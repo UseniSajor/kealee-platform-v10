@@ -64,6 +64,17 @@ export const api = {
     apiRequest<{ canProceed: boolean; gates: any[]; blockers: string[] }>(`/workflow/gate/${phase}/${projectId}`),
   canAdvanceToPhase: (projectId: string, phase: string) =>
     apiRequest<{ canAdvance: boolean; blockers: string[] }>(`/workflow/can-advance/${projectId}?phase=${phase}`),
+  generateTasksFromSOW: (data: {
+    sowText: string
+    projectType: string
+    projectId: string
+    phase?: string
+    includeDeliverables?: boolean
+  }) =>
+    apiRequest<{ result: any }>("/tasks/generate", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
   getMyClients: (query?: { active?: boolean; limit?: number }) => {
     const params = new URLSearchParams()
     if (query?.active !== undefined) params.set("active", String(query.active))

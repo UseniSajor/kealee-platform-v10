@@ -77,6 +77,7 @@ import { handoffRoutes } from './modules/handoff/handoff.routes'
 import { serviceRequestRoutes } from './modules/ops-services/service-request.routes'
 import { servicePlanRoutes } from './modules/ops-services/service-plan.routes'
 import { workflowRoutes } from './modules/workflow/workflow.routes'
+import { taskGeneratorRoutes } from './modules/tasks/task-generator.routes'
 import { createGraphQLServer } from './graphql/server'
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware'
 import { registerGlobalRateLimit } from './middleware/rate-limit.middleware'
@@ -200,6 +201,7 @@ const start = async () => {
     await fastify.register(serviceRequestRoutes, { prefix: '/ops-services' })
     await fastify.register(servicePlanRoutes, { prefix: '/ops-services' })
     await fastify.register(workflowRoutes, { prefix: '/workflow' })
+    await fastify.register(taskGeneratorRoutes, { prefix: '/tasks' })
 
     // Register GraphQL server
     const graphQLServer = createGraphQLServer()
