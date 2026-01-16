@@ -58,6 +58,12 @@ export const api = {
   getMyStats: () => apiRequest<{ stats: unknown }>("/pm/stats"),
   getProductivityDashboard: () => apiRequest<{ dashboard: import("./types").PMDashboard }>("/pm/productivity"),
   getTaskCompliance: (taskId: string) => apiRequest<{ compliance: any }>(`/pm/tasks/${taskId}/compliance`),
+  getWorkflowStatus: (projectId: string, phase: string) =>
+    apiRequest<{ status: any }>(`/workflow/status/${projectId}?phase=${phase}`),
+  checkWorkflowGate: (phase: string, projectId: string) =>
+    apiRequest<{ canProceed: boolean; gates: any[]; blockers: string[] }>(`/workflow/gate/${phase}/${projectId}`),
+  canAdvanceToPhase: (projectId: string, phase: string) =>
+    apiRequest<{ canAdvance: boolean; blockers: string[] }>(`/workflow/can-advance/${projectId}?phase=${phase}`),
   getMyClients: (query?: { active?: boolean; limit?: number }) => {
     const params = new URLSearchParams()
     if (query?.active !== undefined) params.set("active", String(query.active))
