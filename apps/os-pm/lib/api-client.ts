@@ -75,6 +75,16 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+  uploadVoiceNote: (formData: FormData) =>
+    apiRequest<{ id: string; url: string }>("/pm/voice-notes", {
+      method: "POST",
+      body: formData,
+    }),
+  scanMaterial: (barcode: string) =>
+    apiRequest<{ material: any }>("/pm/materials/scan", {
+      method: "POST",
+      body: JSON.stringify({ barcode }),
+    }),
   getMyClients: (query?: { active?: boolean; limit?: number }) => {
     const params = new URLSearchParams()
     if (query?.active !== undefined) params.set("active", String(query.active))
