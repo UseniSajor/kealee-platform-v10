@@ -14,7 +14,7 @@ export class WorkflowIntegrationService {
     try {
       const project = await prisma.project.findUnique({
         where: { id: projectId },
-      })
+      }) as any
 
       if (!project) {
         return {
@@ -32,7 +32,7 @@ export class WorkflowIntegrationService {
                           project.status === 'PERMITTING' ||
                           project.status === 'CONSTRUCTION' ||
                           project.readinessCompletedAt !== null ||
-                          (project as any).sowValidated === true
+                          project.sowValidated === true
 
       return {
         check: 'SOW_VALIDATED',
@@ -240,14 +240,14 @@ export class WorkflowIntegrationService {
     try {
       const project = await prisma.project.findUnique({
         where: { id: projectId },
-      })
+      }) as any
 
       // Check if project has an approved schedule
       // Schedule approval is typically indicated by project status
       const scheduleApproved = project?.status === 'PERMITTING' || 
                               project?.status === 'CONSTRUCTION' ||
                               project?.status === 'CLOSEOUT' ||
-                              (project as any).scheduleApproved === true
+                              project?.scheduleApproved === true
 
       return {
         check: 'SCHEDULE_APPROVED',
@@ -277,12 +277,12 @@ export class WorkflowIntegrationService {
     try {
       const project = await prisma.project.findUnique({
         where: { id: projectId },
-      })
+      }) as any
 
       // Check if budget is verified (has budget amount and is approved)
       const budgetVerified = project?.budget !== null && 
                             project?.budget !== undefined &&
-                            (project as any).budgetApproved === true
+                            project?.budgetApproved === true
 
       return {
         check: 'BUDGET_VERIFIED',
