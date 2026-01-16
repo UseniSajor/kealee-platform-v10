@@ -17,6 +17,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { api } from "@/lib/api-client"
 import type { PMDashboard } from "@/lib/types"
+import { PomodoroTimer } from "./PomodoroTimer"
+import { ComplianceAlert } from "./ComplianceAlert"
 
 function ProductivityScore({ score }: { score: number }) {
   const getColor = (score: number) => {
@@ -158,7 +160,13 @@ function WorkloadCard({ workload }: { workload: PMDashboard["workload"] }) {
   )
 }
 
-function PriorityTasks({ tasks }: { tasks: PMDashboard["priorityTasks"] }) {
+function PriorityTasks({ 
+  tasks, 
+  onTaskSelect 
+}: { 
+  tasks: PMDashboard["priorityTasks"]
+  onTaskSelect?: (task: PMDashboard["priorityTasks"][0]) => void
+}) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "CRITICAL":
@@ -212,7 +220,8 @@ function PriorityTasks({ tasks }: { tasks: PMDashboard["priorityTasks"] }) {
               return (
                 <div
                   key={task.id}
-                  className="flex items-start justify-between p-3 border rounded-lg hover:bg-neutral-50 transition-colors"
+                  className="flex items-start justify-between p-3 border rounded-lg hover:bg-neutral-50 transition-colors cursor-pointer"
+                  onClick={() => onTaskSelect?.(task)}
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -243,11 +252,54 @@ function PriorityTasks({ tasks }: { tasks: PMDashboard["priorityTasks"] }) {
 }
 
 export function PMProductivityDashboard() {
+  const [currentTask, setCurrentTask] = React.useState<PMDashboard["priorityTasks"][0] | undefined>()
+  const [selectedTaskId, setSelectedTaskId] = React.useState<string | undefined>()
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["pm-productivity"],
     queryFn: () => api.getProductivityDashboard(),
     refetchInterval: 60000, // Refetch every minute
   })
+
+  // Set up real-time updates via SSE
+  React.useEffect(() => {
+    if (!data?.dashboard) return
+
+    // Set first priority task as current if none selected
+    if (!currentTask && data.dashboard.priorityTasks.length > 0) {
+      setCurrentTask(data.dashboard.priorityTasks[0])
+      setSelectedTaskId(data.dashboard.priorityTasks[0].id)
+    }
+
+    // Connect to SSE for real-time updates
+    const eventSource = new EventSource(
+      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/pm/realtime/productivity`,
+      {
+        withCredentials: true,
+      }
+    )
+
+    eventSource.onmessage = (event) => {
+      try {
+        const update = JSON.parse(event.data)
+        if (update.type === "productivity_update") {
+          // Update dashboard data in real-time
+          // This would trigger a refetch or update local state
+        }
+      } catch (err) {
+        console.error("Failed to parse SSE message:", err)
+      }
+    }
+
+    eventSource.onerror = (err) => {
+      console.error("SSE connection error:", err)
+      eventSource.close()
+    }
+
+    return () => {
+      eventSource.close()
+    }
+  }, [data, currentTask])
 
   if (isLoading) {
     return (
@@ -312,7 +364,43 @@ export function PMProductivityDashboard() {
       </div>
 
       {/* Priority Queue */}
-      <PriorityTasks tasks={dashboard.priorityTasks} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <PriorityTasks 
+            tasks={dashboard.priorityTasks} 
+            onTaskSelect={(task) => {
+              setCurrentTask(task)
+              setSelectedTaskId(task.id)
+            }}
+          />
+          {selectedTaskId && (
+            <div className="mt-6">
+              <ComplianceAlert 
+                taskId={selectedTaskId}
+                onResolve={() => setSelectedTaskId(undefined)}
+              />
+            </div>
+          )}
+        </div>
+        <div>
+          <PomodoroTimer
+            currentTask={currentTask}
+            onTaskComplete={(taskId) => {
+              // Handle task completion
+              console.log("Task completed:", taskId)
+            }}
+            onTaskSwitch={() => {
+              // Auto-switch to next priority task
+              if (dashboard.priorityTasks.length > 1) {
+                const currentIndex = dashboard.priorityTasks.findIndex((t) => t.id === currentTask?.id)
+                const nextTask = dashboard.priorityTasks[currentIndex + 1] || dashboard.priorityTasks[0]
+                setCurrentTask(nextTask)
+                setSelectedTaskId(nextTask.id)
+              }
+            }}
+          />
+        </div>
+      </div>
     </div>
   )
 }

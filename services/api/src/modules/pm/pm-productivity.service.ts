@@ -1,5 +1,6 @@
 import { prisma } from '@kealee/database'
 import { NotFoundError } from '../../errors/app.error'
+import { pmPriorityScoringService } from './pm-priority-scoring.service'
 
 interface PMProductivityMetrics {
   productivityScore: number

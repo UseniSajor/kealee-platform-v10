@@ -57,6 +57,7 @@ export const api = {
   // PM stats + lists (these endpoints will be implemented under /pm/*)
   getMyStats: () => apiRequest<{ stats: unknown }>("/pm/stats"),
   getProductivityDashboard: () => apiRequest<{ dashboard: import("./types").PMDashboard }>("/pm/productivity"),
+  getTaskCompliance: (taskId: string) => apiRequest<{ compliance: any }>(`/pm/tasks/${taskId}/compliance`),
   getMyClients: (query?: { active?: boolean; limit?: number }) => {
     const params = new URLSearchParams()
     if (query?.active !== undefined) params.set("active", String(query.active))
