@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { CheckCircle2, Lock, AlertCircle } from "lucide-react"
-import { Button } from "@kealee/ui/card"
+import { Button } from "@kealee/ui/button"
 import { useComplianceCheck } from "@/hooks/useComplianceCheck"
 import { api } from "@/lib/api-client"
 import { ComplianceCheckpoint } from "./ComplianceCheckpoint"
