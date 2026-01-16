@@ -26,27 +26,13 @@ export function AITaskGenerator({
 
   const generateMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/tasks/generate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${await getAuthToken()}`,
-        },
-        body: JSON.stringify({
-          sowText,
-          projectType,
-          projectId,
-          phase,
-          includeDeliverables,
-        }),
+      return api.generateTasksFromSOW({
+        sowText,
+        projectType,
+        projectId,
+        phase,
+        includeDeliverables,
       })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to generate tasks")
-      }
-
-      return response.json()
     },
     onSuccess: (data) => {
       if (onTasksGenerated && data.result?.template?.mandatoryTasks) {
@@ -54,15 +40,6 @@ export function AITaskGenerator({
       }
     },
   })
-
-  async function getAuthToken() {
-    // Get auth token from Supabase
-    const { supabase } = await import("@/lib/supabase")
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    return session?.access_token || ""
-  }
 
   const handleGenerate = () => {
     if (!sowText || sowText.length < 50) {
