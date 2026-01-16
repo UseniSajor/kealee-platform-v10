@@ -368,14 +368,15 @@ async function checkClientApproval(checkType: CheckType, params: Record<string, 
   // Check if project has client approval
   const project = await prisma.project?.findUnique({
     where: { id: projectId },
-    include: {
-      contracts: {
-        where: {
-          status: 'SIGNED',
-        },
-      },
-    },
   }).catch(() => null)
+
+  // Check contracts separately
+  const contracts = await prisma.contractAgreement?.findMany({
+    where: {
+      projectId,
+      status: 'SIGNED',
+    },
+  }).catch(() => [])
 
   // For milestone-specific approval, check milestone approval status
   if (milestoneId) {
@@ -383,13 +384,13 @@ async function checkClientApproval(checkType: CheckType, params: Record<string, 
     // For now, assume project approval is sufficient
   }
 
-  const hasApproval = project !== null && project.contracts && project.contracts.length > 0
+  const hasApproval = project !== null && contracts && contracts.length > 0
 
   return {
     passed: hasApproval,
     data: {
       projectId: project?.id,
-      contractsSigned: project?.contracts?.length || 0,
+      contractsSigned: contracts?.length || 0,
     },
   }
 }

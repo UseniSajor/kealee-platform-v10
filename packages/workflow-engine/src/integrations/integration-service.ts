@@ -14,9 +14,6 @@ export class WorkflowIntegrationService {
     try {
       const project = await prisma.project.findUnique({
         where: { id: projectId },
-        include: {
-          sow: true, // Assuming SOW is a relation or field
-        },
       })
 
       if (!project) {
@@ -30,8 +27,11 @@ export class WorkflowIntegrationService {
       }
 
       // Check if SOW exists and is validated
-      const sowValidated = project.sow?.status === 'VALIDATED' || 
-                          project.sow?.status === 'APPROVED' ||
+      // SOW validation is typically indicated by project status or readiness completion
+      const sowValidated = project.status === 'READINESS' || 
+                          project.status === 'PERMITTING' ||
+                          project.status === 'CONSTRUCTION' ||
+                          project.readinessCompletedAt !== null ||
                           (project as any).sowValidated === true
 
       return {
@@ -41,7 +41,7 @@ export class WorkflowIntegrationService {
         message: sowValidated 
           ? 'SOW is validated' 
           : 'SOW validation required',
-        data: { projectId, sowStatus: project.sow?.status },
+        data: { projectId, projectStatus: project.status },
         timestamp: new Date(),
       }
     } catch (error: any) {
@@ -242,8 +242,10 @@ export class WorkflowIntegrationService {
       })
 
       // Check if project has an approved schedule
-      const scheduleApproved = project?.status === 'ACTIVE' || 
-                              project?.status === 'IN_PROGRESS' ||
+      // Schedule approval is typically indicated by project status
+      const scheduleApproved = project?.status === 'PERMITTING' || 
+                              project?.status === 'CONSTRUCTION' ||
+                              project?.status === 'CLOSEOUT' ||
                               (project as any).scheduleApproved === true
 
       return {
@@ -362,7 +364,7 @@ export class WorkflowIntegrationService {
       default:
         return {
           check,
-          module: 'unknown',
+          module: 'm-project-owner' as ModuleName,
           passed: false,
           message: `Unknown check type: ${check}`,
           timestamp: new Date(),
