@@ -4,11 +4,13 @@ import { webhookQueue } from './queues/webhook.queue'
 import { mlQueue } from './queues/ml.queue'
 import { reportsQueue } from './queues/reports.queue'
 import { salesQueue } from './queues/sales.queue'
+import { mlPredictionQueue } from './queues/ml-prediction.queue'
 import { createEmailWorker } from './processors/email.processor'
 import { createWebhookWorker } from './processors/webhook.processor'
 import { createMLWorker } from './processors/ml.processor'
 import { createReportsWorker } from './processors/reports.processor'
 import { createSalesWorker } from './processors/sales.processor'
+import { createMLPredictionWorker } from './processors/ml-prediction.processor'
 import { cronManager } from './cron/cron.manager'
 import type { Worker } from 'bullmq'
 
@@ -20,6 +22,7 @@ let webhookWorker: Worker | null = null
 let mlWorker: Worker | null = null
 let reportsWorker: Worker | null = null
 let salesWorker: Worker | null = null
+let mlPredictionWorker: Worker | null = null
 
 // Test Redis connection
 async function testRedisConnection() {
@@ -180,6 +183,22 @@ async function initializeSalesQueue() {
   }
 }
 
+// Initialize ML prediction queue and worker
+async function initializeMLPredictionQueue() {
+  try {
+    console.log('🔮 Initializing ML prediction queue...')
+    
+    // Create ML prediction worker
+    mlPredictionWorker = createMLPredictionWorker()
+    console.log('✅ ML prediction worker started')
+    
+    console.log('✅ ML prediction queue initialized')
+  } catch (error) {
+    console.error('❌ Failed to initialize ML prediction queue:', error)
+    throw error
+  }
+}
+
 // Graceful shutdown
 async function shutdown() {
   console.log('\n⚠️ Shutting down worker service...')
@@ -210,6 +229,16 @@ async function shutdown() {
       console.log('✅ Reports worker closed')
     }
     
+    if (salesWorker) {
+      await salesWorker.close()
+      console.log('✅ Sales worker closed')
+    }
+    
+    if (mlPredictionWorker) {
+      await mlPredictionWorker.close()
+      console.log('✅ ML prediction worker closed')
+    }
+    
     // Close queues
     await emailQueue.close()
     console.log('✅ Email queue closed')
@@ -225,6 +254,9 @@ async function shutdown() {
     
     await salesQueue.close()
     console.log('✅ Sales queue closed')
+    
+    await mlPredictionQueue.close()
+    console.log('✅ ML prediction queue closed')
     
     // Close Redis
     await redis.quit()
@@ -270,6 +302,7 @@ async function start() {
   await initializeMLQueue()
   await initializeReportsQueue()
   await initializeSalesQueue()
+  await initializeMLPredictionQueue()
   await initializeCronJobs()
   
   console.log('✅ Worker service ready')
@@ -278,6 +311,7 @@ async function start() {
   console.log('🤖 ML queue operational')
   console.log('📄 Reports queue operational')
   console.log('💼 Sales queue operational')
+  console.log('🔮 ML prediction queue operational')
   console.log('📅 Cron jobs operational')
   console.log('💡 Task 21: Scheduled jobs (cron) complete!')
   
