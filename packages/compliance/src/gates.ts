@@ -302,7 +302,7 @@ async function checkPermitStatus(checkType: CheckType, params: Record<string, an
 
   const { projectId } = params
 
-  const permit = await prisma.permitApplication?.findFirst({
+  const permit = await (prisma as any).permitApplication?.findFirst({
     where: {
       projectId,
       status: {
@@ -312,7 +312,7 @@ async function checkPermitStatus(checkType: CheckType, params: Record<string, an
         gte: new Date(), // Not expired
       },
     },
-  }).catch(() => null)
+  }).catch(() => null) || null
 
   return {
     passed: permit !== null,
@@ -334,14 +334,14 @@ async function checkEscrowStatus(checkType: CheckType, params: Record<string, an
 
   const { projectId } = params
 
-  const escrow = await prisma.escrowAccount?.findFirst({
+  const escrow = await (prisma as any).escrowAccount?.findFirst({
     where: {
       projectId,
       status: {
         in: ['FUNDED', 'ACTIVE'],
       },
     },
-  }).catch(() => null)
+  }).catch(() => null) || null
 
   const isFunded = escrow !== null && (escrow.status === 'FUNDED' || escrow.status === 'ACTIVE')
 
@@ -371,12 +371,12 @@ async function checkClientApproval(checkType: CheckType, params: Record<string, 
   }).catch(() => null)
 
   // Check contracts separately
-  const contracts = await prisma.contractAgreement?.findMany({
+  const contracts = await (prisma as any).contractAgreement?.findMany({
     where: {
       projectId,
       status: 'SIGNED',
     },
-  }).catch(() => [])
+  }).catch(() => []) || []
 
   // For milestone-specific approval, check milestone approval status
   if (milestoneId) {
@@ -480,13 +480,13 @@ async function checkSOPComplete(checkType: CheckType, params: Record<string, any
   const { projectId } = params
 
   // Check if required SOP steps are completed
-  const incompleteSteps = await prisma.sOPCompletion?.findMany({
+  const incompleteSteps = await (prisma as any).sOPCompletion?.findMany({
     where: {
       projectId,
       isRequired: true,
       completedAt: null,
     },
-  }).catch(() => [])
+  }).catch(() => []) || []
 
   return {
     passed: !incompleteSteps || incompleteSteps.length === 0,

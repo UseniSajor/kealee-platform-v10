@@ -60,13 +60,14 @@ export class WorkflowIntegrationService {
    */
   async checkPermitApplied(projectId: string): Promise<CheckResult> {
     try {
-      const permit = await prisma.permitApplication?.findFirst({
+      // Use optional chaining for models that may not exist in Prisma schema
+      const permit = await (prisma as any).permitApplication?.findFirst({
         where: {
           projectId,
           status: { in: ['SUBMITTED', 'UNDER_REVIEW', 'APPROVED', 'ISSUED'] },
         },
         orderBy: { createdAt: 'desc' },
-      }).catch(() => null)
+      }).catch(() => null) || null
 
       return {
         check: 'PERMIT_APPLIED',
@@ -91,13 +92,13 @@ export class WorkflowIntegrationService {
 
   async checkPermitApproved(projectId: string): Promise<CheckResult> {
     try {
-      const permit = await prisma.permitApplication?.findFirst({
+      const permit = await (prisma as any).permitApplication?.findFirst({
         where: {
           projectId,
           status: { in: ['APPROVED', 'ISSUED'] },
         },
         orderBy: { createdAt: 'desc' },
-      }).catch(() => null)
+      }).catch(() => null) || null
 
       return {
         check: 'PERMIT_APPROVED',
@@ -125,13 +126,13 @@ export class WorkflowIntegrationService {
    */
   async checkEscrowFunded(projectId: string): Promise<CheckResult> {
     try {
-      const escrow = await prisma.escrowAccount?.findFirst({
+      const escrow = await (prisma as any).escrowAccount?.findFirst({
         where: {
           projectId,
           status: { in: ['FUNDED', 'ACTIVE'] },
         },
         orderBy: { createdAt: 'desc' },
-      }).catch(() => null)
+      }).catch(() => null) || null
 
       return {
         check: 'ESCROW_FUNDED',
@@ -159,7 +160,7 @@ export class WorkflowIntegrationService {
    */
   async checkContractorAssigned(projectId: string): Promise<CheckResult> {
     try {
-      const contract = await prisma.contractAgreement?.findFirst({
+      const contract = await (prisma as any).contractAgreement?.findFirst({
         where: {
           projectId,
           contractorId: { not: null },
@@ -169,7 +170,7 @@ export class WorkflowIntegrationService {
           contractor: true,
         },
         orderBy: { createdAt: 'desc' },
-      }).catch(() => null)
+      }).catch(() => null) || null
 
       return {
         check: 'CONTRACTOR_ASSIGNED',
@@ -202,12 +203,12 @@ export class WorkflowIntegrationService {
   async checkResourceAllocated(projectId: string): Promise<CheckResult> {
     try {
       // Check if project has assigned resources (contractors, materials, etc.)
-      const contract = await prisma.contractAgreement?.findFirst({
+      const contract = await (prisma as any).contractAgreement?.findFirst({
         where: {
           projectId,
           contractorId: { not: null },
         },
-      }).catch(() => null)
+      }).catch(() => null) || null
 
       const hasResources = contract !== null
 
@@ -309,13 +310,13 @@ export class WorkflowIntegrationService {
    */
   async checkClientSignedContract(projectId: string): Promise<CheckResult> {
     try {
-      const contract = await prisma.contractAgreement?.findFirst({
+      const contract = await (prisma as any).contractAgreement?.findFirst({
         where: {
           projectId,
           status: { in: ['SIGNED', 'ACTIVE'] },
         },
         orderBy: { createdAt: 'desc' },
-      }).catch(() => null)
+      }).catch(() => null) || null
 
       return {
         check: 'CLIENT_SIGNED_CONTRACT',
