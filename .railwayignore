@@ -1,0 +1,40 @@
+# Files to ignore during Railway deployment
+# Reduces build context size and speeds up deployment
+
+# Documentation
+_docs/
+*.md
+!README.md
+!DEPLOYMENT.md
+
+# Development files
+.env.local
+.env.example
+*.log
+.DS_Store
+
+# Test files
+**/__tests__/
+**/*.test.ts
+**/*.spec.ts
+coverage/
+
+# Build artifacts (will be rebuilt)
+dist/
+.next/
+node_modules/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/
+*.tmp

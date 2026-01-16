@@ -10,7 +10,10 @@
     "test:api": "cd services/api && pnpm test",
     "test:api:watch": "cd services/api && pnpm test:watch",
     "test:api:coverage": "cd services/api && pnpm test:coverage",
-    "clean": "turbo run clean && rm -rf node_modules"
+    "clean": "turbo run clean && rm -rf node_modules",
+    "deploy:staging": "./scripts/deploy.sh staging",
+    "deploy:production": "./scripts/deploy.sh production",
+    "deploy:promote": "./scripts/deploy.sh promote"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",
