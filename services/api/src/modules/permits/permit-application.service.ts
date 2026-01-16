@@ -110,22 +110,23 @@ async function submitToJurisdiction(
     })
     
     if (apiIntegration) {
-      await prisma.aPICall.create({
-        data: {
-          integrationId: apiIntegration.id,
-          endpoint: '/permits/submit',
-          method: 'POST',
-          action: 'SUBMIT_PERMIT',
-          permitId: permitApplicationId,
-          success: true,
-          statusCode: 201,
-          responseTime: 250,
-        },
-      })
+      try {
+        await prisma.aPICall.create({
+          data: {
+            integrationId: apiIntegration.id,
+            endpoint: '/permits/submit',
+            method: 'POST',
+            action: 'SUBMIT_PERMIT',
+            permitId: permitApplicationId,
+            success: true,
+            statusCode: 201,
+            responseTime: 250,
+          },
+        })
+      } catch (error) {
+        // API integration models may not be available yet
+        console.warn('API integration logging skipped:', error)
       }
-    } catch (error) {
-      // API integration models may not be available yet
-      console.warn('API integration logging skipped:', error)
     }
     
     return {
