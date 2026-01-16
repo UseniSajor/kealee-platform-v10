@@ -322,7 +322,7 @@ export const permitApplicationService = {
     })
     
     // Emit event
-    await eventService.emitEvent({
+    await eventService.recordEvent({
       type: 'PERMIT_APPLICATION_SUBMITTED',
       entityType: 'PermitApplication',
       entityId: application.id,

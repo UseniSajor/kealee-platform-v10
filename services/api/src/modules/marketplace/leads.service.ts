@@ -251,7 +251,7 @@ export const leadsService = {
   async findEligibleContractors(
     lead: {
       id: string
-      estimatedValue: prismaAny.Decimal | null
+      estimatedValue: PrismaDecimal | null
       projectType?: string | null
       city?: string | null
       state?: string | null
@@ -303,11 +303,11 @@ export const leadsService = {
     for (const profile of profiles) {
       // Calculate current pipeline value (sum of distributed leads in pipeline)
       const currentPipelineValue = profile.distributedLeads.reduce(
-        (sum, l) => {
+        (sum: any, l: any) => {
           if (!l.estimatedValue) return sum
-          return sum.plus(l.estimatedValue)
+          return (sum || 0) + Number(l.estimatedValue || 0)
         },
-        new prismaAny.Decimal(0)
+        0 as any
       )
 
       // Calculate projects completed (awarded leads that became projects)
@@ -431,10 +431,10 @@ export const leadsService = {
     if (filters.estimatedValueMin !== undefined || filters.estimatedValueMax !== undefined) {
       where.estimatedValue = {}
       if (filters.estimatedValueMin !== undefined) {
-        where.estimatedValue.gte = new prismaAny.Decimal(filters.estimatedValueMin)
+        where.estimatedValue.gte = filters.estimatedValueMin as any
       }
       if (filters.estimatedValueMax !== undefined) {
-        where.estimatedValue.lte = new prismaAny.Decimal(filters.estimatedValueMax)
+        where.estimatedValue.lte = filters.estimatedValueMax as any
       }
     }
 

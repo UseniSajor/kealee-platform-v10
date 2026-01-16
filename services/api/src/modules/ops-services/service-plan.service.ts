@@ -94,12 +94,12 @@ export const servicePlanService = {
     })
 
     // Emit event
-    await eventService.emitEvent({
-      eventType: 'SERVICE_PLAN_CREATED',
+    await eventService.recordEvent({
+      type: 'SERVICE_PLAN_CREATED',
       entityType: 'ServicePlan',
       entityId: plan.id,
       userId: data.userId,
-      metadata: {
+      payload: {
         packageTier: data.packageTier,
         monthlyPrice: tierInfo.monthlyPrice,
       },
@@ -327,12 +327,12 @@ export const servicePlanService = {
     })
 
     // Emit event
-    await eventService.emitEvent({
-      eventType: 'SERVICE_PLAN_CANCELLED',
+    await eventService.recordEvent({
+      type: 'SERVICE_PLAN_CANCELLED',
       entityType: 'ServicePlan',
       entityId: planId,
       userId: data.userId,
-      metadata: {
+      payload: {
         packageTier: plan.packageTier,
       },
     })

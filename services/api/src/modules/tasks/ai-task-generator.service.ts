@@ -246,9 +246,9 @@ function generateMockTaskTemplate(request: TaskGenerationRequest): TaskGeneratio
 
   const template: TaskTemplate = {
     id: `template-mock-${Date.now()}`,
-    name: `${projectType} Project - ${phase} Phase (Mock)`,
+    name: `${projectType} Project - ${phase || 'INITIATION'} Phase (Mock)`,
     projectType,
-    phase,
+    phase: phase || 'INITIATION',
     mandatoryTasks: mockTasks,
     deliverables: request.includeDeliverables ? mockDeliverables : [],
     description: 'Mock task template for development',

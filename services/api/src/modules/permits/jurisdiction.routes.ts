@@ -42,7 +42,15 @@ export async function jurisdictionRoutes(fastify: FastifyInstance) {
         const user = (request as any).user as { id: string }
         const body = request.body as z.infer<typeof createJurisdictionSchema>
         const jurisdiction = await jurisdictionService.createJurisdiction({
-          ...body,
+          name: body.name,
+          code: body.code,
+          state: body.state,
+          county: body.county,
+          city: body.city,
+          contactEmail: body.contactEmail,
+          contactPhone: body.contactPhone,
+          websiteUrl: body.websiteUrl,
+          serviceArea: body.serviceArea,
           createdById: user.id,
         })
         return reply.code(201).send({ jurisdiction })

@@ -4,6 +4,7 @@ import { validateBody, validateParams } from '../../middleware/validation.middle
 import { z } from 'zod'
 import { addProjectMemberSchema, createProjectSchema, updateProjectSchema } from '../../schemas'
 import { projectService } from './project.service'
+import { NotFoundError, ValidationError } from '../../errors/app.error'
 
 export async function projectRoutes(fastify: FastifyInstance) {
   // POST /projects - create draft project (wizard step 1)

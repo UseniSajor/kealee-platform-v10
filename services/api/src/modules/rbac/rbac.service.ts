@@ -172,7 +172,7 @@ export class RBACService {
       throw new Error('Role not found')
     }
 
-    return role.permissions.map((rp) => rp.permission)
+    return role.permissions.map((rp: any) => rp.permission)
   }
 
   // Check if user has permission (via their org role)
@@ -232,7 +232,7 @@ export class RBACService {
       },
     })
 
-    return rolePermissions.map((rp) => rp.permission)
+    return rolePermissions.map((rp: any) => rp.permission)
   }
 
   // Check if user has any of the specified permissions

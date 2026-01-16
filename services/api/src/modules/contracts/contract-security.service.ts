@@ -229,7 +229,7 @@ export const contractSecurityService = {
       expectedActions.push('ARCHIVED')
     }
 
-    const loggedActions = allLogs.map((log) => log.action)
+    const loggedActions = allLogs.map((log: any) => log.action)
     const missingActions = expectedActions.filter((action) => !loggedActions.includes(action))
 
     const criticalActions = expectedActions.map((action) => {

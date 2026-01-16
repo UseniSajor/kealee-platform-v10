@@ -4,7 +4,7 @@
  */
 
 import {Command} from 'commander';
-import {SDKGenerator} from './generator';
+import {SDKGenerator, ApiEndpoint} from './generator';
 
 const program = new Command();
 
@@ -50,7 +50,7 @@ program
       },
     ];
 
-    const generator = new SDKGenerator(options.url, endpoints);
+    const generator = new SDKGenerator(options.url, endpoints as ApiEndpoint[]);
     await generator.saveSDK(options.type as 'typescript' | 'python' | 'react', options.output);
 
     console.log(`✅ Generated ${options.type} SDK at ${options.output}`);

@@ -1,12 +1,6 @@
 import { prismaAny } from '../../utils/prisma-helper'
 import { AuthorizationError, NotFoundError, ValidationError } from '../../errors/app.error'
-import {
-  EvidenceType,
-  ProjectCategory,
-  ProjectMemberRole,
-  ReadinessItemStatus,
-  ReadinessItemType,
-} from '@prisma/client'
+// Prisma types available through prismaAny
 import { validateReadinessItemResponse } from '../../schemas/readiness.schemas'
 
 function toBool(v: unknown): boolean {
@@ -26,7 +20,7 @@ async function requireOrgAdmin(orgId: string, userId: string) {
 }
 
 export const readinessService = {
-  async listTemplates(params: { orgId?: string; category?: ProjectCategory; activeOnly?: unknown }) {
+  async listTemplates(params: { orgId?: string; category?: string; activeOnly?: unknown }) {
     const activeOnly = toBool(params.activeOnly)
     return prismaAny.readinessTemplate.findMany({
       where: {
@@ -39,7 +33,7 @@ export const readinessService = {
     })
   },
 
-  async createTemplate(input: { orgId?: string | null; name: string; category?: ProjectCategory | null; isActive?: boolean }, actorUserId: string) {
+  async createTemplate(input: { orgId?: string | null; name: string; category?: string | null; isActive?: boolean }, actorUserId: string) {
     if (input.orgId) await requireOrgAdmin(input.orgId, actorUserId)
 
     return prismaAny.readinessTemplate.create({
@@ -58,11 +52,11 @@ export const readinessService = {
     input: {
       title: string
       description?: string | null
-      type: ReadinessItemType
+      type: string
       required?: boolean
       order?: number
       dueDays?: number | null
-      defaultAssigneeRole?: ProjectMemberRole | null
+      defaultAssigneeRole?: string | null
       config?: unknown | null
     },
     actorUserId: string
@@ -118,16 +112,16 @@ export const readinessService = {
     })
 
     // If org has any templates, ignore global ones to avoid duplicates.
-    const hasOrgTemplates = project.orgId ? templates.some((t) => t.orgId === project.orgId) : false
-    const effectiveTemplates = hasOrgTemplates ? templates.filter((t) => t.orgId === project.orgId) : templates.filter((t) => t.orgId === null)
+    const hasOrgTemplates = project.orgId ? templates.some((t: any) => t.orgId === project.orgId) : false
+    const effectiveTemplates = hasOrgTemplates ? templates.filter((t: any) => t.orgId === project.orgId) : templates.filter((t: any) => t.orgId === null)
 
-    const templateItems = effectiveTemplates.flatMap((t) => t.items).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    const templateItems = effectiveTemplates.flatMap((t: any) => t.items).sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0))
 
     const created = await prismaAny.$transaction(
-      templateItems.map((ti) => {
+      templateItems.map((ti: any) => {
         const dueDate = ti.dueDays != null ? new Date(project.createdAt.getTime() + ti.dueDays * 24 * 3600 * 1000) : undefined
         const assigneeUserId =
-          ti.defaultAssigneeRole === ProjectMemberRole.OWNER || !ti.defaultAssigneeRole ? project.ownerId : null
+          ti.defaultAssigneeRole === 'OWNER' || !ti.defaultAssigneeRole ? project.ownerId : null
 
         return prismaAny.readinessItem.create({
           data: {
@@ -136,7 +130,7 @@ export const readinessService = {
             description: ti.description,
             type: ti.type,
             required: ti.required,
-            status: ReadinessItemStatus.PENDING,
+            status: 'PENDING',
             dueDate,
             assigneeUserId,
             response: null,
@@ -170,7 +164,7 @@ export const readinessService = {
     })
   },
 
-  async updateReadinessItem(itemId: string, userId: string, input: { status?: ReadinessItemStatus; response?: unknown | null; dueDate?: string | null; assigneeUserId?: string | null }) {
+  async updateReadinessItem(itemId: string, userId: string, input: { status?: string; response?: unknown | null; dueDate?: string | null; assigneeUserId?: string | null }) {
     const item = await prismaAny.readinessItem.findUnique({
       where: { id: itemId },
       include: { project: { select: { id: true, ownerId: true, orgId: true } } },
@@ -190,15 +184,15 @@ export const readinessService = {
 
     // Require response when completing DOCUMENT_UPLOAD or QUESTION_ANSWER items
     const newStatus = input.status ?? item.status
-    if ((newStatus === ReadinessItemStatus.COMPLETED || newStatus === ReadinessItemStatus.APPROVED) &&
-        (item.type === ReadinessItemType.DOCUMENT_UPLOAD || item.type === ReadinessItemType.QUESTION_ANSWER) &&
+    if ((newStatus === 'COMPLETED' || newStatus === 'APPROVED') &&
+        (item.type === 'DOCUMENT_UPLOAD' || item.type === 'QUESTION_ANSWER') &&
         !input.response) {
       throw new ValidationError(`Response is required when completing ${item.type} items`)
     }
 
     const oldStatus = item.status
-    const isCompleting = (oldStatus !== ReadinessItemStatus.COMPLETED && oldStatus !== ReadinessItemStatus.APPROVED) &&
-      (newStatus === ReadinessItemStatus.COMPLETED || newStatus === ReadinessItemStatus.APPROVED)
+    const isCompleting = (oldStatus !== 'COMPLETED' && oldStatus !== 'APPROVED') &&
+      (newStatus === 'COMPLETED' || newStatus === 'APPROVED')
 
     const updated = await prismaAny.readinessItem.update({
       where: { id: itemId },
@@ -208,11 +202,11 @@ export const readinessService = {
         dueDate: input.dueDate === undefined ? undefined : input.dueDate ? new Date(input.dueDate) : null,
         assigneeUserId: input.assigneeUserId === undefined ? undefined : input.assigneeUserId,
         completedAt:
-          (newStatus === ReadinessItemStatus.COMPLETED || newStatus === ReadinessItemStatus.APPROVED) && !item.completedAt ? new Date() : undefined,
+          (newStatus === 'COMPLETED' || newStatus === 'APPROVED') && !item.completedAt ? new Date() : undefined,
         approvedAt:
-          newStatus === ReadinessItemStatus.APPROVED && !item.approvedAt ? new Date() : undefined,
+          newStatus === 'APPROVED' && !item.approvedAt ? new Date() : undefined,
         approvedById:
-          newStatus === ReadinessItemStatus.APPROVED ? userId : undefined,
+          newStatus === 'APPROVED' ? userId : undefined,
       },
       include: { evidence: true },
     })
@@ -254,7 +248,7 @@ export const readinessService = {
       fileName?: string | null
       mimeType?: string | null
       sizeBytes?: number | null
-      type?: EvidenceType
+      type?: string
       metadata?: unknown | null
     }
   ) {
@@ -269,7 +263,7 @@ export const readinessService = {
       data: {
         projectId: item.project.id,
         readinessItemId: item.id,
-        type: input.type ?? EvidenceType.DOCUMENT,
+        type: input.type ?? 'DOCUMENT',
         url: input.url,
         fileName: input.fileName ?? null,
         mimeType: input.mimeType ?? null,
@@ -297,9 +291,9 @@ export const readinessService = {
     })
 
     const total = items.length
-    const required = items.filter((i) => i.required).length
-    const completed = items.filter((i) => i.status === ReadinessItemStatus.APPROVED || i.status === ReadinessItemStatus.COMPLETED).length
-    const requiredCompleted = items.filter((i) => i.required && (i.status === ReadinessItemStatus.APPROVED || i.status === ReadinessItemStatus.COMPLETED)).length
+    const required = items.filter((i: any) => i.required).length
+    const completed = items.filter((i: any) => i.status === 'APPROVED' || i.status === 'COMPLETED').length
+    const requiredCompleted = items.filter((i: any) => i.required && (i.status === 'APPROVED' || i.status === 'COMPLETED')).length
 
     const percentage = total > 0 ? Math.round((completed / total) * 100) : 0
     const requiredPercentage = required > 0 ? Math.round((requiredCompleted / required) * 100) : 100
@@ -322,15 +316,15 @@ export const readinessService = {
       select: { id: true, title: true, required: true, status: true },
     })
 
-    const requiredItems = items.filter((i) => i.required)
+    const requiredItems = items.filter((i: any) => i.required)
     const incompleteRequired = requiredItems.filter(
-      (i) => i.status !== ReadinessItemStatus.APPROVED && i.status !== ReadinessItemStatus.COMPLETED
+      (i: any) => i.status !== 'APPROVED' && i.status !== 'COMPLETED'
     )
 
     if (incompleteRequired.length > 0) {
       return {
         canProceed: false,
-        reason: `Cannot proceed to READINESS status: ${incompleteRequired.length} required item(s) incomplete: ${incompleteRequired.map((i) => i.title).join(', ')}`,
+        reason: `Cannot proceed to READINESS status: ${incompleteRequired.length} required item(s) incomplete: ${incompleteRequired.map((i: any) => i.title).join(', ')}`,
       }
     }
 
@@ -363,11 +357,11 @@ export const readinessService = {
 
     // Update items and create audit logs
     const results = await prismaAny.$transaction(
-      items.map((item) =>
+      items.map((item: any) =>
         prismaAny.readinessItem.update({
           where: { id: item.id },
           data: {
-            status: ReadinessItemStatus.COMPLETED,
+            status: 'COMPLETED',
             completedAt: item.completedAt || now,
             approvedAt: item.approvedAt || now,
             approverUserId: userId,
@@ -384,8 +378,8 @@ export const readinessService = {
         entityId: projectId,
         userId,
         reason: reason || `Bulk completed ${itemIds.length} readiness item(s)`,
-        before: { itemIds, statuses: items.map((i) => ({ id: i.id, status: i.status })) },
-        after: { itemIds, statuses: results.map((r) => ({ id: r.id, status: r.status })) },
+        before: { itemIds, statuses: items.map((i: any) => ({ id: i.id, status: i.status })) },
+        after: { itemIds, statuses: results.map((r: any) => ({ id: r.id, status: r.status })) },
       },
     })
 

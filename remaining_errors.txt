@@ -1,0 +1,51 @@
+﻿src/__tests__/project-creation.test.ts(5,27): error TS2307: Cannot find module '../../utils/prisma-helper' or its corresponding type declarations.
+src/modules/marketplace/leads.routes.ts(46,23): error TS2345: Argument of type 'ZodObject<{ stage: ZodOptional<ZodString>; estimatedValueMin: ZodOptional<ZodEffects<ZodString, number, string>>; estimatedValueMax: ZodOptional<...>; ... 5 more ...; offset: ZodOptional<...>; }, "strip", ZodTypeAny, { ...; }, { ...; }>' is not assignable to parameter of type 'ZodType<{ limit?: number | undefined; city?: string | undefined; state?: string | undefined; offset?: number | undefined; projectType?: string | undefined; stage?: string | undefined; estimatedValueMin?: number | undefined; estimatedValueMax?: number | undefined; assignedSalesRepId?: string | undefined; }, ZodTypeDe...'.
+src/modules/permits/jurisdiction-config.routes.ts(149,73): error TS2345: Argument of type '{ valuation?: number | undefined; squareFootage?: number | undefined; unitCount?: number | undefined; }' is not assignable to parameter of type 'string'.
+src/modules/permits/jurisdiction-config.routes.ts(357,92): error TS2554: Expected 2 arguments, but got 3.
+src/modules/permits/jurisdiction-staff.routes.ts(132,68): error TS2554: Expected 1 arguments, but got 2.
+src/modules/permits/jurisdiction-staff.routes.ts(210,59): error TS2554: Expected 3 arguments, but got 1.
+src/modules/permits/jurisdiction-staff.routes.ts(241,55): error TS2554: Expected 2 arguments, but got 1.
+src/modules/permits/jurisdiction-staff.routes.ts(274,62): error TS2554: Expected 2 arguments, but got 1.
+src/modules/permits/jurisdiction-staff.routes.ts(308,57): error TS2554: Expected 2 arguments, but got 1.
+src/modules/permits/jurisdiction-staff.routes.ts(339,78): error TS2345: Argument of type '{ score: number; passed: boolean; notes?: string | undefined; certificateFileUrl?: string | undefined; }' is not assignable to parameter of type 'string'.
+src/modules/permits/jurisdiction-staff.routes.ts(366,77): error TS2345: Argument of type '{ staffId: string; jurisdictionId: any; provisionedById: string; deviceId: string; deviceType: "IOS" | "ANDROID"; deviceName?: string | undefined; deviceModel?: string | undefined; osVersion?: string | undefined; appVersion?: string | undefined; }' is not assignable to parameter of type 'string'.
+src/modules/permits/jurisdiction-staff.routes.ts(398,87): error TS2554: Expected 1 arguments, but got 2.
+src/modules/permits/jurisdiction.routes.ts(44,75): error TS2345: Argument of type '{ createdById: string; code: string; name: string; state: string; contactEmail: string; contactPhone: string; city?: string | undefined; county?: string | undefined; websiteUrl?: string | undefined; serviceArea?: any; }' is not assignable to parameter of type '{ name: string; code: string; state: string; county?: string | undefined; city?: string | undefined; contactEmail: string; contactPhone: string; websiteUrl?: string | undefined; serviceArea: any; createdById: string; }'.
+src/modules/pm/pm-productivity.service.ts(115,44): error TS7006: Parameter 'log' implicitly has an 'any' type.
+src/modules/pm/pm-productivity.service.ts(181,39): error TS7006: Parameter 'sr' implicitly has an 'any' type.
+src/modules/pm/pm-productivity.service.ts(202,35): error TS7006: Parameter 'perm' implicitly has an 'any' type.
+src/modules/pm/pm-productivity.service.ts(227,27): error TS7006: Parameter 'task' implicitly has an 'any' type.
+src/modules/pm/pm-realtime.routes.ts(47,37): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/modules/pm/pm-realtime.routes.ts(135,44): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+src/modules/pm/pm-realtime.routes.ts(135,49): error TS7006: Parameter 'task' implicitly has an 'any' type.
+src/modules/projects/project.routes.ts(127,30): error TS2304: Cannot find name 'NotFoundError'.
+src/modules/projects/project.routes.ts(127,64): error TS2304: Cannot find name 'ValidationError'.
+src/modules/projects/project.service.ts(3,73): error TS2307: Cannot find module '@prisma/client' or its corresponding type declarations.
+src/modules/projects/project.service.ts(231,56): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/modules/properties/property.routes.ts(39,52): error TS2345: Argument of type 'ZodObject<{ q: ZodString; orgId: ZodOptional<ZodString>; limit: ZodOptional<ZodEffects<ZodString, number, string>>; }, "strip", ZodTypeAny, { ...; }, { ...; }>' is not assignable to parameter of type 'ZodType<{ q: string; limit?: number | undefined; orgId?: string | undefined; }, ZodTypeDef, { q: string; limit?: number | undefined; orgId?: string | undefined; }>'.
+src/modules/rbac/rbac.service.ts(175,34): error TS7006: Parameter 'rp' implicitly has an 'any' type.
+src/modules/rbac/rbac.service.ts(235,33): error TS7006: Parameter 'rp' implicitly has an 'any' type.
+src/modules/readiness/readiness.service.ts(9,8): error TS2307: Cannot find module '@prisma/client' or its corresponding type declarations.
+src/modules/readiness/readiness.service.ts(121,61): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/modules/readiness/readiness.service.ts(122,68): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/modules/readiness/readiness.service.ts(122,121): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/modules/readiness/readiness.service.ts(124,55): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/modules/readiness/readiness.service.ts(124,76): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/modules/readiness/readiness.service.ts(124,79): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/modules/readiness/readiness.service.ts(127,26): error TS7006: Parameter 'ti' implicitly has an 'any' type.
+src/modules/readiness/readiness.service.ts(300,36): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/modules/readiness/readiness.service.ts(301,37): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/modules/readiness/readiness.service.ts(302,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/modules/readiness/readiness.service.ts(325,41): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/modules/readiness/readiness.service.ts(327,8): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/modules/readiness/readiness.service.ts(333,138): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/modules/readiness/readiness.service.ts(366,18): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/modules/readiness/readiness.service.ts(387,49): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/modules/readiness/readiness.service.ts(388,50): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/modules/security-audit/immutable-audit.service.ts(157,52): error TS2345: Argument of type '{ eventType: any; severity: any; userId: any; apiKeyId: any; ipAddress: any; endpoint: any; method: any; statusCode: any; timestamp: Date; previousHash: any; }' is not assignable to parameter of type 'Omit<ImmutableAuditLog, "id" | "signature">'.
+src/modules/tasks/ai-task-generator.service.ts(251,5): error TS2322: Type 'WorkflowPhase | undefined' is not assignable to type 'WorkflowPhase'.
+src/modules/users/user.service.ts(133,29): error TS7006: Parameter 'm' implicitly has an 'any' type.
+src/modules/webhooks/webhook.routes.ts(63,48): error TS2339: Property 'supabase' does not exist on type 'FastifyInstance<RawServerDefault, IncomingMessage, ServerResponse<IncomingMessage>, FastifyBaseLogger, FastifyTypeProviderDefault>'.
+src/modules/webhooks/webhook.routes.ts(92,23): error TS2339: Property 'supabase' does not exist on type 'FastifyInstance<RawServerDefault, IncomingMessage, ServerResponse<IncomingMessage>, FastifyBaseLogger, FastifyTypeProviderDefault>'.
+src/modules/webhooks/webhook.service.ts(160,30): error TS2339: Property 'active' does not exist on type '{ url: any; secret: any; }'.
+src/sdk/cli.ts(53,53): error TS2345: Argument of type '{ method: string; path: string; description: string; parameters: { name: string; type: string; required: boolean; location: string; }[]; responseType: string; }[]' is not assignable to parameter of type 'ApiEndpoint[]'.

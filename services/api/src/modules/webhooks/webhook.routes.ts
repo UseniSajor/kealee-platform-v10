@@ -60,7 +60,8 @@ export async function webhookRoutes(fastify: FastifyInstance) {
         const {jurisdictionId, organizationId} = request.query as any;
 
         // In production, would filter by authenticated user
-        const {data: webhooks} = await fastify.supabase
+        // @ts-ignore - supabase is not a standard Fastify property
+        const {data: webhooks} = await (fastify as any).supabase
           .from('Webhook')
           .select('*')
           .eq('active', true);
@@ -89,7 +90,8 @@ export async function webhookRoutes(fastify: FastifyInstance) {
       try {
         const {id} = request.params;
 
-        await fastify.supabase.from('Webhook').update({active: false}).eq('id', id);
+        // @ts-ignore - supabase is not a standard Fastify property
+        await (fastify as any).supabase.from('Webhook').update({active: false}).eq('id', id);
 
         return reply.status(204).send();
       } catch (error: any) {

@@ -34,7 +34,7 @@ export const disputeService = {
 
     // Determine if user is owner or contractor
     const isOwner = project.ownerId === userId
-    const isContractor = project.contracts.some((c) => c.contractorId === userId)
+    const isContractor = (project.contracts as any[]).some((c: any) => c.contractorId === userId)
 
     if (!isOwner && !isContractor) {
       throw new AuthorizationError('Only project owner or contractor can initiate disputes')
@@ -214,7 +214,7 @@ export const disputeService = {
     if (!project) throw new NotFoundError('Project', projectId)
 
     const isOwner = project.ownerId === userId
-    const isContractor = project.contracts.some((c) => c.contractorId === userId)
+    const isContractor = (project.contracts as any[]).some((c: any) => c.contractorId === userId)
 
     if (!isOwner && !isContractor) {
       throw new AuthorizationError('Only project parties can view disputes')

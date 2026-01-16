@@ -44,7 +44,7 @@ export async function pmRealtimeRoutes(fastify: FastifyInstance) {
               reply.raw.write(
                 `data: ${JSON.stringify({
                   type: 'tasks_updated',
-                  tasks: tasks.map((t) => ({
+                  tasks: tasks.map((t: any) => ({
                     id: t.id,
                     title: t.title,
                     status: t.status,
@@ -132,7 +132,7 @@ export async function pmRealtimeRoutes(fastify: FastifyInstance) {
             })
 
             const activeHoursToday = Math.round(
-              (tasksCompletedToday.reduce((sum, task) => sum + (task.estimatedTime || 15), 0) / 60) * 10
+              (tasksCompletedToday.reduce((sum: number, task: any) => sum + (task.estimatedTime || 15), 0) / 60) * 10
             ) / 10
 
             // Get workload counts

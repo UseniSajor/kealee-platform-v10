@@ -153,11 +153,11 @@ export class WebhookService {
   ): Promise<void> {
     const {data: webhook} = await this.supabase
       .from('Webhook')
-      .select('url, secret')
+      .select('url, secret, active')
       .eq('id', webhookId)
       .single();
 
-    if (!webhook || !webhook.active) return;
+    if (!webhook || !(webhook as any).active) return;
 
     try {
       const response = await fetch(webhook.url, {

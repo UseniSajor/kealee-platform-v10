@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vites
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { authRoutes } from '../modules/auth/auth.routes'
 import { projectRoutes } from '../modules/projects/project.routes'
 import { propertyRoutes } from '../modules/properties/property.routes'
@@ -41,7 +41,7 @@ describe('Project Creation Integration Tests (Prompt 1.7)', () => {
     await fastify.ready()
 
     // Create test users
-    testUser1 = await prisma.user.create({
+    testUser1 = await prismaAny.user.create({
       data: {
         email: `test-user-1-${Date.now()}@example.com`,
         name: 'Test User 1',
@@ -49,7 +49,7 @@ describe('Project Creation Integration Tests (Prompt 1.7)', () => {
       },
     })
 
-    testUser2 = await prisma.user.create({
+    testUser2 = await prismaAny.user.create({
       data: {
         email: `test-user-2-${Date.now()}@example.com`,
         name: 'Test User 2',
@@ -58,7 +58,7 @@ describe('Project Creation Integration Tests (Prompt 1.7)', () => {
     })
 
     // Create test org
-    testOrg = await prisma.org.create({
+    testOrg = await prismaAny.org.create({
       data: {
         name: `Test Org ${Date.now()}`,
         slug: `test-org-${Date.now()}`,
@@ -66,7 +66,7 @@ describe('Project Creation Integration Tests (Prompt 1.7)', () => {
     })
 
     // Create org memberships
-    await prisma.orgMember.create({
+    await prismaAny.orgMember.create({
       data: {
         userId: testUser1.id,
         orgId: testOrg.id,
@@ -92,32 +92,32 @@ describe('Project Creation Integration Tests (Prompt 1.7)', () => {
 
   afterAll(async () => {
     // Cleanup test data
-    await prisma.readinessItem.deleteMany({
+    await prismaAny.readinessItem.deleteMany({
       where: {
         project: {
           ownerId: { in: [testUser1.id, testUser2.id] },
         },
-      },
-    })
-    await prisma.project.deleteMany({
+      } as any,
+    }).catch(() => {})
+    await prismaAny.project.deleteMany({
       where: {
         ownerId: { in: [testUser1.id, testUser2.id] },
-      },
-    })
-    await prisma.property.deleteMany({
+      } as any,
+    }).catch(() => {})
+    await prismaAny.property.deleteMany({
       where: {
         orgId: testOrg.id,
       },
-    })
-    await prisma.orgMember.deleteMany({
+    }).catch(() => {})
+    await prismaAny.orgMember.deleteMany({
       where: {
         orgId: testOrg.id,
       },
-    })
-    await prisma.org.delete({
+    }).catch(() => {})
+    await prismaAny.org.delete({
       where: { id: testOrg.id },
-    })
-    await prisma.user.deleteMany({
+    }).catch(() => {})
+    await prismaAny.user.deleteMany({
       where: {
         id: { in: [testUser1.id, testUser2.id] },
       },
@@ -128,14 +128,14 @@ describe('Project Creation Integration Tests (Prompt 1.7)', () => {
 
   beforeEach(async () => {
     // Clean up projects and readiness items before each test
-    await prisma.readinessItem.deleteMany({
+    await prismaAny.readinessItem.deleteMany({
       where: {
         project: {
           ownerId: { in: [testUser1.id, testUser2.id] },
         },
       },
     })
-    await prisma.project.deleteMany({
+    await prismaAny.project.deleteMany({
       where: {
         ownerId: { in: [testUser1.id, testUser2.id] },
       },
@@ -201,7 +201,7 @@ describe('Project Creation Integration Tests (Prompt 1.7)', () => {
     let testProperty: { id: string }
 
     beforeAll(async () => {
-      testProperty = await prisma.property.create({
+      testProperty = await prismaAny.property.create({
         data: {
           orgId: testOrg.id,
           address: '123 Test St',

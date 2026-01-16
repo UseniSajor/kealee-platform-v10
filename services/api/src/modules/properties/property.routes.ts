@@ -36,7 +36,7 @@ export async function propertyRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/search',
     {
-      preHandler: [authenticateUser, validateQuery(searchPropertiesQuerySchema)],
+      preHandler: [authenticateUser, validateQuery(searchPropertiesQuerySchema as any)],
     },
     async (request, reply) => {
       const { q, orgId, limit } = request.query as any

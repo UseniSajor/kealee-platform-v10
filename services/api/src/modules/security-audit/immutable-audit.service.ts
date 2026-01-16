@@ -154,18 +154,25 @@ export class ImmutableAuditService {
     if (error || !data) return false;
 
     // Recreate signature and compare
-    const expectedSignature = this.createSignature({
+    const logData: Omit<ImmutableAuditLog, 'signature' | 'id'> = {
       eventType: data.eventType,
-      severity: data.severity,
+      severity: data.severity as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL',
       userId: data.userId,
       apiKeyId: data.apiKeyId,
       ipAddress: data.ipAddress,
+      userAgent: data.userAgent || '',
       endpoint: data.endpoint,
       method: data.method,
       statusCode: data.statusCode,
+      requestHash: data.requestHash || '',
+      responseHash: data.responseHash,
+      jurisdictionId: data.jurisdictionId,
+      organizationId: data.organizationId,
+      metadata: data.metadata,
       timestamp: new Date(data.timestamp),
       previousHash: data.previousHash,
-    });
+    };
+    const expectedSignature = this.createSignature(logData);
 
     return crypto.timingSafeEqual(
       Buffer.from(data.signature),

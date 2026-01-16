@@ -130,7 +130,7 @@ export class UserService {
       },
     })
 
-    return memberships.map((m) => ({
+    return memberships.map((m: any) => ({
       ...m.org,
       role: m.roleKey,
       joinedAt: m.createdAt,

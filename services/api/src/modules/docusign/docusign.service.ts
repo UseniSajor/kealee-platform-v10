@@ -1,3 +1,4 @@
+// @ts-ignore - docusign-esign doesn't have TypeScript definitions
 import { ApiClient, EnvelopesApi, EnvelopeDefinition, Document, Signer, SignHere, Tabs, Recipients } from 'docusign-esign'
 import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError } from '../../errors/app.error'

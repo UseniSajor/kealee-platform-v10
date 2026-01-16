@@ -1,6 +1,6 @@
 import { prismaAny } from '../../utils/prisma-helper'
 import { AuthorizationError, NotFoundError, ValidationError } from '../../errors/app.error'
-import { ProjectMemberRole, ProjectStatus, ExecutionTier, Prisma } from '@prisma/client'
+// Prisma types available through prismaAny
 import { readinessService } from '../readiness/readiness.service'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -38,7 +38,7 @@ export type UpdateProjectInput = {
   budgetTotal?: number | null
   startDate?: string | null
   endDate?: string | null
-  status?: ProjectStatus
+  status?: string
 }
 
 async function assertProjectAccess(projectId: string, userId: string) {
@@ -90,12 +90,12 @@ export const projectService = {
         description: input.description ?? null,
         category: input.category,
         categoryMetadata: (input.categoryMetadata as any) ?? null,
-        status: ProjectStatus.DRAFT,
+        status: 'DRAFT',
         memberships: {
           create: [
             {
               userId: input.ownerId,
-              role: ProjectMemberRole.OWNER,
+              role: 'OWNER',
             },
           ],
         },
@@ -215,20 +215,20 @@ export const projectService = {
     // 0–150k => LOW
     // 150k–350k => STANDARD
     // 350k–500k => HIGH
-    let executionTier: ExecutionTier = ExecutionTier.STANDARD
+    let executionTier: string = 'STANDARD'
     if (lead.estimatedValue) {
-      const value = lead.estimatedValue.toNumber()
+      const value = Number(lead.estimatedValue)
       if (value < 150000) {
-        executionTier = ExecutionTier.LOW
+        executionTier = 'LOW'
       } else if (value >= 150000 && value < 350000) {
-        executionTier = ExecutionTier.STANDARD
+        executionTier = 'STANDARD'
       } else if (value >= 350000 && value <= 500000) {
-        executionTier = ExecutionTier.HIGH
+        executionTier = 'HIGH'
       }
     }
 
     // Create project in transaction
-    const result = await prismaAny.$transaction(async (tx) => {
+    const result = await prismaAny.$transaction(async (tx: any) => {
       // Create project
       const project = await tx.project.create({
         data: {
@@ -240,17 +240,17 @@ export const projectService = {
           categoryMetadata: null,
           budgetTotal: lead.estimatedValue ? (lead.estimatedValue as any) : null,
           executionTier: executionTier,
-          status: ProjectStatus.DRAFT,
+          status: 'DRAFT',
           memberships: {
             create: [
               {
                 userId: ownerId,
-                role: ProjectMemberRole.OWNER,
+                role: 'OWNER',
               },
               // Add contractor as member if awardedProfile exists
               {
                 userId: lead.awardedProfile.userId,
-                role: ProjectMemberRole.CONTRACTOR,
+                role: 'CONTRACTOR',
               },
             ],
           },
@@ -350,7 +350,7 @@ export const projectService = {
     await assertProjectOwner(projectId, userId)
 
     // Prompt 1.5: Readiness gate check
-    if (input.status === ProjectStatus.READINESS) {
+    if (input.status === 'READINESS') {
       const gateCheck = await readinessService.checkReadinessGate(projectId)
       if (!gateCheck.canProceed) {
         throw new ValidationError(gateCheck.reason || 'Cannot proceed to READINESS status')
@@ -382,7 +382,7 @@ export const projectService = {
     return project
   },
 
-  async addMember(projectId: string, ownerId: string, userId: string, role: ProjectMemberRole) {
+  async addMember(projectId: string, ownerId: string, userId: string, role: string) {
     await assertProjectOwner(projectId, ownerId)
 
     const member = await prismaAny.projectMembership.upsert({

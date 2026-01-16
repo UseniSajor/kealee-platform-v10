@@ -26,17 +26,17 @@ export const milestoneUploadService = {
   /**
    * Get evidence type from MIME type (Prompt 3.2)
    */
-  getEvidenceTypeFromMime(mimeType: string): EvidenceType {
+  getEvidenceTypeFromMime(mimeType: string): string {
     if (ALLOWED_IMAGE_TYPES.includes(mimeType.toLowerCase())) {
-      return EvidenceType.PHOTO
+      return 'PHOTO'
     }
     if (ALLOWED_DOCUMENT_TYPES.includes(mimeType.toLowerCase())) {
-      return EvidenceType.DOCUMENT
+      return 'DOCUMENT'
     }
     if (ALLOWED_VIDEO_TYPES.includes(mimeType.toLowerCase())) {
-      return EvidenceType.VIDEO
+      return 'VIDEO'
     }
-    return EvidenceType.OTHER
+    return 'OTHER'
   },
 
   /**
@@ -45,10 +45,10 @@ export const milestoneUploadService = {
   validateFile(file: { name: string; size: number; type: string }): {
     valid: boolean
     errors: string[]
-    evidenceType: EvidenceType | null
+    evidenceType: string | null
   } {
     const errors: string[] = []
-    let evidenceType: EvidenceType | null = null
+    let evidenceType: string | null = null
 
     // Check file size
     if (file.size > MAX_FILE_SIZE) {
@@ -79,7 +79,7 @@ export const milestoneUploadService = {
     fileBuffer: Buffer,
     mimeType: string,
     originalFileName: string
-  ): Promise<{ optimized: Buffer; optimized: boolean; metadata: Record<string, unknown> }> {
+  ): Promise<{ optimizedBuffer: Buffer; optimized: boolean; metadata: Record<string, unknown> }> {
     const evidenceType = this.getEvidenceTypeFromMime(mimeType)
 
     // For now, we just return the original file
@@ -96,7 +96,7 @@ export const milestoneUploadService = {
     }
 
     return {
-      optimized: fileBuffer,
+      optimizedBuffer: fileBuffer,
       optimized: false, // Set to true when actual optimization is implemented
       metadata,
     }
@@ -131,7 +131,7 @@ export const milestoneUploadService = {
     }
 
     // Optimize file (placeholder for production)
-    const { optimized: optimizedBuffer, optimized, metadata } = await this.optimizeFile(
+    const { optimizedBuffer, optimized, metadata } = await this.optimizeFile(
       fileBuffer,
       mimeType,
       fileName

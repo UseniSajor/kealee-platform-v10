@@ -116,6 +116,7 @@ export class OrgService {
     page?: number
     limit?: number
     status?: 'ACTIVE' | 'SUSPENDED' | 'DELETED'
+    search?: string
   }) {
     const page = options.page || 1
     const limit = options.limit || 20
@@ -124,6 +125,9 @@ export class OrgService {
     const where: any = {}
     if (options.status) {
       where.status = options.status
+    }
+    if (options.search) {
+      where.name = { contains: options.search, mode: 'insensitive' } as any
     }
 
     const [orgs, total] = await Promise.all([
@@ -273,7 +277,7 @@ export class OrgService {
       },
     })
 
-    return memberships.map((m) => ({
+    return memberships.map((m: any) => ({
       ...m.org,
       role: m.roleKey,
       joinedAt: m.joinedAt,

@@ -133,7 +133,7 @@ export const pmPriorityScoringService = {
     })
 
     // Calculate priority for each task
-    const prioritizedTasks = tasks.map((task) => {
+    const prioritizedTasks = tasks.map((task: any) => {
       const factors: TaskPriorityFactors = {
         dueDate: task.dueDate ? new Date(task.dueDate) : null,
         source: 'Homeowner', // Default, would need to determine from task metadata
@@ -150,7 +150,7 @@ export const pmPriorityScoringService = {
     })
 
     // Sort by priority score (highest first)
-    prioritizedTasks.sort((a, b) => b.score - a.score)
+    prioritizedTasks.sort((a: any, b: any) => b.score - a.score)
 
     return prioritizedTasks
   },

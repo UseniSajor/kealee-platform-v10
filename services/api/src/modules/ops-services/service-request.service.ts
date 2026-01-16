@@ -71,14 +71,14 @@ export const serviceRequestService = {
     })
 
     // Emit event
-    await eventService.emitEvent({
-      eventType: 'SERVICE_REQUEST_CREATED',
+    await eventService.recordEvent({
+      type: 'SERVICE_REQUEST_CREATED',
       entityType: 'ServiceRequest',
       entityId: request.id,
       userId: data.userId,
-      metadata: {
-        requestType: data.requestType,
-        planId: data.planId,
+      payload: {
+        requestType: (data as any).requestType,
+        planId: (data as any).planId,
       },
     })
 
@@ -246,12 +246,12 @@ export const serviceRequestService = {
     })
 
     // Emit event
-    await eventService.emitEvent({
-      eventType: 'SERVICE_REQUEST_STATUS_UPDATED',
+    await eventService.recordEvent({
+      type: 'SERVICE_REQUEST_STATUS_UPDATED',
       entityType: 'ServiceRequest',
       entityId: requestId,
       userId: data.userId,
-      metadata: {
+      payload: {
         previousStatus: request.status,
         newStatus: data.status,
         assignedTo: data.assignedTo,
@@ -387,7 +387,7 @@ export const serviceRequestService = {
         where: { serviceRequestId: task.serviceRequestId },
       })
 
-      const allCompleted = allTasks.every((t) => t.status === 'completed' || t.id === taskId)
+      const allCompleted = allTasks.every((t: any) => t.status === 'completed' || t.id === taskId)
 
       if (allCompleted && allTasks.length > 0 && task.serviceRequestId) {
         await prismaAny.serviceRequest.update({

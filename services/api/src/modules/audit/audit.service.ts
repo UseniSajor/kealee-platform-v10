@@ -248,7 +248,7 @@ export class AuditService {
 
     return {
       totalAudits,
-      auditsByAction: auditsByAction.map((a) => ({
+      auditsByAction: auditsByAction.map((a: any) => ({
         action: a.action,
         count: a._count.action,
       })),

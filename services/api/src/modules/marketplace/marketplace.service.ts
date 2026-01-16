@@ -54,7 +54,7 @@ export const marketplaceService = {
     ])
 
     return {
-      profiles: profiles.map((p) => ({
+      profiles: profiles.map((p: any) => ({
         id: p.id,
         userId: p.userId,
         businessName: p.businessName,

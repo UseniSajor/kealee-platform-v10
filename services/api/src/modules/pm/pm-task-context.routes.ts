@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { authenticateUser } from '../auth/auth.middleware'
 import { pmTaskContextService } from './pm-task-context.service'
-import { validateParams } from '../../middleware/validation.middleware'
+import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { z } from 'zod'
 
 export async function pmTaskContextRoutes(fastify: FastifyInstance) {

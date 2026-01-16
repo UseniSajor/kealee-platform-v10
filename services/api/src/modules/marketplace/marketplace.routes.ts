@@ -20,7 +20,7 @@ export async function marketplaceRoutes(fastify: FastifyInstance) {
     {
       preHandler: [
         authenticateUser,
-        validateQuery(searchContractorsQuerySchema),
+        validateQuery(searchContractorsQuerySchema as any),
       ],
     },
     async (request, reply) => {

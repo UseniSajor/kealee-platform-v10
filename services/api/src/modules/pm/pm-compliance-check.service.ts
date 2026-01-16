@@ -78,7 +78,7 @@ export const pmComplianceCheckService = {
     // Check 2: Mandatory gates approved
     if (task.project?.gates && task.project.gates.length > 0) {
       const unapprovedGates = task.project.gates.filter(
-        (gate) => gate.status !== 'APPROVED'
+        (gate: any) => gate.status !== 'APPROVED'
       )
 
       if (unapprovedGates.length > 0) {
@@ -139,7 +139,7 @@ export const pmComplianceCheckService = {
       },
     })
 
-    const failedAudits = recentAuditLogs.filter((log) => log.severity === 'ERROR').length
+    const failedAudits = recentAuditLogs.filter((log: any) => log.severity === 'ERROR').length
     const auditScore = recentAuditLogs.length > 0
       ? 100 - (failedAudits / recentAuditLogs.length) * 100
       : 100
@@ -187,19 +187,19 @@ export const pmComplianceCheckService = {
     const details = {
       sopSteps: {
         required: sopSteps?.length || 0,
-        completed: sopSteps?.filter((s) => s.completedAt).length || 0,
+        completed: sopSteps?.filter((s: any) => s.completedAt).length || 0,
       },
       gates: {
         mandatory: gates?.length || 0,
-        approved: gates?.filter((g) => g.status === 'APPROVED').length || 0,
+        approved: gates?.filter((g: any) => g.status === 'APPROVED').length || 0,
       },
       permits: {
         required: permits?.length || 0,
-        approved: permits?.filter((p) => p.status === 'APPROVED').length || 0,
+        approved: permits?.filter((p: any) => p.status === 'APPROVED').length || 0,
       },
       documents: {
         required: documents?.length || 0,
-        uploaded: documents?.filter((d) => d.uploadedAt).length || 0,
+        uploaded: documents?.filter((d: any) => d.uploadedAt).length || 0,
       },
     }
 

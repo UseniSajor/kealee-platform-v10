@@ -98,7 +98,7 @@ export const milestoneService = {
         paidAmount,
         progressPercentage,
         paymentProgress,
-        upcomingMilestones: upcomingMilestones.map((m) => ({
+        upcomingMilestones: upcomingMilestones.map((m: any) => ({
           id: m.id,
           name: m.name,
           dueDate: m.dueDate,

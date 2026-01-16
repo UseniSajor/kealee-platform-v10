@@ -208,7 +208,9 @@ export async function jurisdictionStaffRoutes(fastify: FastifyInstance) {
         const user = (request as any).user as { id: string }
         const body = request.body as z.infer<typeof assignWorkloadSchema>
         const assignment = await jurisdictionStaffService.assignWorkload({
-          ...body,
+          jurisdictionId: body.entityId, // Map entityId to jurisdictionId
+          staffId: body.staffId,
+          permitIds: body.entityType === 'permit' ? [body.entityId] : [], // Map based on entityType
           dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
           assignedById: user.id,
         })

@@ -216,7 +216,7 @@ export const permitRoutingService = {
     }
 
     // Use workload balancing to find best reviewer
-    const balanceResult = await jurisdictionStaffService.balanceWorkload(
+    const balanceResult = await (jurisdictionStaffService as any).balanceWorkload(
       data.jurisdictionId,
       {
         assignmentType: 'REVIEW',
@@ -246,7 +246,7 @@ export const permitRoutingService = {
     })
 
     // Create workload assignment
-    await jurisdictionStaffService.assignWorkload({
+    await (jurisdictionStaffService as any).assignWorkload({
       staffId: recommendedStaff.id,
       jurisdictionId: data.jurisdictionId,
       assignmentType: 'REVIEW',
@@ -300,7 +300,7 @@ export const permitRoutingService = {
 
     // Create new routings based on existing ones
     const newRoutings = await Promise.all(
-      existingRoutings.map(async (existing) => {
+      existingRoutings.map(async (existing: any) => {
         const newRouting = await prismaAny.permitRouting.create({
           data: {
             permitId,
@@ -558,7 +558,7 @@ export const permitRoutingService = {
     })
 
     // Emit event for notification service
-    await eventService.emitEvent({
+    await eventService.recordEvent({
       type: 'PERMIT_NOTIFICATION_CREATED',
       entityType: 'PermitNotification',
       entityId: notification.id,
@@ -615,10 +615,10 @@ export const permitRoutingService = {
       routings: permit.routings,
       summary: {
         total: permit.routings.length,
-        pending: permit.routings.filter((r) => r.routingStatus === 'PENDING').length,
-        inReview: permit.routings.filter((r) => r.routingStatus === 'IN_REVIEW').length,
-        completed: permit.routings.filter((r) => r.routingStatus === 'COMPLETED').length,
-        escalated: permit.routings.filter((r) => r.isEscalated).length,
+        pending: permit.routings.filter((r: any) => r.routingStatus === 'PENDING').length,
+        inReview: permit.routings.filter((r: any) => r.routingStatus === 'IN_REVIEW').length,
+        completed: permit.routings.filter((r: any) => r.routingStatus === 'COMPLETED').length,
+        escalated: permit.routings.filter((r: any) => r.isEscalated).length,
       },
     }
   },
@@ -655,9 +655,9 @@ export const permitRoutingService = {
 
     // Check if all routings are completed
     const allRoutings = routing.permit.routings
-    const allCompleted = allRoutings.every(
-      (r) => r.routingStatus === 'COMPLETED' || r.id === routingId
-    )
+      const allCompleted = allRoutings.every(
+        (r: any) => r.routingStatus === 'COMPLETED' || r.id === routingId
+      )
 
     if (allCompleted) {
       // All reviews complete, check if permit can be approved

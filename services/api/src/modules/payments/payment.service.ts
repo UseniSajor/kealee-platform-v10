@@ -25,7 +25,7 @@ export const paymentService = {
 
     // Only owner or contractor can view escrow
     const isOwner = project.ownerId === userId
-    const isContractor = project.contracts.some((c) => c.contractorId === userId)
+    const isContractor = (project.contracts as any[]).some((c: any) => c.contractorId === userId)
     if (!isOwner && !isContractor) {
       throw new AuthorizationError('Only project owner or contractor can view escrow')
     }
@@ -43,7 +43,7 @@ export const paymentService = {
 
     if (!escrow) {
       // Create escrow agreement if it doesn't exist
-      const activeContract = project.contracts.find((c) => c.status === 'ACTIVE')
+      const activeContract = (project.contracts as any[]).find((c: any) => c.status === 'ACTIVE')
       if (!activeContract) {
         throw new ValidationError('No active contract found for this project')
       }
@@ -349,7 +349,7 @@ export const paymentService = {
     if (!project) throw new NotFoundError('Project', projectId)
 
     const isOwner = project.ownerId === userId
-    const isContractor = project.contracts.some((c) => c.contractorId === userId)
+    const isContractor = (project.contracts as any[]).some((c: any) => c.contractorId === userId)
     if (!isOwner && !isContractor) {
       throw new AuthorizationError('Only project owner or contractor can view payment history')
     }

@@ -43,7 +43,7 @@ export async function leadsRoutes(fastify: FastifyInstance) {
     {
       preHandler: [
         authenticateUser,
-        validateQuery(listLeadsQuerySchema),
+        validateQuery(listLeadsQuerySchema as any),
       ],
     },
     async (request, reply) => {

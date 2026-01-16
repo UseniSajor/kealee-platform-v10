@@ -79,7 +79,7 @@ export const jurisdictionService = {
     })
 
     // Emit event
-    await eventService.emitEvent({
+    await eventService.recordEvent({
       type: 'JURISDICTION_CREATED',
       entityType: 'Jurisdiction',
       entityId: jurisdiction.id,
@@ -325,15 +325,15 @@ export const jurisdictionService = {
       })
 
       const permitsSubmitted = permits.length
-      const permitsApproved = permits.filter((p) => p.status === 'APPROVED' || p.status === 'ISSUED' || p.status === 'ACTIVE').length
-      const permitsIssued = permits.filter((p) => p.status === 'ISSUED' || p.status === 'ACTIVE').length
-      const permitsCompleted = permits.filter((p) => p.status === 'COMPLETED').length
+      const permitsApproved = permits.filter((p: any) => p.status === 'APPROVED' || p.status === 'ISSUED' || p.status === 'ACTIVE').length
+      const permitsIssued = permits.filter((p: any) => p.status === 'ISSUED' || p.status === 'ACTIVE').length
+      const permitsCompleted = permits.filter((p: any) => p.status === 'COMPLETED').length
 
-      const permitFeesCollected = permits.reduce((sum, p) => {
+      const permitFeesCollected = permits.reduce((sum: number, p: any) => {
         return sum + (p.feeAmount ? parseFloat(p.feeAmount.toString()) : 0)
       }, 0)
 
-      const expeditedFeesCollected = permits.reduce((sum, p) => {
+      const expeditedFeesCollected = permits.reduce((sum: number, p: any) => {
         return sum + (p.expeditedFee ? parseFloat(p.expeditedFee.toString()) : 0)
       }, 0)
 

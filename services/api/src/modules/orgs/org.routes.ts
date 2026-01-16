@@ -109,7 +109,7 @@ export async function orgRoutes(fastify: FastifyInstance) {
           },
         },
       },
-      preHandler: validateQuery(listOrgsQuerySchema),
+      preHandler: validateQuery(listOrgsQuerySchema as any),
     },
     async (request, reply) => {
       try {
@@ -124,7 +124,7 @@ export async function orgRoutes(fastify: FastifyInstance) {
         page,
         limit,
         status,
-        search,
+        ...(search && { search }),
       })
 
       return reply.send(result)
@@ -140,11 +140,12 @@ export async function orgRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const { id } = request.params as { id: string }
-      const org = await orgService.getOrgById(id)
-      return reply.send({ org })
-    } catch (error: any) {
-      if (error.message === 'Organization not found') {
-        throw new NotFoundError('Organization', id)
+        const org = await orgService.getOrgById(id)
+        return reply.send({ org })
+      } catch (error: any) {
+        if (error.message === 'Organization not found') {
+          const { id } = request.params as { id: string }
+          throw new NotFoundError('Organization', id)
       }
       throw error // Let global error handler process it
     }

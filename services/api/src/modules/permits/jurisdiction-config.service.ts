@@ -24,4 +24,36 @@ export const jurisdictionConfigService = {
       },
     })
   },
+
+  // Stub methods for routes - to be implemented
+  async createFeeSchedule(data: any) {
+    return { id: 'stub', ...data }
+  },
+  async calculateFee(jurisdictionId: string, data: { permitType?: string; valuation?: number; squareFootage?: number; unitCount?: number }) {
+    return { amount: 0, jurisdictionId, permitType: data.permitType || '' }
+  },
+  async createPermitTypeConfig(data: any) {
+    return { id: 'stub', ...data }
+  },
+  async createReviewDiscipline(data: any) {
+    return { id: 'stub', ...data }
+  },
+  async createInspectorAssignment(data: any) {
+    return { id: 'stub', ...data }
+  },
+  async createBusinessRule(data: any) {
+    return { id: 'stub', ...data }
+  },
+  async evaluateBusinessRules(jurisdictionId: string, permitData: any) {
+    return { passed: true, rules: [] }
+  },
+  async createHoliday(data: any) {
+    return { id: 'stub', ...data }
+  },
+  async isHoliday(jurisdictionId: string, date: Date, type?: string) {
+    return false
+  },
+  async listConfiguration(jurisdictionId: string) {
+    return []
+  },
 }

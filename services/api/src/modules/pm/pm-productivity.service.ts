@@ -59,7 +59,7 @@ export const pmProductivityService = {
 
     // Estimate active hours from completed tasks (assuming 15 min per task minimum)
     const activeHoursToday = Math.round(
-      (tasksCompletedToday.reduce((sum, task) => sum + (task.estimatedTime || 15), 0) / 60) * 10
+      (tasksCompletedToday.reduce((sum: number, task: any) => sum + (task.estimatedTime || 15), 0) / 60) * 10
     ) / 10
 
     // Calculate productivity score based on SOP adherence
@@ -112,7 +112,7 @@ export const pmProductivityService = {
       },
     })
 
-    const failedAudits = auditLogs.filter((log) => log.severity === 'ERROR').length
+    const failedAudits = auditLogs.filter((log: any) => log.severity === 'ERROR').length
     const auditScore = auditLogs.length > 0
       ? Math.max(0, 100 - (failedAudits / auditLogs.length) * 100)
       : 90
@@ -178,7 +178,7 @@ export const pmProductivityService = {
       orderBy: { createdAt: 'asc' },
     }).catch(() => [])
 
-    criticalServiceRequests?.forEach((sr) => {
+    criticalServiceRequests?.forEach((sr: any) => {
       priorityTasks.push({
         id: sr.id,
         title: sr.title || 'Service Request',
@@ -199,7 +199,7 @@ export const pmProductivityService = {
       orderBy: { createdAt: 'asc' },
     }).catch(() => [])
 
-    highPriorityPermits?.forEach((perm) => {
+    highPriorityPermits?.forEach((perm: any) => {
       priorityTasks.push({
         id: perm.id,
         title: `Permit: ${perm.permitType || 'Application'}`,
@@ -224,7 +224,7 @@ export const pmProductivityService = {
       orderBy: { dueDate: 'asc' },
     })
 
-    projectTasks.forEach((task) => {
+    projectTasks.forEach((task: any) => {
       priorityTasks.push({
         id: task.id,
         title: task.title,
