@@ -16,6 +16,7 @@ import { ClientList } from "@/components/dashboard/ClientList"
 import { RecentActivity } from "@/components/dashboard/RecentActivity"
 import { UpcomingInspections } from "@/components/dashboard/UpcomingInspections"
 import { BudgetOverview } from "@/components/dashboard/BudgetOverview"
+import { PMProductivityDashboard } from "@/components/dashboard/PMProductivityDashboard"
 
 function safeDue(dueDate?: string | null) {
   if (!dueDate) return null
@@ -72,6 +73,9 @@ export default function DashboardPage() {
           </Button>
         </div>
       </div>
+
+      {/* PM Productivity Dashboard */}
+      <PMProductivityDashboard />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatsCard

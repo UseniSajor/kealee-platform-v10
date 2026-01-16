@@ -1,10 +1,13 @@
 import { FastifyInstance } from "fastify"
 import { authenticateUser } from "../auth/auth.middleware"
 import { pmService } from "./pm.service"
+import { pmProductivityRoutes } from "./pm-productivity.routes"
 import { z } from "zod"
 import { validateParams, validateQuery } from "../../middleware/validation.middleware"
 
 export async function pmRoutes(fastify: FastifyInstance) {
+  // Register productivity dashboard routes
+  await fastify.register(pmProductivityRoutes)
   // GET /pm/stats - PM dashboard stats
   fastify.get("/stats", { preHandler: authenticateUser }, async (request, reply) => {
     const user = (request as any).user

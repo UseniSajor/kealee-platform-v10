@@ -93,6 +93,39 @@ export interface PMPermit {
   }[]
 }
 
+// PM Productivity Dashboard Types
+export interface PMDashboard {
+  // Productivity Pulse (real-time metrics)
+  productivityScore: number // 0-100 based on SOP adherence
+  activeHoursToday: number
+  focusTimeRemaining: number
+  
+  // Compliance Integration
+  complianceScore: {
+    sopAdherence: number // From completed SOP steps
+    gateCompliance: number // From mandatory gates
+    auditScore: number // From audit logs
+  }
+  
+  // Workload from all profit centers
+  workload: {
+    gcProjects: number // From m-ops-services
+    homeownerProjects: number // From m-project-owner
+    permitsPending: number // From m-permits-inspections
+    escrowReleases: number // From m-finance-trust
+  }
+  
+  // Priority Queue (auto-assigned based on rules)
+  priorityTasks: Array<{
+    id: string
+    title: string
+    source: 'GC' | 'Homeowner' | 'Permit' | 'Escrow'
+    priority: 'CRITICAL' | 'HIGH' | 'MEDIUM'
+    dueTime: string
+    estimatedEffort: number // in minutes
+  }>
+}
+
 // Re-export shared types
 export type {
   LeadStage,
