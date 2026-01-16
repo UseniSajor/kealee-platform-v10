@@ -405,7 +405,7 @@ async function checkContractorAssignment(checkType: CheckType, params: Record<st
 
   const { projectId } = params
 
-  const contract = await prisma.contractAgreement?.findFirst({
+  const contract = await (prisma as any).contractAgreement?.findFirst({
     where: {
       projectId,
       status: {
@@ -415,7 +415,7 @@ async function checkContractorAssignment(checkType: CheckType, params: Record<st
     include: {
       contractor: true,
     },
-  }).catch(() => null)
+  }).catch(() => null) || null
 
   return {
     passed: contract !== null && contract.contractorId !== null,
