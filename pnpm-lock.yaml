@@ -708,6 +708,22 @@ importers:
         specifier: ^5.9.0
         version: 5.9.3
 
+  packages/compliance:
+    dependencies:
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.29
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+
   packages/database:
     dependencies:
       '@prisma/client':
@@ -864,6 +880,9 @@ importers:
       '@fastify/swagger-ui':
         specifier: ^2.1.0
         version: 2.1.0
+      '@kealee/compliance':
+        specifier: workspace:*
+        version: link:../../packages/compliance
       '@kealee/database':
         specifier: workspace:*
         version: link:../../packages/database

@@ -79,6 +79,7 @@ import { servicePlanRoutes } from './modules/ops-services/service-plan.routes'
 import { workflowRoutes } from './modules/workflow/workflow.routes'
 import { taskGeneratorRoutes } from './modules/tasks/task-generator.routes'
 import { complianceCheckpointRoutes } from './modules/compliance/compliance-checkpoint.routes'
+import { complianceGatesRoutes } from './modules/compliance/compliance-gates.routes'
 import { createGraphQLServer } from './graphql/server'
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware'
 import { registerGlobalRateLimit } from './middleware/rate-limit.middleware'
@@ -204,6 +205,7 @@ const start = async () => {
     await fastify.register(workflowRoutes, { prefix: '/workflow' })
     await fastify.register(taskGeneratorRoutes, { prefix: '/tasks' })
     await fastify.register(complianceCheckpointRoutes, { prefix: '/compliance' })
+    await fastify.register(complianceGatesRoutes, { prefix: '/compliance' })
 
     // Register GraphQL server
     const graphQLServer = createGraphQLServer()

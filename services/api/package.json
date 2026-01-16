@@ -21,6 +21,7 @@
     "@fastify/swagger-ui": "^2.1.0",
     "@kealee/database": "workspace:*",
     "@kealee/workflow-engine": "workspace:*",
+    "@kealee/compliance": "workspace:*",
     "@anthropic-ai/sdk": "^0.24.0",
     "@supabase/supabase-js": "^2.39.0",
     "apollo-server-fastify": "^3.12.1",
