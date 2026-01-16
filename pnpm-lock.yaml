@@ -682,6 +682,25 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  packages/analytics:
+    dependencies:
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kealee/types':
+        specifier: workspace:*
+        version: link:../types
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.29
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+
   packages/api-client:
     dependencies:
       '@kealee/types':
