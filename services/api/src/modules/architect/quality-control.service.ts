@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -16,7 +16,7 @@ export const qualityControlService = {
     isDefault?: boolean
     createdById: string
   }) {
-    const template = await prisma.qCChecklistTemplate.create({
+    const template = await prismaAny.qCChecklistTemplate.create({
       data: {
         name: data.name,
         description: data.description,
@@ -69,7 +69,7 @@ export const qualityControlService = {
     // If templateId provided, get items from template
     let items: any[] = data.items || []
     if (data.templateId && !data.items) {
-      const template = await prisma.qCChecklistTemplate.findUnique({
+      const template = await prismaAny.qCChecklistTemplate.findUnique({
         where: { id: data.templateId },
       })
       if (template) {
@@ -77,7 +77,7 @@ export const qualityControlService = {
       }
     }
 
-    const checklist = await prisma.qCChecklist.create({
+    const checklist = await prismaAny.qCChecklist.create({
       data: {
         designProjectId: data.designProjectId,
         phaseId: data.phaseId,
@@ -93,7 +93,7 @@ export const qualityControlService = {
     // Create checklist items
     const checklistItems = await Promise.all(
       items.map((item, index) =>
-        prisma.qCChecklistItem.create({
+        prismaAny.qCChecklistItem.create({
           data: {
             checklistId: checklist.id,
             itemOrder: item.order || index + 1,
@@ -134,7 +134,7 @@ export const qualityControlService = {
    * Get QC checklist
    */
   async getQCChecklist(checklistId: string) {
-    const checklist = await prisma.qCChecklist.findUnique({
+    const checklist = await prismaAny.qCChecklist.findUnique({
       where: { id: checklistId },
       include: {
         template: {
@@ -221,7 +221,7 @@ export const qualityControlService = {
       where.status = filters.status
     }
 
-    const checklists = await prisma.qCChecklist.findMany({
+    const checklists = await prismaAny.qCChecklist.findMany({
       where,
       include: {
         phaseInstance: {
@@ -261,7 +261,7 @@ export const qualityControlService = {
     evidenceFileIds?: string[]
     checkedById: string
   }) {
-    const item = await prisma.qCChecklistItem.findUnique({
+    const item = await prismaAny.qCChecklistItem.findUnique({
       where: { id: itemId },
       include: {
         checklist: true,
@@ -272,7 +272,7 @@ export const qualityControlService = {
       throw new NotFoundError('QCChecklistItem', itemId)
     }
 
-    const updated = await prisma.qCChecklistItem.update({
+    const updated = await prismaAny.qCChecklistItem.update({
       where: { id: itemId },
       data: {
         itemStatus: data.itemStatus as any,
@@ -315,7 +315,7 @@ export const qualityControlService = {
     sampleMethod?: string
     checkedById: string
   }) {
-    const checklist = await prisma.qCChecklist.findUnique({
+    const checklist = await prismaAny.qCChecklist.findUnique({
       where: { id: data.checklistId },
       include: {
         items: {
@@ -335,7 +335,7 @@ export const qualityControlService = {
     const sampleSize = Math.min(data.sampleSize, availableItems.length)
     const selectedItems = this.selectRandomSample(availableItems, sampleSize, data.sampleMethod || 'RANDOM')
 
-    const check = await prisma.qCCheck.create({
+    const check = await prismaAny.qCCheck.create({
       data: {
         checklistId: data.checklistId,
         checkType: 'RANDOM_SAMPLE',
@@ -425,7 +425,7 @@ export const qualityControlService = {
     evidenceFileIds?: string[]
     reportedById: string
   }) {
-    const error = await prisma.qCError.create({
+    const error = await prismaAny.qCError.create({
       data: {
         checklistId: data.checklistId,
         checklistItemId: data.checklistItemId,
@@ -458,7 +458,7 @@ export const qualityControlService = {
 
     // Update check error count if checkId provided
     if (data.checkId) {
-      await prisma.qCCheck.update({
+      await prismaAny.qCCheck.update({
         where: { id: data.checkId },
         data: {
           errorsFound: {
@@ -494,7 +494,7 @@ export const qualityControlService = {
     resolutionNotes?: string
     resolvedById: string
   }) {
-    const error = await prisma.qCError.findUnique({
+    const error = await prismaAny.qCError.findUnique({
       where: { id: errorId },
     })
 
@@ -502,7 +502,7 @@ export const qualityControlService = {
       throw new NotFoundError('QCError', errorId)
     }
 
-    const updated = await prisma.qCError.update({
+    const updated = await prismaAny.qCError.update({
       where: { id: errorId },
       data: {
         isResolved: true,
@@ -541,7 +541,7 @@ export const qualityControlService = {
     dueDate?: Date
     assignedById: string
   }) {
-    const error = await prisma.qCError.findUnique({
+    const error = await prismaAny.qCError.findUnique({
       where: { id: data.errorId },
     })
 
@@ -549,7 +549,7 @@ export const qualityControlService = {
       throw new NotFoundError('QCError', data.errorId)
     }
 
-    const action = await prisma.correctiveAction.create({
+    const action = await prismaAny.correctiveAction.create({
       data: {
         errorId: data.errorId,
         actionDescription: data.actionDescription,
@@ -602,7 +602,7 @@ export const qualityControlService = {
     evidenceFileIds?: string[]
     userId: string
   }) {
-    const action = await prisma.correctiveAction.findUnique({
+    const action = await prismaAny.correctiveAction.findUnique({
       where: { id: actionId },
     })
 
@@ -624,7 +624,7 @@ export const qualityControlService = {
       updateData.evidenceFileIds = data.evidenceFileIds || []
     }
 
-    const updated = await prisma.correctiveAction.update({
+    const updated = await prismaAny.correctiveAction.update({
       where: { id: actionId },
       data: updateData,
     })
@@ -651,7 +651,7 @@ export const qualityControlService = {
     verificationNotes?: string
     verifiedById: string
   }) {
-    const action = await prisma.correctiveAction.findUnique({
+    const action = await prismaAny.correctiveAction.findUnique({
       where: { id: actionId },
     })
 
@@ -663,7 +663,7 @@ export const qualityControlService = {
       throw new ValidationError('Corrective action must be completed before verification')
     }
 
-    const updated = await prisma.correctiveAction.update({
+    const updated = await prismaAny.correctiveAction.update({
       where: { id: actionId },
       data: {
         actionStatus: 'VERIFIED',
@@ -674,7 +674,7 @@ export const qualityControlService = {
     })
 
     // Check if error should be resolved
-    const error = await prisma.qCError.findUnique({
+    const error = await prismaAny.qCError.findUnique({
       where: { id: action.errorId },
       include: {
         correctiveActions: true,
@@ -683,11 +683,11 @@ export const qualityControlService = {
 
     if (error) {
       const allActionsVerified = error.correctiveActions.every(
-        (a) => a.actionStatus === 'VERIFIED' || a.id === actionId
+        (a: any) => a.actionStatus === 'VERIFIED' || a.id === actionId
       )
 
       if (allActionsVerified && error.correctiveActions.length > 0) {
-        await prisma.qCError.update({
+        await prismaAny.qCError.update({
           where: { id: action.errorId },
           data: {
             isResolved: true,
@@ -717,7 +717,7 @@ export const qualityControlService = {
    * Calculate QC metrics
    */
   async calculateQCMetrics(checklistId: string) {
-    const checklist = await prisma.qCChecklist.findUnique({
+    const checklist = await prismaAny.qCChecklist.findUnique({
       where: { id: checklistId },
       include: {
         items: {
@@ -735,14 +735,14 @@ export const qualityControlService = {
 
     // Calculate item metrics
     const totalItems = checklist.items.length
-    const passedItems = checklist.items.filter((item) => item.itemStatus === 'PASSED').length
-    const failedItems = checklist.items.filter((item) => item.itemStatus === 'FAILED').length
-    const exemptItems = checklist.items.filter((item) => item.itemStatus === 'EXEMPT').length
+    const passedItems = checklist.items.filter((item: any) => item.itemStatus === 'PASSED').length
+    const failedItems = checklist.items.filter((item: any) => item.itemStatus === 'FAILED').length
+    const exemptItems = checklist.items.filter((item: any) => item.itemStatus === 'EXEMPT').length
     const completionPercentage =
       totalItems > 0 ? ((passedItems + failedItems + exemptItems) / totalItems) * 100 : 0
 
     // Update checklist
-    await prisma.qCChecklist.update({
+    await prismaAny.qCChecklist.update({
       where: { id: checklistId },
       data: {
         totalItems,
@@ -754,26 +754,26 @@ export const qualityControlService = {
     })
 
     // Calculate error metrics
-    const allErrors = checklist.items.flatMap((item) => item.errors)
+    const allErrors = checklist.items.flatMap((item: any) => item.errors)
     const totalErrors = allErrors.length
-    const resolvedErrors = allErrors.filter((e) => e.isResolved).length
+    const resolvedErrors = allErrors.filter((e: any) => e.isResolved).length
 
     const errorsByCategory: Record<string, number> = {}
     const errorsBySeverity: Record<string, number> = {}
 
-    allErrors.forEach((error) => {
+    allErrors.forEach((error: any) => {
       errorsByCategory[error.errorCategory] = (errorsByCategory[error.errorCategory] || 0) + 1
       errorsBySeverity[error.errorSeverity] = (errorsBySeverity[error.errorSeverity] || 0) + 1
     })
 
     // Calculate check metrics
     const totalChecks = checklist.checks.length
-    const checksPassed = checklist.checks.filter((c) => c.checkStatus === 'COMPLETED' && c.itemsFailed === 0).length
-    const checksFailed = checklist.checks.filter((c) => c.checkStatus === 'COMPLETED' && c.itemsFailed > 0).length
+    const checksPassed = checklist.checks.filter((c: any) => c.checkStatus === 'COMPLETED' && c.itemsFailed === 0).length
+    const checksFailed = checklist.checks.filter((c: any) => c.checkStatus === 'COMPLETED' && c.itemsFailed > 0).length
     const passRate = totalChecks > 0 ? (checksPassed / totalChecks) * 100 : 0
 
     // Get corrective actions
-    const allCorrectiveActions = await prisma.correctiveAction.findMany({
+    const allCorrectiveActions = await prismaAny.correctiveAction.findMany({
       where: {
         error: {
           checklistId: checklistId,
@@ -781,24 +781,24 @@ export const qualityControlService = {
       },
     })
 
-    const actionsCompleted = allCorrectiveActions.filter((a) => a.actionStatus === 'COMPLETED' || a.actionStatus === 'VERIFIED').length
-    const actionsPending = allCorrectiveActions.filter((a) => a.actionStatus === 'PENDING' || a.actionStatus === 'IN_PROGRESS').length
+    const actionsCompleted = allCorrectiveActions.filter((a: any) => a.actionStatus === 'COMPLETED' || a.actionStatus === 'VERIFIED').length
+    const actionsPending = allCorrectiveActions.filter((a: any) => a.actionStatus === 'PENDING' || a.actionStatus === 'IN_PROGRESS').length
     const actionsOverdue = allCorrectiveActions.filter(
-      (a) => a.dueDate && a.dueDate < new Date() && (a.actionStatus === 'PENDING' || a.actionStatus === 'IN_PROGRESS')
+      (a: any) => a.dueDate && a.dueDate < new Date() && (a.actionStatus === 'PENDING' || a.actionStatus === 'IN_PROGRESS')
     ).length
 
     // Calculate average resolution time
-    const resolvedErrorsWithTime = allErrors.filter((e) => e.isResolved && e.resolvedAt && e.createdAt)
+    const resolvedErrorsWithTime = allErrors.filter((e: any) => e.isResolved && e.resolvedAt && e.createdAt)
     const averageResolutionTime =
       resolvedErrorsWithTime.length > 0
-        ? resolvedErrorsWithTime.reduce((sum, e) => {
+        ? resolvedErrorsWithTime.reduce((sum: number, e: any) => {
             const resolutionTime = new Date(e.resolvedAt!).getTime() - new Date(e.createdAt).getTime()
             return sum + resolutionTime / (1000 * 60 * 60) // Convert to hours
           }, 0) / resolvedErrorsWithTime.length
         : null
 
     // Upsert metrics
-    await prisma.qCMetrics.upsert({
+    await prismaAny.qCMetrics.upsert({
       where: { checklistId },
       create: {
         checklistId,
@@ -837,7 +837,7 @@ export const qualityControlService = {
    * Get QC metrics
    */
   async getQCMetrics(checklistId: string) {
-    const metrics = await prisma.qCMetrics.findUnique({
+    const metrics = await prismaAny.qCMetrics.findUnique({
       where: { checklistId },
       include: {
         checklist: {
@@ -853,7 +853,7 @@ export const qualityControlService = {
     if (!metrics) {
       // Calculate if not exists
       await this.calculateQCMetrics(checklistId)
-      return prisma.qCMetrics.findUnique({
+      return prismaAny.qCMetrics.findUnique({
         where: { checklistId },
       })
     }
@@ -877,7 +877,7 @@ export const qualityControlService = {
     estimatedBenefit?: string
     createdById: string
   }) {
-    const feedback = await prisma.qCImprovementFeedback.create({
+    const feedback = await prismaAny.qCImprovementFeedback.create({
       data: {
         designProjectId: data.designProjectId,
         feedbackType: data.feedbackType,
@@ -943,7 +943,7 @@ export const qualityControlService = {
       where.category = filters.category
     }
 
-    const feedback = await prisma.qCImprovementFeedback.findMany({
+    const feedback = await prismaAny.qCImprovementFeedback.findMany({
       where,
       include: {
         createdBy: {
@@ -973,7 +973,7 @@ export const qualityControlService = {
   async implementImprovementFeedback(feedbackId: string, data: {
     implementedById: string
   }) {
-    const feedback = await prisma.qCImprovementFeedback.findUnique({
+    const feedback = await prismaAny.qCImprovementFeedback.findUnique({
       where: { id: feedbackId },
     })
 
@@ -981,7 +981,7 @@ export const qualityControlService = {
       throw new NotFoundError('QCImprovementFeedback', feedbackId)
     }
 
-    const updated = await prisma.qCImprovementFeedback.update({
+    const updated = await prismaAny.qCImprovementFeedback.update({
       where: { id: feedbackId },
       data: {
         isImplemented: true,

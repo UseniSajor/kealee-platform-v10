@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 
 export class OrgService {
   // Create organization
@@ -10,7 +10,7 @@ export class OrgService {
     ownerId: string
   }) {
     // Check if slug is already taken
-    const existing = await prisma.org.findUnique({
+    const existing = await prismaAny.org.findUnique({
       where: { slug: data.slug },
     })
 
@@ -19,7 +19,7 @@ export class OrgService {
     }
 
     // Create org and add owner as ADMIN member
-    const org = await prisma.org.create({
+    const org = await prismaAny.org.create({
       data: {
         name: data.name,
         slug: data.slug,
@@ -53,7 +53,7 @@ export class OrgService {
 
   // Get organization by ID
   async getOrgById(orgId: string) {
-    const org = await prisma.org.findUnique({
+    const org = await prismaAny.org.findUnique({
       where: { id: orgId },
       include: {
         members: {
@@ -86,7 +86,7 @@ export class OrgService {
 
   // Get organization by slug
   async getOrgBySlug(slug: string) {
-    const org = await prisma.org.findUnique({
+    const org = await prismaAny.org.findUnique({
       where: { slug },
       include: {
         members: {
@@ -127,7 +127,7 @@ export class OrgService {
     }
 
     const [orgs, total] = await Promise.all([
-      prisma.org.findMany({
+      prismaAny.org.findMany({
         where,
         skip,
         take: limit,
@@ -141,7 +141,7 @@ export class OrgService {
           },
         },
       }),
-      prisma.org.count({ where }),
+      prismaAny.org.count({ where }),
     ])
 
     return {
@@ -165,7 +165,7 @@ export class OrgService {
       status?: 'ACTIVE' | 'SUSPENDED' | 'DELETED'
     }
   ) {
-    const org = await prisma.org.update({
+    const org = await prismaAny.org.update({
       where: { id: orgId },
       data,
     })
@@ -176,7 +176,7 @@ export class OrgService {
   // Add member to organization
   async addMember(orgId: string, userId: string, roleKey: string) {
     // Check if user is already a member
-    const existing = await prisma.orgMember.findUnique({
+    const existing = await prismaAny.orgMember.findUnique({
       where: {
         userId_orgId: {
           userId,
@@ -189,7 +189,7 @@ export class OrgService {
       throw new Error('User is already a member of this organization')
     }
 
-    const member = await prisma.orgMember.create({
+    const member = await prismaAny.orgMember.create({
       data: {
         orgId,
         userId,
@@ -219,7 +219,7 @@ export class OrgService {
 
   // Remove member from organization
   async removeMember(orgId: string, userId: string) {
-    const member = await prisma.orgMember.delete({
+    const member = await prismaAny.orgMember.delete({
       where: {
         userId_orgId: {
           userId,
@@ -233,7 +233,7 @@ export class OrgService {
 
   // Update member role
   async updateMemberRole(orgId: string, userId: string, roleKey: string) {
-    const member = await prisma.orgMember.update({
+    const member = await prismaAny.orgMember.update({
       where: {
         userId_orgId: {
           userId,
@@ -257,7 +257,7 @@ export class OrgService {
 
   // Get user's organizations
   async getUserOrgs(userId: string) {
-    const memberships = await prisma.orgMember.findMany({
+    const memberships = await prismaAny.orgMember.findMany({
       where: { userId },
       include: {
         org: {

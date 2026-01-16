@@ -1,5 +1,5 @@
 import { ApiClient, EnvelopesApi, EnvelopeDefinition, Document, Signer, SignHere, Tabs, Recipients } from 'docusign-esign'
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError } from '../../errors/app.error'
 
 // DocuSign configuration
@@ -39,7 +39,7 @@ export const docusignService = {
     userId: string
   ): Promise<{ envelopeId: string; recipientViewUrl?: string }> {
     // Get contract with related data
-    const contract = await prisma.contractAgreement.findUnique({
+    const contract = await prismaAny.contractAgreement.findUnique({
       where: { id: contractId },
       include: {
         owner: { select: { id: true, name: true, email: true } },
@@ -129,11 +129,11 @@ export const docusignService = {
     const envelopeId = results.envelopeId || ''
 
     // Update contract with envelope ID
-    await prisma.contractAgreement.update({
+    await prismaAny.contractAgreement.update({
       where: { id: contractId },
       data: {
         docusignEnvelopeId: envelopeId,
-        status: ContractStatus.SENT,
+        status: 'SENT',
       },
     })
 
@@ -186,21 +186,21 @@ export const docusignService = {
     if (!envelopeId) return
 
     // Find contract by envelope ID
-    const contract = await prisma.contractAgreement.findFirst({
+    const contract = await prismaAny.contractAgreement.findFirst({
       where: { docusignEnvelopeId: envelopeId },
     })
 
     if (!contract) return
 
     // Map DocuSign status to our contract status
-    let contractStatus: ContractStatus = ContractStatus.SENT
+    let contractStatus: string = 'SENT'
 
     const event = payload.event
     if (event === 'envelope-completed') {
-      contractStatus = ContractStatus.SIGNED
+      contractStatus = 'SIGNED'
       // Get signed document URL
       const documentUrl = `${process.env.DOCUSIGN_BASE_PATH}/accounts/${DOCUSIGN_ACCOUNT_ID}/envelopes/${envelopeId}/documents/combined`
-      await prisma.contractAgreement.update({
+      await prismaAny.contractAgreement.update({
         where: { id: contract.id },
         data: {
           status: contractStatus,
@@ -209,14 +209,14 @@ export const docusignService = {
       })
     } else if (event === 'recipient-signed') {
       // Keep as SENT until all parties sign
-      contractStatus = ContractStatus.SENT
-      await prisma.contractAgreement.update({
+      contractStatus = 'SENT'
+      await prismaAny.contractAgreement.update({
         where: { id: contract.id },
         data: { status: contractStatus },
       })
     } else if (event === 'envelope-sent') {
-      contractStatus = ContractStatus.SENT
-      await prisma.contractAgreement.update({
+      contractStatus = 'SENT'
+      await prismaAny.contractAgreement.update({
         where: { id: contract.id },
         data: { status: contractStatus },
       })

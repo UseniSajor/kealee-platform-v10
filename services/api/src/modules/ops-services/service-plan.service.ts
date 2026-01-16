@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -50,7 +50,7 @@ export const servicePlanService = {
     }
 
     // Check if user already has an active plan
-    const existingPlan = await prisma.servicePlan.findFirst({
+    const existingPlan = await prismaAny.servicePlan.findFirst({
       where: {
         userId: data.userId,
         status: 'ACTIVE',
@@ -61,7 +61,7 @@ export const servicePlanService = {
       throw new ValidationError('User already has an active service plan')
     }
 
-    const plan = await prisma.servicePlan.create({
+    const plan = await prismaAny.servicePlan.create({
       data: {
         userId: data.userId,
         packageTier: data.packageTier.toUpperCase(),
@@ -118,7 +118,7 @@ export const servicePlanService = {
       where.userId = userId
     }
 
-    const plan = await prisma.servicePlan.findFirst({
+    const plan = await prismaAny.servicePlan.findFirst({
       where,
       include: {
         user: {
@@ -153,7 +153,7 @@ export const servicePlanService = {
    * Get user's active service plan
    */
   async getUserServicePlan(userId: string) {
-    const plan = await prisma.servicePlan.findFirst({
+    const plan = await prismaAny.servicePlan.findFirst({
       where: {
         userId: userId,
         status: 'ACTIVE',
@@ -199,7 +199,7 @@ export const servicePlanService = {
       where.packageTier = filters.packageTier.toUpperCase()
     }
 
-    const plans = await prisma.servicePlan.findMany({
+    const plans = await prismaAny.servicePlan.findMany({
       where,
       include: {
         user: {
@@ -232,7 +232,7 @@ export const servicePlanService = {
     stripeSubscriptionId?: string
     userId: string
   }) {
-    const plan = await prisma.servicePlan.findUnique({
+    const plan = await prismaAny.servicePlan.findUnique({
       where: { id: planId },
     })
 
@@ -262,7 +262,7 @@ export const servicePlanService = {
       updateData.stripeSubscriptionId = data.stripeSubscriptionId
     }
 
-    const updated = await prisma.servicePlan.update({
+    const updated = await prismaAny.servicePlan.update({
       where: { id: planId },
       data: updateData,
     })
@@ -293,7 +293,7 @@ export const servicePlanService = {
   async cancelServicePlan(planId: string, data: {
     userId: string
   }) {
-    const plan = await prisma.servicePlan.findUnique({
+    const plan = await prismaAny.servicePlan.findUnique({
       where: { id: planId },
     })
 
@@ -305,7 +305,7 @@ export const servicePlanService = {
       throw new ValidationError('Service plan is already cancelled')
     }
 
-    const updated = await prisma.servicePlan.update({
+    const updated = await prismaAny.servicePlan.update({
       where: { id: planId },
       data: {
         status: 'CANCELLED',

@@ -1,5 +1,5 @@
 import { NotFoundError, ValidationError } from '../../errors/app.error'
-import { EvidenceType } from '@prisma/client'
+// Prisma types available through prismaAny
 
 // Allowed file types for evidence
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']

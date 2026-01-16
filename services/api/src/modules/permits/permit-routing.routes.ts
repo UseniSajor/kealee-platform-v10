@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { permitRoutingService } from './permit-routing.service'
@@ -54,7 +54,7 @@ export async function permitRoutingRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const { id } = request.params as { id: string }
-        const routing = await prisma.permitRouting.findUnique({
+        const routing = await prismaAny.permitRouting.findUnique({
           where: { id },
           include: {
             permit: {
@@ -243,7 +243,7 @@ export async function permitRoutingRoutes(fastify: FastifyInstance) {
           where.notificationType = query.type
         }
 
-        const notifications = await prisma.permitNotification.findMany({
+        const notifications = await prismaAny.permitNotification.findMany({
           where,
           include: {
             permit: {
@@ -283,7 +283,7 @@ export async function permitRoutingRoutes(fastify: FastifyInstance) {
       try {
         const user = (request as any).user as { id: string }
         const { id } = request.params as { id: string }
-        const notification = await prisma.permitNotification.update({
+        const notification = await prismaAny.permitNotification.update({
           where: { id },
           data: {
             read: true,

@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, AuthorizationError } from '../../errors/app.error'
 
 export const contractSecurityService = {
@@ -12,7 +12,7 @@ export const contractSecurityService = {
     isOwner: boolean
     isContractor: boolean
   }> {
-    const contract = await prisma.contractAgreement.findUnique({
+    const contract = await prismaAny.contractAgreement.findUnique({
       where: { id: contractId },
       select: {
         id: true,
@@ -47,7 +47,7 @@ export const contractSecurityService = {
     }
 
     // Log access attempt
-    await prisma.auditLog.create({
+    await prismaAny.auditLog.create({
       data: {
         entityType: 'ContractAgreement',
         entityId: contractId,
@@ -74,7 +74,7 @@ export const contractSecurityService = {
     checks: Array<{ name: string; passed: boolean; reason: string }>
     riskLevel: 'LOW' | 'MEDIUM' | 'HIGH'
   }> {
-    const contract = await prisma.contractAgreement.findUnique({
+    const contract = await prismaAny.contractAgreement.findUnique({
       where: { id: contractId },
       include: {
         owner: { select: { id: true, email: true } },
@@ -128,7 +128,7 @@ export const contractSecurityService = {
     })
 
     // Check 4: Audit logs exist for signature events
-    const signatureAuditLogs = await prisma.auditLog.count({
+    const signatureAuditLogs = await prismaAny.auditLog.count({
       where: {
         entityType: 'ContractAgreement',
         entityId: contractId,
@@ -166,7 +166,7 @@ export const contractSecurityService = {
     }
 
     // Log security check
-    await prisma.auditLog.create({
+    await prismaAny.auditLog.create({
       data: {
         entityType: 'ContractAgreement',
         entityId: contractId,
@@ -193,7 +193,7 @@ export const contractSecurityService = {
     totalLogs: number
     criticalActions: Array<{ action: string; logged: boolean; timestamp?: string }>
   }> {
-    const contract = await prisma.contractAgreement.findUnique({
+    const contract = await prismaAny.contractAgreement.findUnique({
       where: { id: contractId },
       include: {
         project: { select: { ownerId: true } },
@@ -206,7 +206,7 @@ export const contractSecurityService = {
       throw new AuthorizationError('Only contract parties can test audit logs')
     }
 
-    const allLogs = await prisma.auditLog.findMany({
+    const allLogs = await prismaAny.auditLog.findMany({
       where: {
         entityType: 'ContractAgreement',
         entityId: contractId,
@@ -233,7 +233,7 @@ export const contractSecurityService = {
     const missingActions = expectedActions.filter((action) => !loggedActions.includes(action))
 
     const criticalActions = expectedActions.map((action) => {
-      const log = allLogs.find((l) => l.action === action)
+      const log = allLogs.find((l: any) => l.action === action)
       return {
         action,
         logged: !!log,
@@ -266,7 +266,7 @@ export const contractSecurityService = {
     // - TLS/HTTPS for API communication
     // - DocuSign document encryption
 
-    const contract = await prisma.contractAgreement.findUnique({
+    const contract = await prismaAny.contractAgreement.findUnique({
       where: { id: contractId },
       select: {
         id: true,
@@ -324,7 +324,7 @@ export const contractSecurityService = {
     gdprChecks: Array<{ requirement: string; compliant: boolean; details: string }>
     recommendations: string[]
   }> {
-    const contract = await prisma.contractAgreement.findUnique({
+    const contract = await prismaAny.contractAgreement.findUnique({
       where: { id: contractId },
       include: {
         owner: { select: { id: true, email: true } },

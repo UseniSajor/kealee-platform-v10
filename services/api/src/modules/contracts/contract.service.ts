@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { AuthorizationError, NotFoundError } from '../../errors/app.error'
 
 export const contractService = {
@@ -14,7 +14,7 @@ export const contractService = {
   },
 
   async getContract(id: string, userId: string) {
-    const contract = await prisma.contractAgreement.findUnique({
+    const contract = await prismaAny.contractAgreement.findUnique({
       where: { id },
       include: {
         project: true,
@@ -37,7 +37,7 @@ export const contractService = {
   },
 
   async listProjectContracts(projectId: string, userId: string) {
-    const contracts = await prisma.contractAgreement.findMany({
+    const contracts = await prismaAny.contractAgreement.findMany({
       where: {
         projectId,
         OR: [{ ownerId: userId }, { contractorId: userId }],
@@ -57,7 +57,7 @@ export const contractService = {
     terms?: string | null
     status?: string
   }) {
-    const contract = await prisma.contractAgreement.findUnique({
+    const contract = await prismaAny.contractAgreement.findUnique({
       where: { id },
     })
 
@@ -69,7 +69,7 @@ export const contractService = {
       throw new AuthorizationError('Not authorized to update this contract')
     }
 
-    return prisma.contractAgreement.update({
+    return prismaAny.contractAgreement.update({
       where: { id },
       data,
     })
@@ -80,7 +80,7 @@ export const contractService = {
     description?: string | null
     amount: number
   }) {
-    const contract = await prisma.contractAgreement.findUnique({
+    const contract = await prismaAny.contractAgreement.findUnique({
       where: { id },
     })
 
@@ -92,7 +92,7 @@ export const contractService = {
       throw new AuthorizationError('Not authorized to modify this contract')
     }
 
-    return prisma.contractMilestone.create({
+    return prismaAny.contractMilestone.create({
       data: {
         contractId: id,
         ...data,
@@ -106,7 +106,7 @@ export const contractService = {
     amount?: number
     status?: string
   }) {
-    const milestone = await prisma.contractMilestone.findUnique({
+    const milestone = await prismaAny.contractMilestone.findUnique({
       where: { id: milestoneId },
       include: { contract: true },
     })
@@ -119,14 +119,14 @@ export const contractService = {
       throw new AuthorizationError('Not authorized to modify this milestone')
     }
 
-    return prisma.contractMilestone.update({
+    return prismaAny.contractMilestone.update({
       where: { id: milestoneId },
       data,
     })
   },
 
   async deleteMilestone(milestoneId: string, userId: string) {
-    const milestone = await prisma.contractMilestone.findUnique({
+    const milestone = await prismaAny.contractMilestone.findUnique({
       where: { id: milestoneId },
       include: { contract: true },
     })
@@ -139,7 +139,7 @@ export const contractService = {
       throw new AuthorizationError('Not authorized to delete this milestone')
     }
 
-    await prisma.contractMilestone.delete({
+    await prismaAny.contractMilestone.delete({
       where: { id: milestoneId },
     })
   },

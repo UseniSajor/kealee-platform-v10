@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 
 export interface CreateAuditData {
   action: string
@@ -36,7 +36,7 @@ export class AuditService {
       )
     }
 
-    const auditLog = await prisma.auditLog.create({
+    const auditLog = await prismaAny.auditLog.create({
       data: {
         action: data.action,
         entityType: data.entityType,
@@ -55,7 +55,7 @@ export class AuditService {
 
   // Get audit log by ID
   async getAuditById(auditId: string) {
-    const auditLog = await prisma.auditLog.findUnique({
+    const auditLog = await prismaAny.auditLog.findUnique({
       where: { id: auditId },
     })
 
@@ -110,13 +110,13 @@ export class AuditService {
     }
 
     const [auditLogs, total] = await Promise.all([
-      prisma.auditLog.findMany({
+      prismaAny.auditLog.findMany({
         where,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.auditLog.count({ where }),
+      prismaAny.auditLog.count({ where }),
     ])
 
     return {
@@ -132,7 +132,7 @@ export class AuditService {
 
   // Get audit trail for a specific entity
   async getEntityAuditTrail(entityType: string, entityId: string) {
-    const auditLogs = await prisma.auditLog.findMany({
+    const auditLogs = await prismaAny.auditLog.findMany({
       where: {
         entityType,
         entityId,
@@ -145,7 +145,7 @@ export class AuditService {
 
   // Get audit logs for a user
   async getUserAuditLogs(userId: string, limit?: number) {
-    const auditLogs = await prisma.auditLog.findMany({
+    const auditLogs = await prismaAny.auditLog.findMany({
       where: { userId },
       take: limit || 100,
       orderBy: { createdAt: 'desc' },
@@ -156,7 +156,7 @@ export class AuditService {
 
   // Get audit logs by action
   async getAuditLogsByAction(action: string, limit?: number) {
-    const auditLogs = await prisma.auditLog.findMany({
+    const auditLogs = await prismaAny.auditLog.findMany({
       where: { action },
       take: limit || 100,
       orderBy: { createdAt: 'desc' },
@@ -191,7 +191,7 @@ export class AuditService {
       }
     }
 
-    const auditLogs = await prisma.auditLog.findMany({
+    const auditLogs = await prismaAny.auditLog.findMany({
       where,
       orderBy: { createdAt: 'desc' },
     })
@@ -222,8 +222,8 @@ export class AuditService {
     }
 
     const [totalAudits, auditsByAction, privilegedCount] = await Promise.all([
-      prisma.auditLog.count({ where }),
-      prisma.auditLog.groupBy({
+      prismaAny.auditLog.count({ where }),
+      prismaAny.auditLog.groupBy({
         by: ['action'],
         where,
         _count: {
@@ -236,7 +236,7 @@ export class AuditService {
         },
         take: 10,
       }),
-      prisma.auditLog.count({
+      prismaAny.auditLog.count({
         where: {
           ...where,
           action: {

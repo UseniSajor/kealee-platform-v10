@@ -178,7 +178,7 @@ export async function pmTaskContextRoutes(fastify: FastifyInstance) {
         }
 
         // Log focus session (would save to database)
-        const session = await prisma.focusSession?.create({
+        const session = await prismaAny.focusSession?.create({
           data: {
             pmId: user.id,
             taskId,
@@ -200,4 +200,4 @@ export async function pmTaskContextRoutes(fastify: FastifyInstance) {
   )
 }
 
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'

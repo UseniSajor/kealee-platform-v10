@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -28,7 +28,7 @@ export const reviewService = {
       throw new ValidationError('At least one reviewer must be assigned')
     }
 
-    const reviewers = await prisma.user.findMany({
+    const reviewers = await prismaAny.user.findMany({
       where: {
         id: { in: data.reviewerIds },
       },
@@ -40,7 +40,7 @@ export const reviewService = {
 
     // Validate deliverables if provided
     if (data.deliverableIds && data.deliverableIds.length > 0) {
-      const deliverables = await prisma.designDeliverable.findMany({
+      const deliverables = await prismaAny.designDeliverable.findMany({
         where: {
           id: { in: data.deliverableIds },
         },
@@ -51,14 +51,14 @@ export const reviewService = {
       }
 
       const invalidDeliverables = deliverables.filter(
-        (d) => d.designProjectId !== data.designProjectId
+        (d: any) => d.designProjectId !== data.designProjectId
       )
       if (invalidDeliverables.length > 0) {
         throw new ValidationError('All deliverables must belong to the same project')
       }
     }
 
-    const reviewRequest = await prisma.reviewRequest.create({
+    const reviewRequest = await prismaAny.reviewRequest.create({
       data: {
         designProjectId: data.designProjectId,
         title: data.title,
@@ -123,7 +123,7 @@ export const reviewService = {
    * Submit review request (change status from DRAFT to PENDING)
    */
   async submitReviewRequest(reviewRequestId: string, userId: string) {
-    const reviewRequest = await prisma.reviewRequest.findUnique({
+    const reviewRequest = await prismaAny.reviewRequest.findUnique({
       where: { id: reviewRequestId },
     })
 
@@ -139,7 +139,7 @@ export const reviewService = {
       throw new ValidationError('Review request must have at least one reviewer')
     }
 
-    const updated = await prisma.reviewRequest.update({
+    const updated = await prismaAny.reviewRequest.update({
       where: { id: reviewRequestId },
       data: {
         status: 'PENDING',
@@ -168,7 +168,7 @@ export const reviewService = {
    * Start review (change status from PENDING to IN_REVIEW)
    */
   async startReview(reviewRequestId: string, userId: string) {
-    const reviewRequest = await prisma.reviewRequest.findUnique({
+    const reviewRequest = await prismaAny.reviewRequest.findUnique({
       where: { id: reviewRequestId },
     })
 
@@ -185,7 +185,7 @@ export const reviewService = {
       throw new ValidationError('Only assigned reviewers can start the review')
     }
 
-    const updated = await prisma.reviewRequest.update({
+    const updated = await prismaAny.reviewRequest.update({
       where: { id: reviewRequestId },
       data: {
         status: 'IN_REVIEW',
@@ -211,7 +211,7 @@ export const reviewService = {
    * Get review request with all related data
    */
   async getReviewRequest(reviewRequestId: string) {
-    const reviewRequest = await prisma.reviewRequest.findUnique({
+    const reviewRequest = await prismaAny.reviewRequest.findUnique({
       where: { id: reviewRequestId },
       include: {
         createdBy: {
@@ -248,7 +248,7 @@ export const reviewService = {
     }
 
     // Get reviewers
-    const reviewers = await prisma.user.findMany({
+    const reviewers = await prismaAny.user.findMany({
       where: {
         id: { in: reviewRequest.reviewerIds },
       },
@@ -260,7 +260,7 @@ export const reviewService = {
     })
 
     // Get comments
-    const comments = await prisma.reviewComment.findMany({
+    const comments = await prismaAny.reviewComment.findMany({
       where: {
         reviewRequestId: reviewRequestId,
       },
@@ -328,7 +328,7 @@ export const reviewService = {
       }
     }
 
-    const reviewRequests = await prisma.reviewRequest.findMany({
+    const reviewRequests = await prismaAny.reviewRequest.findMany({
       where,
       include: {
         createdBy: {
@@ -374,7 +374,7 @@ export const reviewService = {
     let designProjectId = data.designProjectId
 
     if (!designProjectId && data.reviewRequestId) {
-      const reviewRequest = await prisma.reviewRequest.findUnique({
+      const reviewRequest = await prismaAny.reviewRequest.findUnique({
         where: { id: data.reviewRequestId },
         select: { designProjectId: true },
       })
@@ -392,7 +392,7 @@ export const reviewService = {
 
     // Validate parent comment if provided
     if (data.parentCommentId) {
-      const parent = await prisma.reviewComment.findUnique({
+      const parent = await prismaAny.reviewComment.findUnique({
         where: { id: data.parentCommentId },
       })
 
@@ -408,13 +408,13 @@ export const reviewService = {
     // Calculate thread depth
     let threadDepth = 0
     if (data.parentCommentId) {
-      const parent = await prisma.reviewComment.findUnique({
+      const parent = await prismaAny.reviewComment.findUnique({
         where: { id: data.parentCommentId },
       })
       threadDepth = (parent?.threadDepth || 0) + 1
     }
 
-    const comment = await prisma.reviewComment.create({
+    const comment = await prismaAny.reviewComment.create({
       data: {
         reviewRequestId: data.reviewRequestId,
         designProjectId: designProjectId,
@@ -482,7 +482,7 @@ export const reviewService = {
     addressedNotes?: string
     userId: string
   }) {
-    const comment = await prisma.reviewComment.findUnique({
+    const comment = await prismaAny.reviewComment.findUnique({
       where: { id: commentId },
     })
 
@@ -512,7 +512,7 @@ export const reviewService = {
       updateData.closedById = data.userId
     }
 
-    const updated = await prisma.reviewComment.update({
+    const updated = await prismaAny.reviewComment.update({
       where: { id: commentId },
       data: updateData,
     })
@@ -539,7 +539,7 @@ export const reviewService = {
     completionNotes?: string
     userId: string
   }) {
-    const reviewRequest = await prisma.reviewRequest.findUnique({
+    const reviewRequest = await prismaAny.reviewRequest.findUnique({
       where: { id: reviewRequestId },
     })
 
@@ -551,7 +551,7 @@ export const reviewService = {
       throw new ValidationError('Only reviews in progress can be completed')
     }
 
-    const updated = await prisma.reviewRequest.update({
+    const updated = await prismaAny.reviewRequest.update({
       where: { id: reviewRequestId },
       data: {
         status: 'COMPLETED',
@@ -596,7 +596,7 @@ export const reviewService = {
     approvalNotes?: string
     userId: string
   }) {
-    const reviewRequest = await prisma.reviewRequest.findUnique({
+    const reviewRequest = await prismaAny.reviewRequest.findUnique({
       where: { id: reviewRequestId },
     })
 
@@ -608,7 +608,7 @@ export const reviewService = {
       throw new ValidationError('Only completed reviews can be approved')
     }
 
-    const updated = await prisma.reviewRequest.update({
+    const updated = await prismaAny.reviewRequest.update({
       where: { id: reviewRequestId },
       data: {
         approvedAt: new Date(),
@@ -650,7 +650,7 @@ export const reviewService = {
       where.designProjectId = designProjectId
     }
 
-    const overdue = await prisma.reviewRequest.findMany({
+    const overdue = await prismaAny.reviewRequest.findMany({
       where,
       include: {
         createdBy: {
@@ -696,7 +696,7 @@ export const reviewService = {
       where.designProjectId = designProjectId
     }
 
-    const dueSoon = await prisma.reviewRequest.findMany({
+    const dueSoon = await prismaAny.reviewRequest.findMany({
       where,
       include: {
         createdBy: {
@@ -725,7 +725,7 @@ export const reviewService = {
    * Send review reminder (placeholder - would integrate with notification service)
    */
   async sendReviewReminder(reviewRequestId: string, userId: string, reminderType: string) {
-    const reviewRequest = await prisma.reviewRequest.findUnique({
+    const reviewRequest = await prismaAny.reviewRequest.findUnique({
       where: { id: reviewRequestId },
     })
 
@@ -738,7 +738,7 @@ export const reviewService = {
     }
 
     // Create reminder record
-    const reminder = await prisma.reviewReminder.create({
+    const reminder = await prismaAny.reviewReminder.create({
       data: {
         reviewRequestId,
         userId,
@@ -748,7 +748,7 @@ export const reviewService = {
     })
 
     // Update reminder sent timestamp
-    await prisma.reviewRequest.update({
+    await prismaAny.reviewRequest.update({
       where: { id: reviewRequestId },
       data: {
         reminderSentAt: new Date(),
@@ -765,7 +765,7 @@ export const reviewService = {
    * Get review summary/dashboard data
    */
   async getReviewSummary(designProjectId: string) {
-    const reviewRequests = await prisma.reviewRequest.findMany({
+    const reviewRequests = await prismaAny.reviewRequest.findMany({
       where: { designProjectId },
       include: {
         _count: {
@@ -779,14 +779,14 @@ export const reviewService = {
     const summary = {
       total: reviewRequests.length,
       byStatus: {
-        DRAFT: reviewRequests.filter((r) => r.status === 'DRAFT').length,
-        PENDING: reviewRequests.filter((r) => r.status === 'PENDING').length,
-        IN_REVIEW: reviewRequests.filter((r) => r.status === 'IN_REVIEW').length,
-        COMPLETED: reviewRequests.filter((r) => r.status === 'COMPLETED').length,
-        CANCELLED: reviewRequests.filter((r) => r.status === 'CANCELLED').length,
+        DRAFT: reviewRequests.filter((r: any) => r.status === 'DRAFT').length,
+        PENDING: reviewRequests.filter((r: any) => r.status === 'PENDING').length,
+        IN_REVIEW: reviewRequests.filter((r: any) => r.status === 'IN_REVIEW').length,
+        COMPLETED: reviewRequests.filter((r: any) => r.status === 'COMPLETED').length,
+        CANCELLED: reviewRequests.filter((r: any) => r.status === 'CANCELLED').length,
       },
-      totalComments: reviewRequests.reduce((sum, r) => sum + (r._count?.comments || 0), 0),
-      overdue: reviewRequests.filter((r) => {
+      totalComments: reviewRequests.reduce((sum: number, r: any) => sum + (r._count?.comments || 0), 0),
+      overdue: reviewRequests.filter((r: any) => {
         if (!r.reviewDeadline) return false
         return new Date(r.reviewDeadline) < new Date() && !['COMPLETED', 'CANCELLED'].includes(r.status)
       }).length,

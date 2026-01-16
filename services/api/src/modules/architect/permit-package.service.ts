@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -16,7 +16,7 @@ export const permitPackageService = {
     description?: string
     createdById: string
   }) {
-    const package_ = await prisma.permitPackage.create({
+    const package_ = await prismaAny.permitPackage.create({
       data: {
         designProjectId: data.designProjectId,
         jurisdictionId: data.jurisdictionId,
@@ -58,7 +58,7 @@ export const permitPackageService = {
    * Get permit package
    */
   async getPermitPackage(packageId: string) {
-    const package_ = await prisma.permitPackage.findUnique({
+    const package_ = await prismaAny.permitPackage.findUnique({
       where: { id: packageId },
       include: {
         createdBy: {
@@ -145,7 +145,7 @@ export const permitPackageService = {
       where.packageType = filters.packageType
     }
 
-    const packages = await prisma.permitPackage.findMany({
+    const packages = await prismaAny.permitPackage.findMany({
       where,
       include: {
         _count: {
@@ -178,7 +178,7 @@ export const permitPackageService = {
     createdById: string
   }) {
     // Get design project with drawings
-    const project = await prisma.designProject.findUnique({
+    const project = await prismaAny.designProject.findUnique({
       where: { id: data.designProjectId },
       include: {
         drawingSheets: {
@@ -205,7 +205,7 @@ export const permitPackageService = {
     }
 
     // Create permit package
-    const package_ = await prisma.permitPackage.create({
+    const package_ = await prismaAny.permitPackage.create({
       data: {
         designProjectId: data.designProjectId,
         jurisdictionId: data.jurisdictionId,
@@ -218,7 +218,7 @@ export const permitPackageService = {
     })
 
     // Extract permit-required drawings
-    const permitRequiredSheets = project.drawingSheets.filter((sheet) => {
+    const permitRequiredSheets = project.drawingSheets.filter((sheet: any) => {
       // Filter logic: typically architectural, structural, site plans
       const discipline = sheet.discipline || ''
       return (
@@ -231,8 +231,8 @@ export const permitPackageService = {
 
     // Add drawings as documents
     const documents = await Promise.all(
-      permitRequiredSheets.map((sheet, index) =>
-        prisma.permitPackageDocument.create({
+      permitRequiredSheets.map((sheet: any, index: number) =>
+        prismaAny.permitPackageDocument.create({
           data: {
             packageId: package_.id,
             documentType: 'DRAWING',
@@ -262,7 +262,7 @@ export const permitPackageService = {
     // Get jurisdiction template if provided
     let template = null
     if (data.jurisdictionId) {
-      template = await prisma.jurisdictionPermitTemplate.findFirst({
+      template = await prismaAny.jurisdictionPermitTemplate.findFirst({
         where: {
           jurisdictionId: data.jurisdictionId,
           templateType: data.packageType as any,
@@ -278,7 +278,7 @@ export const permitPackageService = {
 
     const applicationForms = await Promise.all(
       formTypes.map((formType: string) =>
-        prisma.permitApplicationForm.create({
+        prismaAny.permitApplicationForm.create({
           data: {
             packageId: package_.id,
             formType,
@@ -305,7 +305,7 @@ export const permitPackageService = {
     )
 
     // Update package with calculated fee
-    const updatedPackage = await prisma.permitPackage.update({
+    const updatedPackage = await prismaAny.permitPackage.update({
       where: { id: package_.id },
       data: {
         calculatedFee: feeCalculation.totalFee,
@@ -370,7 +370,7 @@ export const permitPackageService = {
     project: any
   ) {
     // Create cover sheet document
-    await prisma.permitPackageDocument.create({
+    await prismaAny.permitPackageDocument.create({
       data: {
         packageId,
         documentType: 'COVER_SHEET',
@@ -391,7 +391,7 @@ export const permitPackageService = {
     })
 
     // Create index document
-    await prisma.permitPackageDocument.create({
+    await prismaAny.permitPackageDocument.create({
       data: {
         packageId,
         documentType: 'INDEX',
@@ -508,7 +508,7 @@ export const permitPackageService = {
     isRequired?: boolean
     metadata?: any
   }) {
-    const package_ = await prisma.permitPackage.findUnique({
+    const package_ = await prismaAny.permitPackage.findUnique({
       where: { id: packageId },
     })
 
@@ -517,13 +517,13 @@ export const permitPackageService = {
     }
 
     // Get current max order index
-    const maxOrder = await prisma.permitPackageDocument.findFirst({
+    const maxOrder = await prismaAny.permitPackageDocument.findFirst({
       where: { packageId },
       orderBy: { orderIndex: 'desc' },
       select: { orderIndex: true },
     })
 
-    const document = await prisma.permitPackageDocument.create({
+    const document = await prismaAny.permitPackageDocument.create({
       data: {
         packageId,
         documentType: data.documentType as any,
@@ -569,7 +569,7 @@ export const permitPackageService = {
     formData: any
     isComplete?: boolean
   }) {
-    const form = await prisma.permitApplicationForm.findUnique({
+    const form = await prismaAny.permitApplicationForm.findUnique({
       where: { id: formId },
     })
 
@@ -577,7 +577,7 @@ export const permitPackageService = {
       throw new NotFoundError('PermitApplicationForm', formId)
     }
 
-    const updated = await prisma.permitApplicationForm.update({
+    const updated = await prismaAny.permitApplicationForm.update({
       where: { id: formId },
       data: {
         formData: data.formData as any,
@@ -594,7 +594,7 @@ export const permitPackageService = {
   async verifyApplicationForm(formId: string, data: {
     verifiedById: string
   }) {
-    const form = await prisma.permitApplicationForm.findUnique({
+    const form = await prismaAny.permitApplicationForm.findUnique({
       where: { id: formId },
     })
 
@@ -606,7 +606,7 @@ export const permitPackageService = {
       throw new ValidationError('Application form must be complete before verification')
     }
 
-    const updated = await prisma.permitApplicationForm.update({
+    const updated = await prismaAny.permitApplicationForm.update({
       where: { id: formId },
       data: {
         isVerified: true,
@@ -638,7 +638,7 @@ export const permitPackageService = {
     submittedById: string
     submissionNotes?: string
   }) {
-    const package_ = await prisma.permitPackage.findUnique({
+    const package_ = await prismaAny.permitPackage.findUnique({
       where: { id: packageId },
       include: {
         documents: {
@@ -663,13 +663,13 @@ export const permitPackageService = {
       throw new ValidationError('Permit package must contain at least one document')
     }
 
-    const incompleteForms = package_.applicationForms.filter((f) => !f.isComplete)
+    const incompleteForms = package_.applicationForms.filter((f: any) => !f.isComplete)
     if (incompleteForms.length > 0) {
       throw new ValidationError('All application forms must be complete before submission')
     }
 
     // Create submission record
-    const submission = await prisma.permitPackageSubmission.create({
+    const submission = await prismaAny.permitPackageSubmission.create({
       data: {
         packageId,
         submissionMethod: data.submissionMethod,
@@ -693,7 +693,7 @@ export const permitPackageService = {
         submission.apiError = error.message
       }
 
-      await prisma.permitPackageSubmission.update({
+      await prismaAny.permitPackageSubmission.update({
         where: { id: submission.id },
         data: {
           submissionStatus: submission.submissionStatus,
@@ -706,7 +706,7 @@ export const permitPackageService = {
     }
 
     // Update package status
-    const updatedPackage = await prisma.permitPackage.update({
+    const updatedPackage = await prismaAny.permitPackage.update({
       where: { id: packageId },
       data: {
         status: 'SUBMITTED',
@@ -740,7 +740,7 @@ export const permitPackageService = {
    * Sync permit package status from permit system
    */
   async syncPermitPackageStatus(packageId: string) {
-    const package_ = await prisma.permitPackage.findUnique({
+    const package_ = await prismaAny.permitPackage.findUnique({
       where: { id: packageId },
     })
 
@@ -780,7 +780,7 @@ export const permitPackageService = {
     reviewerName?: string
     reviewerEmail?: string
   }) {
-    const package_ = await prisma.permitPackage.findUnique({
+    const package_ = await prismaAny.permitPackage.findUnique({
       where: { id: packageId },
     })
 
@@ -788,7 +788,7 @@ export const permitPackageService = {
       throw new NotFoundError('PermitPackage', packageId)
     }
 
-    const comment = await prisma.permitPackageReviewComment.create({
+    const comment = await prismaAny.permitPackageReviewComment.create({
       data: {
         packageId,
         commentType: data.commentType,
@@ -807,7 +807,7 @@ export const permitPackageService = {
     })
 
     // Update package review counts
-    await prisma.permitPackage.update({
+    await prismaAny.permitPackage.update({
       where: { id: packageId },
       data: {
         reviewCommentsCount: {
@@ -829,7 +829,7 @@ export const permitPackageService = {
     resolutionNotes?: string
     resolvedById: string
   }) {
-    const comment = await prisma.permitPackageReviewComment.findUnique({
+    const comment = await prismaAny.permitPackageReviewComment.findUnique({
       where: { id: commentId },
     })
 
@@ -837,7 +837,7 @@ export const permitPackageService = {
       throw new NotFoundError('PermitPackageReviewComment', commentId)
     }
 
-    const updated = await prisma.permitPackageReviewComment.update({
+    const updated = await prismaAny.permitPackageReviewComment.update({
       where: { id: commentId },
       data: {
         isResolved: true,
@@ -849,7 +849,7 @@ export const permitPackageService = {
 
     // Update package corrections count
     if (comment.severity === 'CRITICAL' || comment.severity === 'MAJOR') {
-      await prisma.permitPackage.update({
+      await prismaAny.permitPackage.update({
         where: { id: comment.packageId },
         data: {
           correctionsRequiredCount: {

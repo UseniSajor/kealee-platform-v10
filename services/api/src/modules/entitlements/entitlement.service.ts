@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 
 export class EntitlementService {
   // Enable a module for an organization
@@ -7,7 +7,7 @@ export class EntitlementService {
     moduleKey: string,
     expiresAt?: Date
   ) {
-    const entitlement = await prisma.moduleEntitlement.upsert({
+    const entitlement = await prismaAny.moduleEntitlement.upsert({
       where: {
         orgId_moduleKey: {
           orgId,
@@ -34,7 +34,7 @@ export class EntitlementService {
 
   // Disable a module for an organization
   async disableModule(orgId: string, moduleKey: string) {
-    const entitlement = await prisma.moduleEntitlement.update({
+    const entitlement = await prismaAny.moduleEntitlement.update({
       where: {
         orgId_moduleKey: {
           orgId,
@@ -52,7 +52,7 @@ export class EntitlementService {
 
   // Get module entitlement
   async getEntitlement(orgId: string, moduleKey: string) {
-    const entitlement = await prisma.moduleEntitlement.findUnique({
+    const entitlement = await prismaAny.moduleEntitlement.findUnique({
       where: {
         orgId_moduleKey: {
           orgId,
@@ -75,7 +75,7 @@ export class EntitlementService {
 
   // Check if organization has access to a module
   async hasModuleAccess(orgId: string, moduleKey: string): Promise<boolean> {
-    const entitlement = await prisma.moduleEntitlement.findUnique({
+    const entitlement = await prismaAny.moduleEntitlement.findUnique({
       where: {
         orgId_moduleKey: {
           orgId,
@@ -102,7 +102,7 @@ export class EntitlementService {
 
   // Get all entitlements for an organization
   async getOrgEntitlements(orgId: string) {
-    const entitlements = await prisma.moduleEntitlement.findMany({
+    const entitlements = await prismaAny.moduleEntitlement.findMany({
       where: { orgId },
       orderBy: { createdAt: 'desc' },
     })
@@ -112,7 +112,7 @@ export class EntitlementService {
 
   // Get all organizations with access to a module
   async getModuleOrgs(moduleKey: string) {
-    const entitlements = await prisma.moduleEntitlement.findMany({
+    const entitlements = await prismaAny.moduleEntitlement.findMany({
       where: {
         moduleKey,
         enabled: true,
@@ -138,7 +138,7 @@ export class EntitlementService {
 
   // Check if any of the modules are enabled
   async hasAnyModuleAccess(orgId: string, moduleKeys: string[]): Promise<boolean> {
-    const entitlements = await prisma.moduleEntitlement.findMany({
+    const entitlements = await prismaAny.moduleEntitlement.findMany({
       where: {
         orgId,
         moduleKey: {
@@ -157,7 +157,7 @@ export class EntitlementService {
 
   // Get enabled modules for an organization
   async getEnabledModules(orgId: string) {
-    const entitlements = await prisma.moduleEntitlement.findMany({
+    const entitlements = await prismaAny.moduleEntitlement.findMany({
       where: {
         orgId,
         enabled: true,
@@ -169,12 +169,12 @@ export class EntitlementService {
       orderBy: { moduleKey: 'asc' },
     })
 
-    return entitlements.map((e) => e.moduleKey)
+    return entitlements.map((e: any) => e.moduleKey)
   }
 
   // Update expiration date
   async updateExpiration(orgId: string, moduleKey: string, expiresAt: Date | null) {
-    const entitlement = await prisma.moduleEntitlement.update({
+    const entitlement = await prismaAny.moduleEntitlement.update({
       where: {
         orgId_moduleKey: {
           orgId,

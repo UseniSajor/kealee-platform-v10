@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 
 // State-specific compliance requirements
@@ -131,7 +131,7 @@ export const contractComplianceService = {
     suggestedLanguage: string
     complianceInfo: StateCompliance
   }> {
-    const contract = await prisma.contractAgreement.findUnique({
+    const contract = await prismaAny.contractAgreement.findUnique({
       where: { id: contractId },
       include: {
         project: {
@@ -210,7 +210,7 @@ export const contractComplianceService = {
   },
 
   async addStatutoryLanguage(contractId: string, autoAppend: boolean = false): Promise<{ terms: string }> {
-    const contract = await prisma.contractAgreement.findUnique({
+    const contract = await prismaAny.contractAgreement.findUnique({
       where: { id: contractId },
       include: {
         project: {
@@ -243,7 +243,7 @@ export const contractComplianceService = {
     }
 
     if (autoAppend) {
-      await prisma.contractAgreement.update({
+      await prismaAny.contractAgreement.update({
         where: { id: contractId },
         data: { terms: updatedTerms },
       })
@@ -261,7 +261,7 @@ export const contractComplianceService = {
     expiresAt: Date | null
     shouldRetain: boolean
   }> {
-    const contract = await prisma.contractAgreement.findUnique({
+    const contract = await prismaAny.contractAgreement.findUnique({
       where: { id: contractId },
       include: {
         project: {

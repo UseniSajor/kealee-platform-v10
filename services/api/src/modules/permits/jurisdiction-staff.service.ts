@@ -1,9 +1,9 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError } from '../../errors/app.error'
 
 export const jurisdictionStaffService = {
   async getStaff(jurisdictionId: string) {
-    return prisma.jurisdictionStaff.findMany({
+    return prismaAny.jurisdictionStaff.findMany({
       where: { jurisdictionId },
       include: {
         user: {
@@ -18,7 +18,7 @@ export const jurisdictionStaffService = {
   },
 
   async addStaff(jurisdictionId: string, userId: string, role: string) {
-    return prisma.jurisdictionStaff.create({
+    return prismaAny.jurisdictionStaff.create({
       data: {
         jurisdictionId,
         userId,
@@ -37,7 +37,7 @@ export const jurisdictionStaffService = {
   },
 
   async removeStaff(jurisdictionId: string, userId: string) {
-    const staff = await prisma.jurisdictionStaff.findFirst({
+    const staff = await prismaAny.jurisdictionStaff.findFirst({
       where: {
         jurisdictionId,
         userId,
@@ -48,7 +48,7 @@ export const jurisdictionStaffService = {
       throw new NotFoundError('Staff member not found')
     }
 
-    await prisma.jurisdictionStaff.delete({
+    await prismaAny.jurisdictionStaff.delete({
       where: { id: staff.id },
     })
   },

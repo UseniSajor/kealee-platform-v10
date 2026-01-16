@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { AuthorizationError, NotFoundError, ValidationError } from '../../errors/app.error'
 
 function toBool(v: unknown): boolean {
@@ -8,7 +8,7 @@ function toBool(v: unknown): boolean {
 }
 
 async function requireOrgAdmin(orgId: string, userId: string) {
-  const membership = await prisma.orgMember.findUnique({
+  const membership = await prismaAny.orgMember.findUnique({
     where: { userId_orgId: { userId, orgId } },
     select: { roleKey: true },
   })
@@ -62,7 +62,7 @@ function substituteVariables(
  * Get variable values from project data
  */
 async function getProjectVariables(projectId: string): Promise<Record<string, string>> {
-  const project = await prisma.project.findUnique({
+  const project = await prismaAny.project.findUnique({
     where: { id: projectId },
     include: {
       owner: { select: { id: true, name: true, email: true } },
@@ -93,7 +93,7 @@ async function getProjectVariables(projectId: string): Promise<Record<string, st
 export const contractTemplateService = {
   async listTemplates(params: { orgId?: string; activeOnly?: unknown; name?: string }) {
     const activeOnly = toBool(params.activeOnly)
-    return prisma.contractTemplate.findMany({
+    return prismaAny.contractTemplate.findMany({
       where: {
         ...(params.orgId ? { orgId: params.orgId } : { orgId: null }), // List global templates if no orgId
         ...(activeOnly ? { isActive: true } : {}),
@@ -104,7 +104,7 @@ export const contractTemplateService = {
   },
 
   async getTemplate(templateId: string) {
-    const template = await prisma.contractTemplate.findUnique({
+    const template = await prismaAny.contractTemplate.findUnique({
       where: { id: templateId },
     })
     if (!template) throw new NotFoundError('ContractTemplate', templateId)
@@ -128,7 +128,7 @@ export const contractTemplateService = {
     const variables = input.variables || extractedVars
 
     // Check for existing template with same name (for versioning)
-    const existing = await prisma.contractTemplate.findFirst({
+    const existing = await prismaAny.contractTemplate.findFirst({
       where: {
         orgId: input.orgId ?? null,
         name: input.name,
@@ -140,7 +140,7 @@ export const contractTemplateService = {
 
     const version = existing ? existing.version + 1 : 1
 
-    return prisma.contractTemplate.create({
+    return prismaAny.contractTemplate.create({
       data: {
         orgId: input.orgId ?? null,
         name: input.name,
@@ -162,7 +162,7 @@ export const contractTemplateService = {
     },
     actorUserId: string
   ) {
-    const template = await prisma.contractTemplate.findUnique({
+    const template = await prismaAny.contractTemplate.findUnique({
       where: { id: templateId },
     })
     if (!template) throw new NotFoundError('ContractTemplate', templateId)
@@ -179,13 +179,13 @@ export const contractTemplateService = {
 
     if (needsNewVersion) {
       // Deactivate old version
-      await prisma.contractTemplate.update({
+      await prismaAny.contractTemplate.update({
         where: { id: templateId },
         data: { isActive: false },
       })
 
       // Create new version
-      return prisma.contractTemplate.create({
+      return prismaAny.contractTemplate.create({
         data: {
           orgId: template.orgId,
           name: input.name ?? template.name,
@@ -198,7 +198,7 @@ export const contractTemplateService = {
     }
 
     // Otherwise, just update in place
-    return prisma.contractTemplate.update({
+    return prismaAny.contractTemplate.update({
       where: { id: templateId },
       data: {
         name: input.name,
@@ -210,27 +210,27 @@ export const contractTemplateService = {
   },
 
   async deleteTemplate(templateId: string, actorUserId: string) {
-    const template = await prisma.contractTemplate.findUnique({
+    const template = await prismaAny.contractTemplate.findUnique({
       where: { id: templateId },
     })
     if (!template) throw new NotFoundError('ContractTemplate', templateId)
     if (template.orgId) await requireOrgAdmin(template.orgId, actorUserId)
 
     // Check if template is used by any agreements
-    const usageCount = await prisma.contractAgreement.count({
+    const usageCount = await prismaAny.contractAgreement.count({
       where: { templateId },
     })
 
     if (usageCount > 0) {
       // Soft delete: just deactivate
-      return prisma.contractTemplate.update({
+      return prismaAny.contractTemplate.update({
         where: { id: templateId },
         data: { isActive: false },
       })
     }
 
     // Hard delete if not used
-    return prisma.contractTemplate.delete({
+    return prismaAny.contractTemplate.delete({
       where: { id: templateId },
     })
   },
@@ -240,7 +240,7 @@ export const contractTemplateService = {
     projectId?: string,
     variableOverrides?: Record<string, string>
   ) {
-    const template = await prisma.contractTemplate.findUnique({
+    const template = await prismaAny.contractTemplate.findUnique({
       where: { id: templateId },
     })
     if (!template) throw new NotFoundError('ContractTemplate', templateId)

@@ -212,14 +212,14 @@ export async function permitPackageRoutes(fastify: FastifyInstance) {
       preHandler: [
         authenticateUser,
         validateParams(z.object({ id: z.string().uuid() })),
-        validateBody(updateApplicationFormSchema),
+        validateBody(updateApplicationFormSchema as any),
       ],
     },
     async (request, reply) => {
       try {
         const { id } = request.params as { id: string }
         const body = request.body as z.infer<typeof updateApplicationFormSchema>
-        const form = await permitPackageService.updateApplicationForm(id, body)
+        const form = await permitPackageService.updateApplicationForm(id, { ...body, formData: body.formData || {} } as any)
         return reply.send({ form })
       } catch (error: any) {
         fastify.log.error(error)

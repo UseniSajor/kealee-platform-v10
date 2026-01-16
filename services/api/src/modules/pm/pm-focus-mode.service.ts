@@ -3,7 +3,7 @@
  * Manages focus mode sessions and DND integrations
  */
 
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 
 export interface FocusModeSession {
   id: string
@@ -27,7 +27,7 @@ export const pmFocusModeService = {
     integrations: string[]
   ): Promise<FocusModeSession> {
     // End any existing focus sessions
-    await prisma.focusSession?.updateMany({
+    await prismaAny.focusSession?.updateMany({
       where: {
         pmId,
         status: 'ACTIVE',
@@ -39,7 +39,7 @@ export const pmFocusModeService = {
     }).catch(() => {})
 
     // Create new focus session
-    const session = await prisma.focusSession?.create({
+    const session = await prismaAny.focusSession?.create({
       data: {
         pmId,
         taskId,
@@ -82,7 +82,7 @@ export const pmFocusModeService = {
    */
   async disableFocusMode(pmId: string): Promise<void> {
     // End active focus session
-    await prisma.focusSession?.updateMany({
+    await prismaAny.focusSession?.updateMany({
       where: {
         pmId,
         status: 'ACTIVE',
@@ -101,7 +101,7 @@ export const pmFocusModeService = {
    * Get active focus session
    */
   async getActiveFocusSession(pmId: string): Promise<FocusModeSession | null> {
-    const session = await prisma.focusSession?.findFirst({
+    const session = await prismaAny.focusSession?.findFirst({
       where: {
         pmId,
         status: 'ACTIVE',

@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -17,7 +17,7 @@ export const constructionHandoffService = {
     createdById: string
   }) {
     // Get design project with drawings
-    const project = await prisma.designProject.findUnique({
+    const project = await prismaAny.designProject.findUnique({
       where: { id: data.designProjectId },
       include: {
         drawingSheets: {
@@ -44,13 +44,13 @@ export const constructionHandoffService = {
     }
 
     // Generate package number
-    const existingPackages = await prisma.iFCPackage.count({
+    const existingPackages = await prismaAny.iFCPackage.count({
       where: { designProjectId: data.designProjectId },
     })
     const packageNumber = `IFC-${String(existingPackages + 1).padStart(3, '0')}`
 
     // Create IFC package
-    const ifcPackage = await prisma.iFCPackage.create({
+    const ifcPackage = await prismaAny.iFCPackage.create({
       data: {
         designProjectId: data.designProjectId,
         packageName: data.packageName,
@@ -63,8 +63,8 @@ export const constructionHandoffService = {
 
     // Add drawings as documents
     const documents = await Promise.all(
-      project.drawingSheets.map((sheet, index) =>
-        prisma.iFCPackageDocument.create({
+      project.drawingSheets.map((sheet: any, index: number) =>
+        prismaAny.iFCPackageDocument.create({
           data: {
             packageId: ifcPackage.id,
             documentType: 'DRAWING',
@@ -92,7 +92,7 @@ export const constructionHandoffService = {
     }
 
     // Update package with counts
-    const updatedPackage = await prisma.iFCPackage.update({
+    const updatedPackage = await prismaAny.iFCPackage.update({
       where: { id: ifcPackage.id },
       data: {
         totalSheets: documents.length,
@@ -129,7 +129,7 @@ export const constructionHandoffService = {
     issuedById: string
     issueDate?: Date
   }) {
-    const package_ = await prisma.iFCPackage.findUnique({
+    const package_ = await prismaAny.iFCPackage.findUnique({
       where: { id: packageId },
     })
 
@@ -141,7 +141,7 @@ export const constructionHandoffService = {
       throw new ValidationError('IFC package must be ready before issuing')
     }
 
-    const updated = await prisma.iFCPackage.update({
+    const updated = await prismaAny.iFCPackage.update({
       where: { id: packageId },
       data: {
         status: 'ISSUED',
@@ -180,13 +180,13 @@ export const constructionHandoffService = {
     createdById: string
   }) {
     // Generate package number
-    const existingPackages = await prisma.bidPackage.count({
+    const existingPackages = await prismaAny.bidPackage.count({
       where: { designProjectId: data.designProjectId },
     })
     const packageNumber = `BID-${String(existingPackages + 1).padStart(3, '0')}`
 
     // Create bid package
-    const bidPackage = await prisma.bidPackage.create({
+    const bidPackage = await prismaAny.bidPackage.create({
       data: {
         designProjectId: data.designProjectId,
         packageName: data.packageName,
@@ -203,7 +203,7 @@ export const constructionHandoffService = {
 
     // Add IFC package documents if included
     if (data.includesIFCPackage && data.ifcPackageId) {
-      const ifcPackage = await prisma.iFCPackage.findUnique({
+      const ifcPackage = await prismaAny.iFCPackage.findUnique({
         where: { id: data.ifcPackageId },
         include: {
           documents: true,
@@ -212,8 +212,8 @@ export const constructionHandoffService = {
 
       if (ifcPackage) {
         await Promise.all(
-          ifcPackage.documents.map((doc, index) =>
-            prisma.bidPackageDocument.create({
+          ifcPackage.documents.map((doc: any, index: number) =>
+            prismaAny.bidPackageDocument.create({
               data: {
                 packageId: bidPackage.id,
                 documentType: doc.documentType,
@@ -231,7 +231,7 @@ export const constructionHandoffService = {
     }
 
     // Update status
-    const updated = await prisma.bidPackage.update({
+    const updated = await prismaAny.bidPackage.update({
       where: { id: bidPackage.id },
       data: {
         status: 'READY',
@@ -269,7 +269,7 @@ export const constructionHandoffService = {
     isPublic?: boolean
     askedById: string
   }) {
-    const question = await prisma.contractorQuestion.create({
+    const question = await prismaAny.contractorQuestion.create({
       data: {
         bidPackageId: data.bidPackageId,
         questionText: data.questionText,
@@ -315,7 +315,7 @@ export const constructionHandoffService = {
     answerText: string
     answeredById: string
   }) {
-    const question = await prisma.contractorQuestion.findUnique({
+    const question = await prismaAny.contractorQuestion.findUnique({
       where: { id: questionId },
     })
 
@@ -323,7 +323,7 @@ export const constructionHandoffService = {
       throw new NotFoundError('ContractorQuestion', questionId)
     }
 
-    const updated = await prisma.contractorQuestion.update({
+    const updated = await prismaAny.contractorQuestion.update({
       where: { id: questionId },
       data: {
         answerText: data.answerText,
@@ -365,12 +365,12 @@ export const constructionHandoffService = {
     submittedById?: string
   }) {
     // Generate RFI number
-    const existingRFIs = await prisma.rFI.count({
+    const existingRFIs = await prismaAny.rFI.count({
       where: { designProjectId: data.designProjectId },
     })
     const rfiNumber = `RFI-${String(existingRFIs + 1).padStart(3, '0')}`
 
-    const rfi = await prisma.rFI.create({
+    const rfi = await prismaAny.rFI.create({
       data: {
         designProjectId: data.designProjectId,
         rfiNumber,
@@ -420,7 +420,7 @@ export const constructionHandoffService = {
     answerText: string
     answeredById: string
   }) {
-    const rfi = await prisma.rFI.findUnique({
+    const rfi = await prismaAny.rFI.findUnique({
       where: { id: rfiId },
     })
 
@@ -437,7 +437,7 @@ export const constructionHandoffService = {
       ? Math.round((new Date().getTime() - new Date(rfi.submittedAt).getTime()) / (1000 * 60 * 60))
       : null
 
-    const updated = await prisma.rFI.update({
+    const updated = await prismaAny.rFI.update({
       where: { id: rfiId },
       data: {
         answerText: data.answerText,
@@ -481,12 +481,12 @@ export const constructionHandoffService = {
     submittedById?: string
   }) {
     // Generate submittal number
-    const existingSubmittals = await prisma.submittal.count({
+    const existingSubmittals = await prismaAny.submittal.count({
       where: { designProjectId: data.designProjectId },
     })
     const submittalNumber = `SUB-${String(existingSubmittals + 1).padStart(3, '0')}`
 
-    const submittal = await prisma.submittal.create({
+    const submittal = await prismaAny.submittal.create({
       data: {
         designProjectId: data.designProjectId,
         submittalNumber,
@@ -538,7 +538,7 @@ export const constructionHandoffService = {
     requiredResubmission?: boolean
     reviewedById: string
   }) {
-    const submittal = await prisma.submittal.findUnique({
+    const submittal = await prismaAny.submittal.findUnique({
       where: { id: submittalId },
     })
 
@@ -579,7 +579,7 @@ export const constructionHandoffService = {
       updateData.approvedById = data.reviewedById
     }
 
-    const updated = await prisma.submittal.update({
+    const updated = await prismaAny.submittal.update({
       where: { id: submittalId },
       data: updateData,
     })
@@ -610,7 +610,7 @@ export const constructionHandoffService = {
     description?: string
     submittedById?: string
   }) {
-    const documentation = await prisma.asBuiltDocumentation.create({
+    const documentation = await prismaAny.asBuiltDocumentation.create({
       data: {
         designProjectId: data.designProjectId,
         documentationName: data.documentationName,
@@ -653,7 +653,7 @@ export const constructionHandoffService = {
     requiredRevisions?: boolean
     reviewedById: string
   }) {
-    const documentation = await prisma.asBuiltDocumentation.findUnique({
+    const documentation = await prismaAny.asBuiltDocumentation.findUnique({
       where: { id: documentationId },
     })
 
@@ -661,7 +661,7 @@ export const constructionHandoffService = {
       throw new NotFoundError('AsBuiltDocumentation', documentationId)
     }
 
-    const updated = await prisma.asBuiltDocumentation.update({
+    const updated = await prismaAny.asBuiltDocumentation.update({
       where: { id: documentationId },
       data: {
         reviewComments: data.reviewComments,
@@ -693,7 +693,7 @@ export const constructionHandoffService = {
   async approveAsBuiltDocumentation(documentationId: string, data: {
     approvedById: string
   }) {
-    const documentation = await prisma.asBuiltDocumentation.findUnique({
+    const documentation = await prismaAny.asBuiltDocumentation.findUnique({
       where: { id: documentationId },
     })
 
@@ -705,7 +705,7 @@ export const constructionHandoffService = {
       throw new ValidationError('As-built documentation must be reviewed before approval')
     }
 
-    const updated = await prisma.asBuiltDocumentation.update({
+    const updated = await prismaAny.asBuiltDocumentation.update({
       where: { id: documentationId },
       data: {
         status: 'APPROVED',

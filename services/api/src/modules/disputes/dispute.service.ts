@@ -1,6 +1,6 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, AuthorizationError, ValidationError } from '../../errors/app.error'
-import { DisputeStatus, EscrowStatus } from '@prisma/client'
+// Prisma types available through prismaAny
 
 export const disputeService = {
   /**
@@ -17,7 +17,7 @@ export const disputeService = {
       priority?: string
     }
   ) {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: input.projectId },
       include: {
         owner: { select: { id: true } },
@@ -41,12 +41,12 @@ export const disputeService = {
     }
 
     // Get active contract and escrow
-    const activeContract = project.contracts.find((c) => c.status === 'ACTIVE')
+    const activeContract = project.contracts.find((c: any) => c.status === 'ACTIVE')
     if (!activeContract) {
       throw new ValidationError('No active contract found for this project')
     }
 
-    const escrow = await prisma.escrowAgreement.findUnique({
+    const escrow = await prismaAny.escrowAgreement.findUnique({
       where: { projectId: input.projectId },
     })
 
@@ -55,7 +55,7 @@ export const disputeService = {
     }
 
     // Check if there's already an active dispute
-    const activeDispute = await prisma.dispute.findFirst({
+    const activeDispute = await prismaAny.dispute.findFirst({
       where: {
         projectId: input.projectId,
         status: {
@@ -69,7 +69,7 @@ export const disputeService = {
     }
 
     // Create dispute
-    const dispute = await prisma.dispute.create({
+    const dispute = await prismaAny.dispute.create({
       data: {
         projectId: input.projectId,
         milestoneId: input.milestoneId || null,
@@ -80,21 +80,21 @@ export const disputeService = {
         reason: input.reason,
         description: input.description,
         priority: input.priority || 'normal',
-        status: DisputeStatus.FILED,
+        status: 'FILED',
       },
     })
 
     // Add evidence if provided
     if (input.evidenceIds && input.evidenceIds.length > 0) {
-      const evidenceRecords = await prisma.evidence.findMany({
+      const evidenceRecords = await prismaAny.evidence.findMany({
         where: {
           id: { in: input.evidenceIds },
           projectId: input.projectId,
         },
       })
 
-      await prisma.disputeEvidence.createMany({
-        data: evidenceRecords.map((ev) => ({
+      await prismaAny.disputeEvidence.createMany({
+        data: evidenceRecords.map((ev: any) => ({
           disputeId: dispute.id,
           evidenceId: ev.id,
           url: ev.url,
@@ -106,23 +106,23 @@ export const disputeService = {
     }
 
     // Freeze escrow (Prompt 3.5: Escrow freeze during dispute)
-    await prisma.escrowAgreement.update({
+    await prismaAny.escrowAgreement.update({
       where: { id: escrow.id },
       data: {
-        status: EscrowStatus.FROZEN,
+        status: 'FROZEN',
       },
     })
 
     // Update dispute status to FREEZE_APPLIED
-    await prisma.dispute.update({
+    await prismaAny.dispute.update({
       where: { id: dispute.id },
       data: {
-        status: DisputeStatus.FREEZE_APPLIED,
+        status: 'FREEZE_APPLIED',
       },
     })
 
     // Create audit log
-    await prisma.auditLog.create({
+    await prismaAny.auditLog.create({
       data: {
         entityType: 'Dispute',
         entityId: dispute.id,
@@ -137,7 +137,7 @@ export const disputeService = {
     })
 
     // Create event
-    await prisma.event.create({
+    await prismaAny.event.create({
       data: {
         entityType: 'Dispute',
         entityId: dispute.id,
@@ -158,7 +158,7 @@ export const disputeService = {
    * Get dispute details (Prompt 3.5)
    */
   async getDispute(disputeId: string, userId: string) {
-    const dispute = await prisma.dispute.findUnique({
+    const dispute = await prismaAny.dispute.findUnique({
       where: { id: disputeId },
       include: {
         project: { select: { ownerId: true } },
@@ -199,7 +199,7 @@ export const disputeService = {
    * List disputes for a project (Prompt 3.5)
    */
   async listProjectDisputes(projectId: string, userId: string) {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       include: {
         owner: { select: { id: true } },
@@ -220,7 +220,7 @@ export const disputeService = {
       throw new AuthorizationError('Only project parties can view disputes')
     }
 
-    const disputes = await prisma.dispute.findMany({
+    const disputes = await prismaAny.dispute.findMany({
       where: { projectId },
       include: {
         milestone: { select: { id: true, name: true } },
@@ -237,7 +237,7 @@ export const disputeService = {
    * Request mediation (Prompt 3.5)
    */
   async requestMediation(disputeId: string, userId: string, notes?: string) {
-    const dispute = await prisma.dispute.findUnique({
+    const dispute = await prismaAny.dispute.findUnique({
       where: { id: disputeId },
       include: {
         project: { select: { ownerId: true } },
@@ -259,23 +259,23 @@ export const disputeService = {
       throw new AuthorizationError('Only project parties can request mediation')
     }
 
-    if (dispute.status === DisputeStatus.RESOLVED || dispute.status === DisputeStatus.CANCELLED) {
+    if (dispute.status === 'RESOLVED' || dispute.status === 'CANCELLED') {
       throw new ValidationError('Cannot request mediation for resolved or cancelled disputes')
     }
 
     // Update dispute
-    const updated = await prisma.dispute.update({
+    const updated = await prismaAny.dispute.update({
       where: { id: disputeId },
       data: {
         mediationRequested: true,
         mediationRequestedAt: new Date(),
-        status: DisputeStatus.PENDING_MEDIATION,
+        status: 'PENDING_MEDIATION',
         mediationNotes: notes || null,
       },
     })
 
     // Create event
-    await prisma.event.create({
+    await prismaAny.event.create({
       data: {
         entityType: 'Dispute',
         entityId: disputeId,
@@ -292,7 +292,7 @@ export const disputeService = {
    * Add comment to dispute (Prompt 3.5)
    */
   async addComment(disputeId: string, userId: string, comment: string, isInternal: boolean = false) {
-    const dispute = await prisma.dispute.findUnique({
+    const dispute = await prismaAny.dispute.findUnique({
       where: { id: disputeId },
       include: {
         project: { select: { ownerId: true } },
@@ -315,7 +315,7 @@ export const disputeService = {
       throw new AuthorizationError('Only project parties can add comments')
     }
 
-    const disputeComment = await prisma.disputeComment.create({
+    const disputeComment = await prismaAny.disputeComment.create({
       data: {
         disputeId,
         comment,
@@ -339,7 +339,7 @@ export const disputeService = {
       mediatorId?: string
     }
   ) {
-    const dispute = await prisma.dispute.findUnique({
+    const dispute = await prismaAny.dispute.findUnique({
       where: { id: disputeId },
       include: {
         escrow: true,
@@ -349,15 +349,15 @@ export const disputeService = {
 
     if (!dispute) throw new NotFoundError('Dispute', disputeId)
 
-    if (dispute.status === DisputeStatus.RESOLVED || dispute.status === DisputeStatus.CANCELLED) {
+    if (dispute.status === 'RESOLVED' || dispute.status === 'CANCELLED') {
       throw new ValidationError('Dispute is already resolved or cancelled')
     }
 
     // Update dispute
-    const updated = await prisma.dispute.update({
+    const updated = await prismaAny.dispute.update({
       where: { id: disputeId },
       data: {
-        status: DisputeStatus.RESOLVED,
+        status: 'RESOLVED',
         resolution: input.resolution,
         resolutionNotes: input.resolutionNotes,
         resolvedBy: resolverId,
@@ -367,11 +367,11 @@ export const disputeService = {
     })
 
     // Prompt 3.5: Automatic unfreeze upon resolution
-    if (dispute.escrow && dispute.escrow.status === EscrowStatus.FROZEN) {
-      await prisma.escrowAgreement.update({
+    if (dispute.escrow && dispute.escrow.status === 'FROZEN') {
+      await prismaAny.escrowAgreement.update({
         where: { id: dispute.escrow.id },
         data: {
-          status: EscrowStatus.ACTIVE,
+          status: 'ACTIVE',
         },
       })
     }
@@ -381,12 +381,12 @@ export const disputeService = {
       (input.resolution === 'CONTRACTOR_WINS' || input.resolution === 'PARTIAL_CONTRACTOR') &&
       dispute.milestoneId
     ) {
-      const milestone = await prisma.milestone.findUnique({
+      const milestone = await prismaAny.milestone.findUnique({
         where: { id: dispute.milestoneId },
       })
 
       if (milestone && milestone.status === 'SUBMITTED') {
-        await prisma.milestone.update({
+        await prismaAny.milestone.update({
           where: { id: dispute.milestoneId },
           data: {
             status: 'APPROVED',
@@ -398,7 +398,7 @@ export const disputeService = {
     }
 
     // Create audit log
-    await prisma.auditLog.create({
+    await prismaAny.auditLog.create({
       data: {
         entityType: 'Dispute',
         entityId: disputeId,
@@ -413,7 +413,7 @@ export const disputeService = {
     })
 
     // Create event
-    await prisma.event.create({
+    await prismaAny.event.create({
       data: {
         entityType: 'Dispute',
         entityId: disputeId,
@@ -442,7 +442,7 @@ export const disputeService = {
       description?: string
     }
   ) {
-    const dispute = await prisma.dispute.findUnique({
+    const dispute = await prismaAny.dispute.findUnique({
       where: { id: disputeId },
       include: {
         project: { select: { ownerId: true } },
@@ -468,7 +468,7 @@ export const disputeService = {
       throw new ValidationError('Either evidenceId or url must be provided')
     }
 
-    const evidence = await prisma.disputeEvidence.create({
+    const evidence = await prismaAny.disputeEvidence.create({
       data: {
         disputeId,
         evidenceId: input.evidenceId || null,

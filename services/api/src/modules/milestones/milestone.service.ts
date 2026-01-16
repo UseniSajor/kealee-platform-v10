@@ -1,10 +1,10 @@
-import { prisma } from '@kealee/database'
-import { MilestoneStatus } from '@prisma/client'
+import { prismaAny } from '../../utils/prisma-helper'
+// Prisma types available through prismaAny
 import { NotFoundError, AuthorizationError, ValidationError } from '../../errors/app.error'
 
 export const milestoneService = {
   async getContractMilestones(contractId: string, userId: string) {
-    const contract = await prisma.contractAgreement.findUnique({
+    const contract = await prismaAny.contractAgreement.findUnique({
       where: { id: contractId },
       include: {
         project: { select: { ownerId: true } },
@@ -18,7 +18,7 @@ export const milestoneService = {
       throw new AuthorizationError('Only contract parties can view milestones')
     }
 
-    const milestones = await prisma.milestone.findMany({
+    const milestones = await prismaAny.milestone.findMany({
       where: { contractId },
       include: {
         evidence: {
@@ -45,16 +45,16 @@ export const milestoneService = {
     // Calculate progress statistics
     const total = milestones.length
     const completed = milestones.filter(
-      (m) => m.status === MilestoneStatus.APPROVED || m.status === MilestoneStatus.PAID
+      (m: any) => m.status === 'APPROVED' || m.status === 'PAID'
     ).length
-    const submitted = milestones.filter((m) => m.status === MilestoneStatus.SUBMITTED).length
-    const underReview = milestones.filter((m) => m.status === MilestoneStatus.UNDER_REVIEW).length
-    const pending = milestones.filter((m) => m.status === MilestoneStatus.PENDING).length
+    const submitted = milestones.filter((m: any) => m.status === 'SUBMITTED').length
+    const underReview = milestones.filter((m: any) => m.status === 'UNDER_REVIEW').length
+    const pending = milestones.filter((m: any) => m.status === 'PENDING').length
 
-    const totalAmount = milestones.reduce((sum, m) => sum + Number(m.amount || 0), 0)
+    const totalAmount = milestones.reduce((sum: number, m: any) => sum + Number(m.amount || 0), 0)
     const paidAmount = milestones
-      .filter((m) => m.status === MilestoneStatus.PAID)
-      .reduce((sum, m) => sum + Number(m.amount || 0), 0)
+      .filter((m: any) => m.status === 'PAID')
+      .reduce((sum: number, m: any) => sum + Number(m.amount || 0), 0)
 
     const progressPercentage = total > 0 ? Math.round((completed / total) * 100) : 0
     const paymentProgress = totalAmount > 0 ? Math.round((paidAmount / totalAmount) * 100) : 0
@@ -63,25 +63,25 @@ export const milestoneService = {
     const now = new Date()
     const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
     const upcomingMilestones = milestones.filter(
-      (m) =>
-        m.status === MilestoneStatus.PENDING &&
+      (m: any) =>
+        m.status === 'PENDING' &&
         m.dueDate &&
         new Date(m.dueDate) <= sevenDaysFromNow &&
         new Date(m.dueDate) >= now
     )
 
     // Build dependency graph
-    const dependencyGraph = milestones.map((milestone) => {
+    const dependencyGraph = milestones.map((milestone: any) => {
       const canSubmit =
         !milestone.dependsOnId ||
-        milestones.find((m) => m.id === milestone.dependsOnId)?.status === MilestoneStatus.APPROVED ||
-        milestones.find((m) => m.id === milestone.dependsOnId)?.status === MilestoneStatus.PAID
+        milestones.find((m: any) => m.id === milestone.dependsOnId)?.status === 'APPROVED' ||
+        milestones.find((m: any) => m.id === milestone.dependsOnId)?.status === 'PAID'
 
       return {
         ...milestone,
         canSubmit,
         blockedBy: milestone.dependsOnId
-          ? milestones.find((m) => m.id === milestone.dependsOnId && m.status !== MilestoneStatus.APPROVED && m.status !== MilestoneStatus.PAID)
+          ? milestones.find((m: any) => m.id === milestone.dependsOnId && m.status !== 'APPROVED' && m.status !== 'PAID')
           : null,
       }
     })
@@ -111,7 +111,7 @@ export const milestoneService = {
   },
 
   async getMilestone(milestoneId: string, userId: string) {
-    const milestone = await prisma.milestone.findUnique({
+    const milestone = await prismaAny.milestone.findUnique({
       where: { id: milestoneId },
       include: {
         contract: {
@@ -152,7 +152,7 @@ export const milestoneService = {
     userId: string,
     evidence: Array<{ type: string; fileUrl: string; url?: string; caption?: string }>
   ) {
-    const milestone = await prisma.milestone.findUnique({
+    const milestone = await prismaAny.milestone.findUnique({
       where: { id: milestoneId },
       include: {
         contract: {
@@ -169,19 +169,19 @@ export const milestoneService = {
       throw new AuthorizationError('Only the contractor can submit milestones')
     }
 
-    if (milestone.status !== MilestoneStatus.PENDING) {
+    if (milestone.status !== 'PENDING') {
       throw new ValidationError(`Milestone is not in PENDING status (current: ${milestone.status})`)
     }
 
     // Check dependencies
     if (milestone.dependsOnId) {
-      const dependency = await prisma.milestone.findUnique({
+      const dependency = await prismaAny.milestone.findUnique({
         where: { id: milestone.dependsOnId },
       })
       if (
         dependency &&
-        dependency.status !== MilestoneStatus.APPROVED &&
-        dependency.status !== MilestoneStatus.PAID
+        dependency.status !== 'APPROVED' &&
+        dependency.status !== 'PAID'
       ) {
         throw new ValidationError(
           `This milestone depends on "${dependency.name}" which must be approved first`
@@ -190,7 +190,7 @@ export const milestoneService = {
     }
 
     // Check if evidence already exists (from uploads)
-    const existingEvidence = await prisma.evidence.count({
+    const existingEvidence = await prismaAny.evidence.count({
       where: { milestoneId },
     })
 
@@ -199,10 +199,10 @@ export const milestoneService = {
     }
 
     // Update milestone status
-    const updated = await prisma.milestone.update({
+    const updated = await prismaAny.milestone.update({
       where: { id: milestoneId },
       data: {
-        status: MilestoneStatus.SUBMITTED,
+        status: 'SUBMITTED',
         submittedAt: new Date(),
       },
     })
@@ -211,7 +211,7 @@ export const milestoneService = {
     // Note: Files should be uploaded via /milestones/:milestoneId/upload first
     if (evidence.length > 0) {
       const projectId = milestone.projectId
-      await prisma.evidence.createMany({
+      await prismaAny.evidence.createMany({
         data: evidence.map((e) => ({
           projectId,
           milestoneId,
@@ -225,7 +225,7 @@ export const milestoneService = {
     }
 
     // Create audit log
-    await prisma.auditLog.create({
+    await prismaAny.auditLog.create({
       data: {
         entityType: 'Milestone',
         entityId: milestoneId,
@@ -236,7 +236,7 @@ export const milestoneService = {
     })
 
     // Create event
-    await prisma.event.create({
+    await prismaAny.event.create({
       data: {
         entityType: 'Milestone',
         entityId: milestoneId,
@@ -250,7 +250,7 @@ export const milestoneService = {
   },
 
   async approveMilestone(milestoneId: string, userId: string, notes?: string) {
-    const milestone = await prisma.milestone.findUnique({
+    const milestone = await prismaAny.milestone.findUnique({
       where: { id: milestoneId },
       include: {
         contract: {
@@ -267,12 +267,12 @@ export const milestoneService = {
       throw new AuthorizationError('Only the project owner can approve milestones')
     }
 
-    if (milestone.status !== MilestoneStatus.SUBMITTED && milestone.status !== MilestoneStatus.UNDER_REVIEW) {
+    if (milestone.status !== 'SUBMITTED' && milestone.status !== 'UNDER_REVIEW') {
       throw new ValidationError(`Milestone is not in SUBMITTED or UNDER_REVIEW status (current: ${milestone.status})`)
     }
 
     // Check for evidence
-    const evidenceCount = await prisma.evidence.count({
+    const evidenceCount = await prismaAny.evidence.count({
       where: { milestoneId },
     })
     if (evidenceCount === 0) {
@@ -280,17 +280,17 @@ export const milestoneService = {
     }
 
     // Update milestone status
-    const updated = await prisma.milestone.update({
+    const updated = await prismaAny.milestone.update({
       where: { id: milestoneId },
       data: {
-        status: MilestoneStatus.APPROVED,
+        status: 'APPROVED',
         approvedAt: new Date(),
         approvedById: userId,
       },
     })
 
     // Create audit log
-    await prisma.auditLog.create({
+    await prismaAny.auditLog.create({
       data: {
         entityType: 'Milestone',
         entityId: milestoneId,
@@ -301,7 +301,7 @@ export const milestoneService = {
     })
 
     // Create event
-    await prisma.event.create({
+    await prismaAny.event.create({
       data: {
         entityType: 'Milestone',
         entityId: milestoneId,
@@ -318,7 +318,7 @@ export const milestoneService = {
   },
 
   async rejectMilestone(milestoneId: string, userId: string, reason: string) {
-    const milestone = await prisma.milestone.findUnique({
+    const milestone = await prismaAny.milestone.findUnique({
       where: { id: milestoneId },
       include: {
         contract: {
@@ -335,20 +335,20 @@ export const milestoneService = {
       throw new AuthorizationError('Only the project owner can reject milestones')
     }
 
-    if (milestone.status !== MilestoneStatus.SUBMITTED && milestone.status !== MilestoneStatus.UNDER_REVIEW) {
+    if (milestone.status !== 'SUBMITTED' && milestone.status !== 'UNDER_REVIEW') {
       throw new ValidationError(`Milestone is not in SUBMITTED or UNDER_REVIEW status (current: ${milestone.status})`)
     }
 
     // Update milestone status
-    const updated = await prisma.milestone.update({
+    const updated = await prismaAny.milestone.update({
       where: { id: milestoneId },
       data: {
-        status: MilestoneStatus.PENDING, // Back to pending
+        status: 'PENDING', // Back to pending
       },
     })
 
     // Create audit log
-    await prisma.auditLog.create({
+    await prismaAny.auditLog.create({
       data: {
         entityType: 'Milestone',
         entityId: milestoneId,
@@ -360,13 +360,37 @@ export const milestoneService = {
     })
 
     // Create event
-    await prisma.event.create({
+    await prismaAny.event.create({
       data: {
         entityType: 'Milestone',
         entityId: milestoneId,
         type: 'MILESTONE_REJECTED',
         payload: { reason },
         userId: userId,
+      },
+    })
+
+    return updated
+  },
+
+  async updateMilestone(milestoneId: string, data: {
+    status?: string
+    reviewerNotes?: string
+    [key: string]: any
+  }, userId?: string) {
+    const milestone = await prismaAny.milestone.findUnique({
+      where: { id: milestoneId },
+    })
+
+    if (!milestone) {
+      throw new NotFoundError('Milestone', milestoneId)
+    }
+
+    const updated = await prismaAny.milestone.update({
+      where: { id: milestoneId },
+      data: {
+        ...(data.status && { status: data.status }),
+        ...(data.reviewerNotes && { reviewerNotes: data.reviewerNotes }),
       },
     })
 

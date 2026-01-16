@@ -341,7 +341,8 @@ export async function versionControlRoutes(fastify: FastifyInstance) {
         const { id } = request.params as { id: string }
         const body = request.body as z.infer<typeof resolveMergeConflictsSchema>
         const merge = await versionControlService.resolveMergeConflicts(id, {
-          ...body,
+          conflictResolution: body.conflictResolution,
+          resolvedConflicts: body.resolvedConflicts || {},
           userId: user.id,
         })
         return reply.send({ merge })

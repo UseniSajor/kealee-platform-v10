@@ -1,11 +1,11 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 
 export class UserService {
   /**
    * Get user by ID
    */
   async getUserById(userId: string) {
-    const user = await prisma.user.findUnique({
+    const user = await prismaAny.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -50,7 +50,7 @@ export class UserService {
     }
 
     const [users, total] = await Promise.all([
-      prisma.user.findMany({
+      prismaAny.user.findMany({
         where,
         skip,
         take: limit,
@@ -66,7 +66,7 @@ export class UserService {
         },
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.user.count({ where }),
+      prismaAny.user.count({ where }),
     ])
 
     return {
@@ -91,7 +91,7 @@ export class UserService {
       avatar?: string
     }
   ) {
-    const user = await prisma.user.update({
+    const user = await prismaAny.user.update({
       where: { id: userId },
       data,
       select: {
@@ -113,7 +113,7 @@ export class UserService {
    * Get user's organizations
    */
   async getUserOrganizations(userId: string) {
-    const memberships = await prisma.orgMember.findMany({
+    const memberships = await prismaAny.orgMember.findMany({
       where: { userId },
       include: {
         org: {

@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -22,7 +22,7 @@ export const revisionService = {
     createdById: string
   }) {
     // Get next revision number
-    const existingRevisions = await prisma.revision.findMany({
+    const existingRevisions = await prismaAny.revision.findMany({
       where: { designProjectId: data.designProjectId },
       orderBy: { revisionNumber: 'desc' },
       take: 1,
@@ -33,7 +33,7 @@ export const revisionService = {
       : 1
 
     // Validate revision letter uniqueness
-    const existing = await prisma.revision.findUnique({
+    const existing = await prismaAny.revision.findUnique({
       where: {
         designProjectId_revisionLetter: {
           designProjectId: data.designProjectId,
@@ -46,7 +46,7 @@ export const revisionService = {
       throw new ValidationError(`Revision "${data.revisionLetter}" already exists`)
     }
 
-    const revision = await prisma.revision.create({
+    const revision = await prismaAny.revision.create({
       data: {
         designProjectId: data.designProjectId,
         revisionLetter: data.revisionLetter,
@@ -94,7 +94,7 @@ export const revisionService = {
    * Get revision with all details
    */
   async getRevision(revisionId: string) {
-    const revision = await prisma.revision.findUnique({
+    const revision = await prismaAny.revision.findUnique({
       where: { id: revisionId },
       include: {
         createdBy: {
@@ -179,7 +179,7 @@ export const revisionService = {
       }
     }
 
-    const revisions = await prisma.revision.findMany({
+    const revisions = await prismaAny.revision.findMany({
       where,
       include: {
         createdBy: {
@@ -214,7 +214,7 @@ export const revisionService = {
     affectedAreas?: string[]
     changeType: string
   }) {
-    const revision = await prisma.revision.findUnique({
+    const revision = await prismaAny.revision.findUnique({
       where: { id: data.revisionId },
     })
 
@@ -222,7 +222,7 @@ export const revisionService = {
       throw new NotFoundError('Revision', data.revisionId)
     }
 
-    const sheet = await prisma.drawingSheet.findUnique({
+    const sheet = await prismaAny.drawingSheet.findUnique({
       where: { id: data.sheetId },
     })
 
@@ -234,7 +234,7 @@ export const revisionService = {
       throw new ValidationError('Sheet must be from the same project as revision')
     }
 
-    const sheetRevision = await prisma.sheetRevision.upsert({
+    const sheetRevision = await prismaAny.sheetRevision.upsert({
       where: {
         revisionId_sheetId: {
           revisionId: data.revisionId,
@@ -258,7 +258,7 @@ export const revisionService = {
     })
 
     // Update sheet's current revision
-    await prisma.drawingSheet.update({
+    await prismaAny.drawingSheet.update({
       where: { id: data.sheetId },
       data: {
         currentRevision: revision.revisionLetter,
@@ -284,7 +284,7 @@ export const revisionService = {
     approvalNotes?: string
     userId: string
   }) {
-    const revision = await prisma.revision.findUnique({
+    const revision = await prismaAny.revision.findUnique({
       where: { id: revisionId },
     })
 
@@ -296,7 +296,7 @@ export const revisionService = {
       throw new ValidationError('Only draft or pending revisions can be approved')
     }
 
-    const updated = await prisma.revision.update({
+    const updated = await prismaAny.revision.update({
       where: { id: revisionId },
       data: {
         status: 'APPROVED',
@@ -329,7 +329,7 @@ export const revisionService = {
     issuedTo?: string
     userId: string
   }) {
-    const revision = await prisma.revision.findUnique({
+    const revision = await prismaAny.revision.findUnique({
       where: { id: revisionId },
     })
 
@@ -341,7 +341,7 @@ export const revisionService = {
       throw new ValidationError('Only approved revisions can be issued')
     }
 
-    const updated = await prisma.revision.update({
+    const updated = await prismaAny.revision.update({
       where: { id: revisionId },
       data: {
         status: 'ISSUED',
@@ -401,7 +401,7 @@ export const revisionService = {
       where.id = data.revisionId
     }
 
-    const revisions = await prisma.revision.findMany({
+    const revisions = await prismaAny.revision.findMany({
       where,
       include: {
         sheetRevisions: {
@@ -423,7 +423,7 @@ export const revisionService = {
     })
 
     // Get all sheets
-    const sheets = await prisma.drawingSheet.findMany({
+    const sheets = await prismaAny.drawingSheet.findMany({
       where: { designProjectId: data.designProjectId },
       select: {
         id: true,
@@ -436,7 +436,7 @@ export const revisionService = {
 
     // Generate schedule data
     const scheduleData = {
-      revisions: revisions.map((r) => ({
+      revisions: revisions.map((r: any) => ({
         id: r.id,
         revisionLetter: r.revisionLetter,
         revisionNumber: r.revisionNumber,
@@ -446,25 +446,25 @@ export const revisionService = {
         status: r.status,
         sheetCount: r.sheetRevisions.length,
       })),
-      sheets: sheets.map((s) => ({
+      sheets: sheets.map((s: any) => ({
         id: s.id,
         sheetNumber: s.sheetNumber,
         sheetTitle: s.sheetTitle,
         discipline: s.discipline,
         currentRevision: s.currentRevision,
         revisions: revisions
-          .filter((r) => r.sheetRevisions.some((sr) => sr.sheetId === s.id))
-          .map((r) => r.revisionLetter),
+          .filter((r: any) => r.sheetRevisions.some((sr: any) => sr.sheetId === s.id))
+          .map((r: any) => r.revisionLetter),
       })),
       summary: {
         totalRevisions: revisions.length,
         totalSheets: sheets.length,
-        issuedRevisions: revisions.filter((r) => r.status === 'ISSUED').length,
-        pendingRevisions: revisions.filter((r) => r.status === 'PENDING_APPROVAL').length,
+        issuedRevisions: revisions.filter((r: any) => r.status === 'ISSUED').length,
+        pendingRevisions: revisions.filter((r: any) => r.status === 'PENDING_APPROVAL').length,
       },
     }
 
-    const schedule = await prisma.revisionSchedule.create({
+    const schedule = await prismaAny.revisionSchedule.create({
       data: {
         designProjectId: data.designProjectId,
         revisionId: data.revisionId,
@@ -496,7 +496,7 @@ export const revisionService = {
    * Get revision schedule
    */
   async getRevisionSchedule(scheduleId: string) {
-    const schedule = await prisma.revisionSchedule.findUnique({
+    const schedule = await prismaAny.revisionSchedule.findUnique({
       where: { id: scheduleId },
       include: {
         revision: {
@@ -526,7 +526,7 @@ export const revisionService = {
    * Analyze revision impact
    */
   async analyzeRevisionImpact(revisionId: string) {
-    const revision = await prisma.revision.findUnique({
+    const revision = await prismaAny.revision.findUnique({
       where: { id: revisionId },
       include: {
         sheetRevisions: {
@@ -551,7 +551,7 @@ export const revisionService = {
     const affectedDisciplines = new Set<string>()
     const affectedSheetIds: string[] = []
 
-    revision.sheetRevisions.forEach((sr) => {
+    revision.sheetRevisions.forEach((sr: any) => {
       affectedDisciplines.add(sr.sheet.discipline)
       affectedSheetIds.push(sr.sheet.id)
     })
@@ -582,7 +582,7 @@ export const revisionService = {
 
     // Create or update impact records
     for (const impact of impacts) {
-      await prisma.revisionImpact.upsert({
+      await prismaAny.revisionImpact.upsert({
         where: {
           revisionId_affectedDiscipline: {
             revisionId,
@@ -611,7 +611,7 @@ export const revisionService = {
       requiresCoordination: impacts.some((i) => i.requiresCoordination),
     }
 
-    await prisma.revision.update({
+    await prismaAny.revision.update({
       where: { id: revisionId },
       data: {
         affectedDisciplines: Array.from(affectedDisciplines),
@@ -634,7 +634,7 @@ export const revisionService = {
     coordinationNotes?: string
     userId: string
   }) {
-    const impact = await prisma.revisionImpact.findUnique({
+    const impact = await prismaAny.revisionImpact.findUnique({
       where: { id: impactId },
     })
 
@@ -642,7 +642,7 @@ export const revisionService = {
       throw new NotFoundError('RevisionImpact', impactId)
     }
 
-    const updated = await prisma.revisionImpact.update({
+    const updated = await prismaAny.revisionImpact.update({
       where: { id: impactId },
       data: {
         requiresCoordination: false,
@@ -665,7 +665,7 @@ export const revisionService = {
     relatedDocuments?: string[]
     userId: string
   }) {
-    const revision = await prisma.revision.findUnique({
+    const revision = await prismaAny.revision.findUnique({
       where: { id: revisionId },
       include: {
         sheetRevisions: true,
@@ -678,7 +678,7 @@ export const revisionService = {
     }
 
     // Create archive record
-    const archive = await prisma.revisionArchive.create({
+    const archive = await prismaAny.revisionArchive.create({
       data: {
         designProjectId: revision.designProjectId,
         revisionId,
@@ -703,7 +703,7 @@ export const revisionService = {
     })
 
     // Mark revision as superseded
-    await prisma.revision.update({
+    await prismaAny.revision.update({
       where: { id: revisionId },
       data: {
         status: 'SUPERSEDED',
@@ -761,7 +761,7 @@ export const revisionService = {
       }
     }
 
-    const archives = await prisma.revisionArchive.findMany({
+    const archives = await prismaAny.revisionArchive.findMany({
       where,
       include: {
         revision: {

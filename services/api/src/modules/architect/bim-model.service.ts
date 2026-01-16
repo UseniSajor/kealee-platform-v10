@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -18,7 +18,7 @@ export const bimModelService = {
     uploadedById: string
   }) {
     // Check if file exists
-    const file = await prisma.designFile.findUnique({
+    const file = await prismaAny.designFile.findUnique({
       where: { id: data.modelFileId },
     })
 
@@ -27,7 +27,7 @@ export const bimModelService = {
     }
 
     // Check if this is a new version of existing model
-    const existingModel = await prisma.bIMModel.findFirst({
+    const existingModel = await prismaAny.bIMModel.findFirst({
       where: {
         designProjectId: data.designProjectId,
         name: data.name,
@@ -43,13 +43,13 @@ export const bimModelService = {
       previousVersionId = existingModel.id
 
       // Mark old version as not latest
-      await prisma.bIMModel.update({
+      await prismaAny.bIMModel.update({
         where: { id: existingModel.id },
         data: { isLatestVersion: false },
       })
     }
 
-    const model = await prisma.bIMModel.create({
+    const model = await prismaAny.bIMModel.create({
       data: {
         designProjectId: data.designProjectId,
         deliverableId: data.deliverableId,
@@ -114,7 +114,7 @@ export const bimModelService = {
    * Get model with all related data
    */
   async getModel(modelId: string) {
-    const model = await prisma.bIMModel.findUnique({
+    const model = await prismaAny.bIMModel.findUnique({
       where: { id: modelId },
       include: {
         uploadedBy: {
@@ -176,7 +176,7 @@ export const bimModelService = {
       where.isLatestVersion = filters.isLatestVersion
     }
 
-    const models = await prisma.bIMModel.findMany({
+    const models = await prismaAny.bIMModel.findMany({
       where,
       include: {
         uploadedBy: {
@@ -218,7 +218,7 @@ export const bimModelService = {
     screenshotUrl?: string
     createdById: string
   }) {
-    const model = await prisma.bIMModel.findUnique({
+    const model = await prismaAny.bIMModel.findUnique({
       where: { id: data.modelId },
     })
 
@@ -226,7 +226,7 @@ export const bimModelService = {
       throw new NotFoundError('BIMModel', data.modelId)
     }
 
-    const view = await prisma.modelView.create({
+    const view = await prismaAny.modelView.create({
       data: {
         modelId: data.modelId,
         name: data.name,
@@ -280,7 +280,7 @@ export const bimModelService = {
     markupData?: any
     createdById: string
   }) {
-    const model = await prisma.bIMModel.findUnique({
+    const model = await prismaAny.bIMModel.findUnique({
       where: { id: data.modelId },
     })
 
@@ -288,7 +288,7 @@ export const bimModelService = {
       throw new NotFoundError('BIMModel', data.modelId)
     }
 
-    const annotation = await prisma.modelAnnotation.create({
+    const annotation = await prismaAny.modelAnnotation.create({
       data: {
         modelId: data.modelId,
         annotationType: data.annotationType as any,
@@ -351,7 +351,7 @@ export const bimModelService = {
       where.elementId = filters.elementId
     }
 
-    const annotations = await prisma.modelAnnotation.findMany({
+    const annotations = await prismaAny.modelAnnotation.findMany({
       where,
       include: {
         createdBy: {
@@ -378,7 +378,7 @@ export const bimModelService = {
    * Resolve annotation
    */
   async resolveAnnotation(annotationId: string, userId: string) {
-    const annotation = await prisma.modelAnnotation.findUnique({
+    const annotation = await prismaAny.modelAnnotation.findUnique({
       where: { id: annotationId },
     })
 
@@ -386,7 +386,7 @@ export const bimModelService = {
       throw new NotFoundError('ModelAnnotation', annotationId)
     }
 
-    const updated = await prisma.modelAnnotation.update({
+    const updated = await prismaAny.modelAnnotation.update({
       where: { id: annotationId },
       data: {
         status: 'RESOLVED',
@@ -415,7 +415,7 @@ export const bimModelService = {
    * Run clash detection (placeholder - would integrate with clash detection service)
    */
   async runClashDetection(modelId: string, userId: string) {
-    const model = await prisma.bIMModel.findUnique({
+    const model = await prismaAny.bIMModel.findUnique({
       where: { id: modelId },
     })
 
@@ -431,7 +431,7 @@ export const bimModelService = {
     // 4. Return clash results
 
     // Placeholder: Return empty results
-    const clashes = await prisma.clashDetection.findMany({
+    const clashes = await prismaAny.clashDetection.findMany({
       where: { modelId },
       include: {
         reviewedBy: {
@@ -484,7 +484,7 @@ export const bimModelService = {
       where.severity = filters.severity
     }
 
-    const clashes = await prisma.clashDetection.findMany({
+    const clashes = await prismaAny.clashDetection.findMany({
       where,
       include: {
         reviewedBy: {
@@ -517,7 +517,7 @@ export const bimModelService = {
     resolutionNotes?: string
     userId: string
   }) {
-    const clash = await prisma.clashDetection.findUnique({
+    const clash = await prismaAny.clashDetection.findUnique({
       where: { id: clashId },
     })
 
@@ -546,7 +546,7 @@ export const bimModelService = {
       updateData.resolutionNotes = data.resolutionNotes
     }
 
-    const updated = await prisma.clashDetection.update({
+    const updated = await prismaAny.clashDetection.update({
       where: { id: clashId },
       data: updateData,
     })
@@ -578,7 +578,7 @@ export const bimModelService = {
       where.elementId = elementId
     }
 
-    const properties = await prisma.modelComponentProperty.findMany({
+    const properties = await prismaAny.modelComponentProperty.findMany({
       where,
       include: {
         updatedBy: {
@@ -607,7 +607,7 @@ export const bimModelService = {
     customProperties?: any
     userId: string
   }) {
-    const existing = await prisma.modelComponentProperty.findUnique({
+    const existing = await prismaAny.modelComponentProperty.findUnique({
       where: {
         modelId_elementId: {
           modelId,
@@ -633,7 +633,7 @@ export const bimModelService = {
       propertyData.customProperties = { ...(existing.customProperties as any || {}), ...(data.customProperties || {}) }
     }
 
-    const property = await prisma.modelComponentProperty.upsert({
+    const property = await prismaAny.modelComponentProperty.upsert({
       where: {
         modelId_elementId: {
           modelId,
@@ -668,11 +668,11 @@ export const bimModelService = {
    * Compare two model versions
    */
   async compareModels(modelId1: string, modelId2: string) {
-    const model1 = await prisma.bIMModel.findUnique({
+    const model1 = await prismaAny.bIMModel.findUnique({
       where: { id: modelId1 },
     })
 
-    const model2 = await prisma.bIMModel.findUnique({
+    const model2 = await prismaAny.bIMModel.findUnique({
       where: { id: modelId2 },
     })
 
@@ -713,7 +713,7 @@ export const bimModelService = {
    * Start viewing session
    */
   async startViewingSession(modelId: string, userId: string, isClientReview: boolean = false) {
-    const model = await prisma.bIMModel.findUnique({
+    const model = await prismaAny.bIMModel.findUnique({
       where: { id: modelId },
     })
 
@@ -721,7 +721,7 @@ export const bimModelService = {
       throw new NotFoundError('BIMModel', modelId)
     }
 
-    const session = await prisma.modelViewingSession.create({
+    const session = await prismaAny.modelViewingSession.create({
       data: {
         modelId,
         userId,
@@ -741,7 +741,7 @@ export const bimModelService = {
     annotationsViewed?: string[]
     reviewCompleted?: boolean
   }) {
-    const session = await prisma.modelViewingSession.findUnique({
+    const session = await prismaAny.modelViewingSession.findUnique({
       where: { id: sessionId },
     })
 
@@ -752,7 +752,7 @@ export const bimModelService = {
     const endedAt = new Date()
     const durationSeconds = Math.floor((endedAt.getTime() - session.startedAt.getTime()) / 1000)
 
-    const updated = await prisma.modelViewingSession.update({
+    const updated = await prismaAny.modelViewingSession.update({
       where: { id: sessionId },
       data: {
         endedAt,

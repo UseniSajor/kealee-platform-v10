@@ -1,13 +1,13 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, AuthorizationError, ValidationError } from '../../errors/app.error'
-import { ProjectStatus } from '@prisma/client'
+// Prisma types available through prismaAny
 
 export const handoffService = {
   /**
    * Generate project completion package (Prompt 3.8)
    */
   async generateHandoffPackage(projectId: string, userId: string) {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       include: {
         owner: { select: { id: true } },
@@ -40,12 +40,12 @@ export const handoffService = {
       throw new AuthorizationError('Only project owner can generate handoff package')
     }
 
-    if (project.status !== ProjectStatus.COMPLETED) {
+    if (project.status !== 'COMPLETED') {
       throw new ValidationError(`Project must be COMPLETED to generate handoff package (current: ${project.status})`)
     }
 
     // Check if package already exists
-    let package_ = await prisma.handoffPackage.findUnique({
+    let package_ = await prismaAny.handoffPackage.findUnique({
       where: { projectId },
       include: {
         documentBundles: {
@@ -62,7 +62,7 @@ export const handoffService = {
 
     // Create or update package
     if (!package_) {
-      package_ = await prisma.handoffPackage.create({
+      package_ = await prismaAny.handoffPackage.create({
         data: {
           projectId,
           status: 'GENERATING',
@@ -77,7 +77,7 @@ export const handoffService = {
       })
     } else {
       // Increment version for regeneration
-      package_ = await prisma.handoffPackage.update({
+      package_ = await prismaAny.handoffPackage.update({
         where: { id: package_.id },
         data: {
           status: 'GENERATING',
@@ -97,7 +97,7 @@ export const handoffService = {
     const bundles = await this.generateDocumentBundles(package_.id, project)
 
     // Update package status to READY
-    package_ = await prisma.handoffPackage.update({
+    package_ = await prismaAny.handoffPackage.update({
       where: { id: package_.id },
       data: {
         status: 'READY',
@@ -119,7 +119,7 @@ export const handoffService = {
     await this.createSatisfactionSurvey(package_.id, projectId)
 
     // Create audit log
-    await prisma.auditLog.create({
+    await prismaAny.auditLog.create({
       data: {
         entityType: 'Project',
         entityId: projectId,
@@ -134,7 +134,7 @@ export const handoffService = {
     })
 
     // Create event
-    await prisma.event.create({
+    await prismaAny.event.create({
       data: {
         entityType: 'Project',
         entityId: projectId,
@@ -157,7 +157,7 @@ export const handoffService = {
 
     // 1. Contracts Bundle
     if (project.contracts && project.contracts.length > 0) {
-      const contractBundle = await prisma.documentBundle.create({
+      const contractBundle = await prismaAny.documentBundle.create({
         data: {
           packageId,
           type: 'CONTRACTS',
@@ -168,7 +168,7 @@ export const handoffService = {
       })
 
       for (const contract of project.contracts) {
-        await prisma.bundleDocument.create({
+        await prismaAny.bundleDocument.create({
           data: {
             bundleId: contractBundle.id,
             documentType: 'contract',
@@ -190,7 +190,7 @@ export const handoffService = {
     }
 
     // 2. Permits Bundle (placeholder - will be populated when Permit model is integrated)
-    const permitBundle = await prisma.documentBundle.create({
+    const permitBundle = await prismaAny.documentBundle.create({
       data: {
         packageId,
         type: 'PERMITS',
@@ -202,7 +202,7 @@ export const handoffService = {
     bundles.push(permitBundle)
 
     // 3. Inspections Bundle (placeholder - will be populated when Inspection model is integrated)
-    const inspectionBundle = await prisma.documentBundle.create({
+    const inspectionBundle = await prismaAny.documentBundle.create({
       data: {
         packageId,
         type: 'INSPECTIONS',
@@ -215,7 +215,7 @@ export const handoffService = {
 
     // 4. Payments Bundle
     if (project.escrow && project.escrow.transactions) {
-      const paymentBundle = await prisma.documentBundle.create({
+      const paymentBundle = await prismaAny.documentBundle.create({
         data: {
           packageId,
           type: 'PAYMENTS',
@@ -226,7 +226,7 @@ export const handoffService = {
       })
 
       for (const transaction of project.escrow.transactions) {
-        await prisma.bundleDocument.create({
+        await prismaAny.bundleDocument.create({
           data: {
             bundleId: paymentBundle.id,
             documentType: 'payment_receipt',
@@ -252,7 +252,7 @@ export const handoffService = {
       )
 
       if (warrantyItems.length > 0) {
-        const warrantyBundle = await prisma.documentBundle.create({
+        const warrantyBundle = await prismaAny.documentBundle.create({
           data: {
             packageId,
             type: 'WARRANTIES',
@@ -264,7 +264,7 @@ export const handoffService = {
 
         for (const item of warrantyItems) {
           for (const attachment of item.attachments) {
-            await prisma.bundleDocument.create({
+            await prismaAny.bundleDocument.create({
               data: {
                 bundleId: warrantyBundle.id,
                 documentType: 'warranty',
@@ -292,7 +292,7 @@ export const handoffService = {
       .filter((e: any) => e.type === 'PHOTO' || e.mimeType?.startsWith('image/'))
 
     if (photoEvidence.length > 0) {
-      const photoBundle = await prisma.documentBundle.create({
+      const photoBundle = await prismaAny.documentBundle.create({
         data: {
           packageId,
           type: 'PHOTOS',
@@ -303,7 +303,7 @@ export const handoffService = {
       })
 
       for (const evidence of photoEvidence) {
-        await prisma.bundleDocument.create({
+        await prismaAny.bundleDocument.create({
           data: {
             bundleId: photoBundle.id,
             documentType: 'photo',
@@ -330,7 +330,7 @@ export const handoffService = {
       )
 
       if (closeoutAttachments.length > 0) {
-        const closeoutBundle = await prisma.documentBundle.create({
+        const closeoutBundle = await prismaAny.documentBundle.create({
           data: {
             packageId,
             type: 'CLOSEOUT',
@@ -341,7 +341,7 @@ export const handoffService = {
         })
 
         for (const attachment of closeoutAttachments) {
-          await prisma.bundleDocument.create({
+          await prismaAny.bundleDocument.create({
             data: {
               bundleId: closeoutBundle.id,
               documentType: 'closeout_document',
@@ -369,7 +369,7 @@ export const handoffService = {
    * Get handoff package (Prompt 3.8)
    */
   async getHandoffPackage(projectId: string, userId: string) {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       include: {
         owner: { select: { id: true } },
@@ -381,7 +381,7 @@ export const handoffService = {
       throw new AuthorizationError('Only project owner can view handoff package')
     }
 
-    const package_ = await prisma.handoffPackage.findUnique({
+    const package_ = await prismaAny.handoffPackage.findUnique({
       where: { projectId },
       include: {
         documentBundles: {
@@ -403,7 +403,7 @@ export const handoffService = {
    * Mark package as delivered (Prompt 3.8)
    */
   async deliverHandoffPackage(projectId: string, userId: string) {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       include: {
         owner: { select: { id: true } },
@@ -415,7 +415,7 @@ export const handoffService = {
       throw new AuthorizationError('Only project owner can deliver handoff package')
     }
 
-    const package_ = await prisma.handoffPackage.findUnique({
+    const package_ = await prismaAny.handoffPackage.findUnique({
       where: { projectId },
     })
 
@@ -423,7 +423,7 @@ export const handoffService = {
       throw new NotFoundError('HandoffPackage', projectId)
     }
 
-    const updated = await prisma.handoffPackage.update({
+    const updated = await prismaAny.handoffPackage.update({
       where: { id: package_.id },
       data: {
         status: 'DELIVERED',
@@ -441,7 +441,7 @@ export const handoffService = {
    * Record package download (Prompt 3.8)
    */
   async recordDownload(projectId: string, userId: string) {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       include: {
         owner: { select: { id: true } },
@@ -453,7 +453,7 @@ export const handoffService = {
       throw new AuthorizationError('Only project owner can download handoff package')
     }
 
-    const package_ = await prisma.handoffPackage.findUnique({
+    const package_ = await prismaAny.handoffPackage.findUnique({
       where: { projectId },
     })
 
@@ -461,7 +461,7 @@ export const handoffService = {
       throw new NotFoundError('HandoffPackage', projectId)
     }
 
-    const updated = await prisma.handoffPackage.update({
+    const updated = await prismaAny.handoffPackage.update({
       where: { id: package_.id },
       data: {
         status: 'DOWNLOADED',
@@ -477,7 +477,7 @@ export const handoffService = {
    * Create satisfaction survey (Prompt 3.8)
    */
   async createSatisfactionSurvey(packageId: string, projectId: string) {
-    const existing = await prisma.satisfactionSurvey.findUnique({
+    const existing = await prismaAny.satisfactionSurvey.findUnique({
       where: { packageId },
     })
 
@@ -485,7 +485,7 @@ export const handoffService = {
       return existing
     }
 
-    const survey = await prisma.satisfactionSurvey.create({
+    const survey = await prismaAny.satisfactionSurvey.create({
       data: {
         packageId,
         projectId,
@@ -500,7 +500,7 @@ export const handoffService = {
    * Get satisfaction survey (Prompt 3.8)
    */
   async getSatisfactionSurvey(packageId: string, userId: string) {
-    const survey = await prisma.satisfactionSurvey.findUnique({
+    const survey = await prismaAny.satisfactionSurvey.findUnique({
       where: { packageId },
       include: {
         project: {
@@ -538,7 +538,7 @@ export const handoffService = {
       recommendationReason?: string
     }
   ) {
-    const survey = await prisma.satisfactionSurvey.findUnique({
+    const survey = await prismaAny.satisfactionSurvey.findUnique({
       where: { packageId },
       include: {
         project: {
@@ -558,7 +558,7 @@ export const handoffService = {
       throw new ValidationError('Survey has already been completed')
     }
 
-    const updated = await prisma.satisfactionSurvey.update({
+    const updated = await prismaAny.satisfactionSurvey.update({
       where: { id: survey.id },
       data: {
         status: 'COMPLETED',
@@ -578,7 +578,7 @@ export const handoffService = {
     })
 
     // Create audit log
-    await prisma.auditLog.create({
+    await prismaAny.auditLog.create({
       data: {
         entityType: 'Project',
         entityId: survey.projectId,
@@ -593,7 +593,7 @@ export const handoffService = {
     })
 
     // Create event
-    await prisma.event.create({
+    await prismaAny.event.create({
       data: {
         entityType: 'Project',
         entityId: survey.projectId,
@@ -613,7 +613,7 @@ export const handoffService = {
    * Start satisfaction survey (Prompt 3.8)
    */
   async startSatisfactionSurvey(packageId: string, userId: string) {
-    const survey = await prisma.satisfactionSurvey.findUnique({
+    const survey = await prismaAny.satisfactionSurvey.findUnique({
       where: { packageId },
       include: {
         project: {
@@ -633,7 +633,7 @@ export const handoffService = {
       throw new ValidationError('Survey has already been completed')
     }
 
-    const updated = await prisma.satisfactionSurvey.update({
+    const updated = await prismaAny.satisfactionSurvey.update({
       where: { id: survey.id },
       data: {
         status: 'IN_PROGRESS',

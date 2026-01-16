@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -22,7 +22,7 @@ export const validationService = {
     isRequired?: boolean
     createdById: string
   }) {
-    const rule = await prisma.validationRule.create({
+    const rule = await prismaAny.validationRule.create({
       data: {
         name: data.name,
         description: data.description,
@@ -82,14 +82,14 @@ export const validationService = {
     let rules: any[] = []
 
     if (data.ruleId) {
-      const rule = await prisma.validationRule.findUnique({
+      const rule = await prismaAny.validationRule.findUnique({
         where: { id: data.ruleId },
       })
       if (rule) {
         rules = [rule]
       }
     } else if (data.ruleIds && data.ruleIds.length > 0) {
-      rules = await prisma.validationRule.findMany({
+      rules = await prismaAny.validationRule.findMany({
         where: {
           id: { in: data.ruleIds },
           isActive: true,
@@ -97,7 +97,7 @@ export const validationService = {
       })
     } else {
       // Get all applicable rules for target type
-      rules = await prisma.validationRule.findMany({
+      rules = await prismaAny.validationRule.findMany({
         where: {
           isActive: true,
           appliesTo: {
@@ -139,7 +139,7 @@ export const validationService = {
         }
       }
 
-      const validation = await prisma.designValidation.create({
+      const validation = await prismaAny.designValidation.create({
         data: {
           designProjectId: data.designProjectId,
           targetType: data.targetType,
@@ -176,7 +176,7 @@ export const validationService = {
     complianceStatus?: string
     validatedById: string
   }) {
-    const validation = await prisma.designValidation.findUnique({
+    const validation = await prismaAny.designValidation.findUnique({
       where: { id: validationId },
     })
 
@@ -214,7 +214,7 @@ export const validationService = {
       updateData.complianceStatus = data.complianceStatus
     }
 
-    const updated = await prisma.designValidation.update({
+    const updated = await prismaAny.designValidation.update({
       where: { id: validationId },
       data: updateData,
     })
@@ -238,7 +238,7 @@ export const validationService = {
    * Get validation
    */
   async getValidation(validationId: string) {
-    const validation = await prisma.designValidation.findUnique({
+    const validation = await prismaAny.designValidation.findUnique({
       where: { id: validationId },
       include: {
         rule: {
@@ -310,7 +310,7 @@ export const validationService = {
       where.codeStandard = filters.codeStandard
     }
 
-    const validations = await prisma.designValidation.findMany({
+    const validations = await prismaAny.designValidation.findMany({
       where,
       include: {
         rule: {
@@ -345,7 +345,7 @@ export const validationService = {
     exemptionReason?: string
     userId: string
   }) {
-    const validation = await prisma.designValidation.findUnique({
+    const validation = await prismaAny.designValidation.findUnique({
       where: { id: validationId },
     })
 
@@ -353,7 +353,7 @@ export const validationService = {
       throw new NotFoundError('DesignValidation', validationId)
     }
 
-    const updated = await prisma.designValidation.update({
+    const updated = await prismaAny.designValidation.update({
       where: { id: validationId },
       data: {
         approvedAt: new Date(),
@@ -410,7 +410,7 @@ export const validationService = {
       where.ruleId = { in: data.ruleIds }
     }
 
-    const validations = await prisma.designValidation.findMany({
+    const validations = await prismaAny.designValidation.findMany({
       where,
       include: {
         rule: {
@@ -427,29 +427,29 @@ export const validationService = {
     // Calculate summary
     const summary = {
       total: validations.length,
-      passed: validations.filter((v) => v.validationStatus === 'PASSED').length,
-      failed: validations.filter((v) => v.validationStatus === 'FAILED').length,
-      warnings: validations.filter((v) => v.validationStatus === 'WARNING').length,
-      pending: validations.filter((v) => v.validationStatus === 'PENDING' || v.validationStatus === 'IN_PROGRESS').length,
-      exempt: validations.filter((v) => v.validationStatus === 'EXEMPT').length,
+      passed: validations.filter((v: any) => v.validationStatus === 'PASSED').length,
+      failed: validations.filter((v: any) => v.validationStatus === 'FAILED').length,
+      warnings: validations.filter((v: any) => v.validationStatus === 'WARNING').length,
+      pending: validations.filter((v: any) => v.validationStatus === 'PENDING' || v.validationStatus === 'IN_PROGRESS').length,
+      exempt: validations.filter((v: any) => v.validationStatus === 'EXEMPT').length,
     }
 
-    const report = await prisma.designValidationReport.create({
+    const report = await prismaAny.designValidationReport.create({
       data: {
         designProjectId: data.designProjectId,
         reportName: data.reportName,
         reportType: data.reportType,
         summary: summary as any,
-        validationIds: validations.map((v) => v.id),
+        validationIds: validations.map((v: any) => v.id),
         reportFormat: data.format,
         generatedById: data.generatedById,
       },
     })
 
     // Link validations to report
-    await prisma.designValidation.updateMany({
+    await prismaAny.designValidation.updateMany({
       where: {
-        id: { in: validations.map((v) => v.id) },
+        id: { in: validations.map((v: any) => v.id) },
       },
       data: {
         reportId: report.id,
@@ -479,7 +479,7 @@ export const validationService = {
    * Get validation report
    */
   async getValidationReport(reportId: string) {
-    const report = await prisma.designValidationReport.findUnique({
+    const report = await prismaAny.designValidationReport.findUnique({
       where: { id: reportId },
       include: {
         generatedBy: {
@@ -528,7 +528,7 @@ export const validationService = {
   }) {
     const checklistItems = await Promise.all(
       data.items.map((item) =>
-        prisma.drawingChecklistItem.create({
+        prismaAny.drawingChecklistItem.create({
           data: {
             designProjectId: data.designProjectId,
             sheetId: data.sheetId,
@@ -554,7 +554,7 @@ export const validationService = {
     validationNotes?: string
     userId: string
   }) {
-    const item = await prisma.drawingChecklistItem.findUnique({
+    const item = await prismaAny.drawingChecklistItem.findUnique({
       where: { id: itemId },
     })
 
@@ -562,7 +562,7 @@ export const validationService = {
       throw new NotFoundError('DrawingChecklistItem', itemId)
     }
 
-    const updated = await prisma.drawingChecklistItem.update({
+    const updated = await prismaAny.drawingChecklistItem.update({
       where: { id: itemId },
       data: {
         isPresent: data.isPresent,
@@ -590,7 +590,7 @@ export const validationService = {
       where.sheetId = null
     }
 
-    const items = await prisma.drawingChecklistItem.findMany({
+    const items = await prismaAny.drawingChecklistItem.findMany({
       where,
       include: {
         validatedBy: {
@@ -630,7 +630,7 @@ export const validationService = {
     relatedDeliverableIds?: string[]
     createdById: string
   }) {
-    const record = await prisma.codeComplianceRecord.create({
+    const record = await prismaAny.codeComplianceRecord.create({
       data: {
         designProjectId: data.designProjectId,
         codeStandard: data.codeStandard as any,
@@ -680,7 +680,7 @@ export const validationService = {
     validationMethod?: string
     userId: string
   }) {
-    const record = await prisma.codeComplianceRecord.findUnique({
+    const record = await prismaAny.codeComplianceRecord.findUnique({
       where: { id: recordId },
     })
 
@@ -688,7 +688,7 @@ export const validationService = {
       throw new NotFoundError('CodeComplianceRecord', recordId)
     }
 
-    const updated = await prisma.codeComplianceRecord.update({
+    const updated = await prismaAny.codeComplianceRecord.update({
       where: { id: recordId },
       data: {
         complianceStatus: data.complianceStatus,
@@ -733,7 +733,7 @@ export const validationService = {
       where.complianceStatus = filters.complianceStatus
     }
 
-    const records = await prisma.codeComplianceRecord.findMany({
+    const records = await prismaAny.codeComplianceRecord.findMany({
       where,
       include: {
         createdBy: {
@@ -784,7 +784,7 @@ export const validationService = {
       where.isRequired = filters.isRequired
     }
 
-    const rules = await prisma.validationRule.findMany({
+    const rules = await prismaAny.validationRule.findMany({
       where,
       include: {
         createdBy: {

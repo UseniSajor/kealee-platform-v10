@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -21,7 +21,7 @@ export const deliverableService = {
   }) {
     // Validate dependency if provided
     if (data.dependsOnId) {
-      const dependency = await prisma.designDeliverable.findUnique({
+      const dependency = await prismaAny.designDeliverable.findUnique({
         where: { id: data.dependsOnId },
       })
       if (!dependency) {
@@ -34,7 +34,7 @@ export const deliverableService = {
 
     // Validate phase if provided
     if (data.phaseId) {
-      const phase = await prisma.designPhaseInstance.findUnique({
+      const phase = await prismaAny.designPhaseInstance.findUnique({
         where: { id: data.phaseId },
       })
       if (!phase) {
@@ -45,7 +45,7 @@ export const deliverableService = {
       }
     }
 
-    const deliverable = await prisma.designDeliverable.create({
+    const deliverable = await prismaAny.designDeliverable.create({
       data: {
         designProjectId: data.designProjectId,
         phaseId: data.phaseId,
@@ -117,7 +117,7 @@ export const deliverableService = {
    * Get a deliverable with all related data
    */
   async getDeliverable(deliverableId: string) {
-    const deliverable = await prisma.designDeliverable.findUnique({
+    const deliverable = await prismaAny.designDeliverable.findUnique({
       where: { id: deliverableId },
       include: {
         dependsOn: {
@@ -202,7 +202,7 @@ export const deliverableService = {
       where.packageId = filters.packageId
     }
 
-    const deliverables = await prisma.designDeliverable.findMany({
+    const deliverables = await prismaAny.designDeliverable.findMany({
       where,
       include: {
         dependsOn: {
@@ -257,7 +257,7 @@ export const deliverableService = {
     associatedFileIds?: string[]
     userId: string
   }) {
-    const deliverable = await prisma.designDeliverable.findUnique({
+    const deliverable = await prismaAny.designDeliverable.findUnique({
       where: { id: deliverableId },
     })
 
@@ -270,7 +270,7 @@ export const deliverableService = {
       if (data.dependsOnId === deliverableId) {
         throw new ValidationError('Deliverable cannot depend on itself')
       }
-      const dependency = await prisma.designDeliverable.findUnique({
+      const dependency = await prismaAny.designDeliverable.findUnique({
         where: { id: data.dependsOnId },
       })
       if (!dependency) {
@@ -291,7 +291,7 @@ export const deliverableService = {
     if (data.milestoneId !== undefined) updateData.milestoneId = data.milestoneId
     if (data.associatedFileIds !== undefined) updateData.associatedFileIds = data.associatedFileIds
 
-    const updated = await prisma.designDeliverable.update({
+    const updated = await prismaAny.designDeliverable.update({
       where: { id: deliverableId },
       data: updateData,
       include: {
@@ -330,7 +330,7 @@ export const deliverableService = {
    * Approve deliverable
    */
   async approveDeliverable(deliverableId: string, userId: string, approvalNotes?: string) {
-    const deliverable = await prisma.designDeliverable.findUnique({
+    const deliverable = await prismaAny.designDeliverable.findUnique({
       where: { id: deliverableId },
     })
 
@@ -342,7 +342,7 @@ export const deliverableService = {
       throw new ValidationError('Only deliverables in review can be approved')
     }
 
-    const updated = await prisma.designDeliverable.update({
+    const updated = await prismaAny.designDeliverable.update({
       where: { id: deliverableId },
       data: {
         status: 'APPROVED',
@@ -400,7 +400,7 @@ export const deliverableService = {
    * Issue deliverable
    */
   async issueDeliverable(deliverableId: string, userId: string, issuedTo?: string) {
-    const deliverable = await prisma.designDeliverable.findUnique({
+    const deliverable = await prismaAny.designDeliverable.findUnique({
       where: { id: deliverableId },
     })
 
@@ -412,7 +412,7 @@ export const deliverableService = {
       throw new ValidationError('Only approved deliverables can be issued')
     }
 
-    const updated = await prisma.designDeliverable.update({
+    const updated = await prismaAny.designDeliverable.update({
       where: { id: deliverableId },
       data: {
         status: 'ISSUED',
@@ -464,7 +464,7 @@ export const deliverableService = {
    */
   async getOverdueDeliverables(designProjectId: string) {
     const now = new Date()
-    const overdue = await prisma.designDeliverable.findMany({
+    const overdue = await prismaAny.designDeliverable.findMany({
       where: {
         designProjectId,
         dueDate: {
@@ -504,7 +504,7 @@ export const deliverableService = {
     const now = new Date()
     const soon = new Date(now.getTime() + days * 24 * 60 * 60 * 1000)
 
-    const dueSoon = await prisma.designDeliverable.findMany({
+    const dueSoon = await prismaAny.designDeliverable.findMany({
       where: {
         designProjectId,
         dueDate: {
@@ -552,7 +552,7 @@ export const deliverableService = {
     createdById: string
   }) {
     // Validate all deliverables belong to the project
-    const deliverables = await prisma.designDeliverable.findMany({
+    const deliverables = await prismaAny.designDeliverable.findMany({
       where: {
         id: { in: data.deliverableIds },
       },
@@ -563,14 +563,14 @@ export const deliverableService = {
     }
 
     const invalidDeliverables = deliverables.filter(
-      (d) => d.designProjectId !== data.designProjectId
+      (d: any) => d.designProjectId !== data.designProjectId
     )
     if (invalidDeliverables.length > 0) {
       throw new ValidationError('All deliverables must belong to the same project')
     }
 
     // Create package
-    const package_ = await prisma.deliverablePackage.create({
+    const package_ = await prismaAny.deliverablePackage.create({
       data: {
         designProjectId: data.designProjectId,
         name: data.name,
@@ -583,7 +583,7 @@ export const deliverableService = {
     })
 
     // Update deliverables to link to package
-    await prisma.designDeliverable.updateMany({
+    await prismaAny.designDeliverable.updateMany({
       where: {
         id: { in: data.deliverableIds },
       },
@@ -612,7 +612,7 @@ export const deliverableService = {
    * Get package with deliverables
    */
   async getPackage(packageId: string) {
-    const package_ = await prisma.deliverablePackage.findUnique({
+    const package_ = await prismaAny.deliverablePackage.findUnique({
       where: { id: packageId },
       include: {
         createdBy: {
@@ -636,7 +636,7 @@ export const deliverableService = {
     }
 
     // Get deliverables in package
-    const deliverables = await prisma.designDeliverable.findMany({
+    const deliverables = await prismaAny.designDeliverable.findMany({
       where: {
         packageId: package_.id,
       },
@@ -666,7 +666,7 @@ export const deliverableService = {
    * List packages for a project
    */
   async listPackages(designProjectId: string) {
-    const packages = await prisma.deliverablePackage.findMany({
+    const packages = await prismaAny.deliverablePackage.findMany({
       where: { designProjectId },
       include: {
         createdBy: {

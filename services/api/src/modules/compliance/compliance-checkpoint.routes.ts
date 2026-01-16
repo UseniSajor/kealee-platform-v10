@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { authenticateUser } from '../auth/auth.middleware'
 import { complianceCheckpointService } from './compliance-checkpoint.service'
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { z } from 'zod'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 
@@ -65,7 +65,7 @@ export async function complianceCheckpointRoutes(fastify: FastifyInstance) {
         const { type = 'POST_TASK' } = request.query as { type?: 'PRE_TASK' | 'POST_TASK' }
 
         // Get task to find project
-        const task = await prisma.task.findUnique({
+        const task = await prismaAny.task.findUnique({
           where: { id: taskId },
           include: { project: true },
         })

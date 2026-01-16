@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { AuthorizationError, NotFoundError, ValidationError } from '../../errors/app.error'
 import {
   EvidenceType,
@@ -16,7 +16,7 @@ function toBool(v: unknown): boolean {
 }
 
 async function requireOrgAdmin(orgId: string, userId: string) {
-  const membership = await prisma.orgMember.findUnique({
+  const membership = await prismaAny.orgMember.findUnique({
     where: { userId_orgId: { userId, orgId } },
     select: { roleKey: true },
   })
@@ -28,7 +28,7 @@ async function requireOrgAdmin(orgId: string, userId: string) {
 export const readinessService = {
   async listTemplates(params: { orgId?: string; category?: ProjectCategory; activeOnly?: unknown }) {
     const activeOnly = toBool(params.activeOnly)
-    return prisma.readinessTemplate.findMany({
+    return prismaAny.readinessTemplate.findMany({
       where: {
         ...(params.orgId ? { orgId: params.orgId } : {}),
         ...(params.category ? { OR: [{ category: params.category }, { category: null }] } : {}),
@@ -42,7 +42,7 @@ export const readinessService = {
   async createTemplate(input: { orgId?: string | null; name: string; category?: ProjectCategory | null; isActive?: boolean }, actorUserId: string) {
     if (input.orgId) await requireOrgAdmin(input.orgId, actorUserId)
 
-    return prisma.readinessTemplate.create({
+    return prismaAny.readinessTemplate.create({
       data: {
         orgId: input.orgId ?? null,
         name: input.name,
@@ -67,11 +67,11 @@ export const readinessService = {
     },
     actorUserId: string
   ) {
-    const template = await prisma.readinessTemplate.findUnique({ where: { id: templateId } })
+    const template = await prismaAny.readinessTemplate.findUnique({ where: { id: templateId } })
     if (!template) throw new NotFoundError('ReadinessTemplate', templateId)
     if (template.orgId) await requireOrgAdmin(template.orgId, actorUserId)
 
-    const item = await prisma.readinessTemplateItem.create({
+    const item = await prismaAny.readinessTemplateItem.create({
       data: {
         templateId,
         title: input.title,
@@ -88,16 +88,16 @@ export const readinessService = {
   },
 
   async generateProjectReadiness(projectId: string, userId: string) {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       select: { id: true, orgId: true, ownerId: true, category: true, createdAt: true },
     })
     if (!project) throw new NotFoundError('Project', projectId)
     if (project.ownerId !== userId) throw new AuthorizationError('Only the project owner can generate readiness')
 
-    const existing = await prisma.readinessItem.count({ where: { projectId } })
+    const existing = await prismaAny.readinessItem.count({ where: { projectId } })
     if (existing > 0) {
-      return prisma.readinessItem.findMany({
+      return prismaAny.readinessItem.findMany({
         where: { projectId },
         include: { evidence: true },
         orderBy: { createdAt: 'asc' },
@@ -105,7 +105,7 @@ export const readinessService = {
     }
 
     // Prefer org-specific templates when orgId present; otherwise use global templates.
-    const templates = await prisma.readinessTemplate.findMany({
+    const templates = await prismaAny.readinessTemplate.findMany({
       where: {
         isActive: true,
         OR: [
@@ -123,13 +123,13 @@ export const readinessService = {
 
     const templateItems = effectiveTemplates.flatMap((t) => t.items).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
 
-    const created = await prisma.$transaction(
+    const created = await prismaAny.$transaction(
       templateItems.map((ti) => {
         const dueDate = ti.dueDays != null ? new Date(project.createdAt.getTime() + ti.dueDays * 24 * 3600 * 1000) : undefined
         const assigneeUserId =
           ti.defaultAssigneeRole === ProjectMemberRole.OWNER || !ti.defaultAssigneeRole ? project.ownerId : null
 
-        return prisma.readinessItem.create({
+        return prismaAny.readinessItem.create({
           data: {
             projectId,
             title: ti.title,
@@ -146,7 +146,7 @@ export const readinessService = {
     )
 
     // Return created items
-    const items = await prisma.readinessItem.findMany({
+    const items = await prismaAny.readinessItem.findMany({
       where: { projectId },
       include: { evidence: true },
       orderBy: { createdAt: 'asc' },
@@ -156,14 +156,14 @@ export const readinessService = {
   },
 
   async listProjectReadiness(projectId: string, userId: string) {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       select: { id: true, ownerId: true },
     })
     if (!project) throw new NotFoundError('Project', projectId)
     if (project.ownerId !== userId) throw new AuthorizationError('Only the project owner can view readiness (for now)')
 
-    return prisma.readinessItem.findMany({
+    return prismaAny.readinessItem.findMany({
       where: { projectId },
       include: { evidence: true },
       orderBy: { createdAt: 'asc' },
@@ -171,7 +171,7 @@ export const readinessService = {
   },
 
   async updateReadinessItem(itemId: string, userId: string, input: { status?: ReadinessItemStatus; response?: unknown | null; dueDate?: string | null; assigneeUserId?: string | null }) {
-    const item = await prisma.readinessItem.findUnique({
+    const item = await prismaAny.readinessItem.findUnique({
       where: { id: itemId },
       include: { project: { select: { id: true, ownerId: true, orgId: true } } },
     })
@@ -200,7 +200,7 @@ export const readinessService = {
     const isCompleting = (oldStatus !== ReadinessItemStatus.COMPLETED && oldStatus !== ReadinessItemStatus.APPROVED) &&
       (newStatus === ReadinessItemStatus.COMPLETED || newStatus === ReadinessItemStatus.APPROVED)
 
-    const updated = await prisma.readinessItem.update({
+    const updated = await prismaAny.readinessItem.update({
       where: { id: itemId },
       data: {
         status: input.status,
@@ -219,7 +219,7 @@ export const readinessService = {
 
     // Prompt 1.5: Audit logging for completions
     if (isCompleting) {
-      await prisma.auditLog.create({
+      await prismaAny.auditLog.create({
         data: {
           action: 'COMPLETE_READINESS_ITEM',
           entityType: 'ReadinessItem',
@@ -231,7 +231,7 @@ export const readinessService = {
         },
       })
 
-      await prisma.event.create({
+      await prismaAny.event.create({
         data: {
           type: 'READINESS_ITEM_COMPLETED',
           entityType: 'ReadinessItem',
@@ -258,14 +258,14 @@ export const readinessService = {
       metadata?: unknown | null
     }
   ) {
-    const item = await prisma.readinessItem.findUnique({
+    const item = await prismaAny.readinessItem.findUnique({
       where: { id: itemId },
       include: { project: { select: { id: true, ownerId: true } } },
     })
     if (!item) throw new NotFoundError('ReadinessItem', itemId)
     if (item.project.ownerId !== userId) throw new AuthorizationError('Only the project owner can upload evidence (for now)')
 
-    const evidence = await prisma.evidence.create({
+    const evidence = await prismaAny.evidence.create({
       data: {
         projectId: item.project.id,
         readinessItemId: item.id,
@@ -284,14 +284,14 @@ export const readinessService = {
 
   // Prompt 1.5: Readiness gate and completion tracking
   async getReadinessCompletion(projectId: string, userId: string) {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       select: { id: true, ownerId: true },
     })
     if (!project) throw new NotFoundError('Project', projectId)
     if (project.ownerId !== userId) throw new AuthorizationError('Only the project owner can view readiness completion')
 
-    const items = await prisma.readinessItem.findMany({
+    const items = await prismaAny.readinessItem.findMany({
       where: { projectId },
       select: { id: true, required: true, status: true },
     })
@@ -317,7 +317,7 @@ export const readinessService = {
   },
 
   async checkReadinessGate(projectId: string): Promise<{ canProceed: boolean; reason?: string }> {
-    const items = await prisma.readinessItem.findMany({
+    const items = await prismaAny.readinessItem.findMany({
       where: { projectId },
       select: { id: true, title: true, required: true, status: true },
     })
@@ -343,14 +343,14 @@ export const readinessService = {
     itemIds: string[],
     reason?: string
   ) {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       select: { id: true, ownerId: true },
     })
     if (!project) throw new NotFoundError('Project', projectId)
     if (project.ownerId !== userId) throw new AuthorizationError('Only the project owner can bulk complete items')
 
-    const items = await prisma.readinessItem.findMany({
+    const items = await prismaAny.readinessItem.findMany({
       where: { id: { in: itemIds }, projectId },
       include: { project: { select: { id: true } } },
     })
@@ -362,9 +362,9 @@ export const readinessService = {
     const now = new Date()
 
     // Update items and create audit logs
-    const results = await prisma.$transaction(
+    const results = await prismaAny.$transaction(
       items.map((item) =>
-        prisma.readinessItem.update({
+        prismaAny.readinessItem.update({
           where: { id: item.id },
           data: {
             status: ReadinessItemStatus.COMPLETED,
@@ -377,7 +377,7 @@ export const readinessService = {
     )
 
     // Create audit log for bulk completion
-    await prisma.auditLog.create({
+    await prismaAny.auditLog.create({
       data: {
         action: 'BULK_COMPLETE_READINESS_ITEMS',
         entityType: 'Project',
@@ -390,7 +390,7 @@ export const readinessService = {
     })
 
     // Create event log
-    await prisma.event.create({
+    await prismaAny.event.create({
       data: {
         type: 'READINESS_ITEMS_BULK_COMPLETED',
         entityType: 'Project',

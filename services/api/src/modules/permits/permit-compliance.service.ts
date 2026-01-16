@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError } from '../../errors/app.error'
 
 // Simplified permit status check (will be extended when full Permit model is added)
@@ -20,7 +20,7 @@ export const permitComplianceService = {
    * Note: This is a placeholder that will be extended when Permit model is fully integrated
    */
   async getProjectPermits(projectId: string): Promise<PermitInfo[]> {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       include: {
         property: true,
@@ -30,7 +30,7 @@ export const permitComplianceService = {
     if (!project) throw new NotFoundError('Project', projectId)
 
     // TODO: When Permit model is added, query:
-    // const permits = await prisma.permit.findMany({
+    // const permits = await prismaAny.permit.findMany({
     //   where: { propertyId: project.propertyId },
     //   include: { ... }
     // })

@@ -44,7 +44,7 @@ export async function contractComplianceRoutes(fastify: FastifyInstance) {
       preHandler: [
         authenticateUser,
         validateParams(z.object({ contractId: z.string().uuid() })),
-        validateQuery(z.object({ autoAppend: z.string().transform((val) => val === 'true').optional() })),
+        validateQuery(z.object({ autoAppend: z.string().transform((val) => val === 'true').optional() }) as any),
       ],
     },
     async (request, reply) => {

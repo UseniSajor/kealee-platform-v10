@@ -137,7 +137,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       preHandler: [
         authenticateUser,
         validateParams(z.object({ id: z.string().uuid() })),
-        validateBody(createViewSchema),
+        validateBody(createViewSchema as any),
       ],
     },
     async (request, reply) => {
@@ -148,8 +148,9 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
         const view = await bimModelService.createView({
           modelId: id,
           ...body,
+          cameraPosition: body.cameraPosition || {},
           createdById: user.id,
-        })
+        } as any)
         return reply.code(201).send({ view })
       } catch (error: any) {
         fastify.log.error(error)
@@ -167,7 +168,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       preHandler: [
         authenticateUser,
         validateParams(z.object({ id: z.string().uuid() })),
-        validateBody(createAnnotationSchema),
+        validateBody(createAnnotationSchema as any),
       ],
     },
     async (request, reply) => {
@@ -178,8 +179,9 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
         const annotation = await bimModelService.createAnnotation({
           modelId: id,
           ...body,
+          position: body.position || {},
           createdById: user.id,
-        })
+        } as any)
         return reply.code(201).send({ annotation })
       } catch (error: any) {
         fastify.log.error(error)

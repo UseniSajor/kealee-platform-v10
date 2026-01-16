@@ -260,7 +260,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       preHandler: [
         authenticateUser,
         validateParams(z.object({ projectId: z.string().uuid() })),
-        validateBody(createSignatureRequestSchema),
+        validateBody(createSignatureRequestSchema as any),
       ],
     },
     async (request, reply) => {
@@ -346,7 +346,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       preHandler: [
         authenticateUser,
         validateParams(z.object({ projectId: z.string().uuid() })),
-        validateBody(createMeetingMinuteSchema),
+        validateBody(createMeetingMinuteSchema as any),
       ],
     },
     async (request, reply) => {
@@ -431,7 +431,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       preHandler: [
         authenticateUser,
         validateParams(z.object({ projectId: z.string().uuid() })),
-        validateBody(createActionItemSchema),
+        validateBody(createActionItemSchema as any),
       ],
     },
     async (request, reply) => {

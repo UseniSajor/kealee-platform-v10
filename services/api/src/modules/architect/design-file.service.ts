@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -77,7 +77,7 @@ export const designFileService = {
    * Initialize AIA folder structure for a design project
    */
   async initializeAIAFolders(designProjectId: string) {
-    const existing = await prisma.designFolder.findFirst({
+    const existing = await prismaAny.designFolder.findFirst({
       where: { designProjectId },
     })
 
@@ -85,9 +85,9 @@ export const designFileService = {
       return // Already initialized
     }
 
-    const folders = await prisma.$transaction(
+    const folders = await prismaAny.$transaction(
       AIA_FOLDER_STRUCTURE.map((folder) =>
-        prisma.designFolder.create({
+        prismaAny.designFolder.create({
           data: {
             designProjectId,
             name: folder.name,
@@ -115,7 +115,7 @@ export const designFileService = {
     // Build path
     let path = data.name
     if (data.parentFolderId) {
-      const parent = await prisma.designFolder.findUnique({
+      const parent = await prismaAny.designFolder.findUnique({
         where: { id: data.parentFolderId },
       })
       if (!parent) {
@@ -124,7 +124,7 @@ export const designFileService = {
       path = `${parent.path}/${data.name}`
     }
 
-    const folder = await prisma.designFolder.create({
+    const folder = await prismaAny.designFolder.create({
       data: {
         designProjectId: data.designProjectId,
         parentFolderId: data.parentFolderId,
@@ -169,7 +169,7 @@ export const designFileService = {
     const { type, mimeType } = detectFileType(data.fileName, data.mimeType)
 
     // Check if file with same name exists
-    const existingFile = await prisma.designFile.findFirst({
+    const existingFile = await prismaAny.designFile.findFirst({
       where: {
         designProjectId: data.designProjectId,
         folderId: data.folderId || null,
@@ -186,13 +186,13 @@ export const designFileService = {
       versionNumber = existingFile.versionNumber + 1
 
       // Mark old version as not latest
-      await prisma.designFile.update({
+      await prismaAny.designFile.update({
         where: { id: existingFile.id },
         data: { isLatestVersion: false },
       })
 
       // Create new version
-      file = await prisma.designFile.create({
+      file = await prismaAny.designFile.create({
         data: {
           designProjectId: data.designProjectId,
           folderId: data.folderId,
@@ -213,7 +213,7 @@ export const designFileService = {
       })
     } else {
       // Create new file
-      file = await prisma.designFile.create({
+      file = await prismaAny.designFile.create({
         data: {
           designProjectId: data.designProjectId,
           folderId: data.folderId,
@@ -302,7 +302,7 @@ export const designFileService = {
    * Check out a file
    */
   async checkOutFile(fileId: string, userId: string, comment?: string) {
-    const file = await prisma.designFile.findUnique({
+    const file = await prismaAny.designFile.findUnique({
       where: { id: fileId },
     })
 
@@ -318,7 +318,7 @@ export const designFileService = {
       throw new ValidationError('File is locked by another user')
     }
 
-    const updated = await prisma.designFile.update({
+    const updated = await prismaAny.designFile.update({
       where: { id: fileId },
       data: {
         checkedOutById: userId,
@@ -332,7 +332,7 @@ export const designFileService = {
     })
 
     // Log access
-    await prisma.designFileAccess.create({
+    await prismaAny.designFileAccess.create({
       data: {
         fileId,
         userId,
@@ -361,7 +361,7 @@ export const designFileService = {
    * Check in a file
    */
   async checkInFile(fileId: string, userId: string, newFileUrl?: string) {
-    const file = await prisma.designFile.findUnique({
+    const file = await prismaAny.designFile.findUnique({
       where: { id: fileId },
     })
 
@@ -388,13 +388,13 @@ export const designFileService = {
       const versionNumber = file.versionNumber + 1
 
       // Mark old version as not latest
-      await prisma.designFile.update({
+      await prismaAny.designFile.update({
         where: { id: fileId },
         data: { isLatestVersion: false, ...updateData },
       })
 
       // Create new version
-      const newVersion = await prisma.designFile.create({
+      const newVersion = await prismaAny.designFile.create({
         data: {
           designProjectId: file.designProjectId,
           folderId: file.folderId,
@@ -415,7 +415,7 @@ export const designFileService = {
       })
 
       // Log access
-      await prisma.designFileAccess.create({
+      await prismaAny.designFileAccess.create({
         data: {
           fileId: newVersion.id,
           userId,
@@ -439,13 +439,13 @@ export const designFileService = {
       return newVersion
     } else {
       // Just check in without new version
-      const updated = await prisma.designFile.update({
+      const updated = await prismaAny.designFile.update({
         where: { id: fileId },
         data: updateData,
       })
 
       // Log access
-      await prisma.designFileAccess.create({
+      await prismaAny.designFileAccess.create({
         data: {
           fileId,
           userId,
@@ -471,7 +471,7 @@ export const designFileService = {
    * Lock a file
    */
   async lockFile(fileId: string, userId: string, reason?: string) {
-    const file = await prisma.designFile.findUnique({
+    const file = await prismaAny.designFile.findUnique({
       where: { id: fileId },
     })
 
@@ -483,7 +483,7 @@ export const designFileService = {
       throw new ValidationError('File is already locked by another user')
     }
 
-    const updated = await prisma.designFile.update({
+    const updated = await prismaAny.designFile.update({
       where: { id: fileId },
       data: {
         lockedById: userId,
@@ -493,7 +493,7 @@ export const designFileService = {
     })
 
     // Log access
-    await prisma.designFileAccess.create({
+    await prismaAny.designFileAccess.create({
       data: {
         fileId,
         userId,
@@ -521,7 +521,7 @@ export const designFileService = {
    * Unlock a file
    */
   async unlockFile(fileId: string, userId: string) {
-    const file = await prisma.designFile.findUnique({
+    const file = await prismaAny.designFile.findUnique({
       where: { id: fileId },
     })
 
@@ -533,7 +533,7 @@ export const designFileService = {
       throw new ValidationError('You do not have permission to unlock this file')
     }
 
-    const updated = await prisma.designFile.update({
+    const updated = await prismaAny.designFile.update({
       where: { id: fileId },
       data: {
         lockedById: null,
@@ -543,7 +543,7 @@ export const designFileService = {
     })
 
     // Log access
-    await prisma.designFileAccess.create({
+    await prismaAny.designFileAccess.create({
       data: {
         fileId,
         userId,
@@ -570,7 +570,7 @@ export const designFileService = {
    * Get file with version history
    */
   async getFile(fileId: string) {
-    const file = await prisma.designFile.findUnique({
+    const file = await prismaAny.designFile.findUnique({
       where: { id: fileId },
       include: {
         checkedOutBy: {
@@ -616,7 +616,7 @@ export const designFileService = {
    */
   async getFileVersions(fileId: string) {
     // Find the root version (oldest)
-    let current = await prisma.designFile.findUnique({
+    let current = await prismaAny.designFile.findUnique({
       where: { id: fileId },
     })
 
@@ -626,7 +626,7 @@ export const designFileService = {
 
     // Traverse back to find root
     while (current.previousVersionId) {
-      const prev = await prisma.designFile.findUnique({
+      const prev = await prismaAny.designFile.findUnique({
         where: { id: current.previousVersionId },
       })
       if (!prev) break
@@ -638,7 +638,7 @@ export const designFileService = {
     let next = current
 
     while (true) {
-      const newer = await prisma.designFile.findFirst({
+      const newer = await prismaAny.designFile.findFirst({
         where: { previousVersionId: next.id },
       })
       if (!newer) break
@@ -664,7 +664,7 @@ export const designFileService = {
       where.folderId = null
     }
 
-    const files = await prisma.designFile.findMany({
+    const files = await prismaAny.designFile.findMany({
       where,
       include: {
         checkedOutBy: {
@@ -709,7 +709,7 @@ export const designFileService = {
       where.parentFolderId = null
     }
 
-    const folders = await prisma.designFolder.findMany({
+    const folders = await prismaAny.designFolder.findMany({
       where,
       include: {
         _count: {
@@ -729,7 +729,7 @@ export const designFileService = {
    * Record file access (view/download)
    */
   async recordFileAccess(fileId: string, userId: string, action: 'VIEWED' | 'DOWNLOADED', ipAddress?: string, userAgent?: string) {
-    await prisma.designFileAccess.create({
+    await prismaAny.designFileAccess.create({
       data: {
         fileId,
         userId,

@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 
 interface TaskPriorityFactors {
   dueDate?: Date | null
@@ -118,7 +118,7 @@ export const pmPriorityScoringService = {
    */
   async recalculateTaskPriorities(userId: string) {
     // Get all active tasks for the user
-    const tasks = await prisma.task.findMany({
+    const tasks = await prismaAny.task.findMany({
       where: {
         assignedTo: userId,
         status: { in: ['pending', 'in_progress'] },

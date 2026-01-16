@@ -6,7 +6,7 @@ import { validateBody } from '../../middleware/validation.middleware'
 import { signupSchema, loginSchema, verifyTokenSchema } from '../../schemas'
 import { NotFoundError, AuthenticationError } from '../../errors/app.error'
 import { RATE_LIMIT_CONFIG } from '../../middleware/rate-limit.middleware'
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 
 export async function authRoutes(fastify: FastifyInstance) {
   // Register stricter rate limiting for auth routes (prevent brute force)
@@ -254,7 +254,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         const user = (request as any).user
 
         // Fetch full user details from database
-        const dbUser = await prisma.user.findUnique({
+        const dbUser = await prismaAny.user.findUnique({
           where: { id: user.id },
           select: {
             id: true,

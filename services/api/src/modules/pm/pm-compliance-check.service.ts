@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 
 interface ComplianceCheckResult {
   canComplete: boolean
@@ -32,7 +32,7 @@ export const pmComplianceCheckService = {
     const warnings: ComplianceCheckResult['warnings'] = []
 
     // Get task details
-    const task = await prisma.task.findUnique({
+    const task = await prismaAny.task.findUnique({
       where: { id: taskId },
       include: {
         project: {
@@ -57,7 +57,7 @@ export const pmComplianceCheckService = {
 
     // Check 1: Required SOP steps completed
     if (projectId) {
-      const requiredSOPSteps = await prisma.sOPCompletion?.findMany({
+      const requiredSOPSteps = await prismaAny.sOPCompletion?.findMany({
         where: {
           projectId,
           isRequired: true,
@@ -93,7 +93,7 @@ export const pmComplianceCheckService = {
 
     // Check 3: Required permits approved (if task is permit-related)
     if (task.title.toLowerCase().includes('permit') && projectId) {
-      const pendingPermits = await prisma.permitApplication?.findMany({
+      const pendingPermits = await prismaAny.permitApplication?.findMany({
         where: {
           projectId,
           status: { in: ['SUBMITTED', 'UNDER_REVIEW', 'REVISION_REQUIRED'] },
@@ -112,7 +112,7 @@ export const pmComplianceCheckService = {
 
     // Check 4: Required documents uploaded
     if (projectId) {
-      const requiredDocs = await prisma.projectDocument?.findMany({
+      const requiredDocs = await prismaAny.projectDocument?.findMany({
         where: {
           projectId,
           isRequired: true,
@@ -130,7 +130,7 @@ export const pmComplianceCheckService = {
     }
 
     // Check 5: Audit score threshold (warning only)
-    const recentAuditLogs = await prisma.auditLog.findMany({
+    const recentAuditLogs = await prismaAny.auditLog.findMany({
       where: {
         userId,
         createdAt: {
@@ -170,16 +170,16 @@ export const pmComplianceCheckService = {
     }
   }> {
     const [sopSteps, gates, permits, documents] = await Promise.all([
-      prisma.sOPCompletion?.findMany({
+      prismaAny.sOPCompletion?.findMany({
         where: { projectId, isRequired: true },
       }).catch(() => []),
-      prisma.projectGate?.findMany({
+      prismaAny.projectGate?.findMany({
         where: { projectId, isMandatory: true },
       }).catch(() => []),
-      prisma.permitApplication?.findMany({
+      prismaAny.permitApplication?.findMany({
         where: { projectId },
       }).catch(() => []),
-      prisma.projectDocument?.findMany({
+      prismaAny.projectDocument?.findMany({
         where: { projectId, isRequired: true },
       }).catch(() => []),
     ])

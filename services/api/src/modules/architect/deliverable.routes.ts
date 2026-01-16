@@ -24,7 +24,7 @@ export async function deliverableRoutes(fastify: FastifyInstance) {
       preHandler: [
         authenticateUser,
         validateParams(z.object({ projectId: z.string().uuid() })),
-        validateBody(createDeliverableSchema),
+        validateBody(createDeliverableSchema as any),
       ],
     },
     async (request, reply) => {
@@ -84,14 +84,14 @@ export async function deliverableRoutes(fastify: FastifyInstance) {
           description: z.string().optional(),
           status: z.string().optional(),
           dueDate: z.string().datetime().optional().transform((val) => val ? new Date(val) : undefined),
-        })),
+        }) as any),
       ],
     },
     async (request, reply) => {
       const user = (request as any).user as { id: string }
       const { id } = request.params as { id: string }
       const data = request.body as any
-      const result = await deliverableService.updateDeliverable(id, data, user.id)
+      const result = await deliverableService.updateDeliverable(id, data)
       return reply.send(result)
     }
   )

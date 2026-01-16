@@ -6,7 +6,7 @@ import { pmRealtimeRoutes } from "./pm-realtime.routes"
 import { pmFocusModeRoutes } from "./pm-focus-mode.routes"
 import { pmTaskContextRoutes } from "./pm-task-context.routes"
 import { pmComplianceCheckService } from "./pm-compliance-check.service"
-import { prisma } from "@kealee/database"
+import { prismaAny } from "../../utils/prisma-helper"
 import { z } from "zod"
 import { validateParams, validateQuery } from "../../middleware/validation.middleware"
 
@@ -110,7 +110,7 @@ export async function pmRoutes(fastify: FastifyInstance) {
         }
 
         // Mark task as completed
-        const completedTask = await prisma.task.update({
+        const completedTask = await prismaAny.task.update({
           where: { id },
           data: {
             status: "completed",

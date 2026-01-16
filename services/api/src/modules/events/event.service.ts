@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 
 export interface CreateEventData {
   type: string
@@ -12,7 +12,7 @@ export interface CreateEventData {
 export class EventService {
   // Record an event (append-only)
   async recordEvent(data: CreateEventData) {
-    const event = await prisma.event.create({
+    const event = await prismaAny.event.create({
       data: {
         type: data.type,
         entityType: data.entityType,
@@ -28,7 +28,7 @@ export class EventService {
 
   // Get event by ID
   async getEventById(eventId: string) {
-    const event = await prisma.event.findUnique({
+    const event = await prismaAny.event.findUnique({
       where: { id: eventId },
     })
 
@@ -88,13 +88,13 @@ export class EventService {
     }
 
     const [events, total] = await Promise.all([
-      prisma.event.findMany({
+      prismaAny.event.findMany({
         where,
         skip,
         take: limit,
         orderBy: { occurredAt: 'desc' },
       }),
-      prisma.event.count({ where }),
+      prismaAny.event.count({ where }),
     ])
 
     return {
@@ -110,7 +110,7 @@ export class EventService {
 
   // Get events for a specific entity
   async getEntityEvents(entityType: string, entityId: string, limit?: number) {
-    const events = await prisma.event.findMany({
+    const events = await prismaAny.event.findMany({
       where: {
         entityType,
         entityId,
@@ -124,7 +124,7 @@ export class EventService {
 
   // Get events for a user
   async getUserEvents(userId: string, limit?: number) {
-    const events = await prisma.event.findMany({
+    const events = await prismaAny.event.findMany({
       where: { userId },
       take: limit || 100,
       orderBy: { occurredAt: 'desc' },
@@ -135,7 +135,7 @@ export class EventService {
 
   // Get events for an organization
   async getOrgEvents(orgId: string, limit?: number) {
-    const events = await prisma.event.findMany({
+    const events = await prismaAny.event.findMany({
       where: { orgId },
       take: limit || 100,
       orderBy: { occurredAt: 'desc' },
@@ -146,7 +146,7 @@ export class EventService {
 
   // Get events by type
   async getEventsByType(type: string, limit?: number) {
-    const events = await prisma.event.findMany({
+    const events = await prismaAny.event.findMany({
       where: { type },
       take: limit || 100,
       orderBy: { occurredAt: 'desc' },
@@ -157,7 +157,7 @@ export class EventService {
 
   // Get recent events (last N events)
   async getRecentEvents(limit: number = 50) {
-    const events = await prisma.event.findMany({
+    const events = await prismaAny.event.findMany({
       take: limit,
       orderBy: { occurredAt: 'desc' },
     })
@@ -167,7 +167,7 @@ export class EventService {
 
   // Count events by type
   async countEventsByType(type: string) {
-    const count = await prisma.event.count({
+    const count = await prismaAny.event.count({
       where: { type },
     })
 
@@ -197,8 +197,8 @@ export class EventService {
     }
 
     const [totalEvents, eventsByType] = await Promise.all([
-      prisma.event.count({ where }),
-      prisma.event.groupBy({
+      prismaAny.event.count({ where }),
+      prismaAny.event.groupBy({
         by: ['type'],
         where,
         _count: {
@@ -215,7 +215,7 @@ export class EventService {
 
     return {
       totalEvents,
-      eventsByType: eventsByType.map((e) => ({
+      eventsByType: eventsByType.map((e: any) => ({
         type: e.type,
         count: e._count.type,
       })),

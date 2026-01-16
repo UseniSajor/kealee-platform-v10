@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -23,7 +23,7 @@ export const onboardingService = {
    */
   async initializeOnboarding(userId: string) {
     // Check if onboarding already exists
-    const existing = await prisma.architectOnboarding.findUnique({
+    const existing = await prismaAny.architectOnboarding.findUnique({
       where: { userId },
     })
 
@@ -31,7 +31,7 @@ export const onboardingService = {
       return existing
     }
 
-    const onboarding = await prisma.architectOnboarding.create({
+    const onboarding = await prismaAny.architectOnboarding.create({
       data: {
         userId,
         currentStep: 0,
@@ -62,7 +62,7 @@ export const onboardingService = {
    * Get onboarding status
    */
   async getOnboarding(userId: string) {
-    let onboarding = await prisma.architectOnboarding.findUnique({
+    let onboarding = await prismaAny.architectOnboarding.findUnique({
       where: { userId },
     })
 
@@ -77,7 +77,7 @@ export const onboardingService = {
    * Complete onboarding step
    */
   async completeStep(userId: string, stepId: number) {
-    const onboarding = await prisma.architectOnboarding.findUnique({
+    const onboarding = await prismaAny.architectOnboarding.findUnique({
       where: { userId },
     })
 
@@ -108,7 +108,7 @@ export const onboardingService = {
 
     const isCompleted = completedSteps === steps.length
 
-    const updated = await prisma.architectOnboarding.update({
+    const updated = await prismaAny.architectOnboarding.update({
       where: { userId },
       data: {
         steps: steps as any,
@@ -140,7 +140,7 @@ export const onboardingService = {
    * Skip onboarding step
    */
   async skipStep(userId: string, stepId: number) {
-    const onboarding = await prisma.architectOnboarding.findUnique({
+    const onboarding = await prismaAny.architectOnboarding.findUnique({
       where: { userId },
     })
 
@@ -160,7 +160,7 @@ export const onboardingService = {
       status: 'SKIPPED',
     }
 
-    const updated = await prisma.architectOnboarding.update({
+    const updated = await prismaAny.architectOnboarding.update({
       where: { userId },
       data: {
         steps: steps as any,

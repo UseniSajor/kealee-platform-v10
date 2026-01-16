@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -85,7 +85,7 @@ async function submitToJurisdiction(
   status: string
   submittedAt: Date
 }> {
-  const jurisdiction = await prisma.jurisdiction.findUnique({
+  const jurisdiction = await prismaAny.jurisdiction.findUnique({
     where: { id: jurisdictionId },
   })
   
@@ -102,7 +102,7 @@ async function submitToJurisdiction(
     const refNumber = `2025-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`
     
     // Log API call
-    const apiIntegration = await prisma.aPIIntegration.findFirst({
+    const apiIntegration = await prismaAny.aPIIntegration.findFirst({
       where: {
         jurisdictionId,
         isActive: true,
@@ -111,7 +111,7 @@ async function submitToJurisdiction(
     
     if (apiIntegration) {
       try {
-        await prisma.aPICall.create({
+        await prismaAny.aPICall.create({
           data: {
             integrationId: apiIntegration.id,
             endpoint: '/permits/submit',
@@ -198,13 +198,13 @@ export const permitApplicationService = {
     const { jurisdictionId, permitType, projectData, documents, expedited = false, submittedById } = data
     
     // Validate jurisdiction (by ID or code)
-    let jurisdiction = await prisma.jurisdiction.findUnique({
+    let jurisdiction = await prismaAny.jurisdiction.findUnique({
       where: { id: jurisdictionId },
     })
     
     if (!jurisdiction) {
       // Try finding by code
-      jurisdiction = await prisma.jurisdiction.findUnique({
+      jurisdiction = await prismaAny.jurisdiction.findUnique({
         where: { code: jurisdictionId },
       })
     }
@@ -214,7 +214,7 @@ export const permitApplicationService = {
     }
     
     // Create permit application
-    const application = await prisma.permitApplication.create({
+    const application = await prismaAny.permitApplication.create({
       data: {
         jurisdictionId: jurisdiction.id,
         projectId: 'temp', // TODO: Get actual project ID
@@ -242,7 +242,7 @@ export const permitApplicationService = {
     const aiReview = await runAIReview(application.id, documents)
     
     // Update application with AI review results
-    const updatedApplication = await prisma.permitApplication.update({
+    const updatedApplication = await prismaAny.permitApplication.update({
       where: { id: application.id },
       data: {
         aiReviewScore: aiReview.overallScore,
@@ -252,7 +252,7 @@ export const permitApplicationService = {
     })
     
     // Save AI review result
-    await prisma.aIReviewResult.create({
+    await prismaAny.aIReviewResult.create({
       data: {
         permitApplicationId: application.id,
         reviewSource: 'CLIENT_SIDE',
@@ -273,7 +273,7 @@ export const permitApplicationService = {
     )
     
     // Update application with submission results
-    const finalApplication = await prisma.permitApplication.update({
+    const finalApplication = await prismaAny.permitApplication.update({
       where: { id: application.id },
       data: {
         jurisdictionRefNumber: submissionResult.jurisdictionRefNumber,
@@ -285,7 +285,7 @@ export const permitApplicationService = {
     })
     
     // Create submission record
-    await prisma.permitSubmission.create({
+    await prismaAny.permitSubmission.create({
       data: {
         permitApplicationId: application.id,
         submissionType: 'INITIAL',
@@ -352,7 +352,7 @@ export const permitApplicationService = {
   },
 
   async getApplication(id: string) {
-    const application = await prisma.permitApplication.findUnique({
+    const application = await prismaAny.permitApplication.findUnique({
       where: { id },
       include: {
         jurisdiction: true,
@@ -383,7 +383,7 @@ export const permitApplicationService = {
       where.kealeeStatus = filters.status
     }
     
-    return await prisma.permitApplication.findMany({
+    return await prismaAny.permitApplication.findMany({
       where,
       include: {
         jurisdiction: {

@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError } from '../../errors/app.error'
 
 export type SearchContractorsInput = {
@@ -33,7 +33,7 @@ export const marketplaceService = {
     }
 
     const [profiles, total] = await Promise.all([
-      prisma.marketplaceProfile.findMany({
+      prismaAny.marketplaceProfile.findMany({
         where,
         include: {
           user: {
@@ -50,7 +50,7 @@ export const marketplaceService = {
         skip: input.offset || 0,
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.marketplaceProfile.count({ where }),
+      prismaAny.marketplaceProfile.count({ where }),
     ])
 
     return {
@@ -74,7 +74,7 @@ export const marketplaceService = {
   },
 
   async getContractorProfile(profileId: string) {
-    const profile = await prisma.marketplaceProfile.findUnique({
+    const profile = await prismaAny.marketplaceProfile.findUnique({
       where: { id: profileId },
       include: {
         user: {
@@ -92,7 +92,7 @@ export const marketplaceService = {
     if (!profile) throw new NotFoundError('MarketplaceProfile', profileId)
 
     // Get active contracts count as a proxy for "available capacity"
-    const activeContractsCount = await prisma.contractAgreement.count({
+    const activeContractsCount = await prismaAny.contractAgreement.count({
       where: {
         contractorId: profile.userId,
         status: { in: ['DRAFT', 'SENT', 'SIGNED', 'ACTIVE'] },
@@ -100,7 +100,7 @@ export const marketplaceService = {
     })
 
     // Get completed projects count
-    const completedProjectsCount = await prisma.contractAgreement.count({
+    const completedProjectsCount = await prismaAny.contractAgreement.count({
       where: {
         contractorId: profile.userId,
         status: 'COMPLETED',
@@ -126,7 +126,7 @@ export const marketplaceService = {
 
   async sendContractorInvitation(contractorId: string, projectId: string, ownerId: string) {
     // Verify contractor exists
-    const contractor = await prisma.marketplaceProfile.findUnique({
+    const contractor = await prismaAny.marketplaceProfile.findUnique({
       where: { userId: contractorId },
       include: { user: true },
     })
@@ -134,7 +134,7 @@ export const marketplaceService = {
     if (!contractor) throw new NotFoundError('MarketplaceProfile', contractorId)
 
     // Verify project exists and owner has access
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       select: { id: true, ownerId: true, name: true },
     })

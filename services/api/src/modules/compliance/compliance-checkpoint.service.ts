@@ -3,7 +3,7 @@
  * Enforces SOP/SOW adherence at every step
  */
 
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import type {
   ComplianceCheckpoint,
   ComplianceCheckResult,
@@ -27,7 +27,7 @@ export const complianceCheckpointService = {
       switch (source) {
         case 'PERMIT': {
           // Check permit status
-          const permit = await prisma.permitApplication?.findFirst({
+          const permit = await prismaAny.permitApplication?.findFirst({
             where: {
               projectId,
               status: { in: ['APPROVED', 'ISSUED'] },
@@ -44,7 +44,7 @@ export const complianceCheckpointService = {
 
         case 'ESCROW': {
           // Check escrow funding
-          const escrow = await prisma.escrowAccount?.findFirst({
+          const escrow = await prismaAny.escrowAccount?.findFirst({
             where: {
               projectId,
               status: { in: ['FUNDED', 'ACTIVE'] },
@@ -61,7 +61,7 @@ export const complianceCheckpointService = {
 
         case 'CONTRACT': {
           // Check contract signing
-          const contract = await prisma.contractAgreement?.findFirst({
+          const contract = await prismaAny.contractAgreement?.findFirst({
             where: {
               projectId,
               status: { in: ['SIGNED', 'ACTIVE'] },
@@ -78,7 +78,7 @@ export const complianceCheckpointService = {
 
         case 'SOP': {
           // Check SOP steps completion
-          const requiredSteps = await prisma.sOPCompletion?.findMany({
+          const requiredSteps = await prismaAny.sOPCompletion?.findMany({
             where: {
               projectId,
               isRequired: true,
@@ -98,7 +98,7 @@ export const complianceCheckpointService = {
 
         case 'SOW': {
           // Check SOW validation
-          const project = await prisma.project.findUnique({
+          const project = await prismaAny.project.findUnique({
             where: { id: projectId },
           })
 
@@ -144,7 +144,7 @@ export const complianceCheckpointService = {
 
     // Check permits
     if (moduleChecks.permits?.required) {
-      const permits = await prisma.permitApplication?.findMany({
+      const permits = await prismaAny.permitApplication?.findMany({
         where: {
           projectId,
           status: { in: moduleChecks.permits.status },
@@ -162,7 +162,7 @@ export const complianceCheckpointService = {
 
     // Check escrow
     if (moduleChecks.escrow?.funded) {
-      const escrow = await prisma.escrowAccount?.findFirst({
+      const escrow = await prismaAny.escrowAccount?.findFirst({
         where: {
           projectId,
           status: { in: ['FUNDED', 'ACTIVE'] },
@@ -184,7 +184,7 @@ export const complianceCheckpointService = {
 
     // Check contracts
     if (moduleChecks.contracts?.signed) {
-      const contracts = await prisma.contractAgreement?.findMany({
+      const contracts = await prismaAny.contractAgreement?.findMany({
         where: {
           projectId,
           status: { in: ['SIGNED', 'ACTIVE'] },
@@ -198,7 +198,7 @@ export const complianceCheckpointService = {
       // Check if all required parties have signed
       const requiredParties = moduleChecks.contracts.parties || []
       const signedParties: string[] = []
-      contracts?.forEach((contract) => {
+      contracts?.forEach((contract: any) => {
         if (contract.status === 'SIGNED' || contract.status === 'ACTIVE') {
           if (contract.ownerId) signedParties.push('owner')
           if (contract.contractorId) signedParties.push('contractor')
@@ -225,7 +225,7 @@ export const complianceCheckpointService = {
 
     // Check SOP
     if (moduleChecks.sop?.stepsCompleted) {
-      const incompleteSteps = await prisma.sOPCompletion?.findMany({
+      const incompleteSteps = await prismaAny.sOPCompletion?.findMany({
         where: {
           projectId,
           isRequired: true,

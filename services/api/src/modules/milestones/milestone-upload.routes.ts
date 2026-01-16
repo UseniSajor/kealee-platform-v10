@@ -4,7 +4,7 @@ import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams } from '../../middleware/validation.middleware'
 import { milestoneUploadService } from './milestone-upload.service'
 import { milestoneService } from './milestone.service'
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 
 export async function milestoneUploadRoutes(fastify: FastifyInstance) {
   // Upload evidence file (Prompt 3.2)
@@ -21,7 +21,7 @@ export async function milestoneUploadRoutes(fastify: FastifyInstance) {
       const { milestoneId } = request.params as { milestoneId: string }
 
       // Get milestone to verify contractor access and get project ID
-      const milestone = await prisma.milestone.findUnique({
+      const milestone = await prismaAny.milestone.findUnique({
         where: { id: milestoneId },
         include: {
           contract: {
@@ -63,7 +63,7 @@ export async function milestoneUploadRoutes(fastify: FastifyInstance) {
       const evidenceType = milestoneUploadService.getEvidenceTypeFromMime(mimeType)
 
       // Create evidence record in database
-      const evidence = await prisma.evidence.create({
+      const evidence = await prismaAny.evidence.create({
         data: {
           projectId: milestone.projectId,
           milestoneId,

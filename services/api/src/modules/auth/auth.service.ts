@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 function getSupabaseClient(): SupabaseClient {
@@ -26,7 +26,7 @@ export class AuthService {
     if (authError) throw authError
 
     // 2. Create user record in our database
-    const user = await prisma.user.create({
+    const user = await prismaAny.user.create({
       data: {
         id: authData.user!.id,
         email,

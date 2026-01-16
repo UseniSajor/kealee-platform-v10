@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -17,7 +17,7 @@ export const serviceRequestService = {
     userId: string
   }) {
     // Verify org exists and user has access
-    const org = await prisma.org.findFirst({
+    const org = await prismaAny.org.findFirst({
       where: {
         id: data.orgId,
         members: {
@@ -33,7 +33,7 @@ export const serviceRequestService = {
     }
 
     // Create service request
-    const request = await prisma.serviceRequest.create({
+    const request = await prismaAny.serviceRequest.create({
       data: {
         orgId: data.orgId,
         title: data.title,
@@ -102,7 +102,7 @@ export const serviceRequestService = {
       }
     }
 
-    const request = await prisma.serviceRequest.findFirst({
+    const request = await prismaAny.serviceRequest.findFirst({
       where,
       include: {
         org: {
@@ -169,7 +169,7 @@ export const serviceRequestService = {
       where.assignedTo = filters.assignedTo
     }
 
-    const requests = await prisma.serviceRequest.findMany({
+    const requests = await prismaAny.serviceRequest.findMany({
       where,
       include: {
         org: {
@@ -200,7 +200,7 @@ export const serviceRequestService = {
     assignedTo?: string
     userId: string
   }) {
-    const request = await prisma.serviceRequest.findUnique({
+    const request = await prismaAny.serviceRequest.findUnique({
       where: { id: requestId },
     })
 
@@ -208,7 +208,7 @@ export const serviceRequestService = {
       throw new NotFoundError('ServiceRequest', requestId)
     }
 
-    const updated = await prisma.serviceRequest.update({
+    const updated = await prismaAny.serviceRequest.update({
       where: { id: requestId },
       data: {
         status: data.status as any,
@@ -268,7 +268,7 @@ export const serviceRequestService = {
     assignedTo: string
     userId: string
   }) {
-    const request = await prisma.serviceRequest.findUnique({
+    const request = await prismaAny.serviceRequest.findUnique({
       where: { id: requestId },
     })
 
@@ -276,7 +276,7 @@ export const serviceRequestService = {
       throw new NotFoundError('ServiceRequest', requestId)
     }
 
-    const updated = await prisma.serviceRequest.update({
+    const updated = await prismaAny.serviceRequest.update({
       where: { id: requestId },
       data: {
         assignedTo: data.assignedTo,
@@ -309,7 +309,7 @@ export const serviceRequestService = {
     dueDate?: Date
     userId: string
   }) {
-    const request = await prisma.serviceRequest.findUnique({
+    const request = await prismaAny.serviceRequest.findUnique({
       where: { id: requestId },
     })
 
@@ -317,7 +317,7 @@ export const serviceRequestService = {
       throw new NotFoundError('ServiceRequest', requestId)
     }
 
-    const task = await prisma.task.create({
+    const task = await prismaAny.task.create({
       data: {
         serviceRequestId: requestId,
         title: data.title,
@@ -360,7 +360,7 @@ export const serviceRequestService = {
     status: string
     userId: string
   }) {
-    const task = await prisma.task.findUnique({
+    const task = await prismaAny.task.findUnique({
       where: { id: taskId },
     })
 
@@ -376,21 +376,21 @@ export const serviceRequestService = {
       updateData.completedAt = new Date()
     }
 
-    const updated = await prisma.task.update({
+    const updated = await prismaAny.task.update({
       where: { id: taskId },
       data: updateData,
     })
 
     // Check if all tasks are completed, update request status
     if (data.status === 'completed') {
-      const allTasks = await prisma.task.findMany({
+      const allTasks = await prismaAny.task.findMany({
         where: { serviceRequestId: task.serviceRequestId },
       })
 
       const allCompleted = allTasks.every((t) => t.status === 'completed' || t.id === taskId)
 
       if (allCompleted && allTasks.length > 0 && task.serviceRequestId) {
-        await prisma.serviceRequest.update({
+        await prismaAny.serviceRequest.update({
           where: { id: task.serviceRequestId },
           data: { status: 'completed', completedAt: new Date() },
         })
@@ -437,7 +437,7 @@ export const serviceRequestService = {
       where.status = filters.status
     }
 
-    const tasks = await prisma.task.findMany({
+    const tasks = await prismaAny.task.findMany({
       where,
       include: {
         serviceRequest: {

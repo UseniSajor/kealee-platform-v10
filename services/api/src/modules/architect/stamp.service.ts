@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -20,7 +20,7 @@ export const stampService = {
     metadata?: any
   }) {
     // Check if license validation exists
-    const licenseValidation = await prisma.licenseValidation.findFirst({
+    const licenseValidation = await prismaAny.licenseValidation.findFirst({
       where: {
         userId: data.userId,
         licenseNumber: data.licenseNumber,
@@ -32,7 +32,7 @@ export const stampService = {
       throw new ValidationError('License must be validated before creating stamp template')
     }
 
-    const stampTemplate = await prisma.stampTemplate.create({
+    const stampTemplate = await prismaAny.stampTemplate.create({
       data: {
         userId: data.userId,
         stampType: data.stampType as any,
@@ -86,7 +86,7 @@ export const stampService = {
       where.userId = userId
     }
 
-    const template = await prisma.stampTemplate.findFirst({
+    const template = await prismaAny.stampTemplate.findFirst({
       where,
       include: {
         user: {
@@ -143,7 +143,7 @@ export const stampService = {
       where.isVerified = filters.isVerified
     }
 
-    const templates = await prisma.stampTemplate.findMany({
+    const templates = await prismaAny.stampTemplate.findMany({
       where,
       include: {
         user: {
@@ -174,7 +174,7 @@ export const stampService = {
     verificationNotes?: string
     verifiedBy: string
   }) {
-    const template = await prisma.stampTemplate.findUnique({
+    const template = await prismaAny.stampTemplate.findUnique({
       where: { id: templateId },
     })
 
@@ -182,7 +182,7 @@ export const stampService = {
       throw new NotFoundError('StampTemplate', templateId)
     }
 
-    const updated = await prisma.stampTemplate.update({
+    const updated = await prismaAny.stampTemplate.update({
       where: { id: templateId },
       data: {
         isVerified: data.isVerified,
@@ -225,7 +225,7 @@ export const stampService = {
     appliedById: string
   }) {
     // Verify stamp template is active and verified
-    const template = await prisma.stampTemplate.findUnique({
+    const template = await prismaAny.stampTemplate.findUnique({
       where: { id: data.stampTemplateId },
     })
 
@@ -248,7 +248,7 @@ export const stampService = {
       .update(`${data.targetId}-${data.stampTemplateId}-${Date.now()}`)
       .digest('hex')
 
-    const application = await prisma.stampApplication.create({
+    const application = await prismaAny.stampApplication.create({
       data: {
         designProjectId: data.designProjectId,
         stampTemplateId: data.stampTemplateId,
@@ -286,7 +286,7 @@ export const stampService = {
     })
 
     // Create stamp log entry
-    await prisma.stampLog.create({
+    await prismaAny.stampLog.create({
       data: {
         stampApplicationId: application.id,
         actionType: 'APPLIED',
@@ -324,7 +324,7 @@ export const stampService = {
    * Get stamp application
    */
   async getStampApplication(applicationId: string) {
-    const application = await prisma.stampApplication.findUnique({
+    const application = await prismaAny.stampApplication.findUnique({
       where: { id: applicationId },
       include: {
         stampTemplate: {
@@ -395,7 +395,7 @@ export const stampService = {
       where.stampTemplateId = filters.stampTemplateId
     }
 
-    const applications = await prisma.stampApplication.findMany({
+    const applications = await prismaAny.stampApplication.findMany({
       where,
       include: {
         stampTemplate: {
@@ -428,7 +428,7 @@ export const stampService = {
     verificationNotes?: string
     verifiedById: string
   }) {
-    const application = await prisma.stampApplication.findUnique({
+    const application = await prismaAny.stampApplication.findUnique({
       where: { id: applicationId },
     })
 
@@ -438,7 +438,7 @@ export const stampService = {
 
     const newStatus = data.isVerified ? 'VERIFIED' : 'REJECTED'
 
-    const updated = await prisma.stampApplication.update({
+    const updated = await prismaAny.stampApplication.update({
       where: { id: applicationId },
       data: {
         applicationStatus: newStatus as any,
@@ -449,7 +449,7 @@ export const stampService = {
     })
 
     // Create stamp log entry
-    await prisma.stampLog.create({
+    await prismaAny.stampLog.create({
       data: {
         stampApplicationId: applicationId,
         actionType: data.isVerified ? 'VERIFIED' : 'REJECTED',
@@ -482,7 +482,7 @@ export const stampService = {
    * Check for tampering
    */
   async checkTampering(applicationId: string, currentDocumentHash: string) {
-    const application = await prisma.stampApplication.findUnique({
+    const application = await prismaAny.stampApplication.findUnique({
       where: { id: applicationId },
     })
 
@@ -494,7 +494,7 @@ export const stampService = {
 
     if (tamperDetected) {
       // Create stamp log entry for tamper detection
-      await prisma.stampLog.create({
+      await prismaAny.stampLog.create({
         data: {
           stampApplicationId: applicationId,
           actionType: 'TAMPER_DETECTED',
@@ -510,7 +510,7 @@ export const stampService = {
       })
 
       // Update application status
-      await prisma.stampApplication.update({
+      await prismaAny.stampApplication.update({
         where: { id: applicationId },
         data: {
           applicationStatus: 'REJECTED',
@@ -529,7 +529,7 @@ export const stampService = {
    * Get stamp log
    */
   async getStampLog(applicationId: string) {
-    const logEntries = await prisma.stampLog.findMany({
+    const logEntries = await prismaAny.stampLog.findMany({
       where: {
         stampApplicationId: applicationId,
       },
@@ -562,7 +562,7 @@ export const stampService = {
     validatedBy?: string
   }) {
     // Check if validation already exists
-    const existing = await prisma.licenseValidation.findFirst({
+    const existing = await prismaAny.licenseValidation.findFirst({
       where: {
         userId: data.userId,
         licenseNumber: data.licenseNumber,
@@ -576,7 +576,7 @@ export const stampService = {
     const expirationDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year from now (placeholder)
 
     if (existing) {
-      const updated = await prisma.licenseValidation.update({
+      const updated = await prismaAny.licenseValidation.update({
         where: { id: existing.id },
         data: {
           isValid,
@@ -592,7 +592,7 @@ export const stampService = {
       return updated
     }
 
-    const validation = await prisma.licenseValidation.create({
+    const validation = await prismaAny.licenseValidation.create({
       data: {
         userId: data.userId,
         licenseNumber: data.licenseNumber,
@@ -630,7 +630,7 @@ export const stampService = {
    * Get license validation
    */
   async getLicenseValidation(validationId: string) {
-    const validation = await prisma.licenseValidation.findUnique({
+    const validation = await prismaAny.licenseValidation.findUnique({
       where: { id: validationId },
       include: {
         user: {
@@ -682,7 +682,7 @@ export const stampService = {
       where.status = filters.status
     }
 
-    const validations = await prisma.licenseValidation.findMany({
+    const validations = await prismaAny.licenseValidation.findMany({
       where,
       include: {
         user: {

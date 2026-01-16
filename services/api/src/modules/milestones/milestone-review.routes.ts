@@ -54,7 +54,8 @@ export async function milestoneReviewRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { milestoneId } = request.params as { milestoneId: string }
-      const milestone = await milestoneService.getMilestone(milestoneId)
+      const user = (request as any).user as { id: string }
+      const milestone = await milestoneService.getMilestone(milestoneId, user.id)
       return reply.send({
         reviews: milestone.reviews || [],
         currentStatus: milestone.status,

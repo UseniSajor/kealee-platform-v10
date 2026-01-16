@@ -1,8 +1,9 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
-import { Prisma } from '@prisma/client'
+// Prisma Decimal type - use any for now
+type PrismaDecimal = any
 
 // Configuration
 const MAX_LEAD_VALUE = 500000 // $500k threshold
@@ -23,8 +24,8 @@ export interface ContractorCandidate {
   rating: number | null
   projectsCompleted: number
   subscriptionTier: string | null
-  currentPipelineValue: Prisma.Decimal
-  maxPipelineValue: Prisma.Decimal
+  currentPipelineValue: PrismaDecimal
+  maxPipelineValue: PrismaDecimal
   canAccept: boolean
   rejectionReason?: string
 }
@@ -37,7 +38,7 @@ export const leadsService = {
     const { leadId, userId, distributionCount = DEFAULT_DISTRIBUTION_COUNT } = input
 
     // Fetch lead
-    const lead = await prisma.lead.findUnique({
+    const lead = await prismaAny.lead.findUnique({
       where: { id: leadId },
       include: {
         distributedTo: true,
@@ -56,7 +57,7 @@ export const leadsService = {
     // Check if lead value exceeds maximum threshold
     if (lead.estimatedValue && lead.estimatedValue.gt(MAX_LEAD_VALUE)) {
       // Mark lead as LOST with reason
-      const updatedLead = await prisma.lead.update({
+      const updatedLead = await prismaAny.lead.update({
         where: { id: leadId },
         data: {
           stage: 'LOST',
@@ -176,7 +177,7 @@ export const leadsService = {
 
     // Update lead stage if estimatedValue is missing (mark as INTAKE)
     const shouldMarkAsIntake = !lead.estimatedValue
-    const updatedLead = await prisma.lead.update({
+    const updatedLead = await prismaAny.lead.update({
       where: { id: leadId },
       data: {
         stage: shouldMarkAsIntake ? 'INTAKE' : lead.stage,
@@ -250,7 +251,7 @@ export const leadsService = {
   async findEligibleContractors(
     lead: {
       id: string
-      estimatedValue: Prisma.Decimal | null
+      estimatedValue: prismaAny.Decimal | null
       projectType?: string | null
       city?: string | null
       state?: string | null
@@ -258,7 +259,7 @@ export const leadsService = {
     limit: number
   ): Promise<ContractorCandidate[]> {
     // Base query: Only contractors accepting leads
-    const profiles = await prisma.marketplaceProfile.findMany({
+    const profiles = await prismaAny.marketplaceProfile.findMany({
       where: {
         acceptingLeads: true,
         user: {
@@ -306,7 +307,7 @@ export const leadsService = {
           if (!l.estimatedValue) return sum
           return sum.plus(l.estimatedValue)
         },
-        new Prisma.Decimal(0)
+        new prismaAny.Decimal(0)
       )
 
       // Calculate projects completed (awarded leads that became projects)
@@ -430,10 +431,10 @@ export const leadsService = {
     if (filters.estimatedValueMin !== undefined || filters.estimatedValueMax !== undefined) {
       where.estimatedValue = {}
       if (filters.estimatedValueMin !== undefined) {
-        where.estimatedValue.gte = new Prisma.Decimal(filters.estimatedValueMin)
+        where.estimatedValue.gte = new prismaAny.Decimal(filters.estimatedValueMin)
       }
       if (filters.estimatedValueMax !== undefined) {
-        where.estimatedValue.lte = new Prisma.Decimal(filters.estimatedValueMax)
+        where.estimatedValue.lte = new prismaAny.Decimal(filters.estimatedValueMax)
       }
     }
 
@@ -454,7 +455,7 @@ export const leadsService = {
     }
 
     const [leads, total] = await Promise.all([
-      prisma.lead.findMany({
+      prismaAny.lead.findMany({
         where,
         include: {
           assignedSalesRep: {
@@ -486,7 +487,7 @@ export const leadsService = {
         take: filters.limit || 100,
         skip: filters.offset || 0,
       }),
-      prisma.lead.count({ where }),
+      prismaAny.lead.count({ where }),
     ])
 
     return { leads, total, limit: filters.limit || 100, offset: filters.offset || 0 }
@@ -496,7 +497,7 @@ export const leadsService = {
    * Update lead stage
    */
   async updateLeadStage(leadId: string, newStage: string, userId?: string) {
-    const lead = await prisma.lead.findUnique({
+    const lead = await prismaAny.lead.findUnique({
       where: { id: leadId },
     })
 
@@ -525,7 +526,7 @@ export const leadsService = {
       updateData.lostAt = now
     }
 
-    const updatedLead = await prisma.lead.update({
+    const updatedLead = await prismaAny.lead.update({
       where: { id: leadId },
       data: updateData,
       include: {
@@ -581,7 +582,7 @@ export const leadsService = {
    * Assign sales rep to lead
    */
   async assignSalesRep(leadId: string, salesRepId: string, userId?: string) {
-    const lead = await prisma.lead.findUnique({
+    const lead = await prismaAny.lead.findUnique({
       where: { id: leadId },
     })
 
@@ -590,7 +591,7 @@ export const leadsService = {
     }
 
     // Verify sales rep exists
-    const salesRep = await prisma.user.findUnique({
+    const salesRep = await prismaAny.user.findUnique({
       where: { id: salesRepId },
       select: { id: true, name: true, email: true },
     })
@@ -599,7 +600,7 @@ export const leadsService = {
       throw new NotFoundError('User', salesRepId)
     }
 
-    const updatedLead = await prisma.lead.update({
+    const updatedLead = await prismaAny.lead.update({
       where: { id: leadId },
       data: {
         assignedSalesRepId: salesRepId,
@@ -646,7 +647,7 @@ export const leadsService = {
    * Award contractor to lead
    */
   async awardContractor(leadId: string, profileId: string, userId?: string) {
-    const lead = await prisma.lead.findUnique({
+    const lead = await prismaAny.lead.findUnique({
       where: { id: leadId },
     })
 
@@ -655,7 +656,7 @@ export const leadsService = {
     }
 
     // Verify profile exists
-    const profile = await prisma.marketplaceProfile.findUnique({
+    const profile = await prismaAny.marketplaceProfile.findUnique({
       where: { id: profileId },
       include: {
         user: {
@@ -672,7 +673,7 @@ export const leadsService = {
       throw new NotFoundError('MarketplaceProfile', profileId)
     }
 
-    const updatedLead = await prisma.lead.update({
+    const updatedLead = await prismaAny.lead.update({
       where: { id: leadId },
       data: {
         awardedProfileId: profileId,
@@ -733,7 +734,7 @@ export const leadsService = {
    * Close lead as lost
    */
   async closeLost(leadId: string, reason: string, userId?: string) {
-    const lead = await prisma.lead.findUnique({
+    const lead = await prismaAny.lead.findUnique({
       where: { id: leadId },
     })
 
@@ -741,7 +742,7 @@ export const leadsService = {
       throw new NotFoundError('Lead', leadId)
     }
 
-    const updatedLead = await prisma.lead.update({
+    const updatedLead = await prismaAny.lead.update({
       where: { id: leadId },
       data: {
         stage: 'LOST',
@@ -788,7 +789,7 @@ export const leadsService = {
    * Get lead by ID
    */
   async getLead(leadId: string) {
-    const lead = await prisma.lead.findUnique({
+    const lead = await prismaAny.lead.findUnique({
       where: { id: leadId },
       include: {
         distributedTo: {

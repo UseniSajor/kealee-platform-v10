@@ -1,6 +1,6 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, AuthorizationError, ValidationError } from '../../errors/app.error'
-import { MilestoneStatus } from '@prisma/client'
+// Prisma types available through prismaAny
 
 const DEFAULT_HOLDBACK_PERCENTAGE = 10 // 10% holdback
 
@@ -9,7 +9,7 @@ export const paymentService = {
    * Get escrow agreement for a project (Prompt 3.4)
    */
   async getEscrowAgreement(projectId: string, userId: string) {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       include: {
         owner: { select: { id: true } },
@@ -31,7 +31,7 @@ export const paymentService = {
     }
 
     // Get or create escrow agreement
-    let escrow = await prisma.escrowAgreement.findUnique({
+    let escrow = await prismaAny.escrowAgreement.findUnique({
       where: { projectId },
       include: {
         transactions: {
@@ -48,7 +48,7 @@ export const paymentService = {
         throw new ValidationError('No active contract found for this project')
       }
 
-      escrow = await prisma.escrowAgreement.create({
+      escrow = await prismaAny.escrowAgreement.create({
         data: {
           projectId,
           contractId: activeContract.id,
@@ -93,7 +93,7 @@ export const paymentService = {
     canRelease: boolean
     reasons: string[]
   }> {
-    const milestone = await prisma.milestone.findUnique({
+    const milestone = await prismaAny.milestone.findUnique({
       where: { id: milestoneId },
       include: {
         contract: {
@@ -117,12 +117,12 @@ export const paymentService = {
     const reasons: string[] = []
 
     // Check milestone status
-    if (milestone.status !== MilestoneStatus.APPROVED) {
+    if (milestone.status !== 'APPROVED') {
       reasons.push(`Milestone must be APPROVED (current: ${milestone.status})`)
     }
 
     // Check if already paid
-    if (milestone.status === MilestoneStatus.PAID) {
+    if (milestone.status === 'PAID') {
       reasons.push('Milestone has already been paid')
     }
 
@@ -132,7 +132,7 @@ export const paymentService = {
     }
 
     // Check escrow balance
-    const escrow = await prisma.escrowAgreement.findUnique({
+    const escrow = await prismaAny.escrowAgreement.findUnique({
       where: { projectId: milestone.contract.projectId },
     })
 
@@ -140,7 +140,7 @@ export const paymentService = {
       reasons.push('Escrow agreement not found')
     } else if (escrow.status === 'FROZEN') {
       // Check if there's an active dispute
-      const activeDispute = await prisma.dispute.findFirst({
+      const activeDispute = await prismaAny.dispute.findFirst({
         where: {
           projectId: milestone.contract.projectId,
           status: {
@@ -176,7 +176,7 @@ export const paymentService = {
       notes?: string
     }
   ) {
-    const milestone = await prisma.milestone.findUnique({
+    const milestone = await prismaAny.milestone.findUnique({
       where: { id: milestoneId },
       include: {
         contract: {
@@ -202,7 +202,7 @@ export const paymentService = {
     }
 
     // Get escrow
-    const escrow = await prisma.escrowAgreement.findUnique({
+    const escrow = await prismaAny.escrowAgreement.findUnique({
       where: { projectId: milestone.contract.projectId },
     })
 
@@ -228,7 +228,7 @@ export const paymentService = {
     const balanceBefore = escrow.currentBalance
     const balanceAfter = balanceBefore - releaseAmount
 
-    const transaction = await prisma.escrowTransaction.create({
+    const transaction = await prismaAny.escrowTransaction.create({
       data: {
         escrowId: escrow.id,
         milestoneId: milestoneId,
@@ -248,7 +248,7 @@ export const paymentService = {
     })
 
     // Update escrow balance
-    await prisma.escrowAgreement.update({
+    await prismaAny.escrowAgreement.update({
       where: { id: escrow.id },
       data: {
         currentBalance: balanceAfter,
@@ -256,16 +256,16 @@ export const paymentService = {
     })
 
     // Update milestone status
-    await prisma.milestone.update({
+    await prismaAny.milestone.update({
       where: { id: milestoneId },
       data: {
-        status: MilestoneStatus.PAID,
+        status: 'PAID',
         paidAt: new Date(),
       },
     })
 
     // Create audit log
-    await prisma.auditLog.create({
+    await prismaAny.auditLog.create({
       data: {
         entityType: 'Milestone',
         entityId: milestoneId,
@@ -281,7 +281,7 @@ export const paymentService = {
     })
 
     // Create event
-    await prisma.event.create({
+    await prismaAny.event.create({
       data: {
         entityType: 'Milestone',
         entityId: milestoneId,
@@ -306,7 +306,7 @@ export const paymentService = {
     // })
 
     // Simulate successful payment
-    await prisma.escrowTransaction.update({
+    await prismaAny.escrowTransaction.update({
       where: { id: transaction.id },
       data: {
         status: 'COMPLETED',
@@ -334,7 +334,7 @@ export const paymentService = {
    * Get payment history for a project (Prompt 3.4)
    */
   async getPaymentHistory(projectId: string, userId: string) {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       include: {
         owner: { select: { id: true } },
@@ -354,7 +354,7 @@ export const paymentService = {
       throw new AuthorizationError('Only project owner or contractor can view payment history')
     }
 
-    const escrow = await prisma.escrowAgreement.findUnique({
+    const escrow = await prismaAny.escrowAgreement.findUnique({
       where: { projectId },
     })
 
@@ -362,7 +362,7 @@ export const paymentService = {
       return { transactions: [], escrow: null }
     }
 
-    const transactions = await prisma.escrowTransaction.findMany({
+    const transactions = await prismaAny.escrowTransaction.findMany({
       where: { escrowId: escrow.id },
       include: {
         milestone: {

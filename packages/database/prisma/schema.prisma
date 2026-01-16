@@ -1462,6 +1462,10 @@ model Project {
   // Relationships
   permits           Permit[]
   inspections       Inspection[]
+  contracts         ContractAgreement[]
+  escrowAgreements  EscrowAgreement[]
+  disputes          Dispute[]
+  leads             Lead[]
 }
 
 model User {
@@ -1490,6 +1494,283 @@ model User {
   createdPermitTemplates PermitTemplate[] @relation("PermitTemplateCreated")
   createdRoutingRules RoutingRule[] @relation("RoutingRuleCreated")
   receivedPermitNotifications PermitNotification[] @relation("PermitNotificationRecipient")
+  
+  // Contract & Marketplace relations
+  ownedContracts    ContractAgreement[] @relation("ContractOwner")
+  contractorContracts ContractAgreement[] @relation("ContractContractor")
+  marketplaceProfile MarketplaceProfile? @relation("MarketplaceProfileUser")
+}
+
+// ============================================================================
+// CONTRACTS, MILESTONES, ESCROW & DISPUTES
+// ============================================================================
+
+enum ContractStatus {
+  DRAFT
+  SENT
+  SENT_FOR_SIGNATURE
+  PARTIALLY_SIGNED
+  FULLY_SIGNED
+  SIGNED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  ARCHIVED
+}
+
+enum MilestoneStatus {
+  PENDING
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  DISPUTED
+  PAID
+}
+
+enum EscrowStatus {
+  ACTIVE
+  FROZEN
+  CLOSED
+}
+
+enum DisputeStatus {
+  FILED
+  FREEZE_APPLIED
+  UNDER_INVESTIGATION
+  PENDING_MEDIATION
+  PENDING_RESOLUTION
+  RESOLVED
+  CANCELLED
+}
+
+enum LeadStatus {
+  OPEN
+  INTAKE
+  DISTRIBUTED
+  QUOTED
+  AWARDED
+  LOST
+  CLOSED
+}
+
+model ContractAgreement {
+  id                 String         @id @default(uuid())
+  projectId          String
+  ownerId            String
+  contractorId       String
+  amount             Decimal
+  status             ContractStatus @default(DRAFT)
+  signedAt           DateTime?
+  expiresAt          DateTime?
+  docusignEnvelopeId String?
+  signedDocumentUrl  String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  owner           User             @relation("ContractOwner", fields: [ownerId], references: [id])
+  contractor      User             @relation("ContractContractor", fields: [contractorId], references: [id])
+  milestones      Milestone[]
+  escrowAgreement EscrowAgreement?
+  disputes        Dispute[]
+
+  @@index([projectId])
+  @@index([ownerId])
+  @@index([contractorId])
+  @@index([status])
+}
+
+model Milestone {
+  id          String          @id @default(uuid())
+  contractId  String
+  name        String
+  description String?
+  amount      Decimal
+  status      MilestoneStatus @default(PENDING)
+  dependsOnId String?
+  completedAt DateTime?
+  approvedAt  DateTime?
+  paidAt      DateTime?
+  approvedBy  String?
+
+  contract   ContractAgreement @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  dependsOn  Milestone?        @relation("MilestoneDependency", fields: [dependsOnId], references: [id])
+  dependentMilestones Milestone[] @relation("MilestoneDependency")
+  evidence   Evidence[]
+
+  @@index([contractId])
+  @@index([status])
+  @@index([dependsOnId])
+}
+
+model Evidence {
+  id          String    @id @default(uuid())
+  milestoneId String
+  type        String
+  fileUrl     String
+  caption     String?
+  uploadedBy  String
+  uploadedAt  DateTime  @default(now())
+
+  milestone Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+
+  @@index([milestoneId])
+}
+
+model EscrowAgreement {
+  id              String       @id @default(uuid())
+  contractId      String       @unique
+  projectId       String
+  totalAmount     Decimal
+  currentBalance  Decimal      @default(0)
+  holdbackPercent Int          @default(10)
+  status          EscrowStatus @default(ACTIVE)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  contract     ContractAgreement   @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  project      Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  transactions EscrowTransaction[]
+  disputes     Dispute[]
+
+  @@index([contractId])
+  @@index([projectId])
+  @@index([status])
+}
+
+model EscrowTransaction {
+  id              String            @id @default(uuid())
+  escrowId        String
+  type            String // DEPOSIT, RELEASE, RELEASE_FINAL, REFUND, FEE
+  amount          Decimal
+  balanceBefore   Decimal
+  balanceAfter    Decimal
+  status          String // PENDING, COMPLETED, FAILED, CANCELLED
+  stripePaymentId String?
+  processedAt     DateTime?
+  createdAt       DateTime          @default(now())
+
+  escrow EscrowAgreement @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+
+  @@index([escrowId])
+  @@index([status])
+}
+
+model Dispute {
+  id              String        @id @default(uuid())
+  projectId       String
+  contractId      String?
+  escrowId        String?
+  milestoneId     String?
+  initiatedBy     String
+  initiatedByRole String // OWNER, CONTRACTOR
+  reason          String
+  description     String
+  priority        String // low, normal, high, urgent
+  status          DisputeStatus @default(FILED)
+  resolution      String?
+  resolvedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  contract  ContractAgreement? @relation(fields: [contractId], references: [id])
+  escrow    EscrowAgreement?  @relation(fields: [escrowId], references: [id])
+
+  @@index([projectId])
+  @@index([contractId])
+  @@index([status])
+}
+
+model Lead {
+  id             String      @id @default(uuid())
+  projectId      String?
+  category       String
+  description    String
+  estimatedValue Decimal?
+  budget         Decimal?
+  location       String
+  city           String?
+  state          String?
+  stage          LeadStatus  @default(OPEN)
+  status         String?     // Alternative status field
+  distributedTo  String[]    // Array of profile IDs
+  assignedSalesRepId String?
+  lostAt         DateTime?
+  lostReason     String?
+  stageChangedAt DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  project         Project?            @relation(fields: [projectId], references: [id])
+  quotes          Quote[]
+
+  @@index([projectId])
+  @@index([stage])
+  @@index([status])
+}
+
+model MarketplaceProfile {
+  id                String    @id @default(uuid())
+  userId            String    @unique
+  businessName      String
+  description       String?
+  serviceArea       Json?
+  specialties       String[]
+  rating            Float?    @default(0)
+  reviewCount       Int       @default(0)
+  projectsCompleted Int       @default(0)
+  performanceScore  Int?
+  verified          Boolean   @default(false)
+  verifiedAt        DateTime?
+  subscriptionTier  String?
+  leadCredits       Int       @default(0)
+  acceptingLeads    Boolean   @default(true)
+  maxPipelineValue  Decimal?
+  currentPipelineValue Decimal? @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user      User        @relation("MarketplaceProfileUser", fields: [userId], references: [id])
+  portfolio Portfolio[]
+  quotes    Quote[]
+
+  @@index([verified])
+  @@index([subscriptionTier])
+  @@index([acceptingLeads])
+}
+
+model Portfolio {
+  id          String      @id @default(uuid())
+  profileId   String
+  projectName String
+  description String?
+  category    String
+  imageUrls   String[]
+  completedAt DateTime?
+
+  profile MarketplaceProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+model Quote {
+  id          String      @id @default(uuid())
+  leadId      String
+  profileId   String
+  amount      Decimal
+  timeline    String?
+  details     String?
+  status      String // SUBMITTED, ACCEPTED, REJECTED
+  submittedAt DateTime    @default(now())
+
+  lead    Lead               @relation(fields: [leadId], references: [id])
+  profile MarketplaceProfile @relation(fields: [profileId], references: [id])
+
+  @@index([leadId])
+  @@index([profileId])
+  @@index([status])
 }
 
 // ============================================================================

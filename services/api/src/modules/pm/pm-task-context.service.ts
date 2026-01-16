@@ -3,7 +3,7 @@
  * Provides full context for a task including requirements and integration points
  */
 
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 
 export interface TaskContext {
   id: string
@@ -38,7 +38,7 @@ export const pmTaskContextService = {
   async getTaskContext(taskId: string, userId: string): Promise<TaskContext | null> {
     // Get task (would need to query from appropriate table)
     // For now, return a mock structure
-    const task = await prisma.task?.findUnique({
+    const task = await prismaAny.task?.findUnique({
       where: { id: taskId },
       include: {
         request: {
@@ -58,7 +58,7 @@ export const pmTaskContextService = {
     }
 
     // Get project if available
-    const project = await prisma.project?.findFirst({
+    const project = await prismaAny.project?.findFirst({
       where: {
         ownerId: task.request?.plan?.userId || '',
       },

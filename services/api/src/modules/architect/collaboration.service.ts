@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -16,7 +16,7 @@ export const collaborationService = {
     viewportPosition?: any
     cursorPosition?: any
   }) {
-    const presence = await prisma.documentPresence.upsert({
+    const presence = await prismaAny.documentPresence.upsert({
       where: {
         targetType_targetId_userId: {
           targetType: data.targetType,
@@ -51,7 +51,7 @@ export const collaborationService = {
     // Get all active presence (within last 5 minutes)
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
 
-    const presence = await prisma.documentPresence.findMany({
+    const presence = await prismaAny.documentPresence.findMany({
       where: {
         designProjectId,
         targetType,
@@ -81,7 +81,7 @@ export const collaborationService = {
    * Remove presence (user left document)
    */
   async removePresence(targetType: string, targetId: string, userId: string) {
-    await prisma.documentPresence.deleteMany({
+    await prismaAny.documentPresence.deleteMany({
       where: {
         targetType,
         targetId,
@@ -109,7 +109,7 @@ export const collaborationService = {
     versionAfter?: string
     createdById: string
   }) {
-    const change = await prisma.documentChange.create({
+    const change = await prismaAny.documentChange.create({
       data: {
         designProjectId: data.designProjectId,
         targetType: data.targetType,
@@ -173,7 +173,7 @@ export const collaborationService = {
       }
     }
 
-    const changes = await prisma.documentChange.findMany({
+    const changes = await prismaAny.documentChange.findMany({
       where,
       include: {
         createdBy: {
@@ -203,7 +203,7 @@ export const collaborationService = {
     expiresAt?: Date
     approvalNotes?: string
   }) {
-    const signature = await prisma.digitalSignature.create({
+    const signature = await prismaAny.digitalSignature.create({
       data: {
         designProjectId: data.designProjectId,
         targetType: data.targetType,
@@ -253,7 +253,7 @@ export const collaborationService = {
     userAgent?: string
     userId: string
   }) {
-    const signature = await prisma.digitalSignature.findUnique({
+    const signature = await prismaAny.digitalSignature.findUnique({
       where: { id: signatureId },
     })
 
@@ -273,7 +273,7 @@ export const collaborationService = {
       throw new ValidationError('Signature request has expired')
     }
 
-    const updated = await prisma.digitalSignature.update({
+    const updated = await prismaAny.digitalSignature.update({
       where: { id: signatureId },
       data: {
         signatureStatus: 'SIGNED',
@@ -318,7 +318,7 @@ export const collaborationService = {
    * Get signatures for a document
    */
   async getSignatures(designProjectId: string, targetType: string, targetId: string) {
-    const signatures = await prisma.digitalSignature.findMany({
+    const signatures = await prismaAny.digitalSignature.findMany({
       where: {
         designProjectId,
         targetType,
@@ -360,7 +360,7 @@ export const collaborationService = {
     nextMeetingDate?: Date
     createdById: string
   }) {
-    const meeting = await prisma.meetingMinute.create({
+    const meeting = await prismaAny.meetingMinute.create({
       data: {
         designProjectId: data.designProjectId,
         title: data.title,
@@ -411,7 +411,7 @@ export const collaborationService = {
    * Get meeting minute
    */
   async getMeetingMinute(meetingId: string) {
-    const meeting = await prisma.meetingMinute.findUnique({
+    const meeting = await prismaAny.meetingMinute.findUnique({
       where: { id: meetingId },
       include: {
         createdBy: {
@@ -446,7 +446,7 @@ export const collaborationService = {
     }
 
     // Get attendees
-    const attendees = await prisma.user.findMany({
+    const attendees = await prismaAny.user.findMany({
       where: {
         id: { in: meeting.attendeeIds },
       },
@@ -489,7 +489,7 @@ export const collaborationService = {
       where.meetingType = filters.meetingType
     }
 
-    const meetings = await prisma.meetingMinute.findMany({
+    const meetings = await prismaAny.meetingMinute.findMany({
       where,
       include: {
         createdBy: {
@@ -531,7 +531,7 @@ export const collaborationService = {
     relatedFileIds?: string[]
     createdById: string
   }) {
-    const actionItem = await prisma.actionItem.create({
+    const actionItem = await prismaAny.actionItem.create({
       data: {
         designProjectId: data.designProjectId,
         sourceType: data.sourceType,
@@ -600,7 +600,7 @@ export const collaborationService = {
     completionNotes?: string
     userId: string
   }) {
-    const actionItem = await prisma.actionItem.findUnique({
+    const actionItem = await prismaAny.actionItem.findUnique({
       where: { id: actionItemId },
     })
 
@@ -620,7 +620,7 @@ export const collaborationService = {
       }
     }
 
-    const updated = await prisma.actionItem.update({
+    const updated = await prismaAny.actionItem.update({
       where: { id: actionItemId },
       data: updateData,
       include: {
@@ -678,7 +678,7 @@ export const collaborationService = {
       where.sourceId = filters.sourceId
     }
 
-    const actionItems = await prisma.actionItem.findMany({
+    const actionItems = await prismaAny.actionItem.findMany({
       where,
       include: {
         assignedTo: {
@@ -730,7 +730,7 @@ export const collaborationService = {
     proposedById: string
     createdById: string
   }) {
-    const decision = await prisma.designDecision.create({
+    const decision = await prismaAny.designDecision.create({
       data: {
         designProjectId: data.designProjectId,
         title: data.title,
@@ -789,7 +789,7 @@ export const collaborationService = {
     status: string
     userId: string
   }) {
-    const decision = await prisma.designDecision.findUnique({
+    const decision = await prismaAny.designDecision.findUnique({
       where: { id: decisionId },
     })
 
@@ -815,7 +815,7 @@ export const collaborationService = {
       updateData.implementedById = data.userId
     }
 
-    const updated = await prisma.designDecision.update({
+    const updated = await prismaAny.designDecision.update({
       where: { id: decisionId },
       data: updateData,
       include: {
@@ -873,7 +873,7 @@ export const collaborationService = {
       where.relatedReviewRequestId = filters.relatedReviewRequestId
     }
 
-    const decisions = await prisma.designDecision.findMany({
+    const decisions = await prismaAny.designDecision.findMany({
       where,
       include: {
         proposedBy: {
@@ -908,7 +908,7 @@ export const collaborationService = {
    * Get design decision
    */
   async getDesignDecision(decisionId: string) {
-    const decision = await prisma.designDecision.findUnique({
+    const decision = await prismaAny.designDecision.findUnique({
       where: { id: decisionId },
       include: {
         proposedBy: {

@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -10,7 +10,7 @@ export const permitRoutingService = {
    * Route permit to review disciplines (rules-based routing)
    */
   async routePermit(permitId: string, data: { routedById: string }) {
-    const permit = await prisma.permit.findUnique({
+    const permit = await prismaAny.permit.findUnique({
       where: { id: permitId },
       include: {
         jurisdiction: {
@@ -27,7 +27,7 @@ export const permitRoutingService = {
     }
 
     // Get permit type config to determine required disciplines
-    const permitTypeConfig = await prisma.permitTypeConfig.findUnique({
+    const permitTypeConfig = await prismaAny.permitTypeConfig.findUnique({
       where: {
         jurisdictionId_permitType: {
           jurisdictionId: permit.jurisdictionId,
@@ -37,7 +37,7 @@ export const permitRoutingService = {
     })
 
     // Get routing rules for this jurisdiction
-    const routingRules = await prisma.routingRule.findMany({
+    const routingRules = await prismaAny.routingRule.findMany({
       where: {
         jurisdictionId: permit.jurisdictionId,
         isActive: true,
@@ -116,7 +116,7 @@ export const permitRoutingService = {
         }
 
         // Calculate due date (based on discipline estimated review days)
-        const reviewDiscipline = await prisma.reviewDiscipline.findUnique({
+        const reviewDiscipline = await prismaAny.reviewDiscipline.findUnique({
           where: {
             jurisdictionId_disciplineType: {
               jurisdictionId: permit.jurisdictionId,
@@ -131,7 +131,7 @@ export const permitRoutingService = {
           dueDate.setDate(dueDate.getDate() + reviewDiscipline.estimatedReviewDays)
         }
 
-        const routing = await prisma.permitRouting.create({
+        const routing = await prismaAny.permitRouting.create({
           data: {
             permitId,
             discipline,
@@ -157,7 +157,7 @@ export const permitRoutingService = {
     )
 
     // Update permit status
-    await prisma.permit.update({
+    await prismaAny.permit.update({
       where: { id: permitId },
       data: {
         status: 'UNDER_REVIEW',
@@ -198,7 +198,7 @@ export const permitRoutingService = {
     isExpedited?: boolean
     priority?: number
   }) {
-    const routing = await prisma.permitRouting.findUnique({
+    const routing = await prismaAny.permitRouting.findUnique({
       where: { id: routingId },
       include: {
         permit: {
@@ -236,7 +236,7 @@ export const permitRoutingService = {
     const recommendedStaff = balanceResult.recommended.staff
 
     // Assign reviewer
-    const updated = await prisma.permitRouting.update({
+    const updated = await prismaAny.permitRouting.update({
       where: { id: routingId },
       data: {
         assignedReviewerId: recommendedStaff.id,
@@ -280,7 +280,7 @@ export const permitRoutingService = {
     discipline?: string
     reRoutedById: string
   }) {
-    const permit = await prisma.permit.findUnique({
+    const permit = await prismaAny.permit.findUnique({
       where: { id: permitId },
     })
 
@@ -289,7 +289,7 @@ export const permitRoutingService = {
     }
 
     // Get existing routings
-    const existingRoutings = await prisma.permitRouting.findMany({
+    const existingRoutings = await prismaAny.permitRouting.findMany({
       where: {
         permitId,
         routingStatus: {
@@ -301,7 +301,7 @@ export const permitRoutingService = {
     // Create new routings based on existing ones
     const newRoutings = await Promise.all(
       existingRoutings.map(async (existing) => {
-        const newRouting = await prisma.permitRouting.create({
+        const newRouting = await prismaAny.permitRouting.create({
           data: {
             permitId,
             discipline: data.discipline || existing.discipline,
@@ -316,7 +316,7 @@ export const permitRoutingService = {
         })
 
         // Mark old routing as re-routed
-        await prisma.permitRouting.update({
+        await prismaAny.permitRouting.update({
           where: { id: existing.id },
           data: {
             routingStatus: 'RE_ROUTED',
@@ -338,7 +338,7 @@ export const permitRoutingService = {
     )
 
     // Update permit status
-    await prisma.permit.update({
+    await prismaAny.permit.update({
       where: { id: permitId },
       data: {
         status: 'RESUBMITTED',
@@ -376,7 +376,7 @@ export const permitRoutingService = {
     escalatedToId?: string
     escalatedById: string
   }) {
-    const routing = await prisma.permitRouting.findUnique({
+    const routing = await prismaAny.permitRouting.findUnique({
       where: { id: routingId },
       include: {
         permit: {
@@ -404,7 +404,7 @@ export const permitRoutingService = {
     // If no escalatedToId, escalate to administrator
     let escalatedToId = data.escalatedToId
     if (!escalatedToId) {
-      const admin = await prisma.jurisdictionStaff.findFirst({
+      const admin = await prismaAny.jurisdictionStaff.findFirst({
         where: {
           jurisdictionId: routing.permit.jurisdictionId,
           role: 'ADMINISTRATOR',
@@ -424,7 +424,7 @@ export const permitRoutingService = {
       }
     }
 
-    const updated = await prisma.permitRouting.update({
+    const updated = await prismaAny.permitRouting.update({
       where: { id: routingId },
       data: {
         isEscalated: true,
@@ -466,7 +466,7 @@ export const permitRoutingService = {
    */
   async checkDelayedReviews(jurisdictionId: string) {
     const now = new Date()
-    const delayedRoutings = await prisma.permitRouting.findMany({
+    const delayedRoutings = await prismaAny.permitRouting.findMany({
       where: {
         permit: {
           jurisdictionId,
@@ -527,7 +527,7 @@ export const permitRoutingService = {
     recipientId: string
     permitApplicationId?: string
   }) {
-    const permit = await prisma.permit.findUnique({
+    const permit = await prismaAny.permit.findUnique({
       where: { id: permitId },
       include: {
         applicant: {
@@ -543,7 +543,7 @@ export const permitRoutingService = {
       throw new NotFoundError('Permit', permitId)
     }
 
-    const notification = await prisma.permitNotification.create({
+    const notification = await prismaAny.permitNotification.create({
       data: {
         permitId,
         permitApplicationId: data.permitApplicationId,
@@ -577,7 +577,7 @@ export const permitRoutingService = {
    * Get routing status for permit
    */
   async getRoutingStatus(permitId: string) {
-    const permit = await prisma.permit.findUnique({
+    const permit = await prismaAny.permit.findUnique({
       where: { id: permitId },
       include: {
         routings: {
@@ -627,7 +627,7 @@ export const permitRoutingService = {
    * Complete routing
    */
   async completeRouting(routingId: string, data: { completedById: string }) {
-    const routing = await prisma.permitRouting.findUnique({
+    const routing = await prismaAny.permitRouting.findUnique({
       where: { id: routingId },
       include: {
         permit: {
@@ -644,7 +644,7 @@ export const permitRoutingService = {
       throw new NotFoundError('PermitRouting', routingId)
     }
 
-    const updated = await prisma.permitRouting.update({
+    const updated = await prismaAny.permitRouting.update({
       where: { id: routingId },
       data: {
         routingStatus: 'COMPLETED',
@@ -661,7 +661,7 @@ export const permitRoutingService = {
 
     if (allCompleted) {
       // All reviews complete, check if permit can be approved
-      await prisma.permit.update({
+      await prismaAny.permit.update({
         where: { id: routing.permitId },
         data: {
           status: 'APPROVED',

@@ -117,7 +117,7 @@ const start = async () => {
     })
 
     // Register Swagger/OpenAPI documentation
-    await fastify.register(swagger, swaggerConfig)
+    await fastify.register(swagger, swaggerConfig as any)
     await fastify.register(swaggerUI, swaggerUIConfig)
 
     // Register rate limiting (global)

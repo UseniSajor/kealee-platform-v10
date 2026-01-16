@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -28,7 +28,7 @@ export const jurisdictionService = {
     createdById: string
   }) {
     // Check if code already exists
-    const existing = await prisma.jurisdiction.findUnique({
+    const existing = await prismaAny.jurisdiction.findUnique({
       where: { code: data.code },
     })
 
@@ -39,7 +39,7 @@ export const jurisdictionService = {
     // Generate license key
     const licenseKey = generateLicenseKey()
 
-    const jurisdiction = await prisma.jurisdiction.create({
+    const jurisdiction = await prismaAny.jurisdiction.create({
       data: {
         name: data.name,
         code: data.code,
@@ -104,7 +104,7 @@ export const jurisdictionService = {
     stripeSubscriptionId?: string
     updatedById: string
   }) {
-    const jurisdiction = await prisma.jurisdiction.findUnique({
+    const jurisdiction = await prismaAny.jurisdiction.findUnique({
       where: { id: jurisdictionId },
     })
 
@@ -112,7 +112,7 @@ export const jurisdictionService = {
       throw new NotFoundError('Jurisdiction', jurisdictionId)
     }
 
-    const updated = await prisma.jurisdiction.update({
+    const updated = await prismaAny.jurisdiction.update({
       where: { id: jurisdictionId },
       data: {
         subscriptionTier: data.subscriptionTier as any,
@@ -147,7 +147,7 @@ export const jurisdictionService = {
    * Regenerate license key
    */
   async regenerateLicenseKey(jurisdictionId: string, data: { updatedById: string }) {
-    const jurisdiction = await prisma.jurisdiction.findUnique({
+    const jurisdiction = await prismaAny.jurisdiction.findUnique({
       where: { id: jurisdictionId },
     })
 
@@ -157,7 +157,7 @@ export const jurisdictionService = {
 
     const newLicenseKey = generateLicenseKey()
 
-    const updated = await prisma.jurisdiction.update({
+    const updated = await prismaAny.jurisdiction.update({
       where: { id: jurisdictionId },
       data: {
         licenseKey: newLicenseKey,
@@ -186,7 +186,7 @@ export const jurisdictionService = {
    * Validate license key
    */
   async validateLicenseKey(licenseKey: string) {
-    const jurisdiction = await prisma.jurisdiction.findUnique({
+    const jurisdiction = await prismaAny.jurisdiction.findUnique({
       where: { licenseKey },
       include: {
         _count: {
@@ -213,7 +213,7 @@ export const jurisdictionService = {
    * Get jurisdiction by ID
    */
   async getJurisdiction(jurisdictionId: string) {
-    const jurisdiction = await prisma.jurisdiction.findUnique({
+    const jurisdiction = await prismaAny.jurisdiction.findUnique({
       where: { id: jurisdictionId },
       include: {
         _count: {
@@ -265,7 +265,7 @@ export const jurisdictionService = {
       ]
     }
 
-    const jurisdictions = await prisma.jurisdiction.findMany({
+    const jurisdictions = await prismaAny.jurisdiction.findMany({
       where,
       include: {
         _count: {
@@ -288,7 +288,7 @@ export const jurisdictionService = {
    * Get usage metrics dashboard
    */
   async getUsageMetrics(jurisdictionId: string, period?: { year?: number; month?: number }) {
-    const jurisdiction = await prisma.jurisdiction.findUnique({
+    const jurisdiction = await prismaAny.jurisdiction.findUnique({
       where: { id: jurisdictionId },
     })
 
@@ -302,7 +302,7 @@ export const jurisdictionService = {
     const month = period?.month || now.getMonth() + 1
 
     // Get or create metrics for this period
-    let metrics = await prisma.jurisdictionUsageMetrics.findUnique({
+    let metrics = await prismaAny.jurisdictionUsageMetrics.findUnique({
       where: {
         jurisdictionId_year_month: {
           jurisdictionId,
@@ -314,7 +314,7 @@ export const jurisdictionService = {
 
     if (!metrics) {
       // Calculate current metrics from permits
-      const permits = await prisma.permit.findMany({
+      const permits = await prismaAny.permit.findMany({
         where: {
           jurisdictionId,
           createdAt: {
@@ -337,7 +337,7 @@ export const jurisdictionService = {
         return sum + (p.expeditedFee ? parseFloat(p.expeditedFee.toString()) : 0)
       }, 0)
 
-      metrics = await prisma.jurisdictionUsageMetrics.create({
+      metrics = await prismaAny.jurisdictionUsageMetrics.create({
         data: {
           jurisdictionId,
           year,
@@ -354,7 +354,7 @@ export const jurisdictionService = {
     }
 
     // Get staff metrics
-    const staff = await prisma.jurisdictionStaff.findMany({
+    const staff = await prismaAny.jurisdictionStaff.findMany({
       where: {
         jurisdictionId,
         active: true,
@@ -388,7 +388,7 @@ export const jurisdictionService = {
     status: string
     updatedById: string
   }) {
-    const jurisdiction = await prisma.jurisdiction.findUnique({
+    const jurisdiction = await prismaAny.jurisdiction.findUnique({
       where: { id: jurisdictionId },
     })
 
@@ -396,7 +396,7 @@ export const jurisdictionService = {
       throw new NotFoundError('Jurisdiction', jurisdictionId)
     }
 
-    const updated = await prisma.jurisdiction.update({
+    const updated = await prismaAny.jurisdiction.update({
       where: { id: jurisdictionId },
       data: {
         status: data.status as any,

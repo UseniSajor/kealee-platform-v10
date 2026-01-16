@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq'
 import IORedis from 'ioredis'
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 
 import { entitlementService } from '../entitlements/entitlement.service'
 import { eventService } from '../events/event.service'
@@ -49,7 +49,7 @@ export class BillingService {
   private stripe = getStripe()
 
   async listPlans() {
-    return prisma.servicePlan.findMany({
+    return prismaAny.servicePlan.findMany({
       where: { isActive: true },
       orderBy: { order: 'asc' },
     })
@@ -63,7 +63,7 @@ export class BillingService {
     cancelUrl: string
     customerEmail?: string
   }) {
-    const plan = await prisma.servicePlan.findUnique({ where: { slug: input.planSlug } })
+    const plan = await prismaAny.servicePlan.findUnique({ where: { slug: input.planSlug } })
     if (!plan) {
       throw new Error(`Unknown service plan slug: ${input.planSlug}`)
     }
@@ -106,7 +106,7 @@ export class BillingService {
   }
 
   async createBillingPortalSession(input: { orgId: string; returnUrl: string }) {
-    const sub = await prisma.serviceSubscription.findFirst({
+    const sub = await prismaAny.serviceSubscription.findFirst({
       where: {
         orgId: input.orgId,
         stripeId: { not: null },
@@ -184,7 +184,7 @@ export class BillingService {
       (subscription.metadata?.orgId as string | undefined) ||
       (await this.bootstrapOrgFromSubscriptionIfNeeded(subscription, planSlug))
 
-    const plan = await prisma.servicePlan.findUnique({ where: { slug: planSlug } })
+    const plan = await prismaAny.servicePlan.findUnique({ where: { slug: planSlug } })
     if (!plan) {
       throw new Error(`ServicePlan not found for slug: ${planSlug}`)
     }
@@ -194,7 +194,7 @@ export class BillingService {
     const currentPeriodEnd = toDateFromSeconds(subscription.current_period_end)
     const canceledAt = subscription.canceled_at ? toDateFromSeconds(subscription.canceled_at) : null
 
-    const upserted = await prisma.serviceSubscription.upsert({
+    const upserted = await prismaAny.serviceSubscription.upsert({
       where: { stripeId: subscription.id },
       create: {
         orgId,
@@ -302,12 +302,12 @@ export class BillingService {
     if (!slug) slug = `gc-${ownerEmail.split('@')[0]}`
 
     // Ensure slug uniqueness
-    const existing = await prisma.org.findUnique({ where: { slug } })
+    const existing = await prismaAny.org.findUnique({ where: { slug } })
     if (existing) {
       slug = `${slug}-${Math.random().toString(16).slice(2, 6)}`
     }
 
-    const user = await prisma.user.upsert({
+    const user = await prismaAny.user.upsert({
       where: { email: ownerEmail },
       update: { name: ownerName },
       create: {
@@ -358,7 +358,7 @@ export class BillingService {
     const subscriptionId =
       typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id
     const orgSub = subscriptionId
-      ? await prisma.serviceSubscription.findUnique({ where: { stripeId: subscriptionId } })
+      ? await prismaAny.serviceSubscription.findUnique({ where: { stripeId: subscriptionId } })
       : null
     const orgId = orgSub?.orgId || invoice.metadata?.orgId || null
 
@@ -411,7 +411,7 @@ export class BillingService {
     const subscriptionId =
       typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id
     const orgSub = subscriptionId
-      ? await prisma.serviceSubscription.findUnique({ where: { stripeId: subscriptionId } })
+      ? await prismaAny.serviceSubscription.findUnique({ where: { stripeId: subscriptionId } })
       : null
     const orgId = orgSub?.orgId || invoice.metadata?.orgId || null
 

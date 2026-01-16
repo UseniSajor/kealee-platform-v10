@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 
 export class RBACService {
   // Create a role
@@ -7,7 +7,7 @@ export class RBACService {
     name: string
     description?: string
   }) {
-    const role = await prisma.role.create({
+    const role = await prismaAny.role.create({
       data: {
         key: data.key,
         name: data.name,
@@ -20,7 +20,7 @@ export class RBACService {
 
   // Get role by key
   async getRoleByKey(roleKey: string) {
-    const role = await prisma.role.findUnique({
+    const role = await prismaAny.role.findUnique({
       where: { key: roleKey },
       include: {
         permissions: {
@@ -40,7 +40,7 @@ export class RBACService {
 
   // List all roles
   async listRoles() {
-    const roles = await prisma.role.findMany({
+    const roles = await prismaAny.role.findMany({
       include: {
         _count: {
           select: {
@@ -60,7 +60,7 @@ export class RBACService {
     name: string
     description?: string
   }) {
-    const permission = await prisma.permission.create({
+    const permission = await prismaAny.permission.create({
       data: {
         key: data.key,
         name: data.name,
@@ -73,7 +73,7 @@ export class RBACService {
 
   // Get permission by key
   async getPermissionByKey(permissionKey: string) {
-    const permission = await prisma.permission.findUnique({
+    const permission = await prismaAny.permission.findUnique({
       where: { key: permissionKey },
       include: {
         roles: {
@@ -93,7 +93,7 @@ export class RBACService {
 
   // List all permissions
   async listPermissions() {
-    const permissions = await prisma.permission.findMany({
+    const permissions = await prismaAny.permission.findMany({
       include: {
         _count: {
           select: {
@@ -110,7 +110,7 @@ export class RBACService {
   // Assign permission to role
   async assignPermissionToRole(roleKey: string, permissionKey: string) {
     // Check if role exists
-    const role = await prisma.role.findUnique({
+    const role = await prismaAny.role.findUnique({
       where: { key: roleKey },
     })
     if (!role) {
@@ -118,7 +118,7 @@ export class RBACService {
     }
 
     // Check if permission exists
-    const permission = await prisma.permission.findUnique({
+    const permission = await prismaAny.permission.findUnique({
       where: { key: permissionKey },
     })
     if (!permission) {
@@ -126,7 +126,7 @@ export class RBACService {
     }
 
     // Create or get existing assignment
-    const rolePermission = await prisma.rolePermission.upsert({
+    const rolePermission = await prismaAny.rolePermission.upsert({
       where: {
         roleKey_permissionKey: {
           roleKey,
@@ -145,7 +145,7 @@ export class RBACService {
 
   // Remove permission from role
   async removePermissionFromRole(roleKey: string, permissionKey: string) {
-    await prisma.rolePermission.delete({
+    await prismaAny.rolePermission.delete({
       where: {
         roleKey_permissionKey: {
           roleKey,
@@ -157,7 +157,7 @@ export class RBACService {
 
   // Get all permissions for a role
   async getRolePermissions(roleKey: string) {
-    const role = await prisma.role.findUnique({
+    const role = await prismaAny.role.findUnique({
       where: { key: roleKey },
       include: {
         permissions: {
@@ -182,7 +182,7 @@ export class RBACService {
     permissionKey: string
   ): Promise<boolean> {
     // Get user's role in the organization
-    const membership = await prisma.orgMember.findUnique({
+    const membership = await prismaAny.orgMember.findUnique({
       where: {
         userId_orgId: {
           userId,
@@ -196,7 +196,7 @@ export class RBACService {
     }
 
     // Check if the role has the permission
-    const rolePermission = await prisma.rolePermission.findUnique({
+    const rolePermission = await prismaAny.rolePermission.findUnique({
       where: {
         roleKey_permissionKey: {
           roleKey: membership.roleKey,
@@ -210,7 +210,7 @@ export class RBACService {
 
   // Get all permissions for a user in an organization
   async getUserPermissions(userId: string, orgId: string) {
-    const membership = await prisma.orgMember.findUnique({
+    const membership = await prismaAny.orgMember.findUnique({
       where: {
         userId_orgId: {
           userId,
@@ -223,7 +223,7 @@ export class RBACService {
       return []
     }
 
-    const rolePermissions = await prisma.rolePermission.findMany({
+    const rolePermissions = await prismaAny.rolePermission.findMany({
       where: {
         roleKey: membership.roleKey,
       },
@@ -241,7 +241,7 @@ export class RBACService {
     orgId: string,
     permissionKeys: string[]
   ): Promise<boolean> {
-    const membership = await prisma.orgMember.findUnique({
+    const membership = await prismaAny.orgMember.findUnique({
       where: {
         userId_orgId: {
           userId,
@@ -254,7 +254,7 @@ export class RBACService {
       return false
     }
 
-    const count = await prisma.rolePermission.count({
+    const count = await prismaAny.rolePermission.count({
       where: {
         roleKey: membership.roleKey,
         permissionKey: {
@@ -268,7 +268,7 @@ export class RBACService {
 
   // Get user's role in organization
   async getUserRole(userId: string, orgId: string) {
-    const membership = await prisma.orgMember.findUnique({
+    const membership = await prismaAny.orgMember.findUnique({
       where: {
         userId_orgId: {
           userId,
@@ -290,7 +290,7 @@ export class RBACService {
       return null
     }
 
-    const role = await prisma.role.findUnique({
+    const role = await prismaAny.role.findUnique({
       where: { key: membership.roleKey },
     })
 

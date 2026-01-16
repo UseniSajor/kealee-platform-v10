@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
-import { validateParams, validateBody } from '../../middleware/validation.middleware'
+import { validateParams, validateBody, validateQuery } from '../../middleware/validation.middleware'
 import { leadsService } from './leads.service'
 
 const distributeLeadBodySchema = z.object({

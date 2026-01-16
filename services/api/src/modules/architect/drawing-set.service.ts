@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -29,7 +29,7 @@ export const drawingSetService = {
     const prefix = DISCIPLINE_PREFIX[discipline] || 'X'
 
     // Get the highest sequence number for this discipline
-    const lastSheet = await prisma.drawingSheet.findFirst({
+    const lastSheet = await prismaAny.drawingSheet.findFirst({
       where: {
         designProjectId,
         discipline: discipline as any,
@@ -70,7 +70,7 @@ export const drawingSetService = {
       fullSheetNumber = `${prefix}-${String(sequenceNumber).padStart(3, '0')}`
 
       // Check if this number already exists
-      const existing = await prisma.drawingSheet.findUnique({
+      const existing = await prismaAny.drawingSheet.findUnique({
         where: {
           designProjectId_fullSheetNumber: {
             designProjectId: data.designProjectId,
@@ -89,7 +89,7 @@ export const drawingSetService = {
     }
 
     // Auto-populate title block data
-    const project = await prisma.designProject.findUnique({
+    const project = await prismaAny.designProject.findUnique({
       where: { id: data.designProjectId },
       include: {
         project: {
@@ -117,7 +117,7 @@ export const drawingSetService = {
       approvedBy: null,
     }
 
-    const sheet = await prisma.drawingSheet.create({
+    const sheet = await prismaAny.drawingSheet.create({
       data: {
         designProjectId: data.designProjectId,
         deliverableId: data.deliverableId,
@@ -175,7 +175,7 @@ export const drawingSetService = {
    * Get a sheet with all related data
    */
   async getSheet(sheetId: string) {
-    const sheet = await prisma.drawingSheet.findUnique({
+    const sheet = await prismaAny.drawingSheet.findUnique({
       where: { id: sheetId },
       include: {
         drawnBy: {
@@ -246,7 +246,7 @@ export const drawingSetService = {
       where.deliverableId = filters.deliverableId
     }
 
-    const sheets = await prisma.drawingSheet.findMany({
+    const sheets = await prismaAny.drawingSheet.findMany({
       where,
       include: {
         drawnBy: {
@@ -287,7 +287,7 @@ export const drawingSetService = {
     pdfFileId?: string
     userId: string
   }) {
-    const sheet = await prisma.drawingSheet.findUnique({
+    const sheet = await prismaAny.drawingSheet.findUnique({
       where: { id: sheetId },
     })
 
@@ -325,7 +325,7 @@ export const drawingSetService = {
     if (data.drawingFileId !== undefined) updateData.drawingFileId = data.drawingFileId
     if (data.pdfFileId !== undefined) updateData.pdfFileId = data.pdfFileId
 
-    const updated = await prisma.drawingSheet.update({
+    const updated = await prismaAny.drawingSheet.update({
       where: { id: sheetId },
       data: updateData,
     })
@@ -354,7 +354,7 @@ export const drawingSetService = {
     cloudAreas?: any[]
     userId: string
   }) {
-    const sheet = await prisma.drawingSheet.findUnique({
+    const sheet = await prismaAny.drawingSheet.findUnique({
       where: { id: sheetId },
     })
 
@@ -374,7 +374,7 @@ export const drawingSetService = {
 
     revisionHistory.push(newRevision)
 
-    const updated = await prisma.drawingSheet.update({
+    const updated = await prismaAny.drawingSheet.update({
       where: { id: sheetId },
       data: {
         currentRevision: data.revision,
@@ -408,7 +408,7 @@ export const drawingSetService = {
     customFields?: Record<string, any>
     userId: string
   }) {
-    const sheet = await prisma.drawingSheet.findUnique({
+    const sheet = await prismaAny.drawingSheet.findUnique({
       where: { id: sheetId },
     })
 
@@ -419,7 +419,7 @@ export const drawingSetService = {
     const titleBlock = (sheet.titleBlockData as any) || {}
     
     if (data.drawnById) {
-      const user = await prisma.user.findUnique({
+      const user = await prismaAny.user.findUnique({
         where: { id: data.drawnById },
         select: { name: true },
       })
@@ -427,7 +427,7 @@ export const drawingSetService = {
     }
 
     if (data.checkedById) {
-      const user = await prisma.user.findUnique({
+      const user = await prismaAny.user.findUnique({
         where: { id: data.checkedById },
         select: { name: true },
       })
@@ -435,7 +435,7 @@ export const drawingSetService = {
     }
 
     if (data.approvedById) {
-      const user = await prisma.user.findUnique({
+      const user = await prismaAny.user.findUnique({
         where: { id: data.approvedById },
         select: { name: true },
       })
@@ -454,7 +454,7 @@ export const drawingSetService = {
     if (data.checkedById) updateData.checkedById = data.checkedById
     if (data.approvedById) updateData.approvedById = data.approvedById
 
-    const updated = await prisma.drawingSheet.update({
+    const updated = await prismaAny.drawingSheet.update({
       where: { id: sheetId },
       data: updateData,
     })
@@ -488,7 +488,7 @@ export const drawingSetService = {
   }) {
     // Validate all sheets belong to the project
     if (data.sheetIds.length > 0) {
-      const sheets = await prisma.drawingSheet.findMany({
+      const sheets = await prismaAny.drawingSheet.findMany({
         where: {
           id: { in: data.sheetIds },
         },
@@ -499,14 +499,14 @@ export const drawingSetService = {
       }
 
       const invalidSheets = sheets.filter(
-        (s) => s.designProjectId !== data.designProjectId
+        (s: any) => s.designProjectId !== data.designProjectId
       )
       if (invalidSheets.length > 0) {
         throw new ValidationError('All sheets must belong to the same project')
       }
     }
 
-    const set = await prisma.drawingSet.create({
+    const set = await prismaAny.drawingSet.create({
       data: {
         designProjectId: data.designProjectId,
         deliverableId: data.deliverableId,
@@ -547,7 +547,7 @@ export const drawingSetService = {
    * Get drawing set with sheets
    */
   async getSet(setId: string) {
-    const set = await prisma.drawingSet.findUnique({
+    const set = await prismaAny.drawingSet.findUnique({
       where: { id: setId },
       include: {
         createdBy: {
@@ -571,7 +571,7 @@ export const drawingSetService = {
     }
 
     // Fetch all sheets in the set
-    const sheets = await prisma.drawingSheet.findMany({
+    const sheets = await prismaAny.drawingSheet.findMany({
       where: {
         id: { in: set.sheetIds },
       },
@@ -611,7 +611,7 @@ export const drawingSetService = {
    * List drawing sets for a project
    */
   async listSets(designProjectId: string) {
-    const sets = await prisma.drawingSet.findMany({
+    const sets = await prismaAny.drawingSet.findMany({
       where: { designProjectId },
       include: {
         createdBy: {
@@ -634,7 +634,7 @@ export const drawingSetService = {
    * Generate PDF for drawing set (placeholder - would integrate with PDF generation service)
    */
   async generateSetPdf(setId: string, userId: string) {
-    const set = await prisma.drawingSet.findUnique({
+    const set = await prismaAny.drawingSet.findUnique({
       where: { id: setId },
     })
 
@@ -652,7 +652,7 @@ export const drawingSetService = {
 
     const pdfFileId = `generated-pdf-${setId}` // Placeholder
 
-    const updated = await prisma.drawingSet.update({
+    const updated = await prismaAny.drawingSet.update({
       where: { id: setId },
       data: {
         combinedPdfFileId: pdfFileId,

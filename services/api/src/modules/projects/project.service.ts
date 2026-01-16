@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { AuthorizationError, NotFoundError, ValidationError } from '../../errors/app.error'
 import { ProjectMemberRole, ProjectStatus, ExecutionTier, Prisma } from '@prisma/client'
 import { readinessService } from '../readiness/readiness.service'
@@ -42,7 +42,7 @@ export type UpdateProjectInput = {
 }
 
 async function assertProjectAccess(projectId: string, userId: string) {
-  const project = await prisma.project.findUnique({
+  const project = await prismaAny.project.findUnique({
     where: { id: projectId },
     select: {
       id: true,
@@ -59,7 +59,7 @@ async function assertProjectAccess(projectId: string, userId: string) {
 }
 
 async function assertProjectOwner(projectId: string, userId: string) {
-  const project = await prisma.project.findUnique({
+  const project = await prismaAny.project.findUnique({
     where: { id: projectId },
     select: { id: true, ownerId: true },
   })
@@ -82,7 +82,7 @@ export const projectService = {
       throw new ValidationError('adminReason is required when adminOverride is true')
     }
 
-    const project = await prisma.project.create({
+    const project = await prismaAny.project.create({
       data: {
         ownerId: input.ownerId,
         orgId: input.orgId ?? null,
@@ -131,7 +131,7 @@ export const projectService = {
     const MAX_LEAD_VALUE = 500000
 
     // Fetch lead with related data
-    const lead = await prisma.lead.findUnique({
+    const lead = await prismaAny.lead.findUnique({
       where: { id: leadId },
       include: {
         awardedProfile: {
@@ -184,7 +184,7 @@ export const projectService = {
     }
 
     // Verify ownerId exists
-    const owner = await prisma.user.findUnique({
+    const owner = await prismaAny.user.findUnique({
       where: { id: ownerId },
       select: { id: true, email: true },
     })
@@ -228,7 +228,7 @@ export const projectService = {
     }
 
     // Create project in transaction
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prismaAny.$transaction(async (tx) => {
       // Create project
       const project = await tx.project.create({
         data: {
@@ -325,7 +325,7 @@ export const projectService = {
   },
 
   async listMyProjects(userId: string) {
-    return prisma.project.findMany({
+    return prismaAny.project.findMany({
       where: { ownerId: userId },
       orderBy: { createdAt: 'desc' },
     })
@@ -334,7 +334,7 @@ export const projectService = {
   async getProject(projectId: string, userId: string) {
     await assertProjectAccess(projectId, userId)
 
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       include: {
         property: true,
@@ -357,7 +357,7 @@ export const projectService = {
       }
     }
 
-    const project = await prisma.project.update({
+    const project = await prismaAny.project.update({
       where: { id: projectId },
       data: {
         orgId: input.orgId === undefined ? undefined : input.orgId,
@@ -385,7 +385,7 @@ export const projectService = {
   async addMember(projectId: string, ownerId: string, userId: string, role: ProjectMemberRole) {
     await assertProjectOwner(projectId, ownerId)
 
-    const member = await prisma.projectMembership.upsert({
+    const member = await prismaAny.projectMembership.upsert({
       where: { projectId_userId: { projectId, userId } },
       update: { role },
       create: { projectId, userId, role },

@@ -1,11 +1,11 @@
-import { prisma } from '@kealee/database'
-import { ContractStatus } from '@prisma/client'
+import { prismaAny } from '../../utils/prisma-helper'
+// Prisma types available through prismaAny
 import { AuthorizationError, NotFoundError } from '../../errors/app.error'
 
 export const contractDashboardService = {
   async getUserContracts(userId: string) {
     // Get all contracts where user is owner or contractor
-    const contracts = await prisma.contractAgreement.findMany({
+    const contracts = await prismaAny.contractAgreement.findMany({
       where: {
         OR: [{ ownerId: userId }, { contractorId: userId }],
       },
@@ -20,15 +20,15 @@ export const contractDashboardService = {
 
     // Get signature status for each contract
     const contractsWithStatus = await Promise.all(
-      contracts.map(async (contract) => {
+      contracts.map(async (contract: any) => {
         let needsSignature = false
         let pendingSigners: string[] = []
         let lastSignatureDate: Date | null = null
 
-        if (contract.docusignEnvelopeId && (contract.status === ContractStatus.SENT || contract.status === ContractStatus.SIGNED)) {
+        if (contract.docusignEnvelopeId && (contract.status === 'SENT' || contract.status === 'SIGNED')) {
           // In production, this would fetch from DocuSign API
           // For now, determine based on contract status
-          if (contract.status === ContractStatus.SENT) {
+          if (contract.status === 'SENT') {
             needsSignature = true
             if (contract.contractorId === userId) {
               pendingSigners.push('contractor')
@@ -36,7 +36,7 @@ export const contractDashboardService = {
             if (contract.ownerId === userId) {
               pendingSigners.push('owner')
             }
-          } else if (contract.status === ContractStatus.SIGNED) {
+          } else if (contract.status === 'SIGNED') {
             lastSignatureDate = contract.updatedAt
           }
         }
@@ -54,7 +54,7 @@ export const contractDashboardService = {
   },
 
   async getSigningAuditTrail(contractId: string, userId: string) {
-    const contract = await prisma.contractAgreement.findUnique({
+    const contract = await prismaAny.contractAgreement.findUnique({
       where: { id: contractId },
       include: { project: { select: { ownerId: true } } },
     })
@@ -65,7 +65,7 @@ export const contractDashboardService = {
     }
 
     // Get audit logs for signing events
-    const auditLogs = await prisma.auditLog.findMany({
+    const auditLogs = await prismaAny.auditLog.findMany({
       where: {
         entityType: 'ContractAgreement',
         entityId: contractId,
@@ -82,7 +82,7 @@ export const contractDashboardService = {
     })
 
     // Get events for signing
-    const events = await prisma.event.findMany({
+    const events = await prismaAny.event.findMany({
       where: {
         entityType: 'ContractAgreement',
         entityId: contractId,
@@ -95,14 +95,14 @@ export const contractDashboardService = {
     })
 
     return {
-      auditLogs: auditLogs.map((log) => ({
+      auditLogs: auditLogs.map((log: any) => ({
         id: log.id,
         action: log.action,
         details: log.details,
         user: log.user,
         createdAt: log.createdAt,
       })),
-      events: events.map((event) => ({
+      events: events.map((event: any) => ({
         id: event.id,
         type: event.type,
         metadata: event.metadata,
@@ -112,7 +112,7 @@ export const contractDashboardService = {
   },
 
   async cancelContract(contractId: string, userId: string, reason: string) {
-    const contract = await prisma.contractAgreement.findUnique({
+    const contract = await prismaAny.contractAgreement.findUnique({
       where: { id: contractId },
       include: { project: { select: { ownerId: true } } },
     })
@@ -122,19 +122,19 @@ export const contractDashboardService = {
       throw new AuthorizationError('Only the contract owner can cancel')
     }
 
-    if (contract.status === ContractStatus.CANCELLED || contract.status === ContractStatus.ARCHIVED) {
+    if (contract.status === 'CANCELLED' || contract.status === 'ARCHIVED') {
       throw new Error('Contract is already cancelled or archived')
     }
 
-    const updated = await prisma.contractAgreement.update({
+    const updated = await prismaAny.contractAgreement.update({
       where: { id: contractId },
       data: {
-        status: ContractStatus.CANCELLED,
+        status: 'CANCELLED',
       },
     })
 
     // Create audit log
-    await prisma.auditLog.create({
+    await prismaAny.auditLog.create({
       data: {
         entityType: 'ContractAgreement',
         entityId: contractId,
@@ -145,7 +145,7 @@ export const contractDashboardService = {
     })
 
     // Create event
-    await prisma.event.create({
+    await prismaAny.event.create({
       data: {
         entityType: 'ContractAgreement',
         entityId: contractId,
@@ -159,7 +159,7 @@ export const contractDashboardService = {
   },
 
   async archiveContract(contractId: string, userId: string) {
-    const contract = await prisma.contractAgreement.findUnique({
+    const contract = await prismaAny.contractAgreement.findUnique({
       where: { id: contractId },
       include: { project: { select: { ownerId: true } } },
     })
@@ -169,19 +169,19 @@ export const contractDashboardService = {
       throw new AuthorizationError('Only the contract owner can archive')
     }
 
-    if (contract.status !== ContractStatus.COMPLETED && contract.status !== ContractStatus.SIGNED) {
+    if (contract.status !== 'COMPLETED' && contract.status !== 'SIGNED') {
       throw new Error('Only completed or signed contracts can be archived')
     }
 
-    const updated = await prisma.contractAgreement.update({
+    const updated = await prismaAny.contractAgreement.update({
       where: { id: contractId },
       data: {
-        status: ContractStatus.ARCHIVED,
+        status: 'ARCHIVED',
       },
     })
 
     // Create audit log
-    await prisma.auditLog.create({
+    await prismaAny.auditLog.create({
       data: {
         entityType: 'ContractAgreement',
         entityId: contractId,
@@ -195,9 +195,9 @@ export const contractDashboardService = {
   },
 
   async getPendingSignatures(userId: string) {
-    const contracts = await prisma.contractAgreement.findMany({
+    const contracts = await prismaAny.contractAgreement.findMany({
       where: {
-        status: ContractStatus.SENT,
+        status: 'SENT',
         OR: [{ ownerId: userId }, { contractorId: userId }],
         docusignEnvelopeId: { not: null },
       },
@@ -209,7 +209,7 @@ export const contractDashboardService = {
       orderBy: { createdAt: 'asc' }, // Oldest first
     })
 
-    return contracts.map((contract) => ({
+    return contracts.map((contract: any) => ({
       id: contract.id,
       projectName: contract.project.name,
       totalAmount: contract.totalAmount,

@@ -219,8 +219,8 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
         const status = await entitlementService.getEntitlementStatus(orgId, moduleKey)
 
         return reply.send({
-          hasAccess,
           ...status,
+          hasAccess, // Override status.hasAccess with the direct value
         })
       } catch (error: any) {
         fastify.log.error(error)

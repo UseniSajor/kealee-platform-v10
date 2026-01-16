@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import { authenticateUser } from '../auth/auth.middleware'
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 
 /**
  * Server-Sent Events (SSE) route for real-time task updates
@@ -28,7 +28,7 @@ export async function pmRealtimeRoutes(fastify: FastifyInstance) {
         const interval = setInterval(async () => {
           try {
             // Get updated tasks
-            const tasks = await prisma.task.findMany({
+            const tasks = await prismaAny.task.findMany({
               where: {
                 assignedTo: user.id,
                 status: { in: ['pending', 'in_progress'] },
@@ -121,7 +121,7 @@ export async function pmRealtimeRoutes(fastify: FastifyInstance) {
             today.setHours(0, 0, 0, 0)
 
             // Get today's completed tasks for active hours
-            const tasksCompletedToday = await prisma.task.findMany({
+            const tasksCompletedToday = await prismaAny.task.findMany({
               where: {
                 assignedTo: user.id,
                 status: 'completed',
@@ -137,27 +137,27 @@ export async function pmRealtimeRoutes(fastify: FastifyInstance) {
 
             // Get workload counts
             const [gcProjects, homeownerProjects, permitsPending, escrowReleases] = await Promise.all([
-              prisma.serviceRequest?.count({
+              prismaAny.serviceRequest?.count({
                 where: {
-                  organizationId: (await prisma.user.findUnique({ where: { id: user.id } }))?.organizationId,
+                  organizationId: (await prismaAny.user.findUnique({ where: { id: user.id } }))?.organizationId,
                   status: { in: ['OPEN', 'IN_PROGRESS'] },
                 },
               }).catch(() => 0),
-              prisma.project?.count({
+              prismaAny.project?.count({
                 where: {
-                  organizationId: (await prisma.user.findUnique({ where: { id: user.id } }))?.organizationId,
+                  organizationId: (await prismaAny.user.findUnique({ where: { id: user.id } }))?.organizationId,
                   status: { in: ['ACTIVE', 'IN_PROGRESS'] },
                 },
               }).catch(() => 0),
-              prisma.permitApplication?.count({
+              prismaAny.permitApplication?.count({
                 where: {
-                  organizationId: (await prisma.user.findUnique({ where: { id: user.id } }))?.organizationId,
+                  organizationId: (await prismaAny.user.findUnique({ where: { id: user.id } }))?.organizationId,
                   status: { in: ['SUBMITTED', 'UNDER_REVIEW', 'REVISION_REQUIRED'] },
                 },
               }).catch(() => 0),
-              prisma.escrowRelease?.count({
+              prismaAny.escrowRelease?.count({
                 where: {
-                  organizationId: (await prisma.user.findUnique({ where: { id: user.id } }))?.organizationId,
+                  organizationId: (await prismaAny.user.findUnique({ where: { id: user.id } }))?.organizationId,
                   status: 'PENDING',
                 },
               }).catch(() => 0),

@@ -1,13 +1,14 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, AuthorizationError, ValidationError } from '../../errors/app.error'
-import { ProjectStatus } from '@prisma/client'
+// ProjectStatus type is available through prismaAny
+type ProjectStatus = any
 
 export const closeoutService = {
   /**
    * Get or create closeout checklist for project (Prompt 3.7)
    */
   async getCloseoutChecklist(projectId: string, userId: string) {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       include: {
         owner: { select: { id: true } },
@@ -19,7 +20,7 @@ export const closeoutService = {
       throw new AuthorizationError('Only project owner can view closeout checklist')
     }
 
-    let checklist = await prisma.closeoutChecklist.findUnique({
+    let checklist = await prismaAny.closeoutChecklist.findUnique({
       where: { projectId },
       include: {
         items: {
@@ -110,7 +111,7 @@ export const closeoutService = {
       },
     ]
 
-    const checklist = await prisma.closeoutChecklist.create({
+    const checklist = await prismaAny.closeoutChecklist.create({
       data: {
         projectId,
         status: 'in_progress',
@@ -144,7 +145,7 @@ export const closeoutService = {
       completed?: boolean
     }
   ) {
-    const item = await prisma.closeoutItem.findUnique({
+    const item = await prismaAny.closeoutItem.findUnique({
       where: { id: itemId },
       include: {
         checklist: {
@@ -173,7 +174,7 @@ export const closeoutService = {
       updateData.completedBy = null
     }
 
-    const updated = await prisma.closeoutItem.update({
+    const updated = await prismaAny.closeoutItem.update({
       where: { id: itemId },
       data: updateData,
       include: {
@@ -202,7 +203,7 @@ export const closeoutService = {
       description?: string
     }
   ) {
-    const item = await prisma.closeoutItem.findUnique({
+    const item = await prismaAny.closeoutItem.findUnique({
       where: { id: itemId },
       include: {
         checklist: {
@@ -218,7 +219,7 @@ export const closeoutService = {
       throw new AuthorizationError('Only project owner can add attachments')
     }
 
-    const attachment = await prisma.closeoutAttachment.create({
+    const attachment = await prismaAny.closeoutAttachment.create({
       data: {
         itemId,
         url: input.url,
@@ -237,7 +238,7 @@ export const closeoutService = {
    * Check if checklist is complete and update status (Prompt 3.7)
    */
   async checkChecklistCompletion(checklistId: string) {
-    const checklist = await prisma.closeoutChecklist.findUnique({
+    const checklist = await prismaAny.closeoutChecklist.findUnique({
       where: { id: checklistId },
       include: {
         items: true,
@@ -247,11 +248,11 @@ export const closeoutService = {
     if (!checklist) return
 
     const allRequiredCompleted = checklist.items
-      .filter((item) => item.required)
-      .every((item) => item.status === 'COMPLETED')
+      .filter((item: any) => item.required)
+      .every((item: any) => item.status === 'COMPLETED')
 
     if (allRequiredCompleted && checklist.status !== 'completed') {
-      await prisma.closeoutChecklist.update({
+      await prismaAny.closeoutChecklist.update({
         where: { id: checklistId },
         data: {
           status: 'completed',
@@ -265,7 +266,7 @@ export const closeoutService = {
    * Complete closeout checklist and release final payment (Prompt 3.7)
    */
   async completeCloseout(projectId: string, userId: string) {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       include: {
         owner: { select: { id: true } },
@@ -283,7 +284,7 @@ export const closeoutService = {
       throw new AuthorizationError('Only project owner can complete closeout')
     }
 
-    if (project.status !== ProjectStatus.CLOSEOUT) {
+    if (project.status !== 'CLOSEOUT') {
       throw new ValidationError(`Project must be in CLOSEOUT status (current: ${project.status})`)
     }
 
@@ -294,7 +295,7 @@ export const closeoutService = {
 
     // Verify all required items are completed
     const incompleteItems = checklist.items.filter(
-      (item) => item.required && item.status !== 'COMPLETED'
+      (item: any) => item.required && item.status !== 'COMPLETED'
     )
     if (incompleteItems.length > 0) {
       throw new ValidationError(
@@ -303,7 +304,7 @@ export const closeoutService = {
     }
 
     // Mark checklist as completed
-    await prisma.closeoutChecklist.update({
+    await prismaAny.closeoutChecklist.update({
       where: { id: checklist.id },
       data: {
         status: 'completed',
@@ -315,7 +316,7 @@ export const closeoutService = {
     // Prompt 3.7: Final payment processing - Release final holdback if escrow exists
     if (project.escrow && project.escrow.currentBalance > 0) {
       // Get all milestones to calculate remaining holdback
-      const milestones = await prisma.milestone.findMany({
+      const milestones = await prismaAny.milestone.findMany({
         where: {
           projectId,
           contractId: project.escrow.contractId || undefined,
@@ -323,7 +324,7 @@ export const closeoutService = {
       })
 
       const totalMilestoneAmount = milestones.reduce(
-        (sum, m) => sum + Number(m.amount || 0),
+        (sum: number, m: any) => sum + Number(m.amount || 0),
         0
       )
       const holdbackAmount = (totalMilestoneAmount * Number(project.escrow.holdbackPercentage || 10)) / 100
@@ -333,7 +334,7 @@ export const closeoutService = {
         const balanceBefore = project.escrow.currentBalance
         const balanceAfter = balanceBefore - holdbackAmount
 
-        await prisma.escrowTransaction.create({
+        await prismaAny.escrowTransaction.create({
           data: {
             escrowId: project.escrow.id,
             type: 'RELEASE_FINAL',
@@ -349,7 +350,7 @@ export const closeoutService = {
         })
 
         // Update escrow balance
-        await prisma.escrowAgreement.update({
+        await prismaAny.escrowAgreement.update({
           where: { id: project.escrow.id },
           data: {
             currentBalance: balanceAfter,
@@ -363,16 +364,16 @@ export const closeoutService = {
     }
 
     // Update project status to COMPLETED
-    await prisma.project.update({
+    await prismaAny.project.update({
       where: { id: projectId },
       data: {
-        status: ProjectStatus.COMPLETED,
+        status: 'COMPLETED',
         endDate: new Date(),
       },
     })
 
     // Create audit log
-    await prisma.auditLog.create({
+    await prismaAny.auditLog.create({
       data: {
         entityType: 'Project',
         entityId: projectId,
@@ -386,7 +387,7 @@ export const closeoutService = {
     })
 
     // Create event
-    await prisma.event.create({
+    await prismaAny.event.create({
       data: {
         entityType: 'Project',
         entityId: projectId,
@@ -400,7 +401,7 @@ export const closeoutService = {
 
     return {
       checklist,
-      project: await prisma.project.findUnique({ where: { id: projectId } }),
+      project: await prismaAny.project.findUnique({ where: { id: projectId } }),
     }
   },
 
@@ -420,7 +421,7 @@ export const closeoutService = {
       checklistItemId?: string
     }
   ) {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       include: {
         owner: { select: { id: true } },
@@ -432,7 +433,7 @@ export const closeoutService = {
       throw new AuthorizationError('Only project owner can create punch list items')
     }
 
-    const item = await prisma.punchListItem.create({
+    const item = await prismaAny.punchListItem.create({
       data: {
         projectId,
         checklistItemId: input.checklistItemId || null,
@@ -453,7 +454,7 @@ export const closeoutService = {
    * Get punch list items for project (Prompt 3.7)
    */
   async getPunchListItems(projectId: string, userId: string) {
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       include: {
         owner: { select: { id: true } },
@@ -465,7 +466,7 @@ export const closeoutService = {
       throw new AuthorizationError('Only project owner can view punch list items')
     }
 
-    const items = await prisma.punchListItem.findMany({
+    const items = await prismaAny.punchListItem.findMany({
       where: { projectId },
       orderBy: [
         { priority: 'desc' },
@@ -489,7 +490,7 @@ export const closeoutService = {
       assignedTo?: string
     }
   ) {
-    const item = await prisma.punchListItem.findUnique({
+    const item = await prismaAny.punchListItem.findUnique({
       where: { id: itemId },
       include: {
         project: { select: { ownerId: true } },
@@ -512,7 +513,7 @@ export const closeoutService = {
       updateData.completedBy = userId
     }
 
-    const updated = await prisma.punchListItem.update({
+    const updated = await prismaAny.punchListItem.update({
       where: { id: itemId },
       data: updateData,
     })

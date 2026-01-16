@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError } from '../../errors/app.error'
 import { pmPriorityScoringService } from './pm-priority-scoring.service'
 
@@ -30,7 +30,7 @@ interface PMProductivityMetrics {
 export const pmProductivityService = {
   async getProductivityDashboard(userId: string): Promise<PMProductivityMetrics> {
     // Get user's organization
-    const user = await prisma.user.findUnique({
+    const user = await prismaAny.user.findUnique({
       where: { id: userId },
       include: { organization: true },
     })
@@ -46,7 +46,7 @@ export const pmProductivityService = {
     tomorrow.setDate(tomorrow.getDate() + 1)
 
     // Calculate active hours today (from time tracking or task completion)
-    const tasksCompletedToday = await prisma.task.findMany({
+    const tasksCompletedToday = await prismaAny.task.findMany({
       where: {
         assignedTo: userId,
         status: 'completed',
@@ -64,7 +64,7 @@ export const pmProductivityService = {
 
     // Calculate productivity score based on SOP adherence
     // This would integrate with SOP completion tracking
-    const sopStepsCompleted = await prisma.sOPCompletion?.findMany({
+    const sopStepsCompleted = await prismaAny.sOPCompletion?.findMany({
       where: {
         userId,
         completedAt: {
@@ -79,7 +79,7 @@ export const pmProductivityService = {
       : 75 // Default if no SOP tracking
 
     // Calculate gate compliance
-    const mandatoryGates = await prisma.projectGate?.findMany({
+    const mandatoryGates = await prismaAny.projectGate?.findMany({
       where: {
         project: {
           organizationId: orgId,
@@ -88,7 +88,7 @@ export const pmProductivityService = {
       },
     }).catch(() => [])
 
-    const completedGates = await prisma.projectGate?.findMany({
+    const completedGates = await prismaAny.projectGate?.findMany({
       where: {
         project: {
           organizationId: orgId,
@@ -103,7 +103,7 @@ export const pmProductivityService = {
       : 85
 
     // Calculate audit score (from audit logs)
-    const auditLogs = await prisma.auditLog.findMany({
+    const auditLogs = await prismaAny.auditLog.findMany({
       where: {
         userId,
         createdAt: {
@@ -127,7 +127,7 @@ export const pmProductivityService = {
 
     // Get workload from all profit centers
     // GC Projects (from m-ops-services / service requests)
-    const gcProjects = await prisma.serviceRequest?.count({
+    const gcProjects = await prismaAny.serviceRequest?.count({
       where: {
         organizationId: orgId,
         status: {
@@ -137,7 +137,7 @@ export const pmProductivityService = {
     }).catch(() => 0)
 
     // Homeowner Projects (from m-project-owner)
-    const homeownerProjects = await prisma.project?.count({
+    const homeownerProjects = await prismaAny.project?.count({
       where: {
         organizationId: orgId,
         status: {
@@ -147,7 +147,7 @@ export const pmProductivityService = {
     }).catch(() => 0)
 
     // Permits Pending (from m-permits-inspections)
-    const permitsPending = await prisma.permitApplication?.count({
+    const permitsPending = await prismaAny.permitApplication?.count({
       where: {
         organizationId: orgId,
         status: {
@@ -157,7 +157,7 @@ export const pmProductivityService = {
     }).catch(() => 0)
 
     // Escrow Releases (from m-finance-trust)
-    const escrowReleases = await prisma.escrowRelease?.count({
+    const escrowReleases = await prismaAny.escrowRelease?.count({
       where: {
         organizationId: orgId,
         status: 'PENDING',
@@ -168,7 +168,7 @@ export const pmProductivityService = {
     const priorityTasks: PMProductivityMetrics['priorityTasks'] = []
 
     // Get critical tasks from GC projects
-    const criticalServiceRequests = await prisma.serviceRequest?.findMany({
+    const criticalServiceRequests = await prismaAny.serviceRequest?.findMany({
       where: {
         organizationId: orgId,
         status: { in: ['OPEN', 'IN_PROGRESS'] },
@@ -190,7 +190,7 @@ export const pmProductivityService = {
     })
 
     // Get high priority permits
-    const highPriorityPermits = await prisma.permitApplication?.findMany({
+    const highPriorityPermits = await prismaAny.permitApplication?.findMany({
       where: {
         organizationId: orgId,
         status: { in: ['REVISION_REQUIRED', 'UNDER_REVIEW'] },
@@ -211,7 +211,7 @@ export const pmProductivityService = {
     })
 
     // Get homeowner project tasks
-    const projectTasks = await prisma.task.findMany({
+    const projectTasks = await prismaAny.task.findMany({
       where: {
         assignedTo: userId,
         status: { in: ['pending', 'in_progress'] },

@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError } from '../../errors/app.error'
 
 export type CreatePropertyInput = {
@@ -20,7 +20,7 @@ export type CreatePropertyInput = {
 export const propertyService = {
   async createProperty(input: CreatePropertyInput) {
     // Avoid duplicate properties for identical normalized address.
-    const existing = await prisma.property.findFirst({
+    const existing = await prismaAny.property.findFirst({
       where: {
         address: { equals: input.address, mode: 'insensitive' },
         city: { equals: input.city, mode: 'insensitive' },
@@ -33,7 +33,7 @@ export const propertyService = {
       return { property: existing, created: false as const }
     }
 
-    const property = await prisma.property.create({
+    const property = await prismaAny.property.create({
       data: {
         orgId: input.orgId ?? null,
         address: input.address,
@@ -55,13 +55,13 @@ export const propertyService = {
   },
 
   async getProperty(id: string) {
-    const property = await prisma.property.findUnique({ where: { id } })
+    const property = await prismaAny.property.findUnique({ where: { id } })
     if (!property) throw new NotFoundError('Property', id)
     return property
   },
 
   async searchProperties(q: string, orgId?: string, limit: number = 10) {
-    return prisma.property.findMany({
+    return prismaAny.property.findMany({
       where: {
         ...(orgId ? { orgId } : {}),
         OR: [
@@ -77,7 +77,7 @@ export const propertyService = {
   },
 
   async validateAddress(address: string, city: string, state: string, zip: string) {
-    const existingProperty = await prisma.property.findFirst({
+    const existingProperty = await prismaAny.property.findFirst({
       where: {
         address: { equals: address, mode: 'insensitive' },
         city: { equals: city, mode: 'insensitive' },
@@ -89,7 +89,7 @@ export const propertyService = {
 
     if (!existingProperty) return { propertyId: null as string | null, existingProjects: 0 }
 
-    const existingProjects = await prisma.project.count({
+    const existingProjects = await prismaAny.project.count({
       where: { propertyId: existingProperty.id },
     })
 

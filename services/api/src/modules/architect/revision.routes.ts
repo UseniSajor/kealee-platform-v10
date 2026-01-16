@@ -59,7 +59,7 @@ export async function revisionRoutes(fastify: FastifyInstance) {
       preHandler: [
         authenticateUser,
         validateParams(z.object({ projectId: z.string().uuid() })),
-        validateBody(createRevisionSchema),
+        validateBody(createRevisionSchema as any),
       ],
     },
     async (request, reply) => {

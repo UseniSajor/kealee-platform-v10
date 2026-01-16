@@ -130,7 +130,7 @@ export async function drawingSetRoutes(fastify: FastifyInstance) {
       preHandler: [
         authenticateUser,
         validateParams(z.object({ id: z.string().uuid() })),
-        validateBody(updateSheetSchema),
+        validateBody(updateSheetSchema as any),
       ],
     },
     async (request, reply) => {
@@ -141,7 +141,7 @@ export async function drawingSetRoutes(fastify: FastifyInstance) {
         const sheet = await drawingSetService.updateSheet(id, {
           ...body,
           userId: user.id,
-        })
+        } as any)
         return reply.send({ sheet })
       } catch (error: any) {
         fastify.log.error(error)

@@ -1,4 +1,4 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
@@ -16,7 +16,7 @@ export const versionControlService = {
     createdById: string
   }) {
     // Validate branch name uniqueness
-    const existing = await prisma.versionBranch.findUnique({
+    const existing = await prismaAny.versionBranch.findUnique({
       where: {
         designProjectId_name: {
           designProjectId: data.designProjectId,
@@ -31,7 +31,7 @@ export const versionControlService = {
 
     // Validate base branch if provided
     if (data.baseBranchId) {
-      const baseBranch = await prisma.versionBranch.findUnique({
+      const baseBranch = await prismaAny.versionBranch.findUnique({
         where: { id: data.baseBranchId },
       })
 
@@ -44,7 +44,7 @@ export const versionControlService = {
       }
     }
 
-    const branch = await prisma.versionBranch.create({
+    const branch = await prismaAny.versionBranch.create({
       data: {
         designProjectId: data.designProjectId,
         name: data.name,
@@ -86,7 +86,7 @@ export const versionControlService = {
    * Get default branch or create one
    */
   async getOrCreateDefaultBranch(designProjectId: string, createdById: string) {
-    let defaultBranch = await prisma.versionBranch.findFirst({
+    let defaultBranch = await prismaAny.versionBranch.findFirst({
       where: {
         designProjectId,
         isDefault: true,
@@ -95,7 +95,7 @@ export const versionControlService = {
     })
 
     if (!defaultBranch) {
-      defaultBranch = await prisma.versionBranch.create({
+      defaultBranch = await prismaAny.versionBranch.create({
         data: {
           designProjectId,
           name: 'main',
@@ -127,7 +127,7 @@ export const versionControlService = {
       where.status = { not: 'MERGED' }
     }
 
-    const branches = await prisma.versionBranch.findMany({
+    const branches = await prismaAny.versionBranch.findMany({
       where,
       include: {
         createdBy: {
@@ -156,7 +156,7 @@ export const versionControlService = {
    * Get branch with versions
    */
   async getBranch(branchId: string) {
-    const branch = await prisma.versionBranch.findUnique({
+    const branch = await prismaAny.versionBranch.findUnique({
       where: { id: branchId },
       include: {
         createdBy: {
@@ -204,7 +204,7 @@ export const versionControlService = {
     createdById: string
   }) {
     // Validate branch
-    const branch = await prisma.versionBranch.findUnique({
+    const branch = await prismaAny.versionBranch.findUnique({
       where: { id: data.branchId },
     })
 
@@ -221,39 +221,39 @@ export const versionControlService = {
     }
 
     // Get current file/sheet/model states
-    const files = await prisma.designFile.findMany({
+    const files = await prismaAny.designFile.findMany({
       where: { designProjectId: data.designProjectId },
       select: { id: true, versionNumber: true },
     })
 
-    const sheets = await prisma.drawingSheet.findMany({
+    const sheets = await prismaAny.drawingSheet.findMany({
       where: { designProjectId: data.designProjectId },
       select: { id: true },
     })
 
-    const models = await prisma.bIMModel.findMany({
+    const models = await prismaAny.bIMModel.findMany({
       where: { designProjectId: data.designProjectId },
       select: { id: true, versionNumber: true },
     })
 
-    const fileSnapshots = data.fileSnapshots || files.map((f) => ({
+    const fileSnapshots = data.fileSnapshots || files.map((f: any) => ({
       fileId: f.id,
       fileVersion: f.versionNumber || 1,
     }))
 
-    const sheetSnapshots = data.sheetSnapshots || sheets.map((s) => ({
+    const sheetSnapshots = data.sheetSnapshots || sheets.map((s: any) => ({
       sheetId: s.id,
       sheetVersion: 1, // Sheets don't have version numbers yet
     }))
 
-    const modelSnapshots = data.modelSnapshots || models.map((m) => ({
+    const modelSnapshots = data.modelSnapshots || models.map((m: any) => ({
       modelId: m.id,
       modelVersion: m.versionNumber || 1,
     }))
 
     const isTagged = !!data.versionTag
 
-    const version = await prisma.designVersion.create({
+    const version = await prismaAny.designVersion.create({
       data: {
         designProjectId: data.designProjectId,
         branchId: data.branchId,
@@ -301,7 +301,7 @@ export const versionControlService = {
    * Get version
    */
   async getVersion(versionId: string) {
-    const version = await prisma.designVersion.findUnique({
+    const version = await prismaAny.designVersion.findUnique({
       where: { id: versionId },
       include: {
         createdBy: {
@@ -352,7 +352,7 @@ export const versionControlService = {
       where.isTagged = filters.isTagged
     }
 
-    const versions = await prisma.designVersion.findMany({
+    const versions = await prismaAny.designVersion.findMany({
       where,
       include: {
         createdBy: {
@@ -386,11 +386,11 @@ export const versionControlService = {
     toVersionId: string
     createdById: string
   }) {
-    const fromVersion = await prisma.designVersion.findUnique({
+    const fromVersion = await prismaAny.designVersion.findUnique({
       where: { id: data.fromVersionId },
     })
 
-    const toVersion = await prisma.designVersion.findUnique({
+    const toVersion = await prismaAny.designVersion.findUnique({
       where: { id: data.toVersionId },
     })
 
@@ -403,7 +403,7 @@ export const versionControlService = {
     }
 
     // Check if comparison already exists
-    let comparison = await prisma.designVersionComparison.findUnique({
+    let comparison = await prismaAny.designVersionComparison.findUnique({
       where: {
         fromVersionId_toVersionId: {
           fromVersionId: data.fromVersionId,
@@ -528,7 +528,7 @@ export const versionControlService = {
 
     const diffSummary = `Files: +${filesAdded} ~${filesModified} -${filesDeleted} | Sheets: +${sheetsAdded} ~${sheetsModified} -${sheetsDeleted}`
 
-    comparison = await prisma.designVersionComparison.create({
+    comparison = await prismaAny.designVersionComparison.create({
       data: {
         designProjectId: data.designProjectId,
         fromVersionId: data.fromVersionId,
@@ -568,7 +568,7 @@ export const versionControlService = {
    * Get comparison
    */
   async getComparison(comparisonId: string) {
-    const comparison = await prisma.designVersionComparison.findUnique({
+    const comparison = await prismaAny.designVersionComparison.findUnique({
       where: { id: comparisonId },
       include: {
         fromVersion: {
@@ -613,11 +613,11 @@ export const versionControlService = {
     resolvedConflicts?: any
     createdById: string
   }) {
-    const sourceBranch = await prisma.versionBranch.findUnique({
+    const sourceBranch = await prismaAny.versionBranch.findUnique({
       where: { id: data.sourceBranchId },
     })
 
-    const targetBranch = await prisma.versionBranch.findUnique({
+    const targetBranch = await prismaAny.versionBranch.findUnique({
       where: { id: data.targetBranchId },
     })
 
@@ -638,7 +638,7 @@ export const versionControlService = {
     }
 
     // Get latest versions from both branches
-    const sourceLatest = await prisma.designVersion.findFirst({
+    const sourceLatest = await prismaAny.designVersion.findFirst({
       where: {
         branchId: data.sourceBranchId,
       },
@@ -647,7 +647,7 @@ export const versionControlService = {
       },
     })
 
-    const targetLatest = await prisma.designVersion.findFirst({
+    const targetLatest = await prismaAny.designVersion.findFirst({
       where: {
         branchId: data.targetBranchId,
       },
@@ -660,7 +660,7 @@ export const versionControlService = {
     const hasConflicts = false // Placeholder - would check for actual conflicts
     const conflictFiles: string[] = [] // Placeholder
 
-    const merge = await prisma.branchMerge.create({
+    const merge = await prismaAny.branchMerge.create({
       data: {
         designProjectId: data.designProjectId,
         sourceBranchId: data.sourceBranchId,
@@ -688,7 +688,7 @@ export const versionControlService = {
       })
 
       // Update merge record
-      await prisma.branchMerge.update({
+      await prismaAny.branchMerge.update({
         where: { id: merge.id },
         data: {
           mergeStatus: 'COMPLETED',
@@ -698,7 +698,7 @@ export const versionControlService = {
       })
 
       // Mark source branch as merged
-      await prisma.versionBranch.update({
+      await prismaAny.versionBranch.update({
         where: { id: data.sourceBranchId },
         data: {
           status: 'MERGED',
@@ -733,7 +733,7 @@ export const versionControlService = {
     resolvedConflicts: any
     userId: string
   }) {
-    const merge = await prisma.branchMerge.findUnique({
+    const merge = await prismaAny.branchMerge.findUnique({
       where: { id: mergeId },
     })
 
@@ -746,7 +746,7 @@ export const versionControlService = {
     }
 
     // Create merged version after conflict resolution
-    const targetBranch = await prisma.versionBranch.findUnique({
+    const targetBranch = await prismaAny.versionBranch.findUnique({
       where: { id: merge.targetBranchId },
     })
 
@@ -764,7 +764,7 @@ export const versionControlService = {
     })
 
     // Update merge
-    const updated = await prisma.branchMerge.update({
+    const updated = await prismaAny.branchMerge.update({
       where: { id: mergeId },
       data: {
         mergeStatus: 'COMPLETED',
@@ -776,7 +776,7 @@ export const versionControlService = {
     })
 
     // Mark source branch as merged
-    await prisma.versionBranch.update({
+    await prismaAny.versionBranch.update({
       where: { id: merge.sourceBranchId },
       data: {
         status: 'MERGED',
@@ -801,11 +801,11 @@ export const versionControlService = {
     createBackup?: boolean
     createdById: string
   }) {
-    const fromVersion = await prisma.designVersion.findUnique({
+    const fromVersion = await prismaAny.designVersion.findUnique({
       where: { id: data.fromVersionId },
     })
 
-    const toVersion = await prisma.designVersion.findUnique({
+    const toVersion = await prismaAny.designVersion.findUnique({
       where: { id: data.toVersionId },
     })
 
@@ -844,7 +844,7 @@ export const versionControlService = {
     const affectedModels = comparison.changedModels || []
 
     // Create rollback record
-    const rollback = await prisma.versionRollback.create({
+    const rollback = await prismaAny.versionRollback.create({
       data: {
         designProjectId: data.designProjectId,
         fromVersionId: data.fromVersionId,
@@ -900,7 +900,7 @@ export const versionControlService = {
    * Get rollback history
    */
   async getRollbackHistory(designProjectId: string) {
-    const rollbacks = await prisma.versionRollback.findMany({
+    const rollbacks = await prismaAny.versionRollback.findMany({
       where: { designProjectId },
       include: {
         fromVersion: {

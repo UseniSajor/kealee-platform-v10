@@ -1,9 +1,9 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError } from '../../errors/app.error'
 
 export const jurisdictionConfigService = {
   async getConfig(jurisdictionId: string) {
-    const config = await prisma.jurisdictionConfig.findUnique({
+    const config = await prismaAny.jurisdictionConfig.findUnique({
       where: { jurisdictionId },
     })
 
@@ -15,7 +15,7 @@ export const jurisdictionConfigService = {
   },
 
   async updateConfig(jurisdictionId: string, data: any) {
-    return prisma.jurisdictionConfig.upsert({
+    return prismaAny.jurisdictionConfig.upsert({
       where: { jurisdictionId },
       update: data,
       create: {

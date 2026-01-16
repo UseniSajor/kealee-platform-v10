@@ -1,8 +1,7 @@
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
-import { Prisma } from '@prisma/client'
 
 export const designProjectService = {
   /**
@@ -16,7 +15,7 @@ export const designProjectService = {
     userId: string
   }) {
     // Verify the Project Owner project exists
-    const project = await prisma.project.findUnique({
+    const project = await prismaAny.project.findUnique({
       where: { id: data.projectId },
       include: {
         owner: true,
@@ -29,7 +28,7 @@ export const designProjectService = {
     }
 
     // Check if design project already exists for this project
-    const existing = await prisma.designProject.findUnique({
+    const existing = await prismaAny.designProject.findUnique({
       where: { projectId: data.projectId },
     })
 
@@ -41,14 +40,14 @@ export const designProjectService = {
     const clientAccessUrl = `client-${data.projectId.slice(0, 8)}-${Date.now().toString(36)}`
 
     // Create design project with default phases
-    const designProject = await prisma.$transaction(async (tx) => {
+    const designProject = await prismaAny.$transaction(async (tx: any) => {
       const dp = await tx.designProject.create({
         data: {
           projectId: data.projectId,
           name: data.name,
           description: data.description,
           projectType: data.projectType,
-          budgetTotal: project.budgetTotal ? new Prisma.Decimal(project.budgetTotal) : null,
+          budgetTotal: project.budgetTotal ? new prismaAny.Decimal(project.budgetTotal) : null,
           startDate: project.startDate,
           endDate: project.endDate,
           clientAccessUrl,
@@ -121,7 +120,7 @@ export const designProjectService = {
    * Get design project by ID
    */
   async getDesignProject(id: string) {
-    const designProject = await prisma.designProject.findUnique({
+    const designProject = await prismaAny.designProject.findUnique({
       where: { id },
       include: {
         project: {
@@ -188,7 +187,7 @@ export const designProjectService = {
       where.status = filters.status
     }
 
-    const designProjects = await prisma.designProject.findMany({
+    const designProjects = await prismaAny.designProject.findMany({
       where,
       include: {
         project: {
@@ -225,7 +224,7 @@ export const designProjectService = {
    */
   async getAvailableProjects(userId: string) {
     // Get projects where user is owner or member, and no design project exists
-    const projects = await prisma.project.findMany({
+    const projects = await prismaAny.project.findMany({
       where: {
         OR: [
           { ownerId: userId },
@@ -269,7 +268,7 @@ export const designProjectService = {
     role: 'PRINCIPAL' | 'PROJECT_ARCHITECT' | 'DESIGNER' | 'DRAFTER'
     addedByUserId: string
   }) {
-    const designProject = await prisma.designProject.findUnique({
+    const designProject = await prismaAny.designProject.findUnique({
       where: { id: data.designProjectId },
     })
 
@@ -278,7 +277,7 @@ export const designProjectService = {
     }
 
     // Check if user is already a member
-    const existing = await prisma.designTeamMember.findUnique({
+    const existing = await prismaAny.designTeamMember.findUnique({
       where: {
         designProjectId_userId: {
           designProjectId: data.designProjectId,
@@ -291,7 +290,7 @@ export const designProjectService = {
       throw new ValidationError('User is already a team member')
     }
 
-    const teamMember = await prisma.designTeamMember.upsert({
+    const teamMember = await prismaAny.designTeamMember.upsert({
       where: {
         designProjectId_userId: {
           designProjectId: data.designProjectId,
@@ -337,7 +336,7 @@ export const designProjectService = {
     clientAccessEnabled?: boolean
     userId: string
   }) {
-    const designProject = await prisma.designProject.findUnique({
+    const designProject = await prismaAny.designProject.findUnique({
       where: { id },
     })
 
@@ -345,7 +344,7 @@ export const designProjectService = {
       throw new NotFoundError('DesignProject', id)
     }
 
-    const updated = await prisma.designProject.update({
+    const updated = await prismaAny.designProject.update({
       where: { id },
       data: {
         ...(data.name && { name: data.name }),

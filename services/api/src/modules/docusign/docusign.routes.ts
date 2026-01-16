@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams } from '../../middleware/validation.middleware'
 import { docusignService } from './docusign.service'
@@ -37,7 +37,7 @@ export async function docusignRoutes(fastify: FastifyInstance) {
       const { contractId } = request.params as { contractId: string }
 
       // Verify user has access to contract
-      const contract = await prisma.contractAgreement.findUnique({
+      const contract = await prismaAny.contractAgreement.findUnique({
         where: { id: contractId },
         select: { id: true, ownerId: true, contractorId: true, docusignEnvelopeId: true },
       })
@@ -73,7 +73,7 @@ export async function docusignRoutes(fastify: FastifyInstance) {
       const { contractId } = request.params as { contractId: string }
 
       // Verify user has access to contract
-      const contract = await prisma.contractAgreement.findUnique({
+      const contract = await prismaAny.contractAgreement.findUnique({
         where: { id: contractId },
         select: { id: true, ownerId: true, contractorId: true, docusignEnvelopeId: true, status: true },
       })

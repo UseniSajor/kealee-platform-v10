@@ -1,13 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { leadsService } from '../leads.service'
-import { prisma } from '@kealee/database'
-import { Prisma } from '@prisma/client'
+import { prismaAny } from '../../../utils/prisma-helper'
 import { auditService } from '../../audit/audit.service'
 import { eventService } from '../../events/event.service'
 
 // Mock dependencies
 vi.mock('@kealee/database', () => ({
-  prisma: {
+  prismaAny: {
     lead: {
       findUnique: vi.fn(),
       update: vi.fn(),
@@ -42,12 +41,12 @@ describe('leadsService', () => {
       const highValueLead = {
         id: leadId,
         stage: 'INTAKE' as const,
-        estimatedValue: new Prisma.Decimal(600000),
+        estimatedValue: (600000),
         distributedTo: [],
       }
 
-      ;(prisma.lead.findUnique as any).mockResolvedValue(highValueLead)
-      ;(prisma.lead.update as any).mockResolvedValue({
+      ;(prismaAny.lead.findUnique as any).mockResolvedValue(highValueLead)
+      ;(prismaAny.lead.update as any).mockResolvedValue({
         ...highValueLead,
         stage: 'LOST',
         lostAt: new Date(),
@@ -63,7 +62,7 @@ describe('leadsService', () => {
 
       expect(result.success).toBe(false)
       expect(result.reason).toBe('LEAD_VALUE_EXCEEDS_THRESHOLD')
-      expect(prisma.lead.update).toHaveBeenCalledWith({
+      expect(prismaAny.lead.update).toHaveBeenCalledWith({
         where: { id: leadId },
         data: {
           stage: 'LOST',
@@ -97,7 +96,7 @@ describe('leadsService', () => {
           userId: 'user-1',
           businessName: 'Test Contractor',
           acceptingLeads: true,
-          maxPipelineValue: new Prisma.Decimal(500000),
+          maxPipelineValue: (500000),
           subscriptionTier: 'pro',
           user: { status: 'ACTIVE' },
           distributedLeads: [],
@@ -106,9 +105,9 @@ describe('leadsService', () => {
         },
       ]
 
-      ;(prisma.lead.findUnique as any).mockResolvedValue(leadWithoutValue)
-      ;(prisma.marketplaceProfile.findMany as any).mockResolvedValue(mockProfiles)
-      ;(prisma.lead.update as any).mockResolvedValue({
+      ;(prismaAny.lead.findUnique as any).mockResolvedValue(leadWithoutValue)
+      ;(prismaAny.marketplaceProfile.findMany as any).mockResolvedValue(mockProfiles)
+      ;(prismaAny.lead.update as any).mockResolvedValue({
         ...leadWithoutValue,
         stage: 'INTAKE',
         distributedTo: [{ id: 'profile-1' }],
@@ -122,7 +121,7 @@ describe('leadsService', () => {
       })
 
       expect(result.success).toBe(true)
-      expect(prisma.lead.update).toHaveBeenCalledWith({
+      expect(prismaAny.lead.update).toHaveBeenCalledWith({
         where: { id: leadId },
         data: expect.objectContaining({
           stage: 'INTAKE',
@@ -136,7 +135,7 @@ describe('leadsService', () => {
       const lead = {
         id: leadId,
         stage: 'INTAKE' as const,
-        estimatedValue: new Prisma.Decimal(100000),
+        estimatedValue: (100000),
         distributedTo: [],
       }
 
@@ -146,7 +145,7 @@ describe('leadsService', () => {
           userId: 'user-1',
           businessName: 'Accepting Contractor',
           acceptingLeads: true,
-          maxPipelineValue: new Prisma.Decimal(500000),
+          maxPipelineValue: (500000),
           subscriptionTier: 'pro',
           user: { status: 'ACTIVE' },
           distributedLeads: [],
@@ -158,7 +157,7 @@ describe('leadsService', () => {
           userId: 'user-2',
           businessName: 'Not Accepting',
           acceptingLeads: false, // Should be filtered out
-          maxPipelineValue: new Prisma.Decimal(500000),
+          maxPipelineValue: (500000),
           subscriptionTier: 'basic',
           user: { status: 'ACTIVE' },
           distributedLeads: [],
@@ -167,9 +166,9 @@ describe('leadsService', () => {
         },
       ]
 
-      ;(prisma.lead.findUnique as any).mockResolvedValue(lead)
-      ;(prisma.marketplaceProfile.findMany as any).mockResolvedValue(mockProfiles)
-      ;(prisma.lead.update as any).mockResolvedValue({
+      ;(prismaAny.lead.findUnique as any).mockResolvedValue(lead)
+      ;(prismaAny.marketplaceProfile.findMany as any).mockResolvedValue(mockProfiles)
+      ;(prismaAny.lead.update as any).mockResolvedValue({
         ...lead,
         distributedTo: [{ id: 'profile-1' }],
       })
@@ -182,8 +181,8 @@ describe('leadsService', () => {
 
       expect(result.success).toBe(true)
       // Should only distribute to profile-1 (acceptingLeads = true)
-      expect(result.distributedTo).toHaveLength(1)
-      expect(result.distributedTo[0].profileId).toBe('profile-1')
+      expect((result.distributedTo || []).length).toBe(1)
+      expect((result.distributedTo || [])[0]?.profileId).toBe('profile-1')
     })
 
     it('should filter contractors by maxPipelineValue constraint', async () => {
@@ -191,7 +190,7 @@ describe('leadsService', () => {
       const lead = {
         id: leadId,
         stage: 'INTAKE' as const,
-        estimatedValue: new Prisma.Decimal(200000),
+        estimatedValue: (200000),
         distributedTo: [],
       }
 
@@ -201,7 +200,7 @@ describe('leadsService', () => {
           userId: 'user-1',
           businessName: 'Has Capacity',
           acceptingLeads: true,
-          maxPipelineValue: new Prisma.Decimal(500000),
+          maxPipelineValue: (500000),
           subscriptionTier: 'pro',
           user: { status: 'ACTIVE' },
           distributedLeads: [], // No existing pipeline
@@ -213,20 +212,20 @@ describe('leadsService', () => {
           userId: 'user-2',
           businessName: 'Exceeds Capacity',
           acceptingLeads: true,
-          maxPipelineValue: new Prisma.Decimal(500000),
+          maxPipelineValue: (500000),
           subscriptionTier: 'basic',
           user: { status: 'ACTIVE' },
           distributedLeads: [
-            { estimatedValue: new Prisma.Decimal(400000) }, // Already at 400k
+            { estimatedValue: (400000) }, // Already at 400k
           ], // Would exceed with 200k lead
           awardedLeads: [],
           quotes: [],
         },
       ]
 
-      ;(prisma.lead.findUnique as any).mockResolvedValue(lead)
-      ;(prisma.marketplaceProfile.findMany as any).mockResolvedValue(mockProfiles)
-      ;(prisma.lead.update as any).mockResolvedValue({
+      ;(prismaAny.lead.findUnique as any).mockResolvedValue(lead)
+      ;(prismaAny.marketplaceProfile.findMany as any).mockResolvedValue(mockProfiles)
+      ;(prismaAny.lead.update as any).mockResolvedValue({
         ...lead,
         distributedTo: [{ id: 'profile-1' }],
       })
@@ -239,8 +238,8 @@ describe('leadsService', () => {
 
       expect(result.success).toBe(true)
       // Should only distribute to profile-1 (has capacity)
-      expect(result.distributedTo).toHaveLength(1)
-      expect(result.distributedTo[0].profileId).toBe('profile-1')
+      expect((result.distributedTo || []).length).toBe(1)
+      expect((result.distributedTo || [])[0].profileId).toBe('profile-1')
     })
 
     it('should return error if no eligible contractors found', async () => {
@@ -248,12 +247,12 @@ describe('leadsService', () => {
       const lead = {
         id: leadId,
         stage: 'INTAKE' as const,
-        estimatedValue: new Prisma.Decimal(100000),
+        estimatedValue: (100000),
         distributedTo: [],
       }
 
-      ;(prisma.lead.findUnique as any).mockResolvedValue(lead)
-      ;(prisma.marketplaceProfile.findMany as any).mockResolvedValue([]) // No contractors
+      ;(prismaAny.lead.findUnique as any).mockResolvedValue(lead)
+      ;(prismaAny.marketplaceProfile.findMany as any).mockResolvedValue([]) // No contractors
       ;(auditService.recordAudit as any).mockResolvedValue({})
       ;(eventService.recordEvent as any).mockResolvedValue({})
 
@@ -275,7 +274,7 @@ describe('leadsService', () => {
       const lead = {
         id: leadId,
         stage: 'INTAKE' as const,
-        estimatedValue: new Prisma.Decimal(100000),
+        estimatedValue: (100000),
         distributedTo: [],
       }
 
@@ -285,7 +284,7 @@ describe('leadsService', () => {
         userId: `user-${i + 1}`,
         businessName: `Contractor ${i + 1}`,
         acceptingLeads: true,
-        maxPipelineValue: new Prisma.Decimal(500000),
+        maxPipelineValue: (500000),
         subscriptionTier: 'pro',
         user: { status: 'ACTIVE' },
         distributedLeads: [],
@@ -293,9 +292,9 @@ describe('leadsService', () => {
         quotes: [],
       }))
 
-      ;(prisma.lead.findUnique as any).mockResolvedValue(lead)
-      ;(prisma.marketplaceProfile.findMany as any).mockResolvedValue(mockProfiles)
-      ;(prisma.lead.update as any).mockResolvedValue({
+      ;(prismaAny.lead.findUnique as any).mockResolvedValue(lead)
+      ;(prismaAny.marketplaceProfile.findMany as any).mockResolvedValue(mockProfiles)
+      ;(prismaAny.lead.update as any).mockResolvedValue({
         ...lead,
         distributedTo: mockProfiles.slice(0, 5).map((p) => ({ id: p.id })),
       })
@@ -307,7 +306,7 @@ describe('leadsService', () => {
       })
 
       expect(result.success).toBe(true)
-      expect(result.distributedTo).toHaveLength(5) // Default limit
+      expect((result.distributedTo || []).length).toBe(5) // Default limit
     })
 
     it('should respect custom distributionCount', async () => {
@@ -315,7 +314,7 @@ describe('leadsService', () => {
       const lead = {
         id: leadId,
         stage: 'INTAKE' as const,
-        estimatedValue: new Prisma.Decimal(100000),
+        estimatedValue: (100000),
         distributedTo: [],
       }
 
@@ -324,7 +323,7 @@ describe('leadsService', () => {
         userId: `user-${i + 1}`,
         businessName: `Contractor ${i + 1}`,
         acceptingLeads: true,
-        maxPipelineValue: new Prisma.Decimal(500000),
+        maxPipelineValue: (500000),
         subscriptionTier: 'pro',
         user: { status: 'ACTIVE' },
         distributedLeads: [],
@@ -332,9 +331,9 @@ describe('leadsService', () => {
         quotes: [],
       }))
 
-      ;(prisma.lead.findUnique as any).mockResolvedValue(lead)
-      ;(prisma.marketplaceProfile.findMany as any).mockResolvedValue(mockProfiles)
-      ;(prisma.lead.update as any).mockResolvedValue({
+      ;(prismaAny.lead.findUnique as any).mockResolvedValue(lead)
+      ;(prismaAny.marketplaceProfile.findMany as any).mockResolvedValue(mockProfiles)
+      ;(prismaAny.lead.update as any).mockResolvedValue({
         ...lead,
         distributedTo: mockProfiles.slice(0, 3).map((p) => ({ id: p.id })),
       })
@@ -347,7 +346,7 @@ describe('leadsService', () => {
       })
 
       expect(result.success).toBe(true)
-      expect(result.distributedTo).toHaveLength(3) // Custom limit
+      expect((result.distributedTo || []).length).toBe(3) // Custom limit
     })
   })
 
@@ -355,7 +354,7 @@ describe('leadsService', () => {
     it('should sort contractors by verified, performanceScore, rating, projectsCompleted', async () => {
       const lead = {
         id: 'lead-123',
-        estimatedValue: new Prisma.Decimal(100000),
+        estimatedValue: (100000),
         projectType: null,
         city: null,
         state: null,
@@ -367,7 +366,7 @@ describe('leadsService', () => {
           userId: 'user-1',
           businessName: 'Low Priority',
           acceptingLeads: true,
-          maxPipelineValue: new Prisma.Decimal(500000),
+          maxPipelineValue: (500000),
           subscriptionTier: 'basic',
           user: { status: 'ACTIVE' },
           distributedLeads: [],
@@ -379,7 +378,7 @@ describe('leadsService', () => {
           userId: 'user-2',
           businessName: 'High Priority',
           acceptingLeads: true,
-          maxPipelineValue: new Prisma.Decimal(500000),
+          maxPipelineValue: (500000),
           subscriptionTier: 'enterprise',
           user: { status: 'ACTIVE' },
           distributedLeads: [],
@@ -388,7 +387,7 @@ describe('leadsService', () => {
         },
       ]
 
-      ;(prisma.marketplaceProfile.findMany as any).mockResolvedValue(mockProfiles)
+      ;(prismaAny.marketplaceProfile.findMany as any).mockResolvedValue(mockProfiles)
 
       const candidates = await leadsService.findEligibleContractors(lead, 10)
 

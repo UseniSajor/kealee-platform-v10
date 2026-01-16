@@ -1,4 +1,4 @@
-import { prisma } from "@kealee/database"
+import { prismaAny } from '../../utils/prisma-helper'
 
 /**
  * PM service (MVP stub).
@@ -10,7 +10,7 @@ import { prisma } from "@kealee/database"
 class PMService {
   async getStatsForUser(userId: string) {
     // Ensure the user exists in local DB
-    const user = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } })
+    const user = await prismaAny.user.findUnique({ where: { id: userId }, select: { name: true } })
 
     return {
       name: user?.name ?? undefined,
