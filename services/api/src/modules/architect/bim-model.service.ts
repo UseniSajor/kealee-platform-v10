@@ -1,0 +1,769 @@
+import { prisma } from '@kealee/database'
+import { NotFoundError, ValidationError } from '../../errors/app.error'
+import { auditService } from '../audit/audit.service'
+import { eventService } from '../events/event.service'
+
+export const bimModelService = {
+  /**
+   * Upload/create a new BIM model
+   */
+  async createModel(data: {
+    designProjectId: string
+    deliverableId?: string
+    name: string
+    description?: string
+    modelFormat: string
+    modelFileId: string
+    thumbnailUrl?: string
+    uploadedById: string
+  }) {
+    // Check if file exists
+    const file = await prisma.designFile.findUnique({
+      where: { id: data.modelFileId },
+    })
+
+    if (!file) {
+      throw new NotFoundError('DesignFile', data.modelFileId)
+    }
+
+    // Check if this is a new version of existing model
+    const existingModel = await prisma.bIMModel.findFirst({
+      where: {
+        designProjectId: data.designProjectId,
+        name: data.name,
+        isLatestVersion: true,
+      },
+    })
+
+    let versionNumber = 1
+    let previousVersionId: string | undefined
+
+    if (existingModel) {
+      versionNumber = existingModel.versionNumber + 1
+      previousVersionId = existingModel.id
+
+      // Mark old version as not latest
+      await prisma.bIMModel.update({
+        where: { id: existingModel.id },
+        data: { isLatestVersion: false },
+      })
+    }
+
+    const model = await prisma.bIMModel.create({
+      data: {
+        designProjectId: data.designProjectId,
+        deliverableId: data.deliverableId,
+        name: data.name,
+        description: data.description,
+        modelFormat: data.modelFormat as any,
+        modelFileId: data.modelFileId,
+        thumbnailUrl: data.thumbnailUrl,
+        versionNumber,
+        isLatestVersion: true,
+        previousVersionId,
+        fileSize: file.fileSize,
+        conversionStatus: 'PENDING',
+        uploadedById: data.uploadedById,
+      },
+      include: {
+        uploadedBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    })
+
+    // Log audit
+    await auditService.recordAudit({
+      action: existingModel ? 'BIM_MODEL_VERSIONED' : 'BIM_MODEL_UPLOADED',
+      entityType: 'BIMModel',
+      entityId: model.id,
+      userId: data.uploadedById,
+      reason: existingModel ? `New version ${versionNumber} uploaded` : `Model uploaded: ${data.name}`,
+      after: {
+        name: data.name,
+        modelFormat: data.modelFormat,
+        versionNumber,
+      },
+    })
+
+    // Log event
+    await eventService.recordEvent({
+      type: existingModel ? 'BIM_MODEL_VERSIONED' : 'BIM_MODEL_UPLOADED',
+      entityType: 'BIMModel',
+      entityId: model.id,
+      userId: data.uploadedById,
+      payload: {
+        name: data.name,
+        modelFormat: data.modelFormat,
+        versionNumber,
+        designProjectId: data.designProjectId,
+      },
+    })
+
+    // TODO: Trigger model conversion job (convert to web-friendly format)
+    // await modelConversionService.queueConversion(model.id)
+
+    return model
+  },
+
+  /**
+   * Get model with all related data
+   */
+  async getModel(modelId: string) {
+    const model = await prisma.bIMModel.findUnique({
+      where: { id: modelId },
+      include: {
+        uploadedBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        previousVersion: {
+          select: {
+            id: true,
+            name: true,
+            versionNumber: true,
+          },
+        },
+        views: {
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
+        _count: {
+          select: {
+            annotations: true,
+            clashDetections: true,
+            views: true,
+          },
+        },
+      },
+    })
+
+    if (!model) {
+      throw new NotFoundError('BIMModel', modelId)
+    }
+
+    return model
+  },
+
+  /**
+   * List models for a project
+   */
+  async listModels(designProjectId: string, filters?: {
+    modelFormat?: string
+    deliverableId?: string
+    isLatestVersion?: boolean
+  }) {
+    const where: any = {
+      designProjectId,
+    }
+
+    if (filters?.modelFormat) {
+      where.modelFormat = filters.modelFormat
+    }
+
+    if (filters?.deliverableId) {
+      where.deliverableId = filters.deliverableId
+    }
+
+    if (filters?.isLatestVersion !== undefined) {
+      where.isLatestVersion = filters.isLatestVersion
+    }
+
+    const models = await prisma.bIMModel.findMany({
+      where,
+      include: {
+        uploadedBy: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        _count: {
+          select: {
+            annotations: true,
+            clashDetections: true,
+            views: true,
+          },
+        },
+      },
+      orderBy: [
+        { isLatestVersion: 'desc' },
+        { versionNumber: 'desc' },
+        { createdAt: 'desc' },
+      ],
+    })
+
+    return models
+  },
+
+  /**
+   * Create model view (saved view configuration)
+   */
+  async createView(data: {
+    modelId: string
+    name: string
+    description?: string
+    viewType: string
+    cameraPosition: any
+    viewSettings?: any
+    slicePlane?: any
+    sliceType?: string
+    screenshotUrl?: string
+    createdById: string
+  }) {
+    const model = await prisma.bIMModel.findUnique({
+      where: { id: data.modelId },
+    })
+
+    if (!model) {
+      throw new NotFoundError('BIMModel', data.modelId)
+    }
+
+    const view = await prisma.modelView.create({
+      data: {
+        modelId: data.modelId,
+        name: data.name,
+        description: data.description,
+        viewType: data.viewType as any,
+        cameraPosition: data.cameraPosition as any,
+        viewSettings: data.viewSettings as any,
+        slicePlane: data.slicePlane as any,
+        sliceType: data.sliceType,
+        screenshotUrl: data.screenshotUrl,
+        createdById: data.createdById,
+      },
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    })
+
+    // Log audit
+    await auditService.recordAudit({
+      action: 'MODEL_VIEW_CREATED',
+      entityType: 'ModelView',
+      entityId: view.id,
+      userId: data.createdById,
+      reason: `View created: ${data.name}`,
+      after: {
+        name: data.name,
+        viewType: data.viewType,
+      },
+    })
+
+    return view
+  },
+
+  /**
+   * Create model annotation
+   */
+  async createAnnotation(data: {
+    modelId: string
+    annotationType: string
+    title: string
+    description?: string
+    position: any
+    elementId?: string
+    elementType?: string
+    markupData?: any
+    createdById: string
+  }) {
+    const model = await prisma.bIMModel.findUnique({
+      where: { id: data.modelId },
+    })
+
+    if (!model) {
+      throw new NotFoundError('BIMModel', data.modelId)
+    }
+
+    const annotation = await prisma.modelAnnotation.create({
+      data: {
+        modelId: data.modelId,
+        annotationType: data.annotationType as any,
+        title: data.title,
+        description: data.description,
+        position: data.position as any,
+        elementId: data.elementId,
+        elementType: data.elementType,
+        markupData: data.markupData as any,
+        createdById: data.createdById,
+      },
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    })
+
+    // Log audit
+    await auditService.recordAudit({
+      action: 'MODEL_ANNOTATION_CREATED',
+      entityType: 'ModelAnnotation',
+      entityId: annotation.id,
+      userId: data.createdById,
+      reason: `Annotation created: ${data.title}`,
+      after: {
+        annotationType: data.annotationType,
+        title: data.title,
+      },
+    })
+
+    return annotation
+  },
+
+  /**
+   * List annotations for a model
+   */
+  async listAnnotations(modelId: string, filters?: {
+    annotationType?: string
+    status?: string
+    elementId?: string
+  }) {
+    const where: any = {
+      modelId,
+    }
+
+    if (filters?.annotationType) {
+      where.annotationType = filters.annotationType
+    }
+
+    if (filters?.status) {
+      where.status = filters.status
+    }
+
+    if (filters?.elementId) {
+      where.elementId = filters.elementId
+    }
+
+    const annotations = await prisma.modelAnnotation.findMany({
+      where,
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        resolvedBy: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    return annotations
+  },
+
+  /**
+   * Resolve annotation
+   */
+  async resolveAnnotation(annotationId: string, userId: string) {
+    const annotation = await prisma.modelAnnotation.findUnique({
+      where: { id: annotationId },
+    })
+
+    if (!annotation) {
+      throw new NotFoundError('ModelAnnotation', annotationId)
+    }
+
+    const updated = await prisma.modelAnnotation.update({
+      where: { id: annotationId },
+      data: {
+        status: 'RESOLVED',
+        resolvedAt: new Date(),
+        resolvedById: userId,
+      },
+    })
+
+    // Log audit
+    await auditService.recordAudit({
+      action: 'MODEL_ANNOTATION_RESOLVED',
+      entityType: 'ModelAnnotation',
+      entityId: annotationId,
+      userId,
+      reason: 'Annotation resolved',
+      after: {
+        status: 'RESOLVED',
+        resolvedAt: updated.resolvedAt,
+      },
+    })
+
+    return updated
+  },
+
+  /**
+   * Run clash detection (placeholder - would integrate with clash detection service)
+   */
+  async runClashDetection(modelId: string, userId: string) {
+    const model = await prisma.bIMModel.findUnique({
+      where: { id: modelId },
+    })
+
+    if (!model) {
+      throw new NotFoundError('BIMModel', modelId)
+    }
+
+    // TODO: Integrate with actual clash detection service
+    // This would:
+    // 1. Load model geometry
+    // 2. Detect overlapping elements
+    // 3. Create ClashDetection records
+    // 4. Return clash results
+
+    // Placeholder: Return empty results
+    const clashes = await prisma.clashDetection.findMany({
+      where: { modelId },
+      include: {
+        reviewedBy: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        resolvedBy: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    // Log audit
+    await auditService.recordAudit({
+      action: 'CLASH_DETECTION_RUN',
+      entityType: 'BIMModel',
+      entityId: modelId,
+      userId,
+      reason: 'Clash detection run',
+      after: {
+        clashCount: clashes.length,
+      },
+    })
+
+    return clashes
+  },
+
+  /**
+   * Get clash detections for a model
+   */
+  async getClashDetections(modelId: string, filters?: {
+    status?: string
+    severity?: string
+  }) {
+    const where: any = {
+      modelId,
+    }
+
+    if (filters?.status) {
+      where.status = filters.status
+    }
+
+    if (filters?.severity) {
+      where.severity = filters.severity
+    }
+
+    const clashes = await prisma.clashDetection.findMany({
+      where,
+      include: {
+        reviewedBy: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        resolvedBy: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: [
+        { severity: 'desc' },
+        { createdAt: 'desc' },
+      ],
+    })
+
+    return clashes
+  },
+
+  /**
+   * Update clash detection status
+   */
+  async updateClashStatus(clashId: string, data: {
+    status: string
+    resolutionNotes?: string
+    userId: string
+  }) {
+    const clash = await prisma.clashDetection.findUnique({
+      where: { id: clashId },
+    })
+
+    if (!clash) {
+      throw new NotFoundError('ClashDetection', clashId)
+    }
+
+    const updateData: any = {
+      status: data.status,
+    }
+
+    if (data.status === 'REVIEWED' && !clash.reviewedAt) {
+      updateData.reviewedAt = new Date()
+      updateData.reviewedById = data.userId
+    }
+
+    if (data.status === 'RESOLVED' && !clash.resolvedAt) {
+      updateData.resolvedAt = new Date()
+      updateData.resolvedById = data.userId
+      if (data.resolutionNotes) {
+        updateData.resolutionNotes = data.resolutionNotes
+      }
+    }
+
+    if (data.resolutionNotes && data.status !== 'RESOLVED') {
+      updateData.resolutionNotes = data.resolutionNotes
+    }
+
+    const updated = await prisma.clashDetection.update({
+      where: { id: clashId },
+      data: updateData,
+    })
+
+    // Log audit
+    await auditService.recordAudit({
+      action: 'CLASH_DETECTION_UPDATED',
+      entityType: 'ClashDetection',
+      entityId: clashId,
+      userId: data.userId,
+      reason: `Clash status updated to ${data.status}`,
+      after: {
+        status: data.status,
+      },
+    })
+
+    return updated
+  },
+
+  /**
+   * Get component properties
+   */
+  async getComponentProperties(modelId: string, elementId?: string) {
+    const where: any = {
+      modelId,
+    }
+
+    if (elementId) {
+      where.elementId = elementId
+    }
+
+    const properties = await prisma.modelComponentProperty.findMany({
+      where,
+      include: {
+        updatedBy: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        lockedBy: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    })
+
+    return properties
+  },
+
+  /**
+   * Update component properties
+   */
+  async updateComponentProperties(modelId: string, elementId: string, data: {
+    properties?: any
+    customProperties?: any
+    userId: string
+  }) {
+    const existing = await prisma.modelComponentProperty.findUnique({
+      where: {
+        modelId_elementId: {
+          modelId,
+          elementId,
+        },
+      },
+    })
+
+    if (existing && existing.isLocked && existing.lockedById !== data.userId) {
+      throw new ValidationError('Component is locked by another user')
+    }
+
+    const propertyData: any = {
+      modelId,
+      elementId,
+      properties: data.properties || {},
+      customProperties: data.customProperties,
+      updatedById: data.userId,
+    }
+
+    if (existing) {
+      propertyData.properties = { ...(existing.properties as any), ...(data.properties || {}) }
+      propertyData.customProperties = { ...(existing.customProperties as any || {}), ...(data.customProperties || {}) }
+    }
+
+    const property = await prisma.modelComponentProperty.upsert({
+      where: {
+        modelId_elementId: {
+          modelId,
+          elementId,
+        },
+      },
+      create: propertyData,
+      update: {
+        properties: propertyData.properties,
+        customProperties: propertyData.customProperties,
+        updatedById: data.userId,
+      },
+    })
+
+    // Log audit
+    await auditService.recordAudit({
+      action: 'MODEL_COMPONENT_PROPERTY_UPDATED',
+      entityType: 'ModelComponentProperty',
+      entityId: property.id,
+      userId: data.userId,
+      reason: `Properties updated for element ${elementId}`,
+      after: {
+        elementId,
+        propertiesUpdated: Object.keys(data.properties || {}).length,
+      },
+    })
+
+    return property
+  },
+
+  /**
+   * Compare two model versions
+   */
+  async compareModels(modelId1: string, modelId2: string) {
+    const model1 = await prisma.bIMModel.findUnique({
+      where: { id: modelId1 },
+    })
+
+    const model2 = await prisma.bIMModel.findUnique({
+      where: { id: modelId2 },
+    })
+
+    if (!model1 || !model2) {
+      throw new NotFoundError('BIMModel', modelId1 || modelId2)
+    }
+
+    if (model1.designProjectId !== model2.designProjectId) {
+      throw new ValidationError('Models must be from the same project')
+    }
+
+    // TODO: Integrate with model comparison service
+    // This would:
+    // 1. Load both models
+    // 2. Compare geometry
+    // 3. Identify added/removed/modified elements
+    // 4. Return comparison results
+
+    return {
+      model1: {
+        id: model1.id,
+        name: model1.name,
+        versionNumber: model1.versionNumber,
+      },
+      model2: {
+        id: model2.id,
+        name: model2.name,
+        versionNumber: model2.versionNumber,
+      },
+      differences: [], // Placeholder
+      addedElements: [],
+      removedElements: [],
+      modifiedElements: [],
+    }
+  },
+
+  /**
+   * Start viewing session
+   */
+  async startViewingSession(modelId: string, userId: string, isClientReview: boolean = false) {
+    const model = await prisma.bIMModel.findUnique({
+      where: { id: modelId },
+    })
+
+    if (!model) {
+      throw new NotFoundError('BIMModel', modelId)
+    }
+
+    const session = await prisma.modelViewingSession.create({
+      data: {
+        modelId,
+        userId,
+        isClientReview,
+      },
+    })
+
+    return session
+  },
+
+  /**
+   * End viewing session
+   */
+  async endViewingSession(sessionId: string, data: {
+    viewsAccessed?: string[]
+    annotationsCreated?: number
+    annotationsViewed?: string[]
+    reviewCompleted?: boolean
+  }) {
+    const session = await prisma.modelViewingSession.findUnique({
+      where: { id: sessionId },
+    })
+
+    if (!session) {
+      throw new NotFoundError('ModelViewingSession', sessionId)
+    }
+
+    const endedAt = new Date()
+    const durationSeconds = Math.floor((endedAt.getTime() - session.startedAt.getTime()) / 1000)
+
+    const updated = await prisma.modelViewingSession.update({
+      where: { id: sessionId },
+      data: {
+        endedAt,
+        durationSeconds,
+        viewsAccessed: data.viewsAccessed || session.viewsAccessed,
+        annotationsCreated: data.annotationsCreated || session.annotationsCreated,
+        annotationsViewed: data.annotationsViewed || session.annotationsViewed,
+        reviewCompleted: data.reviewCompleted || session.reviewCompleted,
+      },
+    })
+
+    return updated
+  },
+}

@@ -1,0 +1,23 @@
+{
+  "name": "kealee-platform-v10",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:api": "cd services/api && pnpm test",
+    "test:api:watch": "cd services/api && pnpm test:watch",
+    "test:api:coverage": "cd services/api && pnpm test:coverage",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "typescript": "^5.9.0",
+    "turbo": "^2.7.0",
+    "prettier": "^3.7.0",
+    "eslint": "^9.39.0"
+  },
+  "packageManager": "pnpm@8.12.0"
+}

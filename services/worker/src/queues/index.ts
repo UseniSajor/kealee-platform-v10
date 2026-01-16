@@ -1,0 +1,10 @@
+// Export all queues
+export { BaseQueue } from './base.queue'
+export type { BaseJobData } from './base.queue'
+
+// Queue instances
+export { EmailQueue, emailQueue } from './email.queue'
+export { WebhookQueue, webhookQueue } from './webhook.queue'
+export { MLQueue, mlQueue } from './ml.queue'
+export { ReportsQueue, reportsQueue } from './reports.queue'
+export { SalesQueue, salesQueue } from './sales.queue'

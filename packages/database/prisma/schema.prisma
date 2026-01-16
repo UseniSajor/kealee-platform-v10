@@ -1,0 +1,1694 @@
+// ============================================================
+// CORE PERMIT SCHEMA - Stage 7.5 Base + Dual-Side Extensions
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Add after CONSTRUCTION ADMINISTRATION HANDOFF END
+
+// ============================================================================
+// ARCHITECT ONBOARDING & TEMPLATE LIBRARY (Prompt 2.10)
+// ============================================================================
+
+enum OnboardingStepStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+}
+
+enum TemplateCategory {
+  DETAIL
+  SCHEDULE
+  SHEET
+  SPECIFICATION
+  CALCULATION
+  STANDARD_DETAIL
+}
+
+enum TemplateStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// Architect onboarding workflow
+model ArchitectOnboarding {
+  id String @id @default(uuid())
+  userId String @unique
+
+  // Onboarding information
+  currentStep Int @default(0)
+  totalSteps Int @default(10)
+  completedSteps Int @default(0)
+  completionPercentage Decimal @default(0) @db.Decimal(5, 2)
+
+  // Status
+  isCompleted Boolean @default(false)
+  completedAt DateTime?
+  startedAt DateTime @default(now())
+
+  // Steps tracking (JSON array of step statuses)
+  steps Json? // Array of { stepId, name, status, completedAt }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation("ArchitectOnboarding", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isCompleted])
+}
+
+// Template library (details, schedules, sheets, etc.)
+model DesignTemplate {
+  id String @id @default(uuid())
+
+  // Template information
+  templateName String
+  templateCategory TemplateCategory
+  description String?
+  tags String[] // Searchable tags
+
+  // Template content
+  templateContent Json // Template structure/content
+  templateFileUrl String? // URL to template file (DWG, PDF, etc.)
+  thumbnailUrl String? // Preview thumbnail
+
+  // Organization
+  organizationId String? // Org-specific template
+  isPublic Boolean @default(false) // Public template library
+  isStandard Boolean @default(false) // Standard detail library
+
+  // Status
+  status TemplateStatus @default(DRAFT)
+  publishedAt DateTime?
+  version String @default("1.0.0")
+
+  // Usage tracking
+  usageCount Int @default(0)
+  lastUsedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdById String
+
+  // organization Org? @relation("DesignTemplateOrg", fields: [organizationId], references: [id], onDelete: SetNull) // Org model not defined yet
+  createdBy User @relation("DesignTemplateCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  instances DesignTemplateInstance[]
+
+  @@index([templateCategory])
+  @@index([isPublic])
+  @@index([isStandard])
+  @@index([status])
+  @@index([organizationId])
+}
+
+// Template instance (usage of template in project)
+model DesignTemplateInstance {
+  id String @id @default(uuid())
+  templateId String
+  designProjectId String?
+
+  // Instance information
+  instanceName String
+  customizations Json? // Customizations made to template
+
+  // Usage tracking
+  usedAt DateTime @default(now())
+  usedById String
+
+  template DesignTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  // designProject DesignProject? @relation(fields: [designProjectId], references: [id], onDelete: SetNull) // DesignProject model not defined yet
+  usedBy User @relation("DesignTemplateInstanceUsed", fields: [usedById], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@index([designProjectId])
+  @@index([usedAt])
+}
+
+// Standard detail library entry
+model StandardDetail {
+  id String @id @default(uuid())
+
+  // Detail information
+  detailNumber String @unique // e.g., "SD-001", "SD-002"
+  detailName String
+  detailCategory String // WALL, ROOF, FOUNDATION, WINDOW, DOOR, etc.
+  description String?
+
+  // Detail content
+  detailFileUrl String // URL to detail drawing (DWG, PDF)
+  thumbnailUrl String?
+  applicableCodes String[] // Building codes this detail applies to
+  applicableProjectTypes String[] // Project types this detail is for
+
+  // Organization
+  sourceOrganization String? // Organization that created/owns this detail
+  isPublic Boolean @default(true) // Standard details are typically public
+
+  // Usage tracking
+  usageCount Int @default(0)
+  lastUsedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdById String
+
+  createdBy User @relation("StandardDetailCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  instances StandardDetailInstance[]
+
+  @@index([detailNumber])
+  @@index([detailCategory])
+  @@index([isPublic])
+}
+
+// Standard detail instance (usage in project)
+model StandardDetailInstance {
+  id String @id @default(uuid())
+  standardDetailId String
+  designProjectId String
+  drawingSheetId String? // Sheet where detail is placed
+
+  // Instance information
+  sheetReference String? // Reference on sheet (e.g., "Detail 1/A2.1")
+  customizations Json? // Any customizations made
+
+  // Usage tracking
+  placedAt DateTime @default(now())
+  placedById String
+
+  standardDetail StandardDetail @relation(fields: [standardDetailId], references: [id], onDelete: Cascade)
+  // designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade) // DesignProject model not defined yet
+  // drawingSheet DrawingSheet? @relation(fields: [drawingSheetId], references: [id], onDelete: SetNull) // DrawingSheet model not defined yet
+  placedBy User @relation("StandardDetailInstancePlaced", fields: [placedById], references: [id], onDelete: Cascade)
+
+  @@index([standardDetailId])
+  @@index([designProjectId])
+  @@index([drawingSheetId])
+}
+
+// Performance benchmark record
+model PerformanceBenchmark {
+  id String @id @default(uuid())
+  designProjectId String?
+
+  // Benchmark information
+  benchmarkType String // FILE_UPLOAD, VERSION_COMPARISON, LARGE_FILE_VIEW, etc.
+  operationName String
+  operationDuration Int // Milliseconds
+
+  // Context
+  fileSize Int? // Bytes
+  fileType String?
+  recordCount Int? // Number of records processed
+  concurrentUsers Int? // Number of concurrent users
+
+  // Results
+  success Boolean @default(true)
+  errorMessage String?
+
+  recordedAt DateTime @default(now())
+
+  // designProject DesignProject? @relation(fields: [designProjectId], references: [id], onDelete: SetNull) // DesignProject model not defined yet
+
+  @@index([benchmarkType])
+  @@index([recordedAt])
+  @@index([designProjectId])
+}
+
+// Backup and disaster recovery record
+model BackupRecord {
+  id String @id @default(uuid())
+
+  // Backup information
+  backupType String // FULL, INCREMENTAL, DATABASE_ONLY, FILES_ONLY
+  backupScope String // ALL, PROJECT, ORG, USER
+  scopeId String? // ID of scope (project, org, user)
+
+  // Backup details
+  backupLocation String // S3 bucket, local path, etc.
+  backupSize Int? // Bytes
+  fileCount Int?
+  recordCount Int?
+
+  // Status
+  status String // IN_PROGRESS, COMPLETED, FAILED
+  startedAt DateTime @default(now())
+  completedAt DateTime?
+  errorMessage String?
+
+  // Verification
+  isVerified Boolean @default(false)
+  verifiedAt DateTime?
+  checksum String? // Backup integrity checksum
+
+  createdAt DateTime @default(now())
+  createdById String
+
+  createdBy User @relation("BackupRecordCreated", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([backupType])
+  @@index([status])
+  @@index([startedAt])
+  @@index([scopeId])
+}
+
+// Disaster recovery plan
+model DisasterRecoveryPlan {
+  id String @id @default(uuid())
+
+  // Plan information
+  planName String
+  planType String // RTO_PLAN, RPO_PLAN, FULL_DR_PLAN
+  description String?
+
+  // Recovery objectives
+  recoveryTimeObjective Int? // Minutes (RTO)
+  recoveryPointObjective Int? // Minutes (RPO)
+  maximumTolerableDowntime Int? // Minutes (MTD)
+
+  // Procedures
+  procedures Json? // Step-by-step recovery procedures
+  contactInformation Json? // Emergency contacts
+  escalationPath Json? // Escalation procedures
+
+  // Testing
+  lastTestedAt DateTime?
+  testResults Json?
+  nextTestDate DateTime?
+
+  // Status
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdById String
+
+  createdBy User @relation("DisasterRecoveryPlanCreated", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([planType])
+  @@index([isActive])
+}
+
+// ============================================================================
+// ARCHITECT ONBOARDING & TEMPLATE LIBRARY END
+// ============================================================================
+
+// ============================================================================
+// PERMITS & INSPECTIONS HUB - JURISDICTION ADMINISTRATION (Prompt 1.1)
+// ============================================================================
+
+enum JurisdictionStatus {
+  ACTIVE
+  INACTIVE
+  PENDING_SETUP
+}
+
+enum SubscriptionTier {
+  BASIC
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum StaffRole {
+  PLAN_REVIEWER
+  INSPECTOR
+  PERMIT_COORDINATOR
+  ADMINISTRATOR
+}
+
+model Jurisdiction {
+  id                String    @id @default(uuid())
+  name              String    // "Montgomery County, MD"
+  code              String    @unique // "US-MD-MONT"
+  state             String
+  county            String?
+  city              String?
+  
+  // Dual-Side Extension
+  subscriptionTier  String?   // BASIC, PRO, ENTERPRISE, CUSTOM
+  monthlyFee        Decimal?  @db.Decimal(10, 2)
+  subscribedAt      DateTime?
+  subscriptionStatus String   @default("TRIAL")
+  
+  // Integration
+  integrationType   String    // API_DIRECT, PORTAL_SCRAPE, MANUAL_ENTRY
+  apiProvider       String?   // ACCELA, TYLER, GOVOS, CUSTOM
+  apiUrl            String?
+  apiKey            String?
+  portalUrl         String?
+  
+  // Requirements
+  requiredDocuments Json      // JSON array of required doc types by permit type
+  feeSchedule       Json      // Fee calculation rules
+  formTemplates     Json      // Jurisdiction-specific form schemas
+  
+  // Performance Stats
+  avgReviewDays     Int?
+  firstTimeApprovalRate Float?
+  totalPermitsProcessed Int   @default(0)
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  lastSyncedAt      DateTime?
+  
+  // Relationships
+  permits           Permit[]
+  staff             JurisdictionStaff[]
+  templates         JurisdictionFormTemplate[]
+  inspections       Inspection[]
+  integrations      APIIntegration[]
+  analytics         JurisdictionAnalytics[]
+  usageMetrics      JurisdictionUsageMetrics[]
+  permitTemplates    PermitTemplate[]
+  integrationLogs   JurisdictionIntegrationLog[] @relation("JurisdictionIntegrationLogJurisdiction")
+  routingRules      RoutingRule[] @relation("RoutingRuleJurisdiction")
+  reviewAssignments ReviewAssignment[]
+  inspectionAssignments InspectionAssignment[]
+  
+  @@index([code])
+  @@index([state, county])
+  @@index([subscriptionStatus])
+}
+
+// ============================================================
+// DUAL-SIDE EXTENSION MODELS
+// ============================================================
+
+model JurisdictionStaff {
+  id                String    @id @default(uuid())
+  jurisdictionId    String
+  userId            String?   // Null if not a Kealee user
+  
+  // Staff Info
+  firstName         String
+  lastName          String
+  email             String    @unique
+  phone             String?
+  employeeId        String?   // Jurisdiction employee ID
+  
+  // Role & Specialty
+  role              String    // PLAN_REVIEWER, INSPECTOR, PERMIT_TECH, ADMIN, SUPERVISOR
+  disciplines       String[]  // ["BUILDING", "ELECTRICAL", "FIRE"]
+  certifications    String[]  // ["ICC_CERTIFIED", "PE_LICENSE"]
+  
+  // Workload Management
+  currentWorkload   Int       @default(0) // Active assignments
+  maxWorkload       Int       @default(25)
+  avgReviewTime     Int?      // Minutes average
+  isActive          Boolean   @default(true)
+  
+  // Performance
+  reviewsCompleted  Int       @default(0)
+  inspectionsCompleted Int    @default(0)
+  avgAccuracy       Float?    // Based on supervisor reviews
+  
+  // Availability
+  workingHours      Json      // Weekly schedule
+  timezone          String    @default("America/New_York")
+  vacationDates     Json      // Array of date ranges
+  
+  // Mobile
+  mobileDeviceId    String?
+  lastLocation      Json?     // {lat, lng, timestamp}
+  lastActive        DateTime?
+  
+  // Metadata
+  hiredDate         DateTime
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relationships
+  jurisdiction      Jurisdiction @relation(fields: [jurisdictionId], references: [id])
+  reviewAssignments ReviewAssignment[]
+  inspectionAssignments InspectionAssignment[]
+  inspections       Inspection[]
+  remoteInspections RemoteInspection[]
+  
+  @@index([jurisdictionId])
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+}
+
+// Usage metrics tracking (monthly snapshots)
+model JurisdictionUsageMetrics {
+  id String @id @default(uuid())
+  jurisdictionId String
+  
+  // Metrics period
+  year Int
+  month Int // 1-12
+  
+  // Permit metrics
+  permitsSubmitted Int @default(0)
+  permitsApproved Int @default(0)
+  permitsIssued Int @default(0)
+  permitsCompleted Int @default(0)
+  
+  // Revenue metrics
+  permitFeesCollected Decimal @default(0) @db.Decimal(12, 2)
+  expeditedFeesCollected Decimal @default(0) @db.Decimal(12, 2)
+  totalRevenue Decimal @default(0) @db.Decimal(12, 2)
+  
+  // Processing metrics
+  averageProcessingTime Int? // Days
+  averageReviewTime Int? // Days
+  averageInspectionTime Int? // Days
+  
+  // Staff metrics
+  activeStaffCount Int @default(0)
+  reviewsCompleted Int @default(0)
+  inspectionsCompleted Int @default(0)
+  
+  recordedAt DateTime @default(now())
+  
+  jurisdiction Jurisdiction @relation(fields: [jurisdictionId], references: [id], onDelete: Cascade)
+  
+  @@unique([jurisdictionId, year, month])
+  @@index([jurisdictionId])
+  @@index([year, month])
+}
+
+// Permit template (jurisdiction-specific)
+model PermitTemplate {
+  id String @id @default(uuid())
+  jurisdictionId String
+  
+  templateName String
+  permitType String // BUILDING, ELECTRICAL, etc.
+  templateData Json // Form fields, requirements, etc.
+  
+  isActive Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdById String
+  
+  jurisdiction Jurisdiction @relation(fields: [jurisdictionId], references: [id], onDelete: Cascade)
+  createdBy User @relation("PermitTemplateCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  
+  @@index([jurisdictionId])
+  @@index([permitType])
+}
+
+// ============================================================
+// FORM GENERATION & TEMPLATE MODELS
+// ============================================================
+
+model JurisdictionFormTemplate {
+  id                String    @id @default(uuid())
+  jurisdictionId    String
+  permitType        PermitType
+  
+  // Template Info
+  formName          String    // "Building Permit Application"
+  formVersion       String    @default("1.0")
+  formCode          String?   // Jurisdiction form code
+  
+  // Structure
+  formSchema        Json      // JSON Schema definition
+  fieldMappings     Json      // Kealee fields → Jurisdiction fields
+  validationRules   Json      // Required fields, formats, conditions
+  
+  // Generation
+  templateUrl       String?   // PDF template URL
+  generationMethod  String    // PDF_FILL, HTML_RENDER, API_CALL
+  
+  // Status
+  isActive          Boolean   @default(true)
+  lastUpdated       DateTime  @default(now())
+  lastVerified      DateTime?
+  
+  // Relationships
+  jurisdiction      Jurisdiction @relation(fields: [jurisdictionId], references: [id])
+  
+  @@unique([jurisdictionId, permitType, formVersion])
+  @@index([jurisdictionId])
+  @@index([permitType])
+  @@index([isActive])
+}
+
+// Expedited permit service (premium processing)
+model ExpeditedPermitService {
+  id String @id @default(uuid())
+  permitApplicationId String
+  
+  serviceType String // EXPEDITED_REVIEW, CONCIERGE
+  
+  jurisdictionFee Decimal @db.Decimal(10, 2) // What jurisdiction charges
+  kealeeMarkup Decimal @db.Decimal(10, 2) // Our markup (15-25%)
+  totalCharge Decimal @db.Decimal(10, 2)
+  
+  guaranteedDays Int // Guaranteed turnaround time in days
+  actualDays Int? // Actual processing days
+  metGuarantee Boolean? // Whether guarantee was met
+  
+  status String @default("PENDING") // PENDING, ACTIVE, COMPLETED, REFUNDED
+  startedAt DateTime?
+  completedAt DateTime?
+  refundIssued Boolean @default(false)
+  refundAmount Decimal? @db.Decimal(10, 2)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // permitApplication PermitApplication @relation("ExpeditedPermitServiceApplication", fields: [permitApplicationId], references: [id], onDelete: Cascade) // PermitApplication replaced by Permit in Stage 7.5
+  
+  @@index([permitApplicationId])
+  @@index([serviceType])
+  @@index([status])
+}
+
+// Jurisdiction integration log (tracks API/scraping/email interactions)
+model JurisdictionIntegrationLog {
+  id String @id @default(uuid())
+  jurisdictionId String
+  permitApplicationId String?
+  
+  action String // SUBMIT, STATUS_CHECK, UPDATE, RETRIEVE
+  method String // API, SCRAPING, EMAIL, PORTAL
+  
+  requestData Json? // Request payload/data sent
+  responseData Json? // Response received
+  success Boolean
+  errorMessage String?
+  
+  executedAt DateTime @default(now())
+  
+  jurisdiction Jurisdiction @relation("JurisdictionIntegrationLogJurisdiction", fields: [jurisdictionId], references: [id], onDelete: Cascade)
+  // permitApplication PermitApplication? @relation("JurisdictionIntegrationLogApplication", fields: [permitApplicationId], references: [id], onDelete: SetNull) // PermitApplication replaced by Permit in Stage 7.5
+  permitApplicationNotifications PermitNotification[] @relation("PermitNotificationApplication")
+  
+  @@index([jurisdictionId])
+  @@index([permitApplicationId])
+  @@index([action])
+  @@index([method])
+  @@index([success])
+  @@index([executedAt])
+}
+
+// ============================================================
+// CORE PERMIT SCHEMA - Stage 7.5 Base + Dual-Side Extensions
+// ============================================================
+
+// ENUMS
+enum PermitType {
+  BUILDING
+  ELECTRICAL
+  PLUMBING
+  MECHANICAL
+  FIRE
+  GRADING
+  DEMOLITION
+  SIGN
+  FENCE
+  ROOFING
+  HVAC
+  SOLAR
+  POOL
+}
+
+enum PermitStatus {
+  DRAFT
+  AI_PRE_REVIEW
+  READY_TO_SUBMIT
+  SUBMITTED
+  UNDER_REVIEW
+  CORRECTIONS_REQUESTED
+  RESUBMITTED
+  APPROVED
+  ISSUED
+  ACTIVE
+  INSPECTION_HOLD
+  EXPIRED
+  COMPLETED
+  CANCELLED
+  REJECTED
+}
+
+enum ApplicantType {
+  OWNER
+  CONTRACTOR
+  ARCHITECT
+  ENGINEER
+  DESIGN_BUILDER
+  DEVELOPER
+}
+
+enum ReviewDiscipline {
+  ZONING
+  BUILDING
+  STRUCTURAL
+  ELECTRICAL
+  PLUMBING
+  MECHANICAL
+  FIRE
+  ENERGY
+  ACCESSIBILITY
+  ENVIRONMENTAL
+  HEALTH
+  TRANSPORTATION
+}
+
+enum InspectionType {
+  SITE
+  FOOTING
+  FOUNDATION
+  SLAB
+  UNDER_SLAB_PLUMBING
+  ROUGH_FRAMING
+  ROUGH_ELECTRICAL
+  ROUGH_PLUMBING
+  ROUGH_MECHANICAL
+  INSULATION
+  GYPSUM_BOARD
+  FINAL_ELECTRICAL
+  FINAL_PLUMBING
+  FINAL_MECHANICAL
+  FINAL_BUILDING
+  FINAL_FIRE
+  CERTIFICATE_OF_OCCUPANCY
+  SPECIAL_INSPECTION
+  REINSPECTION
+}
+
+enum InspectionResult {
+  PASS
+  PASS_WITH_COMMENTS
+  FAIL
+  PARTIAL_PASS
+  CANCELLED
+  NOT_READY
+}
+
+enum AIReviewSource {
+  CLIENT_SIDE_PRE_REVIEW
+  JURISDICTION_SIDE_ASSIST
+  REMOTE_INSPECTION_ANALYSIS
+  DOCUMENT_COMPLIANCE_CHECK
+}
+
+enum DocumentType {
+  SITE_PLAN
+  FLOOR_PLAN
+  ELEVATION
+  STRUCTURAL_CALCS
+  ENERGY_CALCS
+  SURVEY
+  PROOF_OF_OWNERSHIP
+  HOA_APPROVAL
+  ENGINEERING_STAMP
+  ARCHITECTURAL_STAMP
+  OTHER
+}
+
+// ============================================================
+// CORE MODELS (Stage 7.5)
+// ============================================================
+
+model Permit {
+  id                String    @id @default(uuid())
+  permitNumber      String?   @unique // Auto-generated after submission
+  projectId         String
+  clientId          String
+  jurisdictionId    String
+  pmUserId          String    // Kealee PM assigned
+  
+  // Basic Info
+  permitType        PermitType
+  subtype           String?   // "Kitchen Remodel", "New Deck", etc.
+  scope             String
+  valuation         Decimal   @db.Decimal(12, 2) // For fee calculation
+  squareFootage     Int?
+  units             Int?      // For multi-family
+  stories           Int?
+  
+  // Property Info
+  propertyId        String
+  address           String
+  parcelNumber      String?
+  zoning            String?
+  
+  // Applicant Info
+  applicantId       String
+  applicantType     ApplicantType
+  applicantName     String
+  applicantEmail    String
+  applicantPhone    String
+  
+  // Professionals
+  architectId       String?
+  architectName     String?
+  architectLicense  String?
+  engineerId        String?
+  engineerName      String?
+  engineerLicense   String?
+  contractorId      String?
+  contractorName    String?
+  contractorLicense String?
+  
+  // Status Tracking (Client-Side)
+  kealeeStatus      PermitStatus @default(DRAFT)
+  aiReviewScore     Int?          // 0-100 score from AI pre-review
+  aiIssuesFound     Json?         // JSON array of issues detected
+  autoCorrections   Json?         // Corrections made before submission
+  readyToSubmit     Boolean       @default(false)
+  
+  // Jurisdiction Tracking (Dual-Side)
+  jurisdictionRefNumber String?   // Jurisdiction's permit number
+  jurisdictionStatus    String?   // Status in jurisdiction's system
+  submittedVia          String?   // API, PORTAL, EMAIL, MANUAL
+  submittedAt           DateTime?
+  reviewStartedAt       DateTime?
+  approvedAt            DateTime?
+  issuedAt              DateTime?
+  expiresAt             DateTime?
+  completedAt           DateTime?
+  
+  // Fees
+  calculatedFee     Decimal?  @db.Decimal(10, 2)
+  paidAmount        Decimal?  @default(0) @db.Decimal(10, 2)
+  feePaid           Boolean   @default(false)
+  feePaidAt         DateTime?
+  
+  // Expedited Processing
+  expedited         Boolean   @default(false)
+  expeditedFee      Decimal?  @db.Decimal(10, 2)
+  expeditedGuaranteeDays Int? // 2, 5, 10 day guarantee
+  
+  // Documents
+  plans             String[]  // Array of S3 URLs
+  calculations      String[]
+  reports           String[]
+  otherDocuments    String[]
+  
+  // Relationships
+  jurisdiction      Jurisdiction @relation(fields: [jurisdictionId], references: [id])
+  project           Project @relation(fields: [projectId], references: [id])
+  aiReviews         AIReviewResult[]
+  submissions       PermitSubmission[]
+  corrections       PermitCorrection[]
+  reviewAssignments ReviewAssignment[]
+  inspections       Inspection[]
+  events            PermitEvent[]
+  permitRoutings     PermitRouting[] @relation("PermitRoutingPermit")
+  permitNotifications PermitNotification[] @relation("PermitNotificationPermit")
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([projectId])
+  @@index([clientId])
+  @@index([jurisdictionId])
+  @@index([kealeeStatus])
+  @@index([jurisdictionStatus])
+  @@index([submittedAt])
+  @@index([permitNumber])
+}
+
+model AIReviewResult {
+  id                String    @id @default(uuid())
+  permitId          String
+  reviewSource      AIReviewSource
+  overallScore      Int       // 0-100
+  readyToSubmit     Boolean
+  
+  // Findings
+  planIssues        Json      // Array of plan-related issues
+  codeViolations    Json      // Array of code violations
+  missingDocuments  Json      // Array of missing required docs
+  suggestedFixes    Json      // Array of suggested fixes
+  
+  // Metadata
+  modelVersion      String
+  processingTimeMs  Int
+  confidenceScores  Json      // Per-issue confidence scores
+  
+  reviewedAt        DateTime  @default(now())
+  reviewedBy        String?   // NULL for AI, user ID for human
+  
+  permit            Permit @relation(fields: [permitId], references: [id], onDelete: Cascade)
+  
+  @@index([permitId])
+  @@index([reviewSource])
+  @@index([reviewedAt])
+}
+
+model PermitSubmission {
+  id                String    @id @default(uuid())
+  permitId          String
+  
+  submissionType    String    // INITIAL, RESUBMITTAL, SUPPLEMENTAL
+  submittedVia      String    // API, PORTAL, EMAIL, MANUAL, FAX
+  submittedBy       String    // User ID
+  submittedAt       DateTime  @default(now())
+  
+  // Submission Data
+  documents         Json      // Array of document metadata
+  formData          Json      // Form field values
+  notes             String?
+  
+  // Jurisdiction Response
+  confirmationNumber String?
+  jurisdictionResponse Json?  // Raw response from jurisdiction
+  submissionStatus   String?  // RECEIVED, PROCESSING, REJECTED
+  
+  permit            Permit @relation(fields: [permitId], references: [id], onDelete: Cascade)
+  
+  @@index([permitId])
+  @@index([submittedAt])
+  @@index([confirmationNumber])
+}
+
+model PermitCorrection {
+  id                String    @id @default(uuid())
+  permitId          String
+  
+  source            String    // JURISDICTION_EMAIL, PORTAL_COMMENT, PHONE_CALL, AI_DETECTION
+  receivedAt        DateTime  @default(now())
+  rawText           String    // Original correction text
+  
+  // Parsed Data
+  parsedIssues      Json      // Array of structured issues
+  affectedSheets    String[]  // Drawing sheet references
+  severity          String    // MINOR, MAJOR, CRITICAL
+  discipline        ReviewDiscipline?
+  
+  // Assignment & Tracking
+  assignedTo        String    // ARCHITECT, ENGINEER, CONTRACTOR, OWNER
+  assignedUserId    String?   // Kealee user assigned to fix
+  dueDate           DateTime
+  status            String    @default("PENDING") // PENDING, IN_PROGRESS, RESOLVED, OVERDUE
+  resolvedAt        DateTime?
+  resolutionNotes   String?
+  
+  permit            Permit @relation(fields: [permitId], references: [id], onDelete: Cascade)
+  
+  @@index([permitId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([assignedTo])
+}
+
+// ============================================================
+// EVENT & AUDIT MODELS
+// ============================================================
+
+model PermitEvent {
+  id                String    @id @default(uuid())
+  permitId          String
+  userId            String?   // NULL for system events
+  
+  eventType         String    // STATUS_CHANGE, DOCUMENT_UPLOAD, FEE_PAID, etc.
+  description       String
+  metadata          Json?     // Additional event data
+  
+  // Source
+  source            String    @default("SYSTEM") // SYSTEM, USER, API, WEBHOOK
+  ipAddress         String?
+  userAgent         String?
+  
+  occurredAt        DateTime  @default(now())
+  
+  permit            Permit @relation(fields: [permitId], references: [id], onDelete: Cascade)
+  
+  @@index([permitId])
+  @@index([eventType])
+  @@index([occurredAt])
+  @@index([userId])
+}
+
+model Inspection {
+  id                String    @id @default(uuid())
+  inspectionNumber  String?   @unique
+  permitId          String
+  projectId         String
+  jurisdictionId    String
+  
+  inspectionType    InspectionType
+  description       String?
+  phaseRequired     String?   // Construction phase
+  
+  // Preparation (Client-Side)
+  checklistId       String?
+  sitePhotos        String[]  // Pre-inspection photos
+  pmPreInspection   DateTime? // PM verification date
+  readyToSchedule   Boolean   @default(false)
+  notes             String?   // Contractor notes about readiness
+  
+  // Scheduling (Jurisdiction-Side)
+  requestedDate     DateTime
+  requestedBy       String    // User ID
+  scheduledDate     DateTime?
+  scheduledWindow   String?   // "8:00-12:00", "1:00-5:00"
+  inspectorId       String?   // Jurisdiction inspector
+  jurisdictionRefNumber String?
+  
+  // Remote Inspection (Dual-Side Extension)
+  isRemote          Boolean   @default(false)
+  videoSessionId    String?
+  videoRecordingUrl String?
+  liveStreamUrl     String?
+  aiVideoAnalysis   Json?
+  
+  // Results
+  result            InspectionResult?
+  inspectorNotes    String?
+  deficiencies      Json?     // Array of deficiencies found
+  passedItems       Int?
+  failedItems       Int?
+  totalItems        Int?
+  completedAt       DateTime?
+  
+  // Reinspection Tracking
+  parentInspectionId String?
+  isReinspection    Boolean   @default(false)
+  
+  // Relationships
+  permit            Permit @relation(fields: [permitId], references: [id])
+  project           Project @relation(fields: [projectId], references: [id])
+  jurisdiction      Jurisdiction @relation(fields: [jurisdictionId], references: [id])
+  inspector         JurisdictionStaff? @relation(fields: [inspectorId], references: [id])
+  remoteSession     RemoteInspection?
+  inspectionAssignment InspectionAssignment?
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([permitId])
+  @@index([projectId])
+  @@index([jurisdictionId])
+  @@index([scheduledDate])
+  @@index([inspectorId])
+  @@index([result])
+}
+
+// ============================================================================
+// PERMITS & INSPECTIONS HUB - PERMIT MODELS END
+// ============================================================================
+
+// ============================================================================
+// PERMITS & INSPECTIONS HUB - AUTOMATIC APPLICATION ROUTING (Prompt 1.5)
+// ============================================================================
+
+enum RoutingStatus {
+  PENDING
+  ROUTED
+  IN_REVIEW
+  COMPLETED
+  RE_ROUTED
+  ESCALATED
+}
+
+enum EscalationReason {
+  DELAYED_REVIEW
+  OVERDUE
+  NO_ASSIGNMENT
+  WORKLOAD_OVERFLOW
+  QUALITY_CONCERN
+}
+
+// Permit routing assignment
+model PermitRouting {
+  id String @id @default(uuid())
+  permitId String
+  
+  // Routing information
+  discipline String // ZONING, BUILDING, FIRE, etc.
+  routingStatus RoutingStatus @default(PENDING)
+  
+  // Assignment
+  assignedReviewerId String?
+  assignedAt DateTime?
+  startedAt DateTime?
+  completedAt DateTime?
+  
+  // Routing details
+  routingRuleId String? // Business rule that triggered this routing
+  routingPriority Int @default(0) // Higher = more urgent
+  isExpedited Boolean @default(false)
+  
+  // Re-routing
+  previousRoutingId String? // If re-routed
+  reRoutingReason String?
+  reRoutedAt DateTime?
+  
+  // Escalation
+  isEscalated Boolean @default(false)
+  escalationReason EscalationReason?
+  escalatedAt DateTime?
+  escalatedToId String? // User/role escalated to
+  
+  // Timing
+  dueDate DateTime?
+  estimatedCompletionDate DateTime?
+  actualCompletionDate DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  permit Permit @relation("PermitRoutingPermit", fields: [permitId], references: [id], onDelete: Cascade)
+  assignedReviewer User? @relation("PermitRoutingReviewer", fields: [assignedReviewerId], references: [id], onDelete: SetNull)
+  escalatedTo User? @relation("PermitRoutingEscalatedTo", fields: [escalatedToId], references: [id], onDelete: SetNull)
+  previousRouting PermitRouting? @relation("PermitRoutingReRoute", fields: [previousRoutingId], references: [id], onDelete: SetNull)
+  reRoutings PermitRouting[] @relation("PermitRoutingReRoute")
+  
+  @@index([permitId])
+  @@index([discipline])
+  @@index([routingStatus])
+  @@index([assignedReviewerId])
+  @@index([dueDate])
+  @@index([isEscalated])
+}
+
+// Routing rule (for rules-based routing)
+model RoutingRule {
+  id String @id @default(uuid())
+  jurisdictionId String
+  
+  // Rule information
+  ruleName String
+  ruleDescription String?
+  
+  // Conditions
+  conditions Json // Conditions that trigger this rule
+  // Example: { permitType: "BUILDING", valuation: { min: 100000 }, projectType: "COMMERCIAL" }
+  
+  // Routing actions
+  requiredDisciplines String[] // Disciplines that must review
+  optionalDisciplines String[] // Disciplines that may review
+  routingOrder Json? // Order of discipline reviews
+  
+  // Priority
+  priority Int @default(0) // Higher priority rules evaluated first
+  isActive Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdById String
+  
+  jurisdiction Jurisdiction @relation("RoutingRuleJurisdiction", fields: [jurisdictionId], references: [id], onDelete: Cascade)
+  createdBy User @relation("RoutingRuleCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  
+  @@index([jurisdictionId])
+  @@index([isActive])
+  @@index([priority])
+}
+
+// Notification for applicants
+model PermitNotification {
+  id String @id @default(uuid())
+  permitId String
+  permitApplicationId String? // If from application
+  jurisdictionIntegrationLogId String? // If from integration log
+  
+  // Notification information
+  notificationType String // STATUS_UPDATE, REVIEW_STARTED, CORRECTIONS_REQUIRED, APPROVED, etc.
+  title String
+  message String
+  
+  // Recipient
+  recipientId String // User ID (applicant)
+  recipientEmail String?
+  
+  // Status
+  sent Boolean @default(false)
+  sentAt DateTime?
+  read Boolean @default(false)
+  readAt DateTime?
+  
+  // Delivery
+  deliveryMethod String[] // EMAIL, SMS, IN_APP
+  emailSent Boolean @default(false)
+  smsSent Boolean @default(false)
+  inAppSent Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  
+  permit Permit @relation("PermitNotificationPermit", fields: [permitId], references: [id], onDelete: Cascade)
+  // permitApplication PermitApplication? @relation("PermitNotificationApplication", fields: [permitApplicationId], references: [id], onDelete: SetNull) // PermitApplication replaced by Permit in Stage 7.5
+  recipient User @relation("PermitNotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  integrationLog JurisdictionIntegrationLog? @relation("PermitNotificationApplication", fields: [jurisdictionIntegrationLogId], references: [id], onDelete: SetNull)
+  
+  @@index([permitId])
+  @@index([permitApplicationId])
+  @@index([recipientId])
+  @@index([sent])
+  @@index([read])
+  @@index([notificationType])
+}
+
+// ============================================================================
+// PERMITS & INSPECTIONS HUB - AUTOMATIC APPLICATION ROUTING END
+// ============================================================================
+
+// ============================================================================
+// OLD MODELS - DEPRECATED (Kept for backward compatibility)
+// These models are replaced by the Stage 7.5 Permit model above
+// ============================================================================
+
+model ReviewAssignment {
+  id                String    @id @default(uuid())
+  permitId          String
+  reviewerId        String
+  jurisdictionId    String
+  
+  discipline        ReviewDiscipline
+  priority          String    @default("STANDARD") // STANDARD, EXPEDITED, URGENT
+  estimatedDuration Int?      // Minutes
+  
+  // Assignment Details
+  assignedBy        String    // Supervisor or system
+  assignedAt        DateTime  @default(now())
+  dueDate           DateTime
+  startedAt         DateTime?
+  completedAt       DateTime?
+  
+  // Status & Progress
+  status            String    @default("ASSIGNED") // ASSIGNED, IN_PROGRESS, COMPLETED, ON_HOLD
+  progress          Int?      @default(0) // 0-100
+  
+  // AI Assistance
+  aiPreReview       Json?     // AI findings for this discipline
+  reviewerComments  Json?     // Comments and markups
+  reviewTime        Int?      // Minutes spent
+  
+  // Relationships
+  permit            Permit @relation(fields: [permitId], references: [id])
+  reviewer          JurisdictionStaff @relation(fields: [reviewerId], references: [id])
+  jurisdiction      Jurisdiction @relation(fields: [jurisdictionId], references: [id])
+  
+  @@unique([permitId, reviewerId, discipline])
+  @@index([permitId])
+  @@index([reviewerId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model InspectionAssignment {
+  id                String    @id @default(uuid())
+  inspectionId      String    @unique
+  inspectorId       String
+  jurisdictionId    String
+  
+  scheduledDate     DateTime
+  timeSlot          String    // "8:00-9:00", "9:00-10:00", etc.
+  
+  // Route Optimization
+  routeOrder        Int?      // Sequence in daily route
+  estimatedDuration Int       // Minutes
+  travelTime        Int?      // Minutes from previous
+  
+  // Status
+  assignedAt        DateTime  @default(now())
+  status            String    @default("SCHEDULED") // SCHEDULED, EN_ROUTE, ON_SITE, COMPLETED, CANCELLED
+  
+  // Location
+  siteAddress       String
+  siteCoordinates   Json?     // {lat, lng}
+  
+  // Relationships
+  inspection        Inspection @relation(fields: [inspectionId], references: [id])
+  inspector         JurisdictionStaff @relation(fields: [inspectorId], references: [id])
+  jurisdiction      Jurisdiction @relation(fields: [jurisdictionId], references: [id])
+  
+  @@index([inspectorId])
+  @@index([scheduledDate])
+  @@index([status])
+}
+
+model RemoteInspection {
+  id                String    @id @default(uuid())
+  inspectionId      String    @unique
+  
+  // Video Session
+  sessionId         String    @unique
+  startedAt         DateTime
+  endedAt           DateTime?
+  duration          Int?      // Seconds
+  
+  // Participants
+  inspectorId       String
+  contractorName    String?
+  contractorPhone   String?
+  participants      Json      // Array of participant info
+  
+  // Technical Details
+  recordingUrl      String?
+  recordingSize     Int?      // MB
+  videoQuality      String?   // HD, SD, POOR
+  connectionIssues  Boolean   @default(false)
+  connectionLog     Json?     // Array of connection events
+  
+  // AI Analysis
+  videoFrames       Json?     // Key frames extracted for analysis
+  aiAnalysis        Json?     // Real-time AI findings
+  aiConfidence      Float?
+  manualOverride    Boolean   @default(false) // Inspector overrode AI
+  
+  // Quality Assurance
+  qaReviewed        Boolean   @default(false)
+  qaReviewerId      String?
+  qaNotes           String?
+  
+  // Relationships
+  inspection        Inspection @relation(fields: [inspectionId], references: [id])
+  inspector         JurisdictionStaff @relation(fields: [inspectorId], references: [id])
+  
+  @@index([inspectionId])
+  @@index([inspectorId])
+  @@index([startedAt])
+}
+
+
+// ============================================================
+// API INTEGRATION MODELS
+// ============================================================
+
+model APIIntegration {
+  id                String    @id @default(uuid())
+  jurisdictionId    String
+  
+  // Provider Info
+  provider          String    // ACCELA, TYLER, GOVOS, CUSTOM, KEALEE_API
+  integrationType   String    // REST_API, SOAP, GRAPHQL, WEBHOOK
+  
+  // Credentials (Encrypted)
+  apiUrl            String
+  apiKey            String
+  clientId          String?
+  clientSecret      String?
+  authToken         String?
+  tokenExpiresAt    DateTime?
+  
+  // Configuration
+  endpoints         Json      // Endpoint mappings
+  fieldMappings     Json      // Data transformation rules
+  webhookUrl        String?   // Our webhook endpoint for them
+  webhookSecret     String?
+  
+  // Status
+  isActive          Boolean   @default(true)
+  lastSyncAt        DateTime?
+  lastError         String?
+  errorCount        Int       @default(0)
+  
+  // Performance
+  totalRequests     Int       @default(0)
+  successfulRequests Int      @default(0)
+  failedRequests    Int       @default(0)
+  avgResponseTime   Int?      // Milliseconds
+  
+  // Rate Limiting
+  rateLimitRemaining Int?
+  rateLimitReset     DateTime?
+  
+  jurisdiction      Jurisdiction @relation(fields: [jurisdictionId], references: [id])
+  apiCalls          APICall[]
+  webhookEvents     WebhookEvent[]
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([jurisdictionId])
+  @@index([provider])
+  @@index([isActive])
+}
+
+model APICall {
+  id                String    @id @default(uuid())
+  integrationId     String
+  
+  // Request
+  endpoint          String
+  method            String    // GET, POST, PUT, DELETE, PATCH
+  requestPayload    Json?
+  requestHeaders    Json?
+  
+  // Response
+  statusCode        Int?
+  responsePayload   Json?
+  responseHeaders   Json?
+  responseTime      Int?      // Milliseconds
+  
+  // Context
+  action            String    // SUBMIT_PERMIT, CHECK_STATUS, GET_DOCUMENTS
+  permitId          String?
+  inspectionId      String?
+  
+  // Outcome
+  success           Boolean
+  errorMessage      String?
+  retryCount        Int       @default(0)
+  
+  executedAt        DateTime  @default(now())
+  
+  integration       APIIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  
+  @@index([integrationId])
+  @@index([executedAt])
+  @@index([action])
+  @@index([permitId])
+}
+
+model WebhookEvent {
+  id                String    @id @default(uuid())
+  integrationId     String?
+  
+  // Event Details
+  eventType         String    // permit.submitted, permit.approved, inspection.scheduled
+  eventSource        String    // ACCELA, TYLER, CLIENT, JURISDICTION
+  eventId           String?   // Source event ID
+  
+  // Payload
+  payload           Json
+  signature         String?   // For verification
+  rawBody           String?   // Original raw body
+  
+  // Processing
+  receivedAt        DateTime  @default(now())
+  processedAt       DateTime?
+  status            String    @default("PENDING") // PENDING, PROCESSED, FAILED, RETRYING
+  errorMessage      String?
+  retryCount        Int       @default(0)
+  
+  // Related Records
+  permitId          String?
+  inspectionId      String?
+  
+  integration       APIIntegration? @relation(fields: [integrationId], references: [id])
+  
+  @@index([integrationId])
+  @@index([eventType])
+  @@index([receivedAt])
+  @@index([status])
+  @@index([permitId])
+}
+
+// ============================================================
+// ANALYTICS & REPORTING MODELS
+// ============================================================
+
+model JurisdictionAnalytics {
+  id                String    @id @default(uuid())
+  jurisdictionId    String
+  periodStart       DateTime  // Usually start of month
+  periodEnd         DateTime  // Usually end of month
+  
+  // Volume Metrics
+  totalPermits      Int       @default(0)
+  permitsSubmitted  Int       @default(0)
+  permitsApproved   Int       @default(0)
+  permitsRejected   Int       @default(0)
+  permitsExpired    Int       @default(0)
+  
+  // Performance Metrics
+  avgReviewTime     Float?    // Days
+  avgApprovalTime   Float?    // Days
+  firstTimeApprovalRate Float?
+  correctionRate    Float?    // % needing corrections
+  
+  // Inspection Metrics
+  inspectionsScheduled Int    @default(0)
+  inspectionsCompleted Int    @default(0)
+  inspectionPassRate   Float?
+  
+  // AI Impact
+  aiReviewsRun      Int       @default(0)
+  issuesCaughtPreReview Int   @default(0)
+  estimatedTimeSaved Float?   // Hours
+  
+  // Revenue (Kealee)
+  expeditedFees     Decimal?  @default(0) @db.Decimal(12, 2)
+  subscriptionRevenue Decimal? @default(0) @db.Decimal(12, 2)
+  transactionFees   Decimal?  @default(0) @db.Decimal(12, 2)
+  
+  // Jurisdiction Stats
+  avgStaffWorkload  Float?
+  backlogSize       Int?
+  
+  generatedAt       DateTime  @default(now())
+  
+  jurisdiction      Jurisdiction @relation(fields: [jurisdictionId], references: [id])
+  
+  @@index([jurisdictionId])
+  @@index([periodStart])
+  @@index([periodEnd])
+}
+
+// ============================================================
+// RELATIONSHIPS WITH EXISTING KEALEE MODELS
+// ============================================================
+
+// These models reference existing Kealee platform models
+// If they don't exist, add minimal stub definitions below
+
+model Project {
+  id                String    @id @default(uuid())
+  // ... existing Kealee project fields
+  
+  // Relationships
+  permits           Permit[]
+  inspections       Inspection[]
+}
+
+model User {
+  id                String    @id @default(uuid())
+  // ... existing Kealee user fields
+  
+  // Relationships (example - adjust based on your existing schema)
+  // submittedPermits  Permit[]  @relation("PermitApplicant")
+  // reviewedPermits   Permit[]  @relation("PermitReviewer")
+  // pmPermits         Permit[]  @relation("PermitPM")
+  
+  // PermitRouting relations
+  assignedPermitRoutings PermitRouting[] @relation("PermitRoutingReviewer")
+  escalatedPermitRoutings PermitRouting[] @relation("PermitRoutingEscalatedTo")
+  
+  // Architect Onboarding & Template Library relations
+  architectOnboarding ArchitectOnboarding? @relation("ArchitectOnboarding")
+  createdDesignTemplates DesignTemplate[] @relation("DesignTemplateCreated")
+  usedDesignTemplateInstances DesignTemplateInstance[] @relation("DesignTemplateInstanceUsed")
+  createdStandardDetails StandardDetail[] @relation("StandardDetailCreated")
+  placedStandardDetailInstances StandardDetailInstance[] @relation("StandardDetailInstancePlaced")
+  createdBackupRecords BackupRecord[] @relation("BackupRecordCreated")
+  createdDisasterRecoveryPlans DisasterRecoveryPlan[] @relation("DisasterRecoveryPlanCreated")
+  
+  // Permit & Inspection relations
+  createdPermitTemplates PermitTemplate[] @relation("PermitTemplateCreated")
+  createdRoutingRules RoutingRule[] @relation("RoutingRuleCreated")
+  receivedPermitNotifications PermitNotification[] @relation("PermitNotificationRecipient")
+}
+
+// ============================================================================
+// UNIFIED API PLATFORM (Prompt 3.1)
+// ============================================================================
+
+// API Key Management
+model ApiKey {
+  id              String   @id @default(uuid())
+  keyHash         String   @unique // SHA-256 hash of the actual API key
+  name            String
+  jurisdictionId  String?
+  userId          String?
+  organizationId  String?
+  
+  // Permissions
+  scopes          String[] // e.g., ["read", "write", "admin"]
+  rateLimit       Int      @default(100) // requests per minute
+  
+  // Status
+  active          Boolean  @default(true)
+  expiresAt       DateTime?
+  lastUsedAt      DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relationships
+  usage           ApiKeyUsage[]
+  auditLogs       SecurityAuditLog[]
+  
+  @@index([keyHash])
+  @@index([userId])
+  @@index([organizationId])
+  @@index([jurisdictionId])
+  @@index([active])
+}
+
+// API Key Usage Tracking
+model ApiKeyUsage {
+  id              String   @id @default(uuid())
+  apiKeyId        String
+  endpoint        String
+  method          String
+  statusCode      Int
+  responseTime    Int      // milliseconds
+  timestamp       DateTime @default(now())
+  
+  // Context
+  ipAddress       String?
+  userAgent       String?
+  jurisdictionId  String?
+  organizationId  String?
+  
+  apiKey          ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  
+  @@index([apiKeyId])
+  @@index([timestamp])
+  @@index([endpoint])
+}
+
+// Webhook Management
+model Webhook {
+  id              String   @id @default(uuid())
+  url             String
+  secret          String   // HMAC secret for signing
+  events          String[] // Event types to subscribe to
+  
+  // Ownership
+  jurisdictionId  String?
+  organizationId  String?
+  userId          String?
+  
+  // Status
+  active          Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relationships
+  deliveries      WebhookDelivery[]
+  
+  @@index([jurisdictionId])
+  @@index([organizationId])
+  @@index([active])
+}
+
+// Webhook Delivery Tracking
+model WebhookDelivery {
+  id              String   @id @default(uuid())
+  webhookId       String
+  event           String
+  payload         Json
+  
+  // Delivery status
+  status          WebhookDeliveryStatus @default(PENDING)
+  attempts        Int                   @default(0)
+  lastAttemptAt   DateTime?
+  nextRetryAt     DateTime?
+  
+  // Response
+  responseCode    Int?
+  responseBody    String?  // Truncated response body
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  webhook         Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  
+  @@index([webhookId])
+  @@index([status])
+  @@index([nextRetryAt])
+}
+
+enum WebhookDeliveryStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+// API Usage Analytics (consolidated usage tracking)
+model ApiUsage {
+  id              String   @id @default(uuid())
+  apiKeyId        String?
+  userId          String?
+  organizationId  String?
+  jurisdictionId  String?
+  
+  // Request details
+  endpoint        String
+  method          String
+  statusCode      Int
+  responseTime    Int      // milliseconds
+  
+  // Context
+  ipAddress       String?
+  userAgent       String?
+  
+  timestamp       DateTime @default(now())
+  
+  @@index([apiKeyId])
+  @@index([userId])
+  @@index([organizationId])
+  @@index([jurisdictionId])
+  @@index([timestamp])
+  @@index([endpoint])
+}
+
+// Security Audit Logging
+model SecurityAuditLog {
+  id              String   @id @default(uuid())
+  eventType       SecurityEventType
+  severity        SecuritySeverity
+  
+  // Actor
+  userId          String?
+  apiKeyId        String?
+  ipAddress       String
+  userAgent       String
+  
+  // Action
+  endpoint        String
+  method          String
+  statusCode      Int
+  
+  // Data
+  requestBody     Json?
+  responseBody    Json?
+  
+  // Context
+  jurisdictionId  String?
+  organizationId  String?
+  metadata        Json?
+  
+  timestamp       DateTime @default(now())
+  
+  apiKey          ApiKey?  @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+  
+  @@index([eventType])
+  @@index([severity])
+  @@index([userId])
+  @@index([apiKeyId])
+  @@index([jurisdictionId])
+  @@index([organizationId])
+  @@index([timestamp])
+}
+
+enum SecurityEventType {
+  API_ACCESS
+  AUTHENTICATION
+  AUTHORIZATION
+  DATA_ACCESS
+  CONFIG_CHANGE
+}
+
+enum SecuritySeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+

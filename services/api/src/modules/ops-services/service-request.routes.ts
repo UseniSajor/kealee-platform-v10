@@ -1,0 +1,258 @@
+import { FastifyInstance } from 'fastify'
+import { z } from 'zod'
+import { authenticateUser } from '../auth/auth.middleware'
+import { validateParams, validateBody } from '../../middleware/validation.middleware'
+import { serviceRequestService } from './service-request.service'
+
+const createServiceRequestSchema = z.object({
+  orgId: z.string().uuid(),
+  title: z.string().min(1),
+  description: z.string().optional(),
+  category: z.string().min(1),
+  priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
+  dueDate: z.string().optional(),
+})
+
+const updateStatusSchema = z.object({
+  status: z.enum(['open', 'in_progress', 'completed', 'canceled']),
+  assignedTo: z.string().uuid().optional(),
+})
+
+const assignRequestSchema = z.object({
+  assignedTo: z.string().uuid(),
+})
+
+const createTaskSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  assignedTo: z.string().uuid().optional(),
+  dueDate: z.string().optional(),
+})
+
+const updateTaskStatusSchema = z.object({
+  status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED']),
+})
+
+export async function serviceRequestRoutes(fastify: FastifyInstance) {
+  // POST /ops-services/service-requests - Create service request
+  fastify.post(
+    '/service-requests',
+    {
+      preHandler: [
+        authenticateUser,
+        validateBody(createServiceRequestSchema),
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user as { id: string }
+        const body = request.body as z.infer<typeof createServiceRequestSchema>
+        const serviceRequest = await serviceRequestService.createServiceRequest({
+          ...body,
+          dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
+          userId: user.id,
+        })
+        return reply.code(201).send({ serviceRequest })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(400).send({
+          error: error.message || 'Failed to create service request',
+        })
+      }
+    }
+  )
+
+  // GET /ops-services/service-requests/:id - Get service request
+  fastify.get(
+    '/service-requests/:id',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(z.object({ id: z.string().uuid() })),
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user as { id: string }
+        const { id } = request.params as { id: string }
+        const serviceRequest = await serviceRequestService.getServiceRequest(id, user.id)
+        return reply.send({ serviceRequest })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(404).send({
+          error: error.message || 'Service request not found',
+        })
+      }
+    }
+  )
+
+  // GET /ops-services/service-requests - List service requests
+  fastify.get(
+    '/service-requests',
+    {
+      preHandler: [authenticateUser],
+    },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user as { id: string }
+        const query = request.query as {
+          planId?: string
+          status?: string
+          requestType?: string
+          assignedTo?: string
+        }
+        const serviceRequests = await serviceRequestService.listServiceRequests({
+          userId: user.id,
+          ...query,
+        })
+        return reply.send({ serviceRequests })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(400).send({
+          error: error.message || 'Failed to list service requests',
+        })
+      }
+    }
+  )
+
+  // PATCH /ops-services/service-requests/:id/status - Update service request status
+  fastify.patch(
+    '/service-requests/:id/status',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(z.object({ id: z.string().uuid() })),
+        validateBody(updateStatusSchema),
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user as { id: string }
+        const { id } = request.params as { id: string }
+        const body = request.body as z.infer<typeof updateStatusSchema>
+        const serviceRequest = await serviceRequestService.updateServiceRequestStatus(id, {
+          ...body,
+          userId: user.id,
+        })
+        return reply.send({ serviceRequest })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(400).send({
+          error: error.message || 'Failed to update service request status',
+        })
+      }
+    }
+  )
+
+  // POST /ops-services/service-requests/:id/assign - Assign service request to PM
+  fastify.post(
+    '/service-requests/:id/assign',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(z.object({ id: z.string().uuid() })),
+        validateBody(assignRequestSchema),
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user as { id: string }
+        const { id } = request.params as { id: string }
+        const body = request.body as z.infer<typeof assignRequestSchema>
+        const serviceRequest = await serviceRequestService.assignServiceRequest(id, {
+          ...body,
+          userId: user.id,
+        })
+        return reply.send({ serviceRequest })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(400).send({
+          error: error.message || 'Failed to assign service request',
+        })
+      }
+    }
+  )
+
+  // POST /ops-services/service-requests/:id/tasks - Create task for service request
+  fastify.post(
+    '/service-requests/:id/tasks',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(z.object({ id: z.string().uuid() })),
+        validateBody(createTaskSchema),
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user as { id: string }
+        const { id } = request.params as { id: string }
+        const body = request.body as z.infer<typeof createTaskSchema>
+        const task = await serviceRequestService.createTask(id, {
+          ...body,
+          dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
+          userId: user.id,
+        })
+        return reply.code(201).send({ task })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(400).send({
+          error: error.message || 'Failed to create task',
+        })
+      }
+    }
+  )
+
+  // GET /ops-services/tasks - List tasks
+  fastify.get(
+    '/tasks',
+    {
+      preHandler: [authenticateUser],
+    },
+    async (request, reply) => {
+      try {
+        const query = request.query as {
+          requestId?: string
+          assignedTo?: string
+          status?: string
+        }
+        const tasks = await serviceRequestService.listTasks(query)
+        return reply.send({ tasks })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(400).send({
+          error: error.message || 'Failed to list tasks',
+        })
+      }
+    }
+  )
+
+  // PATCH /ops-services/tasks/:id/status - Update task status
+  fastify.patch(
+    '/tasks/:id/status',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(z.object({ id: z.string().uuid() })),
+        validateBody(updateTaskStatusSchema),
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user as { id: string }
+        const { id } = request.params as { id: string }
+        const body = request.body as z.infer<typeof updateTaskStatusSchema>
+        const task = await serviceRequestService.updateTaskStatus(id, {
+          ...body,
+          userId: user.id,
+        })
+        return reply.send({ task })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(400).send({
+          error: error.message || 'Failed to update task status',
+        })
+      }
+    }
+  )
+}
