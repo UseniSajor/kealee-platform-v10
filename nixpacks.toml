@@ -3,9 +3,9 @@
 
 [phases.setup]
 nixPkgs = ["nodejs_20", "pnpm"]
-env = {
-  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
-}
+
+[phases.setup.env]
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
 
 [phases.install]
 cmds = [
