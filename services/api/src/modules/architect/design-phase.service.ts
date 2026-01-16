@@ -232,7 +232,6 @@ export const designPhaseService = {
       where: { id: phaseId },
       data: {
         status: 'COMPLETED',
-        actualEndDate,
         actualEndDate: actualEndDate,
         completedById: userId,
         completionNotes: data.completionNotes,

@@ -22,14 +22,14 @@ export function createGraphQLServer() {
         request,
       };
     },
-    subscriptions: {
-      path: '/graphql',
-      onConnect: (connectionParams: any) => {
-        // Validate connection
-        return {
-          apiKey: connectionParams['x-api-key'],
-        };
-      },
-    },
+    // Note: Subscriptions may not be supported in this Apollo Server version
+    // subscriptions: {
+    //   path: '/graphql',
+    //   onConnect: (connectionParams: any) => {
+    //     return {
+    //       apiKey: connectionParams['x-api-key'],
+    //     };
+    //   },
+    // },
   });
 }

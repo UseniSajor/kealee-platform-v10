@@ -49,7 +49,7 @@ export const swaggerConfig: FastifySwaggerOptions = {
 export const swaggerUIConfig = {
   routePrefix: '/docs',
   uiConfig: {
-    docExpansion: 'list',
+    docExpansion: 'list' as const,
     deepLinking: true,
   },
   uiHooks: {

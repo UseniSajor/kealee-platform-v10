@@ -44,6 +44,32 @@ export const openApiSpec = {
         bearerFormat: 'JWT',
       },
     },
+    responses: {
+      Unauthorized: {
+        description: 'Unauthorized',
+        content: {
+          'application/json': {
+            schema: {$ref: '#/components/schemas/Error'},
+          },
+        },
+      },
+      RateLimitExceeded: {
+        description: 'Rate limit exceeded',
+        content: {
+          'application/json': {
+            schema: {$ref: '#/components/schemas/Error'},
+          },
+        },
+      },
+      NotFound: {
+        description: 'Not found',
+        content: {
+          'application/json': {
+            schema: {$ref: '#/components/schemas/Error'},
+          },
+        },
+      },
+    },
     schemas: {
       Permit: {
         type: 'object',
@@ -198,34 +224,6 @@ export const openApiSpec = {
             },
           },
           '404': {$ref: '#/components/responses/NotFound'},
-        },
-      },
-    },
-  },
-  components: {
-    responses: {
-      Unauthorized: {
-        description: 'Unauthorized',
-        content: {
-          'application/json': {
-            schema: {$ref: '#/components/schemas/Error'},
-          },
-        },
-      },
-      RateLimitExceeded: {
-        description: 'Rate limit exceeded',
-        content: {
-          'application/json': {
-            schema: {$ref: '#/components/schemas/Error'},
-          },
-        },
-      },
-      NotFound: {
-        description: 'Not found',
-        content: {
-          'application/json': {
-            schema: {$ref: '#/components/schemas/Error'},
-          },
         },
       },
     },

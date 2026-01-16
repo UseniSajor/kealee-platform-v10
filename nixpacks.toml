@@ -1,0 +1,14 @@
+# Nixpacks configuration for Railway
+# This ensures proper Node.js version and pnpm usage
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "pnpm"]
+
+[phases.install]
+cmds = ["pnpm install --frozen-lockfile"]
+
+[phases.build]
+cmds = ["echo 'Build command specified in railway.json'"]
+
+[start]
+cmd = "echo 'Start command specified in railway.json'"

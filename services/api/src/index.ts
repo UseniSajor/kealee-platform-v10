@@ -1,15 +1,20 @@
 import { config } from 'dotenv'
 import { resolve } from 'path'
 
-// Load .env.local file (for API service)
-config({ path: resolve(process.cwd(), '.env.local') })
-// Ensure local dev picks up the database package's connection string.
-// We intentionally override here because `.env.local` often contains app secrets,
-// while the canonical DB credentials live in `packages/database/.env`.
+// Load .env.local file ONLY in development (for local development)
+// In production (Railway), environment variables are set directly via Railway dashboard
+// and available in process.env - no .env.local file needed or used
 if (process.env.NODE_ENV !== 'production') {
+  // Load .env.local file (for API service) - only exists locally, gitignored
+  config({ path: resolve(process.cwd(), '.env.local') })
+  // Ensure local dev picks up the database package's connection string.
+  // We intentionally override here because `.env.local` often contains app secrets,
+  // while the canonical DB credentials live in `packages/database/.env`.
   // When running from services/api, the workspace package lives at ../../packages/database
   config({ path: resolve(process.cwd(), '../../packages/database/.env'), override: true })
 }
+// In production, Railway sets environment variables directly in process.env
+// No .env.local file is needed or used on Railway
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
@@ -54,9 +59,23 @@ import { jurisdictionConfigRoutes } from './modules/permits/jurisdiction-config.
 import { jurisdictionStaffRoutes } from './modules/permits/jurisdiction-staff.routes'
 import { permitApplicationRoutes } from './modules/permits/permit-application.routes'
 import { permitRoutingRoutes } from './modules/permits/permit-routing.routes'
+import { permitComplianceRoutes } from './modules/permits/permit-compliance.routes'
 import { permitsApiRoutes } from './modules/permits-api/permits-api.routes'
 import { apiKeyRoutes } from './modules/api-keys/api-key.routes'
 import { webhookRoutes } from './modules/webhooks/webhook.routes'
+import { milestoneRoutes } from './modules/milestones/milestone.routes'
+import { milestoneUploadRoutes } from './modules/milestones/milestone-upload.routes'
+import { milestoneReviewRoutes } from './modules/milestones/milestone-review.routes'
+import { contractDashboardRoutes } from './modules/contracts/contract-dashboard.routes'
+import { contractComplianceRoutes } from './modules/contracts/contract-compliance.routes'
+import { contractSecurityRoutes } from './modules/contracts/contract-security.routes'
+import { leadsRoutes } from './modules/marketplace/leads.routes'
+import { paymentRoutes } from './modules/payments/payment.routes'
+import { disputeRoutes } from './modules/disputes/dispute.routes'
+import { closeoutRoutes } from './modules/closeout/closeout.routes'
+import { handoffRoutes } from './modules/handoff/handoff.routes'
+import { serviceRequestRoutes } from './modules/ops-services/service-request.routes'
+import { servicePlanRoutes } from './modules/ops-services/service-plan.routes'
 import { createGraphQLServer } from './graphql/server'
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware'
 import { registerGlobalRateLimit } from './middleware/rate-limit.middleware'
@@ -164,10 +183,11 @@ const start = async () => {
     await fastify.register(qualityControlRoutes, { prefix: '/architect' })
     await fastify.register(permitPackageRoutes, { prefix: '/architect' })
     await fastify.register(constructionHandoffRoutes, { prefix: '/architect' })
-    await fastify.register(onboardingRoutes, { prefix: '/architect' })
-    await fastify.register(templateLibraryRoutes, { prefix: '/architect' })
-    await fastify.register(performanceBenchmarkRoutes, { prefix: '/architect' })
-    await fastify.register(backupDRRoutes, { prefix: '/architect' })
+    // TODO: Implement these routes
+    // await fastify.register(onboardingRoutes, { prefix: '/architect' })
+    // await fastify.register(templateLibraryRoutes, { prefix: '/architect' })
+    // await fastify.register(performanceBenchmarkRoutes, { prefix: '/architect' })
+    // await fastify.register(backupDRRoutes, { prefix: '/architect' })
     await fastify.register(jurisdictionRoutes, { prefix: '/permits' })
     await fastify.register(jurisdictionConfigRoutes, { prefix: '/permits' })
     await fastify.register(jurisdictionStaffRoutes, { prefix: '/permits' })
