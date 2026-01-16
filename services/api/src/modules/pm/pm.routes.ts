@@ -3,6 +3,8 @@ import { authenticateUser } from "../auth/auth.middleware"
 import { pmService } from "./pm.service"
 import { pmProductivityRoutes } from "./pm-productivity.routes"
 import { pmRealtimeRoutes } from "./pm-realtime.routes"
+import { pmFocusModeRoutes } from "./pm-focus-mode.routes"
+import { pmTaskContextRoutes } from "./pm-task-context.routes"
 import { pmComplianceCheckService } from "./pm-compliance-check.service"
 import { prisma } from "@kealee/database"
 import { z } from "zod"
@@ -14,6 +16,12 @@ export async function pmRoutes(fastify: FastifyInstance) {
   
   // Register real-time update routes
   await fastify.register(pmRealtimeRoutes)
+  
+  // Register focus mode routes
+  await fastify.register(pmFocusModeRoutes, { prefix: '/focus-mode' })
+  
+  // Register task context routes
+  await fastify.register(pmTaskContextRoutes)
   // GET /pm/stats - PM dashboard stats
   fastify.get("/stats", { preHandler: authenticateUser }, async (request, reply) => {
     const user = (request as any).user
