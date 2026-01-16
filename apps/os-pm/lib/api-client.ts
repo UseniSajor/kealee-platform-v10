@@ -92,10 +92,10 @@ export const api = {
     return apiRequest<{ tasks: PMTask[] }>(`/pm/tasks${qs ? `?${qs}` : ""}`)
   },
   getTask: (id: string) => apiRequest<{ task: PMTask }>(`/pm/tasks/${id}`),
-  completeTask: (id: string, data: { completedAt: string }) =>
-    apiRequest<{ task: PMTask }>(`/pm/tasks/${id}/complete`, {
+  completeTask: (id: string, data?: { completedAt?: string; force?: boolean }) =>
+    apiRequest<{ task: PMTask; compliance?: any; warning?: string }>(`/pm/tasks/${id}/complete`, {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify(data || {}),
     }),
 
   // Sales Pipeline / Leads (using shared API client)
