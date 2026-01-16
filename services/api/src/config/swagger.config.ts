@@ -41,7 +41,7 @@ export const swaggerConfig: FastifySwaggerOptions = {
       },
     },
   },
-}
+} as any
 
 /**
  * Swagger UI configuration

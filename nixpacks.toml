@@ -3,10 +3,14 @@
 
 [phases.setup]
 nixPkgs = ["nodejs_20", "pnpm"]
+env = {
+  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+}
 
 [phases.install]
 cmds = [
-  "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --frozen-lockfile"
+  "pnpm install --frozen-lockfile",
+  "pnpm --filter @kealee/database db:generate"
 ]
 
 [phases.build]
