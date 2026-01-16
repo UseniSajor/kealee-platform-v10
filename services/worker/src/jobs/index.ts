@@ -6,3 +6,6 @@ export { executeSalesSlaReminders } from './sales-sla-reminders.job'
 
 // Export ML prediction engine
 export { mlPredictionEngine } from './ml-predictions'
+
+// Export report generator
+export { reportGenerator } from './report-generation'
