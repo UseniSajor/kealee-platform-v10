@@ -809,8 +809,27 @@ importers:
         specifier: ^5.9.0
         version: 5.9.3
 
+  packages/workflow-engine:
+    dependencies:
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.29
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+
   services/api:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.24.0
+        version: 0.24.3
       '@fastify/cors':
         specifier: ^9.0.1
         version: 9.0.1
@@ -832,6 +851,9 @@ importers:
       '@kealee/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@kealee/workflow-engine':
+        specifier: workspace:*
+        version: link:../../packages/workflow-engine
       '@supabase/supabase-js':
         specifier: ^2.39.0
         version: 2.90.1
