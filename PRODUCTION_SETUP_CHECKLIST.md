@@ -33,7 +33,7 @@
 
 ### Steps:
 
-1. **Sign Up:**
+1. **Sign Up:**Done
    - Go to: https://supabase.com/dashboard
    - Click "New Project"
    - Organization: Create new or select existing
@@ -42,14 +42,14 @@
    - Region: Choose closest to your users (e.g., `us-east-1`)
    - Click "Create new project"
 
-2. **Get Credentials:**
+2. **Get Credentials:**Done
    - Wait for project to finish setting up (~2 minutes)
    - Go to: **Settings** → **API**
    - Copy these values:
      ```
      Project URL: https://xxxxx.supabase.co
      anon public key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-     service_role key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (keep secret!)
+     service_role key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (keep secret!)Done
      ```
 
 3. **Configure Database:**
