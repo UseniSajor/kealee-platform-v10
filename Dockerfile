@@ -12,7 +12,7 @@ FROM node:20-slim
 
 # === COMPLETE CACHE INVALIDATION ===
 # Update this timestamp for EVERY deploy to force complete rebuild
-ARG FORCE_REBUILD=2026-01-17T19:00:00Z
+ARG FORCE_REBUILD=2026-01-17T20:00:00Z
 RUN echo "=========================================" && \
     echo "FORCE REBUILD ALL LAYERS AT: $FORCE_REBUILD" && \
     echo "=========================================" && \
