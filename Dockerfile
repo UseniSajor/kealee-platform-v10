@@ -72,7 +72,7 @@ RUN DATABASE_URL="postgresql://kealee:kealee_dev@localhost:5432/kealee?schema=pu
 # Layer 4: Copy config files
 # ============================================================
 # Copy config files - IMPORTANT: turbo.json must be copied before build
-# Cache invalidation: 2026-01-17 - Fixed turbo.json (removed invalid _cacheBust key)
+# Cache invalidation: 2026-01-17T15:00 - Forcing fresh turbo.json copy
 COPY turbo.json tsconfig.json ./
 
 # ============================================================
