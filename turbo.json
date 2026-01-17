@@ -3,6 +3,7 @@
   "globalDependencies": ["**/.env.*local"],
   "globalEnv": ["NODE_ENV"],
   "concurrency": "20",
+  "_cacheBust": "2026-01-17-database-build",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

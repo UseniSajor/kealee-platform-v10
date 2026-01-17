@@ -53,10 +53,9 @@ ENV PUPPETEER_EXECUTABLE_PATH=""
 # Use --filter to only install @kealee/api and its workspace dependencies
 # The '...' syntax means "this package and all its dependencies"
 # Use --ignore-scripts to skip ALL postinstall scripts (including Puppeteer Chrome download)
-# Then manually run Prisma postinstall which we need
+# Prisma postinstall will run during db:generate, so we don't need to run it here
 RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true PUPPETEER_EXECUTABLE_PATH="" \
-    pnpm install --frozen-lockfile --filter @kealee/api... --prod=false --ignore-scripts && \
-    pnpm --filter @kealee/database exec node node_modules/@prisma/engines/postinstall.js || true
+    pnpm install --frozen-lockfile --filter @kealee/api... --prod=false --ignore-scripts
 
 # ============================================================
 # Layer 3: Generate Prisma client
@@ -72,11 +71,29 @@ RUN DATABASE_URL="postgresql://kealee:kealee_dev@localhost:5432/kealee?schema=pu
 # ============================================================
 # Layer 4: Copy config files
 # ============================================================
-# These change less frequently than source code
+# Copy config files - add comment to invalidate cache if needed
+# Cache bust: Added database build step 2026-01-17
 COPY turbo.json tsconfig.json ./
 
 # ============================================================
-# Layer 5: Build the API service
+# Layer 5: Build database package (CRITICAL - must run)
+# ============================================================
+# Build database package BEFORE API service
+# This step MUST NOT be cached - database dist is required at runtime
+RUN echo "=== STEP: Building database package ===" && \
+    rm -rf packages/database/dist && \
+    pnpm build --filter=@kealee/database && \
+    echo "=== Build complete. Listing dist files ===" && \
+    ls -la packages/database/dist/ && \
+    echo "=== Verifying required files exist ===" && \
+    test -f packages/database/dist/index.js || (echo "ERROR: dist/index.js missing!" && ls -la packages/database/ && exit 1) && \
+    test -f packages/database/dist/client.js || (echo "ERROR: dist/client.js missing!" && ls -la packages/database/dist/ && exit 1) && \
+    echo "=== Verifying package.json main field ===" && \
+    grep -q '"main": "./dist/index.js"' packages/database/package.json || (echo "ERROR: package.json main field wrong!" && cat packages/database/package.json && exit 1) && \
+    echo "=== SUCCESS: Database package built and verified ==="
+
+# ============================================================
+# Layer 6: Build the API service
 # ============================================================
 # Source code is already copied in Layer 1, so we can build directly
 # This layer invalidates when source code changes
@@ -91,6 +108,12 @@ ENV NODE_ENV=production
 EXPOSE 3001
 
 WORKDIR /app/services/api
+
+# Runtime verification: Check database package dist exists before starting
+# This will fail fast if the build didn't work
+RUN test -f /app/packages/database/dist/index.js || (echo "RUNTIME ERROR: /app/packages/database/dist/index.js missing!" && ls -la /app/packages/database/ && exit 1) && \
+    test -f /app/packages/database/dist/client.js || (echo "RUNTIME ERROR: /app/packages/database/dist/client.js missing!" && ls -la /app/packages/database/dist/ && exit 1) && \
+    echo "Runtime check: Database dist files verified"
 
 # Health check (optional - Railway also supports healthcheckPath in railway.json)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
