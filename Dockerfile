@@ -10,9 +10,10 @@
 
 FROM node:20-slim
 
-# COMPLETE CACHE BUST - Force rebuild all layers
-ARG FORCE_REBUILD=2026-01-17T16:00:00Z
-RUN echo "Force rebuilding all layers at: $FORCE_REBUILD"
+# === FORCE REBUILD ALL LAYERS - Railway cache fix ===
+ARG BUILD_TIMESTAMP=2026-01-17T18:30:00Z
+RUN echo "Build timestamp: $BUILD_TIMESTAMP" > /tmp/build_id.txt
+RUN cat /tmp/build_id.txt
 
 # Ensure OpenSSL is available for Prisma engines
 RUN apt-get update -y \
