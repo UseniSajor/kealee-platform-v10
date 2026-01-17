@@ -52,9 +52,11 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=""
 # Use --filter to only install @kealee/api and its workspace dependencies
 # The '...' syntax means "this package and all its dependencies"
-# This should skip installing apps that aren't dependencies of the API
+# Use --ignore-scripts to skip ALL postinstall scripts (including Puppeteer Chrome download)
+# Then manually run Prisma postinstall which we need
 RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true PUPPETEER_EXECUTABLE_PATH="" \
-    pnpm install --frozen-lockfile --filter @kealee/api... --prod=false
+    pnpm install --frozen-lockfile --filter @kealee/api... --prod=false --ignore-scripts && \
+    pnpm --filter @kealee/database exec node node_modules/@prisma/engines/postinstall.js || true
 
 # ============================================================
 # Layer 3: Generate Prisma client
