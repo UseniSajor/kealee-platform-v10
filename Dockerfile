@@ -10,9 +10,9 @@
 
 FROM node:20-slim
 
-# Build argument to bust cache when needed - change this value to force complete rebuild
-ARG CACHE_BUST=2026-01-17T15:30:00Z
-RUN echo "Building with cache bust: $CACHE_BUST"
+# COMPLETE CACHE BUST - Force rebuild all layers
+ARG FORCE_REBUILD=2026-01-17T16:00:00Z
+RUN echo "Force rebuilding all layers at: $FORCE_REBUILD"
 
 # Ensure OpenSSL is available for Prisma engines
 RUN apt-get update -y \
