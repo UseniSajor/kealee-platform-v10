@@ -10,8 +10,9 @@
 
 FROM node:20-slim
 
-# Build argument to bust cache when needed
-ARG CACHE_BUST=2026-01-17-fix
+# Build argument to bust cache when needed - change this value to force complete rebuild
+ARG CACHE_BUST=2026-01-17T15:30:00Z
+RUN echo "Building with cache bust: $CACHE_BUST"
 
 # Ensure OpenSSL is available for Prisma engines
 RUN apt-get update -y \
@@ -76,9 +77,6 @@ RUN DATABASE_URL="postgresql://kealee:kealee_dev@localhost:5432/kealee?schema=pu
 # ============================================================
 # Copy config files - IMPORTANT: turbo.json must be copied before build
 COPY turbo.json tsconfig.json ./
-
-# Use CACHE_BUST to force this layer and all subsequent layers to rebuild
-RUN echo "Cache bust: $CACHE_BUST"
 
 # ============================================================
 # Layer 5: Build database package (CRITICAL - must run)
