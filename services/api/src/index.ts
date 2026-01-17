@@ -213,7 +213,8 @@ const start = async () => {
     
     // Use the new Fastify integration for Apollo Server v4
     const { default: fastifyApollo } = await import('@as-integrations/fastify')
-    const fastifyApolloHandler = fastifyApollo(graphQLServer, {
+    
+    await fastify.register(fastifyApollo(graphQLServer), {
       context: async (request: any, reply: any) => {
         // Extract API key or auth token from request
         const apiKey = request.headers?.['x-api-key']
@@ -226,9 +227,7 @@ const start = async () => {
           reply,
         }
       },
-    })
-    
-    await fastify.register(fastifyApolloHandler)
+    } as any)
 
     const port = Number(process.env.PORT) || 3001
     await fastify.listen({ port, host: '0.0.0.0' })
