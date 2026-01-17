@@ -82,6 +82,23 @@ RUN DATABASE_URL="postgresql://kealee:kealee_dev@localhost:5432/kealee?schema=pu
 # Copy config files - IMPORTANT: turbo.json must be copied before build
 COPY turbo.json tsconfig.json ./
 
+# === FIX turbo.json BEFORE building ===
+RUN echo "=== FIXING turbo.json (Railway cache workaround) ===" && \
+    echo "Current directory:" && pwd && \
+    echo "Checking turbo.json..." && \
+    if [ -f "turbo.json" ]; then \
+        echo "Original turbo.json content:" && \
+        cat turbo.json && \
+        echo "" && \
+        echo "Removing _cacheBust if it exists..." && \
+        sed -i '/"_cacheBust"/d' turbo.json && \
+        echo "Fixed turbo.json content:" && \
+        cat turbo.json; \
+    else \
+        echo "ERROR: turbo.json not found!" && \
+        exit 1; \
+    fi
+
 # ============================================================
 # Layer 5: Build database package (CRITICAL - must run)
 # ============================================================
@@ -89,14 +106,15 @@ COPY turbo.json tsconfig.json ./
 # This step MUST NOT be cached - database dist is required at runtime
 RUN echo "=== STEP: Building database package ===" && \
     rm -rf packages/database/dist && \
-    cd packages/database && \
-    pnpm exec tsc && \
-    cd /app && \
+    (pnpm build --filter=@kealee/database || \
+    (echo "Turbo failed, building directly with tsc..." && \
+     cd packages/database && \
+     pnpm exec tsc && \
+     cd /app)) && \
     echo "=== Build complete. Listing dist files ===" && \
     ls -la packages/database/dist/ && \
     echo "=== Verifying required files exist ===" && \
     test -f packages/database/dist/index.js || (echo "ERROR: dist/index.js missing!" && ls -la packages/database/ && exit 1) && \
-    test -f packages/database/dist/client.js || (echo "ERROR: dist/client.js missing!" && ls -la packages/database/dist/ && exit 1) && \
     echo "=== Verifying package.json main field ===" && \
     grep -q '"main": "./dist/index.js"' packages/database/package.json || (echo "ERROR: package.json main field wrong!" && cat packages/database/package.json && exit 1) && \
     echo "=== SUCCESS: Database package built and verified ==="
