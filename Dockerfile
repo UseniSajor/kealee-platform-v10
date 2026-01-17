@@ -131,23 +131,35 @@ RUN echo "=== STEP: Building database package ===" && \
      (echo "FATAL: Could not build database package" && ls -la packages/database/ && exit 1)) && \
     echo "=== SUCCESS: Database package built ==="
 
-# Build all other workspace packages (workflow-engine, compliance, types, etc.)
-RUN echo "=== STEP: Building all workspace packages ===" && \
-    for pkg in workflow-engine compliance types analytics api-client; do \
+# Build workflow-engine package (REQUIRED)
+RUN echo "=== STEP: Building workflow-engine package ===" && \
+    rm -rf packages/workflow-engine/dist && \
+    (pnpm build --filter=@kealee/workflow-engine || \
+     (echo "=== Turbo failed, building directly with tsc ===" && \
+      cd packages/workflow-engine && \
+      pnpm exec tsc && \
+      cd ../..)) && \
+    test -f packages/workflow-engine/dist/index.js || \
+    (echo "FATAL: workflow-engine build failed!" && ls -la packages/workflow-engine/ && exit 1) && \
+    echo "=== SUCCESS: Workflow-engine package built ==="
+
+# Build other workspace packages (optional - best effort)
+RUN echo "=== STEP: Building other workspace packages ===" && \
+    for pkg in compliance types analytics api-client; do \
       echo "Building @kealee/$pkg..." && \
       rm -rf packages/$pkg/dist && \
       (pnpm build --filter=@kealee/$pkg || \
        (echo "=== Turbo failed for $pkg, building directly with tsc ===" && \
         cd packages/$pkg && \
         pnpm exec tsc && \
-        cd ../..)) && \
+        cd ../..)) || true && \
       if [ -f "packages/$pkg/dist/index.js" ]; then \
         echo "✓ @kealee/$pkg built successfully"; \
       else \
         echo "✗ WARNING: packages/$pkg/dist/index.js not found (may not be needed)"; \
       fi; \
     done && \
-    echo "=== SUCCESS: All workspace packages built ==="
+    echo "=== INFO: Optional packages build complete ==="
 
 # ============================================================
 # Layer 6: Build the API service

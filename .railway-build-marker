@@ -1,4 +1,5 @@
-BUILD_ID=workflow-engine-fix-final
-TIMESTAMP=2026-01-17T22:45:00Z
+BUILD_ID=workflow-engine-fix-v4-mandatory
+TIMESTAMP=2026-01-17T23:00:00Z
 PACKAGES=database,workflow-engine,compliance,analytics,types,api-client
-COMMIT=force-rebuild-all-packages
+COMMIT=force-rebuild-workflow-engine-mandatory
+REQUIRED_PACKAGES=database,workflow-engine
