@@ -10,6 +10,11 @@
 
 FROM node:20-slim
 
+# Ensure OpenSSL is available for Prisma engines
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
 # Install pnpm globally
 RUN npm install -g pnpm@8.12.0
 
@@ -18,7 +23,6 @@ RUN npm install -g pnpm@8.12.0
 # but setting this prevents any transitive dependencies from downloading Chrome
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=""
-ENV NODE_ENV=production
 
 WORKDIR /app
 
@@ -41,14 +45,19 @@ COPY apps ./apps
 # Install ALL dependencies including devDependencies for the build
 # This ensures Prisma CLI from @kealee/database devDependencies is available
 # We need devDependencies during build for Prisma generation and TypeScript
-RUN pnpm install --frozen-lockfile
+ENV PNPM_CONFIG_PRODUCTION=false
+RUN pnpm install --frozen-lockfile --prod=false
 
 # ============================================================
 # Layer 3: Generate Prisma client
 # ============================================================
 # Prisma client must be generated before TypeScript compilation
 # Prisma CLI is now available from database package devDependencies
-RUN pnpm --filter @kealee/database db:generate
+RUN pnpm --filter @kealee/database exec prisma --version
+# Prisma requires DATABASE_URL to be set even for `prisma generate`.
+# In local dev this comes from `.env`, but `.env*` is intentionally excluded from the Docker build context.
+# Provide a safe placeholder at build-time; Railway will override DATABASE_URL at runtime.
+RUN DATABASE_URL="postgresql://kealee:kealee_dev@localhost:5432/kealee?schema=public" pnpm --filter @kealee/database db:generate
 
 # ============================================================
 # Layer 4: Copy config files
@@ -62,6 +71,9 @@ COPY turbo.json tsconfig.json ./
 # Source code is already copied in Layer 1, so we can build directly
 # This layer invalidates when source code changes
 RUN pnpm build --filter=@kealee/api
+
+# Set production mode after build tooling is done
+ENV NODE_ENV=production
 
 # ============================================================
 # Expose port and set working directory
