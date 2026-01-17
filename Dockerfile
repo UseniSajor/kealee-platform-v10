@@ -38,9 +38,10 @@ COPY apps ./apps
 # Layer 2: Install dependencies (including dev for build)
 # ============================================================
 # This layer is cached if dependencies don't change
-# Install all dependencies including devDependencies (Prisma CLI is in devDeps)
+# Install ALL dependencies including devDependencies for the build
+# This ensures Prisma CLI from @kealee/database devDependencies is available
 # We need devDependencies during build for Prisma generation and TypeScript
-RUN pnpm install --frozen-lockfile --filter @kealee/api...
+RUN pnpm install --frozen-lockfile
 
 # ============================================================
 # Layer 3: Generate Prisma client
