@@ -1,6 +1,9 @@
 /**
  * Stripe Configuration
  * Centralized config for all Stripe products and prices
+ * 
+ * @deprecated Use @kealee/stripe package instead
+ * This file is kept for backward compatibility
  */
 
 export const stripeConfig = {
