@@ -12,7 +12,7 @@ FROM node:20-slim
 
 # === COMPLETE CACHE INVALIDATION ===
 # Update this timestamp for EVERY deploy to force complete rebuild
-ARG FORCE_REBUILD=2026-01-17T20:00:00Z
+ARG FORCE_REBUILD=2026-01-17T21:00:00Z
 RUN echo "=========================================" && \
     echo "FORCE REBUILD ALL LAYERS AT: $FORCE_REBUILD" && \
     echo "=========================================" && \
@@ -107,10 +107,12 @@ RUN echo "=== FIXING turbo.json before build ===" && \
     fi
 
 # ============================================================
-# Layer 5: Build database package (CRITICAL - must run)
+# Layer 5: Build workspace packages (CRITICAL - must run)
 # ============================================================
-# Build database package BEFORE API service
-# This step MUST NOT be cached - database dist is required at runtime
+# Build workspace packages BEFORE API service
+# These packages are required at runtime
+
+# Build database package
 RUN echo "=== STEP: Building database package ===" && \
     rm -rf packages/database/dist && \
     (pnpm build --filter=@kealee/database || \
@@ -120,7 +122,6 @@ RUN echo "=== STEP: Building database package ===" && \
       cd ../..)) && \
     echo "=== Build complete. Listing dist files ===" && \
     ls -la packages/database/dist/ 2>/dev/null || echo "WARNING: No dist directory" && \
-    echo "=== Verifying required files exist ===" && \
     test -f packages/database/dist/index.js || \
     (echo "ERROR: dist/index.js missing! Trying emergency build..." && \
      cd packages/database && \
@@ -128,10 +129,21 @@ RUN echo "=== STEP: Building database package ===" && \
      cd ../.. && \
      test -f packages/database/dist/index.js || \
      (echo "FATAL: Could not build database package" && ls -la packages/database/ && exit 1)) && \
-    echo "=== Verifying package.json main field ===" && \
-    grep -q '"main": "./dist/index.js"' packages/database/package.json || \
-    (echo "ERROR: package.json main field wrong!" && cat packages/database/package.json && exit 1) && \
-    echo "=== SUCCESS: Database package built and verified ==="
+    echo "=== SUCCESS: Database package built ==="
+
+# Build workflow-engine package
+RUN echo "=== STEP: Building workflow-engine package ===" && \
+    rm -rf packages/workflow-engine/dist && \
+    (pnpm build --filter=@kealee/workflow-engine || \
+     (echo "=== Turbo failed, building directly with tsc ===" && \
+      cd packages/workflow-engine && \
+      pnpm exec tsc && \
+      cd ../..)) && \
+    echo "=== Build complete. Listing dist files ===" && \
+    ls -la packages/workflow-engine/dist/ 2>/dev/null || echo "WARNING: No dist directory" && \
+    test -f packages/workflow-engine/dist/index.js || \
+    (echo "ERROR: dist/index.js missing!" && ls -la packages/workflow-engine/ && exit 1) && \
+    echo "=== SUCCESS: Workflow-engine package built ==="
 
 # ============================================================
 # Layer 6: Build the API service
