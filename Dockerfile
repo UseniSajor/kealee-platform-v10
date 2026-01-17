@@ -82,20 +82,27 @@ RUN DATABASE_URL="postgresql://kealee:kealee_dev@localhost:5432/kealee?schema=pu
 # Copy config files - IMPORTANT: turbo.json must be copied before build
 COPY turbo.json tsconfig.json ./
 
-# === FIX turbo.json BEFORE building ===
-RUN echo "=== FIXING turbo.json (Railway cache workaround) ===" && \
+# === CRITICAL: FIX turbo.json first (Railway cache issue) ===
+RUN echo "=== FIXING turbo.json before build ===" && \
     echo "Current directory:" && pwd && \
-    echo "Checking turbo.json..." && \
+    echo "Checking if turbo.json exists..." && \
     if [ -f "turbo.json" ]; then \
-        echo "Original turbo.json content:" && \
+        echo "Found turbo.json. Original content:" && \
         cat turbo.json && \
         echo "" && \
-        echo "Removing _cacheBust if it exists..." && \
-        sed -i '/"_cacheBust"/d' turbo.json && \
-        echo "Fixed turbo.json content:" && \
-        cat turbo.json; \
+        echo "Removing _cacheBust if present..." && \
+        if grep -q '_cacheBust' turbo.json; then \
+            echo "Found _cacheBust. Removing it..." && \
+            grep -v '_cacheBust' turbo.json > turbo.json.tmp && \
+            mv turbo.json.tmp turbo.json && \
+            echo "turbo.json after fix:" && \
+            cat turbo.json; \
+        else \
+            echo "turbo.json is already clean (no _cacheBust found)"; \
+        fi; \
     else \
         echo "ERROR: turbo.json not found!" && \
+        ls -la && \
         exit 1; \
     fi
 
@@ -107,16 +114,23 @@ RUN echo "=== FIXING turbo.json (Railway cache workaround) ===" && \
 RUN echo "=== STEP: Building database package ===" && \
     rm -rf packages/database/dist && \
     (pnpm build --filter=@kealee/database || \
-    (echo "Turbo failed, building directly with tsc..." && \
-     cd packages/database && \
-     pnpm exec tsc && \
-     cd /app)) && \
+     (echo "=== Turbo failed, building directly with tsc ===" && \
+      cd packages/database && \
+      pnpm exec tsc && \
+      cd ../..)) && \
     echo "=== Build complete. Listing dist files ===" && \
-    ls -la packages/database/dist/ && \
+    ls -la packages/database/dist/ 2>/dev/null || echo "WARNING: No dist directory" && \
     echo "=== Verifying required files exist ===" && \
-    test -f packages/database/dist/index.js || (echo "ERROR: dist/index.js missing!" && ls -la packages/database/ && exit 1) && \
+    test -f packages/database/dist/index.js || \
+    (echo "ERROR: dist/index.js missing! Trying emergency build..." && \
+     cd packages/database && \
+     npx tsc && \
+     cd ../.. && \
+     test -f packages/database/dist/index.js || \
+     (echo "FATAL: Could not build database package" && ls -la packages/database/ && exit 1)) && \
     echo "=== Verifying package.json main field ===" && \
-    grep -q '"main": "./dist/index.js"' packages/database/package.json || (echo "ERROR: package.json main field wrong!" && cat packages/database/package.json && exit 1) && \
+    grep -q '"main": "./dist/index.js"' packages/database/package.json || \
+    (echo "ERROR: package.json main field wrong!" && cat packages/database/package.json && exit 1) && \
     echo "=== SUCCESS: Database package built and verified ==="
 
 # ============================================================
