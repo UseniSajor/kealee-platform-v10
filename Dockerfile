@@ -46,9 +46,15 @@ COPY apps ./apps
 # Only install API service and its workspace dependencies (not all apps)
 # This significantly reduces install time by skipping unused app dependencies
 ENV PNPM_CONFIG_PRODUCTION=false
-# Set PUPPETEER env vars directly in RUN command to ensure they're respected during pnpm install
-# Use --filter to only install @kealee/api and its dependencies (database, workflow-engine, compliance)
-RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true PUPPETEER_EXECUTABLE_PATH="" pnpm install --frozen-lockfile --filter @kealee/api... --prod=false
+# Set PUPPETEER env vars at ENV level AND in RUN command for maximum compatibility
+# Some packages ignore ENV vars, so set in both places
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=""
+# Use --filter to only install @kealee/api and its workspace dependencies
+# The '...' syntax means "this package and all its dependencies"
+# This should skip installing apps that aren't dependencies of the API
+RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true PUPPETEER_EXECUTABLE_PATH="" \
+    pnpm install --frozen-lockfile --filter @kealee/api... --prod=false
 
 # ============================================================
 # Layer 3: Generate Prisma client
