@@ -10,72 +10,79 @@ export const stripeConfig = {
   webhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
 
   // PM Services (Ops Services) Pricing
-  pmServices: {
-    packageA: {
+  packages: {
+    A: {
       priceId: process.env.STRIPE_PRICE_PACKAGE_A!,
-      name: 'PM Staffing - Starter (Package A)',
-      amount: 170000, // $1,700 in cents
+      name: 'Essential',
+      price: 1750, // $1,750 per month
+      amount: 175000, // in cents
       interval: 'month',
       features: [
-        '5-10 hours/week PM time',
-        'Single project management',
-        'Basic reporting',
-        'Email support',
-        'Monthly check-ins',
-      ],
-      hoursPerWeek: '5-10',
-      projectLimit: 1,
-    },
-    packageB: {
-      priceId: process.env.STRIPE_PRICE_PACKAGE_B!,
-      name: 'PM Staffing - Professional (Package B)',
-      amount: 450000, // $4,500 in cents
-      interval: 'month',
-      features: [
-        '15-20 hours/week PM time',
-        'Up to 3 concurrent projects',
-        'Advanced reporting & analytics',
-        'Priority email & phone support',
+        'Timeline & task management',
+        'Document organization',
         'Weekly check-ins',
-        'Dedicated PM assignment',
       ],
-      hoursPerWeek: '15-20',
-      projectLimit: 3,
     },
-    packageC: {
+    B: {
+      priceId: process.env.STRIPE_PRICE_PACKAGE_B!,
+      name: 'Professional',
+      price: 3750, // $3,750 per month
+      amount: 375000, // in cents
+      interval: 'month',
+      features: [
+        'Everything in Essential',
+        'Contractor coordination',
+        'Budget tracking',
+        'Site visits',
+      ],
+    },
+    C: {
       priceId: process.env.STRIPE_PRICE_PACKAGE_C!,
-      name: 'PM Staffing - Premium (Package C)',
-      amount: 850000, // $8,500 in cents
+      name: 'Premium',
+      price: 9500, // $9,500 per month
+      amount: 950000, // in cents
       interval: 'month',
+      popular: true,
       features: [
-        '30-40 hours/week PM time',
-        'Unlimited concurrent projects',
-        'Real-time reporting & insights',
-        '24/7 priority support',
-        'Daily check-ins available',
-        'Senior PM assignment',
-        'Custom workflow automation',
+        'Everything in Professional',
+        'Permit management',
+        'Inspection coordination',
+        'Full contractor oversight',
       ],
-      hoursPerWeek: '30-40',
-      projectLimit: -1, // unlimited
     },
-    packageD: {
+    D: {
       priceId: process.env.STRIPE_PRICE_PACKAGE_D!,
-      name: 'PM Staffing - Enterprise (Package D)',
-      amount: 1650000, // $16,500 in cents
+      name: 'White Glove',
+      price: 16500, // $16,500 per month
+      amount: 1650000, // in cents
       interval: 'month',
       features: [
-        'Full-time PM team (40+ hours/week)',
-        'Unlimited projects & portfolio management',
-        'Executive reporting suite',
-        'Dedicated account manager',
-        'Custom integration & API access',
-        'White-glove onboarding',
-        'Quarterly business reviews',
+        'Everything in Premium',
+        'We hire contractors',
+        'Handle all payments',
+        'Complete hands-off',
       ],
-      hoursPerWeek: '40+',
-      projectLimit: -1, // unlimited
-      enterprise: true,
+    },
+  },
+
+  // Professional Services
+  services: {
+    architecture: {
+      name: 'Architecture & Design',
+      priceRange: [3500, 15000],
+      type: 'custom',
+    },
+    engineering: {
+      name: 'Engineering Services',
+      priceRange: [1200, 5000],
+      type: 'custom',
+    },
+    permit: {
+      priceId: process.env.STRIPE_PRICE_PERMIT!,
+      name: 'Permit Acceleration',
+      price: 299,
+      amount: 29900, // in cents
+      type: 'one_time',
     },
   },
 
@@ -200,11 +207,22 @@ export const stripeConfig = {
     },
   },
 
+  // Marketplace & Platform Fees
+  marketplace: {
+    platformFee: 0.03, // 3%
+    escrowFee: 0.01, // 1%
+    maxEscrowFee: 500, // $500 maximum
+  },
+
   // Platform Transaction Fees
   fees: {
     standard: {
-      percentage: 3.5,
-      fixed: 0.30,
+      percentage: 3.0, // 3% platform fee
+      fixed: 0.0,
+    },
+    escrow: {
+      percentage: 1.0, // 1% escrow fee
+      maximum: 500, // $500 max
     },
     milestone: {
       percentage: 2.9,
@@ -225,10 +243,17 @@ export const stripeConfig = {
  * Helper function to get all PM service packages
  */
 export function getPMServicePackages() {
-  return Object.entries(stripeConfig.pmServices).map(([key, value]) => ({
+  return Object.entries(stripeConfig.packages).map(([key, value]) => ({
     id: key,
     ...value,
   }));
+}
+
+/**
+ * Get package by ID
+ */
+export function getPackageById(packageId: 'A' | 'B' | 'C' | 'D') {
+  return stripeConfig.packages[packageId];
 }
 
 /**
