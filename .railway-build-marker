@@ -1,5 +1,6 @@
-BUILD_ID=workflow-engine-fix-v4-mandatory
-TIMESTAMP=2026-01-17T23:00:00Z
+BUILD_ID=fastify-multipart-lockfile-fix
+TIMESTAMP=2026-01-17T15:55:00Z
 PACKAGES=database,workflow-engine,compliance,analytics,types,api-client
-COMMIT=force-rebuild-workflow-engine-mandatory
+COMMIT=updated-lockfile-for-fastify-multipart-v8
 REQUIRED_PACKAGES=database,workflow-engine
+NOTE=Force rebuild with updated pnpm-lock.yaml after downgrading @fastify/multipart to v8
