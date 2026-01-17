@@ -33,7 +33,8 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Copy workspace package.json files for dependency resolution
-# We need the full directory structure, but Docker layer caching will optimize this
+# pnpm workspace needs package.json files from all workspace packages
+# but --filter will only install @kealee/api and its dependencies
 COPY packages ./packages
 COPY services ./services
 COPY apps ./apps
@@ -42,11 +43,12 @@ COPY apps ./apps
 # Layer 2: Install dependencies (including dev for build)
 # ============================================================
 # This layer is cached if dependencies don't change
-# Install ALL dependencies including devDependencies for the build
-# This ensures Prisma CLI from @kealee/database devDependencies is available
-# We need devDependencies during build for Prisma generation and TypeScript
+# Only install API service and its workspace dependencies (not all apps)
+# This significantly reduces install time by skipping unused app dependencies
 ENV PNPM_CONFIG_PRODUCTION=false
-RUN pnpm install --frozen-lockfile --prod=false
+# Set PUPPETEER env vars directly in RUN command to ensure they're respected during pnpm install
+# Use --filter to only install @kealee/api and its dependencies (database, workflow-engine, compliance)
+RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true PUPPETEER_EXECUTABLE_PATH="" pnpm install --frozen-lockfile --filter @kealee/api... --prod=false
 
 # ============================================================
 # Layer 3: Generate Prisma client
