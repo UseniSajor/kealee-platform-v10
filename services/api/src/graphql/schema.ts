@@ -3,7 +3,7 @@
  * Federated schema for permits and inspections
  */
 
-import {gql} from 'apollo-server-fastify';
+import { gql } from 'graphql-tag';
 
 export const typeDefs = gql`
   scalar DateTime
