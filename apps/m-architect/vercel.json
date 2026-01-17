@@ -2,6 +2,5 @@
   "buildCommand": "cd ../.. && pnpm install --filter @kealee/m-architect... && pnpm build --filter @kealee/m-architect",
   "outputDirectory": ".next",
   "installCommand": "cd ../.. && pnpm install --filter @kealee/m-architect...",
-  "framework": "nextjs",
-  "rootDirectory": "apps/m-architect"
+  "framework": "nextjs"
 }
