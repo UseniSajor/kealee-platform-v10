@@ -11,12 +11,15 @@
 FROM node:20-slim
 
 # === COMPLETE CACHE INVALIDATION ===
-# Update this timestamp for EVERY deploy to force complete rebuild
-ARG FORCE_REBUILD=2026-01-17T22:00:00Z
+# Update this value for EVERY deploy to force complete rebuild
+ARG FORCE_REBUILD=build-workflow-engine-fix-v3
 RUN echo "=========================================" && \
-    echo "FORCE REBUILD ALL LAYERS AT: $FORCE_REBUILD" && \
+    echo "FORCE REBUILD ALL LAYERS: $FORCE_REBUILD" && \
+    echo "BUILD ID: workflow-engine-packages-build" && \
+    echo "TIMESTAMP: 2026-01-17T22:30:00Z" && \
     echo "=========================================" && \
-    echo "$FORCE_REBUILD" > /tmp/build_id.txt
+    echo "$FORCE_REBUILD" > /tmp/build_id.txt && \
+    date > /tmp/build_timestamp.txt
 
 # Ensure OpenSSL is available for Prisma engines
 RUN apt-get update -y \
