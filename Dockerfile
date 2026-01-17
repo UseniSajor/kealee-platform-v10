@@ -82,7 +82,9 @@ COPY turbo.json tsconfig.json ./
 # This step MUST NOT be cached - database dist is required at runtime
 RUN echo "=== STEP: Building database package ===" && \
     rm -rf packages/database/dist && \
-    pnpm build --filter=@kealee/database && \
+    cd packages/database && \
+    pnpm exec tsc && \
+    cd /app && \
     echo "=== Build complete. Listing dist files ===" && \
     ls -la packages/database/dist/ && \
     echo "=== Verifying required files exist ===" && \
