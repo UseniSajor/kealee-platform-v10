@@ -67,12 +67,18 @@ ENV PNPM_CONFIG_PRODUCTION=false
 # Some packages ignore ENV vars, so set in both places
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=""
+# VERIFY: Check what version of @fastify/multipart is in package.json (for debugging cache issues)
+RUN echo "=== VERIFYING package.json has correct @fastify/multipart version ===" && \
+    grep -A 2 '@fastify/multipart' services/api/package.json && \
+    echo "=== If version above is NOT 8.3.0, Railway cache is the problem ==="
+
 # Use --filter to only install @kealee/api and its workspace dependencies
 # The '...' syntax means "this package and all its dependencies"
 # Use --ignore-scripts to skip ALL postinstall scripts (including Puppeteer Chrome download)
 # Prisma postinstall will run during db:generate, so we don't need to run it here
+# NOTE: Removed --frozen-lockfile due to Railway cache issues - pnpm will update lockfile if needed
 RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true PUPPETEER_EXECUTABLE_PATH="" \
-    pnpm install --frozen-lockfile --filter @kealee/api... --prod=false --ignore-scripts
+    pnpm install --filter @kealee/api... --prod=false --ignore-scripts
 
 # ============================================================
 # Layer 3: Generate Prisma client

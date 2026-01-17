@@ -1,7 +1,8 @@
-BUILD_ID=fastify-multipart-lockfile-fix-with-build-tools
-TIMESTAMP=2026-01-17T16:00:00Z
+BUILD_ID=remove-frozen-lockfile-flag-v5
+TIMESTAMP=2026-01-17T16:05:00Z
 PACKAGES=database,workflow-engine,compliance,analytics,types,api-client
-COMMIT=added-build-tools-for-native-dependencies
+COMMIT=removed-frozen-lockfile-to-fix-cache-issue
 REQUIRED_PACKAGES=database,workflow-engine
-NOTE=Force rebuild with build tools (python3, gcc, g++, make) + updated lockfile
-CHANGES=Added system build tools for native node module compilation
+NOTE=Removed --frozen-lockfile flag - Railway cache was preventing updated lockfile from being used
+CHANGES=Let pnpm resolve version mismatch itself during build
+CRITICAL_FIX=This addresses 4 repeated failures due to aggressive Railway Docker cache
