@@ -100,8 +100,8 @@ await graphQLServer.start()
 
 // Use the new Fastify integration for Apollo Server v4
 const { default: fastifyApollo } = await import('@as-integrations/fastify')
-await fastify.register(fastifyApollo(graphQLServer), {
-  context: async (request: any) => {
+const fastifyApolloHandler = fastifyApollo(graphQLServer, {
+  context: async (request: any, reply: any) => {
     // Extract API key or auth token from request
     const apiKey = request.headers?.['x-api-key']
     const authToken = request.headers?.authorization
@@ -110,10 +110,15 @@ await fastify.register(fastifyApollo(graphQLServer), {
       apiKey,
       authToken,
       request,
+      reply,
     }
   },
 })
+
+await fastify.register(fastifyApolloHandler)
 ```
+
+**Key Change:** Context must be passed as the second argument to `fastifyApollo()`, not in `fastify.register()` options.
 
 ---
 
