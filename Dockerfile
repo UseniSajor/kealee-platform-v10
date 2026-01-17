@@ -10,16 +10,13 @@
 
 FROM node:20-slim
 
-# === COMPLETE CACHE INVALIDATION ===
-# Update this value for EVERY deploy to force complete rebuild
-ARG FORCE_REBUILD=build-workflow-engine-fix-v3
+# === CACHE INVALIDATION - Copy build marker early ===
+# This file changes with every fix, forcing cache invalidation
+COPY .railway-build-marker /tmp/build-marker
 RUN echo "=========================================" && \
-    echo "FORCE REBUILD ALL LAYERS: $FORCE_REBUILD" && \
-    echo "BUILD ID: workflow-engine-packages-build" && \
-    echo "TIMESTAMP: 2026-01-17T22:30:00Z" && \
-    echo "=========================================" && \
-    echo "$FORCE_REBUILD" > /tmp/build_id.txt && \
-    date > /tmp/build_timestamp.txt
+    echo "RAILWAY BUILD MARKER:" && \
+    cat /tmp/build-marker && \
+    echo "========================================="
 
 # Ensure OpenSSL is available for Prisma engines
 RUN apt-get update -y \
