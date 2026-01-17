@@ -18,9 +18,18 @@ RUN echo "=========================================" && \
     cat /tmp/build-marker && \
     echo "========================================="
 
-# Ensure OpenSSL is available for Prisma engines
+# Install system dependencies and build tools
+# - OpenSSL & ca-certificates: Required for Prisma and HTTPS
+# - python3, make, gcc, g++: Build tools for native node modules
 RUN apt-get update -y \
-  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+    python3 \
+    make \
+    gcc \
+    g++ \
+    git \
   && rm -rf /var/lib/apt/lists/*
 
 # Install pnpm globally
