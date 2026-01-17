@@ -35,16 +35,18 @@ COPY services ./services
 COPY apps ./apps
 
 # ============================================================
-# Layer 2: Install dependencies
+# Layer 2: Install dependencies (including dev for build)
 # ============================================================
 # This layer is cached if dependencies don't change
-# Using --filter-prod to exclude devDependencies for production
-RUN pnpm install --frozen-lockfile --filter-prod @kealee/api...
+# Install all dependencies including devDependencies (Prisma CLI is in devDeps)
+# We need devDependencies during build for Prisma generation and TypeScript
+RUN pnpm install --frozen-lockfile --filter @kealee/api...
 
 # ============================================================
 # Layer 3: Generate Prisma client
 # ============================================================
 # Prisma client must be generated before TypeScript compilation
+# Prisma CLI is now available from database package devDependencies
 RUN pnpm --filter @kealee/database db:generate
 
 # ============================================================
