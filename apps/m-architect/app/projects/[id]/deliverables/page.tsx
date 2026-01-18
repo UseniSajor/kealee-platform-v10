@@ -240,7 +240,7 @@ export default function DeliverablesPage() {
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg"
                 >
                   <option value="">All Phases</option>
-                  {projectData?.project?.phases?.map((phase: any) => (
+                  {projectData?.designProject?.phases?.map((phase: any) => (
                     <option key={phase.id} value={phase.id}>
                       {phase.phase}
                     </option>

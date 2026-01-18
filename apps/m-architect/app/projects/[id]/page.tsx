@@ -197,7 +197,9 @@ export default function DesignProjectDetailPage() {
                         {phase.status.replace("_", " ")}
                       </span>
                       {phase.requiresApproval && phase.approvedAt && (
-                        <CheckCircle2 className="h-5 w-5 text-emerald-600" title="Approved" />
+                        <span title="Approved">
+                          <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                        </span>
                       )}
                     </div>
                   </div>

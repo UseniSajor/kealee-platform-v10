@@ -199,7 +199,9 @@ export default function StampsPage() {
                               {template.status}
                             </span>
                             {template.isVerified && (
-                              <CheckCircle2 className="h-4 w-4 text-green-600" title="Verified" />
+                              <span title="Verified">
+                                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                              </span>
                             )}
                           </div>
                           <div className="text-sm text-neutral-600">
