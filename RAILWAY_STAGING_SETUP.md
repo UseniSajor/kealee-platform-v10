@@ -73,7 +73,27 @@ Staging Flow:
 
 #### **3.3: Set Build Configuration**
 
+**✅ RECOMMENDED: Use Docker (Your Current Setup)**
+
+Your project has a `Dockerfile` at the root → Railway auto-detects it!
+
 1. In Settings → **"Build"**
+2. Railway shows: **"Builder: Docker"** (auto-detected)
+3. **Leave ALL commands EMPTY:**
+   - Build Command: (empty)
+   - Start Command: (empty)  
+   - Install Command: (empty)
+
+4. Railway uses your `Dockerfile` automatically
+5. ✅ **Same build process as production!**
+
+---
+
+**Alternative: Manual Build (Not Recommended for Your Setup)**
+
+Only if you want to skip Docker:
+
+1. In Settings → **"Build"** → Change to **"Nixpacks"**
 2. **Build Command:**
    ```bash
    pnpm install --frozen-lockfile && cd ../.. && pnpm build --filter=@kealee/api
@@ -88,6 +108,8 @@ Staging Flow:
    ```bash
    pnpm install --frozen-lockfile
    ```
+
+**Note:** Using Docker is strongly recommended for consistency.
 
 ---
 
