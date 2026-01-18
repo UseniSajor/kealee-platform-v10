@@ -57,7 +57,7 @@ export function WorkflowStatus({ projectId, phase }: WorkflowStatusProps) {
         <div>
           <h4 className="text-sm font-semibold mb-2">Mandatory Checks</h4>
           <div className="space-y-2">
-            {status.checks.map((check, idx) => (
+            {status.checks.map((check: any, idx: number) => (
               <div
                 key={idx}
                 className={`flex items-center gap-2 p-2 rounded ${
@@ -85,7 +85,7 @@ export function WorkflowStatus({ projectId, phase }: WorkflowStatusProps) {
         <div>
           <h4 className="text-sm font-semibold mb-2">Phase Gates</h4>
           <div className="space-y-2">
-            {status.gates.map((gateResult, idx) => (
+            {status.gates.map((gateResult: any, idx: number) => (
               <div
                 key={idx}
                 className={`flex items-center gap-2 p-2 rounded ${

@@ -39,7 +39,7 @@ export function ComplianceAlert({ taskId, onResolve }: ComplianceAlertProps) {
             <div className="flex-1">
               <h4 className="font-semibold text-amber-900 mb-2">Compliance Warnings</h4>
               <ul className="space-y-1 text-sm text-amber-800">
-                {compliance.warnings.map((warning, idx) => (
+                {compliance.warnings.map((warning: {type: string, message: string}, idx: number) => (
                   <li key={idx} className="flex items-start gap-2">
                     <span className="text-amber-600">•</span>
                     <span>
@@ -70,7 +70,7 @@ export function ComplianceAlert({ taskId, onResolve }: ComplianceAlertProps) {
               This task cannot be completed until the following compliance requirements are met:
             </p>
             <ul className="space-y-2 mb-4">
-              {compliance.blockers.map((blocker, idx) => (
+              {compliance.blockers.map((blocker: {message: string, actionRequired: string}, idx: number) => (
                 <li key={idx} className="flex items-start gap-2 text-sm">
                   <span className="text-red-600 mt-1">•</span>
                   <div>

@@ -186,7 +186,7 @@ export function FocusMode({ taskId, onExit }: FocusModeProps) {
   }
 
   // Open integrated module
-  const openIntegratedModule = (integrationPoint: TaskContext["integrationPoints"][0]) => {
+  const openIntegratedModule = (integrationPoint: any) => {
     if (integrationPoint.url) {
       window.open(integrationPoint.url, "_blank")
     } else {

@@ -22,6 +22,8 @@ import type {
   IntegrationModule,
   ValidationRule,
   PhaseConnection,
+} from "@/lib/types/sop"
+import {
   PROJECT_TYPES,
   INTEGRATION_MODULES,
 } from "@/lib/types/sop"

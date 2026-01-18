@@ -35,7 +35,7 @@ export default function MobilePMLayout() {
   const { data: tasksData } = useQuery({
     queryKey: ["pm-tasks", "today", "priority"],
     queryFn: async () => {
-      return api.getMyTasks?.({ priority: "HIGH", limit: 10 })
+      return api.getMyTasks?.({ priority: "high", limit: 10 })
     },
     refetchInterval: 30000, // Refetch every 30 seconds
   })
@@ -112,7 +112,7 @@ export default function MobilePMLayout() {
       {/* Today's Priority Tasks */}
       <section className="priority-tasks p-4">
         <h2 className="text-xl font-bold mb-4">Today's Focus</h2>
-        <SwipeableTaskList tasks={todaysPriorityTasks} />
+        <SwipeableTaskList tasks={todaysPriorityTasks as any} />
       </section>
 
       {/* Quick Actions */}
