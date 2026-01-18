@@ -116,7 +116,7 @@ export function WorkflowStatus({ projectId, phase }: WorkflowStatusProps) {
               <div className="flex-1">
                 <h4 className="text-sm font-semibold text-red-900 mb-1">Blockers</h4>
                 <ul className="space-y-1">
-                  {status.blockers.map((blocker, idx) => (
+                  {status.blockers.map((blocker: string, idx: number) => (
                     <li key={idx} className="text-sm text-red-800">
                       • {blocker}
                     </li>
@@ -135,7 +135,7 @@ export function WorkflowStatus({ projectId, phase }: WorkflowStatusProps) {
               <div className="flex-1">
                 <h4 className="text-sm font-semibold text-amber-900 mb-1">Warnings</h4>
                 <ul className="space-y-1">
-                  {status.warnings.map((warning, idx) => (
+                  {status.warnings.map((warning: string, idx: number) => (
                     <li key={idx} className="text-sm text-amber-800">
                       • {warning}
                     </li>
