@@ -1,6 +1,6 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {permitApplicationCreatorService} from '@/services/architect-integration/permit-application-creator';
-import {createClient} from '@/lib/supabase/server';
+import {createServerClient as createClient} from '@/lib/supabase/server';
 
 /**
  * POST /api/architect-integration/submit-permit-package

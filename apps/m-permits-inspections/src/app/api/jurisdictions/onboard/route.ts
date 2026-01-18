@@ -1,6 +1,6 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {jurisdictionOnboardingService} from '@/services/jurisdiction/onboarding-service';
-import {createClient} from '@/lib/supabase/server';
+import {createServerClient as createClient} from '@/lib/supabase/server';
 
 /**
  * POST /api/jurisdictions/onboard

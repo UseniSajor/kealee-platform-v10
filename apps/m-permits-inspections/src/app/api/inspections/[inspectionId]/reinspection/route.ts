@@ -18,20 +18,20 @@ export async function POST(
     const supabase = createClient();
 
     // Get inspection details
-    const {data: inspection} = await supabase
+    const {data: inspection, error: inspectionError} = await supabase
       .from('Inspection')
       .select('permitId, type')
-      .eq('id', inspectionId)
+      .eq('id', inspectionId as any)
       .single();
 
-    if (!inspection) {
+    if (inspectionError || !inspection) {
       return NextResponse.json({error: 'Inspection not found'}, {status: 404});
     }
 
     // Check if reinspection can be requested
     const canRequest = await reinspectionAutomationService.canRequestReinspection(
       inspectionId,
-      inspection.permitId
+      (inspection as any).permitId
     );
 
     if (!canRequest.canRequest) {
@@ -48,8 +48,8 @@ export async function POST(
     // Create reinspection
     const reinspection = await reinspectionAutomationService.createReinspectionRequest({
       parentInspectionId: inspectionId,
-      permitId: inspection.permitId,
-      inspectionType: inspection.type,
+      permitId: (inspection as any).permitId,
+      inspectionType: (inspection as any).type,
       requestedBy: body.requestedBy,
       reason: body.reason || 'CORRECTIONS_COMPLETED',
       correctionsResolved: body.correctionsResolved || [],

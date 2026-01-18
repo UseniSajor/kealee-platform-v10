@@ -9,7 +9,7 @@ import {useState} from 'react';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
-import {Settings, DollarSign, FileText, Users, MapPin, Calendar, Rules} from 'lucide-react';
+import {Settings, DollarSign, FileText, Users, MapPin, Calendar, FileCheck2} from 'lucide-react';
 import {FeeScheduleEditor} from './fee-schedule-editor';
 import {PermitTypeConfig} from './permit-type-config';
 import {ReviewDisciplineConfig} from './review-discipline-config';
@@ -52,7 +52,7 @@ export function ConfigurationDashboard({jurisdictionId}: ConfigurationDashboardP
             Inspector Zones
           </TabsTrigger>
           <TabsTrigger value="rules">
-            <Rules className="w-4 h-4 mr-2" />
+            <FileCheck2 className="w-4 h-4 mr-2" />
             Business Rules
           </TabsTrigger>
           <TabsTrigger value="calendar">
@@ -86,94 +86,5 @@ export function ConfigurationDashboard({jurisdictionId}: ConfigurationDashboardP
         </TabsContent>
       </Tabs>
     </div>
-  );
-}
-
-// Placeholder components - would be fully implemented
-function FeeScheduleEditor({jurisdictionId}: {jurisdictionId: string}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Fee Schedule Management</CardTitle>
-        <CardDescription>
-          Configure fee calculation rules with formula builder
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-600">Fee schedule editor component would go here</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function PermitTypeConfig({jurisdictionId}: {jurisdictionId: string}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Permit Type Configuration</CardTitle>
-        <CardDescription>Configure permit types and requirements</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-600">Permit type configuration component would go here</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function ReviewDisciplineConfig({jurisdictionId}: {jurisdictionId: string}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Review Discipline Setup</CardTitle>
-        <CardDescription>Configure review disciplines</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-600">Review discipline configuration component would go here</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function InspectorZoneManager({jurisdictionId}: {jurisdictionId: string}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Inspector Zone Management</CardTitle>
-        <CardDescription>Assign inspectors to geographic zones</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-600">Inspector zone manager component would go here</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function BusinessRulesEditor({jurisdictionId}: {jurisdictionId: string}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Business Rules Configuration</CardTitle>
-        <CardDescription>
-          Configure automatic approvals, expedited thresholds, and workflow rules
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-600">Business rules editor component would go here</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function CalendarManager({jurisdictionId}: {jurisdictionId: string}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Holiday & Closure Calendar</CardTitle>
-        <CardDescription>Manage holidays and closure periods</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-600">Calendar manager component would go here</p>
-      </CardContent>
-    </Card>
   );
 }
