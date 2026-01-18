@@ -1,236 +1,350 @@
-# 🚀 Deployment Guide - One-Click Promote to Production
+# 🚀 Deployment Guide - Kealee Platform v10
 
-## Quick Start
+**Last Updated:** January 18, 2026
 
-### Option 1: GitHub Actions (Recommended)
-1. Go to **Actions** tab in GitHub
-2. Click **"Deploy to Railway"** workflow
-3. Click **"Run workflow"**
-4. Select environment: `staging` or `production`
-5. Click **"Run workflow"** button
+---
 
-### Option 2: Command Line Script
-```bash
-# Deploy to staging
-./scripts/deploy.sh staging
+## 📚 **COMPLETE GUIDES AVAILABLE:**
 
-# Deploy to production
-./scripts/deploy.sh production
+For detailed step-by-step setup, see:
+- **[RAILWAY_WALKTHROUGH_PRODUCTION_AND_STAGING.md](./RAILWAY_WALKTHROUGH_PRODUCTION_AND_STAGING.md)** - Complete 30-45 min walkthrough ⭐
+- **[RAILWAY_COMPLETE_SETUP_GUIDE.md](./RAILWAY_COMPLETE_SETUP_GUIDE.md)** - URLs & environment variables reference
+- **[RAILWAY_STAGING_SETUP.md](./RAILWAY_STAGING_SETUP.md)** - Staging environment setup details
 
-# Promote staging to production (one-click!)
-./scripts/deploy.sh promote
+This file is a **quick reference only**.
+
+---
+
+## 🏗️ Railway Setup - Quick Reference
+
+### Current Architecture:
+
 ```
+┌─────────────────────────────────────┐
+│  📦 api (Production)                │
+│  Branch: main                       │
+│  URL: kealee-platform-v10-prod...  │
+│  Always on                          │
+└─────────────────────────────────────┘
 
-### Option 3: Node.js Script
-```bash
-# One-click promote to production
-node scripts/promote-to-prod.js
+┌─────────────────────────────────────┐
+│  📦 api-staging (Staging)           │
+│  Branch: main                       │
+│  URL: api-staging-production-xxx... │
+│  Sleep mode enabled                 │
+└─────────────────────────────────────┘
 ```
 
 ---
 
-## 🏗️ Railway Setup
-
 ### 1. Create Two Services
 
-**Staging Service:**
-- Name: `api-staging`
-- Branch: `staging`
-- Environment: `staging`
-
-**Production Service:**
-- Name: `api-production`
+**Production Service (Existing):**
+- Name: `api`
 - Branch: `main`
-- Environment: `production`
+- Builder: Docker (auto-detected)
+- Environment: `NODE_ENV=production`
+- Sleep Mode: Disabled (always on)
+
+**Staging Service (New):**
+- Name: `api-staging`
+- Branch: `main`
+- Builder: Docker (auto-detected)
+- Environment: `NODE_ENV=staging`
+- Sleep Mode: Enabled (saves resources)
+
+---
 
 ### 2. Configure Services
 
-Both services should use:
-- **Build Command:** `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --frozen-lockfile && pnpm build --filter=@kealee/api`
-- **Start Command:** `cd services/api && node dist/index.js`
+**✅ Using Docker (Current Setup):**
+
+Both services use the `Dockerfile` at project root:
+- **Build Command:** (empty - uses Dockerfile)
+- **Start Command:** (empty - uses Dockerfile CMD)
+- **Root Directory:** (empty - uses project root)
 - **Health Check:** `/health`
 
-### 3. Environment Variables
+**Railway auto-detects and uses your Dockerfile!**
 
-Set these in Railway dashboard for each service:
+---
 
-**Required:**
-- `DATABASE_URL` - PostgreSQL connection string
-- `SUPABASE_URL` - Supabase project URL
-- `SUPABASE_ANON_KEY` - Supabase anonymous key
-- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
-- `NODE_ENV` - `production` or `staging`
-- `PORT` - `3001` (or Railway's assigned port)
+### 3. Quick Setup Steps
 
-**Optional:**
-- `REDIS_URL` - Redis connection (for queues)
-- `SENDGRID_API_KEY` - Email sending
-- `STRIPE_SECRET_KEY` - Payments
-- `ANTHROPIC_API_KEY` - AI features
+**For Staging (if not created yet):**
+
+```bash
+1. Railway Dashboard → Your Project → "+ New" → "Empty Service"
+2. Name: api-staging
+3. Connect repo: UseniSajor/kealee-platform-v10
+4. Branch: main
+5. Root Directory: (empty)
+6. Variables: Copy from production, change NODE_ENV=staging
+7. Settings → Networking → Generate Domain
+8. Settings → Sleep Mode → Enable
+```
+
+**See full walkthrough:** [RAILWAY_WALKTHROUGH_PRODUCTION_AND_STAGING.md](./RAILWAY_WALKTHROUGH_PRODUCTION_AND_STAGING.md)
+
+### 4. Environment Variables
+
+**Production (`api` service):**
+```env
+NODE_ENV=production
+PORT=3000
+DATABASE_URL=postgresql://postgres:password@host:6543/postgres
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+CORS_ORIGINS=https://*.vercel.app,http://localhost:3000
+STRIPE_SECRET_KEY=sk_live_...  # Production key
+LOG_LEVEL=info
+```
+
+**Staging (`api-staging` service):**
+```env
+NODE_ENV=staging
+PORT=3000
+DATABASE_URL=postgresql://postgres:password@host:6543/postgres
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+CORS_ORIGINS=https://*.vercel.app,http://localhost:3000
+STRIPE_SECRET_KEY=sk_test_...  # ⚠️ Test key for staging!
+LOG_LEVEL=debug  # Verbose logging
+ENABLE_DEBUG_MODE=true
+```
+
+**See full templates:** [RAILWAY_COMPLETE_SETUP_GUIDE.md](./RAILWAY_COMPLETE_SETUP_GUIDE.md)
 
 ---
 
 ## 🔄 Deployment Workflow
 
-### Standard Flow:
+### Current Flow:
+
+**Method 1: Using Branches**
 ```
-1. Push to `staging` branch
+1. Push to `preview-deploy` branch (or any branch)
    ↓
-2. Auto-deploy to staging environment
+2. Railway staging auto-deploys
    ↓
-3. Test in staging
+3. Vercel preview deployments use staging API
    ↓
-4. Merge `staging` → `main`
+4. Test in preview environment
    ↓
-5. Auto-deploy to production
+5. Merge to `main` branch
+   ↓
+6. Railway production auto-deploys
+   ↓
+7. Vercel production deployments use production API
 ```
 
-### One-Click Promote Flow:
+**Method 2: Manual Redeploy**
 ```
-1. Deploy to staging (via push or manual)
-   ↓
-2. Test in staging
-   ↓
-3. Run: ./scripts/deploy.sh promote
-   ↓
-4. Staging deployment promoted to production
+1. Railway Dashboard → api-staging → Deployments
+2. Click latest deployment → "..." → "Redeploy"
+3. Test staging thoroughly
+4. Railway Dashboard → api → Deployments
+5. Click "..." → "Redeploy" to update production
 ```
+
+**Environment Isolation:**
+- Production uses `NODE_ENV=production` + live API keys
+- Staging uses `NODE_ENV=staging` + test API keys
+- Both run simultaneously, completely isolated
 
 ---
 
 ## ⚡ Build Optimization
 
-### To Prevent Timeouts:
+### Using Docker (Current Setup):
 
-1. **Use Build Caching:**
-   - Railway caches `node_modules` between builds
-   - Turborepo caches build outputs
+Your `Dockerfile` already includes optimizations:
+- ✅ Multi-stage build (smaller image)
+- ✅ Dependency caching (faster rebuilds)
+- ✅ Skips Puppeteer chrome download
+- ✅ pnpm workspace support
+- ✅ Prisma generation
 
-2. **Optimize Build Command:**
-   ```bash
-   # Skip Puppeteer download (saves ~2-3 minutes)
-   PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --frozen-lockfile
-   
-   # Build only what's needed
-   pnpm build --filter=@kealee/api
-   ```
+**No manual build commands needed!** Railway uses your Dockerfile automatically.
 
-3. **Use Railway Build Cache:**
-   - Railway automatically caches dependencies
-   - Set `RAILWAY_BUILD_CACHE=true` in environment
+**Build times:**
+- First build: ~3-5 minutes
+- Subsequent builds: ~2-3 minutes (with cache)
 
-4. **Increase Build Timeout:**
-   - Railway default: 15 minutes
-   - Can be increased in Railway dashboard
+**To further optimize:**
+1. Railway caches Docker layers automatically
+2. Only rebuild when source code changes
+3. Dependencies are cached between builds
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Build Timeout
-**Solution:**
-1. Check build logs for slow steps
-2. Optimize dependencies (remove unused packages)
-3. Use build caching
-4. Split build into multiple steps if needed
+### Build Fails
+**Symptoms:** Red X on deployment
+**Solutions:**
+1. Check Railway logs: Click deployment → View logs
+2. Verify Dockerfile exists at project root
+3. Check environment variables are set
+4. Test Docker build locally: `docker build -t test .`
 
-### Deployment Fails
-**Solution:**
-1. Check Railway logs: `railway logs --service api-production`
-2. Verify environment variables are set
-3. Check health endpoint: `curl https://your-api.railway.app/health`
-4. Verify database connection
+### API Returns 500 Errors
+**Symptoms:** Health check fails or 500 responses
+**Solutions:**
+1. Check Railway logs for errors
+2. Verify `DATABASE_URL` is set correctly
+3. Test connection: `curl https://your-api.railway.app/health`
+4. Check Supabase variables are correct
 
-### Promote Fails
-**Solution:**
-1. Ensure staging deployment is successful first
-2. Check both services exist in Railway
-3. Verify Railway CLI is logged in: `railway whoami`
-4. Check service names match: `api-staging` and `api-production`
+### CORS Errors from Vercel
+**Symptoms:** Browser console shows CORS blocked
+**Solutions:**
+1. Add to Railway variables: `CORS_ORIGINS=https://*.vercel.app`
+2. Redeploy API after adding variable
+3. Verify Vercel uses correct API URL
+
+### Staging API Not Responding
+**Symptoms:** Timeout on first request
+**Solutions:**
+1. Sleep mode enabled - first request takes ~10-15 seconds
+2. Check Railway logs to see if it's waking up
+3. Disable sleep mode if needed (costs more)
+
+**See detailed troubleshooting:** [RAILWAY_WALKTHROUGH_PRODUCTION_AND_STAGING.md](./RAILWAY_WALKTHROUGH_PRODUCTION_AND_STAGING.md#troubleshooting)
 
 ---
 
 ## 📊 Monitoring
 
-### Check Deployment Status:
-```bash
-# Staging
-railway status --service api-staging
+### Health Checks:
 
-# Production
-railway status --service api-production
+**Production API:**
+```bash
+curl https://kealee-platform-v10-production.up.railway.app/health
+# Expected: {"status":"ok","timestamp":1737241234567}
 ```
 
-### View Logs:
+**Staging API:**
 ```bash
-# Staging logs
+curl https://api-staging-production-xxxx.up.railway.app/health
+# Expected: {"status":"ok","timestamp":1737241234567}
+# Note: First request after sleep may take ~10-15 seconds
+```
+
+### View Logs (Railway Dashboard):
+```
+1. Railway Dashboard → Your Project
+2. Click service (api or api-staging)
+3. Click "Deployments" tab
+4. Click latest deployment
+5. View logs in real-time
+```
+
+### Railway CLI (Optional):
+```bash
+# Install CLI
+npm i -g @railway/cli
+
+# Login
+railway login
+
+# View logs
+railway logs --service api
 railway logs --service api-staging
-
-# Production logs
-railway logs --service api-production --follow
-```
-
-### Health Check:
-```bash
-# Staging
-curl https://api-staging.railway.app/health
-
-# Production
-curl https://api-production.railway.app/health
 ```
 
 ---
 
 ## 🔐 Security Best Practices
 
-1. **Never commit secrets** - Use Railway environment variables
-2. **Use different keys** for staging and production
-3. **Enable Railway's built-in security** features
-4. **Monitor deployments** for unauthorized changes
-5. **Use branch protection** on `main` branch
+1. **Never commit secrets** - Use Railway environment variables only
+2. **Use test keys in staging:**
+   - Stripe: `sk_test_...` not `sk_live_...`
+   - Other APIs: Use sandbox/test keys
+3. **Isolate environments:**
+   - Production and staging are completely separate
+   - Different API URLs
+   - Different environment variables
+4. **Enable sleep mode for staging** - Saves resources
+5. **Monitor both environments** - Set up alerts
+6. **Use branch protection on `main`** - Require reviews before merging
 
 ---
 
-## 📝 GitHub Actions Setup
+## 🔗 Integration with Vercel
 
-1. Add Railway token to GitHub Secrets:
-   - Go to: Settings → Secrets and variables → Actions
-   - Add: `RAILWAY_TOKEN` (get from Railway dashboard)
+### Connect Vercel Apps to Railway APIs:
 
-2. Enable workflow:
-   - Go to: Actions tab
-   - Enable "Deploy to Railway" workflow
+**For each Vercel app, set:**
 
-3. Workflow will run on:
-   - Push to `main` → Deploy to production
-   - Push to `staging` → Deploy to staging
-   - Manual trigger → Choose environment
+```env
+Environment: Production
+NEXT_PUBLIC_API_URL=https://kealee-platform-v10-production.up.railway.app
+
+Environment: Preview
+NEXT_PUBLIC_API_URL=https://api-staging-production-xxxx.up.railway.app
+
+Environment: Development
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
+
+**See Vercel setup guides:**
+- [VERCEL_ALL_APPS_DEPLOYMENT.md](./VERCEL_ALL_APPS_DEPLOYMENT.md)
+- [VERCEL_PREVIEW_DEPLOYMENT_GUIDE.md](./VERCEL_PREVIEW_DEPLOYMENT_GUIDE.md)
 
 ---
 
 ## 🎯 Quick Reference
 
-| Command | Action |
-|---------|--------|
-| `./scripts/deploy.sh staging` | Deploy to staging |
-| `./scripts/deploy.sh production` | Deploy to production |
-| `./scripts/deploy.sh promote` | Promote staging → production |
-| `railway status` | Check deployment status |
-| `railway logs --follow` | Follow logs in real-time |
-| `railway open` | Open Railway dashboard |
+| Service | URL | Status | Purpose |
+|---------|-----|--------|---------|
+| **Production** | `https://kealee-platform-v10-production.up.railway.app` | ✅ Live | Live users |
+| **Staging** | `https://api-staging-production-xxxx.up.railway.app` | ✅ Live | Testing |
+
+| Action | How To |
+|--------|--------|
+| Test production API | `curl https://kealee-platform-v10-production.up.railway.app/health` |
+| Test staging API | `curl https://api-staging-production-xxxx.up.railway.app/health` |
+| View logs | Railway Dashboard → Service → Deployments → View Logs |
+| Redeploy | Railway Dashboard → Service → Deployments → "..." → Redeploy |
+| Generate new URL | Settings → Networking → Generate Domain |
+| Toggle sleep mode | Settings → Sleep Mode → Enable/Disable |
 
 ---
 
-## ✅ Pre-Deployment Checklist
+## ✅ Deployment Checklist
 
-- [ ] All tests passing
-- [ ] Environment variables configured
-- [ ] Database migrations applied
-- [ ] Build completes successfully locally
-- [ ] Health check endpoint working
-- [ ] Staging deployment tested
-- [ ] Backup production database (if promoting)
+**Before Creating Staging:**
+- [ ] Production API is working
+- [ ] Have production environment variables copied
+- [ ] Know your Supabase credentials
+- [ ] Have test Stripe API keys ready
+
+**After Creating Staging:**
+- [ ] Staging API health check passes
+- [ ] Different URL from production
+- [ ] Using test API keys (not production keys!)
+- [ ] Sleep mode enabled (optional)
+- [ ] Vercel preview apps updated with staging URL
+- [ ] Tested full flow: Vercel preview → Staging API → Database
+
+**See complete setup guide:** [RAILWAY_WALKTHROUGH_PRODUCTION_AND_STAGING.md](./RAILWAY_WALKTHROUGH_PRODUCTION_AND_STAGING.md)
 
 ---
 
-**Need Help?** Check Railway docs: https://docs.railway.app
+## 📚 Related Documentation
+
+- **[RAILWAY_WALKTHROUGH_PRODUCTION_AND_STAGING.md](./RAILWAY_WALKTHROUGH_PRODUCTION_AND_STAGING.md)** - Complete setup guide (30-45 min) ⭐
+- **[RAILWAY_COMPLETE_SETUP_GUIDE.md](./RAILWAY_COMPLETE_SETUP_GUIDE.md)** - URLs & environment variables
+- **[RAILWAY_STAGING_SETUP.md](./RAILWAY_STAGING_SETUP.md)** - Staging environment details
+- **[VERCEL_ALL_APPS_DEPLOYMENT.md](./VERCEL_ALL_APPS_DEPLOYMENT.md)** - Frontend deployment
+- **[DEPLOYMENT_URLS.md](./DEPLOYMENT_URLS.md)** - All deployment URLs
+
+---
+
+**Need Help?**
+- Railway docs: https://docs.railway.app
+- Railway Dashboard: https://railway.app/dashboard
+- Vercel Dashboard: https://vercel.com/dashboard
