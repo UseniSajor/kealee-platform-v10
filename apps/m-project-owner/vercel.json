@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pnpm build --filter=m-project-owner",
+  "outputDirectory": "apps/m-project-owner/.next",
+  "installCommand": "pnpm install"
+}

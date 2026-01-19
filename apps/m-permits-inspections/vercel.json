@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pnpm build --filter=m-permits-inspections",
+  "outputDirectory": "apps/m-permits-inspections/.next",
+  "installCommand": "pnpm install"
+}

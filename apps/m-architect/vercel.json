@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pnpm build --filter=m-architect",
+  "outputDirectory": "apps/m-architect/.next",
+  "installCommand": "pnpm install"
+}
