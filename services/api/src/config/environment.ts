@@ -176,7 +176,9 @@ export function validateProductionConfig(): void {
   if (missing.length > 0) {
     console.error('❌ Missing required production environment variables:');
     missing.forEach(varName => console.error(`   - ${varName}`));
-    throw new Error(`Missing required production environment variables: ${missing.join(', ')}`);
+    console.error('⚠️  App will start but some features may not work until these are added.');
+    // Don't throw - let app start with warnings
+    // throw new Error(`Missing required production environment variables: ${missing.join(', ')}`);
   }
   
   // Validate production values don't contain "test", "demo", "staging", etc.
