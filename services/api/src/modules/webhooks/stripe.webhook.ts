@@ -7,11 +7,30 @@ import Stripe from 'stripe';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '@kealee/database';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-12-15.clover',
-});
+let stripeInstance: Stripe | null = null;
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+function getStripeInstance(): Stripe {
+  if (stripeInstance) return stripeInstance;
+  
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) {
+    throw new Error('STRIPE_SECRET_KEY is not configured');
+  }
+  
+  stripeInstance = new Stripe(key, {
+    apiVersion: '2025-12-15.clover',
+  });
+  
+  return stripeInstance;
+}
+
+function getWebhookSecret(): string {
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!secret) {
+    throw new Error('STRIPE_WEBHOOK_SECRET is not configured');
+  }
+  return secret;
+}
 
 /**
  * Main webhook handler
@@ -30,6 +49,9 @@ export async function handleStripeWebhook(
 
   try {
     // Verify webhook signature
+    const stripe = getStripeInstance();
+    const webhookSecret = getWebhookSecret();
+    
     event = stripe.webhooks.constructEvent(
       request.rawBody!,
       signature,
