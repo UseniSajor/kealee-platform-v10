@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm build --filter=m-project-owner",
+  "buildCommand": "turbo run build --filter=m-project-owner",
   "outputDirectory": "apps/m-project-owner/.next",
   "installCommand": "pnpm install",
   "framework": "nextjs"

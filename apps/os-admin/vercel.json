@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm build --filter=os-admin",
+  "buildCommand": "turbo run build --filter=os-admin",
   "outputDirectory": "apps/os-admin/.next",
   "installCommand": "pnpm install",
   "framework": "nextjs"

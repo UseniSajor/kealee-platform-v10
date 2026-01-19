@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm build --filter=m-ops-services",
+  "buildCommand": "turbo run build --filter=m-ops-services",
   "outputDirectory": "apps/m-ops-services/.next",
   "installCommand": "pnpm install",
   "framework": "nextjs"
