@@ -2,5 +2,6 @@
   "buildCommand": "turbo run build --filter=os-pm",
   "outputDirectory": "apps/os-pm/.next",
   "installCommand": "pnpm install",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "_comment": "Preview deployment - updated 2025-01-15"
 }

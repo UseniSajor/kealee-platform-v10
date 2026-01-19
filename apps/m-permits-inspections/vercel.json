@@ -2,5 +2,6 @@
   "buildCommand": "turbo run build --filter=m-permits-inspections",
   "outputDirectory": "apps/m-permits-inspections/.next",
   "installCommand": "pnpm install",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "_comment": "Preview deployment - updated 2025-01-15"
 }
