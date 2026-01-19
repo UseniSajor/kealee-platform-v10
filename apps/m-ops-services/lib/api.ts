@@ -5,13 +5,38 @@
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
+async function getAuthToken(): Promise<string | null> {
+  // Get auth token from Supabase session or localStorage
+  if (typeof window !== 'undefined') {
+    // Try to get from localStorage (set by auth flow)
+    const token = localStorage.getItem('supabase.auth.token')
+    if (token) {
+      try {
+        const parsed = JSON.parse(token)
+        return parsed?.access_token || null
+      } catch {
+        return null
+      }
+    }
+  }
+  return null
+}
+
 async function apiRequest<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const token = await getAuthToken()
+  
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options?.headers,
+  }
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
+    headers,
     credentials: 'include',
   })
 
@@ -24,44 +49,34 @@ async function apiRequest<T>(endpoint: string, options?: RequestInit): Promise<T
 }
 
 export const api = {
-  // Service Plans
-  getPackageTiers: () => apiRequest<{ packageTiers: any }>(`/ops-services/package-tiers`),
+  // Billing & Plans
+  getPlans: () => apiRequest<{ plans: any[] }>(`/billing/plans`),
 
-  createServicePlan: (data: {
-    packageTier: 'A' | 'B' | 'C' | 'D'
-    stripeSubscriptionId?: string
-  }) => apiRequest<{ servicePlan: any }>(`/ops-services/service-plans`, {
+  createCheckoutSession: (data: {
+    orgId: string
+    planSlug: 'package-a' | 'package-b' | 'package-c' | 'package-d'
+    interval: 'month' | 'year'
+    successUrl: string
+    cancelUrl: string
+    customerEmail?: string
+  }) => apiRequest<{ url: string; id: string }>(`/billing/stripe/checkout-session`, {
     method: 'POST',
     body: JSON.stringify(data),
   }),
 
-  getServicePlan: (planId: string) => apiRequest<{ servicePlan: any }>(`/ops-services/service-plans/${planId}`),
+  createBillingPortalSession: (data: {
+    orgId: string
+    returnUrl: string
+  }) => apiRequest<{ url: string; id: string }>(`/billing/stripe/portal-session`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
 
-  getMyServicePlan: () => apiRequest<{ servicePlan: any }>(`/ops-services/service-plans/me`),
-
-  listServicePlans: (filters?: {
-    status?: string
-    packageTier?: string
-  }) => {
-    const params = new URLSearchParams()
-    if (filters?.status) params.append('status', filters.status)
-    if (filters?.packageTier) params.append('packageTier', filters.packageTier)
-    const query = params.toString()
-    return apiRequest<{ servicePlans: any[] }>(`/ops-services/service-plans${query ? `?${query}` : ''}`)
+  getMySubscription: () => {
+    // Get subscription from service subscriptions table
+    // This will be implemented when we have org context
+    return apiRequest<{ subscription: any }>(`/billing/subscriptions/me`)
   },
-
-  updateServicePlan: (planId: string, data: {
-    packageTier?: 'A' | 'B' | 'C' | 'D'
-    status?: string
-    stripeSubscriptionId?: string
-  }) => apiRequest<{ servicePlan: any }>(`/ops-services/service-plans/${planId}`, {
-    method: 'PATCH',
-    body: JSON.stringify(data),
-  }),
-
-  cancelServicePlan: (planId: string) => apiRequest<{ servicePlan: any }>(`/ops-services/service-plans/${planId}/cancel`, {
-    method: 'POST',
-  }),
 
   // Service Requests
   createServiceRequest: (data: {
