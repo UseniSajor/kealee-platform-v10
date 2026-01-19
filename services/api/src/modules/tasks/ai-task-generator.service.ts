@@ -122,7 +122,7 @@ Focus on the ${phase} phase requirements. Return only valid JSON.`
 
     // Extract content from response
     const content = response.content
-      .map((block) => {
+      .map((block: any) => {
         if (block.type === 'text') {
           return block.text
         }
