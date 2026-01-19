@@ -1,7 +1,7 @@
 {
   "buildCommand": "turbo run build --filter=m-architect",
   "outputDirectory": "apps/m-architect/.next",
-  "installCommand": "pnpm install",
+  "installCommand": "pnpm install --network-timeout=60000 --fetch-retries=5",
   "framework": "nextjs",
   "_comment": "Preview deployment - updated 2025-01-15"
 }
