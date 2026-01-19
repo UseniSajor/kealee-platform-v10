@@ -46,7 +46,14 @@ function slugify(input: string): string {
 }
 
 export class BillingService {
-  private stripe = getStripe()
+  private _stripe?: ReturnType<typeof getStripe>
+  
+  private get stripe() {
+    if (!this._stripe) {
+      this._stripe = getStripe()
+    }
+    return this._stripe
+  }
 
   async listPlans() {
     return prismaAny.servicePlan.findMany({
