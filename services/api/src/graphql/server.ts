@@ -1,26 +1,16 @@
 /**
  * GraphQL Server Setup
- * Apollo Server v4 with Fastify integration
+ * Apollo Server with Fastify integration
  */
 
-import { ApolloServer, BaseContext } from '@apollo/server';
-import { typeDefs } from './schema';
-import { resolvers } from './resolvers';
-
-interface GraphQLContext extends BaseContext {
-  apiKey?: string;
-  authToken?: string;
-  request?: any;
-  reply?: any;
-}
+import {ApolloServer} from '@apollo/server';
+import {typeDefs} from './schema';
+import {resolvers} from './resolvers';
 
 export function createGraphQLServer() {
-  return new ApolloServer<GraphQLContext>({
+  return new ApolloServer({
     typeDefs,
     resolvers,
-    // Disable persisted queries to fix Railway deployment warning
-    persistedQueries: false,
-    // Enable introspection for development
-    introspection: true,
+    // Note: context is provided via @as-integrations/fastify in index.ts
   });
 }

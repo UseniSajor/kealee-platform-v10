@@ -8,7 +8,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '@kealee/database';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-12-15.clover',
 });
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -99,8 +99,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     stripePriceId: priceId,
     status: subscription.status,
     packageId,
-    currentPeriodStart: new Date(subscription.current_period_start * 1000),
-    currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+    billingCycleAnchor: new Date(subscription.billing_cycle_anchor * 1000),
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
   });
 
@@ -120,8 +119,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     status: subscription.status,
     stripePriceId: subscription.items.data[0].price.id,
     packageId: subscription.metadata.packageId,
-    currentPeriodStart: new Date(subscription.current_period_start * 1000),
-    currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+    billingCycleAnchor: new Date(subscription.billing_cycle_anchor * 1000),
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
   });
 
@@ -152,7 +150,8 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
   console.log('💰 Invoice paid:', invoice.id);
 
-  const subscriptionId = invoice.subscription as string;
+  const subscription = invoice.parent?.subscription_details?.subscription;
+  const subscriptionId = typeof subscription === 'string' ? subscription : subscription?.id;
 
   if (subscriptionId) {
     // TODO: Update subscription payment status once Prisma models are added
@@ -162,6 +161,8 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
       invoiceId: invoice.id,
       amount: invoice.amount_paid,
       currency: invoice.currency,
+      periodStart: new Date(invoice.period_start * 1000),
+      periodEnd: new Date(invoice.period_end * 1000),
     });
 
     // TODO: Create payment record in database
@@ -175,7 +176,8 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   console.log('⚠️  Invoice payment failed:', invoice.id);
 
-  const subscriptionId = invoice.subscription as string;
+  const subscription = invoice.parent?.subscription_details?.subscription;
+  const subscriptionId = typeof subscription === 'string' ? subscription : subscription?.id;
 
   if (subscriptionId) {
     // TODO: Update subscription status once Prisma models are added
