@@ -24,12 +24,27 @@ export function detectEnvironment(): EnvironmentConfig {
   const railwayServiceName = process.env.RAILWAY_SERVICE_NAME;
   
   // Determine environment priority:
-  // 1. If RAILWAY_ENVIRONMENT_NAME is set, use it
-  // 2. Otherwise, use NODE_ENV
+  // 1. NODE_ENV takes precedence (user-defined)
+  // 2. Check service name for "staging" keyword
+  // 3. Fallback to RAILWAY_ENVIRONMENT_NAME
   let env: Environment = 'development';
   
-  if (railwayEnv) {
-    // Railway sets RAILWAY_ENVIRONMENT_NAME to deployment environment
+  // Priority 1: Use NODE_ENV if explicitly set
+  if (nodeEnv === 'production') {
+    env = 'production';
+  } else if (nodeEnv === 'staging') {
+    env = 'staging';
+  } else if (nodeEnv === 'preview') {
+    env = 'preview';
+  } else if (nodeEnv === 'development') {
+    env = 'development';
+  }
+  // Priority 2: Check if service name contains "staging"
+  else if (railwayServiceName && railwayServiceName.toLowerCase().includes('staging')) {
+    env = 'staging';
+  }
+  // Priority 3: Fallback to Railway environment
+  else if (railwayEnv) {
     if (railwayEnv === 'production') {
       env = 'production';
     } else if (railwayEnv === 'staging') {
@@ -37,17 +52,6 @@ export function detectEnvironment(): EnvironmentConfig {
     } else {
       // Any other Railway environment (pr-xxx, etc.) is preview
       env = 'preview';
-    }
-  } else {
-    // Fallback to NODE_ENV
-    if (nodeEnv === 'production') {
-      env = 'production';
-    } else if (nodeEnv === 'staging') {
-      env = 'staging';
-    } else if (nodeEnv === 'preview') {
-      env = 'preview';
-    } else {
-      env = 'development';
     }
   }
   
