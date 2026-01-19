@@ -174,7 +174,7 @@ export const handoffService = {
             documentType: 'contract',
             title: `Contract Agreement - ${contract.id}`,
             url: contract.docusignEnvelopeId
-              ? `https://demo.docusign.com/envelopes/${contract.docusignEnvelopeId}`
+              ? `${process.env.DOCUSIGN_BASE_PATH || 'https://demo.docusign.net/restapi'}/envelopes/${contract.docusignEnvelopeId}`
               : `#contract-${contract.id}`,
             fileName: `contract-${contract.id}.pdf`,
             mimeType: 'application/pdf',
