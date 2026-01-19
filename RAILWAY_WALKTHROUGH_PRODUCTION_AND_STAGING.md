@@ -116,12 +116,42 @@ Build:
 2. **You should see these critical variables:**
 
 ```env
+# ===== CORE CONFIGURATION =====
 NODE_ENV=production
 PORT=3000
-DATABASE_URL=postgresql://...
-SUPABASE_URL=https://...
-SUPABASE_ANON_KEY=eyJ...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...
+
+# ===== DATABASE (Supabase Postgres - Connection Pooler) =====
+# Get from: Supabase Dashboard → Settings → Database → Connection String → Transaction mode
+DATABASE_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
+
+# Optional: Direct connection for migrations
+DIRECT_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
+
+# ===== SUPABASE AUTHENTICATION =====
+SUPABASE_URL=https://[PROJECT-REF].supabase.co
+SUPABASE_ANON_KEY=eyJhbGci...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGci...
+
+# ===== CORS (Production domains) =====
+CORS_ORIGINS=https://admin.kealee.com,https://pm.kealee.com,https://permits.kealee.com,https://owner.kealee.com,https://architect.kealee.com,https://services.kealee.com
+
+# ===== STRIPE (LIVE KEYS FOR PRODUCTION!) =====
+STRIPE_SECRET_KEY=sk_live_51...
+STRIPE_PUBLISHABLE_KEY=pk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# ===== SENDGRID EMAIL =====
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxx...
+SENDGRID_FROM_EMAIL=noreply@kealee.com
+SENDGRID_FROM_NAME=Kealee Platform
+
+# ===== ANTHROPIC CLAUDE AI =====
+ANTHROPIC_API_KEY=sk-ant-api03-...
+
+# ===== PRODUCTION SETTINGS =====
+LOG_LEVEL=info
+ENABLE_DEBUG_MODE=false
+RAILWAY_ENVIRONMENT=production
 ```
 
 3. **Copy these variables** - you'll need them for staging!
@@ -265,7 +295,7 @@ To save resources:
 
 ---
 
-### **Step 3.2: Add Core Variables**
+### **Step 3.2: Add Staging Variables**
 
 Add these one by one (or use "Raw Editor" to paste all at once):
 
@@ -274,26 +304,42 @@ Add these one by one (or use "Raw Editor" to paste all at once):
 NODE_ENV=staging
 PORT=3000
 
-# ===== DATABASE (Same as production or separate) =====
-DATABASE_URL=postgresql://postgres:[PASSWORD]@[HOST]:6543/postgres
+# ===== DATABASE (Supabase Postgres - Connection Pooler) =====
+# Get from: Supabase Dashboard → Settings → Database → Connection String → Transaction mode
+DATABASE_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
 
-# ===== SUPABASE (Same as production) =====
-SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_UR# Optional: Direct connection for migrations (non-pooled)
+DIRECT_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
+
+# ===== SUPABASE AUTHENTICATION =====
+# Get from: Supabase Dashboard → Settings → API
+SUPABASE_URL=https://[PROJECT-REF].supabase.co
 SUPABASE_ANON_KEY=eyJhbGci...
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGci...
 
-# ===== CORS (Allow Vercel domains) =====
-CORS_ORIGINS=https://*.vercel.app,http://localhost:3000
+# ===== CORS (Allow Vercel preview domains) =====
+CORS_ORIGINS=https://*.vercel.app,http://localhost:3000,http://localhost:3001
 
-# ===== API KEYS (Use TEST keys!) =====
-# Stripe (TEST key for staging!)
+# ===== STRIPE (TEST KEYS FOR STAGING!) =====
+# Get from: Stripe Dashboard → Developers → API keys → Test mode
 STRIPE_SECRET_KEY=sk_test_51...
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 
-# Anthropic Claude
-ANTHROPIC_API_KEY=sk-ant-...
+# ===== SENDGRID EMAIL (Same key for staging/production) =====
+# Get from: SendGrid Dashboard → Settings → API Keys
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxx...
+SENDGRID_FROM_EMAIL=noreply@kealee.com
+SENDGRID_FROM_NAME=Kealee Platform (Staging)
 
-# SendGrid
-SENDGRID_API_KEY=SG...
+# ===== ANTHROPIC CLAUDE AI =====
+# Get from: Anthropic Console → API Keys
+ANTHROPIC_API_KEY=sk-ant-api03-...
+
+# ===== TWILIO (Optional - for SMS) =====
+TWILIO_ACCOUNT_SID=AC...
+TWILIO_AUTH_TOKEN=...
+TWILIO_PHONE_NUMBER=+1...
 
 # ===== DEBUGGING (Staging only) =====
 LOG_LEVEL=debug
@@ -304,22 +350,160 @@ RAILWAY_ENVIRONMENT=staging
 
 ---
 
-### **Step 3.3: IMPORTANT - Use Test API Keys!**
+### **Step 3.3: IMPORTANT - Environment Variables Comparison**
 
-For staging, use **test/sandbox** keys:
+Here's what should be **DIFFERENT** vs **SAME** between environments:
 
-| Service | Production | Staging |
-|---------|-----------|---------|
-| **Stripe** | `sk_live_...` | `sk_test_...` ⭐ |
-| **Stripe Publishable** | `pk_live_...` | `pk_test_...` ⭐ |
-| **Database** | Production DB | Same or separate |
-| **Logging** | `info` | `debug` ⭐ |
+| Service | Production | Staging | Notes |
+|---------|-----------|---------|-------|
+| **Stripe Secret** | `sk_live_...` | `sk_test_...` ⭐ | DIFFERENT - prevent real charges |
+| **Stripe Publishable** | `pk_live_...` | `pk_test_...` ⭐ | DIFFERENT |
+| **Stripe Webhook** | `whsec_...` (live) | `whsec_...` (test) ⭐ | DIFFERENT |
+| **SendGrid API Key** | `SG.xxx...` | `SG.xxx...` ✅ | SAME - ok for staging |
+| **SendGrid From Name** | `Kealee Platform` | `Kealee Platform (Staging)` | DIFFERENT - clarity |
+| **Postgres (DATABASE_URL)** | Port 6543 | Port 6543 ✅ | SAME connection pooler |
+| **Postgres (DIRECT_URL)** | Port 5432 | Port 5432 ✅ | SAME direct connection |
+| **Database** | Production DB | Production DB ✅ | SAME or separate database |
+| **Supabase URL** | `https://[ref].supabase.co` | `https://[ref].supabase.co` ✅ | SAME |
+| **Supabase Keys** | Same keys | Same keys ✅ | SAME |
+| **Anthropic API** | `sk-ant-...` | `sk-ant-...` ✅ | SAME |
+| **NODE_ENV** | `production` | `staging` | DIFFERENT |
+| **Logging** | `info` | `debug` ⭐ | DIFFERENT - verbose staging logs |
+| **Debug Mode** | `false` | `true` ⭐ | DIFFERENT |
 
-**Why?** So you don't accidentally charge real customers when testing!
+**Key Points:**
+
+✅ **SAME for both:** SendGrid, Postgres connection (same DB or separate), Supabase, AI APIs  
+⭐ **DIFFERENT:** Stripe keys (TEST vs LIVE), logging level, debug mode  
+
+**Why different Stripe keys?** So you don't accidentally charge real customers when testing!  
+**Why same SendGrid?** Email sending is safe to share, just different sender name  
+**Why same Postgres?** Can use same database with different data, or separate staging DB
 
 ---
 
-### **Step 3.4: Deploy Staging**
+### **Step 3.4: Understanding Postgres Configuration**
+
+Both Production and Staging use the **same Postgres ports**:
+
+#### **DATABASE_URL - Port 6543 (Connection Pooler)**
+
+```env
+# Production API
+DATABASE_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
+
+# Staging API  
+DATABASE_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
+```
+
+**Why Port 6543?**
+- ✅ This is Supabase's **connection pooler** (PgBouncer)
+- ✅ Recommended for API runtime connections
+- ✅ Prevents "too many connections" errors
+- ✅ Better performance for serverless/Railway environments
+
+#### **DIRECT_URL - Port 5432 (Direct Connection)**
+
+```env
+# Production API (for Prisma migrations)
+DIRECT_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
+
+# Staging API (for Prisma migrations)
+DIRECT_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
+```
+
+**Why Port 5432?**
+- ✅ This is the **direct Postgres connection**
+- ✅ Required for Prisma migrations
+- ✅ Bypasses connection pooler
+- ⚠️ Don't use for regular API queries
+
+#### **How to Get Your Connection Strings:**
+
+1. **Go to Supabase Dashboard**: https://supabase.com/dashboard
+2. **Select your project**
+3. **Settings** → **Database**
+4. **Connection string** section
+5. **Select "Transaction mode"** for DATABASE_URL (port 6543)
+6. **Select "Session mode"** for DIRECT_URL (port 5432)
+7. **Replace `[YOUR-PASSWORD]` with your actual database password**
+
+#### **Database Strategy Options:**
+
+**Option 1: Shared Database (Recommended for starting)**
+```
+Production API → Same Postgres DB
+Staging API    → Same Postgres DB
+```
+- ✅ Simpler setup
+- ✅ Save on database costs
+- ⚠️ Be careful with staging data
+
+**Option 2: Separate Databases (Recommended for production)**
+```
+Production API → Production Postgres DB
+Staging API    → Staging Postgres DB (separate Supabase project)
+```
+- ✅ Complete isolation
+- ✅ Safe testing without affecting production
+- ✅ Can use test data freely
+- ⚠️ Costs more (need 2 Supabase projects)
+
+---
+
+### **Step 3.5: Understanding SendGrid Configuration**
+
+Both Production and Staging use the **same SendGrid API key**:
+
+```env
+# Production API
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxx...
+SENDGRID_FROM_EMAIL=noreply@kealee.com
+SENDGRID_FROM_NAME=Kealee Platform
+
+# Staging API
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxx...
+SENDGRID_FROM_EMAIL=noreply@kealee.com
+SENDGRID_FROM_NAME=Kealee Platform (Staging)
+```
+
+**Why Same API Key?**
+- ✅ Email sending is safe to share between environments
+- ✅ SendGrid tracks usage, not environments
+- ✅ Simpler credential management
+- ✅ Same sender verification
+
+**What's Different?**
+- ⭐ `SENDGRID_FROM_NAME` includes "(Staging)" to identify test emails
+
+**How to Get Your SendGrid API Key:**
+
+1. **Go to SendGrid Dashboard**: https://app.sendgrid.com
+2. **Settings** → **API Keys**
+3. **Click "Create API Key"**
+4. **Name:** `Kealee Platform API`
+5. **Permissions:** Full Access (or Mail Send only)
+6. **Click "Create & View"**
+7. **Copy the key** - it starts with `SG.`
+8. ⚠️ **Save it immediately** - you can't view it again!
+
+**SendGrid Sender Configuration:**
+
+Before sending emails, verify your sender identity:
+
+1. **SendGrid Dashboard** → **Settings** → **Sender Authentication**
+2. **Option A: Single Sender Verification**
+   - Add: `noreply@kealee.com`
+   - Verify via email
+   
+3. **Option B: Domain Authentication (Recommended)**
+   - Authenticate entire `kealee.com` domain
+   - Add DNS records to NameBright
+   - Better deliverability
+
+---
+
+### **Step 3.6: Deploy Staging**
 
 After adding variables:
 
@@ -579,10 +763,11 @@ curl https://api-staging-production-xxx.up.railway.app/health
 2. **Verify DATABASE_URL:**
    - Go to Variables tab
    - Check DATABASE_URL is set correctly
-   - Test connection string format:
+   - Verify connection string format (port 6543 for pooled connections):
      ```
-     postgresql://postgres:PASSWORD@HOST:6543/postgres
+     postgresql://postgres.[PROJECT-REF]:PASSWORD@aws-0-[REGION].pooler.supabase.com:6543/postgres
      ```
+   - Replace `[YOUR-PASSWORD]` placeholder with actual password
 
 ---
 
@@ -638,7 +823,71 @@ Access to fetch at 'https://api-staging...' has been blocked by CORS policy
 
 ---
 
-### **Issue 6: Can't find staging URL**
+### **Issue 6: Database Connection Fails - "too many connections"**
+
+**Symptoms:**
+```
+Error: remaining connection slots are reserved
+FATAL: remaining connection slots are reserved for non-replication superuser connections
+```
+
+**Solutions:**
+
+1. **Use connection pooler (port 6543) instead of direct connection (port 5432):**
+   ```env
+   # CORRECT - Uses pooler
+   DATABASE_URL=postgresql://postgres.[REF]:PASS@aws-0-region.pooler.supabase.com:6543/postgres
+   
+   # WRONG - Direct connection
+   DATABASE_URL=postgresql://postgres.[REF]:PASS@aws-0-region.pooler.supabase.com:5432/postgres
+   ```
+
+2. **Verify you're using Transaction mode:**
+   - Supabase → Database → Connection String → **Transaction mode**
+
+3. **Check Supabase connection pooler is enabled:**
+   - Supabase Dashboard → Database → Connection Pooling → Should be ON
+
+---
+
+### **Issue 7: SendGrid Emails Not Sending**
+
+**Symptoms:**
+```
+Error: SendGrid API request failed
+401 Unauthorized
+```
+
+**Solutions:**
+
+1. **Verify SendGrid API Key:**
+   - Should start with `SG.`
+   - Check for extra spaces or line breaks
+   - Verify key has "Mail Send" permissions
+
+2. **Verify sender identity:**
+   ```bash
+   # SendGrid Dashboard → Settings → Sender Authentication
+   # Must verify noreply@kealee.com first
+   ```
+
+3. **Check Railway logs for SendGrid errors:**
+   ```
+   Railway → Deployments → View Logs
+   Look for: "SendGrid" or "email" errors
+   ```
+
+4. **Test SendGrid API key:**
+   ```bash
+   curl -X POST https://api.sendgrid.com/v3/mail/send \
+     -H "Authorization: Bearer SG.YOUR_API_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{...}'
+   ```
+
+---
+
+### **Issue 8: Can't find staging URL**
 
 **Solution:**
 
@@ -657,31 +906,187 @@ Access to fetch at 'https://api-staging...' has been blocked by CORS policy
 After completing this guide, you'll have:
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    YOUR INFRASTRUCTURE                  │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  🚂 RAILWAY (Backend)                                   │
-│  ├── api (Production)                                   │
-│  │   └── URL: kealee-platform-v10-production.up...    │
-│  │   └── Always on, live API keys                      │
-│  │                                                      │
-│  └── api-staging (Staging)                              │
-│      └── URL: api-staging-production-xxx.up...        │
-│      └── Sleep mode, test API keys                     │
-│                                                         │
-│  ☁️ VERCEL (Frontend - 6 Apps)                          │
-│  ├── Production                                         │
-│  │   └── Calls: Production API                         │
-│  │                                                      │
-│  └── Preview                                            │
-│      └── Calls: Staging API                            │
-│                                                         │
-│  🗄️ SUPABASE (Database)                                 │
-│  └── One database (or separate for staging)            │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│                    YOUR COMPLETE INFRASTRUCTURE                   │
+├───────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│  🚂 RAILWAY (Backend APIs)                                        │
+│  ├── api (Production)                                             │
+│  │   ├── URL: kealee-platform-v10-production.up.railway.app     │
+│  │   ├── Always on, never sleeps                                 │
+│  │   ├── Stripe: LIVE keys (sk_live_...)                         │
+│  │   ├── Logging: info level                                     │
+│  │   └── Port: 3000 (internal)                                   │
+│  │                                                                │
+│  └── api-staging (Staging)                                        │
+│      ├── URL: api-staging-production-xxx.up.railway.app          │
+│      ├── Sleep mode enabled (saves costs)                        │
+│      ├── Stripe: TEST keys (sk_test_...)                         │
+│      ├── Logging: debug level                                    │
+│      └── Port: 3000 (internal)                                   │
+│                                                                   │
+│  ☁️ VERCEL (Frontend - 6 Apps)                                    │
+│  ├── Production Deployments                                      │
+│  │   ├── admin.kealee.com          → os-admin                    │
+│  │   ├── pm.kealee.com             → os-pm                       │
+│  │   ├── permits.kealee.com        → m-permits-inspections       │
+│  │   ├── owner.kealee.com          → m-project-owner             │
+│  │   ├── architect.kealee.com      → m-architect                 │
+│  │   ├── services.kealee.com       → m-ops-services              │
+│  │   └── Calls: Production Railway API                           │
+│  │                                                                │
+│  └── Preview Deployments (*.vercel.app)                          │
+│      └── Calls: Staging Railway API                              │
+│                                                                   │
+│  🗄️ SUPABASE (Postgres Database)                                 │
+│  ├── Connection Pooler (Port 6543)                               │
+│  │   ├── Used by: Production API (runtime queries)               │
+│  │   ├── Used by: Staging API (runtime queries)                  │
+│  │   └── Protocol: Transaction mode (PgBouncer)                  │
+│  │                                                                │
+│  └── Direct Connection (Port 5432)                               │
+│      ├── Used by: Prisma migrations                              │
+│      └── Protocol: Session mode (Direct Postgres)                │
+│                                                                   │
+│  📧 SENDGRID (Email Service)                                      │
+│  ├── API Key: SG.xxx... (SAME for both environments)             │
+│  ├── From: noreply@kealee.com                                    │
+│  ├── Production: "Kealee Platform"                               │
+│  └── Staging: "Kealee Platform (Staging)"                        │
+│                                                                   │
+│  💳 STRIPE (Payment Processing)                                   │
+│  ├── Production: sk_live_... (LIVE MODE)                         │
+│  └── Staging: sk_test_... (TEST MODE)                            │
+│                                                                   │
+│  🤖 ANTHROPIC CLAUDE (AI Service)                                │
+│  └── API Key: sk-ant-... (SAME for both environments)            │
+│                                                                   │
+└───────────────────────────────────────────────────────────────────┘
+
+Data Flow:
+──────────
+1. User visits: admin.kealee.com (Vercel)
+2. Vercel app calls: kealee-platform-v10-production.up.railway.app
+3. Railway API queries: Supabase Postgres (port 6543)
+4. Railway API sends emails via: SendGrid (noreply@kealee.com)
+5. Railway API processes payments via: Stripe (live mode)
 ```
+
+---
+
+## 📋 **COMPLETE ENVIRONMENT VARIABLES REFERENCE**
+
+### **Production API Environment Variables (Complete List)**
+
+```env
+# ===== CORE CONFIGURATION =====
+NODE_ENV=production
+PORT=3000
+
+# ===== DATABASE (Supabase Postgres) =====
+# Transaction mode - Port 6543 (Connection Pooler)
+DATABASE_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
+
+# Session mode - Port 5432 (Direct - for migrations)
+DIRECT_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
+
+# ===== SUPABASE AUTHENTICATION =====
+SUPABASE_URL=https://[PROJECT-REF].supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# ===== CORS (Production domains) =====
+CORS_ORIGINS=https://admin.kealee.com,https://pm.kealee.com,https://permits.kealee.com,https://owner.kealee.com,https://architect.kealee.com,https://services.kealee.com
+
+# ===== STRIPE (LIVE KEYS) =====
+STRIPE_SECRET_KEY=sk_live_51...
+STRIPE_PUBLISHABLE_KEY=pk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# ===== SENDGRID EMAIL =====
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxx...
+SENDGRID_FROM_EMAIL=noreply@kealee.com
+SENDGRID_FROM_NAME=Kealee Platform
+
+# ===== ANTHROPIC CLAUDE AI =====
+ANTHROPIC_API_KEY=sk-ant-api03-...
+
+# ===== OPTIONAL: TWILIO SMS =====
+TWILIO_ACCOUNT_SID=AC...
+TWILIO_AUTH_TOKEN=...
+TWILIO_PHONE_NUMBER=+1...
+
+# ===== PRODUCTION SETTINGS =====
+LOG_LEVEL=info
+ENABLE_DEBUG_MODE=false
+RAILWAY_ENVIRONMENT=production
+```
+
+---
+
+### **Staging API Environment Variables (Complete List)**
+
+```env
+# ===== CORE CONFIGURATION =====
+NODE_ENV=staging
+PORT=3000
+
+# ===== DATABASE (Supabase Postgres) =====
+# Transaction mode - Port 6543 (Connection Pooler)
+DATABASE_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
+
+# Session mode - Port 5432 (Direct - for migrations)
+DIRECT_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
+
+# ===== SUPABASE AUTHENTICATION =====
+SUPABASE_URL=https://[PROJECT-REF].supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# ===== CORS (Allow Vercel preview domains) =====
+CORS_ORIGINS=https://*.vercel.app,http://localhost:3000,http://localhost:3001
+
+# ===== STRIPE (TEST KEYS) =====
+STRIPE_SECRET_KEY=sk_test_51...
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# ===== SENDGRID EMAIL =====
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxx...
+SENDGRID_FROM_EMAIL=noreply@kealee.com
+SENDGRID_FROM_NAME=Kealee Platform (Staging)
+
+# ===== ANTHROPIC CLAUDE AI =====
+ANTHROPIC_API_KEY=sk-ant-api03-...
+
+# ===== OPTIONAL: TWILIO SMS =====
+TWILIO_ACCOUNT_SID=AC...
+TWILIO_AUTH_TOKEN=...
+TWILIO_PHONE_NUMBER=+1...
+
+# ===== STAGING/DEBUG SETTINGS =====
+LOG_LEVEL=debug
+ENABLE_DEBUG_MODE=true
+ALLOW_TEST_USERS=true
+RAILWAY_ENVIRONMENT=staging
+```
+
+---
+
+### **Key Differences Highlighted**
+
+| Variable | Production | Staging |
+|----------|-----------|---------|
+| `NODE_ENV` | `production` | `staging` |
+| `STRIPE_SECRET_KEY` | `sk_live_...` ⚠️ | `sk_test_...` ⚠️ |
+| `STRIPE_PUBLISHABLE_KEY` | `pk_live_...` ⚠️ | `pk_test_...` ⚠️ |
+| `SENDGRID_FROM_NAME` | `Kealee Platform` | `Kealee Platform (Staging)` |
+| `CORS_ORIGINS` | Custom domains | `*.vercel.app` wildcard |
+| `LOG_LEVEL` | `info` | `debug` |
+| `ENABLE_DEBUG_MODE` | `false` | `true` |
+| `ALLOW_TEST_USERS` | Not set | `true` |
+
+**Everything else is THE SAME!**
 
 ---
 
@@ -694,14 +1099,19 @@ After completing this guide, you'll have:
 ✅ Use debug logging in staging  
 ✅ Test in staging before deploying to production  
 ✅ Keep production and staging isolated  
+✅ Use same Postgres ports (6543 for runtime, 5432 for migrations)  
+✅ Use same SendGrid API key for both environments  
+✅ Include "(Staging)" in sender name for test emails  
 
 ### **DON'T:**
 
-❌ Use production API keys in staging  
+❌ Use production Stripe keys in staging  
 ❌ Test destructive operations in production  
 ❌ Skip testing in staging before production deploys  
 ❌ Share staging URLs with customers  
-❌ Use same database for both (risk of data loss)  
+❌ Forget to update CORS_ORIGINS when adding new Vercel domains  
+❌ Use different Postgres ports between environments  
+❌ Mix up DATABASE_URL (port 6543) and DIRECT_URL (port 5432)  
 
 ---
 
@@ -733,6 +1143,8 @@ After completing this guide:
 
 ## 🎯 **QUICK REFERENCE COMMANDS**
 
+### **Test APIs:**
+
 ```bash
 # Test Production API
 curl https://kealee-platform-v10-production.up.railway.app/health
@@ -740,14 +1152,72 @@ curl https://kealee-platform-v10-production.up.railway.app/health
 # Test Staging API
 curl https://api-staging-production-xxx.up.railway.app/health
 
+# Expected response:
+# {"status":"ok","timestamp":1737241234567}
+```
+
+### **Test Database Connection:**
+
+```bash
+# Test Postgres connection (requires psql)
+psql "postgresql://postgres.[REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres"
+
+# Test connection pooler (port 6543)
+pg_isready -h aws-0-[REGION].pooler.supabase.com -p 6543
+
+# Test direct connection (port 5432)
+pg_isready -h aws-0-[REGION].pooler.supabase.com -p 5432
+```
+
+### **Railway CLI Commands:**
+
+```bash
 # View Railway logs (requires CLI)
+railway logs --service api
 railway logs --service api-staging
 
+# View environment variables
+railway variables --service api
+railway variables --service api-staging
+
+# Deploy manually
+railway up --service api-staging
+```
+
+### **Git Deployment Commands:**
+
+```bash
 # Deploy to staging (push to preview branch)
 git push origin preview-deploy
 
 # Deploy to production (push to main)
 git push origin main
+
+# Check deployment status
+git log --oneline -5
+```
+
+### **Test SendGrid:**
+
+```bash
+# Verify SendGrid API key (replace YOUR_API_KEY)
+curl -X GET "https://api.sendgrid.com/v3/user/profile" \
+  -H "Authorization: Bearer SG.YOUR_API_KEY"
+
+# Should return your SendGrid account info if key is valid
+```
+
+### **DNS/Network Debugging:**
+
+```bash
+# Check if Railway API is reachable
+ping kealee-platform-v10-production.up.railway.app
+
+# Check DNS resolution
+nslookup kealee-platform-v10-production.up.railway.app
+
+# Check SSL certificate
+openssl s_client -connect kealee-platform-v10-production.up.railway.app:443 -servername kealee-platform-v10-production.up.railway.app
 ```
 
 ---
@@ -772,6 +1242,14 @@ You now have a complete production + staging setup on Railway!
 
 ---
 
-**Last Updated:** January 18, 2026  
-**Guide Version:** 1.0  
+**Last Updated:** January 19, 2026  
+**Guide Version:** 2.0  
 **Estimated Time:** 30-45 minutes
+
+**What's New in v2.0:**
+- ✅ Complete Postgres configuration (ports 6543 & 5432)
+- ✅ SendGrid setup and configuration details
+- ✅ Complete environment variables reference for both environments
+- ✅ Enhanced troubleshooting for database and email issues
+- ✅ Expanded quick reference commands
+- ✅ Detailed architecture diagram with all services

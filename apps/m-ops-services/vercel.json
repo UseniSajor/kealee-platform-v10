@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd ../.. && pnpm install --filter @kealee/m-ops-services... && pnpm build --filter @kealee/m-ops-services",
-  "outputDirectory": ".next",
-  "installCommand": "cd ../.. && pnpm install --filter @kealee/m-ops-services...",
-  "framework": "nextjs"
-}

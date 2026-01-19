@@ -62,7 +62,7 @@ export class ApiClient {
       throw new Error(error.message || error.error || "API request failed")
     }
 
-    return response.json() as Promise<T>
+    return response.json()
   }
 
   // ============================================================================

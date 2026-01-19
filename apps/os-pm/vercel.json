@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd ../.. && pnpm install --filter @kealee/os-pm... && pnpm build --filter @kealee/os-pm",
-  "outputDirectory": ".next",
-  "installCommand": "cd ../.. && pnpm install --filter @kealee/os-pm...",
-  "framework": "nextjs"
-}

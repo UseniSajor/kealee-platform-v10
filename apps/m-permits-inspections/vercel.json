@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd ../.. && pnpm install --filter @kealee/m-permits-inspections... && pnpm build --filter @kealee/m-permits-inspections",
-  "outputDirectory": ".next",
-  "installCommand": "cd ../.. && pnpm install --filter @kealee/m-permits-inspections...",
-  "framework": "nextjs"
-}

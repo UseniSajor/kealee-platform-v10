@@ -60,7 +60,7 @@ export default function LeadDetailPage() {
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
 
   const updateStageMutation = useMutation({
-    mutationFn: (stage: string) => api.updateLeadStage(leadId, stage as LeadStage),
+    mutationFn: (stage: string) => api.updateLeadStage(leadId, stage),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lead", leadId] })
       queryClient.invalidateQueries({ queryKey: ["pipeline-leads"] })
