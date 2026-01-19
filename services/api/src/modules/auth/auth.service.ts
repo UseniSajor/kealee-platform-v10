@@ -1,18 +1,5 @@
 import { prismaAny } from '../../utils/prisma-helper'
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
-
-function getSupabaseClient(): SupabaseClient {
-  const supabaseUrl = process.env.SUPABASE_URL
-  const supabaseKey = process.env.SUPABASE_ANON_KEY
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error(
-      'Supabase credentials not configured. Please set SUPABASE_URL and SUPABASE_ANON_KEY environment variables.'
-    )
-  }
-
-  return createClient(supabaseUrl, supabaseKey)
-}
+import { getSupabaseClient } from '../../utils/supabase-client'
 
 export class AuthService {
   async signup(email: string, password: string, name: string) {
