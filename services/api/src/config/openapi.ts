@@ -16,12 +16,12 @@ export const openApiSpec = {
   },
   servers: [
     {
-      url: 'https://api.kealee.com',
-      description: 'Production server',
-    },
-    {
-      url: 'https://api-staging.kealee.com',
-      description: 'Staging server',
+      url: process.env.API_BASE_URL || 'http://localhost:3000',
+      description: process.env.NODE_ENV === 'production' 
+        ? 'Production server' 
+        : process.env.NODE_ENV === 'staging' 
+          ? 'Staging server' 
+          : 'Development server',
     },
   ],
   tags: [

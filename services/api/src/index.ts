@@ -229,9 +229,15 @@ const start = async () => {
       },
     } as any)
 
-    const port = Number(process.env.PORT) || 3001
+    // Railway provides PORT env var, default to 3000 for local dev
+    const port = Number(process.env.PORT) || 3000
+    
+    // Log environment for debugging Railway previews
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`)
+    console.log(`🚀 Starting server on port ${port}`)
+    
     await fastify.listen({ port, host: '0.0.0.0' })
-    console.log(`🚀 API server running on port ${port}`)
+    console.log(`✅ API server running at http://0.0.0.0:${port}`)
   } catch (err) {
     fastify.log.error(err)
     process.exit(1)

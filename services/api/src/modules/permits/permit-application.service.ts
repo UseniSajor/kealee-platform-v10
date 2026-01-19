@@ -341,7 +341,9 @@ export const permitApplicationService = {
       aiReviewScore: aiReview.overallScore,
       estimatedApprovalDate: estimatedApprovalDate.toISOString().split('T')[0],
       submittedAt: submissionResult.submittedAt.toISOString(),
-      trackingUrl: `${process.env.API_BASE_URL || 'https://api.kealee.com'}/v1/permits/${permitId}`,
+      trackingUrl: process.env.API_BASE_URL 
+        ? `${process.env.API_BASE_URL}/v1/permits/${permitId}`
+        : undefined, // Don't set if no base URL configured
     }
   },
 

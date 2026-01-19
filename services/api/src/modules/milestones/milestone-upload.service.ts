@@ -141,7 +141,14 @@ export const milestoneUploadService = {
     // For now, generate a placeholder URL
     const timestamp = Date.now()
     const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_')
-    const fileUrl = `${process.env.FILE_STORAGE_URL || 'https://storage.example.com'}/projects/${projectId}/milestones/${milestoneId}/${timestamp}_${sanitizedFileName}`
+    // Only generate URL if FILE_STORAGE_URL is configured
+    const fileUrl = process.env.FILE_STORAGE_URL
+      ? `${process.env.FILE_STORAGE_URL}/projects/${projectId}/milestones/${milestoneId}/${timestamp}_${sanitizedFileName}`
+      : null;
+    
+    if (!fileUrl) {
+      throw new Error('FILE_STORAGE_URL environment variable not configured');
+    }
 
     return {
       fileUrl,

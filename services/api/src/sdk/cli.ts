@@ -18,7 +18,7 @@ program
   .description('Generate SDK')
   .option('-t, --type <type>', 'SDK type (typescript, python, react)', 'typescript')
   .option('-o, --output <path>', 'Output directory', './sdk')
-  .option('-u, --url <url>', 'API base URL', 'https://api.kealee.com')
+  .option('-u, --url <url>', 'API base URL', process.env.API_BASE_URL || 'http://localhost:3000')
   .action(async (options) => {
     // In production, would fetch endpoints from OpenAPI spec
     const endpoints = [
