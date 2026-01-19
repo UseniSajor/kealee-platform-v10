@@ -1,0 +1,35 @@
+{
+  "buildCommand": "turbo run build --filter=m-marketplace",
+  "outputDirectory": "apps/m-marketplace/.next",
+  "installCommand": "pnpm install --network-timeout=60000 --fetch-retries=5",
+  "framework": "nextjs",
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.kealee.com"
+        }
+      ],
+      "destination": "https://kealee.com/$1",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    }
+  ],
+  "_comment": "Marketplace homepage - kealee.com and www.kealee.com"
+}
