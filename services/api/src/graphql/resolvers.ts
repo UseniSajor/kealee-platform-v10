@@ -3,20 +3,25 @@
  * Resolvers for permits and inspections GraphQL API
  */
 
-import {createClient} from '@supabase/supabase-js';
-import {PubSub} from 'graphql-subscriptions';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { PubSub } from 'graphql-subscriptions';
+import { getSupabaseClient } from '../utils/supabase-client';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+let supabaseInstance: SupabaseClient | null = null;
+
+function getSupabase(): SupabaseClient {
+  if (!supabaseInstance) {
+    supabaseInstance = getSupabaseClient();
+  }
+  return supabaseInstance;
+}
 
 const pubsub = new PubSub();
 
 export const resolvers = {
   Query: {
     permit: async (_: any, {id}: {id: string}) => {
-      const {data} = await supabase
+      const {data} = await getSupabase()
         .from('Permit')
         .select('*, documents:PermitDocument(*), reviews:PermitReview(*), inspections:Inspection(*)')
         .eq('id', id)
@@ -41,7 +46,7 @@ export const resolvers = {
         offset?: number;
       }
     ) => {
-      let query = supabase.from('Permit').select('*');
+      let query = getSupabase().from('Permit').select('*');
 
       if (jurisdictionId) {
         query = query.eq('jurisdictionId', jurisdictionId);
@@ -60,7 +65,7 @@ export const resolvers = {
     },
 
     inspection: async (_: any, {id}: {id: string}) => {
-      const {data} = await supabase
+      const {data} = await getSupabase()
         .from('Inspection')
         .select('*, permit:Permit(*)')
         .eq('id', id)
@@ -73,7 +78,7 @@ export const resolvers = {
       _: any,
       {permitId, limit = 50, offset = 0}: {permitId?: string; limit?: number; offset?: number}
     ) => {
-      let query = supabase.from('Inspection').select('*');
+      let query = getSupabase().from('Inspection').select('*');
 
       if (permitId) {
         query = query.eq('permitId', permitId);
@@ -88,7 +93,7 @@ export const resolvers = {
 
   Mutation: {
     createPermit: async (_: any, {input}: {input: any}) => {
-      const {data, error} = await supabase.from('Permit').insert(input).select().single();
+      const {data, error} = await getSupabase().from('Permit').insert(input).select().single();
 
       if (error) throw new Error(error.message);
 
@@ -101,7 +106,7 @@ export const resolvers = {
     },
 
     updatePermit: async (_: any, {id, input}: {id: string; input: any}) => {
-      const {data, error} = await supabase
+      const {data, error} = await getSupabase()
         .from('Permit')
         .update(input)
         .eq('id', id)
@@ -119,7 +124,7 @@ export const resolvers = {
     },
 
     createInspection: async (_: any, {input}: {input: any}) => {
-      const {data, error} = await supabase.from('Inspection').insert(input).select().single();
+      const {data, error} = await getSupabase().from('Inspection').insert(input).select().single();
 
       if (error) throw new Error(error.message);
 
@@ -132,7 +137,7 @@ export const resolvers = {
     },
 
     updateInspection: async (_: any, {id, input}: {id: string; input: any}) => {
-      const {data, error} = await supabase
+      const {data, error} = await getSupabase()
         .from('Inspection')
         .update(input)
         .eq('id', id)
