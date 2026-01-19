@@ -1,7 +1,1 @@
-{
-  "buildCommand": "cd ../.. && pnpm build --filter=m-ops-services",
-  "outputDirectory": ".next",
-  "framework": "nextjs",
-  "installCommand": "pnpm install",
-  "devCommand": "pnpm dev"
-}
+{}
