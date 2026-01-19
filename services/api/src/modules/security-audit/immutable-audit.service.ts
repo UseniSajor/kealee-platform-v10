@@ -3,8 +3,9 @@
  * Writes audit logs to immutable storage (append-only)
  */
 
-import {createClient} from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
+import { getSupabaseClient } from '../../utils/supabase-client';
 
 export interface ImmutableAuditLog {
   id: string;
@@ -28,11 +29,15 @@ export interface ImmutableAuditLog {
 }
 
 export class ImmutableAuditService {
-  private supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  private _supabase?: SupabaseClient;
   private secretKey: string;
+
+  private get supabase(): SupabaseClient {
+    if (!this._supabase) {
+      this._supabase = getSupabaseClient();
+    }
+    return this._supabase;
+  }
 
   constructor() {
     // Use environment variable for signing key

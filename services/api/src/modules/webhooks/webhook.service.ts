@@ -3,8 +3,9 @@
  * Event-driven webhook system with retry logic
  */
 
-import {createClient} from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
+import { getSupabaseClient } from '../../utils/supabase-client';
 
 export interface Webhook {
   id: string;
@@ -31,10 +32,14 @@ export interface WebhookDelivery {
 }
 
 export class WebhookService {
-  private supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  private _supabase?: SupabaseClient;
+
+  private get supabase(): SupabaseClient {
+    if (!this._supabase) {
+      this._supabase = getSupabaseClient();
+    }
+    return this._supabase;
+  }
 
   /**
    * Create webhook
