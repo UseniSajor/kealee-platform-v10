@@ -86,6 +86,7 @@ import { registerGlobalRateLimit } from './middleware/rate-limit.middleware'
 import { requestLogger, responseLogger } from './middleware/logging.middleware'
 import { swaggerConfig, swaggerUIConfig } from './config/swagger.config'
 import { prisma } from '@kealee/database'
+import { environment, logEnvironment, validateProductionConfig, getSafeConfig } from './config/environment'
 
 const fastify = Fastify({
   logger: true,
@@ -94,6 +95,26 @@ const fastify = Fastify({
 // Start server
 const start = async () => {
   try {
+    // Log environment information
+    logEnvironment();
+    
+    // Validate production-only configuration
+    if (environment.isProduction) {
+      validateProductionConfig();
+    }
+    
+    // Get safe configuration based on environment
+    const config = getSafeConfig();
+    
+    // Log configuration warnings
+    if (environment.isPreview) {
+      console.log('🔵 Running in PREVIEW mode:');
+      console.log('   - Using test/preview credentials');
+      console.log('   - Production integrations disabled');
+      console.log('   - External services may be mocked');
+      console.log('');
+    }
+    
     // Register plugins
     await fastify.register(cors, {
       origin: true,
@@ -232,12 +253,22 @@ const start = async () => {
     // Railway provides PORT env var, default to 3000 for local dev
     const port = Number(process.env.PORT) || 3000
     
-    // Log environment for debugging Railway previews
-    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`)
-    console.log(`🚀 Starting server on port ${port}`)
-    
     await fastify.listen({ port, host: '0.0.0.0' })
-    console.log(`✅ API server running at http://0.0.0.0:${port}`)
+    
+    // Startup complete message
+    const emoji = environment.isProduction ? '🚀' : environment.isStaging ? '🔶' : environment.isPreview ? '🔵' : '💻';
+    console.log('');
+    console.log('='.repeat(60));
+    console.log(`${emoji} API Server Started Successfully ${emoji}`);
+    console.log('='.repeat(60));
+    console.log(`Environment:  ${environment.env.toUpperCase()}`);
+    console.log(`Port:         ${port}`);
+    console.log(`Host:         0.0.0.0`);
+    console.log(`Health:       /health`);
+    console.log(`Docs:         /docs`);
+    console.log(`GraphQL:      /graphql`);
+    console.log('='.repeat(60));
+    console.log('');
   } catch (err) {
     fastify.log.error(err)
     process.exit(1)
