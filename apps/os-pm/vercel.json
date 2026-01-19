@@ -1,6 +1,6 @@
 {
   "buildCommand": "pnpm build --filter=os-pm",
   "outputDirectory": "apps/os-pm/.next",
-  "installCommand": "corepack enable && corepack prepare pnpm@8.12.0 --activate && pnpm install",
+  "installCommand": "pnpm install",
   "framework": "nextjs"
 }
