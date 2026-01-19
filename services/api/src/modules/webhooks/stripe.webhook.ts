@@ -8,7 +8,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '@kealee/database';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
+  apiVersion: '2024-12-18.acacia',
 });
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -92,18 +92,16 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   const packageId = subscription.metadata.packageId;
   const priceId = subscription.items.data[0].price.id;
 
-  // Create or update subscription in database
-  await prisma.subscription.create({
-    data: {
-      stripeSubscriptionId: subscription.id,
-      stripeCustomerId: customerId,
-      stripePriceId: priceId,
-      status: subscription.status,
-      packageId,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
-    },
+  // TODO: Create subscription in database once Prisma models are added
+  console.log('Subscription details:', {
+    stripeSubscriptionId: subscription.id,
+    stripeCustomerId: customerId,
+    stripePriceId: priceId,
+    status: subscription.status,
+    packageId,
+    currentPeriodStart: new Date(subscription.current_period_start * 1000),
+    currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+    cancelAtPeriodEnd: subscription.cancel_at_period_end,
   });
 
   // TODO: Send confirmation email
@@ -116,16 +114,15 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   console.log('🔄 Subscription updated:', subscription.id);
 
-  await prisma.subscription.update({
-    where: { stripeSubscriptionId: subscription.id },
-    data: {
-      status: subscription.status,
-      stripePriceId: subscription.items.data[0].price.id,
-      packageId: subscription.metadata.packageId,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
-    },
+  // TODO: Update subscription in database once Prisma models are added
+  console.log('Subscription update:', {
+    stripeSubscriptionId: subscription.id,
+    status: subscription.status,
+    stripePriceId: subscription.items.data[0].price.id,
+    packageId: subscription.metadata.packageId,
+    currentPeriodStart: new Date(subscription.current_period_start * 1000),
+    currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+    cancelAtPeriodEnd: subscription.cancel_at_period_end,
   });
 
   // TODO: Update user access if package changed
@@ -138,12 +135,11 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   console.log('❌ Subscription deleted:', subscription.id);
 
-  await prisma.subscription.update({
-    where: { stripeSubscriptionId: subscription.id },
-    data: {
-      status: 'canceled',
-      canceledAt: new Date(),
-    },
+  // TODO: Update subscription in database once Prisma models are added
+  console.log('Subscription canceled:', {
+    stripeSubscriptionId: subscription.id,
+    status: 'canceled',
+    canceledAt: new Date(),
   });
 
   // TODO: Revoke access to services
@@ -159,26 +155,16 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   const subscriptionId = invoice.subscription as string;
 
   if (subscriptionId) {
-    // Update subscription payment status
-    await prisma.subscription.update({
-      where: { stripeSubscriptionId: subscriptionId },
-      data: {
-        status: 'active',
-      },
+    // TODO: Update subscription payment status once Prisma models are added
+    console.log('Invoice paid, subscription now active:', {
+      stripeSubscriptionId: subscriptionId,
+      status: 'active',
+      invoiceId: invoice.id,
+      amount: invoice.amount_paid,
+      currency: invoice.currency,
     });
 
-    // Create payment record
-    await prisma.payment.create({
-      data: {
-        stripeInvoiceId: invoice.id,
-        stripePaymentIntentId: invoice.payment_intent as string,
-        amount: invoice.amount_paid,
-        currency: invoice.currency,
-        status: 'succeeded',
-        paidAt: new Date(invoice.status_transitions.paid_at! * 1000),
-      },
-    });
-
+    // TODO: Create payment record in database
     // TODO: Send receipt email
   }
 }
@@ -192,11 +178,11 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   const subscriptionId = invoice.subscription as string;
 
   if (subscriptionId) {
-    await prisma.subscription.update({
-      where: { stripeSubscriptionId: subscriptionId },
-      data: {
-        status: 'past_due',
-      },
+    // TODO: Update subscription status once Prisma models are added
+    console.log('Invoice payment failed, subscription past due:', {
+      stripeSubscriptionId: subscriptionId,
+      status: 'past_due',
+      invoiceId: invoice.id,
     });
 
     // TODO: Send payment failed email
@@ -212,15 +198,13 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
 
   // Handle one-time payments (e.g., permit acceleration)
   if (paymentIntent.metadata.type === 'one_time') {
-    await prisma.payment.create({
-      data: {
-        stripePaymentIntentId: paymentIntent.id,
-        amount: paymentIntent.amount,
-        currency: paymentIntent.currency,
-        status: 'succeeded',
-        paidAt: new Date(),
-        metadata: paymentIntent.metadata,
-      },
+    // TODO: Create payment record once Prisma models are added
+    console.log('One-time payment succeeded:', {
+      stripePaymentIntentId: paymentIntent.id,
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency,
+      status: 'succeeded',
+      metadata: paymentIntent.metadata,
     });
 
     // TODO: Provision service based on metadata

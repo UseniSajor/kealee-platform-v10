@@ -210,8 +210,8 @@ export const stripeConfig = {
     },
   },
 
-  // Marketplace & Platform Fees
-  marketplace: {
+  // Platform Fees (renamed from marketplace to avoid duplicate)
+  platformFees: {
     platformFee: 0.03, // 3%
     escrowFee: 0.01, // 1%
     maxEscrowFee: 500, // $500 maximum
@@ -263,10 +263,13 @@ export function getPackageById(packageId: 'A' | 'B' | 'C' | 'D') {
  * Helper function to get all marketplace tiers
  */
 export function getMarketplaceTiers() {
-  return Object.entries(stripeConfig.marketplace).map(([key, value]) => ({
-    id: key,
-    ...value,
-  }));
+  const marketplace = stripeConfig.marketplace as Record<string, any>;
+  return Object.entries(marketplace)
+    .filter(([key]) => key !== 'platformFee' && key !== 'escrowFee' && key !== 'maxEscrowFee')
+    .map(([key, value]) => ({
+      id: key,
+      ...value as object,
+    }));
 }
 
 /**
@@ -278,10 +281,11 @@ export function calculatePlatformFee(
 ): number {
   const fee = stripeConfig.fees[feeType];
   const percentageFee = (amount * fee.percentage) / 100;
-  const totalFee = percentageFee + (fee.fixed || 0) * 100; // Convert fixed to cents
+  const fixedAmount = 'fixed' in fee ? fee.fixed : 0;
+  const totalFee = percentageFee + fixedAmount * 100; // Convert fixed to cents
 
-  if (feeType.includes('architect')) {
-    return Math.max(totalFee, (fee.minimum || 0) * 100);
+  if (feeType.includes('architect') && 'minimum' in fee) {
+    return Math.max(totalFee, fee.minimum * 100);
   }
 
   return totalFee;
