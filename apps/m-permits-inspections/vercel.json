@@ -1,5 +1,6 @@
 {
   "buildCommand": "pnpm build --filter=m-permits-inspections",
   "outputDirectory": "apps/m-permits-inspections/.next",
-  "installCommand": "corepack enable && corepack prepare pnpm@8.12.0 --activate && pnpm install --frozen-lockfile"
+  "installCommand": "corepack enable && corepack prepare pnpm@8.12.0 --activate && pnpm install --frozen-lockfile",
+  "framework": "nextjs"
 }
