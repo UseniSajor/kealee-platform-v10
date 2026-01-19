@@ -201,11 +201,51 @@ export const docusignService = {
       contractStatus = 'SIGNED'
       // Get signed document URL
       const documentUrl = `${process.env.DOCUSIGN_BASE_PATH}/accounts/${DOCUSIGN_ACCOUNT_ID}/envelopes/${envelopeId}/documents/combined`
+      
+      // Update contract status
       await prismaAny.contractAgreement.update({
         where: { id: contract.id },
         data: {
-          status: contractStatus,
+          status: 'ACTIVE',
+          signedAt: new Date(),
           signedDocumentUrl: documentUrl,
+        },
+      })
+
+      // Update project status to ACTIVE
+      await prismaAny.project.update({
+        where: { id: contract.projectId },
+        data: {
+          status: 'ACTIVE',
+        },
+      })
+
+      // Create audit log
+      await prismaAny.auditLog.create({
+        data: {
+          entityType: 'ContractAgreement',
+          entityId: contract.id,
+          action: 'CONTRACT_SIGNED',
+          details: {
+            envelopeId,
+            signedAt: new Date(),
+          },
+          userId: contract.ownerId,
+          reason: 'Contract signed via DocuSign',
+        },
+      })
+
+      // Create event
+      await prismaAny.event.create({
+        data: {
+          entityType: 'ContractAgreement',
+          entityId: contract.id,
+          type: 'CONTRACT_SIGNED',
+          payload: {
+            envelopeId,
+            projectId: contract.projectId,
+          },
+          userId: contract.ownerId,
         },
       })
     } else if (event === 'recipient-signed') {
@@ -222,11 +262,6 @@ export const docusignService = {
         data: { status: contractStatus },
       })
     }
-
-    // In production, you'd also:
-    // - Create audit log entries
-    // - Send email notifications
-    // - Update project status if contract becomes ACTIVE
   },
 
   convertTermsToDocument(terms: string): string {

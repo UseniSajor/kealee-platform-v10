@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { api } from "@/lib/api";
+import { getPrimaryOrgId } from "@/lib/auth";
 
 type InvoiceStatus = "Paid" | "Due" | "Failed" | "Refunded";
 
@@ -103,63 +105,70 @@ function Modal({
 }
 
 export function GCBilling() {
-  // TODO: Replace with real org/company lookup + subscription provider (e.g. Stripe).
-  const currentPackageId: PackageId = "B";
-  const nextChargeIso = "2024-11-15T12:00:00Z";
-  const serviceHoursUsed = 12;
-  const serviceHoursLimit = 40;
-  const savedHoursThisMonth = 44;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [subscription, setSubscription] = useState<any>(null);
+  const [plans, setPlans] = useState<PackagePlan[]>([]);
+  
+  // Load subscription and plans
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const [plansData, subscriptionData] = await Promise.all([
+          api.getPlans().catch(() => ({ plans: [] })),
+          api.getMySubscription().catch(() => ({ subscription: null })),
+        ]);
+        
+        // Map plans from backend
+        const mappedPlans: PackagePlan[] = (plansData.plans || []).map((p: any) => ({
+          id: p.slug?.replace('package-', '').toUpperCase() as PackageId || 'B',
+          name: p.name || `Package ${p.slug?.replace('package-', '').toUpperCase() || 'B'}`,
+          priceMonthly: p.priceMonthly || 0,
+          includedProjects: p.includedProjects || 0,
+          serviceHoursMonthly: p.serviceHoursMonthly || 0,
+          features: p.features || [],
+        }));
+        
+        setPlans(mappedPlans.length > 0 ? mappedPlans : [
+          { id: "A", name: "Package A", priceMonthly: 1750, includedProjects: 1, serviceHoursMonthly: 20, features: [] },
+          { id: "B", name: "Package B", priceMonthly: 3750, includedProjects: 3, serviceHoursMonthly: 40, features: [] },
+          { id: "C", name: "Package C", priceMonthly: 9500, includedProjects: 6, serviceHoursMonthly: 80, features: [] },
+        ]);
+        
+        setSubscription(subscriptionData.subscription);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Failed to load billing data");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
-  const plans: PackagePlan[] = useMemo(
-    () => [
-      {
-        id: "A",
-        name: "Package A",
-        priceMonthly: 2250,
-        includedProjects: 1,
-        serviceHoursMonthly: 20,
-        features: ["Weekly reports", "Permit & inspection tracking", "Email support (48h SLA)"],
-      },
-      {
-        id: "B",
-        name: "Package B",
-        priceMonthly: 3750,
-        includedProjects: 3,
-        serviceHoursMonthly: 40,
-        features: [
-          "Everything in A",
-          "Priority support (24h SLA)",
-          "Budget tracking + variance alerts",
-          "Shareable weekly reports (clients/lenders)",
-        ],
-      },
-      {
-        id: "C",
-        name: "Package C",
-        priceMonthly: 6500,
-        includedProjects: 6,
-        serviceHoursMonthly: 80,
-        features: [
-          "Everything in B",
-          "Dedicated PM coverage window",
-          "Expanded reporting + custom KPIs",
-          "Phone support",
-        ],
-      },
-    ],
-    []
-  );
+  // Get current package from subscription
+  const currentPackageId: PackageId = useMemo(() => {
+    if (!subscription?.servicePlan?.slug) return "B";
+    const slug = subscription.servicePlan.slug.replace('package-', '').toUpperCase();
+    return (slug === 'A' || slug === 'B' || slug === 'C' ? slug : 'B') as PackageId;
+  }, [subscription]);
 
-  const currentPlan = plans.find((p) => p.id === currentPackageId) || plans[0];
+  const nextChargeIso = subscription?.currentPeriodEnd 
+    ? new Date(subscription.currentPeriodEnd).toISOString()
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+  
+  const serviceHoursUsed = 12; // TODO: Calculate from actual service requests
+  const serviceHoursLimit = plans.find(p => p.id === currentPackageId)?.serviceHoursMonthly || 40;
+  const savedHoursThisMonth = 44; // TODO: Calculate from actual data
 
-  const invoices: Invoice[] = useMemo(
-    () => [
-      { id: "inv_2024_10", date: "2024-10-15T12:00:00Z", amount: 3750, status: "Paid", pdfUrl: null, taxReceiptUrl: null },
-      { id: "inv_2024_09", date: "2024-09-15T12:00:00Z", amount: 3750, status: "Paid", pdfUrl: null, taxReceiptUrl: null },
-      { id: "inv_2024_08", date: "2024-08-15T12:00:00Z", amount: 3750, status: "Paid", pdfUrl: null, taxReceiptUrl: null },
-    ],
-    []
-  );
+  const currentPlan = plans.find((p) => p.id === currentPackageId) || plans[0] || plans[1];
+
+  const invoices: Invoice[] = useMemo(() => {
+    // TODO: Fetch real invoices from Stripe
+    // For now, return empty array - will be populated when we add invoice fetching
+    return [];
+  }, []);
 
   const hoursPct =
     serviceHoursLimit > 0 ? Math.min(100, (serviceHoursUsed / serviceHoursLimit) * 100) : 0;
@@ -213,18 +222,33 @@ export function GCBilling() {
     );
   }
 
-  function openWhatChanges(planId: PackageId) {
+  async function openWhatChanges(planId: PackageId) {
     setSelectedPlanId(planId);
     setPlanModalOpen(true);
   }
 
-  function confirmPlanChange() {
-    toast(
-      `Plan change is stubbed. Would change from ${currentPlan.name} to ${selectedPlan.name} with estimated proration ${formatMoney(
-        proration.estimatedCharge
-      )}.`
-    );
-    setPlanModalOpen(false);
+  async function confirmPlanChange() {
+    try {
+      const orgId = await getPrimaryOrgId();
+      if (!orgId) {
+        toast("No organization found. Please ensure you're logged in.");
+        return;
+      }
+
+      // Open Stripe billing portal for plan changes
+      const portalSession = await api.createBillingPortalSession({
+        orgId,
+        returnUrl: window.location.href,
+      });
+
+      if (portalSession.url) {
+        window.location.href = portalSession.url;
+      } else {
+        toast("Failed to open billing portal. Please contact support.");
+      }
+    } catch (e: unknown) {
+      toast(e instanceof Error ? e.message : "Failed to change plan");
+    }
   }
 
   function requestExport() {
@@ -289,6 +313,22 @@ export function GCBilling() {
     const net = value - currentPlan.priceMonthly;
     return { inHouseHourly, value, net };
   }, [currentPlan.priceMonthly, savedHoursThisMonth]);
+
+  if (loading) {
+    return (
+      <div className="rounded-2xl border border-black/10 bg-white p-5 text-sm text-zinc-700 shadow-sm">
+        Loading billing information...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-900 shadow-sm">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
@@ -482,7 +522,24 @@ export function GCBilling() {
             <div className="mt-3 flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={() => toast("Open billing provider portal (stub).")}
+                onClick={async () => {
+                  try {
+                    const orgId = await getPrimaryOrgId();
+                    if (!orgId) {
+                      toast("No organization found.");
+                      return;
+                    }
+                    const portalSession = await api.createBillingPortalSession({
+                      orgId,
+                      returnUrl: window.location.href,
+                    });
+                    if (portalSession.url) {
+                      window.location.href = portalSession.url;
+                    }
+                  } catch (e: unknown) {
+                    toast(e instanceof Error ? e.message : "Failed to open billing portal");
+                  }
+                }}
                 className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-black text-[var(--primary-foreground)] hover:opacity-95"
               >
                 Manage payment method

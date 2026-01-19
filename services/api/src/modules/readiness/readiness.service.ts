@@ -397,5 +397,98 @@ export const readinessService = {
 
     return results
   },
+
+  /**
+   * Get readiness gates status for project
+   */
+  async getReadinessGates(projectId: string, userId: string) {
+    const project = await prismaAny.project.findUnique({
+      where: { id: projectId },
+      select: { id: true, ownerId: true, status: true, budgetTotal: true },
+    })
+
+    if (!project) throw new NotFoundError('Project', projectId)
+    if (project.ownerId !== userId) throw new AuthorizationError('Only project owner can view gates')
+
+    // Get all readiness items
+    const items = await prismaAny.readinessItem.findMany({
+      where: { projectId },
+      include: { evidence: true },
+    })
+
+    // Check documents_uploaded gate
+    const docItems = items.filter((i: any) => i.type === 'DOCUMENT_UPLOAD' && i.required)
+    const completedDocs = docItems.filter((i: any) => i.status === 'COMPLETED' || i.status === 'APPROVED')
+    const documentsGate = {
+      key: 'documents_uploaded',
+      name: 'Documents Uploaded',
+      description: 'All required documents must be uploaded',
+      required: true,
+      status: (completedDocs.length === docItems.length && docItems.length > 0 ? 'completed' : 'pending') as 'pending' | 'completed' | 'blocked',
+      completionPercentage: docItems.length > 0 ? Math.round((completedDocs.length / docItems.length) * 100) : 0,
+      blockers: docItems
+        .filter((i: any) => i.status !== 'COMPLETED' && i.status !== 'APPROVED')
+        .map((i: any) => i.title),
+    }
+
+    // Check scope_defined gate
+    const scopeItems = items.filter((i: any) => i.type === 'QUESTION_ANSWER' && i.title.toLowerCase().includes('scope'))
+    const completedScope = scopeItems.filter((i: any) => i.status === 'COMPLETED' || i.status === 'APPROVED')
+    const scopeGate = {
+      key: 'scope_defined',
+      name: 'Scope Defined',
+      description: 'Project scope must be clearly defined',
+      required: true,
+      status: (completedScope.length === scopeItems.length && scopeItems.length > 0 ? 'completed' : 'pending') as 'pending' | 'completed' | 'blocked',
+      completionPercentage: scopeItems.length > 0 ? Math.round((completedScope.length / scopeItems.length) * 100) : 0,
+      blockers: scopeItems
+        .filter((i: any) => i.status !== 'COMPLETED' && i.status !== 'APPROVED')
+        .map((i: any) => i.title),
+    }
+
+    // Check budget_approved gate
+    const budgetGate = {
+      key: 'budget_approved',
+      name: 'Budget Approved',
+      description: 'Project budget must be approved',
+      required: true,
+      status: (project.budgetTotal && project.budgetTotal > 0 ? 'completed' : 'pending') as 'pending' | 'completed' | 'blocked',
+      completionPercentage: project.budgetTotal && project.budgetTotal > 0 ? 100 : 0,
+      blockers: project.budgetTotal && project.budgetTotal > 0 ? [] : ['Budget not yet approved'],
+    }
+
+    // Check contract_signed gate
+    const contract = await prismaAny.contractAgreement.findFirst({
+      where: { projectId, status: 'SIGNED' },
+    })
+    const contractGate = {
+      key: 'contract_signed',
+      name: 'Contract Signed',
+      description: 'Contract must be signed by all parties',
+      required: true,
+      status: (contract ? 'completed' : 'pending') as 'pending' | 'completed' | 'blocked',
+      completionPercentage: contract ? 100 : 0,
+      blockers: contract ? [] : ['Contract not signed'],
+    }
+
+    const gates = [documentsGate, scopeGate, budgetGate, contractGate]
+    const overallCompletion = Math.round(
+      gates.reduce((sum, g) => sum + g.completionPercentage, 0) / gates.length
+    )
+
+    const requiredGates = gates.filter((g) => g.required)
+    const canAdvance = requiredGates.every((g) => g.status === 'completed')
+
+    const blockers = gates
+      .filter((g) => g.status !== 'completed' && g.required)
+      .flatMap((g) => g.blockers)
+
+    return {
+      gates,
+      overallCompletion,
+      canAdvance,
+      blockers,
+    }
+  },
 }
 

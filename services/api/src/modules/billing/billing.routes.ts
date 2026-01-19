@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 
 import { validateBody } from '../../middleware/validation.middleware'
+import { authenticateUser } from '../auth/auth.middleware'
 import { billingService } from './billing.service'
 import type { BillingInterval, GCPlanSlug } from './billing.constants'
 
@@ -92,6 +93,7 @@ export async function billingRoutes(fastify: FastifyInstance) {
   )
 
   // POST /billing/stripe/webhook - Stripe webhooks (raw body required)
+  // This route uses the production-ready webhook handler
   fastify.post(
     '/stripe/webhook',
     {
@@ -102,20 +104,31 @@ export async function billingRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const sig = request.headers['stripe-signature']
-      const raw = (request as any).rawBody as string | Buffer | undefined
-      if (!raw) {
-        return reply.code(400).send({ error: 'Missing raw body' })
-      }
+      const { handleStripeWebhook } = await import('../webhooks/stripe.webhook')
+      await handleStripeWebhook(request, reply)
+    }
+  )
 
-      const buf = Buffer.isBuffer(raw) ? raw : Buffer.from(raw, 'utf8')
-
+  // GET /billing/subscriptions/me - Get current user's subscription
+  fastify.get(
+    '/subscriptions/me',
+    {
+      schema: {
+        description: 'Get current user\'s active subscription',
+        tags: ['billing'],
+      },
+      preHandler: [authenticateUser],
+    },
+    async (request, reply) => {
       try {
-        const result = await billingService.handleWebhook(buf, sig)
-        return reply.send(result)
-      } catch (err: any) {
-        request.log.error(err)
-        return reply.code(400).send({ error: err.message || 'Webhook error' })
+        const user = (request as any).user as { id: string }
+        const subscription = await billingService.getMySubscription(user.id)
+        return reply.send({ subscription })
+      } catch (error: any) {
+        request.log.error(error)
+        return reply.code(404).send({
+          error: error.message || 'No subscription found',
+        })
       }
     }
   )

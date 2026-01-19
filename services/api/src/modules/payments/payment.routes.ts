@@ -3,6 +3,8 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { paymentService } from './payment.service'
+import { milestonePaymentRoutes } from './milestone-payment.routes'
+import { paymentWebhookRoutes } from './payment-webhook.routes'
 
 const releasePaymentSchema = z.object({
   skipHoldback: z.boolean().optional(),
@@ -82,4 +84,10 @@ export async function paymentRoutes(fastify: FastifyInstance) {
       return reply.send(history)
     }
   )
+
+  // Register milestone payment routes
+  await fastify.register(milestonePaymentRoutes)
+
+  // Register payment webhook routes
+  await fastify.register(paymentWebhookRoutes)
 }

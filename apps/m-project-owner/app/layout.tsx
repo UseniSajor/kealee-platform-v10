@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-
+import { ErrorBoundary } from '@kealee/ui'
+import { Toaster } from 'sonner'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -17,7 +18,12 @@ export default function RootLayout({
       <head>
         <meta name="theme-color" content="#0ea5e9" />
       </head>
-      <body>{children}</body>
+      <body>
+        <ErrorBoundary>
+          {children}
+          <Toaster position="top-right" />
+        </ErrorBoundary>
+      </body>
     </html>
   )
 }

@@ -72,11 +72,7 @@ export const api = {
     body: JSON.stringify(data),
   }),
 
-  getMySubscription: () => {
-    // Get subscription from service subscriptions table
-    // This will be implemented when we have org context
-    return apiRequest<{ subscription: any }>(`/billing/subscriptions/me`)
-  },
+  getMySubscription: () => apiRequest<{ subscription: any }>(`/billing/subscriptions/me`),
 
   // Service Requests
   createServiceRequest: (data: {
@@ -153,4 +149,17 @@ export const api = {
     method: 'PATCH',
     body: JSON.stringify(data),
   }),
+
+  // Service Request Messages & Satisfaction
+  addServiceRequestMessage: (requestId: string, message: string) => 
+    apiRequest<{ serviceRequest: any }>(`/ops-services/service-requests/${requestId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    }),
+
+  setServiceRequestSatisfaction: (requestId: string, rating: number) =>
+    apiRequest<{ serviceRequest: any }>(`/ops-services/service-requests/${requestId}/satisfaction`, {
+      method: 'POST',
+      body: JSON.stringify({ rating }),
+    }),
 }

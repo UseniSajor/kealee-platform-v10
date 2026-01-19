@@ -25,11 +25,12 @@ export async function userRoutes(fastify: FastifyInstance) {
     { preHandler: authenticateUser },
     async (request, reply) => {
       try {
-        const { page, limit, status, search } = request.query as {
+        const { page, limit, status, search, role } = request.query as {
           page?: string
           limit?: string
           status?: 'ACTIVE' | 'SUSPENDED' | 'DELETED'
           search?: string
+          role?: string
         }
 
         const result = await userService.listUsers({
@@ -37,6 +38,7 @@ export async function userRoutes(fastify: FastifyInstance) {
           limit: limit ? parseInt(limit) : undefined,
           status,
           search,
+          role,
         })
 
         return reply.send(result)

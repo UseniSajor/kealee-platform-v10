@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import { ErrorBoundary } from "@kealee/ui"
+import { Toaster } from "sonner"
 import "./globals.css"
 import { Providers } from "./providers"
 
@@ -18,7 +20,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Providers>{children}</Providers>
+        <ErrorBoundary>
+          <Providers>
+            {children}
+            <Toaster position="top-right" />
+          </Providers>
+        </ErrorBoundary>
       </body>
     </html>
   )

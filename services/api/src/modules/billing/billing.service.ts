@@ -62,6 +62,43 @@ export class BillingService {
     })
   }
 
+  async getMySubscription(userId: string) {
+    // Get user's orgs
+    const orgMemberships = await prismaAny.orgMember.findMany({
+      where: { userId },
+      include: { org: true },
+    })
+
+    if (orgMemberships.length === 0) {
+      throw new Error('User is not a member of any organization')
+    }
+
+    // Get active subscription for any of user's orgs
+    const orgIds = orgMemberships.map(m => m.orgId)
+    const subscription = await prismaAny.serviceSubscription.findFirst({
+      where: {
+        orgId: { in: orgIds },
+        status: { in: ['active', 'trial', 'past_due', 'paused'] },
+      },
+      include: {
+        servicePlan: true,
+        org: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    if (!subscription) {
+      throw new Error('No active subscription found')
+    }
+
+    return subscription
+  }
+
   async createCheckoutSession(input: {
     orgId: string
     planSlug: GCPlanSlug

@@ -1,8 +1,11 @@
 import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, AuthorizationError, ValidationError } from '../../errors/app.error'
+import { getStripe } from '../billing/stripe.client'
+import { milestonePaymentService } from './milestone-payment.service'
 // Prisma types available through prismaAny
 
 const DEFAULT_HOLDBACK_PERCENTAGE = 10 // 10% holdback
+const PLATFORM_FEE_PERCENTAGE = 0.03 // 3% platform fee
 
 export const paymentService = {
   /**
@@ -295,8 +298,46 @@ export const paymentService = {
       },
     })
 
-    // TODO: Trigger Stripe transfer to contractor
-    // In production, this would call m-finance-trust service or Stripe API
+    // Use new milestone payment service for Stripe Connect
+    try {
+      const paymentResult = await milestonePaymentService.releaseMilestonePayment(
+        milestoneId,
+        userId,
+        {
+          skipHoldback: options?.skipHoldback,
+          notes: options?.notes,
+        }
+      )
+
+      // Update transaction with payment intent ID
+      await prismaAny.escrowTransaction.update({
+        where: { id: transaction.id },
+        data: {
+          stripePaymentId: paymentResult.paymentIntentId,
+          status: 'PENDING', // Will be updated by webhook
+        },
+      })
+
+      return {
+        transaction,
+        releaseAmount,
+        holdbackAmount,
+        balanceAfter,
+        paymentIntentId: paymentResult.paymentIntentId,
+        clientSecret: paymentResult.clientSecret,
+      }
+    } catch (error: any) {
+      // Fallback to old method if new service fails
+      console.warn('Milestone payment service failed, using fallback:', error)
+      await this.processStripePayment(milestone, releaseAmount, transaction.id, userId)
+      
+      return {
+        transaction,
+        releaseAmount,
+        holdbackAmount,
+        balanceAfter,
+      }
+    }
     // For now, we'll simulate it by updating transaction status
     // In real implementation:
     // const stripeTransfer = await stripe.transfers.create({
@@ -379,6 +420,119 @@ export const paymentService = {
     return {
       transactions,
       escrow,
+    }
+  },
+
+  /**
+   * Process Stripe payment with 3% platform fee
+   */
+  async processStripePayment(
+    milestone: any,
+    releaseAmount: number,
+    transactionId: string,
+    userId: string
+  ) {
+    try {
+      const stripe = getStripe()
+
+      // Calculate 3% platform fee
+      const platformFee = Math.round(releaseAmount * PLATFORM_FEE_PERCENTAGE * 100) / 100
+      const contractorPayout = Math.round((releaseAmount - platformFee) * 100) / 100
+
+      // Get contractor's Stripe account ID
+      const contractor = await prismaAny.user.findUnique({
+        where: { id: milestone.contract.contractorId },
+        select: { id: true, stripeAccountId: true },
+      })
+
+      if (!contractor?.stripeAccountId) {
+        throw new ValidationError('Contractor does not have a Stripe account connected')
+      }
+
+      // Create Stripe transfer to contractor (97% of milestone amount)
+      const transfer = await stripe.transfers.create({
+        amount: Math.round(contractorPayout * 100), // Convert to cents
+        currency: 'usd',
+        destination: contractor.stripeAccountId,
+        metadata: {
+          milestoneId: milestone.id,
+          milestoneName: milestone.name,
+          transactionId,
+          projectId: milestone.contract.projectId,
+        },
+      })
+
+      // Record platform fee payment
+      await prismaAny.payment.create({
+        data: {
+          orgId: milestone.contract.project.orgId || null,
+          subscriptionId: null,
+          stripePaymentIntentId: transfer.id, // Use transfer ID as payment intent ID
+          stripeInvoiceId: null,
+          amount: platformFee,
+          currency: 'usd',
+          status: 'COMPLETED',
+          paidAt: new Date(),
+          metadata: {
+            type: 'platform_fee',
+            milestoneId: milestone.id,
+            transactionId,
+            contractorPayout,
+            totalAmount: releaseAmount,
+            stripeTransferId: transfer.id,
+          },
+        },
+      })
+
+      // Update transaction with Stripe payment ID
+      await prismaAny.escrowTransaction.update({
+        where: { id: transactionId },
+        data: {
+          status: 'COMPLETED',
+          processedAt: new Date(),
+          stripePaymentId: transfer.id,
+          metadata: {
+            ...((await prismaAny.escrowTransaction.findUnique({ where: { id: transactionId } }))?.metadata as any || {}),
+            platformFee,
+            contractorPayout,
+            stripeTransferId: transfer.id,
+          },
+        },
+      })
+
+      // Create audit log for platform fee
+      await prismaAny.auditLog.create({
+        data: {
+          entityType: 'Payment',
+          entityId: transactionId,
+          action: 'PLATFORM_FEE_COLLECTED',
+          details: {
+            platformFee,
+            contractorPayout,
+            totalAmount: releaseAmount,
+            stripeTransferId: transfer.id,
+          },
+          userId: userId,
+          reason: `Platform fee collected for milestone: ${milestone.name}`,
+        },
+      })
+    } catch (error: any) {
+      // Log error but don't fail the payment release
+      console.error('Stripe payment processing failed:', error)
+      
+      // Update transaction status to indicate payment processing failed
+      await prismaAny.escrowTransaction.update({
+        where: { id: transactionId },
+        data: {
+          status: 'FAILED',
+          metadata: {
+            error: error.message,
+            retryable: true,
+          },
+        },
+      })
+
+      throw new ValidationError(`Payment processing failed: ${error.message}`)
     }
   },
 }

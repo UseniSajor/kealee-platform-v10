@@ -255,4 +255,62 @@ export async function serviceRequestRoutes(fastify: FastifyInstance) {
       }
     }
   )
+
+  // POST /ops-services/service-requests/:id/messages - Add message to service request
+  fastify.post(
+    '/service-requests/:id/messages',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(z.object({ id: z.string().uuid() })),
+        validateBody(z.object({ message: z.string().min(1) })),
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user as { id: string }
+        const { id } = request.params as { id: string }
+        const body = request.body as { message: string }
+        const serviceRequest = await serviceRequestService.addMessage(id, {
+          message: body.message,
+          userId: user.id,
+        })
+        return reply.send({ serviceRequest })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(400).send({
+          error: error.message || 'Failed to add message',
+        })
+      }
+    }
+  )
+
+  // POST /ops-services/service-requests/:id/satisfaction - Set satisfaction rating
+  fastify.post(
+    '/service-requests/:id/satisfaction',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(z.object({ id: z.string().uuid() })),
+        validateBody(z.object({ rating: z.number().min(1).max(5) })),
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user as { id: string }
+        const { id } = request.params as { id: string }
+        const body = request.body as { rating: number }
+        const serviceRequest = await serviceRequestService.setSatisfaction(id, {
+          rating: body.rating,
+          userId: user.id,
+        })
+        return reply.send({ serviceRequest })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(400).send({
+          error: error.message || 'Failed to set satisfaction',
+        })
+      }
+    }
+  )
 }

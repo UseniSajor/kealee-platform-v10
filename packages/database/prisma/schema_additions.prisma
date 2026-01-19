@@ -1,0 +1,52 @@
+// ============================================================================
+// STRIPE BILLING MODELS
+// ============================================================================
+
+model Payment {
+  id                    String    @id @default(uuid())
+  orgId                 String?
+  subscriptionId        String?
+  stripeInvoiceId       String?
+  stripePaymentIntentId String?  @unique
+  amount                Decimal   @db.Decimal(10, 2)
+  currency              String    @default("usd")
+  status                String    // completed, failed, pending, refunded
+  paidAt                DateTime?
+  failedAt              DateTime?
+  refundedAt            DateTime?
+  refundAmount          Decimal?  @db.Decimal(10, 2)
+  metadata              Json?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([orgId])
+  @@index([subscriptionId])
+  @@index([stripePaymentIntentId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Invoice {
+  id                String    @id @default(uuid())
+  orgId             String?
+  subscriptionId    String?
+  stripeInvoiceId   String    @unique
+  invoiceNumber     String?
+  amount            Decimal   @db.Decimal(10, 2)
+  currency          String    @default("usd")
+  status            String    // draft, open, paid, uncollectible, void
+  periodStart       DateTime?
+  periodEnd         DateTime?
+  paidAt            DateTime?
+  hostedInvoiceUrl  String?
+  invoicePdf        String?
+  metadata          Json?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([orgId])
+  @@index([subscriptionId])
+  @@index([stripeInvoiceId])
+  @@index([status])
+  @@index([createdAt])
+}

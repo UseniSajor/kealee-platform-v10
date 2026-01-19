@@ -76,8 +76,20 @@ export default function MilestoneDetailPage({
       setError(null)
 
       try {
+        // Approve milestone
         await api.approveMilestoneWithReason(milestone.id, reason, notes)
-        alert('Milestone approved successfully!')
+        
+        // Trigger payment processing (with 3% platform fee)
+        try {
+          const paymentResult = await api.releasePayment(milestone.id, {
+            notes: `Milestone approved: ${reason}`,
+          })
+          alert(`Milestone approved and payment processed! Amount: $${paymentResult.releaseAmount.toLocaleString()}`)
+        } catch (paymentError: any) {
+          console.error('Payment processing error:', paymentError)
+          alert(`Milestone approved, but payment processing failed: ${paymentError.message}`)
+        }
+        
         await loadMilestone()
       } catch (e: unknown) {
         setError(e instanceof Error ? e.message : 'Failed to approve milestone')

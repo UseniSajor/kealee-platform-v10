@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
+import { api } from "@/lib/api";
+import { getPrimaryOrgId } from "@/lib/auth";
+
 export type GCServiceRequestCategory =
   | "Permit Application Help"
   | "Inspection Scheduling"
@@ -162,26 +165,40 @@ export function ServiceRequestWizard({
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const res = await fetch("/api/service-requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          category,
-          priority,
-          projectId,
-          title,
-          description,
-          attachments: attachmentsMeta,
-          packageName,
-        }),
-      });
-      const data = (await res.json()) as { ok: boolean; data?: GCServiceRequest; message?: string };
-      if (!res.ok || !data.ok || !data.data) {
-        throw new Error(data.message || "Failed to submit request");
+      const orgId = await getPrimaryOrgId();
+      if (!orgId) {
+        throw new Error("No organization found. Please ensure you're logged in.");
       }
-      setSubmittedRequest(data.data);
+
+      const result = await api.createServiceRequest({
+        orgId,
+        title,
+        description: description || undefined,
+        category,
+        priority: priority === 'Urgent' ? 'urgent' : priority.toLowerCase() as 'low' | 'normal' | 'high' | 'urgent',
+      });
+
+      // Map backend response to frontend format
+      const mappedRequest: GCServiceRequest = {
+        id: result.serviceRequest.id,
+        title: result.serviceRequest.title,
+        description: result.serviceRequest.description || null,
+        category: result.serviceRequest.category as GCServiceRequest["category"],
+        priority: (result.serviceRequest.priority === 'urgent' ? 'Urgent' : 'Normal') as GCServiceRequest["priority"],
+        status: 'Submitted' as GCServiceRequest["status"],
+        projectId: projectId || null,
+        projectName: null,
+        createdAt: result.serviceRequest.createdAt || new Date().toISOString(),
+        assignedPm: null,
+        timeSpentMinutes: 0,
+        attachments: attachmentsMeta,
+        thread: [],
+        satisfaction: null,
+      };
+
+      setSubmittedRequest(mappedRequest);
       setStep(5);
-      onSubmitted?.(data.data);
+      onSubmitted?.(mappedRequest);
     } catch (e: unknown) {
       setSubmitError(e instanceof Error ? e.message : "Failed to submit request");
     } finally {

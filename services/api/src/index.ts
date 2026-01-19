@@ -41,6 +41,9 @@ import { docusignRoutes } from './modules/docusign/docusign.routes'
 import { designProjectRoutes } from './modules/architect/design-project.routes'
 import { designPhaseRoutes } from './modules/architect/design-phase.routes'
 import { designFileRoutes } from './modules/architect/design-file.routes'
+import { architectFileUploadRoutes } from './modules/architect/architect-file-upload.routes'
+import { architectVersionControlRoutes } from './modules/architect/architect-version-control.routes'
+import { architectReviewWorkflowRoutes } from './modules/architect/architect-review-workflow.routes'
 import { deliverableRoutes } from './modules/architect/deliverable.routes'
 import { drawingSetRoutes } from './modules/architect/drawing-set.routes'
 import { bimModelRoutes } from './modules/architect/bim-model.routes'
@@ -77,12 +80,14 @@ import { handoffRoutes } from './modules/handoff/handoff.routes'
 import { serviceRequestRoutes } from './modules/ops-services/service-request.routes'
 import { servicePlanRoutes } from './modules/ops-services/service-plan.routes'
 import { workflowRoutes } from './modules/workflow/workflow.routes'
+import { fileRoutes } from './modules/files/file.routes'
 import { taskGeneratorRoutes } from './modules/tasks/task-generator.routes'
 import { complianceCheckpointRoutes } from './modules/compliance/compliance-checkpoint.routes'
 import { complianceGatesRoutes } from './modules/compliance/compliance-gates.routes'
 import { createGraphQLServer } from './graphql/server'
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware'
 import { registerGlobalRateLimit } from './middleware/rate-limit.middleware'
+import { registerCSRFProtection } from './middleware/csrf.middleware'
 import { requestLogger, responseLogger } from './middleware/logging.middleware'
 import { swaggerConfig, swaggerUIConfig } from './config/swagger.config'
 import { prisma } from '@kealee/database'
@@ -116,8 +121,43 @@ const start = async () => {
     }
     
     // Register plugins
+    // CORS configuration - allow all client-facing and internal domains
+    const corsOrigins = process.env.CORS_ORIGINS
+      ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim())
+      : [
+          // CLIENT-FACING
+          'https://kealee.com',
+          'https://www.kealee.com',
+          'https://ops.kealee.com',
+          'https://app.kealee.com',
+          'https://architect.kealee.com',
+          'https://permits.kealee.com',
+          // INTERNAL
+          'https://pm.kealee.com',
+          'https://admin.kealee.com',
+          // DEVELOPMENT
+          'http://localhost:3000',
+          'http://localhost:3001',
+          'http://localhost:3002',
+          'http://localhost:3003',
+          'http://localhost:3004',
+          'http://localhost:3005',
+          'http://localhost:3006',
+          'http://localhost:3007',
+        ]
+
     await fastify.register(cors, {
-      origin: true,
+      origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, Postman, etc.)
+        if (!origin) return callback(null, true)
+        // Check if origin is in allowed list
+        if (corsOrigins.includes(origin)) {
+          callback(null, true)
+        } else {
+          callback(new Error('Not allowed by CORS'), false)
+        }
+      },
+      credentials: true,
     })
 
     await fastify.register(helmet)
@@ -144,7 +184,20 @@ const start = async () => {
     // Register rate limiting (global)
     await registerGlobalRateLimit(fastify)
 
+    // Register CSRF protection (enabled in all environments for security)
+    await registerCSRFProtection(fastify)
+
+    // Initialize Sentry
+    const { initSentry } = require('./middleware/sentry.middleware')
+    initSentry()
+
+    // Register Sentry hooks
+    const { sentryRequestHandler, sentryResponseHandler } = require('./middleware/sentry.middleware')
+    fastify.addHook('onRequest', sentryRequestHandler)
+    fastify.addHook('onResponse', sentryResponseHandler)
+
     // Register request/response logging
+    const { requestLogger, responseLogger } = require('./middleware/request-logger.middleware')
     fastify.addHook('onRequest', requestLogger)
     fastify.addHook('onResponse', responseLogger)
 
@@ -152,10 +205,9 @@ const start = async () => {
     fastify.setErrorHandler(errorHandler)
     fastify.setNotFoundHandler(notFoundHandler)
 
-    // Health check
-    fastify.get('/health', async () => {
-      return { status: 'ok' }
-    })
+    // Register enhanced health checks
+    const { registerHealthChecks } = require('./middleware/health-check.middleware')
+    registerHealthChecks(fastify)
 
     // DB health check (useful for local Windows/Docker debugging)
     fastify.get('/health/db', async () => {
@@ -195,6 +247,9 @@ const start = async () => {
     await fastify.register(designProjectRoutes, { prefix: '/architect' })
     await fastify.register(designPhaseRoutes, { prefix: '/architect' })
     await fastify.register(designFileRoutes, { prefix: '/architect' })
+    await fastify.register(architectFileUploadRoutes, { prefix: '/architect' })
+    await fastify.register(architectVersionControlRoutes, { prefix: '/architect' })
+    await fastify.register(architectReviewWorkflowRoutes, { prefix: '/architect' })
     await fastify.register(deliverableRoutes, { prefix: '/architect' })
     await fastify.register(drawingSetRoutes, { prefix: '/architect' })
     await fastify.register(bimModelRoutes, { prefix: '/architect' })
@@ -224,6 +279,9 @@ const start = async () => {
     await fastify.register(serviceRequestRoutes, { prefix: '/ops-services' })
     await fastify.register(servicePlanRoutes, { prefix: '/ops-services' })
     await fastify.register(workflowRoutes, { prefix: '/workflow' })
+    await fastify.register(fileRoutes, { prefix: '/files' })
+    await fastify.register(analyticsRoutes)
+    await fastify.register(monitoringDashboardRoutes)
     await fastify.register(taskGeneratorRoutes, { prefix: '/tasks' })
     await fastify.register(complianceCheckpointRoutes, { prefix: '/compliance' })
     await fastify.register(complianceGatesRoutes, { prefix: '/compliance' })

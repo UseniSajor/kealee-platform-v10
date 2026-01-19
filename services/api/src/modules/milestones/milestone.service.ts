@@ -311,8 +311,8 @@ export const milestoneService = {
       },
     })
 
-    // In production, this would trigger payment processing via Stripe
-    // For now, we just update the status to APPROVED
+    // Payment processing will be triggered separately via /payments/milestones/:id/release-payment
+    // This allows the project owner to review before releasing payment
 
     return updated
   },

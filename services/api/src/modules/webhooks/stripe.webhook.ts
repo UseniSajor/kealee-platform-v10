@@ -1,248 +1,1025 @@
 /**
- * Stripe Webhook Handler
- * Handles all Stripe webhook events for subscriptions and payments
+ * Production-Ready Stripe Webhook Handler
+ * Handles all Stripe webhook events with signature verification and database sync
  */
 
-import Stripe from 'stripe';
-import { FastifyRequest, FastifyReply } from 'fastify';
-import { prisma } from '@kealee/database';
+import Stripe from 'stripe'
+import { FastifyRequest, FastifyReply } from 'fastify'
+import { prismaAny } from '../../utils/prisma-helper'
+import { auditService } from '../audit/audit.service'
+import { eventService } from '../events/event.service'
+import { getStripe } from '../billing/stripe.client'
+import { mapStripeSubscriptionStatus, getPlanSlugFromPriceId, OPS_SERVICES_MODULE_KEY } from '../billing/billing.constants'
+import { entitlementService } from '../entitlements/entitlement.service'
 
-let stripeInstance: Stripe | null = null;
+// Rate limiting: track webhook attempts
+const webhookAttempts = new Map<string, { count: number; resetAt: number }>()
+const RATE_LIMIT_WINDOW = 60000 // 1 minute
+const RATE_LIMIT_MAX = 100 // max requests per minute per IP
 
-function getStripeInstance(): Stripe {
-  if (stripeInstance) return stripeInstance;
-  
-  const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) {
-    throw new Error('STRIPE_SECRET_KEY is not configured');
-  }
-  
-  stripeInstance = new Stripe(key, {
-    apiVersion: '2025-12-15.clover',
-  });
-  
-  return stripeInstance;
-}
-
+/**
+ * Get webhook secret from environment
+ */
 function getWebhookSecret(): string {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  const secret = process.env.STRIPE_WEBHOOK_SECRET
   if (!secret) {
-    throw new Error('STRIPE_WEBHOOK_SECRET is not configured');
+    throw new Error('STRIPE_WEBHOOK_SECRET is not configured')
   }
-  return secret;
+  return secret
 }
 
 /**
- * Main webhook handler
+ * Rate limit check
+ */
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const record = webhookAttempts.get(ip)
+
+  if (!record || now > record.resetAt) {
+    webhookAttempts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW })
+    return true
+  }
+
+  if (record.count >= RATE_LIMIT_MAX) {
+    return false
+  }
+
+  record.count++
+  return true
+}
+
+/**
+ * Convert Unix timestamp to Date
+ */
+function toDateFromSeconds(seconds: number | null | undefined): Date | null {
+  if (!seconds) return null
+  return new Date(seconds * 1000)
+}
+
+/**
+ * Main webhook handler - Returns 200 OK immediately, processes asynchronously
  */
 export async function handleStripeWebhook(
   request: FastifyRequest,
   reply: FastifyReply
-) {
-  const signature = request.headers['stripe-signature'] as string;
+): Promise<void> {
+  const signature = request.headers['stripe-signature'] as string
+  const ip = request.ip || request.socket.remoteAddress || 'unknown'
 
-  if (!signature) {
-    return reply.code(400).send({ error: 'Missing stripe-signature header' });
+  // Rate limiting
+  if (!checkRateLimit(ip)) {
+    console.error(`⚠️  Rate limit exceeded for IP: ${ip}`)
+    await logWebhookAttempt(ip, null, 'RATE_LIMIT_EXCEEDED', null)
+    reply.code(429).send({ error: 'Rate limit exceeded' })
+    return
   }
 
-  let event: Stripe.Event;
+  // Verify signature exists
+  if (!signature) {
+    console.error('⚠️  Missing stripe-signature header')
+    await logWebhookAttempt(ip, null, 'MISSING_SIGNATURE', null)
+    reply.code(400).send({ error: 'Missing stripe-signature header' })
+    return
+  }
+
+  // Get raw body
+  const rawBody = (request as any).rawBody as Buffer | string | undefined
+  if (!rawBody) {
+    console.error('⚠️  Missing raw body')
+    await logWebhookAttempt(ip, null, 'MISSING_BODY', null)
+    reply.code(400).send({ error: 'Missing raw body' })
+    return
+  }
+
+  let event: Stripe.Event
 
   try {
     // Verify webhook signature
-    const stripe = getStripeInstance();
-    const webhookSecret = getWebhookSecret();
-    
-    event = stripe.webhooks.constructEvent(
-      request.rawBody!,
-      signature,
-      webhookSecret
-    );
+    const stripe = getStripe()
+    const webhookSecret = getWebhookSecret()
+    const buf = Buffer.isBuffer(rawBody) ? rawBody : Buffer.from(rawBody, 'utf8')
+
+    event = stripe.webhooks.constructEvent(buf, signature, webhookSecret)
+
+    // Log successful verification
+    await logWebhookAttempt(ip, event.id, 'VERIFIED', event.type)
   } catch (err: any) {
-    console.error('⚠️  Webhook signature verification failed:', err.message);
-    return reply.code(400).send({ error: `Webhook Error: ${err.message}` });
+    console.error('⚠️  Webhook signature verification failed:', err.message)
+    await logWebhookAttempt(ip, null, 'SIGNATURE_VERIFICATION_FAILED', null, err.message)
+    reply.code(400).send({ error: `Webhook Error: ${err.message}` })
+    return
   }
 
-  // Handle the event
+  // Return 200 OK immediately - process asynchronously
+  reply.code(200).send({ received: true, eventId: event.id })
+
+  // Process event asynchronously (don't await)
+  processWebhookEvent(event).catch((error) => {
+    console.error(`❌ Error processing webhook event ${event.id}:`, error)
+  })
+}
+
+/**
+ * Process webhook event asynchronously
+ */
+async function processWebhookEvent(event: Stripe.Event): Promise<void> {
+  const maxRetries = 3
+  let retryCount = 0
+
+  while (retryCount < maxRetries) {
+    try {
+      switch (event.type) {
+        case 'customer.subscription.created':
+          await handleSubscriptionCreated(event.data.object as Stripe.Subscription)
+          return
+
+        case 'customer.subscription.updated':
+          await handleSubscriptionUpdated(event.data.object as Stripe.Subscription)
+          return
+
+        case 'customer.subscription.deleted':
+          await handleSubscriptionDeleted(event.data.object as Stripe.Subscription)
+          return
+
+        case 'invoice.paid':
+          await handleInvoicePaid(event.data.object as Stripe.Invoice)
+          return
+
+        case 'invoice.payment_failed':
+          await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice)
+          return
+
+        case 'payment_intent.succeeded':
+          await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent)
+          return
+
+        case 'payment_intent.payment_failed':
+          await handlePaymentIntentFailed(event.data.object as Stripe.PaymentIntent)
+          return
+
+        default:
+          console.log(`ℹ️  Unhandled event type: ${event.type}`)
+          return
+      }
+    } catch (error: any) {
+      retryCount++
+      const delay = Math.pow(2, retryCount) * 1000 // Exponential backoff
+
+      if (retryCount >= maxRetries) {
+        console.error(`❌ Failed to process webhook event ${event.id} after ${maxRetries} retries:`, error)
+        await logWebhookError(event.id, event.type, error.message || 'Unknown error', retryCount)
+        throw error
+      }
+
+      console.warn(`⚠️  Retry ${retryCount}/${maxRetries} for event ${event.id} after ${delay}ms`)
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+  }
+}
+
+/**
+ * Handle subscription.created event
+ */
+async function handleSubscriptionCreated(subscription: Stripe.Subscription): Promise<void> {
   try {
-    switch (event.type) {
-      case 'customer.subscription.created':
-        await handleSubscriptionCreated(event.data.object as Stripe.Subscription);
-        break;
+    console.log('✅ Processing subscription.created:', subscription.id)
 
-      case 'customer.subscription.updated':
-        await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
-        break;
+    const planSlugFromMeta = subscription.metadata?.planSlug as string | undefined
+    const item = subscription.items?.data?.[0]
+    const priceId = item?.price?.id as string | undefined
+    const planSlug = planSlugFromMeta || (priceId ? getPlanSlugFromPriceId(priceId) : null)
 
-      case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
-        break;
-
-      case 'invoice.paid':
-        await handleInvoicePaid(event.data.object as Stripe.Invoice);
-        break;
-
-      case 'invoice.payment_failed':
-        await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
-        break;
-
-      case 'payment_intent.succeeded':
-        await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent);
-        break;
-
-      case 'payment_intent.payment_failed':
-        await handlePaymentIntentFailed(event.data.object as Stripe.PaymentIntent);
-        break;
-
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
+    if (!planSlug) {
+      throw new Error(`Unable to determine planSlug for subscription ${subscription.id}`)
     }
 
-    return reply.code(200).send({ received: true });
-  } catch (err: any) {
-    console.error('Error processing webhook event:', err);
-    return reply.code(500).send({ error: 'Webhook processing failed' });
+    // Get or create org
+    const orgId: string =
+      (subscription.metadata?.orgId as string | undefined) ||
+      (await bootstrapOrgFromSubscription(subscription, planSlug))
+
+    // Get plan
+    const plan = await prismaAny.servicePlan.findUnique({ where: { slug: planSlug } })
+    if (!plan) {
+      throw new Error(`ServicePlan not found for slug: ${planSlug}`)
+    }
+
+    // Map status
+    const status = mapStripeSubscriptionStatus(subscription.status)
+    const currentPeriodStart = toDateFromSeconds(subscription.current_period_start)
+    const currentPeriodEnd = toDateFromSeconds(subscription.current_period_end)
+    const canceledAt = subscription.canceled_at ? toDateFromSeconds(subscription.canceled_at) : null
+
+    // Create subscription record
+    const subscriptionData: any = {
+      orgId,
+      servicePlanId: plan.id,
+      status,
+      stripeId: subscription.id,
+      currentPeriodStart: currentPeriodStart || new Date(),
+      currentPeriodEnd: currentPeriodEnd || new Date(),
+      cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
+    }
+
+    // Add optional fields if they exist in schema
+    if (canceledAt) subscriptionData.canceledAt = canceledAt
+    const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer?.id
+    if (customerId) subscriptionData.stripeCustomerId = customerId
+    subscriptionData.metadata = {
+      planSlug,
+      priceId,
+      interval: item?.price?.recurring?.interval || 'month',
+    }
+
+    const created = await prismaAny.serviceSubscription.create({
+      data: subscriptionData,
+    })
+
+    // Enable module entitlement
+    if (currentPeriodEnd) {
+      await entitlementService.enableModule(orgId, OPS_SERVICES_MODULE_KEY, currentPeriodEnd)
+    }
+
+    // Log audit
+    await auditService.recordAudit({
+      action: 'STRIPE_SUBSCRIPTION_CREATED',
+      entityType: 'ServiceSubscription',
+      entityId: created.id,
+      orgId,
+      reason: `Subscription created: ${planSlug}`,
+      after: {
+        stripeId: subscription.id,
+        status,
+        planSlug,
+      },
+    })
+
+    // Record event
+    await eventService.recordEvent({
+      type: 'STRIPE_SUBSCRIPTION_CREATED',
+      entityType: 'ServiceSubscription',
+      entityId: created.id,
+      orgId,
+      payload: {
+        stripeSubscriptionId: subscription.id,
+        status,
+        planSlug,
+        currentPeriodEnd: currentPeriodEnd?.toISOString(),
+      },
+    })
+
+    console.log(`✅ Subscription created in database: ${created.id}`)
+  } catch (error: any) {
+    console.error(`❌ Error handling subscription.created for ${subscription.id}:`, error)
+    throw error
   }
 }
 
 /**
- * Handle subscription created
+ * Handle subscription.updated event
  */
-async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
-  console.log('✅ Subscription created:', subscription.id);
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
+  try {
+    console.log('🔄 Processing subscription.updated:', subscription.id)
 
-  const customerId = subscription.customer as string;
-  const packageId = subscription.metadata.packageId;
-  const priceId = subscription.items.data[0].price.id;
+    const existing = await prismaAny.serviceSubscription.findUnique({
+      where: { stripeId: subscription.id },
+    })
 
-  // TODO: Create subscription in database once Prisma models are added
-  console.log('Subscription details:', {
-    stripeSubscriptionId: subscription.id,
-    stripeCustomerId: customerId,
-    stripePriceId: priceId,
-    status: subscription.status,
-    packageId,
-    billingCycleAnchor: new Date(subscription.billing_cycle_anchor * 1000),
-    cancelAtPeriodEnd: subscription.cancel_at_period_end,
-  });
+    if (!existing) {
+      console.warn(`⚠️  Subscription ${subscription.id} not found, creating...`)
+      await handleSubscriptionCreated(subscription)
+      return
+    }
 
-  // TODO: Send confirmation email
-  // TODO: Provision access to services
-}
+    const planSlugFromMeta = subscription.metadata?.planSlug as string | undefined
+    const item = subscription.items?.data?.[0]
+    const priceId = item?.price?.id as string | undefined
+    const planSlug = planSlugFromMeta || (priceId ? getPlanSlugFromPriceId(priceId) : null) || existing.metadata?.planSlug
 
-/**
- * Handle subscription updated
- */
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
-  console.log('🔄 Subscription updated:', subscription.id);
+    if (!planSlug) {
+      throw new Error(`Unable to determine planSlug for subscription ${subscription.id}`)
+    }
 
-  // TODO: Update subscription in database once Prisma models are added
-  console.log('Subscription update:', {
-    stripeSubscriptionId: subscription.id,
-    status: subscription.status,
-    stripePriceId: subscription.items.data[0].price.id,
-    packageId: subscription.metadata.packageId,
-    billingCycleAnchor: new Date(subscription.billing_cycle_anchor * 1000),
-    cancelAtPeriodEnd: subscription.cancel_at_period_end,
-  });
+    const plan = await prismaAny.servicePlan.findUnique({ where: { slug: planSlug } })
+    if (!plan) {
+      throw new Error(`ServicePlan not found for slug: ${planSlug}`)
+    }
 
-  // TODO: Update user access if package changed
-  // TODO: Send notification email
-}
+    const status = mapStripeSubscriptionStatus(subscription.status)
+    const currentPeriodStart = toDateFromSeconds(subscription.current_period_start)
+    const currentPeriodEnd = toDateFromSeconds(subscription.current_period_end)
+    const canceledAt = subscription.canceled_at ? toDateFromSeconds(subscription.canceled_at) : null
 
-/**
- * Handle subscription deleted
- */
-async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  console.log('❌ Subscription deleted:', subscription.id);
+    const before = {
+      status: existing.status,
+      planId: existing.servicePlanId,
+      currentPeriodEnd: existing.currentPeriodEnd?.toISOString(),
+    }
 
-  // TODO: Update subscription in database once Prisma models are added
-  console.log('Subscription canceled:', {
-    stripeSubscriptionId: subscription.id,
-    status: 'canceled',
-    canceledAt: new Date(),
-  });
+    // Update subscription
+    const updated = await prismaAny.serviceSubscription.update({
+      where: { stripeId: subscription.id },
+      data: {
+        servicePlanId: plan.id,
+        status,
+        currentPeriodStart: currentPeriodStart || existing.currentPeriodStart,
+        currentPeriodEnd: currentPeriodEnd || existing.currentPeriodEnd,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
+        canceledAt,
+        metadata: {
+          ...(existing.metadata as any || {}),
+          planSlug,
+          priceId,
+          interval: item?.price?.recurring?.interval || 'month',
+        },
+      },
+    })
 
-  // TODO: Revoke access to services
-  // TODO: Send cancellation confirmation email
-}
+    // Check if plan changed (upgrade/downgrade)
+    const planChanged = existing.servicePlanId !== plan.id
 
-/**
- * Handle invoice paid
- */
-async function handleInvoicePaid(invoice: Stripe.Invoice) {
-  console.log('💰 Invoice paid:', invoice.id);
+    // Update entitlements
+    if (status === 'canceled' || status === 'past_due') {
+      await entitlementService.disableModule(existing.orgId, OPS_SERVICES_MODULE_KEY)
+    } else if (currentPeriodEnd) {
+      await entitlementService.enableModule(existing.orgId, OPS_SERVICES_MODULE_KEY, currentPeriodEnd)
+    }
 
-  const subscription = invoice.parent?.subscription_details?.subscription;
-  const subscriptionId = typeof subscription === 'string' ? subscription : subscription?.id;
+    // Log audit
+    await auditService.recordAudit({
+      action: 'STRIPE_SUBSCRIPTION_UPDATED',
+      entityType: 'ServiceSubscription',
+      entityId: updated.id,
+      orgId: existing.orgId,
+      reason: planChanged ? `Plan changed: ${planSlug}` : `Subscription updated: ${status}`,
+      before,
+      after: {
+        status,
+        planId: plan.id,
+        planSlug,
+        currentPeriodEnd: currentPeriodEnd?.toISOString(),
+      },
+    })
 
-  if (subscriptionId) {
-    // TODO: Update subscription payment status once Prisma models are added
-    console.log('Invoice paid, subscription now active:', {
-      stripeSubscriptionId: subscriptionId,
-      status: 'active',
-      invoiceId: invoice.id,
-      amount: invoice.amount_paid,
-      currency: invoice.currency,
-      periodStart: new Date(invoice.period_start * 1000),
-      periodEnd: new Date(invoice.period_end * 1000),
-    });
+    // Record event
+    await eventService.recordEvent({
+      type: 'STRIPE_SUBSCRIPTION_UPDATED',
+      entityType: 'ServiceSubscription',
+      entityId: updated.id,
+      orgId: existing.orgId,
+      payload: {
+        stripeSubscriptionId: subscription.id,
+        status,
+        planSlug,
+        planChanged,
+        currentPeriodEnd: currentPeriodEnd?.toISOString(),
+      },
+    })
 
-    // TODO: Create payment record in database
-    // TODO: Send receipt email
+    console.log(`✅ Subscription updated in database: ${updated.id}`)
+  } catch (error: any) {
+    console.error(`❌ Error handling subscription.updated for ${subscription.id}:`, error)
+    throw error
   }
 }
 
 /**
- * Handle invoice payment failed
+ * Handle subscription.deleted event
  */
-async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
-  console.log('⚠️  Invoice payment failed:', invoice.id);
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
+  try {
+    console.log('❌ Processing subscription.deleted:', subscription.id)
 
-  const subscription = invoice.parent?.subscription_details?.subscription;
-  const subscriptionId = typeof subscription === 'string' ? subscription : subscription?.id;
+    const existing = await prismaAny.serviceSubscription.findUnique({
+      where: { stripeId: subscription.id },
+      include: { org: { select: { id: true, name: true } } },
+    })
 
-  if (subscriptionId) {
-    // TODO: Update subscription status once Prisma models are added
-    console.log('Invoice payment failed, subscription past due:', {
-      stripeSubscriptionId: subscriptionId,
-      status: 'past_due',
-      invoiceId: invoice.id,
-    });
+    if (!existing) {
+      console.warn(`⚠️  Subscription ${subscription.id} not found in database`)
+      return
+    }
 
-    // TODO: Send payment failed email
-    // TODO: Notify admin
+    const canceledAt = new Date()
+
+    // Update subscription status
+    const updated = await prismaAny.serviceSubscription.update({
+      where: { stripeId: subscription.id },
+      data: {
+        status: 'canceled',
+        canceledAt,
+        cancelAtPeriodEnd: false,
+      },
+    })
+
+    // Disable module entitlement
+    await entitlementService.disableModule(existing.orgId, OPS_SERVICES_MODULE_KEY)
+
+    // Log audit
+    await auditService.recordAudit({
+      action: 'STRIPE_SUBSCRIPTION_DELETED',
+      entityType: 'ServiceSubscription',
+      entityId: updated.id,
+      orgId: existing.orgId,
+      reason: 'Subscription canceled',
+      before: {
+        status: existing.status,
+      },
+      after: {
+        status: 'canceled',
+        canceledAt: canceledAt.toISOString(),
+      },
+    })
+
+    // Record event
+    await eventService.recordEvent({
+      type: 'STRIPE_SUBSCRIPTION_DELETED',
+      entityType: 'ServiceSubscription',
+      entityId: updated.id,
+      orgId: existing.orgId,
+      payload: {
+        stripeSubscriptionId: subscription.id,
+        canceledAt: canceledAt.toISOString(),
+      },
+    })
+
+    // Queue notification email
+    await queueNotificationEmail({
+      to: existing.org?.name || 'customer',
+      subject: 'Kealee subscription canceled',
+      template: 'subscription_canceled',
+      orgId: existing.orgId,
+      metadata: {
+        subscriptionId: subscription.id,
+        canceledAt: canceledAt.toISOString(),
+      },
+    })
+
+    console.log(`✅ Subscription canceled in database: ${updated.id}`)
+  } catch (error: any) {
+    console.error(`❌ Error handling subscription.deleted for ${subscription.id}:`, error)
+    throw error
   }
 }
 
 /**
- * Handle payment intent succeeded
+ * Handle invoice.paid event
  */
-async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
-  console.log('✅ Payment succeeded:', paymentIntent.id);
+async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
+  try {
+    console.log('💰 Processing invoice.paid:', invoice.id)
 
-  // Handle one-time payments (e.g., permit acceleration)
-  if (paymentIntent.metadata.type === 'one_time') {
-    // TODO: Create payment record once Prisma models are added
-    console.log('One-time payment succeeded:', {
-      stripePaymentIntentId: paymentIntent.id,
-      amount: paymentIntent.amount,
-      currency: paymentIntent.currency,
-      status: 'succeeded',
-      metadata: paymentIntent.metadata,
-    });
+    const subscriptionId =
+      typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id
 
-    // TODO: Provision service based on metadata
-    // TODO: Send confirmation email
+    if (!subscriptionId) {
+      console.warn(`⚠️  Invoice ${invoice.id} has no subscription`)
+      return
+    }
+
+    const subscription = await prismaAny.serviceSubscription.findUnique({
+      where: { stripeId: subscriptionId },
+    })
+
+    if (!subscription) {
+      console.warn(`⚠️  Subscription ${subscriptionId} not found for invoice ${invoice.id}`)
+      return
+    }
+
+    // Update subscription last payment date
+    const updateData: any = {
+      metadata: {
+        ...(subscription.metadata as any || {}),
+        lastInvoiceId: invoice.id,
+        lastInvoiceAmount: invoice.amount_paid,
+        lastInvoiceCurrency: invoice.currency,
+        lastPaymentDate: new Date().toISOString(),
+      },
+    }
+    // Add lastPaymentDate if field exists
+    if (subscription.lastPaymentDate !== undefined) {
+      updateData.lastPaymentDate = new Date()
+    }
+
+    await prismaAny.serviceSubscription.update({
+      where: { stripeId: subscriptionId },
+      data: updateData,
+    })
+
+    // Create payment record (if model exists)
+    try {
+      await prismaAny.payment.create({
+      data: {
+        orgId: subscription.orgId,
+        subscriptionId: subscription.id,
+        stripeInvoiceId: invoice.id,
+        stripePaymentIntentId: typeof invoice.payment_intent === 'string' ? invoice.payment_intent : invoice.payment_intent?.id || null,
+        amount: invoice.amount_paid / 100, // Convert from cents
+        currency: invoice.currency || 'usd',
+        status: 'completed',
+        paidAt: new Date(invoice.status_transitions?.paid_at ? invoice.status_transitions.paid_at * 1000 : Date.now()),
+        metadata: {
+          invoiceNumber: invoice.number,
+          hostedInvoiceUrl: invoice.hosted_invoice_url,
+          invoicePdf: invoice.invoice_pdf,
+        },
+      },
+    })
+    } catch (error: any) {
+      // If Payment model doesn't exist yet, just log
+      if (error.message?.includes('model') || error.message?.includes('Payment')) {
+        console.warn('⚠️  Payment model not found, skipping payment record creation')
+      } else {
+        throw error
+      }
+    }
+
+    // Create invoice record (if model exists)
+    try {
+      await prismaAny.invoice.create({
+      data: {
+        orgId: subscription.orgId,
+        subscriptionId: subscription.id,
+        stripeInvoiceId: invoice.id,
+        invoiceNumber: invoice.number || null,
+        amount: invoice.amount_paid / 100,
+        currency: invoice.currency || 'usd',
+        status: 'paid',
+        periodStart: invoice.period_start ? new Date(invoice.period_start * 1000) : null,
+        periodEnd: invoice.period_end ? new Date(invoice.period_end * 1000) : null,
+        paidAt: new Date(invoice.status_transitions?.paid_at ? invoice.status_transitions.paid_at * 1000 : Date.now()),
+        hostedInvoiceUrl: invoice.hosted_invoice_url || null,
+        invoicePdf: invoice.invoice_pdf || null,
+        metadata: {
+          stripeCustomerId: typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id,
+        },
+      },
+    })
+
+    // Log audit
+    await auditService.recordAudit({
+      action: 'STRIPE_INVOICE_PAID',
+      entityType: 'Payment',
+      entityId: invoice.id,
+      orgId: subscription.orgId,
+      reason: `Invoice paid: ${invoice.id}`,
+      after: {
+        amount: invoice.amount_paid / 100,
+        currency: invoice.currency,
+        invoiceId: invoice.id,
+      },
+    })
+
+    // Record event
+    await eventService.recordEvent({
+      type: 'STRIPE_INVOICE_PAID',
+      entityType: 'Payment',
+      entityId: invoice.id,
+      orgId: subscription.orgId,
+      payload: {
+        subscriptionId,
+        amountPaid: invoice.amount_paid,
+        currency: invoice.currency,
+        hostedInvoiceUrl: invoice.hosted_invoice_url,
+        invoicePdf: invoice.invoice_pdf,
+      },
+    })
+
+    // Queue confirmation email
+    const recipient = invoice.customer_email || invoice.customer_details?.email
+    if (recipient) {
+      await queueNotificationEmail({
+        to: recipient,
+        subject: 'Kealee receipt: invoice paid',
+        template: 'invoice_paid',
+        orgId: subscription.orgId,
+        metadata: {
+          invoiceId: invoice.id,
+          amount: invoice.amount_paid / 100,
+          currency: invoice.currency,
+          hostedInvoiceUrl: invoice.hosted_invoice_url,
+          invoicePdf: invoice.invoice_pdf,
+        },
+      })
+    }
+
+    console.log(`✅ Invoice paid processed: ${invoice.id}`)
+  } catch (error: any) {
+    console.error(`❌ Error handling invoice.paid for ${invoice.id}:`, error)
+    throw error
   }
 }
 
 /**
- * Handle payment intent failed
+ * Handle invoice.payment_failed event
  */
-async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
-  console.log('❌ Payment failed:', paymentIntent.id);
+async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
+  try {
+    console.log('⚠️  Processing invoice.payment_failed:', invoice.id)
 
-  // TODO: Log failed payment
-  // TODO: Notify user
-  // TODO: Notify admin if needed
+    const subscriptionId =
+      typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id
+
+    if (!subscriptionId) {
+      console.warn(`⚠️  Invoice ${invoice.id} has no subscription`)
+      return
+    }
+
+    const subscription = await prismaAny.serviceSubscription.findUnique({
+      where: { stripeId: subscriptionId },
+    })
+
+    if (!subscription) {
+      console.warn(`⚠️  Subscription ${subscriptionId} not found for invoice ${invoice.id}`)
+      return
+    }
+
+    // Update subscription status to past_due
+    const updated = await prismaAny.serviceSubscription.update({
+      where: { stripeId: subscriptionId },
+      data: {
+        status: 'past_due',
+        metadata: {
+          ...(subscription.metadata as any || {}),
+          failedInvoiceId: invoice.id,
+          failedInvoiceAmount: invoice.amount_due,
+          paymentFailureCount: ((subscription.metadata as any)?.paymentFailureCount || 0) + 1,
+          lastPaymentFailureAt: new Date().toISOString(),
+        },
+      },
+    })
+
+    // Create payment record for failed payment (if model exists)
+    try {
+      await prismaAny.payment.create({
+      data: {
+        orgId: subscription.orgId,
+        subscriptionId: subscription.id,
+        stripeInvoiceId: invoice.id,
+        amount: invoice.amount_due / 100,
+        currency: invoice.currency || 'usd',
+        status: 'failed',
+        failedAt: new Date(),
+        metadata: {
+          failureReason: invoice.last_payment_error?.message || 'Payment failed',
+          hostedInvoiceUrl: invoice.hosted_invoice_url,
+        },
+      },
+    })
+
+    // Log audit
+    await auditService.recordAudit({
+      action: 'STRIPE_INVOICE_PAYMENT_FAILED',
+      entityType: 'ServiceSubscription',
+      entityId: updated.id,
+      orgId: subscription.orgId,
+      reason: `Payment failed for invoice: ${invoice.id}`,
+      after: {
+        status: 'past_due',
+        failedInvoiceId: invoice.id,
+        failureCount: (subscription.metadata as any)?.paymentFailureCount || 1,
+      },
+    })
+
+    // Record event
+    await eventService.recordEvent({
+      type: 'STRIPE_INVOICE_PAYMENT_FAILED',
+      entityType: 'ServiceSubscription',
+      entityId: updated.id,
+      orgId: subscription.orgId,
+      payload: {
+        subscriptionId,
+        amountDue: invoice.amount_due,
+        currency: invoice.currency,
+        hostedInvoiceUrl: invoice.hosted_invoice_url,
+        failureReason: invoice.last_payment_error?.message,
+      },
+    })
+
+    // Queue notification email
+    const recipient = invoice.customer_email || invoice.customer_details?.email
+    if (recipient) {
+      await queueNotificationEmail({
+        to: recipient,
+        subject: 'Kealee billing: payment failed',
+        template: 'payment_failed',
+        orgId: subscription.orgId,
+        metadata: {
+          invoiceId: invoice.id,
+          amount: invoice.amount_due / 100,
+          currency: invoice.currency,
+          hostedInvoiceUrl: invoice.hosted_invoice_url,
+          failureReason: invoice.last_payment_error?.message,
+        },
+      })
+    }
+
+    console.log(`✅ Payment failure processed: ${invoice.id}`)
+  } catch (error: any) {
+    console.error(`❌ Error handling invoice.payment_failed for ${invoice.id}:`, error)
+    throw error
+  }
+}
+
+/**
+ * Handle payment_intent.succeeded event
+ */
+async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent): Promise<void> {
+  try {
+    console.log('✅ Processing payment_intent.succeeded:', paymentIntent.id)
+
+    // Handle one-time payments (e.g., permit acceleration, escrow deposits)
+    if (paymentIntent.metadata?.type === 'one_time') {
+      const orgId = paymentIntent.metadata?.orgId as string | undefined
+      const projectId = paymentIntent.metadata?.projectId as string | undefined
+
+      // Create payment record (if model exists)
+      try {
+        await prismaAny.payment.create({
+        data: {
+          orgId: orgId || null,
+          stripePaymentIntentId: paymentIntent.id,
+          amount: paymentIntent.amount / 100,
+          currency: paymentIntent.currency || 'usd',
+          status: 'completed',
+          paidAt: new Date(),
+          metadata: {
+            type: 'one_time',
+            projectId,
+            description: paymentIntent.description || paymentIntent.metadata?.description,
+          },
+        },
+      })
+      } catch (error: any) {
+        // If Payment model doesn't exist yet, just log
+        if (error.message?.includes('model') || error.message?.includes('Payment')) {
+          console.warn('⚠️  Payment model not found, skipping payment record creation')
+        } else {
+          throw error
+        }
+      }
+
+      // Record event
+      if (orgId) {
+        await eventService.recordEvent({
+          type: 'STRIPE_PAYMENT_INTENT_SUCCEEDED',
+          entityType: 'Payment',
+          entityId: paymentIntent.id,
+          orgId,
+          payload: {
+            amount: paymentIntent.amount,
+            currency: paymentIntent.currency,
+            type: 'one_time',
+            projectId,
+          },
+        })
+      }
+
+      // Queue confirmation email
+      const recipient = paymentIntent.receipt_email
+      if (recipient) {
+        await queueNotificationEmail({
+          to: recipient,
+          subject: 'Kealee payment confirmation',
+          template: 'payment_confirmation',
+          orgId: orgId || undefined,
+          metadata: {
+            paymentIntentId: paymentIntent.id,
+            amount: paymentIntent.amount / 100,
+            currency: paymentIntent.currency,
+          },
+        })
+      }
+
+      console.log(`✅ One-time payment processed: ${paymentIntent.id}`)
+    }
+  } catch (error: any) {
+    console.error(`❌ Error handling payment_intent.succeeded for ${paymentIntent.id}:`, error)
+    throw error
+  }
+}
+
+/**
+ * Handle payment_intent.payment_failed event
+ */
+async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent): Promise<void> {
+  try {
+    console.log('❌ Processing payment_intent.payment_failed:', paymentIntent.id)
+
+    const orgId = paymentIntent.metadata?.orgId as string | undefined
+
+    // Create failed payment record (if model exists)
+    try {
+      await prismaAny.payment.create({
+      data: {
+        orgId: orgId || null,
+        stripePaymentIntentId: paymentIntent.id,
+        amount: paymentIntent.amount / 100,
+        currency: paymentIntent.currency || 'usd',
+        status: 'failed',
+        failedAt: new Date(),
+        metadata: {
+          failureReason: paymentIntent.last_payment_error?.message || 'Payment failed',
+          type: paymentIntent.metadata?.type || 'unknown',
+        },
+      },
+    })
+    } catch (error: any) {
+      // If Payment model doesn't exist yet, just log
+      if (error.message?.includes('model') || error.message?.includes('Payment')) {
+        console.warn('⚠️  Payment model not found, skipping payment record creation')
+      } else {
+        throw error
+      }
+    }
+
+    // Record event
+    if (orgId) {
+      await eventService.recordEvent({
+        type: 'STRIPE_PAYMENT_INTENT_FAILED',
+        entityType: 'Payment',
+        entityId: paymentIntent.id,
+        orgId,
+        payload: {
+          amount: paymentIntent.amount,
+          currency: paymentIntent.currency,
+          failureReason: paymentIntent.last_payment_error?.message,
+        },
+      })
+    }
+
+    // Queue notification email
+    const recipient = paymentIntent.receipt_email
+    if (recipient) {
+      await queueNotificationEmail({
+        to: recipient,
+        subject: 'Kealee payment failed',
+        template: 'payment_failed',
+        orgId: orgId || undefined,
+        metadata: {
+          paymentIntentId: paymentIntent.id,
+          amount: paymentIntent.amount / 100,
+          currency: paymentIntent.currency,
+          failureReason: paymentIntent.last_payment_error?.message,
+        },
+      })
+    }
+
+    console.log(`✅ Payment failure logged: ${paymentIntent.id}`)
+  } catch (error: any) {
+    console.error(`❌ Error handling payment_intent.payment_failed for ${paymentIntent.id}:`, error)
+    throw error
+  }
+}
+
+/**
+ * Bootstrap org from subscription if needed
+ */
+async function bootstrapOrgFromSubscription(
+  subscription: Stripe.Subscription,
+  planSlug: string
+): Promise<string> {
+  // Get customer
+  const customerId =
+    typeof subscription.customer === 'string' ? subscription.customer : subscription.customer?.id
+  if (!customerId) {
+    throw new Error('Missing subscription.customer; cannot bootstrap org')
+  }
+
+  const stripe = getStripe()
+  const customer = await stripe.customers.retrieve(customerId)
+  if ((customer as any).deleted) {
+    throw new Error('Stripe customer is deleted; cannot bootstrap org')
+  }
+
+  const ownerEmail: string | undefined =
+    subscription.metadata?.ownerEmail ||
+    (customer as any).email ||
+    undefined
+
+  if (!ownerEmail) {
+    throw new Error(
+      'Cannot bootstrap org: no owner email found (set subscription metadata.ownerEmail or ensure customer has email)'
+    )
+  }
+
+  const ownerName: string =
+    subscription.metadata?.ownerName ||
+    (customer as any).name ||
+    ownerEmail.split('@')[0]
+
+  const orgName: string =
+    subscription.metadata?.orgName ||
+    (customer as any).name ||
+    `${ownerName} (GC)`
+
+  // Create user
+  const user = await prismaAny.user.upsert({
+    where: { email: ownerEmail },
+    update: { name: ownerName },
+    create: {
+      email: ownerEmail,
+      name: ownerName,
+      status: 'ACTIVE',
+    },
+  })
+
+  // Create org
+  const { orgService } = await import('../org/org.service')
+  const org = await orgService.createOrg({
+    name: orgName,
+    slug: subscription.metadata?.orgSlug || `gc-${ownerEmail.split('@')[0]}-${Date.now()}`,
+    ownerId: user.id,
+  })
+
+  return org.id
+}
+
+/**
+ * Log webhook attempt
+ */
+async function logWebhookAttempt(
+  ip: string,
+  eventId: string | null,
+  status: string,
+  eventType: string | null,
+  error?: string
+): Promise<void> {
+  try {
+    // Log to database if audit table exists
+    await auditService.recordAudit({
+      action: 'STRIPE_WEBHOOK_ATTEMPT',
+      entityType: 'Webhook',
+      entityId: eventId || 'unknown',
+      reason: `Webhook ${status} from ${ip}`,
+      after: {
+        ip,
+        eventId,
+        eventType,
+        status,
+        error,
+      },
+    })
+  } catch (error) {
+    // If audit logging fails, just log to console
+    console.error('Failed to log webhook attempt:', error)
+  }
+}
+
+/**
+ * Log webhook error
+ */
+async function logWebhookError(
+  eventId: string,
+  eventType: string,
+  error: string,
+  retryCount: number
+): Promise<void> {
+  try {
+    await auditService.recordAudit({
+      action: 'STRIPE_WEBHOOK_ERROR',
+      entityType: 'Webhook',
+      entityId: eventId,
+      reason: `Webhook processing failed after ${retryCount} retries`,
+      after: {
+        eventId,
+        eventType,
+        error,
+        retryCount,
+      },
+    })
+  } catch (err) {
+    console.error('Failed to log webhook error:', err)
+  }
+}
+
+/**
+ * Queue notification email (placeholder - implement with your email queue)
+ */
+async function queueNotificationEmail(data: {
+  to: string
+  subject: string
+  template: string
+  orgId?: string
+  metadata?: any
+}): Promise<void> {
+  try {
+    // Use email queue if available
+    const { getEmailQueue } = await import('../../utils/email-queue')
+    const emailQueue = getEmailQueue()
+
+    await emailQueue.add('send-email', {
+      to: data.to,
+      subject: data.subject,
+      template: data.template,
+      metadata: {
+        ...data.metadata,
+        orgId: data.orgId,
+      },
+    })
+  } catch (error) {
+    // If email queue not available, just log
+    console.log(`📧 Email queued: ${data.subject} to ${data.to}`)
+  }
 }

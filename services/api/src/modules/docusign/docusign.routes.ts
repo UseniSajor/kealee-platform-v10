@@ -102,10 +102,22 @@ export async function docusignRoutes(fastify: FastifyInstance) {
   )
 
   // DocuSign webhook handler (Prompt 2.4)
-  fastify.post('/webhooks/docusign', async (request, reply) => {
-    // Note: In production, verify webhook signature for security
-    const payload = request.body
-    await docusignService.handleWebhook(payload)
-    return reply.send({ status: 'ok' })
-  })
+  fastify.post(
+    '/webhooks/docusign',
+    {
+      config: { rawBody: true },
+    },
+    async (request, reply) => {
+      try {
+        // Note: In production, verify webhook signature for security
+        const payload = request.body as any
+        await docusignService.handleWebhook(payload)
+        return reply.send({ status: 'ok' })
+      } catch (error: any) {
+        fastify.log.error('DocuSign webhook error:', error)
+        // Always return 200 to DocuSign even on error
+        return reply.send({ status: 'ok', error: error.message })
+      }
+    }
+  )
 }

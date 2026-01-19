@@ -34,8 +34,9 @@ export class UserService {
     limit?: number
     status?: 'ACTIVE' | 'SUSPENDED' | 'DELETED'
     search?: string
+    role?: string
   }) {
-    const { page = 1, limit = 20, status, search } = options
+    const { page = 1, limit = 20, status, search, role } = options
     const skip = (page - 1) * limit
 
     const where: any = {}
@@ -47,6 +48,15 @@ export class UserService {
         { email: { contains: search, mode: 'insensitive' } },
         { name: { contains: search, mode: 'insensitive' } },
       ]
+    }
+    if (role) {
+      where.orgMemberships = {
+        some: {
+          role: {
+            key: role,
+          },
+        },
+      }
     }
 
     const [users, total] = await Promise.all([

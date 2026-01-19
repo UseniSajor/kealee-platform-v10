@@ -8,48 +8,60 @@ export const designProjectService = {
    * Create a new design project linked to a Project Owner project
    */
   async createDesignProject(data: {
-    projectId: string
+    projectId?: string
     name: string
     description?: string
     projectType: 'RESIDENTIAL' | 'COMMERCIAL' | 'INSTITUTIONAL' | 'MIXED_USE'
+    clientId?: string
+    scope?: string
+    budget?: number
     userId: string
   }) {
-    // Verify the Project Owner project exists
-    const project = await prismaAny.project.findUnique({
-      where: { id: data.projectId },
-      include: {
-        owner: true,
-        org: true,
-      },
-    })
+    let project: any = null
 
-    if (!project) {
-      throw new NotFoundError('Project', data.projectId)
-    }
+    // Verify the Project Owner project exists if provided
+    if (data.projectId) {
+      project = await prismaAny.project.findUnique({
+        where: { id: data.projectId },
+        include: {
+          owner: true,
+          org: true,
+        },
+      })
 
-    // Check if design project already exists for this project
-    const existing = await prismaAny.designProject.findUnique({
-      where: { projectId: data.projectId },
-    })
+      if (!project) {
+        throw new NotFoundError('Project', data.projectId)
+      }
 
-    if (existing) {
-      throw new ValidationError('Design project already exists for this project')
+      // Check if design project already exists for this project
+      const existing = await prismaAny.designProject.findUnique({
+        where: { projectId: data.projectId },
+      })
+
+      if (existing) {
+        throw new ValidationError('Design project already exists for this project')
+      }
     }
 
     // Generate unique client access URL
-    const clientAccessUrl = `client-${data.projectId.slice(0, 8)}-${Date.now().toString(36)}`
+    const projectIdPrefix = data.projectId ? data.projectId.slice(0, 8) : 'standalone'
+    const clientAccessUrl = `client-${projectIdPrefix}-${Date.now().toString(36)}`
 
     // Create design project with default phases
     const designProject = await prismaAny.$transaction(async (tx: any) => {
       const dp = await tx.designProject.create({
         data: {
-          projectId: data.projectId,
+          projectId: data.projectId || null,
           name: data.name,
-          description: data.description,
+          description: data.description || data.scope, // Use scope as description if provided
           projectType: data.projectType,
-          budgetTotal: project.budgetTotal ? new prismaAny.Decimal(project.budgetTotal) : null,
-          startDate: project.startDate,
-          endDate: project.endDate,
+          budgetTotal: data.budget
+            ? new prismaAny.Decimal(data.budget)
+            : project?.budgetTotal
+            ? new prismaAny.Decimal(project.budgetTotal)
+            : null,
+          startDate: project?.startDate || new Date(),
+          endDate: project?.endDate || null,
           clientAccessUrl,
           clientAccessEnabled: true,
         },

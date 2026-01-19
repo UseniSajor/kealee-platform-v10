@@ -17,10 +17,11 @@
   },
   "devDependencies": {
     "@types/node": "^20.19.0",
-    "typescript": "^5.9.0",
-    "turbo": "^2.7.0",
+    "eslint": "^9.39.0",
     "prettier": "^3.7.0",
-    "eslint": "^9.39.0"
+    "tsx": "^4.7.0",
+    "turbo": "^2.7.0",
+    "typescript": "^5.9.0"
   },
   "packageManager": "pnpm@8.12.0"
 }

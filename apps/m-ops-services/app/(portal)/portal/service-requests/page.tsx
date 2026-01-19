@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
+import { api } from "@/lib/api";
+import { getPrimaryOrgId } from "@/lib/auth";
 import type { GCServiceRequest } from "@/components/portal/ServiceRequestWizard";
 
 function formatRelative(iso: string) {
@@ -54,11 +56,36 @@ export default function ServiceRequestsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/service-requests", { cache: "no-store" });
-      const data = (await res.json()) as { ok: boolean; data: GCServiceRequest[]; message?: string };
-      if (!res.ok || !data.ok) throw new Error(data.message || "Failed to load requests");
-      setRequests(data.data || []);
-      if (!activeId && data.data?.[0]?.id) setActiveId(data.data[0].id);
+      const data = await api.listServiceRequests();
+      
+      // Map backend format to frontend format
+      const mappedRequests: GCServiceRequest[] = (data.serviceRequests || []).map((r: any) => ({
+        id: r.id,
+        title: r.title,
+        description: r.description || null,
+        category: r.category as GCServiceRequest["category"],
+        priority: (r.priority === 'urgent' ? 'Urgent' : 'Normal') as GCServiceRequest["priority"],
+        status: (
+          r.status === 'completed' ? 'Completed' :
+          r.status === 'in_progress' ? 'In Progress' :
+          r.status === 'assigned' ? 'Assigned' :
+          'Submitted'
+        ) as GCServiceRequest["status"],
+        projectId: (r as any).projectId || null,
+        projectName: (r as any).projectName || null,
+        createdAt: r.createdAt || new Date().toISOString(),
+        assignedPm: (r as any).assignedTo ? {
+          name: (r as any).assignedToName || 'Assigned PM',
+          email: (r as any).assignedToEmail,
+        } : null,
+        timeSpentMinutes: (r as any).timeSpentMinutes || 0,
+        attachments: (r as any).attachments || [],
+        thread: (r as any).thread || [],
+        satisfaction: (r as any).satisfaction || null,
+      }));
+      
+      setRequests(mappedRequests);
+      if (!activeId && mappedRequests[0]?.id) setActiveId(mappedRequests[0].id);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load requests");
     } finally {
@@ -76,22 +103,22 @@ export default function ServiceRequestsPage() {
     if (message.trim().length < 2) return;
     const text = message.trim();
     setMessage("");
-    await fetch("/api/service-requests", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "addMessage", requestId: active.id, message: text }),
-    });
-    await load();
+    try {
+      await api.addServiceRequestMessage(active.id, text);
+      await load();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed to send message");
+    }
   }
 
   async function setSatisfaction(rating: number) {
     if (!active) return;
-    await fetch("/api/service-requests", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "setSatisfaction", requestId: active.id, rating }),
-    });
-    await load();
+    try {
+      await api.setServiceRequestSatisfaction(active.id, rating);
+      await load();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed to set satisfaction");
+    }
   }
 
   return (

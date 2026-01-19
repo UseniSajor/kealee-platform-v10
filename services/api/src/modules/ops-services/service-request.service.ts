@@ -53,9 +53,14 @@ export const serviceRequestService = {
       },
     })
 
-    // Auto-assign PM based on workload (simplified - can be enhanced)
-    // TODO: Implement PM assignment algorithm
-    // For now, leave assignedTo as null (PM will claim from queue)
+    // Auto-assign PM based on workload balancing
+    try {
+      const { pmService } = await import('../pm/pm.service')
+      await pmService.assignToBestPM(request.id, data.orgId)
+    } catch (error) {
+      // If assignment fails, leave unassigned (PM can claim from queue)
+      console.error('Failed to auto-assign PM:', error)
+    }
 
     // Log audit
     await auditService.recordAudit({
@@ -455,5 +460,95 @@ export const serviceRequestService = {
     })
 
     return tasks
+  },
+
+  /**
+   * Add message to service request thread
+   */
+  async addMessage(requestId: string, data: {
+    message: string
+    userId: string
+  }) {
+    const request = await prismaAny.serviceRequest.findUnique({
+      where: { id: requestId },
+    })
+
+    if (!request) {
+      throw new NotFoundError('ServiceRequest', requestId)
+    }
+
+    // Get existing metadata
+    const metadata = (request.metadata as any) || {}
+    const thread = Array.isArray(metadata.thread) ? metadata.thread : []
+
+    // Add new message
+    thread.push({
+      id: `msg_${Date.now()}`,
+      at: new Date().toISOString(),
+      from: 'Customer',
+      message: data.message,
+    })
+
+    const updated = await prismaAny.serviceRequest.update({
+      where: { id: requestId },
+      data: {
+        metadata: {
+          ...metadata,
+          thread,
+        },
+      },
+    })
+
+    await eventService.recordEvent({
+      type: 'SERVICE_REQUEST_MESSAGE_ADDED',
+      entityType: 'ServiceRequest',
+      entityId: requestId,
+      userId: data.userId,
+      payload: {
+        messageId: thread[thread.length - 1].id,
+      },
+    })
+
+    return updated
+  },
+
+  /**
+   * Set satisfaction rating for service request
+   */
+  async setSatisfaction(requestId: string, data: {
+    rating: number
+    userId: string
+  }) {
+    const request = await prismaAny.serviceRequest.findUnique({
+      where: { id: requestId },
+    })
+
+    if (!request) {
+      throw new NotFoundError('ServiceRequest', requestId)
+    }
+
+    const metadata = (request.metadata as any) || {}
+
+    const updated = await prismaAny.serviceRequest.update({
+      where: { id: requestId },
+      data: {
+        metadata: {
+          ...metadata,
+          satisfaction: Math.max(1, Math.min(5, data.rating)),
+        },
+      },
+    })
+
+    await eventService.recordEvent({
+      type: 'SERVICE_REQUEST_SATISFACTION_SET',
+      entityType: 'ServiceRequest',
+      entityId: requestId,
+      userId: data.userId,
+      payload: {
+        rating: data.rating,
+      },
+    })
+
+    return updated
   },
 }

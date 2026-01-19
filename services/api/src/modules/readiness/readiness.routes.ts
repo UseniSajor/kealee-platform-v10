@@ -151,5 +151,19 @@ export async function readinessRoutes(fastify: FastifyInstance) {
       return reply.send({ items })
     }
   )
+
+  // GET /readiness/projects/:projectId/gates - Get readiness gates status
+  fastify.get(
+    '/projects/:projectId/gates',
+    {
+      preHandler: [authenticateUser, validateParams(z.object({ projectId: z.string().uuid() }))],
+    },
+    async (request, reply) => {
+      const user = (request as any).user as { id: string }
+      const { projectId } = request.params as { projectId: string }
+      const gates = await readinessService.getReadinessGates(projectId, user.id)
+      return reply.send(gates)
+    }
+  )
 }
 

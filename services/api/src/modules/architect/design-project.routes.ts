@@ -5,10 +5,13 @@ import { validateParams, validateBody, validateQuery } from '../../middleware/va
 import { designProjectService } from './design-project.service'
 
 const createDesignProjectSchema = z.object({
-  projectId: z.string().uuid(),
+  projectId: z.string().uuid().optional(), // Optional - can create standalone
   name: z.string().min(1),
   description: z.string().optional(),
   projectType: z.enum(['RESIDENTIAL', 'COMMERCIAL', 'INSTITUTIONAL', 'MIXED_USE']),
+  clientId: z.string().uuid().optional(),
+  scope: z.string().optional(),
+  budget: z.number().positive().optional(),
 })
 
 const updateDesignProjectSchema = z.object({
