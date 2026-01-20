@@ -66,6 +66,7 @@ import { permitComplianceRoutes } from './modules/permits/permit-compliance.rout
 import { permitsApiRoutes } from './modules/permits-api/permits-api.routes'
 import { apiKeyRoutes } from './modules/api-keys/api-key.routes'
 import { webhookRoutes } from './modules/webhooks/webhook.routes'
+import { webhookStatusRoutes } from './modules/webhooks/webhook-status.routes'
 import { milestoneRoutes } from './modules/milestones/milestone.routes'
 import { milestoneUploadRoutes } from './modules/milestones/milestone-upload.routes'
 import { milestoneReviewRoutes } from './modules/milestones/milestone-review.routes'
@@ -276,6 +277,7 @@ const start = async () => {
     await fastify.register(permitsApiRoutes) // Unified API routes (no prefix, uses /api/v1)
     await fastify.register(apiKeyRoutes) // API key management
     await fastify.register(webhookRoutes) // Webhook management
+    await fastify.register(webhookStatusRoutes) // Webhook status and monitoring
     await fastify.register(serviceRequestRoutes, { prefix: '/ops-services' })
     await fastify.register(servicePlanRoutes, { prefix: '/ops-services' })
     await fastify.register(workflowRoutes, { prefix: '/workflow' })

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { ErrorBoundary } from "@kealee/ui";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 import { Toaster } from "sonner";
 import "./globals.css";
 

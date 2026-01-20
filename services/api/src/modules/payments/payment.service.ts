@@ -373,8 +373,256 @@ export const paymentService = {
 
   /**
    * Get payment history for a project (Prompt 3.4)
+   * Enhanced with filtering, pagination, and detailed transaction info
    */
-  async getPaymentHistory(projectId: string, userId: string) {
+  /**
+   * Create payment intent with flexible options
+   * Supports creating payment intents with/without customer, with/without payment method
+   */
+  async createPaymentIntent(data: {
+    amount: number
+    currency: string
+    description?: string
+    customerId?: string
+    paymentMethodId?: string
+    savePaymentMethod?: boolean
+    metadata?: Record<string, any>
+    userId: string
+    userEmail?: string
+  }) {
+    const stripe = getStripe()
+
+    // Attach payment method to customer if provided
+    if (data.paymentMethodId && data.customerId) {
+      await stripe.paymentMethods.attach(data.paymentMethodId, {
+        customer: data.customerId,
+      })
+
+      if (data.savePaymentMethod) {
+        // Set as default payment method
+        await stripe.customers.update(data.customerId, {
+          invoice_settings: {
+            default_payment_method: data.paymentMethodId,
+          },
+        })
+      }
+    }
+
+    let paymentIntent: any
+
+    if (data.paymentMethodId && data.customerId) {
+      // Create payment intent with specific payment method
+      paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(data.amount * 100), // Convert to cents
+        currency: data.currency.toLowerCase(),
+        customer: data.customerId,
+        payment_method: data.paymentMethodId,
+        off_session: false,
+        confirm: true,
+        description: data.description,
+        metadata: {
+          ...data.metadata,
+          userId: data.userId,
+          userEmail: data.userEmail || '',
+        },
+        return_url: `${process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/payments/return`,
+      })
+    } else if (data.customerId) {
+      // Create payment intent for customer (will use default payment method)
+      paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(data.amount * 100),
+        currency: data.currency.toLowerCase(),
+        customer: data.customerId,
+        description: data.description,
+        metadata: {
+          ...data.metadata,
+          userId: data.userId,
+          userEmail: data.userEmail || '',
+        },
+      })
+    } else {
+      // Create payment intent without customer
+      paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(data.amount * 100),
+        currency: data.currency.toLowerCase(),
+        description: data.description,
+        metadata: {
+          ...data.metadata,
+          userId: data.userId,
+          userEmail: data.userEmail || '',
+        },
+      })
+    }
+
+    // Save payment record in database
+    const payment = await prismaAny.payment.create({
+      data: {
+        stripePaymentIntentId: paymentIntent.id,
+        amount: data.amount,
+        currency: data.currency.toLowerCase(),
+        status: paymentIntent.status.toUpperCase() as any,
+        description: data.description,
+        metadata: data.metadata || {},
+        createdBy: data.userId,
+        orgId: data.metadata?.orgId || null,
+        projectId: data.metadata?.projectId || null,
+        milestoneId: data.metadata?.milestoneId || null,
+        paidAt: paymentIntent.status === 'succeeded' ? new Date() : null,
+      },
+    })
+
+    return {
+      paymentId: payment.id,
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
+      status: paymentIntent.status,
+      requiresAction: paymentIntent.status === 'requires_action',
+      nextAction: paymentIntent.next_action,
+    }
+  },
+
+  /**
+   * Get payment history for a user (across all projects/orgs)
+   */
+  async getUserPaymentHistory(
+    userId: string,
+    options?: {
+      limit?: number
+      offset?: number
+      status?: string
+      startDate?: Date
+      endDate?: Date
+      startingAfter?: string
+    }
+  ) {
+    const where: any = {
+      createdBy: userId,
+    }
+
+    if (options?.status) {
+      where.status = options.status.toUpperCase()
+    }
+
+    if (options?.startDate || options?.endDate) {
+      where.createdAt = {}
+      if (options?.startDate) {
+        where.createdAt.gte = options.startDate
+      }
+      if (options?.endDate) {
+        where.createdAt.lte = options.endDate
+      }
+    }
+
+    if (options?.startingAfter) {
+      const afterPayment = await prismaAny.payment.findUnique({
+        where: { id: options.startingAfter },
+        select: { createdAt: true },
+      })
+      if (afterPayment) {
+        where.createdAt = {
+          ...where.createdAt,
+          lt: afterPayment.createdAt,
+        }
+      }
+    }
+
+    const payments = await prismaAny.payment.findMany({
+      where,
+      take: options?.limit || 50,
+      skip: options?.offset || 0,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        org: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        project: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    })
+
+    // Get Stripe payment intent details
+    const stripe = getStripe()
+    const paymentsWithDetails = await Promise.all(
+      payments.map(async (payment) => {
+        try {
+          const paymentIntent = await stripe.paymentIntents.retrieve(
+            payment.stripePaymentIntentId,
+            { expand: ['customer', 'payment_method'] }
+          )
+
+          return {
+            id: payment.id,
+            amount: payment.amount,
+            currency: payment.currency,
+            status: payment.status,
+            description: payment.description,
+            metadata: payment.metadata,
+            createdAt: payment.createdAt,
+            paidAt: payment.paidAt,
+            org: payment.org,
+            project: payment.project,
+            stripe_details: {
+              status: paymentIntent.status,
+              amount_received: paymentIntent.amount_received ? paymentIntent.amount_received / 100 : null,
+              customer: paymentIntent.customer,
+              payment_method: paymentIntent.payment_method
+                ? {
+                    type: (paymentIntent.payment_method as any).type,
+                    card: (paymentIntent.payment_method as any).card
+                      ? {
+                          brand: (paymentIntent.payment_method as any).card?.brand,
+                          last4: (paymentIntent.payment_method as any).card?.last4,
+                          exp_month: (paymentIntent.payment_method as any).card?.exp_month,
+                          exp_year: (paymentIntent.payment_method as any).card?.exp_year,
+                        }
+                      : null,
+                  }
+                : null,
+            },
+          }
+        } catch (error) {
+          // Return without Stripe details if retrieval fails
+          return {
+            id: payment.id,
+            amount: payment.amount,
+            currency: payment.currency,
+            status: payment.status,
+            description: payment.description,
+            metadata: payment.metadata,
+            createdAt: payment.createdAt,
+            paidAt: payment.paidAt,
+            org: payment.org,
+            project: payment.project,
+            stripe_details: null,
+          }
+        }
+      })
+    )
+
+    return {
+      payments: paymentsWithDetails,
+      hasMore: payments.length === (options?.limit || 50),
+    }
+  },
+
+  async getPaymentHistory(
+    projectId: string,
+    userId: string,
+    filters?: {
+      limit?: number
+      offset?: number
+      status?: string
+      startDate?: Date
+      endDate?: Date
+    }
+  ) {
     const project = await prismaAny.project.findUnique({
       where: { id: projectId },
       include: {
@@ -400,11 +648,30 @@ export const paymentService = {
     })
 
     if (!escrow) {
-      return { transactions: [], escrow: null }
+      return { transactions: [], escrow: null, total: 0 }
     }
 
+    // Build where clause
+    const where: any = { escrowId: escrow.id }
+    if (filters?.status) {
+      where.status = filters.status
+    }
+    if (filters?.startDate || filters?.endDate) {
+      where.createdAt = {}
+      if (filters.startDate) {
+        where.createdAt.gte = filters.startDate
+      }
+      if (filters.endDate) {
+        where.createdAt.lte = filters.endDate
+      }
+    }
+
+    // Get total count
+    const total = await prismaAny.escrowTransaction.count({ where })
+
+    // Get transactions with pagination
     const transactions = await prismaAny.escrowTransaction.findMany({
-      where: { escrowId: escrow.id },
+      where,
       include: {
         milestone: {
           select: {
@@ -415,6 +682,8 @@ export const paymentService = {
         },
       },
       orderBy: { createdAt: 'desc' },
+      take: filters?.limit || 50,
+      skip: filters?.offset || 0,
     })
 
     return {
@@ -534,5 +803,138 @@ export const paymentService = {
 
       throw new ValidationError(`Payment processing failed: ${error.message}`)
     }
+  },
+
+  /**
+   * Attach payment method to customer
+   */
+  async attachPaymentMethod(data: {
+    customerId: string
+    paymentMethodId: string
+    setAsDefault?: boolean
+    userId: string
+  }) {
+    const stripe = getStripe()
+
+    // Attach payment method to customer
+    await stripe.paymentMethods.attach(data.paymentMethodId, {
+      customer: data.customerId,
+    })
+
+    // Set as default payment method if requested
+    if (data.setAsDefault) {
+      await stripe.customers.update(data.customerId, {
+        invoice_settings: {
+          default_payment_method: data.paymentMethodId,
+        },
+      })
+    }
+
+    // Retrieve the payment method details
+    const paymentMethod = await stripe.paymentMethods.retrieve(data.paymentMethodId, {
+      expand: ['customer'],
+    })
+
+    return {
+      id: paymentMethod.id,
+      type: paymentMethod.type,
+      card: paymentMethod.card
+        ? {
+            brand: paymentMethod.card.brand,
+            last4: paymentMethod.card.last4,
+            expMonth: paymentMethod.card.exp_month,
+            expYear: paymentMethod.card.exp_year,
+          }
+        : null,
+      isDefault: data.setAsDefault || false,
+      customerId: data.customerId,
+    }
+  },
+
+  /**
+   * List payment methods for a customer
+   */
+  async listPaymentMethods(customerId: string, userId: string) {
+    const stripe = getStripe()
+
+    // Verify user has access to this customer
+    // (You may want to add additional authorization checks here)
+
+    const paymentMethods = await stripe.paymentMethods.list({
+      customer: customerId,
+      type: 'card',
+    })
+
+    // Get customer to check default payment method
+    const customer = await stripe.customers.retrieve(customerId)
+    const defaultPaymentMethodId =
+      typeof customer.invoice_settings?.default_payment_method === 'string'
+        ? customer.invoice_settings.default_payment_method
+        : customer.invoice_settings?.default_payment_method?.id
+
+    return paymentMethods.data.map((pm) => ({
+      id: pm.id,
+      type: pm.type,
+      card: pm.card
+        ? {
+            brand: pm.card.brand,
+            last4: pm.card.last4,
+            expMonth: pm.card.exp_month,
+            expYear: pm.card.exp_year,
+          }
+        : null,
+      isDefault: pm.id === defaultPaymentMethodId,
+      created: new Date(pm.created * 1000),
+    }))
+  },
+
+  /**
+   * Delete payment method
+   */
+  async deletePaymentMethod(paymentMethodId: string, userId: string) {
+    const stripe = getStripe()
+
+    // Retrieve payment method to get customer ID
+    const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId)
+    const customerId =
+      typeof paymentMethod.customer === 'string'
+        ? paymentMethod.customer
+        : paymentMethod.customer?.id
+
+    if (!customerId) {
+      throw new ValidationError('Payment method is not attached to a customer')
+    }
+
+    // Detach payment method
+    await stripe.paymentMethods.detach(paymentMethodId)
+
+    return { success: true, paymentMethodId, customerId }
+  },
+
+  /**
+   * Set default payment method for customer
+   */
+  async setDefaultPaymentMethod(customerId: string, paymentMethodId: string, userId: string) {
+    const stripe = getStripe()
+
+    // Verify payment method is attached to customer
+    const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId)
+    const pmCustomerId =
+      typeof paymentMethod.customer === 'string'
+        ? paymentMethod.customer
+        : paymentMethod.customer?.id
+
+    if (pmCustomerId !== customerId) {
+      throw new ValidationError('Payment method is not attached to this customer')
+    }
+
+    // Set as default
+    await stripe.customers.update(customerId, {
+      invoice_settings: {
+        default_payment_method: paymentMethodId,
+      },
+    })
+
+    return { success: true, customerId, paymentMethodId }
   },
 }

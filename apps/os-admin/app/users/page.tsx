@@ -1,247 +1,325 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { ProtectedRoute } from '@/components/auth/protected-route'
-import { AppLayout } from '@/components/layout/app-layout'
-import { api } from '@/lib/api'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { Plus, Search } from 'lucide-react'
-import Link from 'next/link'
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { ProtectedRoute } from '@/components/auth/protected-route';
+import { AppLayout } from '@/components/layout/app-layout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Search, 
+  UserPlus, 
+  Edit, 
+  Trash2, 
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  MoreVertical
+} from 'lucide-react';
+import { AdminApiClient } from '@/lib/api/admin-client';
+import { toast } from 'sonner';
+import Link from 'next/link';
 
 interface User {
-  id: string
-  email: string
-  name: string
-  phone?: string
-  status: string
-  createdAt: string
+  id: string;
+  email: string;
+  name: string;
+  role?: string;
+  status: 'active' | 'inactive' | 'suspended' | 'ACTIVE' | 'SUSPENDED' | 'DELETED';
+  createdAt: string;
+  lastLoginAt?: string;
 }
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('')
-  const [page, setPage] = useState(1)
-  const [pagination, setPagination] = useState({ total: 0, limit: 10, totalPages: 0 })
+  const router = useRouter();
+  
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchUsers()
-  }, [page, search, statusFilter])
+    fetchUsers();
+  }, [page, search]);
 
-  async function fetchUsers() {
+  const fetchUsers = async () => {
     try {
-      setLoading(true)
-      const data = await api.getUsers({
+      setLoading(true);
+      setError(null);
+      
+      const data = await AdminApiClient.getUsers({
         page,
-        limit: 10,
+        limit: 20,
         search: search || undefined,
-        status: statusFilter || undefined,
-      })
-      setUsers(data.users || [])
-      setPagination(data.pagination || { total: 0, limit: 10, totalPages: 0 })
+      });
+      
+      setUsers(data.users || []);
+      setTotalPages(data.pagination?.totalPages || 1);
     } catch (err: any) {
-      setError(err.message || 'Failed to load users')
+      setError(err.message || 'Failed to load users');
+      toast.error('Failed to load users');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    setPage(1)
-    fetchUsers()
-  }
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (!confirm(`Are you sure you want to delete ${userName}? This action cannot be undone.`)) {
+      return;
+    }
 
-  const handleStatusFilter = (status: string) => {
-    setStatusFilter(status)
-    setPage(1)
-  }
+    try {
+      await AdminApiClient.deleteUser(userId);
+      toast.success('User deleted successfully');
+      fetchUsers(); // Refresh the list
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete user');
+    }
+  };
+
+  const handleUpdateStatus = async (userId: string, newStatus: string) => {
+    try {
+      await AdminApiClient.updateUser(userId, { status: newStatus });
+      toast.success('User status updated');
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update user status');
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const normalizedStatus = status.toLowerCase();
+    switch (normalizedStatus) {
+      case 'active':
+        return (
+          <Badge className="bg-green-100 text-green-800 border-green-200">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Active
+          </Badge>
+        );
+      case 'inactive':
+        return <Badge variant="outline">Inactive</Badge>;
+      case 'suspended':
+      case 'deleted':
+        return (
+          <Badge className="bg-red-100 text-red-800 border-red-200">
+            {normalizedStatus === 'suspended' ? 'Suspended' : 'Deleted'}
+          </Badge>
+        );
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const getRoleBadge = (role?: string) => {
+    if (!role) return <Badge variant="outline">No Role</Badge>;
+    
+    const colors: Record<string, string> = {
+      admin: 'bg-purple-100 text-purple-800 border-purple-200',
+      user: 'bg-blue-100 text-blue-800 border-blue-200',
+      contractor: 'bg-orange-100 text-orange-800 border-orange-200',
+      manager: 'bg-green-100 text-green-800 border-green-200',
+    };
+    
+    return (
+      <Badge className={colors[role.toLowerCase()] || 'bg-gray-100 text-gray-800 border-gray-200'}>
+        {role.charAt(0).toUpperCase() + role.slice(1)}
+      </Badge>
+    );
+  };
+
+  const normalizeStatus = (status: string): string => {
+    const normalized = status.toLowerCase();
+    if (normalized === 'active') return 'active';
+    if (normalized === 'suspended') return 'suspended';
+    if (normalized === 'deleted') return 'suspended'; // Map deleted to suspended for UI
+    return 'inactive';
+  };
 
   return (
     <ProtectedRoute>
       <AppLayout>
-        <div className="container mx-auto p-6">
-          <div className="flex items-center justify-between mb-6">
+        <div className="container mx-auto p-6 space-y-6">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">Users</h1>
-              <p className="text-gray-600 mt-2">Manage all users in the system</p>
+              <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
+              <p className="text-muted-foreground mt-1">
+                Manage system users, roles, and permissions
+              </p>
             </div>
             <Link href="/users/new">
               <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                New User
+                <UserPlus className="mr-2 h-4 w-4" />
+                Add User
               </Button>
             </Link>
           </div>
 
-          {/* Search and Filters */}
-          <div className="mb-6 space-y-4">
-            <form onSubmit={handleSearch} className="flex gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search users by name or email..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10"
-                />
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Users</CardTitle>
+                  <CardDescription>
+                    View and manage all system users
+                  </CardDescription>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search users..."
+                      className="pl-10 w-[300px]"
+                      value={search}
+                      onChange={(e) => {
+                        setSearch(e.target.value);
+                        setPage(1); // Reset to first page on search
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          fetchUsers();
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
-              <Button type="submit">Search</Button>
-            </form>
-
-            {/* Status Filter */}
-            <div className="flex gap-2">
-              <Button
-                variant={statusFilter === '' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleStatusFilter('')}
-              >
-                All
-              </Button>
-              <Button
-                variant={statusFilter === 'ACTIVE' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleStatusFilter('ACTIVE')}
-              >
-                Active
-              </Button>
-              <Button
-                variant={statusFilter === 'SUSPENDED' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleStatusFilter('SUSPENDED')}
-              >
-                Suspended
-              </Button>
-              <Button
-                variant={statusFilter === 'DELETED' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleStatusFilter('DELETED')}
-              >
-                Deleted
-              </Button>
-            </div>
-          </div>
-
-          {error && (
-            <div className="mb-6 rounded-md bg-red-50 p-4 text-sm text-red-800">
-              {error}
-            </div>
-          )}
-
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"></div>
-                <p className="mt-4 text-gray-600">Loading users...</p>
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="bg-white rounded-lg shadow-sm border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                          No users found
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      users.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell className="font-medium">
-                            <Link href={`/users/${user.id}`} className="hover:underline">
-                              {user.name}
-                            </Link>
-                          </TableCell>
-                          <TableCell className="text-gray-600">{user.email}</TableCell>
-                          <TableCell className="text-gray-600">
-                            {user.phone || '—'}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                user.status === 'ACTIVE'
-                                  ? 'default'
-                                  : user.status === 'SUSPENDED'
-                                  ? 'secondary'
-                                  : 'destructive'
-                              }
-                            >
-                              {user.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-gray-600">
-                            {new Date(user.createdAt).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Link href={`/users/${user.id}`}>
-                              <Button variant="ghost" size="sm">
-                                View
-                              </Button>
-                            </Link>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {/* Pagination */}
-              {pagination.totalPages > 1 && (
-                <div className="mt-6 flex items-center justify-between">
-                  <p className="text-sm text-gray-600">
-                    Showing {((page - 1) * pagination.limit) + 1} to{' '}
-                    {Math.min(page * pagination.limit, pagination.total)} of{' '}
-                    {pagination.total} users
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page === 1}
-                    >
-                      Previous
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
-                      disabled={page === pagination.totalPages}
-                    >
-                      Next
-                    </Button>
+            </CardHeader>
+            
+            <CardContent>
+              {error && (
+                <div className="mb-4 rounded-lg bg-red-50 p-4 border border-red-200">
+                  <div className="flex items-center">
+                    <AlertCircle className="h-5 w-5 text-red-500" />
+                    <span className="ml-2 text-red-800">{error}</span>
                   </div>
                 </div>
               )}
-            </>
-          )}
+
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <span className="ml-2">Loading users...</span>
+                </div>
+              ) : (
+                <>
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>User</TableHead>
+                          <TableHead>Role</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Joined</TableHead>
+                          <TableHead>Last Login</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {users.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                              No users found
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          users.map((user) => (
+                            <TableRow key={user.id}>
+                              <TableCell>
+                                <div>
+                                  <Link 
+                                    href={`/users/${user.id}`}
+                                    className="font-medium hover:underline"
+                                  >
+                                    {user.name}
+                                  </Link>
+                                  <div className="text-sm text-gray-500">{user.email}</div>
+                                </div>
+                              </TableCell>
+                              <TableCell>{getRoleBadge(user.role)}</TableCell>
+                              <TableCell>
+                                <select
+                                  value={normalizeStatus(user.status)}
+                                  onChange={(e) => handleUpdateStatus(user.id, e.target.value)}
+                                  className="rounded border p-1 text-sm bg-white hover:bg-gray-50 cursor-pointer"
+                                >
+                                  <option value="active">Active</option>
+                                  <option value="inactive">Inactive</option>
+                                  <option value="suspended">Suspended</option>
+                                </select>
+                              </TableCell>
+                              <TableCell className="text-gray-600">
+                                {new Date(user.createdAt).toLocaleDateString()}
+                              </TableCell>
+                              <TableCell className="text-gray-600">
+                                {user.lastLoginAt
+                                  ? new Date(user.lastLoginAt).toLocaleDateString()
+                                  : 'Never'}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex justify-end space-x-2">
+                                  <Link href={`/users/${user.id}`}>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                  </Link>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDeleteUser(user.id, user.name)}
+                                    className="text-red-600 hover:text-red-700 hover:border-red-300"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="text-sm text-gray-500">
+                        Page {page} of {totalPages}
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPage(page - 1)}
+                          disabled={page === 1}
+                        >
+                          Previous
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPage(page + 1)}
+                          disabled={page === totalPages}
+                        >
+                          Next
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </AppLayout>
     </ProtectedRoute>
-  )
+  );
 }

@@ -26,19 +26,6 @@
 
 ### **1. Backend API Integration** ⚠️ CRITICAL
 **Status:** Partial - Many frontend apps not connected to Fastify API
-
-**Missing:**
-- [ ] Frontend apps not using `@kealee/api-client` consistently
-- [ ] API endpoints not called from frontend components
-- [ ] Error handling for API failures
-- [ ] Loading states during API calls
-- [ ] Authentication token management in frontend
-
-**Impact:** Apps are UI shells without real data
-
----
-
-### **2. Stripe Payment Processing** ⚠️ CRITICAL
 **Status:** Partial - Checkout exists, webhook is placeholder
 
 **What Exists:**

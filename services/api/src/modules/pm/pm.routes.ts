@@ -5,6 +5,7 @@ import { pmProductivityRoutes } from "./pm-productivity.routes"
 import { pmRealtimeRoutes } from "./pm-realtime.routes"
 import { pmFocusModeRoutes } from "./pm-focus-mode.routes"
 import { pmTaskContextRoutes } from "./pm-task-context.routes"
+import { pmApprovalRoutes } from "./pm-approval.routes"
 import { pmComplianceCheckService } from "./pm-compliance-check.service"
 import { prismaAny } from "../../utils/prisma-helper"
 import { z } from "zod"
@@ -22,6 +23,10 @@ export async function pmRoutes(fastify: FastifyInstance) {
   
   // Register task context routes
   await fastify.register(pmTaskContextRoutes)
+  
+  // Register approval workflow routes
+  await fastify.register(pmApprovalRoutes)
+  
   // GET /pm/stats - PM dashboard stats
   fastify.get("/stats", { preHandler: authenticateUser }, async (request, reply) => {
     const user = (request as any).user

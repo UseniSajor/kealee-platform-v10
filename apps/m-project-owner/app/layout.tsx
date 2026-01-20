@@ -1,30 +1,23 @@
-import type { Metadata } from 'next'
-import { ErrorBoundary } from '@kealee/ui'
-import { Toaster } from 'sonner'
-import './globals.css'
+// apps/m-project-owner/app/layout.tsx
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Kealee Project Owner Hub',
-  description: 'Homeowner-facing hub for projects, readiness, contracts, and milestones.',
-}
+  title: 'Kealee - Project Owner Dashboard',
+  description: 'Manage your construction projects with ease',
+};
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en">
-      <head>
-        <meta name="theme-color" content="#0ea5e9" />
-      </head>
-      <body>
-        <ErrorBoundary>
-          {children}
-          <Toaster position="top-right" />
-        </ErrorBoundary>
-      </body>
+    <html lang="en" className={inter.className}>
+      <body>{children}</body>
     </html>
-  )
+  );
 }
-

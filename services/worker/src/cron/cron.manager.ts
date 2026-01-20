@@ -5,6 +5,7 @@ import { executeWeeklyGCReports } from '../jobs/weekly-gc-reports.job'
 import { executePerformanceCalculation } from '../jobs/performance-calculation.job'
 import { executeReadinessOverdueReminders } from '../jobs/readiness-reminders.job'
 import { executeSalesSlaReminders } from '../jobs/sales-sla-reminders.job'
+import { executeFileCleanup } from '../jobs/file-cleanup.job'
 
 /**
  * Cron job manager
@@ -59,6 +60,9 @@ export class CronManager {
             case 'sales_sla_reminders':
               result = await executeSalesSlaReminders()
               break
+            case 'file_cleanup':
+              result = await executeFileCleanup()
+              break
             default:
               console.error(`❌ Unknown cron job type: ${config.type}`)
               return
@@ -105,6 +109,9 @@ export class CronManager {
 
     // Register sales SLA reminders
     this.registerJob(CRON_JOBS.salesSlaReminders)
+
+    // Register file cleanup
+    this.registerJob(CRON_JOBS.fileCleanup)
 
     console.log(`✅ Registered ${this.jobs.size} cron jobs`)
   }

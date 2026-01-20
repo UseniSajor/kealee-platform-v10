@@ -1,107 +1,83 @@
-import { NextResponse } from "next/server";
-import Stripe from "stripe";
+// apps/m-ops-services/app/api/stripe/checkout/route.ts
+// Stripe Checkout Session creation
 
-type PackageKey = "A" | "B" | "C" | "D";
-type BillingCycle = "monthly" | "annual";
+import { NextRequest, NextResponse } from 'next/server';
 
-const PACKAGE_MONTHLY: Record<PackageKey, number> = {
-  A: 1750,
-  B: 3750,
-  C: 9500,
-  D: 16500,
+const PACKAGE_PRICES: Record<string, number> = {
+  a: 1750,
+  b: 4500,
+  c: 8500,
+  d: 16500,
 };
 
-function annualFromMonthly(monthly: number) {
-  return Math.round(monthly * 12 * 0.85);
-}
-
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const secretKey = process.env.STRIPE_SECRET_KEY;
-    if (!secretKey) {
+    const body = await request.json();
+    const { packageId, email, name } = body;
+
+    if (!packageId || !email || !name) {
       return NextResponse.json(
-        { error: "STRIPE_SECRET_KEY is not set" },
-        { status: 500 }
+        { error: 'Missing required fields' },
+        { status: 400 }
       );
     }
 
-    const stripe = new Stripe(secretKey, { apiVersion: "2024-12-18.acacia" });
+    const price = PACKAGE_PRICES[packageId];
+    if (!price) {
+      return NextResponse.json(
+        { error: 'Invalid package ID' },
+        { status: 400 }
+      );
+    }
 
-    const body = (await req.json()) as {
-      packageKey: PackageKey;
-      billingCycle: BillingCycle;
-      company?: Record<string, unknown>;
-      primaryContact?: {
-        name?: string;
-        email?: string;
-        phone?: string;
-        role?: string;
-      };
-    };
-
-    const packageKey = body.packageKey ?? "B";
-    const billingCycle = body.billingCycle ?? "monthly";
-
-    const monthly = PACKAGE_MONTHLY[packageKey] ?? PACKAGE_MONTHLY.B;
-    const unitAmount =
-      billingCycle === "annual" ? annualFromMonthly(monthly) : monthly;
-
-    const origin = req.headers.get("origin") || "http://localhost:3005";
-    const successUrl = `${origin}/signup?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${origin}/signup?checkout=canceled`;
+    // TODO: Integrate with actual Stripe API
+    // For now, return mock checkout session
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
     const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      payment_method_types: ["card"],
-      customer_email: body?.primaryContact?.email,
+      payment_method_types: ['card'],
+      customer_email: email,
       line_items: [
         {
-          quantity: 1,
           price_data: {
-            currency: "usd",
-            unit_amount: unitAmount * 100,
-            recurring:
-              billingCycle === "annual"
-                ? { interval: "year" }
-                : { interval: "month" },
+            currency: 'usd',
             product_data: {
-              name: `Kealee Ops Services - Package ${packageKey} (GC)`,
-              description:
-                billingCycle === "annual"
-                  ? "Annual billing (15% savings) + 14-day free trial"
-                  : "Monthly billing + 14-day free trial",
+              name: `Package ${packageId.toUpperCase()} - Project Management`,
+            },
+            unit_amount: price * 100, // Convert to cents
+            recurring: {
+              interval: 'month',
             },
           },
+          quantity: 1,
         },
       ],
+      mode: 'subscription',
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
       subscription_data: {
         trial_period_days: 14,
         metadata: {
-          packageKey,
-          billingCycle,
-          companyName: String(body?.company?.name ?? ""),
-          companyType: String(body?.company?.type ?? ""),
-          contactName: body?.primaryContact?.name ?? "",
-          contactRole: body?.primaryContact?.role ?? "",
-          contactPhone: body?.primaryContact?.phone ?? "",
+          packageId,
+          customerName: name,
         },
       },
       metadata: {
-        packageKey,
-        billingCycle,
+        packageId,
+        customerName: name,
       },
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      allow_promotion_codes: true,
     });
 
-    return NextResponse.json({ url: session.url });
-  } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Failed to create checkout session";
+    return NextResponse.json({
+      id: session.id,
+      url: session.url,
+      customerId: session.customer,
+    });
+  } catch (error) {
+    console.error('Error creating Stripe checkout session:', error);
     return NextResponse.json(
-      { error: message },
+      { error: 'Failed to create checkout session' },
       { status: 500 }
     );
   }
 }
-

@@ -6,9 +6,18 @@
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start -p 3000",
-    "lint": "next lint"
+    "lint": "next lint",
+    "deploy": "bash scripts/deploy-marketplace.sh",
+    "deploy:production": "bash scripts/deploy-marketplace.sh production",
+    "deploy:staging": "bash scripts/deploy-marketplace.sh staging",
+    "deploy:preview": "bash scripts/deploy-marketplace.sh preview",
+    "rollback": "bash scripts/rollback.sh",
+    "test": "echo \"No tests specified\" && exit 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@sentry/nextjs": "^8.40.0",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",

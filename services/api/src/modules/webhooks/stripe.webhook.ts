@@ -129,6 +129,10 @@ async function processWebhookEvent(event: Stripe.Event): Promise<void> {
   while (retryCount < maxRetries) {
     try {
       switch (event.type) {
+        case 'checkout.session.completed':
+          await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session)
+          return
+
         case 'customer.subscription.created':
           await handleSubscriptionCreated(event.data.object as Stripe.Subscription)
           return
@@ -174,6 +178,82 @@ async function processWebhookEvent(event: Stripe.Event): Promise<void> {
       console.warn(`⚠️  Retry ${retryCount}/${maxRetries} for event ${event.id} after ${delay}ms`)
       await new Promise((resolve) => setTimeout(resolve, delay))
     }
+  }
+}
+
+/**
+ * Handle checkout.session.completed event
+ * This event fires when a customer completes checkout, including subscription creation
+ */
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session): Promise<void> {
+  try {
+    console.log('✅ Processing checkout.session.completed:', session.id)
+
+    // Only handle subscription checkouts
+    if (session.mode !== 'subscription') {
+      console.log(`ℹ️  Checkout session ${session.id} is not a subscription (mode: ${session.mode}), skipping`)
+      return
+    }
+
+    const subscriptionId = typeof session.subscription === 'string' 
+      ? session.subscription 
+      : session.subscription?.id
+
+    if (!subscriptionId) {
+      console.warn(`⚠️  Checkout session ${session.id} has no subscription ID`)
+      return
+    }
+
+    // Retrieve the full subscription object from Stripe
+    const stripe = getStripe()
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+      expand: ['items.data.price.product'],
+    })
+
+    // The subscription.created event will handle the actual database sync
+    // But we can log this as a successful checkout completion
+    const orgId = session.metadata?.orgId || session.client_reference_id
+    const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id
+
+    // Record event
+    if (orgId) {
+      await eventService.recordEvent({
+        type: 'STRIPE_CHECKOUT_COMPLETED',
+        entityType: 'StripeCheckoutSession',
+        entityId: session.id,
+        orgId,
+        payload: {
+          sessionId: session.id,
+          subscriptionId,
+          customerId,
+          planSlug: subscription.metadata?.planSlug,
+          amountTotal: session.amount_total,
+          currency: session.currency,
+        },
+      })
+    }
+
+    // Log audit
+    if (orgId) {
+      await auditService.recordAudit({
+        action: 'STRIPE_CHECKOUT_COMPLETED',
+        entityType: 'StripeCheckoutSession',
+        entityId: session.id,
+        orgId,
+        reason: `Checkout completed: ${subscription.metadata?.planSlug || 'unknown plan'}`,
+        after: {
+          sessionId: session.id,
+          subscriptionId,
+          amountTotal: session.amount_total,
+          currency: session.currency,
+        },
+      })
+    }
+
+    console.log(`✅ Checkout session completed processed: ${session.id}`)
+  } catch (error: any) {
+    console.error(`❌ Error handling checkout.session.completed for ${session.id}:`, error)
+    throw error
   }
 }
 

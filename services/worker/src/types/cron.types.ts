@@ -7,6 +7,8 @@ export type CronJobType =
   | 'weekly_gc_reports'
   | 'performance_calculation'
   | 'readiness_overdue_reminders'
+  | 'sales_sla_reminders'
+  | 'file_cleanup'
   | 'custom'
 
 export interface CronJobConfig {
@@ -82,6 +84,16 @@ export const CRON_JOBS: Record<string, CronJobConfig> = {
     timezone: 'UTC',
     metadata: {
       description: 'Sends SLA reminders for sales tasks due within 2 hours',
+    },
+  },
+  fileCleanup: {
+    name: 'File Cleanup',
+    type: 'file_cleanup',
+    schedule: '0 2 * * *', // Daily at 2:00 AM UTC
+    enabled: true,
+    timezone: 'UTC',
+    metadata: {
+      description: 'Cleans up incomplete uploads, orphaned files, and old deleted files from S3/R2',
     },
   },
 }

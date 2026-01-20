@@ -479,7 +479,7 @@ EscrowAgreement {
 - Create CloseoutChecklist
 - Track punchlist items
 - Final inspection logged
-- Release final holdback after providing review:
+- Release final holdback:
   - Create EscrowTransaction (RELEASE, $14,750)
   - Update escrow balance to $0
   - Transfer to contractor

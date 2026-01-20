@@ -1,439 +1,147 @@
-# 📊 Deployment Summary - Complete Overview
+# Deployment Summary - P0 Critical Tasks
 
-**Your Kealee Platform is ready for safe, production-grade deployments!**
+## ✅ Completed Tasks
 
----
+### 1. Stripe Webhook Handler Deployment Documentation
+**Status**: ✅ Documentation and test scripts created
 
-## 🎯 **DEPLOYMENT STRATEGY**
+**Files Created**:
+- `DEPLOYMENT_TASKS.md` - Comprehensive deployment guide
+- `apps/m-marketplace/scripts/test-stripe-webhook.sh` - Webhook testing script
 
-```
-┌─────────────┐
-│   Develop   │
-│  (feature   │
-│  branches)  │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│   Preview   │  ← TEST EVERYTHING HERE
-│   Deploy    │
-│ (preview-   │
-│   deploy)   │
-└──────┬──────┘
-       │
-       ▼
-    ✅ Tests Pass?
-       │
-       ▼
-┌─────────────┐
-│ Production  │  ← ONLY AFTER TESTING
-│   Deploy    │
-│   (main)    │
-└─────────────┘
-```
+**Key Information**:
+- Webhook endpoint: `POST /billing/stripe/webhook` (Backend API)
+- Next.js proxy: `POST /api/webhooks/stripe` (forwards to backend)
+- Production URL: `https://api.kealee.com/billing/stripe/webhook`
+- Local test URL: `http://localhost:3001/billing/stripe/webhook`
+
+**Next Steps**:
+1. Configure `STRIPE_WEBHOOK_SECRET` in production environment
+2. Add webhook endpoint in Stripe Dashboard
+3. Test with Stripe CLI: `stripe listen --forward-to localhost:3001/billing/stripe/webhook`
+4. Verify all event types are processed correctly
+
+**Verification Checklist**:
+- [ ] Environment variable `STRIPE_WEBHOOK_SECRET` configured
+- [ ] Stripe Dashboard webhook endpoint added and active
+- [ ] Test events successfully processed
+- [ ] Database subscriptions synced
+- [ ] Module entitlements working
+- [ ] Audit logs created
 
 ---
 
-## ✅ **WHAT'S READY**
+### 2. m-marketplace Landing Page Deployment
+**Status**: ⚠️ Ready for deployment, needs execution
 
-### **4 Apps Built & Tested:**
-1. ✅ **os-admin** - Internal admin console
-2. ✅ **os-pm** - Project management portal
-3. ✅ **m-ops-services** - PM services + Stripe
-4. ✅ **m-architect** - Design platform
+**Files Available**:
+- `apps/m-marketplace/scripts/deploy-marketplace.sh` - Deployment script (Bash)
+- `apps/m-marketplace/scripts/deploy-marketplace.ps1` - Deployment script (PowerShell)
+- `apps/m-marketplace/scripts/rollback.sh` - Rollback script
 
-### **Missing Modules Created:**
-- ✅ `@kealee/shared-ai` package
-- ✅ ReviewComments component
-- ✅ ConflictDetectorService
-- ✅ Jurisdiction config components
-- ✅ Canvas/PDF fixes
-
-### **Backend Deployed:**
-- ✅ Railway API running
-- ✅ URL: `https://kealee-platform-v10-production.up.railway.app`
-- ✅ Apollo Server v4
-- ✅ GraphQL endpoint active
-
----
-
-## 📚 **DOCUMENTATION CREATED**
-
-### **🚀 Deployment Guides:**
-| Document | Purpose | Time to Read |
-|----------|---------|--------------|
-| `PREVIEW_DEPLOY_QUICK_START.md` | **START HERE** - 15 min setup | 5 min |
-| `VERCEL_PREVIEW_DEPLOYMENT_GUIDE.md` | Complete workflow guide | 15 min |
-| `VERCEL_DEPLOY_4_APPS.md` | Direct-to-production guide | 10 min |
-| `VERCEL_QUICK_DEPLOY_CARD.md` | Copy-paste configs | 2 min |
-
-### **🧪 Testing:**
-| Document | Purpose | Time |
-|----------|---------|------|
-| `PREVIEW_TEST_CHECKLIST.md` | 50+ test checks | 20 min/app |
-
-### **🔧 Scripts:**
-| Script | Purpose | Platform |
-|--------|---------|----------|
-| `scripts/preview-deploy.sh` | Automated deployment | Mac/Linux/GitBash |
-
-### **📖 Reference:**
-| Document | Purpose |
-|----------|---------|
-| `ENV_VARIABLES_TEMPLATE.md` | All environment variables |
-| `HOW_TO_GET_ENV_VARIABLES.md` | Get Supabase/Stripe keys |
-| `STRIPE_PRODUCTS_TIERS.md` | Stripe configuration |
-
----
-
-## 🎯 **RECOMMENDED DEPLOYMENT PATH**
-
-### **Option 1: Safe Preview-First (RECOMMENDED) 🛡️**
-
-**Time:** 30 minutes  
-**Risk:** Low  
-
+**Deployment Command**:
 ```bash
-# Step 1: Setup (5 min)
-git checkout -b preview-deploy
-git push origin preview-deploy
-
-# Step 2: Deploy to Preview (10 min)
-# Import os-admin to Vercel
-# Set Root Directory: apps/os-admin
-# Add environment variables for PREVIEW only
-
-# Step 3: Test (10 min)
-# Open preview URL
-# Use PREVIEW_TEST_CHECKLIST.md
-
-# Step 4: Promote to Production (5 min)
-# Configure production branch in Vercel
-# Add production environment variables
-# Merge preview-deploy to main
-git checkout main
-git merge preview-deploy
-git push origin main
+cd apps/m-marketplace
+./scripts/deploy-marketplace.sh staging
+# or
+npm run deploy:staging
 ```
 
-**Benefits:**
-- ✅ Test everything before production
-- ✅ Safe rollback if issues found
-- ✅ Separate Stripe TEST/LIVE keys
-- ✅ No production downtime
+**Environment Variables Needed**:
+- `NEXT_PUBLIC_API_URL`
+- `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_GA_MEASUREMENT_ID`
+- `NEXT_PUBLIC_FB_PIXEL_ID`
+- `NEXT_PUBLIC_GTM_ID`
+- `NEXT_PUBLIC_HOTJAR_ID`
+- `NEXT_PUBLIC_SENTRY_DSN`
+- `VERCEL_TOKEN`
+
+**Post-Deployment Verification**:
+1. Check staging URL: `https://staging-marketplace.kealee.com`
+2. Verify analytics tracking (GA4, Facebook Pixel, GTM, Hotjar)
+3. Test SEO meta tags and Schema.org markup
+4. Verify PerformanceMonitor is tracking metrics
+5. Check Sentry error tracking
 
 ---
 
-### **Option 2: Direct to Production ⚡**
+### 3. SSL Certificate Issues
+**Status**: ⚠️ Test script created, needs execution
 
-**Time:** 20 minutes  
-**Risk:** Medium  
+**Files Created**:
+- `scripts/test-ssl-certificates.sh` - SSL certificate testing script
 
+**Test Command**:
 ```bash
-# Deploy all apps directly to production
-# Follow VERCEL_QUICK_DEPLOY_CARD.md
+./scripts/test-ssl-certificates.sh
 ```
 
-**When to use:**
-- Testing environment already available
-- Apps thoroughly tested locally
-- Confident in stability
-- Need to go live quickly
+**Domains to Test**:
+- api.kealee.com
+- ops.kealee.com
+- app.kealee.com
+- architect.kealee.com
+- permits.kealee.com
+- marketplace.kealee.com
+- staging-marketplace.kealee.com
+- pm.kealee.com
+- admin.kealee.com
+
+**Common SSL Issues to Check**:
+1. **Certificate Expiration**: Check if certificates are expiring soon (< 30 days)
+2. **Certificate Chain**: Verify intermediate certificates are included
+3. **Trust Chain**: Ensure root CA is trusted
+4. **Mixed Content**: Check for HTTP resources on HTTPS pages
+5. **TLS Version**: Verify TLS 1.2+ is used
+
+**Fix Steps**:
+1. Run SSL test script to identify issues
+2. For Let's Encrypt: Run `certbot renew --force-renewal`
+3. For Cloudflare: Verify "Full (strict)" mode enabled
+4. Update certificate chain if needed
+5. Test all subdomains after fixes
 
 ---
 
-## 🔑 **REQUIRED CREDENTIALS**
+## Quick Reference
 
-### **✅ Already Have:**
-- Railway API URL
-- GitHub repository
+### Stripe Webhook
+- **Production**: `https://api.kealee.com/billing/stripe/webhook`
+- **Local Test**: `stripe listen --forward-to localhost:3001/billing/stripe/webhook`
+- **Test Script**: `apps/m-marketplace/scripts/test-stripe-webhook.sh`
 
-### **⏳ Need to Get:**
-- Supabase URL & API Key → https://supabase.com/dashboard
-- Stripe API Keys → https://dashboard.stripe.com
+### Marketplace Deployment
+- **Staging**: `https://staging-marketplace.kealee.com`
+- **Production**: `https://marketplace.kealee.com`
+- **Deploy Script**: `apps/m-marketplace/scripts/deploy-marketplace.sh`
 
-**See:** `HOW_TO_GET_ENV_VARIABLES.md` for detailed instructions
-
----
-
-## 📋 **ENVIRONMENT VARIABLES SUMMARY**
-
-### **All Apps Need:**
-```bash
-NEXT_PUBLIC_API_URL=https://kealee-platform-v10-production.up.railway.app
-NEXT_PUBLIC_SUPABASE_URL=your_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
-NEXT_PUBLIC_APP_NAME=App Name
-NEXT_PUBLIC_ENVIRONMENT=preview|production
-```
-
-### **m-ops-services Additional:**
-```bash
-STRIPE_SECRET_KEY=sk_test_xxx  # Preview: TEST key
-STRIPE_SECRET_KEY=sk_live_xxx  # Production: LIVE key
-NEXT_PUBLIC_APP_URL=your_vercel_url
-STRIPE_PRICE_PACKAGE_A=1750
-STRIPE_PRICE_PACKAGE_B=3780
-STRIPE_PRICE_PACKAGE_C=9700
-STRIPE_PRICE_PACKAGE_D=16800
-```
+### SSL Testing
+- **Test Script**: `scripts/test-ssl-certificates.sh`
+- **SSL Labs**: https://www.ssllabs.com/ssltest/
 
 ---
 
-## 🎬 **QUICK START COMMANDS**
+## Next Actions
 
-### **Setup Preview Deployment:**
-```bash
-cd "c:\Kealee-Platform v10"
-git checkout -b preview-deploy
-git push origin preview-deploy
-```
+1. **Immediate (P0)**:
+   - [ ] Deploy Stripe webhook handler (configure environment variables)
+   - [ ] Test Stripe webhook with Stripe CLI
+   - [ ] Deploy m-marketplace to staging
+   - [ ] Run SSL certificate tests
 
-### **Test Locally Before Deploy:**
-```bash
-# Test os-admin
-cd apps/os-admin
-pnpm build
-
-# Test os-pm
-cd ../os-pm
-pnpm build
-
-# Test m-architect
-cd ../m-architect
-pnpm build
-
-# Test m-ops-services
-cd ../m-ops-services
-pnpm build
-```
-
-### **Deploy Using Script (Mac/Linux/GitBash):**
-```bash
-bash scripts/preview-deploy.sh
-```
-
-### **Promote to Production:**
-```bash
-git checkout main
-git merge preview-deploy
-git push origin main
-```
+2. **Follow-up**:
+   - [ ] Verify all webhook events are processed
+   - [ ] Set up monitoring for webhook failures
+   - [ ] Configure SSL certificate auto-renewal alerts
+   - [ ] Deploy m-marketplace to production after staging verification
 
 ---
 
-## 📊 **DEPLOYMENT METRICS**
+## Support Resources
 
-### **Expected Deployment Times:**
-
-| App | Build Time | Total Deploy Time |
-|-----|-----------|-------------------|
-| os-admin | 2-3 min | 3-4 min |
-| os-pm | 2-3 min | 3-4 min |
-| m-architect | 3-4 min | 4-5 min |
-| m-ops-services | 3-4 min | 4-5 min |
-
-**Total for all 4 apps:** ~15-20 minutes
-
----
-
-## ✅ **POST-DEPLOYMENT CHECKLIST**
-
-### **After Each App Deploys:**
-- [ ] Deployment shows "Ready" in Vercel
-- [ ] Preview/Production URL loads
-- [ ] No console errors (F12)
-- [ ] Can log in (if auth set up)
-- [ ] API calls return data
-- [ ] Environment indicator shows (preview/production)
-
-### **After All Apps Deploy:**
-- [ ] All 4 apps accessible
-- [ ] Cross-app navigation works
-- [ ] Shared authentication works
-- [ ] API consistency across apps
-- [ ] Analytics enabled
-- [ ] Custom domains configured (optional)
-
----
-
-## 🔄 **ONGOING MAINTENANCE**
-
-### **Weekly:**
-- Review error logs in Vercel
-- Check Vercel Analytics
-- Monitor API response times
-- Review Stripe transactions (m-ops-services)
-
-### **Monthly:**
-- Update dependencies
-- Review and rotate API keys
-- Check Lighthouse scores
-- Performance optimization
-
-### **As Needed:**
-- Add new features via preview branches
-- Deploy hotfixes via preview testing
-- Scale Vercel plan if needed
-- Add custom domains
-
----
-
-## 🚨 **EMERGENCY PROCEDURES**
-
-### **If Preview Deploy Breaks:**
-```bash
-# Fix in current branch
-git add .
-git commit -m "fix: resolve issue"
-git push origin preview-deploy
-
-# Vercel redeploys automatically
-```
-
-### **If Production Deploy Breaks:**
-
-**Option 1: Instant Rollback (Vercel)**
-1. Go to Vercel → Deployments
-2. Find last working deployment
-3. Click "..." → "Promote to Production"
-
-**Option 2: Git Revert**
-```bash
-git revert HEAD
-git push origin main
-```
-
-**Option 3: Deploy Previous Commit**
-```bash
-git reset --hard HEAD~1
-git push origin main --force  # ⚠️ Use with caution
-```
-
----
-
-## 💰 **COST ESTIMATE**
-
-### **Vercel Free Tier:**
-- ✅ 100 deployments/day (shared across all projects)
-- ✅ 100GB bandwidth/month
-- ✅ Unlimited preview deployments
-- ✅ Custom domains
-
-**Current Usage:**
-- 4 apps = 4 projects
-- With preview workflow = ~10-20 deploys/day
-- Well within free tier limits!
-
-### **If You Need More:**
-Vercel Pro: $20/month per team member
-- 6,000 builds/month
-- 1TB bandwidth
-- Deployment protection
-- Analytics
-
----
-
-## 🎉 **SUCCESS CRITERIA**
-
-### **You're Live When:**
-✅ All 4 apps deployed to production  
-✅ All apps accessible at Vercel URLs  
-✅ Authentication working  
-✅ API calls successful  
-✅ No critical errors  
-✅ Basic functionality tested  
-✅ Team can access apps  
-
-### **You're Production-Ready When:**
-✅ Preview workflow established  
-✅ Test checklist being used  
-✅ Monitoring enabled  
-✅ Rollback tested  
-✅ Team trained on workflow  
-✅ Documentation reviewed  
-✅ Custom domains configured (optional)  
-
----
-
-## 📈 **NEXT STEPS AFTER DEPLOYMENT**
-
-### **Week 1:**
-1. Monitor deployments closely
-2. Fix any issues found in production
-3. Set up error tracking (Sentry)
-4. Configure custom domains
-5. Enable Vercel Analytics
-
-### **Week 2-4:**
-1. Optimize performance
-2. Add missing features
-3. Improve user experience
-4. Set up CI/CD with GitHub Actions
-5. Add end-to-end tests
-
-### **Month 2+:**
-1. Scale based on usage
-2. Add new apps (m-permits-inspections when fixed)
-3. Optimize costs
-4. Advanced monitoring
-5. Team expansion
-
----
-
-## 🎯 **YOUR ACTION ITEMS**
-
-**Today:**
-- [ ] Read `PREVIEW_DEPLOY_QUICK_START.md`
-- [ ] Get Supabase credentials
-- [ ] Create preview-deploy branch
-- [ ] Deploy os-admin to preview
-- [ ] Test preview deployment
-
-**This Week:**
-- [ ] Deploy all 4 apps to preview
-- [ ] Test each app thoroughly
-- [ ] Promote to production
-- [ ] Set up monitoring
-- [ ] Document any issues
-
-**This Month:**
-- [ ] Configure custom domains
-- [ ] Optimize performance
-- [ ] Set up CI/CD
-- [ ] Train team on workflow
-- [ ] Plan next features
-
----
-
-## 📚 **QUICK REFERENCE**
-
-| I Want To... | Use This Guide |
-|--------------|----------------|
-| Deploy safely with testing | `PREVIEW_DEPLOY_QUICK_START.md` |
-| Deploy quickly to production | `VERCEL_QUICK_DEPLOY_CARD.md` |
-| Understand complete workflow | `VERCEL_PREVIEW_DEPLOYMENT_GUIDE.md` |
-| Test before promoting | `PREVIEW_TEST_CHECKLIST.md` |
-| Get environment variables | `HOW_TO_GET_ENV_VARIABLES.md` |
-| Configure Stripe | `STRIPE_PRODUCTS_TIERS.md` |
-| Automate deployment | `scripts/preview-deploy.sh` |
-
----
-
-## 🎊 **CONGRATULATIONS!**
-
-You have a complete, production-ready deployment system:
-
-✅ 4 fully tested apps  
-✅ Safe preview-first workflow  
-✅ Comprehensive documentation  
-✅ Automated scripts  
-✅ Testing checklists  
-✅ Rollback procedures  
-✅ Monitoring ready  
-
-**You're ready to deploy! Start with `PREVIEW_DEPLOY_QUICK_START.md`** 🚀
-
----
-
-**Questions? Issues? Check the troubleshooting sections in each guide!**
+- **Stripe Webhooks**: https://stripe.com/docs/webhooks
+- **Stripe CLI**: https://stripe.com/docs/stripe-cli
+- **Vercel Deployment**: https://vercel.com/docs
+- **SSL Labs Test**: https://www.ssllabs.com/ssltest/
+- **Let's Encrypt**: https://letsencrypt.org/

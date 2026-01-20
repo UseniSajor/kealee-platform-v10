@@ -1,550 +1,537 @@
-'use client'
+'use client';
 
-import { useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { api, type ProjectCategory } from '@/lib/api'
-import { uploadFileToS3 } from '@/lib/s3-upload'
-import { checkReadinessGates } from '@/lib/readiness-gates'
+import { useState, useEffect } from 'react';
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Button, Input, Textarea, ProgressBar, StepIndicator } from '@kealee/ui';
 
-type StepId = 1 | 2 | 3 | 4
+const STEPS = [
+  { id: 'basics', title: 'Project Basics', subtitle: 'Name and location' },
+  { id: 'scope', title: 'Project Scope', subtitle: 'Timeline and budget' },
+  { id: 'contractors', title: 'Contractors', subtitle: 'Find or invite' },
+  { id: 'review', title: 'Review', subtitle: 'Confirm and create' },
+];
 
-const CATEGORY_OPTIONS = [
-  { value: 'KITCHEN', label: 'Kitchen' },
-  { value: 'BATHROOM', label: 'Bathroom' },
-  { value: 'ADDITION', label: 'Addition' },
-  { value: 'NEW_CONSTRUCTION', label: 'New construction' },
-  { value: 'RENOVATION', label: 'Renovation' },
-  { value: 'OTHER', label: 'Other' },
-] as const
-
-const STEPS: Array<{ id: StepId; label: string }> = [
-  { id: 1, label: 'Basic Info' },
-  { id: 2, label: 'Scope' },
-  { id: 3, label: 'Documents' },
-  { id: 4, label: 'Review & Submit' },
-]
-
-function cx(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ')
+interface ProjectFormData {
+  name: string;
+  location: string;
+  type: string;
+  budget: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+  contractorChoice: string;
 }
 
-export default function NewProjectWizardPage() {
-  const router = useRouter()
+export default function NewProjectPage() {
+  const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState<ProjectFormData>({
+    name: '',
+    location: '',
+    type: '',
+    budget: '',
+    startDate: '',
+    endDate: '',
+    description: '',
+    contractorChoice: '',
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
-  const [step, setStep] = useState<StepId>(1)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [projectId, setProjectId] = useState<string | null>(null)
-
-  // Step 1: Basic Info
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [category, setCategory] = useState<ProjectCategory>('KITCHEN')
-  const [location, setLocation] = useState('')
-  const [budget, setBudget] = useState<string>('')
-
-  // Step 2: Scope
-  const [workType, setWorkType] = useState('')
-  const [timeline, setTimeline] = useState('')
-  const [requirements, setRequirements] = useState('')
-
-  // Step 3: Documents
-  const [sowFile, setSowFile] = useState<File | null>(null)
-  const [plansFile, setPlansFile] = useState<File | null>(null)
-  const [permitsFile, setPermitsFile] = useState<File | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const [uploadedFiles, setUploadedFiles] = useState<Array<{ url: string; fileName: string }>>([])
-
-  // Step 4: Review
-  const [gates, setGates] = useState<any>(null)
-
-  // Load draft from localStorage
+  // Auto-save every 5 seconds
   useEffect(() => {
-    const savedProjectId = window.localStorage.getItem('kealee:projectWizard:projectId')
-    if (savedProjectId) setProjectId(savedProjectId)
-    const savedStep = Number(window.localStorage.getItem('kealee:projectWizard:step') || '1') as StepId
-    if (savedStep >= 1 && savedStep <= 4) setStep(savedStep)
+    const timer = setInterval(() => {
+      if (formData.name || formData.location) {
+        saveDraft();
+      }
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [formData]);
 
+  const saveDraft = async () => {
+    setIsSaving(true);
     try {
-      const savedState = window.localStorage.getItem('kealee:projectWizard:formState')
-      if (savedState) {
-        const state = JSON.parse(savedState)
-        if (state.name) setName(state.name)
-        if (state.description) setDescription(state.description)
-        if (state.category) setCategory(state.category)
-        if (state.location) setLocation(state.location)
-        if (state.budget) setBudget(state.budget)
-        if (state.workType) setWorkType(state.workType)
-        if (state.timeline) setTimeline(state.timeline)
-        if (state.requirements) setRequirements(state.requirements)
-      }
-    } catch {
-      // Ignore parse errors
-    }
-  }, [])
-
-  // Auto-save form state
-  useEffect(() => {
-    const formState = {
-      name,
-      description,
-      category,
-      location,
-      budget,
-      workType,
-      timeline,
-      requirements,
-    }
-    window.localStorage.setItem('kealee:projectWizard:formState', JSON.stringify(formState))
-  }, [name, description, category, location, budget, workType, timeline, requirements])
-
-  useEffect(() => {
-    if (projectId) window.localStorage.setItem('kealee:projectWizard:projectId', projectId)
-    window.localStorage.setItem('kealee:projectWizard:step', String(step))
-  }, [projectId, step])
-
-  // Load readiness gates on step 4
-  useEffect(() => {
-    if (step === 4 && projectId) {
-      checkReadinessGates(projectId)
-        .then(setGates)
-        .catch(() => setGates(null))
-    }
-  }, [step, projectId])
-
-  async function handleNext() {
-    setError(null)
-
-    try {
-      setSaving(true)
-
-      if (step === 1) {
-        if (!name.trim()) throw new Error('Project name is required.')
-        if (!location.trim()) throw new Error('Location is required.')
-        if (!budget.trim() || Number(budget) <= 0) throw new Error('Valid budget is required.')
-
-        if (!projectId) {
-          const res = await api.createProject({
-            name: name.trim(),
-            description: description.trim() || undefined,
-            category,
-            categoryMetadata: {
-              location: location.trim(),
-              budget: Number(budget),
-            },
-          })
-          setProjectId(res.project.id)
-        } else {
-          await api.updateProject(projectId, {
-            name: name.trim(),
-            description: description.trim() || null,
-            category,
-            categoryMetadata: {
-              location: location.trim(),
-              budget: Number(budget),
-            },
-            budgetTotal: Number(budget),
-          })
-        }
-      }
-
-      if (step === 2) {
-        if (!projectId) throw new Error('Missing project draft. Go back to Step 1.')
-        if (!workType.trim()) throw new Error('Work type is required.')
-        if (!timeline.trim()) throw new Error('Timeline is required.')
-
-        await api.updateProject(projectId, {
-          categoryMetadata: {
-            workType: workType.trim(),
-            timeline: timeline.trim(),
-            requirements: requirements.trim() || null,
-          },
-        })
-      }
-
-      if (step === 3) {
-        if (!projectId) throw new Error('Missing project draft. Go back to Step 1.')
-
-        setUploading(true)
-        const filesToUpload: File[] = []
-        if (sowFile) filesToUpload.push(sowFile)
-        if (plansFile) filesToUpload.push(plansFile)
-        if (permitsFile) filesToUpload.push(permitsFile)
-
-        if (filesToUpload.length > 0) {
-          const uploads = await Promise.all(
-            filesToUpload.map((file) =>
-              uploadFileToS3(file, {
-                projectId,
-                documentType: file === sowFile ? 'SOW' : file === plansFile ? 'PLANS' : 'PERMITS',
-              })
-            )
-          )
-          setUploadedFiles(uploads)
-        }
-        setUploading(false)
-      }
-
-      if (step === 4) {
-        if (!projectId) throw new Error('Missing project draft.')
-
-        // Check readiness gates
-        const gatesStatus = await checkReadinessGates(projectId)
-        if (!gatesStatus.canAdvance) {
-          throw new Error(`Cannot submit project. Please complete: ${gatesStatus.blockers.join(', ')}`)
-        }
-
-        // Submit project (change status from DRAFT to READINESS)
-        await api.updateProject(projectId, {
-          status: 'READINESS',
-        })
-
-        // Clear wizard state
-        window.localStorage.removeItem('kealee:projectWizard:projectId')
-        window.localStorage.removeItem('kealee:projectWizard:step')
-        window.localStorage.removeItem('kealee:projectWizard:formState')
-
-        router.push(`/projects/${projectId}`)
-        return
-      }
-
-      setStep((s) => (Math.min(4, s + 1) as StepId))
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Something went wrong.')
+      // TODO: Replace with actual API call
+      // await fetch('/api/projects/draft', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(formData),
+      // });
+      setLastSaved(new Date());
+    } catch (error) {
+      console.error('Error saving draft:', error);
     } finally {
-      setSaving(false)
-      setUploading(false)
+      setIsSaving(false);
     }
-  }
+  };
 
-  function handleBack() {
-    setError(null)
-    setStep((s) => (Math.max(1, s - 1) as StepId))
-  }
+  const validateCurrentStep = (): boolean => {
+    const newErrors: Record<string, string> = {};
 
-  const stepTitle = useMemo(() => {
-    switch (step) {
-      case 1:
-        return 'Basic Info'
-      case 2:
-        return 'Scope'
-      case 3:
-        return 'Documents'
-      case 4:
-        return 'Review & Submit'
+    if (currentStep === 0) {
+      if (!formData.name.trim()) {
+        newErrors.name = 'Project name is required';
+      }
+      if (!formData.location.trim()) {
+        newErrors.location = 'Location is required';
+      }
     }
-  }, [step])
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const nextStep = () => {
+    if (validateCurrentStep()) {
+      setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
+    }
+  };
+
+  const prevStep = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+  };
+
+  const createProject = async () => {
+    if (!validateCurrentStep()) return;
+
+    try {
+      // TODO: Replace with actual API call
+      // const response = await fetch('/api/projects', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(formData),
+      // });
+      
+      // For now, simulate success
+      router.push('/projects/success');
+    } catch (error) {
+      console.error('Error creating project:', error);
+      setErrors({ submit: 'Failed to create project. Please try again.' });
+    }
+  };
+
+  const progress = ((currentStep + 1) / STEPS.length) * 100;
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-3 py-4 sm:px-4 sm:py-6">
-      <nav aria-label="Breadcrumb" className="text-xs sm:text-sm text-neutral-600">
-        <ol className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-          <li>
-            <Link className="underline underline-offset-4 touch-manipulation" href="/">
-              Home
-            </Link>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li className="text-neutral-800">Create project</li>
-        </ol>
-      </nav>
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="max-w-3xl mx-auto px-6">
+        {/* Progress Indicator */}
+        <StepIndicator steps={STEPS} currentStep={currentStep} />
 
-      <header className="mt-3 sm:mt-4">
-        <h1 className="text-xl font-semibold text-neutral-900 sm:text-2xl">Project creation</h1>
-        <p className="mt-1 text-xs sm:text-sm text-neutral-600">
-          Step {step} of 4 — <span className="font-medium text-neutral-800">{stepTitle}</span>
+        {/* Progress Bar */}
+        <div className="mt-6">
+          <ProgressBar value={progress} showLabel variant="success" />
+        </div>
+
+        {/* Main Form Card */}
+        <div className="mt-8 bg-white rounded-2xl shadow-lg p-8">
+          {/* Step Content */}
+          {currentStep === 0 && (
+            <StepBasics formData={formData} setFormData={setFormData} errors={errors} />
+          )}
+          {currentStep === 1 && (
+            <StepScope formData={formData} setFormData={setFormData} />
+          )}
+          {currentStep === 2 && (
+            <StepContractors formData={formData} setFormData={setFormData} />
+          )}
+          {currentStep === 3 && <StepReview formData={formData} />}
+
+          {/* Navigation Buttons */}
+          <div className="mt-8 flex items-center justify-between">
+            <Button
+              variant="ghost"
+              onClick={prevStep}
+              disabled={currentStep === 0}
+              leftIcon={<ArrowLeft size={20} />}
+            >
+              Back
+            </Button>
+
+            {currentStep < STEPS.length - 1 ? (
+              <Button
+                variant="primary"
+                onClick={nextStep}
+                rightIcon={<ArrowRight size={20} />}
+              >
+                Next
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                onClick={createProject}
+                leftIcon={<Check size={20} />}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Create Project
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Auto-save indicator */}
+        <div className="mt-4 text-center">
+          {isSaving ? (
+            <p className="text-sm text-gray-500">💾 Saving...</p>
+          ) : lastSaved ? (
+            <p className="text-sm text-gray-500">
+              💾 Changes saved automatically{' '}
+              {lastSaved.toLocaleTimeString()}
+            </p>
+          ) : (
+            <p className="text-sm text-gray-500">
+              💾 Changes will be saved automatically
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// STEP 1: BASICS
+function StepBasics({
+  formData,
+  setFormData,
+  errors,
+}: {
+  formData: ProjectFormData;
+  setFormData: (data: ProjectFormData) => void;
+  errors: Record<string, string>;
+}) {
+  const projectTypes = ['Renovation', 'New Build', 'Addition', 'Remodel'];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          Let's start with the basics
+        </h2>
+        <p className="text-gray-600">
+          Give your project a name and tell us where it's located
         </p>
-      </header>
+      </div>
 
-      <div className="mt-3 sm:mt-4 space-y-2" aria-label="Step progress">
-        <ol className="flex flex-wrap gap-1.5 sm:gap-2">
-          {STEPS.map((s) => {
-            const isCurrent = s.id === step
-            const canGoBack = s.id < step
-            return (
-              <li key={s.id}>
-                <button
-                  type="button"
-                  className={cx(
-                    'touch-manipulation rounded-full border px-2.5 py-1.5 text-xs sm:px-3 sm:py-1 sm:text-sm',
-                    'min-h-[44px] min-w-[44px]',
-                    isCurrent ? 'border-neutral-900 text-neutral-900' : 'border-neutral-200 text-neutral-700',
-                    canGoBack ? 'active:scale-95 hover:border-neutral-900' : 'opacity-70'
-                  )}
-                  onClick={() => {
-                    if (!canGoBack) return
-                    setError(null)
-                    setStep(s.id)
-                  }}
-                  aria-current={isCurrent ? 'step' : undefined}
-                  aria-disabled={!canGoBack && !isCurrent}
-                  disabled={!canGoBack && !isCurrent}
-                >
-                  <span className="hidden sm:inline">{s.id}. </span>
-                  <span className="sm:hidden">{s.id}</span>
-                  <span className="hidden sm:inline">{s.label}</span>
-                </button>
-              </li>
-            )
-          })}
-        </ol>
-        <div className="grid grid-cols-4 gap-1.5 sm:gap-2" aria-hidden="true">
-          {([1, 2, 3, 4] as const).map((s) => (
-            <div
-              key={s}
-              className={cx('h-1.5 sm:h-2 rounded-full', s <= step ? 'bg-blue-600' : 'bg-neutral-200')}
-            />
+      {/* Project Name */}
+      <Input
+        label="Project Name"
+        required
+        value={formData.name}
+        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        placeholder="e.g., Kitchen Renovation"
+        error={errors.name}
+        autoFocus
+      />
+
+      {/* Location with Autocomplete */}
+      <Input
+        label="Project Location"
+        required
+        value={formData.location}
+        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+        placeholder="Enter address..."
+        error={errors.location}
+        helperText="Start typing to see suggestions"
+      />
+
+      {/* Project Type */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-3">
+          Project Type
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          {projectTypes.map((type) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => setFormData({ ...formData, type })}
+              className={`
+                px-4 py-3
+                border-2 rounded-lg
+                font-medium
+                transition-all duration-200
+                ${
+                  formData.type === type
+                    ? 'border-primary-600 bg-primary-50 text-primary-700'
+                    : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                }
+              `}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// STEP 2: SCOPE
+function StepScope({
+  formData,
+  setFormData,
+}: {
+  formData: ProjectFormData;
+  setFormData: (data: ProjectFormData) => void;
+}) {
+  const budgetRanges = [
+    '$10K - $50K',
+    '$50K - $100K',
+    '$100K - $250K',
+    '$250K - $500K',
+    '$500K+',
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          Project scope and timeline
+        </h2>
+        <p className="text-gray-600">
+          Help us understand the size and duration of your project
+        </p>
+      </div>
+
+      {/* Budget Range */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-3">
+          Budget Range
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          {budgetRanges.map((range) => (
+            <button
+              key={range}
+              type="button"
+              onClick={() => setFormData({ ...formData, budget: range })}
+              className={`
+                px-4 py-3
+                border-2 rounded-lg
+                font-medium
+                transition-all duration-200
+                ${
+                  formData.budget === range
+                    ? 'border-primary-600 bg-primary-50 text-primary-700'
+                    : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                }
+              `}
+            >
+              {range}
+            </button>
           ))}
         </div>
       </div>
 
-      {error ? (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">
-          {error}
+      {/* Timeline */}
+      <div className="grid grid-cols-2 gap-4">
+        <Input
+          label="Start Date"
+          type="date"
+          value={formData.startDate}
+          onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+        />
+        <Input
+          label="End Date (Expected)"
+          type="date"
+          value={formData.endDate}
+          onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+        />
+      </div>
+
+      {/* Description - Optional */}
+      <Textarea
+        label="Brief Description"
+        value={formData.description}
+        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+        placeholder="Tell us more about your project..."
+        rows={3}
+        helperText="Optional - You can add more details later"
+      />
+    </div>
+  );
+}
+
+// STEP 3: CONTRACTORS
+function StepContractors({
+  formData,
+  setFormData,
+}: {
+  formData: ProjectFormData;
+  setFormData: (data: ProjectFormData) => void;
+}) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          How will you find contractors?
+        </h2>
+        <p className="text-gray-600">
+          Choose how you want to manage contractors for this project
+        </p>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        {/* Option 1 */}
+        <button
+          type="button"
+          onClick={() => setFormData({ ...formData, contractorChoice: 'own' })}
+          className={`
+            p-6
+            border-2 rounded-xl
+            text-left
+            transition-all duration-200
+            ${
+              formData.contractorChoice === 'own'
+                ? 'border-primary-600 bg-primary-50'
+                : 'border-gray-300 hover:border-gray-400'
+            }
+          `}
+        >
+          <div
+            className={`
+              w-12 h-12 rounded-full mb-4
+              flex items-center justify-center
+              ${
+                formData.contractorChoice === 'own'
+                  ? 'bg-primary-600 text-white'
+                  : 'bg-gray-200 text-gray-600'
+              }
+            `}
+          >
+            👤
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            I'll find contractors
+          </h3>
+          <p className="text-gray-600">
+            You already have contractors or want to find them yourself
+          </p>
+        </button>
+
+        {/* Option 2 */}
+        <button
+          type="button"
+          onClick={() => setFormData({ ...formData, contractorChoice: 'help' })}
+          className={`
+            p-6
+            border-2 rounded-xl
+            text-left
+            transition-all duration-200
+            ${
+              formData.contractorChoice === 'help'
+                ? 'border-primary-600 bg-primary-50'
+                : 'border-gray-300 hover:border-gray-400'
+            }
+          `}
+        >
+          <div
+            className={`
+              w-12 h-12 rounded-full mb-4
+              flex items-center justify-center
+              ${
+                formData.contractorChoice === 'help'
+                  ? 'bg-primary-600 text-white'
+                  : 'bg-gray-200 text-gray-600'
+              }
+            `}
+          >
+            🤝
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Help me find contractors
+          </h3>
+          <p className="text-gray-600">
+            We'll suggest qualified contractors from our network
+          </p>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// STEP 4: REVIEW
+function StepReview({ formData }: { formData: ProjectFormData }) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          Review your project
+        </h2>
+        <p className="text-gray-600">
+          Make sure everything looks correct before creating
+        </p>
+      </div>
+
+      {/* Summary Card */}
+      <div className="bg-gray-50 rounded-xl p-6 space-y-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-sm text-gray-500 mb-1">Project Name</p>
+            <p className="text-lg font-semibold text-gray-900">{formData.name}</p>
+          </div>
         </div>
-      ) : null}
 
-      <section className="mt-4 sm:mt-6 rounded-xl border border-neutral-200 bg-white p-3 shadow-sm sm:p-4 sm:p-6">
-        {step === 1 ? (
-          <div className="space-y-4">
+        <div className="border-t border-gray-200 pt-4">
+          <p className="text-sm text-gray-500 mb-1">Location</p>
+          <p className="font-medium text-gray-900">{formData.location}</p>
+        </div>
+
+        <div className="border-t border-gray-200 pt-4 grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-sm text-gray-500 mb-1">Project Type</p>
+            <p className="font-medium text-gray-900">{formData.type || 'Not specified'}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 mb-1">Budget Range</p>
+            <p className="font-medium text-gray-900">{formData.budget || 'Not specified'}</p>
+          </div>
+        </div>
+
+        {(formData.startDate || formData.endDate) && (
+          <div className="border-t border-gray-200 pt-4 grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-neutral-900" htmlFor="name">
-                Project name *
-              </label>
-              <input
-                id="name"
-                className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-3 text-base sm:py-2 sm:text-sm"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                autoComplete="off"
-              />
+              <p className="text-sm text-gray-500 mb-1">Start Date</p>
+              <p className="font-medium text-gray-900">
+                {formData.startDate || 'Not specified'}
+              </p>
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-neutral-900" htmlFor="desc">
-                Description (optional)
-              </label>
-              <textarea
-                id="desc"
-                className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-3 text-base sm:py-2 sm:text-sm"
-                rows={4}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-neutral-900" htmlFor="location">
-                Location *
-              </label>
-              <input
-                id="location"
-                className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-3 text-base sm:py-2 sm:text-sm"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="123 Main St, City, State ZIP"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-neutral-900" htmlFor="budget">
-                Budget (USD) *
-              </label>
-              <input
-                id="budget"
-                className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-3 text-base sm:py-2 sm:text-sm"
-                type="number"
-                value={budget}
-                onChange={(e) => setBudget(e.target.value)}
-                placeholder="150000"
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between gap-3">
-                <label className="block text-sm font-medium text-neutral-900">Category</label>
-              </div>
-              <div className="mt-2 grid grid-cols-1 gap-2 xs:grid-cols-2 sm:grid-cols-3">
-                {CATEGORY_OPTIONS.map((c) => {
-                  const selected = c.value === category
-                  return (
-                    <button
-                      key={c.value}
-                      type="button"
-                      className={cx(
-                        'touch-manipulation rounded-lg border p-3 text-left active:scale-95',
-                        'min-h-[60px]',
-                        selected ? 'border-neutral-900 bg-neutral-50' : 'border-neutral-200'
-                      )}
-                      onClick={() => setCategory(c.value)}
-                      aria-pressed={selected}
-                    >
-                      <div className="text-sm font-semibold text-neutral-900">{c.label}</div>
-                    </button>
-                  )
-                })}
-              </div>
+              <p className="text-sm text-gray-500 mb-1">End Date</p>
+              <p className="font-medium text-gray-900">
+                {formData.endDate || 'Not specified'}
+              </p>
             </div>
           </div>
-        ) : step === 2 ? (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-neutral-900" htmlFor="workType">
-                Work Type *
-              </label>
-              <input
-                id="workType"
-                className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-3 text-base sm:py-2 sm:text-sm"
-                value={workType}
-                onChange={(e) => setWorkType(e.target.value)}
-                placeholder="e.g., Kitchen renovation, Bathroom remodel"
-              />
-            </div>
+        )}
 
-            <div>
-              <label className="block text-sm font-medium text-neutral-900" htmlFor="timeline">
-                Timeline *
-              </label>
-              <input
-                id="timeline"
-                className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-3 text-base sm:py-2 sm:text-sm"
-                value={timeline}
-                onChange={(e) => setTimeline(e.target.value)}
-                placeholder="e.g., 3-4 months, Start: Jan 2024, End: Apr 2024"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-neutral-900" htmlFor="requirements">
-                Requirements (optional)
-              </label>
-              <textarea
-                id="requirements"
-                className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-3 text-base sm:py-2 sm:text-sm"
-                rows={6}
-                value={requirements}
-                onChange={(e) => setRequirements(e.target.value)}
-                placeholder="Describe specific requirements, materials, finishes, etc."
-              />
-            </div>
+        {formData.description && (
+          <div className="border-t border-gray-200 pt-4">
+            <p className="text-sm text-gray-500 mb-1">Description</p>
+            <p className="text-gray-900">{formData.description}</p>
           </div>
-        ) : step === 3 ? (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-neutral-900" htmlFor="sow">
-                Statement of Work (SOW)
-              </label>
-              <input
-                id="sow"
-                type="file"
-                className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
-                accept=".pdf,.doc,.docx"
-                onChange={(e) => setSowFile(e.target.files?.[0] || null)}
-              />
-            </div>
+        )}
+      </div>
 
-            <div>
-              <label className="block text-sm font-medium text-neutral-900" htmlFor="plans">
-                Plans & Drawings
-              </label>
-              <input
-                id="plans"
-                type="file"
-                className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
-                accept=".pdf,.dwg,.dxf"
-                onChange={(e) => setPlansFile(e.target.files?.[0] || null)}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-neutral-900" htmlFor="permits">
-                Permits
-              </label>
-              <input
-                id="permits"
-                type="file"
-                className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
-                accept=".pdf"
-                onChange={(e) => setPermitsFile(e.target.files?.[0] || null)}
-              />
-            </div>
-
-            {uploading && <div className="text-sm text-neutral-600">Uploading files...</div>}
-            {uploadedFiles.length > 0 && (
-              <div className="rounded-lg border bg-neutral-50 p-3">
-                <div className="text-sm font-medium text-neutral-900">Uploaded Files:</div>
-                <ul className="mt-2 space-y-1 text-sm text-neutral-700">
-                  {uploadedFiles.map((f, i) => (
-                    <li key={i}>✓ {f.fileName}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        ) : step === 4 ? (
-          <div className="space-y-4">
-            <div className="rounded-lg border bg-neutral-50 p-3">
-              <h3 className="text-sm font-medium text-neutral-900">Project Summary</h3>
-              <div className="mt-2 space-y-1 text-sm text-neutral-700">
-                <div><strong>Name:</strong> {name}</div>
-                <div><strong>Location:</strong> {location}</div>
-                <div><strong>Budget:</strong> ${Number(budget).toLocaleString()}</div>
-                <div><strong>Work Type:</strong> {workType}</div>
-                <div><strong>Timeline:</strong> {timeline}</div>
-              </div>
-            </div>
-
-            {gates && (
-              <div className="rounded-lg border bg-blue-50 p-3">
-                <h3 className="text-sm font-medium text-blue-900">Readiness Gates</h3>
-                <div className="mt-2 space-y-2">
-                  {gates.gates.map((gate: any) => (
-                    <div key={gate.key} className="flex items-center justify-between text-sm">
-                      <span className={gate.status === 'completed' ? 'text-green-700' : 'text-neutral-700'}>
-                        {gate.name} {gate.required && '*'}
-                      </span>
-                      <span className={gate.status === 'completed' ? 'text-green-700 font-medium' : 'text-neutral-600'}>
-                        {gate.completionPercentage}%
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                {!gates.canAdvance && (
-                  <div className="mt-2 text-sm text-red-700">
-                    <strong>Blockers:</strong> {gates.blockers.join(', ')}
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="text-sm text-neutral-600">
-              Review all information above. Click "Submit" to create your project.
-            </div>
-          </div>
-        ) : null}
-      </section>
-
-      <footer className="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <button
-          type="button"
-          className="touch-manipulation rounded-lg border border-neutral-300 px-4 py-3 text-base font-medium disabled:opacity-50 sm:py-2 sm:text-sm min-h-[44px]"
-          onClick={handleBack}
-          disabled={saving || step === 1}
-        >
-          Back
-        </button>
-
-        <button
-          type="button"
-          className="touch-manipulation rounded-lg bg-blue-600 px-6 py-3 text-base font-semibold text-white disabled:opacity-60 active:bg-blue-700 sm:py-2 sm:text-sm min-h-[44px]"
-          onClick={handleNext}
-          disabled={saving || uploading}
-          aria-busy={saving || uploading}
-        >
-          {step === 4 ? 'Submit' : saving || uploading ? 'Saving…' : 'Next'}
-        </button>
-      </footer>
-    </main>
-  )
+      {/* Next Steps Preview */}
+      <div className="bg-primary-50 rounded-xl p-6">
+        <h3 className="font-semibold text-primary-900 mb-3">What happens next?</h3>
+        <ul className="space-y-2 text-sm text-primary-800">
+          <li className="flex items-center gap-2">
+            <Check size={16} className="text-primary-600" />
+            Your project will be created and saved to your dashboard
+          </li>
+          <li className="flex items-center gap-2">
+            <Check size={16} className="text-primary-600" />
+            You'll be able to invite contractors immediately
+          </li>
+          <li className="flex items-center gap-2">
+            <Check size={16} className="text-primary-600" />
+            Start tracking milestones and approving payments
+          </li>
+        </ul>
+      </div>
+    </div>
+  );
 }

@@ -283,4 +283,551 @@ _________________________________
 Signature
 `
   },
+
+  /**
+   * Create document template
+   */
+  async createDocumentTemplate(data: {
+    name: string
+    description?: string
+    templateContent: string
+    signerRoles: string[]
+    fields?: Array<{
+      role: string
+      fieldType: 'signature' | 'date' | 'text' | 'checkbox'
+      x: number
+      y: number
+      page: number
+      width?: number
+      height?: number
+      required?: boolean
+    }>
+    metadata?: Record<string, any>
+  }) {
+    // Store template in database (using ContractTemplate or create new DocuSignTemplate model)
+    const template = await prismaAny.contractTemplate.create({
+      data: {
+        name: data.name,
+        description: data.description || null,
+        content: data.templateContent,
+        signerRoles: data.signerRoles,
+        templateFields: data.fields || [],
+        metadata: data.metadata || {},
+        status: 'ACTIVE',
+      },
+    })
+
+    return template
+  },
+
+  /**
+   * Get document template
+   */
+  async getDocumentTemplate(templateId: string) {
+    const template = await prismaAny.contractTemplate.findUnique({
+      where: { id: templateId },
+    })
+
+    if (!template) {
+      throw new NotFoundError('ContractTemplate', templateId)
+    }
+
+    return template
+  },
+
+  /**
+   * List document templates
+   */
+  async listDocumentTemplates(filters?: {
+    status?: string
+    limit?: number
+    offset?: number
+  }) {
+    const where: any = {}
+    if (filters?.status) {
+      where.status = filters.status
+    }
+
+    const templates = await prismaAny.contractTemplate.findMany({
+      where,
+      take: filters?.limit || 50,
+      skip: filters?.offset || 0,
+      orderBy: { createdAt: 'desc' },
+    })
+
+    const total = await prismaAny.contractTemplate.count({ where })
+
+    return {
+      templates,
+      total,
+      limit: filters?.limit || 50,
+      offset: filters?.offset || 0,
+    }
+  },
+
+  /**
+   * Get detailed envelope status with recipient information
+   */
+  async getDetailedEnvelopeStatus(envelopeId: string) {
+    const apiClient = await getDocuSignApiClient()
+    const envelopesApi = new EnvelopesApi(apiClient)
+    
+    // Get envelope
+    const envelope = await envelopesApi.getEnvelope(DOCUSIGN_ACCOUNT_ID, envelopeId)
+    
+    // Get recipients
+    const recipients = await envelopesApi.listRecipients(DOCUSIGN_ACCOUNT_ID, envelopeId)
+    
+    // Get documents
+    const documents = await envelopesApi.listDocuments(DOCUSIGN_ACCOUNT_ID, envelopeId)
+
+    return {
+      envelopeId: envelope.envelopeId,
+      status: envelope.status,
+      statusChangedDateTime: envelope.statusChangedDateTime,
+      completedDateTime: envelope.completedDateTime,
+      sentDateTime: envelope.sentDateTime,
+      recipients: recipients.signers?.map((signer: any) => ({
+        recipientId: signer.recipientId,
+        email: signer.email,
+        name: signer.name,
+        status: signer.status,
+        signedDateTime: signer.signedDateTime,
+        deliveredDateTime: signer.deliveredDateTime,
+      })) || [],
+      documents: documents.envelopeDocuments?.map((doc: any) => ({
+        documentId: doc.documentId,
+        name: doc.name,
+        uri: doc.uri,
+      })) || [],
+    }
+  },
+
+  /**
+   * Track document status changes
+   */
+  async trackDocumentStatus(envelopeId: string) {
+    // Get contract by envelope ID
+    const contract = await prismaAny.contractAgreement.findFirst({
+      where: { docusignEnvelopeId: envelopeId },
+      include: {
+        project: { select: { id: true, name: true } },
+      },
+    })
+
+    if (!contract) {
+      throw new NotFoundError('ContractAgreement', envelopeId)
+    }
+
+    // Get detailed status
+    const status = await this.getDetailedEnvelopeStatus(envelopeId)
+
+    // Update contract status based on envelope status
+    let contractStatus = contract.status
+    if (status.status === 'completed') {
+      contractStatus = 'ACTIVE'
+    } else if (status.status === 'sent' || status.status === 'delivered') {
+      contractStatus = 'SENT'
+    }
+
+    // Update contract record
+    await prismaAny.contractAgreement.update({
+      where: { id: contract.id },
+      data: {
+        status: contractStatus,
+        ...(status.status === 'completed' && status.completedDateTime ? {
+          signedAt: new Date(status.completedDateTime),
+        } : {}),
+        metadata: {
+          ...(contract.metadata as any || {}),
+          docusignStatus: status.status,
+          lastStatusCheck: new Date().toISOString(),
+          recipients: status.recipients,
+        },
+      },
+    })
+
+    // Create status tracking event
+    await prismaAny.event.create({
+      data: {
+        entityType: 'ContractAgreement',
+        entityId: contract.id,
+        type: `DOCUSIGN_STATUS_${status.status.toUpperCase()}`,
+        payload: {
+          envelopeId,
+          status: status.status,
+          recipients: status.recipients,
+        },
+        userId: contract.ownerId,
+      },
+    })
+
+    return {
+      contractId: contract.id,
+      envelopeId,
+      status: status.status,
+      contractStatus,
+      recipients: status.recipients,
+    }
+  },
+
+  /**
+   * Get authorization URL for OAuth flow
+   */
+  async getAuthUrl(redirectUri: string) {
+    const apiClient = new ApiClient()
+    apiClient.setBasePath(DOCUSIGN_BASE_PATH)
+    apiClient.setOAuthBasePath(DOCUSIGN_OAUTH_BASE_PATH)
+
+    const scopes = ['signature', 'impersonation']
+    const authUrl = apiClient.getJWTUri(
+      DOCUSIGN_INTEGRATION_KEY,
+      redirectUri,
+      DOCUSIGN_BASE_PATH,
+      scopes
+    )
+
+    return { authUrl }
+  },
+
+  /**
+   * Create envelope from template (general purpose, not contract-specific)
+   */
+  async createEnvelopeFromTemplate(data: {
+    templateId: string
+    recipientEmail: string
+    recipientName: string
+    documentName?: string
+    customFields?: Record<string, any>
+    userId: string
+    userEmail?: string
+    embeddedSigning?: boolean
+    returnUrl?: string
+  }) {
+    const apiClient = await getDocuSignApiClient()
+    const envelopesApi = new EnvelopesApi(apiClient)
+
+    // Create envelope definition
+    const envelopeDefinition = new EnvelopeDefinition()
+    envelopeDefinition.templateId = data.templateId
+    envelopeDefinition.emailSubject = data.documentName || `Document to sign from ${process.env.APP_NAME || 'Kealee'}`
+    envelopeDefinition.emailBlurb = `Please sign this document. Sent via ${process.env.APP_NAME || 'Kealee'}`
+
+    // Add template role
+    const signer = new Signer()
+    signer.email = data.recipientEmail
+    signer.name = data.recipientName
+    signer.roleName = 'Signer'
+    
+    if (data.embeddedSigning) {
+      signer.clientUserId = data.userId
+    }
+
+    // Add custom fields if provided
+    if (data.customFields && Object.keys(data.customFields).length > 0) {
+      const textCustomFields = Object.entries(data.customFields).map(([key, value]) => ({
+        name: key,
+        value: String(value),
+        required: 'false',
+        show: 'true',
+      }))
+
+      envelopeDefinition.customFields = {
+        textCustomFields,
+      } as any
+    }
+
+    envelopeDefinition.templateRoles = [signer as any]
+    envelopeDefinition.status = 'sent'
+
+    // Create the envelope
+    const envelope = await envelopesApi.createEnvelope(DOCUSIGN_ACCOUNT_ID, { envelopeDefinition })
+
+    let signingUrl: string | undefined
+    let expiresAt: string | undefined
+
+    // Create signing URL for embedded signing if requested
+    if (data.embeddedSigning) {
+      const recipientViewRequest = {
+        authenticationMethod: 'none' as const,
+        returnUrl: data.returnUrl || `${process.env.APP_BASE_URL || 'http://localhost:3000'}/documents/signed`,
+        email: data.recipientEmail,
+        userName: data.recipientName,
+        clientUserId: data.userId,
+      }
+
+      const viewUrl = await envelopesApi.createRecipientView(DOCUSIGN_ACCOUNT_ID, envelope.envelopeId || '', { recipientViewRequest })
+      signingUrl = viewUrl.url
+      expiresAt = viewUrl.expiredDateTime
+    }
+
+    // Save to database (if Document model exists)
+    try {
+      await prismaAny.document.create({
+        data: {
+          envelopeId: envelope.envelopeId || '',
+          userId: data.userId,
+          recipientEmail: data.recipientEmail,
+          recipientName: data.recipientName,
+          templateId: data.templateId,
+          status: envelope.status || 'sent',
+          signingUrl: signingUrl || null,
+          metadata: {
+            customFields: data.customFields || {},
+            documentName: data.documentName,
+          },
+        },
+      })
+    } catch (error: any) {
+      // If Document model doesn't exist, just log
+      if (error.message?.includes('model')) {
+        console.warn('Document model not found, skipping database save')
+      } else {
+        throw error
+      }
+    }
+
+    return {
+      envelopeId: envelope.envelopeId,
+      status: envelope.status,
+      signingUrl,
+      expiresAt,
+    }
+  },
+
+  /**
+   * List envelopes for user
+   */
+  async listEnvelopes(filters?: {
+    fromDate?: Date
+    status?: string
+    limit?: number
+  }) {
+    const apiClient = await getDocuSignApiClient()
+    const envelopesApi = new EnvelopesApi(apiClient)
+
+    const fromDate = filters?.fromDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Default: last 30 days
+    const status = filters?.status || 'completed,sent,delivered,signed'
+
+    const envelopes = await envelopesApi.listStatusChanges(DOCUSIGN_ACCOUNT_ID, {
+      fromDate: fromDate.toISOString(),
+      status,
+      count: filters?.limit || 100,
+    })
+
+    const formattedEnvelopes = (envelopes.envelopes || []).map((envelope: any) => ({
+      envelopeId: envelope.envelopeId,
+      status: envelope.status,
+      createdDateTime: envelope.createdDateTime,
+      sentDateTime: envelope.sentDateTime,
+      completedDateTime: envelope.completedDateTime,
+      subject: envelope.emailSubject,
+      recipients: envelope.recipients,
+    }))
+
+    return { envelopes: formattedEnvelopes }
+  },
+
+  /**
+   * Get document download URL/info
+   */
+  async getDocumentInfo(envelopeId: string, documentId: string = 'combined') {
+    const apiClient = await getDocuSignApiClient()
+    const envelopesApi = new EnvelopesApi(apiClient)
+
+    const document = await envelopesApi.getDocument(DOCUSIGN_ACCOUNT_ID, envelopeId, documentId)
+
+    return {
+      documentId,
+      name: (document as any).name || `document_${documentId}`,
+      type: (document as any).type || 'pdf',
+      uri: (document as any).uri || `${DOCUSIGN_BASE_PATH}/accounts/${DOCUSIGN_ACCOUNT_ID}/envelopes/${envelopeId}/documents/${documentId}`,
+    }
+  },
+
+  /**
+   * Void envelope
+   */
+  async voidEnvelope(envelopeId: string, reason: string = 'Voided by user request', userId: string) {
+    const apiClient = await getDocuSignApiClient()
+    const envelopesApi = new EnvelopesApi(apiClient)
+
+    const voidRequest = new EnvelopeDefinition()
+    voidRequest.status = 'voided'
+    ;(voidRequest as any).voidedReason = reason
+
+    const result = await envelopesApi.update(DOCUSIGN_ACCOUNT_ID, envelopeId, { envelope: voidRequest as any })
+
+    // Update database
+    try {
+      await prismaAny.document.updateMany({
+        where: { envelopeId },
+        data: {
+          status: 'voided',
+          metadata: {
+            voidedReason: reason,
+            voidedAt: new Date().toISOString(),
+            voidedBy: userId,
+          },
+        },
+      })
+    } catch (error: any) {
+      if (!error.message?.includes('model')) {
+        throw error
+      }
+    }
+
+    return result
+  },
+
+  /**
+   * Send reminder for envelope
+   */
+  async remindEnvelope(envelopeId: string, reminderDelay: string = '1', reminderFrequency: string = '2') {
+    const apiClient = await getDocuSignApiClient()
+    const envelopesApi = new EnvelopesApi(apiClient)
+
+    const reminderRequest = {
+      reminderEnabled: 'true',
+      reminderDelay,
+      reminderFrequency,
+    }
+
+    const result = await envelopesApi.updateReminders(DOCUSIGN_ACCOUNT_ID, envelopeId, { reminders: reminderRequest as any })
+
+    return result
+  },
+
+  /**
+   * Resend envelope
+   */
+  async resendEnvelope(envelopeId: string) {
+    const apiClient = await getDocuSignApiClient()
+    const envelopesApi = new EnvelopesApi(apiClient)
+
+    const result = await envelopesApi.updateRecipients(DOCUSIGN_ACCOUNT_ID, envelopeId, { resendEnvelope: 'true' })
+
+    // Update database
+    try {
+      await prismaAny.document.updateMany({
+        where: { envelopeId },
+        data: {
+          status: 'resent',
+          metadata: {
+            resentAt: new Date().toISOString(),
+          },
+        },
+      })
+    } catch (error: any) {
+      if (!error.message?.includes('model')) {
+        throw error
+      }
+    }
+
+    return result
+  },
+
+  /**
+   * Handle DocuSign callback (OAuth redirect or signing completion)
+   */
+  async handleCallback(data: {
+    envelopeId?: string
+    event?: string
+    state?: string
+    userId: string
+  }) {
+    // If envelopeId and event are provided, this is a signing completion callback
+    if (data.envelopeId && data.event === 'signing_complete') {
+      // Check if this is a contract envelope
+      const contract = await prismaAny.contractAgreement.findFirst({
+        where: { docusignEnvelopeId: data.envelopeId },
+        include: {
+          project: { select: { id: true, name: true } },
+        },
+      })
+
+      if (contract) {
+        // Get project with orgId
+        const project = await prismaAny.project.findUnique({
+          where: { id: contract.projectId },
+          select: { id: true, orgId: true },
+        })
+
+        // Update contract status
+        await prismaAny.contractAgreement.update({
+          where: { id: contract.id },
+          data: {
+            status: 'ACTIVE',
+            signedAt: new Date(),
+          },
+        })
+
+        // Update project status to ACTIVE if contract is signed
+        await prismaAny.project.update({
+          where: { id: contract.projectId },
+          data: {
+            status: 'ACTIVE',
+          },
+        })
+
+        // Create contract signed event
+        await prismaAny.event.create({
+          data: {
+            entityType: 'ContractAgreement',
+            entityId: contract.id,
+            type: 'CONTRACT_SIGNED',
+            payload: {
+              envelopeId: data.envelopeId,
+              contractId: contract.id,
+              projectId: contract.projectId,
+              event: data.event,
+            },
+            userId: data.userId,
+            orgId: project?.orgId || undefined,
+          },
+        })
+
+        // Create audit log
+        await prismaAny.auditLog.create({
+          data: {
+            entityType: 'ContractAgreement',
+            entityId: contract.id,
+            action: 'CONTRACT_SIGNED',
+            details: {
+              envelopeId: data.envelopeId,
+              signedAt: new Date().toISOString(),
+              event: data.event,
+            },
+            userId: data.userId,
+            reason: 'Contract signed via DocuSign callback',
+          },
+        })
+      } else {
+        // If not a contract, create a general document signing event
+        // (for non-contract documents if Document model exists in future)
+        try {
+          await prismaAny.event.create({
+            data: {
+              entityType: 'Document',
+              entityId: data.envelopeId,
+              type: 'DOCUMENT_SIGNING_COMPLETED',
+              payload: {
+                envelopeId: data.envelopeId,
+                event: data.event,
+              },
+              userId: data.userId,
+            },
+          })
+        } catch (error: any) {
+          // If event creation fails, just log
+          console.warn('Failed to create document signing event:', error)
+        }
+      }
+    }
+
+    // Return redirect URL
+    const redirectUrl = data.state || `${process.env.APP_BASE_URL || 'http://localhost:3000'}/documents`
+
+    return { redirectUrl, success: true }
+  },
 }
