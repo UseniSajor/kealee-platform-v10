@@ -384,7 +384,7 @@ class FileService {
     ])
 
     return {
-      files: files.map((file) => ({
+      files: files.map((file: any) => ({
         id: file.id,
         fileName: file.fileName,
         fileSize: file.size,

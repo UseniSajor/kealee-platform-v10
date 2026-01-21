@@ -43,8 +43,8 @@ class ArchitectFileUploadService {
     fileName: string,
     mimeType: string,
     fileSize: number,
-    folderId?: string,
-    userId: string
+    userId: string,
+    folderId?: string
   ) {
     // Verify project exists and user has access
     const project = await prismaAny.designProject.findUnique({

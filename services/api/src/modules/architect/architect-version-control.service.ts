@@ -135,7 +135,7 @@ class ArchitectVersionControlService {
         fileName: file.fileName,
         currentVersion: file.version,
       },
-      versions: versions.map((v) => ({
+      versions: versions.map((v: any) => ({
         id: v.id,
         version: v.version,
         fileUrl: v.fileUrl,

@@ -4,7 +4,7 @@
  */
 
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { prismaAny } from '../../utils/prisma-helper'
+import { prismaAny } from '../utils/prisma-helper'
 
 interface RequestLog {
   method: string

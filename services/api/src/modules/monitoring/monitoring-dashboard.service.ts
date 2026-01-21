@@ -103,26 +103,30 @@ class MonitoringDashboardService {
     // Performance metrics (if model exists)
     let allLogs: any[] = []
     let performanceByEndpoint: any[] = []
+    let avgResponseTime = 0
+    let p50 = 0
+    let p95 = 0
+    let p99 = 0
 
     try {
       allLogs = await (prismaAny as any).apiRequestLog.findMany({
-      where: dateFilter,
-      select: { durationMs: true, path: true },
-    })
+        where: dateFilter,
+        select: { durationMs: true, path: true },
+      })
 
-    const durations = allLogs.map((log) => log.durationMs).sort((a, b) => a - b)
-    const avgResponseTime =
-      durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0
-    const p50 = durations[Math.floor(durations.length * 0.5)] || 0
-    const p95 = durations[Math.floor(durations.length * 0.95)] || 0
-    const p99 = durations[Math.floor(durations.length * 0.99)] || 0
+      const durations = allLogs.map((log: any) => log.durationMs || 0).filter((d: number) => d > 0).sort((a: number, b: number) => a - b)
+      avgResponseTime =
+        durations.length > 0 ? durations.reduce((a: number, b: number) => a + b, 0) / durations.length : 0
+      p50 = durations[Math.floor(durations.length * 0.5)] || 0
+      p95 = durations[Math.floor(durations.length * 0.95)] || 0
+      p99 = durations[Math.floor(durations.length * 0.99)] || 0
 
-    const performanceByEndpoint = await prismaAny.apiRequestLog.groupBy({
-      by: ['path'],
-      where: dateFilter,
-      _avg: { durationMs: true },
-      _count: true,
-      orderBy: { _avg: { durationMs: 'desc' } },
+      performanceByEndpoint = await (prismaAny as any).apiRequestLog.groupBy({
+        by: ['path'],
+        where: dateFilter,
+        _avg: { durationMs: true },
+        _count: true,
+        orderBy: { _avg: { durationMs: 'desc' } },
         take: 10,
       })
     } catch (error: any) {
@@ -184,22 +188,22 @@ class MonitoringDashboardService {
       select: { amount: true, metadata: true },
     })
 
-    const totalRevenue = payments.reduce((sum, p) => sum + Number(p.amount), 0)
+    const totalRevenue = payments.reduce((sum: number, p: any) => sum + Number(p.amount), 0)
     const platformFees = payments
-      .filter((p) => (p.metadata as any)?.type === 'platform_fee')
-      .reduce((sum, p) => sum + Number(p.amount), 0)
+      .filter((p: any) => (p.metadata as any)?.type === 'platform_fee')
+      .reduce((sum: number, p: any) => sum + Number(p.amount), 0)
 
     const revenue24h = payments
-      .filter((p) => p.paidAt && p.paidAt >= dayAgo)
-      .reduce((sum, p) => sum + Number(p.amount), 0)
+      .filter((p: any) => p.paidAt && p.paidAt >= dayAgo)
+      .reduce((sum: number, p: any) => sum + Number(p.amount), 0)
 
     const revenue7d = payments
-      .filter((p) => p.paidAt && p.paidAt >= weekAgo)
-      .reduce((sum, p) => sum + Number(p.amount), 0)
+      .filter((p: any) => p.paidAt && p.paidAt >= weekAgo)
+      .reduce((sum: number, p: any) => sum + Number(p.amount), 0)
 
     const revenue30d = payments
-      .filter((p) => p.paidAt && p.paidAt >= monthAgo)
-      .reduce((sum, p) => sum + Number(p.amount), 0)
+      .filter((p: any) => p.paidAt && p.paidAt >= monthAgo)
+      .reduce((sum: number, p: any) => sum + Number(p.amount), 0)
 
     return {
       errors: {
@@ -225,7 +229,7 @@ class MonitoringDashboardService {
         p50: Math.round(p50),
         p95: Math.round(p95),
         p99: Math.round(p99),
-        byEndpoint: performanceByEndpoint.map((p) => ({
+        byEndpoint: performanceByEndpoint.map((p: any) => ({
           endpoint: p.path,
           avgDuration: Math.round(p._avg.durationMs || 0),
           count: p._count,

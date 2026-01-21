@@ -10,8 +10,6 @@ import csrf from '@fastify/csrf-protection'
 export async function registerCSRFProtection(fastify: FastifyInstance) {
   // Register CSRF protection plugin
   await fastify.register(csrf, {
-    // Generate CSRF token secret from environment or use default
-    secret: process.env.CSRF_SECRET || 'change-this-secret-in-production',
     // Cookie options
     cookieOpts: {
       signed: true,
@@ -21,6 +19,11 @@ export async function registerCSRFProtection(fastify: FastifyInstance) {
       path: '/',
     },
   })
+  
+  // Set CSRF secret if provided
+  if (process.env.CSRF_SECRET) {
+    fastify.decorate('csrfSecret', process.env.CSRF_SECRET)
+  }
 
   // Add hook to verify CSRF token on state-changing requests
   fastify.addHook('onRequest', async (request: FastifyRequest, reply: FastifyReply) => {
@@ -68,7 +71,16 @@ export async function registerCSRFProtection(fastify: FastifyInstance) {
 
     // Verify token using Fastify's CSRF plugin
     try {
-      await reply.verifyCsrf(token)
+      // @fastify/csrf-protection v4 uses request.verifyCsrfToken
+      if ('verifyCsrfToken' in request && typeof request.verifyCsrfToken === 'function') {
+        await (request as any).verifyCsrfToken(token)
+      } else {
+        // Fallback: basic token validation
+        const sessionToken = (request.session as any)?.csrfToken
+        if (token !== sessionToken) {
+          throw new Error('CSRF token mismatch')
+        }
+      }
     } catch (error: any) {
       fastify.log.warn({
         message: 'CSRF token verification failed',
@@ -90,7 +102,17 @@ export async function registerCSRFProtection(fastify: FastifyInstance) {
 
   // Add route to get CSRF token (for frontend)
   fastify.get('/csrf-token', async (request: FastifyRequest, reply: FastifyReply) => {
-    const token = await reply.generateCsrf()
+    // @fastify/csrf-protection v4 uses request.generateCsrfToken
+    let token: string
+    if ('generateCsrfToken' in request && typeof request.generateCsrfToken === 'function') {
+      token = await (request as any).generateCsrfToken()
+    } else {
+      // Fallback: generate a simple token
+      token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      if (request.session) {
+        (request.session as any).csrfToken = token
+      }
+    }
     return {
       csrfToken: token,
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours

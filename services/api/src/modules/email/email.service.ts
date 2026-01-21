@@ -31,11 +31,11 @@ export class EmailService {
         from: process.env.RESEND_FROM_EMAIL || 'Kealee Platform <noreply@kealee.com>',
         to: Array.isArray(options.to) ? options.to : [options.to],
         subject: options.subject,
-        html: html || text,
-        text: text || html?.replace(/<[^>]*>/g, ''),
+        html: html || undefined,
+        text: text || (html ? html.replace(/<[^>]*>/g, '') : undefined),
       })
 
-      return { success: true, id: result.id }
+      return { success: true, id: result.data?.id || result.id || 'unknown' }
     } catch (error: any) {
       console.error('❌ Email send failed:', error)
       return { success: false, error: error.message }

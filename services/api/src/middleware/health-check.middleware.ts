@@ -4,7 +4,7 @@
  */
 
 import { FastifyInstance } from 'fastify'
-import { prismaAny } from '../../utils/prisma-helper'
+import { prismaAny } from '../utils/prisma-helper'
 import IORedis from 'ioredis'
 
 interface HealthStatus {
@@ -125,9 +125,15 @@ async function checkExternalServices(): Promise<Record<string, any>> {
  * Calculate overall health status
  */
 function calculateOverallStatus(checks: HealthStatus['checks']): 'healthy' | 'degraded' | 'down' {
-  const allChecks = [checks.database, checks.redis, ...Object.values(checks.external || {})]
-  const downChecks = allChecks.filter((c) => c?.status === 'down')
-  const degradedChecks = allChecks.filter((c) => c?.status === 'degraded')
+  const allChecks = [
+    checks.database,
+    checks.redis,
+    ...Object.values(checks.external || {}),
+  ].filter((c): c is { status: 'healthy' | 'degraded' | 'down'; latency?: number; error?: string } => 
+    c !== undefined && typeof c === 'object' && 'status' in c
+  )
+  const downChecks = allChecks.filter((c) => c.status === 'down')
+  const degradedChecks = allChecks.filter((c) => c.status === 'degraded')
 
   if (downChecks.length > 0 || checks.database.status === 'down') {
     return 'down'

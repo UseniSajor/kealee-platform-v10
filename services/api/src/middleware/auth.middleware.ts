@@ -49,30 +49,31 @@ export async function authenticateUser(
       });
     }
 
-    // Get user profile with role from database
+    // Get user with organization from database
     const { prisma } = await import('@kealee/database');
-    const profile = await prisma.profile.findUnique({
+    const userWithOrg = await prisma.user.findUnique({
       where: { id: user.id },
       include: {
         organization: true,
       }
     });
 
-    if (!profile) {
+    if (!userWithOrg) {
       return reply.code(404).send({ 
-        error: 'User profile not found',
-        message: 'Please complete your profile setup'
+        error: 'User not found',
+        message: 'User account not found'
       });
     }
 
-    // Attach user with profile to request
+    // Attach user to request
+    const { id, email, ...userRest } = user
     request.user = {
-      id: user.id,
-      email: user.email,
-      role: profile.role,
-      organizationId: profile.organizationId,
-      profile,
-      ...user
+      id,
+      email,
+      role: userWithOrg.role || 'user',
+      organizationId: userWithOrg.organizationId || null,
+      profile: userWithOrg,
+      ...userRest
     };
     
   } catch (error: any) {
