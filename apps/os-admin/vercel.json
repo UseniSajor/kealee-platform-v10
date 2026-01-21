@@ -1,7 +1,35 @@
 {
-  "buildCommand": "turbo run build --filter=os-admin",
-  "outputDirectory": "apps/os-admin/.next",
-  "installCommand": "pnpm install --network-timeout=60000 --fetch-retries=5",
+  "buildCommand": "cd ../.. && pnpm turbo run build --filter=os-admin",
+  "installCommand": "cd ../.. && pnpm install",
   "framework": "nextjs",
-  "_comment": "Preview deployment - updated 2025-01-15"
+  "rootDirectory": "apps/os-admin",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/$1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ]
 }
