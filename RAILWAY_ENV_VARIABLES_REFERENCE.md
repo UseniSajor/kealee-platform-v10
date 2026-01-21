@@ -23,6 +23,8 @@ bash scripts/add-railway-env-vars.sh
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:pass@host:port/railway?sslmode=require` |
+| `PRISMA_CLIENT_ENGINE_TYPE` | Prisma engine type (use binary for better performance) | `binary` |
+| `PRISMA_HIDE_UPDATE_MESSAGE` | Hide Prisma update messages | `true` |
 | `SUPABASE_URL` | Supabase project URL | `https://xxx.supabase.co` |
 | `SUPABASE_ANON_KEY` | Supabase anonymous key | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
 | `SUPABASE_SERVICE_KEY` | Supabase service role key (optional) | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |

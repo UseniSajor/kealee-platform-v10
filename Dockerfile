@@ -68,6 +68,11 @@ RUN npm install -g pnpm@8.12.0
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=""
 
+# Prisma configuration
+# Use binary engine for better performance and reliability
+ENV PRISMA_CLIENT_ENGINE_TYPE=binary
+ENV PRISMA_HIDE_UPDATE_MESSAGE=true
+
 WORKDIR /app
 
 # ============================================================
