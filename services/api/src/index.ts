@@ -274,6 +274,10 @@ const start = async () => {
     await fastify.register(jurisdictionRoutes, { prefix: '/permits' })
     await fastify.register(jurisdictionConfigRoutes, { prefix: '/permits' })
     await fastify.register(jurisdictionStaffRoutes, { prefix: '/permits' })
+    
+    // Register jurisdiction subscription routes
+    const { jurisdictionSubscriptionRoutes } = await import('./modules/permits/jurisdiction-subscription.routes')
+    await fastify.register(jurisdictionSubscriptionRoutes, { prefix: '/jurisdictions' })
     await fastify.register(permitApplicationRoutes, { prefix: '/permits' })
     await fastify.register(permitRoutingRoutes, { prefix: '/permits' })
     await fastify.register(permitsApiRoutes) // Unified API routes (no prefix, uses /api/v1)
@@ -299,6 +303,10 @@ const start = async () => {
     await fastify.register(clientRoutes, { prefix: '/api/clients' })
     await fastify.register(taskRoutes, { prefix: '/api/tasks' })
     await fastify.register(permitRoutes, { prefix: '/api/permits' })
+    
+    // Register permit payment routes
+    const { permitPaymentRoutes } = await import('./modules/permits/permit-payment.routes')
+    await fastify.register(permitPaymentRoutes, { prefix: '/permits' })
     await fastify.register(reportRoutes, { prefix: '/api/reports' })
     
     // Register Stripe routes

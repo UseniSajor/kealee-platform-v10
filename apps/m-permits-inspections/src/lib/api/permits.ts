@@ -197,7 +197,8 @@ export class PermitApiService {
       delete headers['Content-Type'];
     }
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const fullUrl = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`
+    const response = await fetch(fullUrl, {
       ...options,
       headers,
       credentials: 'include',
@@ -428,6 +429,45 @@ export class PermitApiService {
   static async getPaymentHistory(permitId: string) {
     // Note: Backend route may need to be created (GET /permits/:id/payments)
     return this.fetchWithAuth(`/permits/${permitId}/payments`);
+  }
+
+  static async createCheckoutSession(permitId: string, data: {
+    feeType: 'permit_fee' | 'expedited' | 'document_prep' | 'platform_fee';
+    amount: number;
+    description?: string;
+    expeditedTier?: 'standard' | 'premium';
+    documentPrepPackage?: 'basic' | 'standard' | 'premium';
+    returnUrl?: string;
+  }) {
+    return this.fetchWithAuth(`/permits/${permitId}/payment/checkout`, {
+      method: 'POST',
+      body: JSON.stringify({ permitId, ...data }),
+    });
+  }
+
+  static async addExpeditedService(permitId: string, expeditedTier: 'standard' | 'premium') {
+    return this.fetchWithAuth(`/permits/${permitId}/payment/expedited`, {
+      method: 'POST',
+      body: JSON.stringify({ permitId, expeditedTier }),
+    });
+  }
+
+  static async addDocumentPrep(permitId: string, packageType: 'basic' | 'standard' | 'premium') {
+    return this.fetchWithAuth(`/permits/${permitId}/payment/document-prep`, {
+      method: 'POST',
+      body: JSON.stringify({ permitId, package: packageType }),
+    });
+  }
+
+  static async getPermitFees(permitId: string) {
+    return this.fetchWithAuth(`/permits/${permitId}/payment/fees`);
+  }
+
+  static async confirmPayment(permitId: string, sessionId: string, feeType: string) {
+    return this.fetchWithAuth(`/permits/${permitId}/payment/confirm`, {
+      method: 'POST',
+      body: JSON.stringify({ sessionId, feeType }),
+    });
   }
 
   // ============================================================================

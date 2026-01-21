@@ -189,6 +189,12 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session):
   try {
     console.log('✅ Processing checkout.session.completed:', session.id)
 
+    // Handle permit payments (one-time payments)
+    if (session.mode === 'payment' && session.metadata?.permitId && session.metadata?.feeType) {
+      await handlePermitPayment(session)
+      return
+    }
+
     // Only handle subscription checkouts
     if (session.mode !== 'subscription') {
       console.log(`ℹ️  Checkout session ${session.id} is not a subscription (mode: ${session.mode}), skipping`)
@@ -832,6 +838,12 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void
 async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent): Promise<void> {
   try {
     console.log('✅ Processing payment_intent.succeeded:', paymentIntent.id)
+
+    // Handle permit payments
+    if (session.metadata?.permitId && session.metadata?.feeType) {
+      await handlePermitPayment(session)
+      return
+    }
 
     // Handle one-time payments (e.g., permit acceleration, escrow deposits)
     if (paymentIntent.metadata?.type === 'one_time') {

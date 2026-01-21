@@ -168,10 +168,38 @@ export default function NewPermitPage() {
             {currentStep < STEPS.length - 1 ? (
               <Button
                 variant="primary"
-                onClick={nextStep}
-                rightIcon={<ArrowRight size={20} />}
+                onClick={async () => {
+                  if (currentStep === 3) {
+                    // On payment step, create permit first, then redirect to payment
+                    try {
+                      const permit = await api.permits.create({
+                        address: formData.address,
+                        jurisdiction: formData.jurisdictionId || formData.jurisdiction || '',
+                        permitTypes: formData.permitTypes,
+                        projectDetails: {
+                          description: formData.projectDescription || '',
+                          valuation: formData.projectValuation || 0,
+                        },
+                        applicantInfo: {
+                          name: formData.applicantName,
+                          contactInfo: {
+                            email: formData.applicantEmail,
+                            phone: formData.applicantPhone,
+                          },
+                        },
+                      })
+                      // Redirect to payment page
+                      router.push(`/permits/${permit.id}/payment`)
+                    } catch (error: any) {
+                      toast.error(error.message || 'Failed to create permit')
+                    }
+                  } else {
+                    nextStep()
+                  }
+                }}
+                rightIcon={currentStep === 3 ? <CreditCard size={20} /> : <ArrowRight size={20} />}
               >
-                Continue
+                {currentStep === 3 ? 'Continue to Payment' : 'Continue'}
               </Button>
             ) : (
               <Button
