@@ -1,9 +1,10 @@
-BUILD_ID=remove-frozen-lockfile-flag-v5
-TIMESTAMP=2026-01-17T16:05:00Z
-PACKAGES=database,workflow-engine,compliance,analytics,types,api-client
-COMMIT=removed-frozen-lockfile-to-fix-cache-issue
-REQUIRED_PACKAGES=database,workflow-engine
-NOTE=Removed --frozen-lockfile flag - Railway cache was preventing updated lockfile from being used
-CHANGES=Let pnpm resolve version mismatch itself during build
-CRITICAL_FIX=This addresses 4 repeated failures due to aggressive Railway Docker cache
-
+﻿BUILD_ID=fix-dockerfile-build-commands-v6
+TIMESTAMP=2026-01-21T14:10:00Z
+COMMIT=6026742
+CHANGES=Updated all build steps to use pnpm --filter run build instead of turbo
+PACKAGES=database,workflow-engine,compliance,types,analytics,api-client,api
+REQUIRED_PACKAGES=database,workflow-engine,api
+NOTE=All build commands now use pnpm run build directly - no turbo dependency
+CRITICAL_FIX=Fixed 4 consecutive build failures - Railway was using cached Dockerfile
+VERSION=6.0.0
+FORCE_REBUILD=true

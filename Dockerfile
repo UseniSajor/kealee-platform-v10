@@ -1,6 +1,11 @@
 # ============================================================
 # Railway Deployment Dockerfile - Optimized for pnpm Monorepo
 # ============================================================
+# Version: 6.0.0
+# Last Updated: 2026-01-21
+# Commit: 6026742
+# Changes: All build steps now use pnpm --filter run build (no turbo)
+# ============================================================
 # Optimizations:
 # - Skip Puppeteer Chrome download (saves 5-8 minutes)
 # - Layer caching for faster rebuilds  
@@ -10,12 +15,20 @@
 
 FROM node:20-slim
 
-# === CACHE INVALIDATION - Copy build marker early ===
-# This file changes with every fix, forcing cache invalidation
+# === CACHE INVALIDATION ===
+# Build argument to force cache invalidation on Railway
+ARG BUILD_DATE=2026-01-21
+ARG BUILD_VERSION=6.0.0
+ARG CACHE_BUST=6026742
+
+# Copy build marker early to invalidate cache
 COPY .railway-build-marker /tmp/build-marker
 RUN echo "=========================================" && \
     echo "RAILWAY BUILD MARKER:" && \
     cat /tmp/build-marker && \
+    echo "BUILD_DATE: ${BUILD_DATE}" && \
+    echo "BUILD_VERSION: ${BUILD_VERSION}" && \
+    echo "CACHE_BUST: ${CACHE_BUST}" && \
     echo "========================================="
 
 # Install system dependencies and build tools
