@@ -2,12 +2,12 @@
   "name": "@kealee/database",
   "version": "1.0.0",
   "main": "./dist/index.js",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "require": "./dist/index.js",
       "import": "./dist/index.js",
-      "types": "./src/index.ts"
+      "types": "./dist/index.d.ts"
     }
   },
   "scripts": {
@@ -34,8 +34,10 @@
     "@prisma/client": "^5.20.0"
   },
   "devDependencies": {
+    "@types/node": "^20.19.0",
     "dotenv": "^17.2.3",
     "prisma": "^5.20.0",
-    "tsx": "^4.7.0"
+    "tsx": "^4.7.0",
+    "typescript": "^5.9.0"
   }
 }

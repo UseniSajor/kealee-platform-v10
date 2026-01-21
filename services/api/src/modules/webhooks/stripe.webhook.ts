@@ -239,13 +239,14 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session):
         action: 'STRIPE_CHECKOUT_COMPLETED',
         entityType: 'StripeCheckoutSession',
         entityId: session.id,
-        orgId,
+        userId: 'system',
         reason: `Checkout completed: ${subscription.metadata?.planSlug || 'unknown plan'}`,
         after: {
           sessionId: session.id,
           subscriptionId,
           amountTotal: session.amount_total,
           currency: session.currency,
+          orgId,
         },
       })
     }
@@ -325,12 +326,13 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription): Pro
       action: 'STRIPE_SUBSCRIPTION_CREATED',
       entityType: 'ServiceSubscription',
       entityId: created.id,
-      orgId,
+      userId: 'system',
       reason: `Subscription created: ${planSlug}`,
       after: {
         stripeId: subscription.id,
         status,
         planSlug,
+        orgId,
       },
     })
 
@@ -431,7 +433,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
       action: 'STRIPE_SUBSCRIPTION_UPDATED',
       entityType: 'ServiceSubscription',
       entityId: updated.id,
-      orgId: existing.orgId,
+      userId: 'system',
       reason: planChanged ? `Plan changed: ${planSlug}` : `Subscription updated: ${status}`,
       before,
       after: {
@@ -439,6 +441,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
         planId: plan.id,
         planSlug,
         currentPeriodEnd: currentPeriodEnd?.toISOString(),
+        orgId: existing.orgId,
       },
     })
 
@@ -501,7 +504,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
       action: 'STRIPE_SUBSCRIPTION_DELETED',
       entityType: 'ServiceSubscription',
       entityId: updated.id,
-      orgId: existing.orgId,
+      userId: 'system',
       reason: 'Subscription canceled',
       before: {
         status: existing.status,
@@ -509,6 +512,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
       after: {
         status: 'canceled',
         canceledAt: canceledAt.toISOString(),
+        orgId: existing.orgId,
       },
     })
 
@@ -650,12 +654,13 @@ async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
       action: 'STRIPE_INVOICE_PAID',
       entityType: 'Payment',
       entityId: invoice.id,
-      orgId: subscription.orgId,
+      userId: 'system',
       reason: `Invoice paid: ${invoice.id}`,
       after: {
         amount: invoice.amount_paid / 100,
         currency: invoice.currency,
         invoiceId: invoice.id,
+        orgId: subscription.orgId,
       },
     })
 
@@ -769,12 +774,13 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void
       action: 'STRIPE_INVOICE_PAYMENT_FAILED',
       entityType: 'ServiceSubscription',
       entityId: updated.id,
-      orgId: subscription.orgId,
+      userId: 'system',
       reason: `Payment failed for invoice: ${invoice.id}`,
       after: {
         status: 'past_due',
         failedInvoiceId: invoice.id,
         failureCount: (subscription.metadata as any)?.paymentFailureCount || 1,
+        orgId: subscription.orgId,
       },
     })
 
@@ -1048,6 +1054,7 @@ async function logWebhookAttempt(
       action: 'STRIPE_WEBHOOK_ATTEMPT',
       entityType: 'Webhook',
       entityId: eventId || 'unknown',
+      userId: 'system',
       reason: `Webhook ${status} from ${ip}`,
       after: {
         ip,
@@ -1077,6 +1084,7 @@ async function logWebhookError(
       action: 'STRIPE_WEBHOOK_ERROR',
       entityType: 'Webhook',
       entityId: eventId,
+      userId: 'system',
       reason: `Webhook processing failed after ${retryCount} retries`,
       after: {
         eventId,
