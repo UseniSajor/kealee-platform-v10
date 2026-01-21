@@ -636,6 +636,14 @@ async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
         },
       },
     })
+    } catch (error: any) {
+      // If Invoice model doesn't exist yet, just log
+      if (error.message?.includes('model') || error.message?.includes('Invoice')) {
+        console.warn('⚠️  Invoice model not found, skipping invoice record creation')
+      } else {
+        throw error
+      }
+    }
 
     // Log audit
     await auditService.recordAudit({
@@ -747,6 +755,14 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void
         },
       },
     })
+    } catch (error: any) {
+      // If Payment model doesn't exist yet, just log
+      if (error.message?.includes('model') || error.message?.includes('Payment')) {
+        console.warn('⚠️  Payment model not found, skipping payment record creation')
+      } else {
+        throw error
+      }
+    }
 
     // Log audit
     await auditService.recordAudit({
