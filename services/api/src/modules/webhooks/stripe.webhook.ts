@@ -247,7 +247,7 @@ async function handlePermitPayment(session: Stripe.Checkout.Session): Promise<vo
       },
     })
 
-    console.log(`✅ Permit payment processed: ${permitId}, feeType: ${feeType}, amount: $${session.amount_total / 100}`)
+    console.log(`✅ Permit payment processed: ${permitId}, feeType: ${feeType}, amount: $${(session.amount_total ?? 0) / 100}`)
   } catch (error: any) {
     console.error(`❌ Error processing permit payment for session ${session.id}:`, error)
     throw error
@@ -876,7 +876,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void
         amountDue: invoice.amount_due,
         currency: invoice.currency,
         hostedInvoiceUrl: invoice.hosted_invoice_url,
-        failureReason: invoice.last_payment_error?.message,
+        failureReason: (invoice as any).last_payment_error?.message,
       },
     })
 

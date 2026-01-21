@@ -153,8 +153,8 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
                 fileId: uploadedFile.id,
                 fileName: uploadedFile.fileName,
                 fileUrl: uploadedFile.url,
-                fileType: uploadedFile.mimeType,
-                fileSize: uploadedFile.size,
+                fileType: (uploadedFile as any).mimeType || (uploadedFile as any).mimetype || 'application/octet-stream',
+                fileSize: (uploadedFile as any).size || (uploadedFile as any).file?.bytesRead || 0,
               })
             }
           }
@@ -323,7 +323,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
     {
       preHandler: [authenticateUser, validateQuery(z.object({
         type: z.string().optional(),
-        active: z.string().optional().transform(val => val === 'true'),
+        active: z.string().optional().transform(val => val === 'true').pipe(z.boolean().optional()),
         page: z.coerce.number().default(1),
         limit: z.coerce.number().default(50),
       }))],

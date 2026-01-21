@@ -308,8 +308,8 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     where: { stripeId: subscription.id },
     data: {
       status: subscription.status as any,
-      currentPeriodStart: new Date((subscription as Stripe.Subscription).current_period_start * 1000),
-      currentPeriodEnd: new Date((subscription as Stripe.Subscription).current_period_end * 1000),
+      currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+      currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
     },
   });
 }
@@ -321,8 +321,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     where: { stripeId: subscription.id },
     data: {
       status: subscription.status as any,
-      currentPeriodStart: new Date((subscription as Stripe.Subscription).current_period_start * 1000),
-      currentPeriodEnd: new Date((subscription as Stripe.Subscription).current_period_end * 1000),
+      currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+      currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
     },
   });
 }

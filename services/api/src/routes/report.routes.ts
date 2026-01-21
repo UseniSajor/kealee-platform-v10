@@ -129,9 +129,9 @@ export async function reportRoutes(fastify: FastifyInstance) {
           data: {
             title: `${type.charAt(0).toUpperCase() + type.slice(1)} Report - ${start.toLocaleDateString()} to ${end.toLocaleDateString()}`,
             type,
-            data: { period: `${start.toLocaleDateString()} - ${end.toLocaleDateString()}` },
             generatedBy: user.id,
             data: {
+              period: `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`,
               tasks,
               clients,
               stats,

@@ -35,7 +35,7 @@ export async function permitRoutes(fastify: FastifyInstance) {
           where: { applicantId: user.id },
           include: {
             aiReviews: {
-              orderBy: { createdAt: 'desc' },
+              orderBy: { id: 'desc' },
               take: 1,
             },
           },
@@ -67,7 +67,9 @@ export async function permitRoutes(fastify: FastifyInstance) {
           data: {
             jurisdictionId: data.jurisdiction,
             applicantId: user.id,
-            applicantInfo: data.applicantInfo,
+            applicantName: data.applicantInfo?.name || '',
+            applicantEmail: data.applicantInfo?.email || '',
+            applicantPhone: data.applicantInfo?.phone || '',
             status: 'draft',
             permitTypes: data.permitTypes,
           },
@@ -101,7 +103,7 @@ export async function permitRoutes(fastify: FastifyInstance) {
           },
           include: {
             aiReviews: {
-              orderBy: { createdAt: 'desc' },
+              orderBy: { id: 'desc' },
             },
             jurisdiction: true,
           },
@@ -141,13 +143,6 @@ export async function permitRoutes(fastify: FastifyInstance) {
             applicantId: user.id,
           },
           include: {
-            documents: documentIds
-              ? {
-                  where: {
-                    id: { in: documentIds },
-                  },
-                }
-              : true,
             jurisdiction: true,
           },
         });

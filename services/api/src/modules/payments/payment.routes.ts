@@ -140,8 +140,9 @@ export async function paymentRoutes(fastify: FastifyInstance) {
         dueDate?: string
         metadata?: Record<string, any>
       }
+      const bodyData = body as any
       const invoice = await paymentService.generateInvoice({
-        projectId: body.projectId || '',
+        projectId: bodyData.projectId || '',
         amount: body.amount,
         description: body.description,
         dueDate: body.dueDate ? new Date(body.dueDate).toISOString() : undefined,

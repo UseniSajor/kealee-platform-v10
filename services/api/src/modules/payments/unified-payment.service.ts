@@ -147,9 +147,8 @@ class UnifiedPaymentService {
           projectId: data.metadata.projectId || '',
           amount: data.amount,
           description: data.metadata.description,
-          lineItems: data.metadata.lineItems || [],
           dueDate: data.metadata.dueDate ? new Date(data.metadata.dueDate).toISOString() : undefined,
-          metadata: data.metadata,
+          metadata: { ...data.metadata, lineItems: data.metadata.lineItems || [] },
         })
         break
 

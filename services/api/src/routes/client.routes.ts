@@ -250,7 +250,6 @@ export async function clientRoutes(fastify: FastifyInstance) {
             clientId,
             pmUserId: user.id,
             status: 'pending',
-            estimatedWorkload: newWorkload,
             currentWorkload,
             metadata: {
               requestType: 'client_assignment',

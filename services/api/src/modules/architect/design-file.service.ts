@@ -291,9 +291,8 @@ export const designFileService = {
         fileUrl: fileData.fileUrl,
         thumbnailUrl: fileData.thumbnailUrl,
         userId: data.userId,
-        metadata: fileData.metadata as any,
       })
-      uploadedFiles.push(file)
+      uploadedFiles.push(file as any)
     }
 
     return uploadedFiles

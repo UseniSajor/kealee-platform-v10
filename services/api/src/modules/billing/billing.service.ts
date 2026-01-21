@@ -153,8 +153,8 @@ export class BillingService {
           return {
             id: stripeSubscription.id,
             status: stripeSubscription.status,
-            current_period_start: stripeSub.current_period_start ? new Date(stripeSub.current_period_start * 1000) : new Date(),
-            current_period_end: stripeSub.current_period_end ? new Date(stripeSub.current_period_end * 1000) : new Date(),
+            current_period_start: (stripeSub as any).current_period_start ? new Date((stripeSub as any).current_period_start * 1000) : new Date(),
+            current_period_end: (stripeSub as any).current_period_end ? new Date((stripeSub as any).current_period_end * 1000) : new Date(),
             cancel_at_period_end: stripeSubscription.cancel_at_period_end,
             canceled_at: stripeSubscription.canceled_at
               ? new Date(stripeSubscription.canceled_at * 1000)
@@ -271,8 +271,8 @@ export class BillingService {
           },
           update: {
             status: mapStripeSubscriptionStatus(subscription.status),
-            currentPeriodStart: toDateFromSeconds((subscription as Stripe.Subscription).current_period_start),
-            currentPeriodEnd: toDateFromSeconds((subscription as Stripe.Subscription).current_period_end),
+            currentPeriodStart: toDateFromSeconds((subscription as any).current_period_start),
+            currentPeriodEnd: toDateFromSeconds((subscription as any).current_period_end),
             cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
           },
         })
@@ -293,11 +293,11 @@ export class BillingService {
 
     return {
       subscriptionId: subscription.id,
-      clientSecret: (subscription.latest_invoice as Stripe.Invoice)?.payment_intent
-        ? (typeof (subscription.latest_invoice as Stripe.Invoice).payment_intent === 'string'
+      clientSecret: ((subscription.latest_invoice as any)?.payment_intent)
+        ? (typeof ((subscription.latest_invoice as any).payment_intent) === 'string'
           ? null
-          : ((subscription.latest_invoice as Stripe.Invoice).payment_intent as Stripe.PaymentIntent)
-              .client_secret)
+          : (((subscription.latest_invoice as any).payment_intent as Stripe.PaymentIntent)
+              .client_secret))
         : null,
       status: subscription.status,
     }
@@ -371,7 +371,7 @@ export class BillingService {
       const invoices = await stripe.invoices.list({
         subscription: subscription.stripeId,
         limit: 1,
-        status: 'upcoming',
+        status: 'upcoming' as any,
       })
       if (invoices.data.length > 0) {
         upcomingInvoice = invoices.data[0]
