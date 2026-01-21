@@ -5,7 +5,7 @@
 
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { authenticateUser } from '../modules/auth/auth.middleware';
+import { authenticateUser } from '../middleware/auth.middleware';
 import { validateBody, validateQuery } from '../middleware/validation.middleware';
 import {
   autocompleteAddresses,

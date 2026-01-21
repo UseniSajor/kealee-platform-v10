@@ -55,7 +55,7 @@ export async function authenticateUser(
     }
 
     // Get user with organization memberships from database
-    const { prismaAny } = await import('../../utils/prisma-helper');
+    const { prismaAny } = await import('../utils/prisma-helper');
     const userWithOrgs = await prismaAny.user.findUnique({
       where: { id: user.id },
       include: {

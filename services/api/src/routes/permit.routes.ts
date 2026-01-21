@@ -5,8 +5,8 @@
 
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { authenticateUser } from '../modules/auth/auth.middleware';
-import { validateBody, validateParams } from '../../middleware/validation.middleware';
+import { authenticateUser } from '../middleware/auth.middleware';
+import { validateBody, validateParams } from '../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
 import { reviewPermitWithAI } from '../services/ai.service';
 

@@ -5,8 +5,8 @@
 
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { authenticateUser, requirePM } from '../modules/auth/auth.middleware';
-import { validateBody, validateQuery, validateParams } from '../../middleware/validation.middleware';
+import { authenticateUser, requirePM } from '../middleware/auth.middleware';
+import { validateBody, validateQuery, validateParams } from '../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
 
 const createClientSchema = z.object({
