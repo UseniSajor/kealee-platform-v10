@@ -94,7 +94,7 @@ export const permitRoutingService = {
       requiredDisciplines = [
         ...new Set([
           ...requiredDisciplines,
-          ...(primaryRule.requiredDisciplines || []),
+          ...((primaryRule as any).requiredDisciplines || []),
         ]),
       ]
     }

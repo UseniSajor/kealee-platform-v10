@@ -130,8 +130,8 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
               fileId: uploadedFile.id,
               fileName: uploadedFile.fileName,
               fileUrl: uploadedFile.url,
-              fileType: uploadedFile.mimeType,
-              fileSize: uploadedFile.size,
+              fileType: uploadedFile.mimetype,
+              fileSize: uploadedFile.file?.bytesRead || 0,
             })
           }
 
@@ -519,8 +519,8 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
           uploadedFile.id,
           uploadedFile.fileName,
           uploadedFile.url,
-          uploadedFile.mimeType || 'application/octet-stream',
-          uploadedFile.size
+          uploadedFile.mimetype || 'application/octet-stream',
+          uploadedFile.file?.bytesRead || 0
         )
 
         return reply.code(201).send({ attachment })

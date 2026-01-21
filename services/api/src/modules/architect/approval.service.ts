@@ -443,8 +443,8 @@ export const approvalService = {
     if (!nextStep || nextStep.stepStatus === 'APPROVED') {
       // All steps approved
       newStatus = 'APPROVED'
-      completedAt = new Date()
-      completedById = data.userId
+      completedAt = new Date() as any
+      completedById = data.userId as any
     }
 
     // Update approval request

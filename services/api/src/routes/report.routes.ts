@@ -119,7 +119,7 @@ export async function reportRoutes(fastify: FastifyInstance) {
         const stats = {
           tasksCompleted: tasks.filter(t => t.status === 'completed').length,
           tasksTotal: tasks.length,
-          hoursLogged: tasks.reduce((sum, t) => sum + (t.hoursLogged || 0), 0),
+          hoursLogged: tasks.reduce((sum, t) => sum + ((t as any).hoursLogged || 0), 0),
           clientsServed: new Set(tasks.map(t => t.clientId).filter(Boolean)).size,
           averageTaskCompletionTime: calculateAverageCompletionTime(tasks),
         };
@@ -129,8 +129,8 @@ export async function reportRoutes(fastify: FastifyInstance) {
           data: {
             title: `${type.charAt(0).toUpperCase() + type.slice(1)} Report - ${start.toLocaleDateString()} to ${end.toLocaleDateString()}`,
             type,
-            period: `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`,
-            userId: user.id,
+            data: { period: `${start.toLocaleDateString()} - ${end.toLocaleDateString()}` },
+            generatedBy: user.id,
             stats,
             data: {
               tasks,
@@ -146,7 +146,7 @@ export async function reportRoutes(fastify: FastifyInstance) {
             id: report.id,
             title: report.title,
             type: report.type,
-            period: report.period,
+            period: (report.data as any)?.period || '',
             stats,
             createdAt: report.createdAt,
           },
@@ -174,7 +174,7 @@ export async function reportRoutes(fastify: FastifyInstance) {
         const report = await prisma.report.findFirst({
           where: {
             id,
-            userId: user.id,
+            generatedBy: user.id,
           },
         });
 
@@ -208,7 +208,7 @@ export async function reportRoutes(fastify: FastifyInstance) {
         const report = await prisma.report.findFirst({
           where: {
             id,
-            userId: user.id,
+            generatedBy: user.id,
           },
         });
 

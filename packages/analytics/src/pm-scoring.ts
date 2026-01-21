@@ -147,11 +147,9 @@ export class PMScoringSystem {
         assignedTo: pmId,
       },
       include: {
-        request: {
+        plan: {
           include: {
-            plan: {
-              include: {
-                user: true,
+            user: true,
               },
             },
           },
@@ -169,21 +167,10 @@ export class PMScoringSystem {
     // Get projects where PM is assigned or is the owner
     const projects = await prisma.project?.findMany({
       where: {
-        OR: [
-          { ownerId: pmId },
-          {
-            memberships: {
-              some: {
-                userId: pmId,
-                role: 'PROJECT_MANAGER',
-              },
-            },
-          },
-        ],
+        assignedPM: pmId,
       },
       include: {
         contracts: true,
-        readinessItems: true,
       },
     }).catch(() => [])
 
@@ -467,7 +454,7 @@ export class PMScoringSystem {
    */
   private async getEscrowModuleUsage(pmId: string): Promise<number> {
     const projects = await this.getManagedProjects(pmId)
-    const escrows = await prisma.escrowAccount?.findMany({
+    const escrows = await (prisma as any).escrowAccount?.findMany({
       where: {
         projectId: {
           in: projects.map((p) => p.id),

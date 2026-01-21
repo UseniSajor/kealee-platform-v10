@@ -98,7 +98,7 @@ class PaymentReportingService {
         },
       },
       byOrganization: Object.values(byOrg),
-      byMonth: Object.values(byMonth).sort((a, b) => b.month.localeCompare(a.month)),
+      byMonth: Object.values(byMonth).sort((a: any, b: any) => b.month.localeCompare(a.month)),
       payments: payments.map((p) => ({
         id: p.id,
         amount: Number(p.amount),

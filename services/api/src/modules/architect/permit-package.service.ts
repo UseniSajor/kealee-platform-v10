@@ -273,7 +273,7 @@ export const permitPackageService = {
 
     // Generate application forms based on template or default
     const formTypes = template
-      ? ((template.requiredDocuments as any)?.formTypes || ['BUILDING_PERMIT'])
+      ? ((template as any).requiredDocuments?.formTypes || ['BUILDING_PERMIT'])
       : ['BUILDING_PERMIT']
 
     const applicationForms = await Promise.all(
@@ -283,7 +283,7 @@ export const permitPackageService = {
             packageId: package_.id,
             formType,
             formName: `${formType} Application`,
-            formTemplateId: template?.id,
+            formTemplateId: (template as any)?.id,
             formData: this.generateFormData(project, formType, template),
             isComplete: false,
             createdById: data.createdById,
