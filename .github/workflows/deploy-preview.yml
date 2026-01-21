@@ -88,9 +88,46 @@ jobs:
           ls -la | grep -E "package.json|pnpm-workspace.yaml|turbo.json" || echo "⚠️ Some root files missing"
           echo "📁 App directory exists:"
           ls -la apps/${{ matrix.app.name }} || echo "❌ App directory not found!"
-          echo "📁 Checking vercel.json:"
-          cat apps/${{ matrix.app.name }}/vercel.json || echo "❌ vercel.json not found!"
           echo "✅ Structure verified"
+
+      - name: Validate vercel.json Schema
+        working-directory: apps/${{ matrix.app.name }}
+        run: |
+          echo "🔍 Validating vercel.json schema..."
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          if [ ! -f "vercel.json" ]; then
+            echo "❌ vercel.json not found!"
+            exit 1
+          fi
+          
+          # Check for invalid properties
+          echo "📋 Checking for invalid properties in vercel.json..."
+          
+          # Check for _comment property (not allowed in Vercel schema)
+          if grep -q '"_comment"' vercel.json || grep -q "'_comment'" vercel.json; then
+            echo "❌ ERROR: vercel.json contains '_comment' property which is not allowed!"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "🔍 Found _comment in vercel.json:"
+            grep -n "_comment" vercel.json || true
+            echo ""
+            echo "💡 Fix: Remove all '_comment' properties from vercel.json"
+            echo "💡 Vercel JSON schema does not allow custom properties like '_comment'"
+            exit 1
+          fi
+          
+          # Validate JSON syntax
+          if ! python3 -m json.tool vercel.json > /dev/null 2>&1; then
+            echo "❌ ERROR: vercel.json has invalid JSON syntax!"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            python3 -m json.tool vercel.json 2>&1 || true
+            exit 1
+          fi
+          
+          echo "✅ vercel.json schema is valid"
+          echo "📄 vercel.json contents:"
+          cat vercel.json
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
       - name: Link Vercel Project
         working-directory: apps/${{ matrix.app.name }}
@@ -157,13 +194,48 @@ jobs:
             cat "$TEMP_LOG"
             echo ""
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "💡 Troubleshooting:"
+            
+            # Check for specific common errors
+            if grep -qi "_comment" "$TEMP_LOG" || grep -qi "additional property" "$TEMP_LOG"; then
+              echo "🚨 DETECTED: vercel.json schema validation error"
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "❌ Error: vercel.json contains invalid properties"
+              echo ""
+              echo "💡 Common Issues:"
+              echo "  1. '_comment' property is not allowed in vercel.json"
+              echo "  2. Custom properties not in Vercel schema"
+              echo ""
+              echo "🔧 Fix Steps:"
+              echo "  1. Check vercel.json for '_comment' or other invalid properties"
+              echo "  2. Remove any properties not in Vercel's official schema"
+              echo "  3. Valid properties: buildCommand, installCommand, framework,"
+              echo "     rewrites, headers, routes, env, regions, github, public"
+              echo ""
+              echo "📄 Current vercel.json:"
+              cat vercel.json 2>/dev/null || echo "  (Could not read vercel.json)"
+              echo ""
+            fi
+            
+            if grep -qi "project.*not found" "$TEMP_LOG" || grep -qi "project.*does not exist" "$TEMP_LOG"; then
+              echo "🚨 DETECTED: Project not found error"
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "💡 Fix: Verify project ID is correct in GitHub secrets"
+              echo "  - Secret name: VERCEL_PROJECT_ID_${{ matrix.app.name | upper | replace: '-', '_' }}"
+              echo "  - Current project ID: ${{ matrix.app.project-id }}"
+              echo ""
+            fi
+            
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "💡 General Troubleshooting:"
             echo "  - Project ID: ${{ matrix.app.project-id }}"
             echo "  - Org ID: ${{ env.VERCEL_ORG_ID }}"
             echo "  - App: ${{ matrix.app.name }}"
             echo "  - Working dir: $(pwd)"
+            echo "  - Vercel Dashboard: https://vercel.com/${{ env.VERCEL_ORG_ID }}/${{ matrix.app.project-id }}"
             echo "  - Check Vercel dashboard for detailed build logs"
             echo "  - Verify project exists and is linked correctly"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            
             echo "deployment_failed=true" >> $GITHUB_OUTPUT
             echo "deployment_error_code=$DEPLOY_EXIT_CODE" >> $GITHUB_OUTPUT
             rm -f "$TEMP_LOG"
