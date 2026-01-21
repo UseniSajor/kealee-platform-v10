@@ -734,7 +734,7 @@ model Permit {
   stories       Int?
 
   // Property Info
-  propertyId   String
+  propertyId   String?
   address      String
   parcelNumber String?
   zoning       String?
@@ -795,6 +795,7 @@ model Permit {
   // Relationships
   jurisdiction        Jurisdiction         @relation(fields: [jurisdictionId], references: [id])
   project             Project              @relation(fields: [projectId], references: [id])
+  property            Property?            @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   aiReviews           AIReviewResult[]
   submissions         PermitSubmission[]
   corrections         PermitCorrection[]
@@ -1458,6 +1459,8 @@ model Project {
   id        String   @id @default(uuid())
   name      String?
   clientId  String?
+  orgId     String?
+  propertyId String?
   status    String   @default("ACTIVE")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1470,10 +1473,14 @@ model Project {
   disputes         Dispute[]
   leads            Lead[]
   client           Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  org              Org?      @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  property         Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   tasks            Task[]
   payments         Payment[]
 
   @@index([clientId])
+  @@index([orgId])
+  @@index([propertyId])
   @@index([status])
 }
 
@@ -1519,6 +1526,55 @@ model User {
   approvalRequests ApprovalRequest[] @relation("ApprovalRequestRequester")
   approvalSteps    ApprovalStep[]    @relation("ApprovalStepApprover")
   approvalComments ApprovalComment[] @relation("ApprovalCommentUser")
+}
+
+// ============================================================================
+// ============================================================================
+// MODULE ENTITLEMENTS
+// ============================================================================
+
+model ModuleEntitlement {
+  id         String    @id @default(uuid())
+  orgId      String
+  moduleKey  String
+  enabled    Boolean   @default(false)
+  enabledAt  DateTime?
+  disabledAt DateTime?
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, moduleKey])
+  @@index([orgId])
+  @@index([moduleKey])
+  @@index([enabled])
+}
+
+// ============================================================================
+// PROPERTY MODEL
+// ============================================================================
+
+model Property {
+  id        String   @id @default(uuid())
+  orgId     String?
+  address   String
+  city      String
+  state     String
+  zip       String
+  country   String   @default("US")
+  latitude  Float?
+  longitude Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  org      Org?      @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  projects Project[]
+  permits  Permit[]
+
+  @@index([orgId])
+  @@index([city, state])
 }
 
 // ============================================================================
