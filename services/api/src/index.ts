@@ -15,6 +15,141 @@ if (process.env.NODE_ENV !== 'production') {
 }
 // In production, deployment platforms (Railway/Vercel) set environment variables via their dashboards
 // No .env.local file is needed or used in production
+
+// ============================================================================
+// STARTUP GUARDS - Critical Security Checks
+// ============================================================================
+
+/**
+ * Validates required environment variables and prevents environment/database mismatches
+ * This guard runs before any server initialization to prevent security issues
+ */
+function validateStartupGuards() {
+  // Guard 1: Require APP_ENV
+  const appEnv = process.env.APP_ENV
+  if (!appEnv) {
+    console.error('')
+    console.error('='.repeat(80))
+    console.error('❌ FATAL ERROR: APP_ENV is not set')
+    console.error('='.repeat(80))
+    console.error('')
+    console.error('APP_ENV is required to determine the application environment.')
+    console.error('Valid values: development, staging, production')
+    console.error('')
+    console.error('Set APP_ENV in your environment variables:')
+    console.error('  - Local: Add to .env.local')
+    console.error('  - Railway: Set in Railway dashboard → Service → Variables')
+    console.error('  - Vercel: Set in Vercel dashboard → Project → Settings → Environment Variables')
+    console.error('')
+    console.error('='.repeat(80))
+    process.exit(1)
+  }
+
+  // Guard 2: Require DATABASE_URL
+  const databaseUrl = process.env.DATABASE_URL
+  if (!databaseUrl) {
+    console.error('')
+    console.error('='.repeat(80))
+    console.error('❌ FATAL ERROR: DATABASE_URL is not set')
+    console.error('='.repeat(80))
+    console.error('')
+    console.error('DATABASE_URL is required to connect to the database.')
+    console.error('')
+    console.error('Set DATABASE_URL in your environment variables:')
+    console.error('  - Local: Add to .env.local or packages/database/.env')
+    console.error('  - Railway: Set in Railway dashboard → Service → Variables')
+    console.error('')
+    console.error('⚠️  IMPORTANT: DATABASE_URL must only exist in backend services.')
+    console.error('   Never add DATABASE_URL to frontend applications (Vercel).')
+    console.error('')
+    console.error('='.repeat(80))
+    process.exit(1)
+  }
+
+  // Guard 3: Prevent staging from connecting to production database
+  if (appEnv === 'staging') {
+    const isProductionDb = 
+      databaseUrl.includes('production-postgres') ||
+      databaseUrl.includes('production-postgres.internal') ||
+      databaseUrl.includes('prod-postgres') ||
+      databaseUrl.includes('prod-postgres.internal') ||
+      databaseUrl.toLowerCase().includes('production') && databaseUrl.includes('postgres')
+
+    if (isProductionDb) {
+      console.error('')
+      console.error('='.repeat(80))
+      console.error('❌ FATAL ERROR: Environment/Database Mismatch')
+      console.error('='.repeat(80))
+      console.error('')
+      console.error('SECURITY VIOLATION: Staging environment is attempting to connect to production database!')
+      console.error('')
+      console.error(`APP_ENV:        ${appEnv}`)
+      console.error(`DATABASE_URL:   ${databaseUrl.replace(/:[^:@]+@/, ':****@')}`)
+      console.error('')
+      console.error('This is a critical security issue that could result in:')
+      console.error('  - Data corruption in production')
+      console.error('  - Accidental deletion of production data')
+      console.error('  - Security breaches')
+      console.error('')
+      console.error('REQUIRED FIX:')
+      console.error('  1. Verify APP_ENV is set to "staging"')
+      console.error('  2. Verify DATABASE_URL points to staging database (staging-postgres.internal)')
+      console.error('  3. Ensure staging and production use separate Railway services')
+      console.error('  4. Check Railway dashboard → Service → Variables')
+      console.error('')
+      console.error('='.repeat(80))
+      process.exit(1)
+    }
+  }
+
+  // Guard 4: Prevent production from connecting to staging database
+  if (appEnv === 'production') {
+    const isStagingDb = 
+      databaseUrl.includes('staging-postgres') ||
+      databaseUrl.includes('staging-postgres.internal') ||
+      databaseUrl.includes('stage-postgres') ||
+      databaseUrl.includes('stage-postgres.internal') ||
+      databaseUrl.toLowerCase().includes('staging') && databaseUrl.includes('postgres')
+
+    if (isStagingDb) {
+      console.error('')
+      console.error('='.repeat(80))
+      console.error('❌ FATAL ERROR: Environment/Database Mismatch')
+      console.error('='.repeat(80))
+      console.error('')
+      console.error('SECURITY VIOLATION: Production environment is attempting to connect to staging database!')
+      console.error('')
+      console.error(`APP_ENV:        ${appEnv}`)
+      console.error(`DATABASE_URL:   ${databaseUrl.replace(/:[^:@]+@/, ':****@')}`)
+      console.error('')
+      console.error('This is a critical security issue that could result in:')
+      console.error('  - Production using test/staging data')
+      console.error('  - Data loss if staging database is reset')
+      console.error('  - Incorrect data being served to production users')
+      console.error('')
+      console.error('REQUIRED FIX:')
+      console.error('  1. Verify APP_ENV is set to "production"')
+      console.error('  2. Verify DATABASE_URL points to production database (production-postgres.internal)')
+      console.error('  3. Ensure production and staging use separate Railway services')
+      console.error('  4. Check Railway dashboard → Service → Variables')
+      console.error('')
+      console.error('='.repeat(80))
+      process.exit(1)
+    }
+  }
+
+  // Log successful validation (only in non-production to avoid log noise)
+  if (appEnv !== 'production') {
+    console.log('✅ Startup guards passed:')
+    console.log(`   APP_ENV: ${appEnv}`)
+    console.log(`   DATABASE_URL: ${databaseUrl.replace(/:[^:@]+@/, ':****@')}`)
+    console.log('')
+  }
+}
+
+// Run startup guards immediately after environment loading
+validateStartupGuards()
+
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
