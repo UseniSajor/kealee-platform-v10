@@ -1800,81 +1800,153 @@ enum AccountType {
 }
 
 enum AccountSubType {
-  // Assets
+  // Assets (1000-1999)
   CASH
   ESCROW_HOLDINGS
   ACCOUNTS_RECEIVABLE
-  // Liabilities
+  PREPAID_EXPENSES
+  // Liabilities (2000-2999)
   ACCOUNTS_PAYABLE
   ESCROW_LIABILITIES
   PLATFORM_FEES_PAYABLE
-  // Equity
+  DEFERRED_REVENUE
+  // Equity (3000-3999)
   RETAINED_EARNINGS
-  // Revenue
+  OWNER_EQUITY
+  // Revenue (4000-4999)
   PLATFORM_FEES
   TRANSACTION_FEES
-  // Expenses
+  SUBSCRIPTION_REVENUE
+  // Expenses (5000-5999)
   PROCESSING_FEES
   OPERATING_EXPENSES
+  CONTRACTOR_PAYOUTS
+}
+
+enum JournalEntryStatus {
+  DRAFT
+  POSTED
+  VOID
 }
 
 model Account {
-  id          String        @id @default(uuid())
-  code        String        @unique // Chart of accounts code (e.g., "1000", "2000")
+  id          String         @id @default(uuid())
+  code        String         @unique // Auto-assigned: 1000-1999 Assets, 2000-2999 Liabilities, etc.
   name        String
   type        AccountType
   subType     AccountSubType?
   description String?
-  parentId    String? // For account hierarchy
-  isActive    Boolean       @default(true)
-  balance     Decimal       @default(0) // Current balance (debit - credit)
-  currency    String        @default("USD")
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  parentId    String?        // Account hierarchy support
+  isActive    Boolean        @default(true) // Soft delete pattern
+  balance     Decimal        @default(0) @db.Decimal(18, 4) // Current balance (precision: 18, scale: 4)
+  currency    String         @default("USD") // Multi-currency support
+  
+  // Metadata
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  createdBy   String?
 
-  parent   Account?          @relation("AccountHierarchy", fields: [parentId], references: [id])
-  children Account[]       @relation("AccountHierarchy")
-  lines     JournalEntryLine[]
+  // Relationships
+  parent          Account?           @relation("AccountHierarchy", fields: [parentId], references: [id])
+  children        Account[]          @relation("AccountHierarchy")
+  lines           JournalEntryLine[]
+  periodBalances  AccountBalance[]
 
   @@index([type])
   @@index([subType])
   @@index([isActive])
+  @@index([code])
+  @@index([parentId])
 }
 
 model JournalEntry {
-  id          String   @id @default(uuid())
-  entryNumber String   @unique // Sequential entry number
+  id          String              @id @default(uuid())
+  entryNumber String              @unique // Auto-increment format: JE-2025-000001
   description String
-  reference   String? // Reference to source transaction (escrow, milestone, etc.)
-  referenceId String? // ID of source transaction
-  entryDate   DateTime @default(now())
-  postedAt    DateTime? // When entry was posted (null = draft)
-  postedBy    String? // User who posted the entry
-  createdAt   DateTime @default(now())
+  reference   String?             // Reference type (e.g., "ESCROW_DEPOSIT", "MILESTONE_PAYMENT")
+  referenceId String?             // ID of source transaction
+  entryDate   DateTime            @default(now())
+  status      JournalEntryStatus  @default(DRAFT)
+  
+  // Approval workflow for large transactions
+  requiresApproval Boolean         @default(false) // Auto-set for entries > $10,000
+  approvedBy      String?         // User ID who approved
+  approvedAt      DateTime?
+  
+  // Posting (immutable once POSTED)
+  postedAt    DateTime?           // When entry was posted (null = draft, immutable once set)
+  postedBy    String?             // User who posted the entry
+  voidedAt    DateTime?           // When entry was voided
+  voidedBy    String?             // User who voided
+  voidReason  String?
+  
+  // Audit trail
+  createdAt   DateTime            @default(now())
   createdBy   String
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime            @updatedAt
 
-  lines JournalEntryLine[]
+  // Relationships
+  lines       JournalEntryLine[]
 
   @@index([entryDate])
+  @@index([status])
   @@index([postedAt])
   @@index([reference, referenceId])
+  @@index([requiresApproval])
+  @@index([entryNumber])
 }
 
 model JournalEntryLine {
-  id            String        @id @default(uuid())
+  id             String       @id @default(uuid())
   journalEntryId String
-  accountId     String
-  debit         Decimal       @default(0)
-  credit        Decimal       @default(0)
-  description   String?
-  createdAt     DateTime      @default(now())
+  accountId      String
+  lineOrder      Int          @default(0) // Line ordering within entry
+  debit          Decimal      @default(0) @db.Decimal(18, 4)
+  credit         Decimal      @default(0) @db.Decimal(18, 4)
+  description    String?
+  
+  // Audit trail
+  createdAt      DateTime     @default(now())
 
+  // Relationships
   journalEntry JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
   account      Account      @relation(fields: [accountId], references: [id])
 
   @@index([journalEntryId])
   @@index([accountId])
+  @@index([lineOrder])
+}
+
+// Period-based account balances for reconciliation
+model AccountBalance {
+  id            String   @id @default(uuid())
+  accountId     String
+  fiscalYear    Int      // e.g., 2025
+  fiscalPeriod  Int      // 1-12 for months, or custom period
+  
+  // Balances
+  openingBalance  Decimal @default(0) @db.Decimal(18, 4)
+  closingBalance  Decimal @default(0) @db.Decimal(18, 4)
+  debitTotal      Decimal @default(0) @db.Decimal(18, 4) // Sum of debits in period
+  creditTotal     Decimal @default(0) @db.Decimal(18, 4) // Sum of credits in period
+  
+  // Reconciliation
+  isReconciled    Boolean   @default(false)
+  reconciledAt    DateTime?
+  reconciledBy    String?
+  reconciliationNotes String?
+  
+  // Audit trail
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relationships
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, fiscalYear, fiscalPeriod])
+  @@index([accountId])
+  @@index([fiscalYear, fiscalPeriod])
+  @@index([isReconciled])
 }
 
 model Dispute {

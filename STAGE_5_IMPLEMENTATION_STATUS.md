@@ -7,13 +7,29 @@
 
 ## ✅ Completed
 
-### Database Schema
-- ✅ Added double-entry ledger models to Prisma schema:
-  - `Account` model with account types (ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE)
-  - `JournalEntry` model for recording transactions
-  - `JournalEntryLine` model for debit/credit entries
-  - Account hierarchy support (parent/child accounts)
-  - Currency support
+### Database Schema (Enhanced: 2026-01-21)
+- ✅ Enhanced double-entry ledger models in Prisma schema:
+  - `Account` model with:
+    - Auto-incrementing account codes (1000-1999: Assets, 2000-2999: Liabilities, 3000-3999: Equity, 4000-4999: Revenue, 5000-5999: Expenses)
+    - Account hierarchy (parent/child via parentId)
+    - Soft delete pattern (isActive)
+    - Multi-currency support (base USD, precision 18,4)
+    - Current balance tracking
+  - `JournalEntry` model with:
+    - Auto-increment entry numbers (format: JE-2025-000001)
+    - Status enum (DRAFT, POSTED, VOID)
+    - Approval workflow (requiresApproval for entries > $10,000)
+    - Immutability enforcement (postedAt, voidedAt)
+    - Audit trail (createdBy, postedBy, voidedBy)
+  - `JournalEntryLine` model with:
+    - Line ordering (lineOrder field)
+    - Separate debit/credit columns (precision 18,4)
+    - Per-line descriptions
+  - `AccountBalance` model for period tracking:
+    - Fiscal year/period tracking
+    - Opening/closing balances
+    - Debit/credit totals per period
+    - Reconciliation status and notes
 
 ### App Structure
 - ✅ Created `m-finance-trust` Next.js app
