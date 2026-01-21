@@ -150,11 +150,14 @@ steps:
 
 ## Next Steps
 
-Railway should automatically rebuild with the fixes. If errors persist:
+**Note:** Railway and Vercel are deployment platforms - they deploy, run, and host code. They do not fix code. All code fixes must be completed in the codebase before deployment.
+
+If errors persist after code fixes:
 
 1. **Check Railway build logs** - Verify it's building from the latest commit
 2. **Clear Railway build cache** - May need to trigger a fresh build
 3. **Verify branch** - Ensure Railway is building from `main` branch
+4. **Fix remaining code issues** - All TypeScript/Prisma errors must be fixed in the codebase
 
 ## Verification Commands
 

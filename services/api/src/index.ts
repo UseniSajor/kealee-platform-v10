@@ -2,7 +2,7 @@ import { config } from 'dotenv'
 import { resolve } from 'path'
 
 // Load .env.local file ONLY in development (for local development)
-// In production (Railway), environment variables are set directly via Railway dashboard
+// In production (Railway/Vercel), environment variables are set via platform dashboards
 // and available in process.env - no .env.local file needed or used
 if (process.env.NODE_ENV !== 'production') {
   // Load .env.local file (for API service) - only exists locally, gitignored
@@ -13,8 +13,8 @@ if (process.env.NODE_ENV !== 'production') {
   // When running from services/api, the workspace package lives at ../../packages/database
   config({ path: resolve(process.cwd(), '../../packages/database/.env'), override: true })
 }
-// In production, Railway sets environment variables directly in process.env
-// No .env.local file is needed or used on Railway
+// In production, deployment platforms (Railway/Vercel) set environment variables via their dashboards
+// No .env.local file is needed or used in production
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'

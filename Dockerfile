@@ -120,7 +120,7 @@ RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true PUPPETEER_EXECUTABLE_PATH="" \
 RUN pnpm --filter @kealee/database exec prisma --version
 # Prisma requires DATABASE_URL to be set even for `prisma generate`.
 # In local dev this comes from `.env`, but `.env*` is intentionally excluded from the Docker build context.
-# Provide a safe placeholder at build-time; Railway will override DATABASE_URL at runtime.
+# Provide a safe placeholder at build-time; Railway sets DATABASE_URL at runtime via environment variables.
 RUN DATABASE_URL="postgresql://kealee:kealee_dev@localhost:5432/kealee?schema=public" pnpm --filter @kealee/database db:generate
 
 # ============================================================

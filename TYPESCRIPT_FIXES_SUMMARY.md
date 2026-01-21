@@ -77,7 +77,7 @@ const organizations = memberships.map(m => ({
    - These should be automatically picked up by TypeScript
 
 4. **Monitor Build**:
-   - Check Railway build logs for any remaining type errors
+   - Check Railway build logs for any remaining type errors (all fixes must be in codebase - Railway only deploys)
    - Fix any new issues as they arise
 
 ## 📝 Notes

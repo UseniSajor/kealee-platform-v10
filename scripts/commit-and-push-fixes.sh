@@ -81,7 +81,8 @@ log "Pushing to remote..."
 if git push; then
     success "Changes pushed successfully!"
     echo ""
-    echo "🚀 Railway will automatically rebuild with the fixes"
+    echo "🚀 Railway will automatically rebuild and deploy the fixed code"
+    echo "   Note: Railway deploys code - all fixes must be in the codebase first"
     echo "📊 Monitor deployment in Railway dashboard"
 else
     fail "Push failed"

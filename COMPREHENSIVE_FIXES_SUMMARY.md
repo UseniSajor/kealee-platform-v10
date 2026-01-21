@@ -156,7 +156,7 @@ pnpm build
 
 1. **Test Build**: Run `pnpm build` in services/api
 2. **Verify Prisma**: Run `pnpm prisma validate` in packages/database
-3. **Check Railway**: Monitor build logs for any remaining errors
+3. **Check Railway Build Logs**: Monitor for any remaining errors (all code fixes must be in the codebase - Railway only deploys)
 4. **Re-enable Strict Mode**: Once all errors fixed, set `noImplicitAny: true`
 
 ## 📝 Notes

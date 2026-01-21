@@ -34,7 +34,7 @@ Fixed 3 TypeScript compilation errors in `services/api/src/modules/webhooks/stri
    git push
    ```
 
-3. **Railway will automatically rebuild** with the fixed code
+3. **Railway will automatically rebuild and deploy** the fixed code (Railway deploys code - all fixes must be in the codebase first)
 
 ## What Was Fixed
 

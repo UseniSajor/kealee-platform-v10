@@ -178,5 +178,7 @@ Every item in the user's checklist has been addressed:
 
 ## 🚀 Ready for Build
 
-The codebase is now ready for Railway deployment. All TypeScript errors should be resolved, and Prisma schema should validate successfully.
+The codebase is now ready for deployment. All TypeScript errors should be resolved, and Prisma schema should validate successfully.
+
+**Important:** Railway and Vercel are deployment platforms - they deploy, run, and host code. They do not fix code. All code must be properly fixed and tested before deployment.
 
