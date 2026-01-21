@@ -80,6 +80,18 @@ jobs:
           npm install --global vercel@latest
           echo "✅ Vercel CLI installed: $(vercel --version)"
 
+      - name: Verify Monorepo Structure
+        run: |
+          echo "🔍 Verifying monorepo structure..."
+          echo "📁 Root directory: $(pwd)"
+          echo "📁 Checking for required files:"
+          ls -la | grep -E "package.json|pnpm-workspace.yaml|turbo.json" || echo "⚠️ Some root files missing"
+          echo "📁 App directory exists:"
+          ls -la apps/${{ matrix.app.name }} || echo "❌ App directory not found!"
+          echo "📁 Checking vercel.json:"
+          cat apps/${{ matrix.app.name }}/vercel.json || echo "❌ vercel.json not found!"
+          echo "✅ Structure verified"
+
       - name: Link Vercel Project
         working-directory: apps/${{ matrix.app.name }}
         run: |
@@ -93,6 +105,10 @@ jobs:
           }
           EOF
           echo "✅ Project configuration created"
+          echo "📁 Project ID: ${{ matrix.app.project-id }}"
+          echo "📁 Org ID: ${{ env.VERCEL_ORG_ID }}"
+          echo "📁 Configuration file:"
+          cat .vercel/project.json
 
       - name: Deploy to Vercel Preview
         id: deploy
@@ -102,15 +118,25 @@ jobs:
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "💡 Vercel will build and deploy automatically"
           echo "💡 Deployment logs stream in real-time below..."
+          echo "📁 Working directory: $(pwd)"
+          echo "📁 App directory: apps/${{ matrix.app.name }}"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           
           # Deploy to preview - Vercel will handle the build
+          # Use --cwd to ensure we're in the right directory
           TEMP_LOG=$(mktemp)
           trap "rm -f $TEMP_LOG" EXIT
           
           set +e
-          # Deploy with --yes to skip prompts and let Vercel handle the build
-          vercel deploy --yes --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }} 2>&1 | tee "$TEMP_LOG"
+          # Deploy with explicit project and org, and let Vercel handle the build
+          # The vercel.json in the app directory will be used for configuration
+          vercel deploy \
+            --yes \
+            --token=${{ env.VERCEL_TOKEN }} \
+            --scope=${{ env.VERCEL_ORG_ID }} \
+            --project=${{ matrix.app.project-id }} \
+            2>&1 | tee "$TEMP_LOG"
+          
           # Get exit code from vercel deploy (not tee)
           if [ "${PIPESTATUS[0]}" -ne 0 ]; then
             DEPLOY_EXIT_CODE=${PIPESTATUS[0]}
@@ -127,14 +153,17 @@ jobs:
           if [ $DEPLOY_EXIT_CODE -ne 0 ]; then
             echo "❌ Deployment failed with exit code: $DEPLOY_EXIT_CODE"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "🔍 Error details from deployment:"
-            tail -n 50 "$TEMP_LOG" | grep -i "error\|fail\|exception" || tail -n 50 "$TEMP_LOG"
+            echo "🔍 Full error output:"
+            cat "$TEMP_LOG"
             echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "💡 Troubleshooting:"
-            echo "  - Check if project ID is correct: ${{ matrix.app.project-id }}"
-            echo "  - Verify VERCEL_TOKEN and VERCEL_ORG_ID are set correctly"
-            echo "  - Ensure project exists in Vercel dashboard"
+            echo "  - Project ID: ${{ matrix.app.project-id }}"
+            echo "  - Org ID: ${{ env.VERCEL_ORG_ID }}"
+            echo "  - App: ${{ matrix.app.name }}"
+            echo "  - Working dir: $(pwd)"
             echo "  - Check Vercel dashboard for detailed build logs"
+            echo "  - Verify project exists and is linked correctly"
             echo "deployment_failed=true" >> $GITHUB_OUTPUT
             echo "deployment_error_code=$DEPLOY_EXIT_CODE" >> $GITHUB_OUTPUT
             rm -f "$TEMP_LOG"
