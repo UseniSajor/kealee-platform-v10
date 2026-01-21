@@ -27,7 +27,8 @@ export async function webhookStatusRoutes(fastify: FastifyInstance) {
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { limit = 10, eventType } = request.query
+        const query = request.query as any
+        const { limit = 10, eventType } = { limit: query.limit ? Number(query.limit) : 10, eventType: query.eventType }
 
         // Query audit logs for webhook-related entries
         const where: any = {
@@ -115,7 +116,8 @@ export async function webhookStatusRoutes(fastify: FastifyInstance) {
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { eventId } = request.params
+        const params = request.params as any
+        const { eventId } = params
 
         // Find all audit logs related to this event
         const logs = await prismaAny.auditLog.findMany({
@@ -170,7 +172,8 @@ export async function webhookStatusRoutes(fastify: FastifyInstance) {
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { eventType } = request.body
+        const body = request.body as any
+        const { eventType } = body
 
         // Validate event type
         const validEventTypes = [

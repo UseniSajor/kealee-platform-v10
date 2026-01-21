@@ -140,28 +140,28 @@ export class BillingService {
     // Fetch Stripe subscription details
     const stripe = getStripe()
     const formattedSubscriptions = await Promise.all(
-      subscriptions.map(async (sub: any) => {
+      subscriptions.map(async (dbSub: any) => {
         try {
-          const stripeSubscription = await stripe.subscriptions.retrieve(sub.stripeId!, {
+          const stripeSubscription = await stripe.subscriptions.retrieve(dbSub.stripeId!, {
             expand: ['default_payment_method', 'items.data.price.product'],
           })
 
           const item = stripeSubscription.items.data[0]
           const product = item?.price?.product as Stripe.Product | undefined
-          const sub = stripeSubscription as Stripe.Subscription // Type assertion for period fields
+          const stripeSub = stripeSubscription as Stripe.Subscription // Type assertion for period fields
 
           return {
             id: stripeSubscription.id,
             status: stripeSubscription.status,
-            current_period_start: sub.current_period_start ? new Date(sub.current_period_start * 1000) : new Date(),
-            current_period_end: sub.current_period_end ? new Date(sub.current_period_end * 1000) : new Date(),
+            current_period_start: stripeSub.current_period_start ? new Date(stripeSub.current_period_start * 1000) : new Date(),
+            current_period_end: stripeSub.current_period_end ? new Date(stripeSub.current_period_end * 1000) : new Date(),
             cancel_at_period_end: stripeSubscription.cancel_at_period_end,
             canceled_at: stripeSubscription.canceled_at
               ? new Date(stripeSubscription.canceled_at * 1000)
               : null,
             plan: {
               id: item?.price?.id || '',
-              name: product?.name || sub.servicePlan?.name || 'Unknown',
+              name: product?.name || dbSub.servicePlan?.name || 'Unknown',
               amount: item?.price?.unit_amount ? item.price.unit_amount / 100 : 0,
               currency: item?.price?.currency || 'usd',
               interval: item?.price?.recurring?.interval || 'month',
@@ -175,34 +175,34 @@ export class BillingService {
                 }
               : null,
             org: {
-              id: sub.org.id,
-              name: sub.org.name,
+              id: dbSub.org?.id || '',
+              name: dbSub.org?.name || '',
             },
-            dbId: sub.id,
+            dbId: dbSub.id,
           }
         } catch (error) {
-          console.error(`Failed to retrieve Stripe subscription ${sub.stripeId}:`, error)
+          console.error(`Failed to retrieve Stripe subscription ${dbSub.stripeId}:`, error)
           // Return basic info even if Stripe fetch fails
           return {
-            id: sub.stripeId || '',
-            status: sub.status,
-            current_period_start: sub.currentPeriodStart || new Date(),
-            current_period_end: sub.currentPeriodEnd || new Date(),
-            cancel_at_period_end: sub.cancelAtPeriodEnd || false,
-            canceled_at: sub.canceledAt,
+            id: dbSub.stripeId || '',
+            status: dbSub.status,
+            current_period_start: dbSub.currentPeriodStart || new Date(),
+            current_period_end: dbSub.currentPeriodEnd || new Date(),
+            cancel_at_period_end: dbSub.cancelAtPeriodEnd || false,
+            canceled_at: dbSub.canceledAt,
             plan: {
               id: '',
-              name: sub.servicePlan?.name || 'Unknown',
+              name: dbSub.servicePlan?.name || 'Unknown',
               amount: 0,
               currency: 'usd',
               interval: 'month',
             },
             payment_method: null,
             org: {
-              id: sub.org.id,
-              name: sub.org.name,
+              id: dbSub.org?.id || '',
+              name: dbSub.org?.name || '',
             },
-            dbId: sub.id,
+            dbId: dbSub.id,
           }
         }
       })
@@ -371,7 +371,7 @@ export class BillingService {
       const invoices = await stripe.invoices.list({
         subscription: subscription.stripeId,
         limit: 1,
-        status: 'upcoming' as const,
+        status: 'upcoming',
       })
       if (invoices.data.length > 0) {
         upcomingInvoice = invoices.data[0]

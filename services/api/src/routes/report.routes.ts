@@ -131,10 +131,10 @@ export async function reportRoutes(fastify: FastifyInstance) {
             type,
             data: { period: `${start.toLocaleDateString()} - ${end.toLocaleDateString()}` },
             generatedBy: user.id,
-            stats,
             data: {
               tasks,
               clients,
+              stats,
             },
           },
         });

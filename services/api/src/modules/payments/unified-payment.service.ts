@@ -144,10 +144,8 @@ class UnifiedPaymentService {
 
       case 'invoice':
         result = await paymentService.generateInvoice({
-          orgId: data.metadata.orgId,
-          subscriptionId: data.metadata.subscriptionId,
+          projectId: data.metadata.projectId || '',
           amount: data.amount,
-          currency: data.currency || 'usd',
           description: data.metadata.description,
           lineItems: data.metadata.lineItems || [],
           dueDate: data.metadata.dueDate ? new Date(data.metadata.dueDate).toISOString() : undefined,

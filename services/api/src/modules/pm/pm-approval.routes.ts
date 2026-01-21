@@ -31,8 +31,8 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         startDate: z.string().datetime().optional(),
         endDate: z.string().datetime().optional(),
         search: z.string().optional(),
-        page: z.string().optional().transform(val => parseInt(val || '1')),
-        limit: z.string().optional().transform(val => parseInt(val || '50')),
+        page: z.coerce.number().default(1),
+        limit: z.coerce.number().default(50),
       }))],
     },
     async (request, reply) => {
@@ -130,8 +130,8 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
               fileId: uploadedFile.id,
               fileName: uploadedFile.fileName,
               fileUrl: uploadedFile.url,
-              fileType: uploadedFile.mimetype,
-              fileSize: uploadedFile.file?.bytesRead || 0,
+              fileType: (uploadedFile as any).mimetype || (uploadedFile as any).mimeType || 'application/octet-stream',
+              fileSize: (uploadedFile as any).file?.bytesRead || (uploadedFile as any).size || 0,
             })
           }
 
@@ -293,13 +293,9 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
     {
       preHandler: [authenticateUser, validateQuery(z.object({
         type: z.string().optional(),
-        page: z.string().optional().transform(val => parseInt(val || '1')),
-        limit: z.string().optional().transform(val => parseInt(val || '50')),
-      }).transform(data => ({
-        ...data,
-        page: typeof data.page === 'string' ? parseInt(data.page || '1') : data.page,
-        limit: typeof data.limit === 'string' ? parseInt(data.limit || '50') : data.limit,
-      })))],
+        page: z.coerce.number().default(1),
+        limit: z.coerce.number().default(50),
+      }))],
     },
     async (request, reply) => {
       try {
@@ -328,13 +324,9 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
       preHandler: [authenticateUser, validateQuery(z.object({
         type: z.string().optional(),
         active: z.string().optional().transform(val => val === 'true'),
-        page: z.string().optional().transform(val => parseInt(val || '1')),
-        limit: z.string().optional().transform(val => parseInt(val || '50')),
-      }).transform(data => ({
-        ...data,
-        page: typeof data.page === 'string' ? parseInt(data.page || '1') : data.page,
-        limit: typeof data.limit === 'string' ? parseInt(data.limit || '50') : data.limit,
-      })))],
+        page: z.coerce.number().default(1),
+        limit: z.coerce.number().default(50),
+      }))],
     },
     async (request, reply) => {
       try {
@@ -519,8 +511,8 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
           uploadedFile.id,
           uploadedFile.fileName,
           uploadedFile.url,
-          uploadedFile.mimetype || 'application/octet-stream',
-          uploadedFile.file?.bytesRead || 0
+          (uploadedFile as any).mimetype || (uploadedFile as any).mimeType || 'application/octet-stream',
+          (uploadedFile as any).file?.bytesRead || (uploadedFile as any).size || 0
         )
 
         return reply.code(201).send({ attachment })

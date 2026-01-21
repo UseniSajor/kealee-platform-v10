@@ -79,14 +79,14 @@ export function createTestCheckoutSessionCompletedEvent(sessionData?: Partial<St
 /**
  * Create a test customer.subscription.updated event payload
  */
-export function createTestSubscriptionUpdatedEvent(subscriptionData?: Partial<Stripe.Subscription>): Stripe.Event {
-  const defaultSubscription: Partial<Stripe.Subscription> = {
+export function createTestSubscriptionUpdatedEvent(subscriptionData?: any): Stripe.Event {
+  const defaultSubscription: any = {
     id: `sub_test_${Date.now()}`,
     object: 'subscription',
     status: 'active',
     customer: `cus_test_${Date.now()}`,
-    current_period_start: Math.floor(Date.now() / 1000) as any,
-    current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60 as any, // 30 days
+    current_period_start: Math.floor(Date.now() / 1000),
+    current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, // 30 days
     cancel_at_period_end: false,
     canceled_at: null,
     metadata: {
@@ -140,8 +140,8 @@ export function createTestSubscriptionUpdatedEvent(subscriptionData?: Partial<St
 /**
  * Create a test invoice.payment_failed event payload
  */
-export function createTestInvoicePaymentFailedEvent(invoiceData?: Partial<Stripe.Invoice>): Stripe.Event {
-  const defaultInvoice: Partial<Stripe.Invoice> = {
+export function createTestInvoicePaymentFailedEvent(invoiceData?: any): Stripe.Event {
+  const defaultInvoice: any = {
     id: `in_test_${Date.now()}`,
     object: 'invoice',
     status: 'open',

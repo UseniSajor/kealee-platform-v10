@@ -141,8 +141,11 @@ export async function paymentRoutes(fastify: FastifyInstance) {
         metadata?: Record<string, any>
       }
       const invoice = await paymentService.generateInvoice({
-        ...body,
+        projectId: body.projectId || '',
+        amount: body.amount,
+        description: body.description,
         dueDate: body.dueDate ? new Date(body.dueDate).toISOString() : undefined,
+        metadata: body.metadata,
       })
       return reply.code(201).send({ invoice })
     }

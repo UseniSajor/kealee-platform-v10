@@ -3,6 +3,7 @@
  * Handles milestone payment processing with Stripe Connect and 3% platform fee
  */
 
+import Stripe from 'stripe'
 import { getStripe } from '../billing/stripe.client'
 import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, AuthorizationError, ValidationError } from '../../errors/app.error'
@@ -384,7 +385,7 @@ class MilestonePaymentService {
     // Note: listCharges doesn't exist in Stripe API, use retrieve with expand instead
     const paymentIntentWithCharges = await stripe.paymentIntents.retrieve(paymentIntentId, {
       expand: ['charges'],
-    }) as Stripe.PaymentIntent & { charges?: Stripe.ApiList<Stripe.Charge> }
+    }) as any
     const charges = paymentIntentWithCharges.charges 
       ? { data: Array.isArray(paymentIntentWithCharges.charges.data) 
           ? paymentIntentWithCharges.charges.data 
@@ -505,10 +506,10 @@ class MilestonePaymentService {
     }
 
     // Get charges - use retrieve with expand instead
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+    const paymentIntentWithCharges = await stripe.paymentIntents.retrieve(paymentIntentId, {
       expand: ['charges'],
-    }) as Stripe.PaymentIntent & { charges?: Stripe.ApiList<Stripe.Charge> }
-    const charges = paymentIntent.charges || { data: [] }
+    }) as any
+    const charges = paymentIntentWithCharges.charges || { data: [] }
 
     // Get transfers (to contractor)
     const transfers = await stripe.transfers.list({

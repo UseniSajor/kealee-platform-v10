@@ -158,8 +158,8 @@ export async function fileRoutes(fastify: FastifyInstance) {
         validateQuery(
           z.object({
             folder: z.string().optional(),
-            limit: z.string().optional().transform((val) => parseInt(val || '50')),
-            offset: z.string().optional().transform((val) => parseInt(val || '0')),
+            limit: z.coerce.number().default(50),
+            offset: z.coerce.number().default(0),
           })
         ),
       ],

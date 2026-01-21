@@ -240,7 +240,7 @@ async function handlePermitPayment(session: Stripe.Checkout.Session): Promise<vo
       payload: {
         sessionId: session.id,
         feeType,
-        amount: (session.amount_total || 0) / 100,
+        amount: (session.amount_total ?? 0) / 100,
         expeditedTier,
         documentPrepPackage,
         userId: session.metadata?.userId,

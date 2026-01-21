@@ -112,7 +112,7 @@ export async function clientRoutes(fastify: FastifyInstance) {
 
             const activeProjects = projects.filter(p => p.status === 'ACTIVE').length;
             const totalRevenue = projects.reduce(
-              (sum, p) => sum + p.payments.reduce((pSum, payment) => pSum + payment.amount, 0),
+              (sum, p) => sum + p.payments.reduce((pSum, payment) => pSum + Number(payment.amount), 0),
               0
             );
 
@@ -248,7 +248,7 @@ export async function clientRoutes(fastify: FastifyInstance) {
         const assignmentRequest = await prisma.assignmentRequest.create({
           data: {
             clientId,
-            requestedBy: user.id,
+            pmUserId: user.id,
             status: 'pending',
             estimatedWorkload: newWorkload,
             currentWorkload,
