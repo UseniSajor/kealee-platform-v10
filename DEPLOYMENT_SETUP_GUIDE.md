@@ -452,3 +452,4 @@ curl -X POST https://your-api.railway.app/auth/signup \
 - ⚠️ Need to add `STRIPE_SECRET_KEY` to Railway
 - ⏭️ Deploy Next.js apps to Vercel (optional)
 
+

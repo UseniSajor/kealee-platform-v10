@@ -174,3 +174,4 @@ curl -X POST http://localhost:3001/api/permits/{id}/ai-review \
 **Default Model:** `claude-sonnet-4-20250514`  
 **Last Updated:** January 2026
 
+

@@ -183,3 +183,4 @@ pnpm prisma studio
 **Last Updated:** January 2026  
 **Prisma Version:** Check `packages/database/package.json`
 
+

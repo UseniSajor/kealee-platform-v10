@@ -235,3 +235,4 @@ Write-Host "💡 Note: Service names in Railway may differ." -ForegroundColor Ye
 Write-Host "   If 'api' or 'worker' don't work, use exact service names from Railway dashboard" -ForegroundColor Gray
 Write-Host ""
 
+

@@ -59,3 +59,4 @@ Write-Host ""
 Write-Host "📊 Check deployment status:" -ForegroundColor Blue
 Write-Host "railway status --service api-$Environment" -ForegroundColor Gray
 
+

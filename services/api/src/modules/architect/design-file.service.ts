@@ -279,7 +279,7 @@ export const designFileService = {
     }>
     userId: string
   }) {
-    const uploadedFiles = []
+    const uploadedFiles: Awaited<ReturnType<typeof this.uploadFile>>[] = []
 
     for (const fileData of data.files) {
       const file = await this.uploadFile({
@@ -292,7 +292,7 @@ export const designFileService = {
         thumbnailUrl: fileData.thumbnailUrl,
         userId: data.userId,
       })
-      uploadedFiles.push(file as any)
+      uploadedFiles.push(file)
     }
 
     return uploadedFiles

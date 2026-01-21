@@ -12,3 +12,4 @@ export const prismaAny = prisma as any
 // Re-export prisma for normal usage
 export { prisma }
 
+

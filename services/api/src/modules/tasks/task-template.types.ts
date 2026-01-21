@@ -57,3 +57,4 @@ export interface TaskGenerationResult {
   reasoning?: string // AI reasoning for task breakdown
 }
 
+

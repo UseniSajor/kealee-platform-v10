@@ -26,3 +26,4 @@ echo "  1. Verify health endpoint: curl https://api.kealee.com/health"
 echo "  2. Check logs: railway logs"
 echo "  3. Monitor: railway status"
 
+

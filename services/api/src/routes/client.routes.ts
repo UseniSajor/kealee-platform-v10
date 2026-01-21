@@ -249,11 +249,8 @@ export async function clientRoutes(fastify: FastifyInstance) {
           data: {
             clientId,
             pmUserId: user.id,
-            status: 'pending',
-            currentWorkload,
-            metadata: {
-              requestType: 'client_assignment',
-            },
+            status: 'PENDING',
+            message: `Current workload: ${currentWorkload}`,
           },
           include: {
             client: {

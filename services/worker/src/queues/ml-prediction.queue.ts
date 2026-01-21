@@ -84,3 +84,4 @@ export class MLPredictionQueue extends BaseQueue<MLPredictionJobData> {
 // Singleton instance
 export const mlPredictionQueue = new MLPredictionQueue()
 
+

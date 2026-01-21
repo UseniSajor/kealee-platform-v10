@@ -38,3 +38,4 @@ Write-Host "  2. Check logs: railway logs" -ForegroundColor White
 Write-Host "  3. Monitor: railway status" -ForegroundColor White
 Write-Host ""
 
+

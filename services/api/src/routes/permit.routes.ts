@@ -63,15 +63,33 @@ export async function permitRoutes(fastify: FastifyInstance) {
         const user = (request as any).user;
         const data = createPermitSchema.parse(request.body);
 
+        // Get user's organization to find client/project
+        const userOrg = user.organizationId;
+        if (!userOrg) {
+          return reply.code(400).send({
+            error: 'User must belong to an organization',
+          });
+        }
+
+        // Get projectId and clientId from projectDetails or use defaults
+        const projectId = data.projectDetails?.projectId as string || userOrg; // Use org as fallback
+        const clientId = data.projectDetails?.clientId as string || userOrg; // Use org as fallback
+
         const permit = await prisma.permit.create({
           data: {
             jurisdictionId: data.jurisdiction,
             applicantId: user.id,
             applicantName: data.applicantInfo?.name || '',
-            applicantEmail: data.applicantInfo?.email || '',
-            applicantPhone: data.applicantInfo?.phone || '',
-            status: 'draft',
-            permitTypes: data.permitTypes,
+            applicantEmail: data.applicantInfo?.contactInfo?.email || '',
+            applicantPhone: data.applicantInfo?.contactInfo?.phone || '',
+            permitType: (data.permitTypes[0]?.toUpperCase() || 'BUILDING') as any, // Use first permit type, convert to enum
+            scope: (data.projectDetails?.scope as string) || '',
+            valuation: 0,
+            address: data.address,
+            projectId, // Required field
+            clientId, // Required field
+            pmUserId: user.id, // Required field
+            applicantType: 'OWNER' as any, // Required field
           },
         });
 

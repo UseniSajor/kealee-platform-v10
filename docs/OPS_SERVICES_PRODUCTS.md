@@ -221,3 +221,4 @@ When you provide the Stripe product list screenshot, we'll add variables for:
 3. ⏳ Add product-specific variables based on your Stripe products
 4. ⏳ Update checkout flow to support a la carte purchases
 
+

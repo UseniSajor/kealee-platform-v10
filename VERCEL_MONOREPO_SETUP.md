@@ -142,3 +142,4 @@ Each with their own landing pages!
 
 **Each app = One Vercel Project**. You'll have 6 separate projects, not one "full platform" project. This is the standard approach for monorepos on Vercel.
 
+

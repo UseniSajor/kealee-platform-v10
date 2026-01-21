@@ -33,3 +33,4 @@ export const detectJurisdictionSchema = z.object({
   address: z.string().min(1).max(500),
 });
 
+

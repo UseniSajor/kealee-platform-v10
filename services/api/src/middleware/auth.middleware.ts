@@ -109,7 +109,7 @@ export async function authenticateUser(
   }
 }
 
-export async function requireRole(roles: string[]) {
+export function requireRole(roles: string[]) {
   return async (request: AuthenticatedRequest, reply: FastifyReply) => {
     const user = request.user;
     

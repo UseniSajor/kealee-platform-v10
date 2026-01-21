@@ -92,3 +92,4 @@ export async function complianceCheckpointRoutes(fastify: FastifyInstance) {
   )
 }
 
+
