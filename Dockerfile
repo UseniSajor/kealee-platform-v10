@@ -1,9 +1,10 @@
 # ============================================================
 # Railway Deployment Dockerfile - Optimized for pnpm Monorepo
 # ============================================================
-# Version: 6.0.0
-# Last Updated: 2026-01-21
-# Commit: 6026742
+# Version: 6.1.0
+# Last Updated: 2026-01-21 14:30
+# Commit: 9241af0
+# CACHE BUST: Aggressive - restructured early layers
 # Changes: All build steps now use pnpm --filter run build (no turbo)
 # ============================================================
 # Optimizations:
@@ -15,20 +16,33 @@
 
 FROM node:20-slim
 
-# === CACHE INVALIDATION ===
-# Build argument to force cache invalidation on Railway
-ARG BUILD_DATE=2026-01-21
-ARG BUILD_VERSION=6.0.0
-ARG CACHE_BUST=6026742
+# === AGGRESSIVE CACHE INVALIDATION ===
+# Multiple cache-busting mechanisms to force Railway rebuild
+ARG BUILD_DATE=2026-01-21T14:30:00Z
+ARG BUILD_VERSION=6.1.0
+ARG CACHE_BUST=9241af0
+ARG RAILWAY_FORCE_REBUILD=true
 
-# Copy build marker early to invalidate cache
-COPY .railway-build-marker /tmp/build-marker
-RUN echo "=========================================" && \
-    echo "RAILWAY BUILD MARKER:" && \
-    cat /tmp/build-marker && \
+# Add unique timestamp to break cache
+RUN echo "FORCE_REBUILD_$(date +%s)" > /tmp/cache-bust.txt && \
+    cat /tmp/cache-bust.txt && \
+    echo "=========================================" && \
+    echo "CACHE INVALIDATION FORCED" && \
     echo "BUILD_DATE: ${BUILD_DATE}" && \
     echo "BUILD_VERSION: ${BUILD_VERSION}" && \
     echo "CACHE_BUST: ${CACHE_BUST}" && \
+    echo "RAILWAY_FORCE_REBUILD: ${RAILWAY_FORCE_REBUILD}" && \
+    echo "========================================="
+
+# Copy multiple cache-busting files
+COPY .railway-build-marker /tmp/build-marker
+COPY .railway-cache-bust /tmp/cache-bust
+RUN echo "=========================================" && \
+    echo "RAILWAY BUILD MARKER:" && \
+    cat /tmp/build-marker && \
+    echo "" && \
+    echo "CACHE BUST:" && \
+    cat /tmp/cache-bust && \
     echo "========================================="
 
 # Install system dependencies and build tools
