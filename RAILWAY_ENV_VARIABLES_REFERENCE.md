@@ -89,6 +89,8 @@ These are **REQUIRED** for the ops services checkout flow to work:
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:pass@host:port/railway?sslmode=require` |
+| `PRISMA_CLIENT_ENGINE_TYPE` | Prisma engine type (use binary for better performance) | `binary` |
+| `PRISMA_HIDE_UPDATE_MESSAGE` | Hide Prisma update messages | `true` |
 | `REDIS_URL` | Redis connection string | `redis://localhost:6379` or `rediss://default:pass@host:port` |
 | `NODE_ENV` | Node environment | `production` |
 
