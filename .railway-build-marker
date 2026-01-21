@@ -6,3 +6,4 @@ REQUIRED_PACKAGES=database,workflow-engine
 NOTE=Removed --frozen-lockfile flag - Railway cache was preventing updated lockfile from being used
 CHANGES=Let pnpm resolve version mismatch itself during build
 CRITICAL_FIX=This addresses 4 repeated failures due to aggressive Railway Docker cache
+

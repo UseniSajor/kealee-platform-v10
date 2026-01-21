@@ -56,3 +56,4 @@ export interface TaskGenerationResult {
   confidence?: number // AI confidence score (0-1)
   reasoning?: string // AI reasoning for task breakdown
 }
+

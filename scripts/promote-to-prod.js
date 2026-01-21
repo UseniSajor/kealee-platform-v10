@@ -60,3 +60,4 @@ async function promote() {
 }
 
 promote();
+

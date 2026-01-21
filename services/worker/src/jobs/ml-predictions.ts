@@ -512,3 +512,4 @@ Output as JSON array of risk predictions.`
 
 // Export singleton instance
 export const mlPredictionEngine = new MLPredictionEngine()
+

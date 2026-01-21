@@ -62,3 +62,4 @@ After redeploying, check Railway build logs for:
 
 - Build: Database package compiles TypeScript → `dist/index.js`, `dist/client.js`
 - Runtime: Node.js resolves `@kealee/database` → `packages/database/dist/index.js` → loads compiled JavaScript
+

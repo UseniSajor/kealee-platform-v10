@@ -155,8 +155,9 @@ export type ClientAssignRequest = {
 }
 
 export type ReportGenerateRequest = {
-  weekStart: string
-  weekEnd: string
+  type: 'weekly' | 'monthly' | 'custom'
+  startDate: string
+  endDate: string
   pmId?: string
 }
 
@@ -256,10 +257,55 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
+  requestClientAssignment: (data: { clientId: string; pmId: string }) =>
+    apiRequest<{ request: any; message: string }>(`/pm/clients/request-assignment`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  getWorkload: () => apiRequest<{ workloads: Array<{ id: string; name: string; currentWorkload: number; maxCapacity: number; clientCount: number }> }>(`/pm/workload`),
+
   // Workload Balancing
   getWorkloadStats: () => apiRequest<{ workloads: WorkloadStats[] }>(`/pm/workload`),
 
   // Reports
+  getReports: (filters?: { type?: 'weekly' | 'monthly' | 'custom' }) => {
+    const params = new URLSearchParams()
+    if (filters?.type) params.set("type", filters.type)
+    const qs = params.toString()
+    return apiRequest<{ reports: any[] }>(`/pm/reports${qs ? `?${qs}` : ""}`)
+  },
+
+  generateReport: (data: ReportGenerateRequest) =>
+    apiRequest<{ report: any; pdfUrl?: string; id: string; period: string; stats: any }>(`/pm/reports/generate`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  downloadReport: async (reportId: string): Promise<Blob> => {
+    const token = await getAuthToken()
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+
+    const response = await fetch(`${API_URL}/pm/reports/${reportId}/download`, {
+      method: "GET",
+      headers,
+      credentials: "include",
+    })
+
+    if (!response.ok) {
+      const error = (await response.json().catch(() => ({}))) as {
+        message?: string
+        error?: string
+      }
+      throw new Error(error.message || error.error || `HTTP ${response.status}`)
+    }
+
+    return response.blob()
+  },
+
   generateWeeklyReport: (data: ReportGenerateRequest) =>
     apiRequest<{ report: any; pdfUrl?: string }>(`/pm/reports/generate`, {
       method: "POST",

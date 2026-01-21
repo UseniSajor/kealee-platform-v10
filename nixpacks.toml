@@ -2,7 +2,7 @@
 # Optimized for faster builds and reduced timeouts
 
 [phases.setup]
-nixPkgs = ["nodejs_20", "pnpm"]
+nixPkgs = ["nodejs-20_x", "pnpm"]
 
 [phases.setup.env]
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
@@ -20,4 +20,4 @@ cmds = [
 ]
 
 [start]
-cmd = "cd services/api && node dist/index.js"
+cmd = "cd services/api && pnpm start"

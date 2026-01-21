@@ -30,17 +30,23 @@ export function Header() {
               Services
             </a>
             <a
-              href="#how-it-works"
+              href="#pricing"
               className="text-gray-700 hover:text-blue-600 transition"
             >
-              How It Works
+              Pricing
             </a>
-            <a
-              href="#testimonials"
+            <Link
+              href="/about"
               className="text-gray-700 hover:text-blue-600 transition"
             >
-              Testimonials
-            </a>
+              About
+            </Link>
+            <Link
+              href="/contact"
+              className="text-gray-700 hover:text-blue-600 transition"
+            >
+              Contact
+            </Link>
             <Link
               href="https://app.kealee.com/login"
               className="text-gray-700 hover:text-blue-600 transition"
@@ -76,19 +82,26 @@ export function Header() {
               Services
             </a>
             <a
-              href="#how-it-works"
+              href="#pricing"
               className="block text-gray-700 hover:text-blue-600"
               onClick={() => setMobileMenuOpen(false)}
             >
-              How It Works
+              Pricing
             </a>
-            <a
-              href="#testimonials"
+            <Link
+              href="/about"
               className="block text-gray-700 hover:text-blue-600"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Testimonials
-            </a>
+              About
+            </Link>
+            <Link
+              href="/contact"
+              className="block text-gray-700 hover:text-blue-600"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Contact
+            </Link>
             <Link
               href="https://app.kealee.com/login"
               className="block text-gray-700 hover:text-blue-600"

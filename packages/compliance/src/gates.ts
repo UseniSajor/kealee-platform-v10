@@ -525,3 +525,4 @@ export async function checkGate(gateId: string, params: Record<string, any>): Pr
 
   return await gate.enforce(params.projectId, params.milestoneId || params.paymentId || params)
 }
+

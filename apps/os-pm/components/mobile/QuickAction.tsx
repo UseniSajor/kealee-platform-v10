@@ -26,3 +26,4 @@ export function QuickAction({ icon, label, onClick, integration }: QuickActionPr
     </Card>
   )
 }
+

@@ -1,197 +1,251 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { CalendarClock, Download, FileText, Wand2 } from "lucide-react"
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { format, startOfWeek, endOfWeek } from "date-fns"
+import { useState, useEffect } from 'react';
+import { useRequireAuth } from '@kealee/auth';
+import { api } from '@/lib/api-client';
+import { toast } from 'sonner';
+import {
+  FileText,
+  Download,
+  Calendar,
+  TrendingUp,
+  Clock,
+  CheckCircle,
+  Plus,
+  Filter
+} from 'lucide-react';
+import Link from 'next/link';
 
-import { Button } from "@kealee/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
-import { Input } from "@kealee/ui/input"
-import { api } from "@/lib/api-client"
-import { cn } from "@/lib/utils"
-import { toast } from "sonner"
+interface Report {
+  id: string;
+  title: string;
+  type: 'weekly' | 'monthly' | 'custom';
+  period: string;
+  createdAt: string;
+  generatedBy: string;
+  downloadUrl: string;
+  stats: {
+    tasksCompleted: number;
+    hoursLogged: number;
+    clientsServed: number;
+  };
+}
 
 export default function ReportsPage() {
-  const [weekStart, setWeekStart] = React.useState(() => {
-    const start = startOfWeek(new Date(), { weekStartsOn: 0 })
-    return format(start, "yyyy-MM-dd")
-  })
+  const { user } = useRequireAuth();
+  const [reports, setReports] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'weekly' | 'monthly'>('all');
 
-  const [weekEnd, setWeekEnd] = React.useState(() => {
-    const end = endOfWeek(new Date(), { weekStartsOn: 0 })
-    return format(end, "yyyy-MM-dd")
-  })
+  useEffect(() => {
+    loadReports();
+  }, [filter]);
 
-  const { data: reportData, isLoading } = useQuery({
-    queryKey: ["pm-weekly-report", weekStart],
-    queryFn: () => api.getWeeklyReport(weekStart),
-    enabled: !!weekStart,
-  })
+  const loadReports = async () => {
+    try {
+      const filters: any = {};
+      if (filter !== 'all') filters.type = filter;
+      
+      const data = await api.getReports(filters);
+      setReports(data.reports || []);
+    } catch (error) {
+      toast.error('Failed to load reports');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const generateReport = useMutation({
-    mutationFn: () =>
-      api.generateWeeklyReport({
-        weekStart,
-        weekEnd,
-      }),
-    onSuccess: (result) => {
-      toast.success("Report generated successfully")
-      if (result.pdfUrl) {
-        window.open(result.pdfUrl, "_blank")
-      }
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to generate report")
-    },
-  })
-
-  const report = reportData?.report
+  const handleDownload = async (reportId: string) => {
+    try {
+      const blob = await api.downloadReport(reportId);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `report-${reportId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success('Report downloaded');
+    } catch (error) {
+      toast.error('Failed to download report');
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div className="space-y-8">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Reports</h1>
-          <p className="text-neutral-600 mt-1">Generate and view weekly PM reports.</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Reports
+          </h1>
+          <p className="text-gray-600">
+            Generate and download performance reports
+          </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            size="sm"
-            onClick={() => generateReport.mutate()}
-            disabled={generateReport.isPending}
-          >
-            <Wand2 className="h-4 w-4" />
-            {generateReport.isPending ? "Generating..." : "Generate Report"}
-          </Button>
+
+        <Link
+          href="/reports/new"
+          className="
+            flex items-center gap-2
+            px-6 py-3
+            bg-blue-600 hover:bg-blue-700
+            text-white font-semibold
+            rounded-lg
+            shadow-md hover:shadow-lg
+            transition-all duration-200
+          "
+        >
+          <Plus size={20} />
+          Generate Report
+        </Link>
+      </div>
+
+      {/* Filter */}
+      <div className="bg-white rounded-2xl shadow-lg p-6">
+        <div className="flex items-center gap-4">
+          <Filter size={20} className="text-gray-600" />
+          <div className="flex gap-2">
+            {['all', 'weekly', 'monthly'].map((type) => (
+              <button
+                key={type}
+                onClick={() => setFilter(type as any)}
+                className={`
+                  px-4 py-2 rounded-lg font-medium
+                  transition-all duration-200
+                  ${filter === type
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }
+                `}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Weekly Report Generator</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium">Week Start</label>
-              <Input
-                type="date"
-                value={weekStart}
-                onChange={(e) => setWeekStart(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Week End</label>
-              <Input
-                type="date"
-                value={weekEnd}
-                onChange={(e) => setWeekEnd(e.target.value)}
-                className="mt-1"
-              />
+      {/* Reports List */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+        </div>
+      ) : reports.length === 0 ? (
+        <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+          <FileText className="mx-auto mb-4 text-gray-400" size={64} />
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">
+            No reports yet
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Generate your first report to track your performance
+          </p>
+          <Link
+            href="/reports/new"
+            className="
+              inline-block px-6 py-3
+              bg-blue-600 hover:bg-blue-700
+              text-white font-semibold
+              rounded-lg
+              shadow-md hover:shadow-lg
+              transition-all duration-200
+            "
+          >
+            Generate Report
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {reports.map((report) => (
+            <ReportCard
+              key={report.id}
+              report={report}
+              onDownload={handleDownload}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ReportCard({ report, onDownload }: { report: Report; onDownload: (id: string) => void }) {
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-200">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start gap-4">
+          <div className="
+            w-12 h-12
+            bg-blue-100 text-blue-600
+            rounded-xl
+            flex items-center justify-center
+          ">
+            <FileText size={24} />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-gray-900 mb-1">
+              {report.title}
+            </h3>
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <span className="flex items-center gap-1">
+                <Calendar size={16} />
+                {report.period}
+              </span>
+              <span>•</span>
+              <span>Generated {new Date(report.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
+        </div>
 
-          {isLoading ? (
-            <div className="text-center py-10 text-neutral-600">Loading report...</div>
-          ) : report ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="rounded-lg border bg-neutral-50 p-4">
-                  <div className="text-xs text-neutral-600">Total Tasks</div>
-                  <div className="text-2xl font-bold mt-1">{report.summary?.totalTasks || 0}</div>
-                </div>
-                <div className="rounded-lg border bg-neutral-50 p-4">
-                  <div className="text-xs text-neutral-600">Completed</div>
-                  <div className="text-2xl font-bold mt-1">{report.summary?.completedTasks || 0}</div>
-                </div>
-                <div className="rounded-lg border bg-neutral-50 p-4">
-                  <div className="text-xs text-neutral-600">Completion Rate</div>
-                  <div className="text-2xl font-bold mt-1">{report.summary?.completionRate || 0}%</div>
-                </div>
-                <div className="rounded-lg border bg-neutral-50 p-4">
-                  <div className="text-xs text-neutral-600">Total Hours</div>
-                  <div className="text-2xl font-bold mt-1">{report.summary?.totalHours || 0}</div>
-                </div>
-              </div>
+        <button
+          onClick={() => onDownload(report.id)}
+          className="
+            flex items-center gap-2
+            px-4 py-2
+            bg-blue-600 hover:bg-blue-700
+            text-white font-semibold
+            rounded-lg
+            shadow-md hover:shadow-lg
+            transition-all duration-200
+          "
+        >
+          <Download size={20} />
+          Download
+        </button>
+      </div>
 
-              {report.clients && report.clients.length > 0 && (
-                <div>
-                  <h3 className="font-medium mb-2">Client Breakdown</h3>
-                  <div className="rounded-xl border bg-white overflow-hidden">
-                    <table className="w-full text-sm">
-                      <thead className="bg-neutral-50">
-                        <tr>
-                          <th className="text-left px-4 py-2 font-medium">Client</th>
-                          <th className="text-right px-4 py-2 font-medium">Requests</th>
-                          <th className="text-right px-4 py-2 font-medium">Completed</th>
-                          <th className="text-right px-4 py-2 font-medium">Hours</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {report.clients.map((client: any) => (
-                          <tr key={client.orgId} className="border-t">
-                            <td className="px-4 py-2">{client.orgName}</td>
-                            <td className="text-right px-4 py-2">{client.requests}</td>
-                            <td className="text-right px-4 py-2">{client.completed}</td>
-                            <td className="text-right px-4 py-2">{client.hours.toFixed(1)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {report.tasks && report.tasks.length > 0 && (
-                <div>
-                  <h3 className="font-medium mb-2">Tasks</h3>
-                  <div className="rounded-xl border bg-white overflow-hidden">
-                    <table className="w-full text-sm">
-                      <thead className="bg-neutral-50">
-                        <tr>
-                          <th className="text-left px-4 py-2 font-medium">Title</th>
-                          <th className="text-left px-4 py-2 font-medium">Status</th>
-                          <th className="text-left px-4 py-2 font-medium">Priority</th>
-                          <th className="text-left px-4 py-2 font-medium">Completed</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {report.tasks.slice(0, 10).map((task: any) => (
-                          <tr key={task.id} className="border-t">
-                            <td className="px-4 py-2">{task.title}</td>
-                            <td className="px-4 py-2">
-                              <span className="text-xs rounded-full border px-2 py-1 bg-neutral-50 text-neutral-700">
-                                {task.status}
-                              </span>
-                            </td>
-                            <td className="px-4 py-2">{task.priority}</td>
-                            <td className="px-4 py-2">
-                              {task.completedAt ? format(new Date(task.completedAt), "MMM dd, yyyy") : "—"}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => generateReport.mutate()}>
-                  <Download className="h-4 w-4" />
-                  Download PDF
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-10 text-neutral-600">
-              No report data available. Generate a report to view details.
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-gray-900 mb-1">
+            {report.stats.tasksCompleted}
+          </div>
+          <div className="text-xs text-gray-600 flex items-center justify-center gap-1">
+            <CheckCircle size={14} />
+            Tasks Completed
+          </div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-gray-900 mb-1">
+            {report.stats.hoursLogged}
+          </div>
+          <div className="text-xs text-gray-600 flex items-center justify-center gap-1">
+            <Clock size={14} />
+            Hours Logged
+          </div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-gray-900 mb-1">
+            {report.stats.clientsServed}
+          </div>
+          <div className="text-xs text-gray-600 flex items-center justify-center gap-1">
+            <TrendingUp size={14} />
+            Clients Served
+          </div>
+        </div>
+      </div>
     </div>
-  )
+  );
 }

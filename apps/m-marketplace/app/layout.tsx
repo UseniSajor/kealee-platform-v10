@@ -5,27 +5,57 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Kealee - Complete Construction Management Platform',
-  description:
-    'Professional construction management with PM services, architect tools, permit processing, and project tracking. Trusted by contractors and project owners.',
-  keywords:
-    'construction management, project management, architect services, permits, inspections, construction software',
+  metadataBase: new URL('https://kealee.com'),
+  title: {
+    default: 'Kealee - Complete Construction Management Platform',
+    template: '%s | Kealee'
+  },
+  description: 'Professional construction project management, AI-powered permit review, and licensed architects on-demand. Save 40% on PM costs and deliver projects 25% faster.',
+  keywords: [
+    'construction management',
+    'project management',
+    'permit review',
+    'construction software',
+    'architect services',
+    'building permits',
+    'DC construction',
+    'Baltimore construction'
+  ],
+  authors: [{ name: 'Kealee Construction LLC' }],
+  creator: 'Kealee',
+  publisher: 'Kealee',
   openGraph: {
-    title: 'Kealee - Construction Management Platform',
-    description: 'Complete construction management solution',
+    type: 'website',
+    locale: 'en_US',
     url: 'https://kealee.com',
     siteName: 'Kealee',
-    locale: 'en_US',
-    type: 'website',
+    title: 'Kealee - Complete Construction Management Platform',
+    description: 'Save 40% on PM costs. AI-powered permit review. Licensed architects on-demand.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Kealee Construction Management Platform',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Kealee - Construction Management Platform',
-    description: 'Complete construction management solution',
+    description: 'Save 40% on PM costs. Deliver projects 25% faster.',
+    images: ['/og-image.png'],
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 

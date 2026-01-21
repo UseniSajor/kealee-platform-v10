@@ -16,6 +16,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Shield, Key } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface Role {
   id: string
@@ -70,7 +71,35 @@ export default function RBACPage() {
               <h1 className="text-3xl font-bold">RBAC Management</h1>
               <p className="text-gray-600 mt-2">Manage roles and permissions</p>
             </div>
-            <Button>
+            <Button
+              onClick={async () => {
+                if (activeTab === 'roles') {
+                  const name = prompt('Enter role name:')
+                  const key = prompt('Enter role key (e.g., custom_role):')
+                  if (name && key) {
+                    try {
+                      await api.createRole({ key, name })
+                      toast.success('Role created successfully')
+                      fetchData()
+                    } catch (err: any) {
+                      toast.error('Failed to create role: ' + err.message)
+                    }
+                  }
+                } else {
+                  const name = prompt('Enter permission name:')
+                  const key = prompt('Enter permission key (e.g., custom_permission):')
+                  if (name && key) {
+                    try {
+                      await api.createPermission({ key, name })
+                      toast.success('Permission created successfully')
+                      fetchData()
+                    } catch (err: any) {
+                      toast.error('Failed to create permission: ' + err.message)
+                    }
+                  }
+                }
+              }}
+            >
               <Plus className="mr-2 h-4 w-4" />
               {activeTab === 'roles' ? 'New Role' : 'New Permission'}
             </Button>
@@ -153,7 +182,19 @@ export default function RBACPage() {
                             {new Date(role.createdAt).toLocaleDateString()}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={async () => {
+                                try {
+                                  const permissions = await api.getRolePermissions(role.key)
+                                  // TODO: Open modal/dialog to show permissions
+                                  alert(`Permissions for ${role.name}: ${permissions.permissions?.map((p: any) => p.name).join(', ') || 'None'}`)
+                                } catch (err: any) {
+                                  alert('Failed to load permissions: ' + err.message)
+                                }
+                              }}
+                            >
                               View Permissions
                             </Button>
                           </TableCell>

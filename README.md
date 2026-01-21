@@ -78,7 +78,9 @@ kealee-platform-v10/
 
 ## 📚 Documentation
 
-- **[Setup Guide](./RAILWAY_SETUP.md)** - Railway deployment instructions
+- **[Railway Environment Setup](./RAILWAY_ENVIRONMENT_SETUP.md)** - ⚠️ **IMPORTANT:** Staging & Production isolation guide
+- **[Railway Quick Reference](./RAILWAY_QUICK_REFERENCE.md)** - Quick checklist and fixes
+- **[Database Deployment](./packages/database/README.md)** - Prisma migrations guide
 - **[Environment Setup](./services/api/ENV_SETUP.md)** - Environment variables
 - **[Supabase Setup](./services/api/SUPABASE_SETUP.md)** - Supabase configuration
 - **[Deployment Guide](./DEPLOYMENT.md)** - Production deployment

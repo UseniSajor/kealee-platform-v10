@@ -65,3 +65,4 @@ esac
 
 echo -e "\n${BLUE}📊 Check deployment status:${NC}"
 echo "railway status --service api-${ENVIRONMENT}"
+

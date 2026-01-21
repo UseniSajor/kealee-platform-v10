@@ -87,3 +87,4 @@ export function BarcodeScanner({ onScan }: BarcodeScannerProps) {
     </Card>
   )
 }
+

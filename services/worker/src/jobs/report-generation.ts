@@ -662,3 +662,4 @@ We're making great progress and will keep you updated on next steps.`
 
 // Export singleton instance
 export const reportGenerator = new ReportGenerator()
+

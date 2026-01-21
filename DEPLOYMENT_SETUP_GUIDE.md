@@ -451,3 +451,4 @@ curl -X POST https://your-api.railway.app/auth/signup \
 - ✅ Docker build working (turbo.json fixed)
 - ⚠️ Need to add `STRIPE_SECRET_KEY` to Railway
 - ⏭️ Deploy Next.js apps to Vercel (optional)
+

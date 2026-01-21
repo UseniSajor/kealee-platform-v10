@@ -2,16 +2,19 @@
 
 ## Overview
 
-This guide covers deploying Prisma migrations to the Railway production PostgreSQL database.
+This guide covers deploying Prisma migrations to the Railway PostgreSQL databases (staging and production).
+
+**⚠️ IMPORTANT:** Before deploying, ensure you've set up proper environment isolation. See [RAILWAY_ENVIRONMENT_SETUP.md](../../RAILWAY_ENVIRONMENT_SETUP.md) for complete setup instructions.
 
 ---
 
 ## Prerequisites
 
 1. **Railway Account**: Access to Railway dashboard
-2. **Database URL**: Production `DATABASE_URL` from Railway
+2. **Database URLs**: Separate `DATABASE_URL` for staging and production from Railway
 3. **Prisma CLI**: Installed via `pnpm install`
 4. **Schema Valid**: Prisma schema must be valid (run `npx prisma format`)
+5. **Environment Isolation**: Staging and production must have separate databases (see [RAILWAY_ENVIRONMENT_SETUP.md](../../RAILWAY_ENVIRONMENT_SETUP.md))
 
 ---
 
@@ -86,39 +89,83 @@ npx prisma db pull --schema=./prisma/schema.prisma --force
 
 ---
 
-## Railway Production Deployment
+## Railway Deployment
+
+### ⚠️ CRITICAL: Environment Isolation
+
+**Before deploying, verify environment isolation:**
+
+```bash
+# Run verification script
+bash scripts/verify-railway-env-isolation.sh
+```
+
+**Key Requirements:**
+- Staging must use `staging-postgres.internal` as hostname
+- Production must use `production-postgres.internal` as hostname
+- DATABASE_URL values must be **different** for each environment
+- Never share the same database between staging and production
+
+See [RAILWAY_ENVIRONMENT_SETUP.md](../../RAILWAY_ENVIRONMENT_SETUP.md) for complete setup.
 
 ### Step 1: Get Database URL
 
+**For Staging:**
 1. Log into Railway dashboard
-2. Navigate to your PostgreSQL service
-3. Go to **Variables** tab
-4. Copy `DATABASE_URL` value
+2. Switch to **Staging** environment
+3. Navigate to `staging-postgres` service
+4. Go to **Variables** tab
+5. Copy `DATABASE_URL` value
+6. Update hostname to `staging-postgres.internal`
+
+**For Production:**
+1. Log into Railway dashboard
+2. Switch to **Production** environment
+3. Navigate to `production-postgres` service
+4. Go to **Variables** tab
+5. Copy `DATABASE_URL` value
+6. Update hostname to `production-postgres.internal`
 
 ### Step 2: Set Environment Variable
+
+**Railway (via Dashboard) - RECOMMENDED:**
+- Go to your API service (`kealee-platform-v10`)
+- Switch to the correct environment (staging or production)
+- Go to **Variables** tab
+- Add/Update `DATABASE_URL` variable
+- Use the PostgreSQL service's **internal** connection string (with `.internal` hostname)
+
+**Railway (via CLI):**
+```bash
+# For staging
+railway variables set DATABASE_URL="postgresql://user:password@staging-postgres.internal:5432/railway" --environment staging
+
+# For production
+railway variables set DATABASE_URL="postgresql://user:password@production-postgres.internal:5432/railway" --environment production
+```
 
 **Local (for testing):**
 ```bash
 export DATABASE_URL="postgresql://user:password@host:port/database"
 ```
 
-**Railway (via CLI):**
+### Step 3: Run Migrations
+
+**For Staging (can use dev mode for testing):**
 ```bash
-railway variables set DATABASE_URL="postgresql://user:password@host:port/database"
+cd packages/database
+export DATABASE_URL="<your-staging-database-url>"
+pnpm db:migrate:dev
 ```
 
-**Railway (via Dashboard):**
-- Go to your API service
-- Add `DATABASE_URL` variable
-- Use the PostgreSQL service's internal connection string
-
-### Step 3: Run Deployment Script
-
+**For Production (must use deploy mode):**
 ```bash
 cd packages/database
 export DATABASE_URL="<your-production-database-url>"
-bash deploy-production.sh
+pnpm db:migrate:deploy
 ```
+
+**Note:** Railway automatically runs `prisma migrate deploy` during deployment (configured in `services/api/railway.json`).
 
 ### Step 4: Verify Deployment
 
@@ -303,29 +350,36 @@ npx prisma db execute --stdin --schema=./prisma/schema.prisma <<< "SELECT name F
 ### Internal vs External Connection
 
 Railway provides two connection strings:
-- **Internal**: Use within Railway services (faster, no SSL)
+- **Internal**: Use within Railway services (faster, no SSL) - Use `.internal` hostname
 - **External**: Use from outside Railway (requires SSL)
 
-For migrations, use the **internal** connection string when running from Railway.
+**Always use internal connection strings** for Railway service-to-service communication:
+- Staging: `staging-postgres.internal`
+- Production: `production-postgres.internal`
 
 ### Environment Variables
 
-Railway automatically sets `DATABASE_URL` for services connected to PostgreSQL. You can also set it manually in the Variables tab.
+Railway automatically sets `DATABASE_URL` for services connected to PostgreSQL, but you should:
+1. **Verify** it uses the correct `.internal` hostname
+2. **Ensure** staging and production have different values
+3. **Update** if it uses public hostname instead of `.internal`
 
 ### Automated Deployments
 
-Railway can run migrations automatically on deploy by adding to `railway.json`:
+Railway automatically runs migrations during deployment. The `services/api/railway.json` is configured with:
 
 ```json
 {
-  "build": {
-    "builder": "NIXPACKS"
-  },
   "deploy": {
-    "startCommand": "cd packages/database && npx prisma migrate deploy && cd ../.. && npm start"
+    "startCommand": "cd packages/database && pnpm db:migrate:deploy && cd ../.. && pnpm start"
   }
 }
 ```
+
+This ensures:
+- ✅ Migrations run before the service starts
+- ✅ Uses `prisma migrate deploy` (safe for production)
+- ✅ Fails fast if migrations fail
 
 ---
 

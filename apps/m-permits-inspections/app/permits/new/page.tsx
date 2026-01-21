@@ -5,6 +5,15 @@ import { MapPin, FileText, Upload, CreditCard, CheckCircle, AlertCircle, ArrowLe
 import { useRouter } from 'next/navigation';
 import { Button, Input, ProgressBar, StepIndicator } from '@kealee/ui';
 import { Card } from '@kealee/ui';
+import { api } from '../../lib/api/client';
+import { detectJurisdiction, loadJurisdictions, findJurisdictionByCode, type Jurisdiction } from '../../lib/jurisdictions';
+
+// Simple toast implementation (replace with sonner if available)
+const toast = {
+  success: (message: string) => console.log('✅', message),
+  error: (message: string) => console.error('❌', message),
+  warning: (message: string) => console.warn('⚠️', message),
+};
 
 const STEPS = [
   { id: 'location', title: 'Location', subtitle: 'Project address' },
@@ -16,12 +25,15 @@ const STEPS = [
 interface PermitFormData {
   address: string;
   jurisdiction: string | null;
+  jurisdictionId: string | null;
+  jurisdictionData: Jurisdiction | null;
   permitTypes: string[];
-  documents: File[];
+  documents: Array<{ id: string; file: File; uploaded: boolean }>;
   aiReview: any | null;
   applicantName: string;
   applicantEmail: string;
   applicantPhone: string;
+  permitId: string | null;
 }
 
 export default function NewPermitPage() {
@@ -30,12 +42,15 @@ export default function NewPermitPage() {
   const [formData, setFormData] = useState<PermitFormData>({
     address: '',
     jurisdiction: null,
+    jurisdictionId: null,
+    jurisdictionData: null,
     permitTypes: [],
     documents: [],
     aiReview: null,
     applicantName: '',
     applicantEmail: '',
     applicantPhone: '',
+    permitId: null,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -71,6 +86,9 @@ export default function NewPermitPage() {
       if (formData.documents.length === 0) {
         newErrors.documents = 'Please upload at least one document';
       }
+      if (!formData.jurisdictionId) {
+        newErrors.jurisdiction = 'Please select a valid address with jurisdiction';
+      }
     }
 
     setErrors(newErrors);
@@ -81,17 +99,29 @@ export default function NewPermitPage() {
     if (!validateCurrentStep()) return;
 
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/permits', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // });
+      // Create permit application
+      const { permit } = await api.permits.create({
+        address: formData.address,
+        jurisdictionId: formData.jurisdictionId!,
+        permitTypes: formData.permitTypes,
+        projectDetails: {
+          valuation: 0, // TODO: Add valuation field
+        },
+        applicantInfo: {
+          name: formData.applicantName,
+          email: formData.applicantEmail,
+          phone: formData.applicantPhone,
+        },
+      });
+
+      // Submit permit
+      await api.permits.submit(permit.id);
       
-      router.push('/permits/success');
-    } catch (error) {
+      router.push(`/permits/success?id=${permit.id}`);
+    } catch (error: any) {
       console.error('Error submitting application:', error);
-      setErrors({ submit: 'Failed to submit application. Please try again.' });
+      toast.error(error.message || 'Failed to submit application. Please try again.');
+      setErrors({ submit: error.message || 'Failed to submit application. Please try again.' });
     }
   };
 
@@ -173,28 +203,56 @@ function StepLocation({
   const [suggestions, setSuggestions] = useState<Array<{ address: string; jurisdiction: string }>>([]);
 
   const handleAddressChange = async (address: string) => {
-    setFormData({ ...formData, address, jurisdiction: null });
+    setFormData({ ...formData, address, jurisdiction: null, jurisdictionId: null, jurisdictionData: null });
     
-    // Simulated address autocomplete
+    // Real Google Places autocomplete
     if (address.length > 3) {
-      // TODO: Call Google Places API
-      setSuggestions([
-        { address: '1234 Main St, Washington, DC 20001', jurisdiction: 'Washington, DC' },
-        { address: '1234 Main St, Baltimore, MD 21201', jurisdiction: 'Baltimore, MD' },
-        { address: '1234 Main St, Arlington, VA 22201', jurisdiction: 'Arlington, VA' },
-      ]);
+      try {
+        const { predictions } = await api.places.autocomplete(address);
+        setSuggestions(
+          predictions.map((p: any) => ({
+            address: p.description,
+            jurisdiction: p.secondaryText || '',
+            placeId: p.placeId,
+          }))
+        );
+      } catch (error) {
+        console.error('Autocomplete error:', error);
+        setSuggestions([]);
+      }
     } else {
       setSuggestions([]);
     }
   };
 
-  const selectAddress = (suggestion: { address: string; jurisdiction: string }) => {
+  const selectAddress = async (suggestion: { address: string; jurisdiction: string; placeId?: string }) => {
     setFormData({
       ...formData,
       address: suggestion.address,
       jurisdiction: suggestion.jurisdiction,
+      jurisdictionId: null,
+      jurisdictionData: null,
     });
     setSuggestions([]);
+
+    // Detect jurisdiction from address
+    try {
+      const detected = await detectJurisdiction(suggestion.address);
+      if (detected?.jurisdictionCode) {
+        const jurisdiction = await findJurisdictionByCode(detected.jurisdictionCode);
+        if (jurisdiction) {
+          setFormData({
+            ...formData,
+            address: suggestion.address,
+            jurisdiction: jurisdiction.name,
+            jurisdictionId: jurisdiction.id,
+            jurisdictionData: jurisdiction,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to detect jurisdiction:', error);
+    }
   };
 
   return (
@@ -246,7 +304,7 @@ function StepLocation({
       </div>
 
       {/* Jurisdiction Info Card */}
-      {formData.jurisdiction && (
+      {formData.jurisdictionData && (
         <Card className="bg-primary-50 border-primary-200">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 bg-primary-600 text-white rounded-full flex items-center justify-center flex-shrink-0">
@@ -254,12 +312,21 @@ function StepLocation({
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-primary-900 mb-2">
-                Jurisdiction Detected: {formData.jurisdiction}
+                Jurisdiction Detected: {formData.jurisdictionData.name}
               </h3>
               <div className="space-y-1 text-sm text-primary-800">
-                <p>• Typical approval time: 21 days</p>
-                <p>• Estimated fees: $350-$500</p>
-                <p>• Requirements: Site plan, floor plan, elevations</p>
+                {formData.jurisdictionData.avgReviewDays && (
+                  <p>• Typical approval time: {formData.jurisdictionData.avgReviewDays} days</p>
+                )}
+                {formData.jurisdictionData.firstTimeApprovalRate && (
+                  <p>• First-time approval rate: {Math.round(formData.jurisdictionData.firstTimeApprovalRate * 100)}%</p>
+                )}
+                {formData.jurisdictionData.requiredDocuments && (
+                  <p>• Required documents: {Object.keys(formData.jurisdictionData.requiredDocuments).length} types</p>
+                )}
+                {formData.jurisdictionData.portalUrl && (
+                  <p>• Portal: <a href={formData.jurisdictionData.portalUrl} target="_blank" rel="noopener noreferrer" className="underline">View jurisdiction portal</a></p>
+                )}
               </div>
             </div>
           </div>
@@ -378,6 +445,7 @@ function StepDocuments({
   const [uploading, setUploading] = useState(false);
   const [aiReviewing, setAiReviewing] = useState(false);
   const [uploadedDocs, setUploadedDocs] = useState<Record<string, boolean>>({});
+  const [permitId, setPermitId] = useState<string | null>(null);
 
   const requiredDocs = [
     { id: 'site_plan', name: 'Site Plan' },
@@ -390,41 +458,118 @@ function StepDocuments({
 
     setUploading(true);
     
-    // Simulate upload
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    
-    const fileArray = Array.from(files);
-    setFormData({ ...formData, documents: [...formData.documents, ...fileArray] });
-    
-    // Mark documents as uploaded
-    const newUploaded = { ...uploadedDocs };
-    fileArray.forEach(() => {
-      requiredDocs.forEach((doc) => {
-        if (!newUploaded[doc.id]) {
-          newUploaded[doc.id] = true;
+    try {
+      // Create permit application first if not exists
+      let currentPermitId = permitId;
+      if (!currentPermitId) {
+        const { permit } = await api.permits.create({
+          address: formData.address,
+          jurisdictionId: formData.jurisdictionId!,
+          permitTypes: formData.permitTypes,
+          projectDetails: {},
+          applicantInfo: {
+            name: formData.applicantName || 'TBD',
+            email: formData.applicantEmail || 'TBD',
+            phone: formData.applicantPhone || 'TBD',
+          },
+        });
+        currentPermitId = permit.id;
+        setPermitId(permit.id);
+        setFormData({ ...formData, permitId: permit.id });
+      }
+
+      // Upload files
+      const fileArray = Array.from(files);
+      const uploadedDocuments: Array<{ id: string; file: File; uploaded: boolean }> = [];
+
+      for (const file of fileArray) {
+        try {
+          // Get presigned URL
+          const { url, key, fileId } = await api.files.getPresignedUrl(
+            file.name,
+            file.type
+          );
+
+          // Upload to S3
+          await fetch(url, {
+            method: 'PUT',
+            body: file,
+            headers: {
+              'Content-Type': file.type,
+            },
+          });
+
+          // Complete upload
+          await api.files.completeUpload({
+            key,
+            fileName: file.name,
+            mimeType: file.type,
+            size: file.size,
+          });
+
+          uploadedDocuments.push({
+            id: fileId,
+            file,
+            uploaded: true,
+          });
+        } catch (error) {
+          console.error('File upload error:', error);
+          toast.error(`Failed to upload ${file.name}`);
         }
+      }
+
+      setFormData({
+        ...formData,
+        documents: [...formData.documents, ...uploadedDocuments],
+        permitId: currentPermitId,
       });
-    });
-    setUploadedDocs(newUploaded);
-    
-    setUploading(false);
+
+      // Mark documents as uploaded
+      const newUploaded = { ...uploadedDocs };
+      uploadedDocuments.forEach(() => {
+        requiredDocs.forEach((doc) => {
+          if (!newUploaded[doc.id]) {
+            newUploaded[doc.id] = true;
+          }
+        });
+      });
+      setUploadedDocs(newUploaded);
+
+      // Run AI review after upload
+      if (currentPermitId && uploadedDocuments.length > 0) {
+        await runAIReview(currentPermitId, uploadedDocuments.map(d => d.id));
+      }
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload files: ' + error.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const runAIReview = async (permitId: string, documentIds: string[]) => {
     setAiReviewing(true);
     
-    // Simulate AI review
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    
-    const aiResults = {
-      score: 95,
-      issues: [
-        { type: 'warning', message: 'Floor plan missing dimension on north wall' },
-      ],
-      suggestions: [
-        'Consider adding property survey for faster approval',
-      ],
-    };
-    
-    setFormData({ ...formData, aiReview: aiResults });
-    setAiReviewing(false);
+    try {
+      const { aiReview, review } = await api.permits.aiReview(permitId, {
+        documentIds,
+      });
+      
+      setFormData({ ...formData, aiReview: review });
+      
+      if (review.score >= 90) {
+        toast.success(`Great! ${review.score}% approval likelihood`);
+      } else if (review.score >= 70) {
+        toast.warning(`${review.score}% approval likelihood. Review suggestions.`);
+      } else {
+        toast.error(`${review.score}% approval likelihood. Please address issues.`);
+      }
+    } catch (error: any) {
+      console.error('AI review error:', error);
+      toast.error('AI review failed: ' + error.message);
+    } finally {
+      setAiReviewing(false);
+    }
   };
 
   return (

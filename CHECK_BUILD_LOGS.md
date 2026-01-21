@@ -32,3 +32,4 @@ Please share the BUILD LOGS section that shows:
 3. Any error messages during the build phase
 
 **Note:** Runtime logs (what you just shared) show errors AFTER the container starts. Build logs show what happens DURING the Docker image build process.
+

@@ -1,208 +1,342 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import Link from "next/link"
-import { useQuery } from "@tanstack/react-query"
-import { Download, Plus, Upload } from "lucide-react"
-
-import { api } from "@/lib/api-client"
-import { Button } from "@kealee/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
-import { Input } from "@kealee/ui/input"
-import { cn } from "@/lib/utils"
-import type { PMClient } from "@/lib/types"
-
-type StatusFilter = "all" | PMClient["status"]
-
-function toCsv(rows: Record<string, string>[]) {
-  if (!rows.length) return ""
-  const headers = Object.keys(rows[0])
-  const escape = (v: string) => {
-    const needs = /[",\n]/.test(v)
-    const escaped = v.replaceAll('"', '""')
-    return needs ? `"${escaped}"` : escaped
-  }
-  const lines = [headers.join(","), ...rows.map((r) => headers.map((h) => escape(r[h] ?? "")).join(","))]
-  return lines.join("\n")
-}
+import { useState, useEffect } from 'react';
+import { useRequireAuth } from '@kealee/auth';
+import { api } from '@/lib/api-client';
+import { toast } from 'sonner';
+import type { PMClient } from '@/lib/types';
+import {
+  Search,
+  Plus,
+  Building,
+  Phone,
+  Mail,
+  MapPin,
+  MoreVertical,
+  Edit,
+  Archive,
+  TrendingUp
+} from 'lucide-react';
+import Link from 'next/link';
 
 export default function ClientsPage() {
-  const { data } = useQuery({
-    queryKey: ["pm-clients"],
-    queryFn: () => api.getMyClients(),
-  })
+  const { user } = useRequireAuth();
+  const [clients, setClients] = useState<PMClient[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
-  const clients = (data?.clients ?? []) as PMClient[]
-  const [search, setSearch] = React.useState("")
-  const [status, setStatus] = React.useState<StatusFilter>("all")
-  const [importNote, setImportNote] = React.useState<string>("")
+  useEffect(() => {
+    loadClients();
+  }, [search, filter]);
 
-  const filtered = React.useMemo(() => {
-    const q = search.trim().toLowerCase()
-    return clients.filter((c) => {
-      if (status !== "all" && c.status !== status) return false
-      if (!q) return true
-      return (
-        c.name.toLowerCase().includes(q) ||
-        c.email.toLowerCase().includes(q) ||
-        (c.phone ?? "").toLowerCase().includes(q)
-      )
-    })
-  }, [clients, search, status])
-
-  function exportContacts() {
-    const rows = filtered.map((c) => ({
-      id: c.id,
-      name: c.name,
-      email: c.email,
-      phone: c.phone ?? "",
-      status: c.status,
-      totalProjects: String(c.activeProjects ?? 0),
-    }))
-
-    const csv = toCsv(rows)
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `clients-${new Date().toISOString().slice(0, 10)}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
-
-  async function handleImport(file: File) {
-    // Placeholder import: we don't persist yet; just report basic parsing.
-    const text = await file.text()
-    const lines = text.split(/\r?\n/).filter(Boolean)
-    setImportNote(
-      `Imported ${Math.max(0, lines.length - 1)} contacts from ${file.name} (placeholder — not saved yet).`
-    )
-  }
+  const loadClients = async () => {
+    try {
+      const query: any = {};
+      if (filter === 'active') query.active = true;
+      if (filter === 'inactive') query.active = false;
+      
+      const data = await api.getMyClients(query);
+      let filtered = data.clients || [];
+      
+      // Apply search filter
+      if (search) {
+        filtered = filtered.filter((c: PMClient) =>
+          c.name.toLowerCase().includes(search.toLowerCase()) ||
+          c.email.toLowerCase().includes(search.toLowerCase())
+        );
+      }
+      
+      setClients(filtered);
+    } catch (error) {
+      toast.error('Failed to load clients');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div className="space-y-8">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Clients</h1>
-          <p className="text-neutral-600 mt-1">Manage your client contacts and their projects.</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            My Clients
+          </h1>
+          <p className="text-gray-600">
+            {clients.length} clients assigned to you
+          </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={exportContacts} disabled={!filtered.length}>
-            <Download className="h-4 w-4" />
-            Export contacts
-          </Button>
 
-          <Button variant="outline" size="sm" asChild>
-            <label className="cursor-pointer">
-              <Upload className="h-4 w-4" />
-              Import contacts
-              <input
-                type="file"
-                accept=".csv,text/csv"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0]
-                  if (f) void handleImport(f)
-                  e.currentTarget.value = ""
-                }}
-              />
-            </label>
-          </Button>
+        <Link
+          href="/clients/assign"
+          className="
+            flex items-center gap-2
+            px-6 py-3
+            bg-blue-600 hover:bg-blue-700
+            text-white font-semibold
+            rounded-lg
+            shadow-md hover:shadow-lg
+            transition-all duration-200
+          "
+        >
+          <Plus size={20} />
+          Request Assignment
+        </Link>
+      </div>
 
-          <Button size="sm" onClick={() => alert("Add new client (placeholder)")}>
-            <Plus className="h-4 w-4" />
-            Add new client
-          </Button>
+      {/* Filters */}
+      <div className="bg-white rounded-2xl shadow-lg p-6">
+        <div className="grid md:grid-cols-2 gap-4">
+          
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search clients..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="
+                w-full pl-11 pr-4 py-3
+                border-2 border-gray-300 rounded-lg
+                focus:border-blue-500 focus:ring-2 focus:ring-blue-100
+                transition-all duration-200
+              "
+            />
+          </div>
+
+          {/* Status Filter */}
+          <div className="flex gap-2">
+            {['all', 'active', 'inactive'].map((status) => (
+              <button
+                key={status}
+                onClick={() => setFilter(status as any)}
+                className={`
+                  flex-1 px-4 py-3 rounded-lg font-medium
+                  transition-all duration-200
+                  ${filter === status
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }
+                `}
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {importNote ? (
-        <div className="rounded-lg border bg-emerald-50 text-emerald-800 px-4 py-3 text-sm">{importNote}</div>
-      ) : null}
+      {/* Summary Stats */}
+      <div className="grid md:grid-cols-3 gap-6">
+        <StatCard
+          title="Total Clients"
+          value={clients.length}
+          icon={Building}
+          color="blue"
+        />
+        <StatCard
+          title="Active Projects"
+          value={clients.reduce((sum: number, c: PMClient) => sum + (c.activeProjects || 0), 0)}
+          icon={TrendingUp}
+          color="green"
+        />
+        <StatCard
+          title="Open Tasks"
+          value={clients.reduce((sum: number, c: PMClient) => sum + (c.openTasks || 0), 0)}
+          icon={TrendingUp}
+          color="purple"
+        />
+      </div>
 
-      <Card className="py-0">
-        <CardHeader>
-          <CardTitle className="text-base">Directory</CardTitle>
-        </CardHeader>
-        <CardContent className="pb-4 space-y-3">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search name, email, phone…"
-              className="sm:w-80"
-            />
-            <div className="flex items-center gap-2">
-              <select
-                className="h-9 rounded-md border bg-white px-3 text-sm"
-                value={status}
-                onChange={(e) => setStatus(e.target.value as StatusFilter)}
-                aria-label="Filter by status"
-              >
-                <option value="all">All status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-              <div className="text-sm text-neutral-600">
-                {filtered.length} / {clients.length}
-              </div>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto rounded-xl border bg-white">
-            <table className="min-w-[900px] w-full text-sm">
-              <thead className="bg-neutral-50 text-neutral-600">
-                <tr>
-                  <th className="text-left font-medium px-4 py-3">Name</th>
-                  <th className="text-left font-medium px-4 py-3">Email</th>
-                  <th className="text-left font-medium px-4 py-3">Phone</th>
-                  <th className="text-left font-medium px-4 py-3">Total projects</th>
-                  <th className="text-left font-medium px-4 py-3">Status</th>
-                  <th className="text-right font-medium px-4 py-3">Open</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length ? (
-                  filtered.map((c) => (
-                    <tr key={c.id} className="border-t">
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-neutral-900">{c.name}</div>
-                      </td>
-                      <td className="px-4 py-3 text-neutral-700">{c.email}</td>
-                      <td className="px-4 py-3 text-neutral-700">{c.phone ?? "—"}</td>
-                      <td className="px-4 py-3 text-neutral-700">{c.activeProjects ?? 0}</td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={cn(
-                            "text-xs rounded-full border px-2 py-1",
-                            c.status === "active"
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : "bg-neutral-50 text-neutral-700 border-neutral-200"
-                          )}
-                        >
-                          {c.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={`/clients/${c.id}`}>View</Link>
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-10 text-center text-neutral-600">
-                      No clients match your filters.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Clients Grid */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+        </div>
+      ) : clients.length === 0 ? (
+        <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+          <Building className="mx-auto mb-4 text-gray-400" size={64} />
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">
+            No clients found
+          </h3>
+          <p className="text-gray-600 mb-6">
+            {search ? 'Try adjusting your search' : 'No clients assigned to you yet'}
+          </p>
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {clients.map((client: PMClient) => (
+            <ClientCard key={client.id} client={client} onUpdate={loadClients} />
+          ))}
+        </div>
+      )}
     </div>
-  )
+  );
 }
 
+function StatCard({ title, value, icon: Icon, color }: { title: string; value: string | number; icon: any; color: 'blue' | 'green' | 'purple' }) {
+  const colors: Record<'blue' | 'green' | 'purple', string> = {
+    blue: 'bg-blue-100 text-blue-600',
+    green: 'bg-green-100 text-green-600',
+    purple: 'bg-purple-100 text-purple-600',
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className={`w-12 h-12 ${colors[color]} rounded-xl flex items-center justify-center`}>
+          <Icon size={24} />
+        </div>
+      </div>
+      <div className="text-3xl font-bold text-gray-900 mb-1">
+        {value}
+      </div>
+      <div className="text-sm font-medium text-gray-600">
+        {title}
+      </div>
+    </div>
+  );
+}
+
+function ClientCard({ client, onUpdate }: { client: PMClient; onUpdate: () => void }) {
+  const [showMenu, setShowMenu] = useState(false);
+
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-200">
+      
+      {/* Header */}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="
+            w-12 h-12
+            bg-blue-100 text-blue-600
+            rounded-full
+            flex items-center justify-center
+            font-bold text-lg
+          ">
+            {client.name.charAt(0)}
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-900">{client.name}</h3>
+            <span className={`
+              inline-block px-2 py-1 mt-1
+              rounded-full text-xs font-medium
+              ${client.status === 'active' 
+                ? 'bg-green-100 text-green-700' 
+                : 'bg-gray-100 text-gray-700'
+              }
+            `}>
+              {client.status}
+            </span>
+          </div>
+        </div>
+
+        {/* Menu */}
+        <div className="relative">
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="
+              w-8 h-8
+              text-gray-600 hover:text-gray-900
+              hover:bg-gray-100
+              rounded-full
+              flex items-center justify-center
+            "
+          >
+            <MoreVertical size={20} />
+          </button>
+
+          {showMenu && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setShowMenu(false)}
+              />
+              <div className="
+                absolute right-0 mt-2
+                bg-white
+                border-2 border-gray-200 rounded-lg
+                shadow-xl
+                w-48
+                z-20
+              ">
+                <button className="
+                  w-full px-4 py-2
+                  text-left text-sm
+                  hover:bg-gray-50
+                  flex items-center gap-2
+                ">
+                  <Edit size={16} />
+                  Edit Client
+                </button>
+                <button className="
+                  w-full px-4 py-2
+                  text-left text-sm text-red-600
+                  hover:bg-red-50
+                  flex items-center gap-2
+                ">
+                  <Archive size={16} />
+                  Archive Client
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Contact Info */}
+      <div className="space-y-2 mb-4 text-sm">
+        {client.email && (
+          <div className="flex items-center gap-2 text-gray-600">
+            <Mail size={16} />
+            <a href={`mailto:${client.email}`} className="hover:text-blue-600">
+              {client.email}
+            </a>
+          </div>
+        )}
+        {client.phone && (
+          <div className="flex items-center gap-2 text-gray-600">
+            <Phone size={16} />
+            <a href={`tel:${client.phone}`} className="hover:text-blue-600">
+              {client.phone}
+            </a>
+          </div>
+        )}
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+        <div>
+          <div className="text-2xl font-bold text-gray-900">
+            {client.activeProjects || 0}
+          </div>
+          <div className="text-xs text-gray-600">Active Projects</div>
+        </div>
+        <div>
+          <div className="text-2xl font-bold text-gray-900">
+            ${(client.packagePrice || 0).toLocaleString()}
+          </div>
+          <div className="text-xs text-gray-600">Package Price</div>
+        </div>
+      </div>
+
+      {/* View Details */}
+      <Link
+        href={`/clients/${client.id}`}
+        className="
+          w-full mt-4 py-3
+          bg-blue-50 hover:bg-blue-100
+          text-blue-600 font-semibold
+          rounded-lg
+          transition-all duration-200
+          flex items-center justify-center
+        "
+      >
+        View Details →
+      </Link>
+    </div>
+  );
+}

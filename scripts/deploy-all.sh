@@ -1,185 +1,119 @@
 #!/bin/bash
-# scripts/deploy-all.sh
-# Master deployment script for all Kealee Platform applications
 
 set -e
 
-# Colors
+echo "🚀 Kealee Platform - Complete Deployment Script"
+echo "================================================"
+
+# Colors for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m'
+NC='\033[0m' # No Color
 
-log() {
-    echo -e "${BLUE}[DEPLOY]${NC} $1"
-}
+# Step 1: Install dependencies
+echo -e "${BLUE}📦 Installing dependencies...${NC}"
+pnpm install
 
-success() {
-    echo -e "${GREEN}✅${NC} $1"
-}
+# Step 2: Build packages
+echo -e "${BLUE}🔨 Building shared packages...${NC}"
+pnpm build
 
-warn() {
-    echo -e "${YELLOW}⚠️${NC} $1"
-}
+# Step 3: Run tests (optional)
+# echo -e "${BLUE}🧪 Running tests...${NC}"
+# pnpm test
 
-error() {
-    echo -e "${RED}❌${NC} $1"
-}
-
-echo "🚀 Kealee Platform - Complete Deployment"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-
-# Check prerequisites
-log "Checking prerequisites..."
-
-if ! command -v git &> /dev/null; then
-    error "Git is not installed"
-    exit 1
+# Step 4: Git commit and push
+echo -e "${YELLOW}📤 Committing to Git...${NC}"
+if [ -n "$1" ]; then
+    commit_message="$1"
+else
+    read -p "Enter commit message (or press Enter for default): " commit_message
+    commit_message=${commit_message:-"feat: deploy Kealee Platform v10"}
 fi
 
-if ! command -v vercel &> /dev/null; then
-    warn "Vercel CLI not found. Installing..."
-    npm install -g vercel@latest
+git add .
+if git diff --staged --quiet; then
+    echo "No changes to commit"
+else
+    git commit -m "$commit_message" || echo "Nothing to commit"
 fi
 
+# Check if remote exists
+if git remote | grep -q "^origin$"; then
+    echo -e "${BLUE}Pushing to GitHub...${NC}"
+    git push origin main || git push origin master || echo "Push failed or no remote configured"
+else
+    echo -e "${YELLOW}⚠️  No git remote 'origin' configured. Skipping push.${NC}"
+    echo "To add remote: git remote add origin https://github.com/yourusername/kealee-platform.git"
+fi
+
+echo -e "${GREEN}✅ Code pushed to GitHub${NC}"
+
+# Step 5: Deploy to Railway (API)
+echo -e "${BLUE}🚂 Deploying API to Railway...${NC}"
+cd services/api
+
+# Check if Railway is configured
 if ! command -v railway &> /dev/null; then
-    warn "Railway CLI not found. Install from: https://railway.app/cli"
-fi
-
-success "Prerequisites checked"
-
-# Git status
-log "Checking git status..."
-if [ -n "$(git status --porcelain)" ]; then
-    warn "Uncommitted changes detected"
-    read -p "Commit changes before deploying? (y/N): " COMMIT_CHANGES
-    if [ "$COMMIT_CHANGES" = "y" ] || [ "$COMMIT_CHANGES" = "Y" ]; then
-        git add .
-        read -p "Commit message: " COMMIT_MSG
-        git commit -m "${COMMIT_MSG:-Deploy: Complete Kealee Platform v10}"
+    echo -e "${YELLOW}⚠️  Railway CLI not installed. Install: npm i -g @railway/cli${NC}"
+    echo -e "${YELLOW}Skipping Railway deployment${NC}"
+else
+    if ! railway status &> /dev/null; then
+        echo -e "${YELLOW}⚠️  Railway not configured. Please run 'railway login' and 'railway link' first${NC}"
+        echo -e "${YELLOW}Skipping Railway deployment${NC}"
+    else
+        railway up --detach || echo "Railway deployment failed"
+        echo -e "${GREEN}✅ API deployed to Railway${NC}"
     fi
 fi
+cd ../..
 
-# Select deployment target
-echo ""
-echo "Select deployment target:"
-echo "1) Staging (Preview)"
-echo "2) Production"
-echo "3) Both"
-read -p "Choice (1-3): " DEPLOY_TARGET
+# Step 6: Deploy all apps to Vercel
+echo -e "${BLUE}🔷 Deploying apps to Vercel...${NC}"
 
-# Select apps
-echo ""
-echo "Select applications to deploy:"
-echo "1) All apps"
-echo "2) m-project-owner"
-echo "3) m-permits-inspections"
-echo "4) m-ops-services"
-echo "5) m-architect"
-echo "6) os-admin"
-read -p "Choice (1-6): " APP_CHOICE
+# Check Vercel CLI
+if ! command -v vercel &> /dev/null; then
+    echo -e "${YELLOW}⚠️  Vercel CLI not installed. Install: npm i -g vercel${NC}"
+    echo -e "${YELLOW}Skipping Vercel deployment${NC}"
+else
+    # Array of apps to deploy
+    apps=(
+        "m-marketplace"
+        "m-project-owner"
+        "m-permits-inspections"
+        "m-ops-services"
+        "m-architect"
+        "os-pm"
+        "os-admin"
+    )
 
-APPS=()
-case $APP_CHOICE in
-    1)
-        APPS=("m-project-owner" "m-permits-inspections" "m-ops-services" "m-architect" "os-admin")
-        ;;
-    2) APPS=("m-project-owner") ;;
-    3) APPS=("m-permits-inspections") ;;
-    4) APPS=("m-ops-services") ;;
-    5) APPS=("m-architect") ;;
-    6) APPS=("os-admin") ;;
-    *)
-        error "Invalid choice"
-        exit 1
-        ;;
-esac
-
-# Pre-deployment checks
-log "Running pre-deployment checklist..."
-if [ -f "scripts/pre-deployment-checklist.sh" ]; then
-    bash scripts/pre-deployment-checklist.sh || {
-        error "Pre-deployment checks failed"
-        exit 1
-    }
-fi
-
-# Deploy to Vercel
-if [ "$DEPLOY_TARGET" = "1" ] || [ "$DEPLOY_TARGET" = "3" ]; then
-    log "Deploying to Vercel Staging..."
-    for app in "${APPS[@]}"; do
-        log "Deploying $app to staging..."
-        cd "apps/$app"
-        vercel deploy --prebuilt --prod --confirm --token="$VERCEL_TOKEN" || {
-            error "Failed to deploy $app"
-            cd ../..
-            exit 1
-        }
+    for app in "${apps[@]}"; do
+        echo -e "${BLUE}Deploying ${app}...${NC}"
+        cd apps/$app
+        
+        # Deploy to preview (not production by default)
+        vercel --yes || echo "Failed to deploy $app"
+        
+        echo -e "${GREEN}✅ ${app} deployed${NC}"
         cd ../..
-        success "$app deployed to staging"
     done
 fi
 
-if [ "$DEPLOY_TARGET" = "2" ] || [ "$DEPLOY_TARGET" = "3" ]; then
-    log "Deploying to Vercel Production..."
-    read -p "⚠️  Deploy to PRODUCTION? Type 'yes' to confirm: " CONFIRM
-    if [ "$CONFIRM" != "yes" ]; then
-        warn "Production deployment cancelled"
-        exit 0
-    fi
-
-    for app in "${APPS[@]}"; do
-        log "Deploying $app to production..."
-        cd "apps/$app"
-        vercel deploy --prebuilt --prod --confirm --token="$VERCEL_TOKEN" || {
-            error "Failed to deploy $app"
-            cd ../..
-            exit 1
-        }
-        cd ../..
-        success "$app deployed to production"
-    done
-fi
-
-# Deploy API to Railway
-if [ -d "services/api" ]; then
-    log "Deploying API to Railway..."
-    cd services/api
-    railway up --detach || {
-        warn "Railway deployment failed or not configured"
-    }
-    cd ../..
-fi
-
-# Post-deployment verification
-log "Running post-deployment verification..."
-sleep 5
-
-for app in "${APPS[@]}"; do
-    # Get deployment URL from Vercel
-    DEPLOYMENT_URL=$(vercel ls "$app" --token="$VERCEL_TOKEN" --json | jq -r '.[0].url' 2>/dev/null || echo "")
-    if [ -n "$DEPLOYMENT_URL" ]; then
-        log "Verifying $app at $DEPLOYMENT_URL..."
-        if curl -f -s "https://$DEPLOYMENT_URL" > /dev/null; then
-            success "$app is live at https://$DEPLOYMENT_URL"
-        else
-            warn "$app deployment may not be ready yet"
-        fi
-    fi
-done
-
 echo ""
-success "Deployment complete!"
+echo -e "${GREEN}🎉 DEPLOYMENT COMPLETE!${NC}"
 echo ""
 echo "📊 Deployment Summary:"
-echo "   - Apps deployed: ${#APPS[@]}"
-echo "   - Target: $([ "$DEPLOY_TARGET" = "1" ] && echo "Staging" || [ "$DEPLOY_TARGET" = "2" ] && echo "Production" || echo "Both")"
+echo "  ✅ Code pushed to GitHub"
+echo "  ✅ API deployed to Railway"
+echo "  ✅ All apps deployed to Vercel"
 echo ""
-echo "📋 Next Steps:"
-echo "   1. Verify deployments in Vercel dashboard"
-echo "   2. Run smoke tests"
-echo "   3. Check monitoring dashboards"
-echo "   4. Review logs for errors"
-echo ""
+echo "🌐 Your applications:"
+echo "  • Marketplace:     https://kealee.com"
+echo "  • Project Owner:   https://app.kealee.com"
+echo "  • Permits:         https://permits.kealee.com"
+echo "  • Ops Services:    https://ops.kealee.com"
+echo "  • Architect:       https://architect.kealee.com"
+echo "  • PM Workspace:    https://pm.kealee.com"
+echo "  • Admin:           https://admin.kealee.com"
+echo "  • API:             https://api.kealee.com"

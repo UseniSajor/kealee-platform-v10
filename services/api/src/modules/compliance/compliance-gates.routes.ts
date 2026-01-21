@@ -117,3 +117,4 @@ export async function complianceGatesRoutes(fastify: FastifyInstance) {
     }
   )
 }
+

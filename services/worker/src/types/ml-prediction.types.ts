@@ -105,3 +105,4 @@ export interface MLPredictionJobResult {
   error?: string
   processedAt: Date
 }
+

@@ -112,6 +112,40 @@ export class EmailService {
           text: `Payment of $${data.amount} released. Your payout: $${data.payout}`,
         }
 
+      case 'task-assigned':
+        return {
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #2563eb;">New Task Assigned</h1>
+              <p>You've been assigned a new task:</p>
+              <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                <h2 style="margin: 0 0 8px 0;">${data.taskTitle || 'Task'}</h2>
+                <p style="margin: 0; color: #6b7280;">${data.taskDescription || ''}</p>
+                <p style="margin: 8px 0 0 0;"><strong>Due:</strong> ${data.dueDate || 'N/A'}</p>
+              </div>
+              <a href="https://pm.kealee.com/tasks/${data.taskId || ''}" style="display: inline-block; padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; margin-top: 16px;">
+                View Task
+              </a>
+            </div>
+          `,
+          text: `New task assigned: ${data.taskTitle || 'Task'}. Due: ${data.dueDate || 'N/A'}`,
+        }
+
+      case 'payment-failed':
+        return {
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #ef4444;">Payment Failed</h1>
+              <p>We were unable to process your payment of $${data.amount || 0}.</p>
+              <p>Please update your payment method to avoid service interruption.</p>
+              <a href="${data.invoiceUrl || 'https://app.kealee.com/billing'}" style="display: inline-block; padding: 12px 24px; background: #ef4444; color: white; text-decoration: none; border-radius: 8px; margin-top: 16px;">
+                Update Payment Method
+              </a>
+            </div>
+          `,
+          text: `Payment failed: $${data.amount || 0}. Update payment method: ${data.invoiceUrl || 'https://app.kealee.com/billing'}`,
+        }
+
       default:
         throw new Error(`Unknown template: ${template}`)
     }

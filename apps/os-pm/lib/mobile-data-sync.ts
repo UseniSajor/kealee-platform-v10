@@ -164,3 +164,4 @@ class MobileDataSync {
 
 // Export singleton instance
 export const mobileDataSync = new MobileDataSync()
+

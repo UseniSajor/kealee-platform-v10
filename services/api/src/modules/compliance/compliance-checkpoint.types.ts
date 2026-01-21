@@ -73,3 +73,4 @@ export interface ComplianceCheckResult {
   warnings: string[]
   timestamp: Date
 }
+

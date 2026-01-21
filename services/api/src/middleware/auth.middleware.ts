@@ -39,6 +39,7 @@ export async function authenticateUser(
 
     const token = authHeader.substring(7);
     
+    // Verify token with Supabase
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
     if (error || !user) {
@@ -48,10 +49,29 @@ export async function authenticateUser(
       });
     }
 
-    // Attach user to request
+    // Get user profile with role from database
+    const { prisma } = await import('@kealee/database');
+    const profile = await prisma.profile.findUnique({
+      where: { id: user.id },
+      include: {
+        organization: true,
+      }
+    });
+
+    if (!profile) {
+      return reply.code(404).send({ 
+        error: 'User profile not found',
+        message: 'Please complete your profile setup'
+      });
+    }
+
+    // Attach user with profile to request
     request.user = {
       id: user.id,
       email: user.email,
+      role: profile.role,
+      organizationId: profile.organizationId,
+      profile,
       ...user
     };
     

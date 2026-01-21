@@ -1,8 +1,6 @@
 'use client';
 
 import { Check, ArrowRight, Star } from 'lucide-react';
-import Link from 'next/link';
-import { Button, Card, Badge } from '@kealee/ui';
 
 export default function PricingPage() {
   const packages = [
@@ -82,6 +80,7 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-20">
       <div className="container mx-auto px-6">
+        
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-gray-900 mb-4">
@@ -94,27 +93,30 @@ export default function PricingPage() {
 
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-          {packages.map((pkg) => (
-            <Card
+          {packages.map(pkg => (
+            <div
               key={pkg.id}
-              variant={pkg.popular ? 'elevated' : 'default'}
-              hover
               className={`
                 relative
+                bg-white
+                rounded-2xl
+                border-2
                 p-8
                 transition-all duration-300
-                ${pkg.popular ? 'border-primary-600 border-2 scale-105' : ''}
+                ${pkg.popular
+                  ? 'border-blue-600 shadow-2xl scale-105'
+                  : 'border-gray-200 shadow-lg hover:shadow-xl'
+                }
               `}
             >
               {/* Popular Badge */}
               {pkg.popular && (
                 <div className="
                   absolute -top-4 left-1/2 -translate-x-1/2
-                  bg-primary-600 text-white
+                  bg-blue-600 text-white
                   px-4 py-1
                   rounded-full text-sm font-semibold
                   shadow-lg
-                  z-10
                 ">
                   Most Popular
                 </div>
@@ -146,7 +148,7 @@ export default function PricingPage() {
               </div>
 
               {/* Features */}
-              <ul className="space-y-3 mb-8 min-h-[300px]">
+              <ul className="space-y-3 mb-8">
                 {pkg.features.map((feature, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <Check className="text-green-500 flex-shrink-0 mt-0.5" size={20} />
@@ -156,28 +158,33 @@ export default function PricingPage() {
               </ul>
 
               {/* CTA */}
-              <Link href={`/checkout/${pkg.id}`}>
-                <Button
-                  variant={pkg.popular ? 'primary' : 'default'}
-                  size="lg"
-                  className="w-full"
-                  rightIcon={pkg.id !== 'd' ? <ArrowRight size={20} /> : undefined}
-                >
-                  {pkg.cta}
-                </Button>
-              </Link>
+              <button
+                onClick={() => window.location.href = `/checkout/${pkg.id}`}
+                className={`
+                  w-full py-3
+                  font-semibold
+                  rounded-lg
+                  transition-all duration-200
+                  ${pkg.popular
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl'
+                    : 'bg-gray-900 hover:bg-gray-800 text-white'
+                  }
+                `}
+              >
+                {pkg.cta}
+              </button>
 
               {/* Trial Notice */}
               <p className="text-center text-xs text-gray-500 mt-4">
                 14-day free trial • No credit card required
               </p>
-            </Card>
+            </div>
           ))}
         </div>
 
         {/* Trust Indicators */}
         <div className="mt-16 text-center">
-          <div className="flex items-center justify-center gap-8 text-gray-600 flex-wrap">
+          <div className="flex items-center justify-center gap-8 text-gray-600">
             <div className="flex items-center gap-2">
               <Star className="text-yellow-400 fill-yellow-400" size={20} />
               <span className="font-semibold">4.9/5 rating</span>

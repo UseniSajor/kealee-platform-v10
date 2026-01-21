@@ -205,3 +205,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
 
 # Start the API service
 CMD ["node", "dist/index.js"]
+

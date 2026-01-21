@@ -227,3 +227,4 @@ docker run -p 3001:3001 -e DATABASE_URL="..." kealee-api
 - ✅ Prisma client generated successfully
 - ✅ API service starts on port 3001
 - ✅ Health check responds at `/health`
+

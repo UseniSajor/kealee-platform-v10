@@ -141,3 +141,4 @@ Each with their own landing pages!
 **Vercel detected `m-architect`?** That's normal - just **change the Project Name** in Vercel's setup screen to what you want (e.g., `kealee-architect` or `kealee-platform-architect`).
 
 **Each app = One Vercel Project**. You'll have 6 separate projects, not one "full platform" project. This is the standard approach for monorepos on Vercel.
+

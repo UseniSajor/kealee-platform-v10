@@ -10,7 +10,18 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "stripe:setup-gc-products": "tsx scripts/stripe/setup-gc-products.ts"
+    "stripe:setup-gc-products": "tsx scripts/stripe/setup-gc-products.ts",
+    "stripe:setup-ops-products": "tsx scripts/stripe/setup-ops-products.ts",
+    "stripe:setup-catalog": "tsx scripts/stripe/setup-complete-catalog.ts",
+    "stripe:import": "tsx scripts/stripe/stripe-import.ts",
+    "stripe:import:dry-run": "tsx scripts/stripe/stripe-import.ts --dry-run",
+    "stripe:list": "tsx scripts/stripe/stripe-list.ts",
+    "stripe:list:json": "tsx scripts/stripe/stripe-list.ts --json",
+    "db:push": "cd ../database && pnpm prisma db push",
+    "db:migrate": "cd ../database && pnpm prisma migrate dev",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "cd ../database && pnpm prisma studio",
+    "db:reset": "cd ../database && pnpm prisma migrate reset && tsx prisma/seed.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.17.1",

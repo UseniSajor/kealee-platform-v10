@@ -287,6 +287,27 @@ const start = async () => {
     await fastify.register(taskGeneratorRoutes, { prefix: '/tasks' })
     await fastify.register(complianceCheckpointRoutes, { prefix: '/compliance' })
     await fastify.register(complianceGatesRoutes, { prefix: '/compliance' })
+    
+    // Register new API routes for PM workspace
+    const { clientRoutes } = await import('./routes/client.routes')
+    const { taskRoutes } = await import('./routes/task.routes')
+    const { permitRoutes } = await import('./routes/permit.routes')
+    const { reportRoutes } = await import('./routes/report.routes')
+    
+    await fastify.register(clientRoutes, { prefix: '/api/clients' })
+    await fastify.register(taskRoutes, { prefix: '/api/tasks' })
+    await fastify.register(permitRoutes, { prefix: '/api/permits' })
+    await fastify.register(reportRoutes, { prefix: '/api/reports' })
+    
+    // Register Stripe routes
+    const { stripeRoutes } = await import('./routes/stripe.routes')
+    await fastify.register(stripeRoutes, { prefix: '/api/stripe' })
+    
+    // Register Google Places routes
+    const { googlePlacesRoutes } = await import('./routes/google-places.routes')
+    await fastify.register(googlePlacesRoutes, { prefix: '/api/google-places' })
+    
+    // Note: File routes already registered at line 284 with prefix '/files'
 
     // Register GraphQL server (Apollo Server v4)
     const graphQLServer = createGraphQLServer()
