@@ -153,7 +153,7 @@ export const pmProductivityService = {
     }).catch(() => 0)
 
     // Permits Pending (from m-permits-inspections)
-    const permitsPending = await prismaAny.permitApplication?.count({
+    const permitsPending = await prismaAny.permit?.count({
       where: {
         organizationId: orgId,
         status: {
@@ -196,7 +196,7 @@ export const pmProductivityService = {
     })
 
     // Get high priority permits
-    const highPriorityPermits = await prismaAny.permitApplication?.findMany({
+    const highPriorityPermits = await prismaAny.permit?.findMany({
       where: {
         organizationId: orgId,
         status: { in: ['REVISION_REQUIRED', 'UNDER_REVIEW'] },

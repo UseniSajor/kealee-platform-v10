@@ -47,7 +47,7 @@ class PaymentWebhookService {
         paymentIntentId: paymentIntent.id,
         amount: paymentIntent.amount / 100,
       },
-      userId: paymentIntent.metadata?.ownerId || null,
+      userId: paymentIntent.metadata?.ownerId || undefined,
     })
   }
 
@@ -100,7 +100,7 @@ class PaymentWebhookService {
         paymentIntentId: paymentIntent.id,
         error: paymentIntent.last_payment_error?.message,
       },
-      userId: paymentIntent.metadata?.ownerId || null,
+      userId: paymentIntent.metadata?.ownerId || undefined,
     })
 
     // TODO: Send notification email to project owner
@@ -123,7 +123,7 @@ class PaymentWebhookService {
         destination: transfer.destination,
         currency: transfer.currency,
       },
-      userId: null,
+      userId: undefined,
     })
   }
 
@@ -145,7 +145,7 @@ class PaymentWebhookService {
         amount: payout.amount / 100,
         currency: payout.currency,
       },
-      userId: null,
+      userId: undefined,
     })
   }
 
@@ -198,7 +198,7 @@ class PaymentWebhookService {
         chargeId: charge.id,
         refundAmount: charge.amount_refunded / 100,
       },
-      userId: paymentIntent.metadata?.ownerId || null,
+      userId: paymentIntent.metadata?.ownerId || undefined,
     })
   }
 
@@ -313,7 +313,7 @@ class PaymentWebhookService {
       payload: {
         paymentIntentId: paymentIntent.id,
       },
-      userId: paymentIntent.metadata?.ownerId || null,
+      userId: paymentIntent.metadata?.ownerId || undefined,
     })
   }
 
@@ -332,7 +332,7 @@ class PaymentWebhookService {
         amount: transfer.amount / 100,
         destination: transfer.destination,
       },
-      userId: null,
+      userId: undefined,
     })
   }
 
@@ -352,7 +352,7 @@ class PaymentWebhookService {
         failureCode: transfer.failure_code,
         failureMessage: transfer.failure_message,
       },
-      userId: null,
+      userId: undefined,
     })
   }
 
@@ -372,7 +372,7 @@ class PaymentWebhookService {
         failureCode: payout.failure_code,
         failureMessage: payout.failure_message,
       },
-      userId: null,
+      userId: undefined,
     })
   }
 
@@ -415,7 +415,7 @@ class PaymentWebhookService {
         chargeId: charge.id,
         disputeId: charge.dispute?.id,
       },
-      userId: paymentIntent.metadata?.ownerId || null,
+      userId: paymentIntent.metadata?.ownerId || undefined,
     })
   }
 

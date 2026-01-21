@@ -38,7 +38,7 @@ export function generateTestWebhookSignature(
  * Create a test checkout.session.completed event payload
  */
 export function createTestCheckoutSessionCompletedEvent(sessionData?: Partial<Stripe.Checkout.Session>): Stripe.Event {
-  const defaultSession: Stripe.Checkout.Session = {
+  const defaultSession: Partial<Stripe.Checkout.Session> = {
     id: `cs_test_${Date.now()}`,
     object: 'checkout.session',
     mode: 'subscription',
@@ -85,8 +85,8 @@ export function createTestSubscriptionUpdatedEvent(subscriptionData?: Partial<St
     object: 'subscription',
     status: 'active',
     customer: `cus_test_${Date.now()}`,
-    current_period_start: Math.floor(Date.now() / 1000),
-    current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, // 30 days
+    current_period_start: Math.floor(Date.now() / 1000) as any,
+    current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60 as any, // 30 days
     cancel_at_period_end: false,
     canceled_at: null,
     metadata: {
@@ -257,7 +257,7 @@ export class WebhookTesting {
   static async generateTestWebhookPayload(eventType: string): Promise<Stripe.Event> {
     const timestamp = Math.floor(Date.now() / 1000)
     
-    const baseEvent: Stripe.Event = {
+    const baseEvent = {
       id: `evt_test_${Date.now()}`,
       object: 'event',
       api_version: '2025-01-27.acacia',

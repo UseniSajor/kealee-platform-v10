@@ -150,7 +150,7 @@ class UnifiedPaymentService {
           currency: data.currency || 'usd',
           description: data.metadata.description,
           lineItems: data.metadata.lineItems || [],
-          dueDate: data.metadata.dueDate ? new Date(data.metadata.dueDate) : undefined,
+          dueDate: data.metadata.dueDate ? new Date(data.metadata.dueDate).toISOString() : undefined,
           metadata: data.metadata,
         })
         break

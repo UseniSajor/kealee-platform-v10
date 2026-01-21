@@ -33,7 +33,7 @@ export class EmailService {
         subject: options.subject,
         html: html || undefined,
         text: text || (html ? html.replace(/<[^>]*>/g, '') : undefined),
-      })
+      } as any)
 
       // Handle different response structures from Resend API
       const emailId = result.data?.id || (result as any).id || 'unknown'

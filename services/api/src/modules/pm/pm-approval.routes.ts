@@ -295,7 +295,11 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         type: z.string().optional(),
         page: z.string().optional().transform(val => parseInt(val || '1')),
         limit: z.string().optional().transform(val => parseInt(val || '50')),
-      }))],
+      }).transform(data => ({
+        ...data,
+        page: typeof data.page === 'string' ? parseInt(data.page || '1') : data.page,
+        limit: typeof data.limit === 'string' ? parseInt(data.limit || '50') : data.limit,
+      })))],
     },
     async (request, reply) => {
       try {
@@ -326,7 +330,11 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         active: z.string().optional().transform(val => val === 'true'),
         page: z.string().optional().transform(val => parseInt(val || '1')),
         limit: z.string().optional().transform(val => parseInt(val || '50')),
-      }))],
+      }).transform(data => ({
+        ...data,
+        page: typeof data.page === 'string' ? parseInt(data.page || '1') : data.page,
+        limit: typeof data.limit === 'string' ? parseInt(data.limit || '50') : data.limit,
+      })))],
     },
     async (request, reply) => {
       try {

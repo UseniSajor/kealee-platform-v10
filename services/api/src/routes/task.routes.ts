@@ -243,7 +243,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
             id,
             OR: [
               { assignedTo: user.id },
-              { createdBy: user.id },
+              { assignedTo: user.id },
             ],
           },
         });
@@ -334,7 +334,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
             id,
             OR: [
               { assignedTo: user.id },
-              { createdBy: user.id },
+              { assignedTo: user.id },
             ],
           },
         });
@@ -349,7 +349,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
           data: {
             taskId: id,
             userId: user.id,
-            message,
+            content: message,
           },
           include: {
             user: {

@@ -240,7 +240,7 @@ async function handlePermitPayment(session: Stripe.Checkout.Session): Promise<vo
       payload: {
         sessionId: session.id,
         feeType,
-        amount: session.amount_total / 100,
+        amount: (session.amount_total || 0) / 100,
         expeditedTier,
         documentPrepPackage,
         userId: session.metadata?.userId,
@@ -893,7 +893,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void
           amount: invoice.amount_due / 100,
           currency: invoice.currency,
           hostedInvoiceUrl: invoice.hosted_invoice_url,
-          failureReason: invoice.last_payment_error?.message,
+          failureReason: (invoice as any).last_payment_error?.message,
         },
       })
     }

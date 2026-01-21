@@ -34,7 +34,6 @@ export async function permitRoutes(fastify: FastifyInstance) {
         const permits = await prisma.permit.findMany({
           where: { applicantId: user.id },
           include: {
-            documents: true,
             reviews: {
               orderBy: { createdAt: 'desc' },
               take: 1,
@@ -68,7 +67,7 @@ export async function permitRoutes(fastify: FastifyInstance) {
           data: {
             jurisdictionId: data.jurisdiction,
             applicantId: user.id,
-            projectData: data.projectDetails,
+            metadata: { projectDetails: data.projectDetails },
             applicantInfo: data.applicantInfo,
             status: 'draft',
             permitTypes: data.permitTypes,
@@ -102,7 +101,6 @@ export async function permitRoutes(fastify: FastifyInstance) {
             applicantId: user.id,
           },
           include: {
-            documents: true,
             reviews: {
               orderBy: { createdAt: 'desc' },
             },
@@ -214,13 +212,13 @@ export async function permitRoutes(fastify: FastifyInstance) {
           });
         }
 
-        if (permit.status !== 'draft') {
+        if ((permit as any).status !== 'draft') {
           return reply.code(400).send({
             error: 'Permit already submitted',
           });
         }
 
-        const updated = await prisma.permitApplication.update({
+        const updated = await prisma.permit.update({
           where: { id },
           data: {
             status: 'submitted',

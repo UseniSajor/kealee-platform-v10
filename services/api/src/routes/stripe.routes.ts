@@ -308,8 +308,8 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     where: { stripeId: subscription.id },
     data: {
       status: subscription.status as any,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      currentPeriodStart: new Date((subscription as Stripe.Subscription).current_period_start * 1000),
+      currentPeriodEnd: new Date((subscription as Stripe.Subscription).current_period_end * 1000),
     },
   });
 }
@@ -321,8 +321,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     where: { stripeId: subscription.id },
     data: {
       status: subscription.status as any,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      currentPeriodStart: new Date((subscription as Stripe.Subscription).current_period_start * 1000),
+      currentPeriodEnd: new Date((subscription as Stripe.Subscription).current_period_end * 1000),
     },
   });
 }
@@ -361,7 +361,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   console.log('Invoice paid:', invoice.id);
   
   const subscription = await prismaAny.serviceSubscription.findFirst({
-    where: { stripeId: invoice.subscription as string },
+    where: { stripeId: (invoice as any).subscription as string },
     include: { org: { include: { members: { include: { user: true }, take: 1 } } } },
   });
 
@@ -383,7 +383,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   console.log('Invoice payment failed:', invoice.id);
   
   const subscription = await prismaAny.serviceSubscription.findFirst({
-    where: { stripeId: invoice.subscription as string },
+    where: { stripeId: (invoice as any).subscription as string },
     include: { org: { include: { members: { include: { user: true }, take: 1 } } } },
   });
 

@@ -25,7 +25,7 @@ export async function webhookStatusRoutes(fastify: FastifyInstance) {
         },
       },
     },
-    async (request: FastifyRequest<{ Querystring: { limit?: number; eventType?: string } }>, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { limit = 10, eventType } = request.query
 
@@ -113,7 +113,7 @@ export async function webhookStatusRoutes(fastify: FastifyInstance) {
         },
       },
     },
-    async (request: FastifyRequest<{ Params: { eventId: string } }>, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { eventId } = request.params
 
@@ -168,7 +168,7 @@ export async function webhookStatusRoutes(fastify: FastifyInstance) {
         },
       },
     },
-    async (request: FastifyRequest<{ Body: { eventType: string } }>, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { eventType } = request.body
 

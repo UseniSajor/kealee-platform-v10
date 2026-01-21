@@ -54,7 +54,7 @@ export async function complianceGatesRoutes(fastify: FastifyInstance) {
         if (error instanceof ComplianceError) {
           return reply.code(403).send({
             error: 'Compliance gate failed',
-            failedChecks: error.failedChecks,
+            failedChecks: (error as any).failedChecks,
             message: error.message,
           })
         }
@@ -92,7 +92,7 @@ export async function complianceGatesRoutes(fastify: FastifyInstance) {
 
         const result = await checkGate(gateId, params)
 
-        if (!result.canProceed) {
+        if (!(result as any).canProceed) {
           return reply.code(403).send({
             error: 'Compliance gate enforcement failed',
             result,
@@ -104,7 +104,7 @@ export async function complianceGatesRoutes(fastify: FastifyInstance) {
         if (error instanceof ComplianceError) {
           return reply.code(403).send({
             error: 'Compliance gate enforcement failed',
-            failedChecks: error.failedChecks,
+            failedChecks: (error as any).failedChecks,
             message: error.message,
           })
         }

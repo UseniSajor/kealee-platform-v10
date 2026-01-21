@@ -238,13 +238,17 @@ export async function clientRoutes(fastify: FastifyInstance) {
         });
 
         const currentWorkload = (currentTasks * 2) + (currentClients * 1); // hours per week
-        const newWorkload = estimatedWorkload || (client._count?.projects || 0) * 2;
+            const clientWithCount = await prisma.client.findUnique({
+              where: { id: clientId },
+              include: { _count: { select: { projects: true } } }
+            });
+            const newWorkload = estimatedWorkload || (clientWithCount?._count?.projects || 0) * 2;
 
         // Create assignment request
         const assignmentRequest = await prisma.assignmentRequest.create({
           data: {
             clientId,
-            pmId: user.id,
+            requestedBy: user.id,
             status: 'pending',
             estimatedWorkload: newWorkload,
             currentWorkload,
@@ -302,9 +306,6 @@ export async function clientRoutes(fastify: FastifyInstance) {
           include: {
             projects: {
               include: {
-                milestones: {
-                  orderBy: { order: 'asc' },
-                },
                 payments: true,
               },
               orderBy: { createdAt: 'desc' },

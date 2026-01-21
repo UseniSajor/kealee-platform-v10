@@ -384,11 +384,11 @@ class MilestonePaymentService {
     // Note: listCharges doesn't exist in Stripe API, use retrieve with expand instead
     const paymentIntentWithCharges = await stripe.paymentIntents.retrieve(paymentIntentId, {
       expand: ['charges'],
-    })
+    }) as Stripe.PaymentIntent & { charges?: Stripe.ApiList<Stripe.Charge> }
     const charges = paymentIntentWithCharges.charges 
-      ? { data: Array.isArray(paymentIntentWithCharges.charges) 
-          ? paymentIntentWithCharges.charges 
-          : [paymentIntentWithCharges.charges] } 
+      ? { data: Array.isArray(paymentIntentWithCharges.charges.data) 
+          ? paymentIntentWithCharges.charges.data 
+          : [paymentIntentWithCharges.charges.data] } 
       : { data: [] }
     if (charges.data.length === 0) {
       throw new ValidationError('No charges found for this payment intent')
@@ -504,8 +504,11 @@ class MilestonePaymentService {
       throw new AuthorizationError('Access denied')
     }
 
-    // Get charges
-    const charges = await stripe.paymentIntents.listCharges(paymentIntentId)
+    // Get charges - use retrieve with expand instead
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+      expand: ['charges'],
+    }) as Stripe.PaymentIntent & { charges?: Stripe.ApiList<Stripe.Charge> }
+    const charges = paymentIntent.charges || { data: [] }
 
     // Get transfers (to contractor)
     const transfers = await stripe.transfers.list({
