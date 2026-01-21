@@ -15,12 +15,17 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   }
 });
 
+export interface AuthenticatedUser {
+  id: string
+  email?: string
+  role: string
+  organizationId?: string | null
+  profile?: any
+  [key: string]: any
+}
+
 export interface AuthenticatedRequest extends FastifyRequest {
-  user?: {
-    id: string;
-    email?: string;
-    [key: string]: any;
-  };
+  user?: AuthenticatedUser
 }
 
 export async function authenticateUser(
@@ -75,16 +80,26 @@ export async function authenticateUser(
     const primaryMembership = userWithOrgs.orgMemberships?.[0];
     const primaryOrg = primaryMembership?.org;
 
-    // Attach user to request
+    // Attach user to request with proper type checking
     const { id, email, ...userRest } = user
-    request.user = {
+    const authenticatedUser: AuthenticatedUser = {
       id,
-      email,
+      email: email || undefined,
       role: primaryMembership?.roleKey || 'user',
       organizationId: primaryOrg?.id || null,
       profile: userWithOrgs,
       ...userRest
-    };
+    }
+    
+    // Type guard to ensure user has required properties
+    if (authenticatedUser.id && authenticatedUser.role) {
+      request.user = authenticatedUser
+    } else {
+      return reply.code(401).send({
+        error: 'Invalid user data',
+        message: 'User missing required properties'
+      })
+    }
     
   } catch (error: any) {
     return reply.code(401).send({ 

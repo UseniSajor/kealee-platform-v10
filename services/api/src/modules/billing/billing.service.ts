@@ -77,7 +77,7 @@ export class BillingService {
     }
 
     // Get active subscription for any of user's orgs
-    const orgIds = orgMemberships.map(m => m.orgId)
+    const orgIds = orgMemberships.map((m: { orgId: string }) => m.orgId)
     const subscription = await prismaAny.serviceSubscription.findFirst({
       where: {
         orgId: { in: orgIds },
@@ -117,7 +117,7 @@ export class BillingService {
       return []
     }
 
-    const orgIds = orgMemberships.map(m => m.orgId)
+    const orgIds = orgMemberships.map((m: { orgId: string }) => m.orgId)
 
     // Get all subscriptions for user's orgs
     const subscriptions = await prismaAny.serviceSubscription.findMany({
@@ -140,7 +140,7 @@ export class BillingService {
     // Fetch Stripe subscription details
     const stripe = getStripe()
     const formattedSubscriptions = await Promise.all(
-      subscriptions.map(async (sub) => {
+      subscriptions.map(async (sub: any) => {
         try {
           const stripeSubscription = await stripe.subscriptions.retrieve(sub.stripeId!, {
             expand: ['default_payment_method', 'items.data.price.product'],

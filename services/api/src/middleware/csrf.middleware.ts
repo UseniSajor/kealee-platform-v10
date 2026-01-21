@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
-import csrf from '@fastify/csrf-protection'
+import csrf, { FastifyCsrfOptions } from '@fastify/csrf-protection'
 
 /**
  * CSRF Protection Middleware
@@ -18,7 +18,7 @@ export async function registerCSRFProtection(fastify: FastifyInstance) {
       secure: process.env.NODE_ENV === 'production',
       path: '/',
     },
-  })
+  } as FastifyCsrfOptions)
   
   // Set CSRF secret if provided
   if (process.env.CSRF_SECRET) {

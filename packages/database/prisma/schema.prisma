@@ -1479,10 +1479,13 @@ model Project {
 
 model User {
   id String @id @default(uuid())
+  email String? @unique
+  name String?
   // ... existing Kealee user fields
 
   // Organization relations
   orgMemberships OrgMember[]
+  sessions Session[]
 
   // Relationships (example - adjust based on your existing schema)
   // submittedPermits  Permit[]  @relation("PermitApplicant")

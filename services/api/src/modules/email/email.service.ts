@@ -35,7 +35,9 @@ export class EmailService {
         text: text || (html ? html.replace(/<[^>]*>/g, '') : undefined),
       })
 
-      return { success: true, id: result.data?.id || result.id || 'unknown' }
+      // Handle different response structures from Resend API
+      const emailId = result.data?.id || (result as any).id || 'unknown'
+      return { success: true, id: emailId }
     } catch (error: any) {
       console.error('❌ Email send failed:', error)
       return { success: false, error: error.message }

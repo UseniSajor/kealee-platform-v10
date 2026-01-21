@@ -381,9 +381,15 @@ class MilestonePaymentService {
     }
 
     // Get charge ID from payment intent
-    // Note: listCharges doesn't exist in Stripe API, use retrieve instead
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
-    const charges = paymentIntent.charges ? { data: Array.isArray(paymentIntent.charges) ? paymentIntent.charges : [paymentIntent.charges] } : { data: [] }
+    // Note: listCharges doesn't exist in Stripe API, use retrieve with expand instead
+    const paymentIntentWithCharges = await stripe.paymentIntents.retrieve(paymentIntentId, {
+      expand: ['charges'],
+    })
+    const charges = paymentIntentWithCharges.charges 
+      ? { data: Array.isArray(paymentIntentWithCharges.charges) 
+          ? paymentIntentWithCharges.charges 
+          : [paymentIntentWithCharges.charges] } 
+      : { data: [] }
     if (charges.data.length === 0) {
       throw new ValidationError('No charges found for this payment intent')
     }

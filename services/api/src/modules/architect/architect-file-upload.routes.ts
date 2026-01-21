@@ -42,7 +42,7 @@ export async function architectFileUploadRoutes(fastify: FastifyInstance) {
           body.fileName,
           body.mimeType,
           body.fileSize,
-          body.folderId,
+          body.folderId || 'default', // Provide default value
           user.id
         )
 
