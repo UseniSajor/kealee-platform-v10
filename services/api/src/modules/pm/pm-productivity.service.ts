@@ -29,17 +29,23 @@ interface PMProductivityMetrics {
 
 export const pmProductivityService = {
   async getProductivityDashboard(userId: string): Promise<PMProductivityMetrics> {
-    // Get user's organization
+    // Get user's organization memberships
     const user = await prismaAny.user.findUnique({
       where: { id: userId },
-      include: { organization: true },
+      include: {
+        orgMemberships: {
+          include: { org: true },
+          take: 1,
+          orderBy: { joinedAt: 'asc' },
+        },
+      },
     })
 
-    if (!user || !user.organizationId) {
+    if (!user || !user.orgMemberships?.[0]?.org) {
       throw new NotFoundError('User or organization not found')
     }
 
-    const orgId = user.organizationId
+    const orgId = user.orgMemberships[0].org.id
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const tomorrow = new Date(today)

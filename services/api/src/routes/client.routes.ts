@@ -309,7 +309,7 @@ export async function clientRoutes(fastify: FastifyInstance) {
               },
               orderBy: { createdAt: 'desc' },
             },
-            organization: true,
+            // Client model doesn't have direct org relation - org is on Project
           },
         });
 

@@ -49,30 +49,40 @@ export async function authenticateUser(
       });
     }
 
-    // Get user with organization from database
-    const { prisma } = await import('@kealee/database');
-    const userWithOrg = await prisma.user.findUnique({
+    // Get user with organization memberships from database
+    const { prismaAny } = await import('../../utils/prisma-helper');
+    const userWithOrgs = await prismaAny.user.findUnique({
       where: { id: user.id },
       include: {
-        organization: true,
+        orgMemberships: {
+          include: {
+            org: true,
+          },
+          take: 1, // Get first org as primary
+          orderBy: { joinedAt: 'asc' },
+        },
       }
     });
 
-    if (!userWithOrg) {
+    if (!userWithOrgs) {
       return reply.code(404).send({ 
         error: 'User not found',
         message: 'User account not found'
       });
     }
 
+    // Get primary organization (first membership)
+    const primaryMembership = userWithOrgs.orgMemberships?.[0];
+    const primaryOrg = primaryMembership?.org;
+
     // Attach user to request
     const { id, email, ...userRest } = user
     request.user = {
       id,
       email,
-      role: userWithOrg.role || 'user',
-      organizationId: userWithOrg.organizationId || null,
-      profile: userWithOrg,
+      role: primaryMembership?.roleKey || 'user',
+      organizationId: primaryOrg?.id || null,
+      profile: userWithOrgs,
       ...userRest
     };
     
