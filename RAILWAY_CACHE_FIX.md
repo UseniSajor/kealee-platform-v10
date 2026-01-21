@@ -52,10 +52,12 @@ Added clear version information at the top:
 3. `6026742` - API service build fix
 4. `6aaf15a` - **Cache invalidation fix** (this commit)
 
-## What Railway Needs to Do
+## What Happens Next
+
+**Note:** Railway is a deployment platform - it deploys, runs, and hosts code. It does not fix code. All code fixes must be completed in the codebase before Railway can deploy.
 
 ### Automatic (Should Happen)
-Railway should automatically detect the new commit and rebuild. The build marker change will force a complete rebuild from scratch.
+Railway will automatically detect the new commit and rebuild. The build marker change will force a complete rebuild from scratch.
 
 ### Manual Steps (If Automatic Doesn't Work)
 1. **Clear Build Cache in Railway:**
