@@ -7,7 +7,7 @@ import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateParams } from '../../middleware/validation.middleware'
-import { prisma } from '@kealee/database'
+import { prismaAny } from '../../utils/prisma-helper'
 import { getStripe } from '../billing/stripe.client'
 import { paymentService } from '../payments/payment.service'
 

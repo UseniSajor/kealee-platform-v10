@@ -182,6 +182,79 @@ async function processWebhookEvent(event: Stripe.Event): Promise<void> {
 }
 
 /**
+ * Handle permit payment
+ */
+async function handlePermitPayment(session: Stripe.Checkout.Session): Promise<void> {
+  try {
+    const permitId = session.metadata?.permitId
+    const feeType = session.metadata?.feeType
+    const expeditedTier = session.metadata?.expeditedTier
+    const documentPrepPackage = session.metadata?.documentPrepPackage
+
+    if (!permitId || !feeType) {
+      console.warn('⚠️  Permit payment webhook missing metadata:', session.id)
+      return
+    }
+
+    const permit = await prismaAny.permit.findUnique({
+      where: { id: permitId },
+    })
+
+    if (!permit) {
+      console.warn(`⚠️  Permit ${permitId} not found for payment ${session.id}`)
+      return
+    }
+
+    const updateData: any = {
+      feePaid: true,
+      feePaidAt: new Date(),
+    }
+
+    if (feeType === 'expedited' && expeditedTier) {
+      updateData.expedited = true
+      updateData.expeditedFee = Number(session.amount_total) / 100
+      updateData.expeditedGuaranteeDays = expeditedTier === 'premium' ? 48 : 72
+    }
+
+    if (feeType === 'document_prep' && documentPrepPackage) {
+      // Store document prep package info
+      updateData.metadata = {
+        ...(permit.metadata as any || {}),
+        documentPrepPackage,
+        documentPrepPaid: true,
+        documentPrepPaidAt: new Date().toISOString(),
+      }
+    }
+
+    await prismaAny.permit.update({
+      where: { id: permitId },
+      data: updateData,
+    })
+
+    // Log event
+    await eventService.recordEvent({
+      type: 'PERMIT_PAYMENT_COMPLETED',
+      entityType: 'Permit',
+      entityId: permitId,
+      orgId: session.metadata?.orgId,
+      payload: {
+        sessionId: session.id,
+        feeType,
+        amount: session.amount_total / 100,
+        expeditedTier,
+        documentPrepPackage,
+        userId: session.metadata?.userId,
+      },
+    })
+
+    console.log(`✅ Permit payment processed: ${permitId}, feeType: ${feeType}, amount: $${session.amount_total / 100}`)
+  } catch (error: any) {
+    console.error(`❌ Error processing permit payment for session ${session.id}:`, error)
+    throw error
+  }
+}
+
+/**
  * Handle checkout.session.completed event
  * This event fires when a customer completes checkout, including subscription creation
  */
@@ -839,13 +912,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
   try {
     console.log('✅ Processing payment_intent.succeeded:', paymentIntent.id)
 
-    // Handle permit payments
-    if (session.metadata?.permitId && session.metadata?.feeType) {
-      await handlePermitPayment(session)
-      return
-    }
-
-    // Handle one-time payments (e.g., permit acceleration, escrow deposits)
+    // Handle one-time payments (e.g., escrow deposits)
     if (paymentIntent.metadata?.type === 'one_time') {
       const orgId = paymentIntent.metadata?.orgId as string | undefined
       const projectId = paymentIntent.metadata?.projectId as string | undefined
@@ -1042,7 +1109,7 @@ async function bootstrapOrgFromSubscription(
   })
 
   // Create org
-  const { orgService } = await import('../org/org.service')
+  const { orgService } = await import('../orgs/org.service')
   const org = await orgService.createOrg({
     name: orgName,
     slug: subscription.metadata?.orgSlug || `gc-${ownerEmail.split('@')[0]}-${Date.now()}`,
