@@ -1787,6 +1787,96 @@ model EscrowTransaction {
   @@index([status])
 }
 
+// ============================================================================
+// DOUBLE-ENTRY LEDGER SYSTEM (Stage 5 - Finance & Trust)
+// ============================================================================
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+enum AccountSubType {
+  // Assets
+  CASH
+  ESCROW_HOLDINGS
+  ACCOUNTS_RECEIVABLE
+  // Liabilities
+  ACCOUNTS_PAYABLE
+  ESCROW_LIABILITIES
+  PLATFORM_FEES_PAYABLE
+  // Equity
+  RETAINED_EARNINGS
+  // Revenue
+  PLATFORM_FEES
+  TRANSACTION_FEES
+  // Expenses
+  PROCESSING_FEES
+  OPERATING_EXPENSES
+}
+
+model Account {
+  id          String        @id @default(uuid())
+  code        String        @unique // Chart of accounts code (e.g., "1000", "2000")
+  name        String
+  type        AccountType
+  subType     AccountSubType?
+  description String?
+  parentId    String? // For account hierarchy
+  isActive    Boolean       @default(true)
+  balance     Decimal       @default(0) // Current balance (debit - credit)
+  currency    String        @default("USD")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  parent   Account?          @relation("AccountHierarchy", fields: [parentId], references: [id])
+  children Account[]       @relation("AccountHierarchy")
+  lines     JournalEntryLine[]
+
+  @@index([type])
+  @@index([subType])
+  @@index([isActive])
+}
+
+model JournalEntry {
+  id          String   @id @default(uuid())
+  entryNumber String   @unique // Sequential entry number
+  description String
+  reference   String? // Reference to source transaction (escrow, milestone, etc.)
+  referenceId String? // ID of source transaction
+  entryDate   DateTime @default(now())
+  postedAt    DateTime? // When entry was posted (null = draft)
+  postedBy    String? // User who posted the entry
+  createdAt   DateTime @default(now())
+  createdBy   String
+  updatedAt   DateTime @updatedAt
+
+  lines JournalEntryLine[]
+
+  @@index([entryDate])
+  @@index([postedAt])
+  @@index([reference, referenceId])
+}
+
+model JournalEntryLine {
+  id            String        @id @default(uuid())
+  journalEntryId String
+  accountId     String
+  debit         Decimal       @default(0)
+  credit        Decimal       @default(0)
+  description   String?
+  createdAt     DateTime      @default(now())
+
+  journalEntry JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  account      Account      @relation(fields: [accountId], references: [id])
+
+  @@index([journalEntryId])
+  @@index([accountId])
+}
+
 model Dispute {
   id              String        @id @default(uuid())
   projectId       String
