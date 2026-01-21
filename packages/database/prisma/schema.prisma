@@ -1481,6 +1481,9 @@ model User {
   id String @id @default(uuid())
   // ... existing Kealee user fields
 
+  // Organization relations
+  orgMemberships OrgMember[]
+
   // Relationships (example - adjust based on your existing schema)
   // submittedPermits  Permit[]  @relation("PermitApplicant")
   // reviewedPermits   Permit[]  @relation("PermitReviewer")
