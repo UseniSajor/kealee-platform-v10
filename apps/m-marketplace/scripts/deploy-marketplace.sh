@@ -208,18 +208,12 @@ deploy_to_vercel() {
 run_migrations() {
     log "Running database migrations..."
     
-    # Check if migrations are needed
-    if [ -f "prisma/schema.prisma" ]; then
-        log "Running Prisma migrations..."
-        npx prisma migrate deploy
-        
-        if [ $? -ne 0 ]; then
-            error "Database migrations failed"
-        fi
-        log "✓ Database migrations completed"
-    else
-        log "No database migrations required"
-    fi
+    # NOTE: Frontend apps should NOT run Prisma migrations
+    # Migrations are handled by the backend API service at runtime via Railway startCommand
+    # Frontend apps should never have DATABASE_URL set
+    # If this script is used for a full-stack app, migrations should be removed
+    # and handled separately by the backend service
+    log "✓ Skipping database migrations (frontend app - migrations handled by backend API service)"
 }
 
 update_dns() {
