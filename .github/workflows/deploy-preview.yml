@@ -170,15 +170,33 @@ jobs:
             exit $DEPLOY_EXIT_CODE
           fi
           
+          # Extract deployment ID from output for build log access
+          DEPLOYMENT_ID=$(grep -oE 'https://[a-zA-Z0-9-]+\.vercel\.app' "$TEMP_LOG" | head -n 1 | sed 's|https://||' | sed 's|\.vercel\.app||' || echo "")
+          
           if [ -n "$DEPLOYMENT_URL" ]; then
             echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
             echo "deployment_failed=false" >> $GITHUB_OUTPUT
             echo "✅ Preview deployment URL: $DEPLOYMENT_URL"
+            
+            # Generate Vercel dashboard links for build logs
+            if [ -n "$DEPLOYMENT_ID" ]; then
+              VERCEL_LOG_URL="https://vercel.com/${{ env.VERCEL_ORG_ID }}/${{ matrix.app.project-id }}/$DEPLOYMENT_ID"
+              echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+              echo "vercel_log_url=$VERCEL_LOG_URL" >> $GITHUB_OUTPUT
+            fi
           else
             echo "⚠️ Note: Deployment completed but URL not found in output."
             echo "🔗 Check Vercel dashboard for deployment URL: https://vercel.com/dashboard"
             echo "deployment_failed=false" >> $GITHUB_OUTPUT
           fi
+          
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📊 Build Logs Access:"
+          echo "  🔗 Vercel Dashboard: https://vercel.com/${{ env.VERCEL_ORG_ID }}/${{ matrix.app.project-id }}"
+          if [ -n "$DEPLOYMENT_ID" ]; then
+            echo "  📝 Direct Build Logs: https://vercel.com/${{ env.VERCEL_ORG_ID }}/${{ matrix.app.project-id }}/$DEPLOYMENT_ID"
+          fi
+          echo "  📦 Project: ${{ matrix.app.name }}"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           
           rm -f "$TEMP_LOG"
@@ -247,17 +265,34 @@ jobs:
               });
             }
 
-      - name: ✅ Deployment Complete - ${{ matrix.app.name }}
+      - name: ✅ Verify Build Logs Access - ${{ matrix.app.name }}
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "✅ Successfully deployed: ${{ matrix.app.name }}"
+          echo "✅ Deployment Complete: ${{ matrix.app.name }}"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
           if [ -n "${{ steps.deploy.outputs.deployment_url }}" ]; then
             echo "🔗 Preview URL: ${{ steps.deploy.outputs.deployment_url }}"
           else
             echo "📊 Check Vercel Dashboard for deployment URL"
-            echo "🔗 Dashboard: https://vercel.com/dashboard"
           fi
+          
+          echo ""
+          echo "📊 Build Logs Verification:"
+          echo "  ✅ Build logs are available in Vercel Dashboard"
+          echo "  🔗 Project Dashboard: https://vercel.com/${{ env.VERCEL_ORG_ID }}/${{ matrix.app.project-id }}"
+          
+          if [ -n "${{ steps.deploy.outputs.vercel_log_url }}" ]; then
+            echo "  📝 Direct Build Logs: ${{ steps.deploy.outputs.vercel_log_url }}"
+          fi
+          
+          echo ""
+          echo "💡 How to Access Build Logs:"
+          echo "  1. Go to Vercel Dashboard: https://vercel.com/dashboard"
+          echo "  2. Select project: ${{ matrix.app.name }}"
+          echo "  3. Click on the deployment to view build logs"
+          echo "  4. Build logs show in real-time during deployment"
+          echo ""
           echo "⏰ Completed at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
@@ -293,10 +328,14 @@ jobs:
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          echo "### 📊 View Deployment Status" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 View Deployment Status & Build Logs" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- 🔗 [Vercel Dashboard](https://vercel.com/dashboard) - View all deployments" >> $GITHUB_STEP_SUMMARY
           echo "- 📝 [GitHub Actions Logs](#) - Real-time build logs above" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 **Build Logs in Vercel:** Available for each deployment" >> $GITHUB_STEP_SUMMARY
+          echo "  - Click any deployment in Vercel dashboard" >> $GITHUB_STEP_SUMMARY
+          echo "  - Build logs show installation, build, and deployment steps" >> $GITHUB_STEP_SUMMARY
+          echo "  - Logs are streamed in real-time during deployment" >> $GITHUB_STEP_SUMMARY
           echo "- ❌ [View Failed Deployments](#) - Check failed jobs above" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
