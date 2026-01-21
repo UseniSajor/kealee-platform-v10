@@ -1,156 +1,79 @@
 # Database Schema Migration Status
 
-## 🔍 How to Check Migration Status
+**Last Updated:** $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
 
-### Quick Check
+## Current Status
 
+### Schema Statistics
+- **Models:** 84
+- **Enums:** Multiple (OnboardingStepStatus, TemplateCategory, TemplateStatus, etc.)
+- **Migration Files:** 6
+
+### Migration Files
+1. `20260115073113_add_lead_pipeline_fields` - Added lead pipeline fields
+2. `20260115073116_add_contractor_capacity_fields` - Added contractor capacity fields
+3. `20260115073200_migrate_pipeline_stages_to_lead` - Migrated pipeline stages to lead
+4. `20260115073511_migrate_pipeline_stages_to_lead` - Additional pipeline stages migration
+5. `20260115074000_add_project_execution_tier` - Added project execution tier
+6. `20260115074723_add_project_execution_tier` - Additional project execution tier migration
+
+## Verification Commands
+
+### Check Migration Status
+```powershell
+powershell -File scripts/check-db-migration-status.ps1
+```
+
+### Apply Pending Migrations
+```powershell
+# Development
+powershell -File scripts/apply-db-migrations.ps1 -Environment dev
+
+# Production
+powershell -File scripts/apply-db-migrations.ps1 -Environment prod
+```
+
+### Manual Commands
 ```bash
 # From root directory
 cd packages/database
-pnpm prisma migrate status
+
+# Check status
+npx prisma migrate status --schema=./prisma/schema.prisma
+
+# Apply migrations (development)
+npx prisma migrate dev --schema=./prisma/schema.prisma
+
+# Apply migrations (production)
+npx prisma migrate deploy --schema=./prisma/schema.prisma
+
+# Push schema directly (dev only - no migration history)
+npx prisma db push --schema=./prisma/schema.prisma
 ```
 
-Or use the script:
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/check-db-migration-status.ps1
-```
+## Auto-Agent Implementation
 
-### What to Look For
+### Scripts Created
+1. **`scripts/check-db-migration-status.ps1`** - Checks migration status and auto-applies if needed
+2. **`scripts/apply-db-migrations.ps1`** - Automatically applies pending migrations
 
-**✅ All Applied:**
-```
-Database schema is up to date!
-All migrations have been applied.
-```
+### Features
+- ✅ Automatic migration status checking
+- ✅ Auto-apply pending migrations
+- ✅ Schema statistics reporting
+- ✅ Migration file listing
+- ✅ Error handling and diagnostics
+- ✅ Environment-aware (dev/prod)
 
-**⚠️ Pending Migrations:**
-```
-The following migrations have not yet been applied:
-- 20260115073113_add_lead_pipeline_fields
-- 20260115073116_add_contractor_capacity_fields
-```
+## Next Steps
 
-**❌ Schema Out of Sync:**
-```
-Database schema is not in sync with the Prisma schema.
-```
+1. **Set DATABASE_URL** environment variable to check actual database status
+2. **Run verification script** to confirm all migrations are applied
+3. **Monitor** for any schema drift between `schema.prisma` and database
 
----
+## Notes
 
-## 📋 Current Migrations
-
-Based on migration files found:
-
-1. ✅ `20260115073113_add_lead_pipeline_fields`
-2. ✅ `20260115073116_add_contractor_capacity_fields`
-3. ✅ `20260115073200_migrate_pipeline_stages_to_lead`
-4. ✅ `20260115073511_migrate_pipeline_stages_to_lead`
-5. ✅ `20260115074000_add_project_execution_tier`
-6. ✅ `20260115074723_add_project_execution_tier`
-
----
-
-## 🚀 Apply Pending Migrations
-
-### Development Database
-
-```bash
-# From root
-pnpm db:migrate
-
-# Or from database package
-cd packages/database
-pnpm prisma migrate dev
-```
-
-### Production Database (Railway)
-
-```bash
-# From root
-cd packages/database
-pnpm prisma migrate deploy
-
-# Or use the script
-pnpm db:migrate:deploy
-```
-
-### Push Schema (Quick Sync - Dev Only)
-
-```bash
-# From root
-pnpm db:push
-
-# Or from database package
-cd packages/database
-pnpm prisma db push
-```
-
-**⚠️ Warning:** `db push` is for development only. Use `migrate deploy` for production.
-
----
-
-## ✅ Verification Steps
-
-1. **Check Migration Status:**
-   ```bash
-   cd packages/database
-   pnpm prisma migrate status
-   ```
-
-2. **Verify Schema Sync:**
-   ```bash
-   cd packages/database
-   pnpm prisma db pull
-   # Compare with schema.prisma
-   ```
-
-3. **Check Database Tables:**
-   ```bash
-   cd packages/database
-   pnpm prisma studio
-   # Opens Prisma Studio to view database
-   ```
-
----
-
-## 📊 Migration Commands Reference
-
-| Command | Purpose | Environment |
-|---------|---------|-------------|
-| `pnpm db:migrate` | Create and apply migration | Development |
-| `pnpm db:migrate:deploy` | Apply pending migrations | Production |
-| `pnpm db:push` | Push schema changes (no migration) | Development only |
-| `pnpm db:migrate:status` | Check migration status | Any |
-| `pnpm db:studio` | Open Prisma Studio | Any |
-
----
-
-## 🔧 Troubleshooting
-
-### Issue: "Migration not found"
-
-**Solution:**
-```bash
-cd packages/database
-pnpm prisma migrate resolve --applied <migration_name>
-```
-
-### Issue: "Schema drift detected"
-
-**Solution:**
-1. Review schema changes
-2. Create new migration: `pnpm db:migrate`
-3. Apply: `pnpm db:migrate:deploy`
-
-### Issue: "Database connection failed"
-
-**Solution:**
-1. Check `DATABASE_URL` environment variable
-2. Verify database is running
-3. Check network connectivity
-
----
-
-**Last Updated:** 2026-01-21
-**Status:** ⏳ Check migration status to verify
-
+- Prisma Client generated successfully (v5.22.0)
+- Schema file validated and parsed
+- All migration files present in `packages/database/prisma/migrations/`
+- Database connection required to verify actual migration status
