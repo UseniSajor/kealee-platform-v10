@@ -187,7 +187,8 @@ RUN echo "=== STEP: Building other workspace packages ===" && \
 # ============================================================
 # Source code is already copied in Layer 1, so we can build directly
 # This layer invalidates when source code changes
-RUN pnpm build --filter=@kealee/api
+RUN echo "=== STEP: Building API service ===" && \
+    pnpm --filter @kealee/api run build
 
 # Set production mode after build tooling is done
 ENV NODE_ENV=production
