@@ -2,7 +2,6 @@
   "buildCommand": "cd ../.. && pnpm turbo run build --filter=os-admin",
   "installCommand": "cd ../.. && pnpm install",
   "framework": "nextjs",
-  "rootDirectory": "apps/os-admin",
   "rewrites": [
     {
       "source": "/(.*)",
