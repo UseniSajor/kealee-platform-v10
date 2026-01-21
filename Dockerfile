@@ -128,50 +128,56 @@ RUN echo "=== FIXING turbo.json before build ===" && \
 # These packages are required at runtime
 
 # Build database package
+# Use pnpm to run the build script directly, which will use the package's local TypeScript
 RUN echo "=== STEP: Building database package ===" && \
+    pwd && \
+    echo "Verifying database package exists..." && \
+    test -d packages/database || (echo "ERROR: packages/database directory not found!" && ls -la packages/ && exit 1) && \
+    echo "Cleaning dist directory..." && \
     rm -rf packages/database/dist && \
-    (pnpm build --filter=@kealee/database || \
-     (echo "=== Turbo failed, building directly with tsc ===" && \
-      cd packages/database && \
-      pnpm exec tsc && \
-      cd ../..)) && \
-    echo "=== Build complete. Listing dist files ===" && \
-    ls -la packages/database/dist/ 2>/dev/null || echo "WARNING: No dist directory" && \
+    echo "Running build script via pnpm..." && \
+    pnpm --filter @kealee/database run build && \
+    echo "=== Build complete. Verifying output ===" && \
     test -f packages/database/dist/index.js || \
-    (echo "ERROR: dist/index.js missing! Trying emergency build..." && \
-     cd packages/database && \
-     npx tsc && \
-     cd ../.. && \
-     test -f packages/database/dist/index.js || \
-     (echo "FATAL: Could not build database package" && ls -la packages/database/ && exit 1)) && \
-    echo "=== SUCCESS: Database package built ==="
+    (echo "ERROR: dist/index.js missing after build!" && \
+     echo "Checking dist directory:" && \
+     ls -la packages/database/dist/ 2>/dev/null || echo "No dist directory found" && \
+     echo "Checking package structure:" && \
+     ls -la packages/database/ && \
+     echo "Checking for TypeScript in node_modules:" && \
+     find packages/database/node_modules -name "tsc" -type f 2>/dev/null | head -3 || \
+     find node_modules -path "*/typescript/bin/tsc" -type f 2>/dev/null | head -3 || \
+     echo "TypeScript not found in expected locations" && \
+     exit 1) && \
+    echo "=== SUCCESS: Database package built ===" && \
+    ls -la packages/database/dist/
 
 # Build workflow-engine package (REQUIRED)
 RUN echo "=== STEP: Building workflow-engine package ===" && \
+    test -d packages/workflow-engine || (echo "ERROR: packages/workflow-engine directory not found!" && exit 1) && \
     rm -rf packages/workflow-engine/dist && \
-    (pnpm build --filter=@kealee/workflow-engine || \
-     (echo "=== Turbo failed, building directly with tsc ===" && \
-      cd packages/workflow-engine && \
-      pnpm exec tsc && \
-      cd ../..)) && \
+    pnpm --filter @kealee/workflow-engine run build && \
     test -f packages/workflow-engine/dist/index.js || \
-    (echo "FATAL: workflow-engine build failed!" && ls -la packages/workflow-engine/ && exit 1) && \
+    (echo "FATAL: workflow-engine build failed!" && \
+     ls -la packages/workflow-engine/ && \
+     ls -la packages/workflow-engine/dist/ 2>/dev/null || echo "No dist directory" && \
+     exit 1) && \
     echo "=== SUCCESS: Workflow-engine package built ==="
 
 # Build other workspace packages (optional - best effort)
 RUN echo "=== STEP: Building other workspace packages ===" && \
     for pkg in compliance types analytics api-client; do \
       echo "Building @kealee/$pkg..." && \
-      rm -rf packages/$pkg/dist && \
-      (pnpm build --filter=@kealee/$pkg || \
-       (echo "=== Turbo failed for $pkg, building directly with tsc ===" && \
-        cd packages/$pkg && \
-        pnpm exec tsc && \
-        cd ../..)) || true && \
-      if [ -f "packages/$pkg/dist/index.js" ]; then \
-        echo "✓ @kealee/$pkg built successfully"; \
+      if [ -d "packages/$pkg" ]; then \
+        rm -rf packages/$pkg/dist && \
+        pnpm --filter @kealee/$pkg run build || echo "Build failed for $pkg (non-fatal)" && \
+        if [ -f "packages/$pkg/dist/index.js" ]; then \
+          echo "✓ @kealee/$pkg built successfully"; \
+        else \
+          echo "✗ WARNING: packages/$pkg/dist/index.js not found (may not be needed)"; \
+        fi; \
       else \
-        echo "✗ WARNING: packages/$pkg/dist/index.js not found (may not be needed)"; \
+        echo "⚠ Package @kealee/$pkg not found, skipping"; \
       fi; \
     done && \
     echo "=== INFO: Optional packages build complete ==="
