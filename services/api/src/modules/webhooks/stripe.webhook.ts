@@ -287,8 +287,8 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription): Pro
 
     // Map status
     const status = mapStripeSubscriptionStatus(subscription.status)
-    const currentPeriodStart = toDateFromSeconds(subscription.current_period_start)
-    const currentPeriodEnd = toDateFromSeconds(subscription.current_period_end)
+    const currentPeriodStart = toDateFromSeconds((subscription as any).current_period_start)
+    const currentPeriodEnd = toDateFromSeconds((subscription as any).current_period_end)
     const canceledAt = subscription.canceled_at ? toDateFromSeconds(subscription.canceled_at) : null
 
     // Create subscription record
@@ -389,8 +389,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
     }
 
     const status = mapStripeSubscriptionStatus(subscription.status)
-    const currentPeriodStart = toDateFromSeconds(subscription.current_period_start)
-    const currentPeriodEnd = toDateFromSeconds(subscription.current_period_end)
+    const currentPeriodStart = toDateFromSeconds((subscription as any).current_period_start)
+    const currentPeriodEnd = toDateFromSeconds((subscription as any).current_period_end)
     const canceledAt = subscription.canceled_at ? toDateFromSeconds(subscription.canceled_at) : null
 
     const before = {
@@ -554,8 +554,9 @@ async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
   try {
     console.log('💰 Processing invoice.paid:', invoice.id)
 
+    const invoiceAny = invoice as any
     const subscriptionId =
-      typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id
+      typeof invoiceAny.subscription === 'string' ? invoiceAny.subscription : invoiceAny.subscription?.id
 
     if (!subscriptionId) {
       console.warn(`⚠️  Invoice ${invoice.id} has no subscription`)
@@ -598,7 +599,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
         orgId: subscription.orgId,
         subscriptionId: subscription.id,
         stripeInvoiceId: invoice.id,
-        stripePaymentIntentId: typeof invoice.payment_intent === 'string' ? invoice.payment_intent : invoice.payment_intent?.id || null,
+        stripePaymentIntentId: typeof invoiceAny.payment_intent === 'string' ? invoiceAny.payment_intent : invoiceAny.payment_intent?.id || null,
         amount: invoice.amount_paid / 100, // Convert from cents
         currency: invoice.currency || 'usd',
         status: 'completed',
@@ -680,7 +681,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
     })
 
     // Queue confirmation email
-    const recipient = invoice.customer_email || invoice.customer_details?.email
+    const recipient = invoice.customer_email || (invoice as any).customer_details?.email
     if (recipient) {
       await queueNotificationEmail({
         to: recipient,
@@ -711,8 +712,9 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void
   try {
     console.log('⚠️  Processing invoice.payment_failed:', invoice.id)
 
+    const invoiceAny = invoice as any
     const subscriptionId =
-      typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id
+      typeof invoiceAny.subscription === 'string' ? invoiceAny.subscription : invoiceAny.subscription?.id
 
     if (!subscriptionId) {
       console.warn(`⚠️  Invoice ${invoice.id} has no subscription`)
@@ -755,7 +757,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void
         status: 'failed',
         failedAt: new Date(),
         metadata: {
-          failureReason: invoice.last_payment_error?.message || 'Payment failed',
+          failureReason: (invoice as any).last_payment_error?.message || 'Payment failed',
           hostedInvoiceUrl: invoice.hosted_invoice_url,
         },
       },
@@ -800,7 +802,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void
     })
 
     // Queue notification email
-    const recipient = invoice.customer_email || invoice.customer_details?.email
+    const recipient = invoice.customer_email || (invoice as any).customer_details?.email
     if (recipient) {
       await queueNotificationEmail({
         to: recipient,

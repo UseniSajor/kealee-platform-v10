@@ -867,10 +867,11 @@ export const paymentService = {
 
     // Get customer to check default payment method
     const customer = await stripe.customers.retrieve(customerId)
+    const customerAny = customer as any
     const defaultPaymentMethodId =
-      typeof customer.invoice_settings?.default_payment_method === 'string'
-        ? customer.invoice_settings.default_payment_method
-        : customer.invoice_settings?.default_payment_method?.id
+      typeof customerAny.invoice_settings?.default_payment_method === 'string'
+        ? customerAny.invoice_settings.default_payment_method
+        : customerAny.invoice_settings?.default_payment_method?.id
 
     return paymentMethods.data.map((pm) => ({
       id: pm.id,
@@ -936,5 +937,30 @@ export const paymentService = {
     })
 
     return { success: true, customerId, paymentMethodId }
+  },
+
+  /**
+   * Generate invoice for a payment
+   */
+  async generateInvoice(data: {
+    projectId: string
+    amount: number
+    description?: string
+    dueDate?: string
+    metadata?: Record<string, any>
+  }) {
+    // Create invoice record in database
+    const invoice = await prismaAny.invoice.create({
+      data: {
+        projectId: data.projectId,
+        amount: data.amount,
+        description: data.description || 'Payment invoice',
+        dueDate: data.dueDate ? new Date(data.dueDate) : null,
+        status: 'PENDING',
+        metadata: data.metadata || {},
+      },
+    })
+
+    return invoice
   },
 }

@@ -36,6 +36,8 @@ export function getEmailQueue(): Queue<EmailJobData> {
     maxRetriesPerRequest: null, // required by BullMQ blocking connections
   })
 
-  emailQueueSingleton = new Queue<EmailJobData>('email', { connection })
+  emailQueueSingleton = new Queue<EmailJobData>('email', { 
+    connection: connection as any 
+  }) as Queue<EmailJobData, any, string, EmailJobData, any, string>
   return emailQueueSingleton
 }

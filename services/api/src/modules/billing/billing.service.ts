@@ -1,5 +1,6 @@
 import { Queue } from 'bullmq'
 import IORedis from 'ioredis'
+import Stripe from 'stripe'
 import { prismaAny } from '../../utils/prisma-helper'
 
 import { entitlementService } from '../entitlements/entitlement.service'
@@ -26,7 +27,9 @@ function getEmailQueue(): Queue<EmailJobData> {
   const connection = new IORedis(redisUrl, {
     maxRetriesPerRequest: null, // required by BullMQ blocking connections
   })
-  emailQueueSingleton = new Queue<EmailJobData>('email', { connection })
+  emailQueueSingleton = new Queue<EmailJobData>('email', { 
+    connection: connection as any 
+  }) as Queue<EmailJobData, any, string, EmailJobData, any, string>
   return emailQueueSingleton
 }
 
@@ -145,12 +148,13 @@ export class BillingService {
 
           const item = stripeSubscription.items.data[0]
           const product = item?.price?.product as Stripe.Product | undefined
+          const sub = stripeSubscription as any // Type assertion for period fields
 
           return {
             id: stripeSubscription.id,
             status: stripeSubscription.status,
-            current_period_start: new Date(stripeSubscription.current_period_start * 1000),
-            current_period_end: new Date(stripeSubscription.current_period_end * 1000),
+            current_period_start: sub.current_period_start ? new Date(sub.current_period_start * 1000) : new Date(),
+            current_period_end: sub.current_period_end ? new Date(sub.current_period_end * 1000) : new Date(),
             cancel_at_period_end: stripeSubscription.cancel_at_period_end,
             canceled_at: stripeSubscription.canceled_at
               ? new Date(stripeSubscription.canceled_at * 1000)
@@ -390,8 +394,8 @@ export class BillingService {
       stripe: {
         subscriptionId: stripeSubscription.id,
         status: stripeSubscription.status,
-        currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+        currentPeriodStart: new Date((stripeSubscription as any).current_period_start * 1000),
+        currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
         cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
         canceledAt: stripeSubscription.canceled_at
           ? new Date(stripeSubscription.canceled_at * 1000)
@@ -566,8 +570,8 @@ export class BillingService {
     }
 
     const status = mapStripeSubscriptionStatus(subscription.status)
-    const currentPeriodStart = toDateFromSeconds(subscription.current_period_start)
-    const currentPeriodEnd = toDateFromSeconds(subscription.current_period_end)
+    const currentPeriodStart = toDateFromSeconds((subscription as any).current_period_start)
+    const currentPeriodEnd = toDateFromSeconds((subscription as any).current_period_end)
     const canceledAt = subscription.canceled_at ? toDateFromSeconds(subscription.canceled_at) : null
 
     const upserted = await prismaAny.serviceSubscription.upsert({

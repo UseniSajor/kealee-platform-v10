@@ -138,7 +138,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
           // Handle multiple files if provided
           const files = await request.saveRequestFiles()
           for (const file of files) {
-            if (file.fileName !== data.filename) {
+            if ((file as any).filename !== data.filename) {
               const buffer = await file.toBuffer()
               const uploadedFile = await fileService.uploadFile(
                 buffer,

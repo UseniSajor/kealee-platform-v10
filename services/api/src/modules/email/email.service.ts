@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 export interface EmailOptions {
   to: string | string[]
   subject: string
-  template?: 'welcome' | 'password-reset' | 'invoice-paid' | 'subscription-canceled' | 'milestone-approved' | 'payment-released'
+  template?: 'welcome' | 'password-reset' | 'invoice-paid' | 'subscription-canceled' | 'milestone-approved' | 'payment-released' | 'payment-failed'
   data?: Record<string, any>
   html?: string
   text?: string

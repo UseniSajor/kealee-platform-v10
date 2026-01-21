@@ -381,7 +381,9 @@ class MilestonePaymentService {
     }
 
     // Get charge ID from payment intent
-    const charges = await stripe.paymentIntents.listCharges(paymentIntentId)
+    // Note: listCharges doesn't exist in Stripe API, use retrieve instead
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
+    const charges = paymentIntent.charges ? { data: Array.isArray(paymentIntent.charges) ? paymentIntent.charges : [paymentIntent.charges] } : { data: [] }
     if (charges.data.length === 0) {
       throw new ValidationError('No charges found for this payment intent')
     }
@@ -390,9 +392,9 @@ class MilestonePaymentService {
 
     // Create refund
     const refund = await stripe.refunds.create({
-      charge: chargeId,
+      payment_intent: paymentIntentId,
       amount: options?.amount ? Math.round(options.amount * 100) : undefined, // Partial refund if specified
-      reason: options?.reason || 'requested_by_customer',
+      reason: (options?.reason as any) || 'requested_by_customer',
       metadata: {
         milestoneId,
         refundedBy: userId,
@@ -533,7 +535,7 @@ class MilestonePaymentService {
         ? {
             id: relatedTransfer.id,
             amount: relatedTransfer.amount / 100,
-            status: relatedTransfer.status,
+            status: (relatedTransfer as any).status || 'pending',
             created: new Date(relatedTransfer.created * 1000).toISOString(),
           }
         : null,

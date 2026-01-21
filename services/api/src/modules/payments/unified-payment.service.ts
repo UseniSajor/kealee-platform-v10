@@ -166,7 +166,8 @@ class UnifiedPaymentService {
             type: 'one_time',
             userId: data.userId,
           },
-          idempotency_key: idempotencyKey,
+          // Note: idempotency_key is not a direct param, use headers instead
+          // idempotency_key: idempotencyKey,
         })
         result = {
           paymentIntentId: paymentIntent.id,

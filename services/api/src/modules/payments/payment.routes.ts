@@ -203,6 +203,7 @@ export async function paymentRoutes(fastify: FastifyInstance) {
 
         const result = await paymentService.createPaymentIntent({
           ...body,
+          currency: body.currency || 'usd', // Ensure currency is always provided
           userId: user.id,
           userEmail: user.email,
         })

@@ -31,7 +31,7 @@ export async function permitRoutes(fastify: FastifyInstance) {
       try {
         const user = (request as any).user;
 
-        const permits = await prisma.permitApplication.findMany({
+        const permits = await prisma.permit.findMany({
           where: { applicantId: user.id },
           include: {
             documents: true,
@@ -64,7 +64,7 @@ export async function permitRoutes(fastify: FastifyInstance) {
         const user = (request as any).user;
         const data = createPermitSchema.parse(request.body);
 
-        const permit = await prisma.permitApplication.create({
+        const permit = await prisma.permit.create({
           data: {
             jurisdictionId: data.jurisdiction,
             applicantId: user.id,
@@ -96,7 +96,7 @@ export async function permitRoutes(fastify: FastifyInstance) {
         const user = (request as any).user;
         const { id } = request.params as { id: string };
 
-        const permit = await prisma.permitApplication.findFirst({
+        const permit = await prisma.permit.findFirst({
           where: {
             id,
             applicantId: user.id,
@@ -138,7 +138,7 @@ export async function permitRoutes(fastify: FastifyInstance) {
         const { id } = request.params as { id: string };
         const { documentIds } = (request.body as any) || {};
 
-        const permit = await prisma.permitApplication.findFirst({
+        const permit = await prisma.permit.findFirst({
           where: {
             id,
             applicantId: user.id,
@@ -165,7 +165,7 @@ export async function permitRoutes(fastify: FastifyInstance) {
         const review = await reviewPermitWithAI(permit);
 
         // Save review results
-        const aiReview = await prisma.permitReview.create({
+        const aiReview = await (prisma as any).permitReview.create({
           data: {
             applicationId: id,
             reviewerType: 'AI',
@@ -201,7 +201,7 @@ export async function permitRoutes(fastify: FastifyInstance) {
         const user = (request as any).user;
         const { id } = request.params as { id: string };
 
-        const permit = await prisma.permitApplication.findFirst({
+        const permit = await prisma.permit.findFirst({
           where: {
             id,
             applicantId: user.id,

@@ -347,7 +347,7 @@ export async function billingRoutes(fastify: FastifyInstance) {
             id: updatedSubscription.id,
             status: updatedSubscription.status,
             cancel_at_period_end: updatedSubscription.cancel_at_period_end,
-            current_period_end: new Date(updatedSubscription.current_period_end * 1000),
+            current_period_end: new Date((updatedSubscription as any).current_period_end * 1000),
           },
         })
       } catch (error: any) {
