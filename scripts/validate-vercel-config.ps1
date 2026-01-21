@@ -72,3 +72,18 @@ if ($ERRORS -eq 0) {
     exit 1
 }
 
+Write-Host ""
+Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+if ($ERRORS -eq 0) {
+    Write-Host "✅ All vercel.json files are valid!" -ForegroundColor Green
+    exit 0
+} else {
+    Write-Host "❌ Found $ERRORS error(s) in vercel.json files" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "💡 Fix Steps:" -ForegroundColor Yellow
+    Write-Host "  1. Remove '_comment' or other invalid properties from vercel.json"
+    Write-Host "  2. Only use properties from Vercel's official schema"
+    Write-Host "  3. Re-run this script to verify"
+    exit 1
+}
+
