@@ -364,12 +364,12 @@ export class BillingService {
     }
 
     // Get upcoming invoice
-    let upcomingInvoice: any = null
+    let upcomingInvoice: Stripe.Invoice | null = null
     try {
       const invoices = await stripe.invoices.list({
         subscription: subscription.stripeId,
         limit: 1,
-        status: 'upcoming',
+        status: 'upcoming' as const,
       })
       if (invoices.data.length > 0) {
         upcomingInvoice = invoices.data[0]
