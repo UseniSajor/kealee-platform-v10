@@ -261,8 +261,8 @@ export class BillingService {
             servicePlanId: plan.id,
             status: mapStripeSubscriptionStatus(subscription.status),
             stripeId: subscription.id,
-            currentPeriodStart: toDateFromSeconds((subscription as Stripe.Subscription).current_period_start),
-            currentPeriodEnd: toDateFromSeconds((subscription as Stripe.Subscription).current_period_end),
+            currentPeriodStart: toDateFromSeconds((subscription as any).current_period_start),
+            currentPeriodEnd: toDateFromSeconds((subscription as any).current_period_end),
             cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
             metadata: {
               planSlug,
