@@ -75,14 +75,37 @@ jobs:
           echo "✅ Dependencies installed"
 
       - name: Build app locally
+        id: build
         run: |
           echo "🔨 Building ${{ matrix.app.name }}..."
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "💡 Build logs stream in real-time below..."
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          pnpm build --filter=${{ matrix.app.name }}
+          
+          # Build with error capture
+          set +e
+          pnpm build --filter=${{ matrix.app.name }} > build-output.log 2>&1
+          BUILD_EXIT_CODE=$?
+          set -e
+          
+          # Display build output
+          cat build-output.log
+          
+          if [ $BUILD_EXIT_CODE -ne 0 ]; then
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "❌ Build failed with exit code: $BUILD_EXIT_CODE"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "🔍 Last 50 lines of build output:"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            tail -n 50 build-output.log
+            echo "build_failed=true" >> $GITHUB_OUTPUT
+            echo "build_error_exit_code=$BUILD_EXIT_CODE" >> $GITHUB_OUTPUT
+            exit $BUILD_EXIT_CODE
+          fi
+          
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "✅ Local build completed"
+          echo "build_failed=false" >> $GITHUB_OUTPUT
         continue-on-error: false
 
       - name: Install Vercel CLI
@@ -99,6 +122,7 @@ jobs:
           echo "✅ Environment configuration pulled"
 
       - name: Build for Vercel
+        id: vercel-build
         working-directory: apps/${{ matrix.app.name }}
         run: |
           echo "🏗️  Building for Vercel (this may take a few minutes)..."
@@ -106,9 +130,30 @@ jobs:
           echo "💡 Build logs stream in real-time below..."
           echo "💡 Note: Vercel build logs may take a moment to appear"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          vercel build --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }} --debug
+          
+          # Build with error capture
+          set +e
+          vercel build --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }} --debug > vercel-build.log 2>&1
+          VERCEL_BUILD_EXIT_CODE=$?
+          set -e
+          
+          # Display build output
+          cat vercel-build.log
+          
+          if [ $VERCEL_BUILD_EXIT_CODE -ne 0 ]; then
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "❌ Vercel build failed with exit code: $VERCEL_BUILD_EXIT_CODE"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "🔍 Error details:"
+            tail -n 100 vercel-build.log | grep -i "error\|fail\|exception" || tail -n 50 vercel-build.log
+            echo "vercel_build_failed=true" >> $GITHUB_OUTPUT
+            echo "vercel_build_error_code=$VERCEL_BUILD_EXIT_CODE" >> $GITHUB_OUTPUT
+            exit $VERCEL_BUILD_EXIT_CODE
+          fi
+          
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "✅ Vercel build completed"
+          echo "vercel_build_failed=false" >> $GITHUB_OUTPUT
 
       - name: Deploy to Vercel Preview
         id: deploy
@@ -125,24 +170,46 @@ jobs:
           trap "rm -f $TEMP_LOG" EXIT
           
           # Deploy and stream output in real-time while capturing to file
+          set +e
           vercel deploy --prebuilt --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }} 2>&1 | tee "$TEMP_LOG"
+          # Get exit code from vercel deploy (not tee)
+          if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+            DEPLOY_EXIT_CODE=${PIPESTATUS[0]}
+          else
+            DEPLOY_EXIT_CODE=0
+          fi
+          set -e
           
           # Extract deployment URL from captured output
           DEPLOYMENT_URL=$(grep -oE 'https://[a-zA-Z0-9-]+\.vercel\.app' "$TEMP_LOG" | head -n 1 || echo "")
           
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          if [ $DEPLOY_EXIT_CODE -ne 0 ]; then
+            echo "❌ Deployment failed with exit code: $DEPLOY_EXIT_CODE"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "🔍 Error details from deployment:"
+            grep -i "error\|fail\|exception" "$TEMP_LOG" | tail -n 20 || tail -n 30 "$TEMP_LOG"
+            echo "deployment_failed=true" >> $GITHUB_OUTPUT
+            echo "deployment_error_code=$DEPLOY_EXIT_CODE" >> $GITHUB_OUTPUT
+            rm -f "$TEMP_LOG"
+            exit $DEPLOY_EXIT_CODE
+          fi
+          
           if [ -n "$DEPLOYMENT_URL" ]; then
             echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+            echo "deployment_failed=false" >> $GITHUB_OUTPUT
             echo "✅ Preview deployment URL: $DEPLOYMENT_URL"
           else
-            echo "⚠️ Note: Deployment completed. Check Vercel dashboard for URL."
-            echo "🔗 View deployment: https://vercel.com/dashboard"
+            echo "⚠️ Note: Deployment completed but URL not found in output."
+            echo "🔗 Check Vercel dashboard for deployment URL: https://vercel.com/dashboard"
+            echo "deployment_failed=false" >> $GITHUB_OUTPUT
           fi
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           
           rm -f "$TEMP_LOG"
 
-      - name: Comment PR with Preview URL
+      - name: Comment PR with Deployment Status
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
@@ -155,12 +222,53 @@ jobs:
             
             const botComment = comments.find(comment => 
               comment.user.type === 'Bot' && 
-              comment.body.includes('🚀 Preview Deployment')
+              (comment.body.includes('🚀 Preview Deployment') || comment.body.includes('❌ Deployment Failed'))
             );
             
             const url = '${{ steps.deploy.outputs.deployment_url }}';
             const appName = '${{ matrix.app.name }}';
-            const body = `🚀 **Preview Deployment: ${appName}**\n\n🔗 [View Preview](${url})\n\n---\n\n✅ Deployment completed successfully!`;
+            const buildFailed = '${{ steps.build.outputs.build_failed }}' === 'true';
+            const vercelBuildFailed = '${{ steps.vercel-build.outputs.vercel_build_failed }}' === 'true';
+            const deploymentFailed = '${{ steps.deploy.outputs.deployment_failed }}' === 'true';
+            
+            let body = '';
+            let emoji = '🚀';
+            let status = '';
+            
+            if (buildFailed || vercelBuildFailed || deploymentFailed) {
+              emoji = '❌';
+              status = '**Failed**';
+              body = `${emoji} **Preview Deployment: ${appName}** - ${status}\n\n`;
+              
+              if (buildFailed) {
+                body += `🔨 **Build Error** (Exit code: ${{ steps.build.outputs.build_error_exit_code }})\n`;
+                body += `Check build logs above for details.\n\n`;
+              }
+              if (vercelBuildFailed) {
+                body += `🏗️ **Vercel Build Error** (Exit code: ${{ steps.vercel-build.outputs.vercel_build_error_code }})\n`;
+                body += `Check Vercel build logs above for details.\n\n`;
+              }
+              if (deploymentFailed) {
+                body += `🚀 **Deployment Error** (Exit code: ${{ steps.deploy.outputs.deployment_error_code }})\n`;
+                body += `Check deployment logs above for details.\n\n`;
+              }
+              
+              body += `---\n\n`;
+              body += `📊 [View Build Logs](#) | 🔗 [Vercel Dashboard](https://vercel.com/dashboard)\n`;
+              body += `\n💡 **Troubleshooting:**\n`;
+              body += `- Check for TypeScript errors\n`;
+              body += `- Verify environment variables are set\n`;
+              body += `- Ensure all dependencies are installed\n`;
+            } else {
+              status = '**Success**';
+              body = `${emoji} **Preview Deployment: ${appName}** - ${status}\n\n`;
+              if (url) {
+                body += `🔗 [View Preview](${url})\n\n`;
+              } else {
+                body += `📊 Check [Vercel Dashboard](https://vercel.com/dashboard) for deployment URL\n\n`;
+              }
+              body += `---\n\n✅ Deployment completed successfully!`;
+            }
             
             if (botComment) {
               await github.rest.issues.updateComment({
@@ -193,17 +301,27 @@ jobs:
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
   notify-deployment:
-    name: 📊 Deployment Summary
+    name: 📊 Deployment Summary & Error Report
     runs-on: ubuntu-latest
     needs: deploy-preview
     if: always()
     
     steps:
-      - name: Generate Deployment Summary
+      - name: Generate Deployment Summary with Error Tracking
         run: |
           echo "## 🚀 Preview Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Preview deployments triggered for all 7 apps" >> $GITHUB_STEP_SUMMARY
+          
+          # Check if any deployments failed
+          FAILED_JOBS=$(echo '${{ needs.deploy-preview.result }}' | grep -c "failure" || echo "0")
+          if [ "$FAILED_JOBS" -gt "0" ]; then
+            echo "⚠️ **Status:** Some deployments failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Failed deployments detected. Check individual job logs above for details." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ **Status:** All deployments completed successfully" >> $GITHUB_STEP_SUMMARY
+          fi
+          
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -213,24 +331,40 @@ jobs:
             echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
+          
           echo "### 📊 View Deployment Status" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- 🔗 [Vercel Dashboard](https://vercel.com/dashboard) - View all deployments" >> $GITHUB_STEP_SUMMARY
           echo "- 📝 [GitHub Actions Logs](#) - Real-time build logs above" >> $GITHUB_STEP_SUMMARY
+          echo "- ❌ [View Failed Deployments](#) - Check failed jobs above" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          
           echo "### 💡 Quick Tips" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- Build logs appear in **real-time** in GitHub Actions (above)" >> $GITHUB_STEP_SUMMARY
-          echo "- Vercel dashboard may take a moment to show new deployments" >> $GITHUB_STEP_SUMMARY
-          echo "- Each app deploys in parallel for faster completion" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Build logs appear in **real-time** in GitHub Actions (above)" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 Each app deploys in parallel for faster completion" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔍 Click on failed jobs above to see detailed error logs" >> $GITHUB_STEP_SUMMARY
+          echo "- 🛠️ Common fixes: Check TypeScript errors, environment variables, dependencies" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          
           echo "### 📦 Deployed Apps" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "1. m-marketplace" >> $GITHUB_STEP_SUMMARY
-          echo "2. m-project-owner" >> $GITHUB_STEP_SUMMARY
-          echo "3. m-permits-inspections" >> $GITHUB_STEP_SUMMARY
-          echo "4. m-ops-services" >> $GITHUB_STEP_SUMMARY
-          echo "5. m-architect" >> $GITHUB_STEP_SUMMARY
-          echo "6. os-pm" >> $GITHUB_STEP_SUMMARY
-          echo "7. os-admin" >> $GITHUB_STEP_SUMMARY
+          echo "1. ✅ m-marketplace" >> $GITHUB_STEP_SUMMARY
+          echo "2. ✅ m-project-owner" >> $GITHUB_STEP_SUMMARY
+          echo "3. ✅ m-permits-inspections" >> $GITHUB_STEP_SUMMARY
+          echo "4. ✅ m-ops-services" >> $GITHUB_STEP_SUMMARY
+          echo "5. ✅ m-architect" >> $GITHUB_STEP_SUMMARY
+          echo "6. ✅ os-pm" >> $GITHUB_STEP_SUMMARY
+          echo "7. ✅ os-admin" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "$FAILED_JOBS" -gt "0" ]; then
+            echo "### ❌ Error Management" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Next Steps:**" >> $GITHUB_STEP_SUMMARY
+            echo "1. Review error logs in failed jobs above" >> $GITHUB_STEP_SUMMARY
+            echo "2. Check for common issues (TypeScript, dependencies, env vars)" >> $GITHUB_STEP_SUMMARY
+            echo "3. Fix issues and push to trigger new deployment" >> $GITHUB_STEP_SUMMARY
+            echo "4. All logs are available in real-time above" >> $GITHUB_STEP_SUMMARY
+          fi
 
