@@ -74,104 +74,43 @@ jobs:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --frozen-lockfile
           echo "✅ Dependencies installed"
 
-      - name: Build app locally
-        id: build
-        run: |
-          echo "🔨 Building ${{ matrix.app.name }}..."
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "💡 Build logs stream in real-time below..."
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          
-          # Build with error capture
-          set +e
-          pnpm build --filter=${{ matrix.app.name }} > build-output.log 2>&1
-          BUILD_EXIT_CODE=$?
-          set -e
-          
-          # Display build output
-          cat build-output.log
-          
-          if [ $BUILD_EXIT_CODE -ne 0 ]; then
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "❌ Build failed with exit code: $BUILD_EXIT_CODE"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "🔍 Last 50 lines of build output:"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            tail -n 50 build-output.log
-            echo "build_failed=true" >> $GITHUB_OUTPUT
-            echo "build_error_exit_code=$BUILD_EXIT_CODE" >> $GITHUB_OUTPUT
-            exit $BUILD_EXIT_CODE
-          fi
-          
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "✅ Local build completed"
-          echo "build_failed=false" >> $GITHUB_OUTPUT
-        continue-on-error: false
-
       - name: Install Vercel CLI
         run: |
           echo "📥 Installing Vercel CLI..."
           npm install --global vercel@latest
           echo "✅ Vercel CLI installed: $(vercel --version)"
 
-      - name: Pull Vercel Environment Information
+      - name: Link Vercel Project
         working-directory: apps/${{ matrix.app.name }}
         run: |
-          echo "🔍 Pulling Vercel environment configuration..."
-          vercel pull --yes --environment=preview --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }}
-          echo "✅ Environment configuration pulled"
-
-      - name: Build for Vercel
-        id: vercel-build
-        working-directory: apps/${{ matrix.app.name }}
-        run: |
-          echo "🏗️  Building for Vercel (this may take a few minutes)..."
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "💡 Build logs stream in real-time below..."
-          echo "💡 Note: Vercel build logs may take a moment to appear"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          
-          # Build with error capture
-          set +e
-          vercel build --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }} --debug > vercel-build.log 2>&1
-          VERCEL_BUILD_EXIT_CODE=$?
-          set -e
-          
-          # Display build output
-          cat vercel-build.log
-          
-          if [ $VERCEL_BUILD_EXIT_CODE -ne 0 ]; then
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "❌ Vercel build failed with exit code: $VERCEL_BUILD_EXIT_CODE"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "🔍 Error details:"
-            tail -n 100 vercel-build.log | grep -i "error\|fail\|exception" || tail -n 50 vercel-build.log
-            echo "vercel_build_failed=true" >> $GITHUB_OUTPUT
-            echo "vercel_build_error_code=$VERCEL_BUILD_EXIT_CODE" >> $GITHUB_OUTPUT
-            exit $VERCEL_BUILD_EXIT_CODE
-          fi
-          
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "✅ Vercel build completed"
-          echo "vercel_build_failed=false" >> $GITHUB_OUTPUT
+          echo "🔗 Linking Vercel project..."
+          # Create .vercel directory with project configuration
+          mkdir -p .vercel
+          cat > .vercel/project.json << EOF
+          {
+            "projectId": "${{ matrix.app.project-id }}",
+            "orgId": "${{ env.VERCEL_ORG_ID }}"
+          }
+          EOF
+          echo "✅ Project configuration created"
 
       - name: Deploy to Vercel Preview
         id: deploy
         working-directory: apps/${{ matrix.app.name }}
         run: |
-          echo "🚀 Deploying to Vercel Preview..."
+          echo "🚀 Deploying ${{ matrix.app.name }} to Vercel Preview..."
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "💡 Vercel will build and deploy automatically"
           echo "💡 Deployment logs stream in real-time below..."
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           
-          # Deploy to preview with real-time output streaming
-          # Use tee to both display and capture output
+          # Deploy to preview - Vercel will handle the build
           TEMP_LOG=$(mktemp)
           trap "rm -f $TEMP_LOG" EXIT
           
-          # Deploy and stream output in real-time while capturing to file
           set +e
-          vercel deploy --prebuilt --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }} 2>&1 | tee "$TEMP_LOG"
+          # Deploy with --yes to skip prompts and let Vercel handle the build
+          vercel deploy --yes --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }} 2>&1 | tee "$TEMP_LOG"
           # Get exit code from vercel deploy (not tee)
           if [ "${PIPESTATUS[0]}" -ne 0 ]; then
             DEPLOY_EXIT_CODE=${PIPESTATUS[0]}
@@ -189,7 +128,13 @@ jobs:
             echo "❌ Deployment failed with exit code: $DEPLOY_EXIT_CODE"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🔍 Error details from deployment:"
-            grep -i "error\|fail\|exception" "$TEMP_LOG" | tail -n 20 || tail -n 30 "$TEMP_LOG"
+            tail -n 50 "$TEMP_LOG" | grep -i "error\|fail\|exception" || tail -n 50 "$TEMP_LOG"
+            echo ""
+            echo "💡 Troubleshooting:"
+            echo "  - Check if project ID is correct: ${{ matrix.app.project-id }}"
+            echo "  - Verify VERCEL_TOKEN and VERCEL_ORG_ID are set correctly"
+            echo "  - Ensure project exists in Vercel dashboard"
+            echo "  - Check Vercel dashboard for detailed build logs"
             echo "deployment_failed=true" >> $GITHUB_OUTPUT
             echo "deployment_error_code=$DEPLOY_EXIT_CODE" >> $GITHUB_OUTPUT
             rm -f "$TEMP_LOG"
@@ -227,38 +172,25 @@ jobs:
             
             const url = '${{ steps.deploy.outputs.deployment_url }}';
             const appName = '${{ matrix.app.name }}';
-            const buildFailed = '${{ steps.build.outputs.build_failed }}' === 'true';
-            const vercelBuildFailed = '${{ steps.vercel-build.outputs.vercel_build_failed }}' === 'true';
             const deploymentFailed = '${{ steps.deploy.outputs.deployment_failed }}' === 'true';
             
             let body = '';
             let emoji = '🚀';
             let status = '';
             
-            if (buildFailed || vercelBuildFailed || deploymentFailed) {
+            if (deploymentFailed) {
               emoji = '❌';
               status = '**Failed**';
               body = `${emoji} **Preview Deployment: ${appName}** - ${status}\n\n`;
-              
-              if (buildFailed) {
-                body += `🔨 **Build Error** (Exit code: ${{ steps.build.outputs.build_error_exit_code }})\n`;
-                body += `Check build logs above for details.\n\n`;
-              }
-              if (vercelBuildFailed) {
-                body += `🏗️ **Vercel Build Error** (Exit code: ${{ steps.vercel-build.outputs.vercel_build_error_code }})\n`;
-                body += `Check Vercel build logs above for details.\n\n`;
-              }
-              if (deploymentFailed) {
-                body += `🚀 **Deployment Error** (Exit code: ${{ steps.deploy.outputs.deployment_error_code }})\n`;
-                body += `Check deployment logs above for details.\n\n`;
-              }
-              
+              body += `🚀 **Deployment Error** (Exit code: ${{ steps.deploy.outputs.deployment_error_code }})\n`;
+              body += `Check deployment logs above for details.\n\n`;
               body += `---\n\n`;
               body += `📊 [View Build Logs](#) | 🔗 [Vercel Dashboard](https://vercel.com/dashboard)\n`;
               body += `\n💡 **Troubleshooting:**\n`;
-              body += `- Check for TypeScript errors\n`;
-              body += `- Verify environment variables are set\n`;
-              body += `- Ensure all dependencies are installed\n`;
+              body += `- Verify project ID is correct: \`${{ matrix.app.project-id }}\`\n`;
+              body += `- Check VERCEL_TOKEN and VERCEL_ORG_ID secrets\n`;
+              body += `- Ensure project exists in Vercel dashboard\n`;
+              body += `- Check Vercel dashboard for detailed build logs\n`;
             } else {
               status = '**Success**';
               body = `${emoji} **Preview Deployment: ${appName}** - ${status}\n\n`;
