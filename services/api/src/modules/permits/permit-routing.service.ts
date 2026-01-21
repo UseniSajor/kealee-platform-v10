@@ -48,7 +48,7 @@ export const permitRoutingService = {
     })
 
     // Evaluate routing rules
-    const applicableRules = []
+    const applicableRules: any[] = []
     for (const rule of routingRules) {
       const conditions = rule.conditions as any
       let matches = true
@@ -498,7 +498,7 @@ export const permitRoutingService = {
       },
     })
 
-    const escalated = []
+    const escalated: string[] = []
     for (const routing of delayedRoutings) {
       try {
         await this.escalateRouting(routing.id, {

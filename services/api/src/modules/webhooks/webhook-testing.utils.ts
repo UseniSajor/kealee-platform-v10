@@ -322,7 +322,7 @@ export class WebhookTesting {
         } as any
     }
 
-    return baseEvent
+    return baseEvent as Stripe.Event
   }
 
   /**
