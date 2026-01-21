@@ -1,0 +1,167 @@
+name: Deploy Preview to Vercel
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main
+      - staging
+  push:
+    branches:
+      - preview
+      - preview-*
+
+env:
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8.15.0'
+
+jobs:
+  deploy-preview:
+    name: Deploy Preview to Vercel
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false || github.event_name == 'push'
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - name: m-marketplace
+            project-id: ${{ secrets.VERCEL_PROJECT_ID_MARKETPLACE }}
+          - name: m-project-owner
+            project-id: ${{ secrets.VERCEL_PROJECT_ID_PROJECT_OWNER }}
+          - name: m-permits-inspections
+            project-id: ${{ secrets.VERCEL_PROJECT_ID_PERMITS }}
+          - name: m-ops-services
+            project-id: ${{ secrets.VERCEL_PROJECT_ID_OPS_SERVICES }}
+          - name: m-architect
+            project-id: ${{ secrets.VERCEL_PROJECT_ID_ARCHITECT }}
+          - name: os-pm
+            project-id: ${{ secrets.VERCEL_PROJECT_ID_OS_PM }}
+          - name: os-admin
+            project-id: ${{ secrets.VERCEL_PROJECT_ID_OS_ADMIN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: |
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --frozen-lockfile
+
+      - name: Build app
+        run: |
+          pnpm build --filter=${{ matrix.app.name }}
+        continue-on-error: false
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        working-directory: apps/${{ matrix.app.name }}
+        run: |
+          vercel pull --yes --environment=preview --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }}
+
+      - name: Build for Vercel
+        working-directory: apps/${{ matrix.app.name }}
+        run: |
+          vercel build --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }}
+
+      - name: Deploy to Vercel Preview
+        id: deploy
+        working-directory: apps/${{ matrix.app.name }}
+        run: |
+          # Deploy to preview (no --prod flag means preview deployment)
+          # Vercel automatically creates preview deployments for non-production branches
+          OUTPUT=$(vercel deploy --prebuilt --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }} 2>&1)
+          echo "$OUTPUT"
+          
+          # Extract deployment URL from output
+          DEPLOYMENT_URL=$(echo "$OUTPUT" | grep -Eo 'https://[a-zA-Z0-9-]+\.vercel\.app' | head -n 1 || echo "")
+          
+          if [ -n "$DEPLOYMENT_URL" ]; then
+            echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+            echo "✅ Preview deployment URL: $DEPLOYMENT_URL"
+          else
+            echo "⚠️ Note: Deployment completed. Check Vercel dashboard for URL."
+            # Vercel deployment URLs are also available in the Vercel dashboard
+          fi
+
+      - name: Comment PR with Preview URL
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('🚀 Preview Deployment')
+            );
+            
+            const url = '${{ steps.deploy.outputs.deployment_url }}';
+            const appName = '${{ matrix.app.name }}';
+            const body = `🚀 **Preview Deployment: ${appName}**\n\n🔗 [View Preview](${url})\n\n---\n\n✅ Deployment completed successfully!`;
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: botComment.body + `\n\n${body}`
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+      - name: Output Deployment Status
+        run: |
+          echo "✅ Successfully deployed ${{ matrix.app.name }}"
+          echo "🔗 Preview URL: ${{ steps.deploy.outputs.deployment_url }}"
+
+  notify-deployment:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: deploy-preview
+    if: always()
+    
+    steps:
+      - name: Deployment Summary
+        run: |
+          echo "## 🚀 Preview Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Preview deployments triggered for all apps" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "**PR:** #${{ github.event.pull_request.number }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Branch:** ${{ github.event.pull_request.head.ref }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Check the [Vercel Dashboard](https://vercel.com/dashboard) for deployment status and URLs." >> $GITHUB_STEP_SUMMARY
+
