@@ -66,6 +66,11 @@ jobs:
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "⏰ Started at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           echo "📍 Branch: ${{ github.ref_name }}"
+          echo "📦 App: ${{ matrix.app.name }}"
+          echo "🆔 Project ID: ${{ matrix.app.project-id }}"
+          if [ "${{ matrix.app.name }}" = "os-admin" ]; then
+            echo "✅ OS-ADMIN: Deployment confirmed in workflow"
+          fi
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
       - name: Install dependencies
@@ -93,11 +98,12 @@ jobs:
       - name: Validate vercel.json Schema
         working-directory: apps/${{ matrix.app.name }}
         run: |
-          echo "🔍 Validating vercel.json schema..."
+          echo "🔍 Validating vercel.json schema for ${{ matrix.app.name }}..."
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           
           if [ ! -f "vercel.json" ]; then
-            echo "❌ vercel.json not found!"
+            echo "❌ ERROR: vercel.json not found in apps/${{ matrix.app.name }}!"
+            echo "💡 Create vercel.json with proper configuration"
             exit 1
           fi
           
@@ -105,22 +111,32 @@ jobs:
           echo "📋 Checking for invalid properties in vercel.json..."
           
           # Check for _comment property (not allowed in Vercel schema)
-          if grep -q '"_comment"' vercel.json || grep -q "'_comment'" vercel.json; then
-            echo "❌ ERROR: vercel.json contains '_comment' property which is not allowed!"
+          if grep -q '"_comment"' vercel.json || grep -q "'_comment'" vercel.json || grep -qi "comment" vercel.json; then
+            echo "❌ ERROR: vercel.json contains invalid property!"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "🔍 Found _comment in vercel.json:"
-            grep -n "_comment" vercel.json || true
+            echo "🔍 Found invalid property in vercel.json:"
+            grep -n -i "comment" vercel.json || true
             echo ""
-            echo "💡 Fix: Remove all '_comment' properties from vercel.json"
+            echo "💡 Fix: Remove all '_comment' or 'comment' properties from vercel.json"
             echo "💡 Vercel JSON schema does not allow custom properties like '_comment'"
+            echo ""
+            echo "📄 Full vercel.json content:"
+            cat vercel.json
+            echo ""
+            echo "🔗 Vercel Dashboard: https://vercel.com/${{ env.VERCEL_ORG_ID }}/${{ matrix.app.project-id }}/settings/build-and-deployment"
+            echo "💡 Also check Vercel dashboard settings for any '_comment' fields"
             exit 1
           fi
           
           # Validate JSON syntax
+          echo "📋 Validating JSON syntax..."
           if ! python3 -m json.tool vercel.json > /dev/null 2>&1; then
             echo "❌ ERROR: vercel.json has invalid JSON syntax!"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            python3 -m json.tool vercel.json 2>&1 || true
+            python3 -m json.tool vercel.json 2>&1 | head -n 20 || true
+            echo ""
+            echo "📄 vercel.json content:"
+            cat vercel.json
             exit 1
           fi
           
@@ -188,52 +204,105 @@ jobs:
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           
           if [ $DEPLOY_EXIT_CODE -ne 0 ]; then
-            echo "❌ Deployment failed with exit code: $DEPLOY_EXIT_CODE"
+            echo ""
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "🔍 Full error output:"
+            echo "❌ DEPLOYMENT FAILED: ${{ matrix.app.name }}"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "Exit Code: $DEPLOY_EXIT_CODE"
+            echo "App: ${{ matrix.app.name }}"
+            echo "Project ID: ${{ matrix.app.project-id }}"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            echo "🔍 FULL ERROR OUTPUT:"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             cat "$TEMP_LOG"
             echo ""
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
             
             # Check for specific common errors
-            if grep -qi "_comment" "$TEMP_LOG" || grep -qi "additional property" "$TEMP_LOG"; then
-              echo "🚨 DETECTED: vercel.json schema validation error"
+            if grep -qi "_comment" "$TEMP_LOG" || grep -qi "additional property" "$TEMP_LOG" || grep -qi "should NOT have additional property" "$TEMP_LOG"; then
+              echo "🚨 DETECTED: vercel.json Schema Validation Error"
               echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
               echo "❌ Error: vercel.json contains invalid properties"
               echo ""
-              echo "💡 Common Issues:"
-              echo "  1. '_comment' property is not allowed in vercel.json"
-              echo "  2. Custom properties not in Vercel schema"
+              echo "📋 Error Details:"
+              grep -i "_comment\|additional property" "$TEMP_LOG" | head -n 5 || true
+              echo ""
+              echo "💡 Root Cause:"
+              echo "  - '_comment' or other custom properties in vercel.json"
+              echo "  - Vercel schema does not allow custom properties"
               echo ""
               echo "🔧 Fix Steps:"
-              echo "  1. Check vercel.json for '_comment' or other invalid properties"
-              echo "  2. Remove any properties not in Vercel's official schema"
-              echo "  3. Valid properties: buildCommand, installCommand, framework,"
-              echo "     rewrites, headers, routes, env, regions, github, public"
+              echo "  1. Check vercel.json file in apps/${{ matrix.app.name }}/vercel.json"
+              echo "  2. Remove ALL '_comment' properties"
+              echo "  3. Check Vercel Dashboard → Settings → Build and Deployment"
+              echo "     - Remove any '_comment' fields from dashboard settings"
+              echo "  4. Only use valid properties:"
+              echo "     buildCommand, installCommand, framework, rewrites,"
+              echo "     headers, routes, env, regions, github, public"
               echo ""
-              echo "📄 Current vercel.json:"
+              echo "📄 Current vercel.json file:"
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
               cat vercel.json 2>/dev/null || echo "  (Could not read vercel.json)"
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
               echo ""
             fi
             
-            if grep -qi "project.*not found" "$TEMP_LOG" || grep -qi "project.*does not exist" "$TEMP_LOG"; then
-              echo "🚨 DETECTED: Project not found error"
+            if grep -qi "project.*not found" "$TEMP_LOG" || grep -qi "project.*does not exist" "$TEMP_LOG" || grep -qi "project.*invalid" "$TEMP_LOG"; then
+              echo "🚨 DETECTED: Project Configuration Error"
               echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-              echo "💡 Fix: Verify project ID is correct in GitHub secrets"
-              echo "  - Secret name: VERCEL_PROJECT_ID_${{ matrix.app.name | upper | replace: '-', '_' }}"
-              echo "  - Current project ID: ${{ matrix.app.project-id }}"
+              echo "❌ Error: Project ID not found or invalid"
+              echo ""
+              echo "💡 Fix Steps:"
+              echo "  1. Verify project exists in Vercel dashboard"
+              echo "  2. Check GitHub secret: VERCEL_PROJECT_ID_${{ matrix.app.name | upper | replace: '-', '_' }}"
+              echo "  3. Current project ID: ${{ matrix.app.project-id }}"
+              echo "  4. Ensure project ID matches Vercel dashboard"
+              echo ""
+            fi
+            
+            # Special check for os-admin
+            if [ "${{ matrix.app.name }}" = "os-admin" ]; then
+              echo "🚨 OS-ADMIN SPECIFIC TROUBLESHOOTING"
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "⚠️  os-admin deployment failed!"
+              echo ""
+              echo "📋 Verification Checklist:"
+              echo "  [ ] os-admin is in workflow matrix (line 42-43)"
+              echo "  [ ] VERCEL_PROJECT_ID_OS_ADMIN secret is set in GitHub"
+              echo "  [ ] Project exists in Vercel dashboard"
+              echo "  [ ] Root directory is set to: apps/os-admin"
+              echo "  [ ] Build command: cd ../.. && pnpm build --filter=os-admin"
+              echo "  [ ] Install command: cd ../.. && pnpm install"
+              echo ""
+              echo "🔗 Direct Links:"
+              echo "  - Vercel Project: https://vercel.com/${{ env.VERCEL_ORG_ID }}/${{ matrix.app.project-id }}"
+              echo "  - Build Settings: https://vercel.com/${{ env.VERCEL_ORG_ID }}/${{ matrix.app.project-id }}/settings/build-and-deployment"
+              echo "  - Deployments: https://vercel.com/${{ env.VERCEL_ORG_ID }}/${{ matrix.app.project-id }}/deployments"
               echo ""
             fi
             
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "💡 General Troubleshooting:"
-            echo "  - Project ID: ${{ matrix.app.project-id }}"
-            echo "  - Org ID: ${{ env.VERCEL_ORG_ID }}"
-            echo "  - App: ${{ matrix.app.name }}"
-            echo "  - Working dir: $(pwd)"
-            echo "  - Vercel Dashboard: https://vercel.com/${{ env.VERCEL_ORG_ID }}/${{ matrix.app.project-id }}"
-            echo "  - Check Vercel dashboard for detailed build logs"
-            echo "  - Verify project exists and is linked correctly"
+            echo "💡 GENERAL TROUBLESHOOTING"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "App Name: ${{ matrix.app.name }}"
+            echo "Project ID: ${{ matrix.app.project-id }}"
+            echo "Org ID: ${{ env.VERCEL_ORG_ID }}"
+            echo "Working Directory: $(pwd)"
+            echo ""
+            echo "🔗 Vercel Dashboard Links:"
+            echo "  - Project Overview: https://vercel.com/${{ env.VERCEL_ORG_ID }}/${{ matrix.app.project-id }}"
+            echo "  - Build Settings: https://vercel.com/${{ env.VERCEL_ORG_ID }}/${{ matrix.app.project-id }}/settings/build-and-deployment"
+            echo "  - Deployments: https://vercel.com/${{ env.VERCEL_ORG_ID }}/${{ matrix.app.project-id }}/deployments"
+            echo "  - Environment Variables: https://vercel.com/${{ env.VERCEL_ORG_ID }}/${{ matrix.app.project-id }}/settings/environment-variables"
+            echo ""
+            echo "📊 Next Steps:"
+            echo "  1. Review full error output above"
+            echo "  2. Check Vercel dashboard for detailed build logs"
+            echo "  3. Verify project configuration matches requirements"
+            echo "  4. Remove any '_comment' properties from dashboard settings"
+            echo "  5. Ensure all required environment variables are set"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             
             echo "deployment_failed=true" >> $GITHUB_OUTPUT
