@@ -321,12 +321,23 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/approval-rules',
     {
-      preHandler: [authenticateUser, validateQuery(z.object({
-        type: z.string().optional(),
-        active: z.string().optional().transform(val => val === 'true').pipe(z.boolean().optional()),
-        page: z.coerce.number().default(1),
-        limit: z.coerce.number().default(50),
-      }))],
+      preHandler: [authenticateUser, validateQuery(z.preprocess(
+        (val) => {
+          const obj = val as any
+          return {
+            type: obj.type,
+            active: obj.active === 'true' || obj.active === true,
+            page: obj.page ? Number(obj.page) : 1,
+            limit: obj.limit ? Number(obj.limit) : 50,
+          }
+        },
+        z.object({
+          type: z.string().optional(),
+          active: z.boolean(),
+          page: z.number(),
+          limit: z.number(),
+        })
+      ))],
     },
     async (request, reply) => {
       try {
