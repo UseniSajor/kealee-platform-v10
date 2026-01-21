@@ -39,7 +39,50 @@
 
 ## Required Changes
 
-1. Remove Prisma migration from frontend deployment script
-2. Ensure all build scripts only use `prisma generate` (never migrations)
-3. Document that `prisma migrate deploy` only runs at runtime via Railway startCommand
+1. ✅ Remove Prisma migration from frontend deployment script - **FIXED**
+2. ✅ Ensure all build scripts only use `prisma generate` (never migrations) - **VERIFIED**
+3. ✅ Document that `prisma migrate deploy` only runs at runtime via Railway startCommand - **DOCUMENTED**
+
+## Summary of Changes Made
+
+### Fixed Issues
+
+1. **apps/m-marketplace/scripts/deploy-marketplace.sh**
+   - **Change:** Removed `prisma migrate deploy` from deployment script
+   - **Reason:** Frontend apps should not run migrations (they don't have DATABASE_URL)
+   - **Impact:** Frontend deployments no longer attempt to run database migrations
+
+### Verified Correct Implementations
+
+1. **Dockerfile (Line 124)**
+   - ✅ Runs `prisma generate` during build (correct)
+   - ✅ No migrations run during build
+
+2. **packages/database/package.json (Line 15)**
+   - ✅ `postinstall: "prisma generate"` runs on install (correct for build)
+   - ✅ `prisma generate` does NOT require DATABASE_URL
+   - ✅ Safe for Next.js builds (generates TypeScript types only)
+
+3. **services/api/railway.json (Line 8)**
+   - ✅ Runs `prisma migrate deploy` in `startCommand` (runtime, not build)
+   - ✅ Migrations run at service startup, not during build
+
+4. **services/api/package.json**
+   - ✅ `build: "tsc"` - No Prisma commands in build script
+   - ✅ `db:migrate` uses `prisma migrate dev` - Only for local development
+
+5. **Next.js Apps (m-marketplace, m-ops-services, etc.)**
+   - ✅ Build scripts only run `next build` - No Prisma commands
+   - ✅ Depend on `@kealee/database` which runs `prisma generate` on install (safe)
+
+6. **Root package.json**
+   - ✅ `build: "turbo run build"` - No Prisma commands
+   - ✅ `db:migrate` scripts use `prisma migrate dev` - Only for local development
+
+## Final State
+
+- ✅ `prisma generate` runs during build (via postinstall hook and Dockerfile)
+- ✅ `prisma migrate deploy` runs only at runtime (via Railway startCommand)
+- ✅ No Prisma commands run automatically during Next.js or API build
+- ✅ All `prisma migrate dev` usage is explicitly for local development only
 
