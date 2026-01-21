@@ -1,7 +1,7 @@
-﻿BUILD_ID=force-rebuild-v7-aggressive-cache-bust
+﻿BUILD_ID=force-rebuild-v8-fix-missing-imports
 TIMESTAMP=2026-01-21T14:30:00Z
 COMMIT=9241af0
-CHANGES=AGGRESSIVE cache busting - restructured Dockerfile early layers
+CHANGES=Fixed missing route imports (analyticsRoutes, monitoringDashboardRoutes) and added missing dependencies
 PACKAGES=database,workflow-engine,compliance,types,analytics,api-client,api
 REQUIRED_PACKAGES=database,workflow-engine,api
 NOTE=All build commands use pnpm --filter run build - NO TURBO

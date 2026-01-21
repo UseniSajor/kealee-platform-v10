@@ -82,6 +82,8 @@ import { serviceRequestRoutes } from './modules/ops-services/service-request.rou
 import { servicePlanRoutes } from './modules/ops-services/service-plan.routes'
 import { workflowRoutes } from './modules/workflow/workflow.routes'
 import { fileRoutes } from './modules/files/file.routes'
+import { analyticsRoutes } from './modules/analytics/analytics.routes'
+import { monitoringDashboardRoutes } from './modules/monitoring/monitoring-dashboard.routes'
 import { taskGeneratorRoutes } from './modules/tasks/task-generator.routes'
 import { complianceCheckpointRoutes } from './modules/compliance/compliance-checkpoint.routes'
 import { complianceGatesRoutes } from './modules/compliance/compliance-gates.routes'
