@@ -1,6 +1,16 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import csrf, { FastifyCsrfOptions } from '@fastify/csrf-protection'
 
+// Extend FastifyRequest to include session type
+declare module 'fastify' {
+  interface FastifyRequest {
+    session?: {
+      csrfToken?: string
+      [key: string]: any
+    }
+  }
+}
+
 /**
  * CSRF Protection Middleware
  * Protects all POST/PUT/PATCH/DELETE routes from CSRF attacks
