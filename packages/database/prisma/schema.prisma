@@ -1994,6 +1994,7 @@ enum SecuritySeverity {
 model Payment {
   id                    String    @id @default(uuid())
   orgId                 String?
+  projectId             String?
   subscriptionId        String?
   stripeInvoiceId       String?
   stripePaymentIntentId String?   @unique
@@ -2008,10 +2009,12 @@ model Payment {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
   // org          Org?              @relation(fields: [orgId], references: [id], onDelete: SetNull)
   // subscription ServiceSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
 
   @@index([orgId])
+  @@index([projectId])
   @@index([subscriptionId])
   @@index([stripePaymentIntentId])
   @@index([status])
@@ -2198,7 +2201,9 @@ model Client {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  projects Project[]
+  projects          Project[]
+  tasks             Task[]
+  assignmentRequests AssignmentRequest[]
 
   @@index([assignedPM])
   @@index([status])
