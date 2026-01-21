@@ -159,15 +159,6 @@ export async function taskRoutes(fastify: FastifyInstance) {
             project: true,
             client: true,
             comments: {
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    fullName: true,
-                    email: true,
-                  },
-                },
-              },
               orderBy: { createdAt: 'desc' },
             },
           },
@@ -204,7 +195,6 @@ export async function taskRoutes(fastify: FastifyInstance) {
           data: {
             ...data,
             assignedTo: data.assignedTo || user.id,
-            createdBy: user.id,
             dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
           },
           include: {
@@ -291,7 +281,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
         const existing = await prisma.task.findFirst({
           where: {
             id,
-            createdBy: user.id,
+            assignedTo: user.id,
           },
         });
 
@@ -350,15 +340,6 @@ export async function taskRoutes(fastify: FastifyInstance) {
             taskId: id,
             userId: user.id,
             content: message,
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                fullName: true,
-                email: true,
-              },
-            },
           },
         });
 
