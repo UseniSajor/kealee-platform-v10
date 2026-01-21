@@ -59,47 +59,88 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      - name: 🚀 Starting deployment for ${{ matrix.app.name }}
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🚀 Starting Preview Deployment: ${{ matrix.app.name }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "⏰ Started at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "📍 Branch: ${{ github.ref_name }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
       - name: Install dependencies
         run: |
+          echo "📦 Installing dependencies..."
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --frozen-lockfile
+          echo "✅ Dependencies installed"
 
-      - name: Build app
+      - name: Build app locally
         run: |
+          echo "🔨 Building ${{ matrix.app.name }}..."
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "💡 Build logs stream in real-time below..."
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           pnpm build --filter=${{ matrix.app.name }}
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ Local build completed"
         continue-on-error: false
 
       - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+        run: |
+          echo "📥 Installing Vercel CLI..."
+          npm install --global vercel@latest
+          echo "✅ Vercel CLI installed: $(vercel --version)"
 
       - name: Pull Vercel Environment Information
         working-directory: apps/${{ matrix.app.name }}
         run: |
+          echo "🔍 Pulling Vercel environment configuration..."
           vercel pull --yes --environment=preview --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }}
+          echo "✅ Environment configuration pulled"
 
       - name: Build for Vercel
         working-directory: apps/${{ matrix.app.name }}
         run: |
-          vercel build --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }}
+          echo "🏗️  Building for Vercel (this may take a few minutes)..."
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "💡 Build logs stream in real-time below..."
+          echo "💡 Note: Vercel build logs may take a moment to appear"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          vercel build --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }} --debug
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ Vercel build completed"
 
       - name: Deploy to Vercel Preview
         id: deploy
         working-directory: apps/${{ matrix.app.name }}
         run: |
-          # Deploy to preview (no --prod flag means preview deployment)
-          # Vercel automatically creates preview deployments for non-production branches
-          OUTPUT=$(vercel deploy --prebuilt --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }} 2>&1)
-          echo "$OUTPUT"
+          echo "🚀 Deploying to Vercel Preview..."
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "💡 Deployment logs stream in real-time below..."
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           
-          # Extract deployment URL from output
-          DEPLOYMENT_URL=$(echo "$OUTPUT" | grep -Eo 'https://[a-zA-Z0-9-]+\.vercel\.app' | head -n 1 || echo "")
+          # Deploy to preview with real-time output streaming
+          # Use tee to both display and capture output
+          TEMP_LOG=$(mktemp)
+          trap "rm -f $TEMP_LOG" EXIT
           
+          # Deploy and stream output in real-time while capturing to file
+          vercel deploy --prebuilt --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }} 2>&1 | tee "$TEMP_LOG"
+          
+          # Extract deployment URL from captured output
+          DEPLOYMENT_URL=$(grep -oE 'https://[a-zA-Z0-9-]+\.vercel\.app' "$TEMP_LOG" | head -n 1 || echo "")
+          
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           if [ -n "$DEPLOYMENT_URL" ]; then
             echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
             echo "✅ Preview deployment URL: $DEPLOYMENT_URL"
           else
             echo "⚠️ Note: Deployment completed. Check Vercel dashboard for URL."
-            # Vercel deployment URLs are also available in the Vercel dashboard
+            echo "🔗 View deployment: https://vercel.com/dashboard"
           fi
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          rm -f "$TEMP_LOG"
 
       - name: Comment PR with Preview URL
         if: github.event_name == 'pull_request'
@@ -137,23 +178,32 @@ jobs:
               });
             }
 
-      - name: Output Deployment Status
+      - name: ✅ Deployment Complete - ${{ matrix.app.name }}
         run: |
-          echo "✅ Successfully deployed ${{ matrix.app.name }}"
-          echo "🔗 Preview URL: ${{ steps.deploy.outputs.deployment_url }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ Successfully deployed: ${{ matrix.app.name }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          if [ -n "${{ steps.deploy.outputs.deployment_url }}" ]; then
+            echo "🔗 Preview URL: ${{ steps.deploy.outputs.deployment_url }}"
+          else
+            echo "📊 Check Vercel Dashboard for deployment URL"
+            echo "🔗 Dashboard: https://vercel.com/dashboard"
+          fi
+          echo "⏰ Completed at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
   notify-deployment:
-    name: Notify Deployment Status
+    name: 📊 Deployment Summary
     runs-on: ubuntu-latest
     needs: deploy-preview
     if: always()
     
     steps:
-      - name: Deployment Summary
+      - name: Generate Deployment Summary
         run: |
           echo "## 🚀 Preview Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Preview deployments triggered for all apps" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Preview deployments triggered for all 7 apps" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -163,5 +213,24 @@ jobs:
             echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Check the [Vercel Dashboard](https://vercel.com/dashboard) for deployment status and URLs." >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 View Deployment Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔗 [Vercel Dashboard](https://vercel.com/dashboard) - View all deployments" >> $GITHUB_STEP_SUMMARY
+          echo "- 📝 [GitHub Actions Logs](#) - Real-time build logs above" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 💡 Quick Tips" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Build logs appear in **real-time** in GitHub Actions (above)" >> $GITHUB_STEP_SUMMARY
+          echo "- Vercel dashboard may take a moment to show new deployments" >> $GITHUB_STEP_SUMMARY
+          echo "- Each app deploys in parallel for faster completion" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Deployed Apps" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "1. m-marketplace" >> $GITHUB_STEP_SUMMARY
+          echo "2. m-project-owner" >> $GITHUB_STEP_SUMMARY
+          echo "3. m-permits-inspections" >> $GITHUB_STEP_SUMMARY
+          echo "4. m-ops-services" >> $GITHUB_STEP_SUMMARY
+          echo "5. m-architect" >> $GITHUB_STEP_SUMMARY
+          echo "6. os-pm" >> $GITHUB_STEP_SUMMARY
+          echo "7. os-admin" >> $GITHUB_STEP_SUMMARY
 
