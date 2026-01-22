@@ -1486,10 +1486,30 @@ model Project {
 }
 
 model User {
-  id    String  @id @default(uuid())
-  email String? @unique
-  name  String?
-  // ... existing Kealee user fields
+  id        String   @id @default(uuid())
+  email     String?  @unique
+  name      String?
+  firstName String?
+  lastName  String?
+  password  String?
+  
+  // User metadata
+  role              String?  @default("USER")
+  status            String?  @default("ACTIVE")
+  stripeCustomerId  String?
+  twoFactorEnabled  Boolean  @default(false)
+  
+  // Address fields
+  address String?
+  city    String?
+  state   String?
+  zipCode String?
+  ssn     String?  // Encrypted
+  ein     String?  // Tax ID
+  
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Organization relations
   orgMemberships OrgMember[]
@@ -1945,14 +1965,16 @@ model EscrowAgreement {
 }
 
 model EscrowTransaction {
-  id             String  @id @default(uuid())
-  escrowId       String
-  journalEntryId String? @unique // Link to accounting entry
+  id                 String  @id @default(uuid())
+  escrowId           String
+  escrowAgreementId  String  // Alias for escrowId for backward compatibility
+  journalEntryId     String? @unique // Link to accounting entry
 
   // Transaction Details
-  type     EscrowTransactionType
-  amount   Decimal               @db.Decimal(18, 2)
-  currency String                @default("USD")
+  type        EscrowTransactionType
+  amount      Decimal               @db.Decimal(18, 2)
+  currency    String                @default("USD")
+  description String?               @db.Text
 
   // Balance Tracking
   balanceBefore Decimal @db.Decimal(18, 2)
@@ -1995,8 +2017,9 @@ model EscrowTransaction {
 }
 
 model EscrowHold {
-  id       String @id @default(uuid())
-  escrowId String
+  id                String @id @default(uuid())
+  escrowId          String
+  escrowAgreementId String // Alias for escrowId for backward compatibility
 
   // Hold Details
   amount Decimal          @db.Decimal(18, 2)
@@ -3802,6 +3825,7 @@ model Quote {
 model ApiKey {
   id             String  @id @default(uuid())
   keyHash        String  @unique // SHA-256 hash of the actual API key
+  keyPrefix      String? // First 8 chars for identification
   name           String
   jurisdictionId String?
   userId         String?
@@ -3813,6 +3837,7 @@ model ApiKey {
 
   // Status
   active     Boolean   @default(true)
+  isRevoked  Boolean   @default(false)
   expiresAt  DateTime?
   lastUsedAt DateTime?
 
@@ -3999,17 +4024,19 @@ enum SecuritySeverity {
 // ============================================================================
 
 model UserSession {
-  id           String    @id @default(uuid())
-  userId       String
-  sessionToken String    @unique
-  refreshToken String?   @unique
-  ipAddress    String?
-  userAgent    String?
-  expiresAt    DateTime
-  lastActivity DateTime  @default(now())
-  isActive     Boolean   @default(true)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id             String    @id @default(uuid())
+  userId         String
+  sessionToken   String    @unique
+  refreshToken   String?   @unique
+  ipAddress      String?
+  userAgent      String?
+  expiresAt      DateTime
+  lastActivity   DateTime  @default(now())
+  lastActivityAt DateTime  @default(now()) // Alias for lastActivity
+  isActive       Boolean   @default(true)
+  isRevoked      Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([userId])
   @@index([sessionToken])
@@ -4017,12 +4044,14 @@ model UserSession {
 }
 
 model TwoFactorSecret {
-  id        String    @id @default(uuid())
-  userId    String    @unique
-  secret    String
-  isEnabled Boolean   @default(false)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id         String    @id @default(uuid())
+  userId     String    @unique
+  secret     String
+  isEnabled  Boolean   @default(false)
+  isVerified Boolean   @default(false)
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@index([userId])
 }
@@ -4066,10 +4095,13 @@ model SecurityEvent {
   id          String   @id @default(uuid())
   userId      String?
   eventType   String
+  type        String? // Alias for eventType
   description String
+  severity    String   @default("INFO")
   ipAddress   String?
   userAgent   String?
   metadata    Json?
+  timestamp   DateTime @default(now()) // Alias for createdAt
   createdAt   DateTime @default(now())
 
   @@index([userId])
@@ -4104,6 +4136,7 @@ model PaymentMethod {
 model DepositRequest {
   id                    String    @id @default(uuid())
   escrowId              String
+  escrowAgreementId     String? // Alias for escrowId
   paymentMethodId       String
   userId                String
   amount                Decimal   @db.Decimal(18, 2)
@@ -4129,11 +4162,13 @@ model DepositRequest {
 model TaxForm {
   id             String    @id @default(uuid())
   userId         String
+  recipientId    String? // Alias for userId
   taxYear        Int
   formType       String // 1099_NEC, 1099_K, W9
   totalAmount    Decimal   @db.Decimal(18, 2)
   status         String    @default("NOT_FILED") // NOT_FILED, FILED, 1099_READY, NOT_REQUIRED
   filedAt        DateTime?
+  sentAt         DateTime?
   documentUrl    String?
   metadata       Json?
   createdAt      DateTime  @default(now())
