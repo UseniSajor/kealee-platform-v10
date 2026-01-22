@@ -357,6 +357,88 @@ export class AuditService {
     };
   }
 
+  /**
+   * Get audit logs with filters
+   */
+  async getAuditLogs(filters?: {
+    userId?: string;
+    entityType?: string;
+    action?: string;
+    startDate?: Date;
+    endDate?: Date;
+    limit?: number;
+    offset?: number;
+  }): Promise<AuditLog[]> {
+    // In production, would query audit log table with filters
+    // Mock data for now
+    return [
+      {
+        id: '1',
+        userId: filters?.userId || 'user-123',
+        action: filters?.action || 'CREATE',
+        entityType: filters?.entityType || 'Project',
+        entityId: 'entity-123',
+        timestamp: new Date(),
+      },
+    ];
+  }
+
+  /**
+   * Get single audit log by ID
+   */
+  async getAuditById(id: string): Promise<AuditLog | null> {
+    // In production, would query audit log table
+    // Mock data for now
+    return {
+      id,
+      userId: 'user-123',
+      action: 'UPDATE',
+      entityType: 'Project',
+      entityId: 'entity-123',
+      changes: {
+        status: { from: 'DRAFT', to: 'ACTIVE' },
+      },
+      timestamp: new Date(),
+    };
+  }
+
+  /**
+   * Get entity audit trail (alias for getAuditTrail)
+   */
+  async getEntityAuditTrail(
+    entityType: string,
+    entityId: string
+  ): Promise<AuditLog[]> {
+    return this.getAuditTrail(entityType, entityId);
+  }
+
+  /**
+   * Get user audit logs
+   */
+  async getUserAuditLogs(
+    userId: string,
+    filters?: {
+      action?: string;
+      entityType?: string;
+      startDate?: Date;
+      endDate?: Date;
+      limit?: number;
+    }
+  ): Promise<AuditLog[]> {
+    // In production, would query audit log table filtered by userId
+    // Mock data for now
+    return [
+      {
+        id: '1',
+        userId,
+        action: filters?.action || 'CREATE',
+        entityType: filters?.entityType || 'Project',
+        entityId: 'entity-123',
+        timestamp: new Date(),
+      },
+    ];
+  }
+
   // Helper methods
 
   private generateId(): string {
