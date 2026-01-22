@@ -1568,6 +1568,15 @@ model User {
   analyticsAlerts          AnalyticsAlert[]  @relation("AnalyticsAlertUser")
   resolvedAnalyticsAlerts  AnalyticsAlert[]  @relation("AnalyticsAlertResolver")
   customReports            CustomReport[]    @relation("CustomReportCreator")
+
+  // Compliance & Regulatory relations
+  complianceChecks          ComplianceCheck[]      @relation("ComplianceCheckUser")
+  performedComplianceChecks ComplianceCheck[]      @relation("ComplianceCheckPerformer")
+  licenses                  LicenseTracking[]      @relation("ContractorLicenses")
+  insuranceCertificates     InsuranceCertificate[] @relation("ContractorInsurance")
+  bonds                     BondTracking[]         @relation("ContractorBonds")
+  complianceAlerts          ComplianceAlert[]      @relation("ComplianceAlertUser")
+  resolvedComplianceAlerts  ComplianceAlert[]      @relation("ComplianceAlertResolver")
 }
 
 // ============================================================================
@@ -1834,6 +1843,11 @@ model ContractAgreement {
   escrowAgreement EscrowAgreement?
   disputes        Dispute[]
   lienWaivers     LienWaiver[]
+
+  // Compliance relations
+  complianceChecks ComplianceCheck[] @relation("ComplianceCheckContract")
+  bonds            BondTracking[]    @relation("ContractBonds")
+  complianceAlerts ComplianceAlert[] @relation("ComplianceAlertContract")
 
   @@index([projectId])
   @@index([ownerId])
@@ -3032,6 +3046,351 @@ model CustomReport {
   @@index([createdBy])
   @@index([isScheduled])
   @@index([nextScheduled])
+}
+
+// ============================================================================
+// REGULATORY COMPLIANCE MONITORING (Stage 5 - Finance & Trust)
+// ============================================================================
+
+enum RuleType {
+  STATE_ESCROW // State-specific escrow requirements
+  AML // Anti-Money Laundering
+  KYC // Know Your Customer
+  LICENSING // Contractor licensing
+  INSURANCE // Insurance requirements
+  BOND // Surety bond requirements
+  LIEN_LAW // State lien law compliance
+  TAX // Tax compliance
+}
+
+enum ComplianceSeverity {
+  LOW // Minor issue, informational
+  MEDIUM // Should be addressed
+  HIGH // Must be addressed soon
+  CRITICAL // Blocking issue, immediate action required
+}
+
+enum CheckStatus {
+  PASS // Compliance check passed
+  FAIL // Compliance check failed
+  PENDING // Check in progress
+  WAIVED // Check waived by admin
+  EXPIRED // Check result expired
+}
+
+enum LicenseStatus {
+  ACTIVE // License is current and valid
+  EXPIRED // License has expired
+  SUSPENDED // License temporarily suspended
+  REVOKED // License permanently revoked
+  PENDING // Application pending
+}
+
+enum InsuranceStatus {
+  ACTIVE // Insurance is current
+  EXPIRED // Insurance has expired
+  CANCELLED // Insurance cancelled
+  PENDING // Certificate pending verification
+}
+
+enum RemediationStatus {
+  OPEN // Issue identified, not addressed
+  IN_PROGRESS // Working on remediation
+  RESOLVED // Issue resolved
+  ESCALATED // Escalated to management
+}
+
+model ComplianceRule {
+  id   String   @id @default(uuid())
+  name String // Unique rule name
+  type RuleType
+
+  // Jurisdiction
+  jurisdiction String  @default("US") // Country
+  state        String? // State code (for US)
+  county       String? // County (if applicable)
+
+  // Rule Details
+  description  String  @db.Text
+  requirements Json // Detailed requirements (JSONB)
+  citations    String? @db.Text // Legal citations
+
+  // Validity
+  effectiveDate  DateTime
+  expirationDate DateTime?
+  isActive       Boolean            @default(true)
+  severity       ComplianceSeverity @default(MEDIUM)
+
+  // Thresholds (if applicable)
+  thresholdAmount     Decimal? @db.Decimal(18, 2) // Dollar amount threshold
+  thresholdDays       Int? // Days threshold
+  thresholdPercentage Decimal? @db.Decimal(5, 2) // Percentage threshold
+
+  // Metadata
+  metadata Json? // Additional rule configuration
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  checks ComplianceCheck[] @relation("ComplianceRuleChecks")
+
+  @@index([type])
+  @@index([jurisdiction, state])
+  @@index([isActive])
+  @@index([effectiveDate, expirationDate])
+}
+
+model ComplianceCheck {
+  id        String @id @default(uuid())
+  ruleId    String
+  checkType String // "pre_contract", "pre_payment", "daily_monitoring", "manual"
+
+  // Entity Being Checked
+  userId     String? // User being checked
+  contractId String? // Contract being checked
+  escrowId   String? // Escrow account being checked
+  entityType String? // Generic entity type
+  entityId   String? // Generic entity ID
+
+  // Check Result
+  status        CheckStatus @default(PENDING)
+  checkDate     DateTime    @default(now())
+  expiresAt     DateTime? // When check result expires
+  passedChecks  String[] // List of checks that passed
+  failedChecks  String[] // List of checks that failed
+  failureReason String?     @db.Text
+
+  // Remediation
+  remediation        Json? // Remediation steps and tracking
+  remediationStatus  RemediationStatus?
+  remediationDueDate DateTime?
+
+  // Performed By
+  performedBy String? // "system" or user ID
+  isAutomated Boolean @default(true)
+
+  // Metadata
+  metadata Json? // Additional check data
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  rule      ComplianceRule     @relation("ComplianceRuleChecks", fields: [ruleId], references: [id])
+  user      User?              @relation("ComplianceCheckUser", fields: [userId], references: [id])
+  contract  ContractAgreement? @relation("ComplianceCheckContract", fields: [contractId], references: [id])
+  performer User?              @relation("ComplianceCheckPerformer", fields: [performedBy], references: [id])
+
+  @@index([ruleId])
+  @@index([userId])
+  @@index([contractId])
+  @@index([status])
+  @@index([checkDate])
+  @@index([expiresAt])
+}
+
+model LicenseTracking {
+  id     String @id @default(uuid())
+  userId String // Contractor ID
+
+  // License Details
+  licenseType      String // "general_contractor", "electrical", "plumbing", etc.
+  licenseNumber    String
+  issuingAuthority String // "California CSLB", "Texas TDLR", etc.
+  state            String // State code
+  county           String? // County (if applicable)
+
+  // License Information
+  issueDate       DateTime
+  expirationDate  DateTime
+  status          LicenseStatus @default(ACTIVE)
+  classifications String[] // License classifications/specialties
+
+  // Document
+  documentUrl String? // URL to license document
+  verifiedAt  DateTime? // When license was verified
+  verifiedBy  String? // User ID who verified
+
+  // Validation
+  lastChecked        DateTime? // Last time we checked with state board
+  nextCheck          DateTime? // Next scheduled check
+  autoVerified       Boolean   @default(false) // Verified via API
+  verificationSource String? // "manual", "state_api", "third_party"
+
+  // Alerts
+  expirationAlertSent Boolean   @default(false)
+  alertSentAt         DateTime?
+
+  // Metadata
+  metadata Json? // Additional license data
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  contractor User @relation("ContractorLicenses", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([licenseNumber])
+  @@index([state])
+  @@index([status])
+  @@index([expirationDate])
+  @@index([nextCheck])
+}
+
+model InsuranceCertificate {
+  id     String @id @default(uuid())
+  userId String // Contractor ID
+
+  // Insurance Details
+  insuranceType String // "general_liability", "workers_comp", "professional_liability"
+  carrier       String // Insurance company name
+  policyNumber  String
+
+  // Coverage
+  coverageAmount Decimal  @db.Decimal(18, 2)
+  deductible     Decimal? @db.Decimal(18, 2)
+  perOccurrence  Decimal? @db.Decimal(18, 2) // Per occurrence limit
+  aggregate      Decimal? @db.Decimal(18, 2) // Aggregate limit
+
+  // Validity
+  effectiveDate  DateTime
+  expirationDate DateTime
+  status         InsuranceStatus @default(ACTIVE)
+
+  // Additional Insured
+  additionalInsureds String[] // List of additional insureds
+
+  // Document
+  documentUrl String? // URL to certificate
+  verifiedAt  DateTime? // When certificate was verified
+  verifiedBy  String? // User ID who verified
+
+  // Alerts
+  expirationAlertSent Boolean   @default(false)
+  alertSentAt         DateTime?
+
+  // Metadata
+  metadata Json? // Additional insurance data
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  contractor User @relation("ContractorInsurance", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([policyNumber])
+  @@index([status])
+  @@index([expirationDate])
+  @@index([insuranceType])
+}
+
+model BondTracking {
+  id         String  @id @default(uuid())
+  userId     String // Contractor ID
+  contractId String? // Specific contract (if project-specific bond)
+
+  // Bond Details
+  bondType      String // "license_bond", "contract_bond", "payment_bond", "performance_bond"
+  bondNumber    String
+  suretyCompany String
+  bondAmount    Decimal @db.Decimal(18, 2)
+
+  // Validity
+  effectiveDate  DateTime
+  expirationDate DateTime?
+  status         String    @default("ACTIVE") // ACTIVE, EXPIRED, CLAIMED, RELEASED
+
+  // Obligee
+  obligee String? // Who is protected by the bond
+
+  // Document
+  documentUrl String? // URL to bond document
+  verifiedAt  DateTime?
+  verifiedBy  String?
+
+  // Claims
+  hasClaims   Boolean  @default(false)
+  claimAmount Decimal? @db.Decimal(18, 2)
+  claimNotes  String?  @db.Text
+
+  // Alerts
+  expirationAlertSent Boolean   @default(false)
+  alertSentAt         DateTime?
+
+  // Metadata
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  contractor User               @relation("ContractorBonds", fields: [userId], references: [id], onDelete: Cascade)
+  contract   ContractAgreement? @relation("ContractBonds", fields: [contractId], references: [id])
+
+  @@index([userId])
+  @@index([contractId])
+  @@index([bondNumber])
+  @@index([status])
+  @@index([expirationDate])
+}
+
+model ComplianceAlert {
+  id        String @id @default(uuid())
+  alertType String // "license_expiring", "insurance_lapsing", "bond_insufficient", etc.
+
+  // Related Entities
+  userId     String? // User involved
+  contractId String? // Contract involved
+  entityType String? // "license", "insurance", "bond", "check"
+  entityId   String? // ID of entity
+
+  // Alert Details
+  title       String
+  description String             @db.Text
+  severity    ComplianceSeverity @default(MEDIUM)
+  dueDate     DateTime? // When action must be taken
+
+  // Status
+  status           RemediationStatus @default(OPEN)
+  resolvedBy       String? // User ID
+  resolvedAt       DateTime?
+  resolution       String?           @db.Text
+  remediationSteps String[] // Steps taken
+
+  // Notification
+  notificationSent Boolean   @default(false)
+  sentAt           DateTime?
+  recipients       String[] // User IDs notified
+  escalated        Boolean   @default(false)
+  escalatedAt      DateTime?
+
+  // Metadata
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  user     User?              @relation("ComplianceAlertUser", fields: [userId], references: [id])
+  contract ContractAgreement? @relation("ComplianceAlertContract", fields: [contractId], references: [id])
+  resolver User?              @relation("ComplianceAlertResolver", fields: [resolvedBy], references: [id])
+
+  @@index([alertType])
+  @@index([userId])
+  @@index([contractId])
+  @@index([severity])
+  @@index([status])
+  @@index([dueDate])
+  @@index([createdAt])
 }
 
 model Lead {
