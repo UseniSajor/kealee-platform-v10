@@ -56,7 +56,16 @@
   - ✅ Custom error classes (AccountNotFoundError, etc.)
   - ✅ Zod validation schemas
   - ✅ TypeScript type definitions
-- ⏳ JournalEntryService (next)
+- ✅ **JournalEntryService implemented** (2026-01-21)
+  - ✅ `createJournalEntry()` - DRAFT with strict validation
+  - ✅ `postJournalEntry()` - Atomic balance updates
+  - ✅ `voidJournalEntry()` - Reversing entries (immutable)
+  - ✅ `getJournalEntry()` / `listJournalEntries()`
+  - ✅ `approveJournalEntry()` - Approval workflow >$10k
+  - ✅ DoubleEntryValidator helper class
+  - ✅ Entry number generation (JE-YYYYMMDD-XXXX)
+  - ✅ Prisma transactions for atomicity
+- ⏳ API Routes (next)
 - ⏳ Escrow account service integration
 
 ---
@@ -107,21 +116,22 @@ apps/m-finance-trust/
 └── package.json
 
 services/api/src/modules/finance/
-├── account.service.ts ✅ CREATED
-├── journal-entry.service.ts (to be created)
+├── account.service.ts ✅ CREATED (535 lines)
+├── journal-entry.service.ts ✅ CREATED (659 lines)
+├── double-entry-validator.ts ✅ CREATED (189 lines)
 ├── escrow.service.ts (to be created)
 ├── account.routes.ts (to be created)
 ├── journal-entry.routes.ts (to be created)
 └── escrow.routes.ts (to be created)
 
 services/api/src/errors/
-└── accounting.errors.ts ✅ CREATED
+└── accounting.errors.ts ✅ UPDATED (96 lines, 12 error classes)
 
 services/api/src/types/
-└── accounting.types.ts ✅ CREATED
+└── accounting.types.ts ✅ UPDATED (207 lines)
 
 services/api/src/validators/
-└── accounting.validators.ts ✅ CREATED
+└── accounting.validators.ts ✅ CREATED (165 lines)
 ```
 
 ---
