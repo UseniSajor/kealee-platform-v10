@@ -65,8 +65,14 @@
   - ✅ DoubleEntryValidator helper class
   - ✅ Entry number generation (JE-YYYYMMDD-XXXX)
   - ✅ Prisma transactions for atomicity
-- ⏳ API Routes (next)
-- ⏳ Escrow account service integration
+- ✅ **REST API Routes implemented** (2026-01-21)
+  - ✅ 16 Fastify endpoints (journal entries + accounts)
+  - ✅ Role-based access control (finance, finance_approver)
+  - ✅ Full Zod validation middleware
+  - ✅ OpenAPI/Swagger documentation
+  - ✅ Authentication on all routes
+  - ✅ Registered at `/accounting` prefix
+- ⏳ Escrow account service integration (next)
 
 ---
 
@@ -119,10 +125,10 @@ services/api/src/modules/finance/
 ├── account.service.ts ✅ CREATED (535 lines)
 ├── journal-entry.service.ts ✅ CREATED (659 lines)
 ├── double-entry-validator.ts ✅ CREATED (189 lines)
-├── escrow.service.ts (to be created)
-├── account.routes.ts (to be created)
-├── journal-entry.routes.ts (to be created)
-└── escrow.routes.ts (to be created)
+└── escrow.service.ts (to be created)
+
+services/api/src/routes/
+└── accounting.routes.ts ✅ CREATED (625 lines, 16 endpoints)
 
 services/api/src/errors/
 └── accounting.errors.ts ✅ UPDATED (96 lines, 12 error classes)
