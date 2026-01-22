@@ -31,7 +31,7 @@ export async function stripeWebhookRoutes(fastify: FastifyInstance) {
         const verification = await stripeWebhookSecurityService.verifyWebhookSignature(request);
 
         if (!verification.isValid) {
-          fastify.log.error('Webhook signature verification failed:', verification.error);
+          fastify.log.error({ error: verification.error }, 'Webhook signature verification failed');
           return reply.status(400).send({
             error: 'Webhook signature verification failed',
           });

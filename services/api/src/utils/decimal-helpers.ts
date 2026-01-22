@@ -48,7 +48,7 @@ export function divideDecimal(a: Decimal | number, b: Decimal | number): number 
  * Sum array of Decimal values
  */
 export function sumDecimals(values: (Decimal | number)[]): number {
-  return values.reduce((sum, val) => {
+  return values.reduce<number>((sum: number, val) => {
     return sum + toNumber(val);
   }, 0);
 }

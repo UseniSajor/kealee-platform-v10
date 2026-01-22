@@ -114,6 +114,7 @@ export class DepositService {
       userId: data.userId,
       escrowId: data.escrowId,
       amount: data.amount,
+      paymentMethodId: data.paymentMethodId,
     });
 
     return deposit;
@@ -263,14 +264,14 @@ export class DepositService {
       throw new Error('Deposit not found');
     }
 
-    // Record deposit in escrow
-    await escrowService.recordDeposit(
-      deposit.escrowId,
-      deposit.amount,
-      deposit.userId,
-      `Deposit #${depositId}`,
-      { depositId, chargeId }
-    );
+    // Record deposit in escrow (single object parameter)
+    await escrowService.recordDeposit({
+      escrowId: deposit.escrowId,
+      amount: deposit.amount,
+      userId: deposit.userId,
+      description: `Deposit #${depositId}`,
+      metadata: { depositId, chargeId }
+    });
 
     // Update deposit status
     await prisma.depositRequest.update({
@@ -288,6 +289,7 @@ export class DepositService {
       userId: deposit.userId,
       escrowId: deposit.escrowId,
       amount: deposit.amount,
+      clearedAt: new Date(),
     });
   }
 
@@ -397,6 +399,7 @@ export class DepositService {
       depositId,
       userId: deposit.userId,
       escrowId: deposit.escrowId,
+      reason: 'Manual cancellation',
     });
   }
 

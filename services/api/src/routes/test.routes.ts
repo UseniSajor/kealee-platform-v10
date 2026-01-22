@@ -35,7 +35,7 @@ const testRoutes: FastifyPluginAsync = async (fastify) => {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      fastify.log.error('❌ Failed to send test error to Sentry', error);
+      fastify.log.error({ error }, '❌ Failed to send test error to Sentry');
       Sentry.captureException(error);
       return reply.code(500).send({ 
         success: false,
