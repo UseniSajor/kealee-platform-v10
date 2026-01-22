@@ -1456,14 +1456,14 @@ model JurisdictionAnalytics {
 // If they don't exist, add minimal stub definitions below
 
 model Project {
-  id        String   @id @default(uuid())
-  name      String?
-  clientId  String?
-  orgId     String?
+  id         String   @id @default(uuid())
+  name       String?
+  clientId   String?
+  orgId      String?
   propertyId String?
-  status    String   @default("ACTIVE")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status     String   @default("ACTIVE")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   // Relationships
   permits          Permit[]
@@ -1472,9 +1472,9 @@ model Project {
   escrowAgreements EscrowAgreement[]
   disputes         Dispute[]
   leads            Lead[]
-  client           Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  org              Org?      @relation(fields: [orgId], references: [id], onDelete: SetNull)
-  property         Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  client           Client?             @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  org              Org?                @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  property         Property?           @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   tasks            Task[]
   payments         Payment[]
 
@@ -1485,14 +1485,14 @@ model Project {
 }
 
 model User {
-  id String @id @default(uuid())
+  id    String  @id @default(uuid())
   email String? @unique
-  name String?
+  name  String?
   // ... existing Kealee user fields
 
   // Organization relations
   orgMemberships OrgMember[]
-  sessions Session[]
+  sessions       Session[]
 
   // Relationships (example - adjust based on your existing schema)
   // submittedPermits  Permit[]  @relation("PermitApplicant")
@@ -1526,6 +1526,12 @@ model User {
   approvalRequests ApprovalRequest[] @relation("ApprovalRequestRequester")
   approvalSteps    ApprovalStep[]    @relation("ApprovalStepApprover")
   approvalComments ApprovalComment[] @relation("ApprovalCommentUser")
+
+  // Escrow & Finance relations
+  initiatedEscrowTransactions EscrowTransaction[] @relation("EscrowTransactionInitiator")
+  approvedEscrowTransactions  EscrowTransaction[] @relation("EscrowTransactionApprover")
+  placedEscrowHolds           EscrowHold[]        @relation("EscrowHoldPlacer")
+  releasedEscrowHolds         EscrowHold[]        @relation("EscrowHoldReleaser")
 }
 
 // ============================================================================
@@ -1582,14 +1588,14 @@ model Property {
 // ============================================================================
 
 model Org {
-  id          String    @id @default(uuid())
+  id          String   @id @default(uuid())
   name        String
-  slug        String    @unique
+  slug        String   @unique
   description String?
   logo        String?
-  status      String    @default("ACTIVE")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   members      OrgMember[]
   projects     Project[]
@@ -1659,9 +1665,38 @@ enum MilestoneStatus {
 }
 
 enum EscrowStatus {
+  PENDING_DEPOSIT
   ACTIVE
   FROZEN
   CLOSED
+}
+
+enum EscrowTransactionType {
+  DEPOSIT
+  RELEASE
+  REFUND
+  FEE
+  INTEREST
+}
+
+enum EscrowTransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REVERSED
+}
+
+enum EscrowHoldReason {
+  DISPUTE
+  COMPLIANCE
+  MANUAL
+  LIEN
+}
+
+enum EscrowHoldStatus {
+  ACTIVE
+  RELEASED
 }
 
 enum DisputeStatus {
@@ -1748,43 +1783,126 @@ model Evidence {
   @@index([milestoneId])
 }
 
-model EscrowAgreement {
-  id              String       @id @default(uuid())
-  contractId      String       @unique
-  projectId       String
-  totalAmount     Decimal
-  currentBalance  Decimal      @default(0)
-  holdbackPercent Int          @default(10)
-  status          EscrowStatus @default(ACTIVE)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+// ============================================================================
+// ESCROW SYSTEM (Stage 5 - Finance & Trust)
+// ============================================================================
 
+model EscrowAgreement {
+  id                  String @id @default(uuid())
+  contractId          String @unique
+  projectId           String
+  escrowAccountNumber String @unique // Auto-generated: ESC-YYYYMMDD-XXXX
+
+  // Financial Fields
+  totalContractAmount  Decimal @db.Decimal(18, 2) // From contract
+  initialDepositAmount Decimal @db.Decimal(18, 2) // Calculated percentage
+  holdbackPercentage   Int     @default(10) // Default 10%
+  currentBalance       Decimal @default(0) @db.Decimal(18, 2) // Current total in escrow
+  availableBalance     Decimal @default(0) @db.Decimal(18, 2) // Current - holds
+  heldBalance          Decimal @default(0) @db.Decimal(18, 2) // Sum of active holds
+
+  // Interest Tracking (for interest-bearing escrows)
+  interestRate    Decimal? @db.Decimal(5, 4) // e.g., 0.0250 for 2.5%
+  interestAccrued Decimal  @default(0) @db.Decimal(18, 2)
+
+  // Status & Lifecycle
+  status      EscrowStatus @default(PENDING_DEPOSIT)
+  createdAt   DateTime     @default(now())
+  activatedAt DateTime? // When first deposit made
+  closedAt    DateTime? // When escrow closed
+  updatedAt   DateTime     @updatedAt
+
+  // Relationships
   contract     ContractAgreement   @relation(fields: [contractId], references: [id], onDelete: Cascade)
   project      Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   transactions EscrowTransaction[]
+  holds        EscrowHold[]
   disputes     Dispute[]
 
   @@index([contractId])
   @@index([projectId])
   @@index([status])
+  @@index([escrowAccountNumber])
 }
 
 model EscrowTransaction {
-  id              String    @id @default(uuid())
-  escrowId        String
-  type            String // DEPOSIT, RELEASE, RELEASE_FINAL, REFUND, FEE
-  amount          Decimal
-  balanceBefore   Decimal
-  balanceAfter    Decimal
-  status          String // PENDING, COMPLETED, FAILED, CANCELLED
-  stripePaymentId String?
-  processedAt     DateTime?
-  createdAt       DateTime  @default(now())
+  id             String  @id @default(uuid())
+  escrowId       String
+  journalEntryId String? @unique // Link to accounting entry
 
-  escrow EscrowAgreement @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+  // Transaction Details
+  type     EscrowTransactionType
+  amount   Decimal               @db.Decimal(18, 2)
+  currency String                @default("USD")
+
+  // Balance Tracking
+  balanceBefore Decimal @db.Decimal(18, 2)
+  balanceAfter  Decimal @db.Decimal(18, 2)
+
+  // Status & Processing
+  status        EscrowTransactionStatus @default(PENDING)
+  scheduledDate DateTime? // When transaction is scheduled
+  processedDate DateTime? // When transaction completed
+
+  // Payment & Reference
+  reference       String? // Payment ID, Milestone ID, etc.
+  stripePaymentId String? // Stripe payment reference
+
+  // Audit Trail
+  initiatedBy String // User ID who initiated
+  approvedBy  String? // User ID who approved (if required)
+
+  // Flexible Metadata
+  metadata Json? // For flexible data storage
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  escrow       EscrowAgreement @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+  journalEntry JournalEntry?   @relation(fields: [journalEntryId], references: [id])
+  initiator    User            @relation("EscrowTransactionInitiator", fields: [initiatedBy], references: [id])
+  approver     User?           @relation("EscrowTransactionApprover", fields: [approvedBy], references: [id])
 
   @@index([escrowId])
   @@index([status])
+  @@index([type])
+  @@index([processedDate])
+  @@index([initiatedBy])
+  @@index([reference])
+}
+
+model EscrowHold {
+  id       String @id @default(uuid())
+  escrowId String
+
+  // Hold Details
+  amount Decimal          @db.Decimal(18, 2)
+  reason EscrowHoldReason
+  status EscrowHoldStatus @default(ACTIVE)
+  notes  String?          @db.Text
+
+  // Lifecycle
+  placedBy   String // User ID who placed hold
+  releasedBy String? // User ID who released hold
+  placedAt   DateTime  @default(now())
+  releasedAt DateTime?
+  expiresAt  DateTime? // Optional expiration date
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  escrow   EscrowAgreement @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+  placer   User            @relation("EscrowHoldPlacer", fields: [placedBy], references: [id])
+  releaser User?           @relation("EscrowHoldReleaser", fields: [releasedBy], references: [id])
+
+  @@index([escrowId])
+  @@index([status])
+  @@index([placedBy])
+  @@index([placedAt])
 }
 
 // ============================================================================
@@ -1830,27 +1948,27 @@ enum JournalEntryStatus {
 }
 
 model Account {
-  id          String         @id @default(uuid())
-  code        String         @unique // Auto-assigned: 1000-1999 Assets, 2000-2999 Liabilities, etc.
+  id          String          @id @default(uuid())
+  code        String          @unique // Auto-assigned: 1000-1999 Assets, 2000-2999 Liabilities, etc.
   name        String
   type        AccountType
   subType     AccountSubType?
   description String?
-  parentId    String?        // Account hierarchy support
-  isActive    Boolean        @default(true) // Soft delete pattern
-  balance     Decimal        @default(0) @db.Decimal(18, 4) // Current balance (precision: 18, scale: 4)
-  currency    String         @default("USD") // Multi-currency support
-  
+  parentId    String? // Account hierarchy support
+  isActive    Boolean         @default(true) // Soft delete pattern
+  balance     Decimal         @default(0) @db.Decimal(18, 4) // Current balance (precision: 18, scale: 4)
+  currency    String          @default("USD") // Multi-currency support
+
   // Metadata
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  createdBy   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
 
   // Relationships
-  parent          Account?           @relation("AccountHierarchy", fields: [parentId], references: [id])
-  children        Account[]          @relation("AccountHierarchy")
-  lines           JournalEntryLine[]
-  periodBalances  AccountBalance[]
+  parent         Account?           @relation("AccountHierarchy", fields: [parentId], references: [id])
+  children       Account[]          @relation("AccountHierarchy")
+  lines          JournalEntryLine[]
+  periodBalances AccountBalance[]
 
   @@index([type])
   @@index([subType])
@@ -1860,33 +1978,34 @@ model Account {
 }
 
 model JournalEntry {
-  id          String              @id @default(uuid())
-  entryNumber String              @unique // Auto-increment format: JE-2025-000001
+  id          String             @id @default(uuid())
+  entryNumber String             @unique // Auto-increment format: JE-2025-000001
   description String
-  reference   String?             // Reference type (e.g., "ESCROW_DEPOSIT", "MILESTONE_PAYMENT")
-  referenceId String?             // ID of source transaction
-  entryDate   DateTime            @default(now())
-  status      JournalEntryStatus  @default(DRAFT)
-  
+  reference   String? // Reference type (e.g., "ESCROW_DEPOSIT", "MILESTONE_PAYMENT")
+  referenceId String? // ID of source transaction
+  entryDate   DateTime           @default(now())
+  status      JournalEntryStatus @default(DRAFT)
+
   // Approval workflow for large transactions
-  requiresApproval Boolean         @default(false) // Auto-set for entries > $10,000
-  approvedBy      String?         // User ID who approved
-  approvedAt      DateTime?
-  
+  requiresApproval Boolean   @default(false) // Auto-set for entries > $10,000
+  approvedBy       String? // User ID who approved
+  approvedAt       DateTime?
+
   // Posting (immutable once POSTED)
-  postedAt    DateTime?           // When entry was posted (null = draft, immutable once set)
-  postedBy    String?             // User who posted the entry
-  voidedAt    DateTime?           // When entry was voided
-  voidedBy    String?             // User who voided
-  voidReason  String?
-  
+  postedAt   DateTime? // When entry was posted (null = draft, immutable once set)
+  postedBy   String? // User who posted the entry
+  voidedAt   DateTime? // When entry was voided
+  voidedBy   String? // User who voided
+  voidReason String?
+
   // Audit trail
-  createdAt   DateTime            @default(now())
-  createdBy   String
-  updatedAt   DateTime            @updatedAt
+  createdAt DateTime @default(now())
+  createdBy String
+  updatedAt DateTime @updatedAt
 
   // Relationships
-  lines       JournalEntryLine[]
+  lines             JournalEntryLine[]
+  escrowTransaction EscrowTransaction? // Reverse relation for 1:1
 
   @@index([entryDate])
   @@index([status])
@@ -1897,16 +2016,16 @@ model JournalEntry {
 }
 
 model JournalEntryLine {
-  id             String       @id @default(uuid())
+  id             String  @id @default(uuid())
   journalEntryId String
   accountId      String
-  lineOrder      Int          @default(0) // Line ordering within entry
-  debit          Decimal      @default(0) @db.Decimal(18, 4)
-  credit         Decimal      @default(0) @db.Decimal(18, 4)
+  lineOrder      Int     @default(0) // Line ordering within entry
+  debit          Decimal @default(0) @db.Decimal(18, 4)
+  credit         Decimal @default(0) @db.Decimal(18, 4)
   description    String?
-  
+
   // Audit trail
-  createdAt      DateTime     @default(now())
+  createdAt DateTime @default(now())
 
   // Relationships
   journalEntry JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
@@ -1919,26 +2038,26 @@ model JournalEntryLine {
 
 // Period-based account balances for reconciliation
 model AccountBalance {
-  id            String   @id @default(uuid())
-  accountId     String
-  fiscalYear    Int      // e.g., 2025
-  fiscalPeriod  Int      // 1-12 for months, or custom period
-  
+  id           String @id @default(uuid())
+  accountId    String
+  fiscalYear   Int // e.g., 2025
+  fiscalPeriod Int // 1-12 for months, or custom period
+
   // Balances
-  openingBalance  Decimal @default(0) @db.Decimal(18, 4)
-  closingBalance  Decimal @default(0) @db.Decimal(18, 4)
-  debitTotal      Decimal @default(0) @db.Decimal(18, 4) // Sum of debits in period
-  creditTotal     Decimal @default(0) @db.Decimal(18, 4) // Sum of credits in period
-  
+  openingBalance Decimal @default(0) @db.Decimal(18, 4)
+  closingBalance Decimal @default(0) @db.Decimal(18, 4)
+  debitTotal     Decimal @default(0) @db.Decimal(18, 4) // Sum of debits in period
+  creditTotal    Decimal @default(0) @db.Decimal(18, 4) // Sum of credits in period
+
   // Reconciliation
-  isReconciled    Boolean   @default(false)
-  reconciledAt    DateTime?
-  reconciledBy    String?
+  isReconciled        Boolean   @default(false)
+  reconciledAt        DateTime?
+  reconciledBy        String?
   reconciliationNotes String?
-  
+
   // Audit trail
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relationships
   account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
@@ -2470,17 +2589,17 @@ model ApprovalComment {
 // ============================================================================
 
 model Client {
-  id        String   @id @default(uuid())
-  name      String
-  email     String?
-  phone     String?
+  id         String   @id @default(uuid())
+  name       String
+  email      String?
+  phone      String?
   assignedPM String? // PM user ID
-  status    String   @default("ACTIVE")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status     String   @default("ACTIVE")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  projects          Project[]
-  tasks             Task[]
+  projects           Project[]
+  tasks              Task[]
   assignmentRequests AssignmentRequest[]
 
   @@index([assignedPM])
@@ -2488,21 +2607,21 @@ model Client {
 }
 
 model Task {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   projectId   String?
   clientId    String?
   title       String
   description String?
-  status      String   @default("PENDING")
-  priority    String   @default("NORMAL")
+  status      String    @default("PENDING")
+  priority    String    @default("NORMAL")
   assignedTo  String?
   dueDate     DateTime?
   completedAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  client  Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  project  Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  client   Client?       @relation(fields: [clientId], references: [id], onDelete: SetNull)
   comments TaskComment[]
 
   @@index([projectId])

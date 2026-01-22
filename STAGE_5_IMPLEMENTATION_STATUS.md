@@ -37,10 +37,29 @@
 - ✅ Root layout and homepage
 - ✅ API client library
 
-### Existing Models (Already in Schema)
-- ✅ `EscrowAgreement` model
-- ✅ `EscrowTransaction` model
-- ✅ `Dispute` model
+### Escrow Models (Enhanced: 2026-01-21)
+- ✅ `EscrowAgreement` model enhanced with:
+  - Auto-generated escrow account numbers (ESC-YYYYMMDD-XXXX)
+  - Financial fields (totalContractAmount, initialDepositAmount, holdbackPercentage)
+  - Balance tracking (currentBalance, availableBalance, heldBalance)
+  - Interest-bearing escrow support (interestRate, interestAccrued)
+  - Status workflow (PENDING_DEPOSIT, ACTIVE, FROZEN, CLOSED)
+  - Lifecycle timestamps (createdAt, activatedAt, closedAt)
+- ✅ `EscrowTransaction` model enhanced with:
+  - Link to JournalEntry for accounting integration
+  - Transaction types (DEPOSIT, RELEASE, REFUND, FEE, INTEREST)
+  - Status workflow (PENDING, PROCESSING, COMPLETED, FAILED, REVERSED)
+  - Payment tracking (reference, stripePaymentId, scheduledDate, processedDate)
+  - Full audit trail (initiatedBy, approvedBy)
+  - Metadata JSON for flexible data
+- ✅ `EscrowHold` model (new) for:
+  - Holding funds (amount, reason, status)
+  - Hold reasons (DISPUTE, COMPLIANCE, MANUAL, LIEN)
+  - Lifecycle tracking (placedBy, releasedBy, placedAt, releasedAt, expiresAt)
+  - Notes for explanation
+- ✅ 4 new enums + 1 enhanced enum (5 total)
+- ✅ User relations for audit trail
+- ✅ `Dispute` model (existing)
 
 ---
 
