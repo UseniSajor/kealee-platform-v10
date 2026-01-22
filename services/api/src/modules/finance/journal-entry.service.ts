@@ -40,8 +40,13 @@ export class JournalEntryService {
 
   /**
    * Create a new journal entry in DRAFT status
+   * @param data Journal entry data
+   * @param tx Optional Prisma transaction context for atomicity with other operations
    */
-  async createJournalEntry(data: CreateJournalEntryDTO): Promise<JournalEntryWithLines> {
+  async createJournalEntry(
+    data: CreateJournalEntryDTO,
+    tx?: Prisma.TransactionClient
+  ): Promise<JournalEntryWithLines> {
     const { description, entryDate, reference, referenceId, lines, createdBy } = data
 
     // Validate entry date
@@ -90,9 +95,9 @@ export class JournalEntryService {
     const totalAmount = validation.totalDebits || new Decimal(0)
     const requiresApproval = totalAmount.greaterThan(10000)
 
-    // Create journal entry with lines in a transaction
-    const journalEntry = await prismaAny.$transaction(async (tx: any) => {
-      const entry = await tx.journalEntry.create({
+    // Use provided transaction context or create a new transaction
+    const executeInTransaction = async (txClient: any) => {
+      const entry = await txClient.journalEntry.create({
         data: {
           entryNumber,
           description,
@@ -132,15 +137,25 @@ export class JournalEntryService {
       })
 
       return entry
-    })
+    }
 
-    return journalEntry as JournalEntryWithLines
+    // If transaction context provided, use it; otherwise create new transaction
+    if (tx) {
+      return await executeInTransaction(tx)
+    } else {
+      return await prismaAny.$transaction(executeInTransaction) as JournalEntryWithLines
+    }
   }
 
   /**
    * Post a journal entry - makes it permanent and updates account balances
+   * @param data Post journal entry data
+   * @param txContext Optional Prisma transaction context for atomicity with other operations
    */
-  async postJournalEntry(data: PostJournalEntryDTO): Promise<JournalEntryWithLines> {
+  async postJournalEntry(
+    data: PostJournalEntryDTO,
+    txContext?: Prisma.TransactionClient
+  ): Promise<JournalEntryWithLines> {
     const { entryId, postedBy } = data
 
     // Get the entry with lines
@@ -164,7 +179,8 @@ export class JournalEntryService {
     // Check if entry requires approval
     if (entry.requiresApproval && !entry.approvedBy) {
       // Set status to pending approval - do not post yet
-      const updatedEntry = await prismaAny.journalEntry.update({
+      const dbClient = txContext || prismaAny
+      const updatedEntry = await dbClient.journalEntry.update({
         where: { id: entryId },
         data: {
           status: 'DRAFT', // Keep as DRAFT until approved
@@ -195,7 +211,7 @@ export class JournalEntryService {
     }
 
     // Post the entry and update account balances in a transaction
-    const postedEntry = await prismaAny.$transaction(async (tx: any) => {
+    const executePost = async (tx: any) => {
       // Update entry status to POSTED
       const updated = await tx.journalEntry.update({
         where: { id: entryId },
@@ -267,9 +283,39 @@ export class JournalEntryService {
       }
 
       return updated
-    })
+    }
 
-    return postedEntry as JournalEntryWithLines
+    // Use provided transaction context or create new transaction
+    if (txContext) {
+      return await executePost(txContext) as JournalEntryWithLines
+    } else {
+      return await prismaAny.$transaction(executePost) as JournalEntryWithLines
+    }
+  }
+
+  /**
+   * Create and post a journal entry in one atomic operation
+   * Convenience method for automatic transactions (like escrow operations)
+   * @param data Journal entry data
+   * @param tx Optional Prisma transaction context for atomicity with other operations
+   */
+  async createAndPostJournalEntry(
+    data: CreateJournalEntryDTO,
+    tx?: Prisma.TransactionClient
+  ): Promise<JournalEntryWithLines> {
+    // Create the entry
+    const entry = await this.createJournalEntry(data, tx)
+    
+    // Post it immediately
+    const postedEntry = await this.postJournalEntry(
+      {
+        entryId: entry.id,
+        postedBy: data.createdBy,
+      },
+      tx
+    )
+    
+    return postedEntry
   }
 
   /**

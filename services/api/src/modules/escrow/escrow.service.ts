@@ -167,10 +167,10 @@ export class EscrowService {
 
     // Use Prisma transaction to ensure atomicity
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Create journal entry for the deposit
+      // 1. Create and post journal entry for the deposit
       // Debit: Cash (Asset) - increases our cash
       // Credit: Escrow Liability (Liability) - we owe this to contractor/owner
-      const journalEntry = await journalEntryService.createJournalEntry({
+      const postedEntry = await journalEntryService.createAndPostJournalEntry({
         description: `Escrow deposit for ${escrow.escrowAccountNumber} - Contract ${escrow.contract.contractNumber}`,
         entryDate: processedDate,
         reference: depositId,
@@ -190,13 +190,7 @@ export class EscrowService {
           },
         ],
         createdBy: initiatedBy,
-      })
-
-      // 2. Post the journal entry immediately (deposits are automatic)
-      const postedEntry = await journalEntryService.postJournalEntry({
-        entryId: journalEntry.id,
-        postedBy: initiatedBy,
-      })
+      }, tx)
 
       // 3. Create escrow transaction
       const transaction = await tx.escrowTransaction.create({
@@ -283,11 +277,11 @@ export class EscrowService {
 
     // Use Prisma transaction
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Create journal entry for payment release
+      // 1. Create and post journal entry for payment release
       // Debit: Escrow Liability - reduces our liability
       // Credit: Contractor Payouts (Expense) - payment to contractor
       // Credit: Platform Fees (Revenue) - our revenue
-      const journalEntry = await journalEntryService.createJournalEntry({
+      const postedEntry = await journalEntryService.createAndPostJournalEntry({
         description: `Payment release from ${escrow.escrowAccountNumber} - Milestone ${milestoneId}`,
         entryDate: new Date(),
         reference: milestoneId,
@@ -313,15 +307,9 @@ export class EscrowService {
           },
         ],
         createdBy: initiatedBy,
-      })
+      }, tx)
 
-      // 2. Post the journal entry
-      const postedEntry = await journalEntryService.postJournalEntry({
-        entryId: journalEntry.id,
-        postedBy: approvedBy || initiatedBy,
-      })
-
-      // 3. Create escrow transaction
+      // 2. Create escrow transaction
       const transaction = await tx.escrowTransaction.create({
         data: {
           escrowAgreementId: escrowId,
@@ -505,10 +493,10 @@ export class EscrowService {
 
     // Use transaction
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Create journal entry for refund
+      // 1. Create and post journal entry for refund
       // Debit: Escrow Liability - reduces liability
       // Credit: Cash - money leaving our system
-      const journalEntry = await journalEntryService.createJournalEntry({
+      const postedEntry = await journalEntryService.createAndPostJournalEntry({
         description: `Refund from ${escrow.escrowAccountNumber} - ${reason}`,
         entryDate: new Date(),
         reference: 'REFUND',
@@ -528,15 +516,9 @@ export class EscrowService {
           },
         ],
         createdBy: initiatedBy,
-      })
+      }, tx)
 
-      // 2. Post the journal entry
-      const postedEntry = await journalEntryService.postJournalEntry({
-        entryId: journalEntry.id,
-        postedBy: approvedBy || initiatedBy,
-      })
-
-      // 3. Create escrow transaction
+      // 2. Create escrow transaction
       const transaction = await tx.escrowTransaction.create({
         data: {
           escrowAgreementId: escrowId,
@@ -591,8 +573,8 @@ export class EscrowService {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      // Create journal entry
-      const journalEntry = await journalEntryService.createJournalEntry({
+      // Create and post journal entry
+      const postedEntry = await journalEntryService.createAndPostJournalEntry({
         description: `${feeType} fee for ${escrow.escrowAccountNumber} - ${description}`,
         entryDate: new Date(),
         reference: feeType,
@@ -612,13 +594,7 @@ export class EscrowService {
           },
         ],
         createdBy: userId,
-      })
-
-      // Post the journal entry
-      const postedEntry = await journalEntryService.postJournalEntry({
-        entryId: journalEntry.id,
-        postedBy: userId,
-      })
+      }, tx)
 
       // Create transaction
       const transaction = await tx.escrowTransaction.create({
