@@ -218,6 +218,7 @@ import { servicePlanRoutes } from './modules/ops-services/service-plan.routes'
 import { workflowRoutes } from './modules/workflow/workflow.routes'
 import { fileRoutes } from './modules/files/file.routes'
 import { accountingRoutes } from './routes/accounting.routes'
+import { stripeConnectRoutes } from './routes/stripe-connect.routes'
 import { analyticsRoutes } from './modules/analytics/analytics.routes'
 import { monitoringDashboardRoutes } from './modules/monitoring/monitoring-dashboard.routes'
 import { taskGeneratorRoutes } from './modules/tasks/task-generator.routes'
@@ -365,6 +366,7 @@ const start = async () => {
     await fastify.register(pmRoutes, { prefix: '/pm' })
     await fastify.register(billingRoutes, { prefix: '/billing' })
     await fastify.register(accountingRoutes, { prefix: '/accounting' })
+    await fastify.register(stripeConnectRoutes, { prefix: '/connect' })
     await fastify.register(projectRoutes, { prefix: '/projects' })
     await fastify.register(propertyRoutes, { prefix: '/properties' })
     await fastify.register(readinessRoutes, { prefix: '/readiness' })

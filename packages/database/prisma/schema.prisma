@@ -1532,6 +1532,11 @@ model User {
   approvedEscrowTransactions  EscrowTransaction[] @relation("EscrowTransactionApprover")
   placedEscrowHolds           EscrowHold[]        @relation("EscrowHoldPlacer")
   releasedEscrowHolds         EscrowHold[]        @relation("EscrowHoldReleaser")
+
+  // Stripe Connect relations
+  connectedAccount ConnectedAccount? @relation("ConnectedAccountUser")
+  initiatedPayouts Payout[]          @relation("PayoutInitiator")
+  approvedPayouts  Payout[]          @relation("PayoutApprover")
 }
 
 // ============================================================================
@@ -1763,6 +1768,7 @@ model Milestone {
   dependsOn           Milestone?        @relation("MilestoneDependency", fields: [dependsOnId], references: [id])
   dependentMilestones Milestone[]       @relation("MilestoneDependency")
   evidence            Evidence[]
+  payouts             Payout[] // Payouts from this milestone
 
   @@index([contractId])
   @@index([status])
@@ -1864,6 +1870,7 @@ model EscrowTransaction {
   journalEntry JournalEntry?   @relation(fields: [journalEntryId], references: [id])
   initiator    User            @relation("EscrowTransactionInitiator", fields: [initiatedBy], references: [id])
   approver     User?           @relation("EscrowTransactionApprover", fields: [approvedBy], references: [id])
+  payout       Payout? // Reverse relation for payout
 
   @@index([escrowId])
   @@index([status])
@@ -2066,6 +2073,140 @@ model AccountBalance {
   @@index([accountId])
   @@index([fiscalYear, fiscalPeriod])
   @@index([isReconciled])
+}
+
+// ============================================================================
+// STRIPE CONNECT (Stage 5 - Finance & Trust - Contractor Payouts)
+// ============================================================================
+
+enum ConnectedAccountType {
+  STANDARD
+  EXPRESS
+}
+
+enum ConnectedAccountStatus {
+  PENDING
+  ACTIVE
+  RESTRICTED
+  DISABLED
+}
+
+enum PayoutStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELED
+}
+
+enum PayoutMethod {
+  STANDARD // Next business day, no fee
+  INSTANT // Within 30 minutes, 1% fee (max $10)
+}
+
+model ConnectedAccount {
+  id     String @id @default(uuid())
+  userId String @unique // Contractor user ID
+
+  // Stripe Account Details
+  stripeAccountId String                 @unique
+  accountType     ConnectedAccountType
+  status          ConnectedAccountStatus @default(PENDING)
+
+  // Account Configuration
+  country  String
+  currency String @default("USD")
+  email    String
+
+  // Onboarding Status
+  hasCompletedOnboarding Boolean   @default(false)
+  onboardingLink         String? // Last generated onboarding link
+  onboardingLinkExpires  DateTime?
+
+  // Capabilities
+  payoutsEnabled Boolean @default(false)
+  chargesEnabled Boolean @default(false)
+
+  // Requirements from Stripe
+  requirements Json? // Store currently_due, eventually_due, past_due, disabled_reason
+
+  // Platform Fee Configuration
+  platformFeePercentage Decimal @default(0) @db.Decimal(5, 2) // e.g., 2.50 for 2.5%
+
+  // Tax Information
+  taxFormStatus     String? // W9_COLLECTED, W8BEN_COLLECTED, PENDING
+  taxClassification String? // INDIVIDUAL, C_CORP, S_CORP, PARTNERSHIP, LLC, etc.
+  taxId             String? // TIN/EIN (encrypted)
+
+  // Metadata
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  user    User     @relation("ConnectedAccountUser", fields: [userId], references: [id], onDelete: Cascade)
+  payouts Payout[]
+
+  @@index([userId])
+  @@index([stripeAccountId])
+  @@index([status])
+  @@index([hasCompletedOnboarding])
+}
+
+model Payout {
+  id                  String  @id @default(uuid())
+  connectedAccountId  String
+  escrowTransactionId String? @unique // Link to escrow transaction if from escrow release (1:1)
+  milestoneId         String? // Link to milestone if milestone payment
+
+  // Payout Details
+  amount           Decimal @db.Decimal(18, 2)
+  currency         String  @default("USD")
+  stripePayoutId   String? @unique
+  stripeTransferId String? // Transfer ID if using Stripe Transfers
+
+  // Status & Processing
+  status      PayoutStatus @default(PENDING)
+  method      PayoutMethod @default(STANDARD)
+  arrivalDate DateTime? // Expected/actual arrival date
+  processedAt DateTime? // When payout was processed
+  failedAt    DateTime? // When payout failed
+
+  // Failure Information
+  failureCode    String?
+  failureMessage String?
+
+  // Fee Information
+  platformFee      Decimal @default(0) @db.Decimal(18, 2)
+  stripeFee        Decimal @default(0) @db.Decimal(18, 2)
+  instantPayoutFee Decimal @default(0) @db.Decimal(18, 2) // 1% for instant payouts
+
+  // Audit Trail
+  initiatedBy String // User who initiated payout
+  approvedBy  String? // User who approved (if manual approval required)
+
+  // Metadata
+  metadata Json? // For flexible data (milestone details, etc.)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  connectedAccount  ConnectedAccount   @relation(fields: [connectedAccountId], references: [id], onDelete: Cascade)
+  escrowTransaction EscrowTransaction? @relation(fields: [escrowTransactionId], references: [id])
+  milestone         Milestone?         @relation(fields: [milestoneId], references: [id])
+  initiator         User               @relation("PayoutInitiator", fields: [initiatedBy], references: [id])
+  approver          User?              @relation("PayoutApprover", fields: [approvedBy], references: [id])
+
+  @@index([connectedAccountId])
+  @@index([status])
+  @@index([stripePayoutId])
+  @@index([escrowTransactionId])
+  @@index([milestoneId])
+  @@index([initiatedBy])
+  @@index([arrivalDate])
 }
 
 model Dispute {
