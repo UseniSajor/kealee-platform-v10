@@ -2,8 +2,8 @@
  * DoubleEntryValidator - Helper class for validating double-entry accounting rules
  */
 
-import { Decimal } from '@kealee/database'
 import { Account, AccountType } from '@kealee/database'
+import { Decimal } from '@prisma/client/runtime/library'
 
 export interface ValidationResult {
   isValid: boolean

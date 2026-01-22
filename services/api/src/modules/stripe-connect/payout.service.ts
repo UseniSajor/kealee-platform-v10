@@ -6,7 +6,7 @@
 import Stripe from 'stripe'
 import { prisma } from '@kealee/database'
 import { PayoutMethod, PayoutStatus } from '@kealee/database'
-import { Decimal } from '@kealee/database'
+import { Decimal } from '@prisma/client/runtime/library'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-12-15.clover',

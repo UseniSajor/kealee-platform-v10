@@ -2,7 +2,8 @@
  * JournalEntryService - Core double-entry accounting service
  */
 
-import { JournalEntry, JournalEntryStatus, Prisma, Decimal } from '@kealee/database'
+import { JournalEntry, JournalEntryStatus, Prisma } from '@kealee/database'
+import { Decimal } from '@prisma/client/runtime/library'
 import { prismaAny } from '../../utils/prisma-helper'
 import {
   JournalEntryNotFoundError,
