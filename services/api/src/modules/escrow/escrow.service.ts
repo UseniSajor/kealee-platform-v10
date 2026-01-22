@@ -988,6 +988,50 @@ export class EscrowService {
   }
 
   /**
+   * Get escrow agreement by contract ID
+   */
+  async getEscrowByContract(contractId: string): Promise<EscrowAgreement> {
+    const escrow = await prisma.escrowAgreement.findUnique({
+      where: { contractId },
+      include: {
+        contract: {
+          include: {
+            owner: { select: { id: true, email: true, name: true } },
+            contractor: { select: { id: true, email: true, name: true } },
+          },
+        },
+      },
+    })
+
+    if (!escrow) {
+      throw new EscrowNotFoundError(`Escrow for contract ${contractId}`)
+    }
+
+    return escrow as EscrowAgreement
+  }
+
+  /**
+   * Get hold by reference (e.g., dispute ID)
+   */
+  async getHoldByReference(escrowId: string, reference: string): Promise<EscrowHold> {
+    const hold = await prisma.escrowHold.findFirst({
+      where: {
+        escrowAgreementId: escrowId,
+        notes: {
+          contains: reference,
+        },
+        status: 'ACTIVE',
+      },
+    })
+
+    if (!hold) {
+      throw new HoldNotFoundError(`Hold for reference ${reference} in escrow ${escrowId}`)
+    }
+
+    return hold
+  }
+
+  /**
    * Calculate and verify escrow balances for reconciliation
    * Checks actual transaction history against recorded balances
    */

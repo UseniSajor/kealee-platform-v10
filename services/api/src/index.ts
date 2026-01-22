@@ -336,6 +336,10 @@ const start = async () => {
     fastify.addHook('onRequest', sentryRequestHandler)
     fastify.addHook('onResponse', sentryResponseHandler)
 
+    // Initialize event-driven architecture
+    const { escrowEventHandlers } = require('./events/escrow-event-handlers')
+    escrowEventHandlers.registerHandlers()
+
     // Register request/response logging
     const { requestLogger, responseLogger } = require('./middleware/request-logger.middleware')
     fastify.addHook('onRequest', requestLogger)
