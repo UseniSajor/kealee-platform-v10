@@ -208,15 +208,15 @@ export async function detectMaliciousInput(
   const checkValue = (value: any, path: string): boolean => {
     if (typeof value === 'string') {
       if (hasSQLInjection(value)) {
-        request.log.warn(`SQL injection detected in ${path}:`, value);
+        request.log.warn(`SQL injection detected in ${path}: ${value}`);
         return true;
       }
       if (hasXSS(value)) {
-        request.log.warn(`XSS attempt detected in ${path}:`, value);
+        request.log.warn(`XSS attempt detected in ${path}: ${value}`);
         return true;
       }
       if (hasPathTraversal(value)) {
-        request.log.warn(`Path traversal detected in ${path}:`, value);
+        request.log.warn(`Path traversal detected in ${path}: ${value}`);
         return true;
       }
     }

@@ -123,6 +123,31 @@ export class AuditService {
   }
 
   /**
+   * Alias for logAudit (for backward compatibility)
+   */
+  async recordAudit(data: {
+    userId: string;
+    action: string;
+    entityType: string;
+    entityId: string;
+    changes?: Record<string, any>;
+    metadata?: Record<string, any>;
+    ipAddress?: string;
+    userAgent?: string;
+    reason?: string;
+  }): Promise<AuditLog> {
+    // If reason is provided, add it to metadata
+    const auditData = { ...data };
+    if (data.reason) {
+      auditData.metadata = {
+        ...data.metadata,
+        reason: data.reason,
+      };
+    }
+    return this.logAudit(auditData);
+  }
+
+  /**
    * Get audit trail for entity
    */
   async getAuditTrail(

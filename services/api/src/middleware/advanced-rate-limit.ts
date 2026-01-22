@@ -4,7 +4,9 @@
  */
 
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { createClient, RedisClientType } from 'redis';
+import Redis from 'ioredis';
+
+type RedisClientType = Redis;
 
 // Redis client
 let redisClient: RedisClientType | null = null;
@@ -16,7 +18,7 @@ export async function initializeRedis() {
   const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 
   try {
-    redisClient = createClient({ url: redisUrl });
+    redisClient = new Redis(redisUrl);
 
     redisClient.on('error', (err) => {
       console.error('Redis Client Error:', err);
@@ -25,8 +27,6 @@ export async function initializeRedis() {
     redisClient.on('connect', () => {
       console.log('✅ Redis connected for rate limiting');
     });
-
-    await redisClient.connect();
 
     return redisClient;
   } catch (error) {
@@ -133,7 +133,7 @@ async function checkRateLimitRedis(key: string, config: RateLimitConfig): Promis
   remaining: number;
   resetAt: number;
 }> {
-  if (!redisClient || !redisClient.isOpen) {
+  if (!redisClient || redisClient.status !== 'ready') {
     return checkRateLimitMemory(key, config);
   }
 
@@ -145,19 +145,19 @@ async function checkRateLimitRedis(key: string, config: RateLimitConfig): Promis
     const multi = redisClient.multi();
 
     // Remove old entries
-    multi.zRemRangeByScore(key, 0, windowStart);
+    multi.zremrangebyscore(key, 0, windowStart);
 
     // Add current request
-    multi.zAdd(key, { score: now, value: `${now}` });
+    multi.zadd(key, now, `${now}`);
 
     // Count requests in window
-    multi.zCard(key);
+    multi.zcard(key);
 
     // Set expiry
     multi.expire(key, Math.ceil(config.windowMs / 1000));
 
     const results = await multi.exec();
-    const count = results[2] as number;
+    const count = (results && results[2] && results[2][1]) as number || 0;
 
     const allowed = count <= config.max;
     const remaining = Math.max(0, config.max - count);
@@ -298,7 +298,7 @@ export async function cleanupRateLimitCache() {
  * Graceful shutdown
  */
 export async function closeRedis() {
-  if (redisClient && redisClient.isOpen) {
+  if (redisClient && redisClient.status === 'ready') {
     await redisClient.quit();
     console.log('Redis connection closed');
   }

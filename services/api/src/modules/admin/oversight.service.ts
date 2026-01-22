@@ -18,7 +18,7 @@ export interface DashboardMetrics {
   compliance: {
     pendingScreenings: number;
     flaggedTransactions: number;
-    expiring licenses: number;
+    expiringLicenses: number;
     activeAlerts: number;
   };
   operations: {

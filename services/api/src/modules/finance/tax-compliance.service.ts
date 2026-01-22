@@ -31,7 +31,7 @@ export interface Form1099Data {
   };
   payments: {
     nonemployeeCompensation: number; // Box 1 (1099-NEC)
-    payerMadeDirect Sales: boolean; // Box 2
+    payerMadeDirectSales: boolean; // Box 2
     federalIncomeTaxWithheld: number; // Box 4
     stateTaxWithheld: number; // Box 5
     stateIncome: number; // Box 6
@@ -148,7 +148,7 @@ export class TaxComplianceService {
       },
       payments: {
         nonemployeeCompensation: totalPayments,
-        payerMadeDirect Sales: false,
+        payerMadeDirectSales: false,
         federalIncomeTaxWithheld: 0,
         stateTaxWithheld: 0,
         stateIncome: totalPayments,

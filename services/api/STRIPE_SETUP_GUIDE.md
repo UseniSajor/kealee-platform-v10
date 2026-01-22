@@ -119,3 +119,5 @@ The script will:
 **Next Steps:** After running the script, copy the output environment variables to Vercel and Railway.
 
 
+
+

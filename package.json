@@ -22,7 +22,7 @@
     "setup": "bash scripts/run-all-setup.sh",
     "setup:storage": "bash scripts/setup-s3-r2-storage.sh",
     "setup:env": "bash scripts/setup-vercel-env-vars.sh",
-    "setup:monitoring": "bash scripts/setup-monitoring.sh",
+    "setup:monitoring": "bash scripts/monitor-first-transactions.sh",
     "setup:alerts": "bash scripts/setup-alerts.sh",
     "ssl:diagnose": "bash scripts/ssl-diagnose.sh",
     "ssl:fix": "bash scripts/ssl-fix-trust-chain.sh",
@@ -49,7 +49,6 @@
     "setup:seo": "bash scripts/seo-optimization.sh",
     "setup:content": "bash scripts/content-deployment.sh",
     "setup:golive": "bash scripts/go-live.sh",
-    "setup:monitoring": "bash scripts/monitor-first-transactions.sh",
     "setup:support": "bash scripts/support-team-training.sh",
     "launch:all": "bash scripts/execute-all-launch-tasks.sh",
     "deploy:staging": "bash scripts/deploy-staging.sh staging",
@@ -75,6 +74,10 @@
     "services/*"
   ],
   "devDependencies": {
-    "@playwright/test": "^1.40.0"
+    "@playwright/test": "^1.40.0",
+    "@types/jsonwebtoken": "^9.0.5",
+    "ioredis": "^5.3.2",
+    "isomorphic-dompurify": "^2.35.0",
+    "jsonwebtoken": "^9.0.3"
   }
 }

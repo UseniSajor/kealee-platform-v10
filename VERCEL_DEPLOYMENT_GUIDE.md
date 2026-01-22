@@ -257,3 +257,5 @@ If you encounter issues:
 4. Check Supabase project is active
 
 
+
+

@@ -44,7 +44,7 @@ export function generateAccessToken(userId: string, email: string, role: string,
   return jwt.sign(
     { userId, email, role, sessionId },
     JWT_SECRET,
-    { expiresIn: JWT_EXPIRY, algorithm: 'HS512' }
+    { expiresIn: JWT_EXPIRY }
   );
 }
 
@@ -55,7 +55,7 @@ export function generateRefreshToken(userId: string, sessionId: string): string 
   return jwt.sign(
     { userId, sessionId },
     JWT_REFRESH_SECRET,
-    { expiresIn: JWT_REFRESH_EXPIRY, algorithm: 'HS512' }
+    { expiresIn: JWT_REFRESH_EXPIRY }
   );
 }
 

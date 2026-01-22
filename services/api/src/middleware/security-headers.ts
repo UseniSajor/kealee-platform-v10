@@ -181,7 +181,7 @@ export const PRODUCTION_CORS: CORSConfig = {
  * Development CORS configuration (permissive)
  */
 export const DEVELOPMENT_CORS: CORSConfig = {
-  origin: true, // Allow all origins in development
+  origin: '*', // Allow all origins in development
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['*'],

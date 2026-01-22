@@ -34,7 +34,7 @@ export interface PrePaymentCheckResult {
   checks: {
     escrowSufficient: boolean
     noActiveHolds: boolean
-    permitsC urrent: boolean
+    permitsCurrent: boolean
     lienWaiversSigned: boolean
   }
   failedChecks: string[]

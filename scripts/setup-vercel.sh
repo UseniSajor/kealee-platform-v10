@@ -56,3 +56,5 @@ echo "2. Add environment variables in each Vercel project"
 echo "3. Run ./scripts/deploy-frontend.sh all"
 
 
+
+
