@@ -81,7 +81,7 @@ export class DisputeService {
    */
   static async initiateDispute(data: InitiateDisputeDTO) {
     const {
-      escrowAgreementId,
+      escrowId,
       contractId,
       projectId,
       initiatedBy,

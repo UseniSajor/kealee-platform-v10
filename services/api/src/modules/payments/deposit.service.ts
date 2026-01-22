@@ -267,9 +267,10 @@ export class DepositService {
     // Record deposit in escrow (single object parameter)
     await escrowService.recordDeposit({
       escrowId: deposit.escrowId,
-      amount: deposit.amount,
-      userId: deposit.userId,
-      description: `Deposit #${depositId}`,
+      depositId: depositId,
+      amount: new (await import('@kealee/database')).Decimal(deposit.amount),
+      processedDate: new Date(),
+      initiatedBy: deposit.userId,
       metadata: { depositId, chargeId }
     });
 

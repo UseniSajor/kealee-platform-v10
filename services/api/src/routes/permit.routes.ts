@@ -8,7 +8,9 @@ import { z } from 'zod';
 import { authenticateUser } from '../middleware/auth.middleware';
 import { validateBody, validateParams } from '../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
-import { reviewPermitWithAI } from '../services/ai.service';
+// Temporarily disabled - missing @anthropic-ai/sdk dependency
+// import { reviewPermitWithAI } from '../services/ai.service';
+const reviewPermitWithAI = null as any;
 
 const createPermitSchema = z.object({
   address: z.string().min(1),

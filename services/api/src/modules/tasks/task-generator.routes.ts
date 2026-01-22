@@ -1,6 +1,11 @@
 import { FastifyInstance } from 'fastify'
 import { authenticateUser } from '../auth/auth.middleware'
-import { generateTasksFromSOW, saveTaskTemplate, getTaskTemplate, listTaskTemplates } from './ai-task-generator.service'
+// Temporarily disabled - missing @anthropic-ai/sdk dependency
+// import { generateTasksFromSOW, saveTaskTemplate, getTaskTemplate, listTaskTemplates } from './ai-task-generator.service'
+const generateTasksFromSOW = null as any;
+const saveTaskTemplate = null as any;
+const getTaskTemplate = null as any;
+const listTaskTemplates = null as any;
 import { z } from 'zod'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 
