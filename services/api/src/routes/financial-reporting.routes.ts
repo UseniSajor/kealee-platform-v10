@@ -7,7 +7,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 import { authenticateUser, requireRole, type AuthenticatedRequest } from '../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../middleware/validation.middleware'
-import { financialReportingService } from '../modules/reporting/financial-reporting.service'
+import { FinancialReportingService } from '../modules/reporting/financial-reporting.service'
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -60,7 +60,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
       try {
         const filters = ReportFiltersSchema.parse(request.query)
 
-        const report = await financialReportingService.generateCashFlowStatement(filters)
+        const report = await FinancialReportingService.generateCashFlowStatement(filters)
 
         return reply.send({
           success: true,
@@ -94,7 +94,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
       try {
         const filters = ReportFiltersSchema.parse(request.query)
 
-        const report = await financialReportingService.generateProfitLossReport(filters)
+        const report = await FinancialReportingService.generateProfitLossReport(filters)
 
         return reply.send({
           success: true,
@@ -128,7 +128,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
       try {
         const filters = ReportFiltersSchema.parse(request.query)
 
-        const report = await financialReportingService.generateEscrowBalanceSummary(filters)
+        const report = await FinancialReportingService.generateEscrowBalanceSummary(filters)
 
         return reply.send({
           success: true,
@@ -162,7 +162,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
       try {
         const filters = ReportFiltersSchema.parse(request.query)
 
-        const report = await financialReportingService.generateTransactionVolumeReport(filters)
+        const report = await FinancialReportingService.generateTransactionVolumeReport(filters)
 
         return reply.send({
           success: true,
@@ -196,7 +196,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
       try {
         const filters = ReportFiltersSchema.parse(request.query)
 
-        const report = await financialReportingService.generateFeeRevenueReport(filters)
+        const report = await FinancialReportingService.generateFeeRevenueReport(filters)
 
         return reply.send({
           success: true,
@@ -232,7 +232,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
       try {
         const filters = request.query as any
 
-        const report = await financialReportingService.generateContractorPayoutReport(filters)
+        const report = await FinancialReportingService.generateContractorPayoutReport(filters)
 
         return reply.send({
           success: true,
@@ -266,7 +266,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
       try {
         const options = DashboardMetricsSchema.parse(request.query)
 
-        const dashboard = await financialReportingService.getDashboardMetrics(options)
+        const dashboard = await FinancialReportingService.getDashboardMetrics(options)
 
         return reply.send({
           success: true,
@@ -316,22 +316,22 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
         let reportData: any
         switch (reportType) {
           case 'CASH_FLOW':
-            reportData = await financialReportingService.generateCashFlowStatement(filters || {})
+            reportData = await FinancialReportingService.generateCashFlowStatement(filters || {})
             break
           case 'PROFIT_LOSS':
-            reportData = await financialReportingService.generateProfitLossReport(filters || {})
+            reportData = await FinancialReportingService.generateProfitLossReport(filters || {})
             break
           case 'ESCROW_SUMMARY':
-            reportData = await financialReportingService.generateEscrowBalanceSummary(filters || {})
+            reportData = await FinancialReportingService.generateEscrowBalanceSummary(filters || {})
             break
           case 'TRANSACTION_VOLUME':
-            reportData = await financialReportingService.generateTransactionVolumeReport(filters || {})
+            reportData = await FinancialReportingService.generateTransactionVolumeReport(filters || {})
             break
           case 'FEE_REVENUE':
-            reportData = await financialReportingService.generateFeeRevenueReport(filters || {})
+            reportData = await FinancialReportingService.generateFeeRevenueReport(filters || {})
             break
           case 'CONTRACTOR_PAYOUTS':
-            reportData = await financialReportingService.generateContractorPayoutReport(filters || {})
+            reportData = await FinancialReportingService.generateContractorPayoutReport(filters || {})
             break
           default:
             throw new Error('Invalid report type')
@@ -393,12 +393,12 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
           feeRevenue,
           contractorPayouts,
         ] = await Promise.all([
-          financialReportingService.generateCashFlowStatement(filters),
-          financialReportingService.generateProfitLossReport(filters),
-          financialReportingService.generateEscrowBalanceSummary(filters),
-          financialReportingService.generateTransactionVolumeReport(filters),
-          financialReportingService.generateFeeRevenueReport(filters),
-          financialReportingService.generateContractorPayoutReport(filters),
+          FinancialReportingService.generateCashFlowStatement(filters),
+          FinancialReportingService.generateProfitLossReport(filters),
+          FinancialReportingService.generateEscrowBalanceSummary(filters),
+          FinancialReportingService.generateTransactionVolumeReport(filters),
+          FinancialReportingService.generateFeeRevenueReport(filters),
+          FinancialReportingService.generateContractorPayoutReport(filters),
         ])
 
         return reply.send({

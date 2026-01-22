@@ -186,6 +186,7 @@ export interface EventPayloads {
   }
   'deposit.failed': {
     depositId: string
+    escrowId: string
     reason: string
     error?: Error
     userId?: string
@@ -205,6 +206,7 @@ export interface EventPayloads {
   }
   'deposit.cancelled': {
     depositId: string
+    escrowId: string
     reason: string
     userId?: string
   }

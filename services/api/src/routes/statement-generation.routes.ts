@@ -7,7 +7,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 import { authenticateUser, requireRole, type AuthenticatedRequest } from '../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../middleware/validation.middleware'
-import { statementGenerationService } from '../modules/reporting/statement-generation.service'
+import { StatementGenerationService } from '../modules/reporting/statement-generation.service'
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -90,7 +90,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
       try {
         const data = GenerateStatementSchema.parse(request.body)
 
-        const result = await statementGenerationService.generateStatement(data)
+        const result = await StatementGenerationService.generateStatement(data)
 
         return reply.code(201).send({
           success: true,
@@ -132,7 +132,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
           filters.recipientId = userId
         }
 
-        const result = await statementGenerationService.listStatements(filters)
+        const result = await StatementGenerationService.listStatements(filters)
 
         return reply.send({
           success: true,
@@ -167,7 +167,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
         const { id } = StatementIdParamSchema.parse(request.params)
         const userId = request.user!.id
 
-        const statement = await statementGenerationService.getStatement(id, userId)
+        const statement = await StatementGenerationService.getStatement(id, userId)
 
         return reply.send({
           success: true,
@@ -203,7 +203,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
         const userId = request.user!.id
 
         // Get statement and verify access
-        const statement = await statementGenerationService.getStatement(id, userId)
+        const statement = await StatementGenerationService.getStatement(id, userId)
 
         if (!statement.documentUrl) {
           return reply.code(404).send({
@@ -251,7 +251,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
 
         // TODO: Implement email sending
         // For now, just update the status
-        const statement = await statementGenerationService.getStatement(id, request.user!.id)
+        const statement = await StatementGenerationService.getStatement(id, request.user!.id)
 
         return reply.send({
           success: true,
@@ -286,7 +286,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
       try {
         const data = ScheduleStatementSchema.parse(request.body)
 
-        const schedule = await statementGenerationService.createSchedule(data)
+        const schedule = await StatementGenerationService.createSchedule(data)
 
         return reply.code(201).send({
           success: true,
@@ -331,7 +331,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
           })
         }
 
-        const schedules = await statementGenerationService.getUserSchedules(userId)
+        const schedules = await StatementGenerationService.getUserSchedules(userId)
 
         return reply.send({
           success: true,
@@ -366,7 +366,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
         const { id } = StatementIdParamSchema.parse(request.params)
         const data = VerifyStatementSchema.parse(request.body)
 
-        const verification = await statementGenerationService.verifyStatement(
+        const verification = await StatementGenerationService.verifyStatement(
           id,
           data.verificationCode
         )

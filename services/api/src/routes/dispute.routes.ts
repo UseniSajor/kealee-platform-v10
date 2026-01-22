@@ -7,7 +7,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 import { authenticateUser, requireRole, type AuthenticatedRequest } from '../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../middleware/validation.middleware'
-import { disputeService } from '../modules/disputes/dispute.service'
+import { DisputeService } from '../modules/disputes/dispute.service'
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -102,7 +102,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         const userId = request.user!.id
         const data = InitiateDisputeSchema.parse(request.body)
 
-        const dispute = await disputeService.initiateDispute({
+        const dispute = await DisputeService.initiateDispute({
           ...data,
           initiatedBy: userId,
         })
@@ -140,7 +140,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
       try {
         const filters = ListDisputesSchema.parse(request.query)
 
-        const result = await disputeService.listDisputes(filters)
+        const result = await DisputeService.listDisputes(filters)
 
         return reply.send({
           success: true,
@@ -175,7 +175,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         const { id } = DisputeIdParamSchema.parse(request.params)
         const userId = request.user!.id
 
-        const dispute = await disputeService.getDispute(id, userId)
+        const dispute = await DisputeService.getDispute(id, userId)
 
         return reply.send({
           success: true,
@@ -212,7 +212,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         const userId = request.user!.id
         const data = SubmitEvidenceSchema.parse(request.body)
 
-        const evidence = await disputeService.submitEvidence({
+        const evidence = await DisputeService.submitEvidence({
           disputeId: id,
           submittedBy: userId,
           ...data,
@@ -254,7 +254,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         const userId = request.user!.id
         const data = SendMessageSchema.parse(request.body)
 
-        const message = await disputeService.sendMessage({
+        const message = await DisputeService.sendMessage({
           disputeId: id,
           senderId: userId,
           ...data,
@@ -294,7 +294,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         const userId = request.user!.id
 
         // Get dispute to check access
-        const dispute = await disputeService.getDispute(id, userId)
+        const dispute = await DisputeService.getDispute(id, userId)
 
         // Return messages (internal ones filtered by service if user is not mediator)
         return reply.send({
@@ -332,7 +332,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         const userId = request.user!.id
         const data = AssignMediatorSchema.parse(request.body)
 
-        const dispute = await disputeService.assignMediator({
+        const dispute = await DisputeService.assignMediator({
           disputeId: id,
           ...data,
           assignedBy: userId,
@@ -374,7 +374,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         const userId = request.user!.id
         const data = ResolveDisputeSchema.parse(request.body)
 
-        const resolution = await disputeService.resolveDispute({
+        const resolution = await DisputeService.resolveDispute({
           disputeId: id,
           mediatorId: userId,
           ...data,
@@ -416,7 +416,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         const userId = request.user!.id
         const data = FileAppealSchema.parse(request.body)
 
-        const appeal = await disputeService.fileAppeal({
+        const appeal = await DisputeService.fileAppeal({
           disputeId: id,
           appealedBy: userId,
           ...data,
@@ -454,7 +454,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
       try {
         const userId = request.user!.id
 
-        const queue = await disputeService.getMediatorQueue(userId)
+        const queue = await DisputeService.getMediatorQueue(userId)
 
         return reply.send({
           success: true,
@@ -492,7 +492,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
       try {
         const filters = request.query as any
 
-        const stats = await disputeService.getDisputeStats(filters)
+        const stats = await DisputeService.getDisputeStats(filters)
 
         return reply.send({
           success: true,

@@ -7,7 +7,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 import { authenticateUser, requireRole, type AuthenticatedRequest } from '../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../middleware/validation.middleware'
-import { lienWaiverService } from '../modules/compliance/lien-waiver.service'
+import { LienWaiverService } from '../modules/compliance/lien-waiver.service'
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -108,7 +108,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
         const userId = request.user!.id
         const data = GenerateWaiverSchema.parse(request.body)
 
-        const waiver = await lienWaiverService.generateWaiver({
+        const waiver = await LienWaiverService.generateWaiver({
           ...data,
           createdBy: userId,
         })
@@ -146,7 +146,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       try {
         const filters = ListWaiversSchema.parse(request.query)
 
-        const result = await lienWaiverService.listWaivers(filters)
+        const result = await LienWaiverService.listWaivers(filters)
 
         return reply.send({
           success: true,
@@ -180,7 +180,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       try {
         const { id } = WaiverIdParamSchema.parse(request.params)
 
-        const waiver = await lienWaiverService.getWaiver(id)
+        const waiver = await LienWaiverService.getWaiver(id)
 
         return reply.send({
           success: true,
@@ -216,7 +216,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
         const { id } = WaiverIdParamSchema.parse(request.params)
         const data = SendForSignatureSchema.parse(request.body)
 
-        const waiver = await lienWaiverService.sendForSignature({
+        const waiver = await LienWaiverService.sendForSignature({
           waiverId: id,
           ...data,
         })
@@ -257,7 +257,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
         const userId = request.user!.id
         const data = RecordSignatureSchema.parse(request.body)
 
-        const signature = await lienWaiverService.recordSignature({
+        const signature = await LienWaiverService.recordSignature({
           lienWaiverId: id,
           signerId: userId,
           ...data,
@@ -298,7 +298,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
         const { id } = WaiverIdParamSchema.parse(request.params)
         const data = NotarizeWaiverSchema.parse(request.body)
 
-        const waiver = await lienWaiverService.notarizeWaiver({
+        const waiver = await LienWaiverService.notarizeWaiver({
           waiverId: id,
           ...data,
         })
@@ -336,7 +336,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       try {
         const { contractId } = request.params as { contractId: string }
 
-        const waivers = await lienWaiverService.getWaiversForContract(contractId)
+        const waivers = await LienWaiverService.getWaiversForContract(contractId)
 
         return reply.send({
           success: true,
@@ -370,7 +370,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       try {
         const { paymentReleaseId } = request.params as { paymentReleaseId: string }
 
-        const waivers = await lienWaiverService.getWaiversForPayment(paymentReleaseId)
+        const waivers = await LienWaiverService.getWaiversForPayment(paymentReleaseId)
 
         return reply.send({
           success: true,
@@ -403,7 +403,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       try {
         const data = VerifyWaiverSchema.parse(request.body)
 
-        const verification = await lienWaiverService.verifyWaiver(
+        const verification = await LienWaiverService.verifyWaiver(
           data.waiverId,
           data.verificationCode
         )
@@ -440,7 +440,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       try {
         const { contractId } = request.params as { contractId: string }
 
-        const compliance = await lienWaiverService.checkCompliance(contractId)
+        const compliance = await LienWaiverService.checkCompliance(contractId)
 
         return reply.send({
           success: true,
@@ -478,7 +478,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       try {
         const filters = request.query as any
 
-        const stats = await lienWaiverService.getWaiverStats(filters)
+        const stats = await LienWaiverService.getWaiverStats(filters)
 
         return reply.send({
           success: true,

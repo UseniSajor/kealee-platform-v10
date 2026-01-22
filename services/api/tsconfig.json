@@ -26,6 +26,7 @@
     "src/__tests__/**/*",
     "src/modules/tasks/ai-task-generator.service.ts",
     "src/services/ai.service.ts",
-    "src/sdk/cli.ts"
+    "src/sdk/cli.ts",
+    "src/graphql/**/*"
   ]
 }

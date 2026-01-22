@@ -160,7 +160,7 @@ export class DepositService {
         description: `Deposit to Escrow ${deposit.escrowAgreement.escrowAccountNumber}`,
         metadata: {
           depositId: deposit.id,
-          escrowId: deposit.escrowAgreementId,
+          escrowId: deposit.escrowId,
           userId: deposit.userId,
           contractId: deposit.escrowAgreement.contractId,
         },
@@ -197,7 +197,7 @@ export class DepositService {
       eventBus.emit('deposit.failed', {
         depositId,
         userId: deposit.userId,
-        escrowId: deposit.escrowAgreementId,
+        escrowId: deposit.escrowId,
         reason: error.message,
       });
 
@@ -242,7 +242,7 @@ export class DepositService {
       eventBus.emit('deposit.clearing', {
         depositId: deposit.id,
         userId: deposit.userId,
-        escrowId: deposit.escrowAgreementId,
+        escrowId: deposit.escrowId,
         expectedClearanceDate: deposit.expectedClearanceDate,
       });
     }
@@ -265,7 +265,7 @@ export class DepositService {
 
     // Record deposit in escrow
     await escrowService.recordDeposit(
-      deposit.escrowAgreementId,
+      deposit.escrowId,
       deposit.amount,
       deposit.userId,
       `Deposit #${depositId}`,
@@ -286,7 +286,7 @@ export class DepositService {
     eventBus.emit('deposit.completed', {
       depositId,
       userId: deposit.userId,
-      escrowId: deposit.escrowAgreementId,
+      escrowId: deposit.escrowId,
       amount: deposit.amount,
     });
   }
@@ -317,7 +317,7 @@ export class DepositService {
     eventBus.emit('deposit.failed', {
       depositId: deposit.id,
       userId: deposit.userId,
-      escrowId: deposit.escrowAgreementId,
+      escrowId: deposit.escrowId,
       reason: error.message,
     });
   }
@@ -396,7 +396,7 @@ export class DepositService {
     eventBus.emit('deposit.cancelled', {
       depositId,
       userId: deposit.userId,
-      escrowId: deposit.escrowAgreementId,
+      escrowId: deposit.escrowId,
     });
   }
 
