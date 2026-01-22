@@ -4,6 +4,7 @@
  */
 
 import { PrismaClient } from '@kealee/database';
+import { toNumber } from '../../utils/decimal-helpers';
 
 const prisma = new PrismaClient();
 
@@ -356,7 +357,7 @@ export class OversightService {
       _sum: { currentBalance: true },
       where: { status: { in: ['ACTIVE', 'FROZEN'] } },
     });
-    return result._sum.currentBalance || 0;
+    return toNumber(result._sum.currentBalance);
   }
 
   private async getPendingDeposits(): Promise<number> {
@@ -386,7 +387,7 @@ export class OversightService {
       },
     });
 
-    return result._sum.amount || 0;
+    return toNumber(result._sum.amount);
   }
 
   private async getFailedTransactions(): Promise<number> {

@@ -1965,10 +1965,9 @@ model EscrowAgreement {
 }
 
 model EscrowTransaction {
-  id                 String  @id @default(uuid())
-  escrowId           String
-  escrowAgreementId  String  // Alias for escrowId for backward compatibility
-  journalEntryId     String? @unique // Link to accounting entry
+  id             String  @id @default(uuid())
+  escrowId       String  // CORRECT FIELD NAME
+  journalEntryId String? @unique // Link to accounting entry
 
   // Transaction Details
   type        EscrowTransactionType
@@ -2017,9 +2016,8 @@ model EscrowTransaction {
 }
 
 model EscrowHold {
-  id                String @id @default(uuid())
-  escrowId          String
-  escrowAgreementId String // Alias for escrowId for backward compatibility
+  id       String @id @default(uuid())
+  escrowId String  // CORRECT FIELD NAME
 
   // Hold Details
   amount Decimal          @db.Decimal(18, 2)
@@ -4024,19 +4022,18 @@ enum SecuritySeverity {
 // ============================================================================
 
 model UserSession {
-  id             String    @id @default(uuid())
-  userId         String
-  sessionToken   String    @unique
-  refreshToken   String?   @unique
-  ipAddress      String?
-  userAgent      String?
-  expiresAt      DateTime
-  lastActivity   DateTime  @default(now())
-  lastActivityAt DateTime  @default(now()) // Alias for lastActivity
-  isActive       Boolean   @default(true)
-  isRevoked      Boolean   @default(false)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id           String    @id @default(uuid())
+  userId       String
+  sessionToken String    @unique
+  refreshToken String?   @unique
+  ipAddress    String?
+  userAgent    String?
+  expiresAt    DateTime
+  lastActivity DateTime  @default(now())  // CORRECT FIELD NAME (not lastActivityAt!)
+  isActive     Boolean   @default(true)
+  isRevoked    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@index([userId])
   @@index([sessionToken])
@@ -4135,8 +4132,7 @@ model PaymentMethod {
 
 model DepositRequest {
   id                    String    @id @default(uuid())
-  escrowId              String
-  escrowAgreementId     String? // Alias for escrowId
+  escrowId              String  // CORRECT FIELD NAME (not escrowAgreementId!)
   paymentMethodId       String
   userId                String
   amount                Decimal   @db.Decimal(18, 2)
@@ -4160,19 +4156,18 @@ model DepositRequest {
 }
 
 model TaxForm {
-  id             String    @id @default(uuid())
-  userId         String
-  recipientId    String? // Alias for userId
-  taxYear        Int
-  formType       String // 1099_NEC, 1099_K, W9
-  totalAmount    Decimal   @db.Decimal(18, 2)
-  status         String    @default("NOT_FILED") // NOT_FILED, FILED, 1099_READY, NOT_REQUIRED
-  filedAt        DateTime?
-  sentAt         DateTime?
-  documentUrl    String?
-  metadata       Json?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id          String    @id @default(uuid())
+  userId      String  // CORRECT FIELD NAME (not recipientId!)
+  taxYear     Int
+  formType    String // 1099_NEC, 1099_K, W9
+  totalAmount Decimal   @db.Decimal(18, 2)
+  status      String    @default("NOT_FILED") // NOT_FILED, FILED, 1099_READY, NOT_REQUIRED
+  filedAt     DateTime?
+  sentAt      DateTime?
+  documentUrl String?
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([userId])
   @@index([taxYear])

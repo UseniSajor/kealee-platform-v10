@@ -10,10 +10,10 @@ import { PrismaClient } from '@kealee/database';
 const prisma = new PrismaClient();
 
 // JWT Configuration
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-min-64-chars';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key-min-64-chars';
-const JWT_EXPIRY = process.env.JWT_EXPIRY || '15m'; // Short-lived access tokens
-const JWT_REFRESH_EXPIRY = process.env.JWT_REFRESH_EXPIRY || '7d'; // Long-lived refresh tokens
+const JWT_SECRET: string = (process.env.JWT_SECRET || 'your-secret-key-min-64-chars') as string;
+const JWT_REFRESH_SECRET: string = (process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key-min-64-chars') as string;
+const JWT_EXPIRY: string = (process.env.JWT_EXPIRY || '15m') as string; // Short-lived access tokens
+const JWT_REFRESH_EXPIRY: string = (process.env.JWT_REFRESH_EXPIRY || '7d') as string; // Long-lived refresh tokens
 
 if (JWT_SECRET.length < 64 || JWT_REFRESH_SECRET.length < 64) {
   console.warn('⚠️ WARNING: JWT secrets should be at least 64 characters for production!');
@@ -181,7 +181,7 @@ export async function enhancedAuthMiddleware(
     // Update last activity
     await prisma.userSession.update({
       where: { id: payload.sessionId },
-      data: { lastActivityAt: new Date() },
+      data: { lastActivity: new Date() },
     });
 
     // Attach user to request
@@ -247,7 +247,7 @@ export async function createSession(
       ipAddress: ipAddress || 'Unknown',
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       isRevoked: false,
-      lastActivityAt: new Date(),
+      lastActivity: new Date(),
     },
   });
 
@@ -309,7 +309,7 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
   // Update session activity
   await prisma.userSession.update({
     where: { id: payload.sessionId },
-    data: { lastActivityAt: new Date() },
+    data: { lastActivity: new Date() },
   });
 
   return {
@@ -350,13 +350,13 @@ export async function getUserActiveSessions(userId: string) {
       isRevoked: false,
       expiresAt: { gt: new Date() },
     },
-    orderBy: { lastActivityAt: 'desc' },
+    orderBy: { lastActivity: 'desc' },
     select: {
       id: true,
       userAgent: true,
       ipAddress: true,
       createdAt: true,
-      lastActivityAt: true,
+      lastActivity: true,
     },
   });
 }
@@ -369,7 +369,7 @@ export async function cleanupExpiredSessions(): Promise<number> {
     where: {
       OR: [
         { expiresAt: { lt: new Date() } },
-        { isRevoked: true, lastActivityAt: { lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } }, // Delete revoked sessions older than 30 days
+        { isRevoked: true, lastActivity: { lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } }, // Delete revoked sessions older than 30 days
       ],
     },
   });

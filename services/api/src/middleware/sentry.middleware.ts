@@ -25,7 +25,7 @@ export function initSentry(dsn?: string, environment?: string) {
         environment: environment || process.env.NODE_ENV || 'development',
         tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
         integrations: [
-          new Sentry.Integrations.Http({ tracing: true }),
+          Sentry.httpIntegration(),
         ],
         beforeSend(event, hint) {
           // Filter out health check errors
@@ -56,17 +56,18 @@ export async function sentryRequestHandler(
 
   try {
     const Sentry = await import('@sentry/node')
-    const transaction = Sentry.startTransaction({
+    
+    // Use newer Sentry v8 API
+    const span = Sentry.startInactiveSpan({
       op: 'http.server',
       name: `${request.method} ${request.routerPath || request.url}`,
-      data: {
+      attributes: {
         method: request.method,
         url: request.url,
-        headers: request.headers,
       },
     })
 
-    ;(request as any).__sentryTransaction = transaction
+    ;(request as any).__sentrySpan = span
 
     // Set user context if available
     const user = (request as any).user
@@ -92,10 +93,10 @@ export async function sentryResponseHandler(
   if (!sentryInitialized) return
 
   try {
-    const transaction = (request as any).__sentryTransaction
-    if (transaction) {
-      transaction.setHttpStatus(reply.statusCode)
-      transaction.finish()
+    const span = (request as any).__sentrySpan
+    if (span) {
+      span.setAttribute('http.status_code', reply.statusCode)
+      span.end()
     }
   } catch {
     // Sentry not available
