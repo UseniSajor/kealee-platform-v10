@@ -1559,6 +1559,15 @@ model User {
   relatedComplianceReports  ComplianceReport[]  @relation("ComplianceReportUser")
   reviewedComplianceReports ComplianceReport[]  @relation("ComplianceReportReviewer")
   approvedComplianceReports ComplianceReport[]  @relation("ComplianceReportApprover")
+
+  // Analytics & Predictive Model relations
+  fraudScores              FraudScore[]      @relation("FraudScoreUser")
+  reviewedFraudScores      FraudScore[]      @relation("FraudScoreReviewer")
+  churnPrediction          ChurnPrediction?  @relation("ChurnPredictionUser")
+  reviewedChurnPredictions ChurnPrediction[] @relation("ChurnPredictionReviewer")
+  analyticsAlerts          AnalyticsAlert[]  @relation("AnalyticsAlertUser")
+  resolvedAnalyticsAlerts  AnalyticsAlert[]  @relation("AnalyticsAlertResolver")
+  customReports            CustomReport[]    @relation("CustomReportCreator")
 }
 
 // ============================================================================
@@ -2736,6 +2745,293 @@ model ComplianceReport {
   @@index([relatedUserId])
   @@index([periodStart, periodEnd])
   @@index([filedAt])
+}
+
+// ============================================================================
+// ADVANCED ANALYTICS & PREDICTIVE MODELS (Stage 5 - Finance & Trust)
+// ============================================================================
+
+enum SnapshotType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+}
+
+enum KPIType {
+  FINANCIAL // Revenue, profit, cash flow
+  OPERATIONAL // Transaction success rate, processing time
+  CUSTOMER // Churn rate, NPS, LTV
+  COMPLIANCE // Dispute rate, fraud rate
+}
+
+enum TrendDirection {
+  UP
+  DOWN
+  FLAT
+}
+
+enum CalculationFrequency {
+  REALTIME // Calculate on every request
+  HOURLY
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum RiskLevel {
+  VERY_LOW // 0-20
+  LOW // 21-40
+  MEDIUM // 41-60
+  HIGH // 61-80
+  VERY_HIGH // 81-100
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+  EMERGENCY
+}
+
+model AnalyticsSnapshot {
+  id           String       @id @default(uuid())
+  snapshotDate DateTime     @default(now())
+  snapshotType SnapshotType
+
+  // Calculated Metrics (stored as JSON for flexibility)
+  metrics Json // All calculated metrics for this period
+
+  // Trend Indicators
+  trends Json? // Trend analysis results
+
+  // Forecasts & Predictions
+  forecasts Json? // Predictive analytics results
+
+  // Metadata
+  calculationTime Int? // Time taken to calculate (ms)
+  dataPoints      Int? // Number of records analyzed
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([snapshotDate])
+  @@index([snapshotType])
+  @@index([createdAt])
+}
+
+model KPI {
+  id   String  @id @default(uuid())
+  name String  @unique // Unique identifier (e.g., "monthly_revenue")
+  type KPIType
+
+  // Display Information
+  displayName String // Human-readable name
+  description String? @db.Text
+  unit        String? // e.g., "USD", "count", "percent"
+  category    String? // Grouping category
+
+  // Current State
+  currentValue Decimal  @db.Decimal(18, 2)
+  targetValue  Decimal? @db.Decimal(18, 2)
+  threshold    Decimal? @db.Decimal(18, 2) // Alert threshold
+
+  // Trend Analysis
+  trendDirection TrendDirection
+  changePercent  Decimal?       @db.Decimal(8, 2) // % change vs. previous period
+  previousValue  Decimal?       @db.Decimal(18, 2)
+  isHealthy      Boolean        @default(true) // Is KPI within acceptable range?
+
+  // Calculation Settings
+  calculationFrequency CalculationFrequency @default(DAILY)
+  lastCalculated       DateTime             @default(now())
+  nextCalculation      DateTime?
+
+  // Alert Configuration
+  alertEnabled   Boolean   @default(false)
+  alertThreshold Decimal?  @db.Decimal(18, 2)
+  lastAlertSent  DateTime?
+
+  // Metadata
+  metadata Json? // Additional configuration
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@index([type])
+  @@index([lastCalculated])
+  @@index([isHealthy])
+}
+
+model FraudScore {
+  id            String  @id @default(uuid())
+  transactionId String? // EscrowTransaction ID
+  userId        String? // User being scored
+  entityType    String // "transaction", "user", "payout"
+  entityId      String // ID of the entity
+
+  // Fraud Scoring
+  score      Int       @default(0) // 0-100 (100 = highest fraud risk)
+  riskLevel  RiskLevel @default(VERY_LOW)
+  confidence Decimal   @db.Decimal(5, 2) // Confidence level 0-100%
+
+  // Features Used (for ML model)
+  features Json // Input features used for scoring
+
+  // Detection Details
+  flaggedReasons       String[] // Array of reasons
+  manualReviewRequired Boolean   @default(false)
+  reviewedBy           String? // User ID of reviewer
+  reviewedAt           DateTime?
+  isFraud              Boolean? // Final determination
+
+  // Actions Taken
+  actionsTaken String[] // e.g., ["transaction_held", "user_notified"]
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  user     User? @relation("FraudScoreUser", fields: [userId], references: [id])
+  reviewer User? @relation("FraudScoreReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([score])
+  @@index([riskLevel])
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([manualReviewRequired])
+  @@index([createdAt])
+}
+
+model ChurnPrediction {
+  id     String @id @default(uuid())
+  userId String @unique // Contractor being scored
+
+  // Churn Prediction
+  churnScore       Int       @default(0) // 0-100 (100 = highest churn risk)
+  riskLevel        RiskLevel @default(VERY_LOW)
+  confidence       Decimal   @db.Decimal(5, 2)
+  churnProbability Decimal   @db.Decimal(5, 2) // 0-100%
+
+  // Risk Factors
+  riskFactors Json // Array of contributing factors
+
+  // Features Used
+  features Json // Input features: transaction frequency, disputes, etc.
+
+  // Recommendations
+  retentionActions String[] // Recommended actions
+  priorityLevel    String   @default("low") // low, medium, high, critical
+
+  // Tracking
+  lastEngagement    DateTime? // Last transaction or activity
+  daysSinceActivity Int? // Days since last activity
+
+  // Review & Action
+  reviewedBy   String? // User ID
+  reviewedAt   DateTime?
+  actionsToken String[] // Actions taken
+
+  // Prediction Outcome (to track model accuracy)
+  actuallyChurned Boolean? // Did they actually churn?
+  churnedAt       DateTime?
+
+  // Timestamps
+  calculatedAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  user     User  @relation("ChurnPredictionUser", fields: [userId], references: [id], onDelete: Cascade)
+  reviewer User? @relation("ChurnPredictionReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([churnScore])
+  @@index([riskLevel])
+  @@index([calculatedAt])
+}
+
+model AnalyticsAlert {
+  id          String        @id @default(uuid())
+  alertType   String // "kpi_threshold", "fraud_detected", "churn_risk", etc.
+  severity    AlertSeverity @default(INFO)
+  title       String
+  description String        @db.Text
+
+  // Related Entities
+  relatedKPIId      String? // KPI that triggered alert
+  relatedUserId     String? // User involved
+  relatedEntityType String? // "transaction", "escrow", "user"
+  relatedEntityId   String? // ID of entity
+
+  // Alert Data
+  data Json? // Additional alert data
+
+  // Status
+  isResolved Boolean   @default(false)
+  resolvedBy String? // User ID
+  resolvedAt DateTime?
+  resolution String?   @db.Text
+
+  // Notification
+  notificationSent Boolean   @default(false)
+  sentAt           DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  relatedUser User? @relation("AnalyticsAlertUser", fields: [relatedUserId], references: [id])
+  resolver    User? @relation("AnalyticsAlertResolver", fields: [resolvedBy], references: [id])
+
+  @@index([alertType])
+  @@index([severity])
+  @@index([isResolved])
+  @@index([createdAt])
+}
+
+model CustomReport {
+  id          String  @id @default(uuid())
+  name        String
+  description String? @db.Text
+  createdBy   String // User ID
+
+  // Report Configuration
+  metrics       String[] // List of metrics to include
+  filters       Json // Filter configuration
+  groupBy       String[] // Grouping dimensions
+  visualization String   @default("table") // table, line, bar, pie
+
+  // Schedule
+  isScheduled        Boolean   @default(false)
+  scheduleFrequency  String? // "daily", "weekly", "monthly"
+  scheduleDayOfWeek  Int? // 0-6 for weekly
+  scheduleDayOfMonth Int? // 1-31 for monthly
+  lastGenerated      DateTime?
+  nextScheduled      DateTime?
+
+  // Sharing
+  isPublic   Boolean  @default(false)
+  sharedWith String[] // Array of user IDs
+
+  // Metadata
+  metadata Json? // Additional configuration
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  creator User @relation("CustomReportCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([createdBy])
+  @@index([isScheduled])
+  @@index([nextScheduled])
 }
 
 model Lead {
