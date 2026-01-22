@@ -150,8 +150,6 @@ export class PMScoringSystem {
         plan: {
           include: {
             user: true,
-              },
-            },
           },
         },
       },
