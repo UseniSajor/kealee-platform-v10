@@ -335,7 +335,7 @@ export class EscrowEventHandlers {
             // Check if escrow should be unfrozen
             const remainingHolds = await prisma.escrowHold.count({
               where: {
-                escrowAgreementId: escrow.id,
+                escrowId: escrow.id,
                 status: 'ACTIVE',
               },
             })

@@ -89,7 +89,7 @@ export class DepositService {
     const deposit = await prisma.depositRequest.create({
       data: {
         userId: data.userId,
-        escrowAgreementId: data.escrowId,
+        escrowId: data.escrowId,
         paymentMethodId: data.paymentMethodId,
         amount: data.amount,
         currency: data.currency || 'USD',
@@ -427,7 +427,7 @@ export class DepositService {
    */
   async getDepositHistory(escrowId: string): Promise<any[]> {
     return await prisma.depositRequest.findMany({
-      where: { escrowAgreementId: escrowId },
+      where: { escrowId: escrowId },
       include: {
         paymentMethod: true,
         user: {

@@ -223,7 +223,7 @@ export class StatementGenerationService {
     // Get transactions in period
     const transactions = await prisma.escrowTransaction.findMany({
       where: {
-        escrowAgreementId: config.escrowId,
+        escrowId: config.escrowId,
         createdAt: {
           gte: config.periodStart,
           lte: config.periodEnd,
@@ -453,7 +453,7 @@ export class StatementGenerationService {
   private async getBalanceAtDate(escrowId: string, date: Date): Promise<number> {
     const transactions = await prisma.escrowTransaction.findMany({
       where: {
-        escrowAgreementId: escrowId,
+        escrowId: escrowId,
         createdAt: { lt: date },
         status: 'COMPLETED',
       },

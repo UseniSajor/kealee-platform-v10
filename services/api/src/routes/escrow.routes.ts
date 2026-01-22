@@ -615,7 +615,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         const { id } = EscrowIdParamSchema.parse(request.params)
 
         const transactions = await prisma.escrowTransaction.findMany({
-          where: { escrowAgreementId: id },
+          where: { escrowId: id },
           include: {
             journalEntry: {
               include: {

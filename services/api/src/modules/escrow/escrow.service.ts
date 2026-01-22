@@ -127,6 +127,7 @@ export class EscrowService {
     const escrow = await prisma.escrowAgreement.create({
       data: {
         contractId,
+        projectId: contract.projectId,
         escrowAccountNumber,
         totalContractAmount,
         initialDepositAmount,
@@ -207,7 +208,7 @@ export class EscrowService {
       // 3. Create escrow transaction
       const transaction = await tx.escrowTransaction.create({
         data: {
-          escrowAgreementId: escrowId,
+          escrowId: escrowId,
           journalEntryId: postedEntry.id,
           type: 'DEPOSIT',
           amount,
@@ -336,7 +337,7 @@ export class EscrowService {
       // 2. Create escrow transaction (PROCESSING - payout happens later via Stripe)
       const transaction = await tx.escrowTransaction.create({
         data: {
-          escrowAgreementId: escrowId,
+          escrowId: escrowId,
           journalEntryId: postedEntry.id,
           type: 'RELEASE',
           amount,
@@ -485,7 +486,7 @@ export class EscrowService {
 
       // 2. Restore escrow balances (return money to available balance)
       await tx.escrowAgreement.update({
-        where: { id: transaction.escrowAgreementId },
+        where: { id: transaction.escrowId },
         data: {
           currentBalance: transaction.escrowAgreement.currentBalance.add(transaction.amount),
           availableBalance: transaction.escrowAgreement.availableBalance.add(transaction.amount),
@@ -533,7 +534,7 @@ export class EscrowService {
       // 1. Create hold
       const hold = await tx.escrowHold.create({
         data: {
-          escrowAgreementId: escrowId,
+          escrowId: escrowId,
           amount,
           reason,
           status: 'ACTIVE',
@@ -680,7 +681,7 @@ export class EscrowService {
       // 2. Create escrow transaction
       const transaction = await tx.escrowTransaction.create({
         data: {
-          escrowAgreementId: escrowId,
+          escrowId: escrowId,
           journalEntryId: postedEntry.id,
           type: 'REFUND',
           amount,
@@ -758,7 +759,7 @@ export class EscrowService {
       // Create transaction
       const transaction = await tx.escrowTransaction.create({
         data: {
-          escrowAgreementId: escrowId,
+          escrowId: escrowId,
           journalEntryId: postedEntry.id,
           type: 'FEE',
           amount,
@@ -1016,7 +1017,7 @@ export class EscrowService {
   async getHoldByReference(escrowId: string, reference: string): Promise<EscrowHold> {
     const hold = await prisma.escrowHold.findFirst({
       where: {
-        escrowAgreementId: escrowId,
+        escrowId: escrowId,
         notes: {
           contains: reference,
         },
