@@ -1202,3 +1202,6 @@ export class FinancialReportingService {
   }
 }
 
+// Export singleton instance
+export const financialReportingService = new FinancialReportingService()
+

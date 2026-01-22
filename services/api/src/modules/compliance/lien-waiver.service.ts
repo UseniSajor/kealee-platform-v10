@@ -881,3 +881,6 @@ export class LienWaiverService {
   }
 }
 
+// Export singleton instance
+export const lienWaiverService = new LienWaiverService()
+
