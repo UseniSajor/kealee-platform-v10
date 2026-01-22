@@ -7,7 +7,19 @@
 
 import { prisma, Decimal } from '@kealee/database'
 import { journalEntryService } from '../finance/journal-entry.service'
+import { PayoutService } from '../stripe-connect/payout.service'
 import type { EscrowAgreement, EscrowTransaction, EscrowHold } from '@kealee/database'
+import {
+  InsufficientEscrowBalanceError,
+  EscrowFrozenError,
+  InvalidEscrowStatusError,
+  HoldAlreadyReleasedError,
+  EscrowNotFoundError,
+  HoldNotFoundError,
+  EscrowBalanceDiscrepancyError,
+  EscrowTransactionNotFoundError,
+  InvalidTransactionStatusError,
+} from '../../errors/escrow.errors'
 
 export interface CreateEscrowAgreementDTO {
   contractId: string
@@ -255,17 +267,29 @@ export class EscrowService {
     })
 
     if (!escrow) {
-      throw new Error('Escrow agreement not found')
+      throw new EscrowNotFoundError(escrowId)
     }
 
-    if (escrow.status === 'FROZEN') {
-      throw new Error('Cannot release payment from frozen escrow')
+    // Check escrow status
+    if (escrow.status !== 'ACTIVE') {
+      if (escrow.status === 'FROZEN') {
+        throw new EscrowFrozenError(escrowId, 'Active dispute or compliance hold')
+      }
+      throw new InvalidEscrowStatusError(escrow.status, 'ACTIVE', escrowId)
+    }
+
+    // Check for active holds
+    if (escrow.holds.length > 0) {
+      const holdReasons = escrow.holds.map(h => h.reason).join(', ')
+      throw new EscrowFrozenError(escrowId, `Active holds: ${holdReasons}`)
     }
 
     // Check if sufficient available balance
     if (escrow.availableBalance.lessThan(amount)) {
-      throw new Error(
-        `Insufficient available balance. Available: ${escrow.availableBalance}, Requested: ${amount}`
+      throw new InsufficientEscrowBalanceError(
+        escrow.availableBalance.toNumber(),
+        amount.toNumber(),
+        escrowId
       )
     }
 
@@ -344,6 +368,30 @@ export class EscrowService {
       return transaction
     })
 
+    // 4. Trigger Stripe payout (asynchronous - happens after transaction committed)
+    try {
+      await PayoutService.createPayout({
+        connectedAccountId: recipientAccountId,
+        amount: netAmountToContractor.toNumber(),
+        currency: escrow.currency,
+        escrowTransactionId: result.id,
+        milestoneId,
+        initiatedBy,
+        description: `Payment for milestone ${milestoneId}`,
+        metadata: {
+          escrowId,
+          escrowAccountNumber: escrow.escrowAccountNumber,
+          contractId: escrow.contractId,
+          platformFee: platformFee.toNumber(),
+        },
+      })
+    } catch (error: any) {
+      // Payout initiation failed - mark transaction as failed and rollback
+      console.error('Failed to initiate payout:', error)
+      await this.failEscrowTransaction(result.id, error.message)
+      throw error
+    }
+
     return result
   }
 
@@ -364,12 +412,14 @@ export class EscrowService {
     })
 
     if (!transaction) {
-      throw new Error('Escrow transaction not found')
+      throw new EscrowTransactionNotFoundError(transactionId)
     }
 
     if (transaction.status !== 'PROCESSING') {
-      throw new Error(
-        `Cannot complete transaction with status ${transaction.status}. Expected PROCESSING.`
+      throw new InvalidTransactionStatusError(
+        transactionId,
+        transaction.status,
+        'PROCESSING'
       )
     }
 
@@ -407,12 +457,14 @@ export class EscrowService {
     })
 
     if (!transaction) {
-      throw new Error('Escrow transaction not found')
+      throw new EscrowTransactionNotFoundError(transactionId)
     }
 
     if (transaction.status !== 'PROCESSING') {
-      throw new Error(
-        `Cannot fail transaction with status ${transaction.status}. Expected PROCESSING.`
+      throw new InvalidTransactionStatusError(
+        transactionId,
+        transaction.status,
+        'PROCESSING'
       )
     }
 
@@ -933,6 +985,175 @@ export class EscrowService {
 
     const sequenceStr = String(sequence).padStart(4, '0')
     return `ESC-${datePrefix}-${sequenceStr}`
+  }
+
+  /**
+   * Calculate and verify escrow balances for reconciliation
+   * Checks actual transaction history against recorded balances
+   */
+  async calculateBalances(escrowId: string): Promise<{
+    currentBalance: Decimal
+    availableBalance: Decimal
+    heldBalance: Decimal
+    totalDeposits: Decimal
+    totalReleases: Decimal
+    totalFees: Decimal
+    totalRefunds: Decimal
+    discrepancy: Decimal
+    hasDiscrepancy: boolean
+  }> {
+    // Get escrow agreement
+    const escrow = await prisma.escrowAgreement.findUnique({
+      where: { id: escrowId },
+      include: {
+        transactions: true,
+        holds: {
+          where: { status: 'ACTIVE' },
+        },
+      },
+    })
+
+    if (!escrow) {
+      throw new EscrowNotFoundError(escrowId)
+    }
+
+    // Calculate totals from transactions
+    let totalDeposits = new Decimal(0)
+    let totalReleases = new Decimal(0)
+    let totalFees = new Decimal(0)
+    let totalRefunds = new Decimal(0)
+
+    escrow.transactions.forEach((tx) => {
+      // Only count COMPLETED transactions
+      if (tx.status === 'COMPLETED') {
+        switch (tx.type) {
+          case 'DEPOSIT':
+            totalDeposits = totalDeposits.add(tx.amount)
+            break
+          case 'RELEASE':
+            totalReleases = totalReleases.add(tx.amount)
+            break
+          case 'FEE':
+            totalFees = totalFees.add(tx.amount)
+            break
+          case 'REFUND':
+            totalRefunds = totalRefunds.add(tx.amount)
+            break
+          case 'INTEREST':
+            totalDeposits = totalDeposits.add(tx.amount) // Interest increases balance
+            break
+        }
+      }
+    })
+
+    // Calculate held balance from active holds
+    const heldBalance = escrow.holds.reduce(
+      (sum, hold) => sum.add(hold.amount),
+      new Decimal(0)
+    )
+
+    // Calculate expected balances
+    const calculatedCurrent = totalDeposits
+      .minus(totalReleases)
+      .minus(totalFees)
+      .minus(totalRefunds)
+    const calculatedAvailable = calculatedCurrent.minus(heldBalance)
+
+    // Compare with recorded balances
+    const currentDiscrepancy = calculatedCurrent.minus(escrow.currentBalance)
+    const availableDiscrepancy = calculatedAvailable.minus(escrow.availableBalance)
+    const heldDiscrepancy = heldBalance.minus(escrow.heldBalance)
+
+    // Check for discrepancies (tolerance: $0.01 due to rounding)
+    const tolerance = new Decimal(0.01)
+    const hasDiscrepancy =
+      currentDiscrepancy.abs().greaterThan(tolerance) ||
+      availableDiscrepancy.abs().greaterThan(tolerance) ||
+      heldDiscrepancy.abs().greaterThan(tolerance)
+
+    if (hasDiscrepancy) {
+      // Log discrepancy for investigation
+      console.error('Escrow balance discrepancy detected:', {
+        escrowId,
+        escrowAccountNumber: escrow.escrowAccountNumber,
+        recorded: {
+          current: escrow.currentBalance.toNumber(),
+          available: escrow.availableBalance.toNumber(),
+          held: escrow.heldBalance.toNumber(),
+        },
+        calculated: {
+          current: calculatedCurrent.toNumber(),
+          available: calculatedAvailable.toNumber(),
+          held: heldBalance.toNumber(),
+        },
+        discrepancies: {
+          current: currentDiscrepancy.toNumber(),
+          available: availableDiscrepancy.toNumber(),
+          held: heldDiscrepancy.toNumber(),
+        },
+      })
+
+      // TODO: Create alert for finance team
+      // TODO: Create audit log entry
+      // await auditService.logBalanceDiscrepancy(...)
+    }
+
+    return {
+      currentBalance: calculatedCurrent,
+      availableBalance: calculatedAvailable,
+      heldBalance,
+      totalDeposits,
+      totalReleases,
+      totalFees,
+      totalRefunds,
+      discrepancy: currentDiscrepancy,
+      hasDiscrepancy,
+    }
+  }
+
+  /**
+   * Reconcile escrow balances - update recorded balances to match calculated
+   * WARNING: This should only be used after investigation and approval
+   */
+  async reconcileBalances(escrowId: string, performedBy: string): Promise<EscrowAgreement> {
+    const calculated = await this.calculateBalances(escrowId)
+
+    if (!calculated.hasDiscrepancy) {
+      // No discrepancy, nothing to reconcile
+      return (await prisma.escrowAgreement.findUnique({
+        where: { id: escrowId },
+      }))!
+    }
+
+    // Log the reconciliation
+    console.warn('Reconciling escrow balances:', {
+      escrowId,
+      performedBy,
+      before: {
+        current: (await prisma.escrowAgreement.findUnique({ where: { id: escrowId } }))!.currentBalance.toNumber(),
+      },
+      after: {
+        current: calculated.currentBalance.toNumber(),
+        available: calculated.availableBalance.toNumber(),
+        held: calculated.heldBalance.toNumber(),
+      },
+      discrepancy: calculated.discrepancy.toNumber(),
+    })
+
+    // Update balances
+    const reconciledEscrow = await prisma.escrowAgreement.update({
+      where: { id: escrowId },
+      data: {
+        currentBalance: calculated.currentBalance,
+        availableBalance: calculated.availableBalance,
+        heldBalance: calculated.heldBalance,
+      },
+    })
+
+    // TODO: Create audit log entry
+    // await auditService.logBalanceReconciliation(...)
+
+    return reconciledEscrow
   }
 }
 
