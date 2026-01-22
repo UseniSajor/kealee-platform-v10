@@ -61,3 +61,41 @@ export class ReconciliationError extends AppError {
   }
 }
 
+export class DoubleEntryMismatchError extends ValidationError {
+  constructor(totalDebits: number, totalCredits: number, difference: number) {
+    super('Debits must equal credits in a journal entry', {
+      totalDebits,
+      totalCredits,
+      difference,
+    })
+    this.code = 'DOUBLE_ENTRY_MISMATCH'
+  }
+}
+
+export class EntryAlreadyPostedException extends ConflictError {
+  constructor(entryNumber: string) {
+    super(`Journal entry ${entryNumber} is already posted and cannot be modified`)
+    this.code = 'ENTRY_ALREADY_POSTED'
+  }
+}
+
+export class InsufficientApprovalError extends AppError {
+  constructor(entryNumber: string, amount: number) {
+    super(
+      `Journal entry ${entryNumber} requires approval (amount: $${amount.toFixed(2)} exceeds $10,000 threshold)`,
+      403,
+      'INSUFFICIENT_APPROVAL'
+    )
+  }
+}
+
+export class InvalidEntryStatusError extends ValidationError {
+  constructor(currentStatus: string, requiredStatus: string) {
+    super(
+      `Invalid entry status. Current: ${currentStatus}, Required: ${requiredStatus}`,
+      { currentStatus, requiredStatus }
+    )
+    this.code = 'INVALID_ENTRY_STATUS'
+  }
+}
+

@@ -80,7 +80,25 @@ export interface VoidJournalEntryDTO {
   voidReason: string
 }
 
-export interface JournalEntryWithLines extends JournalEntry {
+export interface JournalEntryWithLines {
+  id: string
+  entryNumber: string
+  description: string
+  reference: string | null
+  referenceId: string | null
+  entryDate: Date
+  status: JournalEntryStatus
+  requiresApproval: boolean
+  approvedBy: string | null
+  approvedAt: Date | null
+  postedAt: Date | null
+  postedBy: string | null
+  voidedAt: Date | null
+  voidedBy: string | null
+  voidReason: string | null
+  createdAt: Date
+  createdBy: string
+  updatedAt: Date
   lines: JournalLineWithAccount[]
 }
 
@@ -91,7 +109,7 @@ export interface JournalLineWithAccount {
   lineOrder: number
   debit: Decimal
   credit: Decimal
-  description: string | null
+  description: string | null | undefined
   createdAt: Date
   account: {
     id: string
