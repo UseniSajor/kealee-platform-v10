@@ -4,7 +4,7 @@
  * Immutable, append-only logging with retention policies
  */
 
-import { prisma } from '@kealee/database'
+import { prisma, Decimal } from '@kealee/database'
 import {
   AuditEntityType,
   AuditAction,
@@ -14,7 +14,6 @@ import {
   AccessAction,
   SensitivityLevel,
 } from '@kealee/database'
-import { Decimal } from '@prisma/client/runtime/library'
 
 // ============================================================================
 // Type Definitions

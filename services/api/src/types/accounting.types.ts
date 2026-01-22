@@ -2,8 +2,7 @@
  * Accounting-specific type definitions
  */
 
-import { Account, AccountType, AccountSubType, JournalEntry, JournalEntryStatus } from '@kealee/database'
-import { Decimal } from '@prisma/client/runtime/library'
+import { Account, AccountType, AccountSubType, JournalEntry, JournalEntryStatus, Decimal } from '@kealee/database'
 
 // ============================================================================
 // Account DTOs

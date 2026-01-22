@@ -4,9 +4,8 @@
  */
 
 import Stripe from 'stripe'
-import { prisma } from '@kealee/database'
+import { prisma, Decimal } from '@kealee/database'
 import { PayoutMethod, PayoutStatus } from '@kealee/database'
-import { Decimal } from '@prisma/client/runtime/library'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-12-15.clover',
@@ -443,6 +442,9 @@ export class PayoutService {
   static async verifyPayoutArrival(stripePayoutId: string) {
     const payout = await prisma.payout.findFirst({
       where: { stripePayoutId },
+      include: {
+        connectedAccount: true,
+      },
     })
 
     if (!payout) {

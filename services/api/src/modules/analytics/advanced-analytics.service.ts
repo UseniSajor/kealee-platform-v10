@@ -3,7 +3,7 @@
  * Provides predictive analytics, forecasting, and machine learning capabilities
  */
 
-import { prisma } from '@kealee/database'
+import { prisma, Decimal } from '@kealee/database'
 import {
   SnapshotType,
   KPIType,
@@ -11,7 +11,6 @@ import {
   RiskLevel,
   AlertSeverity,
 } from '@kealee/database'
-import { Decimal } from '@prisma/client/runtime/library'
 
 // ============================================================================
 // Type Definitions

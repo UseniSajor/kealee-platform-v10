@@ -3,8 +3,7 @@
  * Generates comprehensive financial reports including cash flow, P&L, escrow summaries, and metrics
  */
 
-import { prisma } from '@kealee/database'
-import { Decimal } from '@prisma/client/runtime/library'
+import { prisma, Decimal } from '@kealee/database'
 
 export interface ReportFilters {
   startDate?: Date
@@ -664,10 +663,10 @@ export class FinancialReportingService {
 
     // Calculate average payout time (from creation to paid)
     const payoutTimes = paidPayouts
-      .filter((p) => p.paidAt)
+      .filter((p) => p.processedAt)
       .map(
         (p) =>
-          (p.paidAt!.getTime() - p.createdAt.getTime()) / (1000 * 60 * 60)
+          (p.processedAt!.getTime() - p.createdAt.getTime()) / (1000 * 60 * 60)
       ) // hours
 
     const avgPayoutTime =
@@ -810,7 +809,7 @@ export class FinancialReportingService {
 
     const completedPayoutsToday = await prisma.payout.count({
       where: {
-        paidAt: { gte: todayStart },
+        processedAt: { gte: todayStart },
         status: 'PAID',
       },
     })
@@ -938,7 +937,7 @@ export class FinancialReportingService {
 
     const scheduledMilestones = await prisma.milestone.findMany({
       where: {
-        status: { in: ['PENDING', 'IN_PROGRESS'] },
+        status: { in: ['PENDING', 'SUBMITTED', 'UNDER_REVIEW'] },
         // TODO: Add expected completion date field
       },
     })

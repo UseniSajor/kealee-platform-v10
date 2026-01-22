@@ -3,14 +3,13 @@
  * Handles automated lien waiver generation, state-specific templates, and digital signing
  */
 
-import { prisma } from '@kealee/database'
+import { prisma, Decimal } from '@kealee/database'
 import {
   LienWaiverType,
   LienWaiverScope,
   LienWaiverStatus,
   LienWaiverSignerRole,
 } from '@kealee/database'
-import { Decimal } from '@prisma/client/runtime/library'
 
 export interface GenerateWaiverDTO {
   escrowTransactionId: string

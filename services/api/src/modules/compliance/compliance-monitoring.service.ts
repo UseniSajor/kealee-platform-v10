@@ -3,7 +3,7 @@
  * Handles regulatory compliance monitoring and reporting across all 50 states
  */
 
-import { prisma } from '@kealee/database'
+import { prisma, Decimal } from '@kealee/database'
 import {
   RuleType,
   ComplianceSeverity,
@@ -12,7 +12,6 @@ import {
   InsuranceStatus,
   RemediationStatus,
 } from '@kealee/database'
-import { Decimal } from '@prisma/client/runtime/library'
 
 // ============================================================================
 // Type Definitions

@@ -5,11 +5,10 @@
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
-import { authenticateUser, requireRole } from '../middleware/auth.middleware'
+import { authenticateUser, requireRole, type AuthenticatedRequest } from '../middleware/auth.middleware'
 import { ConnectOnboardingService } from '../modules/stripe-connect/connect-onboarding.service'
 import { PayoutService } from '../modules/stripe-connect/payout.service'
 import { ConnectWebhookHandler } from '../modules/stripe-connect/connect-webhook.handler'
-import type { AuthenticatedRequest } from '../types/auth.types'
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -526,8 +525,9 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
 
       try {
         // Verify webhook signature
+        const rawBody = (request as any).rawBody || JSON.stringify(request.body)
         const event = ConnectWebhookHandler.verifyWebhookSignature(
-          request.rawBody || request.body,
+          rawBody,
           signature,
           webhookSecret
         )

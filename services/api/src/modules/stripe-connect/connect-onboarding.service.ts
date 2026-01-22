@@ -188,8 +188,8 @@ export class ConnectOnboardingService {
     } else if (stripeAccount.requirements?.disabled_reason) {
       status = 'DISABLED'
     } else if (
-      stripeAccount.requirements?.currently_due?.length > 0 ||
-      stripeAccount.requirements?.past_due?.length > 0
+      (stripeAccount.requirements?.currently_due?.length ?? 0) > 0 ||
+      (stripeAccount.requirements?.past_due?.length ?? 0) > 0
     ) {
       status = 'RESTRICTED'
     } else if (stripeAccount.details_submitted) {

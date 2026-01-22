@@ -3,13 +3,12 @@
  * Handles automated generation of financial statements for users
  */
 
-import { prisma } from '@kealee/database'
+import { prisma, Decimal } from '@kealee/database'
 import {
   StatementType,
   StatementStatus,
   RecipientRole,
 } from '@kealee/database'
-import { Decimal } from '@prisma/client/runtime/library'
 
 export interface GenerateStatementDTO {
   recipientId: string
@@ -217,7 +216,7 @@ export class StatementGenerationService {
       where: {
         OR: [
           {
-            contractsAsOwner: {
+            ownedContracts: {
               some: {
                 escrowAgreement: {
                   status: { in: ['ACTIVE', 'FROZEN'] },
@@ -226,7 +225,7 @@ export class StatementGenerationService {
             },
           },
           {
-            contractsAsContractor: {
+            contractorContracts: {
               some: {
                 escrowAgreement: {
                   status: { in: ['ACTIVE', 'FROZEN'] },
@@ -238,7 +237,7 @@ export class StatementGenerationService {
       },
       select: {
         id: true,
-        contractsAsOwner: {
+        ownedContracts: {
           where: {
             escrowAgreement: {
               status: { in: ['ACTIVE', 'FROZEN'] },
@@ -248,7 +247,7 @@ export class StatementGenerationService {
             id: true,
           },
         },
-        contractsAsContractor: {
+        contractorContracts: {
           where: {
             escrowAgreement: {
               status: { in: ['ACTIVE', 'FROZEN'] },
@@ -267,7 +266,7 @@ export class StatementGenerationService {
     for (const user of usersWithEscrow) {
       try {
         // Generate for owner role if applicable
-        if (user.contractsAsOwner.length > 0) {
+        if (user.ownedContracts.length > 0) {
           const { statement } = await this.generateStatement({
             recipientId: user.id,
             recipientRole: 'OWNER',
@@ -279,7 +278,7 @@ export class StatementGenerationService {
         }
 
         // Generate for contractor role if applicable
-        if (user.contractsAsContractor.length > 0) {
+        if (user.contractorContracts.length > 0) {
           const { statement } = await this.generateStatement({
             recipientId: user.id,
             recipientRole: 'CONTRACTOR',
@@ -677,7 +676,7 @@ export class StatementGenerationService {
       where: {
         method: 'INSTANT',
         status: 'PAID',
-        paidAt: { gte: startDate, lte: endDate },
+        processedAt: { gte: startDate, lte: endDate },
       },
     })
 

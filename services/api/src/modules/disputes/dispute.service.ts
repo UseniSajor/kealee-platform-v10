@@ -3,14 +3,13 @@
  * Handles dispute initiation, evidence submission, mediation, and resolution
  */
 
-import { prisma } from '@kealee/database'
+import { prisma, Decimal } from '@kealee/database'
 import {
   DisputeType,
   DisputeStatus,
   DisputeResolutionType,
   EscrowHoldReason,
 } from '@kealee/database'
-import { Decimal } from '@prisma/client/runtime/library'
 
 export interface InitiateDisputeDTO {
   escrowAgreementId: string
@@ -835,3 +834,6 @@ export class DisputeService {
     }
   }
 }
+
+// Export singleton instance
+export const disputeService = new DisputeService()

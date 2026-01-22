@@ -2,8 +2,7 @@
  * AccountService - Manages chart of accounts and account operations
  */
 
-import { Account, AccountType, Prisma } from '@kealee/database'
-import { Decimal } from '@prisma/client/runtime/library'
+import { Account, AccountType, Prisma, Decimal } from '@kealee/database'
 import { prismaAny } from '../../utils/prisma-helper'
 import {
   AccountNotFoundError,
