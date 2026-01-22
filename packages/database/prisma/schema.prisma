@@ -1537,6 +1537,16 @@ model User {
   connectedAccount ConnectedAccount? @relation("ConnectedAccountUser")
   initiatedPayouts Payout[]          @relation("PayoutInitiator")
   approvedPayouts  Payout[]          @relation("PayoutApprover")
+
+  // Dispute relations
+  initiatedDisputes     Dispute[]           @relation("DisputeInitiator")
+  respondentDisputes    Dispute[]           @relation("DisputeRespondent")
+  mediatedDisputes      Dispute[]           @relation("DisputeMediator")
+  submittedEvidence     DisputeEvidence[]   @relation("DisputeEvidenceSubmitter")
+  reviewedEvidence      DisputeEvidence[]   @relation("DisputeEvidenceReviewer")
+  sentDisputeMessages   DisputeMessage[]    @relation("DisputeMessageSender")
+  resolutionsAsMediator DisputeResolution[] @relation("DisputeResolutionMediator")
+  appealedResolutions   DisputeResolution[] @relation("DisputeResolutionAppealer")
 }
 
 // ============================================================================
@@ -1705,13 +1715,42 @@ enum EscrowHoldStatus {
 }
 
 enum DisputeStatus {
-  FILED
-  FREEZE_APPLIED
-  UNDER_INVESTIGATION
-  PENDING_MEDIATION
-  PENDING_RESOLUTION
-  RESOLVED
-  CANCELLED
+  OPEN // Initial status
+  UNDER_REVIEW // Evidence review phase
+  MEDIATION // Active mediation
+  RESOLVED // Resolution decided
+  CLOSED // Fully closed
+  CANCELLED // Cancelled by initiator
+}
+
+enum DisputeType {
+  PAYMENT // Payment dispute
+  QUALITY // Quality of work
+  SCOPE // Scope of work
+  TIMELINE // Timeline/delays
+  OTHER // Other issues
+}
+
+enum DisputeEvidenceType {
+  DOCUMENT
+  PHOTO
+  VIDEO
+  MESSAGE
+  OTHER
+}
+
+enum DisputeResolutionType {
+  FULL_RELEASE // Release full amount to contractor
+  PARTIAL_RELEASE // Split between parties
+  NO_RELEASE // No release, return to owner
+  REFUND // Full refund to owner
+}
+
+enum DisputeAppealStatus {
+  NONE // No appeal
+  PENDING // Appeal filed, under review
+  ACCEPTED // Appeal accepted, case reopened
+  REJECTED // Appeal rejected
 }
 
 enum LeadStatus {
@@ -2209,30 +2248,163 @@ model Payout {
   @@index([arrivalDate])
 }
 
+// ============================================================================
+// DISPUTE RESOLUTION SYSTEM (Stage 5 - Finance & Trust)
+// ============================================================================
+
 model Dispute {
-  id              String        @id @default(uuid())
-  projectId       String
-  contractId      String?
-  escrowId        String?
-  milestoneId     String?
-  initiatedBy     String
-  initiatedByRole String // OWNER, CONTRACTOR
-  reason          String
-  description     String
-  priority        String // low, normal, high, urgent
-  status          DisputeStatus @default(FILED)
-  resolution      String?
-  resolvedAt      DateTime?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id            String @id @default(uuid())
+  disputeNumber String @unique // Auto-generated: DISP-YYYYMMDD-XXXX
 
-  project  Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  contract ContractAgreement? @relation(fields: [contractId], references: [id])
-  escrow   EscrowAgreement?   @relation(fields: [escrowId], references: [id])
+  // Linked Entities
+  escrowAgreementId String
+  contractId        String
+  projectId         String
 
-  @@index([projectId])
+  // Parties
+  initiatedBy  String // User ID who filed dispute
+  respondentId String // User ID of other party
+  mediatorId   String? // Assigned mediator user ID
+
+  // Dispute Details
+  type           DisputeType
+  status         DisputeStatus @default(OPEN)
+  disputedAmount Decimal       @db.Decimal(18, 2) // Amount in dispute
+  frozenAmount   Decimal       @default(0) @db.Decimal(18, 2) // Amount actually frozen
+
+  // Description & Resolution
+  title       String // Brief title
+  description String  @db.Text // Detailed description
+  resolution  String? @db.Text // Final resolution text
+
+  // Timestamps & Deadlines
+  createdAt         DateTime  @default(now())
+  evidenceDeadline  DateTime? // Deadline for evidence submission
+  mediationDeadline DateTime? // Deadline for mediation
+  resolvedAt        DateTime? // When resolution was decided
+  closedAt          DateTime? // When dispute was fully closed
+  updatedAt         DateTime  @updatedAt
+
+  // Metadata
+  metadata Json? // Flexible data storage
+
+  // Relationships
+  escrowAgreement EscrowAgreement     @relation(fields: [escrowAgreementId], references: [id], onDelete: Cascade)
+  contract        ContractAgreement   @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  project         Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  initiator       User                @relation("DisputeInitiator", fields: [initiatedBy], references: [id])
+  respondent      User                @relation("DisputeRespondent", fields: [respondentId], references: [id])
+  mediator        User?               @relation("DisputeMediator", fields: [mediatorId], references: [id])
+  evidence        DisputeEvidence[]
+  messages        DisputeMessage[]
+  resolutions     DisputeResolution[]
+
+  @@index([escrowAgreementId])
   @@index([contractId])
+  @@index([projectId])
   @@index([status])
+  @@index([initiatedBy])
+  @@index([respondentId])
+  @@index([mediatorId])
+  @@index([disputeNumber])
+  @@index([createdAt])
+}
+
+model DisputeEvidence {
+  id          String @id @default(uuid())
+  disputeId   String
+  submittedBy String // User ID
+
+  // Evidence Details
+  evidenceType DisputeEvidenceType
+  fileUrl      String // S3 or storage URL
+  fileName     String
+  fileSize     Int // Size in bytes
+  mimeType     String? // e.g., application/pdf, image/jpeg
+
+  // Description & Review
+  description String?   @db.Text
+  uploadedAt  DateTime  @default(now())
+  isReviewed  Boolean   @default(false)
+  reviewedBy  String? // Mediator user ID who reviewed
+  reviewedAt  DateTime?
+
+  // Metadata
+  metadata Json?
+
+  // Relationships
+  dispute   Dispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  submitter User    @relation("DisputeEvidenceSubmitter", fields: [submittedBy], references: [id])
+  reviewer  User?   @relation("DisputeEvidenceReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([disputeId])
+  @@index([submittedBy])
+  @@index([uploadedAt])
+}
+
+model DisputeMessage {
+  id        String @id @default(uuid())
+  disputeId String
+  senderId  String // User ID
+
+  // Message Content
+  message    String  @db.Text
+  isInternal Boolean @default(false) // Visible only to mediators/admins
+
+  // Read Tracking
+  readBy Json? // Array of user IDs who have read this message
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  dispute Dispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  sender  User    @relation("DisputeMessageSender", fields: [senderId], references: [id])
+
+  @@index([disputeId])
+  @@index([senderId])
+  @@index([createdAt])
+}
+
+model DisputeResolution {
+  id         String @id @default(uuid())
+  disputeId  String
+  mediatorId String // User ID of mediator
+
+  // Resolution Details
+  resolutionType   DisputeResolutionType
+  ownerAmount      Decimal               @default(0) @db.Decimal(18, 2) // Amount awarded to owner
+  contractorAmount Decimal               @default(0) @db.Decimal(18, 2) // Amount awarded to contractor
+  refundAmount     Decimal               @default(0) @db.Decimal(18, 2) // Amount refunded
+
+  // Reasoning & Decision
+  reasoning String   @db.Text
+  decidedAt DateTime @default(now())
+
+  // Appeal Process
+  appealDeadline DateTime // 7 days after decision
+  appealStatus   DisputeAppealStatus @default(NONE)
+  appealReason   String?             @db.Text
+  appealedAt     DateTime?
+  appealedBy     String? // User ID who filed appeal
+
+  // Metadata
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  dispute  Dispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  mediator User    @relation("DisputeResolutionMediator", fields: [mediatorId], references: [id])
+  appealer User?   @relation("DisputeResolutionAppealer", fields: [appealedBy], references: [id])
+
+  @@index([disputeId])
+  @@index([mediatorId])
+  @@index([decidedAt])
+  @@index([appealStatus])
 }
 
 model Lead {
