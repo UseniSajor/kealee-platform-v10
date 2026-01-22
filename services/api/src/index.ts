@@ -229,7 +229,7 @@ import { depositRoutes } from './routes/deposit.routes'
 import { stripeWebhookRoutes } from './routes/stripe-webhook.routes'
 import { oversightRoutes } from './routes/oversight.routes'
 import testRoutes from './routes/test.routes'
-import { createGraphQLServer } from './graphql/server'
+// import { createGraphQLServer } from './graphql/server' // DISABLED: GraphQL not critical for MVP
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware'
 import { registerGlobalRateLimit } from './middleware/rate-limit.middleware'
 import { registerCSRFProtection } from './middleware/csrf.middleware'
@@ -472,16 +472,15 @@ const start = async () => {
     
     // Note: File routes already registered at line 284 with prefix '/files'
 
-    // Register GraphQL server (Apollo Server v4)
+    // GraphQL DISABLED FOR MVP - Uncomment when needed
+    /*
     const graphQLServer = createGraphQLServer()
     await graphQLServer.start()
     
-    // Use the new Fastify integration for Apollo Server v4
     const { default: fastifyApollo } = await import('@as-integrations/fastify')
     
     await fastify.register(fastifyApollo(graphQLServer), {
       context: async (request: any, reply: any) => {
-        // Extract API key or auth token from request
         const apiKey = request.headers?.['x-api-key']
         const authToken = request.headers?.authorization
         
@@ -493,6 +492,8 @@ const start = async () => {
         }
       },
     } as any)
+    */
+    // GraphQL disabled - end comment block
 
     // Railway provides PORT env var, default to 3000 for local dev
     const port = Number(process.env.PORT) || 3000
@@ -510,7 +511,7 @@ const start = async () => {
     console.log(`Host:         0.0.0.0`);
     console.log(`Health:       /health`);
     console.log(`Docs:         /docs`);
-    console.log(`GraphQL:      /graphql`);
+    // console.log(`GraphQL:      /graphql`); // GraphQL disabled for MVP
     console.log('='.repeat(60));
     console.log('');
   } catch (err) {
