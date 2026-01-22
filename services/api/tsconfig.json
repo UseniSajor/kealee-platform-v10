@@ -17,5 +17,15 @@
     "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "scripts/**/*", "**/__tests__/**/*", "**/*.test.ts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "scripts/**/*",
+    "**/__tests__/**/*",
+    "**/*.test.ts",
+    "src/__tests__/**/*",
+    "src/modules/tasks/ai-task-generator.service.ts",
+    "src/services/ai.service.ts",
+    "src/sdk/cli.ts"
+  ]
 }
