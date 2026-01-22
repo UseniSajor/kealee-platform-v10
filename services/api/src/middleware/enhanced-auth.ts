@@ -43,8 +43,8 @@ export interface AuthenticatedRequest extends FastifyRequest {
 export function generateAccessToken(userId: string, email: string, role: string, sessionId: string): string {
   return jwt.sign(
     { userId, email, role, sessionId },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRY }
+    JWT_SECRET as string,
+    { expiresIn: JWT_EXPIRY as string }
   );
 }
 
@@ -54,8 +54,8 @@ export function generateAccessToken(userId: string, email: string, role: string,
 export function generateRefreshToken(userId: string, sessionId: string): string {
   return jwt.sign(
     { userId, sessionId },
-    JWT_REFRESH_SECRET,
-    { expiresIn: JWT_REFRESH_EXPIRY }
+    JWT_REFRESH_SECRET as string,
+    { expiresIn: JWT_REFRESH_EXPIRY as string }
   );
 }
 

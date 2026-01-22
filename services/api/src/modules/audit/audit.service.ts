@@ -135,15 +135,27 @@ export class AuditService {
     ipAddress?: string;
     userAgent?: string;
     reason?: string;
+    before?: any;
+    after?: any;
   }): Promise<AuditLog> {
-    // If reason is provided, add it to metadata
-    const auditData = { ...data };
-    if (data.reason) {
+    // Build the audit data
+    const auditData: any = { ...data };
+    
+    // If reason, before, or after are provided, add them to metadata
+    if (data.reason || data.before || data.after) {
       auditData.metadata = {
         ...data.metadata,
-        reason: data.reason,
       };
+      if (data.reason) auditData.metadata.reason = data.reason;
+      if (data.before) auditData.metadata.before = data.before;
+      if (data.after) auditData.metadata.after = data.after;
     }
+    
+    // Clean up the extra fields before passing to logAudit
+    delete auditData.reason;
+    delete auditData.before;
+    delete auditData.after;
+    
     return this.logAudit(auditData);
   }
 
