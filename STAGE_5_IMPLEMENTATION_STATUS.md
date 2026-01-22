@@ -48,9 +48,15 @@
 
 ### Week 12 Day 1-2: Double-Entry Ledger Foundation
 - ✅ Database models created
-- ⏳ Backend services for ledger system
-- ⏳ Account reconciliation interface
-- ⏳ Journal entry creation with validation
+- ✅ **AccountService implemented** (2026-01-21)
+  - ✅ `createAccount()` with auto-code generation
+  - ✅ `getChartOfAccounts()` with hierarchical structure
+  - ✅ `getAccountBalance()` with date-based calculations
+  - ✅ `reconcileAccount()` with period balances
+  - ✅ Custom error classes (AccountNotFoundError, etc.)
+  - ✅ Zod validation schemas
+  - ✅ TypeScript type definitions
+- ⏳ JournalEntryService (next)
 - ⏳ Escrow account service integration
 
 ---
@@ -101,10 +107,21 @@ apps/m-finance-trust/
 └── package.json
 
 services/api/src/modules/finance/
-├── ledger.service.ts (to be created)
+├── account.service.ts ✅ CREATED
+├── journal-entry.service.ts (to be created)
 ├── escrow.service.ts (to be created)
-├── ledger.routes.ts (to be created)
+├── account.routes.ts (to be created)
+├── journal-entry.routes.ts (to be created)
 └── escrow.routes.ts (to be created)
+
+services/api/src/errors/
+└── accounting.errors.ts ✅ CREATED
+
+services/api/src/types/
+└── accounting.types.ts ✅ CREATED
+
+services/api/src/validators/
+└── accounting.validators.ts ✅ CREATED
 ```
 
 ---
