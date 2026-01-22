@@ -24,6 +24,7 @@
     "**/__tests__/**/*",
     "**/*.test.ts",
     "src/__tests__/**/*",
+    "src/tests/**/*",
     "src/sdk/**/*",
     "src/graphql/**/*",
     "disabled-features/**/*"
