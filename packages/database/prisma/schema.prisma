@@ -1552,6 +1552,13 @@ model User {
   // Lien Waiver relations
   createdLienWaivers   LienWaiver[]          @relation("LienWaiverCreator")
   lienWaiverSignatures LienWaiverSignature[] @relation("LienWaiverSigner")
+
+  // Statement & Compliance relations
+  statements                Statement[]         @relation("StatementRecipient")
+  statementSchedules        StatementSchedule[] @relation("StatementScheduleRecipient")
+  relatedComplianceReports  ComplianceReport[]  @relation("ComplianceReportUser")
+  reviewedComplianceReports ComplianceReport[]  @relation("ComplianceReportReviewer")
+  approvedComplianceReports ComplianceReport[]  @relation("ComplianceReportApprover")
 }
 
 // ============================================================================
@@ -2559,6 +2566,176 @@ model LienWaiverSignature {
   @@index([lienWaiverId])
   @@index([signerId])
   @@index([signedAt])
+}
+
+// ============================================================================
+// STATEMENT GENERATION & COMPLIANCE (Stage 5 - Finance & Trust - Reporting)
+// ============================================================================
+
+enum StatementType {
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+  CUSTOM
+}
+
+enum StatementStatus {
+  GENERATED // Created but not sent
+  SENT // Sent to recipient
+  VIEWED // Opened by recipient
+  ARCHIVED // Archived after retention period
+}
+
+enum RecipientRole {
+  OWNER
+  CONTRACTOR
+  ADMIN
+  FINANCE
+}
+
+enum DeliveryMethod {
+  EMAIL
+  DOWNLOAD
+  BOTH
+}
+
+enum ComplianceReportType {
+  SAR // Suspicious Activity Report
+  CTR // Currency Transaction Report
+  FORM_1099_NEC
+  FORM_1099_K
+  FORM_1099_MISC
+}
+
+enum ComplianceReportStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  FILED
+  REJECTED
+}
+
+model Statement {
+  id            String        @id @default(uuid())
+  statementType StatementType
+  recipientId   String // User ID
+  recipientRole RecipientRole
+
+  // Period Coverage
+  periodStart DateTime
+  periodEnd   DateTime
+
+  // Content
+  documentUrl String? // URL to generated PDF
+  status      StatementStatus @default(GENERATED)
+
+  // Financial Summary (stored in metadata)
+  openingBalance   Decimal @db.Decimal(18, 2)
+  closingBalance   Decimal @db.Decimal(18, 2)
+  totalDeposits    Decimal @db.Decimal(18, 2)
+  totalReleases    Decimal @db.Decimal(18, 2)
+  totalFees        Decimal @db.Decimal(18, 2)
+  transactionCount Int     @default(0)
+
+  // Metadata
+  metadata Json? // Transaction details, charts data, etc.
+
+  // Timestamps
+  generatedAt DateTime  @default(now())
+  sentAt      DateTime?
+  viewedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relationships
+  recipient User @relation("StatementRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId])
+  @@index([statementType])
+  @@index([status])
+  @@index([periodStart, periodEnd])
+  @@index([generatedAt])
+}
+
+model StatementSchedule {
+  id            String        @id @default(uuid())
+  recipientId   String // User ID
+  statementType StatementType
+  frequency     String        @default("MONTHLY") // MONTHLY, QUARTERLY, ANNUAL
+
+  // Schedule Configuration
+  dayOfMonth     Int            @default(1) // Day of month to generate (1-31)
+  isActive       Boolean        @default(true)
+  deliveryMethod DeliveryMethod @default(EMAIL)
+
+  // Tracking
+  lastGenerated DateTime?
+  nextScheduled DateTime?
+
+  // Metadata
+  metadata Json? // Additional configuration
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  recipient User @relation("StatementScheduleRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId])
+  @@index([isActive])
+  @@index([nextScheduled])
+}
+
+model ComplianceReport {
+  id         String                 @id @default(uuid())
+  reportType ComplianceReportType
+  status     ComplianceReportStatus @default(DRAFT)
+
+  // Report Details
+  title       String
+  description String? @db.Text
+
+  // Period Coverage
+  periodStart DateTime?
+  periodEnd   DateTime?
+
+  // Filing Information
+  filedWith    String? // FinCEN, IRS, etc.
+  filingNumber String? // Reference number from filing
+  filedAt      DateTime?
+
+  // Related Entities
+  relatedUserId        String? // User involved
+  relatedTransactionId String? // Transaction involved
+  relatedEscrowId      String? // Escrow account involved
+
+  // Document
+  documentUrl String? // URL to generated report
+
+  // Review & Approval
+  reviewedBy String? // User ID of reviewer
+  reviewedAt DateTime?
+  approvedBy String? // User ID of approver
+  approvedAt DateTime?
+
+  // Metadata
+  metadata Json? // Report-specific data (SAR details, 1099 data, etc.)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  relatedUser User? @relation("ComplianceReportUser", fields: [relatedUserId], references: [id])
+  reviewer    User? @relation("ComplianceReportReviewer", fields: [reviewedBy], references: [id])
+  approver    User? @relation("ComplianceReportApprover", fields: [approvedBy], references: [id])
+
+  @@index([reportType])
+  @@index([status])
+  @@index([relatedUserId])
+  @@index([periodStart, periodEnd])
+  @@index([filedAt])
 }
 
 model Lead {
