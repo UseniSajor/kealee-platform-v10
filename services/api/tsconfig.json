@@ -24,18 +24,8 @@
     "**/__tests__/**/*",
     "**/*.test.ts",
     "src/__tests__/**/*",
-    "src/modules/tasks/**/*",
-    "src/modules/audit/**/*",
-    "src/modules/disputes/**/*",
-    "src/services/**/*",
     "src/sdk/**/*",
     "src/graphql/**/*",
-    "src/routes/dispute.routes.ts",
-    "src/routes/lien-waiver.routes.ts",
-    "src/routes/statement-generation.routes.ts",
-    "src/routes/financial-reporting.routes.ts",
-    "src/routes/audit.routes.ts",
-    "src/routes/compliance.routes.ts",
-    "src/routes/accounting.routes.ts"
+    "disabled-features/**/*"
   ]
 }

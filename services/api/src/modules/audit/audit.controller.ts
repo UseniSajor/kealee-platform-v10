@@ -137,7 +137,15 @@ export class AuditController {
     try {
       const data = trackChangeSchema.parse(request.body);
 
-      const changeLog = await auditService.trackChange(data);
+      const changeLog = await auditService.trackChange({
+        entityType: data.entityType,
+        entityId: data.entityId,
+        field: data.field,
+        oldValue: data.oldValue,
+        newValue: data.newValue,
+        changedBy: data.changedBy,
+        reason: data.reason,
+      });
 
       return reply.status(201).send({
         success: true,
@@ -195,7 +203,8 @@ export class AuditController {
   ) {
     try {
       const { userId } = request.params;
-      const filters = userActivitySchema.parse({ userId, ...request.query });
+      const queryData = request.query as any;
+      const filters = userActivitySchema.parse({ userId, ...queryData });
 
       const activity = await auditService.getUserActivity(userId, filters);
 
