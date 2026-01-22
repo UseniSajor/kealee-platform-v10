@@ -228,6 +228,7 @@ import { complianceRoutes } from './routes/compliance.routes'
 import { depositRoutes } from './routes/deposit.routes'
 import { stripeWebhookRoutes } from './routes/stripe-webhook.routes'
 import { oversightRoutes } from './routes/oversight.routes'
+import testRoutes from './routes/test.routes'
 import { createGraphQLServer } from './graphql/server'
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware'
 import { registerGlobalRateLimit } from './middleware/rate-limit.middleware'
@@ -364,6 +365,7 @@ const start = async () => {
     })
 
     // Register routes
+    await fastify.register(testRoutes, { prefix: '/api' })
     await fastify.register(authRoutes, { prefix: '/auth' })
     await fastify.register(orgRoutes, { prefix: '/orgs' })
     await fastify.register(userRoutes, { prefix: '/users' })

@@ -1,0 +1,87 @@
+import { FastifyPluginAsync } from 'fastify';
+import * as Sentry from '@sentry/node';
+
+const testRoutes: FastifyPluginAsync = async (fastify) => {
+  // Test Sentry error capture
+  fastify.get('/test-sentry', async (request, reply) => {
+    try {
+      fastify.log.info('🧪 Testing Sentry error capture...');
+      
+      // Create test error
+      const error = new Error('🧪 Sentry Test Error - Backend API is working!');
+      
+      // Add context for better debugging
+      Sentry.setContext('test_info', {
+        timestamp: new Date().toISOString(),
+        environment: process.env.APP_ENV || process.env.NODE_ENV,
+        message: 'This is a deliberate test error to verify Sentry integration',
+        endpoint: '/api/test-sentry',
+      });
+      
+      // Add tags
+      Sentry.setTag('test_type', 'manual');
+      Sentry.setTag('component', 'test_routes');
+      
+      // Capture the error
+      Sentry.captureException(error);
+      
+      fastify.log.info('✅ Test error sent to Sentry');
+      
+      return reply.send({
+        success: true,
+        message: 'Test error sent to Sentry successfully!',
+        instructions: 'Check your Sentry dashboard at https://sentry.io',
+        error_message: error.message,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      fastify.log.error('❌ Failed to send test error to Sentry', error);
+      Sentry.captureException(error);
+      return reply.code(500).send({ 
+        success: false,
+        error: 'Test failed',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+
+  // Test successful operation (no error)
+  fastify.get('/health', async (request, reply) => {
+    return reply.send({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      environment: process.env.APP_ENV || process.env.NODE_ENV,
+      sentry_enabled: !!process.env.SENTRY_DSN,
+    });
+  });
+
+  // Test different error types
+  fastify.get('/test-sentry/database-error', async (request, reply) => {
+    const error = new Error('Database connection failed - Test error');
+    Sentry.setTag('error_type', 'database');
+    Sentry.captureException(error);
+    
+    return reply.send({
+      success: true,
+      message: 'Database error test sent to Sentry',
+    });
+  });
+
+  fastify.get('/test-sentry/payment-error', async (request, reply) => {
+    const error = new Error('Payment processing failed - Test error');
+    Sentry.setTag('error_type', 'payment');
+    Sentry.setContext('payment_info', {
+      amount: 1000,
+      currency: 'USD',
+      status: 'failed',
+    });
+    Sentry.captureException(error);
+    
+    return reply.send({
+      success: true,
+      message: 'Payment error test sent to Sentry',
+    });
+  });
+};
+
+export default testRoutes;

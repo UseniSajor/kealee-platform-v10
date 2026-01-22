@@ -1918,6 +1918,7 @@ model EscrowAgreement {
   currentBalance       Decimal @default(0) @db.Decimal(18, 2) // Current total in escrow
   availableBalance     Decimal @default(0) @db.Decimal(18, 2) // Current - holds
   heldBalance          Decimal @default(0) @db.Decimal(18, 2) // Sum of active holds
+  currency             String  @default("USD") // Currency code
 
   // Interest Tracking (for interest-bearing escrows)
   interestRate    Decimal? @db.Decimal(5, 4) // e.g., 0.0250 for 2.5%
@@ -3991,6 +3992,157 @@ enum SecuritySeverity {
   MEDIUM
   HIGH
   CRITICAL
+}
+
+// ============================================================================
+// SECURITY & AUTHENTICATION MODELS
+// ============================================================================
+
+model UserSession {
+  id           String    @id @default(uuid())
+  userId       String
+  sessionToken String    @unique
+  refreshToken String?   @unique
+  ipAddress    String?
+  userAgent    String?
+  expiresAt    DateTime
+  lastActivity DateTime  @default(now())
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@index([expiresAt])
+}
+
+model TwoFactorSecret {
+  id        String    @id @default(uuid())
+  userId    String    @unique
+  secret    String
+  isEnabled Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model BackupCode {
+  id        String    @id @default(uuid())
+  userId    String
+  code      String    @unique
+  isUsed    Boolean   @default(false)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([code])
+}
+
+model PasswordHistory {
+  id           String   @id @default(uuid())
+  userId       String
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+model SecurityEvent {
+  id          String   @id @default(uuid())
+  userId      String?
+  eventType   String
+  description String
+  ipAddress   String?
+  userAgent   String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// PAYMENT & DEPOSIT MODELS
+// ============================================================================
+
+model PaymentMethod {
+  id                    String    @id @default(uuid())
+  userId                String
+  type                  String // CARD, ACH, WIRE
+  stripePaymentMethodId String    @unique
+  last4                 String
+  brand                 String?
+  bankName              String?
+  isDefault             Boolean   @default(false)
+  isVerified            Boolean   @default(false)
+  status                String    @default("ACTIVE") // ACTIVE, VERIFICATION_PENDING, FAILED, REMOVED
+  expiryMonth           Int?
+  expiryYear            Int?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([stripePaymentMethodId])
+}
+
+model DepositRequest {
+  id                    String    @id @default(uuid())
+  escrowId              String
+  paymentMethodId       String
+  userId                String
+  amount                Decimal   @db.Decimal(18, 2)
+  currency              String    @default("USD")
+  status                String    @default("PENDING") // PENDING, PROCESSING, CLEARING, COMPLETED, FAILED, CANCELLED, REFUNDED
+  requiresVerification  Boolean   @default(false)
+  expectedClearanceDate DateTime?
+  stripePaymentIntentId String?   @unique
+  stripeChargeId        String?
+  failureReason         String?
+  failureCode           String?
+  retryCount            Int       @default(0)
+  createdAt             DateTime  @default(now())
+  clearedAt             DateTime?
+  updatedAt             DateTime  @updatedAt
+
+  @@index([escrowId])
+  @@index([userId])
+  @@index([status])
+  @@index([stripePaymentIntentId])
+}
+
+model TaxForm {
+  id             String    @id @default(uuid())
+  userId         String
+  taxYear        Int
+  formType       String // 1099_NEC, 1099_K, W9
+  totalAmount    Decimal   @db.Decimal(18, 2)
+  status         String    @default("NOT_FILED") // NOT_FILED, FILED, 1099_READY, NOT_REQUIRED
+  filedAt        DateTime?
+  documentUrl    String?
+  metadata       Json?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([taxYear])
+  @@index([formType])
+  @@index([status])
 }
 
 // ============================================================================
