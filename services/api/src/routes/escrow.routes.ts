@@ -643,5 +643,89 @@ export async function escrowRoutes(fastify: FastifyInstance) {
       }
     }
   )
+
+  /**
+   * POST /api/escrow/transactions/:id/complete
+   * Complete an escrow transaction after successful payout
+   * Internal endpoint - called by Stripe webhook handler
+   */
+  fastify.post(
+    '/escrow/transactions/:id/complete',
+    {
+      preHandler: [authenticateUser, requireRole(['admin'])],
+      schema: {
+        tags: ['Escrow'],
+        summary: 'Complete an escrow transaction',
+        params: z.object({
+          id: z.string().uuid(),
+        }),
+        body: z.object({
+          payoutId: z.string(),
+        }),
+      },
+    },
+    async (request: AuthenticatedRequest, reply: FastifyReply) => {
+      try {
+        const { id } = z.object({ id: z.string().uuid() }).parse(request.params)
+        const { payoutId } = z.object({ payoutId: z.string() }).parse(request.body)
+
+        const transaction = await escrowService.completeEscrowTransaction(id, payoutId)
+
+        return reply.send({
+          success: true,
+          transaction,
+          message: 'Escrow transaction completed successfully',
+        })
+      } catch (error: any) {
+        request.log.error(error)
+        return reply.code(error.statusCode || 500).send({
+          success: false,
+          error: error.message || 'Failed to complete transaction',
+        })
+      }
+    }
+  )
+
+  /**
+   * POST /api/escrow/transactions/:id/fail
+   * Mark an escrow transaction as failed and rollback balances
+   * Internal endpoint - called by Stripe webhook handler
+   */
+  fastify.post(
+    '/escrow/transactions/:id/fail',
+    {
+      preHandler: [authenticateUser, requireRole(['admin'])],
+      schema: {
+        tags: ['Escrow'],
+        summary: 'Fail an escrow transaction and rollback',
+        params: z.object({
+          id: z.string().uuid(),
+        }),
+        body: z.object({
+          reason: z.string(),
+        }),
+      },
+    },
+    async (request: AuthenticatedRequest, reply: FastifyReply) => {
+      try {
+        const { id } = z.object({ id: z.string().uuid() }).parse(request.params)
+        const { reason } = z.object({ reason: z.string() }).parse(request.body)
+
+        const transaction = await escrowService.failEscrowTransaction(id, reason)
+
+        return reply.send({
+          success: true,
+          transaction,
+          message: 'Escrow transaction failed and rolled back',
+        })
+      } catch (error: any) {
+        request.log.error(error)
+        return reply.code(error.statusCode || 500).send({
+          success: false,
+          error: error.message || 'Failed to process transaction failure',
+        })
+      }
+    }
+  )
 }
 

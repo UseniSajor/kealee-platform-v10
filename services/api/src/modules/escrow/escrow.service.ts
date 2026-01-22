@@ -309,7 +309,7 @@ export class EscrowService {
         createdBy: initiatedBy,
       }, tx)
 
-      // 2. Create escrow transaction
+      // 2. Create escrow transaction (PROCESSING - payout happens later via Stripe)
       const transaction = await tx.escrowTransaction.create({
         data: {
           escrowAgreementId: escrowId,
@@ -317,9 +317,10 @@ export class EscrowService {
           type: 'RELEASE',
           amount,
           currency: escrow.currency,
-          status: 'COMPLETED',
+          status: 'PROCESSING', // Will be updated to COMPLETED after Stripe payout succeeds
           reference: milestoneId,
-          processedDate: new Date(),
+          scheduledDate: new Date(), // When release was scheduled
+          processedDate: null, // Will be set when Stripe payout completes
           initiatedBy,
           approvedBy,
           metadata: {
@@ -331,7 +332,7 @@ export class EscrowService {
         },
       })
 
-      // 4. Update escrow balances
+      // 3. Update escrow balances (reduce available balance immediately)
       await tx.escrowAgreement.update({
         where: { id: escrowId },
         data: {
@@ -341,6 +342,112 @@ export class EscrowService {
       })
 
       return transaction
+    })
+
+    return result
+  }
+
+  /**
+   * Complete an escrow transaction after successful payout
+   * Called by Stripe webhook after payout succeeds
+   */
+  async completeEscrowTransaction(
+    transactionId: string,
+    payoutId: string
+  ): Promise<EscrowTransaction> {
+    // Get the transaction
+    const transaction = await prisma.escrowTransaction.findUnique({
+      where: { id: transactionId },
+      include: {
+        escrowAgreement: true,
+      },
+    })
+
+    if (!transaction) {
+      throw new Error('Escrow transaction not found')
+    }
+
+    if (transaction.status !== 'PROCESSING') {
+      throw new Error(
+        `Cannot complete transaction with status ${transaction.status}. Expected PROCESSING.`
+      )
+    }
+
+    // Update transaction status to COMPLETED
+    const completedTransaction = await prisma.escrowTransaction.update({
+      where: { id: transactionId },
+      data: {
+        status: 'COMPLETED',
+        processedDate: new Date(),
+        metadata: {
+          ...(transaction.metadata as object),
+          payoutId,
+          completedAt: new Date().toISOString(),
+        },
+      },
+    })
+
+    return completedTransaction
+  }
+
+  /**
+   * Fail an escrow transaction if payout fails
+   * Called by Stripe webhook after payout fails
+   */
+  async failEscrowTransaction(
+    transactionId: string,
+    reason: string
+  ): Promise<EscrowTransaction> {
+    // Get the transaction
+    const transaction = await prisma.escrowTransaction.findUnique({
+      where: { id: transactionId },
+      include: {
+        escrowAgreement: true,
+      },
+    })
+
+    if (!transaction) {
+      throw new Error('Escrow transaction not found')
+    }
+
+    if (transaction.status !== 'PROCESSING') {
+      throw new Error(
+        `Cannot fail transaction with status ${transaction.status}. Expected PROCESSING.`
+      )
+    }
+
+    // Use transaction to rollback escrow balance and update status
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Update transaction status to FAILED
+      const failedTransaction = await tx.escrowTransaction.update({
+        where: { id: transactionId },
+        data: {
+          status: 'FAILED',
+          metadata: {
+            ...(transaction.metadata as object),
+            failureReason: reason,
+            failedAt: new Date().toISOString(),
+          },
+        },
+      })
+
+      // 2. Restore escrow balances (return money to available balance)
+      await tx.escrowAgreement.update({
+        where: { id: transaction.escrowAgreementId },
+        data: {
+          currentBalance: transaction.escrowAgreement.currentBalance.add(transaction.amount),
+          availableBalance: transaction.escrowAgreement.availableBalance.add(transaction.amount),
+        },
+      })
+
+      // 3. Create a reversing journal entry to undo the accounting
+      await journalEntryService.voidJournalEntry({
+        entryId: transaction.journalEntryId,
+        voidedBy: 'SYSTEM',
+        voidReason: `Payment failed: ${reason}`,
+      })
+
+      return failedTransaction
     })
 
     return result
