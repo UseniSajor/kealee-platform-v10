@@ -730,3 +730,6 @@ export class StatementGenerationService {
   }
 }
 
+// Export singleton instance
+export const statementGenerationService = new StatementGenerationService()
+
