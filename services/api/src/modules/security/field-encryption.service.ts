@@ -32,7 +32,7 @@ export class FieldEncryptionService {
       const iv = crypto.randomBytes(16);
 
       // Create cipher
-      const cipher = crypto.createCipheriv(this.algorithm, this.masterKey, iv);
+      const cipher = crypto.createCipheriv(this.algorithm, this.masterKey, iv) as crypto.CipherGCM;
 
       // Encrypt
       let encrypted = cipher.update(plaintext, 'utf8', 'hex');
@@ -69,7 +69,7 @@ export class FieldEncryptionService {
       const encrypted = combined.slice(32);
 
       // Create decipher
-      const decipher = crypto.createDecipheriv(this.algorithm, this.masterKey, iv);
+      const decipher = crypto.createDecipheriv(this.algorithm, this.masterKey, iv) as crypto.DecipherGCM;
       decipher.setAuthTag(authTag);
 
       // Decrypt

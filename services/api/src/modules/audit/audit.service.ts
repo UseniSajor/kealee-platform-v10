@@ -74,6 +74,35 @@ export class AuditService {
   }
 
   /**
+   * Track field-level changes
+   */
+  async trackChange(data: {
+    entityType: string;
+    entityId: string;
+    field: string;
+    changedBy: string;
+    reason?: string;
+    oldValue?: any;
+    newValue?: any;
+  }): Promise<ChangeTracking> {
+    const changeLog: ChangeTracking = {
+      entityType: data.entityType,
+      entityId: data.entityId,
+      field: data.field,
+      oldValue: data.oldValue ?? null,
+      newValue: data.newValue ?? null,
+      changedBy: data.changedBy,
+      changedAt: new Date(),
+      reason: data.reason,
+    };
+
+    // Store change tracking record
+    // In production, this would be in a dedicated change_tracking table
+    
+    return changeLog;
+  }
+
+  /**
    * Log user activity
    */
   async logActivity(data: {

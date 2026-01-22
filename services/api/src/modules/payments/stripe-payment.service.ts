@@ -117,8 +117,8 @@ export class StripePaymentService {
   async createPaymentMethod(options: CreatePaymentMethodOptions): Promise<Stripe.PaymentMethod> {
     const paymentMethod = await stripe.paymentMethods.create({
       type: options.type,
-      card: options.cardToken ? { token: options.cardToken } : undefined,
-      us_bank_account: options.bankAccountToken ? { token: options.bankAccountToken } : undefined,
+      card: options.cardToken ? { token: options.cardToken } as any : undefined,
+      us_bank_account: options.bankAccountToken ? { token: options.bankAccountToken } as any : undefined,
     });
 
     // Attach to customer if provided
@@ -223,7 +223,7 @@ export class StripePaymentService {
    */
   requiresVerification(paymentMethod: Stripe.PaymentMethod): boolean {
     if (paymentMethod.type === 'us_bank_account') {
-      const bankAccount = paymentMethod.us_bank_account;
+      const bankAccount = paymentMethod.us_bank_account as any;
       return bankAccount?.status !== 'verified';
     }
     return false;

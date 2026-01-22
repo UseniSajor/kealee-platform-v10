@@ -100,7 +100,7 @@ export class TaxComplianceService {
       totalReportable,
       forms1099Generated: formsGenerated,
       filingDeadline,
-      status: formsGenerated > 0 ? 'NOT_FILED' : 'NOT_REQUIRED',
+      status: formsGenerated > 0 ? '1099_READY' : 'NOT_REQUIRED',
     };
   }
 

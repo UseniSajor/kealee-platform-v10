@@ -182,26 +182,31 @@ export interface EventPayloads {
     escrowId: string
     amount: number
     paymentMethodId: string
+    userId: string
   }
   'deposit.failed': {
     depositId: string
     reason: string
     error?: Error
+    userId?: string
   }
   'deposit.clearing': {
     depositId: string
     escrowId: string
     expectedClearanceDate: Date
+    userId?: string
   }
   'deposit.completed': {
     depositId: string
     escrowId: string
     amount: number
     clearedAt: Date
+    userId?: string
   }
   'deposit.cancelled': {
     depositId: string
     reason: string
+    userId?: string
   }
 
   // Error handling event
