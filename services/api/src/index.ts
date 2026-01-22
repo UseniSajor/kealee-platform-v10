@@ -224,6 +224,10 @@ import { monitoringDashboardRoutes } from './modules/monitoring/monitoring-dashb
 import { taskGeneratorRoutes } from './modules/tasks/task-generator.routes'
 import { complianceCheckpointRoutes } from './modules/compliance/compliance-checkpoint.routes'
 import { complianceGatesRoutes } from './modules/compliance/compliance-gates.routes'
+import { complianceRoutes } from './routes/compliance.routes'
+import { depositRoutes } from './routes/deposit.routes'
+import { stripeWebhookRoutes } from './routes/stripe-webhook.routes'
+import { oversightRoutes } from './routes/oversight.routes'
 import { createGraphQLServer } from './graphql/server'
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware'
 import { registerGlobalRateLimit } from './middleware/rate-limit.middleware'
@@ -436,6 +440,10 @@ const start = async () => {
     await fastify.register(taskGeneratorRoutes, { prefix: '/tasks' })
     await fastify.register(complianceCheckpointRoutes, { prefix: '/compliance' })
     await fastify.register(complianceGatesRoutes, { prefix: '/compliance' })
+    await fastify.register(complianceRoutes, { prefix: '/api/compliance' })
+    await fastify.register(depositRoutes, { prefix: '/api/deposits' })
+    await fastify.register(stripeWebhookRoutes, { prefix: '/webhooks' })
+    await fastify.register(oversightRoutes, { prefix: '/api/admin/oversight' })
     
     // Register new API routes for PM workspace
     const { clientRoutes } = await import('./routes/client.routes')
