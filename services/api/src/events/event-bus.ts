@@ -175,6 +175,37 @@ export interface EventPayloads {
     escrowTransactionId: string
     reason: string
   }
+
+  // Deposit Events
+  'deposit.created': {
+    depositId: string
+    escrowId: string
+    amount: number
+    paymentMethodId: string
+  }
+  'deposit.failed': {
+    depositId: string
+    reason: string
+    error?: Error
+  }
+  'deposit.clearing': {
+    depositId: string
+    escrowId: string
+    expectedClearanceDate: Date
+  }
+  'deposit.completed': {
+    depositId: string
+    escrowId: string
+    amount: number
+    clearedAt: Date
+  }
+  'deposit.cancelled': {
+    depositId: string
+    reason: string
+  }
+
+  // Error handling event
+  'error': Error
 }
 
 // Type-safe event emitter

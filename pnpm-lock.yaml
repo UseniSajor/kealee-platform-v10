@@ -29,6 +29,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.39.0
         version: 2.91.0
+      bullmq:
+        specifier: ^5.0.0
+        version: 5.66.5
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
