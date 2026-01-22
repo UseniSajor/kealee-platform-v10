@@ -1577,6 +1577,13 @@ model User {
   bonds                     BondTracking[]         @relation("ContractorBonds")
   complianceAlerts          ComplianceAlert[]      @relation("ComplianceAlertUser")
   resolvedComplianceAlerts  ComplianceAlert[]      @relation("ComplianceAlertResolver")
+
+  // Audit & Logging relations
+  auditLogsPerformed       AuditLog[]            @relation("AuditLogPerformer")
+  financialAuditsPerformed FinancialAuditEntry[] @relation("FinancialAuditAuditor")
+  financialAuditsVerified  FinancialAuditEntry[] @relation("FinancialAuditVerifier")
+  accessLogs               AccessLog[]           @relation("AccessLogUser")
+  auditReportsGenerated    AuditReport[]         @relation("AuditReportGenerator")
 }
 
 // ============================================================================
@@ -3391,6 +3398,309 @@ model ComplianceAlert {
   @@index([status])
   @@index([dueDate])
   @@index([createdAt])
+}
+
+// ============================================================================
+// AUDIT LOGGING & REPORTING (Stage 5 - Finance & Trust)
+// ============================================================================
+
+enum AuditEntityType {
+  USER
+  CONTRACT
+  ESCROW
+  TRANSACTION
+  PAYMENT
+  MILESTONE
+  PROJECT
+  PAYOUT
+  DISPUTE
+  LICENSE
+  INSURANCE
+  BOND
+  COMPLIANCE_CHECK
+  JOURNAL_ENTRY
+  ACCOUNT
+  STATEMENT
+  REPORT
+}
+
+enum AuditAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  APPROVE
+  REJECT
+  VOID
+  REVERSE
+  EXPORT
+  DOWNLOAD
+  PRINT
+  SEND
+  SIGN
+}
+
+enum AuditCategory {
+  FINANCIAL // Monetary transactions, journal entries
+  OPERATIONAL // Day-to-day operations
+  SECURITY // Authentication, authorization, access
+  COMPLIANCE // Regulatory compliance actions
+  ADMINISTRATIVE // System administration
+}
+
+enum AuditSeverity {
+  INFO // Informational, routine operations
+  WARNING // Unusual but not problematic
+  CRITICAL // Requires attention, security concern
+}
+
+enum AuditFindingType {
+  PASS // Audit check passed
+  DISCREPANCY // Minor discrepancy found
+  IRREGULARITY // Significant issue found
+  FRAUD // Potential fraud detected
+}
+
+enum AccessAction {
+  VIEW
+  DOWNLOAD
+  EXPORT
+  PRINT
+  SHARE
+  DELETE
+}
+
+enum SensitivityLevel {
+  PUBLIC // Public information
+  INTERNAL // Internal use only
+  CONFIDENTIAL // Confidential data
+  RESTRICTED // Highly restricted (financial, PII)
+}
+
+model AuditLog {
+  id         String          @id @default(uuid())
+  entityType AuditEntityType
+  entityId   String // ID of the entity
+  action     AuditAction
+
+  // User Context
+  performedBy String // User ID
+  performedAt DateTime @default(now())
+
+  // Session Context
+  ipAddress String?
+  userAgent String? @db.Text
+  sessionId String?
+  location  String? // Geolocated location
+
+  // Change Tracking
+  beforeData   Json? // State before change
+  afterData    Json? // State after change
+  fieldChanges Json? // Specific field changes with reasons
+
+  // Description
+  changeDescription String? @db.Text
+  businessReason    String? @db.Text // Why the change was made
+
+  // Classification
+  category AuditCategory
+  severity AuditSeverity @default(INFO)
+
+  // Metadata
+  metadata Json? // Additional context
+
+  // Immutability
+  isImmutable Boolean @default(true) // Cannot be modified once created
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  // Relationships
+  performer User @relation("AuditLogPerformer", fields: [performedBy], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([performedBy])
+  @@index([performedAt])
+  @@index([action])
+  @@index([category])
+  @@index([severity])
+  @@index([createdAt])
+}
+
+model FinancialAuditEntry {
+  id             String  @id @default(uuid())
+  journalEntryId String? // Journal entry being audited
+  transactionId  String? // Transaction being audited
+  escrowId       String? // Escrow account being audited
+
+  // Audit Details
+  auditType   String           @default("REVIEW") // CREATION, MODIFICATION, REVERSAL, RECONCILIATION, REVIEW
+  auditorId   String // User ID performing audit
+  auditDate   DateTime         @default(now())
+  findingType AuditFindingType @default(PASS)
+
+  // Findings
+  notes         String? @db.Text
+  discrepancies Json? // Detailed discrepancies found
+  resolution    String? @db.Text
+  actionTaken   String? // What action was taken
+
+  // Verification (Dual Control)
+  verifiedBy String? // Secondary auditor
+  verifiedAt DateTime?
+  isVerified Boolean   @default(false)
+
+  // Amount Verification
+  expectedAmount Decimal? @db.Decimal(18, 2)
+  actualAmount   Decimal? @db.Decimal(18, 2)
+  variance       Decimal? @db.Decimal(18, 2)
+
+  // Compliance
+  isCompliant Boolean  @default(true)
+  violations  String[] // List of violations found
+
+  // Metadata
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  auditor  User  @relation("FinancialAuditAuditor", fields: [auditorId], references: [id])
+  verifier User? @relation("FinancialAuditVerifier", fields: [verifiedBy], references: [id])
+
+  @@index([journalEntryId])
+  @@index([transactionId])
+  @@index([escrowId])
+  @@index([auditorId])
+  @@index([auditDate])
+  @@index([findingType])
+  @@index([isVerified])
+}
+
+model AccessLog {
+  id           String @id @default(uuid())
+  userId       String
+  resourceType String // "contract", "escrow", "transaction", "report", etc.
+  resourceId   String // ID of resource
+
+  // Action Details
+  action     AccessAction
+  accessedAt DateTime     @default(now())
+
+  // Context
+  ipAddress String?
+  userAgent String? @db.Text
+  location  String? // Geolocated location
+  sessionId String?
+
+  // Result
+  success       Boolean @default(true)
+  failureReason String? @db.Text
+
+  // Security Classification
+  sensitivityLevel SensitivityLevel @default(INTERNAL)
+
+  // Data Scope (for exports/downloads)
+  recordCount  Int? // Number of records accessed/exported
+  dataSize     Int? // Size in bytes
+  exportFormat String? // CSV, PDF, JSON, etc.
+
+  // Metadata
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  // Relationships
+  user User @relation("AccessLogUser", fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([resourceType, resourceId])
+  @@index([accessedAt])
+  @@index([action])
+  @@index([sensitivityLevel])
+  @@index([success])
+}
+
+model AuditReport {
+  id          String  @id @default(uuid())
+  reportType  String // SOC2, FINANCIAL, REGULATORY, SECURITY, CUSTOM
+  title       String
+  description String? @db.Text
+
+  // Report Period
+  periodStart DateTime
+  periodEnd   DateTime
+
+  // Generated By
+  generatedBy String // User ID
+  generatedAt DateTime @default(now())
+
+  // Report Content
+  summary         String   @db.Text
+  findings        Json // Detailed findings
+  metrics         Json // Key metrics
+  recommendations String[] // Recommendations
+
+  // Document
+  documentUrl String? // URL to generated report PDF
+
+  // Distribution
+  sharedWith String[] // User IDs who can access
+  isPublic   Boolean  @default(false)
+
+  // Status
+  status String @default("DRAFT") // DRAFT, FINAL, ARCHIVED
+
+  // Metadata
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  generator User @relation("AuditReportGenerator", fields: [generatedBy], references: [id])
+
+  @@index([reportType])
+  @@index([generatedBy])
+  @@index([periodStart, periodEnd])
+  @@index([generatedAt])
+  @@index([status])
+}
+
+model DataRetentionPolicy {
+  id            String @id @default(uuid())
+  dataType      String @unique // "audit_log", "access_log", "financial_audit", etc.
+  retentionDays Int // Days to retain in active storage
+
+  // Archive Settings
+  archiveEnabled   Boolean @default(true)
+  archiveAfterDays Int // Days after which to archive
+  archiveStorage   String  @default("s3_glacier") // Storage location
+
+  // Deletion Settings
+  deleteAfterDays Int // Days after which to permanently delete
+  requireApproval Boolean @default(true)
+
+  // Compliance
+  regulatoryRequirement String? @db.Text
+  legalHold             Boolean @default(false)
+
+  // Status
+  isActive Boolean @default(true)
+
+  // Metadata
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([dataType])
+  @@index([isActive])
 }
 
 model Lead {
