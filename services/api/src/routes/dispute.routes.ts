@@ -14,7 +14,7 @@ import { DisputeService } from '../modules/disputes/dispute.service'
 // ============================================================================
 
 const InitiateDisputeSchema = z.object({
-  escrowAgreementId: z.string().uuid(),
+  escrowId: z.string().uuid(),  // Changed from escrowAgreementId
   contractId: z.string().uuid(),
   projectId: z.string().uuid(),
   respondentId: z.string().uuid(),

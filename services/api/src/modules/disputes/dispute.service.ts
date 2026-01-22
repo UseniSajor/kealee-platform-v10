@@ -12,7 +12,7 @@ import {
 } from '@kealee/database'
 
 export interface InitiateDisputeDTO {
-  escrowAgreementId: string
+  escrowId: string  // Changed from escrowAgreementId to match schema
   contractId: string
   projectId: string
   initiatedBy: string
@@ -94,7 +94,7 @@ export class DisputeService {
 
     // Validate escrow agreement exists
     const escrowAgreement = await prisma.escrowAgreement.findUnique({
-      where: { id: escrowAgreementId },
+      where: { id: escrowId },
       include: {
         contract: true,
       },
@@ -137,7 +137,7 @@ export class DisputeService {
       const dispute = await tx.dispute.create({
         data: {
           disputeNumber,
-          escrowAgreementId,
+          escrowId,
           contractId,
           projectId,
           initiatedBy,
@@ -173,7 +173,7 @@ export class DisputeService {
       // Create escrow hold
       const hold = await tx.escrowHold.create({
         data: {
-          escrowId: escrowAgreementId,
+          escrowId: escrowId,
           amount: new Decimal(disputedAmount),
           reason: 'DISPUTE',
           status: 'ACTIVE',
@@ -184,7 +184,7 @@ export class DisputeService {
 
       // Update escrow balances
       await tx.escrowAgreement.update({
-        where: { id: escrowAgreementId },
+        where: { id: escrowId },
         data: {
           heldBalance: {
             increment: disputedAmount,
@@ -471,7 +471,7 @@ export class DisputeService {
       // Release escrow hold
       const holds = await tx.escrowHold.findMany({
         where: {
-          escrowId: dispute.escrowAgreementId,
+          escrowId: dispute.escrowId,
           reason: 'DISPUTE',
           status: 'ACTIVE',
           notes: {
@@ -493,7 +493,7 @@ export class DisputeService {
 
       // Update escrow balances
       await tx.escrowAgreement.update({
-        where: { id: dispute.escrowAgreementId },
+        where: { id: dispute.escrowId },
         data: {
           heldBalance: {
             decrement: dispute.frozenAmount.toNumber(),
