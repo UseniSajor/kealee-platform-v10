@@ -1477,6 +1477,7 @@ model Project {
   property         Property?           @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   tasks            Task[]
   payments         Payment[]
+  lienWaivers      LienWaiver[]
 
   @@index([clientId])
   @@index([orgId])
@@ -1547,6 +1548,10 @@ model User {
   sentDisputeMessages   DisputeMessage[]    @relation("DisputeMessageSender")
   resolutionsAsMediator DisputeResolution[] @relation("DisputeResolutionMediator")
   appealedResolutions   DisputeResolution[] @relation("DisputeResolutionAppealer")
+
+  // Lien Waiver relations
+  createdLienWaivers   LienWaiver[]          @relation("LienWaiverCreator")
+  lienWaiverSignatures LienWaiverSignature[] @relation("LienWaiverSigner")
 }
 
 // ============================================================================
@@ -1753,6 +1758,35 @@ enum DisputeAppealStatus {
   REJECTED // Appeal rejected
 }
 
+// ============================================================================
+// LIEN WAIVER SYSTEM (Stage 5 - Finance & Trust - Compliance)
+// ============================================================================
+
+enum LienWaiverType {
+  CONDITIONAL // Payment pending
+  UNCONDITIONAL // Payment cleared
+}
+
+enum LienWaiverScope {
+  PARTIAL // Progress payment
+  FINAL // Final payment with holdback
+}
+
+enum LienWaiverStatus {
+  GENERATED // Created, not sent
+  SENT // Sent for signature
+  SIGNED // Signed by contractor
+  RECORDED // Officially recorded
+  EXPIRED // Expired without signature
+}
+
+enum LienWaiverSignerRole {
+  CONTRACTOR
+  SUBCONTRACTOR
+  SUPPLIER
+  OWNER
+}
+
 enum LeadStatus {
   OPEN
   INTAKE
@@ -1783,6 +1817,7 @@ model ContractAgreement {
   milestones      Milestone[]
   escrowAgreement EscrowAgreement?
   disputes        Dispute[]
+  lienWaivers     LienWaiver[]
 
   @@index([projectId])
   @@index([ownerId])
@@ -1808,6 +1843,7 @@ model Milestone {
   dependentMilestones Milestone[]       @relation("MilestoneDependency")
   evidence            Evidence[]
   payouts             Payout[] // Payouts from this milestone
+  lienWaivers         LienWaiver[] // Lien waivers for this milestone
 
   @@index([contractId])
   @@index([status])
@@ -1910,6 +1946,7 @@ model EscrowTransaction {
   initiator    User            @relation("EscrowTransactionInitiator", fields: [initiatedBy], references: [id])
   approver     User?           @relation("EscrowTransactionApprover", fields: [approvedBy], references: [id])
   payout       Payout? // Reverse relation for payout
+  lienWaivers  LienWaiver[] // Lien waivers generated for this transaction
 
   @@index([escrowId])
   @@index([status])
@@ -2405,6 +2442,123 @@ model DisputeResolution {
   @@index([mediatorId])
   @@index([decidedAt])
   @@index([appealStatus])
+}
+
+model LienWaiver {
+  id                  String  @id @default(uuid())
+  paymentReleaseId    String? // Link to payment release/escrow transaction
+  escrowTransactionId String? // Direct link to escrow transaction
+  contractId          String
+  projectId           String
+  milestoneId         String? // Link to milestone if applicable
+
+  // Waiver Classification
+  waiverType  LienWaiverType
+  waiverScope LienWaiverScope
+  status      LienWaiverStatus @default(GENERATED)
+
+  // Project Information
+  projectName    String
+  projectAddress String @db.Text
+  state          String // US State code for form selection
+
+  // Claimant Information (Contractor/Sub/Supplier)
+  claimantName    String
+  claimantAddress String  @db.Text
+  claimantEmail   String?
+  claimantPhone   String?
+
+  // Owner Information
+  ownerName    String
+  ownerAddress String? @db.Text
+
+  // Payment Details
+  throughDate      DateTime // Payment period end date
+  waiverAmount     Decimal  @db.Decimal(18, 2) // Amount covered by this waiver
+  cumulativeAmount Decimal  @db.Decimal(18, 2) // Total amount to date
+
+  // Documents
+  documentUrl       String? // Generated waiver PDF URL
+  signedDocumentUrl String? // Signed waiver PDF URL
+  templateUsed      String? // Template identifier used
+
+  // Timestamps
+  generatedAt DateTime  @default(now())
+  sentAt      DateTime? // When sent for signature
+  signedAt    DateTime? // When signed
+  expiresAt   DateTime? // For conditional waivers
+  recordedAt  DateTime? // When officially recorded
+
+  // Metadata
+  metadata Json? // Additional clauses, notary info, etc.
+
+  // Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String // User ID who generated
+
+  // Relationships
+  contract          ContractAgreement     @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  project           Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  escrowTransaction EscrowTransaction?    @relation(fields: [escrowTransactionId], references: [id])
+  milestone         Milestone?            @relation(fields: [milestoneId], references: [id])
+  creator           User                  @relation("LienWaiverCreator", fields: [createdBy], references: [id])
+  signatures        LienWaiverSignature[]
+
+  @@index([contractId])
+  @@index([projectId])
+  @@index([status])
+  @@index([escrowTransactionId])
+  @@index([milestoneId])
+  @@index([generatedAt])
+  @@index([state])
+}
+
+model LienWaiverSignature {
+  id           String @id @default(uuid())
+  lienWaiverId String
+  signerId     String // User ID
+
+  // Signer Information
+  signerRole    LienWaiverSignerRole
+  signerName    String
+  signerTitle   String?
+  signerCompany String?
+  signerEmail   String
+
+  // Digital Signature
+  signatureImageUrl String? // URL to signature image
+  ipAddress         String? // IP address when signed
+  userAgent         String? // Browser/device info
+
+  // Electronic Consent
+  electronicConsentGiven Boolean   @default(false)
+  consentTimestamp       DateTime?
+
+  // Notarization (for states requiring it)
+  isNotarized      Boolean   @default(false)
+  notaryName       String?
+  notaryCommission String?
+  notaryExpiration DateTime?
+  notarySeal       String? // URL to notary seal image
+
+  // Third-party E-Signature Integration
+  docusignEnvelopeId String? // DocuSign envelope ID
+  docusignStatus     String? // DocuSign status
+  hellosignRequestId String? // HelloSign request ID
+
+  // Timestamps
+  signedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  lienWaiver LienWaiver @relation(fields: [lienWaiverId], references: [id], onDelete: Cascade)
+  signer     User       @relation("LienWaiverSigner", fields: [signerId], references: [id])
+
+  @@index([lienWaiverId])
+  @@index([signerId])
+  @@index([signedAt])
 }
 
 model Lead {
