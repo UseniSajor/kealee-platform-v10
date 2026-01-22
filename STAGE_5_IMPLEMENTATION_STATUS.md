@@ -72,6 +72,13 @@
   - ✅ OpenAPI/Swagger documentation
   - ✅ Authentication on all routes
   - ✅ Registered at `/accounting` prefix
+- ✅ **Frontend Types & API Client** (2026-01-21)
+  - ✅ Complete TypeScript type definitions (467 lines)
+  - ✅ API client with Supabase auth (579 lines)
+  - ✅ Date serialization handling
+  - ✅ Client-side validation helpers
+  - ✅ Bulk operations & reporting helpers
+  - ✅ UI utility functions (formatting, badges)
 - ⏳ Escrow account service integration (next)
 
 ---
@@ -129,6 +136,15 @@ services/api/src/modules/finance/
 
 services/api/src/routes/
 └── accounting.routes.ts ✅ CREATED (625 lines, 16 endpoints)
+
+apps/m-finance-trust/lib/
+├── types/
+│   ├── accounting.types.ts ✅ CREATED (467 lines)
+│   └── index.ts ✅ CREATED
+├── api/
+│   ├── accounting.api.ts ✅ CREATED (579 lines)
+│   └── index.ts ✅ CREATED
+└── api.ts ✅ UPDATED (with Supabase auth)
 
 services/api/src/errors/
 └── accounting.errors.ts ✅ UPDATED (96 lines, 12 error classes)
