@@ -25,24 +25,50 @@ if (process.env.NODE_ENV !== 'production') {
  * This guard runs before any server initialization to prevent security issues
  */
 function validateStartupGuards() {
-  // Guard 1: Require APP_ENV
-  const appEnv = process.env.APP_ENV
+  // Guard 1: Require APP_ENV or detect from NODE_ENV/Railway
+  // Support multiple environment variable patterns for flexibility
+  const appEnv = 
+    process.env.APP_ENV || 
+    process.env.NODE_ENV || 
+    (process.env.RAILWAY_SERVICE_NAME?.toLowerCase().includes('staging') ? 'staging' : undefined) ||
+    process.env.RAILWAY_ENVIRONMENT_NAME
+  
   if (!appEnv) {
     console.error('')
     console.error('='.repeat(80))
-    console.error('❌ FATAL ERROR: APP_ENV is not set')
+    console.error('❌ FATAL ERROR: Environment not configured')
     console.error('='.repeat(80))
     console.error('')
-    console.error('APP_ENV is required to determine the application environment.')
-    console.error('Valid values: development, staging, production')
+    console.error('No environment variable found to determine the application environment.')
+    console.error('Please set ONE of the following:')
+    console.error('  - APP_ENV (recommended): development, staging, production')
+    console.error('  - NODE_ENV: development, staging, production')
+    console.error('  - RAILWAY_ENVIRONMENT_NAME: Set automatically by Railway')
     console.error('')
-    console.error('Set APP_ENV in your environment variables:')
-    console.error('  - Local: Add to .env.local')
-    console.error('  - Railway: Set in Railway dashboard → Service → Variables')
-    console.error('  - Vercel: Set in Vercel dashboard → Project → Settings → Environment Variables')
+    console.error('Current values:')
+    console.error(`  APP_ENV:                    ${process.env.APP_ENV || '(not set)'}`)
+    console.error(`  NODE_ENV:                   ${process.env.NODE_ENV || '(not set)'}`)
+    console.error(`  RAILWAY_ENVIRONMENT_NAME:   ${process.env.RAILWAY_ENVIRONMENT_NAME || '(not set)'}`)
+    console.error(`  RAILWAY_SERVICE_NAME:       ${process.env.RAILWAY_SERVICE_NAME || '(not set)'}`)
+    console.error('')
+    console.error('Set environment in:')
+    console.error('  - Local: Add APP_ENV to .env.local')
+    console.error('  - Railway: Set APP_ENV or NODE_ENV in Railway dashboard → Variables')
+    console.error('  - Vercel: Set NODE_ENV in Vercel dashboard → Environment Variables')
     console.error('')
     console.error('='.repeat(80))
     process.exit(1)
+  }
+  
+  // Normalize environment value
+  const normalizedEnv = appEnv.toLowerCase()
+  
+  // Log detected environment
+  console.log(`✅ Environment detected: ${normalizedEnv}`)
+  
+  // Ensure we have a valid environment value
+  if (!['development', 'staging', 'production', 'preview'].includes(normalizedEnv)) {
+    console.warn(`⚠️  Warning: Unusual environment value "${normalizedEnv}". Expected: development, staging, production, or preview`)
   }
 
   // Guard 2: Require DATABASE_URL
@@ -67,7 +93,7 @@ function validateStartupGuards() {
   }
 
   // Guard 3: Prevent staging from connecting to production database
-  if (appEnv === 'staging') {
+  if (normalizedEnv === 'staging') {
     const isProductionDb = 
       databaseUrl.includes('production-postgres') ||
       databaseUrl.includes('production-postgres.internal') ||
@@ -103,7 +129,7 @@ function validateStartupGuards() {
   }
 
   // Guard 4: Prevent production from connecting to staging database
-  if (appEnv === 'production') {
+  if (normalizedEnv === 'production') {
     const isStagingDb = 
       databaseUrl.includes('staging-postgres') ||
       databaseUrl.includes('staging-postgres.internal') ||
@@ -139,9 +165,9 @@ function validateStartupGuards() {
   }
 
   // Log successful validation (only in non-production to avoid log noise)
-  if (appEnv !== 'production') {
+  if (normalizedEnv !== 'production') {
     console.log('✅ Startup guards passed:')
-    console.log(`   APP_ENV: ${appEnv}`)
+    console.log(`   Environment: ${normalizedEnv}`)
     console.log(`   DATABASE_URL: ${databaseUrl.replace(/:[^:@]+@/, ':****@')}`)
     console.log('')
   }

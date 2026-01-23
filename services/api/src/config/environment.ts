@@ -16,21 +16,36 @@ export interface EnvironmentConfig {
 }
 
 /**
- * Detect current environment based on NODE_ENV and Railway-specific variables
+ * Detect current environment based on APP_ENV, NODE_ENV, and Railway-specific variables
  */
 export function detectEnvironment(): EnvironmentConfig {
+  const appEnv = process.env.APP_ENV;
   const nodeEnv = process.env.NODE_ENV || 'development';
   const railwayEnv = process.env.RAILWAY_ENVIRONMENT_NAME;
   const railwayServiceName = process.env.RAILWAY_SERVICE_NAME;
   
   // Determine environment priority:
-  // 1. NODE_ENV takes precedence (user-defined)
-  // 2. Check service name for "staging" keyword
-  // 3. Fallback to RAILWAY_ENVIRONMENT_NAME
+  // 1. APP_ENV takes highest precedence (explicit override)
+  // 2. NODE_ENV (standard Node.js convention)
+  // 3. Check service name for "staging" keyword
+  // 4. Fallback to RAILWAY_ENVIRONMENT_NAME
   let env: Environment = 'development';
   
-  // Priority 1: Use NODE_ENV if explicitly set
-  if (nodeEnv === 'production') {
+  // Priority 1: Use APP_ENV if explicitly set (highest priority)
+  if (appEnv) {
+    const normalized = appEnv.toLowerCase();
+    if (normalized === 'production') {
+      env = 'production';
+    } else if (normalized === 'staging') {
+      env = 'staging';
+    } else if (normalized === 'preview') {
+      env = 'preview';
+    } else if (normalized === 'development') {
+      env = 'development';
+    }
+  }
+  // Priority 2: Use NODE_ENV if APP_ENV not set
+  else if (nodeEnv === 'production') {
     env = 'production';
   } else if (nodeEnv === 'staging') {
     env = 'staging';
@@ -39,15 +54,16 @@ export function detectEnvironment(): EnvironmentConfig {
   } else if (nodeEnv === 'development') {
     env = 'development';
   }
-  // Priority 2: Check if service name contains "staging"
+  // Priority 3: Check if service name contains "staging"
   else if (railwayServiceName && railwayServiceName.toLowerCase().includes('staging')) {
     env = 'staging';
   }
-  // Priority 3: Fallback to Railway environment
+  // Priority 4: Fallback to Railway environment
   else if (railwayEnv) {
-    if (railwayEnv === 'production') {
+    const normalized = railwayEnv.toLowerCase();
+    if (normalized === 'production') {
       env = 'production';
-    } else if (railwayEnv === 'staging') {
+    } else if (normalized === 'staging') {
       env = 'staging';
     } else {
       // Any other Railway environment (pr-xxx, etc.) is preview
@@ -82,9 +98,13 @@ export function logEnvironment(): void {
   console.log(`${emoji} Environment Configuration ${emoji}`);
   console.log('='.repeat(60));
   console.log(`Environment:        ${environment.env.toUpperCase()}`);
+  console.log(`APP_ENV:            ${process.env.APP_ENV || '(not set)'}`);
   console.log(`NODE_ENV:           ${environment.nodeEnv}`);
   if (environment.railwayEnvironment) {
     console.log(`Railway Env:        ${environment.railwayEnvironment}`);
+  }
+  if (process.env.RAILWAY_SERVICE_NAME) {
+    console.log(`Railway Service:    ${process.env.RAILWAY_SERVICE_NAME}`);
   }
   console.log(`Is Production:      ${environment.isProduction}`);
   console.log(`Is Staging:         ${environment.isStaging}`);
