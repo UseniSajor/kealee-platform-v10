@@ -415,6 +415,13 @@ const start = async () => {
     await fastify.register(escrowRoutes, { prefix: '/escrow' })
     await fastify.register(depositRoutes, { prefix: '/deposits' })
     await fastify.register(disputeRoutes, { prefix: '/disputes' })
+    
+    // Analytics and Compliance - Now enabled
+    const { analyticsRoutes } = await import('./modules/analytics/analytics.routes')
+    const { complianceRoutes: complianceMonitoringRoutes } = await import('./modules/compliance/compliance.routes')
+    await fastify.register(analyticsRoutes, { prefix: '/analytics' })
+    await fastify.register(complianceMonitoringRoutes, { prefix: '/compliance/monitoring' })
+    
     // Temporarily disabled - DTO type mismatches
     // await fastify.register(accountingRoutes, { prefix: '/accounting' })
     await fastify.register(stripeConnectRoutes, { prefix: '/connect' })

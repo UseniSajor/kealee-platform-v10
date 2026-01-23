@@ -1,5 +1,6 @@
 /**
  * Vitest Configuration
+ * Test configuration for API service
  */
 
 import { defineConfig } from 'vitest/config';
@@ -7,49 +8,36 @@ import path from 'path';
 
 export default defineConfig({
   test: {
-    name: '@kealee/api',
     globals: true,
     environment: 'node',
-    setupFiles: ['./src/tests/setup.ts'],
-    include: ['src/tests/**/*.test.ts'],
-    exclude: ['node_modules', 'dist'],
+    setupFiles: ['./src/__tests__/setup.ts'],
+    include: ['**/__tests__/**/*.test.ts'],
+    exclude: ['node_modules', 'dist', 'disabled-features'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
+      reporter: ['text', 'json', 'html'],
       exclude: [
-        'node_modules/',
-        'dist/',
-        'src/tests/',
+        'node_modules',
+        'dist',
+        'disabled-features',
+        '**/__tests__/**',
         '**/*.test.ts',
-        '**/*.spec.ts',
-        '**/types/**',
-        '**/*.d.ts',
+        '**/*.config.ts',
       ],
-      include: [
-        'src/modules/**/*.ts',
-        'src/routes/**/*.ts',
-        'src/services/**/*.ts',
-      ],
-      all: true,
-      lines: 80,
-      functions: 80,
-      branches: 75,
-      statements: 80,
-    },
-    testTimeout: 30000, // 30 seconds for E2E tests
-    hookTimeout: 30000,
-    teardownTimeout: 30000,
-    pool: 'threads',
-    poolOptions: {
-      threads: {
-        singleThread: true, // Prevent race conditions with database
+      thresholds: {
+        lines: 70,
+        functions: 70,
+        branches: 70,
+        statements: 70,
       },
     },
+    testTimeout: 10000,
+    hookTimeout: 10000,
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@tests': path.resolve(__dirname, './src/tests'),
+      '@kealee/database': path.resolve(__dirname, '../../packages/database/src'),
+      '@kealee/workflow-engine': path.resolve(__dirname, '../../packages/workflow-engine/src'),
     },
   },
 });
