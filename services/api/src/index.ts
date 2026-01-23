@@ -393,15 +393,9 @@ const start = async () => {
     fastify.setErrorHandler(errorHandler)
     fastify.setNotFoundHandler(notFoundHandler)
 
-    // Register enhanced health checks
+    // Register enhanced health checks (includes /health/db route)
     const { registerHealthChecks } = require('./middleware/health-check.middleware')
     registerHealthChecks(fastify)
-
-    // DB health check (useful for local Windows/Docker debugging)
-    fastify.get('/health/db', async () => {
-      await prisma.$queryRaw`SELECT 1`
-      return { status: 'ok', db: 'ok' }
-    })
 
     // Register routes
     await fastify.register(testRoutes, { prefix: '/api' })
