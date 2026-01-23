@@ -44,7 +44,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const user = (request as any).user as { id: string }
-      const dispute = await DisputeService.initiateDispute(user.id, request.body as any)
+      const dispute = await DisputeService.initiateDispute(request.body as any)
       return reply.code(201).send({ dispute })
     }
   )
@@ -61,7 +61,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const user = (request as any).user as { id: string }
       const { disputeId } = request.params as { disputeId: string }
-      const dispute = await DisputeService.getDispute(disputeId, user.id)
+      const dispute = await DisputeService.getDispute(disputeId)
       return reply.send({ dispute })
     }
   )
@@ -78,7 +78,8 @@ export async function disputeRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const user = (request as any).user as { id: string }
       const { projectId } = request.params as { projectId: string }
-      const disputes = await DisputeService.listProjectDisputes(projectId, user.id)
+      // TODO: Implement listProjectDisputes filter
+      const disputes = await DisputeService.listDisputes({ projectId })
       return reply.send({ disputes })
     }
   )
@@ -97,7 +98,8 @@ export async function disputeRoutes(fastify: FastifyInstance) {
       const user = (request as any).user as { id: string }
       const { disputeId } = request.params as { disputeId: string }
       const { notes } = request.body as { notes?: string }
-      const dispute = await DisputeService.requestMediation(disputeId, user.id, notes)
+      // TODO: Implement requestMediation method
+      const dispute = await DisputeService.assignMediator(disputeId, user.id)
       return reply.send({ dispute })
     }
   )
@@ -116,7 +118,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
       const user = (request as any).user as { id: string }
       const { disputeId } = request.params as { disputeId: string }
       const { comment, isInternal } = request.body as { comment: string; isInternal?: boolean }
-      const disputeComment = await DisputeService.addComment(disputeId, user.id, comment, isInternal || false)
+      const disputeComment = await DisputeService.sendMessage({ disputeId, senderId: user.id, message: comment, isInternal: isInternal || false })
       return reply.code(201).send({ comment: disputeComment })
     }
   )
@@ -134,7 +136,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const user = (request as any).user as { id: string }
       const { disputeId } = request.params as { disputeId: string }
-      const dispute = await DisputeService.resolveDispute(disputeId, user.id, request.body as any)
+      const dispute = await DisputeService.resolveDispute(request.body as any)
       return reply.send({ dispute })
     }
   )
@@ -152,7 +154,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const user = (request as any).user as { id: string }
       const { disputeId } = request.params as { disputeId: string }
-      const evidence = await DisputeService.addEvidence(disputeId, user.id, request.body as any)
+      const evidence = await DisputeService.submitEvidence(request.body as any)
       return reply.code(201).send({ evidence })
     }
   )

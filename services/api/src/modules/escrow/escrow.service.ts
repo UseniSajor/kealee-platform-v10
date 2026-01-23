@@ -184,7 +184,7 @@ export class EscrowService {
       // Debit: Cash (Asset) - increases our cash
       // Credit: Escrow Liability (Liability) - we owe this to contractor/owner
       const postedEntry = await journalEntryService.createAndPostJournalEntry({
-        description: `Escrow deposit for ${escrow.escrowAccountNumber} - Contract ${escrow.contract.contractNumber}`,
+        description: `Escrow deposit for ${escrow.escrowAccountNumber} - Contract ${escrow.contractId}`,
         entryDate: processedDate,
         reference: depositId,
         referenceId: escrowId,
@@ -212,6 +212,8 @@ export class EscrowService {
           journalEntryId: postedEntry.id,
           type: 'DEPOSIT',
           amount,
+          balanceBefore: escrow.currentBalance,
+          balanceAfter: escrow.currentBalance.add(amount),
           currency,
           status: 'COMPLETED',
           reference: depositId,
@@ -341,11 +343,13 @@ export class EscrowService {
           journalEntryId: postedEntry.id,
           type: 'RELEASE',
           amount,
+          balanceBefore: escrow.currentBalance,
+          balanceAfter: escrow.currentBalance.sub(amount),
           currency: escrow.currency,
           status: 'PROCESSING', // Will be updated to COMPLETED after Stripe payout succeeds
           reference: milestoneId,
           scheduledDate: new Date(), // When release was scheduled
-          processedDate: null, // Will be set when Stripe payout completes
+          processedDate: null as any, // Will be set when Stripe payout completes
           initiatedBy,
           approvedBy,
           metadata: {
@@ -408,7 +412,7 @@ export class EscrowService {
     const transaction = await prisma.escrowTransaction.findUnique({
       where: { id: transactionId },
       include: {
-        escrowAgreement: true,
+        escrow: true,
       },
     })
 
@@ -453,7 +457,7 @@ export class EscrowService {
     const transaction = await prisma.escrowTransaction.findUnique({
       where: { id: transactionId },
       include: {
-        escrowAgreement: true,
+        escrow: true,
       },
     })
 
@@ -488,16 +492,16 @@ export class EscrowService {
       await tx.escrowAgreement.update({
         where: { id: transaction.escrowId },
         data: {
-          currentBalance: transaction.escrowAgreement.currentBalance.add(transaction.amount),
-          availableBalance: transaction.escrowAgreement.availableBalance.add(transaction.amount),
+          currentBalance: transaction.escrow.currentBalance.add(transaction.amount),
+          availableBalance: transaction.escrow.availableBalance.add(transaction.amount),
         },
       })
 
       // 3. Create a reversing journal entry to undo the accounting
       await journalEntryService.voidJournalEntry({
-        entryId: transaction.journalEntryId,
+        entryId: transaction.journalEntryId || '',
         voidedBy: 'SYSTEM',
-        voidReason: `Payment failed: ${reason}`,
+        voidReason: `Payment failed: ${reason}`
       })
 
       return failedTransaction
@@ -572,7 +576,7 @@ export class EscrowService {
     const hold = await prisma.escrowHold.findUnique({
       where: { id: holdId },
       include: {
-        escrowAgreement: true,
+        escrow: true,
       },
     })
 
@@ -598,7 +602,7 @@ export class EscrowService {
       })
 
       // 2. Update escrow balances
-      const escrow = hold.escrowAgreement
+      const escrow = hold.escrow
       await tx.escrowAgreement.update({
         where: { id: escrow.id },
         data: {
@@ -685,6 +689,8 @@ export class EscrowService {
           journalEntryId: postedEntry.id,
           type: 'REFUND',
           amount,
+          balanceBefore: escrow.currentBalance,
+          balanceAfter: escrow.currentBalance.minus(amount),
           currency: escrow.currency,
           status: 'COMPLETED',
           reference: 'REFUND',
@@ -763,6 +769,8 @@ export class EscrowService {
           journalEntryId: postedEntry.id,
           type: 'FEE',
           amount,
+          balanceBefore: escrow.currentBalance,
+          balanceAfter: escrow.currentBalance.minus(amount),
           currency: escrow.currency,
           status: 'COMPLETED',
           reference: feeType,

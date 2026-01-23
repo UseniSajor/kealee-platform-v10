@@ -211,8 +211,9 @@ import { contractComplianceRoutes } from './modules/contracts/contract-complianc
 import { contractSecurityRoutes } from './modules/contracts/contract-security.routes'
 import { leadsRoutes } from './modules/marketplace/leads.routes'
 import { paymentRoutes } from './modules/payments/payment.routes'
-// Temporarily disabled - needs service method fixes
-// import { disputeRoutes } from './modules/disputes/dispute.routes'
+import { escrowRoutes } from './modules/escrow/escrow.routes'
+import { depositRoutes } from './modules/deposits/deposit.routes'
+import { disputeRoutes } from './modules/disputes/dispute.routes'
 import { closeoutRoutes } from './modules/closeout/closeout.routes'
 import { handoffRoutes } from './modules/handoff/handoff.routes'
 import { serviceRequestRoutes } from './modules/ops-services/service-request.routes'
@@ -385,6 +386,9 @@ const start = async () => {
     // await fastify.register(auditRoutes, { prefix: '/audit' })
     await fastify.register(pmRoutes, { prefix: '/pm' })
     await fastify.register(billingRoutes, { prefix: '/billing' })
+    await fastify.register(escrowRoutes, { prefix: '/escrow' })
+    await fastify.register(depositRoutes, { prefix: '/deposits' })
+    await fastify.register(disputeRoutes, { prefix: '/disputes' })
     // Temporarily disabled - DTO type mismatches
     // await fastify.register(accountingRoutes, { prefix: '/accounting' })
     await fastify.register(stripeConnectRoutes, { prefix: '/connect' })

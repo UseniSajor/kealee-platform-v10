@@ -1,6 +1,15 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { authService } from './auth.service'
 
+export interface AuthenticatedRequest extends FastifyRequest {
+  user: {
+    userId: string
+    email: string
+    role?: string
+    [key: string]: any
+  }
+}
+
 export async function authenticateUser(
   request: FastifyRequest,
   reply: FastifyReply
@@ -25,5 +34,20 @@ export async function authenticateUser(
     return reply.code(401).send({
       error: error.message || 'Invalid or expired token',
     })
+  }
+}
+
+export function requireRole(roles: string | string[]) {
+  return async (request: FastifyRequest, reply: FastifyReply) => {
+    const user = (request as any).user
+    
+    if (!user) {
+      return reply.code(401).send({ error: 'Authentication required' })
+    }
+    
+    const allowedRoles = Array.isArray(roles) ? roles : [roles]
+    if (!allowedRoles.includes(user.role) && user.role !== 'ADMIN' && user.role !== 'admin') {
+      return reply.code(403).send({ error: `One of these roles required: ${allowedRoles.join(', ')}` })
+    }
   }
 }

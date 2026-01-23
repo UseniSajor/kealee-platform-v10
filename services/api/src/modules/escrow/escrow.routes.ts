@@ -5,9 +5,9 @@
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
-import { authenticateUser, requireRole, type AuthenticatedRequest } from '../middleware/auth.middleware'
-import { validateBody, validateParams, validateQuery } from '../middleware/validation.middleware'
-import { escrowService } from '../modules/escrow/escrow.service'
+import { authenticateUser, requireRole, type AuthenticatedRequest } from '../auth/auth.middleware'
+import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
+import { escrowService } from './escrow.service'
 import { prisma, Decimal } from '@kealee/database'
 
 // ============================================================================
@@ -108,9 +108,9 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         body: CreateEscrowAgreementSchema,
       },
     },
-    async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const userId = request.user!.id
+        const userId = (request as any).user!.id
         const data = CreateEscrowAgreementSchema.parse(request.body)
 
         const escrow = await escrowService.createEscrowAgreement({
@@ -148,7 +148,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         querystring: ListEscrowsSchema,
       },
     },
-    async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const filters = ListEscrowsSchema.parse(request.query)
 
@@ -216,7 +216,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         params: EscrowIdParamSchema,
       },
     },
-    async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { id } = EscrowIdParamSchema.parse(request.params)
 
@@ -257,7 +257,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         params: ContractIdParamSchema,
       },
     },
-    async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { contractId } = ContractIdParamSchema.parse(request.params)
 
@@ -317,10 +317,10 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         body: RecordDepositSchema,
       },
     },
-    async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { id } = EscrowIdParamSchema.parse(request.params)
-        const userId = request.user!.id
+        const userId = (request as any).user!.id
         const data = RecordDepositSchema.parse(request.body)
 
         const transaction = await escrowService.recordDeposit({
@@ -360,10 +360,10 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         body: ReleasePaymentSchema,
       },
     },
-    async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { id } = EscrowIdParamSchema.parse(request.params)
-        const userId = request.user!.id
+        const userId = (request as any).user!.id
         const data = ReleasePaymentSchema.parse(request.body)
 
         const transaction = await escrowService.releasePayment({
@@ -403,10 +403,10 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         body: PlaceHoldSchema,
       },
     },
-    async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { id } = EscrowIdParamSchema.parse(request.params)
-        const userId = request.user!.id
+        const userId = (request as any).user!.id
         const data = PlaceHoldSchema.parse(request.body)
 
         const hold = await escrowService.placeHold({
@@ -446,10 +446,10 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         body: ReleaseHoldSchema,
       },
     },
-    async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { holdId } = HoldIdParamSchema.parse(request.params)
-        const userId = request.user!.id
+        const userId = (request as any).user!.id
         const data = ReleaseHoldSchema.parse(request.body)
 
         const hold = await escrowService.releaseHold({
@@ -488,10 +488,10 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         body: ProcessRefundSchema,
       },
     },
-    async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { id } = EscrowIdParamSchema.parse(request.params)
-        const userId = request.user!.id
+        const userId = (request as any).user!.id
         const data = ProcessRefundSchema.parse(request.body)
 
         const transaction = await escrowService.processRefund({
@@ -531,10 +531,10 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         body: RecordFeeSchema,
       },
     },
-    async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { id } = EscrowIdParamSchema.parse(request.params)
-        const userId = request.user!.id
+        const userId = (request as any).user!.id
         const data = RecordFeeSchema.parse(request.body)
 
         const transaction = await escrowService.recordFee(
@@ -574,10 +574,10 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         params: EscrowIdParamSchema,
       },
     },
-    async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { id } = EscrowIdParamSchema.parse(request.params)
-        const userId = request.user!.id
+        const userId = (request as any).user!.id
 
         const escrow = await escrowService.closeEscrow(id, userId)
 
@@ -610,7 +610,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         params: EscrowIdParamSchema,
       },
     },
-    async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { id } = EscrowIdParamSchema.parse(request.params)
 
@@ -664,7 +664,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         }),
       },
     },
-    async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { id } = z.object({ id: z.string().uuid() }).parse(request.params)
         const { payoutId } = z.object({ payoutId: z.string() }).parse(request.body)
@@ -706,7 +706,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         }),
       },
     },
-    async (request: AuthenticatedRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { id } = z.object({ id: z.string().uuid() }).parse(request.params)
         const { reason } = z.object({ reason: z.string() }).parse(request.body)

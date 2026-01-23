@@ -137,7 +137,7 @@ export class DisputeService {
       const dispute = await tx.dispute.create({
         data: {
           disputeNumber,
-          escrowId,
+          escrowAgreementId: escrowId,
           contractId,
           projectId,
           initiatedBy,
@@ -471,7 +471,7 @@ export class DisputeService {
       // Release escrow hold
       const holds = await tx.escrowHold.findMany({
         where: {
-          escrowId: dispute.escrowId,
+          escrowId: dispute.escrowAgreementId,
           reason: 'DISPUTE',
           status: 'ACTIVE',
           notes: {
@@ -493,7 +493,7 @@ export class DisputeService {
 
       // Update escrow balances
       await tx.escrowAgreement.update({
-        where: { id: dispute.escrowId },
+        where: { id: dispute.escrowAgreementId },
         data: {
           heldBalance: {
             decrement: dispute.frozenAmount.toNumber(),

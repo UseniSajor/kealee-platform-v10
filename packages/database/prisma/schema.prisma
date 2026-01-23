@@ -1605,6 +1605,11 @@ model User {
   financialAuditsVerified  FinancialAuditEntry[] @relation("FinancialAuditVerifier")
   accessLogs               AccessLog[]           @relation("AccessLogUser")
   auditReportsGenerated    AuditReport[]         @relation("AuditReportGenerator")
+
+  // Payment & Deposit relations
+  paymentMethods   PaymentMethod[]   @relation("UserPaymentMethods")
+  depositRequests  DepositRequest[]  @relation("UserDepositRequests")
+  taxForms         TaxForm[]         @relation("UserTaxForms")
 }
 
 // ============================================================================
@@ -1953,11 +1958,12 @@ model EscrowAgreement {
   updatedAt   DateTime     @updatedAt
 
   // Relationships
-  contract     ContractAgreement   @relation(fields: [contractId], references: [id], onDelete: Cascade)
-  project      Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  transactions EscrowTransaction[]
-  holds        EscrowHold[]
-  disputes     Dispute[]
+  contract        ContractAgreement   @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  project         Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  transactions    EscrowTransaction[]
+  holds           EscrowHold[]
+  disputes        Dispute[]
+  depositRequests DepositRequest[]    @relation("EscrowDepositRequests")
 
   @@index([contractId])
   @@index([projectId])
@@ -4130,8 +4136,15 @@ model PaymentMethod {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
+  // Relations
+  user            User             @relation("UserPaymentMethods", fields: [userId], references: [id], onDelete: Cascade)
+  depositRequests DepositRequest[] @relation("PaymentMethodDepositRequests")
+
   @@index([userId])
   @@index([stripePaymentMethodId])
+  @@index([status])
+  @@index([type])
+  @@index([isDefault])
 }
 
 model DepositRequest {
@@ -4153,10 +4166,18 @@ model DepositRequest {
   clearedAt             DateTime?
   updatedAt             DateTime  @updatedAt
 
+  // Relations
+  escrow        EscrowAgreement @relation("EscrowDepositRequests", fields: [escrowId], references: [id], onDelete: Cascade)
+  paymentMethod PaymentMethod   @relation("PaymentMethodDepositRequests", fields: [paymentMethodId], references: [id], onDelete: Restrict)
+  user          User            @relation("UserDepositRequests", fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([escrowId])
+  @@index([paymentMethodId])
   @@index([userId])
   @@index([status])
   @@index([stripePaymentIntentId])
+  @@index([escrowId, status])
+  @@index([createdAt])
 }
 
 model TaxForm {
@@ -4173,10 +4194,15 @@ model TaxForm {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  // Relations
+  user User @relation("UserTaxForms", fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@index([taxYear])
   @@index([formType])
   @@index([status])
+  @@index([userId, taxYear])
+  @@index([userId, formType, taxYear])
 }
 
 // ============================================================================

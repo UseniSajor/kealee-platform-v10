@@ -3,13 +3,16 @@
  * Handles deposit processing and coordination between Stripe and Escrow
  */
 
-import { PrismaClient, DepositStatus } from '@kealee/database';
-import { stripePaymentService } from './stripe-payment.service';
+import { PrismaClient, Decimal } from '@kealee/database';
+import { stripePaymentService } from '../payments/stripe-payment.service';
 import { escrowService } from '../escrow/escrow.service';
 import { eventBus } from '../../events/event-bus';
 import Stripe from 'stripe';
 
 const prisma = new PrismaClient();
+
+// Deposit status constants
+type DepositStatus = 'PENDING' | 'PROCESSING' | 'CLEARING' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
 
 export interface CreateDepositDTO {
   userId: string;
@@ -54,8 +57,8 @@ export class DepositService {
 
     const customer = await stripePaymentService.createOrGetCustomer(
       data.userId,
-      user.email,
-      `${user.firstName} ${user.lastName}`
+      user.email || '',
+      `${user.firstName || ''} ${user.lastName || ''}`
     );
 
     // Get payment method details
@@ -100,7 +103,7 @@ export class DepositService {
       },
       include: {
         paymentMethod: true,
-        escrowAgreement: {
+        escrow: {
           include: {
             contract: true,
           },
@@ -128,7 +131,7 @@ export class DepositService {
       where: { id: depositId },
       include: {
         paymentMethod: true,
-        escrowAgreement: {
+        escrow: {
           include: {
             contract: true,
           },
@@ -154,16 +157,16 @@ export class DepositService {
 
       // Create Stripe payment intent
       const paymentIntent = await stripePaymentService.createPaymentIntent({
-        amount: deposit.amount, // Already in cents
+        amount: deposit.amount.toNumber(), // Already in cents
         currency: deposit.currency.toLowerCase(),
         paymentMethodId: deposit.paymentMethod.stripePaymentMethodId,
         customerId: deposit.user.stripeCustomerId || undefined,
-        description: `Deposit to Escrow ${deposit.escrowAgreement.escrowAccountNumber}`,
+        description: `Deposit to Escrow ${deposit.escrow.escrowAccountNumber}`,
         metadata: {
           depositId: deposit.id,
           escrowId: deposit.escrowId,
           userId: deposit.userId,
-          contractId: deposit.escrowAgreement.contractId,
+          contractId: deposit.escrow.contractId,
         },
       });
 
@@ -214,7 +217,8 @@ export class DepositService {
       where: { stripePaymentIntentId: paymentIntentId },
       include: {
         paymentMethod: true,
-        escrowAgreement: true,
+        escrow: true,
+        user: true,
       },
     });
 
@@ -244,7 +248,7 @@ export class DepositService {
         depositId: deposit.id,
         userId: deposit.userId,
         escrowId: deposit.escrowId,
-        expectedClearanceDate: deposit.expectedClearanceDate,
+        expectedClearanceDate: deposit.expectedClearanceDate ?? new Date(),
       });
     }
   }
@@ -256,7 +260,9 @@ export class DepositService {
     const deposit = await prisma.depositRequest.findUnique({
       where: { id: depositId },
       include: {
-        escrowAgreement: true,
+        escrow: true,
+        paymentMethod: true,
+        user: true,
       },
     });
 
@@ -268,7 +274,7 @@ export class DepositService {
     await escrowService.recordDeposit({
       escrowId: deposit.escrowId,
       depositId: depositId,
-      amount: new (await import('@kealee/database')).Decimal(deposit.amount),
+      amount: new Decimal(deposit.amount.toString()),
       processedDate: new Date(),
       initiatedBy: deposit.userId,
       metadata: { depositId, chargeId }
@@ -289,7 +295,7 @@ export class DepositService {
       depositId,
       userId: deposit.userId,
       escrowId: deposit.escrowId,
-      amount: deposit.amount,
+      amount: deposit.amount.toNumber(),
       clearedAt: new Date(),
     });
   }
@@ -412,7 +418,7 @@ export class DepositService {
       where: { id: depositId },
       include: {
         paymentMethod: true,
-        escrowAgreement: {
+        escrow: {
           include: {
             contract: true,
           },

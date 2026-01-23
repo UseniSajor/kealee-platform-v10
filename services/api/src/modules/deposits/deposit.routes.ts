@@ -4,12 +4,12 @@
  */
 
 import { FastifyInstance } from 'fastify';
-import { depositController } from '../modules/payments/deposit.controller';
-import { authenticateRequest } from '../middleware/auth';
+import { depositController } from './deposit.controller';
+import { authenticateUser } from '../auth/auth.middleware';
 
 export async function depositRoutes(fastify: FastifyInstance) {
   // All deposit routes require authentication
-  fastify.addHook('onRequest', authenticateRequest);
+  fastify.addHook('onRequest', authenticateUser);
 
   /**
    * POST /api/deposits
