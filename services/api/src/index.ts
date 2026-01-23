@@ -254,7 +254,8 @@ import { stripeConnectRoutes } from './routes/stripe-connect.routes'
 import { monitoringDashboardRoutes } from './modules/monitoring/monitoring-dashboard.routes'
 import { taskGeneratorRoutes } from './modules/tasks/task-generator.routes'
 import { complianceCheckpointRoutes } from './modules/compliance/compliance-checkpoint.routes'
-import { complianceGatesRoutes } from './modules/compliance/compliance-gates.routes'
+// Temporarily disabled - missing @kealee/compliance package
+// import { complianceGatesRoutes } from './modules/compliance/compliance-gates.routes'
 // Temporarily disabled - type issues in route handlers
 // import { complianceRoutes } from './routes/compliance.routes'
 // Deposit temporarily disabled
@@ -491,7 +492,8 @@ const start = async () => {
     await fastify.register(monitoringDashboardRoutes)
     await fastify.register(taskGeneratorRoutes, { prefix: '/tasks' })
     await fastify.register(complianceCheckpointRoutes, { prefix: '/compliance' })
-    await fastify.register(complianceGatesRoutes, { prefix: '/compliance' })
+    // Temporarily disabled - missing @kealee/compliance package
+    // await fastify.register(complianceGatesRoutes, { prefix: '/compliance' })
     // Temporarily disabled - type issues in route handlers
     // await fastify.register(complianceRoutes, { prefix: '/api/compliance' })
     // Deposit temporarily disabled
