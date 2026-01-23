@@ -8,12 +8,10 @@ import { approvalWorkflowService } from './pm-approval.service'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { z } from 'zod'
-import multipart from '@fastify/multipart'
 import { fileService } from '../files/file.service'
 
 export async function pmApprovalRoutes(fastify: FastifyInstance) {
-  // Register multipart for file uploads
-  await fastify.register(multipart)
+  // Multipart already registered globally in index.ts
 
   // ============================================================================
   // APPROVAL REQUESTS
