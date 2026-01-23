@@ -127,13 +127,6 @@ export class AnalyticsService {
       where: {
         role: 'CONTRACTOR',
       },
-      include: {
-        _count: {
-          select: {
-            contracts: true,
-          },
-        },
-      },
     });
 
     // Identify churned contractors (no activity in 90 days)
@@ -168,7 +161,7 @@ export class AnalyticsService {
     const transaction = await prisma.escrowTransaction.findUnique({
       where: { id: transactionId },
       include: {
-        escrowAgreement: {
+        escrow: {
           include: {
             contract: true,
           },
@@ -187,7 +180,8 @@ export class AnalyticsService {
     // Factor 1: Unusual amount (> 3 standard deviations from user's average)
     const userAverage = await this.getUserAverageTransaction(transaction.initiatedBy);
     const stdDev = await this.getUserTransactionStdDev(transaction.initiatedBy);
-    if (Math.abs(transaction.amount - userAverage) > 3 * stdDev) {
+    const transactionAmount = typeof transaction.amount === 'number' ? transaction.amount : transaction.amount.toNumber();
+    if (Math.abs(transactionAmount - userAverage) > 3 * stdDev) {
       riskScore += 0.3;
       riskFactors.push('Unusual transaction amount');
     }
@@ -233,7 +227,7 @@ export class AnalyticsService {
     return {
       transactionId: transaction.id,
       userId: transaction.initiatedBy,
-      amount: transaction.amount,
+      amount: typeof transaction.amount === 'number' ? transaction.amount : transaction.amount.toNumber(),
       riskScore: Math.round(riskScore * 100) / 100,
       riskLevel,
       anomalies: riskFactors,
@@ -290,12 +284,12 @@ export class AnalyticsService {
       // Scheduled inflows for this day
       const dayInflows = scheduledInflows
         .filter(t => this.isSameDay(t.scheduledDate!, date))
-        .reduce((sum, t) => sum + t.amount, 0);
+        .reduce((sum, t) => sum + (typeof t.amount === 'number' ? t.amount : t.amount.toNumber()), 0);
 
       // Scheduled outflows for this day
       const dayOutflows = scheduledOutflows
         .filter(t => this.isSameDay(t.scheduledDate!, date))
-        .reduce((sum, t) => sum + t.amount, 0);
+        .reduce((sum, t) => sum + (typeof t.amount === 'number' ? t.amount : t.amount.toNumber()), 0);
 
       // Add projected unscheduled activity (with some randomness)
       const projectedInflow = dayInflows + avgDailyDeposits * (0.8 + Math.random() * 0.4);
@@ -337,13 +331,6 @@ export class AnalyticsService {
         where: {
           // metadata: { path: ['acquisitionChannel'], equals: channel }
           // This would require proper JSONB querying
-        },
-        include: {
-          _count: {
-            select: {
-              contracts: true,
-            },
-          },
         },
       });
 
@@ -478,7 +465,8 @@ export class AnalyticsService {
       where: { initiatedBy: userId, status: 'COMPLETED' },
       _avg: { amount: true },
     });
-    return result._avg.amount || 0;
+    const avgAmount = result._avg.amount;
+    return avgAmount ? (typeof avgAmount === 'number' ? avgAmount : avgAmount.toNumber()) : 0;
   }
 
   private async getUserTransactionStdDev(userId: string): Promise<number> {
@@ -503,7 +491,8 @@ export class AnalyticsService {
     const result = await prisma.escrowAgreement.aggregate({
       _sum: { currentBalance: true },
     });
-    return result._sum.currentBalance || 0;
+    const sumBalance = result._sum.currentBalance;
+    return sumBalance ? (typeof sumBalance === 'number' ? sumBalance : sumBalance.toNumber()) : 0;
   }
 
   private async getAverageDailyDeposits(): Promise<number> {
@@ -520,7 +509,9 @@ export class AnalyticsService {
       _sum: { amount: true },
     });
 
-    return (result._sum.amount || 0) / 30;
+    const sumAmount = result._sum.amount;
+    const totalAmount = sumAmount ? (typeof sumAmount === 'number' ? sumAmount : sumAmount.toNumber()) : 0;
+    return totalAmount / 30;
   }
 
   private async getAverageDailyReleases(): Promise<number> {
@@ -536,7 +527,9 @@ export class AnalyticsService {
       _sum: { amount: true },
     });
 
-    return (result._sum.amount || 0) / 30;
+    const sumAmount = result._sum.amount;
+    const totalAmount = sumAmount ? (typeof sumAmount === 'number' ? sumAmount : sumAmount.toNumber()) : 0;
+    return totalAmount / 30;
   }
 
   private isSameDay(date1: Date, date2: Date): boolean {

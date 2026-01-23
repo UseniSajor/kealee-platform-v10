@@ -452,11 +452,15 @@ export class ComplianceMonitoringService {
     }
 
     // Create compliance check record
+    // Project model doesn't have state field, use default 'US' for now
+    // In production, you may want to get state from property/org or add to project model
+    const contractState = 'US';
+    
     await prisma.complianceCheck.create({
       data: {
         ruleId: await this.getOrCreateRule(
           'pre_payment',
-          escrow.contract.project.state || 'US'
+          contractState
         ),
         checkType: 'pre_payment',
         escrowId,
