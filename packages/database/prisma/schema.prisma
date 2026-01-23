@@ -1508,6 +1508,9 @@ model User {
   ssn     String?  // Encrypted
   ein     String?  // Tax ID
   
+  // Notification preferences
+  notificationPreferences Json?
+  
   metadata  Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1515,6 +1518,7 @@ model User {
   // Organization relations
   orgMemberships OrgMember[]
   sessions       Session[]
+  notifications  Notification[]
 
   // Relationships (example - adjust based on your existing schema)
   // submittedPermits  Permit[]  @relation("PermitApplicant")
@@ -4500,3 +4504,81 @@ model AssignmentRequest {
 // Alias PermitApplication to Permit for backward compatibility
 // The code uses permitApplication but the model is Permit
 // We'll update the code to use Permit instead
+
+// ============================================================================
+// NOTIFICATION SYSTEM MODELS
+// ============================================================================
+
+model Notification {
+  id      String   @id @default(uuid())
+  userId  String
+  type    String   // Notification type
+  title   String
+  message String
+  data    Json?    // Additional notification data
+  
+  // Delivery channels
+  channels String[] // email, push, sms
+  
+  // Status tracking
+  status String   @default("PENDING") // PENDING, SENT, FAILED
+  sentAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relationships
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// WEBHOOK IDEMPOTENCY MODELS
+// ============================================================================
+
+model WebhookLog {
+  id         String   @id @default(uuid())
+  webhookId  String   @unique // Stripe webhook ID or other source ID
+  status     String   @default("PENDING") // PENDING, PROCESSED, FAILED
+  result     Json?
+  error      String?
+  retryCount Int      @default(0)
+  
+  processedAt   DateTime?
+  lastAttemptAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relationships
+  retries WebhookRetry[]
+  
+  @@index([webhookId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model WebhookRetry {
+  id           String   @id @default(uuid())
+  webhookId    String
+  retryCount   Int
+  scheduledFor DateTime
+  payload      Json
+  status       String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  error        String?
+  completedAt  DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relationships
+  webhookLog WebhookLog @relation(fields: [webhookId], references: [webhookId])
+  
+  @@index([webhookId])
+  @@index([status])
+  @@index([scheduledFor])
+}
