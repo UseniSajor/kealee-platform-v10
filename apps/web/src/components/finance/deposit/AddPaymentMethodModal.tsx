@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { Elements, useStripe } from '@stripe/react-stripe-js';
 import { usePaymentMethods } from '../../../hooks/usePaymentMethods';
+import { getStripe, isStripeConfigured } from '../../../lib/stripe';
 import { Button } from '../../ui/Button';
-import { Input } from '../../ui/Input';
-import { Label } from '../../ui/Label';
 import { Alert, AlertDescription } from '../../ui/Alert';
 import { CreditCard, Building2, X, Loader2, AlertCircle } from 'lucide-react';
+import { StripeCardElement } from './StripeCardElement';
+import { StripeACHElement } from './StripeACHElement';
 import type { PaymentMethodType } from '../../../types/finance.types';
 
 interface AddPaymentMethodModalProps {
@@ -13,40 +15,46 @@ interface AddPaymentMethodModalProps {
   onSuccess?: (paymentMethodId: string) => void;
 }
 
-export function AddPaymentMethodModal({ isOpen, onClose, onSuccess }: AddPaymentMethodModalProps) {
+// Inner component that has access to Stripe context
+function AddPaymentMethodForm({ onClose, onSuccess }: Omit<AddPaymentMethodModalProps, 'isOpen'>) {
+  const stripe = useStripe();
   const { addPaymentMethod, isAdding } = usePaymentMethods();
   const [paymentType, setPaymentType] = useState<PaymentMethodType>('CARD');
   const [error, setError] = useState<string>('');
-
-  // Card fields
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvc, setCardCvc] = useState('');
-  const [cardName, setCardName] = useState('');
-
-  // ACH fields
-  const [routingNumber, setRoutingNumber] = useState('');
-  const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
-
-  if (!isOpen) return null;
+  
+  // Refs to call payment method creation from child components
+  const cardElementRef = useRef<{ createPaymentMethod: () => Promise<string | null> }>(null);
+  const achElementRef = useRef<{ createPaymentMethod: () => Promise<string | null> }>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
+    if (!stripe) {
+      setError('Stripe is not loaded. Please refresh the page and try again.');
+      return;
+    }
+
     try {
-      // In a real implementation, you would:
-      // 1. Create Stripe PaymentMethod using Stripe.js
-      // 2. Get the Stripe PaymentMethod ID
-      // 3. Send to your backend to attach to customer
+      let stripePaymentMethodId: string | null = null;
 
-      // For now, simulating the flow:
-      const mockStripePaymentMethodId = `pm_${Math.random().toString(36).substr(2, 9)}`;
+      // Get payment method ID from the appropriate element
+      if (paymentType === 'CARD' && cardElementRef.current) {
+        stripePaymentMethodId = await cardElementRef.current.createPaymentMethod();
+      } else if (paymentType === 'ACH' && achElementRef.current) {
+        stripePaymentMethodId = await achElementRef.current.createPaymentMethod();
+      }
 
+      if (!stripePaymentMethodId) {
+        // Error already set by child component
+        return;
+      }
+
+      // Save to backend
       const newMethod = await addPaymentMethod({
         type: paymentType,
-        stripePaymentMethodId: mockStripePaymentMethodId,
+        stripePaymentMethodId,
         isDefault: false,
       });
 
@@ -111,140 +119,23 @@ export function AddPaymentMethodModal({ isOpen, onClose, onSuccess }: AddPayment
             </div>
           </div>
 
-          {/* Card Form */}
+          {/* Stripe Elements Integration */}
           {paymentType === 'CARD' && (
-            <>
-              <div>
-                <Label htmlFor="cardName">Cardholder Name</Label>
-                <Input
-                  id="cardName"
-                  value={cardName}
-                  onChange={(e) => setCardName(e.target.value)}
-                  placeholder="John Doe"
-                  required
-                  disabled={isAdding}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="cardNumber">Card Number</Label>
-                <Input
-                  id="cardNumber"
-                  value={cardNumber}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\s/g, '');
-                    if (/^\d*$/.test(value) && value.length <= 16) {
-                      setCardNumber(value.replace(/(\d{4})/g, '$1 ').trim());
-                    }
-                  }}
-                  placeholder="1234 5678 9012 3456"
-                  maxLength={19}
-                  required
-                  disabled={isAdding}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="cardExpiry">Expiry Date</Label>
-                  <Input
-                    id="cardExpiry"
-                    value={cardExpiry}
-                    onChange={(e) => {
-                      let value = e.target.value.replace(/\D/g, '');
-                      if (value.length >= 2) {
-                        value = value.slice(0, 2) + '/' + value.slice(2, 4);
-                      }
-                      if (value.length <= 5) {
-                        setCardExpiry(value);
-                      }
-                    }}
-                    placeholder="MM/YY"
-                    maxLength={5}
-                    required
-                    disabled={isAdding}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="cardCvc">CVC</Label>
-                  <Input
-                    id="cardCvc"
-                    value={cardCvc}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, '');
-                      if (value.length <= 4) {
-                        setCardCvc(value);
-                      }
-                    }}
-                    placeholder="123"
-                    maxLength={4}
-                    required
-                    disabled={isAdding}
-                  />
-                </div>
-              </div>
-            </>
+            <StripeCardElement
+              ref={cardElementRef}
+              onPaymentMethodCreated={(id) => {}}
+              onError={setError}
+            />
           )}
 
-          {/* ACH Form */}
           {paymentType === 'ACH' && (
-            <>
-              <div>
-                <Label htmlFor="accountName">Account Holder Name</Label>
-                <Input
-                  id="accountName"
-                  value={accountName}
-                  onChange={(e) => setAccountName(e.target.value)}
-                  placeholder="John Doe"
-                  required
-                  disabled={isAdding}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="routingNumber">Routing Number</Label>
-                <Input
-                  id="routingNumber"
-                  value={routingNumber}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    if (value.length <= 9) {
-                      setRoutingNumber(value);
-                    }
-                  }}
-                  placeholder="123456789"
-                  maxLength={9}
-                  required
-                  disabled={isAdding}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="accountNumber">Account Number</Label>
-                <Input
-                  id="accountNumber"
-                  type="password"
-                  value={accountNumber}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    if (value.length <= 17) {
-                      setAccountNumber(value);
-                    }
-                  }}
-                  placeholder="••••••••••"
-                  maxLength={17}
-                  required
-                  disabled={isAdding}
-                />
-              </div>
-
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="text-xs">
-                  ACH transfers may require microdeposit verification and take 1-2 business days to verify.
-                </AlertDescription>
-              </Alert>
-            </>
+            <StripeACHElement
+              ref={achElementRef}
+              onPaymentMethodCreated={(id) => {}}
+              onError={setError}
+              accountHolderName={accountName}
+              onAccountHolderNameChange={setAccountName}
+            />
           )}
 
           {/* Error Message */}
@@ -254,15 +145,6 @@ export function AddPaymentMethodModal({ isOpen, onClose, onSuccess }: AddPayment
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-
-          {/* Security Notice */}
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="text-xs">
-              Your payment information is encrypted and securely processed by Stripe.
-              We never store your full card or account details.
-            </AlertDescription>
-          </Alert>
 
           {/* Footer */}
           <div className="flex gap-3">
@@ -278,7 +160,7 @@ export function AddPaymentMethodModal({ isOpen, onClose, onSuccess }: AddPayment
             <Button
               type="submit"
               className="flex-1"
-              disabled={isAdding}
+              disabled={isAdding || !stripe}
             >
               {isAdding ? (
                 <>
@@ -293,6 +175,40 @@ export function AddPaymentMethodModal({ isOpen, onClose, onSuccess }: AddPayment
         </form>
       </div>
     </div>
+  );
+}
+
+// Main component with Stripe Elements wrapper
+export function AddPaymentMethodModal({ isOpen, onClose, onSuccess }: AddPaymentMethodModalProps) {
+  if (!isOpen) return null;
+
+  // Check if Stripe is configured
+  if (!isStripeConfigured()) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Stripe Not Configured</strong>
+              <p className="mt-1">
+                Payment processing is not available. Please contact support or configure 
+                NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY in your environment.
+              </p>
+            </AlertDescription>
+          </Alert>
+          <Button onClick={onClose} className="w-full mt-4">
+            Close
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Elements stripe={getStripe()}>
+      <AddPaymentMethodForm onClose={onClose} onSuccess={onSuccess} />
+    </Elements>
   );
 }
 
