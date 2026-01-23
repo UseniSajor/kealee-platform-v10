@@ -1032,6 +1032,9 @@ importers:
       '@kealee/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@kealee/workflow-engine':
+        specifier: workspace:*
+        version: link:../../packages/workflow-engine
       '@prisma/client':
         specifier: ^5.22.0
         version: 5.22.0(prisma@5.22.0)
