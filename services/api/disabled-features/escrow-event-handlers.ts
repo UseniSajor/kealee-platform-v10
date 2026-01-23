@@ -107,11 +107,12 @@ export class EscrowEventHandlers {
 
         // If escrow has balance, process refund
         if (escrow.currentBalance.greaterThan(0)) {
+          const contract = await prisma.contract.findUnique({ where: { id: escrow.contractId } })
           await escrowService.processRefund({
             escrowId: escrow.id,
             amount: escrow.currentBalance,
             reason: `Contract cancelled: ${data.reason}`,
-            recipientAccountId: escrow.contract.ownerId, // Refund to owner
+            recipientAccountId: contract?.ownerId!, // Refund to owner
             initiatedBy: data.userId,
           })
 
@@ -148,7 +149,11 @@ export class EscrowEventHandlers {
         const escrow = await escrowService.getEscrowByContract(data.contractId)
 
         // Get contractor's connected account
-        const contractor = await escrow.contract.contractor
+        const contract = await prisma.contract.findUnique({ 
+          where: { id: escrow.contractId },
+          include: { contractor: true }
+        })
+        const contractor = contract?.contractor
         if (!contractor || !contractor.connectedAccountId) {
           throw new Error('Contractor does not have a connected account for payouts')
         }

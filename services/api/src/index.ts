@@ -222,16 +222,20 @@ import { fileRoutes } from './modules/files/file.routes'
 // Temporarily disabled - DTO type mismatches
 // import { accountingRoutes } from './routes/accounting.routes'
 import { stripeConnectRoutes } from './routes/stripe-connect.routes'
-import { analyticsRoutes } from './modules/analytics/analytics.routes'
+// Analytics temporarily disabled
+// import { analyticsRoutes } from './modules/analytics/analytics.routes'
 import { monitoringDashboardRoutes } from './modules/monitoring/monitoring-dashboard.routes'
 import { taskGeneratorRoutes } from './modules/tasks/task-generator.routes'
 import { complianceCheckpointRoutes } from './modules/compliance/compliance-checkpoint.routes'
 import { complianceGatesRoutes } from './modules/compliance/compliance-gates.routes'
 // Temporarily disabled - type issues in route handlers
 // import { complianceRoutes } from './routes/compliance.routes'
-import { depositRoutes } from './routes/deposit.routes'
-import { stripeWebhookRoutes } from './routes/stripe-webhook.routes'
-import { oversightRoutes } from './routes/oversight.routes'
+// Deposit temporarily disabled
+// import { depositRoutes } from './routes/deposit.routes'
+// Stripe webhook temporarily disabled
+// import { stripeWebhookRoutes } from './routes/stripe-webhook.routes'
+// Oversight temporarily disabled
+// import { oversightRoutes } from './routes/oversight.routes'
 import testRoutes from './routes/test.routes'
 // import { createGraphQLServer } from './graphql/server' // DISABLED: GraphQL not critical for MVP
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware'
@@ -345,9 +349,10 @@ const start = async () => {
     fastify.addHook('onRequest', sentryRequestHandler)
     fastify.addHook('onResponse', sentryResponseHandler)
 
-    // Initialize event-driven architecture
-    const { escrowEventHandlers } = require('./events/escrow-event-handlers')
-    escrowEventHandlers.registerHandlers()
+    // Initialize event-driven architecture - TEMPORARILY DISABLED
+    // const { escrowEventHandlers } = require('./events/escrow-event-handlers')
+    // escrowEventHandlers.registerHandlers()
+    console.log('⚠️  Escrow event handlers temporarily disabled')
 
     // Register request/response logging
     const { requestLogger, responseLogger } = require('./middleware/request-logger.middleware')
@@ -444,16 +449,20 @@ const start = async () => {
     await fastify.register(servicePlanRoutes, { prefix: '/ops-services' })
     await fastify.register(workflowRoutes, { prefix: '/workflow' })
     await fastify.register(fileRoutes, { prefix: '/files' })
-    await fastify.register(analyticsRoutes)
+    // Analytics temporarily disabled
+    // await fastify.register(analyticsRoutes)
     await fastify.register(monitoringDashboardRoutes)
     await fastify.register(taskGeneratorRoutes, { prefix: '/tasks' })
     await fastify.register(complianceCheckpointRoutes, { prefix: '/compliance' })
     await fastify.register(complianceGatesRoutes, { prefix: '/compliance' })
     // Temporarily disabled - type issues in route handlers
     // await fastify.register(complianceRoutes, { prefix: '/api/compliance' })
-    await fastify.register(depositRoutes, { prefix: '/api/deposits' })
-    await fastify.register(stripeWebhookRoutes, { prefix: '/webhooks' })
-    await fastify.register(oversightRoutes, { prefix: '/api/admin/oversight' })
+    // Deposit temporarily disabled
+    // await fastify.register(depositRoutes, { prefix: '/api/deposits' })
+    // Stripe webhook temporarily disabled
+    // await fastify.register(stripeWebhookRoutes, { prefix: '/webhooks' })
+    // Oversight temporarily disabled
+    // await fastify.register(oversightRoutes, { prefix: '/api/admin/oversight' })
     
     // Register new API routes for PM workspace
     const { clientRoutes } = await import('./routes/client.routes')

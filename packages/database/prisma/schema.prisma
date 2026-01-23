@@ -1498,6 +1498,7 @@ model User {
   status            String?  @default("ACTIVE")
   stripeCustomerId  String?
   twoFactorEnabled  Boolean  @default(false)
+  passwordChangedAt DateTime? // Track when password was last changed
   
   // Address fields
   address String?
@@ -4093,7 +4094,10 @@ model SecurityEvent {
   userId      String?
   eventType   String
   type        String? // Alias for eventType
+  action      String? // Action performed
   description String
+  resource    String? // Resource affected by the event
+  result      String? // Result of the action (success/failure)
   severity    String   @default("INFO")
   ipAddress   String?
   userAgent   String?
