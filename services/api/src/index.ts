@@ -268,7 +268,8 @@ import testRoutes from './routes/test.routes'
 // import { createGraphQLServer } from './graphql/server' // DISABLED: GraphQL not critical for MVP
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware'
 import { registerGlobalRateLimit } from './middleware/rate-limit.middleware'
-import { registerCSRFProtection } from './middleware/csrf.middleware'
+// Temporarily disabled - @fastify/csrf-protection v5.x incompatible with Fastify v4.x
+// import { registerCSRFProtection } from './middleware/csrf.middleware'
 import { requestLogger, responseLogger } from './middleware/logging.middleware'
 import { swaggerConfig, swaggerUIConfig } from './config/swagger.config'
 import { prisma } from '@kealee/database'
@@ -366,7 +367,8 @@ const start = async () => {
     await registerGlobalRateLimit(fastify)
 
     // Register CSRF protection (enabled in all environments for security)
-    await registerCSRFProtection(fastify)
+    // Temporarily disabled - @fastify/csrf-protection v5.x incompatible with Fastify v4.x
+    // await registerCSRFProtection(fastify)
 
     // Initialize Sentry
     const { initSentry } = require('./middleware/sentry.middleware')
