@@ -301,6 +301,32 @@ const start = async () => {
       console.log('   - External services may be mocked');
       console.log('');
     }
+    // AFTER: const fastify = Fastify({ ... })
+// BEFORE: registering routes
+
+fastify.register(async function apiScope(api) {
+  // All these become /api/<prefix>/<route>
+  await api.register(stripeConnectRoutes, { prefix: '/connect' })
+  await api.register(projectRoutes, { prefix: '/projects' })
+  await api.register(propertyRoutes, { prefix: '/properties' })
+  await api.register(readinessRoutes, { prefix: '/readiness' })
+
+  await api.register(contractTemplateRoutes, { prefix: '/contracts' })
+  await api.register(contractRoutes, { prefix: '/contracts' })
+  await api.register(contractDashboardRoutes, { prefix: '/contracts' })
+  await api.register(contractComplianceRoutes, { prefix: '/contracts' })
+  await api.register(contractSecurityRoutes, { prefix: '/contracts' })
+
+  await api.register(milestoneRoutes, { prefix: '/milestones' })
+  await api.register(milestoneUploadRoutes, { prefix: '/milestones' })
+  await api.register(milestoneReviewRoutes, { prefix: '/milestones' })
+
+  await api.register(marketplaceRoutes, { prefix: '/marketplace' })
+  await api.register(leadsRoutes, { prefix: '/marketplace' })
+
+  await api.register(paymentRoutes, { prefix: '/payments' })
+}, { prefix: '/api' })
+
     
     // Register plugins
     // CORS configuration - allow all client-facing and internal domains
