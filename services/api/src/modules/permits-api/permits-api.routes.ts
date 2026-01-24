@@ -4,7 +4,7 @@
  */
 
 import {FastifyInstance, FastifyRequest, FastifyReply} from 'fastify';
-import {createClient} from '@supabase/supabase-js';
+import {getSupabaseClient} from '../../utils/supabase-client';
 
 interface PermitQuery {
   jurisdictionId?: string;
@@ -19,10 +19,8 @@ interface PermitParams {
 }
 
 export async function permitsApiRoutes(fastify: FastifyInstance) {
-  const supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  // Use centralized Supabase client (handles missing credentials gracefully)
+  const supabase = getSupabaseClient();
 
   // GET /api/v1/permits - List permits
   fastify.get<{Querystring: PermitQuery}>(

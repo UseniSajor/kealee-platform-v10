@@ -3,7 +3,7 @@
  * Implements bcrypt option and enhanced security features
  */
 
-import {createClient} from '@supabase/supabase-js';
+import {getSupabaseClient} from '../../utils/supabase-client';
 import crypto from 'crypto';
 
 export interface ApiKeySecurityConfig {
@@ -21,10 +21,7 @@ const DEFAULT_CONFIG: ApiKeySecurityConfig = {
 };
 
 export class ApiKeySecurityService {
-  private supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  private supabase = getSupabaseClient();
   private config: ApiKeySecurityConfig;
 
   constructor(config?: Partial<ApiKeySecurityConfig>) {

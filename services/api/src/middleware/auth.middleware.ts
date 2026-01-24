@@ -1,20 +1,8 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '../utils/supabase-client';
 
-const supabaseUrl = process.env.SUPABASE_URL!;
-// Support both SUPABASE_SERVICE_KEY (legacy) and SUPABASE_SERVICE_ROLE_KEY (standard)
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY!;
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing Supabase environment variables: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required');
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
+// Get the centralized Supabase client (handles missing credentials gracefully)
+const supabase = getSupabaseClient();
 
 export interface AuthenticatedUser {
   id: string

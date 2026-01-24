@@ -3,7 +3,7 @@
  * Track API usage for billing and analytics
  */
 
-import {createClient} from '@supabase/supabase-js';
+import {getSupabaseClient} from '../../utils/supabase-client';
 
 export interface UsageMetrics {
   apiKeyId: string;
@@ -29,10 +29,7 @@ export interface UsageSummary {
 }
 
 export class UsageAnalyticsService {
-  private supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  private supabase = getSupabaseClient();
 
   /**
    * Record API usage

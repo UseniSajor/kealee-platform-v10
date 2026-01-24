@@ -3,7 +3,7 @@
  * Comprehensive security audit logging for API access
  */
 
-import {createClient} from '@supabase/supabase-js';
+import {getSupabaseClient} from '../../utils/supabase-client';
 
 export interface SecurityAuditLog {
   id: string;
@@ -25,10 +25,7 @@ export interface SecurityAuditLog {
 }
 
 export class SecurityAuditService {
-  private supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  private supabase = getSupabaseClient();
 
   /**
    * Log security event
