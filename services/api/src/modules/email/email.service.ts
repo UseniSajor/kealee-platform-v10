@@ -1,6 +1,20 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Lazy-initialize Resend client to avoid crash if API key missing
+let resend: Resend | null = null;
+
+function getResendClient(): Resend | null {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('⚠️  RESEND_API_KEY not set - email service disabled');
+    return null;
+  }
+  
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  
+  return resend;
+}
 
 export interface EmailOptions {
   to: string | string[]
@@ -16,8 +30,10 @@ export class EmailService {
    * Send email using Resend
    */
   async sendEmail(options: EmailOptions) {
-    if (!process.env.RESEND_API_KEY) {
-      console.warn('⚠️  RESEND_API_KEY not set, email not sent:', options.subject)
+    const resendClient = getResendClient();
+    
+    if (!resendClient) {
+      console.warn('⚠️  Email service not configured, email not sent:', options.subject)
       return { success: false, error: 'Email provider not configured' }
     }
 
@@ -27,7 +43,7 @@ export class EmailService {
         ? await this.getTemplate(options.template, options.data || {})
         : { html: options.html, text: options.text }
 
-      const result = await resend.emails.send({
+      const result = await resendClient.emails.send({
         from: process.env.RESEND_FROM_EMAIL || 'Kealee Platform <noreply@kealee.com>',
         to: Array.isArray(options.to) ? options.to : [options.to],
         subject: options.subject,

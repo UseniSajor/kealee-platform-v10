@@ -6,7 +6,20 @@
 import { Resend } from 'resend';
 import { prisma } from '@kealee/database';
 
-const resend = new Resend(process.env.RESEND_API_KEY || '');
+// Lazy-initialize Resend client to avoid crash if API key missing
+let resend: Resend | null = null;
+
+function getResendClient(): Resend | null {
+  if (!process.env.RESEND_API_KEY) {
+    return null;
+  }
+  
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  
+  return resend;
+}
 
 export interface NotificationPayload {
   userId: string;
@@ -101,7 +114,9 @@ export class NotificationService {
    * Send email notification
    */
   private async sendEmail(email: string, payload: NotificationPayload): Promise<void> {
-    if (!process.env.RESEND_API_KEY) {
+    const resendClient = getResendClient();
+    
+    if (!resendClient) {
       console.warn('[Notification] Resend API key not configured, skipping email');
       return;
     }
@@ -109,7 +124,7 @@ export class NotificationService {
     const emailContent = this.getEmailContent(payload);
 
     try {
-      await resend.emails.send({
+      await resendClient.emails.send({
         from: process.env.EMAIL_FROM || 'noreply@kealee.com',
         to: email,
         subject: payload.title,
