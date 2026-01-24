@@ -99,13 +99,13 @@ export async function escrowRoutes(fastify: FastifyInstance) {
    * Create a new escrow agreement (when contract is signed)
    */
   fastify.post(
-    '/escrow/agreements',
+    '/agreements',
     {
-      preHandler: [authenticateUser, requireFinanceAccess],
+      preHandler: [authenticateUser, requireFinanceAccess, validateBody(CreateEscrowAgreementSchema)],
       schema: {
         tags: ['Escrow'],
         summary: 'Create a new escrow agreement',
-        body: CreateEscrowAgreementSchema,
+        description: 'Create a new escrow agreement for a contract',
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
@@ -139,7 +139,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
    * List escrow agreements with filtering
    */
   fastify.get(
-    '/escrow/agreements',
+    '/agreements',
     {
       preHandler: [authenticateUser, requireFinanceAccess],
       schema: {
@@ -213,7 +213,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Escrow'],
         summary: 'Get escrow agreement details',
-        params: EscrowIdParamSchema,
+        description: 'Get details of a specific escrow agreement',
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
@@ -248,7 +248,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
    * Get escrow agreement by contract ID
    */
   fastify.get(
-    '/escrow/contract/:contractId',
+    '/contract/:contractId',
     {
       preHandler: [authenticateUser],
       schema: {
@@ -313,8 +313,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Escrow'],
         summary: 'Record a deposit into escrow',
-        params: EscrowIdParamSchema,
-        body: RecordDepositSchema,
+        description: 'Record a deposit transaction into escrow',
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
@@ -350,14 +349,13 @@ export async function escrowRoutes(fastify: FastifyInstance) {
    * Release payment from escrow
    */
   fastify.post(
-    '/escrow/agreements/:id/release',
+    '/agreements/:id/release',
     {
       preHandler: [authenticateUser, requireFinanceAccess],
       schema: {
         tags: ['Escrow'],
         summary: 'Release payment from escrow',
-        params: EscrowIdParamSchema,
-        body: ReleasePaymentSchema,
+        description: 'Release payment from escrow to recipient',
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
@@ -436,14 +434,13 @@ export async function escrowRoutes(fastify: FastifyInstance) {
    * Release a hold
    */
   fastify.post(
-    '/escrow/holds/:holdId/release',
+    '/holds/:holdId/release',
     {
       preHandler: [authenticateUser, requireFinanceAccess],
       schema: {
         tags: ['Escrow'],
         summary: 'Release a hold',
-        params: HoldIdParamSchema,
-        body: ReleaseHoldSchema,
+        description: 'Release a hold on escrow funds',
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
@@ -521,14 +518,13 @@ export async function escrowRoutes(fastify: FastifyInstance) {
    * Record a fee transaction
    */
   fastify.post(
-    '/escrow/agreements/:id/fee',
+    '/agreements/:id/fee',
     {
       preHandler: [authenticateUser, requireFinanceAccess],
       schema: {
         tags: ['Escrow'],
         summary: 'Record a fee transaction',
-        params: EscrowIdParamSchema,
-        body: RecordFeeSchema,
+        description: 'Record a platform or processing fee',
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
@@ -601,13 +597,13 @@ export async function escrowRoutes(fastify: FastifyInstance) {
    * Get all transactions for an escrow
    */
   fastify.get(
-    '/escrow/agreements/:id/transactions',
+    '/agreements/:id/transactions',
     {
       preHandler: [authenticateUser],
       schema: {
         tags: ['Escrow'],
         summary: 'Get all transactions for an escrow',
-        params: EscrowIdParamSchema,
+        description: 'List all transactions for an escrow agreement',
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
@@ -692,18 +688,13 @@ export async function escrowRoutes(fastify: FastifyInstance) {
    * Internal endpoint - called by Stripe webhook handler
    */
   fastify.post(
-    '/escrow/transactions/:id/fail',
+    '/transactions/:id/fail',
     {
       preHandler: [authenticateUser, requireRole(['admin'])],
       schema: {
         tags: ['Escrow'],
         summary: 'Fail an escrow transaction and rollback',
-        params: z.object({
-          id: z.string().uuid(),
-        }),
-        body: z.object({
-          reason: z.string(),
-        }),
+        description: 'Mark transaction as failed and rollback balances',
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
