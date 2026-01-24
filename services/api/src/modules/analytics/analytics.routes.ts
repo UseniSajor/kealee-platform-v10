@@ -5,8 +5,13 @@
 
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import { validateBody } from '../../middleware/validation.middleware'
+import { validateBody, validateQuery } from '../../middleware/validation.middleware'
 import { prismaAny } from '../../utils/prisma-helper'
+
+// ============================================================================
+// ZOD SCHEMAS (used ONLY by validateBody/validateQuery)
+// DO NOT put Zod schemas inside Fastify route `schema.body/params/querystring`
+// ============================================================================
 
 const performanceMetricsSchema = z.object({
   pageLoadTime: z.number().optional(),
@@ -30,22 +35,34 @@ const userEventSchema = z.object({
   timestamp: z.string().datetime(),
 })
 
+const metricsQuerySchema = z.object({
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional(),
+})
+
+// ============================================================================
+// ROUTES
+// IMPORTANT: This plugin should be registered with a prefix, e.g.
+// fastify.register(analyticsRoutes, { prefix: '/analytics' })
+// Therefore route paths below should NOT include '/analytics' again.
+// ============================================================================
+
 export async function analyticsRoutes(fastify: FastifyInstance) {
   // POST /analytics/performance - Track performance metrics
   fastify.post(
-    '/analytics/performance',
+    '/performance',
     {
+      preHandler: [validateBody(performanceMetricsSchema)],
       schema: {
         description: 'Track performance metrics from frontend',
         tags: ['analytics'],
-        body: performanceMetricsSchema,
+        summary: 'Track performance metrics',
       },
     },
     async (request, reply) => {
       try {
-        const data = request.body as z.infer<typeof performanceMetricsSchema>
+        const data = performanceMetricsSchema.parse(request.body)
 
-        // Store in database
         await prismaAny.performanceMetric.create({
           data: {
             pageLoadTime: data.pageLoadTime,
@@ -65,6 +82,7 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
+          success: false,
           error: error.message || 'Failed to record performance metrics',
         })
       }
@@ -73,17 +91,18 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
 
   // POST /analytics/events - Track user events
   fastify.post(
-    '/analytics/events',
+    '/events',
     {
+      preHandler: [validateBody(userEventSchema)],
       schema: {
         description: 'Track user events from frontend',
         tags: ['analytics'],
-        body: userEventSchema,
+        summary: 'Track user events',
       },
     },
     async (request, reply) => {
       try {
-        const data = request.body as z.infer<typeof userEventSchema>
+        const data = userEventSchema.parse(request.body)
 
         // Store in database (if model exists)
         try {
@@ -98,14 +117,17 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
             },
           })
         } catch (error: any) {
-          // Model might not exist yet - log to console
-          console.log('User event (model not migrated yet):', data)
+          // Model might not exist yet - log
+          fastify.log.warn({ err: error }, 'UserEvent model not migrated yet; logging event')
+          // Keep a safe log line without dumping huge properties
+          fastify.log.info({ eventName: data.eventName, url: data.url, userId: data.userId }, 'User event')
         }
 
         return reply.send({ success: true })
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
+          success: false,
           error: error.message || 'Failed to record event',
         })
       }
@@ -114,19 +136,18 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
 
   // GET /analytics/metrics - Get aggregated metrics
   fastify.get(
-    '/analytics/metrics',
+    '/metrics',
     {
+      preHandler: [validateQuery(metricsQuerySchema)],
       schema: {
         description: 'Get aggregated analytics metrics',
         tags: ['analytics'],
+        summary: 'Get analytics metrics',
       },
     },
     async (request, reply) => {
       try {
-        const { startDate, endDate } = request.query as {
-          startDate?: string
-          endDate?: string
-        }
+        const { startDate, endDate } = metricsQuerySchema.parse(request.query)
 
         const where: any = {}
         if (startDate || endDate) {
@@ -135,7 +156,6 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
           if (endDate) where.recordedAt.lte = new Date(endDate)
         }
 
-        // Get performance metrics (if model exists)
         let perfMetrics: any = { _avg: {}, _count: 0 }
         let eventCounts: any[] = []
 
@@ -159,11 +179,11 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
             _count: true,
           })
         } catch (error: any) {
-          // Models might not exist yet
-          console.warn('Analytics models not migrated yet:', error.message)
+          fastify.log.warn({ err: error }, 'Analytics models not migrated yet')
         }
 
         return reply.send({
+          success: true,
           performance: {
             average: {
               pageLoadTime: perfMetrics._avg.pageLoadTime,
@@ -175,7 +195,7 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
             },
             sampleCount: perfMetrics._count,
           },
-          events: eventCounts.map((e) => ({
+          events: (eventCounts || []).map((e) => ({
             eventName: e.eventName,
             count: e._count,
           })),
@@ -183,6 +203,7 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
+          success: false,
           error: error.message || 'Failed to get metrics',
         })
       }
