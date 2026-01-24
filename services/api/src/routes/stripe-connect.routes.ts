@@ -82,30 +82,35 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
    */
   fastify.post('/accounts', {
     schema: {
-      body: CreateConnectedAccountSchema,
+      body: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['accountType', 'country', 'businessType'],
+        properties: {
+          accountType: { type: 'string' }, // tighten enum if you have it
+          country: { type: 'string', minLength: 2, maxLength: 2 }, // "US"
+          businessType: { type: 'string' }, // tighten enum if you have it
+          platformFeePercentage: { type: 'number', minimum: 0, maximum: 100 },
+        },
+      },
       tags: ['Stripe Connect'],
       summary: 'Create connected account',
       security: [{ bearerAuth: [] }],
     },
     handler: async (request: AuthenticatedRequest, reply: FastifyReply) => {
       const user = request.user
-      if (!user) {
-        return reply.code(401).send({ error: 'Not authenticated' })
-      }
-
+      if (!user) return reply.code(401).send({ error: 'Not authenticated' })
+  
       const body = CreateConnectedAccountSchema.parse(request.body)
-
-      // Check if user already has a connected account
-      const existing = await ConnectOnboardingService.getConnectedAccount(
-        user.id
-      )
+  
+      const existing = await ConnectOnboardingService.getConnectedAccount(user.id)
       if (existing) {
         return reply.code(409).send({
           error: 'Connected account already exists',
           connectedAccount: existing,
         })
       }
-
+  
       const result = await ConnectOnboardingService.createConnectedAccount({
         userId: user.id,
         accountType: body.accountType,
@@ -114,13 +119,14 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
         businessType: body.businessType,
         platformFeePercentage: body.platformFeePercentage,
       })
-
+  
       return reply.code(201).send({
         connectedAccount: result.connectedAccount,
         message: 'Connected account created successfully',
       })
     },
   })
+  
 
   /**
    * GET /api/connect/accounts/me
