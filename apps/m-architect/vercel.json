@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd ../.. && pnpm build --filter=m-architect",
-  "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile",
+  "buildCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm build --filter=m-architect",
+  "installCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
   "rewrites": [
     {

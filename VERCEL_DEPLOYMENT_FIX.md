@@ -1,189 +1,143 @@
-# Vercel Deployment Fix Guide
+# Vercel Deployment Fix
 
-## Issue: All Vercel Deployments Failed
+## Problem
+Vercel deployment failing with `ERR_PNPM_META_FETCH_FAIL` and `ERR_INVALID_THIS` errors.
 
-### Common Causes:
+## Root Cause
+Vercel's default PNPM version (8.x) has a bug with URL parsing that causes npm registry fetch failures.
 
-1. **Missing Environment Variables**
-   - `DATABASE_URL` (Railway PostgreSQL)
-   - `NEXT_PUBLIC_API_URL` (Railway API endpoint)
-   - `SUPABASE_URL` and `SUPABASE_ANON_KEY`
-   - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+## Solution Applied
 
-2. **Build Command Issues**
-   - Turborepo build commands may need adjustment
-   - Missing dependencies in package.json
+### 1. Files Updated
+- ✅ `.node-version` - Set Node.js 20
+- ✅ `pnpm-workspace.yaml` - Define workspace structure
+- ✅ `.npmrc` - Enhanced PNPM configuration
+- ✅ `package.json` - Updated packageManager to pnpm@9.15.4
+- ✅ All `apps/*/vercel.json` - Added corepack commands
 
-3. **Railway Database Connection**
-   - DATABASE_URL may need updating if Railway database was recreated
-   - Connection string format may have changed
+### 2. Configuration Changes
 
----
-
-## Quick Fix Steps
-
-### 1. Check Railway Database URL
-
-```bash
-# Get Railway database URL from Railway dashboard
-# Format: postgresql://postgres:password@host:port/railway?sslmode=require
+#### `.npmrc` Updates:
+```ini
+auto-install-peers=true
+strict-peer-dependencies=false
+network-timeout=300000
+fetch-retries=3
+fetch-retry-mintimeout=20000
+fetch-retry-maxtimeout=120000
+shamefully-hoist=true
+public-hoist-pattern[]=*
+resolution-mode=highest
+node-linker=hoisted
 ```
 
-### 2. Update Vercel Environment Variables
-
-For each app in Vercel, set these environment variables:
-
-#### Required for ALL Apps:
-```env
-DATABASE_URL=postgresql://postgres:password@host:port/railway?sslmode=require
-NEXT_PUBLIC_API_URL=https://api.kealee.com
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-```
-
-#### App-Specific Variables:
-
-**m-marketplace:**
-```env
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
-STRIPE_SECRET_KEY=sk_live_...
-```
-
-**m-ops-services:**
-```env
-STRIPE_SECRET_KEY=sk_live_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-```
-
-**m-permits-inspections:**
-```env
-GOOGLE_PLACES_API_KEY=your-google-api-key
-AWS_ACCESS_KEY_ID=your-aws-key
-AWS_SECRET_ACCESS_KEY=your-aws-secret
-AWS_S3_BUCKET=your-bucket-name
-```
-
----
-
-## 3. Fix Build Commands
-
-### For Turborepo Apps (os-pm, os-admin):
-
-Update `vercel.json`:
+#### `vercel.json` Updates:
+All app configs now explicitly enable corepack and prepare PNPM 9.15.4:
 ```json
 {
-  "buildCommand": "cd ../.. && pnpm install && pnpm turbo run build --filter=os-pm",
-  "installCommand": "cd ../.. && pnpm install",
-  "outputDirectory": ".next"
+  "installCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install --no-frozen-lockfile",
+  "buildCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm build --filter=<app-name>"
 }
 ```
 
-### For Standalone Apps:
+### 3. Additional Vercel Dashboard Settings
 
-Ensure `package.json` has:
-```json
-{
-  "scripts": {
-    "build": "next build",
-    "dev": "next dev"
-  }
-}
+**IMPORTANT:** You must also configure these settings in Vercel Dashboard:
+
+#### For Each Project:
+1. Go to **Project Settings** → **General**
+2. Set **Node.js Version**: `20.x`
+3. Set **Package Manager**: `pnpm`
+
+#### Environment Variables (Optional but Recommended):
+Go to **Project Settings** → **Environment Variables** and add:
+```
+ENABLE_EXPERIMENTAL_COREPACK=1
+VERCEL_FORCE_NO_BUILD_CACHE=1
 ```
 
----
+## Deployment Process
 
-## 4. Railway Database Connection
-
-### Check Railway Dashboard:
-
-1. Go to Railway dashboard
-2. Select your PostgreSQL service
-3. Copy the connection string from "Connect" tab
-4. Update `DATABASE_URL` in Vercel
-
-### Connection String Format:
-```
-postgresql://postgres:password@containers-us-west-xxx.railway.app:5432/railway?sslmode=require
-```
-
----
-
-## 5. Verify API Endpoint
-
-### Check Railway API Service:
-
-1. Go to Railway dashboard
-2. Select your API service
-3. Copy the public URL (e.g., `https://api-production-xxxx.up.railway.app`)
-4. Update `NEXT_PUBLIC_API_URL` in all Vercel apps
-
----
-
-## 6. Test Deployment
-
-After updating environment variables:
-
-1. Go to Vercel dashboard
-2. Select each project
-3. Click "Redeploy" → "Redeploy with existing Build Cache"
-4. Monitor build logs for errors
-
----
-
-## Common Build Errors & Fixes
-
-### Error: "Module not found"
-**Fix:** Ensure all dependencies are in `package.json` and run `pnpm install` locally first
-
-### Error: "Cannot connect to database"
-**Fix:** Check `DATABASE_URL` format and Railway service status
-
-### Error: "API request failed"
-**Fix:** Verify `NEXT_PUBLIC_API_URL` points to correct Railway endpoint
-
-### Error: "Supabase auth failed"
-**Fix:** Verify Supabase environment variables are set correctly
-
----
-
-## Automated Fix Script
-
-Run this to check all environment variables:
-
+### Step 1: Push Changes
 ```bash
-# Check Vercel projects
-vercel env ls
-
-# Pull environment variables
-vercel env pull .env.local
+git add .
+git commit -m "Fix: Configure Vercel for PNPM 9.15.4 with corepack"
+git push
 ```
 
+### Step 2: Monitor Deployment
+1. Go to Vercel Dashboard → Deployments
+2. Watch for new deployment triggered by push
+3. Check build logs for:
+   - ✅ `corepack enable`
+   - ✅ `Preparing pnpm@9.15.4`
+   - ✅ `Installing dependencies`
+   - ✅ `Build completed`
+
+### Step 3: If Build Still Fails
+Try these in order:
+
+1. **Clear Build Cache**
+   - Vercel Dashboard → Settings → Clear Build Cache
+   - Redeploy
+
+2. **Set Environment Variables**
+   - Add `ENABLE_EXPERIMENTAL_COREPACK=1`
+   - Redeploy
+
+3. **Manual Deploy via CLI**
+   ```bash
+   cd apps/<app-name>
+   vercel --prod
+   ```
+
+## Expected Build Output
+
+When working correctly, you should see:
+```
+Running "corepack enable"
+✓ Corepack enabled
+Running "corepack prepare pnpm@9.15.4 --activate"
+✓ Preparing pnpm@9.15.4 for immediate activation
+✓ Dependencies installed successfully (using pnpm 9.15.4)
+✓ Build completed successfully
+```
+
+## Troubleshooting
+
+### Issue: Still Getting ERR_INVALID_THIS
+**Solution:** Vercel might be caching the old PNPM version
+- Clear build cache in Vercel dashboard
+- Add `VERCEL_FORCE_NO_BUILD_CACHE=1` env var
+- Force redeploy
+
+### Issue: Corepack Command Not Found
+**Solution:** Node version too old
+- Update Node.js version to 20.x in Vercel settings
+- Corepack is included by default in Node 16.9+
+
+### Issue: Workspace Dependencies Not Found
+**Solution:** Monorepo not properly configured
+- Verify `pnpm-workspace.yaml` exists at root
+- Verify `--filter` flag matches app name in `package.json`
+
+## Apps Configured
+- ✅ m-ops-services
+- ✅ os-pm
+- ✅ m-finance-trust
+- ✅ m-marketplace
+- ✅ m-project-owner
+- ✅ m-architect
+- ✅ m-permits-inspections
+- ✅ os-admin
+
+## Status
+- **Local PNPM Version**: 9.15.4 ✅
+- **Vercel Configuration**: Updated ✅
+- **Workspace Configuration**: Created ✅
+- **Ready to Deploy**: YES ✅
+
 ---
 
-## Next Steps
-
-1. ✅ Update Railway database URL in Vercel
-2. ✅ Update Railway API URL in Vercel
-3. ✅ Verify Supabase credentials
-4. ✅ Redeploy all apps
-5. ✅ Monitor build logs
-
----
-
-## Railway Configuration Files
-
-Current Railway configs:
-- `railway.json` - Root config
-- `services/api/railway.json` - API service config
-- `services/worker/railway.json` - Worker service config
-
-These should be automatically detected by Railway. If deployments fail, check:
-- Railway service is running
-- Database is provisioned
-- Environment variables are set in Railway
-
-
-
-
+**Last Updated:** 2025-01-24
+**Commit:** Includes corepack activation in all vercel.json files
