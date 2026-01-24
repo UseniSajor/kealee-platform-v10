@@ -1,7 +1,7 @@
 {
   "buildCommand": "cd ../.. && pnpm install --filter m-finance-trust... && pnpm build --filter m-finance-trust",
   "outputDirectory": ".next",
-  "installCommand": "cd ../.. && pnpm install --filter m-finance-trust...",
+  "installCommand": "cd ../.. && pnpm install --filter m-finance-trust... --no-frozen-lockfile",
   "framework": "nextjs",
   "rootDirectory": "apps/m-finance-trust"
 }
