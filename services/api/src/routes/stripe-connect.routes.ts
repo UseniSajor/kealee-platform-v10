@@ -2,7 +2,7 @@
  * Stripe Connect API Routes
  * Handles contractor onboarding, payout management, and webhooks
  */
-
+import { zodToJsonSchema } from zod-to-json-schema
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 import { authenticateUser, requireRole, type AuthenticatedRequest } from '../middleware/auth.middleware'
