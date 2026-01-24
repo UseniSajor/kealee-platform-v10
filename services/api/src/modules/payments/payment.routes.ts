@@ -470,8 +470,8 @@ export async function paymentRoutes(fastify: FastifyInstance) {
     }
   )
 
-  // Register milestone payment routes
-  await fastify.register(milestonePaymentRoutes)
+  // Register milestone payment routes with prefix to avoid route conflicts
+  await fastify.register(milestonePaymentRoutes, { prefix: '/milestones' })
 
   // Register payment webhook routes
   await fastify.register(paymentWebhookRoutes)
