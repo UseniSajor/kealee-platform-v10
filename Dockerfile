@@ -225,8 +225,8 @@ RUN /bin/bash -c "export NODE_OPTIONS='--max-old-space-size=16384' && pnpm --fil
 # Build workflow-engine package
 RUN /bin/bash -c "export NODE_OPTIONS='--max-old-space-size=16384' && pnpm --filter @kealee/workflow-engine run build"
 
-# Build API service TypeScript
-RUN /bin/bash -c "export NODE_OPTIONS='--max-old-space-size=16384' && pnpm --filter @kealee/api exec tsc"
+# Build API service TypeScript via pnpm build script
+RUN /bin/bash -c "export NODE_OPTIONS='--max-old-space-size=16384' && cd /app && pnpm --filter @kealee/api exec tsc --incremental false"
 
 # Set production mode after build tooling is done
 ENV NODE_ENV=production
