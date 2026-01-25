@@ -1,11 +1,11 @@
 # ============================================================
 # Railway Deployment Dockerfile - Optimized for pnpm Monorepo
 # ============================================================
-# Version: 6.1.0
-# Last Updated: 2026-01-21 14:30
-# Commit: 9241af0
-# CACHE BUST: Aggressive - restructured early layers
-# Changes: All build steps now use pnpm --filter run build (no turbo)
+# Version: 6.2.0
+# Last Updated: 2026-01-24 15:45
+# Commit: b5e8304
+# CACHE BUST: Split TypeScript builds into separate RUN commands
+# Changes: Isolated memory contexts for workflow-engine and API compilation
 # ============================================================
 # Optimizations:
 # - Skip Puppeteer Chrome download (saves 5-8 minutes)
