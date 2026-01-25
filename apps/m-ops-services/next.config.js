@@ -1,6 +1,5 @@
-import type { NextConfig } from 'next'
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   // =============================================================================
   // PRODUCTION WORKAROUND: Next.js 16.x Typed Routes Issue
   // =============================================================================
@@ -27,7 +26,6 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-}
+};
 
-export default nextConfig
-
+module.exports = nextConfig;
