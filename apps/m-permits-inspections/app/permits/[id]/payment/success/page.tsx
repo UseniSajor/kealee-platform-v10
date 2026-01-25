@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { PermitAPI } from '@/src/lib/api/permits'
+import { PermitApiService } from '@/src/lib/api/permits'
 
 export default function PermitPaymentSuccessPage() {
   const params = useParams()
@@ -28,7 +28,7 @@ export default function PermitPaymentSuccessPage() {
 
   const confirmPayment = async () => {
     try {
-      await PermitAPI.confirmPayment(permitId, sessionId!, feeType)
+      await PermitApiService.confirmPayment(permitId, sessionId!, feeType)
       setConfirmed(true)
     } catch (err: any) {
       setError(err.message)

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import { PermitAPI } from '@/src/lib/api/permits'
+import { PermitApiService } from '@/src/lib/api/permits'
 import { createClient } from '@/src/lib/supabase/client'
 
 interface FeeBreakdown {
@@ -39,7 +39,7 @@ export default function PermitPaymentPage() {
 
   const loadFees = async () => {
     try {
-      const fees = await PermitAPI.getPermitFees(permitId)
+      const fees = await PermitApiService.getPermitFees(permitId)
       setFees(fees.fees)
     } catch (err: any) {
       setError(err.message)
@@ -54,11 +54,11 @@ export default function PermitPaymentPage() {
       let data: any
 
       if (type === 'expedited' && selectedExpedited) {
-        data = await PermitAPI.addExpeditedService(permitId, selectedExpedited)
+        data = await PermitApiService.addExpeditedService(permitId, selectedExpedited)
       } else if (type === 'document_prep' && selectedDocPrep) {
-        data = await PermitAPI.addDocumentPrep(permitId, selectedDocPrep)
+        data = await PermitApiService.addDocumentPrep(permitId, selectedDocPrep)
       } else {
-        data = await PermitAPI.createCheckoutSession(permitId, {
+        data = await PermitApiService.createCheckoutSession(permitId, {
           feeType: type,
           amount: fees?.total || 0,
           description: `Payment for permit ${permitId}`,
