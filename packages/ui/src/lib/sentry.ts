@@ -1,3 +1,4 @@
+// Sentry v8+ integrations are now functions, not classes
 /**
  * Sentry Integration
  * Error tracking and performance monitoring
@@ -18,15 +19,18 @@ export function initSentry(dsn?: string, environment?: string) {
   try {
     // Dynamic import to avoid bundling issues
     import('@sentry/nextjs').then((Sentry) => {
-      Sentry.init({
+      const S = Sentry.default;
+      S.init({
         dsn: sentryDsn,
         environment: environment || process.env.NODE_ENV || 'development',
         tracesSampleRate: 1.0, // 100% in development, adjust for production
         replaysSessionSampleRate: 0.1, // 10% of sessions
         replaysOnErrorSampleRate: 1.0, // 100% of error sessions
-        integrations: [
-          new Sentry.BrowserTracing(),
-          new Sentry.Replay(),
+        integrations: (integrations) => [
+          ...integrations,
+          // Add performance and replay integrations for Sentry v8+
+          Sentry.browserTracingIntegration(),
+          Sentry.replayIntegration(),
         ],
         beforeSend(event, hint) {
           // Filter out non-critical errors in production

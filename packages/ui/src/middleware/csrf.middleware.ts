@@ -14,7 +14,8 @@ const CSRF_EXEMPT_PATHS = [
 ]
 
 export function middleware(request: NextRequest) {
-  const { pathname, method } = request.nextUrl
+  const { pathname } = request.nextUrl
+  const method = request.method
 
   // Skip CSRF check for exempt paths
   if (CSRF_EXEMPT_PATHS.some((path) => pathname.startsWith(path))) {

@@ -7,7 +7,7 @@
 
 import { useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import { initAnalytics, trackPageView, initPerformanceMonitoring } from '../lib/analytics'
+import { initAnalytics, trackPageView } from '../lib/analytics'
 import { initSentry } from '../lib/sentry'
 
 export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
@@ -20,8 +20,6 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     // Initialize Sentry
     initSentry(process.env.NEXT_PUBLIC_SENTRY_DSN, process.env.NODE_ENV)
 
-    // Initialize performance monitoring
-    initPerformanceMonitoring()
   }, [])
 
   useEffect(() => {

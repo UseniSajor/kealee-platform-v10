@@ -34,7 +34,7 @@ export function useCSRFToken() {
     fetchToken()
   }, [])
 
-  return { token, loading, error }
+  return { token, loading, error };
 }
 
 /**
@@ -42,17 +42,15 @@ export function useCSRFToken() {
  * Usage: <CSRFTokenField />
  */
 export function CSRFTokenField() {
-  const { token } = useCSRFToken()
-
-  if (!token) return null
-
-  return <input type="hidden" name="_csrf" value={token} />
+  const { token } = useCSRFToken();
+  if (!token) return null;
+  return <input type="hidden" name="_csrf" value={token} />;
 }
 
 /**
  * Hook to get CSRF token for manual form handling
  */
 export function useCSRFHeader(): string | null {
-  const { token } = useCSRFToken()
-  return token
+  const { token } = useCSRFToken();
+  return token;
 }

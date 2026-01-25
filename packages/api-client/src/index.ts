@@ -32,7 +32,7 @@ export async function apiRequest<T>(
   });
 
   if (!response.ok) {
-    const error: { message?: string } = await response.json().catch(() => ({ message: 'Request failed' }));
+    const error: { message?: string } = await (response.json().catch(() => ({ message: 'Request failed' })) as Promise<any>);
     throw new Error(error.message || `HTTP ${response.status}`);
   }
 

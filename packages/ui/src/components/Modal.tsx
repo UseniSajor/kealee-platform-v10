@@ -98,7 +98,7 @@ const Modal: React.FC<ModalProps> = ({
                 "
                 aria-label="Close modal"
               >
-                <XIcon size={24} />
+                <X size={24} />
               </button>
             )}
           </div>

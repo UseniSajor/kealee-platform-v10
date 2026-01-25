@@ -3,7 +3,7 @@
  * Wrapper around Zod for consistent form validation
  */
 
-import { z } from 'zod'
+import { z, ZodIssue } from 'zod'
 
 export type ValidationError = {
   field: string
@@ -18,18 +18,15 @@ export function validateForm<T>(
   data: unknown
 ): { success: true; data: T } | { success: false; errors: ValidationError[] } {
   try {
-    const result = schema.safeParse(data)
-    
+    const result = schema.safeParse(data);
     if (result.success) {
-      return { success: true, data: result.data }
+      return { success: true, data: result.data };
     }
-
-    const errors: ValidationError[] = result.error.errors.map((err) => ({
-      field: err.path.join('.'),
+    const errors: ValidationError[] = result.error.issues.map((err: ZodIssue) => ({
+      field: String(err.path.join('.')),
       message: err.message,
-    }))
-
-    return { success: false, errors }
+    }));
+    return { success: false, errors };
   } catch (error) {
     return {
       success: false,
@@ -39,23 +36,9 @@ export function validateForm<T>(
           message: error instanceof Error ? error.message : 'Validation failed',
         },
       ],
-    }
+    };
   }
 }
-
-/**
- * Get field error from validation errors
- */
-export function getFieldError(
-  errors: ValidationError[],
-  fieldName: string
-): string | undefined {
-  return errors.find((err) => err.field === fieldName)?.message
-}
-
-/**
- * Common validation schemas
- */
 export const commonSchemas = {
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),

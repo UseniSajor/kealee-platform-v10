@@ -100,36 +100,12 @@ const nextConfig = {
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
   },
   
-  // Webpack optimizations
-  webpack: (config, { dev, isServer }) => {
-    // Optimize moment.js locales
-    config.plugins.push(new (require('webpack').ContextReplacementPlugin)(
-      /moment[/\\]locale$/,
-      /en|es/
-    ));
-    
-    // Bundle analyzer (development only)
-    if (process.env.ANALYZE) {
-      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
-      config.plugins.push(
-        new BundleAnalyzerPlugin({
-          analyzerMode: 'server',
-          analyzerPort: isServer ? 8888 : 8889,
-          openAnalyzer: true,
-        })
-      );
-    }
-    
-    return config;
-  },
-  
   // Compress responses
   compress: true,
-  
   // Enable React 18 concurrent features
-  experimental: {
-    serverComponentsExternalPackages: ['@sentry/nextjs'],
-  }
+  experimental: {},
+  // Turbopack config placeholder for Next.js 16+
+  turbopack: {},
 };
 
 module.exports = nextConfig;
