@@ -19,7 +19,8 @@
     "react-dom": "19.2.3",
     "canvas-confetti": "^1.9.2",
     "lucide-react": "^0.294.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "@tailwindcss/postcss": "^4"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

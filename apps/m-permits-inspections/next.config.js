@@ -4,9 +4,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   transpilePackages: ['@kealee/shared-ai', '@kealee/database'],
   images: {
     domains: ['localhost', 'supabase.co'],
