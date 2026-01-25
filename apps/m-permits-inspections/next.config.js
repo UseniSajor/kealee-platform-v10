@@ -18,7 +18,6 @@ const nextConfig = {
       },
     ],
   },
-  },
   // Exclude canvas from client-side bundling (server-only)
   webpack: (config, { isServer }) => {
     if (!isServer) {

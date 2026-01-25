@@ -1,3 +1,5 @@
+'use client';
+
 // packages/ui/src/components/Modal.tsx
 // Kealee Platform Modal Component
 
