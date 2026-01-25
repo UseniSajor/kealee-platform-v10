@@ -1,15 +1,45 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { User, Session } from '@supabase/supabase-js';
 
-// Supabase client configuration
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// Lazy Supabase client initialization
+let _supabase: SupabaseClient | null = null;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are required');
+function getSupabaseClient(): SupabaseClient {
+  if (_supabase) return _supabase;
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    // During build time, return a mock client that will fail gracefully
+    if (typeof window === 'undefined') {
+      console.warn('Supabase environment variables not set. Auth operations will fail.');
+      // Return a minimal mock for build-time compatibility
+      return {
+        auth: {
+          getUser: async () => ({ data: { user: null }, error: null }),
+          getSession: async () => ({ data: { session: null }, error: null }),
+          signUp: async () => ({ data: { user: null, session: null }, error: new Error('Supabase not configured') }),
+          signInWithPassword: async () => ({ data: { user: null, session: null }, error: new Error('Supabase not configured') }),
+          signOut: async () => ({ error: null }),
+          resetPasswordForEmail: async () => ({ data: null, error: new Error('Supabase not configured') }),
+          updateUser: async () => ({ data: { user: null }, error: new Error('Supabase not configured') }),
+          onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+        }
+      } as unknown as SupabaseClient;
+    }
+    throw new Error('Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are required');
+  }
+
+  _supabase = createClient(supabaseUrl, supabaseAnonKey);
+  return _supabase;
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_, prop) {
+    return getSupabaseClient()[prop as keyof SupabaseClient];
+  }
+});
 
 // Auth functions
 export async function signUp(email: string, password: string, metadata?: Record<string, any>) {
