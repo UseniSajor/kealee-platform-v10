@@ -13,12 +13,11 @@
     "@supabase/supabase-js": "^2.39.0",
     "@supabase/auth-helpers-nextjs": "^0.8.7",
     "react": "19.2.3",
-    "typescript": "^5.9.3"
-  },
-  "devDependencies": {
+    "typescript": "^5.9.3",
     "@types/node": "^20.19.0",
     "@types/react": "^18.2.0"
   },
+  "devDependencies": {},
   "peerDependencies": {
     "react": "19.2.3",
     "next": "16.1.1"

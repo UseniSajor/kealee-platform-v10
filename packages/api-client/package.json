@@ -10,9 +10,8 @@
   "dependencies": {
     "@kealee/auth": "workspace:*",
     "@kealee/types": "workspace:*",
-    "typescript": "^5.9.0"
-  },
-  "devDependencies": {
+    "typescript": "^5.9.0",
     "@types/node": "^20.19.0"
-  }
+  },
+  "devDependencies": {}
 }
