@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { ErrorBoundary } from "@kealee/ui";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -26,10 +25,8 @@ export default function RootLayout({
         <meta name="theme-color" content="#0ea5e9" />
       </head>
       <body>
-        <ErrorBoundary>
-          {children}
-          <Toaster position="top-right" />
-        </ErrorBoundary>
+        {children}
+        <Toaster position="top-right" />
       </body>
     </html>
   );
