@@ -1,5 +1,6 @@
 {
   "buildCommand": "cd ../.. && pnpm build --filter=@kealee/m-marketplace",
+  "outputDirectory": ".next",
   "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
   "headers": [
