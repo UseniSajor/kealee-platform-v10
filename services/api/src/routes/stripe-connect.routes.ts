@@ -4,7 +4,6 @@
  */
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
-import { zodToJsonSchema } from 'zod-to-json-schema'  // ADD THIS IMPORT
 import { authenticateUser, requireRole, type AuthenticatedRequest } from '../middleware/auth.middleware'
 import { ConnectOnboardingService } from '../modules/stripe-connect/connect-onboarding.service'
 import { PayoutService } from '../modules/stripe-connect/payout.service'
@@ -164,7 +163,6 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
    */
   fastify.post('/accounts/me/onboarding-link', {
     schema: {
-      body: zodToJsonSchema(GenerateOnboardingLinkSchema),  // FIXED: Use zodToJsonSchema
       tags: ['Stripe Connect'],
       summary: 'Generate onboarding link',
       security: [{ bearerAuth: [] }],
@@ -271,7 +269,7 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
    */
   fastify.put('/accounts/me/tax-information', {
     schema: {
-      body: zodToJsonSchema(UpdateTaxInformationSchema),  // FIXED: Use zodToJsonSchema
+
       tags: ['Stripe Connect'],
       summary: 'Update tax information',
       security: [{ bearerAuth: [] }],
@@ -306,7 +304,6 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
    */
   fastify.post('/payouts', {
     schema: {
-      body: zodToJsonSchema(CreatePayoutSchema),  // FIXED: Use zodToJsonSchema
       tags: ['Stripe Connect'],
       summary: 'Create payout',
       security: [{ bearerAuth: [] }],
@@ -362,7 +359,6 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/payouts', {
     schema: {
-      querystring: zodToJsonSchema(ListPayoutsQuerySchema),  // FIXED: Use zodToJsonSchema
       tags: ['Stripe Connect'],
       summary: 'List payouts',
       security: [{ bearerAuth: [] }],
@@ -400,7 +396,6 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/payouts/:id', {
     schema: {
-      params: zodToJsonSchema(z.object({ id: z.string().uuid() })),  // FIXED: Use zodToJsonSchema
       tags: ['Stripe Connect'],
       summary: 'Get payout details',
       security: [{ bearerAuth: [] }],
@@ -484,7 +479,6 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/admin/accounts', {
     schema: {
-      querystring: zodToJsonSchema(ListAccountsQuerySchema),  // FIXED: Use zodToJsonSchema
       tags: ['Stripe Connect - Admin'],
       summary: 'List all connected accounts',
       security: [{ bearerAuth: [] }],
