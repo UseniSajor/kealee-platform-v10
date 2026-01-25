@@ -1,6 +1,6 @@
 {
   "buildCommand": "cd ../.. && pnpm build --filter=m-finance-trust",
-  "installCommand": "cd ../.. && npx pnpm@9 install --no-frozen-lockfile --dev",
+  "installCommand": "cd ../.. && NODE_ENV=development npx pnpm@9 install --no-frozen-lockfile",
   "outputDirectory": ".next",
   "framework": "nextjs",
   "headers": [

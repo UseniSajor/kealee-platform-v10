@@ -1,7 +1,7 @@
 {
   "buildCommand": "cd ../.. && pnpm build --filter=m-permits-inspections",
   "outputDirectory": ".next",
-  "installCommand": "cd ../.. && npx pnpm@9 install --no-frozen-lockfile --dev",
+  "installCommand": "cd ../.. && NODE_ENV=development npx pnpm@9 install --no-frozen-lockfile",
   "framework": "nextjs",
   "rewrites": [
     {
