@@ -11,7 +11,7 @@
     }
   },
   "scripts": {
-    "build": "prisma generate --schema=./prisma/schema.prisma && npx tsc",
+    "build": "prisma generate --schema=./prisma/schema.prisma && pnpm exec tsc",
     "postinstall": "prisma generate --schema=./prisma/schema.prisma",
     "db:generate": "prisma generate --schema=./prisma/schema.prisma",
     "db:push": "prisma db push",

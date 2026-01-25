@@ -11,8 +11,8 @@
     }
   },
   "scripts": {
-    "build": "tsc --incremental false",
-    "dev": "tsc --watch"
+    "build": "pnpm exec tsc --incremental false",
+    "dev": "pnpm exec tsc --watch"
   },
   "dependencies": {
     "@kealee/database": "workspace:*",
