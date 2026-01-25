@@ -20,9 +20,6 @@ const nextConfig = {
   // underlying typed routes issue is investigated.
   // =============================================================================
   typedRoutes: false,
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },

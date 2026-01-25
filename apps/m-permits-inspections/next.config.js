@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -21,10 +18,6 @@ const nextConfig = {
       },
     ],
   },
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '10mb',
-    },
   },
   // Exclude canvas from client-side bundling (server-only)
   webpack: (config, { isServer }) => {

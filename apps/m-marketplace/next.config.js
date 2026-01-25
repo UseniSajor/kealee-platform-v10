@@ -2,9 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -109,9 +106,6 @@ const nextConfig = {
   // Compress responses
   compress: true,
   // Enable React 18 concurrent features
-  experimental: {},
-  // Turbopack config placeholder for Next.js 16+
-  turbopack: {},
 };
 
 module.exports = nextConfig;
