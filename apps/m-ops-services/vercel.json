@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm build --filter=@kealee/m-ops-services",
-  "installCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm install --no-frozen-lockfile",
+  "buildCommand": "pnpm build --filter=@kealee/m-ops-services",
+  "installCommand": "pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
   "rewrites": [
     {
