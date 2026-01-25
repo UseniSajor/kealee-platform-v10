@@ -22,7 +22,8 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "lucide-react": "^0.303.0",
-    "sonner": "^1.5.0"
+    "sonner": "^1.5.0",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
