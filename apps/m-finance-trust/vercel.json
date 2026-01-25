@@ -1,8 +1,29 @@
 {
-  "buildCommand": "pnpm install --filter m-finance-trust... && pnpm build --filter m-finance-trust",
+  "buildCommand": "cd ../.. && pnpm build --filter=m-finance-trust",
+  "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile",
   "outputDirectory": ".next",
-  "installCommand": "cd ../.. && pnpm install --filter m-finance-trust... --no-frozen-lockfile",
   "framework": "nextjs",
-  "rootDirectory": "apps/m-finance-trust"
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ]
 }
-
