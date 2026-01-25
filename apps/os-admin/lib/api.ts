@@ -1,5 +1,3 @@
-import { createApiClient } from '@kealee/api-client'
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 interface ApiOptions {
@@ -10,17 +8,11 @@ interface ApiOptions {
 
 async function getAuthToken(): Promise<string | null> {
   if (typeof document === 'undefined') return null
-  
+
   const cookies = document.cookie.split(';')
   const tokenCookie = cookies.find(c => c.trim().startsWith('sb-access-token='))
   return tokenCookie ? tokenCookie.split('=')[1] : null
 }
-
-// Create shared API client for lead operations
-const leadApiClient = createApiClient({
-  baseUrl: API_URL,
-  getAuthToken,
-})
 
 export async function apiRequest<T>(
   endpoint: string,
@@ -191,17 +183,25 @@ export const api = {
   previewContractTemplate: (id: string, data?: { projectId?: string; variables?: Record<string, string> }) =>
     apiRequest<{ preview: any }>(`/contracts/templates/${id}/preview`, { method: 'POST', body: data }),
 
-  // Sales Pipeline / Leads (using shared API client)
-  listLeads: (query?: Parameters<typeof leadApiClient.listLeads>[0]) =>
-    leadApiClient.listLeads(query),
-  getLead: (id: string) => leadApiClient.getLead(id),
-  updateLeadStage: (id: string, stage: Parameters<typeof leadApiClient.updateLeadStage>[1]) =>
-    leadApiClient.updateLeadStage(id, stage),
+  // Sales Pipeline / Leads
+  listLeads: (params?: { stage?: string; salesRepId?: string; page?: number; limit?: number }) => {
+    const query = new URLSearchParams()
+    if (params?.stage) query.append('stage', params.stage)
+    if (params?.salesRepId) query.append('salesRepId', params.salesRepId)
+    if (params?.page) query.append('page', params.page.toString())
+    if (params?.limit) query.append('limit', params.limit.toString())
+    const suffix = query.toString() ? `?${query.toString()}` : ''
+    return apiRequest<{ leads: any[]; pagination?: any }>(`/leads${suffix}`)
+  },
+  getLead: (id: string) => apiRequest<{ lead: any }>(`/leads/${id}`),
+  updateLeadStage: (id: string, stage: string) =>
+    apiRequest<{ lead: any }>(`/leads/${id}/stage`, { method: 'PATCH', body: { stage } }),
   assignSalesRep: (id: string, salesRepId: string) =>
-    leadApiClient.assignSalesRep(id, salesRepId),
+    apiRequest<{ lead: any }>(`/leads/${id}/assign`, { method: 'POST', body: { salesRepId } }),
   awardContractor: (id: string, profileId: string) =>
-    leadApiClient.awardContractor(id, profileId),
-  closeLost: (id: string, reason: string) => leadApiClient.closeLost(id, reason),
+    apiRequest<{ lead: any }>(`/leads/${id}/award`, { method: 'POST', body: { profileId } }),
+  closeLost: (id: string, reason: string) =>
+    apiRequest<{ lead: any }>(`/leads/${id}/close-lost`, { method: 'POST', body: { reason } }),
   distributeLead: (id: string, distributionCount?: number) =>
-    leadApiClient.distributeLead(id, distributionCount),
+    apiRequest<{ lead: any }>(`/leads/${id}/distribute`, { method: 'POST', body: { distributionCount } }),
 }
