@@ -18,16 +18,19 @@ const nextConfig = {
       },
     ],
   },
-  // Exclude canvas from client-side bundling (server-only)
+  // Turbopack config (required in Next.js 16 when webpack config is present)
+  turbopack: {
+    resolveAlias: {
+      canvas: false,
+    },
+  },
+  // Webpack config for backwards compatibility
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      // Don't bundle canvas on the client side
       config.resolve.alias.canvas = false;
     }
-    // Externalize canvas for server-side
     config.externals = config.externals || [];
     config.externals.push('canvas');
-    
     return config;
   },
 };
