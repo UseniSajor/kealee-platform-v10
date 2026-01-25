@@ -219,8 +219,14 @@ RUN echo "=== STEP: Building other workspace packages ===" && \
 # ============================================================
 # Source code is already copied in Layer 1, so we can build directly
 # This layer invalidates when source code changes
-RUN echo "=== STEP: Building API service ===" && \
-    NODE_OPTIONS="--max-old-space-size=4096" pnpm --filter @kealee/api run build
+# Build workflow-engine separately with high memory allocation
+RUN /bin/bash -c "export NODE_OPTIONS='--max-old-space-size=16384' && pnpm --filter @kealee/database db:generate"
+
+# Build workflow-engine package
+RUN /bin/bash -c "export NODE_OPTIONS='--max-old-space-size=16384' && pnpm --filter @kealee/workflow-engine run build"
+
+# Build API service TypeScript
+RUN /bin/bash -c "export NODE_OPTIONS='--max-old-space-size=16384' && cd /app/services/api && tsc"
 
 # Set production mode after build tooling is done
 ENV NODE_ENV=production
