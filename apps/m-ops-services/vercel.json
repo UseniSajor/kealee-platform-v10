@@ -1,6 +1,6 @@
 {
-  "buildCommand": "pnpm build --filter=@kealee/m-ops-services",
-  "installCommand": "pnpm install --no-frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm build --filter=@kealee/m-ops-services",
+  "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
   "rewrites": [
     {

@@ -1,6 +1,6 @@
 {
-  "buildCommand": "pnpm build --filter=m-project-owner",
-  "installCommand": "pnpm install --no-frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm build --filter=m-project-owner",
+  "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
   "rewrites": [
     {

@@ -1,6 +1,6 @@
 {
-  "buildCommand": "pnpm build --filter=m-architect",
-  "installCommand": "pnpm install --no-frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm build --filter=m-architect",
+  "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
   "rewrites": [
     {

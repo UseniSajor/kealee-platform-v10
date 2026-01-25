@@ -1,6 +1,6 @@
 {
-  "buildCommand": "pnpm build --filter=@kealee/os-pm",
-  "installCommand": "pnpm install --no-frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm build --filter=@kealee/os-pm",
+  "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
   "rewrites": [
     {
