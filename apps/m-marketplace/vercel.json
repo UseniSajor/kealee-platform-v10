@@ -1,7 +1,7 @@
 {
   "buildCommand": "cd ../.. && pnpm build --filter=@kealee/m-marketplace",
   "outputDirectory": ".next",
-  "installCommand": "cd ../.. && npx pnpm@9 install --no-frozen-lockfile",
+  "installCommand": "cd ../.. && npx pnpm@9 install --no-frozen-lockfile --dev",
   "framework": "nextjs",
   "headers": [
     {
@@ -56,5 +56,7 @@
       ]
     }
   ],
-  "regions": ["sfo1"]
+  "regions": [
+    "sfo1"
+  ]
 }
