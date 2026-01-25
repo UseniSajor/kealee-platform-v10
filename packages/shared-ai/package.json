@@ -12,10 +12,10 @@
     "openai": "^4.28.0",
     "zod": "^3.22.4",
     "axios": "^1.6.0",
-    "sharp": "^0.33.0"
+    "sharp": "^0.33.0",
+    "typescript": "^5.9.0"
   },
   "devDependencies": {
-    "@types/node": "^20.19.0",
-    "typescript": "^5.9.0"
+    "@types/node": "^20.19.0"
   }
 }
