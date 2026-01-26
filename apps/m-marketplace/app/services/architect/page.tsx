@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { Pencil, CheckCircle, ArrowRight, Palette, FileText, Cube, Users, Calendar } from 'lucide-react';
+import { Pencil, CheckCircle, ArrowRight, Palette, FileText, Box, Users, Calendar } from 'lucide-react';
 
 const services = [
   { icon: FileText, title: 'Permit-Ready Drawings', description: 'Complete construction documents ready for submission' },
-  { icon: Cube, title: '3D Renderings', description: 'Photorealistic visualizations of your project' },
+  { icon: Box, title: '3D Renderings', description: 'Photorealistic visualizations of your project' },
   { icon: Palette, title: 'Design Development', description: 'Full design services from concept to completion' },
   { icon: Users, title: 'Licensed Architects', description: 'All work stamped by licensed professionals' },
 ];
