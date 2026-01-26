@@ -1,199 +1,270 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, CheckCircle, Play } from 'lucide-react';
+import { ArrowRight, CheckCircle, Play, Building2, Shield, Clock, TrendingUp, Star } from 'lucide-react';
 
 export function Hero() {
   return (
-    <section className="relative pt-32 pb-20 overflow-hidden">
-      {/* Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-orange-50" />
-      
-      {/* Decorative Elements */}
-      <div className="absolute top-20 right-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob" />
-      <div className="absolute top-40 left-10 w-72 h-72 bg-orange-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000" />
-      
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          
-          {/* Left Column - Copy */}
-          <div>
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500" />
+    <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0">
+        {/* Base gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-blue-50/50" />
+
+        {/* Grid pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.015]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        />
+
+        {/* Decorative blobs */}
+        <div className="absolute top-1/4 right-0 w-[600px] h-[600px] bg-blue-400/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-400/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/3 w-[400px] h-[400px] bg-blue-300/10 rounded-full blur-3xl" />
+      </div>
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+          {/* Left Column - Content */}
+          <div className="max-w-2xl">
+            {/* Trust Badge */}
+            <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur border border-slate-200/50 text-slate-700 px-4 py-2 rounded-full text-sm font-medium mb-8 shadow-sm">
+              <div className="flex -space-x-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 border-2 border-white flex items-center justify-center text-[10px] font-bold text-slate-600"
+                  >
+                    {String.fromCharCode(64 + i)}
+                  </div>
+                ))}
+              </div>
+              <span>
+                Trusted by <span className="font-bold text-blue-600">500+</span> construction projects
               </span>
-              Trusted by 500+ construction projects
+              <div className="flex items-center gap-0.5 text-amber-500">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star key={i} size={12} fill="currentColor" />
+                ))}
+              </div>
             </div>
-            
+
             {/* Headline */}
-            <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
-              Complete Construction Management{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-orange-600">
-                Made Simple
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-[1.1] tracking-tight">
+              Build Smarter.{' '}
+              <span className="relative">
+                <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800">
+                  Deliver Faster.
+                </span>
+                <svg className="absolute -bottom-2 left-0 w-full h-3 text-orange-400/40" viewBox="0 0 200 12" preserveAspectRatio="none">
+                  <path d="M0 9c40-6 80-6 120-2s80 6 80 0" stroke="currentColor" strokeWidth="4" fill="none" strokeLinecap="round" />
+                </svg>
               </span>
             </h1>
-            
+
             {/* Subheadline */}
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-              From project planning to permit approval, manage every aspect of your construction project in one place. 
-              <strong> Save 40% on project management costs</strong> and deliver projects 25% faster.
+            <p className="text-lg sm:text-xl text-slate-600 mb-8 leading-relaxed max-w-xl">
+              The all-in-one construction management platform that helps contractors, architects, and project owners
+              streamline every phase of their projects.
             </p>
 
-            {/* Benefits */}
-            <div className="space-y-3 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="text-white" size={16} />
+            {/* Key Value Props */}
+            <div className="grid sm:grid-cols-2 gap-4 mb-10">
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-white/60 backdrop-blur border border-slate-200/50">
+                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="text-green-600" size={20} />
                 </div>
-                <span className="text-gray-700 font-medium">Professional PM services from $1,750/month</span>
+                <div>
+                  <div className="font-semibold text-slate-900">40% Cost Savings</div>
+                  <div className="text-sm text-slate-500">On project management</div>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="text-white" size={16} />
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-white/60 backdrop-blur border border-slate-200/50">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <Clock className="text-blue-600" size={20} />
                 </div>
-                <span className="text-gray-700 font-medium">AI-powered permit review in 5 minutes</span>
+                <div>
+                  <div className="font-semibold text-slate-900">25% Faster Delivery</div>
+                  <div className="text-sm text-slate-500">Average project completion</div>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="text-white" size={16} />
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-white/60 backdrop-blur border border-slate-200/50">
+                <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                  <Shield className="text-orange-600" size={20} />
                 </div>
-                <span className="text-gray-700 font-medium">Licensed architects & engineers on demand</span>
+                <div>
+                  <div className="font-semibold text-slate-900">85% First-Pass Approval</div>
+                  <div className="text-sm text-slate-500">Permit success rate</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-white/60 backdrop-blur border border-slate-200/50">
+                <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                  <Building2 className="text-purple-600" size={20} />
+                </div>
+                <div>
+                  <div className="font-semibold text-slate-900">3,000+ Jurisdictions</div>
+                  <div className="text-sm text-slate-500">Nationwide coverage</div>
+                </div>
               </div>
             </div>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <Link
-                href="https://app.kealee.com/signup"
-                className="
-                  group
-                  inline-flex items-center justify-center gap-2
-                  px-8 py-4
-                  bg-blue-600 hover:bg-blue-700
-                  text-white font-semibold text-lg
-                  rounded-xl
-                  shadow-lg hover:shadow-xl
-                  transition-all duration-200
-                  transform hover:scale-105
-                "
+                href="/signup"
+                className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-lg rounded-xl shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 transform hover:scale-[1.02]"
               >
-                Get Started Free
+                Start Your Free Trial
                 <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
               </Link>
-              
+
               <button
-                onClick={() => {/* Open video modal */}}
-                className="
-                  group
-                  inline-flex items-center justify-center gap-2
-                  px-8 py-4
-                  border-2 border-gray-300 hover:border-blue-600
-                  text-gray-700 hover:text-blue-600 font-semibold text-lg
-                  rounded-xl
-                  transition-all duration-200
-                "
+                onClick={() => {}}
+                className="group inline-flex items-center justify-center gap-3 px-8 py-4 bg-white hover:bg-slate-50 border-2 border-slate-200 hover:border-slate-300 text-slate-700 font-semibold text-lg rounded-xl transition-all duration-300"
               >
-                <div className="w-10 h-10 bg-blue-100 group-hover:bg-blue-600 rounded-full flex items-center justify-center transition-colors">
-                  <Play className="text-blue-600 group-hover:text-white transition-colors" size={20} />
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center shadow-lg">
+                  <Play className="text-white ml-0.5" size={18} fill="white" />
                 </div>
                 Watch Demo
               </button>
             </div>
 
             {/* Trust Signals */}
-            <div className="mt-8 flex items-center gap-6 text-sm text-gray-600 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-500">
               <div className="flex items-center gap-2">
-                <CheckCircle className="text-green-500" size={18} />
+                <CheckCircle className="text-green-500" size={16} />
                 <span>No credit card required</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="text-green-500" size={18} />
+                <CheckCircle className="text-green-500" size={16} />
                 <span>14-day free trial</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="text-green-500" size={18} />
-                <span>Cancel anytime</span>
+                <CheckCircle className="text-green-500" size={16} />
+                <span>Setup in 5 minutes</span>
               </div>
             </div>
           </div>
 
-          {/* Right Column - Visual */}
-          <div className="relative animate-in fade-in slide-in-from-right-8 duration-1000 delay-200">
-            {/* Dashboard Preview */}
-            <div className="relative">
-              {/* Main Card */}
-              <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-200">
-                {/* Fake Browser Chrome */}
-                <div className="flex items-center gap-2 mb-4 pb-4 border-b border-gray-200">
-                  <div className="w-3 h-3 bg-red-400 rounded-full" />
-                  <div className="w-3 h-3 bg-yellow-400 rounded-full" />
-                  <div className="w-3 h-3 bg-green-400 rounded-full" />
+          {/* Right Column - Dashboard Preview */}
+          <div className="relative">
+            {/* Main Dashboard Card */}
+            <div className="relative bg-white rounded-2xl shadow-2xl border border-slate-200/50 overflow-hidden">
+              {/* Browser Chrome */}
+              <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 border-b border-slate-200">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-red-400" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                  <div className="w-3 h-3 rounded-full bg-green-400" />
+                </div>
+                <div className="flex-1 flex justify-center">
+                  <div className="px-4 py-1 bg-white rounded-md text-xs text-slate-400 border border-slate-200">
+                    app.kealee.com/dashboard
+                  </div>
+                </div>
+              </div>
+
+              {/* Dashboard Content */}
+              <div className="p-6 space-y-6">
+                {/* Stats Row */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+                    <div className="text-3xl font-bold">24</div>
+                    <div className="text-sm text-blue-100">Active Projects</div>
+                  </div>
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white">
+                    <div className="text-3xl font-bold">94%</div>
+                    <div className="text-sm text-green-100">On-Time Rate</div>
+                  </div>
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+                    <div className="text-3xl font-bold">$2.4M</div>
+                    <div className="text-sm text-orange-100">Saved YTD</div>
+                  </div>
                 </div>
 
-                {/* Dashboard Content */}
-                <div className="space-y-4">
-                  {/* Stats Row */}
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-blue-50 rounded-lg p-3">
-                      <div className="text-2xl font-bold text-blue-600">24</div>
-                      <div className="text-xs text-gray-600">Active Projects</div>
-                    </div>
-                    <div className="bg-green-50 rounded-lg p-3">
-                      <div className="text-2xl font-bold text-green-600">94%</div>
-                      <div className="text-xs text-gray-600">On-Time</div>
-                    </div>
-                    <div className="bg-orange-50 rounded-lg p-3">
-                      <div className="text-2xl font-bold text-orange-600">18%</div>
-                      <div className="text-xs text-gray-600">Cost Savings</div>
-                    </div>
-                  </div>
+                {/* Chart Placeholder */}
+                <div className="h-32 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl flex items-end p-4 gap-2">
+                  {[40, 65, 45, 80, 55, 90, 70, 85, 60, 95, 75, 88].map((height, i) => (
+                    <div
+                      key={i}
+                      className="flex-1 bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-sm"
+                      style={{ height: `${height}%` }}
+                    />
+                  ))}
+                </div>
 
-                  {/* Project List */}
-                  <div className="space-y-2">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
-                          {i}
-                        </div>
-                        <div className="flex-1">
-                          <div className="h-3 bg-gray-300 rounded w-3/4 mb-1" />
-                          <div className="h-2 bg-gray-200 rounded w-1/2" />
-                        </div>
-                        <div className="w-16 h-6 bg-green-100 rounded-full" />
+                {/* Project List */}
+                <div className="space-y-3">
+                  {[
+                    { name: 'Downtown Office Complex', status: 'On Track', progress: 78, color: 'green' },
+                    { name: 'Residential Development', status: 'In Review', progress: 45, color: 'blue' },
+                    { name: 'Warehouse Renovation', status: 'Permitting', progress: 23, color: 'orange' },
+                  ].map((project, i) => (
+                    <div key={i} className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl">
+                      <div className={`w-10 h-10 rounded-lg bg-${project.color}-100 flex items-center justify-center`}>
+                        <Building2 className={`text-${project.color}-600`} size={20} />
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating Cards */}
-              <div className="absolute -top-6 -right-6 bg-white rounded-xl shadow-xl p-4 border border-gray-200 animate-float">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                    <CheckCircle className="text-green-600" size={24} />
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-gray-900">Permit Approved!</div>
-                    <div className="text-xs text-gray-600">2 days ahead of schedule</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-xl p-4 border border-gray-200 animate-float animation-delay-2000">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <ArrowRight className="text-blue-600" size={24} />
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-gray-900">$12,500 Saved</div>
-                    <div className="text-xs text-gray-600">This month</div>
-                  </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-slate-900 truncate">{project.name}</div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full bg-${project.color}-500 rounded-full`}
+                              style={{ width: `${project.progress}%` }}
+                            />
+                          </div>
+                          <span className="text-xs text-slate-500 font-medium">{project.progress}%</span>
+                        </div>
+                      </div>
+                      <div className={`px-2.5 py-1 rounded-full text-xs font-medium bg-${project.color}-100 text-${project.color}-700`}>
+                        {project.status}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
+
+            {/* Floating Cards */}
+            <div className="absolute -top-4 -right-4 bg-white rounded-xl shadow-xl border border-slate-200/50 p-4 animate-float">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <CheckCircle className="text-green-600" size={24} />
+                </div>
+                <div>
+                  <div className="font-semibold text-slate-900">Permit Approved!</div>
+                  <div className="text-sm text-slate-500">2 days ahead of schedule</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="absolute -bottom-4 -left-4 bg-white rounded-xl shadow-xl border border-slate-200/50 p-4 animate-float animation-delay-2000">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <TrendingUp className="text-blue-600" size={24} />
+                </div>
+                <div>
+                  <div className="font-semibold text-slate-900">$12,500 Saved</div>
+                  <div className="text-sm text-slate-500">This month alone</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Notification Badge */}
+            <div className="absolute top-1/2 -left-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl shadow-xl p-3 animate-pulse">
+              <div className="text-xs font-bold">LIVE</div>
+            </div>
           </div>
+        </div>
+      </div>
+
+      {/* Scroll Indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-2 text-slate-400">
+        <span className="text-xs font-medium uppercase tracking-wider">Scroll to explore</span>
+        <div className="w-6 h-10 border-2 border-slate-300 rounded-full flex justify-center pt-2">
+          <div className="w-1.5 h-3 bg-slate-400 rounded-full animate-bounce" />
         </div>
       </div>
     </section>
