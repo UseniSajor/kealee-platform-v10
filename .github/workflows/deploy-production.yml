@@ -44,18 +44,25 @@ jobs:
         app:
           - name: m-marketplace
             filter: '@kealee/m-marketplace'
+            project_id: ${{ secrets.VERCEL_PROJECT_ID_MARKETPLACE }}
           - name: m-project-owner
             filter: m-project-owner
+            project_id: ${{ secrets.VERCEL_PROJECT_ID_PROJECT_OWNER }}
           - name: m-permits-inspections
             filter: m-permits-inspections
+            project_id: ${{ secrets.VERCEL_PROJECT_ID_PERMITS }}
           - name: m-ops-services
             filter: m-ops-services
+            project_id: ${{ secrets.VERCEL_PROJECT_ID_OPS_SERVICES }}
           - name: m-architect
             filter: m-architect
+            project_id: ${{ secrets.VERCEL_PROJECT_ID_ARCHITECT }}
           - name: os-pm
             filter: os-pm
+            project_id: ${{ secrets.VERCEL_PROJECT_ID_OS_PM }}
           - name: os-admin
             filter: os-admin
+            project_id: ${{ secrets.VERCEL_PROJECT_ID_OS_ADMIN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -82,7 +89,7 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_MARKETPLACE }}
+          vercel-project-id: ${{ matrix.app.project_id }}
           working-directory: apps/${{ matrix.app.name }}
           vercel-args: '--prod'
 
