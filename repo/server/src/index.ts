@@ -1,6 +1,7 @@
 
 import Fastify from 'fastify';
 import dotenv from 'dotenv';
+dotenv.config();
 import bearerAuthPlugin from '@fastify/bearer-auth';
 
 // Route Imports
@@ -35,8 +36,6 @@ import './agents/smart-scheduler-agent/worker';
 import './agents/qa-inspector-agent/worker';
 import './agents/decision-support-agent/worker';
 
-dotenv.config();
-
 const server = Fastify({
     logger: true,
 });
@@ -45,11 +44,16 @@ async function main() {
     try {
         // 1. Register Auth Middleware
         // We only protect /api/v1 routes with strict API Key enforcement
-        // For this demo, we'll implement a simple Key check
-        const keys = new Set(['kealee_demo_key', 'frontend_key']);
+        const keys = new Set(['kealee_demo_key', 'frontend_key', 'kealee_sk_live_12345']);
 
-        // In a real Fastify setup, protecting specific prefixes globally with middleware
-        // requires wrapping them or using a hook. We'll use a simple hook for now.
+        server.setErrorHandler((error, request, reply) => {
+            server.log.error(error);
+            reply.status(error.statusCode || 500).send({
+                message: error.message || 'Internal Server Error',
+                code: (error as any).code || 'INTERNAL_ERROR'
+            });
+        });
+
         server.addHook('onRequest', async (request, reply) => {
             // Skip auth for health checks or static
             if (!request.url.startsWith('/api/v1')) return;
@@ -69,20 +73,20 @@ async function main() {
         });
 
         // 2. Register Routes (All 14 Apps)
-        await server.register(bidEngineRoutes, { prefix: '/api/v1' });
-        await server.register(visitSchedulerRoutes, { prefix: '/api/v1' });
-        await server.register(changeOrderRoutes, { prefix: '/api/v1' });
-        await server.register(reportGeneratorRoutes, { prefix: '/api/v1' });
-        await server.register(permitTrackerRoutes, { prefix: '/api/v1' });
-        await server.register(inspectionCoordinatorRoutes, { prefix: '/api/v1' });
-        await server.register(budgetTrackerRoutes, { prefix: '/api/v1' });
-        await server.register(communicationHubRoutes, { prefix: '/api/v1' });
-        await server.register(taskQueueRoutes, { prefix: '/api/v1' });
-        await server.register(documentGeneratorRoutes, { prefix: '/api/v1' });
-        await server.register(predictiveEngineRoutes, { prefix: '/api/v1' });
-        await server.register(smartSchedulerRoutes, { prefix: '/api/v1' });
-        await server.register(qaInspectorRoutes, { prefix: '/api/v1' });
-        await server.register(decisionSupportRoutes, { prefix: '/api/v1' });
+        await server.register(bidEngineRoutes, { prefix: '/api/v1/bids' });
+        await server.register(visitSchedulerRoutes, { prefix: '/api/v1/visits' });
+        await server.register(changeOrderRoutes, { prefix: '/api/v1/change-orders' });
+        await server.register(reportGeneratorRoutes, { prefix: '/api/v1/reports' });
+        await server.register(permitTrackerRoutes, { prefix: '/api/v1/permits' });
+        await server.register(inspectionCoordinatorRoutes, { prefix: '/api/v1/inspections' });
+        await server.register(budgetTrackerRoutes, { prefix: '/api/v1/budget' });
+        await server.register(communicationHubRoutes, { prefix: '/api/v1/communications' });
+        await server.register(taskQueueRoutes, { prefix: '/api/v1/tasks' });
+        await server.register(documentGeneratorRoutes, { prefix: '/api/v1/documents' });
+        await server.register(predictiveEngineRoutes, { prefix: '/api/v1/ai' });
+        await server.register(smartSchedulerRoutes, { prefix: '/api/v1/smart-scheduler' });
+        await server.register(qaInspectorRoutes, { prefix: '/api/v1/qa' });
+        await server.register(decisionSupportRoutes, { prefix: '/api/v1/decisions' });
 
         console.log('👷 All 14 Kealee Agents Started Successfully');
 

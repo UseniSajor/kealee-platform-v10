@@ -1,15 +1,19 @@
-
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { queues, queueEvents, JOB_OPTIONS } from '../../core/queue';
 import { prisma } from '../../core/db';
+import { ContractorMatcher } from './matcher';
+import { BidAnalyzer } from './analyzer';
+
+const contractorMatcher = new ContractorMatcher();
+const bidAnalyzer = new BidAnalyzer();
 
 export async function bidEngineRoutes(fastify: FastifyInstance) {
-    // Create bid request
-    fastify.post('/bid-requests', async (request: FastifyRequest, reply: FastifyReply) => {
+    // POST /v1/bids/requests – create bid request & push job to queue
+    fastify.post('/requests', async (request: FastifyRequest, reply: FastifyReply) => {
         const { projectId, trades, scope, requirements, deadline } = request.body as any;
 
         const job = await queues.BID_ENGINE.add('create-bid-request', {
-            type: 'CREATE_BID_REQUEST',
+            type: 'create-bid-request',
             projectId,
             trades,
             scope,
@@ -20,8 +24,27 @@ export async function bidEngineRoutes(fastify: FastifyInstance) {
         return { jobId: job.id, status: 'processing' };
     });
 
-    // Get bid request
-    fastify.get('/bid-requests/:id', async (request: FastifyRequest, reply: FastifyReply) => {
+    // POST /v1/bids/match – preview contractor matches using ContractorMatcher
+    fastify.post('/match', async (request: FastifyRequest, reply: FastifyReply) => {
+        const criteria = request.body as any;
+        const matches = await contractorMatcher.findMatches(criteria);
+        return { matches };
+    });
+
+    // POST /v1/bids/requests/:id/analyze – run BidAnalyzer and persist analysis
+    fastify.post('/requests/:id/analyze', async (request: FastifyRequest, reply: FastifyReply) => {
+        const { id } = request.params as { id: string };
+
+        const job = await queues.BID_ENGINE.add('analyze-bids', {
+            type: 'analyze-bids',
+            bidRequestId: id,
+        }, JOB_OPTIONS.HIGH_PRIORITY);
+
+        return { jobId: job.id, status: 'analyzing' };
+    });
+
+    // GET /v1/bids/requests/:id - Get bid request details
+    fastify.get('/requests/:id', async (request: FastifyRequest, reply: FastifyReply) => {
         const { id } = request.params as { id: string };
 
         const bidRequest = await prisma.bidRequest.findUnique({
@@ -34,36 +57,12 @@ export async function bidEngineRoutes(fastify: FastifyInstance) {
         });
 
         if (!bidRequest) {
-            return reply.status(404).send({ error: 'Bid request not found' });
+            return reply.status(404).send({ 
+                message: 'Bid request not found',
+                code: 'NOT_FOUND' 
+            });
         }
 
         return bidRequest;
-    });
-
-    // Trigger bid analysis
-    fastify.post('/bid-requests/:id/analyze', async (request: FastifyRequest, reply: FastifyReply) => {
-        const { id } = request.params as { id: string };
-
-        const job = await queues.BID_ENGINE.add('analyze-bids', {
-            type: 'ANALYZE_BIDS',
-            bidRequestId: id,
-        }, JOB_OPTIONS.HIGH_PRIORITY);
-
-        return { jobId: job.id, status: 'analyzing' };
-    });
-
-    // Find matching contractors
-    fastify.post('/contractors/match', async (request: FastifyRequest, reply: FastifyReply) => {
-        const criteria = request.body as any;
-
-        const job = await queues.BID_ENGINE.add('find-contractors', {
-            type: 'FIND_CONTRACTORS',
-            bidRequestId: null,
-            criteria,
-        }, JOB_OPTIONS.DEFAULT);
-
-        // Wait for result
-        const result = await job.waitUntilFinished(queueEvents.BID_ENGINE);
-        return result;
     });
 }
