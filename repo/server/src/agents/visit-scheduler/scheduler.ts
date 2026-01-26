@@ -2,7 +2,7 @@
 import { prisma } from '../../core/db';
 import { getEventBus, EVENT_TYPES } from '../../core/events';
 import { sendEmail } from '../../core/integrations/sendgrid';
-import { createCalendarEvent, getAvailableSlots, geocodeAddress, getWeatherForecast } from '../../core/integrations/google';
+import { createCalendarEvent, getAvailableSlots, geocodeAddress, getWeatherForecast } from '../../core/integrations/location';
 import { VisitScheduleRequest, ScheduledVisit, Location } from './types';
 import { addDays, isWeekend, startOfDay, endOfDay, isSameDay, format } from 'date-fns';
 
