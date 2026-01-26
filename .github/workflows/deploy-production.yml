@@ -42,13 +42,20 @@ jobs:
     strategy:
       matrix:
         app:
-          - m-marketplace
-          - m-project-owner
-          - m-permits-inspections
-          - m-ops-services
-          - m-architect
-          - os-pm
-          - os-admin
+          - name: m-marketplace
+            filter: '@kealee/m-marketplace'
+          - name: m-project-owner
+            filter: m-project-owner
+          - name: m-permits-inspections
+            filter: m-permits-inspections
+          - name: m-ops-services
+            filter: m-ops-services
+          - name: m-architect
+            filter: m-architect
+          - name: os-pm
+            filter: os-pm
+          - name: os-admin
+            filter: os-admin
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -68,7 +75,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build packages
-        run: pnpm build --filter=${{ matrix.app }}
+        run: pnpm build --filter=${{ matrix.app.filter }}
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
@@ -76,7 +83,7 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_MARKETPLACE }}
-          working-directory: apps/${{ matrix.app }}
+          working-directory: apps/${{ matrix.app.name }}
           vercel-args: '--prod'
 
 

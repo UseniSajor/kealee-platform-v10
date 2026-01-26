@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm build --filter=m-marketplace",
+  "buildCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm build --filter=@kealee/m-marketplace",
   "installCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
   "rewrites": [
@@ -41,7 +41,14 @@
     {
       "src": "/api/(.*)",
       "dest": "/api/$1",
-      "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS"
+      ],
       "headers": {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
@@ -84,7 +91,9 @@
     "NEXT_PUBLIC_HOTJAR_ID": "XXXXXXX",
     "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_XXXXXXXXXXXXXXXXXXXXXXXX"
   },
-  "regions": ["sfo1"],
+  "regions": [
+    "sfo1"
+  ],
   "github": {
     "enabled": true,
     "autoAlias": true,
