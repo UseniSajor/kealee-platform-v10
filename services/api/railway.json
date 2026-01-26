@@ -2,18 +2,15 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "DOCKERFILE",
-    "dockerfilePath": "./Dockerfile",
-    "watchPatterns": [
-      "services/api/**",
-      "packages/**"
-    ]
+    "dockerfilePath": "Dockerfile",
+    "buildContext": "../.."
   },
   "deploy": {
-    "releaseCommand": "pnpm --filter @kealee/database db:migrate:deploy",
+    "numReplicas": 1,
     "startCommand": "node dist/index.js",
     "healthcheckPath": "/health",
-    "healthcheckTimeout": 100,
+    "healthcheckTimeout": 30,
     "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
+    "restartPolicyMaxRetries": 3
   }
 }
