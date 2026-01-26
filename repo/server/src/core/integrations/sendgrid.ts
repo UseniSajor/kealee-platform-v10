@@ -6,7 +6,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
 export interface EmailParams {
     to: string | string[];
-    subject: string;
+    subject?: string;
     html?: string;
     text?: string;
     templateId?: string;
@@ -20,7 +20,7 @@ export interface EmailParams {
 }
 
 export async function sendEmail(params: EmailParams): Promise<void> {
-    await sgMail.send({
+    const msg: any = {
         to: params.to,
         from: {
             email: process.env.SENDGRID_FROM_EMAIL!,
@@ -32,7 +32,12 @@ export async function sendEmail(params: EmailParams): Promise<void> {
         templateId: params.templateId,
         dynamicTemplateData: params.dynamicTemplateData,
         attachments: params.attachments,
-    });
+    };
+
+    // Remove undefined fields to satisfy SendGrid client expectations
+    Object.keys(msg).forEach(key => msg[key] === undefined && delete msg[key]);
+
+    await sgMail.send(msg);
 }
 
 export const EMAIL_TEMPLATES = {

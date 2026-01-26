@@ -1,0 +1,382 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================================
+// ACTORS
+// ==========================================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      String   @default("USER") // ADMIN, PM, CONTRACTOR
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  projects      Project[]      @relation("ProjectPM")
+  apiKeys       ApiKey[]
+  notifications Notification[]
+}
+
+model Contractor {
+  id          String   @id @default(cuid())
+  contactName String?
+  companyName String
+  email       String   @unique
+  phone       String?
+  
+  status      String   @default("ACTIVE")
+  rating      Float    @default(0)
+  trades      String[] // Array of strings in Postgres
+  
+  latitude    Float
+  longitude   Float
+
+  credentials Credentials[]
+  reviews     Review[]
+  projects    ProjectHistory[]
+  bids        BidSubmission[]
+  bidInvitations BidInvitation[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Credentials {
+  id           String   @id @default(cuid())
+  contractorId String
+  contractor   Contractor @relation(fields: [contractorId], references: [id])
+  type         String   // LICENSE, INSURANCE, BOND
+  number       String
+  expiresAt    DateTime
+  verified     Boolean  @default(false)
+}
+
+model Review {
+  id           String   @id @default(cuid())
+  contractorId String
+  contractor   Contractor @relation(fields: [contractorId], references: [id])
+  rating       Int
+  comment      String?
+  createdAt    DateTime @default(now())
+}
+
+model ProjectHistory {
+  id            String   @id @default(cuid())
+  contractorId  String
+  contractor    Contractor @relation(fields: [contractorId], references: [id])
+  name          String
+  contractValue Decimal
+  completedAt   DateTime
+  status        String   @default("COMPLETED")
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+}
+
+// ==========================================================
+// CORE PLATFORM
+// ==========================================================
+
+model Project {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  address         String?
+  status          String   @default("PLANNING")
+  phase           String?
+  budget          Decimal  @default(0)
+  percentComplete Float    @default(0)
+  startDate       DateTime?
+  endDate         DateTime?
+  
+  pmId            String
+  pm              User     @relation("ProjectPM", fields: [pmId], references: [id])
+
+  clientName      String?
+  clientEmail     String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Agent Relations
+  bids            BidSubmission[]
+  bidRequests     BidRequest[]
+  visits          SiteVisit[]
+  changeOrders    ChangeOrder[]
+  milestones      Milestone[]
+  permits         Permit[]
+  transactions    BudgetTransaction[]
+  communications  CommunicationLog[]
+  reports         Report[]
+  tasks           AutomationTask[]
+  documents       Document[]
+  predictions     Prediction[]
+  inspections     Inspection[]
+  qaAnalyses      PhotoAnalysis[]
+}
+
+// ==========================================================
+// APP-01: BID ENGINE
+// ==========================================================
+
+model BidRequest {
+  id           String   @id @default(cuid())
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id])
+  status       String   @default("OPEN")
+  deadline     DateTime
+  trade        String[]
+  description  String?
+  scope        Json?
+  requirements Json?
+  
+  invitations BidInvitation[]
+  submissions BidSubmission[]
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model BidInvitation {
+  id           String     @id @default(cuid())
+  bidRequestId String
+  bidRequest   BidRequest @relation(fields: [bidRequestId], references: [id])
+  contractorId String
+  contractor   Contractor @relation(fields: [contractorId], references: [id])
+  status       String     @default("SENT") // SENT, VIEWED, DECLINED, BID_SUBMITTED
+  sentAt       DateTime   @default(now())
+  viewedAt     DateTime?
+}
+
+model BidSubmission {
+  id           String     @id @default(cuid())
+  projectId    String
+  project      Project    @relation(fields: [projectId], references: [id])
+  bidRequestId String?
+  bidRequest   BidRequest? @relation(fields: [bidRequestId], references: [id])
+  
+  contractorId String?
+  contractor   Contractor? @relation(fields: [contractorId], references: [id])
+  contractorName String? // Fallback if no ID
+
+  amount      Decimal
+  trade       String
+  status      String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  score       Float?   // AI Analysis Score
+  recommendation String? // Map to analyses[].recommendation in code
+  analysis    Json?    // Structured analysis details
+  submittedAt DateTime @default(now())
+}
+
+// ==========================================================
+// APP-02: VISIT SCHEDULER
+// ==========================================================
+
+model SiteVisit {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  type        String
+  status      String   @default("SCHEDULED")
+  scheduledAt DateTime
+  endAt       DateTime
+  notes       String?
+  weather     Json?    // Snapshot of weather at scheduling time
+  createdAt   DateTime @default(now())
+}
+
+// ==========================================================
+// APP-03: CHANGE ORDER PROCESSOR
+// ==========================================================
+
+model ChangeOrder {
+  id             String   @id @default(cuid())
+  projectId      String
+  project        Project  @relation(fields: [projectId], references: [id])
+  number         String
+  description    String
+  reason         String
+  amount         Decimal
+  scheduleImpact Int?     // Days
+  status         String   @default("DRAFT") // DRAFT, PENDING_APPROVAL, APPROVED, REJECTED
+  impactAnalysis Json?    // Result from ImpactAnalyzer
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// ==========================================================
+// APP-04: REPORT GENERATOR
+// ==========================================================
+
+model Report {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  type        String   // WEEKLY, MONTHLY
+  periodStart DateTime
+  periodEnd   DateTime
+  content     Json     // Generated narrative and stats
+  generatedAt DateTime @default(now())
+}
+
+// ==========================================================
+// APP-05: PERMIT TRACKER
+// ==========================================================
+
+model Permit {
+  id            String   @id @default(cuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id])
+  type          String
+  applicationNo String?
+  status        String   // SUBMITTED, IN_REVIEW, APPROVED
+  submittedAt   DateTime
+  issuedAt      DateTime?
+  expiresAt     DateTime?
+  
+  inspections   Inspection[]
+}
+
+// ==========================================================
+// APP-06: INSPECTION COORDINATOR & APP-13: QA INSPECTOR
+// ==========================================================
+
+model Inspection {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  permitId    String?
+  permit      Permit?  @relation(fields: [permitId], references: [id])
+  type        String
+  status      String   @default("SCHEDULED") // SCHEDULED, PASSED, FAILED
+  scheduledAt DateTime
+  completedAt DateTime?
+  result      Json?
+}
+
+model PhotoAnalysis {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  photoUrl    String
+  type        String?
+  analysis    Json     // AI Detected issues/safety
+  createdAt   DateTime @default(now())
+}
+
+// ==========================================================
+// APP-07: BUDGET TRACKER
+// ==========================================================
+
+model BudgetTransaction {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  type        String   // EXPENSE, INVOICE
+  amount      Decimal
+  description String
+  date        DateTime
+  category    String?
+}
+
+// ==========================================================
+// APP-08: COMMUNICATION HUB
+// ==========================================================
+
+model CommunicationLog {
+  id             String   @id @default(cuid())
+  projectId      String
+  project        Project  @relation(fields: [projectId], references: [id])
+  type           String   // EMAIL, SMS
+  recipientEmail String?
+  recipientPhone String?
+  subject        String?
+  body           String
+  status         String   // SENT, FAILED
+  sentAt         DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// ==========================================================
+// APP-09: TASK QUEUE & APP-12: SMART SCHEDULER
+// ==========================================================
+
+model AutomationTask {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  type        String
+  status      String   @default("PENDING")
+  priority    Int      @default(3)
+  payload     Json?
+  result      Json?
+  dueAt       DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model Milestone {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  name      String
+  startDate DateTime
+  dueDate   DateTime
+  status    String   @default("PENDING")
+  isCritical Boolean @default(false)
+}
+
+// ==========================================================
+// APP-10: DOCUMENT GENERATOR
+// ==========================================================
+
+model Document {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  name        String
+  type        String
+  content     String   // Text content or URL
+  format      String   // PDF, DOCX
+  status      String   @default("DRAFT")
+  createdAt   DateTime @default(now())
+}
+
+// ==========================================================
+// APP-11: DELAY PREDICTOR
+// ==========================================================
+
+model Prediction {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  type        String   // DELAY, COST
+  probability Float
+  impact      String   // LOW, MEDIUM, HIGH
+  description String
+  createdAt   DateTime @default(now())
+}

@@ -15,7 +15,7 @@ export const inspectionCoordinatorWorker = createWorker(
                 return await coordinator.scheduleInspection(job.data.request);
 
             case 'GET_CHECKLIST':
-                return await coordinator.generatePrepChecklist(job.data.type);
+                return await coordinator.generatePrepChecklist(job.data.inspectionType);
 
             default:
                 console.warn(`Unknown job type: ${job.data.type}`);

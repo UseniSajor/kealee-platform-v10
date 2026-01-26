@@ -1,18 +1,17 @@
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { queues, JOB_OPTIONS } from '../../core/queue';
+import { queues, queueEvents, JOB_OPTIONS } from '../../core/queue';
 
 export async function visitSchedulerRoutes(fastify: FastifyInstance) {
-    // Schedule a visit
-    fastify.post('/visits', async (request: FastifyRequest, reply: FastifyReply) => {
-        const { projectId, pmId, visitType, preferredDates, duration, priority, notes } = request.body as any;
+    fastify.post('/visits/schedule', async (request: FastifyRequest, reply: FastifyReply) => {
+        const body = request.body as any;
 
-        const job = await queues.VISIT_SCHEDULER.add('schedule-visit', {
+        const job = await queues.VISIT_SCHEDULER.add('schedule', {
             type: 'SCHEDULE_VISIT',
-            request: { projectId, pmId, visitType, preferredDates, duration, priority, notes },
+            request: body,
         }, JOB_OPTIONS.DEFAULT);
 
-        const result = await job.waitUntilFinished(queues.VISIT_SCHEDULER);
+        const result = await job.waitUntilFinished(queueEvents.VISIT_SCHEDULER);
         return result;
     });
 }

@@ -1,24 +1,41 @@
 
+import { prisma } from '../../core/db';
+
 export class QAInspector {
     async analyzePhoto(request: any): Promise<any> {
-        // Mock Vision API
-        const labels = ['ladder', 'drywall', 'crack'];
+        const { projectId, photoUrl, base64Image } = request;
 
-        // Simple rule-based issue detection
-        const issues = [];
-        if (labels.includes('crack')) issues.push({ type: 'STRUCTURAL', severity: 'medium', description: 'Visible crack detected' });
-        if (labels.includes('water')) issues.push({ type: 'WATER', severity: 'high', description: 'Water detected' });
+        // Use base64Image if provided (since real vision API needs it), otherwise assume photoUrl is accessible or handle appropriately.
+        // For this implementation we'll assume base64Image is passed or extracted.
+        // If only URL, we'd need to fetch it.
 
-        const safetyObservations = [];
-        if (labels.includes('ladder')) safetyObservations.push('Ladder use detected - ensure 3-point contact');
+        let analysis;
+        if (base64Image) {
+            // Import dynamically to avoid circular dependecy issues if any, but regular import is fine
+            const { analyzeImage } = await import('../../core/ai');
+            analysis = await analyzeImage(base64Image,
+                "Analyze this construction site photo. Identify safety hazards, quality issues, and progress. Return JSON with keys: issues (array of objects with type, severity, description), safetyObservations (string array), labels (string array).");
+        } else {
+            // Fallback or mock if no image data
+            analysis = {
+                issues: [],
+                safetyObservations: ['No image data provided for analysis'],
+                labels: []
+            };
+        }
+
+        const record = await prisma.photoAnalysis.create({
+            data: {
+                projectId,
+                photoUrl: photoUrl || 'base64-upload',
+                type: 'QA',
+                analysis: analysis,
+            }
+        });
 
         return {
-            projectId: request.projectId,
-            photoUrl: request.photoUrl,
-            issues,
-            safetyObservations,
-            labels,
-            analyzedAt: new Date()
+            ...record,
+            analyzedAt: record.createdAt
         };
     }
 }

@@ -1,6 +1,6 @@
 
 import { Job } from 'bullmq';
-import { createWorker, queues, JOB_NAMES, QUEUE_NAMES } from '../../core/queue';
+import { createWorker, queues, QUEUE_NAMES } from '../../core/queue';
 import { SmartVisitScheduler } from './scheduler';
 
 const scheduler = new SmartVisitScheduler();

@@ -1,5 +1,5 @@
 
-import { Queue, Worker, QueueScheduler, Job } from 'bullmq';
+import { Queue, Worker, QueueEvents, Job } from 'bullmq';
 import Redis from 'ioredis';
 
 const createRedisConnection = () => new Redis(process.env.REDIS_URL!, {
@@ -33,12 +33,13 @@ export const queues = Object.fromEntries(
     ])
 ) as Record<keyof typeof QUEUE_NAMES, Queue>;
 
-export const schedulers = Object.fromEntries(
+export const queueEvents = Object.fromEntries(
     Object.entries(QUEUE_NAMES).map(([key, name]) => [
         key,
-        new QueueScheduler(name, { connection: createRedisConnection() })
+        new QueueEvents(name, { connection: createRedisConnection() })
     ])
-) as Record<keyof typeof QUEUE_NAMES, QueueScheduler>;
+) as Record<keyof typeof QUEUE_NAMES, QueueEvents>;
+
 
 export function createWorker<T = any>(
     queueName: string,

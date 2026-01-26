@@ -1,6 +1,6 @@
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { queues, JOB_OPTIONS } from '../../core/queue';
+import { queues, queueEvents, JOB_OPTIONS } from '../../core/queue';
 
 export async function inspectionCoordinatorRoutes(fastify: FastifyInstance) {
     fastify.post('/inspections', async (request: FastifyRequest, reply: FastifyReply) => {
@@ -11,7 +11,7 @@ export async function inspectionCoordinatorRoutes(fastify: FastifyInstance) {
             request: body,
         }, JOB_OPTIONS.DEFAULT);
 
-        const result = await job.waitUntilFinished(queues.INSPECTION);
+        const result = await job.waitUntilFinished(queueEvents.INSPECTION);
         return { inspectionId: result };
     });
 
@@ -20,10 +20,10 @@ export async function inspectionCoordinatorRoutes(fastify: FastifyInstance) {
 
         const job = await queues.INSPECTION.add('checklist', {
             type: 'GET_CHECKLIST',
-            type: type || 'FINAL',
+            inspectionType: type || 'FINAL',
         }, JOB_OPTIONS.DEFAULT);
 
-        const result = await job.waitUntilFinished(queues.INSPECTION);
+        const result = await job.waitUntilFinished(queueEvents.INSPECTION);
         return { checklist: result };
     });
 }

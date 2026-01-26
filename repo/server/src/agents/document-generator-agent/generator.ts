@@ -5,17 +5,29 @@ import { format } from 'date-fns';
 
 export class DocumentGenerator {
     async generateDocument(request: any): Promise<any> {
-        // Mock AI generation
+        const project = await prisma.project.findUnique({
+            where: { id: request.projectId }
+        }) || { name: 'Demo Project', clientName: 'Valued Client' }; // Fallback for robustness during transiton
+
         const content = await this.renderTemplate(request.type, {
-            projectName: 'Demo Project', // would fetch from DB
-            clientName: 'Acme Corp',
+            projectName: project.name,
+            clientName: project.clientName || 'Valued Client',
             date: format(new Date(), 'MMMM d, yyyy'),
             ...request.variables,
         });
 
-        const documentId = `doc-${Date.now()}`;
+        const document = await prisma.document.create({
+            data: {
+                projectId: request.projectId,
+                name: `${request.type} - ${project.name}`,
+                type: request.type,
+                format: 'MARKDOWN',
+                content: content,
+                status: 'DRAFT'
+            }
+        });
 
-        return { documentId, content };
+        return { documentId: document.id, content };
     }
 
     private async renderTemplate(type: string, variables: Record<string, any>): Promise<string> {

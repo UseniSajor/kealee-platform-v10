@@ -37,10 +37,19 @@ export class SmartVisitScheduler {
             priority: request.priority,
         });
 
-        // We'd save to DB here. For the agent refactor, we'll return the object as if saved.
-        // const visit = await prisma.siteVisit.create(...) 
+        const visit = await prisma.siteVisit.create({
+            data: {
+                projectId: request.projectId,
+                type: request.visitType,
+                status: 'SCHEDULED',
+                scheduledAt: bestSlot.start,
+                endAt: new Date(bestSlot.start.getTime() + duration * 60000),
+                notes: request.notes,
+                weather: weather.find(w => isSameDay(w.date, bestSlot.start)) as any,
+            }
+        });
 
-        const visitId = `visit-${Date.now()}`;
+        const visitId = visit.id;
 
         await createCalendarEvent('primary', {
             summary: `Site Visit: Demo Project`,

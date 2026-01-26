@@ -1,20 +1,34 @@
 
-import { generateText } from '../../core/ai';
+import { generateText, generateJSON } from '../../core/ai';
+import { prisma } from '../../core/db';
 
 export class DecisionSupport {
     async getRecommendation(context: any): Promise<any> {
-        const mockAnalysis = {
-            recommendation: 'Proceed with Change Order but request reduced timeline impact.',
-            confidence: 0.85,
-            reasoning: ['Budget has contingency', 'Timeline overlap is manageable'],
-            risks: ['Potential weather delays'],
-            nextSteps: ['Negotiate with contractor', 'Update timeline']
-        };
-        return { ...mockAnalysis, context };
+        // Fetch real project context if needed
+        const project = await prisma.project.findUnique({
+            where: { id: context.projectId },
+            include: { changeOrders: true }
+        });
+
+        const prompt = `Given the project context: ${JSON.stringify(context)}, provide a recommendation on how to proceed. 
+        Current project status: ${project?.status || 'Unknown'}.
+        Respond with JSON: { recommendation, confidence, reasoning[], risks[], nextSteps[] }`;
+
+        const analysis = await generateJSON(prompt, "You are a senior construction project manager advisor.");
+
+        return { ...analysis as any, context };
     }
 
     async chat(projectId: string, message: string): Promise<string> {
-        // Simple mock chat
-        return `[Decision Support] Based on project parameters (Budget: $500k, progress: 45%), my analysis of "${message}" suggests proceeding with caution.`;
+        const project = await prisma.project.findUnique({
+            where: { id: projectId }
+        });
+
+        const prompt = `Project: ${project?.name} (Budget: ${project?.budget}).
+        User Question: ${message}
+        
+        Answer as a helpful project manager assistant.`;
+
+        return generateText(prompt);
     }
 }

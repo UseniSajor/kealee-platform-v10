@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import {
-    Bot, Activity, Command, MessageSquare, LayoutDashboard, Send,
+    Bot, Activity, MessageSquare, LayoutDashboard, Send,
     FileText, BadgeCheck, HardHat, DollarSign, Mail, ListTodo, File,
     AlertTriangle, Calendar, Camera, BrainCircuit, CreditCard
 } from 'lucide-react';
@@ -93,8 +93,8 @@ function App() {
             }
             else if (activeAgent === 'Report Generator' && lowerMsg.includes('generate')) {
                 setMessages(prev => [...prev, { role: 'agent', content: 'Generating report...', timestamp: new Date() }]);
-                const res = await reportParams.generateReport({ projectId: 'demo', type: 'WEEKLY', periodStart: new Date().toISOString(), periodEnd: new Date().toISOString() });
-                setMessages(prev => [...prev, { role: 'agent', content: `Report generated.`, timestamp: new Date() }]);
+                await reportParams.generateReport({ projectId: 'demo', type: 'WEEKLY', periodStart: new Date().toISOString(), periodEnd: new Date().toISOString() });
+                setMessages(prev => [...prev, { role: 'agent', content: `Report generated successfully.`, timestamp: new Date() }]);
             }
             else if (activeAgent === 'Permit Tracker' && lowerMsg.includes('status')) {
                 setMessages(prev => [...prev, { role: 'agent', content: 'Checking permit...', timestamp: new Date() }]);

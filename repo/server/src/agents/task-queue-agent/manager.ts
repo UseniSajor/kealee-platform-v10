@@ -4,18 +4,30 @@ import { getEventBus, EVENT_TYPES } from '../../core/events';
 
 export class TaskManager {
     async createTask(definition: any): Promise<string> {
-        // Mock Task Creation
-        const taskId = `task-${Date.now()}`;
+        const task = await prisma.automationTask.create({
+            data: {
+                projectId: definition.projectId || 'demo-project', // Fallback or assume provided
+                type: definition.type,
+                status: 'PENDING',
+                priority: definition.priority || 3,
+                payload: definition.payload || {},
+            }
+        });
 
-        // In real app: prisma.automationTask.create(...)
+        await getEventBus().publish(EVENT_TYPES.TASK_CREATED, { taskId: task.id }, 'task-queue');
 
-        await getEventBus().publish(EVENT_TYPES.TASK_CREATED, { taskId }, 'task-queue');
-
-        return taskId;
+        return task.id;
     }
 
     async completeTask(taskId: string, result?: any): Promise<void> {
-        // In real app: prisma.automationTask.update(...)
+        await prisma.automationTask.update({
+            where: { id: taskId },
+            data: {
+                status: 'COMPLETED',
+                result: result || {},
+                completedAt: new Date(),
+            }
+        });
         await getEventBus().publish(EVENT_TYPES.TASK_COMPLETED, { taskId, result }, 'task-queue');
     }
 }

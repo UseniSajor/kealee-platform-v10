@@ -3,17 +3,24 @@ import { prisma } from '../../core/db';
 
 export class PermitTracker {
     async checkPermitStatus(permitId: string): Promise<any> {
-        // Mock DB fetch
-        // const permit = await prisma.permit.findUnique(...) 
+        const permit = await prisma.permit.findUnique({
+            where: { id: permitId },
+        });
 
-        // Simulate finding a permit
+        if (!permit) {
+            // For demo purposes, we might fallback or throw. Let's return a "Not Found" structure or throw.
+            // But for now, let's assume we want to gracefully handle it if we are still filling DB.
+            // Actually, the instruction is to "un-mock", so let's check real DB.
+            return { status: 'NOT_FOUND', permitId };
+        }
+
         return {
-            permitId,
-            applicationNo: 'PERMIT-2024-001',
-            type: 'BUILDING',
-            status: 'IN_REVIEW',
-            submittedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-            nextAction: this.determineNextAction('IN_REVIEW'),
+            permitId: permit.id,
+            applicationNo: permit.applicationNo,
+            type: permit.type,
+            status: permit.status,
+            submittedAt: permit.submittedAt,
+            nextAction: this.determineNextAction(permit.status),
         };
     }
 

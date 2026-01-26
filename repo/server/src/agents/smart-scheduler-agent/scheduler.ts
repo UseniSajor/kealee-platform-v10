@@ -3,20 +3,27 @@ import { prisma } from '../../core/db';
 
 export class SmartScheduler {
     async optimizeSchedule(request: any): Promise<any> {
-        // Mock optimization logic
-        const milestones = [
-            { name: 'Foundation', start: '2024-03-01', end: '2024-03-15' },
-            { name: 'Framing', start: '2024-03-10', end: '2024-03-30' } // Overlap
-        ];
+        const milestones = await prisma.milestone.findMany({
+            where: { projectId: request.projectId },
+            orderBy: { startDate: 'asc' }
+        });
 
-        const conflicts = [{ type: 'OVERLAP', description: 'Foundation overlaps with Framing' }];
-        const recommendations = ['Shift Framing start date to 2024-03-16'];
+        // Simple check for overlaps
+        const conflicts: any[] = [];
+        for (let i = 0; i < milestones.length - 1; i++) {
+            if (milestones[i].dueDate > milestones[i + 1].startDate) {
+                conflicts.push({
+                    type: 'OVERLAP',
+                    description: `Milestone ${milestones[i].name} ends after ${milestones[i + 1].name} starts`
+                });
+            }
+        }
 
         return {
             projectId: request.projectId,
             conflicts,
-            recommendations,
-            optimizationScore: 0.85,
+            recommendations: conflicts.length > 0 ? ['Adjust schedule to resolve overlaps'] : ['Schedule looks good'],
+            optimizationScore: conflicts.length > 0 ? 0.6 : 1.0,
         };
     }
 }

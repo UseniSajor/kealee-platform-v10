@@ -20,6 +20,43 @@ export async function generateText(
     return (textBlock as any)?.text || '';
 }
 
+export async function analyzeImage(
+    imageUrl: string,
+    prompt: string
+): Promise<any> {
+    const response = await claude.messages.create({
+        model: 'claude-3-5-sonnet-20240620',
+        max_tokens: 1024,
+        messages: [
+            {
+                role: 'user',
+                content: [
+                    {
+                        type: 'image',
+                        source: {
+                            type: 'base64',
+                            media_type: 'image/jpeg',
+                            data: imageUrl, // Expecting base64 string without prefix
+                        },
+                    },
+                    {
+                        type: 'text',
+                        text: prompt
+                    }
+                ],
+            },
+        ],
+    });
+    const textBlock = response.content.find(block => block.type === 'text');
+    const text = (textBlock as any)?.text || '';
+    try {
+        const jsonMatch = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+        return jsonMatch ? JSON.parse(jsonMatch[0]) : { error: 'No JSON found', raw: text };
+    } catch (e) {
+        return { error: 'Parse Error', raw: text };
+    }
+}
+
 export async function generateJSON<T>(
     prompt: string,
     systemPrompt?: string

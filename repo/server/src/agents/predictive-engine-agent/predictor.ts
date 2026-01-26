@@ -7,8 +7,15 @@ export class DelayPredictor {
         const features = await this.extractFeatures(projectId);
         const prediction = this.ruleBasedPredict(features);
 
-        // Mock DB save
-        // await prisma.prediction.create(...)
+        const record = await prisma.prediction.create({
+            data: {
+                projectId,
+                type: 'DELAY',
+                probability: prediction.probability,
+                impact: prediction.probability > 0.7 ? 'HIGH' : (prediction.probability > 0.3 ? 'MEDIUM' : 'LOW'),
+                description: prediction.recommendation
+            }
+        });
 
         return {
             projectId,
@@ -18,12 +25,21 @@ export class DelayPredictor {
     }
 
     private async extractFeatures(projectId: string): Promise<Record<string, number>> {
-        // Mock data fetch
+        const project = await prisma.project.findUnique({
+            where: { id: projectId },
+            include: { changeOrders: true, milestones: true }
+        });
+
+        if (!project) return { percentComplete: 0, milestonesOverdue: 0, changeOrderCount: 0 };
+
+        const now = new Date();
+        const milestonesOverdue = project.milestones.filter(m => m.dueDate < now && m.status !== 'COMPLETED').length;
+
         return {
-            percentComplete: 45,
-            milestonesOverdue: 2,
-            milestonesTotal: 10,
-            changeOrderCount: 4,
+            percentComplete: project.percentComplete,
+            milestonesOverdue,
+            milestonesTotal: project.milestones.length,
+            changeOrderCount: project.changeOrders.length,
         };
     }
 

@@ -4,16 +4,23 @@ import { getEventBus, EVENT_TYPES } from '../../core/events';
 
 export class InspectionCoordinator {
     async scheduleInspection(request: any): Promise<string> {
-        // Mock scheduling
-        const inspectionId = `insp-${Date.now()}`;
+        const inspection = await prisma.inspection.create({
+            data: {
+                permitId: request.permitId,
+                projectId: request.projectId,
+                type: request.type || 'FINAL',
+                status: 'SCHEDULED',
+                scheduledAt: new Date(request.date || Date.now() + 86400000), // Default to tomorrow if not provided
+            }
+        });
 
         await getEventBus().publish(
             EVENT_TYPES.INSPECTION_SCHEDULED,
-            { inspectionId, permitId: request.permitId, projectId: request.projectId || 'demo-project' },
+            { inspectionId: inspection.id, permitId: request.permitId, projectId: request.projectId },
             'inspection-coordinator'
         );
 
-        return inspectionId;
+        return inspection.id;
     }
 
     async generatePrepChecklist(type: string): Promise<string[]> {

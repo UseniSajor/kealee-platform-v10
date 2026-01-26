@@ -25,14 +25,14 @@ export class BidRequestBuilder {
     }): Promise<string> {
         const project = await prisma.project.findUniqueOrThrow({
             where: { id: params.projectId },
-            include: { client: true },
         });
 
         const bidRequest = await prisma.bidRequest.create({
             data: {
                 projectId: params.projectId,
-                scope: params.scope,
-                requirements: params.requirements,
+                trade: params.trades,
+                scope: params.scope as any,
+                requirements: params.requirements as any,
                 deadline: params.responseDeadline,
                 status: 'OPEN',
             },
@@ -56,7 +56,7 @@ export class BidRequestBuilder {
     async generateScopeDocument(bidRequestId: string): Promise<string> {
         const bidRequest = await prisma.bidRequest.findUniqueOrThrow({
             where: { id: bidRequestId },
-            include: { project: { include: { client: true } } },
+            include: { project: true },
         });
 
         const scope = bidRequest.scope as any;
@@ -66,7 +66,7 @@ export class BidRequestBuilder {
 
 PROJECT: ${bidRequest.project.name}
 ADDRESS: ${bidRequest.project.address}
-CLIENT: ${bidRequest.project.client.name}
+CLIENT: ${bidRequest.project.clientName}
 
 SCOPE OF WORK:
 ${scope.description}

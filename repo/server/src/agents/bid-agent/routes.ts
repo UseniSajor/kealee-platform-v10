@@ -1,6 +1,6 @@
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { queues, JOB_OPTIONS } from '../../core/queue';
+import { queues, queueEvents, JOB_OPTIONS } from '../../core/queue';
 import { prisma } from '../../core/db';
 
 export async function bidEngineRoutes(fastify: FastifyInstance) {
@@ -63,7 +63,7 @@ export async function bidEngineRoutes(fastify: FastifyInstance) {
         }, JOB_OPTIONS.DEFAULT);
 
         // Wait for result
-        const result = await job.waitUntilFinished(queues.BID_ENGINE);
+        const result = await job.waitUntilFinished(queueEvents.BID_ENGINE);
         return result;
     });
 }
