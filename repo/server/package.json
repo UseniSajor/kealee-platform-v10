@@ -1,0 +1,35 @@
+{
+  "name": "kealee-agent-server",
+  "version": "1.0.0",
+  "description": "Backend for Kealee Agent Platform",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.18.0",
+    "@fastify/bearer-auth": "^10.1.2",
+    "@google-cloud/vision": "^4.0.2",
+    "@googlemaps/google-maps-services-js": "^3.3.42",
+    "@prisma/client": "^5.10.2",
+    "@sendgrid/mail": "^8.1.1",
+    "axios": "^1.6.7",
+    "bullmq": "^5.4.1",
+    "date-fns": "^3.3.1",
+    "docusign-esign": "*",
+    "dotenv": "^16.4.5",
+    "fastify": "^4.26.1",
+    "googleapis": "^134.0.0",
+    "ioredis": "^5.3.2",
+    "node-cron": "^3.0.3",
+    "twilio": "^4.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "prisma": "^5.10.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3"
+  }
+}
