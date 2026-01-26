@@ -3753,6 +3753,7 @@ model Lead {
   lostAt             DateTime?
   lostReason         String?
   stageChangedAt     DateTime?
+  srp                Decimal?
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 
@@ -3782,6 +3783,7 @@ model MarketplaceProfile {
   acceptingLeads       Boolean   @default(true)
   maxPipelineValue     Decimal?
   currentPipelineValue Decimal?  @default(0)
+  lastWonAt            DateTime?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 

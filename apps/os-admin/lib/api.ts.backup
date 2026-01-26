@@ -1,4 +1,4 @@
-import { api } from '@kealee/api-client'
+import { createApiClient } from '@kealee/api-client'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -10,42 +10,24 @@ interface ApiOptions {
 
 async function getAuthToken(): Promise<string | null> {
   if (typeof document === 'undefined') return null
-
+  
   const cookies = document.cookie.split(';')
   const tokenCookie = cookies.find(c => c.trim().startsWith('sb-access-token='))
   return tokenCookie ? tokenCookie.split('=')[1] : null
 }
 
-// Create a compatible leadApiClient using the available api export
-const leadApiClient = {
-  listLeads: (query?: any) => 
-    api.get<any>(`/leads${query ? '?' + new URLSearchParams(query).toString() : ''}`),
-  
-  getLead: (id: string) => 
-    api.get<any>(`/leads/${id}`),
-  
-  updateLeadStage: (id: string, stage: any) => 
-    api.put<any>(`/leads/${id}/stage`, { stage }),
-  
-  assignSalesRep: (id: string, salesRepId: string) => 
-    api.put<any>(`/leads/${id}/assign`, { salesRepId }),
-  
-  awardContractor: (id: string, profileId: string) => 
-    api.put<any>(`/leads/${id}/award`, { profileId }),
-  
-  closeLost: (id: string, reason: string) => 
-    api.put<any>(`/leads/${id}/close`, { reason, status: 'lost' }),
-  
-  distributeLead: (id: string, distributionCount?: number) => 
-    api.post<any>(`/leads/${id}/distribute`, { distributionCount }),
-}
+// Create shared API client for lead operations
+const leadApiClient = createApiClient({
+  baseUrl: API_URL,
+  getAuthToken,
+})
 
 export async function apiRequest<T>(
   endpoint: string,
   options: ApiOptions = {}
 ): Promise<T> {
   const token = await getAuthToken()
-
+  
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...options.headers,
@@ -69,13 +51,13 @@ export async function apiRequest<T>(
   return response.json()
 }
 
-// API methods (rest of the file remains the same)
+// API methods
 export const api = {
   // Auth
   getMe: () => apiRequest<{ user: any }>('/auth/me'),
   signup: (data: { email: string; password: string; name: string }) =>
     apiRequest<{ user: any; session: any }>('/auth/signup', { method: 'POST', body: data }),
-
+  
   // Users
   getUsers: (params?: { page?: number; limit?: number; status?: string; search?: string }) => {
     const query = new URLSearchParams()
@@ -87,7 +69,7 @@ export const api = {
   },
   getUser: (id: string) => apiRequest<{ user: any }>(`/users/${id}`),
   getUserOrgs: (id: string) => apiRequest<{ orgs: any[] }>(`/users/${id}/orgs`),
-
+  
   // Organizations
   getOrgs: (params?: { page?: number; limit?: number; status?: string; search?: string }) => {
     const query = new URLSearchParams()
@@ -108,7 +90,7 @@ export const api = {
     apiRequest<{ member: any }>(`/orgs/${orgId}/members/${userId}`, { method: 'PUT', body: { roleKey } }),
   removeOrgMember: (orgId: string, userId: string) =>
     apiRequest(`/orgs/${orgId}/members/${userId}`, { method: 'DELETE' }),
-
+  
   // Module Entitlements
   getOrgEntitlements: (orgId: string) =>
     apiRequest<{ entitlements: any[] }>(`/entitlements/orgs/${orgId}`),
@@ -125,7 +107,7 @@ export const api = {
     }),
   getModuleEntitlement: (orgId: string, moduleKey: string) =>
     apiRequest<{ entitlement: any }>(`/entitlements/orgs/${orgId}/modules/${moduleKey}`),
-
+  
   // RBAC
   getRoles: () => apiRequest<{ roles: any[] }>('/rbac/roles'),
   getRole: (key: string) => apiRequest<{ role: any }>(`/rbac/roles/${key}`),
@@ -135,7 +117,7 @@ export const api = {
     apiRequest<{ role: any }>('/rbac/roles', { method: 'POST', body: data }),
   createPermission: (data: { key: string; name: string; description?: string }) =>
     apiRequest<{ permission: any }>('/rbac/permissions', { method: 'POST', body: data }),
-
+  
   // Audit Logs
   getAuditLogs: (params?: { page?: number; limit?: number; action?: string; entityType?: string; entityId?: string; userId?: string; startDate?: string; endDate?: string }) => {
     const query = new URLSearchParams()
@@ -150,7 +132,7 @@ export const api = {
     return apiRequest<{ auditLogs: any[]; pagination: any }>(`/audit?${query.toString()}`)
   },
   getAuditLog: (id: string) => apiRequest<{ auditLog: any }>(`/audit/${id}`),
-
+  
   // Events
   getRecentEvents: (limit?: number) => {
     const query = new URLSearchParams()
@@ -208,4 +190,18 @@ export const api = {
   deleteContractTemplate: (id: string) => apiRequest<{ template: any }>(`/contracts/templates/${id}`, { method: 'DELETE' }),
   previewContractTemplate: (id: string, data?: { projectId?: string; variables?: Record<string, string> }) =>
     apiRequest<{ preview: any }>(`/contracts/templates/${id}/preview`, { method: 'POST', body: data }),
+
+  // Sales Pipeline / Leads (using shared API client)
+  listLeads: (query?: Parameters<typeof leadApiClient.listLeads>[0]) =>
+    leadApiClient.listLeads(query),
+  getLead: (id: string) => leadApiClient.getLead(id),
+  updateLeadStage: (id: string, stage: Parameters<typeof leadApiClient.updateLeadStage>[1]) =>
+    leadApiClient.updateLeadStage(id, stage),
+  assignSalesRep: (id: string, salesRepId: string) =>
+    leadApiClient.assignSalesRep(id, salesRepId),
+  awardContractor: (id: string, profileId: string) =>
+    leadApiClient.awardContractor(id, profileId),
+  closeLost: (id: string, reason: string) => leadApiClient.closeLost(id, reason),
+  distributeLead: (id: string, distributionCount?: number) =>
+    leadApiClient.distributeLead(id, distributionCount),
 }

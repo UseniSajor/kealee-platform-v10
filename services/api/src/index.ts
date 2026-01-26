@@ -27,12 +27,12 @@ if (process.env.NODE_ENV !== 'production') {
 function validateStartupGuards() {
   // Guard 1: Require APP_ENV or detect from NODE_ENV/Railway
   // Support multiple environment variable patterns for flexibility
-  const appEnv = 
-    process.env.APP_ENV || 
-    process.env.NODE_ENV || 
+  const appEnv =
+    process.env.APP_ENV ||
+    process.env.NODE_ENV ||
     (process.env.RAILWAY_SERVICE_NAME?.toLowerCase().includes('staging') ? 'staging' : undefined) ||
     process.env.RAILWAY_ENVIRONMENT_NAME
-  
+
   if (!appEnv) {
     console.error('')
     console.error('='.repeat(80))
@@ -59,13 +59,13 @@ function validateStartupGuards() {
     console.error('='.repeat(80))
     process.exit(1)
   }
-  
+
   // Normalize environment value
   const normalizedEnv = appEnv.toLowerCase()
-  
+
   // Log detected environment
   console.log(`✅ Environment detected: ${normalizedEnv}`)
-  
+
   // Ensure we have a valid environment value
   if (!['development', 'staging', 'production', 'preview'].includes(normalizedEnv)) {
     console.warn(`⚠️  Warning: Unusual environment value "${normalizedEnv}". Expected: development, staging, production, or preview`)
@@ -94,7 +94,7 @@ function validateStartupGuards() {
 
   // Guard 3: Prevent staging from connecting to production database
   if (normalizedEnv === 'staging') {
-    const isProductionDb = 
+    const isProductionDb =
       databaseUrl.includes('production-postgres') ||
       databaseUrl.includes('production-postgres.internal') ||
       databaseUrl.includes('prod-postgres') ||
@@ -130,7 +130,7 @@ function validateStartupGuards() {
 
   // Guard 4: Prevent production from connecting to staging database
   if (normalizedEnv === 'production') {
-    const isStagingDb = 
+    const isStagingDb =
       databaseUrl.includes('staging-postgres') ||
       databaseUrl.includes('staging-postgres.internal') ||
       databaseUrl.includes('stage-postgres') ||
@@ -236,6 +236,8 @@ import { contractDashboardRoutes } from './modules/contracts/contract-dashboard.
 import { contractComplianceRoutes } from './modules/contracts/contract-compliance.routes'
 import { contractSecurityRoutes } from './modules/contracts/contract-security.routes'
 import { leadsRoutes } from './modules/marketplace/leads.routes'
+import { quotesRoutes } from './modules/marketplace/quotes.routes'
+import { designRoutes } from './modules/marketplace/design.routes'
 import { paymentRoutes } from './modules/payments/payment.routes'
 import { escrowRoutes } from './modules/escrow/escrow.routes'
 import { depositRoutes } from './modules/deposits/deposit.routes'
@@ -284,15 +286,15 @@ const start = async () => {
   try {
     // Log environment information
     logEnvironment();
-    
+
     // Validate production-only configuration
     if (environment.isProduction) {
       validateProductionConfig();
     }
-    
+
     // Get safe configuration based on environment
     const config = getSafeConfig();
-    
+
     // Log configuration warnings
     if (environment.isPreview) {
       console.log('🔵 Running in PREVIEW mode:');
@@ -302,57 +304,59 @@ const start = async () => {
       console.log('');
     }
     // AFTER: const fastify = Fastify({ ... })
-// BEFORE: registering routes
+    // BEFORE: registering routes
 
-fastify.register(async function apiScope(api) {
-  // All these become /api/<prefix>/<route>
-  await api.register(stripeConnectRoutes, { prefix: '/connect' })
-  await api.register(projectRoutes, { prefix: '/projects' })
-  await api.register(propertyRoutes, { prefix: '/properties' })
-  await api.register(readinessRoutes, { prefix: '/readiness' })
+    fastify.register(async function apiScope(api) {
+      // All these become /api/<prefix>/<route>
+      await api.register(stripeConnectRoutes, { prefix: '/connect' })
+      await api.register(projectRoutes, { prefix: '/projects' })
+      await api.register(propertyRoutes, { prefix: '/properties' })
+      await api.register(readinessRoutes, { prefix: '/readiness' })
 
-  await api.register(contractTemplateRoutes, { prefix: '/contracts' })
-  await api.register(contractRoutes, { prefix: '/contracts' })
-  await api.register(contractDashboardRoutes, { prefix: '/contracts' })
-  await api.register(contractComplianceRoutes, { prefix: '/contracts' })
-  await api.register(contractSecurityRoutes, { prefix: '/contracts' })
+      await api.register(contractTemplateRoutes, { prefix: '/contracts' })
+      await api.register(contractRoutes, { prefix: '/contracts' })
+      await api.register(contractDashboardRoutes, { prefix: '/contracts' })
+      await api.register(contractComplianceRoutes, { prefix: '/contracts' })
+      await api.register(contractSecurityRoutes, { prefix: '/contracts' })
 
-  await api.register(milestoneRoutes, { prefix: '/milestones' })
-  await api.register(milestoneUploadRoutes, { prefix: '/milestones' })
-  await api.register(milestoneReviewRoutes, { prefix: '/milestones' })
+      await api.register(milestoneRoutes, { prefix: '/milestones' })
+      await api.register(milestoneUploadRoutes, { prefix: '/milestones' })
+      await api.register(milestoneReviewRoutes, { prefix: '/milestones' })
 
-  await api.register(marketplaceRoutes, { prefix: '/marketplace' })
-  await api.register(leadsRoutes, { prefix: '/marketplace' })
+      await api.register(marketplaceRoutes, { prefix: '/marketplace' })
+      await api.register(leadsRoutes, { prefix: '/marketplace' })
+      await api.register(quotesRoutes, { prefix: '/marketplace' })
+      await api.register(designRoutes, { prefix: '/marketplace' })
 
-  await api.register(paymentRoutes, { prefix: '/payments' })
-}, { prefix: '/api' })
+      await api.register(paymentRoutes, { prefix: '/payments' })
+    }, { prefix: '/api' })
 
-    
+
     // Register plugins
     // CORS configuration - allow all client-facing and internal domains
     const corsOrigins = process.env.CORS_ORIGINS
       ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim())
       : [
-          // CLIENT-FACING
-          'https://kealee.com',
-          'https://www.kealee.com',
-          'https://ops.kealee.com',
-          'https://app.kealee.com',
-          'https://architect.kealee.com',
-          'https://permits.kealee.com',
-          // INTERNAL
-          'https://pm.kealee.com',
-          'https://admin.kealee.com',
-          // DEVELOPMENT
-          'http://localhost:3000',
-          'http://localhost:3001',
-          'http://localhost:3002',
-          'http://localhost:3003',
-          'http://localhost:3004',
-          'http://localhost:3005',
-          'http://localhost:3006',
-          'http://localhost:3007',
-        ]
+        // CLIENT-FACING
+        'https://kealee.com',
+        'https://www.kealee.com',
+        'https://ops.kealee.com',
+        'https://app.kealee.com',
+        'https://architect.kealee.com',
+        'https://permits.kealee.com',
+        // INTERNAL
+        'https://pm.kealee.com',
+        'https://admin.kealee.com',
+        // DEVELOPMENT
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://localhost:3002',
+        'http://localhost:3003',
+        'http://localhost:3004',
+        'http://localhost:3005',
+        'http://localhost:3006',
+        'http://localhost:3007',
+      ]
 
     await fastify.register(cors, {
       origin: (origin, callback) => {
@@ -438,13 +442,13 @@ fastify.register(async function apiScope(api) {
     await fastify.register(escrowRoutes, { prefix: '/escrow' })
     await fastify.register(depositRoutes, { prefix: '/deposits' })
     await fastify.register(disputeRoutes, { prefix: '/disputes' })
-    
+
     // Analytics and Compliance - Now enabled
     const { analyticsRoutes } = await import('./modules/analytics/analytics.routes')
     const { complianceRoutes: complianceMonitoringRoutes } = await import('./modules/compliance/compliance.routes')
     await fastify.register(analyticsRoutes, { prefix: '/analytics' })
     await fastify.register(complianceMonitoringRoutes, { prefix: '/compliance/monitoring' })
-    
+
     // Temporarily disabled - DTO type mismatches
     // await fastify.register(accountingRoutes, { prefix: '/accounting' })
     await fastify.register(stripeConnectRoutes, { prefix: '/connect' })
@@ -495,7 +499,7 @@ fastify.register(async function apiScope(api) {
     await fastify.register(jurisdictionRoutes, { prefix: '/permits' })
     await fastify.register(jurisdictionConfigRoutes, { prefix: '/permits' })
     await fastify.register(jurisdictionStaffRoutes, { prefix: '/permits' })
-    
+
     // Register jurisdiction subscription routes
     const { jurisdictionSubscriptionRoutes } = await import('./modules/permits/jurisdiction-subscription.routes')
     await fastify.register(jurisdictionSubscriptionRoutes, { prefix: '/jurisdictions' })
@@ -524,30 +528,30 @@ fastify.register(async function apiScope(api) {
     // await fastify.register(stripeWebhookRoutes, { prefix: '/webhooks' })
     // Oversight temporarily disabled
     // await fastify.register(oversightRoutes, { prefix: '/api/admin/oversight' })
-    
+
     // Register new API routes for PM workspace
     const { clientRoutes } = await import('./routes/client.routes')
     const { taskRoutes } = await import('./routes/task.routes')
     const { permitRoutes } = await import('./routes/permit.routes')
     const { reportRoutes } = await import('./routes/report.routes')
-    
+
     await fastify.register(clientRoutes, { prefix: '/api/clients' })
     await fastify.register(taskRoutes, { prefix: '/api/tasks' })
     await fastify.register(permitRoutes, { prefix: '/api/permits' })
-    
+
     // Register permit payment routes
     const { permitPaymentRoutes } = await import('./modules/permits/permit-payment.routes')
     await fastify.register(permitPaymentRoutes, { prefix: '/permits' })
     await fastify.register(reportRoutes, { prefix: '/api/reports' })
-    
+
     // Register Stripe routes
     const { stripeRoutes } = await import('./routes/stripe.routes')
     await fastify.register(stripeRoutes, { prefix: '/api/stripe' })
-    
+
     // Register Google Places routes
     const { googlePlacesRoutes } = await import('./routes/google-places.routes')
     await fastify.register(googlePlacesRoutes, { prefix: '/api/google-places' })
-    
+
     // Note: File routes already registered at line 284 with prefix '/files'
 
     // GraphQL DISABLED FOR MVP - Uncomment when needed
@@ -575,9 +579,9 @@ fastify.register(async function apiScope(api) {
 
     // Railway provides PORT env var, default to 3000 for local dev
     const port = Number(process.env.PORT) || 3000
-    
+
     await fastify.listen({ port, host: '0.0.0.0' })
-    
+
     // Startup complete message
     const emoji = environment.isProduction ? '🚀' : environment.isStaging ? '🔶' : environment.isPreview ? '🔵' : '💻';
     console.log('');

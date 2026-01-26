@@ -36,7 +36,52 @@ const closeLostBodySchema = z.object({
   reason: z.string().min(1),
 })
 
+const createLeadBodySchema = z.object({
+  category: z.string().min(1),
+  description: z.string().min(1),
+  estimatedValue: z.number().optional(),
+  srp: z.number().optional(),
+  location: z.string().min(1),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  projectId: z.string().uuid().optional(),
+})
+
 export async function leadsRoutes(fastify: FastifyInstance) {
+  /**
+   * Create a new lead (Prompt 2.2)
+   */
+  fastify.post(
+    '/leads',
+    {
+      preHandler: [
+        authenticateUser,
+        validateBody(createLeadBodySchema),
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user as { id: string }
+        const body = request.body as any
+
+        const lead = await leadsService.createLead({
+          ...body,
+          userId: user.id,
+        })
+
+        return reply.code(201).send({
+          success: true,
+          lead,
+        })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(400).send({
+          error: error.message || 'Failed to create lead',
+        })
+      }
+    }
+  )
+
   // GET /leads - List leads with filtering
   fastify.get(
     '/leads',

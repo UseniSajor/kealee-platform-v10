@@ -86,6 +86,7 @@ export const marketplaceService = {
             avatar: true,
           },
         },
+        portfolio: true,
       },
     })
 
@@ -99,28 +100,22 @@ export const marketplaceService = {
       },
     })
 
-    // Get completed projects count
-    const completedProjectsCount = await prismaAny.contractAgreement.count({
-      where: {
-        contractorId: profile.userId,
-        status: 'COMPLETED',
-      },
-    })
-
     return {
       id: profile.id,
       userId: profile.userId,
       businessName: profile.businessName,
+      description: profile.description,
       user: profile.user,
-      // Placeholder fields for future schema enhancements
-      rating: null as number | null,
-      reviewCount: 0,
-      projectsCompleted: completedProjectsCount,
-      performanceScore: null as number | null,
-      verified: false,
-      specialties: [] as string[],
+      rating: profile.rating,
+      reviewCount: profile.reviewCount,
+      projectsCompleted: profile.projectsCompleted,
+      performanceScore: profile.performanceScore,
+      verified: profile.verified,
+      specialties: profile.specialties,
+      portfolio: profile.portfolio,
       availableCapacity: activeContractsCount < 5 ? 'Available' : activeContractsCount < 10 ? 'Limited' : 'Fully Booked',
       activeContractsCount,
+      lastWonAt: profile.lastWonAt,
     }
   },
 

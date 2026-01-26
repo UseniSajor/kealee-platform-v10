@@ -26,11 +26,61 @@ export interface ContractorCandidate {
   subscriptionTier: string | null
   currentPipelineValue: PrismaDecimal
   maxPipelineValue: PrismaDecimal
+  lastWonAt: Date | null
   canAccept: boolean
   rejectionReason?: string
 }
 
 export const leadsService = {
+  /**
+   * Create a new lead
+   */
+  async createLead(input: {
+    category: string
+    description: string
+    estimatedValue?: number
+    srp?: number
+    location: string
+    city?: string
+    state?: string
+    projectId?: string
+    userId?: string
+  }) {
+    const lead = await prismaAny.lead.create({
+      data: {
+        category: input.category,
+        description: input.description,
+        estimatedValue: input.estimatedValue as any,
+        srp: input.srp as any,
+        location: input.location,
+        city: input.city,
+        state: input.state,
+        projectId: input.projectId,
+        stage: 'OPEN',
+      },
+    })
+
+    // Log audit
+    await auditService.recordAudit({
+      action: 'LEAD_CREATED',
+      entityType: 'Lead',
+      entityId: lead.id,
+      userId: input.userId || 'system',
+      after: lead,
+    })
+
+    // Log event
+    await eventService.recordEvent({
+      type: 'LEAD_CREATED',
+      entityType: 'Lead',
+      entityId: lead.id,
+      userId: input.userId,
+      payload: lead,
+    })
+
+    return lead
+  },
+
   /**
    * Distribute a lead to eligible contractors based on capacity and performance
    */
@@ -348,6 +398,7 @@ export const leadsService = {
         projectsCompleted,
         subscriptionTier: profile.subscriptionTier,
         currentPipelineValue,
+        lastWonAt: profile.lastWonAt,
         maxPipelineValue: profile.maxPipelineValue,
         canAccept,
         rejectionReason,
@@ -356,30 +407,38 @@ export const leadsService = {
 
     // Sort candidates by selection criteria:
     // 1. verified (desc)
-    // 2. performanceScore (desc)
-    // 3. rating (desc)
-    // 4. projectsCompleted (desc)
+    // 2. lastWonAt (asc, nulls first - front of queue)
+    // 3. performanceScore (desc)
+    // 4. rating (desc)
+    // 5. projectsCompleted (desc)
     candidates.sort((a, b) => {
       // 1. Verified first
       if (a.verified !== b.verified) {
         return a.verified ? -1 : 1
       }
 
-      // 2. Performance score
+      // 2. Fair Rotation: Last won at (asc, nulls first)
+      if (a.lastWonAt !== b.lastWonAt) {
+        if (!a.lastWonAt) return -1
+        if (!b.lastWonAt) return 1
+        return a.lastWonAt.getTime() - b.lastWonAt.getTime()
+      }
+
+      // 3. Performance score
       if (a.performanceScore !== b.performanceScore) {
         if (a.performanceScore === null) return 1
         if (b.performanceScore === null) return -1
         return b.performanceScore - a.performanceScore
       }
 
-      // 3. Rating
+      // 4. Rating
       if (a.rating !== b.rating) {
         if (a.rating === null) return 1
         if (b.rating === null) return -1
         return b.rating - a.rating
       }
 
-      // 4. Projects completed
+      // 5. Projects completed
       return b.projectsCompleted - a.projectsCompleted
     })
 
@@ -693,6 +752,15 @@ export const leadsService = {
             },
           },
         },
+      },
+    })
+
+    // Update contractor's lastWonAt for rotation system
+    await prismaAny.marketplaceProfile.update({
+      where: { id: profileId },
+      data: {
+        lastWonAt: new Date(),
+        projectsCompleted: { increment: 1 },
       },
     })
 
