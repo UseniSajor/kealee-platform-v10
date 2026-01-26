@@ -1,0 +1,10 @@
+# Kealee Platform - Railway Configuration
+# This file configures Railway deployments for the monorepo
+
+[build]
+builder = "NIXPACKS"
+watchPatterns = ["services/**", "packages/**"]
+
+[deploy]
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
