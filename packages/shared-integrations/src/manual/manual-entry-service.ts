@@ -4,7 +4,6 @@
 // ============================================================
 
 import { IntegrationConfig, IntegrationResult, PermitSubmissionData, StatusCheckResult } from '../types';
-import { createClient } from '@kealee/database';
 
 export class ManualEntryService {
   private config: IntegrationConfig;

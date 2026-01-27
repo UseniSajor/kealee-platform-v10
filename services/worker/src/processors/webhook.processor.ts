@@ -173,7 +173,7 @@ export function createWebhookWorker(): Worker<WebhookJobData> {
       return processWebhookJob(job)
     },
     {
-      connection: redis,
+      connection: redis as any,
       concurrency: 20, // Process up to 20 webhooks concurrently
       limiter: {
         max: 1000, // Max 1000 webhooks per

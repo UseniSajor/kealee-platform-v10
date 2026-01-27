@@ -139,7 +139,7 @@ export function createMLPredictionWorker() {
       return processMLPredictionJob(job)
     },
     {
-      connection: redis,
+      connection: redis as any,
       concurrency: 3, // Process 3 prediction jobs concurrently
       limiter: {
         max: 10, // Max 10 jobs

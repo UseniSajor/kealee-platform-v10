@@ -141,7 +141,7 @@ export function createEmailWorker(): Worker<EmailJobData> {
       return processEmailJob(job)
     },
     {
-      connection: redis,
+      connection: redis as any,
       concurrency: 10, // Process up to 10 emails concurrently
       limiter: {
         max: 100, // Max 100 emails per

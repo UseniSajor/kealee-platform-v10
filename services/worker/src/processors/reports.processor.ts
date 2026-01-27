@@ -277,7 +277,7 @@ export function createReportsWorker(): Worker<ReportJobData> {
       return processReportJob(job)
     },
     {
-      connection: redis,
+      connection: redis as any,
       concurrency: 3, // Process up to 3 reports concurrently (PDF generation is CPU intensive)
       limiter: {
         max: 100, // Max 100 reports per

@@ -12,7 +12,7 @@ export interface BaseJobData {
 export class BaseQueue<T = BaseJobData> extends Queue<T> {
   constructor(name: string, options?: Partial<QueueOptions>) {
     super(name, {
-      connection: redis,
+      connection: redis as any,
       defaultJobOptions: {
         attempts: 3,
         backoff: {

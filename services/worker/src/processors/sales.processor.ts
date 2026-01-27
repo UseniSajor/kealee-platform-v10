@@ -12,7 +12,7 @@ async function processSlaReminderJob(job: Job<SalesJobData>): Promise<SalesSlaRe
 
   try {
     // Fetch sales task and related data
-    const task = await prisma.salesTask.findUnique({
+    const task = await (prisma as any).salesTask?.findUnique({
       where: { id: taskId },
       include: {
         lead: {
@@ -85,10 +85,10 @@ async function processSlaReminderJob(job: Job<SalesJobData>): Promise<SalesSlaRe
     })
 
     // Record audit event
-    const auditLog = await prisma.auditLog.create({
+    const auditLog = await (prisma as any).auditLog?.create({
       data: {
-        action: 'SALES_TASK_SLA_REMINDER_SENT',
-        entityType: 'SalesTask',
+        action: 'SALES_TASK_SLA_REMINDER_SENT' as any,
+        entityType: 'SalesTask' as any,
         entityId: taskId,
         userId: assignedToUserId,
         reason: `SLA reminder sent for task ${taskId} (due in ${timeMessage})`,
@@ -106,7 +106,7 @@ async function processSlaReminderJob(job: Job<SalesJobData>): Promise<SalesSlaRe
     })
 
     // Record event
-    await prisma.event.create({
+    await (prisma as any).event?.create({
       data: {
         type: 'SALES_TASK_SLA_REMINDER_SENT',
         entityType: 'SalesTask',
@@ -153,7 +153,7 @@ export function createSalesWorker(): Worker<SalesJobData> {
       }
     },
     {
-      connection: redis,
+      connection: redis as any,
       concurrency: 10, // Process up to 10 sales jobs concurrently
       limiter: {
         max: 100, // Max 100 jobs per

@@ -145,7 +145,7 @@ export function createMLWorker(): Worker<MLJobData> {
       return processMLJob(job)
     },
     {
-      connection: redis,
+      connection: redis as any,
       concurrency: 5, // Process up to 5 ML jobs concurrently (API rate limits)
       limiter: {
         max: 50, // Max 50 ML jobs per

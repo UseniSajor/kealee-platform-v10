@@ -157,7 +157,9 @@ export class IntegrationService {
       }
 
       // Log the attempt
-      this.logIntegrationAttempt('submitPermit', result, Date.now() - startTime, retryCount);
+      if (result) {
+        this.logIntegrationAttempt('submitPermit', result, Date.now() - startTime, retryCount);
+      }
       
       return result || {
         success: false,
@@ -220,8 +222,10 @@ export class IntegrationService {
         result = await this.attemptFallbackStatusCheck(permitNumber, this.config.fallbackTier);
       }
 
-      this.logIntegrationAttempt('checkStatus', result, Date.now() - startTime, retryCount);
-      
+      if (result) {
+        this.logIntegrationAttempt('checkStatus', result, Date.now() - startTime, retryCount);
+      }
+
       return result || {
         success: false,
         error: 'No integration method available',

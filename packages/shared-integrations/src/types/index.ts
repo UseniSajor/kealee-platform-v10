@@ -4,7 +4,7 @@
 
 export type IntegrationTier = 'API' | 'PORTAL' | 'MANUAL' | 'OCR';
 
-export type IntegrationProvider = 'ACCELA' | 'TYLER' | 'GOVOS' | 'CUSTOM' | 'NONE';
+export type IntegrationProvider = 'ACCELA' | 'TYLER' | 'GOVOS' | 'CUSTOM' | 'NONE' | 'EMAIL' | 'OCR';
 
 export interface IntegrationConfig {
   jurisdictionId: string;
