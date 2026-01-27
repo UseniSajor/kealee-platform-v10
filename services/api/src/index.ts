@@ -251,6 +251,9 @@ import { fileRoutes } from './modules/files/file.routes'
 // Temporarily disabled - DTO type mismatches
 // import { accountingRoutes } from './routes/accounting.routes'
 import { stripeConnectRoutes } from './routes/stripe-connect.routes'
+import { estimationRoutes } from './modules/estimation/estimation.routes'
+import { preconRoutes } from './modules/precon/precon.routes'
+import { engineerRoutes } from './modules/engineer/engineer.routes'
 // Analytics temporarily disabled
 // import { analyticsRoutes } from './modules/analytics/analytics.routes'
 import { monitoringDashboardRoutes } from './modules/monitoring/monitoring-dashboard.routes'
@@ -518,6 +521,15 @@ const start = async () => {
     await fastify.register(monitoringDashboardRoutes)
     await fastify.register(taskGeneratorRoutes, { prefix: '/tasks' })
     await fastify.register(complianceCheckpointRoutes, { prefix: '/compliance' })
+
+    // Estimation (Command Center integration)
+    await fastify.register(estimationRoutes, { prefix: '/estimation' })
+
+    // Pre-Construction Workflow (Project Owner Module)
+    await fastify.register(preconRoutes, { prefix: '/precon' })
+
+    // Engineering Services
+    await fastify.register(engineerRoutes, { prefix: '/engineer' })
     // Temporarily disabled - missing @kealee/compliance package
     // await fastify.register(complianceGatesRoutes, { prefix: '/compliance' })
     // Temporarily disabled - type issues in route handlers

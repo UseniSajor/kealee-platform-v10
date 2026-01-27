@@ -1547,6 +1547,7 @@ model User {
   ownedContracts      ContractAgreement[] @relation("ContractOwner")
   contractorContracts ContractAgreement[] @relation("ContractContractor")
   marketplaceProfile  MarketplaceProfile? @relation("MarketplaceProfileUser")
+  contractorProfile   ContractorProfile?  @relation("ContractorProfileUser")
 
   // Approval Workflow relations
   approvalRequests ApprovalRequest[] @relation("ApprovalRequestRequester")
@@ -1614,6 +1615,9 @@ model User {
   paymentMethods   PaymentMethod[]   @relation("UserPaymentMethods")
   depositRequests  DepositRequest[]  @relation("UserDepositRequests")
   taxForms         TaxForm[]         @relation("UserTaxForms")
+
+  // PreCon Project relations
+  preConProjects   PreConProject[]   @relation("PreConProjectOwner")
 }
 
 // ============================================================================
@@ -4632,9 +4636,408 @@ model SecurityAlert {
   resolvedAt  DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   @@index([alertType])
   @@index([severity])
   @@index([status])
   @@index([createdAt])
+}
+
+// ============================================================================
+// PRE-CONSTRUCTION WORKFLOW & MARKETPLACE (Project Owner Module)
+// ============================================================================
+
+enum PreConPhase {
+  INTAKE              // Initial project request submitted
+  DESIGN_IN_PROGRESS  // Design concepts being created
+  DESIGN_REVIEW       // Owner reviewing concepts
+  DESIGN_APPROVED     // Owner approved final design
+  SRP_GENERATED       // Suggested Retail Price calculated
+  MARKETPLACE_READY   // Ready for contractor bids
+  BIDDING_OPEN        // Actively receiving bids
+  AWARDED             // Contractor selected
+  CONTRACT_PENDING    // Contract being prepared
+  CONTRACT_RATIFIED   // Contract signed - fees collected
+  COMPLETED           // Pre-con complete, project started
+}
+
+enum DesignPackageTier {
+  BASIC               // $199 - Basic concept sketches
+  STANDARD            // $499 - Detailed designs with 3D
+  PREMIUM             // $999 - Full architectural package
+}
+
+enum PlatformFeeType {
+  DESIGN_PACKAGE      // Upfront design fee
+  CONTRACT_COMMISSION // % of contract at ratification
+  LEAD_SALE           // Lead sold to contractor (B2B only)
+}
+
+enum PlatformFeeStatus {
+  PENDING             // Fee calculated but not collected
+  HOLD                // Held in escrow
+  COLLECTED           // Fee collected successfully
+  REFUNDED            // Fee refunded
+  WAIVED              // Fee waived (promo/dispute)
+}
+
+// Pre-Construction Project - Main workflow entity
+model PreConProject {
+  id                String       @id @default(uuid())
+  ownerId           String
+  orgId             String?
+
+  // Project Details
+  name              String
+  category          String       // KITCHEN, BATHROOM, ADDITION, etc.
+  description       String       @db.Text
+
+  // Location
+  address           String?
+  city              String?
+  state             String?
+  zipCode           String?
+  latitude          Float?
+  longitude         Float?
+
+  // Scope
+  squareFootage     Int?
+  rooms             Int?
+  floors            Int?
+  features          String[]     // Array of requested features
+  complexity        String       @default("STANDARD") // BASIC, STANDARD, PREMIUM, LUXURY
+
+  // Pre-Con Status
+  phase             PreConPhase  @default(INTAKE)
+  intakeCompletedAt DateTime?
+  designStartedAt   DateTime?
+  designApprovedAt  DateTime?
+  srpGeneratedAt    DateTime?
+  marketplaceReadyAt DateTime?
+  biddingOpenedAt   DateTime?
+  awardedAt         DateTime?
+  contractRatifiedAt DateTime?
+
+  // Design Package Selection
+  designPackageTier DesignPackageTier @default(STANDARD)
+  designPackagePaid Boolean      @default(false)
+  designPackagePaidAt DateTime?
+
+  // Design Concepts
+  selectedConceptId String?
+
+  // Pricing (SRP)
+  suggestedRetailPrice Decimal?  @db.Decimal(12, 2)
+  srpLaborCost      Decimal?     @db.Decimal(12, 2)
+  srpMaterialCost   Decimal?     @db.Decimal(12, 2)
+  srpContingency    Decimal?     @db.Decimal(12, 2)
+  srpMarkup         Decimal?     @db.Decimal(12, 2)
+  srpBreakdown      Json?        // Detailed breakdown
+  srpConfidence     Int?         // 0-100 confidence score
+  srpValidUntil     DateTime?
+
+  // Marketplace Settings (Lead sale hidden from owner UI)
+  allowBidding      Boolean      @default(true)
+  minimumBid        Decimal?     @db.Decimal(12, 2)
+  biddingDeadline   DateTime?
+  maxBids           Int          @default(5)
+
+  // Internal: Lead Sale (NOT visible to project owner)
+  leadSaleEnabled   Boolean      @default(false) // Admin/B2B only
+  leadSalePrice     Decimal?     @db.Decimal(12, 2)
+  leadSoldAt        DateTime?
+  leadSoldToProfileId String?
+
+  // Contract & Award
+  awardedBidId      String?
+  awardedContractorId String?
+  contractAmount    Decimal?     @db.Decimal(12, 2)
+
+  // Links
+  projectId         String?      // Links to main Project after award
+  estimateId        String?      // Links to estimation engine estimate
+
+  // Timestamps
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  // Relationships
+  owner             User         @relation("PreConProjectOwner", fields: [ownerId], references: [id])
+  designConcepts    DesignConcept[]
+  bids              ContractorBid[]
+  platformFees      PlatformFee[]
+  phaseHistory      PreConPhaseHistory[]
+
+  @@index([ownerId])
+  @@index([phase])
+  @@index([category])
+  @@index([state])
+  @@index([createdAt])
+}
+
+// Design Concept - Created by platform/architect for owner review
+model DesignConcept {
+  id                String       @id @default(uuid())
+  preConProjectId   String
+
+  // Concept Details
+  name              String       // "Modern Minimalist", "Traditional", etc.
+  description       String       @db.Text
+  style             String?      // Design style category
+
+  // Design Files
+  primaryImageUrl   String?      // Main rendering/image
+  designFiles       Json?        // Array of { url, type, name }
+  floorPlanUrl      String?
+  renderingsUrls    String[]
+  specificationUrl  String?
+
+  // Estimated Values
+  estimatedCost     Decimal      @db.Decimal(12, 2)
+  estimatedTimeline Int          // days
+  estimatedLaborCost Decimal?    @db.Decimal(12, 2)
+  estimatedMaterialCost Decimal? @db.Decimal(12, 2)
+
+  // Features & Materials
+  features          String[]
+  materials         Json?        // Array of { name, quantity, unitCost }
+  finishes          Json?        // Finish selections
+
+  // Selection
+  isSelected        Boolean      @default(false)
+  selectedAt        DateTime?
+
+  // Owner Feedback
+  ownerRating       Int?         // 1-5 stars
+  ownerFeedback     String?      @db.Text
+  ownerNotes        String?      @db.Text
+
+  // Metadata
+  createdById       String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  // Relationships
+  preConProject     PreConProject @relation(fields: [preConProjectId], references: [id], onDelete: Cascade)
+
+  @@index([preConProjectId])
+  @@index([isSelected])
+}
+
+// Contractor Profile - Contractors in the marketplace system
+model ContractorProfile {
+  id                String    @id @default(uuid())
+  userId            String    @unique
+
+  // Business Info
+  businessName      String
+  licenseNumber     String?
+  insuranceInfo     Json?
+  yearsInBusiness   Int?
+
+  // Contact
+  email             String
+  phone             String?
+  address           String?
+  city              String?
+  state             String?
+  zipCode           String?
+
+  // Profile
+  description       String?   @db.Text
+  specialties       String[]
+  serviceArea       Json?     // GeoJSON or list of zip codes
+
+  // Ratings & Performance
+  rating            Decimal?  @db.Decimal(3, 2) @default(0)
+  reviewCount       Int       @default(0)
+  projectsCompleted Int       @default(0)
+
+  // Verification
+  isVerified        Boolean   @default(false)
+  verifiedAt        DateTime?
+  backgroundCheck   Boolean   @default(false)
+
+  // Status
+  isActive          Boolean   @default(true)
+  acceptingBids     Boolean   @default(true)
+
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relationships
+  user              User      @relation("ContractorProfileUser", fields: [userId], references: [id])
+  bids              ContractorBid[]
+
+  @@index([userId])
+  @@index([isVerified])
+  @@index([isActive])
+  @@index([acceptingBids])
+}
+
+// Contractor Bid - Bids from marketplace
+model ContractorBid {
+  id                String       @id @default(uuid())
+  preConProjectId   String
+  contractorProfileId String
+
+  // Bid Details
+  bidAmount         Decimal      @db.Decimal(12, 2)
+  proposedTimeline  Int          // days
+  proposedStartDate DateTime?
+
+  // Breakdown
+  laborCost         Decimal?     @db.Decimal(12, 2)
+  materialCost      Decimal?     @db.Decimal(12, 2)
+  overheadCost      Decimal?     @db.Decimal(12, 2)
+  profitMargin      Decimal?     @db.Decimal(5, 2) // percentage
+
+  // Proposal
+  coverLetter       String?      @db.Text
+  proposalDocUrl    String?
+  portfolioUrls     String[]
+  references        Json?        // Array of references
+
+  // Status
+  status            String       @default("SUBMITTED") // SUBMITTED, UNDER_REVIEW, SHORTLISTED, AWARDED, REJECTED, WITHDRAWN
+  isAwarded         Boolean      @default(false)
+  awardedAt         DateTime?
+
+  // Contractor Info (denormalized for display)
+  contractorName    String?
+  contractorRating  Decimal?     @db.Decimal(3, 2)
+  contractorReviews Int?
+
+  // Timestamps
+  submittedAt       DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  expiresAt         DateTime?
+
+  // Relationships
+  preConProject     PreConProject @relation(fields: [preConProjectId], references: [id], onDelete: Cascade)
+  contractorProfile ContractorProfile @relation(fields: [contractorProfileId], references: [id])
+
+  @@index([preConProjectId])
+  @@index([contractorProfileId])
+  @@index([status])
+  @@index([isAwarded])
+}
+
+// Platform Fee - Tracks all fees owed to Kealee platform
+model PlatformFee {
+  id                String           @id @default(uuid())
+  preConProjectId   String?
+  projectId         String?
+  contractId        String?
+
+  // Fee Details
+  feeType           PlatformFeeType
+  amount            Decimal          @db.Decimal(12, 2)
+  currency          String           @default("USD")
+
+  // Calculation
+  baseAmount        Decimal?         @db.Decimal(12, 2) // Contract amount or base
+  feePercentage     Decimal?         @db.Decimal(5, 4)  // e.g., 0.0350 = 3.5%
+  flatFee           Decimal?         @db.Decimal(12, 2)
+
+  // Status
+  status            PlatformFeeStatus @default(PENDING)
+
+  // Payment Method: GUARANTEED at Contract Ratification
+  // Fee is held in escrow from contractor's first milestone payment
+  escrowHoldId      String?          // Links to escrow hold
+  stripePaymentIntentId String?
+  stripeTransferId  String?
+
+  // Collection
+  collectedAt       DateTime?
+  collectedAmount   Decimal?         @db.Decimal(12, 2)
+  collectionMethod  String?          // ESCROW_DEDUCTION, DIRECT_CHARGE, INVOICE
+
+  // Payer Info
+  payerId           String?          // User or Profile ID
+  payerType         String?          // OWNER, CONTRACTOR
+
+  // Refund
+  refundedAt        DateTime?
+  refundAmount      Decimal?         @db.Decimal(12, 2)
+  refundReason      String?
+
+  // Metadata
+  description       String?
+  invoiceNumber     String?
+  notes             String?          @db.Text
+
+  // Timestamps
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  dueAt             DateTime?
+
+  // Relationships
+  preConProject     PreConProject?   @relation(fields: [preConProjectId], references: [id])
+
+  @@index([preConProjectId])
+  @@index([projectId])
+  @@index([feeType])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Pre-Con Phase History - Audit trail of phase transitions
+model PreConPhaseHistory {
+  id                String       @id @default(uuid())
+  preConProjectId   String
+
+  fromPhase         PreConPhase?
+  toPhase           PreConPhase
+
+  // Who triggered
+  triggeredBy       String?      // User ID
+  triggerType       String       @default("USER") // USER, SYSTEM, AUTO
+
+  // Context
+  notes             String?      @db.Text
+  metadata          Json?
+
+  // Timestamps
+  occurredAt        DateTime     @default(now())
+
+  // Relationships
+  preConProject     PreConProject @relation(fields: [preConProjectId], references: [id], onDelete: Cascade)
+
+  @@index([preConProjectId])
+  @@index([toPhase])
+  @@index([occurredAt])
+}
+
+// ============================================================================
+// PLATFORM FEE CONFIGURATION
+// ============================================================================
+
+model PlatformFeeConfig {
+  id                String       @id @default(uuid())
+
+  // Fee Configuration
+  feeType           PlatformFeeType @unique
+  name              String
+  description       String?
+
+  // Rates
+  flatFee           Decimal?     @db.Decimal(12, 2)
+  percentageFee     Decimal?     @db.Decimal(5, 4) // e.g., 0.035 = 3.5%
+  minimumFee        Decimal?     @db.Decimal(12, 2)
+  maximumFee        Decimal?     @db.Decimal(12, 2)
+
+  // Tiers (for design packages)
+  tierPricing       Json?        // { BASIC: 199, STANDARD: 499, PREMIUM: 999 }
+
+  // Active
+  isActive          Boolean      @default(true)
+  effectiveFrom     DateTime     @default(now())
+  effectiveUntil    DateTime?
+
+  // Timestamps
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 }
