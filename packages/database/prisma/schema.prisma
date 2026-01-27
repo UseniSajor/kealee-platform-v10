@@ -374,6 +374,7 @@ model Jurisdiction {
   routingRules          RoutingRule[]                @relation("RoutingRuleJurisdiction")
   reviewAssignments     ReviewAssignment[]
   inspectionAssignments InspectionAssignment[]
+  permitApplications    PermitApplication[]
 
   @@index([code])
   @@index([state, county])
@@ -1456,33 +1457,44 @@ model JurisdictionAnalytics {
 // If they don't exist, add minimal stub definitions below
 
 model Project {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   name       String?
   clientId   String?
   orgId      String?
   propertyId String?
-  status     String   @default("ACTIVE")
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  ownerId    String?
+  status     String    @default("ACTIVE")
+  category   String?
+  budget     Decimal?  @db.Decimal(12, 2)
+  startDate  DateTime?
+  endDate    DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   // Relationships
-  permits          Permit[]
-  inspections      Inspection[]
-  contracts        ContractAgreement[]
-  escrowAgreements EscrowAgreement[]
-  disputes         Dispute[]
-  leads            Lead[]
-  client           Client?             @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  org              Org?                @relation(fields: [orgId], references: [id], onDelete: SetNull)
-  property         Property?           @relation(fields: [propertyId], references: [id], onDelete: SetNull)
-  tasks            Task[]
-  payments         Payment[]
-  lienWaivers      LienWaiver[]
+  permits            Permit[]
+  inspections        Inspection[]
+  contracts          ContractAgreement[]
+  escrowAgreements   EscrowAgreement[]
+  disputes           Dispute[]
+  leads              Lead[]
+  client             Client?              @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  org                Org?                 @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  property           Property?            @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  owner              User?                @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  tasks              Task[]
+  payments           Payment[]
+  lienWaivers        LienWaiver[]
+  readinessItems     ReadinessItem[]
+  permitApplications PermitApplication[]
+  events             Event[]
 
   @@index([clientId])
   @@index([orgId])
   @@index([propertyId])
+  @@index([ownerId])
   @@index([status])
+  @@index([category])
 }
 
 model User {
@@ -1614,6 +1626,11 @@ model User {
   paymentMethods   PaymentMethod[]   @relation("UserPaymentMethods")
   depositRequests  DepositRequest[]  @relation("UserDepositRequests")
   taxForms         TaxForm[]         @relation("UserTaxForms")
+
+  // Project & Sales relations
+  ownedProjects    Project[]         @relation("ProjectOwner")
+  salesTasks       SalesTask[]       @relation("SalesTaskAssignee")
+  events           Event[]           @relation("EventUser")
 }
 
 // ============================================================================
@@ -3756,8 +3773,9 @@ model Lead {
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 
-  project Project? @relation(fields: [projectId], references: [id])
-  quotes  Quote[]
+  project    Project?    @relation(fields: [projectId], references: [id])
+  quotes     Quote[]
+  salesTasks SalesTask[]
 
   @@index([projectId])
   @@index([stage])
@@ -4630,9 +4648,125 @@ model SecurityAlert {
   resolvedAt  DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   @@index([alertType])
   @@index([severity])
   @@index([status])
   @@index([createdAt])
+}
+
+// ============================================================================
+// SALES & CRM
+// ============================================================================
+
+model SalesTask {
+  id              String    @id @default(uuid())
+  type            String
+  status          String    @default("PENDING")
+  priority        String?   @default("MEDIUM")
+  description     String?
+  dueDate         DateTime?
+  slaDueAt        DateTime?
+  completedAt     DateTime?
+  assignedToId    String?
+  leadId          String?
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relationships
+  assignedTo      User?     @relation("SalesTaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  lead            Lead?     @relation(fields: [leadId], references: [id], onDelete: SetNull)
+
+  @@index([assignedToId])
+  @@index([leadId])
+  @@index([status])
+  @@index([slaDueAt])
+  @@index([type])
+}
+
+// ============================================================================
+// EVENTS & ACTIVITY TRACKING
+// ============================================================================
+
+model Event {
+  id          String   @id @default(uuid())
+  type        String
+  entityType  String
+  entityId    String
+  userId      String?
+  payload     Json?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  // Relationships
+  user        User?    @relation("EventUser", fields: [userId], references: [id], onDelete: SetNull)
+  project     Project? @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@index([type])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// PERMIT APPLICATIONS
+// ============================================================================
+
+model PermitApplication {
+  id              String    @id @default(uuid())
+  permitNumber    String?   @unique
+  projectId       String
+  jurisdictionId  String?
+  type            String
+  status          String    @default("DRAFT")
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  expiresAt       DateTime?
+  formData        Json?
+  documents       Json?
+  reviewNotes     String?
+  aiReviewScore   Float?
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relationships
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  jurisdiction    Jurisdiction? @relation(fields: [jurisdictionId], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([jurisdictionId])
+  @@index([status])
+  @@index([type])
+  @@index([submittedAt])
+}
+
+// ============================================================================
+// READINESS ITEMS
+// ============================================================================
+
+model ReadinessItem {
+  id          String    @id @default(uuid())
+  projectId   String
+  category    String
+  title       String
+  description String?
+  status      String    @default("PENDING")
+  priority    Int       @default(0)
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  dueDate     DateTime?
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relationships
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([status])
+  @@index([category])
+  @@index([completed])
 }
