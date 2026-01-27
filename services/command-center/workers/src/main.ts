@@ -22,6 +22,7 @@ import { predictiveWorker } from '../../apps/APP-11-predictive/src/index.js';
 import { smartSchedulerWorker } from '../../apps/APP-12-smart-scheduler/src/index.js';
 import { qaInspectorWorker } from '../../apps/APP-13-qa-inspector/src/index.js';
 import { decisionSupportWorker } from '../../apps/APP-14-decision-support/src/index.js';
+import { estimationWorker } from '../../apps/APP-15-estimation/src/index.js';
 
 // Track all workers
 const workers: Map<string, Worker> = new Map();
@@ -150,7 +151,7 @@ async function main(): Promise<void> {
 ╔═══════════════════════════════════════════════════════════╗
 ║        KEALEE COMMAND CENTER - WORKER ORCHESTRATION       ║
 ╠═══════════════════════════════════════════════════════════╣
-║  Starting workers for 14 automation mini-apps...          ║
+║  Starting workers for 15 automation mini-apps...          ║
 ╚═══════════════════════════════════════════════════════════╝
   `);
 
@@ -172,6 +173,7 @@ async function main(): Promise<void> {
   registerWorker('APP-12-smart-scheduler', smartSchedulerWorker);
   registerWorker('APP-13-qa-inspector', qaInspectorWorker);
   registerWorker('APP-14-decision-support', decisionSupportWorker);
+  registerWorker('APP-15-estimation', estimationWorker);
 
   console.log(`
 ╠═══════════════════════════════════════════════════════════╣

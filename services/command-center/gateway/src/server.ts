@@ -23,6 +23,7 @@ import { predictiveRoutes } from '../../apps/APP-11-predictive/src/index.js';
 import { smartSchedulerRoutes } from '../../apps/APP-12-smart-scheduler/src/index.js';
 import { qaInspectorRoutes } from '../../apps/APP-13-qa-inspector/src/index.js';
 import { decisionSupportRoutes } from '../../apps/APP-14-decision-support/src/index.js';
+import { estimationRoutes } from '../../apps/APP-15-estimation/src/index.js';
 
 // Import queue metrics
 import { getAllQueueMetrics, shutdownQueues } from '../../shared/queue.js';
@@ -141,6 +142,9 @@ async function buildServer(): Promise<FastifyInstance> {
     // APP-14: Decision Support
     await app.register(decisionSupportRoutes, { prefix: '/decisions' });
 
+    // APP-15: Estimation Engine
+    await app.register(estimationRoutes, { prefix: '/estimation' });
+
   }, { prefix: '/api/v1' });
 
   // Dashboard summary endpoint
@@ -240,7 +244,7 @@ async function start() {
 ║  • GET  /metrics/queues      - Queue metrics                      ║
 ║  • GET  /api/v1/dashboard    - Dashboard summary                  ║
 ╠═══════════════════════════════════════════════════════════════════╣
-║  14 Mini-Apps Active:                                             ║
+║  15 Mini-Apps Active:                                             ║
 ║  • /api/v1/bids              - APP-01: Contractor Bid Engine      ║
 ║  • /api/v1/visits            - APP-02: Site Visit Scheduler       ║
 ║  • /api/v1/change-orders     - APP-03: Change Order Processor     ║
@@ -255,6 +259,7 @@ async function start() {
 ║  • /api/v1/scheduler         - APP-12: Smart Scheduler (AI)       ║
 ║  • /api/v1/qa                - APP-13: QA Inspector (AI)          ║
 ║  • /api/v1/decisions         - APP-14: Decision Support (AI)      ║
+║  • /api/v1/estimation        - APP-15: Estimation Engine          ║
 ╚═══════════════════════════════════════════════════════════════════╝
     `);
   } catch (error) {

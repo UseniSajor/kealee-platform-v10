@@ -16,7 +16,7 @@ const createRedisConnection = () => new Redis(process.env.REDIS_URL!, {
 export const connection = createRedisConnection();
 export const redisConnection = connection;
 
-// Queue names for all 14 apps (no colons allowed in BullMQ queue names)
+// Queue names for all 15 apps (no colons allowed in BullMQ queue names)
 export const QUEUE_NAMES = {
   BID_ENGINE: 'kealee-bid-engine',
   VISIT_SCHEDULER: 'kealee-visit-scheduler',
@@ -32,6 +32,7 @@ export const QUEUE_NAMES = {
   SMART_SCHEDULER: 'kealee-smart-scheduler',
   QA_INSPECTOR: 'kealee-qa-inspector',
   DECISION_SUPPORT: 'kealee-decision-support',
+  ESTIMATION: 'kealee-estimation-engine',
 } as const;
 
 export type QueueName = typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES];
