@@ -1,0 +1,28 @@
+# KEALEE COMMAND CENTER - RAILWAY CONFIGURATION
+# Deploy to Railway.app
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "./Dockerfile"
+
+[deploy]
+# Number of instances
+numReplicas = 1
+
+# Health check configuration
+healthcheckPath = "/health"
+healthcheckTimeout = 10
+
+# Restart policy
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+# Resource limits
+# Adjust based on your Railway plan
+# memoryMB = 512
+# cpuMillis = 500
+
+[deploy.env]
+NODE_ENV = "production"
+PORT = "3001"
+HOST = "0.0.0.0"
