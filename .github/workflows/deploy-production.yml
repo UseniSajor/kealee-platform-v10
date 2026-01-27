@@ -42,13 +42,27 @@ jobs:
     strategy:
       matrix:
         app:
-          - m-marketplace
-          - m-project-owner
-          - m-permits-inspections
-          - m-ops-services
-          - m-architect
-          - os-pm
-          - os-admin
+          - name: m-marketplace
+            filter: '@kealee/m-marketplace'
+            project_id: ${{ secrets.VERCEL_PROJECT_ID_MARKETPLACE }}
+          - name: m-project-owner
+            filter: m-project-owner
+            project_id: ${{ secrets.VERCEL_PROJECT_ID_PROJECT_OWNER }}
+          - name: m-permits-inspections
+            filter: m-permits-inspections
+            project_id: ${{ secrets.VERCEL_PROJECT_ID_PERMITS }}
+          - name: m-ops-services
+            filter: m-ops-services
+            project_id: ${{ secrets.VERCEL_PROJECT_ID_OPS_SERVICES }}
+          - name: m-architect
+            filter: m-architect
+            project_id: ${{ secrets.VERCEL_PROJECT_ID_ARCHITECT }}
+          - name: os-pm
+            filter: os-pm
+            project_id: ${{ secrets.VERCEL_PROJECT_ID_OS_PM }}
+          - name: os-admin
+            filter: os-admin
+            project_id: ${{ secrets.VERCEL_PROJECT_ID_OS_ADMIN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -68,16 +82,20 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build packages
-        run: pnpm build --filter=${{ matrix.app }}
+        run: pnpm build --filter=${{ matrix.app.filter }}
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ matrix.app.project_id }}
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_MARKETPLACE }}
-          working-directory: apps/${{ matrix.app }}
-          vercel-args: '--prod'
+          vercel-project-id: ${{ matrix.app.project_id }}
+          working-directory: apps/${{ matrix.app.name }}
+          vercel-args: '--prod --yes'
+          scope: ${{ secrets.VERCEL_ORG_ID }}
 
 
 
