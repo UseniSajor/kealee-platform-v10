@@ -6,11 +6,12 @@ import { Button } from "@kealee/ui/button"
 import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
-import { supabase } from "@/lib/supabase"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
 export function LoginClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const supabase = createClientComponentClient()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -24,12 +25,13 @@ export function LoginClient() {
     setError("")
 
     try {
-      // Placeholder auth: Supabase password sign-in.
-      // TODO: re-enable role checks + API user lookup (see prior `lib/auth.ts` flow).
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
 
-      router.push("/dashboard")
+      if (data.session) {
+        router.push("/dashboard")
+        router.refresh()
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to sign in")
     } finally {
@@ -86,13 +88,7 @@ export function LoginClient() {
 
           <div className="space-y-2">
             <p className="text-xs text-neutral-600 text-center">
-              Demo note: this is a prototype login screen wired to Supabase auth (full PM authorization coming next).
-            </p>
-            <p className="text-xs text-neutral-600 text-center">
-              Need admin access?{" "}
-              <a className="text-primary hover:underline" href="http://localhost:3002/login">
-                Go to os-admin
-              </a>
+              Sign in with your Kealee account credentials.
             </p>
           </div>
         </form>
@@ -100,4 +96,3 @@ export function LoginClient() {
     </Card>
   )
 }
-
