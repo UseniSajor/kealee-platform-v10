@@ -294,6 +294,27 @@ export async function findNextWorkableDay(
 }
 
 /**
+ * Get weather forecast (alias for getDailyForecast for compatibility)
+ */
+export async function getWeatherForecast(
+  lat: number,
+  lon: number,
+  days = 7
+): Promise<any> {
+  const forecast = await getDailyForecast(lat, lon, days);
+  // Return in OpenWeatherMap-like format for compatibility
+  return {
+    daily: forecast.map(f => ({
+      dt: Math.floor(f.date.getTime() / 1000),
+      temp: f.temp,
+      pop: f.precipitationProbability,
+      wind_speed: f.windSpeed,
+      weather: [{ main: f.conditions }],
+    })),
+  };
+}
+
+/**
  * Get weather impact summary for a project schedule
  */
 export async function getWeatherImpactSummary(

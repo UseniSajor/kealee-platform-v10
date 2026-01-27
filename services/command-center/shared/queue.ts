@@ -14,23 +14,24 @@ const createRedisConnection = () => new Redis(process.env.REDIS_URL!, {
 });
 
 export const connection = createRedisConnection();
+export const redisConnection = connection;
 
-// Queue names for all 14 apps
+// Queue names for all 14 apps (no colons allowed in BullMQ queue names)
 export const QUEUE_NAMES = {
-  BID_ENGINE: 'kealee:bid-engine',
-  VISIT_SCHEDULER: 'kealee:visit-scheduler',
-  CHANGE_ORDER: 'kealee:change-order',
-  REPORT_GENERATOR: 'kealee:report-generator',
-  PERMIT_TRACKER: 'kealee:permit-tracker',
-  INSPECTION: 'kealee:inspection-coordinator',
-  BUDGET_TRACKER: 'kealee:budget-tracker',
-  COMMUNICATION: 'kealee:communication-hub',
-  TASK_QUEUE: 'kealee:task-queue',
-  DOCUMENT_GENERATOR: 'kealee:document-generator',
-  PREDICTIVE: 'kealee:predictive-engine',
-  SMART_SCHEDULER: 'kealee:smart-scheduler',
-  QA_INSPECTOR: 'kealee:qa-inspector',
-  DECISION_SUPPORT: 'kealee:decision-support',
+  BID_ENGINE: 'kealee-bid-engine',
+  VISIT_SCHEDULER: 'kealee-visit-scheduler',
+  CHANGE_ORDER: 'kealee-change-order',
+  REPORT_GENERATOR: 'kealee-report-generator',
+  PERMIT_TRACKER: 'kealee-permit-tracker',
+  INSPECTION: 'kealee-inspection-coordinator',
+  BUDGET_TRACKER: 'kealee-budget-tracker',
+  COMMUNICATION: 'kealee-communication-hub',
+  TASK_QUEUE: 'kealee-task-queue',
+  DOCUMENT_GEN: 'kealee-document-gen',
+  PREDICTIVE: 'kealee-predictive-engine',
+  SMART_SCHEDULER: 'kealee-smart-scheduler',
+  QA_INSPECTOR: 'kealee-qa-inspector',
+  DECISION_SUPPORT: 'kealee-decision-support',
 } as const;
 
 export type QueueName = typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES];
