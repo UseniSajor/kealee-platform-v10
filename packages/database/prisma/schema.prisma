@@ -1547,6 +1547,7 @@ model User {
   ownedContracts      ContractAgreement[] @relation("ContractOwner")
   contractorContracts ContractAgreement[] @relation("ContractContractor")
   marketplaceProfile  MarketplaceProfile? @relation("MarketplaceProfileUser")
+  contractorProfile   ContractorProfile?  @relation("ContractorProfileUser")
 
   // Approval Workflow relations
   approvalRequests ApprovalRequest[] @relation("ApprovalRequestRequester")
@@ -1614,6 +1615,9 @@ model User {
   paymentMethods   PaymentMethod[]   @relation("UserPaymentMethods")
   depositRequests  DepositRequest[]  @relation("UserDepositRequests")
   taxForms         TaxForm[]         @relation("UserTaxForms")
+
+  // PreCon Project relations
+  preConProjects   PreConProject[]   @relation("PreConProjectOwner")
 }
 
 // ============================================================================
@@ -4818,6 +4822,58 @@ model DesignConcept {
 
   @@index([preConProjectId])
   @@index([isSelected])
+}
+
+// Contractor Profile - Contractors in the marketplace system
+model ContractorProfile {
+  id                String    @id @default(uuid())
+  userId            String    @unique
+
+  // Business Info
+  businessName      String
+  licenseNumber     String?
+  insuranceInfo     Json?
+  yearsInBusiness   Int?
+
+  // Contact
+  email             String
+  phone             String?
+  address           String?
+  city              String?
+  state             String?
+  zipCode           String?
+
+  // Profile
+  description       String?   @db.Text
+  specialties       String[]
+  serviceArea       Json?     // GeoJSON or list of zip codes
+
+  // Ratings & Performance
+  rating            Decimal?  @db.Decimal(3, 2) @default(0)
+  reviewCount       Int       @default(0)
+  projectsCompleted Int       @default(0)
+
+  // Verification
+  isVerified        Boolean   @default(false)
+  verifiedAt        DateTime?
+  backgroundCheck   Boolean   @default(false)
+
+  // Status
+  isActive          Boolean   @default(true)
+  acceptingBids     Boolean   @default(true)
+
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relationships
+  user              User      @relation("ContractorProfileUser", fields: [userId], references: [id])
+  bids              ContractorBid[]
+
+  @@index([userId])
+  @@index([isVerified])
+  @@index([isActive])
+  @@index([acceptingBids])
 }
 
 // Contractor Bid - Bids from marketplace
