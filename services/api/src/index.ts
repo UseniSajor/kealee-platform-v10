@@ -252,6 +252,7 @@ import { fileRoutes } from './modules/files/file.routes'
 // import { accountingRoutes } from './routes/accounting.routes'
 import { stripeConnectRoutes } from './routes/stripe-connect.routes'
 import { estimationRoutes } from './modules/estimation/estimation.routes'
+import { preconRoutes } from './modules/precon/precon.routes'
 // Analytics temporarily disabled
 // import { analyticsRoutes } from './modules/analytics/analytics.routes'
 import { monitoringDashboardRoutes } from './modules/monitoring/monitoring-dashboard.routes'
@@ -522,6 +523,9 @@ const start = async () => {
 
     // Estimation (Command Center integration)
     await fastify.register(estimationRoutes, { prefix: '/estimation' })
+
+    // Pre-Construction Workflow (Project Owner Module)
+    await fastify.register(preconRoutes, { prefix: '/precon' })
     // Temporarily disabled - missing @kealee/compliance package
     // await fastify.register(complianceGatesRoutes, { prefix: '/compliance' })
     // Temporarily disabled - type issues in route handlers
