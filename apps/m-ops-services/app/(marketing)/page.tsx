@@ -79,9 +79,10 @@ const platformModules = [
   {
     name: "Finance & Trust",
     icon: "💰",
-    description: "Secure escrow management, milestone payments, and transparent financial tracking for all parties.",
+    description: "Lender portal for construction financing, draw management, and project oversight. Escrow built into all platform transactions.",
     link: "/finance",
-    features: ["Escrow accounts", "Milestone releases", "ACH/Wire transfers", "Financial reporting"],
+    features: ["Construction lending", "Draw management", "Project oversight", "Risk monitoring"],
+    badge: "LENDERS",
   },
   {
     name: "Permits & Inspections",
@@ -115,28 +116,28 @@ const platformModules = [
 
 const feeStructure = [
   {
-    category: "Project Owner",
+    category: "Homeowners & Project Owners",
     items: [
       { name: "Design Package - Basic", price: "$199", description: "2 concepts, standard revisions" },
       { name: "Design Package - Standard", price: "$499", description: "4 concepts, priority support" },
       { name: "Design Package - Premium", price: "$999", description: "Unlimited concepts, dedicated designer" },
-      { name: "Platform Commission", price: "3.5%", description: "Of contract value (paid by contractor)" },
+      { name: "PM Services Access", price: "Free", description: "Via Project Owner Portal" },
     ],
   },
   {
-    category: "Contractor/Vendor",
+    category: "GCs, Builders & Contractors",
     items: [
+      { name: "Ops Packages", price: "$1,750-$16,500/mo", description: "Full operations support" },
       { name: "Marketplace Subscription", price: "$299/mo", description: "Basic listing + 5 leads/month" },
-      { name: "Lead Purchase", price: "$50-500", description: "Per qualified lead (project size based)" },
       { name: "Platform Commission", price: "3.5%", description: "Deducted from first milestone payment" },
     ],
   },
   {
-    category: "Estimation Services",
+    category: "Lenders & Financial Partners",
     items: [
-      { name: "Basic Estimate", price: "$299", description: "Labor + materials breakdown" },
-      { name: "Standard Estimate", price: "$799", description: "Full timeline + resource planning" },
-      { name: "Premium Estimate", price: "$1,999", description: "Detailed BOQ + profit optimization" },
+      { name: "Lender Portal Access", price: "Contact us", description: "Construction loan management" },
+      { name: "Draw Management", price: "Included", description: "With lender subscription" },
+      { name: "Project Oversight", price: "Included", description: "Real-time monitoring" },
     ],
   },
 ];
@@ -188,12 +189,12 @@ export default function MarketingHomePage() {
       <section className="mt-10">
         <div className="text-center">
           <h1 className="text-4xl font-black tracking-tight md:text-5xl">
-            The Complete Construction Management Platform
+            Professional Project Management for Construction
           </h1>
           <p className="mx-auto mt-4 max-w-3xl text-lg text-zinc-600">
-            From pre-construction design to final closeout. Streamline every phase of your
-            construction project with integrated tools, transparent pricing, and guaranteed
-            escrow-backed payments.
+            Whether you're a GC, builder, contractor, or homeowner—get professional PM services
+            that keep your projects on track. From pre-construction to closeout, we handle the
+            coordination so you can focus on building.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link
@@ -516,11 +517,11 @@ export default function MarketingHomePage() {
       {/* CTA */}
       <section className="mt-12 rounded-2xl bg-[var(--primary)] p-6 text-[var(--primary-foreground)] shadow-sm">
         <h2 className="text-xl font-black">
-          Ready to Transform Your Construction Business?
+          Ready to Get Started?
         </h2>
         <p className="mt-2 max-w-2xl text-sm opacity-95">
-          Join thousands of contractors, project owners, and construction professionals
-          using Kealee to streamline their operations.
+          GCs, builders, contractors, homeowners, and lenders—Kealee has a portal designed for you.
+          Professional project management services that keep your projects on track.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
