@@ -33,9 +33,9 @@ export default function LoginPage() {
       }
 
       if (data.session) {
-        // Redirect to dashboard - the auth-helpers will handle cookies automatically
-        router.push('/dashboard')
+        // Refresh server state first to ensure cookies are recognized, then navigate
         router.refresh()
+        router.push('/dashboard')
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred during login')

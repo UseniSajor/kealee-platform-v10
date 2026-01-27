@@ -29,8 +29,9 @@ export function LoginClient() {
       if (error) throw error
 
       if (data.session) {
-        router.push("/dashboard")
+        // Refresh server state first to ensure cookies are recognized, then navigate
         router.refresh()
+        router.push("/dashboard")
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to sign in")
