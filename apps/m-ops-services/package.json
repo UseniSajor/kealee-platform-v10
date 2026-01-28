@@ -12,6 +12,7 @@
   "dependencies": {
     "@kealee/auth": "workspace:*",
     "@kealee/database": "workspace:*",
+    "@kealee/ui": "workspace:*",
     "@supabase/supabase-js": "^2.39.0",
     "@supabase/auth-helpers-nextjs": "^0.8.7",
     "clsx": "^2.1.0",
