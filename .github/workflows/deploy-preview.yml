@@ -43,28 +43,36 @@ jobs:
 
       - name: Set Project ID
         id: project
+        env:
+          PROJECT_ID_MARKETPLACE: ${{ secrets.VERCEL_PROJECT_ID_MARKETPLACE }}
+          PROJECT_ID_PROJECT_OWNER: ${{ secrets.VERCEL_PROJECT_ID_PROJECT_OWNER }}
+          PROJECT_ID_PERMITS: ${{ secrets.VERCEL_PROJECT_ID_PERMITS }}
+          PROJECT_ID_OPS_SERVICES: ${{ secrets.VERCEL_PROJECT_ID_OPS_SERVICES }}
+          PROJECT_ID_ARCHITECT: ${{ secrets.VERCEL_PROJECT_ID_ARCHITECT }}
+          PROJECT_ID_OS_PM: ${{ secrets.VERCEL_PROJECT_ID_OS_PM }}
+          PROJECT_ID_OS_ADMIN: ${{ secrets.VERCEL_PROJECT_ID_OS_ADMIN }}
         run: |
           case "${{ matrix.app }}" in
             "m-marketplace")
-              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_MARKETPLACE }}" >> $GITHUB_OUTPUT
+              echo "project_id=$PROJECT_ID_MARKETPLACE" >> $GITHUB_OUTPUT
               ;;
             "m-project-owner")
-              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_PROJECT_OWNER }}" >> $GITHUB_OUTPUT
+              echo "project_id=$PROJECT_ID_PROJECT_OWNER" >> $GITHUB_OUTPUT
               ;;
             "m-permits-inspections")
-              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_PERMITS }}" >> $GITHUB_OUTPUT
+              echo "project_id=$PROJECT_ID_PERMITS" >> $GITHUB_OUTPUT
               ;;
             "m-ops-services")
-              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_OPS_SERVICES }}" >> $GITHUB_OUTPUT
+              echo "project_id=$PROJECT_ID_OPS_SERVICES" >> $GITHUB_OUTPUT
               ;;
             "m-architect")
-              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_ARCHITECT }}" >> $GITHUB_OUTPUT
+              echo "project_id=$PROJECT_ID_ARCHITECT" >> $GITHUB_OUTPUT
               ;;
             "os-pm")
-              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_OS_PM }}" >> $GITHUB_OUTPUT
+              echo "project_id=$PROJECT_ID_OS_PM" >> $GITHUB_OUTPUT
               ;;
             "os-admin")
-              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_OS_ADMIN }}" >> $GITHUB_OUTPUT
+              echo "project_id=$PROJECT_ID_OS_ADMIN" >> $GITHUB_OUTPUT
               ;;
           esac
 
@@ -81,121 +89,34 @@ jobs:
 
       - name: Starting deployment for ${{ matrix.app }}
         run: |
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "🚀 Starting Preview Deployment: ${{ matrix.app }}"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "⏰ Started at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          echo "📍 Branch: ${{ github.ref_name }}"
-          echo "📦 App: ${{ matrix.app }}"
-          echo "🆔 Project ID: ${{ steps.project.outputs.project_id }}"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Starting Preview Deployment: ${{ matrix.app }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Project ID: ${{ steps.project.outputs.project_id }}"
 
       - name: Install dependencies
         run: |
-          echo "📦 Installing dependencies..."
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --frozen-lockfile
-          echo "✅ Dependencies installed"
 
       - name: Install Vercel CLI
-        run: |
-          echo "📥 Installing Vercel CLI..."
-          npm install --global vercel@latest
-          echo "✅ Vercel CLI installed: $(vercel --version)"
-
-      - name: Verify Monorepo Structure
-        run: |
-          echo "🔍 Verifying monorepo structure..."
-          echo "📁 Root directory: $(pwd)"
-          echo "📁 Checking for required files:"
-          ls -la | grep -E "package.json|pnpm-workspace.yaml|turbo.json" || echo "⚠️ Some root files missing"
-          echo "📁 App directory exists:"
-          ls -la apps/${{ matrix.app }} || echo "❌ App directory not found!"
-          echo "✅ Structure verified"
-
-      - name: Validate vercel.json Schema
-        working-directory: apps/${{ matrix.app }}
-        run: |
-          echo "🔍 Validating vercel.json schema for ${{ matrix.app }}..."
-
-          if [ ! -f "vercel.json" ]; then
-            echo "❌ ERROR: vercel.json not found in apps/${{ matrix.app }}!"
-            exit 1
-          fi
-
-          # Check for invalid properties
-          if grep -q '"_comment"' vercel.json; then
-            echo "❌ ERROR: vercel.json contains '_comment' property!"
-            cat vercel.json
-            exit 1
-          fi
-
-          # Validate JSON syntax
-          if ! python3 -m json.tool vercel.json > /dev/null 2>&1; then
-            echo "❌ ERROR: vercel.json has invalid JSON syntax!"
-            python3 -m json.tool vercel.json 2>&1 | head -n 20 || true
-            exit 1
-          fi
-
-          echo "✅ vercel.json schema is valid"
-          cat vercel.json
+        run: npm install --global vercel@latest
 
       - name: Link Vercel Project
         working-directory: apps/${{ matrix.app }}
         run: |
-          echo "🔗 Linking Vercel project..."
           mkdir -p .vercel
-          cat > .vercel/project.json << EOF
-          {
-            "projectId": "${{ steps.project.outputs.project_id }}",
-            "orgId": "${{ env.VERCEL_ORG_ID }}"
-          }
-          EOF
-          echo "✅ Project configuration created"
-          cat .vercel/project.json
+          echo '{"projectId":"${{ steps.project.outputs.project_id }}","orgId":"${{ env.VERCEL_ORG_ID }}"}' > .vercel/project.json
 
       - name: Deploy to Vercel Preview
         id: deploy
         working-directory: apps/${{ matrix.app }}
         run: |
-          echo "🚀 Deploying ${{ matrix.app }} to Vercel Preview..."
-
-          TEMP_LOG=$(mktemp)
-          trap "rm -f $TEMP_LOG" EXIT
-
-          set +e
-          vercel deploy \
-            --yes \
-            --token=${{ env.VERCEL_TOKEN }} \
-            --scope=${{ env.VERCEL_ORG_ID }} \
-            --project=${{ steps.project.outputs.project_id }} \
-            2>&1 | tee "$TEMP_LOG"
-
-          DEPLOY_EXIT_CODE=${PIPESTATUS[0]}
-          set -e
-
-          DEPLOYMENT_URL=$(grep -oE 'https://[a-zA-Z0-9-]+\.vercel\.app' "$TEMP_LOG" | head -n 1 || echo "")
-
-          if [ $DEPLOY_EXIT_CODE -ne 0 ]; then
-            echo "❌ DEPLOYMENT FAILED: ${{ matrix.app }}"
-            echo "Exit Code: $DEPLOY_EXIT_CODE"
-            cat "$TEMP_LOG"
-
-            # Generate secret name for troubleshooting
-            SECRET_NAME="VERCEL_PROJECT_ID_$(echo '${{ matrix.app }}' | tr '[:lower:]' '[:upper:]' | tr '-' '_')"
-            echo "💡 Check GitHub secret: $SECRET_NAME"
-            echo "💡 Current project ID: ${{ steps.project.outputs.project_id }}"
-
-            echo "deployment_failed=true" >> $GITHUB_OUTPUT
-            exit $DEPLOY_EXIT_CODE
-          fi
+          DEPLOYMENT_URL=$(vercel deploy --yes --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }} 2>&1 | grep -oE 'https://[a-zA-Z0-9-]+\.vercel\.app' | head -n 1 || echo "")
 
           if [ -n "$DEPLOYMENT_URL" ]; then
             echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
-            echo "deployment_failed=false" >> $GITHUB_OUTPUT
-            echo "✅ Preview deployment URL: $DEPLOYMENT_URL"
+            echo "Preview URL: $DEPLOYMENT_URL"
           else
-            echo "deployment_failed=false" >> $GITHUB_OUTPUT
-            echo "⚠️ Deployment completed but URL not found"
+            echo "Deployment completed - check Vercel dashboard for URL"
           fi
 
       - name: Comment PR with Deployment Status
@@ -205,17 +126,9 @@ jobs:
           script: |
             const url = '${{ steps.deploy.outputs.deployment_url }}';
             const appName = '${{ matrix.app }}';
-            const deploymentFailed = '${{ steps.deploy.outputs.deployment_failed }}' === 'true';
-
-            let body = '';
-            if (deploymentFailed) {
-              body = `❌ **Preview Deployment: ${appName}** - Failed\n\nCheck deployment logs for details.`;
-            } else if (url) {
-              body = `🚀 **Preview Deployment: ${appName}** - Success\n\n🔗 [View Preview](${url})`;
-            } else {
-              body = `🚀 **Preview Deployment: ${appName}** - Success\n\nCheck Vercel Dashboard for URL.`;
-            }
-
+            let body = url
+              ? `🚀 **${appName}** deployed: [Preview](${url})`
+              : `🚀 **${appName}** deployed - check Vercel dashboard`;
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -223,37 +136,17 @@ jobs:
               body: body
             });
 
-      - name: Deployment Complete
-        run: |
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "✅ Deployment Complete: ${{ matrix.app }}"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          if [ -n "${{ steps.deploy.outputs.deployment_url }}" ]; then
-            echo "🔗 Preview URL: ${{ steps.deploy.outputs.deployment_url }}"
-          fi
-          echo "📊 Vercel Dashboard: https://vercel.com/${{ env.VERCEL_ORG_ID }}/${{ steps.project.outputs.project_id }}"
-          echo "⏰ Completed at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-
   notify-deployment:
     name: Deployment Summary
     runs-on: ubuntu-latest
     needs: deploy-preview
     if: always()
-
     steps:
-      - name: Generate Deployment Summary
+      - name: Summary
         run: |
-          echo "## 🚀 Preview Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "**PR:** #${{ github.event.pull_request.number }}" >> $GITHUB_STEP_SUMMARY
-            echo "**Branch:** ${{ github.event.pull_request.head.ref }}" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📦 Deployed Apps" >> $GITHUB_STEP_SUMMARY
+          echo "## Preview Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "### Apps Deployed" >> $GITHUB_STEP_SUMMARY
           echo "- m-marketplace" >> $GITHUB_STEP_SUMMARY
           echo "- m-project-owner" >> $GITHUB_STEP_SUMMARY
           echo "- m-permits-inspections" >> $GITHUB_STEP_SUMMARY

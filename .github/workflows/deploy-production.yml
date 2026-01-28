@@ -57,34 +57,42 @@ jobs:
 
       - name: Set Project ID and Filter
         id: config
+        env:
+          PROJECT_ID_MARKETPLACE: ${{ secrets.VERCEL_PROJECT_ID_MARKETPLACE }}
+          PROJECT_ID_PROJECT_OWNER: ${{ secrets.VERCEL_PROJECT_ID_PROJECT_OWNER }}
+          PROJECT_ID_PERMITS: ${{ secrets.VERCEL_PROJECT_ID_PERMITS }}
+          PROJECT_ID_OPS_SERVICES: ${{ secrets.VERCEL_PROJECT_ID_OPS_SERVICES }}
+          PROJECT_ID_ARCHITECT: ${{ secrets.VERCEL_PROJECT_ID_ARCHITECT }}
+          PROJECT_ID_OS_PM: ${{ secrets.VERCEL_PROJECT_ID_OS_PM }}
+          PROJECT_ID_OS_ADMIN: ${{ secrets.VERCEL_PROJECT_ID_OS_ADMIN }}
         run: |
           case "${{ matrix.app }}" in
             "m-marketplace")
-              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_MARKETPLACE }}" >> $GITHUB_OUTPUT
+              echo "project_id=$PROJECT_ID_MARKETPLACE" >> $GITHUB_OUTPUT
               echo "filter=@kealee/m-marketplace" >> $GITHUB_OUTPUT
               ;;
             "m-project-owner")
-              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_PROJECT_OWNER }}" >> $GITHUB_OUTPUT
+              echo "project_id=$PROJECT_ID_PROJECT_OWNER" >> $GITHUB_OUTPUT
               echo "filter=m-project-owner" >> $GITHUB_OUTPUT
               ;;
             "m-permits-inspections")
-              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_PERMITS }}" >> $GITHUB_OUTPUT
+              echo "project_id=$PROJECT_ID_PERMITS" >> $GITHUB_OUTPUT
               echo "filter=m-permits-inspections" >> $GITHUB_OUTPUT
               ;;
             "m-ops-services")
-              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_OPS_SERVICES }}" >> $GITHUB_OUTPUT
+              echo "project_id=$PROJECT_ID_OPS_SERVICES" >> $GITHUB_OUTPUT
               echo "filter=m-ops-services" >> $GITHUB_OUTPUT
               ;;
             "m-architect")
-              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_ARCHITECT }}" >> $GITHUB_OUTPUT
+              echo "project_id=$PROJECT_ID_ARCHITECT" >> $GITHUB_OUTPUT
               echo "filter=m-architect" >> $GITHUB_OUTPUT
               ;;
             "os-pm")
-              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_OS_PM }}" >> $GITHUB_OUTPUT
+              echo "project_id=$PROJECT_ID_OS_PM" >> $GITHUB_OUTPUT
               echo "filter=os-pm" >> $GITHUB_OUTPUT
               ;;
             "os-admin")
-              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_OS_ADMIN }}" >> $GITHUB_OUTPUT
+              echo "project_id=$PROJECT_ID_OS_ADMIN" >> $GITHUB_OUTPUT
               echo "filter=os-admin" >> $GITHUB_OUTPUT
               ;;
           esac
@@ -108,9 +116,6 @@ jobs:
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ steps.config.outputs.project_id }}
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
