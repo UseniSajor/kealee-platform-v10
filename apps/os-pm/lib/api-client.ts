@@ -347,4 +347,43 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ barcode }),
     }),
+
+  // Lead/Pipeline operations
+  listLeads: (filters?: any) => {
+    const params = new URLSearchParams()
+    if (filters?.estimatedValueMin) params.set("estimatedValueMin", String(filters.estimatedValueMin))
+    if (filters?.estimatedValueMax) params.set("estimatedValueMax", String(filters.estimatedValueMax))
+    if (filters?.city) params.set("city", filters.city)
+    if (filters?.state) params.set("state", filters.state)
+    if (filters?.projectType) params.set("projectType", filters.projectType)
+    if (filters?.assignedSalesRepId) params.set("assignedSalesRepId", filters.assignedSalesRepId)
+    const qs = params.toString()
+    return apiRequest<{ leads: any[]; total: number }>(`/leads${qs ? `?${qs}` : ""}`)
+  },
+
+  getLead: (id: string) => apiRequest<{ lead: any }>(`/leads/${id}`),
+
+  updateLeadStage: (id: string, stage: string) =>
+    apiRequest<{ lead: any }>(`/leads/${id}/stage`, {
+      method: "PUT",
+      body: JSON.stringify({ stage }),
+    }),
+
+  assignSalesRep: (id: string, salesRepId: string) =>
+    apiRequest<{ lead: any }>(`/leads/${id}/assign`, {
+      method: "PUT",
+      body: JSON.stringify({ salesRepId }),
+    }),
+
+  awardContractor: (id: string, profileId: string) =>
+    apiRequest<{ lead: any }>(`/leads/${id}/award`, {
+      method: "PUT",
+      body: JSON.stringify({ profileId }),
+    }),
+
+  closeLost: (id: string, reason: string) =>
+    apiRequest<{ lead: any }>(`/leads/${id}/close`, {
+      method: "PUT",
+      body: JSON.stringify({ reason, status: "lost" }),
+    }),
 }

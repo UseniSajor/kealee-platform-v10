@@ -187,7 +187,7 @@ export default function QuoteRequestPage() {
                 transition-all duration-200
                 cursor-pointer
               "
-              onClick={() => document.getElementById('file-upload').click()}
+              onClick={() => document.getElementById('file-upload')?.click()}
             >
               <Upload className="mx-auto text-gray-400 mb-3" size={32} />
               <p className="text-sm font-medium text-gray-700 mb-1">

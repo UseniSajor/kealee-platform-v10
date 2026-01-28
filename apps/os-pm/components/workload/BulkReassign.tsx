@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { api, type WorkloadStats } from "@/lib/api-client"
 import { toast } from "sonner"
+import { cn } from "@/lib/utils"
 
 type BulkReassignProps = {
   taskIds: string[]

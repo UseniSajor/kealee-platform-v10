@@ -3,7 +3,34 @@
  * Wraps analytics utilities with app-specific tracking
  */
 
-import { initAnalytics, trackPageView, trackEvent, identifyUser, resetUser } from '@kealee/ui'
+// Local analytics stubs - can be replaced with real implementation when PostHog is configured
+function initAnalytics(_provider: string, _key?: string) {
+  // No-op stub
+}
+
+function trackPageView(path: string, properties?: Record<string, unknown>) {
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    console.debug('[Analytics] Page view:', path, properties)
+  }
+}
+
+function trackEvent(name: string, properties?: Record<string, unknown>) {
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    console.debug('[Analytics] Event:', name, properties)
+  }
+}
+
+function identifyUser(userId: string, traits?: Record<string, unknown>) {
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    console.debug('[Analytics] Identify:', userId, traits)
+  }
+}
+
+function resetUser() {
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    console.debug('[Analytics] Reset user')
+  }
+}
 
 // Initialize on module load
 if (typeof window !== 'undefined') {

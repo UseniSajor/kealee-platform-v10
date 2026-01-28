@@ -21,6 +21,7 @@ export interface PMTask {
   status: "pending" | "in_progress" | "completed"
   dueDate?: string | null
   createdAt?: string | null
+  completedAt?: string | null
   estimatedTime?: number | null
   actualTime?: number | null
   assignedTo: string

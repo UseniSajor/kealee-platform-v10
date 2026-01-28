@@ -1,14 +1,81 @@
 /**
  * Example component showing error handling best practices
+ * Note: This is a template file - imports are stubbed locally
  */
 
 'use client'
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { apiRequest, handleApiError, toastSuccess, toastError, ButtonLoading, LoadingSpinner, Skeleton, CardSkeleton } from '@kealee/ui'
-import { validateForm, getFieldError, commonSchemas } from '@kealee/ui'
 import { z } from 'zod'
+import { toast } from 'sonner'
+
+// Local stubs for utilities not exported from @kealee/ui
+async function apiRequest<T>(url: string, options?: RequestInit & { retries?: number; retryDelay?: number }): Promise<T> {
+  const response = await fetch(url, options)
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`)
+  }
+  return response.json()
+}
+
+function handleApiError(error: unknown) {
+  const message = error instanceof Error ? error.message : 'An error occurred'
+  toast.error(message)
+}
+
+function toastSuccess(message: string) {
+  toast.success(message)
+}
+
+function validateForm<T>(schema: z.ZodSchema<T>, data: unknown): { success: true; data: T } | { success: false; errors: Array<{ field: string; message: string }> } {
+  const result = schema.safeParse(data)
+  if (result.success) {
+    return { success: true, data: result.data }
+  }
+  return {
+    success: false,
+    errors: result.error.issues.map((e: z.ZodIssue) => ({ field: e.path.join('.'), message: e.message }))
+  }
+}
+
+function getFieldError(errors: Array<{ field: string; message: string }>, field: string): string | undefined {
+  return errors.find(e => e.field === field)?.message
+}
+
+const commonSchemas = {
+  nonEmptyString: z.string().min(1, 'Required'),
+  email: z.string().email('Invalid email'),
+  positiveNumber: z.number().positive('Must be positive'),
+}
+
+// Skeleton components
+function Skeleton({ lines = 1 }: { lines?: number }) {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: lines }).map((_, i) => (
+        <div key={i} className="h-4 bg-gray-200 rounded animate-pulse" />
+      ))}
+    </div>
+  )
+}
+
+function CardSkeleton() {
+  return (
+    <div className="border rounded-lg p-4 space-y-3 animate-pulse">
+      <div className="h-4 bg-gray-200 rounded w-3/4" />
+      <div className="h-4 bg-gray-200 rounded w-1/2" />
+    </div>
+  )
+}
+
+function ButtonLoading({ loading, children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { loading?: boolean }) {
+  return (
+    <button {...props} disabled={loading || props.disabled}>
+      {loading ? 'Loading...' : children}
+    </button>
+  )
+}
 
 // Form validation schema
 const formSchema = z.object({
@@ -76,7 +143,7 @@ export function ExampleWithErrorHandling() {
     try {
       await mutation.mutateAsync(validation.data)
       setFormData({})
-    } catch (error) {
+    } catch {
       // Error already handled by mutation onError
     } finally {
       setIsSubmitting(false)

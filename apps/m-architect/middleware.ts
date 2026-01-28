@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req: request, res });
+  const supabase = createMiddlewareClient({ req: request, res } as unknown as Parameters<typeof createMiddlewareClient>[0]);
 
   const {
     data: { session },

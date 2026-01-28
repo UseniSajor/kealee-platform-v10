@@ -3,9 +3,48 @@
  * Wraps existing API client with error handling and retry logic
  */
 
-import { apiRequest, logError, handleApiError as handleError, type ApiError } from '@kealee/ui'
-import { toastError, toastSuccess } from '@kealee/ui'
 import { supabase } from './supabase'
+import { toast } from 'sonner'
+
+// Local utility stubs
+type ApiError = Error & { code?: string }
+
+function logError(error: unknown, context?: Record<string, unknown>) {
+  console.error('API Error:', error, context)
+}
+
+function handleError(error: unknown) {
+  const message = error instanceof Error ? error.message : 'An error occurred'
+  toast.error(message)
+}
+
+interface ApiRequestOptions extends RequestInit {
+  onRetry?: (attempt: number, error: unknown) => void
+}
+
+async function apiRequest<T>(url: string, options: ApiRequestOptions = {}): Promise<T> {
+  const { onRetry, ...fetchOptions } = options
+  let lastError: Error | null = null
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const response = await fetch(url, fetchOptions)
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Request failed' }))
+        throw new Error(error.error?.message || error.message || `HTTP ${response.status}`)
+      }
+      return response.json()
+    } catch (error) {
+      lastError = error as Error
+      if (attempt < 2 && onRetry) {
+        onRetry(attempt + 1, error)
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)))
+      }
+    }
+  }
+
+  throw lastError
+}
 import type { PMClient, PMTask } from './types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'

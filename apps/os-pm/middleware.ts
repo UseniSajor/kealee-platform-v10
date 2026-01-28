@@ -4,7 +4,8 @@ import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req: request, res });
+  // Use type assertion to avoid version conflicts between Next.js types
+  const supabase = createMiddlewareClient({ req: request, res } as unknown as Parameters<typeof createMiddlewareClient>[0]);
 
   const {
     data: { session },

@@ -11,12 +11,12 @@ Sentry.init({
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
   integrations: [
-    new Sentry.BrowserTracing(),
-    new Sentry.Replay(),
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration(),
   ],
-  beforeSend(event, hint) {
+  beforeSend(event) {
     // Filter out non-critical errors
-    if (event.exception?.values?.[0]?.type === 'Error' && 
+    if (event.exception?.values?.[0]?.type === 'Error' &&
         event.exception.values[0].value?.includes('console')) {
       return null
     }

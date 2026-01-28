@@ -392,7 +392,7 @@ export function PMProductivityDashboard() {
             onTaskSwitch={() => {
               // Auto-switch to next priority task
               if (dashboard.priorityTasks.length > 1) {
-                const currentIndex = dashboard.priorityTasks.findIndex((t) => t.id === currentTask?.id)
+                const currentIndex = dashboard.priorityTasks.findIndex((t: { id: string }) => t.id === currentTask?.id)
                 const nextTask = dashboard.priorityTasks[currentIndex + 1] || dashboard.priorityTasks[0]
                 setCurrentTask(nextTask)
                 setSelectedTaskId(nextTask.id)

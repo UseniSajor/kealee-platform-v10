@@ -68,10 +68,10 @@ export class TaskApiService {
       throw new Error('Not authenticated');
     }
 
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     };
 
     // Don't set Content-Type for FormData

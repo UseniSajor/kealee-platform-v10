@@ -2,6 +2,8 @@
  * WebSocket Client for Real-time PM Updates
  */
 
+import * as React from 'react'
+
 type WebSocketMessage = {
   type: string
   event?: string

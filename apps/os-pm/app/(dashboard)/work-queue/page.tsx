@@ -179,7 +179,7 @@ export default function WorkQueuePage() {
 
       try {
         setWsStatus("connecting")
-        ws = new WebSocket(url)
+        ws = new WebSocket(url!)
 
         ws.onopen = () => {
           if (cancelled) return

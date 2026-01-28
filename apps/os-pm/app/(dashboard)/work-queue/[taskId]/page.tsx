@@ -45,7 +45,7 @@ export default function TaskDetailPage() {
   const comments = commentsData?.comments || []
 
   const updateTask = useMutation({
-    mutationFn: (data: typeof editData) => api.updateTask(taskId, data),
+    mutationFn: (data: typeof editData) => api.updateTask(taskId, data as any),
     onSuccess: async () => {
       toast.success("Task updated")
       setIsEditing(false)
