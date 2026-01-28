@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm build --filter=@kealee/m-marketplace",
-  "installCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install --no-frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm build --filter=@kealee/m-marketplace",
+  "installCommand": "cd ../.. && rm -rf node_modules .pnpm-store && pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
   "rewrites": [
     {
@@ -31,59 +31,6 @@
       ]
     }
   ],
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1",
-      "methods": [
-        "GET",
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE",
-        "OPTIONS"
-      ],
-      "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "X-Requested-With, Content-Type, Authorization"
-      }
-    },
-    {
-      "src": "/_next/static/(.*)",
-      "dest": "/_next/static/$1",
-      "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable"
-      }
-    },
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1",
-      "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable"
-      }
-    },
-    {
-      "src": "/favicon.ico",
-      "dest": "/favicon.ico",
-      "headers": {
-        "Cache-Control": "public, max-age=86400"
-      }
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1",
-      "headers": {
-        "Cache-Control": "public, max-age=0, must-revalidate"
-      }
-    }
-  ],
   "env": {
     "NEXT_PUBLIC_APP_URL": "https://marketplace.kealee.com",
     "NEXT_PUBLIC_API_URL": "https://api.kealee.com",
@@ -91,9 +38,6 @@
     "NEXT_PUBLIC_HOTJAR_ID": "XXXXXXX",
     "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_XXXXXXXXXXXXXXXXXXXXXXXX"
   },
-  "regions": [
-    "sfo1"
-  ],
   "github": {
     "enabled": true,
     "autoAlias": true,
