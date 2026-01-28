@@ -1,8 +1,4 @@
 {
-  "buildCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install --filter m-finance-trust... && pnpm build --filter m-finance-trust",
-  "outputDirectory": ".next",
-  "installCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install --filter m-finance-trust... --no-frozen-lockfile",
   "framework": "nextjs",
-  "rootDirectory": "apps/m-finance-trust"
+  "outputDirectory": ".next"
 }
-
