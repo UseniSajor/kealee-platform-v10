@@ -10,21 +10,26 @@ declare global {
   }
 }
 
-export type EventCategory = 
+export type EventCategory =
   | 'user_engagement'
   | 'lead_generation'
   | 'contractor_search'
   | 'service_click'
   | 'signup'
-  | 'purchase';
+  | 'purchase'
+  | 'error';
 
-export type EventAction = 
+export type EventAction =
   | 'page_view'
   | 'button_click'
   | 'form_submit'
   | 'scroll'
   | 'video_play'
-  | 'download';
+  | 'download'
+  | 'search'
+  | 'purchase'
+  | 'error_occurred'
+  | 'metric';
 
 export interface EventParams {
   category: EventCategory;
