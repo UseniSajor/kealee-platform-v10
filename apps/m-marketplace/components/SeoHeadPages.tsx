@@ -9,7 +9,7 @@ import React from 'react';
 import Head from 'next/head';
 import { generateSchemaMarkup } from '@/lib/seo';
 
-interface SeoHeadProps {
+interface SeoHeadPagesProps {
   title?: string;
   description?: string;
   canonicalUrl?: string;
@@ -31,7 +31,7 @@ export default function SeoHeadPages({
   schemaMarkup,
   noindex = false,
   children
-}: SeoHeadProps) {
+}: SeoHeadPagesProps) {
   const siteTitle = title.includes('Kealee') ? title : `${title} | Kealee Marketplace`;
   const fullCanonicalUrl = canonicalUrl.startsWith('http') ? canonicalUrl : `https://marketplace.kealee.com${canonicalUrl}`;
 
