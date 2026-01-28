@@ -56,10 +56,10 @@ export default function UsersPage() {
         page,
         limit: 20,
         search: search || undefined,
-      });
-      
-      setUsers(data.users || []);
-      setTotalPages(data.pagination?.totalPages || 1);
+      }) as any;
+
+      setUsers(data?.users || []);
+      setTotalPages(data?.pagination?.totalPages || 1);
     } catch (err: any) {
       setError(err.message || 'Failed to load users');
       toast.error('Failed to load users');

@@ -75,7 +75,7 @@ export default function AnalyticsPage() {
         startDate: startDate.toISOString(),
         endDate,
         metrics: ['acquisition', 'activation', 'retention', 'revenue', 'referral'],
-      })
+      }) as any
 
       // Transform API response to match our interface
       setData({

@@ -71,13 +71,13 @@ export default function FinancialsPage() {
       const stats = await AdminApiClient.getBillingStats({
         start: startDate.toISOString(),
         end: endDate,
-      })
+      }) as any
 
       const revenueReport = await AdminApiClient.getRevenueReport({
         startDate: startDate.toISOString(),
         endDate,
         groupBy: dateRange === '7d' ? 'day' : dateRange === '30d' ? 'day' : dateRange === '90d' ? 'week' : 'month',
-      })
+      }) as any
 
       setData({
         totalRevenue: stats.totalRevenue || 0,
