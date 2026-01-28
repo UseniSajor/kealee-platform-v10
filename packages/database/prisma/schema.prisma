@@ -4632,9 +4632,183 @@ model SecurityAlert {
   resolvedAt  DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   @@index([alertType])
   @@index([severity])
   @@index([status])
   @@index([createdAt])
 }
+
+// ============================================================================
+// PACKAGE RESTRUCTURE - AGENT & TASK MANAGEMENT (50 Critical Tasks)
+// ============================================================================
+
+enum AgentType {
+  ESTIMATING_AGENT
+  PROJECT_MANAGEMENT_AGENT
+  FINANCIAL_AGENT
+  SUBCONTRACTOR_AGENT
+  PERMITS_AGENT
+  CLIENT_AGENT
+  TECHNOLOGY_AGENT
+}
+
+enum TaskCategory {
+  ESTIMATING
+  PROJECT_MANAGEMENT
+  FINANCIAL
+  SUBCONTRACTOR
+  PERMITS
+  CLIENT
+  TECHNOLOGY
+}
+
+enum PackageTier {
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+  PLATFORM
+}
+
+enum TaskStatus {
+  ACTIVE
+  INACTIVE
+  DEPRECATED
+}
+
+// Platform Task - Represents one of the 50 critical construction operations tasks
+model PlatformTask {
+  id              String       @id @default(cuid())
+  taskNumber      Int          @unique // 1-50
+  name            String
+  description     String
+  category        TaskCategory
+  packageTier     PackageTier  // Minimum tier required
+  agentType       AgentType    // Which agent handles this task
+  appModule       String       // Which app module (e.g., "os-pm", "m-project-owner")
+  featureName     String       // Feature identifier
+  status          TaskStatus   @default(ACTIVE)
+  hoursPerJob     Float        @default(0) // Estimated hours per job
+  automationLevel Float        @default(0) // 0-1 scale (0 = manual, 1 = fully automated)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([packageTier])
+  @@index([agentType])
+  @@index([status])
+}
+
+// Agent Configuration - Settings for each of the 7 AI agents
+model AgentConfig {
+  id            String    @id @default(cuid())
+  agentType     AgentType @unique
+  name          String
+  description   String
+  assignedTasks Int[]     // Task numbers (1-50) assigned to this agent
+  maxConcurrent Int       @default(10) // Max concurrent task executions
+  priority      Int       @default(5) // 1-10, higher = more priority
+  config        Json?     // Agent-specific configuration
+  isActive      Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agentType])
+  @@index([isActive])
+}
+
+// Package Configuration - Settings for each package tier (A, B, C, D)
+model PackageConfig {
+  id            String      @id @default(cuid())
+  tier          PackageTier @unique
+  name          String      // "Starter", "Professional", "Enterprise", "Platform"
+  minPrice      Int         // Minimum monthly price in cents
+  maxPrice      Int         // Maximum monthly price in cents
+  minJobs       Int         // Minimum active projects
+  maxJobs       Int         // Maximum active projects (-1 = unlimited)
+  featureCount  Int         // Number of features (6, 20, 40, 50)
+  includedTasks Int[]       // Task numbers included in this tier
+  staffingRatio Float       // Jobs per FTE (Full-Time Equivalent)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tier])
+}
+
+// Agent Task Execution Log - Tracks agent task executions
+model AgentTaskExecution {
+  id            String    @id @default(cuid())
+  agentType     AgentType
+  taskNumber    Int
+  projectId     String?
+  userId        String?
+
+  // Execution details
+  status        String    @default("PENDING") // PENDING, RUNNING, COMPLETED, FAILED
+  startedAt     DateTime?
+  completedAt   DateTime?
+  durationMs    Int?      // Execution duration in milliseconds
+
+  // Input/Output
+  input         Json?
+  output        Json?
+  error         String?
+
+  // Metrics
+  tokensUsed    Int?      // For AI agent calls
+  costCents     Int?      // Cost in cents
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agentType])
+  @@index([taskNumber])
+  @@index([projectId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Organization Package Subscription - Links orgs to their package tier
+model OrganizationPackage {
+  id              String      @id @default(cuid())
+  organizationId  String      @unique
+  packageTier     PackageTier
+
+  // Subscription details
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  stripePriceId        String?
+
+  // Usage limits
+  maxActiveJobs   Int       @default(5)
+  maxUsers        Int       @default(3)
+  currentJobs     Int       @default(0)
+  currentUsers    Int       @default(0)
+
+  // Billing
+  monthlyPriceCents Int     @default(0)
+  billingCycle      String  @default("monthly") // monthly, annual
+
+  // Status
+  status          String    @default("active") // active, past_due, canceled, trialing
+  trialEndsAt     DateTime?
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  canceledAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([packageTier])
+  @@index([status])
+  @@index([stripeCustomerId])
+}
+
+// ============================================================================
+// PACKAGE RESTRUCTURE - END
+// ============================================================================
