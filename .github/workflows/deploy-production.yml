@@ -40,32 +40,54 @@ jobs:
     name: Deploy Apps to Vercel
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         app:
-          - name: m-marketplace
-            filter: '@kealee/m-marketplace'
-            project_id: ${{ secrets.VERCEL_PROJECT_ID_MARKETPLACE }}
-          - name: m-project-owner
-            filter: m-project-owner
-            project_id: ${{ secrets.VERCEL_PROJECT_ID_PROJECT_OWNER }}
-          - name: m-permits-inspections
-            filter: m-permits-inspections
-            project_id: ${{ secrets.VERCEL_PROJECT_ID_PERMITS }}
-          - name: m-ops-services
-            filter: m-ops-services
-            project_id: ${{ secrets.VERCEL_PROJECT_ID_OPS_SERVICES }}
-          - name: m-architect
-            filter: m-architect
-            project_id: ${{ secrets.VERCEL_PROJECT_ID_ARCHITECT }}
-          - name: os-pm
-            filter: os-pm
-            project_id: ${{ secrets.VERCEL_PROJECT_ID_OS_PM }}
-          - name: os-admin
-            filter: os-admin
-            project_id: ${{ secrets.VERCEL_PROJECT_ID_OS_ADMIN }}
+          - m-marketplace
+          - m-project-owner
+          - m-permits-inspections
+          - m-ops-services
+          - m-architect
+          - os-pm
+          - os-admin
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set Project ID and Filter
+        id: config
+        run: |
+          case "${{ matrix.app }}" in
+            "m-marketplace")
+              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_MARKETPLACE }}" >> $GITHUB_OUTPUT
+              echo "filter=@kealee/m-marketplace" >> $GITHUB_OUTPUT
+              ;;
+            "m-project-owner")
+              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_PROJECT_OWNER }}" >> $GITHUB_OUTPUT
+              echo "filter=m-project-owner" >> $GITHUB_OUTPUT
+              ;;
+            "m-permits-inspections")
+              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_PERMITS }}" >> $GITHUB_OUTPUT
+              echo "filter=m-permits-inspections" >> $GITHUB_OUTPUT
+              ;;
+            "m-ops-services")
+              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_OPS_SERVICES }}" >> $GITHUB_OUTPUT
+              echo "filter=m-ops-services" >> $GITHUB_OUTPUT
+              ;;
+            "m-architect")
+              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_ARCHITECT }}" >> $GITHUB_OUTPUT
+              echo "filter=m-architect" >> $GITHUB_OUTPUT
+              ;;
+            "os-pm")
+              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_OS_PM }}" >> $GITHUB_OUTPUT
+              echo "filter=os-pm" >> $GITHUB_OUTPUT
+              ;;
+            "os-admin")
+              echo "project_id=${{ secrets.VERCEL_PROJECT_ID_OS_ADMIN }}" >> $GITHUB_OUTPUT
+              echo "filter=os-admin" >> $GITHUB_OUTPUT
+              ;;
+          esac
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -82,21 +104,17 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build packages
-        run: pnpm build --filter=${{ matrix.app.filter }}
+        run: pnpm build --filter=${{ steps.config.outputs.filter }}
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ matrix.app.project_id }}
+          VERCEL_PROJECT_ID: ${{ steps.config.outputs.project_id }}
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ matrix.app.project_id }}
-          working-directory: apps/${{ matrix.app.name }}
+          vercel-project-id: ${{ steps.config.outputs.project_id }}
+          working-directory: apps/${{ matrix.app }}
           vercel-args: '--prod --yes'
           scope: ${{ secrets.VERCEL_ORG_ID }}
-
-
-
-
