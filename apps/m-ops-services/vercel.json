@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd ../.. && pnpm build --filter=m-ops-services",
-  "installCommand": "cd ../.. && npm i -g pnpm@8.15.9 && pnpm install --no-frozen-lockfile",
+  "buildCommand": "cd ../.. && npx pnpm@8.15.9 build --filter=m-ops-services",
+  "installCommand": "cd ../.. && npx pnpm@8.15.9 install --no-frozen-lockfile",
   "framework": "nextjs",
   "rewrites": [
     {
