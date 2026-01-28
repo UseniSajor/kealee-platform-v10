@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm build --filter=m-project-owner",
+  "buildCommand": "cd ../.. && npx turbo run build --filter=m-project-owner",
   "installCommand": "cd ../.. && corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
   "rewrites": [
