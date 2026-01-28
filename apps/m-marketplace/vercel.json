@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd ../.. && npm run build --workspace=@kealee/m-marketplace",
-  "installCommand": "cd ../.. && rm -rf node_modules package-lock.json && npm install --legacy-peer-deps",
+  "buildCommand": "cd ../.. && corepack enable && corepack prepare pnpm@8.15.9 --activate && pnpm build --filter=@kealee/m-marketplace",
+  "installCommand": "cd ../.. && rm -rf node_modules .pnpm-store && corepack enable && corepack prepare pnpm@8.15.9 --activate && pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
   "rewrites": [
     {
