@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd ../.. && corepack enable && corepack prepare pnpm@8.15.9 --activate && pnpm build --filter=@kealee/m-marketplace",
-  "installCommand": "cd ../.. && rm -rf node_modules .pnpm-store && corepack enable && corepack prepare pnpm@8.15.9 --activate && pnpm install --no-frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm build --filter=@kealee/m-marketplace",
+  "installCommand": "cd ../.. && rm -rf node_modules .pnpm-store && pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
   "rewrites": [
     {
@@ -38,9 +38,6 @@
     "NEXT_PUBLIC_HOTJAR_ID": "XXXXXXX",
     "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_XXXXXXXXXXXXXXXXXXXXXXXX"
   },
-  "regions": [
-    "sfo1"
-  ],
   "github": {
     "enabled": true,
     "autoAlias": true,
