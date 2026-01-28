@@ -156,10 +156,8 @@ export class IntegrationService {
         result = await this.attemptFallbackSubmission(data, this.config.fallbackTier);
       }
 
-      // Log the attempt
-      this.logIntegrationAttempt('submitPermit', result, Date.now() - startTime, retryCount);
-      
-      return result || {
+      // Ensure we have a result
+      const finalResult = result || {
         success: false,
         error: 'No integration method available',
         tier: this.config.tier,
@@ -167,6 +165,11 @@ export class IntegrationService {
         processingTimeMs: Date.now() - startTime,
         retryCount,
       };
+
+      // Log the attempt
+      this.logIntegrationAttempt('submitPermit', finalResult, Date.now() - startTime, retryCount);
+
+      return finalResult;
     } catch (error: any) {
       const errorResult: IntegrationResult = {
         success: false,
@@ -220,9 +223,8 @@ export class IntegrationService {
         result = await this.attemptFallbackStatusCheck(permitNumber, this.config.fallbackTier);
       }
 
-      this.logIntegrationAttempt('checkStatus', result, Date.now() - startTime, retryCount);
-      
-      return result || {
+      // Ensure we have a result
+      const finalResult = result || {
         success: false,
         error: 'No integration method available',
         tier: this.config.tier,
@@ -230,6 +232,10 @@ export class IntegrationService {
         processingTimeMs: Date.now() - startTime,
         retryCount,
       };
+
+      this.logIntegrationAttempt('checkStatus', finalResult, Date.now() - startTime, retryCount);
+
+      return finalResult;
     } catch (error: any) {
       const errorResult: IntegrationResult<StatusCheckResult> = {
         success: false,

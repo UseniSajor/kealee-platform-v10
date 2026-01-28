@@ -40,7 +40,7 @@ export class EmailParser {
           dates,
         },
         tier: 'MANUAL',
-        provider: 'EMAIL',
+        provider: 'CUSTOM',
         processingTimeMs: 0,
       };
     } catch (error: any) {
@@ -48,7 +48,7 @@ export class EmailParser {
         success: false,
         error: error.message || 'Email parsing failed',
         tier: 'MANUAL',
-        provider: 'EMAIL',
+        provider: 'CUSTOM',
         processingTimeMs: 0,
       };
     }
@@ -82,7 +82,7 @@ export class EmailParser {
           dueDate,
         },
         tier: 'MANUAL',
-        provider: 'EMAIL',
+        provider: 'CUSTOM',
         processingTimeMs: 0,
       };
     } catch (error: any) {
@@ -90,7 +90,7 @@ export class EmailParser {
         success: false,
         error: error.message || 'Correction email parsing failed',
         tier: 'MANUAL',
-        provider: 'EMAIL',
+        provider: 'CUSTOM',
         processingTimeMs: 0,
       };
     }

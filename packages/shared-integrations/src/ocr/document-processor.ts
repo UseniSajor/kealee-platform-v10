@@ -24,7 +24,7 @@ export class DocumentProcessor {
       
       if (this.config.psm) {
         await this.worker.setParameters({
-          tessedit_pageseg_mode: this.config.psm.toString(),
+          tessedit_pageseg_mode: this.config.psm as any,
         });
       }
     }
@@ -130,7 +130,13 @@ export class DocumentProcessor {
     const ocrResult = await this.processDocument(documentUrl);
 
     if (!ocrResult.success || !ocrResult.data) {
-      return ocrResult;
+      return {
+        success: false,
+        error: ocrResult.error || 'OCR processing failed',
+        tier: ocrResult.tier,
+        provider: ocrResult.provider,
+        processingTimeMs: ocrResult.processingTimeMs,
+      };
     }
 
     const { text, fields } = ocrResult.data;
