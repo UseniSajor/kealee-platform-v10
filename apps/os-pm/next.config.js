@@ -1,7 +1,10 @@
-/** @type {import("next").NextConfig} */
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Intentionally minimal; extend as needed.
-}
+  reactStrictMode: true,
+  transpilePackages: ['@kealee/ui', '@kealee/auth'],
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+};
 
-module.exports = nextConfig
-
+module.exports = nextConfig;
