@@ -1,3 +1,5 @@
+'use client';
+
 // packages/ui/src/components/Toast.tsx
 // Kealee Platform Toast Component
 

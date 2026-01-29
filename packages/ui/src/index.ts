@@ -41,6 +41,8 @@ export type { LoadingProps } from './components/Loading';
 export { EmptyState } from './components/EmptyState';
 export type { EmptyStateProps } from './components/EmptyState';
 
+export { ErrorBoundary } from './components/ErrorBoundary';
+
 // Design Tokens
 export * from './design-tokens';
 export { default as designTokens } from './design-tokens';
