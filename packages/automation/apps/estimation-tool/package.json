@@ -1,0 +1,71 @@
+{
+  "name": "@kealee/estimation-tool",
+  "version": "1.0.0",
+  "description": "Kealee Platform Estimation Tool - Construction cost estimation with AI-powered analysis",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./cost-database": {
+      "import": "./dist/cost-database/index.mjs",
+      "require": "./dist/cost-database/index.js"
+    },
+    "./assemblies": {
+      "import": "./dist/assemblies/index.mjs",
+      "require": "./dist/assemblies/index.js"
+    },
+    "./takeoff": {
+      "import": "./dist/takeoff/index.mjs",
+      "require": "./dist/takeoff/index.js"
+    },
+    "./estimates": {
+      "import": "./dist/estimates/index.mjs",
+      "require": "./dist/estimates/index.js"
+    },
+    "./ai": {
+      "import": "./dist/ai/index.mjs",
+      "require": "./dist/ai/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@kealee/database": "workspace:*",
+    "@prisma/client": "^5.22.0",
+    "bullmq": "^5.12.12",
+    "decimal.js": "^10.4.3",
+    "fastify": "^4.28.1",
+    "ioredis": "^5.4.1",
+    "lodash": "^4.17.21",
+    "pdf-lib": "^1.17.1",
+    "uuid": "^10.0.0",
+    "xlsx": "^0.18.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.7",
+    "@types/node": "^22.7.4",
+    "@types/uuid": "^10.0.0",
+    "tsup": "^8.3.0",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.2"
+  },
+  "peerDependencies": {
+    "@anthropic-ai/sdk": "^0.30.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -47,7 +47,17 @@
       "Bash(npx tsc:*)",
       "Bash(npx prisma generate:*)",
       "Bash(grep:*)",
-      "Bash(npx turbo build:*)"
+      "Bash(npx turbo build:*)",
+      "Bash(powershell -Command \"\\(Get-Content ''C:\\\\Kealee-Platform v10\\\\services\\\\command-center\\\\apps\\\\APP-15-estimation\\\\src\\\\index.ts''\\).Count\")",
+      "Bash(pnpm list:*)",
+      "Bash(npx tsup:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(dir \"C:\\\\Kealee-Platform v10\\\\packages\\\\automation\\\\apps\")",
+      "Bash(node:*)",
+      "Bash(dir:*)",
+      "Bash(pnpm run typecheck:*)",
+      "Bash(npx prisma:*)",
+      "Bash(bash scripts/deploy-all.sh:*)"
     ]
   }
 }

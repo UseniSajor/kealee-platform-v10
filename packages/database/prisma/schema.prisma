@@ -1515,6 +1515,9 @@ model Project {
   scheduledPayments  ScheduledPayment[]
   projectManagers    ProjectManager[]
 
+  // Command Center Infrastructure relations
+  aiConversations    AIConversation[]
+
   @@index([clientId])
   @@index([orgId])
   @@index([propertyId])
@@ -1666,6 +1669,10 @@ model User {
   changeOrderApprovals ChangeOrderApproval[] @relation("ChangeOrderApprover")
   notificationPrefs NotificationPreference[] @relation("UserNotificationPrefs")
   managedProjects  ProjectManager[]
+
+  // Command Center Infrastructure relations
+  dashboardWidgets DashboardWidget[]
+  aiConversations  AIConversation[]
 }
 
 // ============================================================================
@@ -1735,6 +1742,9 @@ model Org {
   projects     Project[]
   properties   Property[]
   entitlements ModuleEntitlement[]
+
+  // Command Center Infrastructure relations
+  integrationCredentials IntegrationCredential[]
 
   @@index([slug])
   @@index([status])
@@ -6715,4 +6725,212 @@ model ProjectManager {
   @@index([projectId])
   @@index([userId])
   @@map("project_managers")
+}
+
+// =============================================================================
+// COMMAND CENTER INFRASTRUCTURE (APP-15)
+// =============================================================================
+
+// Dashboard Widget Configuration
+enum WidgetType {
+  PROJECT_SUMMARY
+  TASK_LIST
+  CALENDAR
+  BUDGET_OVERVIEW
+  SCHEDULE_TIMELINE
+  RISK_ALERTS
+  PREDICTIONS
+  RECENT_ACTIVITY
+  METRICS_CHART
+  PERMIT_STATUS
+  INSPECTION_CALENDAR
+  COMMUNICATION_FEED
+  WEATHER_FORECAST
+  AI_INSIGHTS
+  CUSTOM
+}
+
+model DashboardWidget {
+  id              String      @id @default(uuid())
+  userId          String
+  type            WidgetType
+  title           String
+  position        Json        // { x, y, width, height }
+  config          Json?       // Widget-specific configuration
+  refreshInterval Int?        // Refresh interval in seconds
+  isVisible       Boolean     @default(true)
+  sortOrder       Int         @default(0)
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@map("dashboard_widgets")
+}
+
+// Job Queue Tracking (persistent tracking for BullMQ jobs)
+enum JobStatus {
+  WAITING
+  ACTIVE
+  COMPLETED
+  FAILED
+  DELAYED
+  PAUSED
+}
+
+model JobQueue {
+  id              String      @id @default(uuid())
+  queueName       String
+  jobId           String
+  jobName         String?
+  status          JobStatus   @default(WAITING)
+  priority        Int         @default(0)
+  data            Json        // Job payload
+  result          Json?       // Job result
+  error           String?     @db.Text
+  attempts        Int         @default(0)
+  maxAttempts     Int         @default(3)
+  delay           Int?        // Delay in milliseconds
+  progress        Int         @default(0) // 0-100 percentage
+
+  createdAt       DateTime    @default(now())
+  processedAt     DateTime?
+  completedAt     DateTime?
+  failedAt        DateTime?
+
+  @@unique([queueName, jobId])
+  @@index([queueName])
+  @@index([status])
+  @@index([createdAt])
+  @@map("job_queue")
+}
+
+// Job Schedule (cron-based scheduled jobs)
+model JobSchedule {
+  id              String      @id @default(uuid())
+  name            String
+  description     String?
+  queueName       String
+  cronExpression  String
+  jobData         Json        // Default job payload
+  timezone        String      @default("America/New_York")
+  isActive        Boolean     @default(true)
+  lastRunAt       DateTime?
+  nextRunAt       DateTime?
+  runCount        Int         @default(0)
+  failCount       Int         @default(0)
+  lastError       String?
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@unique([name, queueName])
+  @@index([isActive])
+  @@index([nextRunAt])
+  @@index([queueName])
+  @@map("job_schedules")
+}
+
+// System Configuration
+model SystemConfig {
+  id              String      @id @default(uuid())
+  key             String      @unique
+  value           Json        // Configuration value
+  description     String?
+  category        String?     // Grouping category (e.g., "email", "security", "features")
+  dataType        String      @default("string") // string, number, boolean, json
+  isPublic        Boolean     @default(false) // Can be exposed to frontend
+  isEncrypted     Boolean     @default(false) // Value is encrypted
+  validationRule  String?     // JSON schema or regex for validation
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([category])
+  @@index([isPublic])
+  @@map("system_config")
+}
+
+// Integration Credentials (external service authentication)
+enum IntegrationService {
+  GOOGLE_CALENDAR
+  GOOGLE_DRIVE
+  GOOGLE_MAPS
+  DOCUSIGN
+  SENDGRID
+  TWILIO
+  STRIPE
+  GOHIGHLEVEL
+  OPENWEATHER
+  ANTHROPIC
+  OPENAI
+  GOOGLE_VISION
+  AWS_S3
+  AZURE_BLOB
+  QUICKBOOKS
+  PROCORE
+  BUILDERTREND
+}
+
+enum IntegrationStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+  ERROR
+  PENDING_AUTH
+}
+
+model IntegrationCredential {
+  id              String              @id @default(uuid())
+  orgId           String?
+  service         IntegrationService
+  credentials     Json                // Encrypted credentials (API keys, tokens, etc.)
+  status          IntegrationStatus   @default(PENDING_AUTH)
+  scope           String[]            @default([]) // OAuth scopes granted
+  accessToken     String?             @db.Text // OAuth access token (encrypted)
+  refreshToken    String?             @db.Text // OAuth refresh token (encrypted)
+  tokenExpiresAt  DateTime?
+  lastUsedAt      DateTime?
+  lastError       String?
+  metadata        Json?               // Service-specific metadata
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  org             Org?                @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, service])
+  @@index([service])
+  @@index([status])
+  @@map("integration_credentials")
+}
+
+// AI Conversation History
+model AIConversation {
+  id              String      @id @default(uuid())
+  projectId       String?
+  userId          String
+  title           String?     // Auto-generated or user-provided title
+  messages        Json        // Array of conversation messages
+  context         Json?       // Project context, selected files, etc.
+  summary         String?     @db.Text // AI-generated conversation summary
+  tokens          Int         @default(0) // Total tokens used
+  model           String?     // AI model used (e.g., "claude-3-opus")
+  isArchived      Boolean     @default(false)
+  lastMessageAt   DateTime    @default(now())
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  project         Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([lastMessageAt])
+  @@index([isArchived])
+  @@map("ai_conversations")
 }
