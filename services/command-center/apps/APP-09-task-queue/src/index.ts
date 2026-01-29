@@ -150,7 +150,7 @@ class TaskQueueService {
         dependencies: definition.dependencies,
         estimatedMinutes: definition.estimatedMinutes || 30,
         status: assignedPmId ? 'ASSIGNED' : 'PENDING',
-      },
+      } as any,
     });
 
     // Emit event
@@ -188,7 +188,7 @@ class TaskQueueService {
       const project = await prisma.project.findUnique({
         where: { id: definition.projectId },
         include: { client: { select: { subscriptionTier: true } } },
-      });
+      } as any) as any;
       const tier = project?.client?.subscriptionTier || 'STARTER';
       score += (TIER_SCORES[tier] || 40) * PRIORITY_WEIGHTS.clientTier;
 
@@ -255,11 +255,11 @@ class TaskQueueService {
       prisma.automationTask.aggregate({
         where: { assignedPmId: pmId, status: { notIn: ['COMPLETED', 'CANCELLED'] } },
         _sum: { estimatedMinutes: true },
-      }),
+      } as any),
     ]);
 
     // Capacity: 480 minutes (8 hours) per day capacity
-    const minutes = totalMinutes._sum.estimatedMinutes || 0;
+    const minutes = (totalMinutes as any)._sum?.estimatedMinutes || 0;
     const capacityUsed = minutes / 480;
     const capacityScore = Math.max(0, Math.round((1 - capacityUsed) * 100));
 
@@ -284,9 +284,9 @@ class TaskQueueService {
         status: 'COMPLETED',
         completedAt: new Date(),
         result: result as object | undefined,
-      },
+      } as any,
       include: { project: { select: { name: true } } },
-    });
+    } as any) as any;
 
     // Emit event
     await getEventBus('task-queue').publish(EVENT_TYPES.TASK_COMPLETED, {
@@ -302,8 +302,8 @@ class TaskQueueService {
       where: {
         dependencies: { has: taskId },
         status: 'BLOCKED',
-      },
-    });
+      } as any,
+    }) as any[];
 
     for (const dependent of dependentTasks) {
       const deps = (dependent.dependencies as string[]) || [];
@@ -338,12 +338,12 @@ class TaskQueueService {
         assignedPm: { select: { name: true, email: true, phone: true } },
         project: { select: { name: true } },
       },
-    });
+    } as any) as any[];
 
     let escalated = 0;
 
     for (const task of overdueTasks) {
-      const overdueDays = Math.ceil((now.getTime() - task.dueAt.getTime()) / (1000 * 60 * 60 * 24));
+      const overdueDays = Math.ceil((now.getTime() - new Date(task.dueAt).getTime()) / (1000 * 60 * 60 * 24));
 
       // Escalate after 1 day overdue
       if (overdueDays >= 1) {
@@ -351,8 +351,8 @@ class TaskQueueService {
           where: { id: task.id },
           data: {
             escalatedAt: now,
-            priority: Math.max(1, (task.priority || 3) - 1) as TaskPriority,
-          },
+            priority: Math.max(1, (Number(task.priority) || 3) - 1) as TaskPriority,
+          } as any,
         });
 
         // Emit event
@@ -378,12 +378,12 @@ class TaskQueueService {
           });
 
           // SMS for high priority
-          if (task.priority && task.priority <= 2 && task.assignedPm.phone) {
+          if (task.priority && Number(task.priority) <= 2 && task.assignedPm.phone) {
             await sendUrgentTaskSMS({
               phone: task.assignedPm.phone,
               task: task.title,
               project: task.project?.name || 'Unknown',
-              deadline: formatDate(task.dueAt),
+              deadline: formatDate(new Date(task.dueAt)),
             });
           }
         }
@@ -402,7 +402,7 @@ class TaskQueueService {
     const task = await prisma.automationTask.findUnique({
       where: { id: taskId },
       include: { project: { select: { name: true } } },
-    });
+    } as any) as any;
 
     const pm = await prisma.user.findUnique({
       where: { id: pmId },
@@ -418,7 +418,7 @@ class TaskQueueService {
           task_title: task.title,
           task_type: task.type,
           project_name: task.project?.name,
-          due_date: formatDate(task.dueAt),
+          due_date: formatDate(new Date(task.dueAt)),
           priority: task.priority,
           task_link: `${process.env.APP_URL}/tasks/${taskId}`,
         },
@@ -436,12 +436,13 @@ class TaskQueueService {
    * Auto-create tasks from events
    */
   async handleEvent(event: KealeeEvent): Promise<void> {
+    const eventData = event.data as any;
     switch (event.type) {
       case EVENT_TYPES.PROJECT_CREATED:
         await this.createTask({
-          projectId: event.data.projectId,
+          projectId: eventData.projectId,
           type: 'SCHEDULE_VISIT',
-          title: `Schedule kickoff visit for ${event.data.projectName}`,
+          title: `Schedule kickoff visit for ${eventData.projectName}`,
           dueAt: addWorkingDays(new Date(), 3),
           priority: 2,
         });
@@ -449,49 +450,49 @@ class TaskQueueService {
 
       case EVENT_TYPES.BID_ANALYSIS_COMPLETE:
         await this.createTask({
-          projectId: event.data.projectId,
+          projectId: eventData.projectId,
           type: 'REVIEW_BID',
-          title: `Review bid analysis for ${event.data.projectName}`,
-          description: `${event.data.totalBids} bids received. Recommended: ${event.data.recommendedContractor}`,
+          title: `Review bid analysis for ${eventData.projectName}`,
+          description: `${eventData.totalBids} bids received. Recommended: ${eventData.recommendedContractor}`,
           dueAt: addWorkingDays(new Date(), 2),
           priority: 2,
-          relatedEntityId: event.data.bidRequestId,
+          relatedEntityId: eventData.bidRequestId,
           relatedEntityType: 'BID_REQUEST',
         });
         break;
 
       case EVENT_TYPES.CHANGE_ORDER_CREATED:
         await this.createTask({
-          projectId: event.data.projectId,
+          projectId: eventData.projectId,
           type: 'REVIEW_CHANGE_ORDER',
-          title: `Review Change Order #${event.data.number}`,
+          title: `Review Change Order #${eventData.number}`,
           dueAt: addWorkingDays(new Date(), 2),
           priority: 2,
-          relatedEntityId: event.data.changeOrderId,
+          relatedEntityId: eventData.changeOrderId,
           relatedEntityType: 'CHANGE_ORDER',
         });
         break;
 
       case EVENT_TYPES.INSPECTION_SCHEDULED:
         await this.createTask({
-          projectId: event.data.projectId,
+          projectId: eventData.projectId,
           type: 'SCHEDULE_INSPECTION',
-          title: `Prepare for ${event.data.inspectionType} inspection`,
-          dueAt: addWorkingDays(new Date(event.data.scheduledAt), -1),
+          title: `Prepare for ${eventData.inspectionType} inspection`,
+          dueAt: addWorkingDays(new Date(eventData.scheduledAt), -1),
           priority: 1,
-          relatedEntityId: event.data.inspectionId,
+          relatedEntityId: eventData.inspectionId,
           relatedEntityType: 'INSPECTION',
         });
         break;
 
       case EVENT_TYPES.PERMIT_COMMENTS_RECEIVED:
         await this.createTask({
-          projectId: event.data.projectId,
+          projectId: eventData.projectId,
           type: 'REVIEW_PERMIT',
           title: `Review permit comments`,
           dueAt: addWorkingDays(new Date(), 3),
           priority: 2,
-          relatedEntityId: event.data.permitId,
+          relatedEntityId: eventData.permitId,
           relatedEntityType: 'PERMIT',
         });
         break;
@@ -578,7 +579,7 @@ export async function taskQueueRoutes(fastify: FastifyInstance) {
         assignedPm: { select: { name: true } },
       },
       orderBy: [{ priority: 'asc' }, { dueAt: 'asc' }],
-    });
+    } as any);
   });
 
   fastify.post('/tasks/:id/complete', async (request: FastifyRequest) => {

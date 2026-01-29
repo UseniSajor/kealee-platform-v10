@@ -101,12 +101,6 @@ class BudgetService {
       where: { id: projectId },
       include: {
         budgetLines: true,
-        invoices: {
-          where: { status: { in: ['PAID', 'APPROVED'] } },
-        },
-        purchaseOrders: {
-          where: { status: { not: 'CANCELLED' } },
-        },
       },
     });
 
@@ -134,11 +128,6 @@ class BudgetService {
   async getCategoryBreakdown(projectId: string): Promise<CostCategory[]> {
     const budgetLines = await prisma.budgetLine.findMany({
       where: { projectId },
-      include: {
-        transactions: {
-          where: { status: { in: ['PAID', 'APPROVED', 'COMMITTED'] } },
-        },
-      },
     });
 
     const categories = budgetLines.reduce((acc: any, line: any) => {
@@ -146,15 +135,9 @@ class BudgetService {
       if (!acc[category]) {
         acc[category] = { name: category, budgeted: 0, spent: 0, committed: 0 };
       }
-      acc[category].budgeted += line.budgeted;
-
-      for (const tx of line.transactions) {
-        if (tx.status === 'PAID' || tx.status === 'APPROVED') {
-          acc[category].spent += tx.amount;
-        } else if (tx.status === 'COMMITTED') {
-          acc[category].committed += tx.amount;
-        }
-      }
+      acc[category].budgeted += Number(line.budgetedAmount || 0);
+      acc[category].spent += Number(line.actualAmount || 0);
+      acc[category].committed += Number(line.committedAmount || 0);
 
       return acc;
     }, {});
@@ -173,11 +156,7 @@ class BudgetService {
       where: { id: projectId },
       include: {
         scheduledPayments: {
-          orderBy: { dueDate: 'asc' },
-        },
-        invoices: {
-          where: { status: { in: ['PAID', 'APPROVED'] } },
-          orderBy: { paidAt: 'asc' },
+          orderBy: { scheduledDate: 'asc' },
         },
       },
     });
@@ -469,7 +448,7 @@ async function processInvoice(data: {
     await prisma.budgetLine.update({
       where: { id: budgetLine.id },
       data: {
-        spent: { increment: data.amount },
+        actualAmount: { increment: data.amount },
       },
     });
   }

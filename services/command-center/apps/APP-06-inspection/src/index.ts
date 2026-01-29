@@ -440,7 +440,7 @@ async function sendInspectionReminders() {
 
   const inspections = await prisma.inspection.findMany({
     where: {
-      status: { in: ['SCHEDULED', 'CONFIRMED'] },
+      result: null, // Not yet completed
       scheduledDate: {
         gte: startOfTomorrow,
         lte: endOfTomorrow,
@@ -980,7 +980,7 @@ export async function inspectionRoutes(fastify: FastifyInstance) {
     ] = await Promise.all([
       prisma.inspection.count({
         where: {
-          status: { in: ['SCHEDULED', 'CONFIRMED'] },
+          result: null,
           scheduledDate: {
             gte: new Date(new Date().setHours(0, 0, 0, 0)),
             lt: new Date(new Date().setHours(23, 59, 59, 999)),
@@ -989,7 +989,7 @@ export async function inspectionRoutes(fastify: FastifyInstance) {
       }),
       prisma.inspection.count({
         where: {
-          status: { in: ['SCHEDULED', 'CONFIRMED'] },
+          result: null,
           scheduledDate: {
             gte: new Date(tomorrow.setHours(0, 0, 0, 0)),
             lt: new Date(tomorrow.setHours(23, 59, 59, 999)),
@@ -997,11 +997,11 @@ export async function inspectionRoutes(fastify: FastifyInstance) {
         },
       }),
       prisma.inspection.count({
-        where: { status: 'IN_PROGRESS' },
+        where: { result: null, scheduledDate: { lte: new Date() } },
       }),
       prisma.inspection.count({
         where: {
-          status: 'FAILED',
+          result: 'FAIL',
           completedAt: { gte: addWorkingDays(new Date(), -7) },
         },
       }),

@@ -99,15 +99,26 @@ class ChangeOrderService {
 
     const changeOrder = await prisma.changeOrder.create({
       data: {
-        projectId: request.projectId,
+        project: { connect: { id: request.projectId } },
+        changeOrderNumber: `CO-${nextNumber.toString().padStart(4, '0')}`,
+        title: request.description.substring(0, 100),
         number: nextNumber,
         requestedBy: request.requestedBy,
         description: request.description,
         reason: request.reason,
         estimatedCost: request.estimatedCost,
+        originalAmount: request.estimatedCost || 0,
+        totalCost: request.estimatedCost || 0,
         scheduleDaysAffected: request.scheduleDaysAffected,
-        lineItems: request.lineItems as object[] | undefined,
-        attachments: request.attachments,
+        lineItems: request.lineItems ? {
+          create: request.lineItems.map(item => ({
+            description: item.description,
+            quantity: item.quantity,
+            unit: 'EA',
+            unitCost: item.unitCost,
+            totalCost: item.total,
+          })),
+        } : undefined,
         status: 'PENDING_ANALYSIS',
       },
     });
@@ -205,11 +216,11 @@ class ChangeOrderService {
       data: {
         impactAnalysis: impactAnalysis as object,
         status: 'ANALYZED',
-        analyzedAt: new Date(),
-        riskLevel: Math.max(
+        reviewedAt: new Date(),
+        aiRecommendation: Math.max(
           this.riskToNumber(costRiskLevel),
           this.riskToNumber(scheduleRiskLevel)
-        ) >= 3 ? 'HIGH' : costRiskLevel,
+        ) >= 3 ? 'HIGH_RISK' : 'APPROVED',
       },
     });
 
@@ -239,7 +250,7 @@ class ChangeOrderService {
       },
     });
 
-    const analysis = changeOrder.impactAnalysis as ImpactAnalysis;
+    const analysis = changeOrder.impactAnalysis as unknown as ImpactAnalysis;
     const approvers: string[] = [];
 
     // Determine required approvers based on impact
@@ -268,8 +279,9 @@ class ChangeOrderService {
     for (const approverId of approvers) {
       await prisma.changeOrderApproval.create({
         data: {
-          changeOrderId,
-          approverId,
+          changeOrder: { connect: { id: changeOrderId } },
+          approver: { connect: { id: approverId } },
+          role: approverId === changeOrder.project.pmId ? 'PM' : 'OWNER',
           status: 'PENDING',
         },
       });

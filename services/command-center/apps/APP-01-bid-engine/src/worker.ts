@@ -68,8 +68,8 @@ async function handleCreateBidRequest(data: BidEngineJob & { type: 'CREATE_BID_R
   const bidRequest = await prisma.bidRequest.create({
     data: {
       projectId: data.projectId,
-      scope: data.scope,
-      requirements: data.requirements,
+      scope: data.scope as unknown as object,
+      requirements: data.requirements as unknown as object,
       trades: data.trades,
       deadline: new Date(data.deadline),
       status: 'OPEN',
@@ -134,7 +134,6 @@ async function handleFindContractors(data: BidEngineJob & { type: 'FIND_CONTRACT
     where: { id: data.bidRequestId },
     data: {
       matchResults: matches as unknown as object,
-      matchedAt: new Date(),
     },
   });
 
@@ -166,7 +165,7 @@ async function handleSendInvitations(data: BidEngineJob & { type: 'SEND_INVITATI
   });
 
   const invitationIds: string[] = [];
-  const matchResults = (bidRequest.matchResults as MatchResult[]) || [];
+  const matchResults = (bidRequest.matchResults as unknown as MatchResult[]) || [];
 
   for (const contractor of contractors) {
     // Create invitation record
@@ -190,7 +189,7 @@ async function handleSendInvitations(data: BidEngineJob & { type: 'SEND_INVITATI
       await sendBidInvitation({
         contractorEmail: contractor.email,
         contractorName: contractor.contactName,
-        projectName: bidRequest.project.name,
+        projectName: bidRequest.project.name || 'Unnamed Project',
         projectAddress: bidRequest.project.address || '',
         deadline: bidRequest.deadline,
         bidLink,

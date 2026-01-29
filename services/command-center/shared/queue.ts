@@ -4,7 +4,7 @@
  */
 
 import { Queue, Worker, Job, QueueEvents } from 'bullmq';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 
 // Redis connection factory
 const createRedisConnection = () => new Redis(process.env.REDIS_URL!, {

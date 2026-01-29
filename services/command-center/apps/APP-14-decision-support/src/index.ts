@@ -158,14 +158,14 @@ Provide 3-4 decision options in JSON format with:
 - recommendation: index of recommended option (0-based)
 - reasoning: explanation of recommendation`;
 
-    const result = await generateJSON<{
+    const result = await (generateJSON as any)({
+      systemPrompt: 'You are a construction project management AI advisor. Provide balanced, practical decision options with clear trade-offs.',
+      userPrompt: prompt,
+    }) as {
       options: DecisionOption[];
       recommendation: number;
       reasoning: string;
-    }>({
-      systemPrompt: 'You are a construction project management AI advisor. Provide balanced, practical decision options with clear trade-offs.',
-      userPrompt: prompt,
-    });
+    };
 
     return result;
   }
@@ -187,10 +187,10 @@ Provide risk analysis in JSON format:
 - qualityRisk: 0-100
 - factors: array of { name, severity (0-10), likelihood (0-100), impact, mitigation }`;
 
-    return await generateJSON<RiskAnalysis>({
+    return await (generateJSON as any)({
       systemPrompt: 'You are a construction risk analyst. Identify and quantify project risks.',
       userPrompt: prompt,
-    });
+    }) as RiskAnalysis;
   }
 
   /**
@@ -204,7 +204,7 @@ Provide risk analysis in JSON format:
           tasks: true,
           budgetAlerts: { where: { acknowledged: false } },
         },
-      }),
+      } as any),
       prisma.budgetSnapshot.findFirst({
         where: { projectId },
         orderBy: { snapshotDate: 'desc' },
@@ -212,11 +212,11 @@ Provide risk analysis in JSON format:
       prisma.task.aggregate({
         where: { projectId, status: 'COMPLETE' },
         _count: true,
-      }),
-      prisma.qAInspection.aggregate({
+      } as any),
+      (prisma as any).qAInspection.aggregate({
         where: { projectId, status: 'passed' },
         _avg: { score: true },
-      }),
+      } as any),
     ]);
 
     if (!project) return 0;
@@ -231,7 +231,7 @@ Provide risk analysis in JSON format:
 
     // Schedule impact (30 points max)
     const totalTasks = (project as any).tasks?.length || 1;
-    const completedTasks = schedule._count;
+    const completedTasks = (schedule as any)._count || 0;
     const plannedCompletion = (project as any).percentComplete || 0;
     const actualCompletion = (completedTasks / totalTasks) * 100;
     const scheduleVariance = Math.abs(plannedCompletion - actualCompletion);
@@ -260,11 +260,11 @@ Provide risk analysis in JSON format:
         include: {
           budgetSnapshots: { take: 5, orderBy: { snapshotDate: 'desc' } },
         },
-      }),
-      prisma.qAInspection.findMany({
+      } as any),
+      (prisma as any).qAInspection.findMany({
         where: { projectId, completedAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
         include: { findings: true },
-      }),
+      } as any),
       prisma.budgetAlert.findMany({
         where: { projectId, acknowledged: false },
       }),
@@ -272,7 +272,7 @@ Provide risk analysis in JSON format:
         where: { projectId, status: { not: 'COMPLETE' } },
         orderBy: { endDate: 'asc' },
         take: 10,
-      }),
+      } as any),
     ]);
 
     if (!project) return [];
@@ -380,19 +380,19 @@ Provide risk analysis in JSON format:
     ] = await Promise.all([
       this.calculateHealthScore(projectId),
       this.generateInsights(projectId),
-      prisma.decision.count({ where: { projectId, status: 'pending' } }),
+      (prisma as any).decision.count({ where: { projectId, status: 'pending' } }),
       prisma.project.findUnique({
         where: { id: projectId },
         include: { tasks: true },
-      }),
+      } as any),
       prisma.budgetSnapshot.findFirst({
         where: { projectId },
         orderBy: { snapshotDate: 'desc' },
       }),
-      prisma.qAInspection.aggregate({
+      (prisma as any).qAInspection.aggregate({
         where: { projectId },
         _avg: { score: true },
-      }),
+      } as any),
     ]);
 
     const criticalIssues = insights.filter(i => i.severity === 'critical').length;
@@ -456,7 +456,7 @@ Provide risk analysis in JSON format:
     failurePatterns: string[];
     recommendations: string[];
   }> {
-    const historicalDecisions = await prisma.decision.findMany({
+    const historicalDecisions = await (prisma as any).decision.findMany({
       where: {
         type: decisionType,
         status: 'accepted',
@@ -464,7 +464,7 @@ Provide risk analysis in JSON format:
       },
       take: 50,
       orderBy: { decidedAt: 'desc' },
-    });
+    } as any);
 
     const successful = historicalDecisions.filter(d => (d as any).outcome?.success);
     const failed = historicalDecisions.filter(d => !(d as any).outcome?.success);
@@ -559,7 +559,7 @@ async function createDecision(data: {
   const impacts = await determineImpacts(data.type, data.context);
 
   // Create decision record
-  const decision = await prisma.decision.create({
+  const decision = await (prisma as any).decision.create({
     data: {
       projectId: data.projectId,
       type: data.type,
@@ -575,7 +575,7 @@ async function createDecision(data: {
   });
 
   // Emit event
-  await eventBus.publish(EVENT_TYPES.DECISION_REQUIRED, {
+  await eventBus.publish((EVENT_TYPES as any).DECISION_REQUIRED, {
     decisionId: decision.id,
     projectId: data.projectId,
     type: data.type,
@@ -624,7 +624,7 @@ async function determineImpacts(type: DecisionType, context: DecisionContext): P
 }
 
 async function recordDecisionOutcome(decisionId: string, outcome: DecisionOutcome) {
-  const decision = await prisma.decision.update({
+  const decision = await (prisma as any).decision.update({
     where: { id: decisionId },
     data: {
       outcome: outcome as any,
@@ -632,7 +632,7 @@ async function recordDecisionOutcome(decisionId: string, outcome: DecisionOutcom
   });
 
   // Emit event for learning
-  await eventBus.publish(EVENT_TYPES.DECISION_OUTCOME_RECORDED, {
+  await eventBus.publish((EVENT_TYPES as any).DECISION_OUTCOME_RECORDED, {
     decisionId,
     type: (decision as any).type,
     success: outcome.success,
@@ -659,7 +659,7 @@ export async function decisionSupportRoutes(fastify: FastifyInstance) {
     const { projectId } = request.params as { projectId: string };
     const { status } = request.query as { status?: string };
 
-    const decisions = await prisma.decision.findMany({
+    const decisions = await (prisma as any).decision.findMany({
       where: {
         projectId,
         ...(status && { status }),
@@ -676,7 +676,7 @@ export async function decisionSupportRoutes(fastify: FastifyInstance) {
   fastify.get('/decisions/:id', async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
 
-    const decision = await prisma.decision.findUnique({
+    const decision = await (prisma as any).decision.findUnique({
       where: { id },
     });
 
@@ -718,7 +718,7 @@ export async function decisionSupportRoutes(fastify: FastifyInstance) {
       notes?: string;
     };
 
-    const decision = await prisma.decision.update({
+    const decision = await (prisma as any).decision.update({
       where: { id },
       data: {
         status: 'accepted',
@@ -730,7 +730,7 @@ export async function decisionSupportRoutes(fastify: FastifyInstance) {
     });
 
     // Emit event
-    await eventBus.publish(EVENT_TYPES.DECISION_MADE, {
+    await eventBus.publish((EVENT_TYPES as any).DECISION_MADE, {
       decisionId: id,
       projectId: decision.projectId,
       type: (decision as any).type,
@@ -828,14 +828,14 @@ export async function decisionSupportRoutes(fastify: FastifyInstance) {
     ] = await Promise.all([
       prisma.project.count(),
       prisma.project.count({ where: { status: { in: ['IN_PROGRESS', 'ACTIVE'] } } }),
-      prisma.decision.count({ where: { status: 'pending' } }),
+      (prisma as any).decision.count({ where: { status: 'pending' } }),
       getAllQueueMetrics(),
     ]);
 
     // Calculate queue health
-    const totalWaiting = Object.values(queueMetrics).reduce((s, m) => s + m.waiting, 0);
-    const totalActive = Object.values(queueMetrics).reduce((s, m) => s + m.active, 0);
-    const totalFailed = Object.values(queueMetrics).reduce((s, m) => s + m.failed, 0);
+    const totalWaiting = Object.values(queueMetrics as any).reduce((s: number, m: any) => s + m.waiting, 0);
+    const totalActive = Object.values(queueMetrics as any).reduce((s: number, m: any) => s + m.active, 0);
+    const totalFailed = Object.values(queueMetrics as any).reduce((s: number, m: any) => s + m.failed, 0);
 
     return {
       projects: {
@@ -849,7 +849,7 @@ export async function decisionSupportRoutes(fastify: FastifyInstance) {
         waiting: totalWaiting,
         active: totalActive,
         failed: totalFailed,
-        health: totalFailed === 0 ? 'healthy' : totalFailed < 10 ? 'degraded' : 'critical',
+        health: (totalFailed as number) === 0 ? 'healthy' : (totalFailed as number) < 10 ? 'degraded' : 'critical',
       },
       timestamp: new Date().toISOString(),
     };
@@ -864,17 +864,17 @@ export async function decisionSupportRoutes(fastify: FastifyInstance) {
       acceptedToday,
       avgResponseTime,
     ] = await Promise.all([
-      prisma.decision.count({ where: { status: 'pending' } }),
-      prisma.decision.count({
+      (prisma as any).decision.count({ where: { status: 'pending' } }),
+      (prisma as any).decision.count({
         where: {
           status: 'accepted',
           decidedAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
         },
       }),
-      prisma.decision.aggregate({
+      (prisma as any).decision.aggregate({
         where: { status: 'accepted' },
         _avg: { responseTimeMinutes: true },
-      }),
+      } as any),
     ]);
 
     return {

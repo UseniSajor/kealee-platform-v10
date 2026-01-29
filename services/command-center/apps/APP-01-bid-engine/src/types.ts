@@ -69,6 +69,7 @@ export interface MatchResult {
 // ============================================================================
 
 export interface BidRequestScope {
+  [key: string]: unknown;
   description: string;
   lineItems: Array<{
     item: string;
@@ -82,6 +83,7 @@ export interface BidRequestScope {
 }
 
 export interface BidRequestRequirements {
+  [key: string]: unknown;
   insuranceMinimum: number;
   bondRequired: boolean;
   bondAmount?: number;

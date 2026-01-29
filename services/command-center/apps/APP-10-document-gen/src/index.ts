@@ -110,7 +110,7 @@ class DocumentService {
    */
   async getTemplate(type: DocumentType): Promise<DocumentTemplate | null> {
     const template = await prisma.documentTemplate.findFirst({
-      where: { type, active: true },
+      where: { type, isActive: true } as any,
       orderBy: { createdAt: 'desc' },
     });
 
@@ -303,18 +303,16 @@ class DocumentService {
     }
 
     // Generate AI narrative
-    const narrative = await generateText({
-      systemPrompt: `You are a construction daily report writer. Write professional, concise daily report narratives.`,
-      userPrompt: `Generate a daily report narrative for:
+    const narrative = await generateText(`You are a construction daily report writer. Write professional, concise daily report narratives.
+
+Generate a daily report narrative for:
 Project: ${project.name}
 Date: ${formatDate(date)}
 Weather: ${data.weather || 'Clear'}, ${data.temperature || 'N/A'}°F
 Workforce: ${data.workforce.map(w => `${w.trade}: ${w.count}`).join(', ')}
 Work Completed: ${data.workCompleted.join('; ')}
 ${data.issues?.length ? `Issues: ${data.issues.join('; ')}` : ''}
-${data.safetyIncidents?.length ? `Safety: ${data.safetyIncidents.join('; ')}` : 'No safety incidents'}`,
-      maxTokens: 500,
-    });
+${data.safetyIncidents?.length ? `Safety: ${data.safetyIncidents.join('; ')}` : 'No safety incidents'}` as any);
 
     let content = `# DAILY FIELD REPORT\n\n`;
     content += `**Project:** ${project.name}\n`;
@@ -757,7 +755,7 @@ async function sendDocument(data: {
   const document = await prisma.document.findUnique({
     where: { id: data.documentId },
     include: { project: true },
-  });
+  } as any) as any;
 
   if (!document) {
     throw new Error('Document not found');
@@ -811,8 +809,8 @@ export async function documentGenRoutes(fastify: FastifyInstance) {
         ...(type && { type }),
         ...(status && { status }),
       },
-      orderBy: { generatedAt: 'desc' },
-    });
+      orderBy: { createdAt: 'desc' },
+    } as any);
 
     return { documents };
   });
@@ -827,9 +825,8 @@ export async function documentGenRoutes(fastify: FastifyInstance) {
       where: { id },
       include: {
         project: { select: { id: true, name: true } },
-        distributions: true,
       },
-    });
+    } as any);
 
     if (!document) {
       return reply.status(404).send({ error: 'Document not found' });
@@ -988,9 +985,9 @@ export async function documentGenRoutes(fastify: FastifyInstance) {
 
     const templates = await prisma.documentTemplate.findMany({
       where: {
-        active: true,
+        isActive: true,
         ...(type && { type }),
-      },
+      } as any,
       orderBy: { name: 'asc' },
     });
 
@@ -1010,7 +1007,7 @@ export async function documentGenRoutes(fastify: FastifyInstance) {
       byType,
     ] = await Promise.all([
       prisma.document.count({
-        where: { generatedAt: { gte: today } },
+        where: { createdAt: { gte: today } } as any,
       }),
       prisma.document.count({
         where: { status: 'draft' },

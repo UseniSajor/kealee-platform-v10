@@ -111,7 +111,6 @@ class ReportGeneratorService {
       where: { id: config.projectId },
       include: {
         client: true,
-        pm: true,
       },
     });
 
@@ -129,12 +128,12 @@ class ReportGeneratorService {
     const progress = this.calculateProgress(project, milestones);
 
     // Calculate schedule status
-    const schedule = this.calculateScheduleStatus(project, milestones);
+    const schedule = this.calculateScheduleStatus(project, milestones as any);
 
     // Determine highlights and issues for narrative
     const highlights = [
       ...activities.slice(0, 3).map(a => a.description),
-      ...milestones.filter(m => m.status === 'COMPLETED').slice(0, 2).map(m => `Completed: ${m.name}`),
+      ...(milestones as any[]).filter(m => m.status === 'COMPLETED').slice(0, 2).map(m => `Completed: ${m.name}`),
     ];
 
     const issueDescriptions = issues.filter(i => i.status !== 'RESOLVED').map(i => i.description);
@@ -209,7 +208,7 @@ class ReportGeneratorService {
         content: content as object,
         status: 'GENERATED',
         generatedAt: new Date(),
-      },
+      } as any,
     });
 
     // Generate PDF (placeholder - would use pdfkit in real implementation)
@@ -249,7 +248,7 @@ class ReportGeneratorService {
       include: { project: { include: { client: true } } },
     });
 
-    const content = report.content as ReportContent;
+    const content = report.content as unknown as ReportContent;
 
     await sendReport({
       recipients,
@@ -267,7 +266,7 @@ class ReportGeneratorService {
         status: 'SENT',
         sentAt: new Date(),
         recipients,
-      },
+      } as any,
     });
 
     // Emit event
@@ -349,12 +348,12 @@ class ReportGeneratorService {
     });
 
     const entries = await prisma.budgetEntry.aggregate({
-      where: { projectId, type: 'EXPENSE' },
+      where: { projectId, category: 'EXPENSE' },
       _sum: { amount: true },
     });
 
     const committed = await prisma.budgetEntry.aggregate({
-      where: { projectId, type: 'COMMITTED' },
+      where: { projectId, category: 'COMMITTED' },
       _sum: { amount: true },
     });
 
@@ -370,9 +369,15 @@ class ReportGeneratorService {
   }
 
   private async getMilestones(projectId: string) {
-    return prisma.milestone.findMany({
+    // Milestones are linked through contracts, fetch all for the project's contracts
+    const contracts = await prisma.contractAgreement.findMany({
       where: { projectId },
-      orderBy: { dueDate: 'asc' },
+      select: { id: true },
+    });
+    const contractIds = contracts.map(c => c.id);
+    return prisma.milestone.findMany({
+      where: { contractId: { in: contractIds } },
+      orderBy: { name: 'asc' },
     });
   }
 
@@ -397,7 +402,7 @@ class ReportGeneratorService {
     });
   }
 
-  private calculateProgress(project: { currentPhase?: string | null }, milestones: { status: string }[]) {
+  private calculateProgress(project: { currentPhase?: string | null }, milestones: any[]) {
     const completed = milestones.filter(m => m.status === 'COMPLETED').length;
     const total = milestones.length || 1;
     const percentComplete = Math.round((completed / total) * 100);
@@ -405,8 +410,8 @@ class ReportGeneratorService {
     return {
       phase: project.currentPhase || 'CONSTRUCTION',
       percentComplete,
-      milestonesCompleted: milestones.filter(m => m.status === 'COMPLETED').map((m: { name?: string }) => m.name || 'Milestone'),
-      milestonesUpcoming: milestones.filter(m => m.status === 'PENDING').slice(0, 3).map((m: { name?: string }) => m.name || 'Milestone'),
+      milestonesCompleted: milestones.filter(m => m.status === 'COMPLETED').map(m => m.name || 'Milestone'),
+      milestonesUpcoming: milestones.filter(m => m.status === 'PENDING').slice(0, 3).map(m => m.name || 'Milestone'),
     };
   }
 

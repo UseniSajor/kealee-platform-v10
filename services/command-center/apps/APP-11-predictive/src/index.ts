@@ -88,10 +88,10 @@ class PredictiveEngineService {
         budgetEntries: true,
         issues: { where: { status: { not: 'RESOLVED' } } },
       },
-    });
+    } as any) as any;
 
     // Gather metrics
-    const percentComplete = this.calculatePercentComplete(project.milestones);
+    const percentComplete = this.calculatePercentComplete(project.milestones || []);
     const daysRemaining = project.scheduledEndDate
       ? daysUntilDeadline(project.scheduledEndDate)
       : 90;
@@ -101,20 +101,20 @@ class PredictiveEngineService {
     let weatherForecast: string | undefined;
     if (project.latitude && project.longitude) {
       const forecast = await getDailyForecast(project.latitude, project.longitude, 7);
-      const badDays = forecast.filter(d => !d.isWorkable).length;
+      const badDays = forecast.filter((d: any) => !d.isWorkable).length;
       if (badDays > 0) {
         weatherForecast = `${badDays} days of poor weather expected in the next 7 days`;
       }
     }
 
     // Recent issues
-    const recentIssues = project.issues.map(i => i.description);
+    const recentIssues = (project.issues || []).map((i: any) => i.description);
 
     // Upcoming milestones
-    const upcomingMilestones = project.milestones
-      .filter(m => m.status !== 'COMPLETED' && m.dueDate > new Date())
+    const upcomingMilestones = (project.milestones || [])
+      .filter((m: any) => m.status !== 'COMPLETED' && m.dueDate > new Date())
       .slice(0, 5)
-      .map(m => `${m.name} - ${formatDate(m.dueDate)}`);
+      .map((m: any) => `${m.name} - ${formatDate(m.dueDate)}`);
 
     // AI prediction
     const aiPrediction = await predictProjectRisks({
@@ -129,7 +129,7 @@ class PredictiveEngineService {
     });
 
     // Build individual risk predictions
-    const risks: RiskPrediction[] = aiPrediction.risks.map(r => ({
+    const risks: RiskPrediction[] = aiPrediction.risks.map((r: any) => ({
       projectId,
       category: this.mapCategory(r.category),
       probability: r.probability,
@@ -141,7 +141,7 @@ class PredictiveEngineService {
     }));
 
     // Store prediction
-    await prisma.riskPrediction.create({
+    await (prisma as any).prediction.create({
       data: {
         projectId,
         overallScore: aiPrediction.overallRiskScore,
@@ -151,7 +151,7 @@ class PredictiveEngineService {
         risks: risks as object[],
         recommendations: aiPrediction.recommendations,
         analyzedAt: new Date(),
-      },
+      } as any,
     });
 
     const analysis: ProjectRiskAnalysis = {
@@ -209,13 +209,14 @@ class PredictiveEngineService {
         inspections: { where: { result: 'FAILED' } },
         changeOrders: { where: { status: 'APPROVED' } },
       },
-    });
+    } as any) as any;
 
     const factors: string[] = [];
 
     // Check milestone completion rate
-    const completedMilestones = project.milestones.filter(m => m.status === 'COMPLETED');
-    const lateMilestones = completedMilestones.filter(m =>
+    const milestones = project.milestones || [];
+    const completedMilestones = milestones.filter((m: any) => m.status === 'COMPLETED');
+    const lateMilestones = completedMilestones.filter((m: any) =>
       m.completedAt && m.dueDate && m.completedAt > m.dueDate
     );
     const lateRate = completedMilestones.length > 0
@@ -227,13 +228,15 @@ class PredictiveEngineService {
     }
 
     // Check failed inspections
-    if (project.inspections.length > 0) {
-      factors.push(`${project.inspections.length} failed inspection(s) requiring rework`);
+    const inspections = project.inspections || [];
+    if (inspections.length > 0) {
+      factors.push(`${inspections.length} failed inspection(s) requiring rework`);
     }
 
     // Check change orders impact
-    const totalScheduleImpact = project.changeOrders.reduce(
-      (sum, co) => sum + (co.scheduleDaysAffected || 0), 0
+    const changeOrders = project.changeOrders || [];
+    const totalScheduleImpact = changeOrders.reduce(
+      (sum: number, co: any) => sum + (co.scheduleDaysAffected || 0), 0
     );
     if (totalScheduleImpact > 0) {
       factors.push(`Change orders added ${totalScheduleImpact} days to schedule`);
@@ -242,7 +245,7 @@ class PredictiveEngineService {
     // Calculate probability
     let probability = 0;
     probability += lateRate * 0.4;
-    probability += Math.min(project.inspections.length * 0.1, 0.3);
+    probability += Math.min(inspections.length * 0.1, 0.3);
     probability += Math.min(totalScheduleImpact / 30, 0.3);
     probability = Math.min(probability, 1);
 
@@ -272,15 +275,16 @@ class PredictiveEngineService {
         budgetEntries: true,
         changeOrders: { where: { status: 'APPROVED' } },
       },
-    });
+    } as any) as any;
 
     const factors: string[] = [];
     const budget = Number(project.budget) || 1;
 
     // Calculate spend
-    const spent = project.budgetEntries
-      .filter(e => e.type === 'EXPENSE')
-      .reduce((sum, e) => sum + Number(e.amount), 0);
+    const budgetEntries = project.budgetEntries || [];
+    const spent = budgetEntries
+      .filter((e: any) => e.type === 'EXPENSE')
+      .reduce((sum: number, e: any) => sum + Number(e.amount), 0);
 
     // Calculate percent complete (rough estimate from budget utilization)
     const percentComplete = Math.min((spent / budget) * 100, 100);
@@ -295,8 +299,9 @@ class PredictiveEngineService {
     }
 
     // Change orders
-    const changeOrderTotal = project.changeOrders.reduce(
-      (sum, co) => sum + Number(co.approvedCost || 0), 0
+    const changeOrders = project.changeOrders || [];
+    const changeOrderTotal = changeOrders.reduce(
+      (sum: number, co: any) => sum + Number(co.approvedCost || 0), 0
     );
     const coPercent = (changeOrderTotal / budget) * 100;
     if (coPercent > 5) {
@@ -454,7 +459,7 @@ export async function predictiveRoutes(fastify: FastifyInstance) {
 
   fastify.get('/ai/risk-history/:projectId', async (request: FastifyRequest) => {
     const { projectId } = request.params as { projectId: string };
-    return prisma.riskPrediction.findMany({
+    return (prisma as any).prediction.findMany({
       where: { projectId },
       orderBy: { analyzedAt: 'desc' },
       take: 10,

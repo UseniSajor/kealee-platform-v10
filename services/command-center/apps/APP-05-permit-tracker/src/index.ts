@@ -374,14 +374,15 @@ async function checkPermitStatus(permitId: string) {
       data: {
         status: statusCheck.status,
         ...(statusCheck.status === 'APPROVED' && { approvedAt: new Date() }),
-      },
+      } as any,
     });
 
     // Log activity
     await prisma.permitActivity.create({
       data: {
-        permitId,
+        permit: { connect: { id: permitId } },
         type: 'STATUS_CHANGE',
+        action: 'STATUS_UPDATED',
         description: `Status changed from ${permit.status} to ${statusCheck.status}`,
         metadata: statusCheck as any,
       },
@@ -409,7 +410,7 @@ async function checkAllActivePermits() {
   const activePermits = await prisma.permit.findMany({
     where: {
       status: {
-        in: ['SUBMITTED', 'IN_REVIEW', 'CORRECTIONS_REQUIRED'],
+        in: ['SUBMITTED', 'UNDER_REVIEW', 'CORRECTIONS_REQUESTED'],
       },
     },
   });
@@ -519,7 +520,7 @@ async function sendRenewalReminder(permitId: string) {
       permitId,
       type: 'RENEWAL_REMINDER_SENT',
       description: `Renewal reminder sent to ${pmEmails.length} recipients`,
-    },
+    } as any,
   });
 
   return { sent: true, recipients: pmEmails.length };
@@ -536,14 +537,15 @@ async function updatePermitStatus(
       status,
       ...(status === 'APPROVED' && { approvedAt: new Date() }),
       ...(status === 'ISSUED' && { issuedAt: new Date() }),
-    },
+    } as any,
   });
 
   // Log activity
   await prisma.permitActivity.create({
     data: {
-      permitId,
+      permit: { connect: { id: permitId } },
       type: 'STATUS_UPDATED',
+      action: 'STATUS_UPDATED',
       description: `Status updated to ${status}`,
       metadata: { notes } as any,
     },
@@ -662,7 +664,7 @@ export async function permitTrackerRoutes(fastify: FastifyInstance) {
     const permits = await prisma.permit.findMany({
       where: {
         projectId,
-        ...(status && { status }),
+        ...(status && { status: status as any }),
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -752,7 +754,7 @@ export async function permitTrackerRoutes(fastify: FastifyInstance) {
         permitId: permit.id,
         type: 'CREATED',
         description: `${type} permit created for ${jurisdiction}`,
-      },
+      } as any,
     });
 
     return permit;
@@ -795,7 +797,7 @@ export async function permitTrackerRoutes(fastify: FastifyInstance) {
         permitId: id,
         type: 'SUBMITTED',
         description: `Permit application submitted${applicationNumber ? ` with #${applicationNumber}` : ''}`,
-      },
+      } as any,
     });
 
     // Emit event
@@ -883,7 +885,7 @@ export async function permitTrackerRoutes(fastify: FastifyInstance) {
       expiringSoon,
     ] = await Promise.all([
       prisma.permit.count({
-        where: { status: { in: ['SUBMITTED', 'IN_REVIEW', 'CORRECTIONS_REQUIRED'] } },
+        where: { status: { in: ['SUBMITTED', 'UNDER_REVIEW', 'CORRECTIONS_REQUESTED'] } },
       }),
       prisma.permit.count({ where: { status: 'SUBMITTED' } }),
       prisma.permit.count({ where: { status: { in: ['APPROVED', 'ISSUED'] } } }),

@@ -37,8 +37,9 @@ const SMS_TEMPLATES: Record<SMSType, string> = {
 
 interface SMSParams {
   to: string;
-  type: SMSType;
-  variables: Record<string, string>;
+  type?: SMSType;
+  variables?: Record<string, string>;
+  body?: string; // Direct body content (alternative to type+variables)
 }
 
 /**
@@ -82,7 +83,11 @@ function buildMessage(type: SMSType, variables: Record<string, string>): string 
  * Send SMS message
  */
 export async function sendSMS(params: SMSParams): Promise<string> {
-  const body = buildMessage(params.type, params.variables);
+  // Use direct body if provided, otherwise build from template
+  const body = params.body || (params.type && params.variables ? buildMessage(params.type, params.variables) : '');
+  if (!body) {
+    throw new Error('Either body or type+variables must be provided');
+  }
   const to = formatPhoneNumber(params.to);
 
   const message = await client.messages.create({

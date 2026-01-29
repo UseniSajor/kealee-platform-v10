@@ -98,7 +98,7 @@ class CommunicationService {
   async getTemplates(category?: string): Promise<MessageTemplate[]> {
     const templates = await prisma.messageTemplate.findMany({
       where: {
-        active: true,
+        isActive: true,
         ...(category && { category }),
       },
       orderBy: { name: 'asc' },
@@ -155,10 +155,21 @@ class CommunicationService {
     category: string
   ): Promise<boolean> {
     const preference = await prisma.notificationPreference.findFirst({
-      where: { userId, channel, category },
+      where: { userId, category },
     });
 
-    if (!preference || !preference.enabled) {
+    if (!preference) {
+      return false;
+    }
+
+    // Check if this channel is enabled
+    const channelEnabled =
+      (channel === 'EMAIL' && preference.emailEnabled) ||
+      (channel === 'SMS' && preference.smsEnabled) ||
+      (channel === 'PUSH' && preference.pushEnabled) ||
+      (channel === 'IN_APP' && preference.inAppEnabled);
+
+    if (!channelEnabled) {
       return false;
     }
 
@@ -228,7 +239,7 @@ class CommunicationService {
 
       case 'all-users':
         const users = await prisma.user.findMany({
-          where: { active: true },
+          where: { status: 'ACTIVE' },
           select: { id: true, email: true, phone: true, name: true },
         });
         return users as any;
@@ -511,8 +522,8 @@ async function sendScheduledMessages() {
 
   const scheduledMessages = await prisma.message.findMany({
     where: {
-      status: 'pending',
-      scheduledAt: { lte: now },
+      status: 'PENDING',
+      createdAt: { lte: now },
     },
   });
 
@@ -545,8 +556,8 @@ async function sendDigestNotifications() {
   // Get users who prefer digest notifications
   const digestPrefs = await prisma.notificationPreference.findMany({
     where: {
-      category: 'digest',
-      enabled: true,
+      frequency: 'DAILY_DIGEST',
+      emailEnabled: true,
     },
     include: { user: true },
   });
@@ -655,14 +666,15 @@ async function markMessageRead(messageId: string) {
 
 // Subscribe to events for automatic notifications
 eventBus.subscribe(EVENT_TYPES.INSPECTION_SCHEDULED, async (event) => {
+  const eventData = event.data as { projectId?: string; type?: string; scheduledDate?: Date };
   await queues.COMMUNICATION.add(
     'inspection-notification',
     {
       type: 'PROJECT_UPDATE',
-      projectId: event.data.projectId,
+      projectId: eventData.projectId,
       updateType: 'INSPECTION',
-      title: `${event.data.type} Inspection Scheduled`,
-      message: `An inspection has been scheduled for ${formatDate(event.data.scheduledDate)}`,
+      title: `${eventData.type} Inspection Scheduled`,
+      message: `An inspection has been scheduled for ${formatDate(eventData.scheduledDate || new Date())}`,
       importance: 'important',
     },
     JOB_OPTIONS.DEFAULT
@@ -670,15 +682,16 @@ eventBus.subscribe(EVENT_TYPES.INSPECTION_SCHEDULED, async (event) => {
 });
 
 eventBus.subscribe(EVENT_TYPES.BUDGET_ALERT, async (event) => {
-  if (event.data.severity === 'critical') {
+  const eventData = event.data as { severity?: string; projectId?: string; message?: string };
+  if (eventData.severity === 'critical') {
     await queues.COMMUNICATION.add(
       'budget-alert-notification',
       {
         type: 'PROJECT_UPDATE',
-        projectId: event.data.projectId,
+        projectId: eventData.projectId,
         updateType: 'BUDGET ALERT',
         title: 'Critical Budget Alert',
-        message: event.data.message,
+        message: eventData.message,
         importance: 'critical',
       },
       JOB_OPTIONS.HIGH_PRIORITY

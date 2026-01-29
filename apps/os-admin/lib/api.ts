@@ -1,4 +1,4 @@
-import { api } from '@kealee/api-client'
+import { api as apiClient } from '@kealee/api-client'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -19,25 +19,25 @@ async function getAuthToken(): Promise<string | null> {
 // Create a compatible leadApiClient using the available api export
 const leadApiClient = {
   listLeads: (query?: any) => 
-    api.get<any>(`/leads${query ? '?' + new URLSearchParams(query).toString() : ''}`),
+    apiClient.get<any>(`/leads${query ? '?' + new URLSearchParams(query).toString() : ''}`),
   
   getLead: (id: string) => 
-    api.get<any>(`/leads/${id}`),
+    apiClient.get<any>(`/leads/${id}`),
   
   updateLeadStage: (id: string, stage: any) => 
-    api.put<any>(`/leads/${id}/stage`, { stage }),
+    apiClient.put<any>(`/leads/${id}/stage`, { stage }),
   
   assignSalesRep: (id: string, salesRepId: string) => 
-    api.put<any>(`/leads/${id}/assign`, { salesRepId }),
+    apiClient.put<any>(`/leads/${id}/assign`, { salesRepId }),
   
   awardContractor: (id: string, profileId: string) => 
-    api.put<any>(`/leads/${id}/award`, { profileId }),
+    apiClient.put<any>(`/leads/${id}/award`, { profileId }),
   
   closeLost: (id: string, reason: string) => 
-    api.put<any>(`/leads/${id}/close`, { reason, status: 'lost' }),
+    apiClient.put<any>(`/leads/${id}/close`, { reason, status: 'lost' }),
   
   distributeLead: (id: string, distributionCount?: number) => 
-    api.post<any>(`/leads/${id}/distribute`, { distributionCount }),
+    apiClient.post<any>(`/leads/${id}/distribute`, { distributionCount }),
 }
 
 export async function apiRequest<T>(

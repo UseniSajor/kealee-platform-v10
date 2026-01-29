@@ -170,7 +170,7 @@ export default function FinanceDashboard() {
                   { icon: "💰", label: "Deposit Funds", href: "/deposit", description: "Add funds to escrow" },
                   { icon: "📤", label: "Release Payment", href: "/releases/new", description: "Approve milestone release" },
                   { icon: "📊", label: "View Reports", href: "/reports", description: "Financial analytics" },
-                  { icon: "⚙️", label: "Payment Settings", href: "/settings/payments", description: "Configure payment methods" },
+                  { icon: "⚙️", label: "Payment Settings", href: "/settings", description: "Configure payment methods" },
                 ].map((action) => (
                   <Link
                     key={action.label}

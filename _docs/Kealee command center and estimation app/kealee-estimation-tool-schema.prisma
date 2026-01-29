@@ -1,0 +1,984 @@
+// =============================================================================
+// KEALEE PLATFORM v10 - APP-15: ESTIMATION TOOL SCHEMA
+// =============================================================================
+// Add these models to your existing schema.prisma file
+// Location: packages/database/prisma/schema.prisma
+// =============================================================================
+
+// =============================================================================
+// SECTION 21: APP-15 - ESTIMATION TOOL
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// COST DATABASE - Regional pricing data for materials, labor, equipment
+// -----------------------------------------------------------------------------
+
+model CostDatabase {
+  id              String   @id @default(uuid())
+  organizationId  String?
+  name            String
+  description     String?
+  region          String   // e.g., "DC-Baltimore", "National"
+  type            CostDatabaseType @default(CUSTOM)
+  version         String   @default("1.0")
+  effectiveDate   DateTime @default(now())
+  expirationDate  DateTime?
+  source          String?  // e.g., "RSMeans", "Internal", "AI-Generated"
+  isActive        Boolean  @default(true)
+  isDefault       Boolean  @default(false)
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  materials       MaterialCost[]
+  laborRates      LaborRate[]
+  equipmentRates  EquipmentRate[]
+  assemblies      Assembly[]
+  estimates       Estimate[]
+
+  @@index([organizationId])
+  @@index([region])
+  @@index([isActive])
+  @@map("cost_databases")
+}
+
+enum CostDatabaseType {
+  NATIONAL
+  REGIONAL
+  LOCAL
+  CUSTOM
+  IMPORTED
+}
+
+model MaterialCost {
+  id              String   @id @default(uuid())
+  costDatabaseId  String
+  csiCode         String?  // CSI MasterFormat code (e.g., "03 30 00")
+  csiDivision     Int?     // Division number 1-49
+  category        MaterialCategory
+  subcategory     String?
+  name            String
+  description     String?
+  unit            String   // e.g., "SF", "LF", "EA", "CY"
+  unitCost        Decimal
+  minCost         Decimal?
+  maxCost         Decimal?
+  wasteFactor     Decimal  @default(1.05) // 5% default waste
+  supplier        String?
+  sku             String?
+  leadTimeDays    Int?
+  isActive        Boolean  @default(true)
+  lastUpdated     DateTime @default(now())
+  priceHistory    Json?    // Array of {date, price} for trending
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  costDatabase    CostDatabase @relation(fields: [costDatabaseId], references: [id])
+  assemblyItems   AssemblyItem[]
+  lineItems       EstimateLineItem[]
+
+  @@index([costDatabaseId])
+  @@index([csiCode])
+  @@index([category])
+  @@index([name])
+  @@map("material_costs")
+}
+
+enum MaterialCategory {
+  CONCRETE
+  MASONRY
+  METALS
+  WOOD_PLASTICS_COMPOSITES
+  THERMAL_MOISTURE
+  OPENINGS
+  FINISHES
+  SPECIALTIES
+  EQUIPMENT
+  FURNISHINGS
+  SPECIAL_CONSTRUCTION
+  CONVEYING
+  FIRE_SUPPRESSION
+  PLUMBING
+  HVAC
+  ELECTRICAL
+  COMMUNICATIONS
+  ELECTRONIC_SAFETY
+  EARTHWORK
+  EXTERIOR_IMPROVEMENTS
+  UTILITIES
+  GENERAL_CONDITIONS
+  OTHER
+}
+
+model LaborRate {
+  id              String   @id @default(uuid())
+  costDatabaseId  String
+  trade           LaborTrade
+  classification  String?  // e.g., "Journeyman", "Apprentice", "Foreman"
+  description     String?
+  baseRate        Decimal  // Hourly base rate
+  burdenRate      Decimal? // Benefits, taxes, insurance
+  totalRate       Decimal  // Base + burden
+  overtimeMultiplier Decimal @default(1.5)
+  prevailingWage  Boolean  @default(false)
+  unionRate       Boolean  @default(false)
+  productivityFactor Decimal @default(1.0)
+  region          String?
+  effectiveDate   DateTime @default(now())
+  expirationDate  DateTime?
+  isActive        Boolean  @default(true)
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  costDatabase    CostDatabase @relation(fields: [costDatabaseId], references: [id])
+  assemblyItems   AssemblyItem[]
+  lineItems       EstimateLineItem[]
+
+  @@index([costDatabaseId])
+  @@index([trade])
+  @@index([region])
+  @@map("labor_rates")
+}
+
+enum LaborTrade {
+  GENERAL_LABOR
+  CARPENTER
+  ELECTRICIAN
+  PLUMBER
+  HVAC_TECHNICIAN
+  PAINTER
+  DRYWALL_FINISHER
+  TILE_SETTER
+  ROOFER
+  MASON
+  CONCRETE_FINISHER
+  IRONWORKER
+  SHEET_METAL_WORKER
+  INSULATOR
+  GLAZIER
+  FLOORING_INSTALLER
+  CABINET_MAKER
+  DEMOLITION
+  EXCAVATOR_OPERATOR
+  CRANE_OPERATOR
+  FOREMAN
+  SUPERINTENDENT
+  PROJECT_MANAGER
+  SAFETY_OFFICER
+  OTHER
+}
+
+model EquipmentRate {
+  id              String   @id @default(uuid())
+  costDatabaseId  String
+  category        EquipmentCategory
+  name            String
+  description     String?
+  dailyRate       Decimal
+  weeklyRate      Decimal?
+  monthlyRate     Decimal?
+  operatorRequired Boolean @default(false)
+  operatorRate    Decimal?
+  fuelCostPerHour Decimal?
+  mobilizationCost Decimal?
+  demobilizationCost Decimal?
+  minRentalDays   Int      @default(1)
+  isActive        Boolean  @default(true)
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  costDatabase    CostDatabase @relation(fields: [costDatabaseId], references: [id])
+  assemblyItems   AssemblyItem[]
+  lineItems       EstimateLineItem[]
+
+  @@index([costDatabaseId])
+  @@index([category])
+  @@map("equipment_rates")
+}
+
+enum EquipmentCategory {
+  EXCAVATION
+  LIFTING
+  CONCRETE
+  COMPACTION
+  HAULING
+  SCAFFOLDING
+  POWER_TOOLS
+  SAFETY
+  TEMPORARY_FACILITIES
+  SURVEYING
+  TESTING
+  CLEANING
+  OTHER
+}
+
+// -----------------------------------------------------------------------------
+// ASSEMBLIES - Pre-built unit costs for common construction tasks
+// -----------------------------------------------------------------------------
+
+model Assembly {
+  id              String   @id @default(uuid())
+  costDatabaseId  String
+  csiCode         String?
+  category        AssemblyCategory
+  subcategory     String?
+  name            String
+  description     String?
+  unit            String   // e.g., "SF", "LF", "EA"
+  unitCost        Decimal  // Calculated total
+  laborCost       Decimal
+  materialCost    Decimal
+  equipmentCost   Decimal  @default(0)
+  laborHours      Decimal
+  productionRate  Decimal? // Units per day
+  crewSize        Decimal? // Number of workers
+  complexity      AssemblyComplexity @default(STANDARD)
+  isActive        Boolean  @default(true)
+  isTemplate      Boolean  @default(false)
+  tags            String[] @default([])
+  notes           String?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  costDatabase    CostDatabase @relation(fields: [costDatabaseId], references: [id])
+  items           AssemblyItem[]
+  lineItems       EstimateLineItem[]
+
+  @@index([costDatabaseId])
+  @@index([csiCode])
+  @@index([category])
+  @@index([name])
+  @@map("assemblies")
+}
+
+enum AssemblyCategory {
+  SITEWORK
+  FOUNDATIONS
+  CONCRETE_FLATWORK
+  FRAMING
+  ROOFING
+  EXTERIOR_FINISHES
+  INTERIOR_FINISHES
+  DRYWALL
+  PAINTING
+  FLOORING
+  TILE
+  CABINETRY
+  COUNTERTOPS
+  DOORS_HARDWARE
+  WINDOWS
+  PLUMBING_ROUGH
+  PLUMBING_FINISH
+  ELECTRICAL_ROUGH
+  ELECTRICAL_FINISH
+  HVAC_ROUGH
+  HVAC_FINISH
+  INSULATION
+  DEMOLITION
+  CLEANUP
+  PERMITS_FEES
+  GENERAL_CONDITIONS
+  OTHER
+}
+
+enum AssemblyComplexity {
+  SIMPLE
+  STANDARD
+  COMPLEX
+  CUSTOM
+}
+
+model AssemblyItem {
+  id              String   @id @default(uuid())
+  assemblyId      String
+  itemType        AssemblyItemType
+  materialId      String?
+  laborRateId     String?
+  equipmentId     String?
+  description     String?
+  quantity        Decimal
+  unit            String
+  unitCost        Decimal
+  totalCost       Decimal
+  laborHours      Decimal?
+  sortOrder       Int      @default(0)
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  assembly        Assembly       @relation(fields: [assemblyId], references: [id], onDelete: Cascade)
+  material        MaterialCost?  @relation(fields: [materialId], references: [id])
+  laborRate       LaborRate?     @relation(fields: [laborRateId], references: [id])
+  equipment       EquipmentRate? @relation(fields: [equipmentId], references: [id])
+
+  @@index([assemblyId])
+  @@map("assembly_items")
+}
+
+enum AssemblyItemType {
+  MATERIAL
+  LABOR
+  EQUIPMENT
+  SUBCONTRACTOR
+  OTHER
+}
+
+// -----------------------------------------------------------------------------
+// ESTIMATES - Project cost estimates
+// -----------------------------------------------------------------------------
+
+model Estimate {
+  id              String   @id @default(uuid())
+  organizationId  String
+  projectId       String?
+  clientId        String?
+  costDatabaseId  String?
+  bidRequestId    String?  // Link to Bid Engine
+  name            String
+  description     String?
+  type            EstimateType
+  status          EstimateStatus @default(DRAFT)
+  version         Int      @default(1)
+  parentEstimateId String? // For revisions
+  
+  // Project Details
+  projectName     String?
+  projectAddress  String?
+  projectCity     String?
+  projectState    String?
+  projectZip      String?
+  squareFootage   Decimal?
+  projectType     String?
+  buildingType    String?
+  stories         Int?
+  
+  // Cost Summary (calculated)
+  subtotalMaterial  Decimal @default(0)
+  subtotalLabor     Decimal @default(0)
+  subtotalEquipment Decimal @default(0)
+  subtotalSubcontractor Decimal @default(0)
+  subtotalOther     Decimal @default(0)
+  subtotalDirect    Decimal @default(0)
+  
+  // Markups & Adjustments
+  overhead          Decimal @default(0)
+  overheadPercent   Decimal @default(10)
+  profit            Decimal @default(0)
+  profitPercent     Decimal @default(10)
+  contingency       Decimal @default(0)
+  contingencyPercent Decimal @default(5)
+  bondCost          Decimal @default(0)
+  bondPercent       Decimal?
+  permitFees        Decimal @default(0)
+  insuranceCost     Decimal @default(0)
+  taxRate           Decimal @default(0)
+  salesTax          Decimal @default(0)
+  
+  // Totals
+  totalCost         Decimal @default(0)
+  costPerSqFt       Decimal?
+  
+  // Timeline
+  estimatedDuration Int?     // Days
+  startDate         DateTime?
+  endDate           DateTime?
+  
+  // AI Analysis
+  aiGenerated       Boolean  @default(false)
+  aiConfidence      Decimal?
+  aiNotes           String?
+  aiComparisons     Json?    // Similar project comparisons
+  
+  // Workflow
+  preparedById      String?
+  reviewedById      String?
+  approvedById      String?
+  preparedAt        DateTime?
+  reviewedAt        DateTime?
+  approvedAt        DateTime?
+  sentAt            DateTime?
+  sentTo            String[] @default([])
+  expiresAt         DateTime?
+  
+  // Service Info
+  serviceType       EstimationServiceType?
+  turnaroundHours   Int?
+  revisionsAllowed  Int      @default(1)
+  revisionsUsed     Int      @default(0)
+  
+  notes             String?
+  internalNotes     String?
+  assumptions       Json?    // Array of assumptions
+  exclusions        Json?    // Array of exclusions
+  clarifications    Json?    // Array of clarifications
+  attachments       Json?
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  costDatabase      CostDatabase? @relation(fields: [costDatabaseId], references: [id])
+  parentEstimate    Estimate?     @relation("EstimateRevisions", fields: [parentEstimateId], references: [id])
+  revisions         Estimate[]    @relation("EstimateRevisions")
+  sections          EstimateSection[]
+  lineItems         EstimateLineItem[]
+  comparisons       EstimateComparison[] @relation("EstimateComparisons")
+  comparedTo        EstimateComparison[] @relation("ComparedEstimates")
+
+  @@index([organizationId])
+  @@index([projectId])
+  @@index([clientId])
+  @@index([status])
+  @@index([type])
+  @@map("estimates")
+}
+
+enum EstimateType {
+  QUICK_BUDGET
+  CONCEPTUAL
+  PRELIMINARY
+  DETAILED
+  BID
+  CHANGE_ORDER
+  VALUE_ENGINEERING
+  AS_BUILT
+}
+
+enum EstimateStatus {
+  DRAFT
+  IN_PROGRESS
+  UNDER_REVIEW
+  PENDING_APPROVAL
+  APPROVED
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  SUPERSEDED
+  ARCHIVED
+}
+
+enum EstimationServiceType {
+  QUICK_BUDGET
+  BASIC_TAKEOFF
+  DETAILED_ESTIMATE
+  ESTIMATE_REVIEW
+  PROFESSIONAL_BID
+  ENTERPRISE
+  MONTHLY_SUPPORT
+}
+
+model EstimateSection {
+  id              String   @id @default(uuid())
+  estimateId      String
+  csiDivision     Int?
+  csiCode         String?
+  name            String
+  description     String?
+  subtotalMaterial  Decimal @default(0)
+  subtotalLabor     Decimal @default(0)
+  subtotalEquipment Decimal @default(0)
+  subtotalSubcontractor Decimal @default(0)
+  subtotalOther     Decimal @default(0)
+  total             Decimal @default(0)
+  sortOrder       Int      @default(0)
+  isExpanded      Boolean  @default(true)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  estimate        Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+  lineItems       EstimateLineItem[]
+
+  @@index([estimateId])
+  @@map("estimate_sections")
+}
+
+model EstimateLineItem {
+  id              String   @id @default(uuid())
+  estimateId      String
+  sectionId       String?
+  itemType        LineItemType
+  
+  // Source references
+  materialId      String?
+  laborRateId     String?
+  equipmentId     String?
+  assemblyId      String?
+  
+  // Item details
+  csiCode         String?
+  category        String?
+  description     String
+  location        String?  // Where in the building
+  
+  // Quantities
+  quantity        Decimal
+  unit            String
+  takeoffSource   TakeoffSource @default(MANUAL)
+  takeoffNotes    String?
+  
+  // Costs
+  unitCost        Decimal
+  totalCost       Decimal
+  laborHours      Decimal?
+  laborCost       Decimal?
+  materialCost    Decimal?
+  equipmentCost   Decimal?
+  subcontractorCost Decimal?
+  
+  // Adjustments
+  wasteFactor     Decimal  @default(1.0)
+  difficultyFactor Decimal @default(1.0)
+  markup          Decimal  @default(0)
+  discount        Decimal  @default(0)
+  
+  // Flags
+  isAlternate     Boolean  @default(false)
+  isAllowance     Boolean  @default(false)
+  isExcluded      Boolean  @default(false)
+  isByOwner       Boolean  @default(false) // Owner-furnished
+  
+  sortOrder       Int      @default(0)
+  notes           String?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  estimate        Estimate       @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+  section         EstimateSection? @relation(fields: [sectionId], references: [id])
+  material        MaterialCost?  @relation(fields: [materialId], references: [id])
+  laborRate       LaborRate?     @relation(fields: [laborRateId], references: [id])
+  equipment       EquipmentRate? @relation(fields: [equipmentId], references: [id])
+  assembly        Assembly?      @relation(fields: [assemblyId], references: [id])
+
+  @@index([estimateId])
+  @@index([sectionId])
+  @@index([itemType])
+  @@map("estimate_line_items")
+}
+
+enum LineItemType {
+  MATERIAL
+  LABOR
+  EQUIPMENT
+  ASSEMBLY
+  SUBCONTRACTOR
+  ALLOWANCE
+  FEE
+  OTHER
+}
+
+enum TakeoffSource {
+  MANUAL
+  PLAN_MEASUREMENT
+  AI_EXTRACTED
+  IMPORTED
+  ASSEMBLY_CALC
+}
+
+// -----------------------------------------------------------------------------
+// ESTIMATE COMPARISONS & HISTORY
+// -----------------------------------------------------------------------------
+
+model EstimateComparison {
+  id              String   @id @default(uuid())
+  estimateId      String
+  comparedToId    String?  // Another estimate, or null for historical
+  type            ComparisonType
+  name            String?
+  
+  // Comparison data
+  baseCost        Decimal
+  comparedCost    Decimal
+  variance        Decimal
+  variancePercent Decimal
+  
+  // Breakdown
+  materialVariance Decimal?
+  laborVariance   Decimal?
+  equipmentVariance Decimal?
+  
+  // Analysis
+  factors         Json?    // What drove the difference
+  recommendations Json?
+  aiAnalysis      String?
+  
+  createdAt       DateTime @default(now())
+
+  estimate        Estimate  @relation("EstimateComparisons", fields: [estimateId], references: [id], onDelete: Cascade)
+  comparedTo      Estimate? @relation("ComparedEstimates", fields: [comparedToId], references: [id])
+
+  @@index([estimateId])
+  @@map("estimate_comparisons")
+}
+
+enum ComparisonType {
+  REVISION
+  SIMILAR_PROJECT
+  MARKET_RATE
+  HISTORICAL
+  CONTRACTOR_BID
+}
+
+model EstimateHistory {
+  id              String   @id @default(uuid())
+  estimateId      String
+  action          EstimateAction
+  userId          String?
+  previousStatus  EstimateStatus?
+  newStatus       EstimateStatus?
+  changes         Json?
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  @@index([estimateId])
+  @@index([createdAt])
+  @@map("estimate_history")
+}
+
+enum EstimateAction {
+  CREATED
+  UPDATED
+  STATUS_CHANGED
+  SUBMITTED
+  REVIEWED
+  APPROVED
+  REJECTED
+  SENT
+  REVISED
+  EXPORTED
+  ARCHIVED
+}
+
+// -----------------------------------------------------------------------------
+// TAKEOFF TOOLS - Plan-based quantity extraction
+// -----------------------------------------------------------------------------
+
+model Takeoff {
+  id              String   @id @default(uuid())
+  estimateId      String?
+  projectId       String?
+  name            String
+  description     String?
+  type            TakeoffType
+  status          TakeoffStatus @default(IN_PROGRESS)
+  
+  // Source documents
+  documentUrls    Json?    // Array of plan URLs
+  pageCount       Int?
+  scale           String?  // e.g., "1/4 inch = 1 foot"
+  
+  // Totals
+  totalItems      Int      @default(0)
+  totalArea       Decimal? // Total SF
+  totalLinear     Decimal? // Total LF
+  totalCount      Int?     // Total EA
+  
+  // AI processing
+  aiProcessed     Boolean  @default(false)
+  aiConfidence    Decimal?
+  aiNotes         String?
+  
+  completedAt     DateTime?
+  completedById   String?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  measurements    TakeoffMeasurement[]
+
+  @@index([estimateId])
+  @@index([projectId])
+  @@map("takeoffs")
+}
+
+enum TakeoffType {
+  GENERAL
+  SITEWORK
+  STRUCTURAL
+  ARCHITECTURAL
+  MECHANICAL
+  ELECTRICAL
+  PLUMBING
+  FIRE_PROTECTION
+}
+
+enum TakeoffStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  VERIFIED
+}
+
+model TakeoffMeasurement {
+  id              String   @id @default(uuid())
+  takeoffId       String
+  category        String
+  subcategory     String?
+  description     String
+  location        String?  // Room/area name
+  floor           String?  // Floor level
+  
+  // Measurement data
+  measurementType MeasurementType
+  length          Decimal?
+  width           Decimal?
+  height          Decimal?
+  depth           Decimal?
+  area            Decimal?
+  volume          Decimal?
+  count           Int?
+  
+  unit            String
+  quantity        Decimal
+  
+  // Source
+  pageNumber      Int?
+  coordinates     Json?    // {x, y, width, height} on the page
+  sourceMethod    TakeoffSource @default(MANUAL)
+  confidence      Decimal?
+  
+  // Linking
+  linkedToLineItem String?
+  
+  notes           String?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  takeoff         Takeoff  @relation(fields: [takeoffId], references: [id], onDelete: Cascade)
+
+  @@index([takeoffId])
+  @@index([category])
+  @@map("takeoff_measurements")
+}
+
+enum MeasurementType {
+  LINEAR
+  AREA
+  VOLUME
+  COUNT
+  WEIGHT
+}
+
+// -----------------------------------------------------------------------------
+// ESTIMATION REQUESTS & ORDERS
+// -----------------------------------------------------------------------------
+
+model EstimationOrder {
+  id              String   @id @default(uuid())
+  organizationId  String?
+  clientId        String?
+  projectId       String?
+  
+  // Order details
+  orderNumber     String   @unique
+  serviceType     EstimationServiceType
+  status          EstimationOrderStatus @default(PENDING)
+  priority        OrderPriority @default(NORMAL)
+  
+  // Pricing
+  price           Decimal
+  discount        Decimal  @default(0)
+  total           Decimal
+  paidAt          DateTime?
+  stripePaymentId String?
+  
+  // Project info
+  projectName     String
+  projectAddress  String?
+  projectType     String?
+  squareFootage   Decimal?
+  scopeDescription String?
+  
+  // Documents
+  uploadedDocs    Json?    // Array of uploaded document URLs
+  
+  // Timeline
+  requestedTurnaround Int?  // Hours
+  dueAt           DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  deliveredAt     DateTime?
+  
+  // Assignment
+  assignedToId    String?
+  reviewedById    String?
+  
+  // Output
+  estimateId      String?  // Generated estimate
+  deliverables    Json?    // URLs to output files
+  
+  // Communication
+  notes           String?
+  internalNotes   String?
+  clientFeedback  String?
+  feedbackRating  Int?
+  
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+  @@index([orderNumber])
+  @@map("estimation_orders")
+}
+
+enum EstimationOrderStatus {
+  PENDING
+  PAID
+  ASSIGNED
+  IN_PROGRESS
+  UNDER_REVIEW
+  COMPLETED
+  DELIVERED
+  REVISION_REQUESTED
+  CANCELLED
+  REFUNDED
+}
+
+enum OrderPriority {
+  LOW
+  NORMAL
+  HIGH
+  RUSH
+}
+
+// -----------------------------------------------------------------------------
+// REGIONAL & HISTORICAL DATA
+// -----------------------------------------------------------------------------
+
+model RegionalCostIndex {
+  id              String   @id @default(uuid())
+  region          String
+  city            String?
+  state           String
+  indexValue      Decimal  // Relative to national average (1.0)
+  laborIndex      Decimal?
+  materialIndex   Decimal?
+  equipmentIndex  Decimal?
+  effectiveDate   DateTime
+  source          String?
+  createdAt       DateTime @default(now())
+
+  @@unique([region, effectiveDate])
+  @@index([region])
+  @@index([state])
+  @@map("regional_cost_indices")
+}
+
+model HistoricalProjectCost {
+  id              String   @id @default(uuid())
+  organizationId  String?
+  projectType     String
+  buildingType    String?
+  region          String
+  city            String?
+  state           String?
+  squareFootage   Decimal
+  totalCost       Decimal
+  costPerSqFt     Decimal
+  
+  // Breakdown
+  laborPercent    Decimal?
+  materialPercent Decimal?
+  equipmentPercent Decimal?
+  
+  // Context
+  complexity      AssemblyComplexity?
+  quality         QualityLevel?
+  year            Int
+  quarter         Int?
+  
+  // Flags
+  isVerified      Boolean  @default(false)
+  source          String?  // "Internal", "RS Means", etc.
+  
+  notes           String?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  @@index([projectType])
+  @@index([region])
+  @@index([year])
+  @@map("historical_project_costs")
+}
+
+enum QualityLevel {
+  ECONOMY
+  STANDARD
+  PREMIUM
+  LUXURY
+  CUSTOM
+}
+
+// -----------------------------------------------------------------------------
+// AI ESTIMATION FEATURES
+// -----------------------------------------------------------------------------
+
+model AIEstimationSession {
+  id              String   @id @default(uuid())
+  estimateId      String?
+  userId          String
+  sessionType     AISessionType
+  status          AISessionStatus @default(ACTIVE)
+  
+  // Input
+  inputType       String   // "plans", "description", "photos", "voice"
+  inputData       Json
+  
+  // Processing
+  processingSteps Json?    // Array of processing steps
+  extractedData   Json?    // Extracted quantities/scope
+  
+  // Output
+  generatedItems  Json?    // Generated line items
+  confidence      Decimal?
+  warnings        Json?    // Array of warnings/flags
+  
+  // Feedback
+  accepted        Boolean?
+  feedbackNotes   String?
+  
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  metadata        Json?
+
+  @@index([estimateId])
+  @@index([userId])
+  @@index([sessionType])
+  @@map("ai_estimation_sessions")
+}
+
+enum AISessionType {
+  PLAN_ANALYSIS
+  SCOPE_EXTRACTION
+  COST_PREDICTION
+  ASSEMBLY_SUGGESTION
+  VALUE_ENGINEERING
+  RISK_ASSESSMENT
+}
+
+enum AISessionStatus {
+  ACTIVE
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// -----------------------------------------------------------------------------
+// NOTE: Add this relation to your existing Project model
+// -----------------------------------------------------------------------------
+// 
+// In your Project model, add:
+//   estimates       Estimate[]
+//   takeoffs        Takeoff[]
+//
+// This links projects to their estimates and takeoffs
+// -----------------------------------------------------------------------------

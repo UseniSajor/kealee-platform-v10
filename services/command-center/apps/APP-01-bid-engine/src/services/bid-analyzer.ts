@@ -78,7 +78,7 @@ export class BidAnalyzer {
 
     // Generate AI narrative
     const aiNarrative = await generateBidComparisonNarrative(
-      bidRequest.project.name,
+      bidRequest.project.name || 'Unnamed Project',
       analyses.map(a => ({
         rank: a.rank,
         contractorName: a.contractorName,

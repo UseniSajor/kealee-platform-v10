@@ -208,7 +208,7 @@ export class ContractorMatcher {
       },
     });
 
-    const conflictingProjects = activeProjects.map(p => p.projectId);
+    const conflictingProjects = activeProjects.map(p => p.projectId).filter((id): id is string => id !== null);
     const utilizationPercent = Math.min(100, activeProjects.length * 25);
 
     return {
@@ -237,7 +237,7 @@ export class ContractorMatcher {
     const ranked = priceHistory
       .map(p => ({
         contractorId: p.contractorId,
-        avgPrice: p._avg.amount || 0,
+        avgPrice: Number(p._avg.amount || 0),
         rank: 0,
       }))
       .sort((a, b) => a.avgPrice - b.avgPrice);
@@ -271,6 +271,7 @@ export class ContractorMatcher {
           contractValue: true,
           scheduledEndDate: true,
           actualEndDate: true,
+          completedAt: true,
         },
       }),
     ]);
@@ -287,8 +288,8 @@ export class ContractorMatcher {
       : 0;
 
     const onTimeProjects = completedProjects.filter(p =>
-      p.actualEndDate && p.scheduledEndDate &&
-      new Date(p.actualEndDate) <= new Date(p.scheduledEndDate)
+      p.completedAt && p.scheduledEndDate &&
+      new Date(p.completedAt) <= new Date(p.scheduledEndDate)
     );
     const onTimeCompletionRate = completedProjects.length > 0
       ? onTimeProjects.length / completedProjects.length

@@ -4,7 +4,7 @@
  */
 
 import { EventEmitter } from 'events';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { v4 as uuid } from 'uuid';
 
 // Event type definitions
@@ -45,6 +45,7 @@ export const EVENT_TYPES = {
 
   // Permit events (APP-05)
   PERMIT_CREATED: 'kealee.permit.created',
+  PERMIT_SUBMITTED: 'kealee.permit.submitted',
   PERMIT_STATUS_CHANGED: 'kealee.permit.status_changed',
   PERMIT_COMMENTS_RECEIVED: 'kealee.permit.comments_received',
   PERMIT_APPROVED: 'kealee.permit.approved',
@@ -52,6 +53,7 @@ export const EVENT_TYPES = {
 
   // Inspection events (APP-06)
   INSPECTION_SCHEDULED: 'kealee.inspection.scheduled',
+  INSPECTION_CONFIRMED: 'kealee.inspection.confirmed',
   INSPECTION_REMINDER: 'kealee.inspection.reminder',
   INSPECTION_COMPLETED: 'kealee.inspection.completed',
   INSPECTION_PASSED: 'kealee.inspection.passed',
@@ -59,6 +61,7 @@ export const EVENT_TYPES = {
 
   // Budget events (APP-07)
   BUDGET_UPDATED: 'kealee.budget.updated',
+  BUDGET_ALERT: 'kealee.budget.alert',
   BUDGET_THRESHOLD_EXCEEDED: 'kealee.budget.threshold_exceeded',
   BUDGET_VARIANCE_DETECTED: 'kealee.budget.variance_detected',
   INVOICE_CREATED: 'kealee.budget.invoice_created',
@@ -68,6 +71,7 @@ export const EVENT_TYPES = {
   MESSAGE_SENT: 'kealee.comm.message_sent',
   MESSAGE_DELIVERED: 'kealee.comm.message_delivered',
   MESSAGE_FAILED: 'kealee.comm.message_failed',
+  COMMUNICATION_BROADCAST: 'kealee.comm.broadcast',
 
   // Task events (APP-09)
   TASK_CREATED: 'kealee.task.created',
@@ -79,6 +83,7 @@ export const EVENT_TYPES = {
 
   // Document events (APP-10)
   DOCUMENT_GENERATED: 'kealee.document.generated',
+  DOCUMENT_APPROVED: 'kealee.document.approved',
   DOCUMENT_SIGNED: 'kealee.document.signed',
   DOCUMENT_REJECTED: 'kealee.document.rejected',
 

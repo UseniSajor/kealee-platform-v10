@@ -159,15 +159,16 @@ class VisitSchedulerService {
     // Create visit record
     const visit = await prisma.siteVisit.create({
       data: {
-        projectId: request.projectId,
-        pmId: request.pmId,
+        project: { connect: { id: request.projectId } },
+        pm: { connect: { id: request.pmId } },
+        type: request.visitType,
         visitType: request.visitType,
         scheduledAt: slot.start,
         duration: request.duration,
         status: 'SCHEDULED',
         priority: request.priority,
         notes: request.notes,
-      },
+      } as any,
     });
 
     // Create calendar event
