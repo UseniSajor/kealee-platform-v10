@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import { PermitAPI } from '@/src/lib/api/permits'
-import { createClient } from '@/src/lib/supabase/client'
+import { PermitAPI } from '@/lib/api/permits'
+import { createClient } from '@/lib/supabase/client'
 
 interface FeeBreakdown {
   permitFee: number
