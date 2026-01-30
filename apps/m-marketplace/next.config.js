@@ -104,8 +104,6 @@ const nextConfig = {
   compress: true,
   // Enable React 18 concurrent features
   experimental: {},
-  // Turbopack config placeholder for Next.js 16+
-  turbopack: {},
 };
 
 module.exports = nextConfig;
