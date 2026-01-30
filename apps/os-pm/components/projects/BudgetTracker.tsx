@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Download, FileUp, PiggyBank, Plus, Printer, Receipt, ShieldCheck, TrendingUp, TriangleAlert } from "lucide-react"
+import { Download, FileUp, PiggyBank, Plus, Printer, Receipt, ShieldCheck, TrendingUp, AlertTriangle } from "lucide-react"
 
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
@@ -364,7 +364,7 @@ export function BudgetTracker({
         <Card className="py-0">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <TriangleAlert className="h-4 w-4" /> Variance
+              <AlertTriangle className="h-4 w-4" /> Variance
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">

@@ -1,15 +1,33 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { api } from '../../lib/api'
 
-export const dynamic = 'force-dynamic'
+export default function ContractTemplatesAdminPage() {
+  const [templates, setTemplates] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-export default async function ContractTemplatesAdminPage() {
-  let templates: any[] = []
-  try {
-    const res = await api.getContractTemplates({ activeOnly: false })
-    templates = res.templates || []
-  } catch {
-    templates = []
+  useEffect(() => {
+    async function loadTemplates() {
+      try {
+        const res = await api.getContractTemplates({ activeOnly: false })
+        setTemplates(res.templates || [])
+      } catch {
+        setTemplates([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadTemplates()
+  }, [])
+
+  if (loading) {
+    return (
+      <main style={{ padding: 24 }}>
+        <p>Loading templates...</p>
+      </main>
+    )
   }
 
   return (

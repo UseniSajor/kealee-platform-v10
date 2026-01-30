@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useQuery } from "@tanstack/react-query"
-import { FolderKanban, ListTodo, TriangleAlert, Users } from "lucide-react"
+import { FolderKanban, ListTodo, AlertTriangle, Users } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Button } from "@kealee/ui/button"
@@ -93,7 +93,7 @@ export default function DashboardPage() {
         <StatsCard
           title="Overdue items"
           value={overdueItems}
-          icon={TriangleAlert}
+          icon={AlertTriangle}
           iconClassName="bg-red-50 text-red-700"
         />
         <StatsCard

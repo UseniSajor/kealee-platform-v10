@@ -4,7 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { format } from "date-fns"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { ArrowUpDown, Check, Download, RefreshCw, Trash2, UserRoundPen } from "lucide-react"
+import { ArrowUpDown, Check, Download, RefreshCw, Trash2, UserCog } from "lucide-react"
 import { toast } from "sonner"
 
 import { api, type TaskFilters } from "@/lib/api-client"
@@ -438,7 +438,7 @@ export default function WorkQueuePage() {
                   onClick={handleBulkReassign}
                   disabled={!selected.size || !bulkAssignee.trim() || bulkAssign.isPending}
                 >
-                  <UserRoundPen className="h-4 w-4" />
+                  <UserCog className="h-4 w-4" />
                   Reassign
                 </Button>
               </div>
