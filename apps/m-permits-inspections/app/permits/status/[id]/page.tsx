@@ -130,7 +130,7 @@ export default function PermitStatusPage() {
               <span>Progress</span>
               <span>{Math.round(progress)}%</span>
             </div>
-            <ProgressBar value={progress} variant="primary" />
+            <ProgressBar value={progress} variant="success" />
           </div>
 
           {/* Timeline */}

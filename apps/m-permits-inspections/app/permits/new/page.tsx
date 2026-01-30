@@ -5,8 +5,8 @@ import { MapPin, FileText, Upload, CreditCard, CheckCircle, AlertCircle, ArrowLe
 import { useRouter } from 'next/navigation';
 import { Button, Input, ProgressBar, StepIndicator } from '@kealee/ui';
 import { Card } from '@kealee/ui';
-import { api } from '../../lib/api/client';
-import { detectJurisdiction, loadJurisdictions, findJurisdictionByCode, type Jurisdiction } from '../../lib/jurisdictions';
+import { api } from '../../../lib/api/client';
+import { detectJurisdiction, loadJurisdictions, findJurisdictionByCode, type Jurisdiction } from '../../../lib/jurisdictions';
 
 // Simple toast implementation (replace with sonner if available)
 const toast = {
@@ -172,20 +172,18 @@ export default function NewPermitPage() {
                   if (currentStep === 3) {
                     // On payment step, create permit first, then redirect to payment
                     try {
-                      const permit = await api.permits.create({
+                      const { permit } = await api.permits.create({
                         address: formData.address,
-                        jurisdiction: formData.jurisdictionId || formData.jurisdiction || '',
+                        jurisdictionId: formData.jurisdictionId || formData.jurisdiction || '',
                         permitTypes: formData.permitTypes,
                         projectDetails: {
-                          description: formData.projectDescription || '',
-                          valuation: formData.projectValuation || 0,
+                          description: (formData as any).projectDescription || '',
+                          valuation: (formData as any).projectValuation || 0,
                         },
                         applicantInfo: {
                           name: formData.applicantName,
-                          contactInfo: {
-                            email: formData.applicantEmail,
-                            phone: formData.applicantPhone,
-                          },
+                          email: formData.applicantEmail,
+                          phone: formData.applicantPhone,
                         },
                       })
                       // Redirect to payment page

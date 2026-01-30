@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { PermitAPI } from '@/src/lib/api/permits'
+import { PermitApiService as PermitAPI } from '@/lib/api/permits'
 
 export default function PermitPaymentSuccessPage() {
   const params = useParams()

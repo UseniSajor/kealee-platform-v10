@@ -131,6 +131,6 @@ async function simulateAIReview(
     permitTypes,
     estimatedApprovalTime: jurisdiction.includes('DC') ? '14-21 days' : '21-30 days',
     confidence: 0.85,
-    files: uploadedFiles,
+    files,
   };
 }

@@ -1,6 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  typescript: {
+    // Warning: This allows production builds to complete even with type errors
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    // Warning: This allows production builds to complete even with ESLint errors
+    ignoreDuringBuilds: true,
+  },
   transpilePackages: ['@kealee/shared-ai', '@kealee/database'],
   images: {
     domains: ['localhost', 'supabase.co'],

@@ -50,7 +50,7 @@ export async function POST(
       .from('Inspection')
       .select('permitId')
       .eq('id', inspectionId)
-      .single();
+      .single() as { data: { permitId: string } | null };
 
     if (inspection) {
       // Notify milestone integration (would check relevant milestones)
