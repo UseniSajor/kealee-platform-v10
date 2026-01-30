@@ -1,8 +1,7 @@
 "use client"
 
 import axios, { AxiosError, type AxiosInstance } from "axios"
-
-import { supabase } from "@/lib/supabase"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
 export type ApiErrorPayload = {
   message?: string
@@ -29,11 +28,20 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
 
 let cachedToken: string | null = null
 let tokenInit = false
+let supabaseClient: ReturnType<typeof createClientComponentClient> | null = null
+
+function getSupabase() {
+  if (!supabaseClient) {
+    supabaseClient = createClientComponentClient()
+  }
+  return supabaseClient
+}
 
 async function ensureTokenCache() {
   if (tokenInit) return
   tokenInit = true
 
+  const supabase = getSupabase()
   const {
     data: { session },
   } = await supabase.auth.getSession()
@@ -85,7 +93,7 @@ export function createApiClient(): AxiosInstance {
 
       if (status === 401) {
         try {
-          await supabase.auth.signOut()
+          await getSupabase().auth.signOut()
         } catch {
           // ignore
         }

@@ -1,16 +1,14 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { supabase } from '@/lib/supabase'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 
 export async function POST() {
   try {
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+
     // Sign out from Supabase
     await supabase.auth.signOut()
-
-    // Clear cookies
-    const cookieStore = await cookies()
-    cookieStore.delete('sb-access-token')
-    cookieStore.delete('sb-refresh-token')
 
     return NextResponse.json({ success: true })
   } catch (error) {

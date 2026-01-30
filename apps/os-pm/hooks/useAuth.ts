@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
-import { supabase } from "@/lib/supabase"
 import { api } from "@/lib/api"
 import type { AuthUser } from "@/lib/types/index"
 
@@ -11,6 +11,7 @@ export function useAuth() {
   const router = useRouter()
   const [user, setUser] = React.useState<AuthUser | null>(null)
   const [loading, setLoading] = React.useState(true)
+  const supabase = createClientComponentClient()
 
   React.useEffect(() => {
     let mounted = true
@@ -46,12 +47,12 @@ export function useAuth() {
       mounted = false
       sub.subscription.unsubscribe()
     }
-  }, [])
+  }, [supabase])
 
   const signOut = React.useCallback(async () => {
     await supabase.auth.signOut()
     router.replace("/login")
-  }, [router])
+  }, [router, supabase])
 
   return { user, loading, signedIn: Boolean(user), signOut }
 }

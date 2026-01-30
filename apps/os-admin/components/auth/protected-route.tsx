@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -12,23 +12,15 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [authenticated, setAuthenticated] = useState(false)
+  const supabase = createClientComponentClient()
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Check for session token in cookies
-        const cookies = document.cookie.split(';')
-        const accessToken = cookies.find(c => c.trim().startsWith('sb-access-token='))
-        
-        if (!accessToken) {
-          router.push('/login')
-          return
-        }
-
         // Verify session with Supabase
-        const { data: { user }, error } = await supabase.auth.getUser()
+        const { data: { session }, error } = await supabase.auth.getSession()
 
-        if (error || !user) {
+        if (error || !session) {
           router.push('/login')
           return
         }
@@ -55,7 +47,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [router])
+  }, [router, supabase])
 
   if (loading) {
     return (
