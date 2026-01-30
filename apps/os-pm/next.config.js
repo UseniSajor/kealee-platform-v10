@@ -7,7 +7,14 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  transpilePackages: ['@kealee/ui'],
+  transpilePackages: ['@kealee/ui', '@kealee/auth', '@kealee/api-client', '@kealee/types'],
+  experimental: {
+    // Fix for client reference manifest issues in route groups on Vercel
+    outputFileTracingIncludes: {
+      '/(dashboard)': ['./app/(dashboard)/**/*'],
+      '/(dashboard)/page': ['./app/(dashboard)/page.tsx'],
+    },
+  },
 }
 
 module.exports = nextConfig
