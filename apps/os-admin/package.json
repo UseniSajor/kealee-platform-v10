@@ -1,5 +1,5 @@
 {
-    "name": "@kealee/os-admin",
+    "name": "os-admin",
     "version": "0.1.0",
     "private": true,
     "scripts": {

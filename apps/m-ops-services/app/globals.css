@@ -1,38 +1,28 @@
-@import "tailwindcss";
-
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --radius-md: var(--radius);
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --radius: 0.75rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  /* Kealee brand-ish primary */
-  --primary: oklch(0.68 0.17 233);
-  --primary-foreground: oklch(0.985 0 0);
+  --background: 0 0% 100%;
+  --foreground: 0 0% 9%;
+  --primary: 211 100% 50%;
+  --primary-foreground: 0 0% 98%;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --primary: oklch(0.72 0.17 233);
-  --primary-foreground: oklch(0.205 0 0);
+  --background: 0 0% 9%;
+  --foreground: 0 0% 98%;
+  --primary: 211 100% 55%;
+  --primary-foreground: 0 0% 9%;
 }
 
-@layer base {
-  * {
-    outline-color: color-mix(in oklab, var(--primary) 35%, transparent);
-  }
-  body {
-    background: var(--background);
-    color: var(--foreground);
-  }
+body {
+  background-color: white;
+  color: #1a1a1a;
 }
 
+.dark body {
+  background-color: #1a1a1a;
+  color: white;
+}

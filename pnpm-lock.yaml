@@ -491,6 +491,9 @@ importers:
       '@kealee/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@kealee/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@supabase/auth-helpers-nextjs':
         specifier: ^0.8.7
         version: 0.8.7(@supabase/supabase-js@2.93.2)

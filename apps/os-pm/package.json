@@ -1,5 +1,5 @@
 {
-  "name": "@kealee/os-pm",
+  "name": "os-pm",
   "version": "0.1.0",
   "private": true,
   "scripts": {

@@ -7,6 +7,8 @@ import { ArrowLeft, Building2, CheckCircle2 } from "lucide-react"
 
 import { api, type DesignProjectType, type ProjectSummary } from "@/lib/api"
 
+export const dynamic = 'force-dynamic';
+
 export default function NewDesignProjectPage() {
   const router = useRouter()
   const queryClient = useQueryClient()

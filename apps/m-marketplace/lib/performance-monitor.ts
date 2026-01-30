@@ -1,3 +1,14 @@
+// LayoutShift interface for CLS measurement
+interface LayoutShift extends PerformanceEntry {
+  value: number;
+  hadRecentInput: boolean;
+}
+
+// Resource timing entry interface
+interface PerformanceResourceTimingEntry extends PerformanceEntry {
+  initiatorType: string;
+}
+
 export class PerformanceMonitor {
   private static instance: PerformanceMonitor;
   private metrics: Map<string, number> = new Map();
@@ -292,9 +303,10 @@ export class PerformanceMonitor {
     try {
       const observer = new PerformanceObserver((list) => {
         list.getEntries().forEach(entry => {
-          if (entry.initiatorType === 'fetch' || entry.initiatorType === 'xmlhttprequest') {
+          const resourceEntry = entry as PerformanceResourceTimingEntry;
+          if (resourceEntry.initiatorType === 'fetch' || resourceEntry.initiatorType === 'xmlhttprequest') {
             PerformanceMonitor.trackCustomMetric(
-              `resource_${entry.initiatorType}`,
+              `resource_${resourceEntry.initiatorType}`,
               entry.duration,
               { name: entry.name }
             );

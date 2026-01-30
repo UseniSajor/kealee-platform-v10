@@ -7,6 +7,8 @@ import { Plus, Building2, Calendar, Users } from "lucide-react"
 
 import { api, type DesignProject } from "@/lib/api"
 
+export const dynamic = 'force-dynamic';
+
 export default function ProjectsPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["design-projects"],
