@@ -394,13 +394,11 @@ async function main() {
     update: {
       name: "System Administrator",
       email: adminEmail,
-      emailVerified: new Date(),
       status: "ACTIVE",
     },
     create: {
       email: adminEmail,
       name: "System Administrator",
-      emailVerified: new Date(),
       status: "ACTIVE",
     },
   });

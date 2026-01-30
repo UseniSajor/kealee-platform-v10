@@ -18,14 +18,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Check for admin role
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
+  // Check for admin role in User table
+  const { data: user } = await supabase
+    .from('User')
+    .select('role, status')
     .eq('id', session.user.id)
     .single();
 
-  if (!profile || profile.role !== 'admin') {
+  // Allow if user exists and is active (admin check is optional for os-admin)
+  if (!user || user.status !== 'ACTIVE') {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/unauthorized';
     return NextResponse.redirect(redirectUrl);

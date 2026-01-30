@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { supabase } from '@/lib/supabase'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -14,6 +14,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Use auth-helpers client which handles cookies properly
+  const supabase = createClientComponentClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,11 +35,7 @@ export default function LoginPage() {
       }
 
       if (data.session) {
-        // Store session tokens in cookies
-        document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=3600`
-        document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; max-age=604800`
-        
-        // Redirect to dashboard
+        // Redirect to dashboard - cookies are handled by auth-helpers
         router.push('/dashboard')
         router.refresh()
       }

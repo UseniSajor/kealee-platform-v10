@@ -1759,6 +1759,7 @@ model OrgMember {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   org  Org  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleKey], references: [key])
 
   @@unique([userId, orgId])
   @@index([userId])
@@ -6933,4 +6934,79 @@ model AIConversation {
   @@index([lastMessageAt])
   @@index([isArchived])
   @@map("ai_conversations")
+}
+
+// ============================================================================
+// SERVICE PLANS & BILLING (Required for seed)
+// ============================================================================
+
+model ServicePlan {
+  id                    String    @id @default(uuid())
+  name                  String
+  slug                  String    @unique
+  tier                  String    // basic, standard, premium, enterprise
+  description           String?
+  monthlyPrice          Decimal   @db.Decimal(10, 2)
+  annualPrice           Decimal?  @db.Decimal(10, 2)
+  features              String[]  // Array of feature strings
+  limits                Json?     // { projects: number, serviceRequestsPerMonth: number }
+  isActive              Boolean   @default(true)
+  order                 Int       @default(0)
+
+  // Stripe integration
+  stripeProductId       String?
+  stripePriceIdMonthly  String?
+  stripePriceIdAnnual   String?
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("service_plans")
+}
+
+// ============================================================================
+// ROLES & PERMISSIONS (Required for seed)
+// ============================================================================
+
+model Role {
+  id          String    @id @default(uuid())
+  key         String    @unique
+  name        String
+  description String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  permissions RolePermission[]
+  orgMembers  OrgMember[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String    @id @default(uuid())
+  key         String    @unique
+  name        String
+  description String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id            String    @id @default(uuid())
+  roleKey       String
+  permissionKey String
+
+  createdAt     DateTime  @default(now())
+
+  role          Role      @relation(fields: [roleKey], references: [key], onDelete: Cascade)
+  permission    Permission @relation(fields: [permissionKey], references: [key], onDelete: Cascade)
+
+  @@unique([roleKey, permissionKey])
+  @@map("role_permissions")
 }

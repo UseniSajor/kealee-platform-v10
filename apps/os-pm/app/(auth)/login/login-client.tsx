@@ -6,7 +6,7 @@ import { Button } from "@kealee/ui/button"
 import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
-import { supabase } from "@/lib/supabase"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
 export function LoginClient() {
   const router = useRouter()
@@ -16,6 +16,9 @@ export function LoginClient() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
+  // Use auth-helpers client which handles cookies properly
+  const supabase = createClientComponentClient()
+
   const unauthorized = searchParams.get("error") === "unauthorized"
 
   async function handleLogin(e: React.FormEvent) {
@@ -24,12 +27,11 @@ export function LoginClient() {
     setError("")
 
     try {
-      // Placeholder auth: Supabase password sign-in.
-      // TODO: re-enable role checks + API user lookup (see prior `lib/auth.ts` flow).
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
 
       router.push("/dashboard")
+      router.refresh()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to sign in")
     } finally {
