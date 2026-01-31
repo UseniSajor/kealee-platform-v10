@@ -1,7 +1,9 @@
 // packages/ui/src/index.ts
 // Kealee Platform UI Component Library - Main Export
 
-// Components
+// ========================================
+// Base Components
+// ========================================
 export { default as Button } from './components/Button';
 export type { ButtonProps } from './components/Button';
 
@@ -43,9 +45,152 @@ export type { EmptyStateProps } from './components/EmptyState';
 
 export { ErrorBoundary } from './components/ErrorBoundary';
 
-// Design Tokens
+// ========================================
+// Layout Components
+// ========================================
+export {
+  AppShell,
+  useAppShell,
+  ClientPortalLayout,
+  OperationalLayout,
+  Sidebar,
+  TopNav,
+  PageHeader,
+  PageHeaderTab,
+  PageHeaderTabs,
+} from './components/layout';
+
+export type {
+  AppShellProps,
+  ClientPortalLayoutProps,
+  OperationalLayoutProps,
+  SidebarProps,
+  SidebarNavItem,
+  SidebarSection,
+  TopNavProps,
+  UserInfo,
+  Notification,
+  PageHeaderProps,
+  PageHeaderTabProps,
+  BreadcrumbItem,
+} from './components/layout';
+
+// ========================================
+// Card Components (Domain-Specific)
+// ========================================
+export {
+  ProjectCard,
+  BidCard,
+  TaskCard,
+  ContractorCard,
+  EstimateCard,
+  EscrowCard,
+} from './components/cards';
+
+export type {
+  ProjectCardProps,
+  ProjectStatus,
+  BidCardProps,
+  BidStatus,
+  TaskCardProps,
+  TaskStatus,
+  TaskPriority,
+  TaskAssignee,
+  ContractorCardProps,
+  ContractorStatus,
+  ContractorSpecialty,
+  ContractorCertification,
+  EstimateCardProps,
+  EstimateStatus,
+  EstimateConfidence,
+  EstimateCostBreakdown,
+  EscrowCardProps,
+  EscrowStatus,
+  EscrowTransactionType,
+  EscrowTransaction,
+  EscrowMilestone,
+} from './components/cards';
+
+// ========================================
+// Data Display Components
+// ========================================
+export {
+  DataTable,
+  KanbanBoard,
+  Timeline,
+  ProgressTracker,
+  MetricCard,
+} from './components/data-display';
+
+export type {
+  DataTableProps,
+  Column,
+  SortDirection,
+  KanbanBoardProps,
+  KanbanItem,
+  KanbanColumn,
+  TimelineProps,
+  TimelineItem,
+  TimelineItemStatus,
+  ProgressTrackerProps,
+  ProgressStep,
+  StepStatus,
+  MetricCardProps,
+  TrendDirection,
+  TrendSentiment,
+} from './components/data-display';
+
+// ========================================
+// Feedback Components
+// ========================================
+export {
+  ToastProvider,
+  useToast,
+  useToastActions,
+  AlertBanner,
+  LoadingState,
+  Skeleton,
+  CardSkeleton,
+  TableSkeleton,
+  EmptyState as EmptyStateNew,
+  EmptyProjects,
+  EmptySearchResults,
+  EmptyTasks,
+  EmptyNotifications,
+  ErrorState,
+  ComingSoon,
+} from './components/feedback';
+
+export type {
+  Toast as ToastNotification,
+  ToastType,
+  ToastProviderProps,
+  AlertBannerProps,
+  AlertType,
+  LoadingStateProps,
+  LoadingVariant,
+  LoadingSize,
+  SkeletonProps,
+  CardSkeletonProps,
+  TableSkeletonProps,
+  EmptyStateProps as EmptyStateNewProps,
+  EmptyStateType,
+  EmptyStateAction,
+  PresetEmptyStateProps,
+} from './components/feedback';
+
+// ========================================
+// Design Tokens & Theming
+// ========================================
 export * from './design-tokens';
 export { default as designTokens } from './design-tokens';
 
+// New design tokens
+export * from './tokens';
+export * from './themes';
+
+// ========================================
 // Utilities
+// ========================================
 export { cn } from './lib/utils';
+export * from './utils';
