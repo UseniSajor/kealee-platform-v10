@@ -3,6 +3,7 @@ import Link from "next/link";
 import { HeroGC } from "@/components/marketing/HeroGC";
 import { GCTestimonials } from "@/components/marketing/GCTestimonials";
 import { ROICalculator } from "@/components/marketing/ROICalculator";
+import { ALaCarteDropdown } from "@/components/marketing/ALaCarteDropdown";
 
 const gcPackages = [
   {
@@ -23,7 +24,7 @@ const gcPackages = [
     highlight: true,
     badge: "⭐ MOST POPULAR",
     benefits: [
-      "We become your operations department (handoff admin + coordination)",
+      "We work with your operation to handle admin + coordination",
       "Permit/delivery follow-ups to protect schedule and margin",
       "Weekly reporting + action items so subs stay accountable",
     ],
@@ -63,7 +64,7 @@ const platformModules = [
   {
     name: "Pre-Construction",
     icon: "🏗️",
-    description: "Streamlined pre-con workflow from design to contractor bidding with guaranteed escrow-backed contracts.",
+    description: "Streamlined pre-con workflow from design to contractor bidding with escrow-backed contracts.",
     link: "/precon",
     features: ["Design packages", "SRP generation", "Contractor marketplace", "Escrow protection"],
     badge: "NEW",
@@ -79,7 +80,7 @@ const platformModules = [
   {
     name: "Finance & Trust",
     icon: "💰",
-    description: "Secure escrow management, milestone payments, and transparent financial tracking for all parties.",
+    description: "Secure escrow management, milestone payments, and financial tracking for all parties.",
     link: "/finance",
     features: ["Escrow accounts", "Milestone releases", "ACH/Wire transfers", "Financial reporting"],
   },
@@ -93,34 +94,22 @@ const platformModules = [
   {
     name: "Marketplace",
     icon: "🏪",
-    description: "Connect with verified contractors, vendors, and suppliers. Quality leads and transparent bidding.",
+    description: "Connect with verified contractors, vendors, and suppliers. Quality leads and competitive bidding.",
     link: "/marketplace",
     features: ["Verified contractors", "Quality leads", "Bid management", "Reviews & ratings"],
   },
-  {
-    name: "Architecture Services",
-    icon: "🏛️",
-    description: "Professional architectural design services with CAD/BIM integration and permit-ready drawings.",
-    link: "/architect",
-    features: ["Design consultation", "CAD/BIM drawings", "Permit packages", "3D visualization"],
-  },
-  {
-    name: "Engineering Services",
-    icon: "⚙️",
-    description: "Structural, MEP, and civil engineering services with stamped drawings and compliance verification.",
-    link: "/engineer",
-    features: ["Structural analysis", "MEP design", "Stamped drawings", "Code compliance"],
-  },
 ];
 
-const feeStructure = [
+const serviceCategories = [
   {
-    category: "Project Owner",
+    category: "À La Carte Services",
     items: [
-      { name: "Design Package - Basic", price: "$199", description: "2 concepts, standard revisions" },
-      { name: "Design Package - Standard", price: "$499", description: "4 concepts, priority support" },
-      { name: "Design Package - Premium", price: "$999", description: "Unlimited concepts, dedicated designer" },
-      { name: "Platform Commission", price: "3.5%", description: "Of contract value (paid by contractor)" },
+      { name: "Permit Application Assistance", price: "$325", description: "Full permit preparation and submission" },
+      { name: "Inspection Scheduling", price: "$200", description: "Coordinate and track inspections" },
+      { name: "Document Organization", price: "$400", description: "Organize project documentation" },
+      { name: "Contractor Coordination", price: "$500", description: "Manage subcontractor communications" },
+      { name: "Site Visit & Reporting", price: "$350", description: "On-site progress documentation" },
+      { name: "Budget Analysis", price: "$450", description: "Cost tracking and variance reports" },
     ],
   },
   {
@@ -128,7 +117,6 @@ const feeStructure = [
     items: [
       { name: "Marketplace Subscription", price: "$299/mo", description: "Basic listing + 5 leads/month" },
       { name: "Lead Purchase", price: "$50-500", description: "Per qualified lead (project size based)" },
-      { name: "Platform Commission", price: "3.5%", description: "Deducted from first milestone payment" },
     ],
   },
   {
@@ -139,19 +127,6 @@ const feeStructure = [
       { name: "Premium Estimate", price: "$1,999", description: "Detailed BOQ + profit optimization" },
     ],
   },
-];
-
-const aLaCarteServices = [
-  { name: "Permit Application Assistance", price: "$325" },
-  { name: "Inspection Scheduling", price: "$200" },
-  { name: "Document Organization", price: "$400" },
-  { name: "Contractor Coordination", price: "$500" },
-  { name: "Site Visit & Reporting", price: "$350" },
-  { name: "Budget Analysis", price: "$450" },
-  { name: "Progress Reporting", price: "$250" },
-  { name: "Quality Control Review", price: "$400" },
-  { name: "Change Order Management", price: "$475" },
-  { name: "Schedule Optimization", price: "$1,250" },
 ];
 
 export default function MarketingHomePage() {
@@ -372,19 +347,19 @@ export default function MarketingHomePage() {
         </div>
       </section>
 
-      {/* Transparent Fee Structure */}
+      {/* Service Categories */}
       <section className="mt-16">
         <div className="text-center">
           <h2 className="text-2xl font-black tracking-tight">
-            Transparent Fee Structure
+            Service Pricing
           </h2>
           <p className="mx-auto mt-2 max-w-2xl text-sm text-zinc-600">
-            No hidden fees. Know exactly what you pay—and what you earn.
+            Flexible pricing options to fit your project needs.
           </p>
         </div>
 
         <div className="mt-8 grid gap-6 md:grid-cols-3">
-          {feeStructure.map((category) => (
+          {serviceCategories.map((category) => (
             <div
               key={category.category}
               className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
@@ -408,21 +383,7 @@ export default function MarketingHomePage() {
 
       {/* A La Carte Services */}
       <section className="mt-12">
-        <h2 className="text-xl font-black tracking-tight">À La Carte Services</h2>
-        <p className="mt-2 text-sm text-zinc-600">
-          Need specific help? Pick only what you need.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {aLaCarteServices.map((service) => (
-            <div
-              key={service.name}
-              className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-1.5 text-sm"
-            >
-              <span className="text-zinc-700">{service.name}</span>
-              <span className="font-bold text-zinc-900">{service.price}</span>
-            </div>
-          ))}
-        </div>
+        <ALaCarteDropdown />
       </section>
 
       {/* ROI Calculator */}
@@ -441,9 +402,9 @@ export default function MarketingHomePage() {
               Pre-Construction Workflow
             </h2>
             <p className="mt-2 max-w-xl text-sm text-zinc-700">
-              From initial design to contractor award—all with guaranteed escrow-backed
-              payments. Design packages start at $199, platform commission is only 3.5%
-              (paid by contractor from first milestone).
+              Streamlined bidding to contractor selection—with secure escrow-backed
+              payments. Connect with verified contractors and manage your project
+              from a single platform.
             </p>
             <div className="mt-4 flex items-center gap-6 text-sm">
               <div>
@@ -451,12 +412,12 @@ export default function MarketingHomePage() {
                 <div className="text-zinc-500">Full workflow</div>
               </div>
               <div>
-                <div className="font-black text-emerald-700">$199-$999</div>
-                <div className="text-zinc-500">Design packages</div>
+                <div className="font-black text-emerald-700">Verified</div>
+                <div className="text-zinc-500">Contractors</div>
               </div>
               <div>
-                <div className="font-black text-emerald-700">3.5%</div>
-                <div className="text-zinc-500">Platform fee</div>
+                <div className="font-black text-emerald-700">Escrow</div>
+                <div className="text-zinc-500">Protected</div>
               </div>
             </div>
           </div>
@@ -561,22 +522,22 @@ export default function MarketingHomePage() {
             <div className="mt-2 flex flex-col gap-1 text-sm text-zinc-700">
               <Link className="hover:text-zinc-950" href="/os-pm">Project Management</Link>
               <Link className="hover:text-zinc-950" href="/permits">Permits & Inspections</Link>
-              <Link className="hover:text-zinc-950" href="/architect">Architecture</Link>
-              <Link className="hover:text-zinc-950" href="/engineer">Engineering</Link>
+              <Link className="hover:text-zinc-950" href="/pricing">Pricing</Link>
             </div>
           </div>
           <div>
             <div className="text-xs font-bold text-zinc-500 uppercase">Company</div>
             <div className="mt-2 flex flex-col gap-1 text-sm text-zinc-700">
               <Link className="hover:text-zinc-950" href="/how-it-works">How it works</Link>
-              <Link className="hover:text-zinc-950" href="/pricing">Pricing</Link>
               <Link className="hover:text-zinc-950" href="/case-studies">Case studies</Link>
               <Link className="hover:text-zinc-950" href="/contractors">For Contractors</Link>
+              <Link className="hover:text-zinc-950" href="/terms">Terms of Service</Link>
+              <Link className="hover:text-zinc-950" href="/privacy">Privacy Policy</Link>
             </div>
           </div>
         </div>
         <div className="mt-8 border-t border-black/5 pt-4 text-xs text-zinc-500">
-          © 2024 Kealee Platform. All rights reserved.
+          © 2026 Kealee Platform. All rights reserved.
         </div>
       </footer>
     </main>

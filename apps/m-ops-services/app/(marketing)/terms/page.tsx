@@ -2,12 +2,12 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | Kealee Ops Services',
-  description: 'Terms of service for using Kealee Ops Services construction management platform.',
+  title: 'Terms of Service | Kealee Platform',
+  description: 'Terms of service for using Kealee Platform construction management services.',
 };
 
 export default function TermsPage() {
-  const lastUpdated = 'January 15, 2025';
+  const lastUpdated = 'January 31, 2026';
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">
@@ -27,8 +27,8 @@ export default function TermsPage() {
 
         <section>
           <p className="text-zinc-600 leading-relaxed">
-            Welcome to Kealee Ops Services. By using our platform, you agree to these terms.
-            Please read them carefully before using our construction management and operations services.
+            Welcome to Kealee Platform. By using our platform, you agree to these terms.
+            Please read them carefully before using our construction management services.
           </p>
         </section>
 
@@ -36,16 +36,16 @@ export default function TermsPage() {
           <h2 className="text-xl font-black mb-4">1. Service Description</h2>
           <div className="text-zinc-600 space-y-3">
             <p>
-              Kealee Ops Services provides construction operations management including:
+              Kealee Platform provides integrated construction management services including:
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>Permit and inspection tracking and follow-up</li>
-              <li>Weekly project reporting and status updates</li>
-              <li>Vendor and subcontractor coordination</li>
-              <li>Document organization and management</li>
-              <li>Project management platform access</li>
-              <li>Pre-construction workflow coordination</li>
-              <li>Estimation and bidding support</li>
+              <li>Project Management (os-pm) - Milestone tracking and team coordination</li>
+              <li>Pre-Construction - Design to contractor selection workflow</li>
+              <li>AI Estimation Engine - Cost projections and bid preparation</li>
+              <li>Finance & Trust - Escrow management and milestone payments</li>
+              <li>Permits & Inspections - Permit tracking and inspection scheduling</li>
+              <li>Marketplace - Contractor matching and verification</li>
+              <li>Operations Support - Vendor coordination and weekly reporting</li>
             </ul>
           </div>
         </section>
@@ -69,16 +69,17 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-black mb-4">3. Platform Commission</h2>
+          <h2 className="text-xl font-black mb-4">3. Escrow and Payment Terms</h2>
           <div className="text-zinc-600 space-y-3">
             <p>
-              For projects facilitated through our marketplace and pre-construction workflow:
+              For projects using our Finance & Trust module:
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>A 3.5% platform commission applies to contract values</li>
-              <li>Commission is paid by the contractor and deducted from the first milestone payment</li>
-              <li>Escrow-backed payments protect all parties</li>
-              <li>Commission rates are subject to change with 30 days notice</li>
+              <li>All project funds are held in FDIC-insured escrow accounts</li>
+              <li>Milestone payments require approval from project owner</li>
+              <li>Escrow fees apply as disclosed at account setup</li>
+              <li>Disputes are handled through our resolution process</li>
+              <li>Wire transfers for amounts over $50,000 may have additional fees</li>
             </ul>
           </div>
         </section>
@@ -147,14 +148,14 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-black mb-4">8. Cancellation & Refunds</h2>
+          <h2 className="text-xl font-black mb-4">8. Cancellation Policy</h2>
           <div className="text-zinc-600 space-y-3">
             <ul className="list-disc pl-6 space-y-2">
               <li>Monthly subscriptions can be canceled at any time</li>
               <li>Cancellation takes effect at the end of the current billing period</li>
-              <li>No prorated refunds for partial months</li>
               <li>Free trial cancellations incur no charges if done before trial ends</li>
-              <li>À la carte services are non-refundable once completed</li>
+              <li>À la carte services are final once work has commenced</li>
+              <li>Escrow funds are released or returned according to project agreement terms</li>
             </ul>
           </div>
         </section>
@@ -179,9 +180,19 @@ export default function TermsPage() {
                 legal@kealee.com
               </a>
             </p>
+            <p className="mt-2">
+              Kealee Platform Inc.<br />
+              1401 H Street NW, Suite 300<br />
+              Washington, DC 20005
+            </p>
           </div>
         </section>
 
+      </div>
+
+      {/* Footer */}
+      <div className="mt-8 text-center text-sm text-zinc-500">
+        © 2026 Kealee Platform. All rights reserved.
       </div>
     </main>
   );

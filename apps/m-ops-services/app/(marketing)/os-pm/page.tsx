@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Project Management | Kealee Platform',
-  description: 'Full-service construction project management with milestone tracking, contractor coordination, and real-time progress updates.',
+  title: 'Project Management for Contractors | Kealee Platform',
+  description: 'Construction project management tools for contractors and builders. Milestone tracking, payment requests, and client communication.',
 };
 
 export default function ProjectManagementPage() {
@@ -11,22 +11,22 @@ export default function ProjectManagementPage() {
     {
       icon: '📋',
       title: 'Milestone Tracking',
-      description: 'Track every phase of your project with customizable milestones and automatic notifications.',
+      description: 'Track project phases with customizable milestones and automatic client notifications.',
     },
     {
       icon: '📸',
-      title: 'Progress Photos',
-      description: 'Capture and organize site photos with date stamps and location tagging.',
+      title: 'Progress Documentation',
+      description: 'Capture and organize site photos with date stamps and location tagging for client updates.',
     },
     {
       icon: '💰',
-      title: 'Budget Management',
-      description: 'Track costs, change orders, and compare actual vs. projected spending in real-time.',
+      title: 'Payment Management',
+      description: 'Submit milestone completion requests and track payment status in real-time.',
     },
     {
       icon: '👥',
-      title: 'Team Collaboration',
-      description: 'Centralized communication hub for owners, contractors, and subcontractors.',
+      title: 'Subcontractor Coordination',
+      description: 'Centralized communication hub for your crews, subs, and project stakeholders.',
     },
     {
       icon: '📅',
@@ -42,18 +42,18 @@ export default function ProjectManagementPage() {
 
   const modules = [
     {
-      title: 'Owner Dashboard',
-      description: 'Bird\'s eye view of your project with status updates, financial summaries, and upcoming milestones.',
-      features: ['Project timeline', 'Budget vs actuals', 'Recent activity', 'Photo gallery'],
+      title: 'Contractor Dashboard',
+      description: 'Your command center for managing active projects, tracking payments, and coordinating with clients.',
+      features: ['Active projects', 'Payment status', 'Upcoming milestones', 'Client messages'],
     },
     {
-      title: 'Contractor Portal',
-      description: 'Everything contractors need to manage their work and communicate with project owners.',
+      title: 'Project Execution',
+      description: 'Tools to manage construction phases from groundbreaking to final walkthrough.',
       features: ['Task management', 'Payment requests', 'RFI submission', 'Change order tracking'],
     },
     {
       title: 'Weekly Reporting',
-      description: 'Automated weekly reports sent to all stakeholders with customizable templates.',
+      description: 'Automated weekly reports sent to clients with customizable templates.',
       features: ['Progress summary', 'Issues & risks', 'Next week lookahead', 'Photo documentation'],
     },
     {
@@ -85,12 +85,15 @@ export default function ProjectManagementPage() {
 
       {/* Hero */}
       <div className="text-center mb-16">
+        <span className="inline-block rounded-full bg-sky-100 px-4 py-1.5 text-sm font-bold text-sky-700 mb-4">
+          FOR CONTRACTORS & BUILDERS
+        </span>
         <h1 className="text-4xl md:text-5xl font-black tracking-tight">
           Project Management
         </h1>
         <p className="mt-4 text-xl text-zinc-600 max-w-3xl mx-auto">
-          Full-service construction project management platform. Track milestones,
-          manage budgets, and coordinate teams—all in one place.
+          Built for contractors. Manage your construction projects, coordinate with clients,
+          and get paid faster with escrow-backed milestone payments.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           <Link

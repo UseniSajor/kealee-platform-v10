@@ -2,12 +2,57 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Shield, Lock, CheckCircle2, CreditCard, Building2, Banknote, ArrowRight } from "lucide-react";
+
+/**
+ * SOP v2 - m-finance-trust
+ *
+ * CRITICAL: This module handles ALL financial transactions for the platform:
+ * - Escrow deposits and releases
+ * - Milestone payment approvals
+ * - Escrow fees
+ * - Contractor payouts
+ * - Dispute resolution fund holds
+ *
+ * Integration points:
+ * - m-project-owner: Clients deposit and approve releases
+ * - m-ops-services: Subscriptions trigger payment flows
+ * - os-pm: Recommends payment approvals
+ * - m-marketplace: Project coordination
+ */
 
 const quickStats = [
   { label: "Total Escrow Balance", value: "$847,250.00", change: "+$125,000", trend: "up" },
   { label: "Pending Releases", value: "12", change: "3 due today", trend: "neutral" },
   { label: "This Month Released", value: "$234,500.00", change: "+18%", trend: "up" },
   { label: "Active Projects", value: "8", change: "2 new", trend: "up" },
+];
+
+const paymentMethods = [
+  {
+    id: "bank",
+    icon: Building2,
+    title: "Bank Account (ACH)",
+    description: "Connect your bank securely via Plaid",
+    badge: "Recommended",
+    fees: "No transfer fees",
+  },
+  {
+    id: "card",
+    icon: CreditCard,
+    title: "Debit/Credit Card",
+    description: "Visa, Mastercard, American Express",
+    badge: null,
+    fees: "2.9% + $0.30",
+  },
+  {
+    id: "wire",
+    icon: Banknote,
+    title: "Wire Transfer",
+    description: "For large deposits over $50,000",
+    badge: null,
+    fees: "$25 per transfer",
+  },
 ];
 
 const recentTransactions = [
@@ -102,6 +147,93 @@ export default function FinanceDashboard() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Security Banner */}
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <Shield className="text-emerald-600 mt-0.5" size={20} />
+            <div className="flex-1">
+              <h4 className="font-semibold text-emerald-800">Bank-Level Security for Your Construction Funds</h4>
+              <p className="text-sm text-emerald-700 mt-1">
+                All funds are held in FDIC-insured escrow accounts. Contractors get paid when milestones are approved,
+                and homeowners are protected until work is verified.
+              </p>
+            </div>
+            <div className="flex gap-4 text-xs">
+              <div className="text-center">
+                <div className="font-bold text-emerald-800">FDIC Insured</div>
+                <div className="text-emerald-600">Up to $250,000</div>
+              </div>
+              <div className="text-center">
+                <div className="font-bold text-emerald-800">256-bit</div>
+                <div className="text-emerald-600">Encryption</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Methods Section */}
+        <div className="bg-white rounded-xl border border-zinc-200 p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-bold">Fund Your Escrow Account</h2>
+              <p className="text-sm text-zinc-500">Choose how you'd like to deposit funds</p>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-zinc-500">
+              <Lock size={14} />
+              <span>Secured by Stripe & Plaid</span>
+            </div>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            {paymentMethods.map((method) => (
+              <Link
+                key={method.id}
+                href={method.id === "bank" ? "/connect-bank" : method.id === "card" ? "/add-card" : "/wire-instructions"}
+                className="group relative rounded-xl border-2 border-zinc-200 p-5 hover:border-emerald-400 hover:shadow-md transition"
+              >
+                {method.badge && (
+                  <span className="absolute -top-2.5 left-4 px-2 py-0.5 text-[10px] font-bold bg-emerald-500 text-white rounded-full">
+                    {method.badge}
+                  </span>
+                )}
+                <method.icon className="text-emerald-600 mb-3" size={28} />
+                <h3 className="font-bold">{method.title}</h3>
+                <p className="text-sm text-zinc-500 mt-1">{method.description}</p>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-xs text-zinc-400">{method.fees}</span>
+                  <ArrowRight className="text-emerald-600 opacity-0 group-hover:opacity-100 transition" size={16} />
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* Plaid/Stripe Trust Indicators */}
+          <div className="mt-6 pt-4 border-t border-zinc-100">
+            <div className="flex items-center justify-center gap-8">
+              <div className="flex items-center gap-2 text-zinc-400">
+                <svg className="w-16 h-6" viewBox="0 0 100 30" fill="currentColor">
+                  <text x="0" y="22" className="text-sm font-bold">Plaid</text>
+                </svg>
+              </div>
+              <div className="h-4 w-px bg-zinc-200" />
+              <div className="flex items-center gap-2 text-zinc-400">
+                <svg className="w-16 h-6" viewBox="0 0 100 30" fill="currentColor">
+                  <text x="0" y="22" className="text-sm font-bold">Stripe</text>
+                </svg>
+              </div>
+              <div className="h-4 w-px bg-zinc-200" />
+              <div className="flex items-center gap-2 text-xs text-zinc-500">
+                <CheckCircle2 size={14} className="text-emerald-500" />
+                <span>PCI-DSS Compliant</span>
+              </div>
+              <div className="h-4 w-px bg-zinc-200" />
+              <div className="flex items-center gap-2 text-xs text-zinc-500">
+                <CheckCircle2 size={14} className="text-emerald-500" />
+                <span>SOC 2 Certified</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Quick Stats */}
         <div className="grid grid-cols-4 gap-4 mb-8">
           {quickStats.map((stat) => (
@@ -167,10 +299,10 @@ export default function FinanceDashboard() {
               <h2 className="text-lg font-bold mb-4">Quick Actions</h2>
               <div className="grid grid-cols-4 gap-4">
                 {[
-                  { icon: "💰", label: "Deposit Funds", href: "/deposit", description: "Add funds to escrow" },
+                  { icon: "🏦", label: "Open Escrow", href: "/escrow/new", description: "Set up new escrow account" },
                   { icon: "📤", label: "Release Payment", href: "/releases/new", description: "Approve milestone release" },
                   { icon: "📊", label: "View Reports", href: "/reports", description: "Financial analytics" },
-                  { icon: "⚙️", label: "Payment Settings", href: "/settings", description: "Configure payment methods" },
+                  { icon: "💳", label: "Payment Methods", href: "/connect-bank", description: "Connect bank or card" },
                 ].map((action) => (
                   <Link
                     key={action.label}

@@ -4,17 +4,17 @@
 
 :root {
   --radius: 0.75rem;
-  --background: 0 0% 100%;
-  --foreground: 0 0% 9%;
-  --primary: 211 100% 50%;
-  --primary-foreground: 0 0% 98%;
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(0 0% 9%);
+  --primary: hsl(211 100% 50%);
+  --primary-foreground: hsl(0 0% 98%);
 }
 
 .dark {
-  --background: 0 0% 9%;
-  --foreground: 0 0% 98%;
-  --primary: 211 100% 55%;
-  --primary-foreground: 0 0% 9%;
+  --background: hsl(0 0% 9%);
+  --foreground: hsl(0 0% 98%);
+  --primary: hsl(211 100% 55%);
+  --primary-foreground: hsl(0 0% 9%);
 }
 
 body {

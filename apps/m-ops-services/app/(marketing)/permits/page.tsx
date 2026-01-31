@@ -50,7 +50,9 @@ export default function PermitsPage() {
     'Anne Arundel County, MD',
     'Howard County, MD',
     'Baltimore City, MD',
+    'Baltimore County, MD',
     'Loudoun County, VA',
+    'Prince William County, VA',
   ];
 
   const permitTypes = [
@@ -62,6 +64,7 @@ export default function PermitsPage() {
     { type: 'Fire Permits', icon: '🔥' },
     { type: 'Zoning Permits', icon: '📐' },
     { type: 'Environmental Permits', icon: '🌿' },
+    { type: 'Historic Preservation', icon: '🏛️' },
   ];
 
   const services = [
@@ -103,16 +106,16 @@ export default function PermitsPage() {
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           <Link
-            href="/signup"
+            href="/permits/new"
             className="inline-flex items-center justify-center rounded-xl bg-amber-500 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-amber-600"
           >
-            Start Tracking
+            Start New Permit Application
           </Link>
           <Link
-            href="/demo"
+            href="/permits/schedule-inspection"
             className="inline-flex items-center justify-center rounded-xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-zinc-900 shadow-sm transition hover:bg-zinc-50"
           >
-            See Demo
+            Schedule Inspection
           </Link>
         </div>
       </div>
@@ -248,10 +251,10 @@ export default function PermitsPage() {
           Start tracking your permits today. Setup takes less than 5 minutes.
         </p>
         <Link
-          href="/signup"
+          href="/permits/track"
           className="mt-6 inline-flex items-center justify-center rounded-xl bg-white px-8 py-3 text-sm font-bold text-amber-700 shadow-sm transition hover:bg-amber-50"
         >
-          Start Free Trial
+          Start Tracking
         </Link>
       </section>
     </main>

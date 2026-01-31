@@ -67,35 +67,35 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-6">
       <div className="max-w-md w-full">
-        
+
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-2xl font-bold">K</span>
+        <div className="text-center mb-4">
+          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2">
+            <span className="text-white text-xl font-bold">K</span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">
             Create Account
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm text-gray-600">
             Get started with Kealee in under 2 minutes
           </p>
         </div>
 
         {/* Signup Form */}
-        <div className="bg-white rounded-2xl shadow-lg p-8">
+        <div className="bg-white rounded-2xl shadow-lg p-6">
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             
             {/* Full Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Full Name *
               </label>
               <input
@@ -106,18 +106,13 @@ export default function SignupPage() {
                 autoComplete="name"
                 autoFocus
                 required
-                className="
-                  w-full px-4 py-3
-                  border-2 border-gray-300 rounded-lg
-                  focus:border-blue-500 focus:ring-2 focus:ring-blue-100
-                  transition-all duration-200
-                "
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-100 transition-all text-sm"
               />
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Email Address *
               </label>
               <input
@@ -127,18 +122,13 @@ export default function SignupPage() {
                 placeholder="you@example.com"
                 autoComplete="email"
                 required
-                className="
-                  w-full px-4 py-3
-                  border-2 border-gray-300 rounded-lg
-                  focus:border-blue-500 focus:ring-2 focus:ring-blue-100
-                  transition-all duration-200
-                "
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-100 transition-all text-sm"
               />
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Password *
               </label>
               <div className="relative">
@@ -149,29 +139,21 @@ export default function SignupPage() {
                   placeholder="••••••••"
                   autoComplete="new-password"
                   required
-                  className="
-                    w-full px-4 py-3 pr-12
-                    border-2 border-gray-300 rounded-lg
-                    focus:border-blue-500 focus:ring-2 focus:ring-blue-100
-                    transition-all duration-200
-                  "
+                  className="w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-100 transition-all text-sm"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="
-                    absolute right-3 top-1/2 -translate-y-1/2
-                    text-gray-400 hover:text-gray-600
-                  "
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              
+
               {/* Password Strength */}
               {formData.password && (
-                <div className="mt-2">
-                  <div className="flex gap-1 mb-1">
+                <div className="mt-1.5">
+                  <div className="flex gap-1">
                     {[1, 2, 3, 4].map((level) => (
                       <div
                         key={level}
@@ -187,18 +169,13 @@ export default function SignupPage() {
                       />
                     ))}
                   </div>
-                  <p className="text-xs text-gray-600">
-                    {passwordStrength <= 2 && 'Weak password'}
-                    {passwordStrength === 3 && 'Good password'}
-                    {passwordStrength === 4 && 'Strong password'}
-                  </p>
                 </div>
               )}
             </div>
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Confirm Password *
               </label>
               <input
@@ -208,15 +185,10 @@ export default function SignupPage() {
                 placeholder="••••••••"
                 autoComplete="new-password"
                 required
-                className="
-                  w-full px-4 py-3
-                  border-2 border-gray-300 rounded-lg
-                  focus:border-blue-500 focus:ring-2 focus:ring-blue-100
-                  transition-all duration-200
-                "
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-100 transition-all text-sm"
               />
               {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">Passwords do not match</p>
+                <p className="mt-1 text-xs text-red-600">Passwords do not match</p>
               )}
             </div>
 
@@ -243,20 +215,11 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="
-                w-full py-3
-                bg-blue-600 hover:bg-blue-700
-                text-white font-semibold
-                rounded-lg
-                shadow-md hover:shadow-lg
-                disabled:opacity-50 disabled:cursor-not-allowed
-                transition-all duration-200
-                flex items-center justify-center gap-2
-              "
+              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 text-sm"
             >
               {loading ? (
                 <>
-                  <Loader2 className="animate-spin" size={20} />
+                  <Loader2 className="animate-spin" size={18} />
                   Creating account...
                 </>
               ) : (
@@ -266,7 +229,7 @@ export default function SignupPage() {
           </form>
 
           {/* Login Link */}
-          <p className="mt-6 text-center text-sm text-gray-600">
+          <p className="mt-4 text-center text-sm text-gray-600">
             Already have an account?{' '}
             <a href="/login" className="text-blue-600 hover:text-blue-700 font-semibold">
               Sign in

@@ -2,12 +2,12 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | Kealee Ops Services',
-  description: 'Learn how Kealee Ops Services protects your personal and project information.',
+  title: 'Privacy Policy | Kealee Platform',
+  description: 'Learn how Kealee Platform protects your personal and project information.',
 };
 
 export default function PrivacyPage() {
-  const lastUpdated = 'January 15, 2025';
+  const lastUpdated = 'January 31, 2026';
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">
@@ -27,9 +27,10 @@ export default function PrivacyPage() {
 
         <section>
           <p className="text-zinc-600 leading-relaxed">
-            Kealee Ops Services is committed to protecting your privacy. This policy explains
+            Kealee Platform is committed to protecting your privacy. This policy explains
             how we collect, use, and protect your information when you use our construction
-            management platform.
+            management platform, including all integrated services (Project Management,
+            Pre-Construction, Estimation, Finance & Trust, Marketplace, and Permits & Inspections).
           </p>
         </section>
 
@@ -175,6 +176,23 @@ export default function PrivacyPage() {
         </section>
 
         <section>
+          <h2 className="text-xl font-black mb-4">Financial Data (m-finance-trust)</h2>
+          <div className="text-zinc-600 space-y-3">
+            <p>For escrow and payment processing, we additionally collect and process:</p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>Bank account information (via Plaid integration)</li>
+              <li>Payment card details (processed by Stripe, not stored by us)</li>
+              <li>Escrow transaction records and milestone payment history</li>
+              <li>Identity verification documents for compliance</li>
+            </ul>
+            <p className="mt-3">
+              Financial data is encrypted using bank-level security and stored in FDIC-insured
+              accounts through our banking partners.
+            </p>
+          </div>
+        </section>
+
+        <section>
           <h2 className="text-xl font-black mb-4">Contact Us</h2>
           <div className="text-zinc-600">
             <p>
@@ -184,13 +202,18 @@ export default function PrivacyPage() {
               </a>
             </p>
             <p className="mt-2">
-              Kealee Construction LLC<br />
+              Kealee Platform Inc.<br />
               1401 H Street NW, Suite 300<br />
               Washington, DC 20005
             </p>
           </div>
         </section>
 
+      </div>
+
+      {/* Footer */}
+      <div className="mt-8 text-center text-sm text-zinc-500">
+        © 2026 Kealee Platform. All rights reserved.
       </div>
     </main>
   );

@@ -399,7 +399,7 @@ export default function EngineerHomePage() {
             </div>
           </div>
           <div className="border-t border-zinc-800 pt-8 text-center text-sm text-zinc-500">
-            © 2024 Kealee Engineering. All rights reserved.
+            © 2026 Kealee Platform. All rights reserved.
           </div>
         </div>
       </footer>

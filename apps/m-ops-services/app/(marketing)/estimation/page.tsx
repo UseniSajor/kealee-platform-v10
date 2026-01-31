@@ -82,8 +82,8 @@ export default function EstimationPage() {
     },
     {
       icon: '🎯',
-      title: 'Accuracy Guarantee',
-      description: 'Our estimates are within 10% of actual costs or we refund the difference.',
+      title: 'Accuracy Commitment',
+      description: 'Our estimates are backed by real market data and expert validation for reliable projections.',
     },
   ];
 
