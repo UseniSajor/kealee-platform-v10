@@ -21,13 +21,28 @@ import {
   BadgeCheck,
   Smartphone,
   Receipt,
-  PiggyBank
+  PiggyBank,
+  BarChart3,
+  ClipboardList,
+  Hammer,
+  FileText,
+  TrendingUp,
+  Bell,
+  Calendar,
+  Search,
+  Star,
+  Zap,
+  LineChart,
+  Calculator,
+  UserCheck,
+  MessageSquare,
+  Camera
 } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Kealee Finance & Trust | Your Money is Protected Until the Work is Done',
-  description: 'Secure escrow accounts for construction projects. Your funds are FDIC-insured and only released when you approve completed work. No more paying upfront and hoping for the best.',
-  keywords: 'construction escrow, payment protection, contractor payment, milestone payments, secure construction payments',
+  description: 'Secure escrow accounts for construction projects. Your funds are FDIC-insured and only released when you approve completed work. Plus budget tracking, project management, and vetted contractors.',
+  keywords: 'construction escrow, payment protection, contractor payment, milestone payments, secure construction payments, budget tracking, project management',
   openGraph: {
     title: 'Kealee Finance & Trust - Your Money is Protected',
     description: 'Secure escrow accounts for construction. Funds only released when work is verified.',
@@ -46,6 +61,7 @@ export const metadata: Metadata = {
  * - Plain English, no financial jargon
  * - Emphasize protection and trust
  * - Show the flow is automatic and simple
+ * - Highlight broader platform benefits beyond just escrow
  */
 
 // Feature Card Component
@@ -163,6 +179,39 @@ function PaymentMethodCard({
   )
 }
 
+// Platform Feature Card (for "More Than Just Escrow" section)
+function PlatformFeatureCard({
+  icon,
+  title,
+  description,
+  color = 'emerald'
+}: {
+  icon: React.ReactNode
+  title: string
+  description: string
+  color?: 'emerald' | 'blue' | 'purple' | 'orange' | 'indigo'
+}) {
+  const colorClasses = {
+    emerald: 'bg-emerald-100 text-emerald-600',
+    blue: 'bg-blue-100 text-blue-600',
+    purple: 'bg-purple-100 text-purple-600',
+    orange: 'bg-orange-100 text-orange-600',
+    indigo: 'bg-indigo-100 text-indigo-600',
+  }
+
+  return (
+    <div className="flex items-start gap-4 p-5 bg-white rounded-xl border border-gray-100 hover:shadow-md transition-all">
+      <div className={`w-11 h-11 ${colorClasses[color]} rounded-lg flex items-center justify-center flex-shrink-0`}>
+        {icon}
+      </div>
+      <div>
+        <h4 className="font-semibold text-gray-900 mb-1">{title}</h4>
+        <p className="text-sm text-gray-600">{description}</p>
+      </div>
+    </div>
+  )
+}
+
 // FAQ Item Component
 function FAQItem({
   question,
@@ -202,10 +251,10 @@ export default function FinanceTrustLandingPage() {
                 How It Works
               </Link>
               <Link
-                href="#escrow"
+                href="#platform"
                 className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
               >
-                Escrow Protection
+                Platform Features
               </Link>
               <Link
                 href="#pricing"
@@ -233,7 +282,7 @@ export default function FinanceTrustLandingPage() {
                 href="/project/start"
                 className="px-5 py-2.5 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors shadow-sm"
               >
-                Protect Your Project
+                Start Your Project
               </Link>
             </div>
           </div>
@@ -250,17 +299,17 @@ export default function FinanceTrustLandingPage() {
             {/* Trust Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-300 rounded-full text-sm font-medium mb-6">
               <Lock className="h-4 w-4" />
-              FDIC Insured • Bank-Level Security
+              FDIC Insured • Bank-Level Security • Full Project Management
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
               Your Money is Protected
-              <span className="block text-emerald-400 mt-2">Until the Work is Done</span>
+              <span className="block text-emerald-400 mt-2">Your Project is Managed</span>
             </h1>
 
             <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
-              No more paying upfront and hoping for the best.
-              Your funds stay safe until you approve each completed phase.
+              Secure payments, real-time budget tracking, vetted contractors, and
+              a dedicated project manager — all in one platform.
             </p>
 
             {/* CTA Buttons */}
@@ -269,7 +318,7 @@ export default function FinanceTrustLandingPage() {
                 href="/project/start"
                 className="inline-flex items-center justify-center px-8 py-4 bg-white text-emerald-700 rounded-lg text-lg font-bold hover:bg-emerald-50 transition-all duration-200 shadow-xl hover:shadow-2xl hover:-translate-y-0.5"
               >
-                Protect Your Project
+                Start Your Project
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
               <Link
@@ -289,11 +338,11 @@ export default function FinanceTrustLandingPage() {
               </span>
               <span className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-emerald-400" />
-                256-bit encryption
+                Vetted contractors only
               </span>
               <span className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-emerald-400" />
-                You control when money moves
+                Real-time budget tracking
               </span>
             </div>
           </div>
@@ -316,38 +365,42 @@ export default function FinanceTrustLandingPage() {
                 <AlertTriangle className="h-8 w-8 text-red-500 flex-shrink-0" />
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    The #1 Fear in Construction Projects
+                    The Biggest Fears in Construction Projects
                   </h2>
                   <p className="text-gray-700 text-lg">
-                    "What if I pay the contractor and they don't finish the work?"
+                    "What if the contractor disappears with my money? What if the project goes over budget? How do I know if the work is done right?"
                   </p>
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-6 mb-8">
+              <div className="grid md:grid-cols-4 gap-4 mb-8">
                 <div className="text-center p-4">
                   <div className="text-3xl font-bold text-red-600 mb-1">73%</div>
-                  <p className="text-sm text-gray-600">of homeowners worry about contractor payments</p>
+                  <p className="text-sm text-gray-600">worry about payments</p>
                 </div>
                 <div className="text-center p-4">
-                  <div className="text-3xl font-bold text-red-600 mb-1">$14,000</div>
-                  <p className="text-sm text-gray-600">average loss when projects go wrong</p>
+                  <div className="text-3xl font-bold text-red-600 mb-1">$14K</div>
+                  <p className="text-sm text-gray-600">avg loss when things go wrong</p>
+                </div>
+                <div className="text-center p-4">
+                  <div className="text-3xl font-bold text-red-600 mb-1">68%</div>
+                  <p className="text-sm text-gray-600">projects go over budget</p>
                 </div>
                 <div className="text-center p-4">
                   <div className="text-3xl font-bold text-red-600 mb-1">45%</div>
-                  <p className="text-sm text-gray-600">of disputes are over payment timing</p>
+                  <p className="text-sm text-gray-600">disputes over payments</p>
                 </div>
               </div>
 
               <div className="bg-white rounded-xl p-6 border border-emerald-200">
                 <div className="flex items-center gap-3 mb-3">
                   <Shield className="h-6 w-6 text-emerald-600" />
-                  <h3 className="text-lg font-bold text-gray-900">Kealee Solves This</h3>
+                  <h3 className="text-lg font-bold text-gray-900">Kealee Solves All of This</h3>
                 </div>
                 <p className="text-gray-600">
-                  Your money goes into a secure account that <strong>you control</strong>.
-                  Contractors can see the funds are there (so they know they'll get paid),
-                  but the money only moves when you approve that the work is done right.
+                  Your money stays in a secure account <strong>you control</strong>. You get a dedicated project manager
+                  who verifies work before you pay. Real-time budget tracking catches overruns before they happen.
+                  And you only work with vetted, insured contractors.
                 </p>
               </div>
             </div>
@@ -355,60 +408,167 @@ export default function FinanceTrustLandingPage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="escrow" className="py-20 bg-gray-50">
+      {/* More Than Just Escrow Section */}
+      <section id="platform" className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
+            <span className="inline-block px-4 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-semibold mb-4">
+              THE COMPLETE PLATFORM
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              More Than Just Payment Protection
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Kealee is a full construction management platform. Your escrow account connects to everything —
+              budget tracking, contractor management, permit coordination, and more.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            <PlatformFeatureCard
+              icon={<BarChart3 className="h-5 w-5" />}
+              title="Real-Time Budget Tracking"
+              description="See exactly where every dollar goes. Get alerts before you go over budget. Compare actual vs. estimated costs."
+              color="blue"
+            />
+
+            <PlatformFeatureCard
+              icon={<UserCheck className="h-5 w-5" />}
+              title="Dedicated Project Manager"
+              description="A real person assigned to your project. They verify work, coordinate contractors, and keep things on track."
+              color="purple"
+            />
+
+            <PlatformFeatureCard
+              icon={<Search className="h-5 w-5" />}
+              title="Vetted Contractors Only"
+              description="Every contractor is licensed, insured, and background-checked. We verify before they can bid on your project."
+              color="emerald"
+            />
+
+            <PlatformFeatureCard
+              icon={<FileText className="h-5 w-5" />}
+              title="Permit Coordination"
+              description="We handle permit applications, inspections scheduling, and compliance tracking. No city hall headaches."
+              color="orange"
+            />
+
+            <PlatformFeatureCard
+              icon={<Camera className="h-5 w-5" />}
+              title="Photo Documentation"
+              description="Daily progress photos from the job site. See exactly what's happening without leaving your couch."
+              color="indigo"
+            />
+
+            <PlatformFeatureCard
+              icon={<Bell className="h-5 w-5" />}
+              title="Smart Notifications"
+              description="Get alerts for milestones, inspections, payment approvals, and budget updates. Stay informed, not overwhelmed."
+              color="blue"
+            />
+
+            <PlatformFeatureCard
+              icon={<ClipboardList className="h-5 w-5" />}
+              title="Change Order Management"
+              description="All changes documented, priced, and approved before work happens. No surprise charges at the end."
+              color="purple"
+            />
+
+            <PlatformFeatureCard
+              icon={<Calendar className="h-5 w-5" />}
+              title="Schedule Tracking"
+              description="Visual timeline shows what's done, what's next, and if you're on track. Know your completion date."
+              color="emerald"
+            />
+
+            <PlatformFeatureCard
+              icon={<MessageSquare className="h-5 w-5" />}
+              title="All Communication in One Place"
+              description="Messages, documents, approvals — everything logged and searchable. No more digging through emails."
+              color="orange"
+            />
+          </div>
+
+          {/* Integration Callout */}
+          <div className="mt-12 max-w-4xl mx-auto">
+            <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="flex-shrink-0">
+                  <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center">
+                    <Zap className="h-10 w-10 text-white" />
+                  </div>
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Everything Works Together</h3>
+                  <p className="text-gray-600">
+                    When a contractor completes a milestone, your PM verifies it, the inspection passes,
+                    you approve on your phone, and payment releases automatically. Budget updates in real-time.
+                    No manual tracking, no spreadsheets, no confusion.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Core Escrow Features */}
+      <section id="escrow" className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <span className="inline-block px-4 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-semibold mb-4">
+              PAYMENT PROTECTION
+            </span>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               How Your Money is Protected
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Simple, automatic protection at every step
+              Bank-level security with you in complete control
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             <FeatureCard
               icon={<PiggyBank className="h-6 w-6 text-emerald-600" />}
-              title="Funds Held Securely"
-              description="Your project money sits in an FDIC-insured account. It's there when needed, protected when not."
+              title="FDIC-Insured Accounts"
+              description="Your project funds sit in an FDIC-insured account. Protected up to $250,000 by the federal government."
             />
 
             <FeatureCard
               icon={<FileCheck className="h-6 w-6 text-emerald-600" />}
-              title="Work Gets Verified First"
-              description="Before any money moves, the work is inspected and verified. No cutting corners."
+              title="Work Verified First"
+              description="Before any money moves, your project manager inspects the work. No cutting corners, no paying for incomplete work."
             />
 
             <FeatureCard
               icon={<ThumbsUp className="h-6 w-6 text-emerald-600" />}
-              title="You Approve Each Release"
-              description="One tap on your phone to approve. If you're not happy, the money doesn't move."
+              title="You Approve Every Payment"
+              description="One tap on your phone to approve. If you're not happy, the money doesn't move. Period."
             />
 
             <FeatureCard
               icon={<Eye className="h-6 w-6 text-emerald-600" />}
-              title="See Every Dollar"
-              description="Real-time dashboard shows exactly where your money is. No surprises, no hidden fees."
+              title="Complete Transparency"
+              description="Real-time dashboard shows exactly where your money is. Every transaction logged and visible."
             />
 
             <FeatureCard
               icon={<Scale className="h-6 w-6 text-emerald-600" />}
-              title="Disputes Get Resolved"
-              description="If there's a problem, funds are frozen while we help you work it out. Fair for everyone."
+              title="Fair Dispute Resolution"
+              description="If there's a disagreement, funds freeze while we help work it out. $150 flat fee, professional mediation."
             />
 
             <FeatureCard
-              icon={<Smartphone className="h-6 w-6 text-emerald-600" />}
-              title="Manage From Anywhere"
-              description="Check balances, approve payments, and see progress from your phone. It's that easy."
+              icon={<Receipt className="h-6 w-6 text-emerald-600" />}
+              title="Automatic Tax Docs"
+              description="1099s, W-9 management, and payment records generated automatically. Tax time made easy."
             />
           </div>
         </div>
       </section>
 
       {/* How It Works - The Flow */}
-      <section id="how-it-works" className="py-20 bg-white">
+      <section id="how-it-works" className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -428,44 +588,44 @@ export default function FinanceTrustLandingPage() {
               <FlowStep
                 number={1}
                 title="Contract Signed"
-                description="You and contractor agree on the work and price"
+                description="You and contractor agree on work, price, and milestones"
                 icon={<FileCheck className="h-7 w-7" />}
               />
 
               <FlowStep
                 number={2}
                 title="You Fund the Account"
-                description="Money goes into your secure project account"
+                description="Money goes into your secure, FDIC-insured account"
                 icon={<Wallet className="h-7 w-7" />}
               />
 
               <FlowStep
                 number={3}
-                title="Work Gets Done"
-                description="Contractor completes each phase, gets verified"
+                title="Work Gets Verified"
+                description="PM inspects, inspection passes, you review"
                 icon={<BadgeCheck className="h-7 w-7" />}
               />
 
               <FlowStep
                 number={4}
                 title="You Approve, They're Paid"
-                description="One tap releases payment for completed work"
+                description="One tap releases payment. Contractor paid in 24-48 hours"
                 icon={<ThumbsUp className="h-7 w-7" />}
               />
             </div>
 
             {/* Detailed Flow */}
-            <div className="bg-gray-50 rounded-2xl p-8">
+            <div className="bg-white rounded-2xl p-8 border border-gray-200">
               <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">What Happens at Each Milestone</h3>
 
               <div className="space-y-4">
-                <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200">
+                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
                   <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-blue-600 font-bold">1</span>
+                    <Hammer className="h-5 w-5 text-blue-600" />
                   </div>
                   <div className="flex-1">
                     <p className="font-medium text-gray-900">Contractor finishes a phase of work</p>
-                    <p className="text-sm text-gray-500">Example: Framing is complete</p>
+                    <p className="text-sm text-gray-500">Photos uploaded, completion submitted in the app</p>
                   </div>
                 </div>
 
@@ -473,27 +633,27 @@ export default function FinanceTrustLandingPage() {
                   <ArrowRight className="h-5 w-5 text-gray-400 rotate-90" />
                 </div>
 
-                <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200">
-                  <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-orange-600 font-bold">2</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">Project manager verifies the work</p>
-                    <p className="text-sm text-gray-500">Our PM confirms quality standards are met</p>
-                  </div>
-                </div>
-
-                <div className="flex justify-center">
-                  <ArrowRight className="h-5 w-5 text-gray-400 rotate-90" />
-                </div>
-
-                <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200">
+                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
                   <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-purple-600 font-bold">3</span>
+                    <UserCheck className="h-5 w-5 text-purple-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">Inspection passes (when required)</p>
-                    <p className="text-sm text-gray-500">City inspector signs off on the work</p>
+                    <p className="font-medium text-gray-900">Your project manager verifies the work</p>
+                    <p className="text-sm text-gray-500">On-site inspection, quality check, budget update</p>
+                  </div>
+                </div>
+
+                <div className="flex justify-center">
+                  <ArrowRight className="h-5 w-5 text-gray-400 rotate-90" />
+                </div>
+
+                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <ClipboardList className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">City inspection passes (when required)</p>
+                    <p className="text-sm text-gray-500">We schedule and track all inspections for you</p>
                   </div>
                 </div>
 
@@ -507,7 +667,7 @@ export default function FinanceTrustLandingPage() {
                   </div>
                   <div className="flex-1">
                     <p className="font-medium text-gray-900">You tap "Approve" on your phone</p>
-                    <p className="text-sm text-gray-500">Contractor is paid within 24-48 hours</p>
+                    <p className="text-sm text-gray-500">Contractor paid within 24-48 hours. Budget updated automatically.</p>
                   </div>
                 </div>
               </div>
@@ -528,7 +688,7 @@ export default function FinanceTrustLandingPage() {
       </section>
 
       {/* Benefits for Both Sides */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -543,7 +703,7 @@ export default function FinanceTrustLandingPage() {
             <div className="grid md:grid-cols-2 gap-6">
               <BenefitCard
                 icon={<Lock className="h-7 w-7 text-emerald-600" />}
-                title="Your Money Doesn't Disappear"
+                title="Your Money Stays Safe"
                 description="Funds stay in your secured account until you're satisfied with the work. No chasing contractors for refunds."
                 audience="homeowner"
               />
@@ -556,29 +716,29 @@ export default function FinanceTrustLandingPage() {
               />
 
               <BenefitCard
-                icon={<Eye className="h-7 w-7 text-emerald-600" />}
-                title="See Where Every Dollar Goes"
-                description="Real-time dashboard shows your balance, pending releases, and complete transaction history."
+                icon={<LineChart className="h-7 w-7 text-emerald-600" />}
+                title="Budget Tracking That Actually Works"
+                description="Real-time updates, change order alerts, and cost comparisons. Know exactly where you stand financially."
                 audience="homeowner"
               />
 
               <BenefitCard
                 icon={<Clock className="h-7 w-7 text-emerald-600" />}
                 title="Fast Payouts, No Waiting"
-                description="Approved payments are processed immediately. Funds hit your account within 24-48 hours."
+                description="Approved payments processed immediately. Funds hit your account within 24-48 hours."
                 audience="contractor"
               />
 
               <BenefitCard
-                icon={<Shield className="h-7 w-7 text-emerald-600" />}
-                title="Dispute Protection"
-                description="If something goes wrong, funds are frozen while we help resolve it. You're never left holding the bag."
+                icon={<UserCheck className="h-7 w-7 text-emerald-600" />}
+                title="Your Own Project Manager"
+                description="A real person who verifies work, coordinates schedules, and keeps contractors accountable."
                 audience="homeowner"
               />
 
               <BenefitCard
-                icon={<BadgeCheck className="h-7 w-7 text-emerald-600" />}
-                title="Builds Your Reputation"
+                icon={<Star className="h-7 w-7 text-emerald-600" />}
+                title="Build Your Reputation"
                 description="Successfully completed projects add to your verified track record. More trust means more work."
                 audience="contractor"
               />
@@ -588,7 +748,7 @@ export default function FinanceTrustLandingPage() {
       </section>
 
       {/* Payment Methods */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -631,17 +791,17 @@ export default function FinanceTrustLandingPage() {
                   <Lock className="h-5 w-5" />
                   <span className="text-sm font-medium">256-bit SSL</span>
                 </div>
-                <div className="h-6 w-px bg-gray-200" />
+                <div className="h-6 w-px bg-gray-300" />
                 <div className="flex items-center gap-2 text-gray-500">
                   <Shield className="h-5 w-5" />
                   <span className="text-sm font-medium">PCI-DSS Compliant</span>
                 </div>
-                <div className="h-6 w-px bg-gray-200" />
+                <div className="h-6 w-px bg-gray-300" />
                 <div className="flex items-center gap-2 text-gray-500">
                   <BadgeCheck className="h-5 w-5" />
                   <span className="text-sm font-medium">SOC 2 Certified</span>
                 </div>
-                <div className="h-6 w-px bg-gray-200" />
+                <div className="h-6 w-px bg-gray-300" />
                 <div className="flex items-center gap-2 text-gray-500">
                   <Building2 className="h-5 w-5" />
                   <span className="text-sm font-medium">FDIC Insured</span>
@@ -653,11 +813,11 @@ export default function FinanceTrustLandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-gray-50">
+      <section id="pricing" className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Simple, Transparent Fees
+              Simple, Transparent Pricing
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               You see exactly what you pay. No hidden charges.
@@ -689,16 +849,16 @@ export default function FinanceTrustLandingPage() {
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                      <span>One-tap approvals</span>
+                      <span>Real-time budget tracking</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                      <span>Real-time dashboard</span>
+                      <span>Mobile app access</span>
                     </li>
                   </ul>
                   <div className="mt-4 pt-4 border-t border-gray-100">
                     <p className="text-xs text-gray-500">
-                      Package C & D clients: Reduced to <strong>0.5%</strong>
+                      Full PM clients: Reduced to <strong>0.5%</strong>
                     </p>
                   </div>
                 </div>
@@ -734,7 +894,7 @@ export default function FinanceTrustLandingPage() {
                   </ul>
                   <div className="mt-4 pt-4 border-t border-gray-100">
                     <p className="text-xs text-gray-500">
-                      Contractor payouts processed via Stripe Connect
+                      Contractor payouts via Stripe Connect
                     </p>
                   </div>
                 </div>
@@ -761,10 +921,10 @@ export default function FinanceTrustLandingPage() {
             {/* Example Calculation */}
             <div className="mt-8 bg-emerald-50 rounded-xl p-6 border border-emerald-200">
               <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <Receipt className="h-5 w-5 text-emerald-600" />
+                <Calculator className="h-5 w-5 text-emerald-600" />
                 Example: $50,000 Kitchen Remodel
               </h4>
-              <div className="grid md:grid-cols-3 gap-4 text-sm">
+              <div className="grid md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <p className="text-gray-500">Escrow Fee (1%)</p>
                   <p className="font-semibold text-gray-900">$500 (capped)</p>
@@ -774,17 +934,31 @@ export default function FinanceTrustLandingPage() {
                   <p className="font-semibold text-gray-900">$0</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Total Protection Cost</p>
-                  <p className="font-semibold text-emerald-600">$500 (1% of project)</p>
+                  <p className="text-gray-500">Budget Tracking</p>
+                  <p className="font-semibold text-gray-900">Included</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Total Cost</p>
+                  <p className="font-semibold text-emerald-600">$500 (1%)</p>
                 </div>
               </div>
+            </div>
+
+            {/* PM Services Upsell */}
+            <div className="mt-6 text-center">
+              <p className="text-gray-600">
+                Want a dedicated project manager?{' '}
+                <Link href="/pricing" className="text-emerald-600 font-semibold hover:underline">
+                  See our full PM packages →
+                </Link>
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="py-20 bg-white">
+      <section id="faq" className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -799,8 +973,13 @@ export default function FinanceTrustLandingPage() {
             />
 
             <FAQItem
-              question="What if the contractor needs money for materials upfront?"
-              answer="We recommend contractors who can work with milestone-based payments. For materials, the first milestone can include material costs that are released when materials are delivered and verified on site."
+              question="Do I need a project manager, or can I just use escrow?"
+              answer="You can use escrow protection on its own — it works great for simple projects. For larger or complex projects, we recommend our PM packages for hands-on oversight. Either way, your money is protected."
+            />
+
+            <FAQItem
+              question="How does budget tracking work?"
+              answer="When you set up your project, we create a budget from your contract. As milestones are completed and payments approved, the budget updates automatically. You'll see actual vs. estimated costs in real-time, plus alerts if change orders push you over budget."
             />
 
             <FAQItem
@@ -815,12 +994,7 @@ export default function FinanceTrustLandingPage() {
 
             <FAQItem
               question="What if my project goes over budget?"
-              answer="You can add more funds to your account at any time. We recommend keeping a 10-15% buffer for unexpected changes. Any unused funds are refunded to you at project completion."
-            />
-
-            <FAQItem
-              question="Can I see my tax documents?"
-              answer="Yes! We generate 1099s and other tax documents automatically. You can download them anytime from your dashboard. We also manage W-9 collection from contractors."
+              answer="You'll see it coming! Our budget tracking shows you projections and alerts you to potential overruns before they happen. You can add more funds anytime. Any unused funds are refunded at project completion."
             />
           </div>
         </div>
@@ -831,10 +1005,10 @@ export default function FinanceTrustLandingPage() {
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Ready to Protect Your Project?
+              Ready to Start Your Project?
             </h2>
             <p className="text-xl text-emerald-100 mb-8">
-              Your money stays safe. Contractors get paid fairly. Everyone sleeps better.
+              Protected payments. Real-time budget tracking. Vetted contractors. One platform.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -842,7 +1016,7 @@ export default function FinanceTrustLandingPage() {
                 href="/project/start"
                 className="inline-flex items-center justify-center px-8 py-4 bg-white text-emerald-700 rounded-lg text-lg font-bold hover:bg-emerald-50 transition-all duration-200 shadow-lg"
               >
-                Protect Your Project
+                Start Your Project
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
               <Link
@@ -861,7 +1035,7 @@ export default function FinanceTrustLandingPage() {
         <p>
           Are you a contractor?{' '}
           <Link href="/contractors" className="text-emerald-600 hover:text-emerald-700 underline">
-            Learn how Kealee guarantees your payments
+            Learn how Kealee guarantees your payments and grows your business
           </Link>.
         </p>
       </div>
@@ -877,7 +1051,7 @@ export default function FinanceTrustLandingPage() {
                 <span className="text-white font-bold text-lg">Kealee</span>
               </div>
               <p className="text-sm leading-relaxed">
-                Secure payment protection for construction projects. Your money is safe until the work is done.
+                The complete construction management platform. Protected payments, budget tracking, vetted contractors, and dedicated project managers.
               </p>
             </div>
 
@@ -885,20 +1059,20 @@ export default function FinanceTrustLandingPage() {
             <div>
               <h4 className="text-white font-semibold mb-4">Get Started</h4>
               <ul className="space-y-3 text-sm">
-                <li><Link href="/project/start" className="hover:text-white transition-colors">Protect Your Project</Link></li>
+                <li><Link href="/project/start" className="hover:text-white transition-colors">Start Your Project</Link></li>
                 <li><Link href="/contractors" className="hover:text-white transition-colors">For Contractors</Link></li>
                 <li><Link href="/login" className="hover:text-white transition-colors">Sign In</Link></li>
                 <li><Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link></li>
               </ul>
             </div>
 
-            {/* Learn More */}
+            {/* Platform */}
             <div>
-              <h4 className="text-white font-semibold mb-4">Learn More</h4>
+              <h4 className="text-white font-semibold mb-4">Platform</h4>
               <ul className="space-y-3 text-sm">
+                <li><Link href="#escrow" className="hover:text-white transition-colors">Payment Protection</Link></li>
+                <li><Link href="#platform" className="hover:text-white transition-colors">Budget Tracking</Link></li>
                 <li><Link href="#how-it-works" className="hover:text-white transition-colors">How It Works</Link></li>
-                <li><Link href="#escrow" className="hover:text-white transition-colors">Escrow Protection</Link></li>
-                <li><Link href="#faq" className="hover:text-white transition-colors">Common Questions</Link></li>
                 <li><Link href="/help" className="hover:text-white transition-colors">Get Help</Link></li>
               </ul>
             </div>
