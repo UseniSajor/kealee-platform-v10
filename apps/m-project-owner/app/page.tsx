@@ -1,360 +1,569 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Check, Home, Shield, TrendingUp, Clock, DollarSign, Users, FileCheck, BarChart3, Zap } from 'lucide-react'
+import {
+  CheckCircle,
+  Shield,
+  DollarSign,
+  Eye,
+  Users,
+  Bell,
+  Home,
+  ArrowRight,
+  Play,
+  BookOpen,
+  ShieldCheck,
+  LayoutDashboard,
+  Clock,
+  FileText,
+  ClipboardCheck,
+  Lock,
+  UserCheck
+} from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Project Owner Portal | Kealee Platform - Construction Project Management',
-  description: 'Manage your construction projects from start to finish. Track readiness, contracts, milestones, payments, and progress all in one integrated platform.',
-  keywords: 'construction project management, project owner portal, construction milestones, escrow management, contractor management',
+  title: 'Kealee | Build Your Project Without the Stress',
+  description: 'We handle the contractors, permits, inspections, and payments. You just approve when you\'re ready. No upfront fees, pay only when work is done right.',
+  keywords: 'construction project management, home renovation, contractor management, permit handling, home improvement',
   openGraph: {
-    title: 'Kealee Project Owner Portal - Complete Construction Project Management',
-    description: 'Take control of your construction projects with integrated project management, financial escrow, and contractor coordination.',
+    title: 'Kealee - Build Your Project Without the Stress',
+    description: 'We handle contractors, permits, inspections, and payments. You just approve when you\'re ready.',
     type: 'website',
   },
 }
 
+// Feature Card Component
+function FeatureCard({
+  icon,
+  title,
+  description
+}: {
+  icon: React.ReactNode
+  title: string
+  description: string
+}) {
+  return (
+    <div className="p-6 bg-white rounded-xl border border-gray-200 hover:shadow-lg hover:border-blue-200 transition-all duration-300">
+      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+        {icon}
+      </div>
+      <h3 className="text-xl font-semibold text-gray-900 mb-2">{title}</h3>
+      <p className="text-gray-600 leading-relaxed">{description}</p>
+    </div>
+  )
+}
+
+// Benefit Card Component
+function BenefitCard({
+  icon,
+  title,
+  description
+}: {
+  icon: React.ReactNode
+  title: string
+  description: string
+}) {
+  return (
+    <div className="flex gap-5 p-6 bg-white rounded-xl border border-gray-200 hover:shadow-md transition-all duration-300">
+      <div className="flex-shrink-0">
+        <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center">
+          {icon}
+        </div>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+        <p className="text-gray-600 leading-relaxed">{description}</p>
+      </div>
+    </div>
+  )
+}
+
+// Integration Card Component
+function IntegrationCard({
+  title,
+  description
+}: {
+  title: string
+  description: string
+}) {
+  return (
+    <div className="p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-300">
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+      <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
+    </div>
+  )
+}
+
+// Step Component
+function Step({
+  number,
+  title,
+  children
+}: {
+  number: number
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="relative flex flex-col items-center text-center md:items-start md:text-left">
+      {/* Step Number */}
+      <div className="w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mb-4 shadow-lg">
+        {number}
+      </div>
+
+      {/* Content */}
+      <h3 className="text-xl font-semibold text-gray-900 mb-2">{title}</h3>
+      <div className="text-gray-600 space-y-1">
+        {children}
+      </div>
+    </div>
+  )
+}
+
 export default function ProjectOwnerLandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-neutral-50 to-white">
+    <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="border-b border-neutral-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Home className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold text-neutral-900">Kealee Project Owner</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link 
-              href="/login" 
-              className="px-4 py-2 text-neutral-700 hover:text-neutral-900"
-            >
-              Log In
+      <nav className="border-b border-gray-100 bg-white/95 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2">
+              <Home className="h-7 w-7 text-blue-600" />
+              <span className="text-xl font-bold text-gray-900">Kealee</span>
             </Link>
-            <Link 
-              href="/projects/new" 
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              Get Started
-            </Link>
+
+            {/* Desktop Navigation Links */}
+            <div className="hidden md:flex items-center gap-8">
+              <Link
+                href="#how-it-works"
+                className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              >
+                How It Works
+              </Link>
+              <Link
+                href="#pricing"
+                className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              >
+                Pricing
+              </Link>
+              <Link
+                href="#why-kealee"
+                className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              >
+                Why Kealee
+              </Link>
+              <Link
+                href="/permits/intake"
+                className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+              >
+                Start a Permit
+              </Link>
+            </div>
+
+            {/* Navigation Actions */}
+            <div className="flex items-center gap-3">
+              <Link
+                href="/login"
+                className="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/projects/new"
+                className="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-sm"
+              >
+                Start Your Project
+              </Link>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
-        <div className="max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-6">
-            <Zap className="h-4 w-4" />
-            <span>Complete Project Control</span>
+      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-blue-900">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyek0zNiAxNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-50"></div>
+
+        <div className="container mx-auto px-4 py-20 md:py-28 relative">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+              Build Your Project
+              <span className="block text-blue-400 mt-2">Without the Stress</span>
+            </h1>
+
+            <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+              We handle the contractors, permits, inspections, and payments.
+              You just approve when you're ready.
+            </p>
+
+            {/* CTA Buttons - HIGH VISIBILITY with strong contrast */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+              <Link
+                href="/projects/new"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-700 rounded-lg text-lg font-bold hover:bg-blue-50 transition-all duration-200 shadow-xl hover:shadow-2xl hover:-translate-y-0.5"
+              >
+                Start Your Project
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+              <Link
+                href="#demo"
+                className="inline-flex items-center justify-center px-8 py-4 bg-transparent text-white border-2 border-white rounded-lg text-lg font-semibold hover:bg-white hover:text-blue-700 transition-all duration-200"
+              >
+                <Play className="mr-2 h-5 w-5" />
+                See How It Works
+              </Link>
+            </div>
+
+            {/* Trust Line */}
+            <p className="text-gray-300 text-sm md:text-base">
+              No upfront fees • Pay only when work is done right • Cancel anytime
+            </p>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-neutral-900 mb-6">
-            Build with
-            <span className="block text-primary mt-2">Complete Confidence</span>
-          </h1>
-          <p className="text-xl text-neutral-600 mb-8 max-w-2xl mx-auto">
-            The only platform that gives property owners full visibility and control over construction projects. 
-            From readiness checklists to milestone payments—everything in one place.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              href="/projects/new"
-              className="px-8 py-4 bg-primary text-white rounded-lg text-lg font-semibold hover:bg-primary/90 transition-colors shadow-lg"
-            >
-              Start Your Project
-            </Link>
-            <Link 
-              href="/login"
-              className="px-8 py-4 bg-white border-2 border-neutral-200 text-neutral-900 rounded-lg text-lg font-semibold hover:border-primary transition-colors"
-            >
-              View Demo
-            </Link>
-          </div>
-          <p className="text-sm text-neutral-500 mt-4">No setup fees • 3% platform fee • Transparent pricing</p>
+        </div>
+
+        {/* Bottom Wave */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
+            <path d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="white"/>
+          </svg>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-neutral-900 mb-4">
-            Everything You Need to Manage Your Project
-          </h2>
-          <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-            Built specifically for property owners managing construction projects
-          </p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <FileCheck className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Readiness Checklists</h3>
-            <p className="text-neutral-600">
-              Comprehensive pre-construction checklists ensure you're ready before breaking ground.
-            </p>
-          </div>
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <Shield className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Contract Management</h3>
-            <p className="text-neutral-600">
-              Digital contracts with milestone gates. Approve milestones only when work is verified complete.
-            </p>
-          </div>
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <DollarSign className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Escrow Protection</h3>
-            <p className="text-neutral-600">
-              Secure escrow accounts with automatic release gates. Funds only release when milestones pass inspection.
-            </p>
-          </div>
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <BarChart3 className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Project Timeline</h3>
-            <p className="text-neutral-600">
-              Visual timeline tracking from design through completion. Automatic updates from all integrated modules.
-            </p>
-          </div>
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <Users className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Team Coordination</h3>
-            <p className="text-neutral-600">
-              Connect with architects, engineers, contractors, and inspectors. All communication in one place.
-            </p>
-          </div>
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <TrendingUp className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Progress Tracking</h3>
-            <p className="text-neutral-600">
-              Real-time updates on milestone completion, inspections, permits, and payments.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="bg-neutral-100 py-16">
+      {/* Features Section */}
+      <section id="features" className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-neutral-900 mb-4">
-              How It Works
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              We Handle Everything
             </h2>
-            <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-              Simple steps to get your project started
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Focus on your vision. We take care of the details.
             </p>
           </div>
-          <div className="max-w-4xl mx-auto grid md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">1</div>
-              <h3 className="text-lg font-semibold text-neutral-900 mb-2">Create Project</h3>
-              <p className="text-neutral-600 text-sm">
-                Set up your project with details, timeline, and budget
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">2</div>
-              <h3 className="text-lg font-semibold text-neutral-900 mb-2">Complete Readiness</h3>
-              <p className="text-neutral-600 text-sm">
-                Work through checklists to ensure project readiness
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">3</div>
-              <h3 className="text-lg font-semibold text-neutral-900 mb-2">Approve Contracts</h3>
-              <p className="text-neutral-600 text-sm">
-                Review and approve contractor contracts with milestone gates
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">4</div>
-              <h3 className="text-lg font-semibold text-neutral-900 mb-2">Track Progress</h3>
-              <p className="text-neutral-600 text-sm">
-                Monitor milestones, approve payments, and track completion
-              </p>
-            </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <FeatureCard
+              icon={<CheckCircle className="h-6 w-6 text-blue-600" />}
+              title="We Make Sure You're Ready"
+              description="Before anything starts, we confirm everything is in place. No surprises."
+            />
+
+            <FeatureCard
+              icon={<Shield className="h-6 w-6 text-blue-600" />}
+              title="Your Money Stays Safe"
+              description="Funds are held securely and only released when you approve completed work."
+            />
+
+            <FeatureCard
+              icon={<DollarSign className="h-6 w-6 text-blue-600" />}
+              title="Pay Only for Done Work"
+              description="No upfront contractor payments. You approve each phase before any money moves."
+            />
+
+            <FeatureCard
+              icon={<Eye className="h-6 w-6 text-blue-600" />}
+              title="Always Know What's Happening"
+              description="See every update, inspection, and milestone in one simple dashboard."
+            />
+
+            <FeatureCard
+              icon={<Users className="h-6 w-6 text-blue-600" />}
+              title="One Place for Everyone"
+              description="Architects, contractors, inspectors—everyone communicates through your project hub."
+            />
+
+            <FeatureCard
+              icon={<Bell className="h-6 w-6 text-blue-600" />}
+              title="We Alert You When Needed"
+              description="Get notified only when your approval is needed. We handle the rest."
+            />
           </div>
         </div>
       </section>
 
-      {/* Benefits */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-neutral-900 mb-4">
-              Why Property Owners Choose Kealee
+      {/* How It Works Section */}
+      <section id="how-it-works" className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Getting Started is Easy
             </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Three simple steps. We guide you through each one.
+            </p>
           </div>
-          <div className="space-y-6">
-            <div className="flex gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Shield className="h-6 w-6 text-primary" />
-                </div>
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-                  Automatic Compliance Gates
-                </h3>
-                <p className="text-neutral-600">
-                  Escrow won't release if permits expire. Milestones can't be approved without passing inspections. 
-                  Your project stays compliant automatically.
-                </p>
-              </div>
+
+          <div className="max-w-5xl mx-auto">
+            {/* Steps Grid */}
+            <div className="grid md:grid-cols-3 gap-12 md:gap-8 relative">
+              {/* Connecting Line (Desktop) */}
+              <div className="hidden md:block absolute top-7 left-[calc(16.67%+28px)] right-[calc(16.67%+28px)] h-0.5 bg-gray-300"></div>
+
+              <Step number={1} title="Tell Us About Your Project">
+                <p className="text-base">Answer a few quick questions. Takes about 5 minutes.</p>
+                <p className="text-sm text-gray-500 mt-2">We'll figure out what permits and approvals you need.</p>
+              </Step>
+
+              <Step number={2} title="We Set Everything Up">
+                <p className="text-base">We handle permits, find qualified contractors, and create your project plan.</p>
+                <p className="text-sm text-gray-500 mt-2">You review and approve. No construction knowledge needed.</p>
+              </Step>
+
+              <Step number={3} title="Approve As You Go">
+                <p className="text-base">Watch progress from your phone. Approve completed work with one tap.</p>
+                <p className="text-sm text-gray-500 mt-2">Money only moves when you say so.</p>
+              </Step>
             </div>
-            <div className="flex gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <BarChart3 className="h-6 w-6 text-primary" />
-                </div>
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-                  Complete Visibility
-                </h3>
-                <p className="text-neutral-600">
-                  See everything in one dashboard: design progress, permit status, inspection results, 
-                  milestone completion, and payment history. No more juggling multiple systems.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-primary" />
-                </div>
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-                  Save Time & Money
-                </h3>
-                <p className="text-neutral-600">
-                  Reduce project delays with integrated workflows. Catch issues early before they become costly problems. 
-                  Automated compliance checks prevent expensive rework.
-                </p>
-              </div>
+
+            {/* CTA */}
+            <div className="text-center mt-16">
+              <Link
+                href="/projects/new"
+                className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white rounded-lg text-lg font-bold hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+              >
+                Start Your Project
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Integration */}
-      <section className="bg-neutral-100 py-16">
+      {/* Why Homeowners Trust Kealee Section */}
+      <section id="why-kealee" className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Why Homeowners Trust Kealee
+              </h2>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <BenefitCard
+                icon={<BookOpen className="h-7 w-7 text-blue-600" />}
+                title="No Construction Experience Needed"
+                description="We speak plain English, not contractor jargon. Our platform guides you through every decision with clear explanations."
+              />
+
+              <BenefitCard
+                icon={<ShieldCheck className="h-7 w-7 text-blue-600" />}
+                title="Protection Built In"
+                description="Permits can't expire without you knowing. Work can't be paid for until it passes inspection. We catch problems before they cost you money."
+              />
+
+              <BenefitCard
+                icon={<LayoutDashboard className="h-7 w-7 text-blue-600" />}
+                title="Everything in One Place"
+                description="No more spreadsheets, email chains, or wondering who to call. Your entire project lives in one simple dashboard."
+              />
+
+              <BenefitCard
+                icon={<Clock className="h-7 w-7 text-blue-600" />}
+                title="Save Time, Avoid Headaches"
+                description="We coordinate the contractors, chase the permits, and schedule the inspections. You just approve when you're ready."
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Everything Works Together Section */}
+      <section id="integrations" className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-neutral-900 mb-4">
-                Fully Integrated Platform
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Everything Works Together
               </h2>
-              <p className="text-lg text-neutral-600">
-                Connect seamlessly with all Kealee modules
+              <p className="text-xl text-gray-600">
+                One platform. No juggling between apps or contractors.
               </p>
             </div>
+
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-white p-6 rounded-xl">
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2">Architect Hub</h3>
-                <p className="text-neutral-600 text-sm">
-                  Automatic updates when designs are complete. Direct handoff to permits module.
-                </p>
-              </div>
-              <div className="bg-white p-6 rounded-xl">
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2">Permits & Inspections</h3>
-                <p className="text-neutral-600 text-sm">
-                  Permits automatically linked to project timeline. Inspection results block milestone approvals.
-                </p>
-              </div>
-              <div className="bg-white p-6 rounded-xl">
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2">Finance & Trust</h3>
-                <p className="text-neutral-600 text-sm">
-                  Secure escrow with automatic release gates. Milestone payments only when work passes inspection.
-                </p>
-              </div>
-              <div className="bg-white p-6 rounded-xl">
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2">Contractor Marketplace</h3>
-                <p className="text-neutral-600 text-sm">
-                  Find verified contractors. Track their performance. Manage contracts all in one place.
-                </p>
-              </div>
+              <IntegrationCard
+                title="Design & Architecture"
+                description="When your plans are ready, we automatically move to permits. No handoff meetings needed."
+              />
+
+              <IntegrationCard
+                title="Permits & Inspections"
+                description="We track every permit and schedule every inspection. You get notified of results."
+              />
+
+              <IntegrationCard
+                title="Secure Payments"
+                description="Your project funds are held safely. Released only when work is verified complete."
+              />
+
+              <IntegrationCard
+                title="Vetted Contractors"
+                description="We connect you with licensed, insured professionals. Check their ratings and reviews."
+              />
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="bg-primary py-16">
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-xl text-gray-600 mb-12">
+              No hidden fees. No surprises. You only pay when your project moves forward.
+            </p>
+
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 md:p-12">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-6">
+                Most Popular
+              </div>
+
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Project Management</h3>
+              <p className="text-gray-600 mb-6">Everything you need to manage your construction project</p>
+
+              <div className="text-5xl font-bold text-gray-900 mb-2">
+                3%
+                <span className="text-xl font-normal text-gray-500"> of project cost</span>
+              </div>
+              <p className="text-gray-500 mb-8">Minimum $500 • Maximum $5,000</p>
+
+              <ul className="text-left space-y-4 mb-8">
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Permit tracking & management</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Secure payment protection</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Contractor verification</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Inspection coordination</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">24/7 project dashboard</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Dedicated support team</span>
+                </li>
+              </ul>
+
+              <Link
+                href="/projects/new"
+                className="block w-full py-4 bg-blue-600 text-white rounded-lg text-lg font-bold hover:bg-blue-700 transition-colors"
+              >
+                Get Started Free
+              </Link>
+              <p className="text-sm text-gray-500 mt-4">No payment required until your project starts</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Bottom CTA Section - HIGH CONTRAST */}
+      <section className="py-20 bg-blue-600">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Ready to Take Control of Your Project?
+              Ready to Build Without the Stress?
             </h2>
-            <p className="text-xl text-primary-foreground/90 mb-8">
-              Start your construction project with confidence. Complete control, full visibility, automatic compliance.
+            <p className="text-xl text-blue-100 mb-8">
+              Start in 5 minutes. No credit card needed. We'll guide you through everything.
             </p>
+
+            {/* HIGH CONTRAST BUTTONS - white on dark background */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link 
+              <Link
                 href="/projects/new"
-                className="px-8 py-4 bg-white text-primary rounded-lg text-lg font-semibold hover:bg-neutral-100 transition-colors"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-700 rounded-lg text-lg font-bold hover:bg-blue-50 transition-all duration-200 shadow-lg"
               >
                 Start Your Project
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
-              <Link 
-                href="/login"
-                className="px-8 py-4 bg-primary-foreground/10 text-white border-2 border-white/20 rounded-lg text-lg font-semibold hover:bg-primary-foreground/20 transition-colors"
+              <Link
+                href="#demo"
+                className="inline-flex items-center justify-center px-8 py-4 bg-transparent text-white border-2 border-white rounded-lg text-lg font-semibold hover:bg-white hover:text-blue-700 transition-all duration-200"
               >
-                View Demo
+                Watch Demo
               </Link>
             </div>
           </div>
         </div>
       </section>
 
+      {/* DIY Disclaimer */}
+      <div className="text-center text-sm text-gray-500 py-6 bg-gray-100">
+        <p>
+          Want to manage your own project?{' '}
+          <Link href="/pm" className="text-blue-600 hover:text-blue-700 underline">
+            Check out our DIY Project Management tools
+          </Link>.
+        </p>
+      </div>
+
       {/* Footer */}
-      <footer className="bg-neutral-900 text-neutral-400 py-12">
+      <footer className="bg-gray-900 text-gray-400 py-16">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-4 gap-12 mb-12">
+            {/* Brand */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Home className="h-6 w-6 text-primary" />
-                <span className="text-white font-semibold">Kealee Project Owner</span>
+                <Home className="h-6 w-6 text-blue-500" />
+                <span className="text-white font-bold text-lg">Kealee</span>
               </div>
-              <p className="text-sm">
-                Complete construction project management for property owners.
+              <p className="text-sm leading-relaxed">
+                Construction project management made simple for homeowners.
               </p>
             </div>
+
+            {/* Get Started */}
             <div>
-              <h4 className="text-white font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/projects/new" className="hover:text-white">Create Project</Link></li>
-                <li><Link href="/login" className="hover:text-white">Sign In</Link></li>
-                <li><Link href="/login" className="hover:text-white">Pricing</Link></li>
+              <h4 className="text-white font-semibold mb-4">Get Started</h4>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/projects/new" className="hover:text-white transition-colors">Start a Project</Link></li>
+                <li><Link href="/permits/intake" className="hover:text-white transition-colors">Start a Permit</Link></li>
+                <li><Link href="/login" className="hover:text-white transition-colors">Sign In</Link></li>
+                <li><Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link></li>
               </ul>
             </div>
+
+            {/* Learn More */}
             <div>
-              <h4 className="text-white font-semibold mb-4">Resources</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="#" className="hover:text-white">Documentation</Link></li>
-                <li><Link href="#" className="hover:text-white">Support</Link></li>
-                <li><Link href="#" className="hover:text-white">FAQ</Link></li>
+              <h4 className="text-white font-semibold mb-4">Learn More</h4>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="#how-it-works" className="hover:text-white transition-colors">How It Works</Link></li>
+                <li><Link href="/faq" className="hover:text-white transition-colors">Common Questions</Link></li>
+                <li><Link href="/help" className="hover:text-white transition-colors">Get Help</Link></li>
               </ul>
             </div>
+
+            {/* Company */}
             <div>
               <h4 className="text-white font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="#" className="hover:text-white">About</Link></li>
-                <li><Link href="#" className="hover:text-white">Contact</Link></li>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/about" className="hover:text-white transition-colors">About Kealee</Link></li>
+                <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
+                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-neutral-800 mt-8 pt-8 text-center text-sm">
-            <p>© {new Date().getFullYear()} Kealee Platform. All rights reserved.</p>
+
+          {/* Footer Bottom */}
+          <div className="border-t border-gray-800 pt-8 text-center">
+            <p className="text-sm">
+              © 2026 Kealee Platform. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>
