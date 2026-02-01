@@ -182,11 +182,27 @@ export type {
 // ========================================
 // Design Tokens & Theming
 // ========================================
-export * from './design-tokens';
-export { default as designTokens } from './design-tokens';
+// Legacy design tokens (use only non-conflicting exports)
+export { designTokens, typography, durations, easing } from './design-tokens';
+export { default as designTokensDefault } from './design-tokens';
 
-// New design tokens
-export * from './tokens';
+// New design tokens (preferred - these are the canonical exports)
+export {
+  colors,
+  fonts,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  shadows,
+  zIndex,
+  breakpoints,
+  animation,
+  tokens,
+} from './tokens';
+export { default as tokensDefault } from './tokens';
+
+// Themes
 export * from './themes';
 
 // ========================================
