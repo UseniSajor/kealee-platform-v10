@@ -3,48 +3,37 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ChevronLeft, ChevronRight, UserCircle2 } from "lucide-react"
+import { UserCircle2 } from "lucide-react"
 
-import { Button } from "@kealee/ui/button"
 import { cn } from "@/lib/utils"
 import { pmNavItems } from "./nav"
 
 export function Sidebar() {
   const pathname = usePathname()
-  const [collapsed, setCollapsed] = React.useState(false)
 
   return (
     <aside
       className={cn(
         "h-dvh sticky top-0 border-r bg-white",
         "hidden md:flex md:flex-col",
-        collapsed ? "w-16" : "w-64"
+        "w-20" // Icon-only width
       )}
       aria-label="Sidebar navigation"
     >
-      <div className={cn("flex items-center justify-between gap-2 border-b px-3 py-3", collapsed && "justify-center")}>
-        {!collapsed ? (
-          <Link href="/" className="font-bold text-lg text-neutral-900">
-            Kealee PM
-          </Link>
-        ) : (
-          <Link href="/" className="font-bold text-lg text-neutral-900" aria-label="Kealee PM">
-            K
-          </Link>
-        )}
-
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => setCollapsed((v) => !v)}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      {/* Logo */}
+      <div className="flex items-center justify-center border-b px-3 py-4">
+        <Link
+          href="/"
+          className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg"
+          aria-label="Kealee PM"
         >
-          {collapsed ? <ChevronRight /> : <ChevronLeft />}
-        </Button>
+          K
+        </Link>
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-2">
-        <ul className="space-y-1">
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-4 px-3">
+        <ul className="flex flex-col items-center gap-2">
           {pmNavItems.map((item) => {
             const isActive =
               item.match === "exact"
@@ -60,14 +49,27 @@ export function Sidebar() {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-                    isActive ? "bg-primary/10 text-primary" : "text-neutral-700 hover:bg-neutral-100",
-                    collapsed && "justify-center px-2"
+                    "relative group flex items-center justify-center w-12 h-12 rounded-xl transition-all",
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-lg"
+                      : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
                   )}
-                  title={collapsed ? item.label : undefined}
+                  aria-label={item.label}
                 >
-                  <Icon className="h-4 w-4" />
-                  {!collapsed ? <span className="truncate">{item.label}</span> : null}
+                  <Icon className="h-5 w-5" />
+
+                  {/* Tooltip */}
+                  <div className="
+                    absolute left-full ml-3 px-3 py-1.5
+                    bg-neutral-900 text-white text-sm font-medium
+                    rounded-lg whitespace-nowrap
+                    opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                    transition-all duration-200
+                    z-50
+                  ">
+                    {item.label}
+                    <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-neutral-900" />
+                  </div>
                 </Link>
               </li>
             )
@@ -75,18 +77,25 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      <div className={cn("border-t p-3", collapsed && "px-2")}>
-        <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
-          <UserCircle2 className="h-9 w-9 text-neutral-500" />
-          {!collapsed ? (
-            <div className="min-w-0">
-              <div className="text-sm font-medium text-neutral-900 truncate">PM User</div>
-              <div className="text-xs text-neutral-500 truncate">pm@kealee.com</div>
-            </div>
-          ) : null}
-        </div>
+      {/* User Avatar */}
+      <div className="border-t p-3 flex justify-center">
+        <button className="relative group">
+          <UserCircle2 className="h-10 w-10 text-neutral-400 hover:text-neutral-600 transition-colors" />
+
+          {/* Tooltip */}
+          <div className="
+            absolute left-full ml-3 px-3 py-1.5
+            bg-neutral-900 text-white text-sm font-medium
+            rounded-lg whitespace-nowrap
+            opacity-0 invisible group-hover:opacity-100 group-hover:visible
+            transition-all duration-200
+            z-50
+          ">
+            PM User
+            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-neutral-900" />
+          </div>
+        </button>
       </div>
     </aside>
   )
 }
-

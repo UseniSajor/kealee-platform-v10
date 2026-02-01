@@ -26,60 +26,8 @@ import {
   Briefcase,
   Building2,
   Zap,
-  ChevronDown,
   Wrench,
-  ClipboardCheck,
-  Calendar,
-  FolderOpen,
-  UserCheck,
-  Eye,
-  BarChart3,
-  FileCheck,
-  AlertTriangle,
-  Receipt,
-  FileSignature
 } from 'lucide-react';
-
-// A La Carte Operations Services from PRODUCT_CATALOG.md
-const A_LA_CARTE_SERVICES = [
-  { name: 'Permit Application Assistance', price: 325, icon: FileText, href: '/services/permit-assistance' },
-  { name: 'Inspection Scheduling', price: 200, icon: Calendar, href: '/services/inspection-scheduling' },
-  { name: 'Document Organization', price: 400, icon: FolderOpen, href: '/services/document-organization' },
-  { name: 'Contractor Coordination', price: 500, icon: UserCheck, href: '/services/contractor-coordination' },
-  { name: 'Site Visit & Reporting', price: 350, icon: Eye, href: '/services/site-visit' },
-  { name: 'Budget Analysis', price: 450, icon: BarChart3, href: '/services/budget-analysis' },
-  { name: 'Progress Reporting', price: 250, icon: ClipboardCheck, href: '/services/progress-reporting' },
-  { name: 'Quality Control Review', price: 400, icon: CheckCircle, href: '/services/quality-control' },
-  { name: 'Change Order Management', price: 475, icon: FileCheck, href: '/services/change-orders' },
-  { name: 'Schedule Optimization', price: 1250, icon: Calendar, href: '/services/schedule-optimization' },
-  { name: 'Billing & Invoicing', price: 300, unit: '/mo', icon: Receipt, href: '/services/billing' },
-  { name: 'Lien Waiver Management', price: 275, icon: FileSignature, href: '/services/lien-waivers' },
-];
-
-// Design Services from m-architect (PRODUCT_CATALOG.md)
-const DESIGN_SERVICES = [
-  { name: 'Design Consultation', price: 2500, description: 'Initial consultation, concept sketches, budget guidance', href: '/design/consultation' },
-  { name: 'Residential Design', price: 7500, description: 'Full design package, CAD drawings, 3D visualization', href: '/design/residential' },
-  { name: 'Full Service', price: 15000, description: 'Complete services, BIM modeling, engineering coordination', href: '/design/full-service' },
-  { name: 'Premium Custom', price: 35000, description: 'Luxury/custom homes, full team, site supervision', href: '/design/premium' },
-];
-
-// Permit Services from PRODUCT_CATALOG.md
-const PERMIT_SERVICES = [
-  { name: 'Permit Application Filing', price: 325, href: '/permits/filing' },
-  { name: 'Inspection Scheduling', price: 200, href: '/permits/inspection' },
-  { name: 'Expedite Service', price: 500, href: '/permits/expedite' },
-  { name: 'AI Document Review', price: 150, href: '/permits/ai-review' },
-  { name: 'Compliance Audit', price: 450, href: '/permits/compliance' },
-];
-
-// Estimation Services from PRODUCT_CATALOG.md
-const ESTIMATION_SERVICES = [
-  { name: 'Basic Estimate', price: 299, description: 'Labor breakdown, materials list, basic timeline', href: '/estimation/basic' },
-  { name: 'Standard Estimate', price: 799, description: 'Detailed analysis, material takeoffs, full timeline', href: '/estimation/standard' },
-  { name: 'Premium Estimate', price: 1999, description: 'Bill of quantities, vendor quotes, risk assessment', href: '/estimation/premium' },
-  { name: 'Enterprise Estimate', price: 4999, description: 'Multi-project analysis, portfolio planning', href: '/estimation/enterprise' },
-];
 
 /**
  * m-marketplace - THE CENTRAL WEBAPP HUB
@@ -91,6 +39,20 @@ const ESTIMATION_SERVICES = [
  *
  * Routes users to appropriate modules based on their needs.
  */
+
+// Icon-only sidebar navigation items
+const SIDEBAR_NAV = [
+  { icon: Home, label: 'Dashboard', href: '/', active: true },
+  { icon: Zap, label: 'My Leads', href: '/leads', badge: '3' },
+  { icon: Briefcase, label: 'My Projects', href: '/projects' },
+  { icon: FileText, label: 'Post Project', href: '/post-project' },
+  { icon: Users, label: 'Contractors', href: '/vendors' },
+  { icon: PenTool, label: 'Design', href: '/design' },
+  { icon: Shield, label: 'Permits', href: '/permits' },
+  { icon: Calculator, label: 'Estimation', href: '/estimation' },
+  { icon: Wrench, label: 'Operations', href: '/services' },
+  { icon: DollarSign, label: 'Pricing', href: '/pricing' },
+];
 
 // Service Card Component
 function ServiceCard({
@@ -200,72 +162,56 @@ function StatCard({
   );
 }
 
-// Services Dropdown Component
-function ServicesDropdown({
-  title,
+// Icon-only Sidebar Nav Item with Tooltip
+function SidebarNavItem({
   icon: Icon,
-  services,
-  isOpen,
-  onToggle,
-  color = 'blue'
+  label,
+  href,
+  active = false,
+  badge
 }: {
-  title: string;
   icon: React.ComponentType<{ className?: string; size?: number }>;
-  services: Array<{ name: string; price: number; unit?: string; href: string; description?: string }>;
-  isOpen: boolean;
-  onToggle: () => void;
-  color?: string;
+  label: string;
+  href: string;
+  active?: boolean;
+  badge?: string;
 }) {
-  const colorClasses: Record<string, string> = {
-    blue: 'text-blue-600 bg-blue-50',
-    green: 'text-green-600 bg-green-50',
-    orange: 'text-orange-600 bg-orange-50',
-    purple: 'text-purple-600 bg-purple-50',
-  };
-
   return (
-    <div>
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-      >
-        <span className="flex items-center gap-3">
-          <Icon size={18} />
-          {title}
+    <Link
+      href={href}
+      className={`
+        relative group flex items-center justify-center w-12 h-12 rounded-xl transition-all
+        ${active
+          ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
+          : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+        }
+      `}
+    >
+      <Icon size={22} />
+      {badge && (
+        <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+          {badge}
         </span>
-        <ChevronDown
-          size={16}
-          className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-        />
-      </button>
-      {isOpen && (
-        <div className="ml-4 mt-1 space-y-1 max-h-64 overflow-y-auto">
-          {services.map((service, idx) => (
-            <Link
-              key={idx}
-              href={service.href}
-              className="flex items-center justify-between px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors"
-            >
-              <span className="truncate pr-2">{service.name}</span>
-              <span className={`text-xs font-semibold ${colorClasses[color]} px-2 py-0.5 rounded-full whitespace-nowrap`}>
-                ${service.price.toLocaleString()}{service.unit || ''}
-              </span>
-            </Link>
-          ))}
-        </div>
       )}
-    </div>
+      {/* Tooltip */}
+      <div className="
+        absolute left-full ml-3 px-3 py-1.5
+        bg-gray-900 text-white text-sm font-medium
+        rounded-lg whitespace-nowrap
+        opacity-0 invisible group-hover:opacity-100 group-hover:visible
+        transition-all duration-200
+        z-50
+      ">
+        {label}
+        <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
+      </div>
+    </Link>
   );
 }
 
 export default function MarketplaceDashboard() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
-
-  const toggleDropdown = (key: string) => {
-    setOpenDropdowns(prev => ({ ...prev, [key]: !prev[key] }));
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -275,7 +221,7 @@ export default function MarketplaceDashboard() {
           {/* Left: Logo & Menu */}
           <div className="flex items-center gap-4">
             <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 hover:bg-gray-100 rounded-lg lg:hidden"
             >
               <Menu size={20} />
@@ -284,7 +230,7 @@ export default function MarketplaceDashboard() {
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <Building2 className="text-white" size={18} />
               </div>
-              <span className="text-xl font-bold text-gray-900">Kealee</span>
+              <span className="text-xl font-bold text-gray-900 hidden sm:inline">Kealee</span>
             </Link>
           </div>
 
@@ -313,7 +259,7 @@ export default function MarketplaceDashboard() {
             </button>
             <Link
               href="/login"
-              className="ml-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              className="ml-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hidden sm:inline"
             >
               Sign In
             </Link>
@@ -340,104 +286,77 @@ export default function MarketplaceDashboard() {
       </header>
 
       <div className="flex">
-        {/* Sidebar */}
+        {/* Icon-Only Sidebar - Desktop */}
+        <aside className="hidden lg:flex flex-col items-center w-20 bg-white border-r border-gray-200 py-6 sticky top-[65px] h-[calc(100vh-65px)]">
+          <nav className="flex flex-col items-center gap-2 flex-1">
+            {SIDEBAR_NAV.map((item) => (
+              <SidebarNavItem
+                key={item.href}
+                icon={item.icon}
+                label={item.label}
+                href={item.href}
+                active={item.active}
+                badge={item.badge}
+              />
+            ))}
+          </nav>
+
+          {/* Bottom user avatar */}
+          <div className="mt-auto pt-4 border-t border-gray-100 w-full flex justify-center">
+            <button className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300 transition-colors">
+              <span className="text-sm font-semibold">JD</span>
+            </button>
+          </div>
+        </aside>
+
+        {/* Mobile Sidebar */}
         <aside className={`
-          fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out
-          lg:relative lg:translate-x-0
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          fixed inset-y-0 left-0 z-40 w-72 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:hidden
+          ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
-          {/* Mobile close button */}
-          <div className="lg:hidden flex justify-end p-4">
-            <button onClick={() => setSidebarOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+          <div className="flex items-center justify-between p-4 border-b border-gray-100">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Building2 className="text-white" size={18} />
+              </div>
+              <span className="text-xl font-bold text-gray-900">Kealee</span>
+            </Link>
+            <button onClick={() => setMobileMenuOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg">
               <X size={20} />
             </button>
           </div>
 
-          <nav className="p-4 space-y-1 mt-16 lg:mt-4">
-            <p className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              For You
-            </p>
-            <Link href="/" className="flex items-center gap-3 px-3 py-2.5 bg-blue-50 text-blue-700 rounded-lg font-medium">
-              <Home size={18} />
-              Dashboard
-            </Link>
-            <Link href="/leads" className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg">
-              <Zap size={18} />
-              My Leads
-              <span className="ml-auto px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">3</span>
-            </Link>
-            <Link href="/projects" className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg">
-              <Briefcase size={18} />
-              My Projects
-            </Link>
-
-            <p className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-6">
-              Services
-            </p>
-            <Link href="/post-project" className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg">
-              <FileText size={18} />
-              Post a Project
-            </Link>
-            <Link href="/vendors" className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg">
-              <Users size={18} />
-              Find Contractors
-            </Link>
-
-            {/* Design Services Dropdown */}
-            <ServicesDropdown
-              title="Design Services"
-              icon={PenTool}
-              services={DESIGN_SERVICES}
-              isOpen={openDropdowns['design'] || false}
-              onToggle={() => toggleDropdown('design')}
-              color="purple"
-            />
-
-            {/* Permit Services Dropdown */}
-            <ServicesDropdown
-              title="Permit Services"
-              icon={Shield}
-              services={PERMIT_SERVICES}
-              isOpen={openDropdowns['permits'] || false}
-              onToggle={() => toggleDropdown('permits')}
-              color="orange"
-            />
-
-            {/* Estimation Services Dropdown */}
-            <ServicesDropdown
-              title="Estimation"
-              icon={Calculator}
-              services={ESTIMATION_SERVICES}
-              isOpen={openDropdowns['estimation'] || false}
-              onToggle={() => toggleDropdown('estimation')}
-              color="blue"
-            />
-
-            {/* A La Carte Operations Dropdown */}
-            <ServicesDropdown
-              title="Operations Services"
-              icon={Wrench}
-              services={A_LA_CARTE_SERVICES}
-              isOpen={openDropdowns['operations'] || false}
-              onToggle={() => toggleDropdown('operations')}
-              color="green"
-            />
-
-            <p className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-6">
-              Tools
-            </p>
-            <Link href="/pricing" className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg">
-              <DollarSign size={18} />
-              Pricing & Plans
-            </Link>
+          <nav className="p-4 space-y-1">
+            {SIDEBAR_NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`
+                  flex items-center gap-3 px-4 py-3 rounded-xl transition-colors
+                  ${item.active
+                    ? 'bg-blue-50 text-blue-700 font-medium'
+                    : 'text-gray-700 hover:bg-gray-50'
+                  }
+                `}
+              >
+                <item.icon size={20} />
+                <span>{item.label}</span>
+                {item.badge && (
+                  <span className="ml-auto px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
+                    {item.badge}
+                  </span>
+                )}
+              </Link>
+            ))}
           </nav>
         </aside>
 
         {/* Mobile sidebar overlay */}
-        {sidebarOpen && (
+        {mobileMenuOpen && (
           <div
             className="fixed inset-0 bg-black/20 z-30 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
+            onClick={() => setMobileMenuOpen(false)}
           />
         )}
 
