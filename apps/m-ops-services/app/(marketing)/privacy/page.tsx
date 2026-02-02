@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | Kealee Platform',
-  description: 'Learn how Kealee Platform protects your personal and project information.',
+  title: 'Privacy Policy | Kealee',
+  description: 'Learn how Kealee protects your personal and project information.',
 };
 
 export default function PrivacyPage() {
@@ -27,7 +27,7 @@ export default function PrivacyPage() {
 
         <section>
           <p className="text-zinc-600 leading-relaxed">
-            Kealee Platform is committed to protecting your privacy. This policy explains
+            Kealee is committed to protecting your privacy. This policy explains
             how we collect, use, and protect your information when you use our construction
             management platform, including all integrated services (Project Management,
             Pre-Construction, Estimation, Finance & Trust, Marketplace, and Permits & Inspections).
@@ -202,7 +202,7 @@ export default function PrivacyPage() {
               </a>
             </p>
             <p className="mt-2">
-              Kealee Platform Inc.<br />
+              Kealee Inc.<br />
               1401 H Street NW, Suite 300<br />
               Washington, DC 20005
             </p>
@@ -213,7 +213,7 @@ export default function PrivacyPage() {
 
       {/* Footer */}
       <div className="mt-8 text-center text-sm text-zinc-500">
-        © 2026 Kealee Platform. All rights reserved.
+        © 2026 Kealee. All rights reserved.
       </div>
     </main>
   );

@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Permits & Inspections | Kealee Platform',
+  title: 'Permits & Inspections | Kealee',
   description: 'Automated permit tracking, inspection scheduling, and AI-powered document review for compliance.',
 };
 

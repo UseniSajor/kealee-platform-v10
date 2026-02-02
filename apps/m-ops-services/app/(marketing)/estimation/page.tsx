@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'AI Estimation Engine | Kealee Platform',
+  title: 'AI Estimation Engine | Kealee',
   description: 'AI-powered cost estimation with labor, materials, and timeline projections for accurate project bidding.',
 };
 

@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Finance & Trust | Kealee Platform',
+  title: 'Finance & Trust | Kealee',
   description: 'Secure escrow management, milestone payments, and transparent financial tracking for all parties.',
 };
 
@@ -228,8 +228,7 @@ export default function FinancePage() {
               ))}
             </div>
             <p className="mt-6 text-xs text-center text-zinc-500">
-              Note: 3.5% platform commission applies to marketplace contracts
-              (deducted from contractor's first milestone payment)
+              All applicable fees are displayed at checkout for complete transparency.
             </p>
           </div>
         </div>

@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Architecture Services | Kealee Platform',
+  title: 'Architecture Services | Kealee',
   description: 'Professional architectural design services with CAD/BIM integration and permit-ready drawings.',
 };
 

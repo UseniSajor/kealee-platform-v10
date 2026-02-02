@@ -2,34 +2,11 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Contractor Marketplace | Kealee Platform',
+  title: 'Contractor Marketplace | Kealee',
   description: 'Connect with verified contractors, vendors, and suppliers. Quality leads and transparent bidding.',
 };
 
 export default function MarketplacePage() {
-  const forOwners = [
-    {
-      icon: '✓',
-      title: 'Verified Contractors',
-      description: 'Every contractor is license-verified, insured, and background-checked.',
-    },
-    {
-      icon: '📊',
-      title: 'Transparent Bidding',
-      description: 'Receive standardized bids with clear pricing breakdowns.',
-    },
-    {
-      icon: '⭐',
-      title: 'Reviews & Ratings',
-      description: 'See real reviews from completed projects on our platform.',
-    },
-    {
-      icon: '🔒',
-      title: 'Escrow Protection',
-      description: 'Your payments are protected until work is completed.',
-    },
-  ];
-
   const forContractors = [
     {
       icon: '🎯',
@@ -43,8 +20,8 @@ export default function MarketplacePage() {
     },
     {
       icon: '💰',
-      title: 'Fair Commission',
-      description: 'Only 3.5% platform fee—lowest in the industry.',
+      title: 'Transparent Pricing',
+      description: 'All fees clearly displayed at checkout—no surprises.',
     },
     {
       icon: '📈',
@@ -68,7 +45,7 @@ export default function MarketplacePage() {
     {
       name: 'Enterprise',
       price: '$999/mo',
-      features: ['Premium placement', 'Unlimited leads', 'Dedicated account manager', 'Custom branding', 'API access'],
+      features: ['Premium placement', 'Priority project matching', 'Dedicated account manager', 'Custom branding', 'API access', 'Performance analytics', 'Multi-location support'],
     },
   ];
 
@@ -129,39 +106,6 @@ export default function MarketplacePage() {
               <div className="text-sm text-zinc-600 mt-1">{stat.label}</div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* For Owners */}
-      <section className="mb-16">
-        <h2 className="text-2xl font-black mb-8">For Project Owners</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {forOwners.map((item) => (
-            <div
-              key={item.title}
-              className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm"
-            >
-              <div className="text-2xl mb-3">{item.icon}</div>
-              <h3 className="font-bold mb-2">{item.title}</h3>
-              <p className="text-sm text-zinc-600">{item.description}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-8 p-6 rounded-2xl bg-sky-50 border border-sky-100">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h3 className="font-bold">Ready to find your contractor?</h3>
-              <p className="text-sm text-zinc-600 mt-1">
-                Post your project and receive bids from verified contractors within 48 hours.
-              </p>
-            </div>
-            <Link
-              href="/signup"
-              className="inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:opacity-95"
-            >
-              Post a Project
-            </Link>
-          </div>
         </div>
       </section>
 
@@ -258,18 +202,12 @@ export default function MarketplacePage() {
           Whether you're looking for contractors or looking to grow your business,
           Kealee Marketplace has you covered.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-4">
-          <Link
-            href="/signup"
-            className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-bold text-zinc-900 shadow-sm transition hover:bg-zinc-50"
-          >
-            I'm a Project Owner
-          </Link>
+        <div className="mt-6">
           <Link
             href="/contractors"
-            className="inline-flex items-center justify-center rounded-xl border border-white/30 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-white/10"
+            className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-bold text-zinc-900 shadow-sm transition hover:bg-zinc-50"
           >
-            I'm a Contractor
+            Get Started
           </Link>
         </div>
       </section>

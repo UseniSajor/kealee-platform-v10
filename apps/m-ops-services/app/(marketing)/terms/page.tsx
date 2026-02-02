@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | Kealee Platform',
-  description: 'Terms of service for using Kealee Platform construction management services.',
+  title: 'Terms of Service | Kealee',
+  description: 'Terms of service for using Kealee construction management services.',
 };
 
 export default function TermsPage() {
@@ -27,7 +27,7 @@ export default function TermsPage() {
 
         <section>
           <p className="text-zinc-600 leading-relaxed">
-            Welcome to Kealee Platform. By using our platform, you agree to these terms.
+            Welcome to Kealee. By using our platform, you agree to these terms.
             Please read them carefully before using our construction management services.
           </p>
         </section>
@@ -36,7 +36,7 @@ export default function TermsPage() {
           <h2 className="text-xl font-black mb-4">1. Service Description</h2>
           <div className="text-zinc-600 space-y-3">
             <p>
-              Kealee Platform provides integrated construction management services including:
+              Kealee provides integrated construction management services including:
             </p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Project Management (os-pm) - Milestone tracking and team coordination</li>
@@ -181,7 +181,7 @@ export default function TermsPage() {
               </a>
             </p>
             <p className="mt-2">
-              Kealee Platform Inc.<br />
+              Kealee Inc.<br />
               1401 H Street NW, Suite 300<br />
               Washington, DC 20005
             </p>
@@ -192,7 +192,7 @@ export default function TermsPage() {
 
       {/* Footer */}
       <div className="mt-8 text-center text-sm text-zinc-500">
-        © 2026 Kealee Platform. All rights reserved.
+        © 2026 Kealee. All rights reserved.
       </div>
     </main>
   );

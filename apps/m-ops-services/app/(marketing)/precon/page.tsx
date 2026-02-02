@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Pre-Construction Services | Kealee Platform',
+  title: 'Pre-Construction Services | Kealee',
   description: 'Streamlined pre-con workflow from design to contractor bidding with guaranteed escrow-backed contracts.',
 };
 
@@ -179,13 +179,12 @@ export default function PreconPage() {
         </div>
       </section>
 
-      {/* Platform Fee */}
+      {/* Transparent Pricing */}
       <section className="rounded-2xl bg-zinc-50 p-8 text-center">
-        <h2 className="text-xl font-black mb-4">Transparent Platform Fee</h2>
-        <div className="text-5xl font-black text-emerald-600 mb-2">3.5%</div>
+        <h2 className="text-xl font-black mb-4">Transparent Pricing</h2>
         <p className="text-zinc-600 max-w-xl mx-auto">
-          Platform commission (paid by contractor from first milestone payment).
-          No hidden fees. Escrow-backed protection for all parties.
+          All fees are clearly displayed at checkout. No hidden costs.
+          Escrow-backed protection for all parties.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-6 text-sm">
           <div className="flex items-center gap-2">

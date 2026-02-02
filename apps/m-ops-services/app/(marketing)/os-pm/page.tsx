@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Project Management for Contractors | Kealee Platform',
+  title: 'Project Management for Contractors | Kealee',
   description: 'Construction project management tools for contractors and builders. Milestone tracking, payment requests, and client communication.',
 };
 

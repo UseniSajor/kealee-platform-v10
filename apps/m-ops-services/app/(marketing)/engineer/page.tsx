@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Engineering Services | Kealee Platform',
+  title: 'Engineering Services | Kealee',
   description: 'Structural, MEP, and civil engineering services with stamped drawings and compliance verification.',
 };
 
