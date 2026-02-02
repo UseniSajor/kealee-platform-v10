@@ -105,6 +105,7 @@ export async function engineerRoutes(fastify: FastifyInstance) {
     const quote = await calculateQuote({
       userId,
       ...body,
+      projectDescription: body.projectDescription || '',
     });
 
     return {

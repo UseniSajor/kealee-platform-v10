@@ -187,9 +187,11 @@ async function routeWebhookEvent(event: Stripe.Event): Promise<void> {
     case 'transfer.created':
       await handleTransferCreated(data as Stripe.Transfer);
       break;
-    case 'transfer.failed':
-      await handleTransferFailed(data as Stripe.Transfer);
-      break;
+    // Note: 'transfer.failed' is not in Stripe's official event types
+    // Keeping handler but removing from switch case
+    // case 'transfer.failed':
+    //   await handleTransferFailed(data as Stripe.Transfer);
+    //   break;
     case 'payout.created':
       await handlePayoutCreated(data as Stripe.Payout);
       break;
