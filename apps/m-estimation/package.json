@@ -1,5 +1,5 @@
 {
-  "name": "@kealee/m-estimation",
+  "name": "m-estimation",
   "version": "1.0.0",
   "private": true,
   "description": "Kealee Estimation Portal - Construction cost estimation and takeoff management",
@@ -11,10 +11,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@kealee/api-client": "workspace:*",
-    "@kealee/auth": "workspace:*",
-    "@kealee/database": "workspace:*",
-    "@kealee/ui": "workspace:*",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.4",
     "@radix-ui/react-dialog": "^1.1.4",

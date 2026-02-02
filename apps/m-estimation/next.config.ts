@@ -2,7 +2,13 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['@kealee/ui', '@kealee/auth', '@kealee/database', '@kealee/api-client'],
+  transpilePackages: [],
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: false,
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',

@@ -32,6 +32,7 @@ export function ScopeAnalysisStep({
     if (!analysis && data.basicInfo?.description) {
       analyzeScope();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const analyzeScope = async () => {

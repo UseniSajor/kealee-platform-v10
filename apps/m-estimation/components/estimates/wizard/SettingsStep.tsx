@@ -226,7 +226,7 @@ export function SettingsStep({
           <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-blue-900">
             These settings will be applied to your estimate in the final step.
-            You'll see the complete cost breakdown including overhead, profit, and
+            You&apos;ll see the complete cost breakdown including overhead, profit, and
             tax.
           </p>
         </CardContent>
