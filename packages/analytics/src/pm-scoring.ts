@@ -425,7 +425,7 @@ export class PMScoringSystem {
    */
   private async checkPermitCompliance(pmId: string): Promise<number> {
     const projects = await this.getManagedProjects(pmId)
-    const permits = await prisma.permitApplication?.findMany({
+    const permits = await prisma.permit?.findMany({
       where: {
         projectId: {
           in: projects.map((p) => p.id),
