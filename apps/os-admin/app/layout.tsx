@@ -7,7 +7,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Kealee Platform - Admin Console",
+  title: "Kealee - Admin Console",
   description: "Internal admin console for Kealee staff",
 };
 
