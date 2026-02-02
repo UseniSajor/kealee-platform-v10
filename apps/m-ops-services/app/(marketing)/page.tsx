@@ -3,7 +3,7 @@ import Link from "next/link";
 import { HeroGC } from "@/components/marketing/HeroGC";
 import { GCTestimonials } from "@/components/marketing/GCTestimonials";
 import { ROICalculator } from "@/components/marketing/ROICalculator";
-import { ALaCarteDropdown } from "@/components/marketing/ALaCarteDropdown";
+import { OnDemandOps } from "@/components/marketing/OnDemandOps";
 
 const gcPackages = [
   {
@@ -135,7 +135,7 @@ export default function MarketingHomePage() {
       {/* Header */}
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="text-xl font-black tracking-tight">
-          Kealee Platform
+          Kealee
         </div>
         <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-700">
           <Link className="hover:text-zinc-950" href="#platform">
@@ -194,7 +194,7 @@ export default function MarketingHomePage() {
             One Platform, Every Phase
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-zinc-600">
-            8 integrated modules covering the entire construction lifecycle
+            6 integrated modules covering the entire construction lifecycle
           </p>
         </div>
 
@@ -381,9 +381,9 @@ export default function MarketingHomePage() {
         </div>
       </section>
 
-      {/* A La Carte Services */}
+      {/* On-Demand Ops */}
       <section className="mt-12">
-        <ALaCarteDropdown />
+        <OnDemandOps />
       </section>
 
       {/* ROI Calculator */}
@@ -503,7 +503,7 @@ export default function MarketingHomePage() {
       <footer className="mt-12 border-t border-black/10 pt-6">
         <div className="grid gap-8 md:grid-cols-4">
           <div>
-            <div className="text-sm font-black">Kealee Platform</div>
+            <div className="text-sm font-black">Kealee</div>
             <p className="mt-2 text-xs text-zinc-500">
               The complete construction management platform for modern builders.
             </p>
@@ -537,7 +537,7 @@ export default function MarketingHomePage() {
           </div>
         </div>
         <div className="mt-8 border-t border-black/5 pt-4 text-xs text-zinc-500">
-          © 2026 Kealee Platform. All rights reserved.
+          © 2026 Kealee. All rights reserved.
         </div>
       </footer>
     </main>
