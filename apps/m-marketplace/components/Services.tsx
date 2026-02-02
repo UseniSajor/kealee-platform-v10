@@ -33,7 +33,7 @@ export function Services() {
       title: 'Project Owner Portal',
       description:
         'Track milestones, approve payments, and manage your construction projects',
-      pricing: '3% platform fee',
+      pricing: 'Fees shown at checkout',
       features: [
         'Real-time project tracking',
         'Milestone approval workflow',

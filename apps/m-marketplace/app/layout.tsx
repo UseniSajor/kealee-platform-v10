@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     'DC construction',
     'Baltimore construction'
   ],
-  authors: [{ name: 'Kealee Construction LLC' }],
+  authors: [{ name: 'Kealee LLC' }],
   creator: 'Kealee',
   publisher: 'Kealee',
   openGraph: {
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Kealee Construction Management Platform',
+        alt: 'Kealee Management Platform',
       },
     ],
   },
