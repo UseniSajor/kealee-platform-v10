@@ -1,0 +1,579 @@
+[
+  {
+    "productId": "prod_Tu7R0RL0CCnM9E",
+    "priceId": "price_1SwJCZIQghAs8OOIBMx2eiCB",
+    "name": "Package A - Solo GC",
+    "description": "For solo general contractors managing 1 active project.",
+    "amount": 175000,
+    "currency": "usd",
+    "billingType": "recurring",
+    "interval": "month",
+    "category": "pm-packages",
+    "code": "PKG_A",
+    "metadata": {
+      "tier": "A",
+      "projects_allowed": "1",
+      "user_limit": "1",
+      "role": "gc",
+      "hours_per_week": "5-10",
+      "site_visits": "0-1/month"
+    }
+  },
+  {
+    "productId": "prod_Tu7RZvO7hfqwbV",
+    "priceId": "price_1SwJCaIQghAs8OOI91v8URrR",
+    "name": "Package B - Growing Team",
+    "description": "For small GC teams managing multiple active projects.",
+    "amount": 375000,
+    "currency": "usd",
+    "billingType": "recurring",
+    "interval": "month",
+    "category": "pm-packages",
+    "code": "PKG_B",
+    "metadata": {
+      "tier": "B",
+      "projects_allowed": "3",
+      "user_limit": "5",
+      "role": "gc",
+      "hours_per_week": "15-20",
+      "site_visits": "2-4/month",
+      "most_popular": "true"
+    }
+  },
+  {
+    "productId": "prod_Tu7RPh3kmKduVH",
+    "priceId": "price_1SwJCaIQghAs8OOIq4vDyqVN",
+    "name": "Package C - Multiple Projects",
+    "description": "For GCs running multiple concurrent builds.",
+    "amount": 950000,
+    "currency": "usd",
+    "billingType": "recurring",
+    "interval": "month",
+    "category": "pm-packages",
+    "code": "PKG_C",
+    "metadata": {
+      "tier": "C",
+      "projects_allowed": "10",
+      "user_limit": "15",
+      "role": "gc",
+      "hours_per_week": "30-40",
+      "site_visits": "4-8/month",
+      "features": "permit_management,0%_marketplace_fees"
+    }
+  },
+  {
+    "productId": "prod_Tu7RIWhHhudwUW",
+    "priceId": "price_1SwJCbIQghAs8OOIBZtGoIhe",
+    "name": "Package D - Enterprise GC",
+    "description": "Enterprise-grade PM for large GC operations.",
+    "amount": 1650000,
+    "currency": "usd",
+    "billingType": "recurring",
+    "interval": "month",
+    "category": "pm-packages",
+    "code": "PKG_D",
+    "metadata": {
+      "tier": "D",
+      "projects_allowed": "unlimited",
+      "user_limit": "unlimited",
+      "role": "gc",
+      "hours_per_week": "40+",
+      "site_visits": "8-16/month",
+      "features": "multi_pm_team,sla_guarantees,executive_reporting"
+    }
+  },
+  {
+    "productId": "prod_Tu7RVi05yPqD9K",
+    "priceId": "price_1SwJCcIQghAs8OOIVm5syCDQ",
+    "name": "Package A - Annual",
+    "description": "Solo GC annual plan (10% savings).",
+    "amount": 1890000,
+    "currency": "usd",
+    "billingType": "recurring",
+    "interval": "year",
+    "category": "pm-packages-annual",
+    "code": "PKG_A_ANNUAL",
+    "metadata": {
+      "tier": "A",
+      "billing": "annual",
+      "discount": "10%",
+      "savings": "$2,100/year"
+    }
+  },
+  {
+    "productId": "prod_Tu7Rm4PnB6x0Fw",
+    "priceId": "price_1SwJCcIQghAs8OOIjFp8HOBd",
+    "name": "Package B - Annual",
+    "description": "Growing Team annual plan (10% savings).",
+    "amount": 4050000,
+    "currency": "usd",
+    "billingType": "recurring",
+    "interval": "year",
+    "category": "pm-packages-annual",
+    "code": "PKG_B_ANNUAL",
+    "metadata": {
+      "tier": "B",
+      "billing": "annual",
+      "discount": "10%",
+      "savings": "$4,500/year",
+      "most_popular": "true"
+    }
+  },
+  {
+    "productId": "prod_Tu7Rkrlo08SrLu",
+    "priceId": "price_1SwJCdIQghAs8OOIz5Tp2mWH",
+    "name": "Package C - Annual",
+    "description": "Multiple Projects annual plan (10% savings).",
+    "amount": 10260000,
+    "currency": "usd",
+    "billingType": "recurring",
+    "interval": "year",
+    "category": "pm-packages-annual",
+    "code": "PKG_C_ANNUAL",
+    "metadata": {
+      "tier": "C",
+      "billing": "annual",
+      "discount": "10%",
+      "savings": "$11,400/year"
+    }
+  },
+  {
+    "productId": "prod_Tu7RqgcWVsulKs",
+    "priceId": "price_1SwJCdIQghAs8OOIkO9aLLcT",
+    "name": "Package D - Annual",
+    "description": "Enterprise GC annual plan (10% savings).",
+    "amount": 17820000,
+    "currency": "usd",
+    "billingType": "recurring",
+    "interval": "year",
+    "category": "pm-packages-annual",
+    "code": "PKG_D_ANNUAL",
+    "metadata": {
+      "tier": "D",
+      "billing": "annual",
+      "discount": "10%",
+      "savings": "$19,800/year"
+    }
+  },
+  {
+    "productId": "prod_Tu7RsaqyqBC4XD",
+    "priceId": "price_1SwJCdIQghAs8OOI2pHSaiWV",
+    "name": "Permit Application Assistance",
+    "description": "Complete permit application preparation and submission through approval.",
+    "amount": 32500,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "on-demand-permits",
+    "code": "OD_PERMIT_APP",
+    "metadata": {
+      "service_type": "permits_field",
+      "duration": "3-5 business days"
+    }
+  },
+  {
+    "productId": "prod_Tu7RUIx9IuusXA",
+    "priceId": "price_1SwJCeIQghAs8OOIjWFyCEBb",
+    "name": "Inspection Scheduling",
+    "description": "Coordinate inspections with AHJ and handle re-inspection follow-ups.",
+    "amount": 20000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "on-demand-permits",
+    "code": "OD_INSPECTION",
+    "metadata": {
+      "service_type": "permits_field",
+      "duration": "same day"
+    }
+  },
+  {
+    "productId": "prod_Tu7RJlBPN8uFgN",
+    "priceId": "price_1SwJCeIQghAs8OOIZ90FI305",
+    "name": "Site Visit & Reporting",
+    "description": "Scheduled site visit with photo documentation and progress report.",
+    "amount": 35000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "on-demand-permits",
+    "code": "OD_SITE_VISIT",
+    "metadata": {
+      "service_type": "permits_field",
+      "includes": "photos,report,recommendations"
+    }
+  },
+  {
+    "productId": "prod_Tu7RrCPcO73Hny",
+    "priceId": "price_1SwJCfIQghAs8OOIICGcwlAL",
+    "name": "Quality Control Review",
+    "description": "Independent quality inspection against plans and specifications.",
+    "amount": 40000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "on-demand-permits",
+    "code": "OD_QC_REVIEW",
+    "metadata": {
+      "service_type": "permits_field",
+      "includes": "inspection,report,punch_list"
+    }
+  },
+  {
+    "productId": "prod_Tu7RXaoxRL9XPU",
+    "priceId": "price_1SwJCfIQghAs8OOI5v4yJMiZ",
+    "name": "Contractor Coordination",
+    "description": "Manage subcontractor schedules, deliveries, and change order tracking.",
+    "amount": 50000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "on-demand-coordination",
+    "code": "OD_CONTRACTOR_COORD",
+    "metadata": {
+      "service_type": "coordination_admin"
+    }
+  },
+  {
+    "productId": "prod_Tu7RrSenxkxAmC",
+    "priceId": "price_1SwJCgIQghAs8OOIKbE0Frc2",
+    "name": "Change Order Management",
+    "description": "Document, price, and track change orders from request to approval.",
+    "amount": 47500,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "on-demand-coordination",
+    "code": "OD_CHANGE_ORDER",
+    "metadata": {
+      "service_type": "coordination_admin"
+    }
+  },
+  {
+    "productId": "prod_Tu7RfnEeXbdNFi",
+    "priceId": "price_1SwJCgIQghAs8OOIM0AUPP1P",
+    "name": "Document Organization",
+    "description": "Centralize and organize contracts, invoices, and project documents.",
+    "amount": 40000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "on-demand-coordination",
+    "code": "OD_DOCUMENT_ORG",
+    "metadata": {
+      "service_type": "coordination_admin"
+    }
+  },
+  {
+    "productId": "prod_Tu7RvAggRYPEdq",
+    "priceId": "price_1SwJChIQghAs8OOIrEx2y8ro",
+    "name": "Progress Reporting",
+    "description": "Weekly or bi-weekly client update with photos and milestone status.",
+    "amount": 25000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "on-demand-coordination",
+    "code": "OD_PROGRESS_REPORT",
+    "metadata": {
+      "service_type": "coordination_admin",
+      "frequency": "weekly_or_biweekly"
+    }
+  },
+  {
+    "productId": "prod_Tu7RMe5RxqVluU",
+    "priceId": "price_1SwJChIQghAs8OOI0X4Qs1Ha",
+    "name": "Budget Analysis",
+    "description": "Review estimates and provide cost-saving recommendations.",
+    "amount": 45000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "on-demand-estimating",
+    "code": "OD_BUDGET_ANALYSIS",
+    "metadata": {
+      "service_type": "estimating_precon"
+    }
+  },
+  {
+    "productId": "prod_Tu7RSaNDoJyV1N",
+    "priceId": "price_1SwJCiIQghAs8OOIFwYPNq62",
+    "name": "Schedule Optimization",
+    "description": "Build or refine project schedule to minimize delays and conflicts.",
+    "amount": 125000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "on-demand-estimating",
+    "code": "OD_SCHEDULE_OPT",
+    "metadata": {
+      "service_type": "estimating_precon"
+    }
+  },
+  {
+    "productId": "prod_Tu7RSnCeJoa4nP",
+    "priceId": "price_1SwJCiIQghAs8OOIlrmmjQJX",
+    "name": "Scope Review - Hourly",
+    "description": "Identify gaps and clarify specifications before construction starts.",
+    "amount": 30000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "on-demand-estimating",
+    "code": "OD_SCOPE_REVIEW",
+    "metadata": {
+      "service_type": "estimating_precon",
+      "billing_unit": "hourly"
+    }
+  },
+  {
+    "productId": "prod_Tu7RTtH1j3sCzn",
+    "priceId": "price_1SwJCjIQghAs8OOIW3UkF28s",
+    "name": "Value Engineering - Hourly",
+    "description": "Cost-reduction analysis without sacrificing quality or performance.",
+    "amount": 40000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "on-demand-estimating",
+    "code": "OD_VALUE_ENG",
+    "metadata": {
+      "service_type": "estimating_precon",
+      "billing_unit": "hourly"
+    }
+  },
+  {
+    "productId": "prod_Tu7REddYaqeFMf",
+    "priceId": "price_1SwJCjIQghAs8OOIcZxddJDk",
+    "name": "Basic Estimate",
+    "description": "Line-item cost estimate for projects up to $100K.",
+    "amount": 50000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "estimation",
+    "code": "EST_BASIC",
+    "metadata": {
+      "project_size": "up_to_100k",
+      "delivery": "2-3 business days",
+      "includes": "line_items,basic_breakdown"
+    }
+  },
+  {
+    "productId": "prod_Tu7RZB3rwPGVxC",
+    "priceId": "price_1SwJCkIQghAs8OOIPX5jfOiP",
+    "name": "Standard Estimate",
+    "description": "Detailed estimate with assemblies for projects $100K-$500K.",
+    "amount": 100000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "estimation",
+    "code": "EST_STANDARD",
+    "metadata": {
+      "project_size": "100k_to_500k",
+      "delivery": "3-5 business days",
+      "includes": "assemblies,detailed_breakdown,cost_analysis"
+    }
+  },
+  {
+    "productId": "prod_Tu7RuZJg3g5XRz",
+    "priceId": "price_1SwJCkIQghAs8OOIoo3Yfs8w",
+    "name": "Premium Estimate",
+    "description": "Comprehensive estimate with takeoff and value engineering for projects $500K+.",
+    "amount": 200000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "estimation",
+    "code": "EST_PREMIUM",
+    "metadata": {
+      "project_size": "500k_plus",
+      "delivery": "5-7 business days",
+      "includes": "takeoff,assemblies,value_engineering,detailed_breakdown"
+    }
+  },
+  {
+    "productId": "prod_Tu7RrD6qPx501Y",
+    "priceId": "price_1SwJClIQghAs8OOIe0c4cPVr",
+    "name": "Schematic Design",
+    "description": "Initial design concepts and space planning phase.",
+    "amount": 250000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "architecture",
+    "code": "ARCH_SCHEMATIC",
+    "metadata": {
+      "phase": "schematic_design",
+      "deliverables": "concepts,sketches,space_planning"
+    }
+  },
+  {
+    "productId": "prod_Tu7RmnElKwW3EW",
+    "priceId": "price_1SwJClIQghAs8OOIOsuJfOUj",
+    "name": "Design Development",
+    "description": "Detailed design drawings and specifications.",
+    "amount": 400000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "architecture",
+    "code": "ARCH_DD",
+    "metadata": {
+      "phase": "design_development",
+      "deliverables": "detailed_drawings,specifications,material_selections"
+    }
+  },
+  {
+    "productId": "prod_Tu7RoJviegXCb3",
+    "priceId": "price_1SwJClIQghAs8OOIkl7FjMQn",
+    "name": "Construction Documents",
+    "description": "Complete construction drawing set for permitting and bidding.",
+    "amount": 600000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "architecture",
+    "code": "ARCH_CD",
+    "metadata": {
+      "phase": "construction_documents",
+      "deliverables": "full_drawing_set,permit_ready,stamped"
+    }
+  },
+  {
+    "productId": "prod_Tu7Rzw3bxu97P8",
+    "priceId": "price_1SwJCmIQghAs8OOIcR4M4IEo",
+    "name": "Structural Engineering - Residential",
+    "description": "Structural calculations and stamped drawings for residential projects.",
+    "amount": 150000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "engineering",
+    "code": "ENG_STRUCT_RES",
+    "metadata": {
+      "discipline": "structural",
+      "project_type": "residential",
+      "includes": "calculations,stamped_drawings"
+    }
+  },
+  {
+    "productId": "prod_Tu7RO39DGorMBv",
+    "priceId": "price_1SwJCmIQghAs8OOIx1aSY7uT",
+    "name": "MEP Engineering",
+    "description": "Mechanical, Electrical, and Plumbing design and calculations.",
+    "amount": 350000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "engineering",
+    "code": "ENG_MEP",
+    "metadata": {
+      "discipline": "mep",
+      "includes": "hvac_design,electrical_design,plumbing_design,calculations"
+    }
+  },
+  {
+    "productId": "prod_Tu7R9IPh4qlCjF",
+    "priceId": "price_1SwJCnIQghAs8OOItPGpbwOr",
+    "name": "Standard Permit Package",
+    "description": "Complete permit submittal package preparation.",
+    "amount": 50000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "permits",
+    "code": "PERMIT_STANDARD",
+    "metadata": {
+      "processing_time": "5-7 business days"
+    }
+  },
+  {
+    "productId": "prod_Tu7RGD7SA5D0GW",
+    "priceId": "price_1SwJCnIQghAs8OOIQBvCK2UD",
+    "name": "Expedited Permit Service",
+    "description": "Fast-track permit processing with priority follow-up.",
+    "amount": 100000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "permits",
+    "code": "PERMIT_EXPEDITED",
+    "metadata": {
+      "processing_time": "2-3 business days",
+      "expedited": "true"
+    }
+  },
+  {
+    "productId": "prod_Tu7RGbHvl9zc7i",
+    "priceId": "price_1SwJCoIQghAs8OOIqc55WSO4",
+    "name": "Escrow Service - Standard",
+    "description": "Milestone-based escrow management with 1% fee (max $500).",
+    "amount": 0,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "finance",
+    "code": "ESCROW_STANDARD",
+    "metadata": {
+      "fee_type": "percentage",
+      "fee_percent": "1",
+      "fee_max": "500"
+    }
+  },
+  {
+    "productId": "prod_Tu7RuFoltG0eP7",
+    "priceId": "price_1SwJCoIQghAs8OOI5jOKxqE2",
+    "name": "Payment Processing",
+    "description": "Secure payment processing (2.9% + $0.30 per transaction).",
+    "amount": 0,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "finance",
+    "code": "PAYMENT_PROCESSING",
+    "metadata": {
+      "fee_type": "percentage_plus_fixed",
+      "fee_percent": "2.9",
+      "fee_fixed": "30"
+    }
+  },
+  {
+    "productId": "prod_Tu7RIi4GQDgNRH",
+    "priceId": "price_1SwJCpIQghAs8OOI7jjazBSv",
+    "name": "Contractor Lead",
+    "description": "Qualified contractor lead from Fair Bid Rotation system.",
+    "amount": 5000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "marketplace",
+    "code": "MKT_LEAD",
+    "metadata": {
+      "lead_quality": "verified",
+      "includes": "contact_info,rating,credentials"
+    }
+  },
+  {
+    "productId": "prod_Tu7R90QKkbdGFX",
+    "priceId": "price_1SwJCpIQghAs8OOILK43sNj7",
+    "name": "Premium Contractor Listing",
+    "description": "Featured placement in contractor marketplace (monthly).",
+    "amount": 29900,
+    "currency": "usd",
+    "billingType": "recurring",
+    "interval": "month",
+    "category": "marketplace",
+    "code": "MKT_PREMIUM_LISTING",
+    "metadata": {
+      "listing_type": "premium",
+      "visibility": "featured"
+    }
+  },
+  {
+    "productId": "prod_Tu7RLqhONzDnvd",
+    "priceId": "price_1SwJCqIQghAs8OOI8isO4UXF",
+    "name": "Initial Consultation",
+    "description": "1-hour consultation to discuss project and services (complimentary).",
+    "amount": 0,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "consultation",
+    "code": "CONSULT_INITIAL",
+    "metadata": {
+      "duration": "60_minutes",
+      "free": "true"
+    }
+  },
+  {
+    "productId": "prod_Tu7RfDCvKjl6TK",
+    "priceId": "price_1SwJCqIQghAs8OOIFu15LgA8",
+    "name": "Expert Consultation - Hourly",
+    "description": "Ongoing consultation with construction PM expert.",
+    "amount": 15000,
+    "currency": "usd",
+    "billingType": "one_time",
+    "category": "consultation",
+    "code": "CONSULT_HOURLY",
+    "metadata": {
+      "billing_unit": "hourly",
+      "expert_level": "senior_pm"
+    }
+  }
+]
