@@ -1,304 +1,436 @@
-# Kealee Platform - Production Deployment Checklist
+# 🚀 Production Deployment Checklist
 
-## Pre-Deployment Verification
-
-### 1. Code Quality & Testing
-- [ ] All unit tests passing (`pnpm test`)
-- [ ] E2E payment flow tests verified
-- [ ] Integration tests for escrow/milestone flow passing
-- [ ] Load testing completed (target: 100 RPS, p95 < 500ms)
-- [ ] Security audit completed on payment endpoints
-- [ ] No critical/high severity vulnerabilities in dependencies (`pnpm audit`)
-- [ ] TypeScript builds without errors (`pnpm build`)
-- [ ] ESLint passes with no errors (`pnpm lint`)
-
-### 2. Database
-- [ ] Database migrations ready and tested
-- [ ] Rollback scripts prepared
-- [ ] Database backup completed
-- [ ] Connection pooling configured (min: 5, max: 20)
-- [ ] SSL/TLS enabled for database connections
-- [ ] Read replicas configured (if applicable)
-
-### 3. Infrastructure
-- [ ] Production environment provisioned
-- [ ] Auto-scaling configured
-- [ ] Load balancer health checks configured
-- [ ] SSL certificates installed and valid
-- [ ] CDN configured for static assets
-- [ ] DNS records updated
-
-### 4. Environment Variables
-Required environment variables set:
-- [ ] `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASSWORD`
-- [ ] `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`
-- [ ] `JWT_SECRET` (min 32 characters)
-- [ ] `STRIPE_SECRET_KEY` (production key, starts with `sk_live_`)
-- [ ] `STRIPE_PUBLISHABLE_KEY` (production key, starts with `pk_live_`)
-- [ ] `STRIPE_WEBHOOK_SECRET` (production webhook secret)
-- [ ] `STRIPE_CONNECT_WEBHOOK_SECRET`
-- [ ] `SENDGRID_API_KEY`
-- [ ] `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `S3_BUCKET`
-- [ ] `SENTRY_DSN`
-- [ ] `API_BASE_URL`
-
-### 5. Stripe Configuration
-- [ ] Production API keys configured
-- [ ] Webhook endpoints registered:
-  - `POST /webhooks/stripe` - Main webhook
-  - `POST /webhooks/stripe/connect` - Connect webhook
-- [ ] Products and prices created in Stripe Dashboard:
-  - Design packages (BASIC $199, STANDARD $499, PREMIUM $999)
-  - Engineering packages (BASIC $1,500, STANDARD $4,500, PREMIUM $12,000)
-  - Subscription plans
-- [ ] Connect onboarding flow tested
-- [ ] Payment methods enabled (Cards, ACH, Wire)
-
-### 6. Feature Flags
-Verify rollout configuration:
-| Module | Status | Rollout % |
-|--------|--------|-----------|
-| m-ops-services | Enabled | 100% |
-| m-permits-inspections | Enabled | 100% |
-| m-project-owner | Enabled | 100% |
-| m-architect | Enabled | 100% |
-| m-finance-trust | Enabled | 100% |
-| m-marketplace | Beta | 50% |
-| m-engineer | Beta | 25% |
-| m-command-center | Enabled | 100% |
+**Platform:** Kealee Platform V10  
+**Target:** Production Launch  
+**Status:** Ready to Execute
 
 ---
 
-## Deployment Steps
+## ✅ PRE-DEPLOYMENT (Complete)
 
-### Phase 1: Database Migration
+### Code & Infrastructure
+- [x] All code committed to Git
+- [x] All scripts created
+- [x] Documentation complete
+- [x] Tests created
+- [x] CSRF protection added
+- [x] Seed data prepared
+
+---
+
+## 📋 DEPLOYMENT STEPS
+
+### STEP 1: Run Database Migrations (30 minutes)
+
+**Location:** `packages/database/`
+
 ```bash
-# 1. Create database backup
-pg_dump -h $DATABASE_HOST -U $DATABASE_USER $DATABASE_NAME > backup_$(date +%Y%m%d_%H%M%S).sql
+# Option A: Automated script
+cd packages/database
+sh scripts/deploy-migrations.sh
 
-# 2. Run migrations
-pnpm prisma migrate deploy
-
-# 3. Verify migration success
-pnpm prisma migrate status
+# Option B: Manual
+npx prisma migrate deploy
+npx tsx prisma/seed-complete.ts
 ```
 
-### Phase 2: Deploy API Service
+**Creates:**
+- ✅ All database tables
+- ✅ Admin user (admin@kealee.com)
+- ✅ 7 default roles
+- ✅ 10 major jurisdictions
+- ✅ 4 service plans
+- ✅ System configuration
+
+**Checklist:**
+- [ ] Migrations deployed
+- [ ] Seed data loaded
+- [ ] Admin can login
+- [ ] Roles exist
+- [ ] Jurisdictions visible
+
+---
+
+### STEP 2: Create Stripe Products (1 hour)
+
+**Location:** `services/api/scripts/stripe/`
+
+**Prerequisites:**
+1. Switch Stripe to LIVE mode in dashboard
+2. Get live secret key (sk_live_xxx)
+3. Set STRIPE_SECRET_KEY environment variable
+
+**Execute:**
 ```bash
-# 1. Build API
 cd services/api
-pnpm build
 
-# 2. Deploy to production
-# (Use your deployment tool: Docker, Kubernetes, Railway, AWS ECS, etc.)
-
-# 3. Verify health endpoint
-curl https://api.kealee.com/health
+# Create all products (30+ products)
+STRIPE_SECRET_KEY=sk_live_xxx pnpm tsx scripts/stripe/create-complete-catalog.ts --confirm-live
 ```
 
-### Phase 3: Deploy Frontend Applications
-Deploy in priority order:
+**Creates:**
+- 4 PM Packages (monthly)
+- 4 PM Packages (annual, 10% discount)
+- 12 On-Demand Ops services
+- 3 Estimation tiers
+- 3 Architecture phases
+- 2 Engineering services
+- 2 Permit services
+- 2 Finance products
+- 2 Marketplace products
+- 2 Consultation options
 
-1. **m-ops-services** (Main landing & marketing)
-```bash
-cd apps/m-ops-services
-pnpm build
-# Deploy to CDN/hosting
-```
+**Total: 30+ products**
 
-2. **m-project-owner** (Project owner portal)
-```bash
-cd apps/m-project-owner
-pnpm build
-```
+**After Creation:**
+1. Copy price IDs from output
+2. Add to Railway (API service → Variables)
+3. Add to Vercel (m-ops-services → Environment Variables)
+4. Update seed.ts with IDs
 
-3. **m-finance-trust** (Finance & escrow)
-```bash
-cd apps/m-finance-trust
-pnpm build
-```
-
-4. **m-engineer** (Engineering services)
-```bash
-cd apps/m-engineer
-pnpm build
-```
-
-5. Remaining apps...
-
-### Phase 4: Post-Deployment Verification
-```bash
-# 1. Verify API health
-curl https://api.kealee.com/health
-curl https://api.kealee.com/status
-
-# 2. Verify Stripe webhook connectivity
-# Send test webhook from Stripe Dashboard
-
-# 3. Test critical user flows
-# - User registration/login
-# - Create PreCon project
-# - Process test payment
-# - Verify escrow deposit
-```
+**Checklist:**
+- [ ] Stripe in live mode
+- [ ] Products created
+- [ ] Environment variables set
+- [ ] stripe-catalog-output.env saved
+- [ ] stripe-catalog.json saved
 
 ---
 
-## Monitoring Setup
+### STEP 3: Deploy Worker Service (1 hour)
 
-### 1. Application Monitoring
-- [ ] Sentry error tracking configured
-- [ ] APM (Application Performance Monitoring) enabled
-- [ ] Custom dashboards created
+**Location:** Railway Dashboard
 
-### 2. Infrastructure Monitoring
-- [ ] Server metrics (CPU, memory, disk)
-- [ ] Database metrics (connections, queries, latency)
-- [ ] Redis metrics (memory, connections, hit rate)
-- [ ] API response times and error rates
+**Steps:**
+1. Go to Railway → New Service
+2. Select "Deploy from GitHub repo"
+3. Choose: kealee-platform-v10
+4. Set Root Directory: `services/worker`
+5. Configure:
+   - Build Command: `pnpm build`
+   - Start Command: `pnpm start`
+6. Set Environment Variables:
+   ```env
+   DATABASE_URL=${{Postgres.DATABASE_URL}}
+   REDIS_URL=${{Redis.REDIS_URL}}
+   ANTHROPIC_API_KEY=your_claude_key
+   SENDGRID_API_KEY=your_sendgrid_key
+   ```
+7. Deploy
 
-### 3. Business Metrics
-- [ ] Payment success/failure rates
-- [ ] User registration rates
-- [ ] Feature adoption metrics
-- [ ] Revenue tracking (3.5% platform commission)
-
-### 4. Alerting
-Configure alerts for:
-- [ ] API error rate > 1%
-- [ ] API p95 latency > 1s
-- [ ] Database connection failures
-- [ ] Payment failures > 5%
-- [ ] Stripe webhook failures
-- [ ] Server health check failures
+**Checklist:**
+- [ ] Service created
+- [ ] Connected to repo
+- [ ] Environment variables set
+- [ ] Build succeeded
+- [ ] Service running
+- [ ] Jobs processing
 
 ---
 
-## Rollback Plan
+### STEP 4: Configure Custom Domains (2 hours)
 
-### Immediate Rollback (< 5 minutes)
-```bash
-# 1. Revert to previous deployment
-# (Use your deployment tool's rollback feature)
-
-# 2. Verify rollback success
-curl https://api.kealee.com/health
+**Required Domains:**
+```
+kealee.com → m-marketplace
+ops.kealee.com → m-ops-services
+projects.kealee.com → m-project-owner
+architect.kealee.com → m-architect
+engineer.kealee.com → m-engineer
+permits.kealee.com → m-permits-inspections
+finance.kealee.com → m-finance-trust
+inspector.kealee.com → m-inspector
+estimation.kealee.com → m-estimation (when ready)
+pm.kealee.com → os-pm
+admin.kealee.com → os-admin
+api.kealee.com → API Gateway (Railway)
 ```
 
-### Database Rollback
-```bash
-# Only if migration caused issues
-# 1. Restore from backup
-psql -h $DATABASE_HOST -U $DATABASE_USER $DATABASE_NAME < backup_YYYYMMDD_HHMMSS.sql
+**For Each App:**
 
-# 2. Verify data integrity
+#### In Vercel
+1. Go to project → Settings → Domains
+2. Add domain (e.g., ops.kealee.com)
+3. Copy provided DNS values
+
+#### In NameBright
+1. Go to DNS management for kealee.com
+2. Add record:
+   - Type: CNAME
+   - Name: ops (for ops.kealee.com)
+   - Value: cname.vercel-dns.com
+3. Save
+
+#### In Railway (for api.kealee.com)
+1. Go to API service → Settings
+2. Add custom domain: api.kealee.com
+3. Copy provided DNS values
+4. Add in NameBright
+
+**Checklist:**
+- [ ] All domains added in Vercel
+- [ ] All DNS records created
+- [ ] DNS propagation verified (15-30 min)
+- [ ] SSL certificates issued
+- [ ] All URLs accessible
+- [ ] Redirects working
+
+---
+
+### STEP 5: Set Environment Variables (1 hour)
+
+**Railway (API Service):**
+```env
+# Core
+NODE_ENV=production
+APP_ENV=production
+DATABASE_URL=(from Postgres service)
+REDIS_URL=(from Redis service)
+
+# Supabase
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=xxx
+SUPABASE_ANON_KEY=xxx
+
+# Stripe
+STRIPE_SECRET_KEY=sk_live_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+STRIPE_PRICE_PACKAGE_A=price_xxx
+STRIPE_PRICE_PACKAGE_B=price_xxx
+STRIPE_PRICE_PACKAGE_C=price_xxx
+STRIPE_PRICE_PACKAGE_D=price_xxx
+(+ all other price IDs from catalog)
+
+# Security
+JWT_SECRET=(generate strong secret)
+AUDIT_SIGNING_KEY=(generate strong secret)
+
+# External Services
+ANTHROPIC_API_KEY=sk-ant-xxx
+SENDGRID_API_KEY=SG.xxx
 ```
 
----
+**Vercel (All Frontend Apps):**
+```env
+# Each app needs:
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=xxx
+NEXT_PUBLIC_API_URL=https://api.kealee.com
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_xxx
 
-## Client-Facing Integration Points
+# App-specific
+NEXT_PUBLIC_APP_URL=https://ops.kealee.com (specific to each app)
+```
 
-All changes reflect in the following locations:
+**Verify:**
+```bash
+npx tsx scripts/verify-environment.ts
+```
 
-### Marketing Website (m-ops-services)
-- `/` - Main landing page with all 8 platform modules
-- `/pricing` - Complete pricing page with fee transparency
-- All modules listed with pricing and features
-
-### Project Owner Portal (m-project-owner)
-- `/dashboard` - PreCon pipeline widget showing active projects
-- `/projects` - Full project management with fee display
-- Design package selection and payment
-
-### Finance & Trust Hub (m-finance-trust)
-- `/` - Escrow dashboard with balance and pending releases
-- `/transactions` - Full transaction history
-- `/approvals` - Milestone approval workflow
-
-### Engineering Portal (m-engineer)
-- `/` - Service offerings overview
-- `/pricing` - Package tiers (Basic/Standard/Premium/Enterprise)
-- `/projects` - Project dashboard for contractors
-
-### Payment Flow Integration
-- PreCon projects: Design package payments ($199-$999)
-- Engineering: Service package payments ($1,500-$12,000)
-- Escrow: Deposit and milestone release with 3.5% fee
-- Subscriptions: Monthly billing with all payment methods
+**Checklist:**
+- [ ] Railway variables set
+- [ ] Vercel variables set (all 10 apps)
+- [ ] Verification script passed
+- [ ] No missing required vars
 
 ---
 
-## Post-Launch Tasks
+### STEP 6: Configure Stripe Webhook (30 minutes)
 
-### Day 1
-- [ ] Monitor error rates and performance
-- [ ] Review Stripe webhook logs
-- [ ] Check user feedback channels
-- [ ] Verify all payment flows working
+**Steps:**
+1. Go to Stripe Dashboard → Developers → Webhooks
+2. Click "Add endpoint"
+3. URL: `https://api.kealee.com/webhooks/stripe`
+4. Events to listen for:
+   - payment_intent.succeeded
+   - payment_intent.payment_failed
+   - checkout.session.completed
+   - customer.subscription.created
+   - customer.subscription.updated
+   - customer.subscription.deleted
+5. Copy webhook signing secret
+6. Add to Railway: `STRIPE_WEBHOOK_SECRET=whsec_xxx`
+
+**Checklist:**
+- [ ] Webhook endpoint created
+- [ ] Events selected
+- [ ] Signing secret copied
+- [ ] Environment variable set
+- [ ] Test webhook (Stripe CLI or dashboard)
+
+---
+
+### STEP 7: End-to-End Testing (4-6 hours)
+
+**Critical Flows to Test:**
+
+```bash
+# Run automated tests
+cd services/api
+pnpm test:e2e
+```
+
+**Manual Tests:**
+1. **User Registration**
+   - Sign up as GC
+   - Verify email
+   - Complete onboarding
+
+2. **Package Subscription**
+   - Browse packages
+   - Select Package B
+   - Complete checkout
+   - Verify subscription active
+
+3. **Project Creation**
+   - Create new project
+   - Upload documents
+   - Assign PM
+
+4. **Estimation**
+   - Create estimate
+   - AI scope analysis
+   - Build line items
+   - Export PDF
+
+5. **Escrow & Payments**
+   - Create escrow account
+   - Fund escrow
+   - Request milestone release
+   - Verify payout
+
+6. **Permits**
+   - Create permit application
+   - Track status
+   - Receive notifications
+
+**Checklist:**
+- [ ] All automated tests passing
+- [ ] User registration works
+- [ ] Stripe checkout works
+- [ ] Payments processing
+- [ ] Escrow functional
+- [ ] Permits tracking
+- [ ] No critical bugs
+
+---
+
+### STEP 8: Monitoring & Alerts (30 minutes)
+
+**Sentry:**
+- [ ] Verify error tracking active
+- [ ] Test error reporting
+- [ ] Set up alert rules
+
+**PostHog:**
+- [ ] Verify analytics tracking
+- [ ] Check event collection
+- [ ] Set up funnels
+
+**Uptime Monitoring:**
+- [ ] Add api.kealee.com to UptimeRobot
+- [ ] Set alert email
+- [ ] Test notifications
+
+---
+
+## 🎯 GO-LIVE CHECKLIST
+
+### Security ✅
+- [x] CSRF protection enabled
+- [x] Rate limiting active
+- [ ] SSL certificates verified
+- [ ] Security headers configured
+- [ ] Webhook signatures verified
+
+### Database ✅
+- [ ] Migrations deployed
+- [ ] Seed data loaded
+- [ ] Backups configured
+- [ ] Connection pooling enabled
+
+### Payments ✅
+- [ ] Stripe in live mode
+- [ ] Products created
+- [ ] Webhook configured
+- [ ] Test payment processed
+
+### Services ✅
+- [ ] API service running
+- [ ] Worker service running
+- [ ] All apps deployed
+- [ ] Health checks passing
+
+### Domains ✅
+- [ ] All custom domains configured
+- [ ] SSL active on all domains
+- [ ] Redirects working
+- [ ] DNS propagated
+
+---
+
+## 🚨 ROLLBACK PLAN
+
+If issues occur:
+
+1. **Database Issues**
+   ```bash
+   # Rollback last migration
+   npx prisma migrate rollback
+   ```
+
+2. **Stripe Issues**
+   - Archive products in Stripe dashboard
+   - Revert environment variables
+   - Switch back to test mode temporarily
+
+3. **Service Issues**
+   - Rollback Railway deployment
+   - Check logs for errors
+   - Verify environment variables
+
+---
+
+## 📞 SUPPORT CONTACTS
+
+- **Database:** Check Railway logs
+- **Payments:** Stripe dashboard → Logs
+- **API Errors:** Sentry dashboard
+- **Domain Issues:** Vercel support
+- **General:** Check runbooks in _docs/
+
+---
+
+## ✅ POST-LAUNCH
+
+### Immediate (Day 1)
+- [ ] Monitor error rates
+- [ ] Check payment processing
+- [ ] Verify all domains
+- [ ] Test critical flows
+- [ ] Monitor performance
 
 ### Week 1
-- [ ] Review performance metrics
-- [ ] Analyze user adoption by module
-- [ ] Address any critical bugs
-- [ ] Adjust rate limits if needed
-- [ ] Increase m-marketplace rollout to 75%
-
-### Week 2
-- [ ] Increase m-engineer rollout to 50%
-- [ ] Review security logs
-- [ ] Performance optimization based on data
-- [ ] User feedback review
+- [ ] Review analytics
+- [ ] Check user feedback
+- [ ] Fix critical bugs
+- [ ] Optimize performance
+- [ ] Document issues
 
 ### Month 1
-- [ ] Full rollout of all modules (100%)
-- [ ] Comprehensive performance review
-- [ ] Security audit review
-- [ ] Plan next feature releases
+- [ ] Review metrics
+- [ ] Plan improvements
+- [ ] Scale infrastructure
+- [ ] Add features
 
 ---
 
-## Revenue Model Summary
+**Ready to deploy when you are!** 🚀
 
-| Product | Price | Platform Fee (3.5%) | Net to Vendor |
-|---------|-------|---------------------|---------------|
-| Basic Design | $199 | $6.97 | $192.03 |
-| Standard Design | $499 | $17.47 | $481.54 |
-| Premium Design | $999 | $34.97 | $964.04 |
-| Basic Engineering | $1,500 | $52.50 | $1,447.50 |
-| Standard Engineering | $4,500 | $157.50 | $4,342.50 |
-| Premium Engineering | $12,000 | $420.00 | $11,580.00 |
+**Estimated Total Time:** 10-15 hours  
+**Can be done over:** 2-3 days  
+**Team Required:** 1-2 engineers
 
 ---
 
-## Sign-off
-
-| Role | Name | Date | Signature |
-|------|------|------|-----------|
-| Engineering Lead | | | |
-| QA Lead | | | |
-| DevOps Lead | | | |
-| Product Owner | | | |
-
----
-
-## Appendix: Test Commands
-
-```bash
-# Run all tests
-pnpm test
-
-# Run specific test suites
-pnpm test --filter=@kealee/api
-
-# Run E2E tests
-cd services/api && pnpm test:e2e
-
-# Run load tests
-cd services/api && npx ts-node scripts/load-test.ts all 50 30
-
-# Security audit
-pnpm audit
-
-# Build all
-pnpm build
-```
+**All scripts and tools are ready. Execute when confident!**
