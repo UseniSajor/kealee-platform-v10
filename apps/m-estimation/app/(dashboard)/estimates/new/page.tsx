@@ -25,7 +25,8 @@ export default function NewEstimatePage() {
         });
         
         // Redirect to estimate editor
-        router.push(`/dashboard/estimates/${response.data.id}/edit`);
+        const estimateId = (response.data as any).id || 'new';
+        router.push(`/dashboard/estimates/${estimateId}/edit`);
       } else {
         throw new Error(response.error || 'Failed to create estimate');
       }
