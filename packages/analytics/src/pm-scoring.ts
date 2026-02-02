@@ -137,21 +137,14 @@ export class PMScoringSystem {
         break
     }
 
-    const tasks = await prisma.task?.findMany({
+    const tasks = await prisma.automationTask?.findMany({
       where: {
         status: 'COMPLETED',
         completedAt: {
           gte: startDate,
           lte: now,
         },
-        assignedTo: pmId,
-      },
-      include: {
-        plan: {
-          include: {
-            user: true,
-          },
-        },
+        assignedPmId: pmId,
       },
     }).catch(() => [])
 
@@ -162,13 +155,13 @@ export class PMScoringSystem {
    * Get managed projects for a PM
    */
   private async getManagedProjects(pmId: string): Promise<any[]> {
-    // Get projects where PM is assigned or is the owner
+    // Get projects where PM is assigned
     const projects = await prisma.project?.findMany({
       where: {
-        assignedPM: pmId,
+        assignedPmId: pmId,
       },
       include: {
-        contracts: true,
+        changeOrders: true,
       },
     }).catch(() => [])
 
@@ -385,7 +378,7 @@ export class PMScoringSystem {
    */
   private async getPermitModuleUsage(pmId: string): Promise<number> {
     const projects = await this.getManagedProjects(pmId)
-    const permits = await prisma.permitApplication?.findMany({
+    const permits = await prisma.permit?.findMany({
       where: {
         projectId: {
           in: projects.map((p) => p.id),
