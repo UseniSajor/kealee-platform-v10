@@ -65,33 +65,38 @@ export default async function HomePage() {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 text-center">
         <div className="max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-6">
             <Zap className="h-4 w-4" />
-            <span>AI-Powered Permit Management</span>
+            <span>Get Approved 40% Faster with AI Review</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-neutral-900 mb-6">
-            Permits & Inspections
-            <span className="block text-primary mt-2">Made Simple</span>
+            Getting Permits Doesn&apos;t Have to Be Painful
+            <span className="block text-emerald-600 mt-2">We Make It Easy</span>
           </h1>
-          <p className="text-xl text-neutral-600 mb-8 max-w-2xl mx-auto">
-            The only platform that connects jurisdictions, contractors, architects, and property owners 
-            in one seamless workflow. From application to final approval, we've got you covered.
+          <p className="text-xl text-neutral-600 mb-4 max-w-2xl mx-auto">
+            Stop worrying about permits slowing down your project. Our AI catches errors before you submit, and we track everything until approval.
+          </p>
+          <p className="text-lg text-neutral-500 mb-8 max-w-2xl mx-auto">
+            ✅ No more rejected applications • ✅ No more chasing status • ✅ Average approval in 14 days
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
-              href="/auth/login"
-              className="px-8 py-4 bg-primary text-white rounded-lg text-lg font-semibold hover:bg-primary/90 transition-colors shadow-lg"
+              href="/permits/new"
+              className="px-8 py-4 bg-emerald-600 text-white rounded-lg text-lg font-semibold hover:bg-emerald-700 transition-colors shadow-lg inline-flex items-center justify-center gap-2"
             >
-              Start Free Trial
+              Start Your Permit Application
+              <ArrowRight className="h-5 w-5" />
             </Link>
             <Link 
               href="/public/search"
-              className="px-8 py-4 bg-white border-2 border-neutral-200 text-neutral-900 rounded-lg text-lg font-semibold hover:border-primary transition-colors"
+              className="px-8 py-4 bg-white border-2 border-neutral-200 text-neutral-900 rounded-lg text-lg font-semibold hover:border-emerald-600 transition-colors"
             >
-              Search Public Permits
+              Check Permit Status
             </Link>
           </div>
-          <p className="text-sm text-neutral-500 mt-4">No credit card required • 14-day free trial</p>
+          <p className="text-sm text-neutral-500 mt-4">
+            💚 Takes 5 minutes • AI reviews instantly • No payment until submission
+          </p>
         </div>
       </section>
 
@@ -368,7 +373,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="border-t border-neutral-800 mt-8 pt-8 text-center text-sm">
-            <p>© {new Date().getFullYear()} Kealee Platform. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Kealee. All rights reserved.</p>
           </div>
         </div>
       </footer>
