@@ -107,21 +107,19 @@ export class ReportGenerator {
       generatedAt: new Date(),
     }
 
-    // Store in database
+    // Save and email report
     await this.saveReport(report, 'GC_WEEKLY')
-
-    // Trigger email to GC
     await this.emailGC(gcId, report)
 
     return report
   }
 
   /**
-   * Generate homeowner status update (for m-project-owner)
+   * Generate homeowner update
    */
   async generateHomeownerUpdate(projectId: string): Promise<HomeownerUpdate> {
-    // Get recent activity (last 3 days)
-    const recentActivity = await this.getProjectActivity(projectId, 'last_3_days')
+    // Get recent project activity
+    const activity = await this.getProjectActivity(projectId, 'last_3_days')
 
     // Get recent photos
     const photos = await this.getRecentPhotos(projectId)
@@ -133,28 +131,26 @@ export class ReportGenerator {
     const timelineUpdate = await this.generateTimelineUpdate(projectId)
 
     // Generate questions for homeowner
-    const questions = await this.generateQuestionsForHomeowner(projectId, recentActivity)
+    const questions = await this.generateQuestionsForHomeowner(projectId, activity)
 
     // Generate update text
-    const update = await this.generateUpdateText(recentActivity, timelineUpdate)
+    const updateText = await this.generateUpdateText(activity, timelineUpdate)
 
-    const homeownerUpdate: HomeownerUpdate = {
+    const update: HomeownerUpdate = {
       projectId,
-      update,
-      photos: photos.slice(0, 5), // Limit to 5 photos
+      update: updateText,
+      photos,
       timelineUpdate,
       nextSteps,
       questions,
       generatedAt: new Date(),
     }
 
-    // Store in database
-    await this.saveReport(homeownerUpdate, 'HOMEOWNER_UPDATE')
+    // Save and email update
+    await this.saveReport(update, 'HOMEOWNER_UPDATE')
+    await this.emailHomeowner(projectId, update)
 
-    // Email homeowner
-    await this.emailHomeowner(projectId, homeownerUpdate)
-
-    return homeownerUpdate
+    return update
   }
 
   /**
@@ -169,7 +165,7 @@ export class ReportGenerator {
       startDate.setMonth(now.getMonth() - 1)
     }
 
-    // Get tasks completed for GC's projects
+    // Get tasks completed by assignee
     const tasks = await prisma.task?.findMany({
       where: {
         status: 'COMPLETED',
@@ -177,24 +173,7 @@ export class ReportGenerator {
           gte: startDate,
           lte: now,
         },
-        request: {
-          plan: {
-            user: {
-              id: gcId, // Assuming GC is the user
-            },
-          },
-        },
-      },
-      include: {
-        request: {
-          include: {
-            plan: {
-              include: {
-                user: true,
-              },
-            },
-          },
-        },
+        assignedTo: gcId,
       },
       orderBy: {
         completedAt: 'desc',
@@ -208,17 +187,16 @@ export class ReportGenerator {
    * Get project updates
    */
   private async getProjectUpdates(gcId: string): Promise<any[]> {
-    // Get projects for this GC
+    // Get projects for this GC (as PM)
     const projects = await prisma.project?.findMany({
       where: {
-        ownerId: gcId,
+        pmId: gcId,
         status: {
-          in: ['PLANNING', 'READINESS', 'PERMITTING', 'CONSTRUCTION'],
+          in: ['PLANNING', 'ACTIVE', 'IN_PROGRESS'],
         },
       },
       include: {
         contracts: true,
-        readinessItems: true,
       },
     }).catch(() => [])
 
@@ -230,10 +208,10 @@ export class ReportGenerator {
    */
   private async getPermitStatuses(gcId: string): Promise<GCWeeklyReport['permitUpdates']> {
     // Get permits for GC's projects
-    const permits = await prisma.permitApplication?.findMany({
+    const permits = await prisma.permit?.findMany({
       where: {
         project: {
-          ownerId: gcId,
+          pmId: gcId,
         },
         status: {
           in: ['SUBMITTED', 'UNDER_REVIEW', 'APPROVED', 'ISSUED', 'REJECTED'],
@@ -247,11 +225,11 @@ export class ReportGenerator {
       },
     }).catch(() => [])
 
-    return (permits || []).map((permit) => ({
+    return (permits || []).map((permit: any) => ({
       permitId: permit.id,
       projectId: permit.projectId,
       status: permit.status,
-      update: `Permit ${permit.status.toLowerCase()} - ${permit.notes || 'No update'}`,
+      update: `Permit ${permit.status.toLowerCase()}`,
     }))
   }
 
@@ -283,24 +261,7 @@ export class ReportGenerator {
         status: {
           in: ['PENDING', 'IN_PROGRESS'],
         },
-        request: {
-          plan: {
-            user: {
-              id: gcId,
-            },
-          },
-        },
-      },
-      include: {
-        request: {
-          include: {
-            plan: {
-              include: {
-                user: true,
-              },
-            },
-          },
-        },
+        assignedTo: gcId,
       },
       orderBy: {
         dueDate: 'asc',
@@ -308,10 +269,10 @@ export class ReportGenerator {
       take: 20,
     }).catch(() => [])
 
-    return (tasks || []).map((task) => ({
+    return (tasks || []).map((task: any) => ({
       id: task.id,
       title: task.title,
-      priority: 'MEDIUM', // Would be calculated
+      priority: task.priority || 'MEDIUM',
       dueDate: task.dueDate || undefined,
     }))
   }
@@ -323,7 +284,7 @@ export class ReportGenerator {
     const context = {
       tasksCompleted: tasks.length,
       projectsActive: projectUpdates.length,
-      taskTitles: tasks.map((t) => t.title).slice(0, 10),
+      taskTitles: tasks.map((t: any) => t.title).slice(0, 10),
     }
 
     const prompt = `Generate a professional weekly summary for a General Contractor based on:
@@ -334,7 +295,7 @@ export class ReportGenerator {
 Write a concise, professional summary (2-3 paragraphs) highlighting key accomplishments and progress.`
 
     try {
-      const mlJob = await mlQueue.processMLJob({
+      await mlQueue.processMLJob({
         type: 'summarize',
         prompt,
         systemPrompt: 'You are a professional construction project manager writing weekly reports.',
@@ -343,8 +304,7 @@ Write a concise, professional summary (2-3 paragraphs) highlighting key accompli
         },
       })
 
-      // Wait for job (in production, this would be handled asynchronously)
-      // For now, return a placeholder
+      // Return placeholder summary
       return `This week, ${context.tasksCompleted} tasks were completed across ${context.projectsActive} active projects. Key accomplishments include ${context.taskTitles.slice(0, 3).join(', ')}.`
     } catch (error) {
       console.error('Failed to generate AI summary:', error)
@@ -373,7 +333,7 @@ Pending items: ${context.pendingTitles.join(', ')}
 Provide specific, actionable recommendations.`
 
     try {
-      const mlJob = await mlQueue.processMLJob({
+      await mlQueue.processMLJob({
         type: 'generate_recommendation',
         prompt,
         systemPrompt: 'You are a construction project management advisor providing actionable recommendations.',
@@ -406,52 +366,56 @@ Provide specific, actionable recommendations.`
       startDate.setDate(now.getDate() - 7)
     }
 
-    // Get events/activity for project
-    const events = await prisma.event?.findMany({
+    // Get activity logs for project
+    const activity = await prisma.activityLog?.findMany({
       where: {
-        entityType: 'project',
+        entityType: 'PROJECT',
         entityId: projectId,
-        occurredAt: {
+        createdAt: {
           gte: startDate,
           lte: now,
         },
       },
       orderBy: {
-        occurredAt: 'desc',
+        createdAt: 'desc',
       },
       take: 20,
     }).catch(() => [])
 
-    return events || []
+    return activity || []
   }
 
   /**
    * Get recent photos
    */
   private async getRecentPhotos(projectId: string): Promise<HomeownerUpdate['photos']> {
-    // In a real system, photos would be stored in a media table
-    // For now, return empty array
-    return []
+    // Get photos for project
+    const photos = await prisma.photo?.findMany({
+      where: {
+        projectId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 10,
+    }).catch(() => [])
+
+    return (photos || []).map((photo: any) => ({
+      id: photo.id,
+      url: photo.url,
+      caption: photo.caption || undefined,
+      takenAt: photo.takenAt || photo.createdAt,
+    }))
   }
 
   /**
    * Get next milestones
    */
   private async getNextMilestones(projectId: string): Promise<HomeownerUpdate['nextSteps']> {
-    // Get upcoming milestones/tasks
+    // Get upcoming tasks for project
     const tasks = await prisma.task?.findMany({
       where: {
-        request: {
-          plan: {
-            user: {
-              projects: {
-                some: {
-                  id: projectId,
-                },
-              },
-            },
-          },
-        },
+        projectId,
         status: {
           in: ['PENDING', 'IN_PROGRESS'],
         },
@@ -462,7 +426,7 @@ Provide specific, actionable recommendations.`
       take: 5,
     }).catch(() => [])
 
-    return (tasks || []).map((task) => ({
+    return (tasks || []).map((task: any) => ({
       id: task.id,
       title: task.title,
       description: task.description || '',
@@ -489,16 +453,15 @@ Provide specific, actionable recommendations.`
     // Calculate progress based on status
     const progressMap: Record<string, number> = {
       PLANNING: 10,
-      READINESS: 20,
-      PERMITTING: 30,
+      ACTIVE: 30,
+      IN_PROGRESS: 50,
       CONSTRUCTION: 60,
-      CLOSEOUT: 90,
       COMPLETED: 100,
     }
 
     return {
-      originalEndDate: project.endDate || undefined,
-      projectedEndDate: project.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      originalEndDate: project.scheduledEndDate || undefined,
+      projectedEndDate: project.projectedEndDate || project.scheduledEndDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       status: project.status,
       progress: progressMap[project.status] || 0,
     }
@@ -511,12 +474,10 @@ Provide specific, actionable recommendations.`
     projectId: string,
     activity: any[]
   ): Promise<HomeownerUpdate['questions']> {
-    const prompt = `Based on recent project activity (${activity.length} events), generate 2-3 relevant questions to ask the homeowner about their project preferences or decisions needed.
-
-Activity summary: ${activity.slice(0, 5).map((a) => a.type).join(', ')}`
+    const prompt = `Based on recent project activity (${activity.length} events), generate 2-3 relevant questions to ask the homeowner about their project preferences or decisions needed.`
 
     try {
-      const mlJob = await mlQueue.processMLJob({
+      await mlQueue.processMLJob({
         type: 'generate_recommendation',
         prompt,
         systemPrompt: 'You are a project manager generating helpful questions for homeowners.',
@@ -562,8 +523,7 @@ We're making great progress and will keep you updated on next steps.`
    * Save report to database
    */
   private async saveReport(report: GCWeeklyReport | HomeownerUpdate, type: string): Promise<void> {
-    // In a real system, this would save to a reports table
-    // For now, we'll queue a report generation job
+    // Queue a report generation job
     await reportsQueue.generateReport({
       type: type === 'GC_WEEKLY' ? 'weekly_summary' : 'project_status',
       title: type === 'GC_WEEKLY' ? 'GC Weekly Report' : 'Homeowner Status Update',
@@ -621,17 +581,17 @@ We're making great progress and will keep you updated on next steps.`
     const project = await prisma.project?.findUnique({
       where: { id: projectId },
       include: {
-        owner: true,
+        client: true,
       },
     }).catch(() => null)
 
-    if (!project || !project.owner?.email) {
-      console.warn(`Project ${projectId} not found or owner has no email`)
+    if (!project || !project.client?.email) {
+      console.warn(`Project ${projectId} not found or client has no email`)
       return
     }
 
     await emailQueue.sendEmail({
-      to: project.owner.email,
+      to: project.client.email,
       subject: `Project Update: ${project.name}`,
       html: `
         <h1>Project Update</h1>
@@ -662,7 +622,3 @@ We're making great progress and will keep you updated on next steps.`
 
 // Export singleton instance
 export const reportGenerator = new ReportGenerator()
-
-
-
-

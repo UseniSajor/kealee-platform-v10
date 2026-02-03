@@ -19,4 +19,5 @@ export interface SalesSlaReminderResult {
   notificationSent: boolean
   auditEventId?: string
   error?: string
+  message?: string
 }

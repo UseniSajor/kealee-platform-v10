@@ -158,7 +158,7 @@ export class PMScoringSystem {
     // Get projects where PM is assigned
     const projects = await prisma.project?.findMany({
       where: {
-        assignedPmId: pmId,
+        pmId: pmId,
       },
       include: {
         changeOrders: true,
@@ -395,7 +395,7 @@ export class PMScoringSystem {
    */
   private async calculatePermitEfficiency(pmId: string): Promise<number> {
     const projects = await this.getManagedProjects(pmId)
-    const permits = await prisma.permitApplication?.findMany({
+    const permits = await prisma.permit?.findMany({
       where: {
         projectId: {
           in: projects.map((p) => p.id),
@@ -406,7 +406,7 @@ export class PMScoringSystem {
       },
     }).catch(() => [])
 
-    const allPermits = await prisma.permitApplication?.findMany({
+    const allPermits = await prisma.permit?.findMany({
       where: {
         projectId: {
           in: projects.map((p) => p.id),

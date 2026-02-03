@@ -30,7 +30,7 @@ export class MLPredictionEngine {
       const similarProjects = await this.findSimilarProjects(project)
 
       // Get permit history for the address
-      const permitHistory = await this.getPermitHistory(project.property?.address || '')
+      const permitHistory = await this.getPermitHistory(project.address || '')
 
       // Get current season
       const currentSeason = this.getCurrentSeason()
@@ -38,11 +38,11 @@ export class MLPredictionEngine {
       // Prepare context for Claude analysis
       const context = {
         project: {
-          type: project.category,
+          type: project.currentPhase || 'UNKNOWN',
           status: project.status,
           budget: project.budget?.toString(),
-          startDate: project.startDate?.toISOString(),
-          endDate: project.endDate?.toISOString(),
+          startDate: project.scheduledStartDate?.toISOString(),
+          endDate: project.scheduledEndDate?.toISOString(),
         },
         historical: {
           similarProjectsCount: similarProjects.length,
@@ -137,9 +137,9 @@ Output as JSON array of risk predictions.`
 
       // Get available contractors from marketplace
       const availableContractors = await this.getAvailableContractors(
-        project.category,
-        project.property?.city || '',
-        project.property?.state || ''
+        project.currentPhase || 'UNKNOWN',
+        project.city || '',
+        project.state || ''
       )
 
       // Get historical performance data
@@ -167,14 +167,9 @@ Output as JSON array of risk predictions.`
     return prisma.project.findUnique({
       where: { id: projectId },
       include: {
-        property: true,
         contracts: {
           include: {
-            contractor: {
-              include: {
-                user: true,
-              },
-            },
+            contractor: true,
           },
         },
       },
@@ -189,16 +184,13 @@ Output as JSON array of risk predictions.`
 
     return prisma.project.findMany({
       where: {
-        category: project.category,
+        currentPhase: project.currentPhase,
         status: 'COMPLETED',
         id: { not: project.id },
       },
       take: 10,
       orderBy: {
         createdAt: 'desc',
-      },
-      include: {
-        property: true,
       },
     })
   }
@@ -210,18 +202,18 @@ Output as JSON array of risk predictions.`
     if (!address) return []
 
     // Try to find permits by address
-    return prisma.permitApplication?.findMany({
+    return prisma.permit?.findMany({
       where: {
-        propertyAddress: {
+        address: {
           contains: address,
           mode: 'insensitive',
         },
       },
       take: 20,
       orderBy: {
-        submittedAt: 'desc',
+        createdAt: 'desc',
       },
-    }).catch(() => [])
+    }).catch(() => []) ?? []
   }
 
   /**
@@ -337,8 +329,8 @@ Output as JSON array of risk predictions.`
       }).catch(() => [])
 
       const onTimeCount = completedProjects?.filter((p) => {
-        if (!p.project?.endDate) return false
-        const actualEnd = new Date(p.project.endDate)
+        if (!p.project?.scheduledEndDate) return false
+        const actualEnd = new Date(p.project.scheduledEndDate)
         const expectedEnd = p.expiresAt ? new Date(p.expiresAt) : null
         return expectedEnd && actualEnd <= expectedEnd
       }).length || 0

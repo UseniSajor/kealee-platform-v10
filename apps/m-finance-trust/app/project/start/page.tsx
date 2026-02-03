@@ -2,16 +2,17 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { 
-  ArrowRight, 
-  Shield, 
-  DollarSign, 
-  FileText, 
+import {
+  ArrowRight,
+  Shield,
+  DollarSign,
+  FileText,
   CheckCircle,
   Home,
   Building2,
   Hammer,
-  Plus
+  Plus,
+  Lock
 } from 'lucide-react';
 
 export default function ProjectStartPage() {
