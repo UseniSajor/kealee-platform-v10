@@ -4,7 +4,10 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import NextLink from 'next/link';
+
+// Type-safe wrapper to handle React version mismatches in monorepo
+const Link = NextLink as any;
 import {
   Calendar,
   MapPin,
