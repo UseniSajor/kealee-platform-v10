@@ -206,6 +206,81 @@ export { default as tokensDefault } from './tokens';
 export * from './themes';
 
 // ========================================
+// Marketing Components
+// ========================================
+export {
+  // Utility Components
+  SectionLabel,
+  TrustBar,
+  MarketingBadge,
+  PriceDisplay,
+  // Hero & Header
+  HeroSection,
+  // Cards
+  ModuleShowcaseCard,
+  PricingTierCard,
+  ServiceCard,
+  FeatureCard,
+  TestimonialCard,
+  NetworkProfileCard,
+  // Sections
+  StatsBar,
+  ProcessSteps,
+  ComparisonSection,
+  PlatformFlowDiagram,
+  FAQAccordion,
+  SplitCTA,
+  // Layout
+  MarketingSidebar,
+  MarketingSidebarProvider,
+  useSidebar,
+  MarketingTopBar,
+  MarketingFooter,
+  MarketingLayout,
+} from './components/marketing';
+
+export type {
+  // Utility Types
+  SectionLabelProps,
+  TrustBarProps,
+  MarketingBadgeProps,
+  PriceDisplayProps,
+  // Hero Types
+  HeroSectionProps,
+  HeroCTA,
+  // Card Types
+  ModuleShowcaseCardProps,
+  PricingTierCardProps,
+  ServiceCardProps,
+  FeatureCardProps,
+  TestimonialCardProps,
+  NetworkProfileCardProps,
+  // Section Types
+  StatsBarProps,
+  Stat,
+  ProcessStepsProps,
+  ProcessStep,
+  ComparisonSectionProps,
+  PlatformFlowDiagramProps,
+  FlowPhase,
+  FAQAccordionProps,
+  FAQItem,
+  SplitCTAProps,
+  CTASection,
+  // Layout Types
+  MarketingSidebarProps,
+  MarketingSidebarProviderProps,
+  MarketingTopBarProps,
+  MarketingFooterProps,
+  FooterColumn,
+  FooterLink,
+  MarketingLayoutProps,
+} from './components/marketing';
+
+// Re-export BreadcrumbItem from marketing (aliased to avoid conflict)
+export type { BreadcrumbItem as MarketingBreadcrumbItem } from './components/marketing';
+
+// ========================================
 // Utilities
 // ========================================
 export { cn } from './lib/utils';
