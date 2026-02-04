@@ -1,545 +1,239 @@
-import Link from "next/link";
+// apps/m-ops-services/app/(marketing)/page.tsx
+// Ops & PM Services Landing Page - THE LARGEST PAGE
 
-import { HeroGC } from "@/components/marketing/HeroGC";
-import { GCTestimonials } from "@/components/marketing/GCTestimonials";
-import { ROICalculator } from "@/components/marketing/ROICalculator";
-import { OnDemandOps } from "@/components/marketing/OnDemandOps";
+import type { Metadata } from 'next';
+import { OpsServicesClient } from '../../components/OpsServicesClient';
 
-const gcPackages = [
-  {
-    name: "Package A",
-    label: "Solo GC",
-    price: "$1,750/mo",
-    highlight: false,
-    benefits: [
-      "Permits + inspections tracking (so you stop chasing statuses)",
-      "Client-ready weekly updates (without losing your Saturday)",
-      "Vendor follow-ups + doc organization (POs, COs, receipts)",
+export const dynamic = 'force-static';
+
+export const metadata: Metadata = {
+  title: 'Kealee Ops & PM Services | Construction Operations Platform',
+  description:
+    'Project management software, professional estimation services, and on-demand operations support for GCs, builders, and contractors. SaaS plans from $99/mo.',
+  openGraph: {
+    title: 'Kealee Ops & PM Services',
+    description:
+      'The complete construction operations platform. PM software, estimation services, and optional PM team.',
+    url: 'https://ops.kealee.com',
+    siteName: 'Kealee',
+    images: [
+      {
+        url: '/og-ops.png',
+        width: 1200,
+        height: 630,
+        alt: 'Kealee Ops & PM Services',
+      },
     ],
+    locale: 'en_US',
+    type: 'website',
+  },
+};
+
+// PM Software Features
+const pmSoftwareFeatures = [
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+      </svg>
+    ),
+    title: 'Project Dashboard',
+    description: 'Unified view of all projects, tasks, and milestones.',
   },
   {
-    name: "Package B",
-    label: "Growing Team",
-    price: "$3,750/mo",
-    highlight: true,
-    badge: "⭐ MOST POPULAR",
-    benefits: [
-      "We work with your operation to handle admin + coordination",
-      "Permit/delivery follow-ups to protect schedule and margin",
-      "Weekly reporting + action items so subs stay accountable",
-    ],
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
+    title: 'Scheduling & CPM',
+    description: 'Gantt charts, critical path, and resource planning.',
   },
   {
-    name: "Package C",
-    label: "Multiple Projects",
-    price: "$9,500/mo",
-    highlight: false,
-    benefits: [
-      "Multi-project ops coverage for active pipelines",
-      "Centralized vendor/sub comms with consistent status cadence",
-      "Proactive risk tracking: permits, inspections, delays, COs",
-    ],
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    title: 'Budget & Cost Tracking',
+    description: 'Real-time budget monitoring and cost breakdowns.',
   },
   {
-    name: "Package D",
-    label: "Enterprise GC",
-    price: "$16,500/mo",
-    highlight: false,
-    benefits: [
-      "Enterprise ops team coverage + escalations",
-      "Standardized workflows + reporting across regions/crews",
-      "SLA-style response + structured weekly executive reporting",
-    ],
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+    title: 'Document Management',
+    description: 'Centralized docs, drawings, and specs storage.',
+  },
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+      </svg>
+    ),
+    title: 'RFIs & Submittals',
+    description: 'Track RFIs, submittals, and design clarifications.',
+  },
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+      </svg>
+    ),
+    title: 'Daily Logs & Field Reports',
+    description: 'Mobile-friendly daily logs with photo attachments.',
+  },
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    ),
+    title: 'Quality & Safety',
+    description: 'QC checklists, safety plans, and inspection logs.',
+  },
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
+    ),
+    title: 'Change Order Management',
+    description: 'Track, price, and approve change orders.',
   },
 ];
 
-const platformModules = [
+// SaaS Pricing
+const saasPricing = [
   {
-    name: "Project Management",
-    icon: "📋",
-    description: "Full-service construction project management with milestone tracking, contractor coordination, and real-time progress updates.",
-    link: "/os-pm",
-    features: ["Milestone tracking", "Progress photos", "Budget management", "Team collaboration"],
+    name: 'Starter',
+    price: 99,
+    period: 'mo',
+    popular: false,
+    features: ['1-3 active projects', 'Up to 5 team members', 'Basic scheduling', 'Document storage (5GB)', 'Email support'],
+    cta: { label: 'Start Free Trial', href: '/signup?plan=starter' },
   },
   {
-    name: "Pre-Construction",
-    icon: "🏗️",
-    description: "Streamlined pre-con workflow from design to contractor bidding with escrow-backed contracts.",
-    link: "/precon",
-    features: ["Design packages", "SRP generation", "Contractor marketplace", "Escrow protection"],
-    badge: "NEW",
+    name: 'Professional',
+    price: 249,
+    period: 'mo',
+    popular: true,
+    features: ['Up to 10 projects', 'Up to 15 team members', 'Gantt & CPM scheduling', 'RFI/Submittal tracking', 'Storage (25GB)', 'Priority support'],
+    cta: { label: 'Start Free Trial', href: '/signup?plan=professional' },
   },
   {
-    name: "Estimation Engine",
-    icon: "📊",
-    description: "AI-powered cost estimation with labor, materials, and timeline projections for accurate project bidding.",
-    link: "/estimation",
-    features: ["Labor estimation", "Material takeoffs", "Timeline projection", "Profit analysis"],
-    badge: "NEW",
+    name: 'Business',
+    price: 499,
+    period: 'mo',
+    popular: false,
+    features: ['Up to 25 projects', 'Unlimited team members', 'Advanced reporting', 'Custom workflows', 'Storage (100GB)', 'Phone support'],
+    cta: { label: 'Start Free Trial', href: '/signup?plan=business' },
   },
   {
-    name: "Finance & Trust",
-    icon: "💰",
-    description: "Secure escrow management, milestone payments, and financial tracking for all parties.",
-    link: "/finance",
-    features: ["Escrow accounts", "Milestone releases", "ACH/Wire transfers", "Financial reporting"],
-  },
-  {
-    name: "Permits & Inspections",
-    icon: "📝",
-    description: "Automated permit tracking, inspection scheduling, and AI-powered document review for compliance.",
-    link: "/permits",
-    features: ["Permit tracking", "Inspection scheduling", "AI document review", "Compliance alerts"],
-  },
-  {
-    name: "Marketplace",
-    icon: "🏪",
-    description: "Connect with verified contractors, vendors, and suppliers. Quality leads and competitive bidding.",
-    link: "/marketplace",
-    features: ["Verified contractors", "Quality leads", "Bid management", "Reviews & ratings"],
+    name: 'Enterprise',
+    price: 'Custom',
+    period: '',
+    popular: false,
+    features: ['Unlimited projects', 'Custom integrations', 'Dedicated success manager', 'SSO & advanced security', 'Unlimited storage', 'SLA guarantee'],
+    cta: { label: 'Contact Sales', href: '/contact?plan=enterprise' },
   },
 ];
 
-const serviceCategories = [
+// Operations Services
+const operationsServices = [
+  { name: 'Site Analysis', price: 125, description: 'Site conditions assessment and feasibility review.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /></svg> },
+  { name: 'Scope of Work', price: 195, description: 'Detailed SOW document with specifications.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg> },
+  { name: 'Material Takeoff', price: 250, description: 'Comprehensive material quantities from plans.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg> },
+  { name: 'Project Schedule', price: 295, description: 'CPM schedule with milestones and dependencies.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> },
+  { name: 'Safety Plan', price: 195, description: 'Site-specific safety plan and protocols.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg> },
+  { name: 'QC Plan', price: 225, description: 'Quality control procedures and checklists.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg> },
+  { name: 'Sub Bid Package', price: 350, description: 'Complete bid package for subcontractors.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg> },
+  { name: 'Permit Prep', price: 395, description: 'Permit application preparation and review.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg> },
+  { name: 'Change Order Analysis', price: 175, description: 'CO review, pricing validation, and impact analysis.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg> },
+  { name: 'Closeout Docs', price: 295, description: 'Project closeout documentation package.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg> },
+  { name: 'Punch List', price: 125, description: 'Punch list compilation and tracking.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg> },
+];
+
+// Estimation Services
+const estimationServices = [
+  { name: 'Quick Estimate', price: 195, description: 'Ballpark estimate for budgeting and feasibility. 24-48 hour turnaround.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg> },
+  { name: 'Detailed Estimate', price: 595, description: 'Line-by-line estimate with labor, materials, and subs breakdown.', popular: true, icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg> },
+  { name: 'Bid Estimate', price: 795, description: 'Competitive bid-ready estimate with markup and contingency.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg> },
+  { name: 'Design-Phase Estimate', price: 1295, description: 'Early-stage estimate for design development and value engineering.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg> },
+  { name: 'Value Engineering', price: 995, description: 'Cost optimization analysis with alternative recommendations.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+  { name: 'Estimate Review', price: 495, description: 'Third-party review and validation of existing estimate.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg> },
+  { name: 'Portfolio Package', price: 5995, description: 'Full estimation support for multiple projects. Includes 10 estimates.', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg> },
+];
+
+// PM Ops Pricing
+const pmOpsPricing = [
   {
-    category: "À La Carte Services",
-    items: [
-      { name: "Permit Application Assistance", price: "$325", description: "Full permit preparation and submission" },
-      { name: "Inspection Scheduling", price: "$200", description: "Coordinate and track inspections" },
-      { name: "Document Organization", price: "$400", description: "Organize project documentation" },
-      { name: "Contractor Coordination", price: "$500", description: "Manage subcontractor communications" },
-      { name: "Site Visit & Reporting", price: "$350", description: "On-site progress documentation" },
-      { name: "Budget Analysis", price: "$450", description: "Cost tracking and variance reports" },
-    ],
+    name: 'Starter',
+    price: 1750,
+    period: 'mo',
+    popular: false,
+    features: ['1 active project', 'Permit tracking', 'Weekly status updates', 'Basic coordination', 'Document organization'],
+    cta: { label: 'Get Started', href: '/pm-operations?plan=starter' },
   },
   {
-    category: "Contractor/Vendor",
-    items: [
-      { name: "Marketplace Subscription", price: "$299/mo", description: "Basic listing + 5 leads/month" },
-      { name: "Lead Purchase", price: "$50-500", description: "Per qualified lead (project size based)" },
-    ],
+    name: 'Growth',
+    price: 3500,
+    period: 'mo',
+    popular: false,
+    features: ['2-3 active projects', 'Full permit management', 'Bi-weekly calls', 'Contractor coordination', 'Change order tracking'],
+    cta: { label: 'Get Started', href: '/pm-operations?plan=growth' },
   },
   {
-    category: "Estimation Services",
-    items: [
-      { name: "Basic Estimate", price: "$299", description: "Labor + materials breakdown" },
-      { name: "Standard Estimate", price: "$799", description: "Full timeline + resource planning" },
-      { name: "Premium Estimate", price: "$1,999", description: "Detailed BOQ + profit optimization" },
-    ],
+    name: 'Professional',
+    price: 6500,
+    period: 'mo',
+    popular: true,
+    features: ['4-6 active projects', 'Dedicated PM', 'Weekly executive reports', 'Full coordination suite', 'Priority escalations'],
+    cta: { label: 'Get Started', href: '/pm-operations?plan=professional' },
+  },
+  {
+    name: 'Enterprise',
+    price: 16500,
+    period: 'mo',
+    popular: false,
+    features: ['7+ active projects', 'PM team assignment', 'Daily check-ins', 'Custom workflows', 'SLA guarantees', '24/7 support'],
+    cta: { label: 'Contact Sales', href: '/contact?plan=pm-enterprise' },
   },
 ];
 
-export default function MarketingHomePage() {
+// Audience Cards
+const audienceCards = [
+  { title: 'General Contractors', description: 'Full project oversight and multi-trade coordination.', icon: <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg> },
+  { title: 'Builders', description: 'Residential and commercial construction management.', icon: <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg> },
+  { title: 'Trade Contractors', description: 'Specialty trade project tracking and billing.', icon: <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /></svg> },
+  { title: 'Owners/RE Developers', description: 'Portfolio management and development oversight.', icon: <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> },
+  { title: 'Specialty Contractors', description: 'Niche trade management and compliance.', icon: <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg> },
+];
+
+// FAQ Items
+const faqItems = [
+  { question: 'What\'s the difference between PM Software and PM Operations?', answer: 'PM Software (SaaS) gives you the tools to manage your own projects — you and your team do the work. PM Operations is a separate add-on where Kealee\'s PM team manages your projects for you, remotely through the platform. These are two different things.' },
+  { question: 'Does PM Operations include on-site supervision?', answer: 'No. PM Operations is 100% remote/platform-based. We coordinate contractors, track permits, generate reports, and manage documentation — all from our platform. We do NOT provide any on-site services, site visits, or physical presence.' },
+  { question: 'Can I use PM Software without PM Operations?', answer: 'Absolutely. PM Software is a standalone SaaS product. You can subscribe to PM Software and run your own projects without any involvement from Kealee\'s PM team.' },
+  { question: 'Do I need PM Software to use PM Operations?', answer: 'Yes. PM Operations requires an active SaaS subscription because our team works through the platform. However, SaaS is included with PM Ops — you won\'t be double-billed.' },
+  { question: 'How do Operations Services differ from PM Operations?', answer: 'Operations Services are one-time à la carte deliverables (like a Safety Plan or Material Takeoff). PM Operations is ongoing monthly project coordination by our team. You can use Operations Services independently or alongside PM Software/Operations.' },
+  { question: 'What\'s included in the SaaS plans?', answer: 'All SaaS plans include the core PM Software features: project dashboard, scheduling, budget tracking, document management, RFI tracking, daily logs, quality/safety tools, and change order management. Higher tiers add more projects, team members, storage, and support levels.' },
+  { question: 'Can I switch between PM Operations packages?', answer: 'Yes. You can upgrade or downgrade your PM Operations package based on your active project count. Changes take effect at the next billing cycle.' },
+  { question: 'What jurisdictions do you support for permit services?', answer: 'We support 3,000+ jurisdictions across the DC-Baltimore corridor and expanding. Our permit prep services work with any jurisdiction — we research requirements and prepare compliant applications.' },
+];
+
+export default function OpsServicesPage() {
   return (
-    <main className="mx-auto max-w-7xl px-6 py-10">
-      {/* Header */}
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div className="text-xl font-black tracking-tight">
-          Kealee
-        </div>
-        <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-700">
-          <Link className="hover:text-zinc-950" href="#platform">
-            Platform
-          </Link>
-          <Link className="hover:text-zinc-950" href="#pricing">
-            Pricing
-          </Link>
-          <Link className="hover:text-zinc-950" href="/how-it-works">
-            How it works
-          </Link>
-          <Link className="hover:text-zinc-950" href="/case-studies">
-            Case studies
-          </Link>
-          <Link className="hover:text-zinc-950" href="/contractors">
-            For Contractors
-          </Link>
-          <Link className="hover:text-zinc-950" href="/login">
-            Login
-          </Link>
-        </nav>
-      </header>
-
-      {/* Hero Section */}
-      <section className="mt-10">
-        <div className="text-center">
-          <h1 className="text-4xl font-black tracking-tight md:text-5xl">
-            The Complete Construction Management Platform
-          </h1>
-          <p className="mx-auto mt-4 max-w-3xl text-lg text-zinc-600">
-            From pre-construction design to final closeout. Streamline every phase of your
-            construction project with integrated tools, transparent pricing, and guaranteed
-            escrow-backed payments.
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link
-              href="/signup"
-              className="inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-6 py-3 text-sm font-extrabold text-[var(--primary-foreground)] shadow-sm transition hover:opacity-95"
-            >
-              Get Started Free
-            </Link>
-            <Link
-              href="/demo"
-              className="inline-flex items-center justify-center rounded-xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-zinc-900 shadow-sm transition hover:bg-zinc-50"
-            >
-              Request Demo
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Platform Modules */}
-      <section id="platform" className="mt-16">
-        <div className="text-center">
-          <h2 className="text-3xl font-black tracking-tight">
-            One Platform, Every Phase
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-zinc-600">
-            6 integrated modules covering the entire construction lifecycle
-          </p>
-        </div>
-
-        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {platformModules.map((module) => (
-            <Link
-              key={module.name}
-              href={module.link}
-              className="group rounded-2xl border border-black/10 bg-white p-5 shadow-sm transition hover:border-[var(--primary)] hover:shadow-md"
-            >
-              <div className="flex items-start justify-between">
-                <span className="text-2xl">{module.icon}</span>
-                {module.badge && (
-                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                    {module.badge}
-                  </span>
-                )}
-              </div>
-              <h3 className="mt-3 text-base font-extrabold">{module.name}</h3>
-              <p className="mt-2 text-sm text-zinc-600 line-clamp-2">{module.description}</p>
-              <ul className="mt-3 flex flex-wrap gap-1">
-                {module.features.slice(0, 3).map((f) => (
-                  <li key={f} className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] text-zinc-700">
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-3 text-sm font-bold text-[var(--primary)] group-hover:underline">
-                Learn more →
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* GC Services Section */}
-      <section className="mt-16">
-        <HeroGC />
-        <div className="mt-5 flex flex-wrap gap-3">
-          <Link
-            href="/signup"
-            className="inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-2.5 text-sm font-extrabold text-[var(--primary-foreground)] shadow-sm transition hover:opacity-95"
-          >
-            Start Free 14-Day Trial (Package B)
-          </Link>
-          <Link
-            href="/pricing"
-            className="inline-flex items-center justify-center rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm font-bold text-zinc-900 shadow-sm transition hover:bg-zinc-50"
-          >
-            View All Packages
-          </Link>
-        </div>
-      </section>
-
-      {/* Pain Points */}
-      <section className="mt-12">
-        <h2 className="text-2xl font-black tracking-tight">
-          General Contractor pain points (solved)
-        </h2>
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          {[
-            {
-              q: "Losing 20+ hours/week on admin?",
-              a: "We take permits, inspections, vendor comms, and reporting off your plate so you can stay on site and sell the next job.",
-            },
-            {
-              q: "Permit delays killing margins?",
-              a: "Proactive tracking + follow-ups reduce schedule slip and the expensive domino effect it creates across trades.",
-            },
-            {
-              q: "Sub/vendor coordination eating your evenings?",
-              a: "Centralized comms and consistent updates keep everyone aligned—without you playing phone tag all day.",
-            },
-            {
-              q: "Weekly reporting always behind?",
-              a: "We produce consistent, client-ready weekly updates with action items—so you look sharp and stay ahead of surprises.",
-            },
-          ].map((item) => (
-            <div
-              key={item.q}
-              className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
-            >
-              <div className="text-base font-extrabold">{item.q}</div>
-              <div className="mt-2 text-sm leading-relaxed text-zinc-700">
-                {item.a}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* GC Packages */}
-      <section id="pricing" className="mt-12">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-black tracking-tight">
-              Operations Packages for GCs
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm text-zinc-700">
-              Pick the level of ops coverage you need today—upgrade as you take
-              on more work.
-            </p>
-          </div>
-          <div className="text-sm text-zinc-700">
-            Free trial on{" "}
-            <span className="font-extrabold text-zinc-900">Package B</span>
-          </div>
-        </div>
-
-        <div className="mt-6 grid gap-4 lg:grid-cols-4">
-          {gcPackages.map((p) => (
-            <div
-              key={p.name}
-              className={[
-                "rounded-2xl border bg-white p-5 shadow-sm",
-                p.highlight
-                  ? "border-[var(--primary)] ring-1 ring-[var(--primary)]/20"
-                  : "border-black/10",
-              ].join(" ")}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-sm font-black">{p.name}</div>
-                  <div className="mt-1 text-sm text-zinc-700">{p.label}</div>
-                </div>
-                {"badge" in p && p.badge ? (
-                  <span className="rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-black text-sky-700">
-                    {p.badge}
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="mt-3 text-xl font-black">{p.price}</div>
-              <ul className="mt-3 list-disc space-y-2 pl-4 text-sm text-zinc-800">
-                {p.benefits.map((b) => (
-                  <li key={b}>{b}</li>
-                ))}
-              </ul>
-
-              <div className="mt-4">
-                <Link
-                  href="/signup"
-                  className="text-sm font-extrabold text-[color:var(--primary)] hover:underline"
-                >
-                  Start trial →
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Service Categories */}
-      <section className="mt-16">
-        <div className="text-center">
-          <h2 className="text-2xl font-black tracking-tight">
-            Service Pricing
-          </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-sm text-zinc-600">
-            Flexible pricing options to fit your project needs.
-          </p>
-        </div>
-
-        <div className="mt-8 grid gap-6 md:grid-cols-3">
-          {serviceCategories.map((category) => (
-            <div
-              key={category.category}
-              className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
-            >
-              <h3 className="text-lg font-black">{category.category}</h3>
-              <div className="mt-4 space-y-3">
-                {category.items.map((item) => (
-                  <div key={item.name} className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="text-sm font-semibold">{item.name}</div>
-                      <div className="text-xs text-zinc-500">{item.description}</div>
-                    </div>
-                    <div className="text-sm font-black text-[var(--primary)]">{item.price}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* On-Demand Ops */}
-      <section className="mt-12">
-        <OnDemandOps />
-      </section>
-
-      {/* ROI Calculator */}
-      <section className="mt-12">
-        <ROICalculator />
-      </section>
-
-      {/* Pre-Con Workflow Highlight */}
-      <section className="mt-16 rounded-2xl bg-gradient-to-br from-emerald-50 to-cyan-50 p-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div>
-            <span className="inline-block rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700 mb-3">
-              NEW FEATURE
-            </span>
-            <h2 className="text-2xl font-black tracking-tight">
-              Pre-Construction Workflow
-            </h2>
-            <p className="mt-2 max-w-xl text-sm text-zinc-700">
-              Streamlined bidding to contractor selection—with secure escrow-backed
-              payments. Connect with verified contractors and manage your project
-              from a single platform.
-            </p>
-            <div className="mt-4 flex items-center gap-6 text-sm">
-              <div>
-                <div className="font-black text-emerald-700">8 Phases</div>
-                <div className="text-zinc-500">Full workflow</div>
-              </div>
-              <div>
-                <div className="font-black text-emerald-700">Verified</div>
-                <div className="text-zinc-500">Contractors</div>
-              </div>
-              <div>
-                <div className="font-black text-emerald-700">Escrow</div>
-                <div className="text-zinc-500">Protected</div>
-              </div>
-            </div>
-          </div>
-          <Link
-            href="/precon"
-            className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700"
-          >
-            Start Pre-Con Project →
-          </Link>
-        </div>
-      </section>
-
-      {/* Estimation Engine Highlight */}
-      <section className="mt-6 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div>
-            <span className="inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700 mb-3">
-              NEW FEATURE
-            </span>
-            <h2 className="text-2xl font-black tracking-tight">
-              AI-Powered Estimation Engine
-            </h2>
-            <p className="mt-2 max-w-xl text-sm text-zinc-700">
-              Get accurate cost estimates with our APP-15 Estimation Engine. Labor rates,
-              material costs, timeline projections, and profit analysis—all powered by
-              real market data.
-            </p>
-            <div className="mt-4 flex items-center gap-6 text-sm">
-              <div>
-                <div className="font-black text-blue-700">$299-$4,999</div>
-                <div className="text-zinc-500">Estimation tiers</div>
-              </div>
-              <div>
-                <div className="font-black text-blue-700">AI-Powered</div>
-                <div className="text-zinc-500">Market data</div>
-              </div>
-              <div>
-                <div className="font-black text-blue-700">24hr</div>
-                <div className="text-zinc-500">Turnaround</div>
-              </div>
-            </div>
-          </div>
-          <Link
-            href="/estimation"
-            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700"
-          >
-            Get Estimate →
-          </Link>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="mt-12">
-        <GCTestimonials />
-      </section>
-
-      {/* CTA */}
-      <section className="mt-12 rounded-2xl bg-[var(--primary)] p-6 text-[var(--primary-foreground)] shadow-sm">
-        <h2 className="text-xl font-black">
-          Ready to Transform Your Construction Business?
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm opacity-95">
-          Join thousands of contractors, project owners, and construction professionals
-          using Kealee to streamline their operations.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Link
-            href="/signup"
-            className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-black text-zinc-900 shadow-sm transition hover:bg-zinc-50"
-          >
-            Start Free Trial
-          </Link>
-          <Link
-            href="/demo"
-            className="inline-flex items-center justify-center rounded-xl border border-white/30 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/10"
-          >
-            Schedule Demo
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="mt-12 border-t border-black/10 pt-6">
-        <div className="grid gap-8 md:grid-cols-4">
-          <div>
-            <div className="text-sm font-black">Kealee</div>
-            <p className="mt-2 text-xs text-zinc-500">
-              The complete construction management platform for modern builders.
-            </p>
-          </div>
-          <div>
-            <div className="text-xs font-bold text-zinc-500 uppercase">Platform</div>
-            <div className="mt-2 flex flex-col gap-1 text-sm text-zinc-700">
-              <Link className="hover:text-zinc-950" href="/precon">Pre-Construction</Link>
-              <Link className="hover:text-zinc-950" href="/estimation">Estimation</Link>
-              <Link className="hover:text-zinc-950" href="/marketplace">Marketplace</Link>
-              <Link className="hover:text-zinc-950" href="/finance">Finance & Trust</Link>
-            </div>
-          </div>
-          <div>
-            <div className="text-xs font-bold text-zinc-500 uppercase">Services</div>
-            <div className="mt-2 flex flex-col gap-1 text-sm text-zinc-700">
-              <Link className="hover:text-zinc-950" href="/os-pm">Project Management</Link>
-              <Link className="hover:text-zinc-950" href="/permits">Permits & Inspections</Link>
-              <Link className="hover:text-zinc-950" href="/pricing">Pricing</Link>
-            </div>
-          </div>
-          <div>
-            <div className="text-xs font-bold text-zinc-500 uppercase">Company</div>
-            <div className="mt-2 flex flex-col gap-1 text-sm text-zinc-700">
-              <Link className="hover:text-zinc-950" href="/how-it-works">How it works</Link>
-              <Link className="hover:text-zinc-950" href="/case-studies">Case studies</Link>
-              <Link className="hover:text-zinc-950" href="/contractors">For Contractors</Link>
-              <Link className="hover:text-zinc-950" href="/terms">Terms of Service</Link>
-              <Link className="hover:text-zinc-950" href="/privacy">Privacy Policy</Link>
-            </div>
-          </div>
-        </div>
-        <div className="mt-8 border-t border-black/5 pt-4 text-xs text-zinc-500">
-          © 2026 Kealee. All rights reserved.
-        </div>
-      </footer>
-    </main>
+    <OpsServicesClient
+      pmSoftwareFeatures={pmSoftwareFeatures}
+      saasPricing={saasPricing}
+      operationsServices={operationsServices}
+      estimationServices={estimationServices}
+      pmOpsPricing={pmOpsPricing}
+      audienceCards={audienceCards}
+      faqItems={faqItems}
+    />
   );
 }
