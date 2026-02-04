@@ -182,7 +182,7 @@ export function NetworkSearchClient({ initialProfiles }: NetworkSearchClientProp
           <div className="text-center mb-8">
             <SectionLabel text="KEALEE CONSTRUCTION NETWORK" color="teal" />
             <h1
-              className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#1A2B4A] mt-4 mb-4"
+              className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#4A90D9] mt-4 mb-4"
               style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
             >
               Find the Right Professional
@@ -383,7 +383,7 @@ export function NetworkSearchClient({ initialProfiles }: NetworkSearchClientProp
                   className="inline-flex items-center gap-1 px-3 py-1 bg-[#2ABFBF]/10 text-[#2ABFBF] rounded-full text-sm"
                 >
                   {trade}
-                  <button onClick={() => toggleTrade(trade)} className="hover:text-[#1A2B4A]">
+                  <button onClick={() => toggleTrade(trade)} className="hover:text-[#4A90D9]">
                     ×
                   </button>
                 </span>
@@ -393,7 +393,7 @@ export function NetworkSearchClient({ initialProfiles }: NetworkSearchClientProp
                   {AVAILABILITY_OPTIONS.find((o) => o.value === availability)?.label}
                   <button
                     onClick={() => setAvailability('all')}
-                    className="hover:text-[#1A2B4A]"
+                    className="hover:text-[#4A90D9]"
                   >
                     ×
                   </button>
@@ -424,7 +424,7 @@ export function NetworkSearchClient({ initialProfiles }: NetworkSearchClientProp
                 />
               </svg>
               <div>
-                <p className="font-semibold text-[#1A2B4A]">Fair Bid Rotation Active</p>
+                <p className="font-semibold text-[#4A90D9]">Fair Bid Rotation Active</p>
                 <p className="text-sm text-gray-600">
                   Qualified professionals get equal opportunities. No pay-to-play positioning.
                 </p>
@@ -435,7 +435,7 @@ export function NetworkSearchClient({ initialProfiles }: NetworkSearchClientProp
           {/* Results Header */}
           <div className="flex items-center justify-between mb-6">
             <p className="text-gray-600">
-              <span className="font-semibold text-[#1A2B4A]">{filteredProfiles.length}</span>{' '}
+              <span className="font-semibold text-[#4A90D9]">{filteredProfiles.length}</span>{' '}
               professionals found
             </p>
             <div className="hidden lg:block">
@@ -535,7 +535,7 @@ export function NetworkSearchClient({ initialProfiles }: NetworkSearchClientProp
                   onClick={() => setCurrentPage(page)}
                   className={`w-10 h-10 rounded-lg font-medium transition-colors ${
                     currentPage === page
-                      ? 'bg-[#1A2B4A] text-white'
+                      ? 'bg-[#4A90D9] text-white'
                       : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
                   }`}
                 >
@@ -581,7 +581,7 @@ export function NetworkSearchClient({ initialProfiles }: NetworkSearchClientProp
               className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-50 lg:hidden max-h-[80vh] overflow-y-auto"
             >
               <div className="p-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white">
-                <h3 className="font-bold text-lg text-[#1A2B4A]">Filters</h3>
+                <h3 className="font-bold text-lg text-[#4A90D9]">Filters</h3>
                 <button
                   onClick={() => setShowFilters(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg"
@@ -682,7 +682,7 @@ export function NetworkSearchClient({ initialProfiles }: NetworkSearchClientProp
                 </button>
                 <button
                   onClick={() => setShowFilters(false)}
-                  className="flex-1 py-3 bg-[#1A2B4A] text-white rounded-lg font-semibold"
+                  className="flex-1 py-3 bg-[#4A90D9] text-white rounded-lg font-semibold"
                 >
                   Apply Filters
                 </button>

@@ -44,7 +44,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
         {/* Content */}
         <div className="flex-grow min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <h4 className="font-semibold text-[#1A2B4A] text-sm truncate pr-2">
+            <h4 className="font-semibold text-[#4A90D9] text-sm truncate pr-2">
               {name}
             </h4>
             <span

@@ -32,7 +32,7 @@ const moduleTabs: ModuleTab[] = [
   { id: 'ops-software', label: 'PM Software', domain: 'ops.kealee.com', color: 'bg-[#E8793A]' },
   { id: 'ops-services', label: 'Operations Services', domain: 'ops.kealee.com', color: 'bg-[#2ABFBF]' },
   { id: 'estimation', label: 'Estimation Services', domain: 'ops.kealee.com', color: 'bg-[#E8793A]' },
-  { id: 'pm-operations', label: 'PM Operations', domain: 'ops.kealee.com', color: 'bg-[#1A2B4A]' },
+  { id: 'pm-operations', label: 'PM Operations', domain: 'ops.kealee.com', color: 'bg-[#4A90D9]' },
   { id: 'project-owner', label: 'Project Owner', domain: 'app.kealee.com', color: 'bg-[#E8793A]' },
 ];
 
@@ -371,9 +371,9 @@ function PricingCard({
         </span>
       )}
       <div className="text-center mb-4">
-        <h3 className="text-lg font-bold text-[#1A2B4A]">{tier.name}</h3>
+        <h3 className="text-lg font-bold text-[#4A90D9]">{tier.name}</h3>
         <div className="mt-2">
-          <span className="text-3xl font-bold font-mono text-[#1A2B4A]">{displayPrice}</span>
+          <span className="text-3xl font-bold font-mono text-[#4A90D9]">{displayPrice}</span>
           {tier.period && <span className="text-gray-500 text-sm ml-1">{tier.period}</span>}
         </div>
       </div>
@@ -410,7 +410,7 @@ function ServiceList({
       {services.map((service, i) => (
         <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
           <span className="text-gray-700">{service.name}</span>
-          <span className="font-mono font-semibold text-[#1A2B4A]">
+          <span className="font-mono font-semibold text-[#4A90D9]">
             {service.note === 'from' ? 'From ' : ''}${service.price}
           </span>
         </div>
@@ -430,7 +430,7 @@ export function PricingOverviewClient() {
   return (
     <MarketingLayout>
       {/* Hero */}
-      <section className="bg-[#1A2B4A] py-16">
+      <section className="bg-[#4A90D9] py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -455,7 +455,7 @@ export function PricingOverviewClient() {
                 onClick={() => setSelectedModule(tab.id)}
                 className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
                   selectedModule === tab.id
-                    ? 'bg-[#1A2B4A] text-white'
+                    ? 'bg-[#4A90D9] text-white'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -495,7 +495,7 @@ export function PricingOverviewClient() {
                           <span className="text-xs text-gray-400">{tabConfig.domain}</span>
                         )}
                       </div>
-                      <h2 className="text-2xl font-bold text-[#1A2B4A]">{module.title}</h2>
+                      <h2 className="text-2xl font-bold text-[#4A90D9]">{module.title}</h2>
                       <p className="text-gray-600 mt-1">{module.subtitle}</p>
                     </div>
 
@@ -521,7 +521,7 @@ export function PricingOverviewClient() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <SectionLabel>FAQ</SectionLabel>
-            <h2 className="text-3xl font-bold text-[#1A2B4A]">Pricing Questions</h2>
+            <h2 className="text-3xl font-bold text-[#4A90D9]">Pricing Questions</h2>
           </div>
           <FAQAccordion items={faqs} />
         </div>

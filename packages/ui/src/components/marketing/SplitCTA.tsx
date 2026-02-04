@@ -26,10 +26,10 @@ export interface SplitCTAProps {
 
 const bgConfig = {
   navy: {
-    container: 'bg-[#1A2B4A]',
+    container: 'bg-[#4A90D9]',
     title: 'text-white',
     subtitle: 'text-gray-300',
-    button: 'bg-white text-[#1A2B4A] hover:bg-gray-100',
+    button: 'bg-white text-[#4A90D9] hover:bg-gray-100',
   },
   orange: {
     container: 'bg-[#E8793A]',
@@ -45,15 +45,15 @@ const bgConfig = {
   },
   white: {
     container: 'bg-white border border-gray-200',
-    title: 'text-[#1A2B4A]',
+    title: 'text-[#4A90D9]',
     subtitle: 'text-gray-600',
     button: 'bg-[#E8793A] text-white hover:bg-[#d16a2f]',
   },
   gray: {
     container: 'bg-gray-100',
-    title: 'text-[#1A2B4A]',
+    title: 'text-[#4A90D9]',
     subtitle: 'text-gray-600',
-    button: 'bg-[#1A2B4A] text-white hover:bg-[#1A2B4A]/90',
+    button: 'bg-[#4A90D9] text-white hover:bg-[#4A90D9]/90',
   },
 };
 

@@ -173,7 +173,7 @@ export function HomeClient({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2
-              className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4"
+              className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4"
               style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
             >
               One Connected Platform, Every Phase
@@ -204,7 +204,7 @@ export function HomeClient({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionLabel text="KEALEE CONSTRUCTION NETWORK" color="teal" />
           <h2
-            className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4 mt-4"
+            className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4 mt-4"
             style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
           >
             Find the Right Partner for Every Project
@@ -232,7 +232,7 @@ export function HomeClient({
             />
             <FeatureCard
               icon={
-                <svg className="w-6 h-6 text-[#1A2B4A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-6 h-6 text-[#4A90D9]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               }
@@ -292,7 +292,7 @@ export function HomeClient({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
                 <div>
-                  <p className="font-semibold text-[#1A2B4A]">Fair Bid Rotation</p>
+                  <p className="font-semibold text-[#4A90D9]">Fair Bid Rotation</p>
                   <p className="text-sm text-gray-600">
                     Our rotation system ensures qualified contractors get equal opportunities to bid.
                     No pay-to-play. Compete on quality and reputation.
@@ -305,7 +305,7 @@ export function HomeClient({
             <div className="text-center mt-8">
               <Link
                 href="/network"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#1A2B4A] text-white font-semibold rounded-lg hover:bg-[#1A2B4A]/90 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#4A90D9] text-white font-semibold rounded-lg hover:bg-[#4A90D9]/90 transition-colors"
               >
                 Browse the Network
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -329,7 +329,7 @@ export function HomeClient({
           <motion.div variants={fadeInUp}>
             <SectionLabel text="FOR HOMEOWNERS & PROJECT OWNERS" color="navy" />
             <h2
-              className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4 mt-4"
+              className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4 mt-4"
               style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
             >
               Build with Confidence from Day One
@@ -366,7 +366,7 @@ export function HomeClient({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionLabel text="FOR GCs • BUILDERS • CONTRACTORS • OWNERS/RE DEVELOPERS • SPECIALTY CONTRACTORS" color="orange" />
           <h2
-            className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-10 mt-4"
+            className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-10 mt-4"
             style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
           >
             The Complete Construction Operations Platform
@@ -383,7 +383,7 @@ export function HomeClient({
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#1A2B4A] text-xl">Ops & PM Services</h3>
+                  <h3 className="font-bold text-[#4A90D9] text-xl">Ops & PM Services</h3>
                   <p className="text-sm text-gray-500">ops.kealee.com</p>
                 </div>
               </div>
@@ -435,7 +435,7 @@ export function HomeClient({
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs font-semibold text-gray-500 uppercase">Optional Add-On</span>
                 </div>
-                <p className="font-semibold text-[#1A2B4A]">PM Operations (os-pm)</p>
+                <p className="font-semibold text-[#4A90D9]">PM Operations (os-pm)</p>
                 <p className="text-sm text-gray-600 mb-2">
                   Remote coordination only. Our PM team handles scheduling, contractor coordination,
                   reporting, and permit tracking through the platform. No site supervision.
@@ -463,7 +463,7 @@ export function HomeClient({
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#1A2B4A] text-xl">Permits & Inspections</h3>
+                  <h3 className="font-bold text-[#4A90D9] text-xl">Permits & Inspections</h3>
                   <p className="text-sm text-gray-500">permits.kealee.com</p>
                 </div>
               </div>
@@ -514,7 +514,7 @@ export function HomeClient({
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2
-              className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4"
+              className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4"
               style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
             >
               Why Choose a Connected Platform?
@@ -570,7 +570,7 @@ export function HomeClient({
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2
-              className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4"
+              className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4"
               style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
             >
               Ready to Get Started?

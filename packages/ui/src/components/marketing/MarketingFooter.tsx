@@ -81,7 +81,7 @@ export const MarketingFooter: React.FC<MarketingFooterProps> = ({
   };
 
   return (
-    <footer className={cn('bg-[#1A2B4A] text-white', className)}>
+    <footer className={cn('bg-[#4A90D9] text-white', className)}>
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-6 py-12 md:py-16">
         {/* Top Section: Logo + Newsletter */}

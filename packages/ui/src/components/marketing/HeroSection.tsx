@@ -29,13 +29,13 @@ export interface HeroSectionProps {
 
 const ctaVariants = {
   primary: 'bg-[#E8793A] hover:bg-[#d16a2f] text-white shadow-md hover:shadow-lg',
-  outline: 'border-2 border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white',
-  ghost: 'text-[#1A2B4A] hover:bg-gray-100',
+  outline: 'border-2 border-[#4A90D9] text-[#4A90D9] hover:bg-[#4A90D9] hover:text-white',
+  ghost: 'text-[#4A90D9] hover:bg-gray-100',
 };
 
 const patternStyles = {
-  dots: `radial-gradient(circle, #1A2B4A 1px, transparent 1px)`,
-  grid: `linear-gradient(#1A2B4A 1px, transparent 1px), linear-gradient(90deg, #1A2B4A 1px, transparent 1px)`,
+  dots: `radial-gradient(circle, #4A90D9 1px, transparent 1px)`,
+  grid: `linear-gradient(#4A90D9 1px, transparent 1px), linear-gradient(90deg, #4A90D9 1px, transparent 1px)`,
   none: 'none',
 };
 
@@ -90,7 +90,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-4xl md:text-5xl lg:text-[56px] font-bold text-[#1A2B4A] leading-tight tracking-tight mb-6"
+          className="text-4xl md:text-5xl lg:text-[56px] font-bold text-[#4A90D9] leading-tight tracking-tight mb-6"
           style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
         >
           {headline}

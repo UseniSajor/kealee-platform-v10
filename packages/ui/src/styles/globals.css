@@ -22,7 +22,7 @@
 @layer base {
   :root {
     /* Brand Colors */
-    --color-navy: #1A2B4A;
+    --color-navy: #4A90D9;
     --color-orange: #E8793A;
     --color-teal: #2ABFBF;
     --color-success: #38A169;
@@ -48,7 +48,7 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    @apply font-bold text-[#1A2B4A];
+    @apply font-bold text-[#4A90D9];
   }
 
   /* Pricing numbers */
@@ -69,7 +69,7 @@
   }
 
   .btn-secondary {
-    @apply btn bg-[#1A2B4A] text-white hover:bg-[#2d3f5c] focus:ring-[#1A2B4A];
+    @apply btn bg-[#4A90D9] text-white hover:bg-[#2d3f5c] focus:ring-[#4A90D9];
   }
 
   .btn-outline {
@@ -112,7 +112,7 @@
   }
 
   .badge-navy {
-    @apply badge bg-[#1A2B4A]/10 text-[#1A2B4A];
+    @apply badge bg-[#4A90D9]/10 text-[#4A90D9];
   }
 
   /* Section Label */
@@ -137,7 +137,7 @@
 
   /* Gradient Backgrounds */
   .gradient-navy {
-    background: linear-gradient(135deg, #1A2B4A 0%, #2d4a6f 100%);
+    background: linear-gradient(135deg, #4A90D9 0%, #2d4a6f 100%);
   }
 
   .gradient-orange {

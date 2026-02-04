@@ -100,7 +100,7 @@ const moduleCards = {
     ],
     priceAnchor: 'From $49/mo',
     cta: { label: 'Start Project', href: 'https://app.kealee.com' },
-    accentColor: '#1A2B4A' as const,
+    accentColor: '#4A90D9' as const,
   },
   architect: {
     icon: (
@@ -248,7 +248,7 @@ const platformPhases = [
     name: 'Closeout',
     app: 'm-project-owner',
     appLabel: 'Owner Portal',
-    color: '#1A2B4A' as const,
+    color: '#4A90D9' as const,
     features: ['Final Inspection', 'Documentation', 'Warranty Tracking'],
     href: 'https://app.kealee.com',
   },

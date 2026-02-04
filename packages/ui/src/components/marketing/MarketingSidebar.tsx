@@ -56,7 +56,7 @@ const accentClasses = {
   teal: 'border-l-[#2ABFBF]',
   green: 'border-l-[#38A169]',
   orange: 'border-l-[#E8793A]',
-  navy: 'border-l-[#1A2B4A]',
+  navy: 'border-l-[#4A90D9]',
 };
 
 const SidebarSection: React.FC<SectionProps> = ({
@@ -74,7 +74,7 @@ const SidebarSection: React.FC<SectionProps> = ({
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between py-2 group"
       >
-        <span className="text-sm font-semibold text-[#1A2B4A] group-hover:text-[#2ABFBF] transition-colors">
+        <span className="text-sm font-semibold text-[#4A90D9] group-hover:text-[#2ABFBF] transition-colors">
           {title}
         </span>
         <motion.svg
@@ -163,7 +163,7 @@ export const MarketingSidebar: React.FC<MarketingSidebarProps> = ({ className })
       <div className="p-4 border-b border-gray-100">
         <Link href="/" className="flex items-center">
           <span
-            className="text-2xl font-bold text-[#1A2B4A]"
+            className="text-2xl font-bold text-[#4A90D9]"
             style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
           >
             KEALEE
@@ -179,7 +179,7 @@ export const MarketingSidebar: React.FC<MarketingSidebarProps> = ({ className })
         {/* Platform Home */}
         <Link
           href="/"
-          className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-[#1A2B4A] hover:bg-gray-50 transition-colors"
+          className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-[#4A90D9] hover:bg-gray-50 transition-colors"
         >
           <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -285,7 +285,7 @@ export const MarketingSidebar: React.FC<MarketingSidebarProps> = ({ className })
               <div className="flex items-center mb-2">
                 <span className="text-[10px] text-gray-500 uppercase tracking-wide">Optional Add-On</span>
               </div>
-              <p className="text-xs font-semibold text-[#1A2B4A] mb-1">PM Operations (os-pm)</p>
+              <p className="text-xs font-semibold text-[#4A90D9] mb-1">PM Operations (os-pm)</p>
               <p className="text-[10px] text-gray-400 italic mb-2">Remote coordination only</p>
               <PriceItem label="Basic" price="$500/mo" />
               <PriceItem label="Standard" price="$1,000/mo" />
@@ -354,7 +354,7 @@ export const MarketingSidebar: React.FC<MarketingSidebarProps> = ({ className })
         className="lg:hidden fixed left-4 top-4 z-50 p-2 bg-white rounded-lg shadow-md border border-gray-200"
         aria-label="Open menu"
       >
-        <svg className="w-6 h-6 text-[#1A2B4A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-6 h-6 text-[#4A90D9]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>

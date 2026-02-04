@@ -72,7 +72,7 @@ export const MarketingTopBar: React.FC<MarketingTopBarProps> = ({
                 {item.label}
               </Link>
             ) : (
-              <span className="text-[#1A2B4A] font-medium truncate">{item.label}</span>
+              <span className="text-[#4A90D9] font-medium truncate">{item.label}</span>
             )}
           </React.Fragment>
         ))}
@@ -111,7 +111,7 @@ export const MarketingTopBar: React.FC<MarketingTopBarProps> = ({
         {/* Notifications */}
         {isAuthenticated && (
           <button
-            className="relative p-2 text-gray-500 hover:text-[#1A2B4A] hover:bg-gray-100 rounded-lg transition-colors"
+            className="relative p-2 text-gray-500 hover:text-[#4A90D9] hover:bg-gray-100 rounded-lg transition-colors"
             aria-label="Notifications"
           >
             <svg
@@ -150,7 +150,7 @@ export const MarketingTopBar: React.FC<MarketingTopBarProps> = ({
           <>
             <Link
               href="/login"
-              className="px-4 py-2 text-[#1A2B4A] font-medium text-sm hover:bg-gray-100 rounded-lg transition-colors hidden sm:block"
+              className="px-4 py-2 text-[#4A90D9] font-medium text-sm hover:bg-gray-100 rounded-lg transition-colors hidden sm:block"
             >
               Log In
             </Link>

@@ -51,7 +51,7 @@ export const FAQAccordion: React.FC<FAQAccordionProps> = ({
             className="w-full flex items-center justify-between text-left group"
           >
             <span
-              className="text-base md:text-lg font-semibold text-[#1A2B4A] group-hover:text-[#2ABFBF] transition-colors pr-4"
+              className="text-base md:text-lg font-semibold text-[#4A90D9] group-hover:text-[#2ABFBF] transition-colors pr-4"
               style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}
             >
               {item.question}

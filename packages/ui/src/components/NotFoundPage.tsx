@@ -56,7 +56,7 @@ export function NotFoundPage({
               {[...Array(8)].map((_, i) => (
                 <div
                   key={i}
-                  className={`flex-1 ${i % 2 === 0 ? 'bg-[#E8793A]' : 'bg-[#1A2B4A]'}`}
+                  className={`flex-1 ${i % 2 === 0 ? 'bg-[#E8793A]' : 'bg-[#4A90D9]'}`}
                   style={{ transform: 'skewX(-20deg)' }}
                 />
               ))}
@@ -65,10 +65,10 @@ export function NotFoundPage({
         </div>
 
         {/* 404 Text */}
-        <h1 className="text-6xl font-bold text-[#1A2B4A] mb-4 font-mono">404</h1>
+        <h1 className="text-6xl font-bold text-[#4A90D9] mb-4 font-mono">404</h1>
 
         {/* Message */}
-        <h2 className="text-2xl font-bold text-[#1A2B4A] mb-3">This Page is Under Construction</h2>
+        <h2 className="text-2xl font-bold text-[#4A90D9] mb-3">This Page is Under Construction</h2>
         <p className="text-gray-600 mb-8">
           Looks like this page hasn't been built yet, or the blueprint got lost along the way.
           Let's get you back on track.
@@ -90,19 +90,19 @@ export function NotFoundPage({
           <div className="flex flex-wrap justify-center gap-6">
             <Link
               href={servicesUrl}
-              className="text-[#1A2B4A] hover:text-[#E8793A] font-medium text-sm transition-colors"
+              className="text-[#4A90D9] hover:text-[#E8793A] font-medium text-sm transition-colors"
             >
               Services
             </Link>
             <Link
               href={permitsUrl}
-              className="text-[#1A2B4A] hover:text-[#E8793A] font-medium text-sm transition-colors"
+              className="text-[#4A90D9] hover:text-[#E8793A] font-medium text-sm transition-colors"
             >
               Permits
             </Link>
             <Link
               href={contactUrl}
-              className="text-[#1A2B4A] hover:text-[#E8793A] font-medium text-sm transition-colors"
+              className="text-[#4A90D9] hover:text-[#E8793A] font-medium text-sm transition-colors"
             >
               Contact Us
             </Link>

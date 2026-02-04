@@ -59,7 +59,7 @@ export const PricingTierCard: React.FC<PricingTierCardProps> = ({
 
       {/* Plan Name */}
       <h3
-        className="text-lg font-bold text-[#1A2B4A] mb-2"
+        className="text-lg font-bold text-[#4A90D9] mb-2"
         style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
       >
         {name}
@@ -73,7 +73,7 @@ export const PricingTierCard: React.FC<PricingTierCardProps> = ({
       {/* Price */}
       <div className="mb-6">
         <span
-          className="text-4xl font-bold text-[#1A2B4A]"
+          className="text-4xl font-bold text-[#4A90D9]"
           style={{ fontFamily: '"JetBrains Mono", monospace' }}
         >
           ${formattedPrice}
@@ -112,7 +112,7 @@ export const PricingTierCard: React.FC<PricingTierCardProps> = ({
           'w-full py-3 rounded-lg font-semibold text-center transition-all duration-200',
           popular
             ? 'bg-[#E8793A] text-white hover:bg-[#d16a2f]'
-            : 'border-2 border-[#1A2B4A] text-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white'
+            : 'border-2 border-[#4A90D9] text-[#4A90D9] hover:bg-[#4A90D9] hover:text-white'
         )}
       >
         {cta.label}

@@ -51,9 +51,9 @@ export function LoginForm({
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
-            <span className="text-3xl font-bold text-[#1A2B4A]">Kealee</span>
+            <span className="text-3xl font-bold text-[#4A90D9]">Kealee</span>
           </Link>
-          <h2 className="mt-4 text-2xl font-bold text-[#1A2B4A]">Welcome back</h2>
+          <h2 className="mt-4 text-2xl font-bold text-[#4A90D9]">Welcome back</h2>
           <p className="mt-2 text-gray-600">Sign in to your account to continue</p>
         </div>
 

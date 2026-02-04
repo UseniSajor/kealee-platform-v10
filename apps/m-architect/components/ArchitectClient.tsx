@@ -101,7 +101,7 @@ export function ArchitectClient({
             className="text-center mb-12"
           >
             <SectionLabel color="teal">Platform Features</SectionLabel>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4">
               Built for Professional Architects
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -122,7 +122,7 @@ export function ArchitectClient({
                 <div className="w-12 h-12 rounded-xl bg-[#2ABFBF]/10 text-[#2ABFBF] flex items-center justify-center mb-4">
                   {feature.icon}
                 </div>
-                <h3 className="text-lg font-bold text-[#1A2B4A] mb-2">{feature.title}</h3>
+                <h3 className="text-lg font-bold text-[#4A90D9] mb-2">{feature.title}</h3>
                 <p className="text-gray-600">{feature.description}</p>
               </motion.div>
             ))}
@@ -141,7 +141,7 @@ export function ArchitectClient({
             className="text-center mb-12"
           >
             <SectionLabel>Workflow</SectionLabel>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4">
               Your Complete Design Workflow
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -164,7 +164,7 @@ export function ArchitectClient({
             className="text-center mb-12"
           >
             <SectionLabel color="teal">Integrations</SectionLabel>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4">
               Seamless Platform Integration
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -182,10 +182,10 @@ export function ArchitectClient({
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 className="bg-gray-50 rounded-xl p-6 text-center hover:shadow-md transition-shadow"
               >
-                <div className="w-14 h-14 mx-auto rounded-full bg-[#1A2B4A]/10 text-[#1A2B4A] flex items-center justify-center mb-4">
+                <div className="w-14 h-14 mx-auto rounded-full bg-[#4A90D9]/10 text-[#4A90D9] flex items-center justify-center mb-4">
                   {integration.icon}
                 </div>
-                <h3 className="font-bold text-[#1A2B4A] mb-2">{integration.name}</h3>
+                <h3 className="font-bold text-[#4A90D9] mb-2">{integration.name}</h3>
                 <p className="text-sm text-gray-600">{integration.description}</p>
               </motion.div>
             ))}
@@ -194,7 +194,7 @@ export function ArchitectClient({
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 bg-[#1A2B4A]">
+      <section className="py-20 bg-[#4A90D9]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -256,7 +256,7 @@ export function ArchitectClient({
             className="text-center mb-12"
           >
             <SectionLabel>FAQ</SectionLabel>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4">
               Questions from Architects
             </h2>
           </motion.div>
@@ -283,7 +283,7 @@ export function ArchitectClient({
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/projects/new"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-[#1A2B4A] font-semibold rounded-xl hover:bg-gray-100 transition-colors shadow-lg"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-[#4A90D9] font-semibold rounded-xl hover:bg-gray-100 transition-colors shadow-lg"
               >
                 Start Design Project
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -16,9 +16,9 @@ export interface MarketingBadgeProps {
 
 const colorConfig = {
   navy: {
-    solid: 'bg-[#1A2B4A] text-white',
-    outline: 'border-[#1A2B4A] text-[#1A2B4A]',
-    soft: 'bg-[#1A2B4A]/10 text-[#1A2B4A]',
+    solid: 'bg-[#4A90D9] text-white',
+    outline: 'border-[#4A90D9] text-[#4A90D9]',
+    soft: 'bg-[#4A90D9]/10 text-[#4A90D9]',
   },
   orange: {
     solid: 'bg-[#E8793A] text-white',

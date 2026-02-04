@@ -149,7 +149,7 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
       showSearch={false}
     >
       {/* Cover Photo Banner */}
-      <div className="h-48 md:h-64 bg-gradient-to-r from-[#1A2B4A] to-[#2ABFBF] relative">
+      <div className="h-48 md:h-64 bg-gradient-to-r from-[#4A90D9] to-[#2ABFBF] relative">
         <div className="absolute inset-0 bg-[url('/patterns/grid.svg')] opacity-10" />
       </div>
 
@@ -158,14 +158,14 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-6 -mt-12 md:-mt-16 pb-6">
             {/* Logo */}
-            <div className="w-24 h-24 md:w-32 md:h-32 rounded-xl bg-white shadow-lg border-4 border-white flex items-center justify-center text-3xl md:text-4xl font-bold text-[#1A2B4A]">
+            <div className="w-24 h-24 md:w-32 md:h-32 rounded-xl bg-white shadow-lg border-4 border-white flex items-center justify-center text-3xl md:text-4xl font-bold text-[#4A90D9]">
               {profile.businessName.split(' ').map((w) => w[0]).join('').slice(0, 2)}
             </div>
 
             {/* Info */}
             <div className="flex-grow">
               <div className="flex flex-wrap items-center gap-3 mb-2">
-                <h1 className="text-2xl md:text-3xl font-bold text-[#1A2B4A]">
+                <h1 className="text-2xl md:text-3xl font-bold text-[#4A90D9]">
                   {profile.businessName}
                 </h1>
                 <span
@@ -182,7 +182,7 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
               )}
 
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-3">
-                <span className="font-medium text-[#1A2B4A]">{profile.typeLabel}</span>
+                <span className="font-medium text-[#4A90D9]">{profile.typeLabel}</span>
                 <span className="flex items-center gap-1">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -206,7 +206,7 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
               {/* Rating */}
               <div className="flex items-center gap-2 mb-3">
                 <div className="flex">{renderStars(profile.rating)}</div>
-                <span className="font-bold text-[#1A2B4A]">{profile.rating.toFixed(1)}</span>
+                <span className="font-bold text-[#4A90D9]">{profile.rating.toFixed(1)}</span>
                 <span className="text-gray-500">({profile.reviewCount} reviews)</span>
               </div>
 
@@ -233,7 +233,7 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
               <button className="px-6 py-3 bg-[#E8793A] text-white font-semibold rounded-lg hover:bg-[#d16a2f] transition-colors">
                 Request Quote
               </button>
-              <button className="px-6 py-3 bg-[#1A2B4A] text-white font-semibold rounded-lg hover:bg-[#1A2B4A]/90 transition-colors">
+              <button className="px-6 py-3 bg-[#4A90D9] text-white font-semibold rounded-lg hover:bg-[#4A90D9]/90 transition-colors">
                 Invite to Bid
               </button>
               <button className="px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
@@ -297,7 +297,7 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'border-[#1A2B4A] text-[#1A2B4A]'
+                    ? 'border-[#4A90D9] text-[#4A90D9]'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
@@ -323,7 +323,7 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
                 {/* Bio */}
                 {profile.bio && (
                   <div className="bg-white rounded-xl p-6 shadow-sm">
-                    <h2 className="text-lg font-bold text-[#1A2B4A] mb-3">About</h2>
+                    <h2 className="text-lg font-bold text-[#4A90D9] mb-3">About</h2>
                     <p className="text-gray-600 leading-relaxed">{profile.bio}</p>
                   </div>
                 )}
@@ -331,7 +331,7 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
                 {/* Specialties */}
                 {profile.specialties && profile.specialties.length > 0 && (
                   <div className="bg-white rounded-xl p-6 shadow-sm">
-                    <h2 className="text-lg font-bold text-[#1A2B4A] mb-3">Specialties</h2>
+                    <h2 className="text-lg font-bold text-[#4A90D9] mb-3">Specialties</h2>
                     <ul className="grid md:grid-cols-2 gap-2">
                       {profile.specialties.map((specialty) => (
                         <li key={specialty} className="flex items-center gap-2 text-gray-600">
@@ -357,7 +357,7 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
 
                 {/* Service Area Map Placeholder */}
                 <div className="bg-white rounded-xl p-6 shadow-sm">
-                  <h2 className="text-lg font-bold text-[#1A2B4A] mb-3">Service Area</h2>
+                  <h2 className="text-lg font-bold text-[#4A90D9] mb-3">Service Area</h2>
                   <div className="h-48 bg-gray-100 rounded-lg flex items-center justify-center">
                     <div className="text-center text-gray-500">
                       <svg
@@ -386,12 +386,12 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
               <div className="space-y-6">
                 {/* Quick Stats */}
                 <div className="bg-white rounded-xl p-6 shadow-sm">
-                  <h2 className="text-lg font-bold text-[#1A2B4A] mb-4">Quick Stats</h2>
+                  <h2 className="text-lg font-bold text-[#4A90D9] mb-4">Quick Stats</h2>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Projects Completed</span>
                       <span
-                        className="font-bold text-[#1A2B4A]"
+                        className="font-bold text-[#4A90D9]"
                         style={{ fontFamily: '"JetBrains Mono", monospace' }}
                       >
                         {profile.stats.projectsCompleted}
@@ -400,7 +400,7 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Years Experience</span>
                       <span
-                        className="font-bold text-[#1A2B4A]"
+                        className="font-bold text-[#4A90D9]"
                         style={{ fontFamily: '"JetBrains Mono", monospace' }}
                       >
                         {profile.stats.yearsExperience}
@@ -417,7 +417,7 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
 
                 {/* Sectors */}
                 <div className="bg-white rounded-xl p-6 shadow-sm">
-                  <h2 className="text-lg font-bold text-[#1A2B4A] mb-3">Sectors</h2>
+                  <h2 className="text-lg font-bold text-[#4A90D9] mb-3">Sectors</h2>
                   <div className="flex flex-wrap gap-2">
                     {profile.sectors.map((sector) => (
                       <span
@@ -462,7 +462,7 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
                         </svg>
                       </div>
                       <div className="p-4">
-                        <h3 className="font-semibold text-[#1A2B4A] mb-1">{project.title}</h3>
+                        <h3 className="font-semibold text-[#4A90D9] mb-1">{project.title}</h3>
                         <p className="text-sm text-gray-500 mb-2">{project.projectType}</p>
                         <div className="flex items-center justify-between text-xs text-gray-400">
                           <span>{project.location}</span>
@@ -509,7 +509,7 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
               {/* Rating Summary */}
               <div className="bg-white rounded-xl p-6 shadow-sm">
                 <div className="text-center mb-6">
-                  <p className="text-5xl font-bold text-[#1A2B4A]" style={{ fontFamily: '"JetBrains Mono", monospace' }}>
+                  <p className="text-5xl font-bold text-[#4A90D9]" style={{ fontFamily: '"JetBrains Mono", monospace' }}>
                     {profile.rating.toFixed(1)}
                   </p>
                   <div className="flex justify-center my-2">{renderStars(profile.rating)}</div>
@@ -526,7 +526,7 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-[#1A2B4A]">{review.title}</span>
+                            <span className="font-semibold text-[#4A90D9]">{review.title}</span>
                             {review.verified && (
                               <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
                                 Verified
@@ -583,11 +583,11 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
                   <table className="w-full">
                     <thead className="bg-gray-50 border-b border-gray-200">
                       <tr>
-                        <th className="text-left py-4 px-6 font-semibold text-[#1A2B4A]">Service</th>
-                        <th className="text-left py-4 px-6 font-semibold text-[#1A2B4A] hidden md:table-cell">
+                        <th className="text-left py-4 px-6 font-semibold text-[#4A90D9]">Service</th>
+                        <th className="text-left py-4 px-6 font-semibold text-[#4A90D9] hidden md:table-cell">
                           Description
                         </th>
-                        <th className="text-right py-4 px-6 font-semibold text-[#1A2B4A]">Price Range</th>
+                        <th className="text-right py-4 px-6 font-semibold text-[#4A90D9]">Price Range</th>
                         <th className="py-4 px-6"></th>
                       </tr>
                     </thead>
@@ -596,7 +596,7 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
                         <tr key={service.id} className="hover:bg-gray-50">
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium text-[#1A2B4A]">{service.name}</span>
+                              <span className="font-medium text-[#4A90D9]">{service.name}</span>
                               {service.popular && (
                                 <span className="text-xs bg-[#E8793A]/10 text-[#E8793A] px-2 py-0.5 rounded-full">
                                   Popular
@@ -658,7 +658,7 @@ export function NetworkProfileClient({ profile }: NetworkProfileClientProps) {
                         <p className="text-xs uppercase text-gray-500 font-medium mb-1">
                           {credential.type}
                         </p>
-                        <h3 className="font-semibold text-[#1A2B4A] mb-1">{credential.name}</h3>
+                        <h3 className="font-semibold text-[#4A90D9] mb-1">{credential.name}</h3>
                         <p className="text-sm text-gray-600">{credential.issuedBy}</p>
                         {credential.number && (
                           <p className="text-sm text-gray-500 mt-1">{credential.number}</p>

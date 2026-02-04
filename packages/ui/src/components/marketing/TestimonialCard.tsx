@@ -74,12 +74,12 @@ export const TestimonialCard: React.FC<TestimonialCardProps> = ({
             className="w-10 h-10 rounded-full mr-3 object-cover"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-[#1A2B4A] text-white flex items-center justify-center mr-3 font-semibold text-sm">
+          <div className="w-10 h-10 rounded-full bg-[#4A90D9] text-white flex items-center justify-center mr-3 font-semibold text-sm">
             {name.split(' ').map(n => n[0]).join('').slice(0, 2)}
           </div>
         )}
         <div>
-          <p className="font-semibold text-[#1A2B4A] text-sm">{name}</p>
+          <p className="font-semibold text-[#4A90D9] text-sm">{name}</p>
           {role && <p className="text-gray-500 text-xs">{role}</p>}
         </div>
         {projectType && (

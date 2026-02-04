@@ -31,7 +31,7 @@ const periodSizes = {
 
 const colorClasses = {
   orange: 'text-[#E8793A]',
-  navy: 'text-[#1A2B4A]',
+  navy: 'text-[#4A90D9]',
   teal: 'text-[#2ABFBF]',
   green: 'text-[#38A169]',
   gray: 'text-gray-700',

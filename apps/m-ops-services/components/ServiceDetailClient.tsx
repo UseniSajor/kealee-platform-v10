@@ -58,18 +58,18 @@ export function ServiceDetailClient({
         <div className="bg-white border-b border-gray-200">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <nav className="flex items-center gap-2 text-sm">
-              <Link href="/" className="text-gray-500 hover:text-[#1A2B4A]">
+              <Link href="/" className="text-gray-500 hover:text-[#4A90D9]">
                 Ops Services
               </Link>
               <span className="text-gray-300">/</span>
               <Link
                 href={`/services?category=${service.category}`}
-                className="text-gray-500 hover:text-[#1A2B4A]"
+                className="text-gray-500 hover:text-[#4A90D9]"
               >
                 {categoryLabel}
               </Link>
               <span className="text-gray-300">/</span>
-              <span className="text-[#1A2B4A] font-medium">{service.name}</span>
+              <span className="text-[#4A90D9] font-medium">{service.name}</span>
             </nav>
           </div>
         </div>
@@ -91,7 +91,7 @@ export function ServiceDetailClient({
                 >
                   {categoryLabel}
                 </span>
-                <h1 className="text-3xl font-bold text-[#1A2B4A]">{service.name}</h1>
+                <h1 className="text-3xl font-bold text-[#4A90D9]">{service.name}</h1>
               </div>
 
               {/* Description */}
@@ -105,7 +105,7 @@ export function ServiceDetailClient({
 
               {/* What's Included */}
               <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-                <h2 className="text-xl font-bold text-[#1A2B4A] mb-4 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-[#4A90D9] mb-4 flex items-center gap-2">
                   <svg
                     className="w-6 h-6 text-[#38A169]"
                     fill="none"
@@ -145,7 +145,7 @@ export function ServiceDetailClient({
 
               {/* What We Need From You */}
               <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-                <h2 className="text-xl font-bold text-[#1A2B4A] mb-4 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-[#4A90D9] mb-4 flex items-center gap-2">
                   <svg
                     className="w-6 h-6 text-[#E8793A]"
                     fill="none"
@@ -174,7 +174,7 @@ export function ServiceDetailClient({
               </div>
 
               {/* Delivery Timeline */}
-              <div className="bg-[#1A2B4A] rounded-xl p-6 mb-6 text-white">
+              <div className="bg-[#4A90D9] rounded-xl p-6 mb-6 text-white">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
                     <svg
@@ -201,7 +201,7 @@ export function ServiceDetailClient({
               {/* Sample Deliverable */}
               {service.sampleDeliverable && (
                 <div className="bg-gray-100 rounded-xl p-6 mb-6">
-                  <h3 className="font-semibold text-[#1A2B4A] mb-3">Sample Deliverable</h3>
+                  <h3 className="font-semibold text-[#4A90D9] mb-3">Sample Deliverable</h3>
                   <div className="bg-white rounded-lg border border-gray-200 p-8 flex items-center justify-center">
                     <div className="text-center">
                       <svg
@@ -241,7 +241,7 @@ export function ServiceDetailClient({
                 <div className="bg-white rounded-xl border border-gray-200 shadow-lg p-6">
                   {/* Price */}
                   <div className="text-center mb-6 pb-6 border-b border-gray-100">
-                    <p className="text-5xl font-bold font-mono text-[#1A2B4A]">
+                    <p className="text-5xl font-bold font-mono text-[#4A90D9]">
                       {formatPrice(service.price, service.priceUnit)}
                     </p>
                     <p className="text-gray-500 mt-1">
@@ -314,7 +314,7 @@ export function ServiceDetailClient({
                 {/* Bundle Suggestion */}
                 {frequentlyOrderedWith.length > 0 && (
                   <div className="mt-6 bg-[#E8793A]/5 border border-[#E8793A]/20 rounded-xl p-4">
-                    <p className="font-semibold text-[#1A2B4A] text-sm mb-2">
+                    <p className="font-semibold text-[#4A90D9] text-sm mb-2">
                       Frequently Ordered Together
                     </p>
                     <div className="space-y-2">
@@ -325,7 +325,7 @@ export function ServiceDetailClient({
                           className="flex items-center justify-between p-2 bg-white rounded-lg hover:shadow-sm transition-shadow"
                         >
                           <span className="text-sm text-gray-700">{related.name}</span>
-                          <span className="text-sm font-mono font-semibold text-[#1A2B4A]">
+                          <span className="text-sm font-mono font-semibold text-[#4A90D9]">
                             {formatPrice(related.price, related.priceUnit)}
                           </span>
                         </Link>
@@ -349,7 +349,7 @@ export function ServiceDetailClient({
               transition={{ duration: 0.5 }}
               className="mt-16"
             >
-              <h2 className="text-2xl font-bold text-[#1A2B4A] mb-6">Related Services</h2>
+              <h2 className="text-2xl font-bold text-[#4A90D9] mb-6">Related Services</h2>
               <div className="grid md:grid-cols-3 gap-6">
                 {relatedServices.slice(0, 3).map((related) => (
                   <ServiceCard

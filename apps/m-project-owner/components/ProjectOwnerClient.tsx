@@ -101,7 +101,7 @@ export function ProjectOwnerClient({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div variants={fadeInUp} className="text-center mb-12">
             <h2
-              className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4"
+              className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4"
               style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
             >
               Everything You Need to Manage Your Project
@@ -138,7 +138,7 @@ export function ProjectOwnerClient({
           <div className="text-center mb-12">
             <SectionLabel text="OWNER PACKAGES" color="navy" />
             <h2
-              className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mt-4 mb-4"
+              className="text-3xl md:text-4xl font-bold text-[#4A90D9] mt-4 mb-4"
               style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
             >
               Simple, Clear Pricing
@@ -166,7 +166,7 @@ export function ProjectOwnerClient({
 
       {/* SECTION 4: PM SERVICES */}
       <motion.section
-        className="py-16 md:py-24 bg-[#1A2B4A]"
+        className="py-16 md:py-24 bg-[#4A90D9]"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-100px' }}
@@ -227,7 +227,7 @@ export function ProjectOwnerClient({
           <motion.div variants={fadeInUp} className="text-center mb-12">
             <SectionLabel text="PLATFORM INTEGRATIONS" color="teal" />
             <h2
-              className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mt-4 mb-4"
+              className="text-3xl md:text-4xl font-bold text-[#4A90D9] mt-4 mb-4"
               style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
             >
               Connected to the Entire Platform
@@ -251,7 +251,7 @@ export function ProjectOwnerClient({
                   <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
-                  <span className="px-3 py-1 bg-[#1A2B4A]/10 text-[#1A2B4A] rounded-full text-sm font-medium">
+                  <span className="px-3 py-1 bg-[#4A90D9]/10 text-[#4A90D9] rounded-full text-sm font-medium">
                     {integration.to}
                   </span>
                 </div>
@@ -275,7 +275,7 @@ export function ProjectOwnerClient({
           <div className="text-center mb-12">
             <SectionLabel text="HOW IT WORKS" color="orange" />
             <h2
-              className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mt-4 mb-4"
+              className="text-3xl md:text-4xl font-bold text-[#4A90D9] mt-4 mb-4"
               style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
             >
               Get Started in Four Simple Steps
@@ -297,7 +297,7 @@ export function ProjectOwnerClient({
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2
-            className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-6"
+            className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-6"
             style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
           >
             Ready to Take Control?
@@ -318,7 +318,7 @@ export function ProjectOwnerClient({
             </Link>
             <Link
               href="/demo"
-              className="inline-flex items-center justify-center px-8 py-4 bg-white text-[#1A2B4A] font-semibold rounded-lg text-lg border-2 border-[#1A2B4A] hover:bg-[#1A2B4A] hover:text-white transition-colors"
+              className="inline-flex items-center justify-center px-8 py-4 bg-white text-[#4A90D9] font-semibold rounded-lg text-lg border-2 border-[#4A90D9] hover:bg-[#4A90D9] hover:text-white transition-colors"
             >
               Watch Demo
             </Link>

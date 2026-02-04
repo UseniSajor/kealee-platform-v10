@@ -15,7 +15,7 @@ export interface FeatureCardProps {
 }
 
 const iconColorClasses = {
-  navy: 'text-[#1A2B4A]',
+  navy: 'text-[#4A90D9]',
   orange: 'text-[#E8793A]',
   teal: 'text-[#2ABFBF]',
   green: 'text-[#38A169]',
@@ -37,7 +37,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
 
       {/* Title */}
       <h4
-        className="text-lg font-bold text-[#1A2B4A] mb-2"
+        className="text-lg font-bold text-[#4A90D9] mb-2"
         style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
       >
         {title}

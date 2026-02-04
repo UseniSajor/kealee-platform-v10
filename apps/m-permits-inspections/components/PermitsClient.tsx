@@ -108,7 +108,7 @@ export function PermitsClient({
             className="text-center mb-12"
           >
             <SectionLabel>The Kealee Difference</SectionLabel>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4">
               Stop Fighting the Permit Process
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -187,7 +187,7 @@ export function PermitsClient({
             className="text-center mb-12"
           >
             <SectionLabel color="green">Platform Features</SectionLabel>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4">
               Everything You Need to Get Approved
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -208,7 +208,7 @@ export function PermitsClient({
                 <div className="w-12 h-12 rounded-xl bg-[#38A169]/10 text-[#38A169] flex items-center justify-center mb-4">
                   {feature.icon}
                 </div>
-                <h3 className="text-lg font-bold text-[#1A2B4A] mb-2">{feature.title}</h3>
+                <h3 className="text-lg font-bold text-[#4A90D9] mb-2">{feature.title}</h3>
                 <p className="text-gray-600">{feature.description}</p>
               </motion.div>
             ))}
@@ -227,7 +227,7 @@ export function PermitsClient({
             className="text-center mb-12"
           >
             <SectionLabel>Permit Types</SectionLabel>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4">
               All Major Permit Types Supported
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -245,10 +245,10 @@ export function PermitsClient({
                 transition={{ duration: 0.4, delay: index * 0.05 }}
                 className="bg-gray-50 rounded-xl p-4 text-center hover:bg-[#38A169]/5 hover:border-[#38A169] border border-transparent transition-all cursor-pointer"
               >
-                <div className="w-12 h-12 mx-auto rounded-full bg-[#1A2B4A]/10 text-[#1A2B4A] flex items-center justify-center mb-3">
+                <div className="w-12 h-12 mx-auto rounded-full bg-[#4A90D9]/10 text-[#4A90D9] flex items-center justify-center mb-3">
                   {type.icon}
                 </div>
-                <h3 className="font-semibold text-[#1A2B4A] text-sm">{type.name}</h3>
+                <h3 className="font-semibold text-[#4A90D9] text-sm">{type.name}</h3>
                 <p className="text-xs text-gray-500 mt-1">{type.description}</p>
               </motion.div>
             ))}
@@ -257,7 +257,7 @@ export function PermitsClient({
       </section>
 
       {/* Jurisdiction Map Section */}
-      <section className="py-20 bg-[#1A2B4A] text-white">
+      <section className="py-20 bg-[#4A90D9] text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -329,7 +329,7 @@ export function PermitsClient({
             className="text-center mb-12"
           >
             <SectionLabel color="green">Pricing</SectionLabel>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4">
               Simple, Project-Based Pricing
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -381,7 +381,7 @@ export function PermitsClient({
             className="text-center mb-12"
           >
             <SectionLabel>FAQ</SectionLabel>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4">
               Common Questions
             </h2>
           </motion.div>

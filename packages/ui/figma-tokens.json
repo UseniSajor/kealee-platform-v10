@@ -3,9 +3,9 @@
     "colors": {
       "brand": {
         "navy": {
-          "value": "#1A2B4A",
+          "value": "#4A90D9",
           "type": "color",
-          "description": "Primary brand color - Trust & Professionalism"
+          "description": "Primary brand color - Trust & Professionalism (Sky Blue)"
         },
         "orange": {
           "value": "#E8793A",
@@ -24,17 +24,17 @@
         }
       },
       "navy": {
-        "50": { "value": "#E8EBF0", "type": "color" },
-        "100": { "value": "#C5CCD8", "type": "color" },
-        "200": { "value": "#9FADC0", "type": "color" },
-        "300": { "value": "#798DA7", "type": "color" },
-        "400": { "value": "#5C7594", "type": "color" },
-        "500": { "value": "#3F5D81", "type": "color" },
-        "600": { "value": "#375279", "type": "color" },
-        "700": { "value": "#2D446E", "type": "color" },
-        "800": { "value": "#243764", "type": "color" },
-        "900": { "value": "#1A2B4A", "type": "color", "description": "Base navy" },
-        "950": { "value": "#0F1A2E", "type": "color", "description": "Darker navy for dark mode" }
+        "50": { "value": "#EBF4FC", "type": "color" },
+        "100": { "value": "#C9E0F5", "type": "color" },
+        "200": { "value": "#A7CCEE", "type": "color" },
+        "300": { "value": "#85B8E7", "type": "color" },
+        "400": { "value": "#63A4E0", "type": "color" },
+        "500": { "value": "#4A90D9", "type": "color", "description": "Base sky blue" },
+        "600": { "value": "#3A7AC0", "type": "color" },
+        "700": { "value": "#2A64A7", "type": "color" },
+        "800": { "value": "#1A4E8E", "type": "color" },
+        "900": { "value": "#2A4A6C", "type": "color", "description": "Dark sky blue" },
+        "950": { "value": "#1A3A5C", "type": "color", "description": "Darker sky blue for dark mode" }
       },
       "orange": {
         "50": { "value": "#FEF3EC", "type": "color" },

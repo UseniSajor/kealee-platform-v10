@@ -19,7 +19,7 @@ export interface StatsBarProps {
 
 export const StatsBar: React.FC<StatsBarProps> = ({ stats, className }) => {
   return (
-    <section className={cn('w-full bg-[#1A2B4A] py-12 md:py-16', className)}>
+    <section className={cn('w-full bg-[#4A90D9] py-12 md:py-16', className)}>
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {stats.map((stat, index) => (

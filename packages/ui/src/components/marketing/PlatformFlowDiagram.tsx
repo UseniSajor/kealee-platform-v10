@@ -79,10 +79,10 @@ const colorConfig = {
     badge: 'bg-[#E8793A]/20 text-[#E8793A]',
   },
   navy: {
-    bg: 'bg-[#1A2B4A]/10',
-    border: 'border-[#1A2B4A]',
-    text: 'text-[#1A2B4A]',
-    badge: 'bg-[#1A2B4A]/20 text-[#1A2B4A]',
+    bg: 'bg-[#4A90D9]/10',
+    border: 'border-[#4A90D9]',
+    text: 'text-[#4A90D9]',
+    badge: 'bg-[#4A90D9]/20 text-[#4A90D9]',
   },
 };
 

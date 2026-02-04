@@ -126,9 +126,9 @@ export function RegisterForm({ onSubmit, loginUrl = '/login' }: RegisterFormProp
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
-            <span className="text-3xl font-bold text-[#1A2B4A]">Kealee</span>
+            <span className="text-3xl font-bold text-[#4A90D9]">Kealee</span>
           </Link>
-          <h2 className="mt-4 text-2xl font-bold text-[#1A2B4A]">Create your account</h2>
+          <h2 className="mt-4 text-2xl font-bold text-[#4A90D9]">Create your account</h2>
           <p className="mt-2 text-gray-600">
             {step === 'role' ? 'First, tell us about yourself' : 'Enter your details to get started'}
           </p>
@@ -160,7 +160,7 @@ export function RegisterForm({ onSubmit, loginUrl = '/login' }: RegisterFormProp
                       }`}
                     >
                       <span className="text-2xl mb-2 block">{role.icon}</span>
-                      <p className="font-medium text-[#1A2B4A] text-sm">{role.label}</p>
+                      <p className="font-medium text-[#4A90D9] text-sm">{role.label}</p>
                       <p className="text-xs text-gray-500 mt-1">{role.description}</p>
                     </button>
                   ))}
@@ -225,7 +225,7 @@ export function RegisterForm({ onSubmit, loginUrl = '/login' }: RegisterFormProp
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="flex items-center gap-1 text-gray-500 hover:text-[#1A2B4A] mb-4 text-sm"
+                  className="flex items-center gap-1 text-gray-500 hover:text-[#4A90D9] mb-4 text-sm"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -238,7 +238,7 @@ export function RegisterForm({ onSubmit, loginUrl = '/login' }: RegisterFormProp
                   <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg mb-6">
                     <span className="text-xl">{selectedRoleConfig.icon}</span>
                     <div>
-                      <p className="font-medium text-[#1A2B4A] text-sm">{selectedRoleConfig.label}</p>
+                      <p className="font-medium text-[#4A90D9] text-sm">{selectedRoleConfig.label}</p>
                       <p className="text-xs text-gray-500">{selectedRoleConfig.description}</p>
                     </div>
                   </div>

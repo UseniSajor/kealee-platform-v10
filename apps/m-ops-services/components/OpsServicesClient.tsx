@@ -128,7 +128,7 @@ export function OpsServicesClient({
           <motion.div variants={fadeInUp}>
             <SectionLabel text="PROJECT MANAGEMENT SOFTWARE — SaaS" color="orange" />
             <h2
-              className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mt-4 mb-4"
+              className="text-3xl md:text-4xl font-bold text-[#4A90D9] mt-4 mb-4"
               style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
             >
               Run Your Projects from One Dashboard
@@ -147,7 +147,7 @@ export function OpsServicesClient({
                 </svg>
               </div>
               <div>
-                <p className="font-semibold text-[#1A2B4A]">PM Software = YOU run your projects</p>
+                <p className="font-semibold text-[#4A90D9]">PM Software = YOU run your projects</p>
                 <p className="text-sm text-gray-600 mt-1">
                   This is self-service software. Your team uses the tools. No Kealee PM team involved.
                   <strong> Want Kealee's team to manage for you?</strong> See PM Operations below.
@@ -171,7 +171,7 @@ export function OpsServicesClient({
 
           {/* SaaS Pricing */}
           <motion.div variants={fadeInUp}>
-            <h3 className="text-2xl font-bold text-[#1A2B4A] mb-6 text-center">SaaS Plans</h3>
+            <h3 className="text-2xl font-bold text-[#4A90D9] mb-6 text-center">SaaS Plans</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
               {saasPricing.map((tier, index) => (
                 <PricingTierCard
@@ -234,7 +234,7 @@ export function OpsServicesClient({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionLabel text="OPERATIONS SERVICES — À LA CARTE" color="navy" />
           <h2
-            className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mt-4 mb-10"
+            className="text-3xl md:text-4xl font-bold text-[#4A90D9] mt-4 mb-10"
             style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
           >
             Professional Operations Services
@@ -255,7 +255,7 @@ export function OpsServicesClient({
 
           {/* Discount Callout */}
           <div className="p-4 bg-[#2ABFBF]/10 border border-[#2ABFBF]/20 rounded-xl text-center">
-            <p className="text-[#1A2B4A] font-medium">
+            <p className="text-[#4A90D9] font-medium">
               <span className="text-[#2ABFBF] font-bold">Volume Discounts:</span> Order 3+ services and save 10%. Order 5+ and save 15%.
             </p>
           </div>
@@ -274,7 +274,7 @@ export function OpsServicesClient({
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionLabel text="ESTIMATION SERVICES — À LA CARTE" color="teal" />
           <h2
-            className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mt-4 mb-10"
+            className="text-3xl md:text-4xl font-bold text-[#4A90D9] mt-4 mb-10"
             style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
           >
             Professional Estimation Services
@@ -293,7 +293,7 @@ export function OpsServicesClient({
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-[#1A2B4A]">{service.name}</h3>
+                        <h3 className="font-bold text-[#4A90D9]">{service.name}</h3>
                         {service.popular && (
                           <MarketingBadge text="Popular" color="orange" size="sm" />
                         )}
@@ -323,7 +323,7 @@ export function OpsServicesClient({
       {/* SECTION 5: PM OPERATIONS ADD-ON */}
       <motion.section
         id="pm-operations"
-        className="py-16 md:py-24 bg-[#1A2B4A]"
+        className="py-16 md:py-24 bg-[#4A90D9]"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-100px' }}
@@ -464,7 +464,7 @@ export function OpsServicesClient({
                     <MarketingBadge text="Most Popular" color="teal" size="sm" />
                   </div>
                 )}
-                <h4 className="font-bold text-[#1A2B4A] text-lg">{tier.name}</h4>
+                <h4 className="font-bold text-[#4A90D9] text-lg">{tier.name}</h4>
                 <div className="my-3">
                   <span
                     className="text-3xl font-bold text-[#E8793A]"
@@ -489,7 +489,7 @@ export function OpsServicesClient({
                   className={`block w-full py-2.5 text-center rounded-lg font-semibold transition-colors ${
                     tier.popular
                       ? 'bg-[#2ABFBF] text-white hover:bg-[#25a8a8]'
-                      : 'bg-gray-100 text-[#1A2B4A] hover:bg-gray-200'
+                      : 'bg-gray-100 text-[#4A90D9] hover:bg-gray-200'
                   }`}
                 >
                   {tier.cta.label}
@@ -521,7 +521,7 @@ export function OpsServicesClient({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2
-              className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4"
+              className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4"
               style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
             >
               Built for Construction Professionals
@@ -535,7 +535,7 @@ export function OpsServicesClient({
                 className="flex-shrink-0 w-56 md:w-auto snap-start bg-gray-50 rounded-xl p-5 border border-gray-200"
               >
                 <div className="mb-3 text-[#E8793A]">{card.icon}</div>
-                <h3 className="font-bold text-[#1A2B4A] mb-1">{card.title}</h3>
+                <h3 className="font-bold text-[#4A90D9] mb-1">{card.title}</h3>
                 <p className="text-sm text-gray-600">{card.description}</p>
               </div>
             ))}
@@ -555,7 +555,7 @@ export function OpsServicesClient({
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2
-              className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-4"
+              className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-4"
               style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
             >
               Frequently Asked Questions
@@ -576,7 +576,7 @@ export function OpsServicesClient({
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2
-            className="text-3xl md:text-4xl font-bold text-[#1A2B4A] mb-6"
+            className="text-3xl md:text-4xl font-bold text-[#4A90D9] mb-6"
             style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
           >
             Ready to Streamline Your Operations?
@@ -594,7 +594,7 @@ export function OpsServicesClient({
             </Link>
             <Link
               href="#services"
-              className="inline-flex items-center justify-center px-8 py-4 bg-[#1A2B4A] text-white font-semibold rounded-lg text-lg hover:bg-[#1A2B4A]/90 transition-colors"
+              className="inline-flex items-center justify-center px-8 py-4 bg-[#4A90D9] text-white font-semibold rounded-lg text-lg hover:bg-[#4A90D9]/90 transition-colors"
             >
               Browse Services
             </Link>

@@ -20,14 +20,14 @@ export interface ProcessStepsProps {
 }
 
 const accentColors = {
-  navy: 'bg-[#1A2B4A] text-white',
+  navy: 'bg-[#4A90D9] text-white',
   orange: 'bg-[#E8793A] text-white',
   teal: 'bg-[#2ABFBF] text-white',
   green: 'bg-[#38A169] text-white',
 };
 
 const lineColors = {
-  navy: 'bg-[#1A2B4A]',
+  navy: 'bg-[#4A90D9]',
   orange: 'bg-[#E8793A]',
   teal: 'bg-[#2ABFBF]',
   green: 'bg-[#38A169]',
@@ -72,7 +72,7 @@ export const ProcessSteps: React.FC<ProcessStepsProps> = ({
 
             {/* Title */}
             <h4
-              className="text-lg font-bold text-[#1A2B4A] mb-2"
+              className="text-lg font-bold text-[#4A90D9] mb-2"
               style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
             >
               {step.title}
@@ -89,7 +89,7 @@ export const ProcessSteps: React.FC<ProcessStepsProps> = ({
                 <svg
                   className={cn(
                     'w-4 h-4',
-                    accentColor === 'navy' && 'text-[#1A2B4A]',
+                    accentColor === 'navy' && 'text-[#4A90D9]',
                     accentColor === 'orange' && 'text-[#E8793A]',
                     accentColor === 'teal' && 'text-[#2ABFBF]',
                     accentColor === 'green' && 'text-[#38A169]'
@@ -138,7 +138,7 @@ export const ProcessSteps: React.FC<ProcessStepsProps> = ({
             {/* Content */}
             <div className="pt-2">
               <h4
-                className="text-lg font-bold text-[#1A2B4A] mb-1"
+                className="text-lg font-bold text-[#4A90D9] mb-1"
                 style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
               >
                 {step.title}

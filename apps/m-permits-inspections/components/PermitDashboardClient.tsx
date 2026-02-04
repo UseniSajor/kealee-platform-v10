@@ -97,7 +97,7 @@ function PermitCard({
     >
       <div className="flex items-start justify-between mb-2">
         <div>
-          <p className="font-semibold text-[#1A2B4A]">{permit.permitNumber}</p>
+          <p className="font-semibold text-[#4A90D9]">{permit.permitNumber}</p>
           <p className="text-sm text-gray-600 truncate max-w-[200px]">{permit.address}</p>
         </div>
         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${type.color}`}>
@@ -144,7 +144,7 @@ function PermitRow({
     >
       <td className="px-4 py-4">
         <div>
-          <p className="font-semibold text-[#1A2B4A]">{permit.permitNumber}</p>
+          <p className="font-semibold text-[#4A90D9]">{permit.permitNumber}</p>
           <p className="text-sm text-gray-600">{permit.address}</p>
         </div>
       </td>
@@ -186,7 +186,7 @@ function DetailPanel({ permit, onClose }: { permit: Permit; onClose: () => void 
     >
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-[#1A2B4A]">Permit Details</h2>
+          <h2 className="text-xl font-bold text-[#4A90D9]">Permit Details</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -200,7 +200,7 @@ function DetailPanel({ permit, onClose }: { permit: Permit; onClose: () => void 
         <div className="space-y-6">
           {/* Permit Number & Address */}
           <div>
-            <p className="text-2xl font-bold text-[#1A2B4A]">{permit.permitNumber}</p>
+            <p className="text-2xl font-bold text-[#4A90D9]">{permit.permitNumber}</p>
             <p className="text-gray-600 mt-1">{permit.address}</p>
           </div>
 
@@ -232,20 +232,20 @@ function DetailPanel({ permit, onClose }: { permit: Permit; onClose: () => void 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wide">Jurisdiction</p>
-              <p className="text-sm font-medium text-[#1A2B4A] mt-1">{permit.jurisdiction}</p>
+              <p className="text-sm font-medium text-[#4A90D9] mt-1">{permit.jurisdiction}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wide">Submitted</p>
-              <p className="text-sm font-medium text-[#1A2B4A] mt-1">{permit.submittedDate}</p>
+              <p className="text-sm font-medium text-[#4A90D9] mt-1">{permit.submittedDate}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wide">Last Updated</p>
-              <p className="text-sm font-medium text-[#1A2B4A] mt-1">{permit.lastUpdated}</p>
+              <p className="text-sm font-medium text-[#4A90D9] mt-1">{permit.lastUpdated}</p>
             </div>
             {permit.estimatedApproval && (
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wide">Est. Approval</p>
-                <p className="text-sm font-medium text-[#1A2B4A] mt-1">{permit.estimatedApproval}</p>
+                <p className="text-sm font-medium text-[#4A90D9] mt-1">{permit.estimatedApproval}</p>
               </div>
             )}
           </div>
@@ -255,11 +255,11 @@ function DetailPanel({ permit, onClose }: { permit: Permit; onClose: () => void 
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Assigned Inspector</p>
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-10 h-10 bg-[#1A2B4A] rounded-full flex items-center justify-center text-white font-medium">
+                <div className="w-10 h-10 bg-[#4A90D9] rounded-full flex items-center justify-center text-white font-medium">
                   {permit.inspector.split(' ').map(n => n[0]).join('')}
                 </div>
                 <div>
-                  <p className="font-medium text-[#1A2B4A]">{permit.inspector}</p>
+                  <p className="font-medium text-[#4A90D9]">{permit.inspector}</p>
                   <p className="text-sm text-gray-500">Building Inspector</p>
                 </div>
               </div>
@@ -305,7 +305,7 @@ function EmptyState() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       </div>
-      <h3 className="text-xl font-bold text-[#1A2B4A] mb-2">No permits yet</h3>
+      <h3 className="text-xl font-bold text-[#4A90D9] mb-2">No permits yet</h3>
       <p className="text-gray-600 mb-6 text-center max-w-md">
         Start your first permit application and track it from submission to approval.
       </p>
@@ -350,7 +350,7 @@ export function PermitDashboardClient({ initialPermits }: PermitDashboardClientP
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-2xl font-bold text-[#1A2B4A]">My Permits</h1>
+            <h1 className="text-2xl font-bold text-[#4A90D9]">My Permits</h1>
             <Link
               href="/apply"
               className="inline-flex items-center gap-2 px-4 py-2 bg-[#E8793A] text-white font-semibold rounded-lg hover:bg-[#d16a2f] transition-colors"
@@ -374,7 +374,7 @@ export function PermitDashboardClient({ initialPermits }: PermitDashboardClientP
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-[#1A2B4A]">My Permits</h1>
+          <h1 className="text-2xl font-bold text-[#4A90D9]">My Permits</h1>
           <Link
             href="/apply"
             className="inline-flex items-center gap-2 px-4 py-2 bg-[#E8793A] text-white font-semibold rounded-lg hover:bg-[#d16a2f] transition-colors"
@@ -435,7 +435,7 @@ export function PermitDashboardClient({ initialPermits }: PermitDashboardClientP
               onClick={() => setView('list')}
               className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
                 view === 'list'
-                  ? 'bg-[#1A2B4A] text-white'
+                  ? 'bg-[#4A90D9] text-white'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -445,7 +445,7 @@ export function PermitDashboardClient({ initialPermits }: PermitDashboardClientP
               onClick={() => setView('kanban')}
               className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
                 view === 'kanban'
-                  ? 'bg-[#1A2B4A] text-white'
+                  ? 'bg-[#4A90D9] text-white'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -510,7 +510,7 @@ export function PermitDashboardClient({ initialPermits }: PermitDashboardClientP
                         className="flex-shrink-0 w-72 bg-gray-100 rounded-xl p-4"
                       >
                         <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-semibold text-[#1A2B4A]">{column.title}</h3>
+                          <h3 className="font-semibold text-[#4A90D9]">{column.title}</h3>
                           <span className="px-2 py-0.5 bg-gray-200 text-gray-600 text-xs font-medium rounded-full">
                             {columnPermits.length}
                           </span>

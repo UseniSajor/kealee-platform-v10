@@ -25,21 +25,21 @@ export interface ModuleShowcaseCardProps {
 }
 
 const accentColors = {
-  navy: 'border-t-[#1A2B4A]',
+  navy: 'border-t-[#4A90D9]',
   orange: 'border-t-[#E8793A]',
   teal: 'border-t-[#2ABFBF]',
   green: 'border-t-[#38A169]',
 };
 
 const iconBgColors = {
-  navy: 'bg-[#1A2B4A]/10 text-[#1A2B4A]',
+  navy: 'bg-[#4A90D9]/10 text-[#4A90D9]',
   orange: 'bg-[#E8793A]/10 text-[#E8793A]',
   teal: 'bg-[#2ABFBF]/10 text-[#2ABFBF]',
   green: 'bg-[#38A169]/10 text-[#38A169]',
 };
 
 const ctaColors = {
-  navy: 'text-[#1A2B4A] hover:text-[#1A2B4A]/80',
+  navy: 'text-[#4A90D9] hover:text-[#4A90D9]/80',
   orange: 'text-[#E8793A] hover:text-[#E8793A]/80',
   teal: 'text-[#2ABFBF] hover:text-[#2ABFBF]/80',
   green: 'text-[#38A169] hover:text-[#38A169]/80',
@@ -79,7 +79,7 @@ export const ModuleShowcaseCard: React.FC<ModuleShowcaseCardProps> = ({
 
         {/* Title & Subtitle */}
         <h3
-          className="text-xl font-bold text-[#1A2B4A] mb-1"
+          className="text-xl font-bold text-[#4A90D9] mb-1"
           style={{ fontFamily: '"Clash Display", "Plus Jakarta Sans", sans-serif' }}
         >
           {title}
@@ -98,7 +98,7 @@ export const ModuleShowcaseCard: React.FC<ModuleShowcaseCardProps> = ({
               <svg
                 className={cn(
                   'w-4 h-4 mr-2 mt-0.5 flex-shrink-0',
-                  accentColor === 'navy' && 'text-[#1A2B4A]',
+                  accentColor === 'navy' && 'text-[#4A90D9]',
                   accentColor === 'orange' && 'text-[#E8793A]',
                   accentColor === 'teal' && 'text-[#2ABFBF]',
                   accentColor === 'green' && 'text-[#38A169]'

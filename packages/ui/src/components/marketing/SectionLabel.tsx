@@ -13,7 +13,7 @@ export interface SectionLabelProps {
 }
 
 const colorClasses = {
-  navy: 'text-[#1A2B4A]',
+  navy: 'text-[#4A90D9]',
   orange: 'text-[#E8793A]',
   teal: 'text-[#2ABFBF]',
   green: 'text-[#38A169]',
