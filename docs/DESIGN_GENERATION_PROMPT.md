@@ -2108,5 +2108,516 @@ OUTPUT: Multi-page brand guidelines PDF-ready design
 
 ---
 
+## PROMPT 35: Homeowner Portal Landing Page
+
+```
+Design a marketing landing page for the Kealee Homeowner Portal (app.kealee.com).
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF, Green #38A169
+
+PURPOSE: Marketing page to convert visitors into paid homeowner portal clients
+
+HEADER:
+- Kealee logo
+- Navigation: Features | Services | Pricing | Resources
+- "Login" (text link, sky blue) | "Sign Up Free" (orange button)
+
+HERO SECTION:
+- Eyebrow: "FOR HOMEOWNERS"
+- Headline: "Take Control of Your Construction Project"
+- Subheadline: "Complete visibility into your project. Manage contractors, track payments, and ensure quality—all in one place."
+- Primary CTA: "Start Free Trial" (orange)
+- Secondary CTA: "See How It Works" (outline)
+- Hero image: Dashboard preview or homeowner reviewing plans on tablet
+- Trust bar: "1,000+ homeowners trust Kealee" | "85% on-time delivery" | "$50M+ projects protected"
+
+TAB NAVIGATION (Feature sections):
+┌──────────────────────────────────────────────────────────────────┐
+│  Dashboard  |  Contractors  |  Payments  |  Documents  |  Reports │
+└──────────────────────────────────────────────────────────────────┘
+
+TAB 1: PROJECT DASHBOARD
+- Real-time project status and timeline
+- Photo documentation feed
+- Milestone tracking with notifications
+- Screenshot of dashboard interface
+
+TAB 2: CONTRACTOR MANAGEMENT
+- Verified contractor profiles
+- Communication log
+- Performance tracking
+- Contract management
+- Screenshot of contractor list
+
+TAB 3: PAYMENT PROTECTION
+- Escrow payment system
+- Milestone-based releases
+- Payment history & schedule
+- "Funds protected until work approved"
+- Screenshot of payment dashboard
+
+TAB 4: DOCUMENT STORAGE
+- Centralized document hub
+- Contracts, permits, invoices
+- Version history
+- Secure sharing with contractors
+
+TAB 5: PROGRESS REPORTS
+- Weekly summary reports
+- Budget vs. actual tracking
+- Photo timeline
+- Export to PDF
+
+INTEGRATED SERVICES SECTION:
+"Access These Services From Your Dashboard"
+4 cards in a row:
+1. Estimation - "Get accurate cost estimates before you start" (teal)
+2. Permits - "We handle your permit applications" (green)
+3. Marketplace - "Find verified contractors" (sky blue)
+4. Finance - "Secure escrow payments" (green)
+
+PRICING PREVIEW:
+3 tiers: Starter $49/mo | Standard $99/mo | Premium $199/mo
+"View Full Pricing" link
+
+TESTIMONIALS:
+2-3 homeowner success stories with photos
+
+FINAL CTA:
+"Ready to build with confidence?"
+"Start Free Trial" (orange) | "Schedule Demo" (outline)
+
+FOOTER:
+Standard Kealee footer with links
+
+OUTPUT: Full landing page at 1440px desktop + 375px mobile
+```
+
+---
+
+## PROMPT 36: Contractor Portal Landing Page
+
+```
+Design a marketing landing page for the Kealee Contractor Portal (contractor.kealee.com).
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A (primary accent), Teal #2ABFBF, Green #38A169
+
+PURPOSE: Marketing page for GCs, builders, developers, commercial building owners, and investors
+
+HEADER:
+- Kealee logo with "Contractor" label
+- Navigation: Features | Pricing | Marketplace | Resources
+- "Login" (sky blue) | "Start Free Trial" (orange button)
+
+HERO SECTION:
+- Eyebrow: "FOR CONTRACTORS & DEVELOPERS"
+- Headline: "Win More Bids. Build More Projects."
+- Subheadline: "Complete project management platform for GCs, builders, and developers. Estimation tools, bid management, team collaboration, and more."
+- Primary CTA: "Start Free Trial" (orange)
+- Secondary CTA: "Watch Demo" (outline)
+- Hero image: Contractor on jobsite with tablet showing dashboard
+- Trust bar: "500+ contractors" | "3.5% commission" | "$2.4M avg won projects"
+
+TAB NAVIGATION:
+┌────────────────────────────────────────────────────────────────────────────┐
+│  Projects  |  Estimation  |  Bidding  |  Team  |  Schedule  |  Finances   │
+└────────────────────────────────────────────────────────────────────────────┘
+
+TAB 1: PROJECT MANAGEMENT
+- Multi-project dashboard
+- Status tracking across all projects
+- Client communication hub
+- Progress documentation
+- Screenshot of projects grid
+
+TAB 2: ESTIMATION TOOLS
+- AI-powered cost estimation
+- Assembly library with 1,000+ items
+- Material takeoffs
+- Bid-ready estimates
+- "Create estimate in minutes, not hours"
+- Screenshot of estimation interface
+
+TAB 3: BID MANAGEMENT
+- Marketplace opportunities
+- Bid submission workflow
+- Win/loss tracking
+- Competitive analysis
+- Screenshot of bid dashboard
+
+TAB 4: TEAM COLLABORATION
+- Team member management
+- Subcontractor portal
+- Role-based permissions
+- Communication tools
+- Screenshot of team view
+
+TAB 5: SCHEDULING
+- Gantt charts & timelines
+- Resource allocation
+- Milestone tracking
+- Calendar integration
+
+TAB 6: FINANCIAL MANAGEMENT
+- Budget tracking
+- Invoice generation
+- Payment processing
+- Profit margin analysis
+
+INTEGRATED SERVICES:
+"Platform Services Included"
+- Estimation Services - Access AI-powered estimates
+- Permits & Inspections - Streamlined permit processing
+- Marketplace - Receive project opportunities
+- Finance & Trust - Secure payment processing
+
+PRICING SECTION:
+4 tiers with orange "Most Popular" badge on Professional:
+- Starter: $99/mo (3 projects)
+- Professional: $249/mo (10 projects) ★ POPULAR
+- Business: $499/mo (25 projects)
+- Enterprise: Custom
+
+SOCIAL PROOF:
+- Contractor testimonials
+- "Trusted by 500+ DC-Baltimore contractors"
+- Logos of notable projects or certifications
+
+FINAL CTA:
+"Ready to grow your business?"
+"Start Free Trial" (orange) | "Contact Sales" (outline)
+
+OUTPUT: Full landing page at 1440px + 375px mobile
+```
+
+---
+
+## PROMPT 37: Professional Portal Landing Page
+
+```
+Design a marketing landing page for the Kealee Professional Portal (professional.kealee.com).
+
+BRAND: Sky Blue #4A90D9, Teal #2ABFBF (primary accent), Orange #E8793A, Green #38A169
+
+PURPOSE: Marketing page for architects, designers, and engineers
+
+HEADER:
+- Kealee logo with "Professional" label
+- Navigation: Features | Pricing | Resources | Help
+- "Login" (sky blue) | "Get Started Free" (teal button)
+
+HERO SECTION:
+- Eyebrow: "FOR ARCHITECTS, DESIGNERS & ENGINEERS"
+- Headline: "Design Project Management, Simplified"
+- Subheadline: "Track deliverables, manage clients, and coordinate permits. Built for the way design professionals actually work."
+- Primary CTA: "Get Started Free" (teal)
+- Secondary CTA: "See Features" (outline)
+- Hero image: Architect reviewing designs with client, or design studio with tablet showing dashboard
+- Trust bar: "200+ design firms" | "5 project phases tracked" | "35% faster approvals"
+
+TAB NAVIGATION:
+┌────────────────────────────────────────────────────────────────────────────┐
+│  Projects  |  Deliverables  |  Clients  |  Permits  |  Billing  |  Docs   │
+└────────────────────────────────────────────────────────────────────────────┘
+
+TAB 1: PROJECT MANAGEMENT
+- Design phase tracking (Pre-Design → CD → CA)
+- Visual timeline with milestones
+- Active projects dashboard
+- Proposal management
+- Screenshot of project phase view
+
+TAB 2: DELIVERABLE TRACKING
+- Deliverable pipeline view
+- Status: In Progress | Under Review | Approved
+- Due date tracking
+- Client feedback integration
+- "Never miss a deadline"
+- Screenshot of deliverables kanban
+
+TAB 3: CLIENT COLLABORATION
+- Client portal access
+- Review and approval workflows
+- Communication log
+- Meeting notes & action items
+- Screenshot of client view
+
+TAB 4: PERMIT COORDINATION
+- Permit application tracking
+- Inspection scheduling
+- Status notifications
+- Jurisdiction database
+- "85% first-try approval rate"
+
+TAB 5: BILLING & FEES
+- Fee schedule management
+- Invoice generation
+- Payment tracking
+- Phase-based billing
+- AIA standard phases support
+
+TAB 6: DOCUMENT MANAGEMENT
+- Drawing version control
+- Specification libraries
+- Secure client sharing
+- Archive management
+
+FEE STRUCTURE HIGHLIGHT:
+"Flexible Pricing for Design Professionals"
+- Free: Up to 3 projects
+- Professional: $149/mo (10 projects)
+- Studio: 3% of project fees (unlimited)
+- "No commission on projects under $10K"
+
+INTEGRATED SERVICES:
+- Estimation - "Get cost estimates for your designs"
+- Permits - "We coordinate permit submissions"
+
+DESIGN PHASES VISUALIZATION:
+Visual representation of AIA phases:
+Pre-Design (10%) → Schematic (15%) → DD (20%) → CD (35%) → Permit (5%) → CA (15%)
+
+TESTIMONIALS:
+- Architect testimonials focused on time savings and client satisfaction
+
+FINAL CTA:
+"Ready to streamline your practice?"
+"Get Started Free" (teal) | "Schedule Demo" (outline)
+
+OUTPUT: Full landing page at 1440px + 375px mobile
+```
+
+---
+
+## PROMPT 38: Portal Comparison Page
+
+```
+Design a portal comparison page helping visitors choose the right Kealee portal.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF
+
+HEADER:
+- Standard marketing header with Login/Sign Up
+
+HERO:
+- Headline: "Choose Your Portal"
+- Subheadline: "Kealee has specialized portals for every role in construction. Find the one that fits you."
+
+3-COLUMN COMPARISON:
+
+┌─────────────────────┬─────────────────────┬─────────────────────┐
+│   HOMEOWNER PORTAL  │  CONTRACTOR PORTAL  │ PROFESSIONAL PORTAL │
+├─────────────────────┼─────────────────────┼─────────────────────┤
+│   Icon: Home        │   Icon: HardHat     │   Icon: PenTool     │
+│   (sky blue)        │   (orange)          │   (teal)            │
+├─────────────────────┼─────────────────────┼─────────────────────┤
+│ "For Homeowners"    │ "For Contractors"   │ "For Professionals" │
+├─────────────────────┼─────────────────────┼─────────────────────┤
+│ Residential         │ GCs, Builders,      │ Architects,         │
+│ homeowners          │ Developers,         │ Designers,          │
+│ building or         │ Commercial Owners,  │ Engineers           │
+│ renovating          │ Investors           │                     │
+├─────────────────────┼─────────────────────┼─────────────────────┤
+│ FEATURES:           │ FEATURES:           │ FEATURES:           │
+│ ✓ Project dashboard │ ✓ Multi-project mgmt│ ✓ Phase tracking    │
+│ ✓ Contractor mgmt   │ ✓ Bid management    │ ✓ Deliverable mgmt  │
+│ ✓ Payment tracking  │ ✓ Estimation tools  │ ✓ Client collab     │
+│ ✓ Document storage  │ ✓ Assembly library  │ ✓ Fee management    │
+│ ✓ Progress reports  │ ✓ Team management   │ ✓ Permit coord      │
+│                     │ ✓ Scheduling        │ ✓ Document control  │
+│                     │ ✓ Subcontractor hub │                     │
+├─────────────────────┼─────────────────────┼─────────────────────┤
+│ PRICING:            │ PRICING:            │ PRICING:            │
+│ From $49/mo         │ From $99/mo         │ Free - 3% of fees   │
+├─────────────────────┼─────────────────────┼─────────────────────┤
+│ [Get Started]       │ [Start Trial]       │ [Get Started Free]  │
+│ (orange)            │ (orange)            │ (teal)              │
+└─────────────────────┴─────────────────────┴─────────────────────┘
+
+SERVICES ACCESS COMPARISON:
+Table showing which services each portal can access:
+| Service      | Homeowner | Contractor | Professional |
+|--------------|-----------|------------|--------------|
+| Estimation   | ✓         | ✓          | ✓            |
+| Permits      | ✓         | ✓          | ✓            |
+| Marketplace  | ✓         | ✓          | -            |
+| Finance      | ✓         | ✓          | ✓            |
+| PM Services  | ✓         | ✓          | -            |
+
+DECISION HELPER:
+"Not sure which portal is right for you?"
+- "I'm building or renovating my home" → Homeowner
+- "I'm a contractor looking for projects" → Contractor
+- "I'm a design professional" → Professional
+- "I'm a developer or investor" → Contractor
+
+CTA:
+"Still have questions?"
+"Contact Us" | "Schedule a Demo"
+
+OUTPUT: Comparison page at 1440px + responsive mobile
+```
+
+---
+
+## PROMPT 39: Services Overview Page
+
+```
+Design a services overview page showing all Kealee platform services.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF, Green #38A169
+
+HEADER:
+- Standard marketing header
+
+HERO:
+- Headline: "Platform Services"
+- Subheadline: "Powerful tools and services integrated into your portal dashboard"
+
+5 SERVICE CARDS (full-width sections, alternating layout):
+
+1. ESTIMATION SERVICES (Teal accent)
+   - Icon: Calculator
+   - "AI-Powered Construction Estimation"
+   - Description: "Get accurate cost estimates in 24 hours. Material takeoffs, labor analysis, and professional reports."
+   - Key features: AI accuracy, Assembly library, Multiple formats
+   - Pricing: $299 - $4,999 per estimate
+   - CTA: "Learn More" | "Request Estimate"
+   - Image: Estimation interface screenshot
+
+2. PERMITS & INSPECTIONS (Green accent)
+   - Icon: FileCheck
+   - "Permit Processing Made Simple"
+   - Description: "We handle your permit applications with 85% first-try approval rate."
+   - Key features: 3,000+ jurisdictions, Inspection coordination, Status tracking
+   - Pricing: $495 - $2,995 per permit
+   - CTA: "Learn More" | "Start Permit"
+   - Image: Permit dashboard screenshot
+
+3. CONTRACTOR MARKETPLACE (Sky Blue accent)
+   - Icon: Store
+   - "Find & Connect with Verified Contractors"
+   - Description: "Fair bidding platform with no pay-to-play. Only 3.5% commission on awarded projects."
+   - Key features: Verified contractors, Fair bidding, Protected payments
+   - Pricing: 3.5% commission (paid by contractor)
+   - CTA: "Browse Contractors" | "Post Project"
+   - Image: Marketplace browse screenshot
+
+4. FINANCE & TRUST (Green accent)
+   - Icon: Shield
+   - "Secure Payment Protection"
+   - Description: "Escrow services that protect both homeowners and contractors."
+   - Key features: Milestone payments, Escrow protection, Transparent fees
+   - Pricing: 1% escrow fee (max $500)
+   - CTA: "Learn More"
+   - Image: Payment flow diagram
+
+5. PM SERVICES (Orange accent)
+   - Icon: Briefcase
+   - "Managed Project Management"
+   - Description: "Expert project managers who handle the day-to-day so you don't have to."
+   - Key features: Dedicated PM, Weekly reports, Contractor coordination
+   - Pricing: $1,750 - $16,500/mo
+   - CTA: "Learn More" | "Contact Sales"
+   - Image: PM working with client
+
+INTEGRATION DIAGRAM:
+Visual showing how all services connect within the portal dashboard
+"All services accessible from your dashboard"
+
+FINAL CTA:
+"Ready to get started?"
+"Choose Your Portal" (orange) → links to comparison page
+
+OUTPUT: Full services page at 1440px + mobile
+```
+
+---
+
+## PROMPT 40: Mobile Portal Landing Pages
+
+```
+Design mobile-optimized versions of all three portal landing pages.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF
+
+SCREEN WIDTH: 375px (iPhone standard)
+
+COMMON MOBILE ELEMENTS:
+
+HEADER (64px):
+- Hamburger menu (left)
+- Kealee logo (center)
+- "Sign Up" button (right, compact)
+
+MOBILE MENU (slide-in):
+- Login / Sign Up buttons at top
+- Navigation links
+- Portal switcher
+- Close button
+
+HERO (mobile):
+- Eyebrow badge
+- Headline (2-3 lines max)
+- Subheadline (3-4 lines)
+- Stacked CTAs (primary full-width, secondary below)
+- Trust bar (horizontal scroll or 2x2 grid)
+
+FEATURES (mobile):
+- Horizontal scrollable tabs (not full tabs)
+- Or: Accordion sections (tap to expand)
+- Feature cards stacked vertically
+- Screenshots at 320px width
+
+PRICING (mobile):
+- Horizontal scroll for tier cards
+- Or: Stacked cards with "See All Plans" link
+- Sticky CTA bar at bottom
+
+SPECIFIC PAGES:
+
+1. HOMEOWNER MOBILE (app.kealee.com/mobile)
+   - Hero with home icon
+   - Feature accordions
+   - Service cards (2x2 grid)
+   - Pricing preview (swipeable)
+   - Bottom sticky: "Start Free Trial"
+
+2. CONTRACTOR MOBILE (contractor.kealee.com/mobile)
+   - Hero with hardhat icon
+   - Feature tabs (horizontal scroll)
+   - Stats cards (scrollable)
+   - Pricing tiers (swipeable)
+   - Bottom sticky: "Start Trial"
+
+3. PROFESSIONAL MOBILE (professional.kealee.com/mobile)
+   - Hero with pen icon
+   - Phase timeline (horizontal)
+   - Feature accordions
+   - Fee calculator
+   - Bottom sticky: "Get Started Free"
+
+MOBILE-SPECIFIC UX:
+- Thumb-friendly tap targets (44px minimum)
+- No hover states (tap only)
+- Swipe gestures for carousels
+- Sticky CTAs at bottom
+- Collapsible sections
+- Minimal text, more visuals
+
+BOTTOM STICKY CTA BAR:
+┌────────────────────────────────────────┐
+│  [Get Started Free]  (full width)      │
+└────────────────────────────────────────┘
+- 56px height
+- Slight shadow/border-top
+- Orange background, white text
+- Appears after scrolling past hero
+
+OUTPUT: 3 mobile landing pages at 375px width, with all scroll states
+```
+
+---
+
 *Generated for Kealee Platform v10 - February 2026*
 *Includes 3-Portal Architecture, Full Service Integration, and Complete Logo System*

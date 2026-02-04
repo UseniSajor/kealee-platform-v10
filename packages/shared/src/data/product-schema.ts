@@ -1733,7 +1733,7 @@ export const CLIENT_PORTALS: ClientPortal[] = [
     description: 'Project visibility and control for residential homeowners',
     primaryUsers: ['homeowner'],
     icon: 'Home',
-    color: 'navy',
+    color: 'skyBlue',
     loginRequired: true,
     features: [
       'Project dashboard',
@@ -1828,7 +1828,7 @@ export const PLATFORM_SERVICES: PlatformService[] = [
     description: 'Fair bidding platform for verified contractors',
     availableTo: ['homeowner', 'contractor', 'subcontractor'],
     icon: 'Store',
-    color: 'navy',
+    color: 'skyBlue',
     integrated: true,
   },
   {
