@@ -19,6 +19,53 @@ Use this prompt with AI design tools (Figma AI, Midjourney, DALL-E) or as a brie
 
 ---
 
+## Logo
+
+### Current Logo Elements
+The Kealee logo consists of two parts:
+
+**1. Bubble Icon Mark**
+- Cluster of overlapping circles representing collaboration, connection, and building blocks
+- Large yellow/gold circle (primary) with subtle wave texture
+- Medium orange circle (energy, action)
+- Small red/coral circle (accent)
+- Tiny yellow and white accent dots
+- Dark navy (#1A2B4A) outlines on all circles (2-3px stroke)
+
+**2. Wordmark**
+- "Kealee" in rounded, bubbly sans-serif font (similar to Quicksand, Nunito, or Varela Round)
+- Dark navy (#1A2B4A) color
+- Friendly, approachable, modern feel
+- "CONSTRUCTION" tagline in all-caps, letterspaced, smaller size below
+
+### Logo Color Palette
+```
+Yellow/Gold:    #F5C542 (primary bubble)
+Orange:         #E8793A (secondary bubble)
+Red/Coral:      #E85A4F (accent bubble)
+Navy:           #1A2B4A (outlines, wordmark)
+White:          #FFFFFF (highlight dots)
+```
+
+### Logo Variants Needed
+1. **Full logo** - Icon + "Kealee" + "CONSTRUCTION"
+2. **Logo without tagline** - Icon + "Kealee" only
+3. **Icon only** - Bubble cluster for favicons, app icons
+4. **Wordmark only** - "Kealee" text for tight spaces
+5. **Horizontal lockup** - Icon left, text right
+6. **Stacked lockup** - Icon above, text below
+7. **Dark mode** - White wordmark, vibrant bubbles
+8. **Monochrome** - Single color versions (navy, white)
+
+### Logo Usage Guidelines
+- Minimum size: 24px height for icon, 80px width for full logo
+- Clear space: Equal to height of the "K" on all sides
+- Never stretch, rotate, or add effects
+- Bubbles should always overlap in the same order
+- Maintain navy outlines in all color versions
+
+---
+
 ## Design Philosophy
 
 ### NOT Procore-Style
@@ -1726,5 +1773,340 @@ OUTPUT: Desktop and mobile with all states
 
 ---
 
+## PROMPT 29: Logo Refinement - Icon Mark
+
+```
+Refine and enhance the Kealee construction platform logo icon mark.
+
+CURRENT DESIGN:
+- Cluster of overlapping circles (bubbles) representing collaboration and building
+- Large yellow/gold circle with subtle wave texture
+- Medium orange circle
+- Small red/coral accent circle
+- Tiny accent dots
+- Dark navy outlines on all circles
+
+KEEP:
+- Bubbly, friendly, approachable aesthetic
+- Overlapping circle concept
+- Warm color palette (yellow, orange, red/coral)
+- Navy outlines for definition
+
+REFINE:
+- Simplify for better scalability (16px favicon to 512px app icon)
+- Ensure circles have consistent overlap pattern
+- Optimize outline weights for different sizes
+- Add subtle gradients or dimension to circles (not flat)
+- Consider adding a subtle construction element (abstract building shape formed by circles)
+- Ensure the wave texture in large circle is subtle, not distracting
+
+COLOR PALETTE:
+- Yellow/Gold: #F5C542
+- Orange: #E8793A
+- Red/Coral: #E85A4F
+- Navy: #1A2B4A
+- White: #FFFFFF (highlights)
+
+DELIVERABLES:
+1. Icon at 512x512px (app icon)
+2. Icon at 256x256px
+3. Icon at 64x64px
+4. Icon at 32x32px (favicon)
+5. Icon at 16x16px (small favicon)
+6. SVG vector version
+
+OUTPUT: Clean vector logo icon with all size variants
+```
+
+---
+
+## PROMPT 30: Logo Refinement - Full Wordmark
+
+```
+Refine and enhance the Kealee logo wordmark and full lockup.
+
+CURRENT DESIGN:
+- "Kealee" in rounded, bubbly sans-serif font
+- "CONSTRUCTION" tagline below in all-caps, letterspaced
+- Dark navy (#1A2B4A) color
+- Friendly, modern feel
+
+WORDMARK REQUIREMENTS:
+- Keep the bubbly, rounded font style (similar to Quicksand, Nunito, Varela Round, or custom)
+- "Kealee" should feel friendly but professional
+- Letters should have consistent rounded terminals
+- The 'K' should be distinctive and work as a standalone letter mark
+- Consider custom lettering for uniqueness
+
+TAGLINE OPTIONS:
+- "CONSTRUCTION" (current)
+- "PLATFORM" (alternative - more tech-forward)
+- No tagline (cleaner for digital use)
+
+LOCKUP VARIATIONS:
+1. Horizontal: [Icon] Kealee CONSTRUCTION
+2. Horizontal compact: [Icon] Kealee
+3. Stacked: [Icon above] Kealee / CONSTRUCTION
+4. Wordmark only: Kealee
+
+TYPOGRAPHY SPECS:
+- Wordmark font weight: Semibold to Bold (600-700)
+- Tagline: Light to Regular (300-400), 150-200% letter-spacing
+- Tagline size: 30-40% of wordmark height
+
+COLORS:
+- Primary: Navy #1A2B4A
+- Dark mode: White #FFFFFF
+- Monochrome options needed
+
+DELIVERABLES:
+1. Full logo (icon + wordmark + tagline) - horizontal
+2. Logo without tagline - horizontal
+3. Stacked version
+4. Wordmark only
+5. All variants in light and dark mode
+6. SVG and PNG formats
+
+OUTPUT: Complete logo system with all variants at 1200px width
+```
+
+---
+
+## PROMPT 31: Logo - Dark Mode & Monochrome Variants
+
+```
+Create dark mode and monochrome variants of the Kealee logo.
+
+BASE LOGO:
+- Bubble icon cluster (yellow, orange, red with navy outlines)
+- "Kealee" wordmark in bubbly font
+- "CONSTRUCTION" tagline
+
+DARK MODE VARIANT:
+- Background: Navy 950 (#0F1A2E) or transparent
+- Wordmark: White (#FFFFFF)
+- Tagline: Gray 300 (#D1D5DB)
+- Icon bubbles: Keep original colors (yellow, orange, red)
+- Icon outlines: Lighter navy or white for visibility
+- Ensure sufficient contrast
+
+MONOCHROME VARIANTS:
+
+1. Navy on white:
+   - All elements in Navy #1A2B4A
+   - Bubbles as filled circles with lighter/darker navy shades
+   - OR bubbles as outlines only
+
+2. White on navy:
+   - All elements in White #FFFFFF
+   - Bubbles as filled circles with opacity variations
+   - OR bubbles as outlines only
+
+3. Black on white:
+   - All elements in pure black #000000
+   - For high-contrast printing
+
+4. Single-color teal:
+   - All elements in Teal #2ABFBF
+   - For brand accent usage
+
+USAGE GUIDELINES:
+- Dark mode: Use on dark backgrounds
+- Navy mono: Use on light backgrounds when color isn't available
+- White mono: Use on dark/colored backgrounds
+- Black: Use for fax, newspaper, low-quality print
+
+DELIVERABLES:
+1. Dark mode full logo
+2. Dark mode icon only
+3. Navy monochrome full logo
+4. White monochrome full logo
+5. Black monochrome full logo
+6. Teal monochrome full logo
+7. All as SVG and PNG
+
+OUTPUT: Complete monochrome logo system
+```
+
+---
+
+## PROMPT 32: Logo - Animated Version
+
+```
+Create a subtle animated version of the Kealee logo for digital use.
+
+BASE LOGO:
+- Bubble icon cluster
+- "Kealee" wordmark
+- Bubbly, friendly aesthetic
+
+ANIMATION CONCEPT - "Building Bubbles":
+The bubbles appear to "build up" or "bubble up" to form the logo.
+
+ANIMATION SEQUENCE (2-3 seconds total):
+1. Frame 0-0.3s: Small accent dot appears with slight bounce
+2. Frame 0.3-0.6s: Red/coral bubble scales up from dot with elastic ease
+3. Frame 0.6-0.9s: Orange bubble slides in and overlaps
+4. Frame 0.9-1.2s: Large yellow bubble scales up behind others
+5. Frame 1.2-1.5s: Navy outlines draw on around each bubble
+6. Frame 1.5-2.0s: Wordmark "Kealee" types in or fades in letter by letter
+7. Frame 2.0-2.5s: Tagline fades in
+8. Frame 2.5-3.0s: Subtle pulse/glow on complete logo, then static
+
+ANIMATION PRINCIPLES:
+- Elastic/bouncy easing (matches bubbly brand)
+- Each bubble has slight overshoot on scale
+- Outlines draw on smoothly
+- Final state should be perfectly static (no endless loops)
+
+ALTERNATIVE - HOVER STATE:
+- Subtle float animation on bubbles (gentle up/down)
+- Slight color shift on hover (brighter)
+- Can be used for web navigation
+
+DELIVERABLES:
+1. Lottie JSON animation file
+2. GIF version (for email, presentations)
+3. MP4 video (for social, video intros)
+4. CSS animation keyframes (for web implementation)
+5. Static end frame as PNG
+
+SPECIFICATIONS:
+- Duration: 2-3 seconds
+- Frame rate: 60fps
+- Size: 400x200px (horizontal lockup)
+- Transparent background
+
+OUTPUT: Animated logo package with all formats
+```
+
+---
+
+## PROMPT 33: Logo Application - App Icons & Favicons
+
+```
+Create app icons and favicons using the Kealee bubble logo.
+
+BASE ICON:
+- Bubble cluster icon mark only (no wordmark)
+- Yellow, orange, red bubbles with navy outlines
+
+APP ICON REQUIREMENTS:
+
+iOS App Icon:
+- 1024x1024px master
+- No transparency
+- Rounded corners applied by OS
+- Ensure icon is centered and fills space well
+- Consider subtle gradient background (light cream or white)
+
+Android Adaptive Icon:
+- 512x512px with safe zone consideration
+- Foreground: Bubble icon
+- Background: White or subtle gradient
+- Account for circular, squircle, and rounded square masks
+
+Favicon Package:
+- 16x16px - Simplified version (may need to reduce to 2-3 bubbles)
+- 32x32px - Simplified version
+- 48x48px - Full icon
+- 64x64px - Full icon
+- 180x180px - Apple touch icon
+- 192x192px - Android Chrome
+- 512x512px - PWA icon
+
+SIMPLIFICATION FOR SMALL SIZES:
+- 16-32px: Consider using just the large yellow bubble with a subtle orange accent
+- Remove smallest dots
+- Thicken outlines proportionally
+- Ensure it's recognizable at tiny sizes
+
+BACKGROUND OPTIONS:
+1. White background
+2. Light cream/warm white (#FEFCF3)
+3. Subtle radial gradient (warm to white)
+4. Transparent (where supported)
+
+DELIVERABLES:
+1. iOS App Icon (1024x1024)
+2. Android Adaptive Icon (512x512 foreground + background)
+3. Favicon ICO (multi-size)
+4. PNG favicons (16, 32, 48, 64, 180, 192, 512)
+5. SVG favicon
+6. Apple touch icon
+7. Maskable icon for PWA
+8. Social media profile picture (400x400)
+
+OUTPUT: Complete icon package ready for all platforms
+```
+
+---
+
+## PROMPT 34: Logo Usage Guidelines Page
+
+```
+Design a logo usage guidelines page for the Kealee brand book.
+
+PAGE LAYOUT (1440px wide, multi-page if needed):
+
+SECTION 1: PRIMARY LOGO
+- Full logo display (large, centered)
+- "Our logo represents collaboration, building, and friendly professionalism"
+- Clear space diagram (using 'K' height as unit)
+- Minimum size specifications
+
+SECTION 2: LOGO VARIANTS
+Grid showing all variants:
+| Full Logo | Without Tagline | Stacked | Icon Only | Wordmark |
+With labels and recommended use cases for each
+
+SECTION 3: COLOR VARIANTS
+Row of logo versions:
+- Full color on white
+- Full color on navy
+- Dark mode (white wordmark)
+- Navy monochrome
+- White monochrome
+
+SECTION 4: LOGO COLORS
+Color swatches with values:
+- Yellow #F5C542 (Pantone, CMYK, RGB)
+- Orange #E8793A
+- Red/Coral #E85A4F
+- Navy #1A2B4A
+
+SECTION 5: CLEAR SPACE & SIZING
+- Diagram showing minimum clear space
+- Minimum sizes for print and digital
+- "The logo should never be smaller than 80px wide"
+
+SECTION 6: DON'Ts
+Grid of incorrect usage examples (with red X):
+- Don't stretch or distort
+- Don't rotate
+- Don't change colors
+- Don't add shadows or effects
+- Don't place on busy backgrounds
+- Don't rearrange elements
+- Don't use low resolution versions
+- Don't crop the logo
+
+SECTION 7: BACKGROUNDS
+- Acceptable backgrounds (solid colors, simple gradients)
+- Photo overlay guidelines (minimum contrast)
+- When to use which variant
+
+DESIGN STYLE:
+- Clean, professional layout
+- Plenty of white space
+- Section headers in Navy
+- Body text in dark gray
+- Examples with subtle borders/shadows
+
+OUTPUT: Multi-page brand guidelines PDF-ready design
+```
+
+---
+
 *Generated for Kealee Platform v10 - February 2026*
-*Includes 3-Portal Architecture with Full Service Integration*
+*Includes 3-Portal Architecture, Full Service Integration, and Complete Logo System*
