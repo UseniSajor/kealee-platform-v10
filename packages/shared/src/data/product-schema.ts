@@ -25,7 +25,7 @@ export const BRAND_LOGO = {
     yellow: '#F5C542', // Large primary bubble
     orange: '#E8793A', // Medium secondary bubble
     coral: '#E85A4F', // Small accent bubble
-    navy: '#1A2B4A', // Outlines
+    skyBlue: '#4A90D9', // Outlines
     white: '#FFFFFF', // Highlight dots
   },
   // Wordmark styling
@@ -35,7 +35,7 @@ export const BRAND_LOGO = {
     altTagline: 'PLATFORM', // Alternative for tech contexts
     font: 'Rounded sans-serif (Quicksand, Nunito, Varela Round, or custom)',
     fontWeight: 600, // Semibold
-    color: '#1A2B4A',
+    color: '#4A90D9',
     darkModeColor: '#FFFFFF',
   },
   // Logo variants
@@ -46,7 +46,7 @@ export const BRAND_LOGO = {
     { id: 'icon-only', name: 'Icon Only', description: 'Bubble cluster only' },
     { id: 'wordmark', name: 'Wordmark Only', description: 'Kealee text only' },
     { id: 'dark-mode', name: 'Dark Mode', description: 'White wordmark, vibrant bubbles' },
-    { id: 'mono-navy', name: 'Monochrome Navy', description: 'Single color navy' },
+    { id: 'mono-sky-blue', name: 'Monochrome Sky Blue', description: 'Single color sky blue' },
     { id: 'mono-white', name: 'Monochrome White', description: 'Single color white' },
   ],
   // Sizing guidelines

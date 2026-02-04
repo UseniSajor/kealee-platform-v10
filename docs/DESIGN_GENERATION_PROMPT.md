@@ -30,11 +30,11 @@ The Kealee logo consists of two parts:
 - Medium orange circle (energy, action)
 - Small red/coral circle (accent)
 - Tiny yellow and white accent dots
-- Dark navy (#1A2B4A) outlines on all circles (2-3px stroke)
+- Sky blue (#4A90D9) outlines on all circles (2-3px stroke)
 
 **2. Wordmark**
 - "Kealee" in rounded, bubbly sans-serif font (similar to Quicksand, Nunito, or Varela Round)
-- Dark navy (#1A2B4A) color
+- Sky blue (#4A90D9) color
 - Friendly, approachable, modern feel
 - "CONSTRUCTION" tagline in all-caps, letterspaced, smaller size below
 
@@ -43,7 +43,7 @@ The Kealee logo consists of two parts:
 Yellow/Gold:    #F5C542 (primary bubble)
 Orange:         #E8793A (secondary bubble)
 Red/Coral:      #E85A4F (accent bubble)
-Navy:           #1A2B4A (outlines, wordmark)
+Sky Blue:       #4A90D9 (outlines, wordmark)
 White:          #FFFFFF (highlight dots)
 ```
 
@@ -55,14 +55,14 @@ White:          #FFFFFF (highlight dots)
 5. **Horizontal lockup** - Icon left, text right
 6. **Stacked lockup** - Icon above, text below
 7. **Dark mode** - White wordmark, vibrant bubbles
-8. **Monochrome** - Single color versions (navy, white)
+8. **Monochrome** - Single color versions (sky blue, white)
 
 ### Logo Usage Guidelines
 - Minimum size: 24px height for icon, 80px width for full logo
 - Clear space: Equal to height of the "K" on all sides
 - Never stretch, rotate, or add effects
 - Bubbles should always overlap in the same order
-- Maintain navy outlines in all color versions
+- Maintain sky blue outlines in all color versions
 
 ---
 
@@ -93,21 +93,21 @@ Avoid the typical construction software look (blue/gray corporate, heavy icons, 
 
 ### Primary Palette
 ```
-Navy #1A2B4A    - Trust, professionalism, primary text
-Orange #E8793A  - CTAs, energy, conversion elements
-Teal #2ABFBF    - Technology, innovation, highlights
-Green #38A169   - Success, approvals, positive outcomes
+Sky Blue #4A90D9  - Trust, professionalism, primary text
+Orange #E8793A    - CTAs, energy, conversion elements
+Teal #2ABFBF      - Technology, innovation, highlights
+Green #38A169     - Success, approvals, positive outcomes
 ```
 
 ### Usage Guidelines
-- **Navy**: Headlines, body text, footer backgrounds, serious messaging
+- **Sky Blue**: Headlines, body text, footer backgrounds, serious messaging
 - **Orange**: Primary buttons, pricing highlights, "Most Popular" badges, urgent CTAs
 - **Teal**: Feature icons, technology sections, AI features, secondary highlights
 - **Green**: Success states, approval badges, "Guaranteed" messaging
 
 ### Dark Mode
-- Background: Navy 950 (#0F1A2E)
-- Cards: Navy 900 (#1A2B4A)
+- Background: Sky Blue 950 (#1A3A5C)
+- Cards: Sky Blue 900 (#2A4A6C)
 - Text: White with gray-300 secondary
 - Accent colors remain vibrant
 
@@ -274,7 +274,7 @@ Pricing Numbers:    48-72px / JetBrains Mono / Bold
 
 ### CTA Hierarchy
 1. **Primary**: Orange background, white text (main conversion)
-2. **Secondary**: Navy background or outline (alternative path)
+2. **Secondary**: Sky Blue background or outline (alternative path)
 3. **Tertiary**: Ghost/text link (learn more)
 
 ### Persuasion Elements
@@ -585,7 +585,7 @@ Below are ready-to-use prompts for AI design tools.
 Design a modern SaaS landing page hero section for Kealee Platform, a construction project management company.
 
 BRAND:
-- Primary color: Navy #1A2B4A
+- Primary color: Sky Blue #4A90D9
 - Accent color: Orange #E8793A
 - Secondary: Teal #2ABFBF
 - Font: Clash Display for headlines, Plus Jakarta Sans for body
@@ -617,7 +617,7 @@ OUTPUT: Figma-ready design at 1440px width
 Design a hero section for a construction estimating service landing page.
 
 BRAND:
-- Navy #1A2B4A (primary text)
+- Sky Blue #4A90D9 (primary text)
 - Orange #E8793A (CTAs)
 - Teal #2ABFBF (AI/technology features)
 - Fonts: Clash Display (headlines), Plus Jakarta Sans (body), JetBrains Mono (prices)
@@ -648,7 +648,7 @@ OUTPUT: Desktop (1440px) and mobile (375px) versions
 Design a 4-tier pricing section for construction estimation services.
 
 BRAND COLORS:
-- Navy #1A2B4A
+- Sky Blue #4A90D9
 - Orange #E8793A (for "Most Popular" badge and primary CTAs)
 - Teal #2ABFBF
 - Green #38A169 (checkmarks)
@@ -690,7 +690,7 @@ OUTPUT: Figma component with both light and dark mode variants
 Design a responsive grid of service cards for construction operations services.
 
 BRAND:
-- Navy #1A2B4A
+- Sky Blue #4A90D9
 - Orange #E8793A
 - Background: White or Gray-50
 - Font: Plus Jakarta Sans
@@ -730,7 +730,7 @@ OUTPUT: Figma component with responsive variants
 Design a features section showcasing AI-powered estimation capabilities.
 
 BRAND:
-- Navy #1A2B4A (text)
+- Sky Blue #4A90D9 (text)
 - Teal #2ABFBF (AI feature highlights)
 - Orange #E8793A (CTAs)
 - Background: Light gray or white
@@ -777,7 +777,7 @@ OUTPUT: Section design for landing page (full width)
 Design a CSI MasterFormat division selector component for a construction estimating app.
 
 BRAND:
-- Navy #1A2B4A
+- Sky Blue #4A90D9
 - Teal #2ABFBF (selected state)
 - Orange #E8793A (hover accent)
 - Gray-100 (backgrounds)
@@ -800,7 +800,7 @@ COMPONENT REQUIREMENTS:
 - Division name below/beside
 - Selected state: Teal background, white text
 - Hover state: Light teal background
-- Unselected: White background, navy text
+- Unselected: White background, sky blue text
 - Small icon for each division (optional)
 - Show "All Divisions" option
 
@@ -817,7 +817,7 @@ OUTPUT: Figma component with all states (default, hover, selected, disabled)
 Design a compact estimate summary card showing cost breakdown.
 
 BRAND:
-- Navy #1A2B4A
+- Sky Blue #4A90D9
 - Orange #E8793A
 - Green #38A169 (positive/success)
 - JetBrains Mono for numbers
@@ -858,8 +858,8 @@ OUTPUT: Card component at 400px width, suitable for dashboard
 Design a homeowner dashboard with full sidebar navigation.
 
 BRAND:
-- Light mode: White background, Navy text
-- Dark mode: Navy 950 #0F1A2E background, White text
+- Light mode: White background, Sky Blue text
+- Dark mode: Sky Blue 950 #1A3A5C background, White text
 - Accent: Orange #E8793A (CTAs), Teal #2ABFBF (highlights)
 
 SIDEBAR NAVIGATION (240px, collapsible):
@@ -881,7 +881,7 @@ SIDEBAR NAVIGATION (240px, collapsible):
 - User profile card at bottom with avatar
 
 NAVIGATION STATES:
-- Default: Navy text, transparent background
+- Default: Sky Blue text, transparent background
 - Hover: Light teal background (#E5F8F8)
 - Active: Teal left border (3px), light teal background, teal text
 - Expanded section: Indented children with smaller text
@@ -915,7 +915,7 @@ OUTPUT: Both light and dark mode at 1440x900px, plus collapsed sidebar variant
 Design a 5-step mobile wizard for requesting a construction estimate.
 
 BRAND:
-- Navy #1A2B4A
+- Sky Blue #4A90D9
 - Orange #E8793A
 - Teal #2ABFBF
 - Screen width: 375px (iPhone)
@@ -965,7 +965,7 @@ OUTPUT: 5 mobile screens showing complete flow
 Design an assembly library browser for construction estimating.
 
 BRAND:
-- Navy #1A2B4A
+- Sky Blue #4A90D9
 - Teal #2ABFBF (selected)
 - Orange #E8793A (add button)
 - Gray-50 background
@@ -1013,7 +1013,7 @@ Professional construction estimator reviewing blueprints on large monitor in mod
 ## PROMPT 12: Image Generation - AI Technology
 
 ```
-Abstract geometric illustration representing AI analyzing construction data, connected nodes forming building outline, flowing data streams in navy blue and teal colors, orange accent highlights on key nodes, clean minimal style, dark background with subtle grid, modern tech aesthetic, vector illustration style, 16:9 aspect ratio
+Abstract geometric illustration representing AI analyzing construction data, connected nodes forming building outline, flowing data streams in sky blue and teal colors, orange accent highlights on key nodes, clean minimal style, dark background with subtle grid, modern tech aesthetic, vector illustration style, 16:9 aspect ratio
 ```
 
 ---
@@ -1029,7 +1029,7 @@ Construction project team meeting around conference table, architect showing tab
 ## PROMPT 14: Image Generation - Cost Analysis
 
 ```
-Clean geometric illustration of cost estimation workflow, three horizontal layers showing: blueprints at bottom, AI processing in middle with neural network pattern, polished estimate document at top, navy blue primary with teal and orange accents, isometric perspective, minimal modern style, white background, vector art, 4:3 aspect ratio
+Clean geometric illustration of cost estimation workflow, three horizontal layers showing: blueprints at bottom, AI processing in middle with neural network pattern, polished estimate document at top, sky blue primary with teal and orange accents, isometric perspective, minimal modern style, white background, vector art, 4:3 aspect ratio
 ```
 
 ---
@@ -1037,7 +1037,7 @@ Clean geometric illustration of cost estimation workflow, three horizontal layer
 ## PROMPT 15: Illustration - Value Engineering
 
 ```
-Simple geometric illustration showing cost optimization concept, downward trending cost line transforming into quality checkmark, dollar signs and building icons, navy blue and green color scheme with orange highlights, clean vector style, professional business illustration, transparent background, 1:1 aspect ratio for icon use
+Simple geometric illustration showing cost optimization concept, downward trending cost line transforming into quality checkmark, dollar signs and building icons, sky blue and green color scheme with orange highlights, clean vector style, professional business illustration, transparent background, 1:1 aspect ratio for icon use
 ```
 
 ---
@@ -1048,7 +1048,7 @@ Simple geometric illustration showing cost optimization concept, downward trendi
 Design a complete sidebar navigation component for Kealee Platform.
 
 BRAND:
-- Navy #1A2B4A
+- Sky Blue #4A90D9
 - Teal #2ABFBF (active state)
 - Orange #E8793A (badges)
 - Icons: Lucide icon set
@@ -1114,7 +1114,7 @@ OUTPUT: Figma component with all variants and states
 ```
 Design a 4-step estimation request wizard for residential homeowners.
 
-BRAND: Navy #1A2B4A, Orange #E8793A, Teal #2ABFBF
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF
 
 STEP 1: PROJECT DETAILS
 - Project name (text input)
@@ -1164,7 +1164,7 @@ OUTPUT: 4 desktop screens (1280px) + 4 mobile screens (375px)
 ```
 Design an estimate results page showing a completed construction estimate.
 
-BRAND: Navy #1A2B4A, Orange #E8793A, Teal #2ABFBF, Green #38A169
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF, Green #38A169
 
 HEADER:
 - Project name: "Smith Kitchen Renovation"
@@ -1221,7 +1221,7 @@ OUTPUT: Full page at 1440px width with all sections
 ```
 Design the Kealee Platform homepage showcasing all services.
 
-BRAND: Navy #1A2B4A, Orange #E8793A, Teal #2ABFBF, Green #38A169
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF, Green #38A169
 
 HERO SECTION:
 - Headline: "Build Better, Build Smarter"
@@ -1384,7 +1384,7 @@ OUTPUT: Figma file structure with empty frames ready for components
 Design mobile bottom navigation for Kealee Platform (Homeowner view).
 
 BRAND:
-- Background: White (light) / Navy 950 (dark)
+- Background: White (light) / Sky Blue 950 (dark)
 - Active: Teal #2ABFBF icon + label
 - Inactive: Gray 500 icons, no label
 - Orange #E8793A for notification badges
@@ -1434,7 +1434,7 @@ OUTPUT: Mobile navigation at 375px width, light + dark mode
 Design a login page for Kealee Platform client portals.
 
 BRAND:
-- Navy #1A2B4A (primary)
+- Sky Blue #4A90D9 (primary)
 - Orange #E8793A (CTA)
 - Teal #2ABFBF (links)
 - White background
@@ -1478,7 +1478,7 @@ OUTPUT: Desktop (1440px) and mobile (375px) versions
 ```
 Design a portal selection screen for new user signup.
 
-BRAND: Navy #1A2B4A, Orange #E8793A, Teal #2ABFBF
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF
 
 HEADLINE: "Choose Your Portal"
 SUBHEADLINE: "Select the option that best describes you"
@@ -1486,7 +1486,7 @@ SUBHEADLINE: "Select the option that best describes you"
 3 PORTAL CARDS (horizontal on desktop, stacked on mobile):
 
 1. HOMEOWNER PORTAL
-   - Icon: Home (navy)
+   - Icon: Home (sky blue)
    - "For Homeowners"
    - Description: "Manage your residential construction project from start to finish"
    - Features: Project tracking, Contractor search, Payment protection, Permits
@@ -1530,7 +1530,7 @@ Design the contractor portal dashboard (contractor.kealee.com).
 
 BRAND:
 - Light mode: White background
-- Dark mode: Navy 950 #0F1A2E
+- Dark mode: Sky Blue 950 #1A3A5C
 - Accent: Orange #E8793A (primary), Teal #2ABFBF (secondary)
 
 HEADER (64px):
@@ -1581,7 +1581,7 @@ Design the professional portal dashboard (professional.kealee.com).
 
 BRAND:
 - Light mode: White background
-- Dark mode: Navy 950 #0F1A2E
+- Dark mode: Sky Blue 950 #1A3A5C
 - Accent: Teal #2ABFBF (primary), Orange #E8793A (CTA)
 
 HEADER (64px):
@@ -1632,7 +1632,7 @@ OUTPUT: Full dashboard at 1440x900px
 ```
 Design the marketplace homepage (marketplace.kealee.com) showing service access.
 
-BRAND: Navy #1A2B4A, Orange #E8793A, Teal #2ABFBF
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF
 
 HEADER:
 - Logo: "Kealee Marketplace"
@@ -1680,7 +1680,7 @@ OUTPUT: Full page at 1440px desktop + 375px mobile
 ```
 Design service access cards for displaying within client portal dashboards.
 
-BRAND: Navy #1A2B4A, Orange #E8793A, Teal #2ABFBF
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF
 
 PURPOSE: Quick access to platform services from within any client portal dashboard
 
@@ -1701,7 +1701,7 @@ CARD GRID (4 cards, 2x2 or 4x1):
    - CTA: "View Permits" →
 
 3. CONTRACTOR MARKETPLACE
-   - Icon: Store (navy, 32px)
+   - Icon: Store (sky blue, 32px)
    - "Marketplace"
    - "Find verified contractors"
    - Status: "3 new bids" (if applicable)
@@ -1733,7 +1733,7 @@ OUTPUT: Component at 280px width per card, with hover state
 ```
 Design a responsive header component with login CTAs for marketing pages.
 
-BRAND: Navy #1A2B4A, Orange #E8793A, Teal #2ABFBF
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF
 
 DESKTOP HEADER (1440px, 72px height):
 
@@ -1745,7 +1745,7 @@ CENTER:
 - Dropdowns on hover
 
 RIGHT:
-- "Login" (text link, navy)
+- "Login" (text link, sky blue)
 - "Sign Up Free" (orange button, rounded)
 
 MOBILE HEADER (375px, 64px height):
@@ -1784,13 +1784,13 @@ CURRENT DESIGN:
 - Medium orange circle
 - Small red/coral accent circle
 - Tiny accent dots
-- Dark navy outlines on all circles
+- Sky blue outlines on all circles
 
 KEEP:
 - Bubbly, friendly, approachable aesthetic
 - Overlapping circle concept
 - Warm color palette (yellow, orange, red/coral)
-- Navy outlines for definition
+- Sky blue outlines for definition
 
 REFINE:
 - Simplify for better scalability (16px favicon to 512px app icon)
@@ -1804,7 +1804,7 @@ COLOR PALETTE:
 - Yellow/Gold: #F5C542
 - Orange: #E8793A
 - Red/Coral: #E85A4F
-- Navy: #1A2B4A
+- Sky Blue: #4A90D9
 - White: #FFFFFF (highlights)
 
 DELIVERABLES:
@@ -1828,7 +1828,7 @@ Refine and enhance the Kealee logo wordmark and full lockup.
 CURRENT DESIGN:
 - "Kealee" in rounded, bubbly sans-serif font
 - "CONSTRUCTION" tagline below in all-caps, letterspaced
-- Dark navy (#1A2B4A) color
+- Sky blue (#4A90D9) color
 - Friendly, modern feel
 
 WORDMARK REQUIREMENTS:
@@ -1855,7 +1855,7 @@ TYPOGRAPHY SPECS:
 - Tagline size: 30-40% of wordmark height
 
 COLORS:
-- Primary: Navy #1A2B4A
+- Primary: Sky Blue #4A90D9
 - Dark mode: White #FFFFFF
 - Monochrome options needed
 
@@ -1878,26 +1878,26 @@ OUTPUT: Complete logo system with all variants at 1200px width
 Create dark mode and monochrome variants of the Kealee logo.
 
 BASE LOGO:
-- Bubble icon cluster (yellow, orange, red with navy outlines)
+- Bubble icon cluster (yellow, orange, red with sky blue outlines)
 - "Kealee" wordmark in bubbly font
 - "CONSTRUCTION" tagline
 
 DARK MODE VARIANT:
-- Background: Navy 950 (#0F1A2E) or transparent
+- Background: Sky Blue 950 (#1A3A5C) or transparent
 - Wordmark: White (#FFFFFF)
 - Tagline: Gray 300 (#D1D5DB)
 - Icon bubbles: Keep original colors (yellow, orange, red)
-- Icon outlines: Lighter navy or white for visibility
+- Icon outlines: Lighter sky blue or white for visibility
 - Ensure sufficient contrast
 
 MONOCHROME VARIANTS:
 
-1. Navy on white:
-   - All elements in Navy #1A2B4A
-   - Bubbles as filled circles with lighter/darker navy shades
+1. Sky Blue on white:
+   - All elements in Sky Blue #4A90D9
+   - Bubbles as filled circles with lighter/darker sky blue shades
    - OR bubbles as outlines only
 
-2. White on navy:
+2. White on sky blue:
    - All elements in White #FFFFFF
    - Bubbles as filled circles with opacity variations
    - OR bubbles as outlines only
@@ -1912,14 +1912,14 @@ MONOCHROME VARIANTS:
 
 USAGE GUIDELINES:
 - Dark mode: Use on dark backgrounds
-- Navy mono: Use on light backgrounds when color isn't available
+- Sky blue mono: Use on light backgrounds when color isn't available
 - White mono: Use on dark/colored backgrounds
 - Black: Use for fax, newspaper, low-quality print
 
 DELIVERABLES:
 1. Dark mode full logo
 2. Dark mode icon only
-3. Navy monochrome full logo
+3. Sky blue monochrome full logo
 4. White monochrome full logo
 5. Black monochrome full logo
 6. Teal monochrome full logo
@@ -1948,7 +1948,7 @@ ANIMATION SEQUENCE (2-3 seconds total):
 2. Frame 0.3-0.6s: Red/coral bubble scales up from dot with elastic ease
 3. Frame 0.6-0.9s: Orange bubble slides in and overlaps
 4. Frame 0.9-1.2s: Large yellow bubble scales up behind others
-5. Frame 1.2-1.5s: Navy outlines draw on around each bubble
+5. Frame 1.2-1.5s: Sky blue outlines draw on around each bubble
 6. Frame 1.5-2.0s: Wordmark "Kealee" types in or fades in letter by letter
 7. Frame 2.0-2.5s: Tagline fades in
 8. Frame 2.5-3.0s: Subtle pulse/glow on complete logo, then static
@@ -1989,7 +1989,7 @@ Create app icons and favicons using the Kealee bubble logo.
 
 BASE ICON:
 - Bubble cluster icon mark only (no wordmark)
-- Yellow, orange, red bubbles with navy outlines
+- Yellow, orange, red bubbles with sky blue outlines
 
 APP ICON REQUIREMENTS:
 
@@ -2063,9 +2063,9 @@ With labels and recommended use cases for each
 SECTION 3: COLOR VARIANTS
 Row of logo versions:
 - Full color on white
-- Full color on navy
+- Full color on sky blue
 - Dark mode (white wordmark)
-- Navy monochrome
+- Sky blue monochrome
 - White monochrome
 
 SECTION 4: LOGO COLORS
@@ -2073,7 +2073,7 @@ Color swatches with values:
 - Yellow #F5C542 (Pantone, CMYK, RGB)
 - Orange #E8793A
 - Red/Coral #E85A4F
-- Navy #1A2B4A
+- Sky Blue #4A90D9
 
 SECTION 5: CLEAR SPACE & SIZING
 - Diagram showing minimum clear space
@@ -2099,7 +2099,7 @@ SECTION 7: BACKGROUNDS
 DESIGN STYLE:
 - Clean, professional layout
 - Plenty of white space
-- Section headers in Navy
+- Section headers in Sky Blue
 - Body text in dark gray
 - Examples with subtle borders/shadows
 
