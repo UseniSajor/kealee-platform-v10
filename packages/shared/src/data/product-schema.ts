@@ -338,10 +338,90 @@ export const HOMEOWNER_PLANS: PricingTier[] = [
 ];
 
 // =============================================================================
-// ARCHITECT PORTAL (architect.kealee.com)
+// CONTRACTOR PORTAL (contractor.kealee.com)
+// For GCs, builders, developers, commercial building owners, investors
 // =============================================================================
 
-export const ARCHITECT_PLANS: PricingTier[] = [
+export const CONTRACTOR_PLANS: PricingTier[] = [
+  {
+    id: 'starter',
+    name: 'Starter',
+    price: 99,
+    period: '/month',
+    description: 'For small contractors and individual builders',
+    features: [
+      'Up to 3 active projects',
+      'Basic bid management',
+      'Estimation tools',
+      'Document storage (5GB)',
+      'Email support',
+    ],
+    limits: { projects: 3, users: 3, storage: '5GB' },
+    cta: { label: 'Start Free Trial', href: '/signup?plan=starter' },
+  },
+  {
+    id: 'professional',
+    name: 'Professional',
+    price: 249,
+    period: '/month',
+    description: 'For growing construction companies',
+    features: [
+      'Up to 10 active projects',
+      'Advanced bid management',
+      'Full estimation suite',
+      'Assembly library access',
+      'Team collaboration (10 users)',
+      'Subcontractor portal',
+      'Priority support',
+    ],
+    limits: { projects: 10, users: 10, storage: '25GB' },
+    popular: true,
+    cta: { label: 'Start Free Trial', href: '/signup?plan=professional' },
+  },
+  {
+    id: 'business',
+    name: 'Business',
+    price: 499,
+    period: '/month',
+    description: 'For established contractors and developers',
+    features: [
+      'Up to 25 active projects',
+      'Unlimited team members',
+      'Custom assembly library',
+      'Advanced reporting & analytics',
+      'Marketplace priority placement',
+      'API access',
+      'Phone support',
+    ],
+    limits: { projects: 25, users: 'unlimited', storage: '100GB' },
+    cta: { label: 'Start Free Trial', href: '/signup?plan=business' },
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    price: 'Custom',
+    period: '',
+    description: 'For large organizations with custom needs',
+    features: [
+      'Unlimited projects',
+      'White-label options',
+      'Custom integrations',
+      'SSO & advanced security',
+      'Dedicated account manager',
+      'SLA guarantee',
+      '24/7 support',
+    ],
+    limits: { projects: 'unlimited', users: 'unlimited', storage: 'unlimited' },
+    cta: { label: 'Contact Sales', href: '/contact' },
+  },
+];
+
+// =============================================================================
+// PROFESSIONAL PORTAL (professional.kealee.com)
+// For architects, designers, and engineers
+// =============================================================================
+
+export const PROFESSIONAL_PLANS: PricingTier[] = [
   {
     id: 'free',
     name: 'Free',
@@ -410,6 +490,9 @@ export const ARCHITECT_PHASES: Record<ArchitectPhase, { label: string; percentag
   PERMIT: { label: 'Permitting', percentage: '5%' },
   CONSTRUCTION_ADMIN: { label: 'Construction Administration', percentage: '15%' },
 };
+
+// Legacy alias for backwards compatibility
+export const ARCHITECT_PLANS = PROFESSIONAL_PLANS;
 
 // =============================================================================
 // PERMITS & INSPECTIONS (permits.kealee.com)
@@ -1547,8 +1630,8 @@ export const STRUCTURED_DATA = {
 
 export type UserRole =
   | 'homeowner' // Residential homeowners
-  | 'architect'
-  | 'contractor' // GCs, developers, commercial building owners, investors
+  | 'contractor' // GCs, builders, developers, commercial building owners, investors
+  | 'professional' // Architects, designers, engineers
   | 'subcontractor'
   | 'estimator';
 
@@ -1561,7 +1644,7 @@ export interface NavItem {
   children?: NavItem[];
 }
 
-export interface AppPortal {
+export interface ClientPortal {
   id: string;
   name: string;
   shortName: string;
@@ -1570,9 +1653,28 @@ export interface AppPortal {
   primaryUsers: UserRole[];
   icon: string;
   color: string;
+  loginRequired: true;
+  features: string[];
 }
 
-export const APP_PORTALS: AppPortal[] = [
+export interface PlatformService {
+  id: string;
+  name: string;
+  shortName: string;
+  url?: string; // Some services are integrated, not standalone
+  description: string;
+  availableTo: UserRole[];
+  icon: string;
+  color: string;
+  integrated: boolean; // true = available within portal dashboards
+}
+
+// =============================================================================
+// CLIENT PORTALS (Login Required - Paid Clients)
+// These are the 3 main client-facing dashboards
+// =============================================================================
+
+export const CLIENT_PORTALS: ClientPortal[] = [
   {
     id: 'm-homeowner',
     name: 'Homeowner Portal',
@@ -1582,58 +1684,128 @@ export const APP_PORTALS: AppPortal[] = [
     primaryUsers: ['homeowner'],
     icon: 'Home',
     color: 'navy',
+    loginRequired: true,
+    features: [
+      'Project dashboard',
+      'Contractor management',
+      'Payment tracking & escrow',
+      'Document storage',
+      'Progress reports',
+      'Access to Estimation services',
+      'Access to Permits services',
+      'Access to Marketplace',
+    ],
   },
   {
-    id: 'm-architect',
-    name: 'Architect Portal',
-    shortName: 'Architect',
-    url: 'architect.kealee.com',
-    description: 'Design project management for architects and designers',
-    primaryUsers: ['architect'],
+    id: 'm-contractor',
+    name: 'Contractor Portal',
+    shortName: 'Contractor',
+    url: 'contractor.kealee.com',
+    description:
+      'Full project management for GCs, builders, developers, and commercial building owners',
+    primaryUsers: ['contractor'],
+    icon: 'HardHat',
+    color: 'orange',
+    loginRequired: true,
+    features: [
+      'Multi-project dashboard',
+      'Bid management',
+      'Estimation tools & assembly library',
+      'Team & subcontractor management',
+      'Schedule & Gantt charts',
+      'Budget tracking',
+      'Payment processing',
+      'Access to Marketplace (receive bids)',
+      'Access to Permits services',
+    ],
+  },
+  {
+    id: 'm-professional',
+    name: 'Professional Portal',
+    shortName: 'Professional',
+    url: 'professional.kealee.com',
+    description: 'Project management for architects, designers, and engineers',
+    primaryUsers: ['professional'],
     icon: 'PenTool',
     color: 'teal',
+    loginRequired: true,
+    features: [
+      'Design project dashboard',
+      'Phase & deliverable tracking',
+      'Client collaboration',
+      'Fee & payment management',
+      'Permit coordination',
+      'Document management',
+      'Access to Estimation services',
+      'Access to Permits services',
+    ],
   },
+];
+
+// =============================================================================
+// PLATFORM SERVICES (Available within Client Portals)
+// These are services that clients can access from their dashboard
+// =============================================================================
+
+export const PLATFORM_SERVICES: PlatformService[] = [
   {
-    id: 'm-permits-inspections',
-    name: 'Permits & Inspections',
-    shortName: 'Permits',
-    url: 'permits.kealee.com',
-    description: 'AI-powered permit processing and inspection coordination',
-    primaryUsers: ['project_owner', 'homeowner', 'contractor', 'architect'],
-    icon: 'FileCheck',
-    color: 'green',
-  },
-  {
-    id: 'm-ops-services',
-    name: 'Ops & PM Services',
-    shortName: 'Ops',
-    url: 'ops.kealee.com',
-    description: 'Project management software and managed services',
-    primaryUsers: ['contractor', 'project_owner'],
-    icon: 'Briefcase',
-    color: 'orange',
-  },
-  {
-    id: 'm-estimation',
+    id: 'estimation',
     name: 'Estimation Services',
     shortName: 'Estimation',
     url: 'estimation.kealee.com',
     description: 'AI-powered construction cost estimation',
-    primaryUsers: ['homeowner', 'contractor', 'estimator'],
+    availableTo: ['homeowner', 'contractor', 'professional', 'estimator'],
     icon: 'Calculator',
     color: 'teal',
+    integrated: true,
   },
   {
-    id: 'm-marketplace',
+    id: 'permits',
+    name: 'Permits & Inspections',
+    shortName: 'Permits',
+    url: 'permits.kealee.com',
+    description: 'AI-powered permit processing and inspection coordination',
+    availableTo: ['homeowner', 'contractor', 'professional'],
+    icon: 'FileCheck',
+    color: 'green',
+    integrated: true,
+  },
+  {
+    id: 'marketplace',
     name: 'Contractor Marketplace',
     shortName: 'Marketplace',
     url: 'marketplace.kealee.com',
     description: 'Fair bidding platform for verified contractors',
-    primaryUsers: ['homeowner', 'contractor', 'subcontractor'],
+    availableTo: ['homeowner', 'contractor', 'subcontractor'],
     icon: 'Store',
     color: 'navy',
+    integrated: true,
+  },
+  {
+    id: 'finance',
+    name: 'Finance & Trust',
+    shortName: 'Finance',
+    description: 'Escrow, payments, and financial services',
+    availableTo: ['homeowner', 'contractor', 'professional'],
+    icon: 'Shield',
+    color: 'green',
+    integrated: true,
+  },
+  {
+    id: 'pm-services',
+    name: 'PM Services',
+    shortName: 'PM Services',
+    url: 'ops.kealee.com',
+    description: 'Managed project management services',
+    availableTo: ['homeowner', 'contractor'],
+    icon: 'Briefcase',
+    color: 'orange',
+    integrated: true,
   },
 ];
+
+// Legacy export for backwards compatibility
+export const APP_PORTALS = CLIENT_PORTALS;
 
 // Navigation structure for Homeowner dashboard (residential homeowners)
 export const HOMEOWNER_NAVIGATION: NavItem[] = [
@@ -1779,16 +1951,148 @@ export const CONTRACTOR_NAVIGATION: NavItem[] = [
     label: 'Team',
     href: '/team',
     icon: 'Users',
+    children: [
+      { id: 'team-members', label: 'Team Members', href: '/team' },
+      { id: 'team-subs', label: 'Subcontractors', href: '/team/subcontractors' },
+      { id: 'team-invites', label: 'Invitations', href: '/team/invites' },
+    ],
+  },
+  {
+    id: 'permits',
+    label: 'Permits',
+    href: '/permits',
+    icon: 'FileCheck',
+    children: [
+      { id: 'permits-active', label: 'Active Permits', href: '/permits' },
+      { id: 'permits-new', label: 'New Application', href: '/permits/new' },
+      { id: 'permits-inspections', label: 'Inspections', href: '/permits/inspections' },
+    ],
   },
   {
     id: 'finances',
     label: 'Finances',
     href: '/finances',
     icon: 'DollarSign',
+    children: [
+      { id: 'finances-overview', label: 'Overview', href: '/finances' },
+      { id: 'finances-invoices', label: 'Invoices', href: '/finances/invoices' },
+      { id: 'finances-payments', label: 'Payments', href: '/finances/payments' },
+    ],
+  },
+  {
+    id: 'documents',
+    label: 'Documents',
+    href: '/documents',
+    icon: 'FileText',
+  },
+  {
+    id: 'reports',
+    label: 'Reports',
+    href: '/reports',
+    icon: 'BarChart3',
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    href: '/settings',
+    icon: 'Settings',
   },
 ];
 
-// Marketing site navigation
+// Navigation structure for Professional dashboard
+// Includes: Architects, designers, engineers
+export const PROFESSIONAL_NAVIGATION: NavItem[] = [
+  {
+    id: 'dashboard',
+    label: 'Dashboard',
+    href: '/dashboard',
+    icon: 'LayoutDashboard',
+  },
+  {
+    id: 'projects',
+    label: 'Projects',
+    href: '/projects',
+    icon: 'FolderKanban',
+    children: [
+      { id: 'projects-active', label: 'Active Projects', href: '/projects?status=active' },
+      { id: 'projects-completed', label: 'Completed', href: '/projects?status=completed' },
+      { id: 'projects-proposals', label: 'Proposals', href: '/projects/proposals' },
+    ],
+  },
+  {
+    id: 'deliverables',
+    label: 'Deliverables',
+    href: '/deliverables',
+    icon: 'Package',
+    children: [
+      { id: 'deliverables-active', label: 'In Progress', href: '/deliverables?status=active' },
+      { id: 'deliverables-review', label: 'Under Review', href: '/deliverables?status=review' },
+      { id: 'deliverables-approved', label: 'Approved', href: '/deliverables?status=approved' },
+    ],
+  },
+  {
+    id: 'clients',
+    label: 'Clients',
+    href: '/clients',
+    icon: 'Users',
+    children: [
+      { id: 'clients-active', label: 'Active Clients', href: '/clients' },
+      { id: 'clients-leads', label: 'Leads', href: '/clients/leads' },
+    ],
+  },
+  {
+    id: 'estimation',
+    label: 'Estimation',
+    href: '/estimation',
+    icon: 'Calculator',
+    children: [
+      { id: 'estimation-request', label: 'Request Estimate', href: '/estimation/new' },
+      { id: 'estimation-history', label: 'Estimate History', href: '/estimation' },
+    ],
+  },
+  {
+    id: 'permits',
+    label: 'Permits',
+    href: '/permits',
+    icon: 'FileCheck',
+    children: [
+      { id: 'permits-active', label: 'Active Permits', href: '/permits' },
+      { id: 'permits-new', label: 'New Application', href: '/permits/new' },
+      { id: 'permits-inspections', label: 'Inspections', href: '/permits/inspections' },
+    ],
+  },
+  {
+    id: 'billing',
+    label: 'Billing & Fees',
+    href: '/billing',
+    icon: 'CreditCard',
+    children: [
+      { id: 'billing-invoices', label: 'Invoices', href: '/billing/invoices' },
+      { id: 'billing-payments', label: 'Payments', href: '/billing/payments' },
+      { id: 'billing-fees', label: 'Fee Schedule', href: '/billing/fees' },
+    ],
+  },
+  {
+    id: 'documents',
+    label: 'Documents',
+    href: '/documents',
+    icon: 'FileText',
+  },
+  {
+    id: 'reports',
+    label: 'Reports',
+    href: '/reports',
+    icon: 'BarChart3',
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    href: '/settings',
+    icon: 'Settings',
+  },
+];
+
+// Marketing site navigation (public pages with login CTAs)
 export const MARKETING_NAVIGATION: NavItem[] = [
   {
     id: 'solutions',
@@ -1801,14 +2105,14 @@ export const MARKETING_NAVIGATION: NavItem[] = [
         href: '/solutions/homeowners',
       },
       {
-        id: 'solutions-architects',
-        label: 'For Architects',
-        href: '/solutions/architects',
-      },
-      {
         id: 'solutions-contractors',
         label: 'For Contractors & Developers',
         href: '/solutions/contractors',
+      },
+      {
+        id: 'solutions-professionals',
+        label: 'For Architects & Engineers',
+        href: '/solutions/professionals',
       },
     ],
   },

@@ -340,19 +340,33 @@ Kealee Design System/
 
 ## Quick Reference: Product Offering
 
-### Apps/Portals
-| Portal | URL | Primary User | Icon |
-|--------|-----|--------------|------|
+### Portal Architecture
+
+**3 Client Portals (Login Required - Paid Clients)**
+
+| Portal | URL | Primary Users | Icon |
+|--------|-----|---------------|------|
 | Homeowner | app.kealee.com | Residential homeowners | Home |
-| Architect | architect.kealee.com | Design professionals | PenTool |
-| Permits | permits.kealee.com | Anyone needing permits | FileCheck |
-| Ops/PM | ops.kealee.com | Contractors, GCs | Briefcase |
-| Estimation | estimation.kealee.com | Homeowners, contractors, estimators | Calculator |
-| Marketplace | marketplace.kealee.com | All users | Store |
+| Contractor | contractor.kealee.com | GCs, builders, developers, commercial owners, investors | HardHat |
+| Professional | professional.kealee.com | Architects, designers, engineers | PenTool |
 
-**Note**: Developers, commercial building owners, and investors use the Contractor portal for more advanced features.
+**Platform Services (Integrated within Portals)**
 
-### Homeowner Sidebar Navigation
+| Service | Description | Available To |
+|---------|-------------|--------------|
+| Estimation | AI-powered cost estimation | All portals |
+| Permits | Permit processing & inspections | All portals |
+| Marketplace | Contractor bidding platform | Homeowner, Contractor |
+| Finance & Trust | Escrow & payment services | All portals |
+| PM Services | Managed project management | Homeowner, Contractor |
+
+### Login & CTA Requirements
+- All dashboards require login (paid clients only)
+- Marketing pages show "Login" and "Sign Up" CTAs in header
+- Services purchased are accessible within client portal dashboard
+- Each portal has its own branding but shared design system
+
+### Homeowner Sidebar Navigation (app.kealee.com)
 ```
 Dashboard           (LayoutDashboard)
 My Projects         (FolderKanban)
@@ -384,8 +398,8 @@ Reports             (BarChart3)
 Settings            (Settings)
 ```
 
-### Contractor Sidebar Navigation
-*(GCs, developers, commercial building owners, investors)*
+### Contractor Sidebar Navigation (contractor.kealee.com)
+*(GCs, builders, developers, commercial building owners, investors)*
 ```
 Dashboard           (LayoutDashboard)
 Projects            (FolderKanban)
@@ -400,7 +414,51 @@ Bidding             (Gavel)
   └── Won Projects
 Schedule            (Calendar)
 Team                (Users)
+  ├── Team Members
+  ├── Subcontractors
+  └── Invitations
+Permits             (FileCheck)
+  ├── Active Permits
+  ├── New Application
+  └── Inspections
 Finances            (DollarSign)
+  ├── Overview
+  ├── Invoices
+  └── Payments
+Documents           (FileText)
+Reports             (BarChart3)
+Settings            (Settings)
+```
+
+### Professional Sidebar Navigation (professional.kealee.com)
+*(Architects, designers, engineers)*
+```
+Dashboard           (LayoutDashboard)
+Projects            (FolderKanban)
+  ├── Active Projects
+  ├── Completed
+  └── Proposals
+Deliverables        (Package)
+  ├── In Progress
+  ├── Under Review
+  └── Approved
+Clients             (Users)
+  ├── Active Clients
+  └── Leads
+Estimation          (Calculator)
+  ├── Request Estimate
+  └── Estimate History
+Permits             (FileCheck)
+  ├── Active Permits
+  ├── New Application
+  └── Inspections
+Billing & Fees      (CreditCard)
+  ├── Invoices
+  ├── Payments
+  └── Fee Schedule
+Documents           (FileText)
+Reports             (BarChart3)
+Settings            (Settings)
 ```
 
 ### Key Price Points
@@ -1323,5 +1381,350 @@ OUTPUT: Mobile navigation at 375px width, light + dark mode
 
 ---
 
+## PROMPT 22: Login Page Design
+
+```
+Design a login page for Kealee Platform client portals.
+
+BRAND:
+- Navy #1A2B4A (primary)
+- Orange #E8793A (CTA)
+- Teal #2ABFBF (links)
+- White background
+
+LAYOUT (Split screen):
+LEFT SIDE (60%):
+- Large hero image or illustration of construction professional
+- Overlay with brand tagline: "Build Better, Build Smarter"
+- Trust indicators at bottom
+
+RIGHT SIDE (40%):
+- Kealee logo at top
+- "Welcome back" headline
+- Portal selector tabs (if applicable): Homeowner | Contractor | Professional
+- Email input field
+- Password input field with show/hide toggle
+- "Forgot password?" link (teal)
+- "Sign In" button (orange, full width)
+- Divider: "or continue with"
+- Social login buttons: Google, Apple
+- "Don't have an account? Sign up" link
+
+MOBILE:
+- Full width form
+- Hero image as background with overlay
+- Form card overlaid on bottom
+
+STATES:
+- Default
+- Loading (spinner on button)
+- Error (red border on invalid fields)
+- Success (redirect)
+
+OUTPUT: Desktop (1440px) and mobile (375px) versions
+```
+
+---
+
+## PROMPT 23: Portal Selection / Account Type
+
+```
+Design a portal selection screen for new user signup.
+
+BRAND: Navy #1A2B4A, Orange #E8793A, Teal #2ABFBF
+
+HEADLINE: "Choose Your Portal"
+SUBHEADLINE: "Select the option that best describes you"
+
+3 PORTAL CARDS (horizontal on desktop, stacked on mobile):
+
+1. HOMEOWNER PORTAL
+   - Icon: Home (navy)
+   - "For Homeowners"
+   - Description: "Manage your residential construction project from start to finish"
+   - Features: Project tracking, Contractor search, Payment protection, Permits
+   - CTA: "Get Started" (orange)
+
+2. CONTRACTOR PORTAL
+   - Icon: HardHat (orange)
+   - "For Contractors & Developers"
+   - Description: "Manage projects, bids, and teams. For GCs, builders, and developers."
+   - Features: Bid management, Estimation tools, Team collaboration, Scheduling
+   - CTA: "Get Started" (orange)
+   - Badge: "Most Popular" (if applicable)
+
+3. PROFESSIONAL PORTAL
+   - Icon: PenTool (teal)
+   - "For Architects & Engineers"
+   - Description: "Design project management for architects, designers, and engineers"
+   - Features: Deliverable tracking, Client collaboration, Fee management, Permits
+   - CTA: "Get Started" (orange)
+
+CARD DESIGN:
+- White cards with subtle shadow
+- Icon at top (48px)
+- Portal name (24px semibold)
+- Description (16px gray-600)
+- Feature list with checkmarks
+- Full-width CTA at bottom
+
+FOOTER:
+- "Not sure which to choose? Contact us for help"
+
+OUTPUT: Desktop and mobile with hover states
+```
+
+---
+
+## PROMPT 24: Contractor Portal Dashboard
+
+```
+Design the contractor portal dashboard (contractor.kealee.com).
+
+BRAND:
+- Light mode: White background
+- Dark mode: Navy 950 #0F1A2E
+- Accent: Orange #E8793A (primary), Teal #2ABFBF (secondary)
+
+HEADER (64px):
+- Logo: "Kealee" with "Contractor" label
+- Search bar
+- Notifications bell with badge
+- User avatar dropdown
+- "Login" / "Sign Up" buttons (for public pages only)
+
+SIDEBAR (240px) - See Contractor Navigation structure
+
+MAIN DASHBOARD CONTENT:
+
+STATS ROW (4 cards):
+1. Active Projects: "12" with +2 vs last month
+2. Open Bids: "8" opportunities
+3. Won Projects: "$2.4M" this quarter
+4. Team Members: "24" active
+
+QUICK ACTIONS ROW:
+- "New Estimate" (teal button)
+- "Submit Bid" (orange button)
+- "View Opportunities" (outline button)
+
+PROJECTS TABLE:
+| Project | Client | Status | Value | Due Date |
+| Smith Reno | John Smith | In Progress | $125K | Feb 28 |
+| Office Build | Acme Corp | Bidding | $450K | Mar 15 |
+| ... | ... | ... | ... | ... |
+
+SIDEBAR WIDGETS:
+- Upcoming Inspections (3 items)
+- Pending Approvals (2 items)
+- Recent Activity feed
+
+SERVICES ACCESS (bottom):
+- Quick links to: Estimation, Permits, Marketplace
+
+OUTPUT: Full dashboard at 1440x900px, light and dark mode
+```
+
+---
+
+## PROMPT 25: Professional Portal Dashboard
+
+```
+Design the professional portal dashboard (professional.kealee.com).
+
+BRAND:
+- Light mode: White background
+- Dark mode: Navy 950 #0F1A2E
+- Accent: Teal #2ABFBF (primary), Orange #E8793A (CTA)
+
+HEADER (64px):
+- Logo: "Kealee" with "Professional" label
+- Search bar
+- Notifications bell
+- User avatar dropdown
+
+SIDEBAR (240px) - See Professional Navigation structure
+
+MAIN DASHBOARD CONTENT:
+
+STATS ROW (4 cards):
+1. Active Projects: "8"
+2. Deliverables Due: "5" this week
+3. Pending Reviews: "3"
+4. Revenue YTD: "$180K"
+
+PHASE PROGRESS:
+- Visual timeline showing project phases
+- Current projects mapped to phases (Pre-Design, Schematic, DD, CD, Permit, CA)
+
+PROJECTS TABLE:
+| Project | Client | Phase | Fee | Next Deliverable |
+| Smith Residence | John Smith | Design Dev | $45K | Floor Plans |
+| Office Complex | Acme Corp | Schematic | $120K | Site Plan |
+
+DELIVERABLES WIDGET:
+- List of upcoming deliverables with due dates
+- Status indicators (On Track, At Risk, Overdue)
+
+CLIENT ACTIVITY:
+- Recent client comments/approvals
+- Pending client reviews
+
+QUICK ACTIONS:
+- "Upload Deliverable" (teal)
+- "Request Estimate" (orange)
+- "Create Invoice" (outline)
+
+OUTPUT: Full dashboard at 1440x900px
+```
+
+---
+
+## PROMPT 26: Marketplace Homepage with Portal Access
+
+```
+Design the marketplace homepage (marketplace.kealee.com) showing service access.
+
+BRAND: Navy #1A2B4A, Orange #E8793A, Teal #2ABFBF
+
+HEADER:
+- Logo: "Kealee Marketplace"
+- Navigation: Find Contractors | Post Project | Services | Pricing
+- "Login" | "Sign Up" buttons (for visitors)
+- User menu (for logged-in users)
+
+HERO SECTION:
+- Headline: "Find Trusted Contractors"
+- Subheadline: "Fair bidding platform for verified contractors. No pay-to-play."
+- Search bar: "What type of project?" + Location
+- CTA: "Search Contractors" (orange)
+- Trust stats: "500+ verified contractors" | "3.5% commission" | "$50M+ projects"
+
+SERVICES ACCESS CARDS (for logged-in users):
+Row of 4 service cards linking to integrated services:
+1. Estimation - "Get accurate estimates" → /estimation
+2. Permits - "Process permits faster" → /permits
+3. Finance - "Secure payments" → /finance
+4. PM Services - "Expert project management" → /pm-services
+
+HOW IT WORKS:
+1. Post your project → 2. Receive bids → 3. Choose contractor → 4. Build with confidence
+
+FEATURED CONTRACTORS:
+- Grid of contractor cards with ratings, specialties, projects completed
+
+CATEGORIES:
+- Browse by category: Kitchen, Bathroom, Addition, New Construction, Commercial
+
+TESTIMONIALS:
+- Homeowner success stories
+
+FOOTER CTA:
+- "Ready to find your contractor?"
+- "Post Your Project" (orange) | "Browse Contractors" (outline)
+
+OUTPUT: Full page at 1440px desktop + 375px mobile
+```
+
+---
+
+## PROMPT 27: Service Access Cards Component
+
+```
+Design service access cards for displaying within client portal dashboards.
+
+BRAND: Navy #1A2B4A, Orange #E8793A, Teal #2ABFBF
+
+PURPOSE: Quick access to platform services from within any client portal dashboard
+
+CARD GRID (4 cards, 2x2 or 4x1):
+
+1. ESTIMATION SERVICES
+   - Icon: Calculator (teal, 32px)
+   - "Estimation"
+   - "AI-powered cost estimates"
+   - Status: "2 estimates pending" (if applicable)
+   - CTA: "Request Estimate" →
+
+2. PERMITS & INSPECTIONS
+   - Icon: FileCheck (green, 32px)
+   - "Permits"
+   - "85% first-try approval"
+   - Status: "1 permit in progress" (if applicable)
+   - CTA: "View Permits" →
+
+3. CONTRACTOR MARKETPLACE
+   - Icon: Store (navy, 32px)
+   - "Marketplace"
+   - "Find verified contractors"
+   - Status: "3 new bids" (if applicable)
+   - CTA: "Browse Contractors" →
+
+4. FINANCE & TRUST
+   - Icon: Shield (green, 32px)
+   - "Payments"
+   - "Secure escrow protection"
+   - Status: "$12,500 in escrow"
+   - CTA: "Manage Payments" →
+
+CARD DESIGN:
+- White card, subtle shadow
+- Hover: lift + shadow increase
+- Icon + title row
+- Description (gray-600)
+- Status badge (if applicable)
+- Arrow CTA at bottom right
+- 16px padding
+
+OUTPUT: Component at 280px width per card, with hover state
+```
+
+---
+
+## PROMPT 28: Header with Login/Signup CTAs
+
+```
+Design a responsive header component with login CTAs for marketing pages.
+
+BRAND: Navy #1A2B4A, Orange #E8793A, Teal #2ABFBF
+
+DESKTOP HEADER (1440px, 72px height):
+
+LEFT:
+- Kealee logo (link to home)
+
+CENTER:
+- Navigation links: Solutions ▼ | Services ▼ | Pricing | Resources ▼
+- Dropdowns on hover
+
+RIGHT:
+- "Login" (text link, navy)
+- "Sign Up Free" (orange button, rounded)
+
+MOBILE HEADER (375px, 64px height):
+- Hamburger menu (left)
+- Logo (center)
+- "Sign Up" button (right, compact)
+
+MOBILE MENU (slide-in from left):
+- User section at top (if logged in) or Login/Sign Up buttons
+- Navigation accordion
+- Close button
+
+STATES:
+- Default (transparent or white background)
+- Scrolled (solid white with shadow)
+- Mobile menu open
+
+LOGGED-IN VARIANT:
+- Replace Login/Sign Up with:
+  - Notifications bell
+  - User avatar dropdown (Profile, Settings, Dashboard, Logout)
+
+OUTPUT: Desktop and mobile with all states
+```
+
+---
+
 *Generated for Kealee Platform v10 - February 2026*
-*Includes Estimation Module with Full Navigation Integration*
+*Includes 3-Portal Architecture with Full Service Integration*
