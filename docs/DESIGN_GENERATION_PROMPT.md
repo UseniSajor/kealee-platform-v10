@@ -11,11 +11,10 @@ Use this prompt with AI design tools (Figma AI, Midjourney, DALL-E) or as a brie
 **Core Differentiator**: Kealee provides SERVICE - Remote Project Management and Construction Operations, not just software.
 
 **Target Market**: DC-Baltimore Corridor construction professionals
-- Project owners & investors
+- Residential homeowners
 - Architects & designers
-- General contractors
+- General contractors (including developers, commercial building owners, investors)
 - Specialty subcontractors
-- Property developers
 - Estimators & cost consultants
 
 ---
@@ -344,14 +343,16 @@ Kealee Design System/
 ### Apps/Portals
 | Portal | URL | Primary User | Icon |
 |--------|-----|--------------|------|
-| Project Owner | app.kealee.com | Homeowners, investors | Home |
+| Homeowner | app.kealee.com | Residential homeowners | Home |
 | Architect | architect.kealee.com | Design professionals | PenTool |
 | Permits | permits.kealee.com | Anyone needing permits | FileCheck |
 | Ops/PM | ops.kealee.com | Contractors, GCs | Briefcase |
-| Estimation | estimation.kealee.com | Project owners, contractors, estimators | Calculator |
+| Estimation | estimation.kealee.com | Homeowners, contractors, estimators | Calculator |
 | Marketplace | marketplace.kealee.com | All users | Store |
 
-### Project Owner/Homeowner Sidebar Navigation
+**Note**: Developers, commercial building owners, and investors use the Contractor portal for more advanced features.
+
+### Homeowner Sidebar Navigation
 ```
 Dashboard           (LayoutDashboard)
 My Projects         (FolderKanban)
@@ -384,6 +385,7 @@ Settings            (Settings)
 ```
 
 ### Contractor Sidebar Navigation
+*(GCs, developers, commercial building owners, investors)*
 ```
 Dashboard           (LayoutDashboard)
 Projects            (FolderKanban)
@@ -745,10 +747,10 @@ OUTPUT: Card component at 400px width, suitable for dashboard
 
 ---
 
-## PROMPT 8: Project Owner Dashboard (Light & Dark Mode)
+## PROMPT 8: Homeowner Dashboard (Light & Dark Mode)
 
 ```
-Design a project owner/homeowner dashboard with full sidebar navigation.
+Design a homeowner dashboard with full sidebar navigation.
 
 BRAND:
 - Light mode: White background, Navy text
@@ -946,7 +948,7 @@ BRAND:
 - Orange #E8793A (badges)
 - Icons: Lucide icon set
 
-STRUCTURE (Project Owner View):
+STRUCTURE (Homeowner View):
 ┌─────────────────────────────┐
 │ [Logo] Kealee               │
 ├─────────────────────────────┤
@@ -1002,10 +1004,10 @@ OUTPUT: Figma component with all variants and states
 
 ---
 
-## PROMPT 17: Estimation Request Flow (Project Owner)
+## PROMPT 17: Estimation Request Flow (Homeowner)
 
 ```
-Design a 4-step estimation request wizard for homeowners/project owners.
+Design a 4-step estimation request wizard for residential homeowners.
 
 BRAND: Navy #1A2B4A, Orange #E8793A, Teal #2ABFBF
 
@@ -1249,7 +1251,7 @@ FILE STRUCTURE:
     ├── Estimation Landing
     ├── Ops Services Landing
     ├── Pricing Overview
-    ├── Owner Dashboard
+    ├── Homeowner Dashboard
     ├── Contractor Dashboard
     └── Estimate Results
 
@@ -1274,7 +1276,7 @@ OUTPUT: Figma file structure with empty frames ready for components
 ## PROMPT 21: Mobile App Navigation
 
 ```
-Design mobile bottom navigation for Kealee Platform (Project Owner view).
+Design mobile bottom navigation for Kealee Platform (Homeowner view).
 
 BRAND:
 - Background: White (light) / Navy 950 (dark)

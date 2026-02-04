@@ -248,7 +248,9 @@ export const PLATFORM_COMMISSION = {
 };
 
 // =============================================================================
-// PROJECT OWNER PORTAL (app.kealee.com)
+// HOMEOWNER PORTAL (app.kealee.com)
+// For residential homeowners. Developers, commercial building owners, and
+// investors use the Contractor Portal for more advanced features.
 // =============================================================================
 
 export interface PricingTier {
@@ -267,7 +269,7 @@ export interface PricingTier {
   cta: { label: string; href: string };
 }
 
-export const PROJECT_OWNER_PLANS: PricingTier[] = [
+export const HOMEOWNER_PLANS: PricingTier[] = [
   {
     id: 'starter',
     name: 'Starter',
@@ -1484,7 +1486,7 @@ export const SEO_KEYWORDS = {
     'DC Baltimore construction',
     'permit application help',
     'construction cost estimate',
-    'project owner portal',
+    'homeowner construction portal',
     'architect project management',
     'construction payment escrow',
     'contractor bidding platform',
@@ -1544,10 +1546,9 @@ export const STRUCTURED_DATA = {
 // =============================================================================
 
 export type UserRole =
-  | 'project_owner'
-  | 'homeowner'
+  | 'homeowner' // Residential homeowners
   | 'architect'
-  | 'contractor'
+  | 'contractor' // GCs, developers, commercial building owners, investors
   | 'subcontractor'
   | 'estimator';
 
@@ -1573,12 +1574,12 @@ export interface AppPortal {
 
 export const APP_PORTALS: AppPortal[] = [
   {
-    id: 'm-project-owner',
-    name: 'Project Owner Portal',
-    shortName: 'Owner',
+    id: 'm-homeowner',
+    name: 'Homeowner Portal',
+    shortName: 'Homeowner',
     url: 'app.kealee.com',
-    description: 'Full project visibility and control for homeowners and investors',
-    primaryUsers: ['project_owner', 'homeowner'],
+    description: 'Project visibility and control for residential homeowners',
+    primaryUsers: ['homeowner'],
     icon: 'Home',
     color: 'navy',
   },
@@ -1618,7 +1619,7 @@ export const APP_PORTALS: AppPortal[] = [
     shortName: 'Estimation',
     url: 'estimation.kealee.com',
     description: 'AI-powered construction cost estimation',
-    primaryUsers: ['project_owner', 'homeowner', 'contractor', 'estimator'],
+    primaryUsers: ['homeowner', 'contractor', 'estimator'],
     icon: 'Calculator',
     color: 'teal',
   },
@@ -1628,14 +1629,14 @@ export const APP_PORTALS: AppPortal[] = [
     shortName: 'Marketplace',
     url: 'marketplace.kealee.com',
     description: 'Fair bidding platform for verified contractors',
-    primaryUsers: ['project_owner', 'homeowner', 'contractor', 'subcontractor'],
+    primaryUsers: ['homeowner', 'contractor', 'subcontractor'],
     icon: 'Store',
     color: 'navy',
   },
 ];
 
-// Navigation structure for Project Owner/Homeowner dashboard
-export const PROJECT_OWNER_NAVIGATION: NavItem[] = [
+// Navigation structure for Homeowner dashboard (residential homeowners)
+export const HOMEOWNER_NAVIGATION: NavItem[] = [
   {
     id: 'dashboard',
     label: 'Dashboard',
@@ -1730,6 +1731,7 @@ export const PROJECT_OWNER_NAVIGATION: NavItem[] = [
 ];
 
 // Navigation structure for Contractor dashboard
+// Includes: GCs, developers, commercial building owners, investors
 export const CONTRACTOR_NAVIGATION: NavItem[] = [
   {
     id: 'dashboard',
@@ -1794,9 +1796,9 @@ export const MARKETING_NAVIGATION: NavItem[] = [
     href: '#',
     children: [
       {
-        id: 'solutions-owners',
-        label: 'For Project Owners',
-        href: '/solutions/project-owners',
+        id: 'solutions-homeowners',
+        label: 'For Homeowners',
+        href: '/solutions/homeowners',
       },
       {
         id: 'solutions-architects',
@@ -1805,7 +1807,7 @@ export const MARKETING_NAVIGATION: NavItem[] = [
       },
       {
         id: 'solutions-contractors',
-        label: 'For Contractors',
+        label: 'For Contractors & Developers',
         href: '/solutions/contractors',
       },
     ],
