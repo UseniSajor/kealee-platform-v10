@@ -1,0 +1,329 @@
+{
+  "global": {
+    "colors": {
+      "brand": {
+        "navy": {
+          "value": "#1A2B4A",
+          "type": "color",
+          "description": "Primary brand color - Trust & Professionalism"
+        },
+        "orange": {
+          "value": "#E8793A",
+          "type": "color",
+          "description": "Secondary brand color - Energy & Action (CTAs)"
+        },
+        "teal": {
+          "value": "#2ABFBF",
+          "type": "color",
+          "description": "Accent color - Technology & Innovation"
+        },
+        "success": {
+          "value": "#38A169",
+          "type": "color",
+          "description": "Success states - Approved, Complete"
+        }
+      },
+      "navy": {
+        "50": { "value": "#E8EBF0", "type": "color" },
+        "100": { "value": "#C5CCD8", "type": "color" },
+        "200": { "value": "#9FADC0", "type": "color" },
+        "300": { "value": "#798DA7", "type": "color" },
+        "400": { "value": "#5C7594", "type": "color" },
+        "500": { "value": "#3F5D81", "type": "color" },
+        "600": { "value": "#375279", "type": "color" },
+        "700": { "value": "#2D446E", "type": "color" },
+        "800": { "value": "#243764", "type": "color" },
+        "900": { "value": "#1A2B4A", "type": "color", "description": "Base navy" }
+      },
+      "orange": {
+        "50": { "value": "#FEF3EC", "type": "color" },
+        "100": { "value": "#FCE0CF", "type": "color" },
+        "200": { "value": "#F9CCB0", "type": "color" },
+        "300": { "value": "#F6B790", "type": "color" },
+        "400": { "value": "#F4A778", "type": "color" },
+        "500": { "value": "#E8793A", "type": "color", "description": "Base orange" },
+        "600": { "value": "#D16A2F", "type": "color", "description": "Hover state" },
+        "700": { "value": "#B85A26", "type": "color" },
+        "800": { "value": "#9E4B1D", "type": "color" },
+        "900": { "value": "#7A3A16", "type": "color" }
+      },
+      "teal": {
+        "50": { "value": "#E5F8F8", "type": "color" },
+        "100": { "value": "#BFF0EF", "type": "color" },
+        "200": { "value": "#95E6E5", "type": "color" },
+        "300": { "value": "#6ADCDB", "type": "color" },
+        "400": { "value": "#4AD4D3", "type": "color" },
+        "500": { "value": "#2ABFBF", "type": "color", "description": "Base teal" },
+        "600": { "value": "#26ACAC", "type": "color" },
+        "700": { "value": "#209494", "type": "color" },
+        "800": { "value": "#1A7C7C", "type": "color" },
+        "900": { "value": "#115252", "type": "color" }
+      },
+      "green": {
+        "50": { "value": "#F0FDF4", "type": "color" },
+        "100": { "value": "#DCFCE7", "type": "color" },
+        "200": { "value": "#BBF7D0", "type": "color" },
+        "300": { "value": "#86EFAC", "type": "color" },
+        "400": { "value": "#4ADE80", "type": "color" },
+        "500": { "value": "#38A169", "type": "color", "description": "Base success green" },
+        "600": { "value": "#2F8A58", "type": "color" },
+        "700": { "value": "#276749", "type": "color" },
+        "800": { "value": "#1F543A", "type": "color" },
+        "900": { "value": "#14412C", "type": "color" }
+      },
+      "gray": {
+        "50": { "value": "#F9FAFB", "type": "color", "description": "Subtle backgrounds" },
+        "100": { "value": "#F3F4F6", "type": "color", "description": "Cards, containers" },
+        "200": { "value": "#E5E7EB", "type": "color", "description": "Borders" },
+        "300": { "value": "#D1D5DB", "type": "color", "description": "Disabled states" },
+        "400": { "value": "#9CA3AF", "type": "color", "description": "Placeholders" },
+        "500": { "value": "#6B7280", "type": "color", "description": "Secondary text" },
+        "600": { "value": "#4B5563", "type": "color", "description": "Body text" },
+        "700": { "value": "#374151", "type": "color", "description": "Headings" },
+        "800": { "value": "#1F2937", "type": "color", "description": "Dark headings" },
+        "900": { "value": "#111827", "type": "color", "description": "Maximum contrast" }
+      },
+      "red": {
+        "50": { "value": "#FEF2F2", "type": "color" },
+        "100": { "value": "#FEE2E2", "type": "color" },
+        "200": { "value": "#FECACA", "type": "color" },
+        "300": { "value": "#FCA5A5", "type": "color" },
+        "400": { "value": "#F87171", "type": "color" },
+        "500": { "value": "#EF4444", "type": "color", "description": "Error states" },
+        "600": { "value": "#DC2626", "type": "color" },
+        "700": { "value": "#B91C1C", "type": "color" }
+      },
+      "yellow": {
+        "50": { "value": "#FEFCE8", "type": "color" },
+        "100": { "value": "#FEF9C3", "type": "color" },
+        "200": { "value": "#FEF08A", "type": "color" },
+        "300": { "value": "#FDE047", "type": "color" },
+        "400": { "value": "#FACC15", "type": "color" },
+        "500": { "value": "#EAB308", "type": "color", "description": "Warning states" },
+        "600": { "value": "#CA8A04", "type": "color" }
+      },
+      "semantic": {
+        "background": {
+          "primary": { "value": "#FFFFFF", "type": "color" },
+          "secondary": { "value": "{colors.gray.50}", "type": "color" },
+          "tertiary": { "value": "{colors.gray.100}", "type": "color" },
+          "inverse": { "value": "{colors.brand.navy}", "type": "color" }
+        },
+        "text": {
+          "primary": { "value": "{colors.brand.navy}", "type": "color" },
+          "secondary": { "value": "{colors.gray.600}", "type": "color" },
+          "tertiary": { "value": "{colors.gray.500}", "type": "color" },
+          "inverse": { "value": "#FFFFFF", "type": "color" },
+          "link": { "value": "{colors.brand.orange}", "type": "color" }
+        },
+        "border": {
+          "default": { "value": "{colors.gray.200}", "type": "color" },
+          "hover": { "value": "{colors.gray.300}", "type": "color" },
+          "focus": { "value": "{colors.brand.orange}", "type": "color" }
+        },
+        "status": {
+          "success": { "value": "{colors.brand.success}", "type": "color" },
+          "warning": { "value": "{colors.yellow.500}", "type": "color" },
+          "error": { "value": "{colors.red.500}", "type": "color" },
+          "info": { "value": "{colors.brand.teal}", "type": "color" }
+        }
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "heading": {
+          "value": "Clash Display",
+          "type": "fontFamilies",
+          "description": "Headlines and titles"
+        },
+        "body": {
+          "value": "Plus Jakarta Sans",
+          "type": "fontFamilies",
+          "description": "Body text and UI"
+        },
+        "mono": {
+          "value": "JetBrains Mono",
+          "type": "fontFamilies",
+          "description": "Pricing, code, numbers"
+        }
+      },
+      "fontSize": {
+        "xs": { "value": "12", "type": "fontSizes", "description": "Small labels" },
+        "sm": { "value": "14", "type": "fontSizes", "description": "Secondary text" },
+        "base": { "value": "16", "type": "fontSizes", "description": "Body text" },
+        "lg": { "value": "18", "type": "fontSizes", "description": "Emphasized text" },
+        "xl": { "value": "20", "type": "fontSizes", "description": "Small headings" },
+        "2xl": { "value": "24", "type": "fontSizes", "description": "Card headings" },
+        "3xl": { "value": "30", "type": "fontSizes", "description": "Section headings" },
+        "4xl": { "value": "36", "type": "fontSizes", "description": "Page headings" },
+        "5xl": { "value": "48", "type": "fontSizes", "description": "Hero headings" },
+        "6xl": { "value": "60", "type": "fontSizes", "description": "Landing page heroes" }
+      },
+      "fontWeight": {
+        "regular": { "value": "400", "type": "fontWeights" },
+        "medium": { "value": "500", "type": "fontWeights" },
+        "semibold": { "value": "600", "type": "fontWeights" },
+        "bold": { "value": "700", "type": "fontWeights" }
+      },
+      "lineHeight": {
+        "tight": { "value": "1.25", "type": "lineHeights", "description": "Headings" },
+        "normal": { "value": "1.5", "type": "lineHeights", "description": "Body text" },
+        "relaxed": { "value": "1.75", "type": "lineHeights", "description": "Long-form" }
+      },
+      "letterSpacing": {
+        "tight": { "value": "-0.025em", "type": "letterSpacing" },
+        "normal": { "value": "0", "type": "letterSpacing" },
+        "wide": { "value": "0.025em", "type": "letterSpacing" },
+        "wider": { "value": "0.05em", "type": "letterSpacing" }
+      }
+    },
+    "spacing": {
+      "0": { "value": "0", "type": "spacing" },
+      "1": { "value": "4", "type": "spacing" },
+      "2": { "value": "8", "type": "spacing" },
+      "3": { "value": "12", "type": "spacing" },
+      "4": { "value": "16", "type": "spacing", "description": "Base unit" },
+      "5": { "value": "20", "type": "spacing" },
+      "6": { "value": "24", "type": "spacing" },
+      "8": { "value": "32", "type": "spacing" },
+      "10": { "value": "40", "type": "spacing" },
+      "12": { "value": "48", "type": "spacing" },
+      "16": { "value": "64", "type": "spacing" },
+      "20": { "value": "80", "type": "spacing" },
+      "24": { "value": "96", "type": "spacing" }
+    },
+    "borderRadius": {
+      "none": { "value": "0", "type": "borderRadius" },
+      "sm": { "value": "2", "type": "borderRadius" },
+      "default": { "value": "6", "type": "borderRadius", "description": "Cards" },
+      "md": { "value": "8", "type": "borderRadius", "description": "Buttons" },
+      "lg": { "value": "12", "type": "borderRadius", "description": "Modals" },
+      "xl": { "value": "16", "type": "borderRadius", "description": "Large cards" },
+      "2xl": { "value": "24", "type": "borderRadius", "description": "Hero sections" },
+      "full": { "value": "9999", "type": "borderRadius", "description": "Pills, avatars" }
+    },
+    "boxShadow": {
+      "none": { "value": "none", "type": "boxShadow" },
+      "sm": {
+        "value": {
+          "x": "0",
+          "y": "1",
+          "blur": "2",
+          "spread": "0",
+          "color": "rgba(0, 0, 0, 0.05)",
+          "type": "dropShadow"
+        },
+        "type": "boxShadow"
+      },
+      "default": {
+        "value": [
+          {
+            "x": "0",
+            "y": "1",
+            "blur": "3",
+            "spread": "0",
+            "color": "rgba(0, 0, 0, 0.1)",
+            "type": "dropShadow"
+          },
+          {
+            "x": "0",
+            "y": "1",
+            "blur": "2",
+            "spread": "-1",
+            "color": "rgba(0, 0, 0, 0.1)",
+            "type": "dropShadow"
+          }
+        ],
+        "type": "boxShadow"
+      },
+      "md": {
+        "value": [
+          {
+            "x": "0",
+            "y": "4",
+            "blur": "6",
+            "spread": "-1",
+            "color": "rgba(0, 0, 0, 0.1)",
+            "type": "dropShadow"
+          },
+          {
+            "x": "0",
+            "y": "2",
+            "blur": "4",
+            "spread": "-2",
+            "color": "rgba(0, 0, 0, 0.1)",
+            "type": "dropShadow"
+          }
+        ],
+        "type": "boxShadow"
+      },
+      "lg": {
+        "value": [
+          {
+            "x": "0",
+            "y": "10",
+            "blur": "15",
+            "spread": "-3",
+            "color": "rgba(0, 0, 0, 0.1)",
+            "type": "dropShadow"
+          },
+          {
+            "x": "0",
+            "y": "4",
+            "blur": "6",
+            "spread": "-4",
+            "color": "rgba(0, 0, 0, 0.1)",
+            "type": "dropShadow"
+          }
+        ],
+        "type": "boxShadow"
+      },
+      "xl": {
+        "value": [
+          {
+            "x": "0",
+            "y": "20",
+            "blur": "25",
+            "spread": "-5",
+            "color": "rgba(0, 0, 0, 0.1)",
+            "type": "dropShadow"
+          },
+          {
+            "x": "0",
+            "y": "8",
+            "blur": "10",
+            "spread": "-6",
+            "color": "rgba(0, 0, 0, 0.1)",
+            "type": "dropShadow"
+          }
+        ],
+        "type": "boxShadow"
+      }
+    },
+    "breakpoints": {
+      "sm": { "value": "640", "type": "dimension", "description": "Mobile landscape" },
+      "md": { "value": "768", "type": "dimension", "description": "Tablet" },
+      "lg": { "value": "1024", "type": "dimension", "description": "Desktop" },
+      "xl": { "value": "1280", "type": "dimension", "description": "Large desktop" },
+      "2xl": { "value": "1440", "type": "dimension", "description": "Wide screens" }
+    },
+    "animation": {
+      "duration": {
+        "fast": { "value": "150ms", "type": "duration" },
+        "normal": { "value": "200ms", "type": "duration" },
+        "slow": { "value": "300ms", "type": "duration" },
+        "slower": { "value": "500ms", "type": "duration" }
+      },
+      "easing": {
+        "linear": { "value": "linear", "type": "other" },
+        "easeIn": { "value": "cubic-bezier(0.4, 0, 1, 1)", "type": "other" },
+        "easeOut": { "value": "cubic-bezier(0, 0, 0.2, 1)", "type": "other" },
+        "easeInOut": { "value": "cubic-bezier(0.4, 0, 0.2, 1)", "type": "other" }
+      }
+    }
+  },
+  "$themes": [],
+  "$metadata": {
+    "tokenSetOrder": ["global"]
+  }
+}
