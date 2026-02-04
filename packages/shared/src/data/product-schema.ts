@@ -907,6 +907,444 @@ export const VOLUME_DISCOUNTS = [
 ];
 
 // =============================================================================
+// ESTIMATION MODULE (estimation.kealee.com)
+// =============================================================================
+
+export type EstimateType =
+  | 'QUICK_BUDGET'
+  | 'CONCEPTUAL'
+  | 'PRELIMINARY'
+  | 'DETAILED'
+  | 'BID_ESTIMATE'
+  | 'CHANGE_ORDER_ESTIMATE'
+  | 'VALUE_ENGINEERING'
+  | 'AS_BUILT';
+
+export interface EstimationServiceTier {
+  id: string;
+  name: string;
+  price: number;
+  turnaround: string;
+  description: string;
+  features: string[];
+  deliverables: string[];
+  bestFor: string;
+  popular?: boolean;
+}
+
+export const ESTIMATION_SERVICE_TIERS: EstimationServiceTier[] = [
+  {
+    id: 'basic',
+    name: 'Basic',
+    price: 299,
+    turnaround: '24 hours',
+    description: 'Quick estimates for small residential projects',
+    bestFor: 'Small residential projects under $50K',
+    features: [
+      'Labor cost breakdown',
+      'Material quantity takeoff',
+      'Basic timeline estimate',
+      'PDF report',
+    ],
+    deliverables: ['PDF estimate report', 'Material list'],
+  },
+  {
+    id: 'standard',
+    name: 'Standard',
+    price: 799,
+    turnaround: '48 hours',
+    description: 'Detailed estimates for mid-size residential & light commercial',
+    bestFor: 'Mid-size residential & light commercial',
+    features: [
+      'Detailed labor analysis',
+      'Material pricing with suppliers',
+      'Phased timeline projection',
+      'Profit margin analysis',
+      'Excel + PDF deliverables',
+    ],
+    deliverables: ['PDF estimate report', 'Excel breakdown', 'Supplier quotes'],
+    popular: true,
+  },
+  {
+    id: 'premium',
+    name: 'Premium',
+    price: 1999,
+    turnaround: '3-5 business days',
+    description: 'Comprehensive estimates for large commercial projects',
+    bestFor: 'Large commercial projects',
+    features: [
+      'Comprehensive Bill of Quantities (BOQ)',
+      'Multi-vendor pricing comparison',
+      'Resource allocation plan',
+      'Risk contingency analysis',
+      'Cash flow projection',
+      'Dedicated estimator review',
+    ],
+    deliverables: [
+      'PDF estimate report',
+      'Excel BOQ',
+      'Cash flow schedule',
+      'Risk analysis',
+      'Vendor comparison',
+    ],
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    price: 4999,
+    turnaround: 'Custom',
+    description: 'Full-service estimation for multi-phase complex builds',
+    bestFor: 'Multi-phase & complex builds',
+    features: [
+      'Everything in Premium',
+      'Value engineering options',
+      'Alternative material analysis',
+      'Subcontractor bid packages',
+      'On-site consultation',
+      'Ongoing support',
+    ],
+    deliverables: [
+      'Complete bid package',
+      'Value engineering report',
+      'Sub bid packages',
+      'Site visit report',
+      'Ongoing revisions',
+    ],
+  },
+];
+
+export interface EstimationAlaCarteService {
+  id: string;
+  name: string;
+  price: number;
+  priceUnit?: string;
+  turnaround: string;
+  description: string;
+  useCase: string;
+}
+
+export const ESTIMATION_ALACARTE_SERVICES: EstimationAlaCarteService[] = [
+  {
+    id: 'quick-budget',
+    name: 'Quick Budget Service',
+    price: 195,
+    turnaround: '24 hours',
+    description: 'Rough SF pricing for initial budgeting',
+    useCase: 'Early feasibility and budgeting',
+  },
+  {
+    id: 'basic-takeoff',
+    name: 'Basic Takeoff',
+    price: 495,
+    turnaround: '48 hours',
+    description: 'Material quantities by CSI division',
+    useCase: 'Quantity verification',
+  },
+  {
+    id: 'detailed-estimate',
+    name: 'Detailed Estimate Service',
+    price: 1295,
+    turnaround: '72 hours',
+    description: 'Full line-item breakdown with labor and materials',
+    useCase: 'Budget development',
+  },
+  {
+    id: 'estimate-review',
+    name: 'Estimate Review',
+    price: 695,
+    turnaround: '48 hours',
+    description: 'Expert review of existing estimates',
+    useCase: 'Second opinion on contractor bids',
+  },
+  {
+    id: 'bid-package',
+    name: 'Professional Bid Package',
+    price: 2495,
+    turnaround: '5 business days',
+    description: 'Complete bid-ready documentation',
+    useCase: 'Competitive bidding',
+  },
+  {
+    id: 'monthly-support',
+    name: 'Monthly Estimation Support',
+    price: 1995,
+    priceUnit: '/month',
+    turnaround: 'Ongoing',
+    description: 'Dedicated estimation support',
+    useCase: 'Contractors with regular needs',
+  },
+];
+
+// CSI MasterFormat Divisions
+export const CSI_DIVISIONS = [
+  { code: '01', name: 'General Requirements' },
+  { code: '02', name: 'Existing Conditions' },
+  { code: '03', name: 'Concrete' },
+  { code: '04', name: 'Masonry' },
+  { code: '05', name: 'Metals' },
+  { code: '06', name: 'Wood, Plastics & Composites' },
+  { code: '07', name: 'Thermal & Moisture Protection' },
+  { code: '08', name: 'Openings' },
+  { code: '09', name: 'Finishes' },
+  { code: '10', name: 'Specialties' },
+  { code: '11', name: 'Equipment' },
+  { code: '12', name: 'Furnishings' },
+  { code: '21', name: 'Fire Suppression' },
+  { code: '22', name: 'Plumbing' },
+  { code: '23', name: 'HVAC' },
+  { code: '26', name: 'Electrical' },
+  { code: '27', name: 'Communications' },
+  { code: '31', name: 'Earthwork' },
+  { code: '32', name: 'Exterior Improvements' },
+  { code: '33', name: 'Utilities' },
+] as const;
+
+// Sample Assembly Categories
+export const ASSEMBLY_CATEGORIES = [
+  'Sitework',
+  'Foundations',
+  'Concrete Flatwork',
+  'Framing',
+  'Roofing',
+  'Exterior Finishes',
+  'Interior Finishes',
+  'Drywall',
+  'Painting',
+  'Flooring',
+  'Tile',
+  'Cabinetry',
+  'Countertops',
+  'Doors & Hardware',
+  'Windows',
+  'Plumbing Rough',
+  'Plumbing Finish',
+  'Electrical Rough',
+  'Electrical Finish',
+  'HVAC Rough',
+  'HVAC Finish',
+  'Insulation',
+  'Demolition',
+  'Cleanup',
+  'Permits & Fees',
+  'General Conditions',
+] as const;
+
+// Regional Cost Indices (DC-Baltimore focus)
+export const REGIONAL_COST_INDICES = {
+  national: 1.0,
+  'Washington, DC': 1.18,
+  'Baltimore, MD': 1.08,
+  'Arlington, VA': 1.15,
+  'Bethesda, MD': 1.12,
+  'Silver Spring, MD': 1.1,
+  'Annapolis, MD': 1.06,
+  'Frederick, MD': 1.02,
+  'Columbia, MD': 1.05,
+  // Comparison cities
+  'New York, NY': 1.32,
+  'Los Angeles, CA': 1.14,
+  'Chicago, IL': 1.15,
+  'Houston, TX': 0.92,
+  'Phoenix, AZ': 0.93,
+} as const;
+
+// AI-Powered Features
+export const ESTIMATION_AI_FEATURES = {
+  scopeAnalyzer: {
+    name: 'AI Scope Analyzer',
+    description: 'Identifies gaps and risks in project scope',
+    capabilities: [
+      'Completeness analysis',
+      'Gap identification',
+      'Risk assessment (10 risk types)',
+      'Recommendations',
+      'Confidence scoring',
+    ],
+  },
+  costPredictor: {
+    name: 'AI Cost Predictor',
+    description: 'ML-based cost prediction and forecasting',
+    capabilities: [
+      'Confidence intervals',
+      'Market trend analysis',
+      'Inflation adjustment',
+      'Historical comparison',
+      'Percentile ranking',
+    ],
+  },
+  valueEngineer: {
+    name: 'AI Value Engineer',
+    description: 'Automated cost optimization analysis',
+    capabilities: [
+      'Material substitution',
+      'Design simplification',
+      'Specification reduction',
+      'Quantity optimization',
+      'Bulk procurement opportunities',
+    ],
+    opportunityTypes: [
+      'MATERIAL_SUBSTITUTION',
+      'DESIGN_SIMPLIFICATION',
+      'SPECIFICATION_REDUCTION',
+      'QUANTITY_OPTIMIZATION',
+      'SCOPE_REDUCTION',
+      'PROCESS_IMPROVEMENT',
+      'BULK_PROCUREMENT',
+      'STANDARDIZATION',
+      'PHASING_ADJUSTMENT',
+    ],
+  },
+  planAnalyzer: {
+    name: 'AI Plan Analyzer',
+    description: 'Automated quantity extraction from drawings',
+    capabilities: [
+      'PDF/image analysis',
+      'Automatic measurements',
+      'Area/volume calculations',
+      'Count extractions',
+      'CSI categorization',
+    ],
+  },
+};
+
+// Market Trends (Sample Data)
+export const MARKET_TRENDS = {
+  concrete: { trend: 'UP', percentage: 5.2, source: 'BLS' },
+  steel: { trend: 'UP', percentage: 8.5, source: 'BLS' },
+  lumber: { trend: 'DOWN', percentage: 3.2, source: 'BLS' },
+  labor: { trend: 'UP', percentage: 4.5, source: 'BLS' },
+  equipment: { trend: 'UP', percentage: 3.8, source: 'BLS' },
+  electrical: { trend: 'UP', percentage: 6.1, source: 'BLS' },
+  plumbing: { trend: 'UP', percentage: 4.3, source: 'BLS' },
+  hvac: { trend: 'UP', percentage: 5.7, source: 'BLS' },
+} as const;
+
+// Default Markup Structure
+export const DEFAULT_ESTIMATE_MARKUPS = {
+  overhead: 0.1, // 10%
+  profit: 0.1, // 10%
+  contingency: 0.05, // 5%
+  wasteFactor: 0.1, // 10%
+  laborBurden: 0.35, // 35% (fringe, taxes, insurance)
+};
+
+// Labor Trades (25+ supported)
+export const LABOR_TRADES = [
+  'General Labor',
+  'Carpenter',
+  'Electrician',
+  'Plumber',
+  'HVAC Technician',
+  'Painter',
+  'Drywall Finisher',
+  'Tile Setter',
+  'Roofer',
+  'Mason',
+  'Concrete Finisher',
+  'Ironworker',
+  'Sheet Metal Worker',
+  'Insulator',
+  'Glazier',
+  'Flooring Installer',
+  'Cabinet Maker',
+  'Demolition Worker',
+  'Equipment Operator',
+  'Crane Operator',
+  'Foreman',
+  'Superintendent',
+  'Project Manager',
+  'Safety Officer',
+  'Quality Control Inspector',
+] as const;
+
+// Estimation Workflow Status
+export const ESTIMATE_STATUS_FLOW = [
+  'DRAFT_ESTIMATE',
+  'IN_PROGRESS_ESTIMATE',
+  'UNDER_REVIEW_ESTIMATE',
+  'PENDING_APPROVAL_ESTIMATE',
+  'APPROVED_ESTIMATE',
+  'SENT_ESTIMATE',
+  'ACCEPTED_ESTIMATE',
+  'REJECTED_ESTIMATE',
+  'EXPIRED_ESTIMATE',
+  'SUPERSEDED',
+  'ARCHIVED_ESTIMATE',
+] as const;
+
+// Integration Points
+export const ESTIMATION_INTEGRATIONS = {
+  bidEngine: {
+    name: 'Bid Engine Integration',
+    description: 'Export estimates to bid requests',
+    features: ['Link estimates to bids', 'Share cost data', 'Bid analysis'],
+  },
+  budgetTracker: {
+    name: 'Budget Tracker Integration',
+    description: 'Seed project budgets from estimates',
+    features: ['Create budget items', 'Update totals', 'CSI code mapping'],
+  },
+  rsMeans: {
+    name: 'RS Means Integration',
+    description: 'Import RS Means cost data',
+    features: ['City cost indices', 'Material costs', 'Labor rates'],
+  },
+};
+
+// Sample Assemblies Preview
+export const SAMPLE_ASSEMBLIES = [
+  {
+    code: '03-1000',
+    name: 'Concrete Slab on Grade - 4"',
+    unit: 'SF',
+    productivity: '800 SF/day',
+    crew: 4,
+  },
+  {
+    code: '06-1100',
+    name: 'Wood Stud Wall - 2x4 @ 16" OC',
+    unit: 'SF',
+    productivity: '200 SF/day',
+    crew: 2,
+  },
+  {
+    code: '07-3100',
+    name: 'Asphalt Shingles - Architectural',
+    unit: 'SQ',
+    productivity: '15 SQ/day',
+    crew: 3,
+  },
+  {
+    code: '09-2900',
+    name: 'Drywall - 1/2" Standard',
+    unit: 'SF',
+    productivity: '600 SF/day',
+    crew: 2,
+  },
+  {
+    code: '09-9100',
+    name: 'Interior Latex Paint - 2 Coats',
+    unit: 'SF',
+    productivity: '400 SF/day',
+    crew: 2,
+  },
+  {
+    code: '22-4100',
+    name: 'Toilet Installation - Standard',
+    unit: 'EA',
+    productivity: '4/day',
+    crew: 1,
+  },
+  {
+    code: '26-2700',
+    name: 'Duplex Receptacle',
+    unit: 'EA',
+    productivity: '10/day',
+    crew: 1,
+  },
+] as const;
+
+// =============================================================================
 // FINANCE & TRUST (m-finance-trust)
 // =============================================================================
 
@@ -989,6 +1427,44 @@ export function formatPrice(price: number | string, unit?: string): string {
   return unit ? `${unit} ${formatted}` : formatted;
 }
 
+export function getEstimationTierByProject(projectValue: number): EstimationServiceTier {
+  if (projectValue < 50000) return ESTIMATION_SERVICE_TIERS[0]; // Basic
+  if (projectValue < 250000) return ESTIMATION_SERVICE_TIERS[1]; // Standard
+  if (projectValue < 1000000) return ESTIMATION_SERVICE_TIERS[2]; // Premium
+  return ESTIMATION_SERVICE_TIERS[3]; // Enterprise
+}
+
+export function getRegionalCostFactor(region: keyof typeof REGIONAL_COST_INDICES): number {
+  return REGIONAL_COST_INDICES[region] ?? 1.0;
+}
+
+export function calculateEstimateMarkups(
+  directCost: number,
+  overrides?: Partial<typeof DEFAULT_ESTIMATE_MARKUPS>
+): {
+  directCost: number;
+  overhead: number;
+  profit: number;
+  contingency: number;
+  total: number;
+} {
+  const markups = { ...DEFAULT_ESTIMATE_MARKUPS, ...overrides };
+  const overhead = directCost * markups.overhead;
+  const subtotal = directCost + overhead;
+  const profit = subtotal * markups.profit;
+  const withProfit = subtotal + profit;
+  const contingency = withProfit * markups.contingency;
+  const total = withProfit + contingency;
+
+  return {
+    directCost,
+    overhead,
+    profit,
+    contingency,
+    total,
+  };
+}
+
 // =============================================================================
 // SEO & AI OPTIMIZATION DATA
 // =============================================================================
@@ -1001,6 +1477,7 @@ export const SEO_KEYWORDS = {
     'construction operations',
     'remote project management',
     'construction estimation',
+    'construction cost estimating',
     'contractor management',
   ],
   secondary: [
@@ -1011,6 +1488,9 @@ export const SEO_KEYWORDS = {
     'architect project management',
     'construction payment escrow',
     'contractor bidding platform',
+    'material takeoff services',
+    'quantity surveying',
+    'bid leveling',
   ],
   longTail: [
     'how to get building permits in DC',
@@ -1019,6 +1499,24 @@ export const SEO_KEYWORDS = {
     'building permit application assistance',
     'construction cost estimation services',
     'find verified contractors DC Maryland',
+    'AI construction estimating software',
+    'CSI MasterFormat cost database',
+    'RS Means cost data DC Maryland',
+    'construction value engineering services',
+    'material takeoff from blueprints',
+    'construction bid package preparation',
+  ],
+  estimation: [
+    'construction estimating services',
+    'detailed construction estimate',
+    'contractor bid estimate',
+    'value engineering analysis',
+    'change order review',
+    'insurance claim estimate Xactimate',
+    'material quantity takeoff',
+    'labor cost breakdown',
+    'cash flow projection construction',
+    'construction feasibility analysis',
   ],
 };
 
@@ -1040,3 +1538,303 @@ export const STRUCTURED_DATA = {
     ratingCount: 1250,
   },
 };
+
+// =============================================================================
+// NAVIGATION & APP STRUCTURE
+// =============================================================================
+
+export type UserRole =
+  | 'project_owner'
+  | 'homeowner'
+  | 'architect'
+  | 'contractor'
+  | 'subcontractor'
+  | 'estimator';
+
+export interface NavItem {
+  id: string;
+  label: string;
+  href: string;
+  icon?: string;
+  badge?: string;
+  children?: NavItem[];
+}
+
+export interface AppPortal {
+  id: string;
+  name: string;
+  shortName: string;
+  url: string;
+  description: string;
+  primaryUsers: UserRole[];
+  icon: string;
+  color: string;
+}
+
+export const APP_PORTALS: AppPortal[] = [
+  {
+    id: 'm-project-owner',
+    name: 'Project Owner Portal',
+    shortName: 'Owner',
+    url: 'app.kealee.com',
+    description: 'Full project visibility and control for homeowners and investors',
+    primaryUsers: ['project_owner', 'homeowner'],
+    icon: 'Home',
+    color: 'navy',
+  },
+  {
+    id: 'm-architect',
+    name: 'Architect Portal',
+    shortName: 'Architect',
+    url: 'architect.kealee.com',
+    description: 'Design project management for architects and designers',
+    primaryUsers: ['architect'],
+    icon: 'PenTool',
+    color: 'teal',
+  },
+  {
+    id: 'm-permits-inspections',
+    name: 'Permits & Inspections',
+    shortName: 'Permits',
+    url: 'permits.kealee.com',
+    description: 'AI-powered permit processing and inspection coordination',
+    primaryUsers: ['project_owner', 'homeowner', 'contractor', 'architect'],
+    icon: 'FileCheck',
+    color: 'green',
+  },
+  {
+    id: 'm-ops-services',
+    name: 'Ops & PM Services',
+    shortName: 'Ops',
+    url: 'ops.kealee.com',
+    description: 'Project management software and managed services',
+    primaryUsers: ['contractor', 'project_owner'],
+    icon: 'Briefcase',
+    color: 'orange',
+  },
+  {
+    id: 'm-estimation',
+    name: 'Estimation Services',
+    shortName: 'Estimation',
+    url: 'estimation.kealee.com',
+    description: 'AI-powered construction cost estimation',
+    primaryUsers: ['project_owner', 'homeowner', 'contractor', 'estimator'],
+    icon: 'Calculator',
+    color: 'teal',
+  },
+  {
+    id: 'm-marketplace',
+    name: 'Contractor Marketplace',
+    shortName: 'Marketplace',
+    url: 'marketplace.kealee.com',
+    description: 'Fair bidding platform for verified contractors',
+    primaryUsers: ['project_owner', 'homeowner', 'contractor', 'subcontractor'],
+    icon: 'Store',
+    color: 'navy',
+  },
+];
+
+// Navigation structure for Project Owner/Homeowner dashboard
+export const PROJECT_OWNER_NAVIGATION: NavItem[] = [
+  {
+    id: 'dashboard',
+    label: 'Dashboard',
+    href: '/dashboard',
+    icon: 'LayoutDashboard',
+  },
+  {
+    id: 'projects',
+    label: 'My Projects',
+    href: '/projects',
+    icon: 'FolderKanban',
+    children: [
+      { id: 'projects-active', label: 'Active Projects', href: '/projects?status=active' },
+      { id: 'projects-completed', label: 'Completed', href: '/projects?status=completed' },
+      { id: 'projects-new', label: 'Start New Project', href: '/projects/new' },
+    ],
+  },
+  {
+    id: 'precon',
+    label: 'Pre-Construction',
+    href: '/precon',
+    icon: 'ClipboardList',
+    children: [
+      { id: 'precon-pipeline', label: 'Project Pipeline', href: '/precon' },
+      { id: 'precon-design', label: 'Design Packages', href: '/precon/design' },
+      { id: 'precon-srp', label: 'Cost Estimates', href: '/precon/estimates' },
+    ],
+  },
+  {
+    id: 'estimation',
+    label: 'Estimation',
+    href: '/estimation',
+    icon: 'Calculator',
+    badge: 'New',
+    children: [
+      { id: 'estimation-request', label: 'Request Estimate', href: '/estimation/new' },
+      { id: 'estimation-history', label: 'My Estimates', href: '/estimation' },
+      { id: 'estimation-compare', label: 'Compare Estimates', href: '/estimation/compare' },
+    ],
+  },
+  {
+    id: 'permits',
+    label: 'Permits',
+    href: '/permits',
+    icon: 'FileCheck',
+    children: [
+      { id: 'permits-active', label: 'Active Permits', href: '/permits' },
+      { id: 'permits-new', label: 'New Application', href: '/permits/new' },
+      { id: 'permits-inspections', label: 'Inspections', href: '/permits/inspections' },
+    ],
+  },
+  {
+    id: 'marketplace',
+    label: 'Find Contractors',
+    href: '/marketplace',
+    icon: 'Users',
+    children: [
+      { id: 'marketplace-search', label: 'Search Contractors', href: '/marketplace' },
+      { id: 'marketplace-bids', label: 'Active Bids', href: '/marketplace/bids' },
+      { id: 'marketplace-saved', label: 'Saved Contractors', href: '/marketplace/saved' },
+    ],
+  },
+  {
+    id: 'payments',
+    label: 'Payments',
+    href: '/payments',
+    icon: 'CreditCard',
+    children: [
+      { id: 'payments-escrow', label: 'Escrow Account', href: '/payments/escrow' },
+      { id: 'payments-history', label: 'Payment History', href: '/payments/history' },
+      { id: 'payments-schedule', label: 'Payment Schedule', href: '/payments/schedule' },
+    ],
+  },
+  {
+    id: 'documents',
+    label: 'Documents',
+    href: '/documents',
+    icon: 'FileText',
+  },
+  {
+    id: 'reports',
+    label: 'Reports',
+    href: '/reports',
+    icon: 'BarChart3',
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    href: '/settings',
+    icon: 'Settings',
+  },
+];
+
+// Navigation structure for Contractor dashboard
+export const CONTRACTOR_NAVIGATION: NavItem[] = [
+  {
+    id: 'dashboard',
+    label: 'Dashboard',
+    href: '/dashboard',
+    icon: 'LayoutDashboard',
+  },
+  {
+    id: 'projects',
+    label: 'Projects',
+    href: '/projects',
+    icon: 'FolderKanban',
+  },
+  {
+    id: 'estimation',
+    label: 'Estimation',
+    href: '/estimation',
+    icon: 'Calculator',
+    children: [
+      { id: 'estimation-new', label: 'New Estimate', href: '/estimation/new' },
+      { id: 'estimation-library', label: 'Assembly Library', href: '/estimation/assemblies' },
+      { id: 'estimation-history', label: 'Estimate History', href: '/estimation' },
+      { id: 'estimation-templates', label: 'Templates', href: '/estimation/templates' },
+    ],
+  },
+  {
+    id: 'bids',
+    label: 'Bidding',
+    href: '/bids',
+    icon: 'Gavel',
+    children: [
+      { id: 'bids-opportunities', label: 'Opportunities', href: '/bids/opportunities' },
+      { id: 'bids-submitted', label: 'Submitted Bids', href: '/bids/submitted' },
+      { id: 'bids-won', label: 'Won Projects', href: '/bids/won' },
+    ],
+  },
+  {
+    id: 'schedule',
+    label: 'Schedule',
+    href: '/schedule',
+    icon: 'Calendar',
+  },
+  {
+    id: 'team',
+    label: 'Team',
+    href: '/team',
+    icon: 'Users',
+  },
+  {
+    id: 'finances',
+    label: 'Finances',
+    href: '/finances',
+    icon: 'DollarSign',
+  },
+];
+
+// Marketing site navigation
+export const MARKETING_NAVIGATION: NavItem[] = [
+  {
+    id: 'solutions',
+    label: 'Solutions',
+    href: '#',
+    children: [
+      {
+        id: 'solutions-owners',
+        label: 'For Project Owners',
+        href: '/solutions/project-owners',
+      },
+      {
+        id: 'solutions-architects',
+        label: 'For Architects',
+        href: '/solutions/architects',
+      },
+      {
+        id: 'solutions-contractors',
+        label: 'For Contractors',
+        href: '/solutions/contractors',
+      },
+    ],
+  },
+  {
+    id: 'services',
+    label: 'Services',
+    href: '#',
+    children: [
+      { id: 'services-permits', label: 'Permits & Inspections', href: '/permits' },
+      { id: 'services-estimation', label: 'Estimation Services', href: '/estimation' },
+      { id: 'services-pm', label: 'PM Services', href: '/pm-services' },
+      { id: 'services-ops', label: 'Operations Services', href: '/ops-services' },
+    ],
+  },
+  {
+    id: 'pricing',
+    label: 'Pricing',
+    href: '/pricing',
+  },
+  {
+    id: 'resources',
+    label: 'Resources',
+    href: '#',
+    children: [
+      { id: 'resources-blog', label: 'Blog', href: '/blog' },
+      { id: 'resources-guides', label: 'Guides', href: '/guides' },
+      { id: 'resources-webinars', label: 'Webinars', href: '/webinars' },
+      { id: 'resources-help', label: 'Help Center', href: '/help' },
+    ],
+  },
+];
