@@ -1689,9 +1689,8 @@ export const STRUCTURED_DATA = {
 
 export type UserRole =
   | 'homeowner' // Residential homeowners
-  | 'developer' // Real estate developers (residential & commercial)
-  | 'business-owner' // Commercial building owners
-  | 'property-manager' // Property management companies
+  | 'developer' // Real estate developers + Property managers (multi-property)
+  | 'owner' // Property owners + Business owners (individual property)
   | 'contractor' // GCs, builders
   | 'professional' // Architects, designers, engineers
   | 'subcontractor'
@@ -1709,6 +1708,9 @@ export interface UserPersona {
 }
 
 // Service SEEKERS - Looking for platform services and contractors
+// NOTE: Consolidated portal structure:
+// - Developer Portal: Developers + Property Managers (multi-property/portfolio management)
+// - Owner Portal: Business Owners + Property Owners (individual property management)
 export const SERVICE_SEEKERS: UserPersona[] = [
   {
     role: 'homeowner',
@@ -1727,48 +1729,36 @@ export const SERVICE_SEEKERS: UserPersona[] = [
   },
   {
     role: 'developer',
-    name: 'Developer',
-    description: 'Real estate developers building residential or commercial projects',
+    name: 'Developer & Property Manager',
+    description: 'Real estate developers and property managers handling multiple properties or development projects',
     lookingFor: [
       'Contractor sourcing at scale',
       'Multi-project estimation',
       'Permit management across jurisdictions',
-      'Budget tracking & cash flow',
+      'Portfolio tracking & analytics',
       'Team coordination',
+      'Work order management',
+      'Vendor network management',
     ],
     portalUrl: 'developer.kealee.com',
     icon: 'Building2',
     color: 'purple',
   },
   {
-    role: 'business-owner',
-    name: 'Business Owner',
-    description: 'Commercial building owners managing tenant improvements and maintenance',
+    role: 'owner',
+    name: 'Property & Business Owner',
+    description: 'Commercial and residential property owners managing their buildings',
     lookingFor: [
       'Contractor network',
       'Tenant improvement estimates',
-      'Permit coordination',
       'Maintenance scheduling',
-      'Vendor management',
+      'Permit coordination',
+      'Budget tracking',
+      'Compliance management',
     ],
-    portalUrl: 'business.kealee.com',
-    icon: 'Briefcase',
-    color: 'orange',
-  },
-  {
-    role: 'property-manager',
-    name: 'Property Manager',
-    description: 'Property management companies handling multiple properties',
-    lookingFor: [
-      'Contractor sourcing',
-      'Maintenance project management',
-      'Multi-property dashboards',
-      'Vendor relationships',
-      'Budget management',
-    ],
-    portalUrl: 'property.kealee.com',
+    portalUrl: 'owner.kealee.com',
     icon: 'Building',
-    color: 'teal',
+    color: 'orange',
   },
 ];
 
@@ -1877,8 +1867,9 @@ export interface PlatformService {
 
 // =============================================================================
 // CLIENT PORTALS (Login Required - Paid Clients)
-// 6 separate portals - each serves a distinct user type
-// Note: Do NOT compare portals/roles - they serve different purposes
+// 5 portals - consolidated structure for distinct user types
+// - Developer Portal: Developers + Property Managers (multi-property professionals)
+// - Owner Portal: Business Owners + Property Owners (individual building management)
 // =============================================================================
 
 export const CLIENT_PORTALS: ClientPortal[] = [
@@ -1908,29 +1899,32 @@ export const CLIENT_PORTALS: ClientPortal[] = [
     name: 'Developer Portal',
     shortName: 'Developer',
     url: 'developer.kealee.com',
-    description: 'Multi-project management for real estate developers',
+    description: 'Multi-project management for developers and property managers',
     primaryUsers: ['developer'],
     icon: 'Building2',
     color: 'purple',
     loginRequired: true,
     features: [
-      'Multi-project dashboard',
+      'Portfolio dashboard',
+      'Multi-project management',
       'Contractor sourcing at scale',
       'Portfolio-wide estimation',
       'Permit management across jurisdictions',
+      'Work order management',
       'Budget tracking & cash flow',
       'Team coordination',
-      'Investor reporting',
+      'Vendor network management',
+      'Investor & owner reporting',
     ],
   },
   {
-    id: 'm-business-owner',
-    name: 'Business Owner Portal',
-    shortName: 'Business',
-    url: 'business.kealee.com',
-    description: 'Commercial building management for business owners',
-    primaryUsers: ['business-owner'],
-    icon: 'Briefcase',
+    id: 'm-owner',
+    name: 'Owner Portal',
+    shortName: 'Owner',
+    url: 'owner.kealee.com',
+    description: 'Property management for business and property owners',
+    primaryUsers: ['owner'],
+    icon: 'Building',
     color: 'orange',
     loginRequired: true,
     features: [
@@ -1941,26 +1935,7 @@ export const CLIENT_PORTALS: ClientPortal[] = [
       'Vendor management',
       'Budget tracking',
       'Compliance tracking',
-    ],
-  },
-  {
-    id: 'm-property-manager',
-    name: 'Property Manager Portal',
-    shortName: 'Property',
-    url: 'property.kealee.com',
-    description: 'Multi-property management for property managers',
-    primaryUsers: ['property-manager'],
-    icon: 'Building',
-    color: 'teal',
-    loginRequired: true,
-    features: [
-      'Multi-property dashboard',
-      'Contractor sourcing',
-      'Maintenance project management',
-      'Vendor relationships',
-      'Budget management',
-      'Work order tracking',
-      'Reporting & analytics',
+      'Permit coordination',
     ],
   },
   // SERVICE PROVIDERS - Providing services to seekers
