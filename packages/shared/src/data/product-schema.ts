@@ -2049,6 +2049,371 @@ export const CONTRACTOR_NAVIGATION: NavItem[] = [
   },
 ];
 
+// =============================================================================
+// CONTRACTOR PORTAL DASHBOARD PAGES
+// Detailed page definitions with features, plan limits, and descriptions
+// =============================================================================
+
+export interface DashboardPage {
+  id: string;
+  name: string;
+  shortDescription: string;
+  description: string;
+  href: string;
+  icon: string;
+  features: string[];
+  planRequirements?: {
+    starter?: string | boolean;
+    professional?: string | boolean;
+    business?: string | boolean;
+    enterprise?: string | boolean;
+  };
+  tabs?: { id: string; label: string; description: string }[];
+}
+
+export const CONTRACTOR_DASHBOARD_PAGES: DashboardPage[] = [
+  {
+    id: 'multi-project-dashboard',
+    name: 'Multi-Project Dashboard',
+    shortDescription: 'Manage all your projects from a single command center.',
+    description:
+      'Central hub showing all active projects, pending bids, revenue metrics, and quick actions. View project status at a glance with kanban-style organization.',
+    href: '/dashboard',
+    icon: 'LayoutDashboard',
+    features: [
+      'Project status overview (Active, Scheduled, Bidding, Completed)',
+      'Revenue metrics (MTD, YTD, trends)',
+      'Pending bid alerts',
+      'Quick action shortcuts',
+      'Kanban-style project view',
+      'Recent activity feed',
+    ],
+    planRequirements: {
+      starter: '3 projects max',
+      professional: '10 projects max',
+      business: '25 projects max',
+      enterprise: 'Unlimited projects',
+    },
+  },
+  {
+    id: 'bid-management',
+    name: 'Bid Management',
+    shortDescription: 'Find opportunities, submit bids, and track win rates.',
+    description:
+      'Complete bid lifecycle management from finding marketplace opportunities to tracking submitted bids and won projects. Integrated with Kealee Marketplace.',
+    href: '/bids',
+    icon: 'Gavel',
+    features: [
+      'Marketplace opportunity browser with filters',
+      'Bid submission workflow',
+      'Submitted bids tracking',
+      'Won projects management',
+      'Win rate analytics',
+      'Bid expiration alerts',
+    ],
+    tabs: [
+      { id: 'opportunities', label: 'Opportunities', description: 'Browse projects from Kealee Marketplace' },
+      { id: 'submitted', label: 'Submitted Bids', description: 'Track your pending and reviewed bids' },
+      { id: 'won', label: 'Won Projects', description: 'Manage awarded contracts' },
+    ],
+    planRequirements: {
+      starter: 'Basic bid management',
+      professional: 'Advanced bid management',
+      business: 'Priority marketplace placement',
+      enterprise: 'Custom bid workflows',
+    },
+  },
+  {
+    id: 'estimation-tools',
+    name: 'Estimation Tools',
+    shortDescription: 'Full estimation suite with 100+ pre-built assemblies.',
+    description:
+      'Professional-grade estimation workspace with line-item builder, assembly library, templates, and markup controls. Create accurate bids in minutes.',
+    href: '/estimation',
+    icon: 'Calculator',
+    features: [
+      'Line-item estimate builder',
+      'CSI MasterFormat divisions',
+      '1,000+ pre-built assemblies',
+      'Custom assembly creation',
+      'Template library',
+      'Markup controls (overhead, profit, contingency)',
+      'PDF and Excel export',
+      'AI-assisted estimation',
+    ],
+    tabs: [
+      { id: 'new', label: 'New Estimate', description: 'Create a new project estimate' },
+      { id: 'library', label: 'Assembly Library', description: 'Browse and manage assemblies' },
+      { id: 'templates', label: 'Templates', description: 'Save and reuse estimate templates' },
+      { id: 'history', label: 'History', description: 'View past estimates' },
+    ],
+    planRequirements: {
+      starter: 'Basic estimation tools',
+      professional: 'Full estimation suite + assembly library',
+      business: 'Custom assembly library',
+      enterprise: 'Unlimited + API access',
+    },
+  },
+  {
+    id: 'team-collaboration',
+    name: 'Team Collaboration',
+    shortDescription: 'Invite team members and subcontractors with role-based access.',
+    description:
+      'Manage your internal team and subcontractor network. Set role-based permissions, send portal invitations, and track collaboration across projects.',
+    href: '/team',
+    icon: 'Users',
+    features: [
+      'Team member management',
+      'Role-based permissions',
+      'Subcontractor network',
+      'Subcontractor portal access',
+      'Invitation management',
+      'Activity tracking',
+    ],
+    tabs: [
+      { id: 'members', label: 'Team Members', description: 'Manage your internal team' },
+      { id: 'subcontractors', label: 'Subcontractors', description: 'Your subcontractor network' },
+      { id: 'invitations', label: 'Invitations', description: 'Pending team invitations' },
+    ],
+    planRequirements: {
+      starter: '3 team members',
+      professional: '10 team members + subcontractor portal',
+      business: 'Unlimited team members',
+      enterprise: 'Unlimited + SSO',
+    },
+  },
+  {
+    id: 'scheduling-gantt',
+    name: 'Scheduling & Gantt',
+    shortDescription: 'Visual scheduling with dependencies and resource allocation.',
+    description:
+      'Professional scheduling tools with Gantt charts, calendar views, resource allocation, and task dependencies. Keep all projects on track.',
+    href: '/schedule',
+    icon: 'Calendar',
+    features: [
+      'Interactive Gantt charts',
+      'Task dependencies (FS, SS, FF, SF)',
+      'Resource allocation view',
+      'Calendar integration',
+      'Milestone tracking',
+      'Progress visualization',
+      'Multi-project timeline',
+    ],
+    tabs: [
+      { id: 'gantt', label: 'Gantt', description: 'Visual timeline with dependencies' },
+      { id: 'calendar', label: 'Calendar', description: 'Calendar view of tasks' },
+      { id: 'list', label: 'List', description: 'Table view with sorting' },
+      { id: 'resources', label: 'Resources', description: 'Team allocation and utilization' },
+    ],
+    planRequirements: {
+      starter: 'Basic scheduling',
+      professional: 'Gantt charts + dependencies',
+      business: 'Resource allocation + multi-project',
+      enterprise: 'Advanced scheduling + integrations',
+    },
+  },
+  {
+    id: 'financial-tracking',
+    name: 'Financial Tracking',
+    shortDescription: 'Invoice clients, track payments, and manage cash flow.',
+    description:
+      'Complete financial management with invoicing, payment tracking, escrow integration, and reporting. Monitor project profitability and cash flow.',
+    href: '/finances',
+    icon: 'DollarSign',
+    features: [
+      'Revenue and expense tracking',
+      'Invoice creation and management',
+      'Payment tracking',
+      'Escrow integration',
+      'Project profitability analysis',
+      'Cash flow forecasting',
+      'Financial reports',
+      'Tax-ready exports (1099)',
+    ],
+    tabs: [
+      { id: 'overview', label: 'Overview', description: 'Financial dashboard and metrics' },
+      { id: 'invoices', label: 'Invoices', description: 'Create and manage invoices' },
+      { id: 'payments', label: 'Payments', description: 'Track incoming payments' },
+      { id: 'reports', label: 'Reports', description: 'Financial reports and exports' },
+    ],
+    planRequirements: {
+      starter: 'Basic invoicing',
+      professional: 'Full financial tracking',
+      business: 'Advanced reporting + analytics',
+      enterprise: 'Custom reports + API',
+    },
+  },
+];
+
+// =============================================================================
+// À LA CARTE SERVICES (Available to Homeowners & Contractors)
+// Individual services purchasable without subscription
+// =============================================================================
+
+export interface AlaCarteService {
+  id: string;
+  name: string;
+  price: number;
+  priceUnit?: 'from' | 'starting at' | 'per';
+  category: 'project-controls' | 'estimation' | 'permits' | 'finance';
+  description: string;
+  turnaround?: string;
+  availableTo: UserRole[];
+  deliverables?: string[];
+}
+
+export const ALACARTE_SERVICES: AlaCarteService[] = [
+  // Project Controls
+  {
+    id: 'site-analysis',
+    name: 'Site Analysis Report',
+    price: 125,
+    category: 'project-controls',
+    description: 'Comprehensive site assessment documenting existing conditions, constraints, and opportunities.',
+    turnaround: '2-3 business days',
+    availableTo: ['homeowner', 'contractor'],
+    deliverables: ['PDF report', 'Photo documentation', 'Recommendations'],
+  },
+  {
+    id: 'scope-development',
+    name: 'Scope of Work Development',
+    price: 195,
+    category: 'project-controls',
+    description: 'Detailed scope document defining project requirements and specifications.',
+    turnaround: '3-5 business days',
+    availableTo: ['homeowner', 'contractor'],
+    deliverables: ['Scope document', 'Specifications list'],
+  },
+  {
+    id: 'permit-research',
+    name: 'Permit Requirements Research',
+    price: 95,
+    category: 'project-controls',
+    description: 'Research and documentation of all permit requirements for your project.',
+    turnaround: '1-2 business days',
+    availableTo: ['homeowner', 'contractor', 'professional'],
+    deliverables: ['Requirements checklist', 'Jurisdiction contacts'],
+  },
+  {
+    id: 'contractor-vetting',
+    name: 'Contractor Vetting & Verification',
+    price: 175,
+    category: 'project-controls',
+    description: 'Background verification, license check, insurance validation, and reference calls.',
+    turnaround: '3-5 business days',
+    availableTo: ['homeowner'],
+    deliverables: ['Verification report', 'License status', 'Insurance certificate', 'References'],
+  },
+  {
+    id: 'bid-leveling',
+    name: 'Bid Leveling & Analysis',
+    price: 245,
+    category: 'project-controls',
+    description: 'Normalize and compare contractor bids for fair, apples-to-apples comparison.',
+    turnaround: '2-3 business days',
+    availableTo: ['homeowner'],
+    deliverables: ['Comparison matrix', 'Recommendations', 'Questions for contractors'],
+  },
+  {
+    id: 'contract-review',
+    name: 'Construction Contract Review',
+    price: 295,
+    category: 'project-controls',
+    description: 'Expert review of construction contracts to protect your interests.',
+    turnaround: '3-5 business days',
+    availableTo: ['homeowner', 'contractor'],
+    deliverables: ['Review summary', 'Red flags', 'Suggested modifications'],
+  },
+  {
+    id: 'draw-request-review',
+    name: 'Draw Request Review',
+    price: 145,
+    category: 'project-controls',
+    description: 'Verify work completion before releasing milestone payments.',
+    turnaround: '1-2 business days',
+    availableTo: ['homeowner'],
+    deliverables: ['Verification report', 'Photo documentation', 'Release recommendation'],
+  },
+  {
+    id: 'punch-list',
+    name: 'Punch List Development',
+    price: 225,
+    category: 'project-controls',
+    description: 'Comprehensive punch list documenting all items requiring correction.',
+    turnaround: '2-3 business days',
+    availableTo: ['homeowner', 'contractor'],
+    deliverables: ['Punch list document', 'Photo documentation', 'Priority ranking'],
+  },
+  {
+    id: 'closeout-review',
+    name: 'Project Closeout Review',
+    price: 175,
+    category: 'project-controls',
+    description: 'Final review ensuring all project requirements are met before final payment.',
+    turnaround: '2-3 business days',
+    availableTo: ['homeowner'],
+    deliverables: ['Closeout checklist', 'Final documentation', 'Warranty information'],
+  },
+  {
+    id: 'warranty-assistance',
+    name: 'Warranty Claim Assistance',
+    price: 150,
+    category: 'project-controls',
+    description: 'Help filing and managing warranty claims with contractors.',
+    turnaround: 'Ongoing',
+    availableTo: ['homeowner'],
+    deliverables: ['Claim documentation', 'Communication support', 'Resolution tracking'],
+  },
+  {
+    id: 'permit-prep',
+    name: 'Permit Application Preparation',
+    price: 295,
+    category: 'permits',
+    description: 'Prepare complete permit applications for jurisdiction submission.',
+    turnaround: '3-5 business days',
+    availableTo: ['homeowner', 'contractor', 'professional'],
+    deliverables: ['Completed application', 'Required documents', 'Submission instructions'],
+  },
+  // Estimation Services
+  {
+    id: 'quick-estimate',
+    name: 'Quick Estimate',
+    price: 195,
+    priceUnit: 'from',
+    category: 'estimation',
+    description: 'Ballpark estimate for budgeting and feasibility analysis.',
+    turnaround: '24-48 hours',
+    availableTo: ['homeowner', 'contractor', 'professional'],
+    deliverables: ['PDF estimate', 'Budget range', 'Key assumptions'],
+  },
+  {
+    id: 'detailed-estimate',
+    name: 'Detailed Estimate',
+    price: 595,
+    priceUnit: 'from',
+    category: 'estimation',
+    description: 'Line-item estimate with quantities, unit costs, and labor breakdown.',
+    turnaround: '5-7 business days',
+    availableTo: ['homeowner', 'contractor', 'professional'],
+    deliverables: ['PDF report', 'Excel breakdown', 'Material list', 'Labor analysis'],
+  },
+];
+
+// Volume discounts for à la carte services
+export const ALACARTE_VOLUME_DISCOUNTS = [
+  { threshold: 3, discount: 0.05, label: '5% off 3+ services' },
+  { threshold: 5, discount: 0.10, label: '10% off 5+ services' },
+  { threshold: 10, discount: 0.15, label: '15% off 10+ services' },
+];
+
+// Plan-based discounts for à la carte services
+export const ALACARTE_PLAN_DISCOUNTS: Record<string, number> = {
+  starter: 0,
+  professional: 0.10, // 10% off
+  business: 0.15, // 15% off
+  enterprise: 0.20, // 20% off
+};
+
 // Navigation structure for Professional dashboard
 // Includes: Architects, designers, engineers
 export const PROFESSIONAL_NAVIGATION: NavItem[] = [
