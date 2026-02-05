@@ -291,10 +291,12 @@ export const PRECON_SERVICES: PreConService[] = [
 ];
 
 // Platform commission on awarded contracts
+// IMPORTANT: Do NOT display on service/landing pages - only show at final checkout
 export const PLATFORM_COMMISSION = {
   rate: 0.035, // 3.5%
   paidBy: 'contractor',
   description: 'Platform commission on contract value',
+  displayRule: 'CHECKOUT_ONLY', // Only display at checkout/total price page
 };
 
 // =============================================================================
@@ -1678,12 +1680,136 @@ export const STRUCTURED_DATA = {
 // NAVIGATION & APP STRUCTURE
 // =============================================================================
 
+// =============================================================================
+// USER ROLES & PERSONAS
+// Note: Each role has its own portal - they are NOT comparable
+// - Homeowner/Developer/BusinessOwner/PropertyManager: Looking for services
+// - Contractor/Professional: Providing services
+// =============================================================================
+
 export type UserRole =
   | 'homeowner' // Residential homeowners
-  | 'contractor' // GCs, builders, developers, commercial building owners, investors
+  | 'developer' // Real estate developers (residential & commercial)
+  | 'business-owner' // Commercial building owners
+  | 'property-manager' // Property management companies
+  | 'contractor' // GCs, builders
   | 'professional' // Architects, designers, engineers
   | 'subcontractor'
   | 'estimator';
+
+// User personas with detailed descriptions
+export interface UserPersona {
+  role: UserRole;
+  name: string;
+  description: string;
+  lookingFor: string[];
+  portalUrl: string;
+  icon: string;
+  color: string;
+}
+
+// Service SEEKERS - Looking for platform services and contractors
+export const SERVICE_SEEKERS: UserPersona[] = [
+  {
+    role: 'homeowner',
+    name: 'Homeowner',
+    description: 'Residential homeowners planning renovations, additions, or new construction',
+    lookingFor: [
+      'Verified contractors',
+      'Project cost estimates',
+      'Permit assistance',
+      'Project management support',
+      'Payment protection (escrow)',
+    ],
+    portalUrl: 'app.kealee.com',
+    icon: 'Home',
+    color: 'skyBlue',
+  },
+  {
+    role: 'developer',
+    name: 'Developer',
+    description: 'Real estate developers building residential or commercial projects',
+    lookingFor: [
+      'Contractor sourcing at scale',
+      'Multi-project estimation',
+      'Permit management across jurisdictions',
+      'Budget tracking & cash flow',
+      'Team coordination',
+    ],
+    portalUrl: 'developer.kealee.com',
+    icon: 'Building2',
+    color: 'purple',
+  },
+  {
+    role: 'business-owner',
+    name: 'Business Owner',
+    description: 'Commercial building owners managing tenant improvements and maintenance',
+    lookingFor: [
+      'Contractor network',
+      'Tenant improvement estimates',
+      'Permit coordination',
+      'Maintenance scheduling',
+      'Vendor management',
+    ],
+    portalUrl: 'business.kealee.com',
+    icon: 'Briefcase',
+    color: 'orange',
+  },
+  {
+    role: 'property-manager',
+    name: 'Property Manager',
+    description: 'Property management companies handling multiple properties',
+    lookingFor: [
+      'Contractor sourcing',
+      'Maintenance project management',
+      'Multi-property dashboards',
+      'Vendor relationships',
+      'Budget management',
+    ],
+    portalUrl: 'property.kealee.com',
+    icon: 'Building',
+    color: 'teal',
+  },
+];
+
+// Service PROVIDERS - Providing services to seekers
+export const SERVICE_PROVIDERS: UserPersona[] = [
+  {
+    role: 'contractor',
+    name: 'Contractor',
+    description: 'General contractors and builders',
+    lookingFor: [
+      'Project opportunities',
+      'Estimation tools',
+      'Team management',
+      'Schedule management',
+      'Payment processing',
+    ],
+    portalUrl: 'contractor.kealee.com',
+    icon: 'HardHat',
+    color: 'orange',
+  },
+  {
+    role: 'professional',
+    name: 'Professional',
+    description: 'Architects, designers, and engineers',
+    lookingFor: [
+      'Client project management',
+      'Deliverable tracking',
+      'Fee management',
+      'Permit coordination',
+      'Collaboration tools',
+    ],
+    portalUrl: 'professional.kealee.com',
+    icon: 'PenTool',
+    color: 'teal',
+  },
+];
+
+// =============================================================================
+// NAVIGATION STRUCTURE (TOPBAR WITH DROPDOWNS)
+// All portals use topbar navigation - no sidebars
+// =============================================================================
 
 export interface NavItem {
   id: string;
@@ -1692,6 +1818,36 @@ export interface NavItem {
   icon?: string;
   badge?: string;
   children?: NavItem[];
+}
+
+export interface TopbarNavItem {
+  id: string;
+  label: string;
+  href?: string; // Optional - if dropdown, no direct href
+  icon?: string;
+  isDropdown?: boolean;
+  dropdownSections?: TopbarDropdownSection[];
+}
+
+export interface TopbarDropdownSection {
+  title?: string;
+  items: TopbarDropdownItem[];
+}
+
+export interface TopbarDropdownItem {
+  id: string;
+  label: string;
+  href: string;
+  description?: string;
+  icon?: string;
+  badge?: string;
+}
+
+// Portal topbar navigation structure
+export interface PortalTopbarNav {
+  logo: { href: string; label: string };
+  mainItems: TopbarNavItem[];
+  rightItems: TopbarNavItem[];
 }
 
 export interface ClientPortal {
@@ -1721,10 +1877,12 @@ export interface PlatformService {
 
 // =============================================================================
 // CLIENT PORTALS (Login Required - Paid Clients)
-// These are the 3 main client-facing dashboards
+// 6 separate portals - each serves a distinct user type
+// Note: Do NOT compare portals/roles - they serve different purposes
 // =============================================================================
 
 export const CLIENT_PORTALS: ClientPortal[] = [
+  // SERVICE SEEKERS - Looking for contractors and platform services
   {
     id: 'm-homeowner',
     name: 'Homeowner Portal',
@@ -1737,22 +1895,81 @@ export const CLIENT_PORTALS: ClientPortal[] = [
     loginRequired: true,
     features: [
       'Project dashboard',
-      'Contractor management',
-      'Payment tracking & escrow',
+      'Find verified contractors',
+      'Cost estimates',
+      'Permit assistance',
+      'Payment protection (escrow)',
       'Document storage',
       'Progress reports',
-      'Access to Estimation services',
-      'Access to Permits services',
-      'Access to Marketplace',
     ],
   },
+  {
+    id: 'm-developer',
+    name: 'Developer Portal',
+    shortName: 'Developer',
+    url: 'developer.kealee.com',
+    description: 'Multi-project management for real estate developers',
+    primaryUsers: ['developer'],
+    icon: 'Building2',
+    color: 'purple',
+    loginRequired: true,
+    features: [
+      'Multi-project dashboard',
+      'Contractor sourcing at scale',
+      'Portfolio-wide estimation',
+      'Permit management across jurisdictions',
+      'Budget tracking & cash flow',
+      'Team coordination',
+      'Investor reporting',
+    ],
+  },
+  {
+    id: 'm-business-owner',
+    name: 'Business Owner Portal',
+    shortName: 'Business',
+    url: 'business.kealee.com',
+    description: 'Commercial building management for business owners',
+    primaryUsers: ['business-owner'],
+    icon: 'Briefcase',
+    color: 'orange',
+    loginRequired: true,
+    features: [
+      'Property dashboard',
+      'Tenant improvement management',
+      'Contractor network',
+      'Maintenance scheduling',
+      'Vendor management',
+      'Budget tracking',
+      'Compliance tracking',
+    ],
+  },
+  {
+    id: 'm-property-manager',
+    name: 'Property Manager Portal',
+    shortName: 'Property',
+    url: 'property.kealee.com',
+    description: 'Multi-property management for property managers',
+    primaryUsers: ['property-manager'],
+    icon: 'Building',
+    color: 'teal',
+    loginRequired: true,
+    features: [
+      'Multi-property dashboard',
+      'Contractor sourcing',
+      'Maintenance project management',
+      'Vendor relationships',
+      'Budget management',
+      'Work order tracking',
+      'Reporting & analytics',
+    ],
+  },
+  // SERVICE PROVIDERS - Providing services to seekers
   {
     id: 'm-contractor',
     name: 'Contractor Portal',
     shortName: 'Contractor',
     url: 'contractor.kealee.com',
-    description:
-      'Full project management for GCs, builders, developers, and commercial building owners',
+    description: 'Full project management for general contractors and builders',
     primaryUsers: ['contractor'],
     icon: 'HardHat',
     color: 'orange',
@@ -1765,8 +1982,6 @@ export const CLIENT_PORTALS: ClientPortal[] = [
       'Schedule & Gantt charts',
       'Budget tracking',
       'Payment processing',
-      'Access to Marketplace (receive bids)',
-      'Access to Permits services',
     ],
   },
   {
@@ -1786,8 +2001,6 @@ export const CLIENT_PORTALS: ClientPortal[] = [
       'Fee & payment management',
       'Permit coordination',
       'Document management',
-      'Access to Estimation services',
-      'Access to Permits services',
     ],
   },
 ];
@@ -3055,28 +3268,428 @@ export const PROFESSIONAL_NAVIGATION: NavItem[] = [
   },
 ];
 
-// Marketing site navigation (public pages with login CTAs)
+// =============================================================================
+// TOPBAR NAVIGATION STRUCTURES
+// All portals use topbar navigation with Features and Services dropdowns
+// =============================================================================
+
+// Homeowner Portal Topbar Navigation
+export const HOMEOWNER_TOPBAR: PortalTopbarNav = {
+  logo: { href: '/dashboard', label: 'Kealee' },
+  mainItems: [
+    { id: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
+    {
+      id: 'features',
+      label: 'Features',
+      isDropdown: true,
+      dropdownSections: [
+        {
+          title: 'Project Management',
+          items: [
+            { id: 'projects', label: 'My Projects', href: '/projects', description: 'View and manage your projects', icon: 'FolderKanban' },
+            { id: 'documents', label: 'Documents', href: '/documents', description: 'Project files and contracts', icon: 'FileText' },
+            { id: 'reports', label: 'Progress Reports', href: '/reports', description: 'Track project milestones', icon: 'BarChart3' },
+          ],
+        },
+        {
+          title: 'Payments & Trust',
+          items: [
+            { id: 'escrow', label: 'Escrow Account', href: '/payments/escrow', description: 'Secure payment protection', icon: 'Shield' },
+            { id: 'payments', label: 'Payment History', href: '/payments', description: 'View payment records', icon: 'CreditCard' },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'services',
+      label: 'Services',
+      isDropdown: true,
+      dropdownSections: [
+        {
+          items: [
+            { id: 'find-contractors', label: 'Find Contractors', href: '/marketplace', description: 'Browse verified contractors', icon: 'Users' },
+            { id: 'get-estimate', label: 'Get Estimate', href: '/estimation', description: 'AI-powered cost estimates', icon: 'Calculator', badge: 'Popular' },
+            { id: 'permits', label: 'Permit Assistance', href: '/permits', description: 'Building permit help', icon: 'FileCheck' },
+            { id: 'pm-services', label: 'PM Services', href: '/pm-services', description: 'Managed project management', icon: 'Briefcase' },
+          ],
+        },
+      ],
+    },
+  ],
+  rightItems: [
+    { id: 'notifications', label: 'Notifications', href: '/notifications', icon: 'Bell' },
+    { id: 'settings', label: 'Settings', href: '/settings', icon: 'Settings' },
+    { id: 'profile', label: 'Profile', href: '/profile', icon: 'User' },
+  ],
+};
+
+// Developer Portal Topbar Navigation
+export const DEVELOPER_TOPBAR: PortalTopbarNav = {
+  logo: { href: '/dashboard', label: 'Kealee Developer' },
+  mainItems: [
+    { id: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
+    {
+      id: 'features',
+      label: 'Features',
+      isDropdown: true,
+      dropdownSections: [
+        {
+          title: 'Portfolio Management',
+          items: [
+            { id: 'projects', label: 'All Projects', href: '/projects', description: 'Multi-project portfolio view', icon: 'Building2' },
+            { id: 'pipeline', label: 'Development Pipeline', href: '/pipeline', description: 'Track projects by phase', icon: 'GitBranch' },
+            { id: 'analytics', label: 'Portfolio Analytics', href: '/analytics', description: 'Performance & ROI tracking', icon: 'TrendingUp' },
+          ],
+        },
+        {
+          title: 'Operations',
+          items: [
+            { id: 'team', label: 'Team Management', href: '/team', description: 'Manage project teams', icon: 'Users' },
+            { id: 'documents', label: 'Documents', href: '/documents', description: 'Contracts & files', icon: 'FileText' },
+            { id: 'budget', label: 'Budget Tracking', href: '/budget', description: 'Cash flow & budgets', icon: 'DollarSign' },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'services',
+      label: 'Services',
+      isDropdown: true,
+      dropdownSections: [
+        {
+          items: [
+            { id: 'contractor-sourcing', label: 'Contractor Sourcing', href: '/contractors', description: 'Find contractors at scale', icon: 'HardHat' },
+            { id: 'estimation', label: 'Portfolio Estimation', href: '/estimation', description: 'Multi-project estimates', icon: 'Calculator' },
+            { id: 'permits', label: 'Permit Management', href: '/permits', description: 'Cross-jurisdiction permits', icon: 'FileCheck' },
+            { id: 'investor-reports', label: 'Investor Reports', href: '/reports/investors', description: 'Generate investor updates', icon: 'PieChart' },
+          ],
+        },
+      ],
+    },
+  ],
+  rightItems: [
+    { id: 'notifications', label: 'Notifications', href: '/notifications', icon: 'Bell' },
+    { id: 'settings', label: 'Settings', href: '/settings', icon: 'Settings' },
+    { id: 'profile', label: 'Profile', href: '/profile', icon: 'User' },
+  ],
+};
+
+// Business Owner Portal Topbar Navigation
+export const BUSINESS_OWNER_TOPBAR: PortalTopbarNav = {
+  logo: { href: '/dashboard', label: 'Kealee Business' },
+  mainItems: [
+    { id: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
+    {
+      id: 'features',
+      label: 'Features',
+      isDropdown: true,
+      dropdownSections: [
+        {
+          title: 'Property Management',
+          items: [
+            { id: 'properties', label: 'My Properties', href: '/properties', description: 'View all properties', icon: 'Building' },
+            { id: 'tenants', label: 'Tenant Improvements', href: '/tenant-improvements', description: 'TI project management', icon: 'Hammer' },
+            { id: 'maintenance', label: 'Maintenance', href: '/maintenance', description: 'Building maintenance', icon: 'Wrench' },
+          ],
+        },
+        {
+          title: 'Vendors & Finance',
+          items: [
+            { id: 'vendors', label: 'Vendor Management', href: '/vendors', description: 'Contractor relationships', icon: 'Users' },
+            { id: 'budget', label: 'Budget Tracking', href: '/budget', description: 'CapEx & OpEx tracking', icon: 'DollarSign' },
+            { id: 'compliance', label: 'Compliance', href: '/compliance', description: 'Building compliance', icon: 'CheckCircle' },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'services',
+      label: 'Services',
+      isDropdown: true,
+      dropdownSections: [
+        {
+          items: [
+            { id: 'find-contractors', label: 'Find Contractors', href: '/contractors', description: 'Vetted contractor network', icon: 'HardHat' },
+            { id: 'estimation', label: 'Get Estimates', href: '/estimation', description: 'TI cost estimates', icon: 'Calculator' },
+            { id: 'permits', label: 'Permit Services', href: '/permits', description: 'Commercial permits', icon: 'FileCheck' },
+          ],
+        },
+      ],
+    },
+  ],
+  rightItems: [
+    { id: 'notifications', label: 'Notifications', href: '/notifications', icon: 'Bell' },
+    { id: 'settings', label: 'Settings', href: '/settings', icon: 'Settings' },
+    { id: 'profile', label: 'Profile', href: '/profile', icon: 'User' },
+  ],
+};
+
+// Property Manager Portal Topbar Navigation
+export const PROPERTY_MANAGER_TOPBAR: PortalTopbarNav = {
+  logo: { href: '/dashboard', label: 'Kealee Property' },
+  mainItems: [
+    { id: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
+    {
+      id: 'features',
+      label: 'Features',
+      isDropdown: true,
+      dropdownSections: [
+        {
+          title: 'Property Portfolio',
+          items: [
+            { id: 'properties', label: 'All Properties', href: '/properties', description: 'Multi-property dashboard', icon: 'Building' },
+            { id: 'work-orders', label: 'Work Orders', href: '/work-orders', description: 'Track maintenance requests', icon: 'ClipboardList' },
+            { id: 'inspections', label: 'Inspections', href: '/inspections', description: 'Property inspections', icon: 'Search' },
+          ],
+        },
+        {
+          title: 'Operations',
+          items: [
+            { id: 'vendors', label: 'Vendor Network', href: '/vendors', description: 'Preferred contractor list', icon: 'Users' },
+            { id: 'budget', label: 'Budget Management', href: '/budget', description: 'Property budgets', icon: 'DollarSign' },
+            { id: 'reports', label: 'Owner Reports', href: '/reports', description: 'Generate owner reports', icon: 'BarChart3' },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'services',
+      label: 'Services',
+      isDropdown: true,
+      dropdownSections: [
+        {
+          items: [
+            { id: 'contractor-sourcing', label: 'Contractor Sourcing', href: '/contractors', description: 'Find reliable contractors', icon: 'HardHat' },
+            { id: 'estimation', label: 'Project Estimates', href: '/estimation', description: 'Maintenance estimates', icon: 'Calculator' },
+            { id: 'permits', label: 'Permit Services', href: '/permits', description: 'Building permits', icon: 'FileCheck' },
+          ],
+        },
+      ],
+    },
+  ],
+  rightItems: [
+    { id: 'notifications', label: 'Notifications', href: '/notifications', icon: 'Bell' },
+    { id: 'settings', label: 'Settings', href: '/settings', icon: 'Settings' },
+    { id: 'profile', label: 'Profile', href: '/profile', icon: 'User' },
+  ],
+};
+
+// Contractor Portal Topbar Navigation
+export const CONTRACTOR_TOPBAR: PortalTopbarNav = {
+  logo: { href: '/dashboard', label: 'Kealee Contractor' },
+  mainItems: [
+    { id: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
+    {
+      id: 'features',
+      label: 'Features',
+      isDropdown: true,
+      dropdownSections: [
+        {
+          title: 'Project Management',
+          items: [
+            { id: 'projects', label: 'Projects', href: '/projects', description: 'Active & completed projects', icon: 'FolderKanban' },
+            { id: 'bids', label: 'Bid Management', href: '/bids', description: 'Track bids & opportunities', icon: 'Gavel' },
+            { id: 'schedule', label: 'Schedule & Gantt', href: '/schedule', description: 'Visual scheduling', icon: 'Calendar' },
+          ],
+        },
+        {
+          title: 'Team & Finance',
+          items: [
+            { id: 'team', label: 'Team Management', href: '/team', description: 'Team & subcontractors', icon: 'Users' },
+            { id: 'finances', label: 'Financial Tracking', href: '/finances', description: 'Invoices & payments', icon: 'DollarSign' },
+            { id: 'documents', label: 'Documents', href: '/documents', description: 'Contracts & files', icon: 'FileText' },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'services',
+      label: 'Services',
+      isDropdown: true,
+      dropdownSections: [
+        {
+          items: [
+            { id: 'estimation', label: 'Estimation Tools', href: '/estimation', description: 'Full estimation suite', icon: 'Calculator' },
+            { id: 'assemblies', label: 'Assembly Library', href: '/estimation/assemblies', description: '1,200+ pre-built assemblies', icon: 'Boxes', badge: 'New' },
+            { id: 'permits', label: 'Permit Services', href: '/permits', description: 'Building permits', icon: 'FileCheck' },
+          ],
+        },
+      ],
+    },
+  ],
+  rightItems: [
+    { id: 'notifications', label: 'Notifications', href: '/notifications', icon: 'Bell' },
+    { id: 'settings', label: 'Settings', href: '/settings', icon: 'Settings' },
+    { id: 'profile', label: 'Profile', href: '/profile', icon: 'User' },
+  ],
+};
+
+// Professional Portal Topbar Navigation
+export const PROFESSIONAL_TOPBAR: PortalTopbarNav = {
+  logo: { href: '/dashboard', label: 'Kealee Professional' },
+  mainItems: [
+    { id: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
+    {
+      id: 'features',
+      label: 'Features',
+      isDropdown: true,
+      dropdownSections: [
+        {
+          title: 'Project Management',
+          items: [
+            { id: 'projects', label: 'Projects', href: '/projects', description: 'Active design projects', icon: 'FolderKanban' },
+            { id: 'deliverables', label: 'Deliverables', href: '/deliverables', description: 'Track deliverables', icon: 'Package' },
+            { id: 'clients', label: 'Clients', href: '/clients', description: 'Client management', icon: 'Users' },
+          ],
+        },
+        {
+          title: 'Business',
+          items: [
+            { id: 'fees', label: 'Fee Management', href: '/fees', description: 'Track fees & billing', icon: 'DollarSign' },
+            { id: 'documents', label: 'Documents', href: '/documents', description: 'Drawings & specs', icon: 'FileText' },
+            { id: 'reports', label: 'Reports', href: '/reports', description: 'Business reports', icon: 'BarChart3' },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'services',
+      label: 'Services',
+      isDropdown: true,
+      dropdownSections: [
+        {
+          items: [
+            { id: 'estimation', label: 'Estimation Services', href: '/estimation', description: 'Cost estimation for designs', icon: 'Calculator' },
+            { id: 'permits', label: 'Permit Coordination', href: '/permits', description: 'Permit submissions', icon: 'FileCheck' },
+            { id: 'collaboration', label: 'Contractor Connect', href: '/contractors', description: 'Connect with contractors', icon: 'Handshake' },
+          ],
+        },
+      ],
+    },
+  ],
+  rightItems: [
+    { id: 'notifications', label: 'Notifications', href: '/notifications', icon: 'Bell' },
+    { id: 'settings', label: 'Settings', href: '/settings', icon: 'Settings' },
+    { id: 'profile', label: 'Profile', href: '/profile', icon: 'User' },
+  ],
+};
+
+// All portal topbar navigations
+export const PORTAL_TOPBAR_NAVIGATIONS = {
+  homeowner: HOMEOWNER_TOPBAR,
+  developer: DEVELOPER_TOPBAR,
+  'business-owner': BUSINESS_OWNER_TOPBAR,
+  'property-manager': PROPERTY_MANAGER_TOPBAR,
+  contractor: CONTRACTOR_TOPBAR,
+  professional: PROFESSIONAL_TOPBAR,
+};
+
+// =============================================================================
+// LANDING PAGE DEFINITIONS FOR NEW PORTALS
+// =============================================================================
+
+export interface PortalLandingPage {
+  portalId: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  heroDescription: string;
+  primaryCta: { label: string; href: string };
+  secondaryCta: { label: string; href: string };
+  features: { icon: string; title: string; description: string }[];
+  services: { icon: string; title: string; description: string; href: string }[];
+  testimonials?: { quote: string; author: string; role: string; company: string }[];
+}
+
+export const DEVELOPER_LANDING: PortalLandingPage = {
+  portalId: 'm-developer',
+  heroTitle: 'Build Your Portfolio, Not Spreadsheets',
+  heroSubtitle: 'Real Estate Developer Platform',
+  heroDescription:
+    'Manage multi-project developments with AI-powered estimation, contractor sourcing, and permit management across jurisdictions.',
+  primaryCta: { label: 'Start Free', href: '/signup?portal=developer' },
+  secondaryCta: { label: 'See Demo', href: '/demo/developer' },
+  features: [
+    { icon: 'Building2', title: 'Portfolio Dashboard', description: 'Track all projects in one view with real-time status updates' },
+    { icon: 'HardHat', title: 'Contractor Sourcing', description: 'Access our vetted network of contractors for any project scale' },
+    { icon: 'Calculator', title: 'Multi-Project Estimation', description: 'Get accurate estimates across your entire portfolio' },
+    { icon: 'FileCheck', title: 'Cross-Jurisdiction Permits', description: 'Manage permits across multiple jurisdictions seamlessly' },
+    { icon: 'TrendingUp', title: 'Portfolio Analytics', description: 'Track ROI, timelines, and budget performance' },
+    { icon: 'PieChart', title: 'Investor Reports', description: 'Generate professional reports for investors and stakeholders' },
+  ],
+  services: [
+    { icon: 'HardHat', title: 'Contractor Sourcing', description: 'Find contractors at scale for multiple projects', href: '/services/contractor-sourcing' },
+    { icon: 'Calculator', title: 'Estimation Services', description: 'Professional multi-project estimates', href: '/services/estimation' },
+    { icon: 'FileCheck', title: 'Permit Management', description: 'Cross-jurisdiction permit handling', href: '/services/permits' },
+    { icon: 'Briefcase', title: 'PM Services', description: 'Managed project management for developments', href: '/services/pm' },
+  ],
+};
+
+export const BUSINESS_OWNER_LANDING: PortalLandingPage = {
+  portalId: 'm-business-owner',
+  heroTitle: 'Commercial Property, Simplified',
+  heroSubtitle: 'Business Owner Platform',
+  heroDescription:
+    'Manage tenant improvements, building maintenance, and contractor relationships from a single platform designed for commercial building owners.',
+  primaryCta: { label: 'Start Free', href: '/signup?portal=business' },
+  secondaryCta: { label: 'See Demo', href: '/demo/business' },
+  features: [
+    { icon: 'Building', title: 'Property Dashboard', description: 'Centralized view of all your commercial properties' },
+    { icon: 'Hammer', title: 'Tenant Improvements', description: 'Streamline TI project management' },
+    { icon: 'Wrench', title: 'Maintenance Management', description: 'Track and schedule building maintenance' },
+    { icon: 'Users', title: 'Vendor Network', description: 'Build relationships with reliable contractors' },
+    { icon: 'DollarSign', title: 'Budget Tracking', description: 'Monitor CapEx and OpEx across properties' },
+    { icon: 'CheckCircle', title: 'Compliance Tracking', description: 'Stay on top of building compliance requirements' },
+  ],
+  services: [
+    { icon: 'HardHat', title: 'Find Contractors', description: 'Access vetted commercial contractors', href: '/services/contractors' },
+    { icon: 'Calculator', title: 'TI Estimates', description: 'Accurate tenant improvement estimates', href: '/services/estimation' },
+    { icon: 'FileCheck', title: 'Permit Services', description: 'Commercial permit assistance', href: '/services/permits' },
+  ],
+};
+
+export const PROPERTY_MANAGER_LANDING: PortalLandingPage = {
+  portalId: 'm-property-manager',
+  heroTitle: 'Multi-Property Management Made Easy',
+  heroSubtitle: 'Property Manager Platform',
+  heroDescription:
+    'Manage maintenance projects, contractor relationships, and owner reporting across your entire property portfolio from one powerful platform.',
+  primaryCta: { label: 'Start Free', href: '/signup?portal=property' },
+  secondaryCta: { label: 'See Demo', href: '/demo/property' },
+  features: [
+    { icon: 'Building', title: 'Multi-Property Dashboard', description: 'All properties at a glance with status tracking' },
+    { icon: 'ClipboardList', title: 'Work Order Management', description: 'Track and manage maintenance requests efficiently' },
+    { icon: 'Users', title: 'Preferred Vendor List', description: 'Build and manage your contractor network' },
+    { icon: 'Search', title: 'Inspection Tracking', description: 'Schedule and track property inspections' },
+    { icon: 'DollarSign', title: 'Budget Management', description: 'Track budgets across all managed properties' },
+    { icon: 'BarChart3', title: 'Owner Reports', description: 'Generate professional reports for property owners' },
+  ],
+  services: [
+    { icon: 'HardHat', title: 'Contractor Sourcing', description: 'Find reliable contractors quickly', href: '/services/contractors' },
+    { icon: 'Calculator', title: 'Project Estimates', description: 'Get estimates for maintenance projects', href: '/services/estimation' },
+    { icon: 'FileCheck', title: 'Permit Services', description: 'Building permit assistance', href: '/services/permits' },
+  ],
+};
+
+// All landing pages
+export const PORTAL_LANDING_PAGES = {
+  developer: DEVELOPER_LANDING,
+  'business-owner': BUSINESS_OWNER_LANDING,
+  'property-manager': PROPERTY_MANAGER_LANDING,
+};
+
+// Legacy - keep for backwards compatibility
 export const MARKETING_NAVIGATION: NavItem[] = [
   {
     id: 'solutions',
     label: 'Solutions',
     href: '#',
     children: [
-      {
-        id: 'solutions-homeowners',
-        label: 'For Homeowners',
-        href: '/solutions/homeowners',
-      },
-      {
-        id: 'solutions-contractors',
-        label: 'For Contractors & Developers',
-        href: '/solutions/contractors',
-      },
-      {
-        id: 'solutions-professionals',
-        label: 'For Architects & Engineers',
-        href: '/solutions/professionals',
-      },
+      { id: 'solutions-homeowners', label: 'For Homeowners', href: '/solutions/homeowners' },
+      { id: 'solutions-developers', label: 'For Developers', href: '/solutions/developers' },
+      { id: 'solutions-business', label: 'For Business Owners', href: '/solutions/business' },
+      { id: 'solutions-property', label: 'For Property Managers', href: '/solutions/property' },
+      { id: 'solutions-contractors', label: 'For Contractors', href: '/solutions/contractors' },
+      { id: 'solutions-professionals', label: 'For Architects & Engineers', href: '/solutions/professionals' },
     ],
   },
   {
@@ -3084,10 +3697,10 @@ export const MARKETING_NAVIGATION: NavItem[] = [
     label: 'Services',
     href: '#',
     children: [
-      { id: 'services-permits', label: 'Permits & Inspections', href: '/permits' },
       { id: 'services-estimation', label: 'Estimation Services', href: '/estimation' },
+      { id: 'services-permits', label: 'Permits & Inspections', href: '/permits' },
+      { id: 'services-contractors', label: 'Contractor Sourcing', href: '/contractors' },
       { id: 'services-pm', label: 'PM Services', href: '/pm-services' },
-      { id: 'services-ops', label: 'Operations Services', href: '/ops-services' },
     ],
   },
   {

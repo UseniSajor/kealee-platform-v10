@@ -389,123 +389,172 @@ Kealee Design System/
 
 ### Portal Architecture
 
-**3 Client Portals (Login Required - Paid Clients)**
+**6 Client Portals (Login Required - Each serves a distinct user type)**
+
+IMPORTANT: Do NOT compare portals/user types - they serve completely different purposes.
+
+**Service Seekers** - Looking for contractors and platform services:
 
 | Portal | URL | Primary Users | Icon |
 |--------|-----|---------------|------|
 | Homeowner | app.kealee.com | Residential homeowners | Home |
-| Contractor | contractor.kealee.com | GCs, builders, developers, commercial owners, investors | HardHat |
+| Developer | developer.kealee.com | Real estate developers | Building2 |
+| Business Owner | business.kealee.com | Commercial building owners | Briefcase |
+| Property Manager | property.kealee.com | Property management companies | Building |
+
+**Service Providers** - Providing services to seekers:
+
+| Portal | URL | Primary Users | Icon |
+|--------|-----|---------------|------|
+| Contractor | contractor.kealee.com | General contractors, builders | HardHat |
 | Professional | professional.kealee.com | Architects, designers, engineers | PenTool |
 
 **Platform Services (Integrated within Portals)**
 
 | Service | Description | Available To |
 |---------|-------------|--------------|
+| Contractor Sourcing | Find vetted contractors | Homeowner, Developer, Business, Property |
 | Estimation | AI-powered cost estimation | All portals |
 | Permits | Permit processing & inspections | All portals |
-| Marketplace | Contractor bidding platform | Homeowner, Contractor |
 | Finance & Trust | Escrow & payment services | All portals |
-| PM Services | Managed project management | Homeowner, Contractor |
+| PM Services | Managed project management | Homeowner, Developer, Business |
 
-### Login & CTA Requirements
-- All dashboards require login (paid clients only)
-- Marketing pages show "Login" and "Sign Up" CTAs in header
-- Services purchased are accessible within client portal dashboard
-- Each portal has its own branding but shared design system
+### Navigation Structure (TOPBAR - No Sidebars)
 
-### Homeowner Sidebar Navigation (app.kealee.com)
+All portals use **topbar navigation with dropdown menus**:
+
 ```
-Dashboard           (LayoutDashboard)
-My Projects         (FolderKanban)
-  ├── Active Projects
-  ├── Completed
-  └── Start New Project
-Pre-Construction    (ClipboardList)
-  ├── Project Pipeline
-  ├── Design Packages
-  └── Cost Estimates
-Estimation          (Calculator) [NEW badge]
-  ├── Request Estimate
-  ├── My Estimates
-  └── Compare Estimates
-Permits             (FileCheck)
-  ├── Active Permits
-  ├── New Application
-  └── Inspections
-Find Contractors    (Users)
-  ├── Search Contractors
-  ├── Active Bids
-  └── Saved Contractors
-Payments            (CreditCard)
-  ├── Escrow Account
-  ├── Payment History
-  └── Payment Schedule
-Documents           (FileText)
-Reports             (BarChart3)
-Settings            (Settings)
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ [Logo]   Dashboard   Features ▼   Services ▼         🔔  ⚙️  👤 Profile        │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                         │              │
+                         ▼              ▼
+                  ┌─────────────┐  ┌─────────────┐
+                  │ Feature 1   │  │ Service 1   │
+                  │ Feature 2   │  │ Service 2   │
+                  │ Feature 3   │  │ Service 3   │
+                  └─────────────┘  └─────────────┘
 ```
 
-### Contractor Sidebar Navigation (contractor.kealee.com)
-*(GCs, builders, developers, commercial building owners, investors)*
+### Homeowner Topbar Navigation (app.kealee.com)
 ```
-Dashboard           (LayoutDashboard)
-Projects            (FolderKanban)
-Estimation          (Calculator)
-  ├── New Estimate
-  ├── Assembly Library
-  ├── Estimate History
-  └── Templates
-Bidding             (Gavel)
-  ├── Opportunities
-  ├── Submitted Bids
-  └── Won Projects
-Schedule            (Calendar)
-Team                (Users)
-  ├── Team Members
-  ├── Subcontractors
-  └── Invitations
-Permits             (FileCheck)
-  ├── Active Permits
-  ├── New Application
-  └── Inspections
-Finances            (DollarSign)
-  ├── Overview
-  ├── Invoices
-  └── Payments
-Documents           (FileText)
-Reports             (BarChart3)
-Settings            (Settings)
+[Kealee]  Dashboard  Features ▼  Services ▼        🔔  ⚙️  👤
+
+Features Dropdown:
+├── Project Management
+│   ├── My Projects
+│   ├── Documents
+│   └── Progress Reports
+└── Payments & Trust
+    ├── Escrow Account
+    └── Payment History
+
+Services Dropdown:
+├── Find Contractors (Popular)
+├── Get Estimate
+├── Permit Assistance
+└── PM Services
 ```
 
-### Professional Sidebar Navigation (professional.kealee.com)
-*(Architects, designers, engineers)*
+### Developer Topbar Navigation (developer.kealee.com)
 ```
-Dashboard           (LayoutDashboard)
-Projects            (FolderKanban)
-  ├── Active Projects
-  ├── Completed
-  └── Proposals
-Deliverables        (Package)
-  ├── In Progress
-  ├── Under Review
-  └── Approved
-Clients             (Users)
-  ├── Active Clients
-  └── Leads
-Estimation          (Calculator)
-  ├── Request Estimate
-  └── Estimate History
-Permits             (FileCheck)
-  ├── Active Permits
-  ├── New Application
-  └── Inspections
-Billing & Fees      (CreditCard)
-  ├── Invoices
-  ├── Payments
-  └── Fee Schedule
-Documents           (FileText)
-Reports             (BarChart3)
-Settings            (Settings)
+[Kealee Developer]  Dashboard  Features ▼  Services ▼        🔔  ⚙️  👤
+
+Features Dropdown:
+├── Portfolio Management
+│   ├── All Projects
+│   ├── Development Pipeline
+│   └── Portfolio Analytics
+└── Operations
+    ├── Team Management
+    ├── Documents
+    └── Budget Tracking
+
+Services Dropdown:
+├── Contractor Sourcing
+├── Portfolio Estimation
+├── Permit Management
+└── Investor Reports
+```
+
+### Business Owner Topbar Navigation (business.kealee.com)
+```
+[Kealee Business]  Dashboard  Features ▼  Services ▼        🔔  ⚙️  👤
+
+Features Dropdown:
+├── Property Management
+│   ├── My Properties
+│   ├── Tenant Improvements
+│   └── Maintenance
+└── Vendors & Finance
+    ├── Vendor Management
+    ├── Budget Tracking
+    └── Compliance
+
+Services Dropdown:
+├── Find Contractors
+├── Get Estimates
+└── Permit Services
+```
+
+### Property Manager Topbar Navigation (property.kealee.com)
+```
+[Kealee Property]  Dashboard  Features ▼  Services ▼        🔔  ⚙️  👤
+
+Features Dropdown:
+├── Property Portfolio
+│   ├── All Properties
+│   ├── Work Orders
+│   └── Inspections
+└── Operations
+    ├── Vendor Network
+    ├── Budget Management
+    └── Owner Reports
+
+Services Dropdown:
+├── Contractor Sourcing
+├── Project Estimates
+└── Permit Services
+```
+
+### Contractor Topbar Navigation (contractor.kealee.com)
+```
+[Kealee Contractor]  Dashboard  Features ▼  Services ▼        🔔  ⚙️  👤
+
+Features Dropdown:
+├── Project Management
+│   ├── Projects
+│   ├── Bid Management
+│   └── Schedule & Gantt
+└── Team & Finance
+    ├── Team Management
+    ├── Financial Tracking
+    └── Documents
+
+Services Dropdown:
+├── Estimation Tools
+├── Assembly Library (New)
+└── Permit Services
+```
+
+### Professional Topbar Navigation (professional.kealee.com)
+```
+[Kealee Professional]  Dashboard  Features ▼  Services ▼        🔔  ⚙️  👤
+
+Features Dropdown:
+├── Project Management
+│   ├── Projects
+│   ├── Deliverables
+│   └── Clients
+└── Business
+    ├── Fee Management
+    ├── Documents
+    └── Reports
+
+Services Dropdown:
+├── Estimation Services
+├── Permit Coordination
+└── Contractor Connect
 ```
 
 ### Key Price Points
@@ -515,7 +564,8 @@ Settings            (Settings)
 - **Estimation**: $299 - $4,999 per estimate
 - **Architect**: Free - 3% of project value
 - **Escrow**: 1% (max $500)
-- **Platform Commission**: 3.5% (paid by contractor)
+
+*Note: Platform fees shown only at final checkout*
 
 ### Estimation Service Tiers
 | Tier | Price | Turnaround | Best For |
@@ -1645,7 +1695,7 @@ HERO SECTION:
 - Subheadline: "Fair bidding platform for verified contractors. No pay-to-play."
 - Search bar: "What type of project?" + Location
 - CTA: "Search Contractors" (orange)
-- Trust stats: "500+ verified contractors" | "3.5% commission" | "$50M+ projects"
+- Trust stats: "500+ verified contractors" | "No pay-to-play" | "$50M+ projects"
 
 SERVICES ACCESS CARDS (for logged-in users):
 Row of 4 service cards linking to integrated services:
@@ -2216,7 +2266,7 @@ HERO SECTION:
 - Primary CTA: "Start Free Trial" (orange)
 - Secondary CTA: "Watch Demo" (outline)
 - Hero image: Contractor on jobsite with tablet showing dashboard
-- Trust bar: "500+ contractors" | "3.5% commission" | "$2.4M avg won projects"
+- Trust bar: "500+ contractors" | "Fair bidding, no pay-to-play" | "$2.4M avg won projects"
 
 TAB NAVIGATION:
 ┌────────────────────────────────────────────────────────────────────────────┐
@@ -2497,9 +2547,9 @@ HERO:
 3. CONTRACTOR MARKETPLACE (Sky Blue accent)
    - Icon: Store
    - "Find & Connect with Verified Contractors"
-   - Description: "Fair bidding platform with no pay-to-play. Only 3.5% commission on awarded projects."
+   - Description: "Fair bidding platform with no pay-to-play. Get competitive bids from verified contractors."
    - Key features: Verified contractors, Fair bidding, Protected payments
-   - Pricing: 3.5% commission (paid by contractor)
+   - Pricing: See checkout for applicable fees
    - CTA: "Browse Contractors" | "Post Project"
    - Image: Marketplace browse screenshot
 
@@ -2727,8 +2777,7 @@ OPPORTUNITY CARDS (List or Grid view toggle):
 │ [View Details]  [Submit Bid →] (orange)                         │
 └─────────────────────────────────────────────────────────────────┘
 
-MARKETPLACE COMMISSION NOTE:
-"3.5% platform fee on awarded contracts" (subtle, at bottom)
+NOTE: Do NOT show platform fees on this page - fees shown at final checkout only.
 
 ### TAB 2: SUBMITTED BIDS
 
@@ -3699,5 +3748,497 @@ OUTPUT: Mobile assembly library at 375px and 768px
 
 ---
 
+## PROMPT 54: Topbar Navigation Component
+
+```
+Design the topbar navigation component used across all 6 portals.
+This replaces sidebar navigation - ALL portals use topbar with dropdowns.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF
+WIDTH: Full-width, responsive (1440px desktop, 768px tablet, 375px mobile)
+
+DESKTOP TOPBAR STRUCTURE (64px height):
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│ [Logo]     Dashboard    Features ▼    Services ▼                  🔔  ⚙️  [Avatar ▼]   │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+
+LEFT SECTION:
+- Logo: Portal-specific (e.g., "Kealee", "Kealee Developer", "Kealee Contractor")
+- Dashboard link: Direct link to /dashboard
+
+CENTER SECTION (Main Navigation):
+- Dashboard: Direct link
+- Features: Dropdown with mega-menu
+- Services: Dropdown with mega-menu
+
+RIGHT SECTION:
+- Notification bell with count badge
+- Settings gear icon
+- User avatar with dropdown menu
+
+FEATURES DROPDOWN (Mega-menu style):
+┌─────────────────────────────────────────────────────────────────────┐
+│ ┌─────────────────────────────┐  ┌─────────────────────────────┐   │
+│ │ SECTION TITLE               │  │ SECTION TITLE               │   │
+│ │ ─────────────────────────── │  │ ─────────────────────────── │   │
+│ │ 🔹 Item Label               │  │ 🔹 Item Label               │   │
+│ │    Description text here    │  │    Description text here    │   │
+│ │ 🔹 Item Label               │  │ 🔹 Item Label               │   │
+│ │    Description text here    │  │    Description text here    │   │
+│ │ 🔹 Item Label               │  │ 🔹 Item Label               │   │
+│ │    Description text here    │  │    Description text here    │   │
+│ └─────────────────────────────┘  └─────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+
+SERVICES DROPDOWN (Single column):
+┌─────────────────────────────────────┐
+│ 🔷 Find Contractors    [Popular]    │
+│    Browse verified contractors      │
+│ 🔷 Get Estimate                     │
+│    AI-powered cost estimates        │
+│ 🔷 Permit Assistance                │
+│    Building permit help             │
+│ 🔷 PM Services                      │
+│    Managed project management       │
+└─────────────────────────────────────┘
+
+USER DROPDOWN:
+┌─────────────────────────────────────┐
+│ 👤 John Smith                       │
+│    john@company.com                 │
+│ ─────────────────────────────────── │
+│ ⚙️ Settings                         │
+│ 🔔 Notifications                    │
+│ 📄 Billing                          │
+│ ─────────────────────────────────── │
+│ 🚪 Sign Out                         │
+└─────────────────────────────────────┘
+
+MOBILE TOPBAR (375px):
+┌───────────────────────────────────────────────┐
+│ ☰  [Logo]                       🔔  👤        │
+└───────────────────────────────────────────────┘
+
+MOBILE MENU (Full screen overlay):
+- Dashboard
+- Features (expandable accordion)
+- Services (expandable accordion)
+- Settings
+- Sign Out
+
+STATES:
+- Default: Sky blue text on white background
+- Hover: Light background tint
+- Active (current page): Teal text, underline indicator
+- Dropdown open: Slight shadow, arrow rotates
+
+STYLING:
+- Logo: 24px height
+- Nav items: 14px semibold, 16px spacing
+- Dropdown: 400px max-width (Features), 280px (Services)
+- Shadow on dropdown: 0 4px 12px rgba(0,0,0,0.1)
+- Transition: 200ms ease-out
+
+OUTPUT: Topbar component with all states + dropdowns at 1440px, 768px, 375px
+```
+
+---
+
+## PROMPT 55: Developer Portal Landing Page
+
+```
+Design the landing page for the Developer Portal (developer.kealee.com).
+Target: Real estate developers building residential or commercial projects.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Purple #7C3AED (Developer accent)
+NOTE: Do NOT show platform fees - only at checkout
+
+HERO SECTION:
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│ [Topbar Navigation]                                                                      │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                          │
+│    Real Estate Developer Platform                                                        │
+│                                                                                          │
+│    BUILD YOUR PORTFOLIO, NOT SPREADSHEETS                                               │
+│                                                                                          │
+│    Manage multi-project developments with AI-powered estimation,                        │
+│    contractor sourcing, and permit management across jurisdictions.                     │
+│                                                                                          │
+│    [Start Free] (orange)    [See Demo] (outline)                                        │
+│                                                                                          │
+│    ─────────────────────────────────────────────────────────────────────────────        │
+│    🏗️ 500+ Projects Managed  |  📊 $250M+ Total Value  |  🎯 42% Avg. Cost Savings     │
+│                                                                                          │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+
+FEATURES SECTION (6-card grid):
+```
+Portfolio Dashboard         Contractor Sourcing         Multi-Project Estimation
+Track all projects in      Access our vetted network   Get accurate estimates
+one view with real-time    of contractors for any      across your entire
+status updates             project scale               portfolio
+
+Cross-Jurisdiction Permits Portfolio Analytics         Investor Reports
+Manage permits across      Track ROI, timelines,       Generate professional
+multiple jurisdictions     and budget performance      reports for investors
+seamlessly                                             and stakeholders
+```
+
+HOW IT WORKS (3 steps):
+1. Add Your Projects → Upload plans and project details
+2. Source & Estimate → Find contractors, get estimates
+3. Track & Report → Monitor progress, generate investor reports
+
+SERVICES AVAILABLE:
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SERVICES                                                                      │
+│ ─────────────────────────────────────────────────────────────────────────── │
+│ 🔶 Contractor Sourcing     Find contractors at scale for multiple projects   │
+│ 🔶 Estimation Services     Professional multi-project estimates              │
+│ 🔶 Permit Management       Cross-jurisdiction permit handling                │
+│ 🔶 PM Services             Managed project management for developments       │
+│                                                                              │
+│ [Explore All Services →]                                                      │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+TESTIMONIAL:
+"Kealee cut our project coordination time in half. Managing 12 concurrent
+developments is finally manageable."
+— Michael Chen, Principal, Apex Development Group
+
+FINAL CTA:
+"Ready to Scale Your Development Portfolio?"
+[Start Free Trial]  [Schedule Demo]
+
+OUTPUT: Full landing page at 1440px desktop + 375px mobile
+```
+
+---
+
+## PROMPT 56: Business Owner Portal Landing Page
+
+```
+Design the landing page for the Business Owner Portal (business.kealee.com).
+Target: Commercial building owners managing tenant improvements and maintenance.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A (Business accent)
+NOTE: Do NOT show platform fees - only at checkout
+
+HERO SECTION:
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│ [Topbar Navigation]                                                                      │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                          │
+│    Business Owner Platform                                                               │
+│                                                                                          │
+│    COMMERCIAL PROPERTY, SIMPLIFIED                                                       │
+│                                                                                          │
+│    Manage tenant improvements, building maintenance, and contractor                      │
+│    relationships from a single platform designed for commercial building owners.        │
+│                                                                                          │
+│    [Start Free] (orange)    [See Demo] (outline)                                        │
+│                                                                                          │
+│    ─────────────────────────────────────────────────────────────────────────────        │
+│    🏢 1,200+ Properties  |  💰 $180M+ TI Value  |  ⏱️ 35% Faster Completion             │
+│                                                                                          │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+
+FEATURES SECTION (6-card grid):
+```
+Property Dashboard          Tenant Improvements         Maintenance Management
+Centralized view of all    Streamline TI project       Track and schedule
+your commercial            management                  building maintenance
+properties
+
+Vendor Network             Budget Tracking             Compliance Tracking
+Build relationships        Monitor CapEx and OpEx      Stay on top of building
+with reliable              across properties           compliance requirements
+contractors
+```
+
+HOW IT WORKS (3 steps):
+1. Add Your Properties → Import or manually add buildings
+2. Manage Projects → Track TI, maintenance, and capital projects
+3. Stay Compliant → Monitor compliance and generate reports
+
+SERVICES AVAILABLE:
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SERVICES                                                                      │
+│ ─────────────────────────────────────────────────────────────────────────── │
+│ 🔶 Find Contractors        Access vetted commercial contractors              │
+│ 🔶 TI Estimates            Accurate tenant improvement estimates             │
+│ 🔶 Permit Services         Commercial permit assistance                      │
+│                                                                              │
+│ [Explore All Services →]                                                      │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+TESTIMONIAL:
+"Finally, a platform that understands commercial building operations.
+We've reduced our TI project timelines by 40%."
+— Sandra Williams, Building Operations Manager
+
+FINAL CTA:
+"Ready to Simplify Commercial Property Management?"
+[Start Free Trial]  [Schedule Demo]
+
+OUTPUT: Full landing page at 1440px desktop + 375px mobile
+```
+
+---
+
+## PROMPT 57: Property Manager Portal Landing Page
+
+```
+Design the landing page for the Property Manager Portal (property.kealee.com).
+Target: Property management companies handling multiple properties.
+
+BRAND: Sky Blue #4A90D9, Teal #2ABFBF (Property Manager accent)
+NOTE: Do NOT show platform fees - only at checkout
+
+HERO SECTION:
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│ [Topbar Navigation]                                                                      │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                          │
+│    Property Manager Platform                                                             │
+│                                                                                          │
+│    MULTI-PROPERTY MANAGEMENT MADE EASY                                                   │
+│                                                                                          │
+│    Manage maintenance projects, contractor relationships, and owner reporting           │
+│    across your entire property portfolio from one powerful platform.                    │
+│                                                                                          │
+│    [Start Free] (orange)    [See Demo] (outline)                                        │
+│                                                                                          │
+│    ─────────────────────────────────────────────────────────────────────────────        │
+│    🏠 3,500+ Units Managed  |  📋 12K+ Work Orders  |  📈 28% Cost Reduction            │
+│                                                                                          │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+
+FEATURES SECTION (6-card grid):
+```
+Multi-Property Dashboard    Work Order Management       Preferred Vendor List
+All properties at a        Track and manage            Build and manage your
+glance with status         maintenance requests        contractor network
+tracking                   efficiently
+
+Inspection Tracking        Budget Management           Owner Reports
+Schedule and track         Track budgets across        Generate professional
+property inspections       all managed properties      reports for property owners
+```
+
+HOW IT WORKS (3 steps):
+1. Add Properties → Import your property portfolio
+2. Build Your Network → Add preferred vendors and contractors
+3. Manage & Report → Track work orders, generate owner reports
+
+SERVICES AVAILABLE:
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SERVICES                                                                      │
+│ ─────────────────────────────────────────────────────────────────────────── │
+│ 🔶 Contractor Sourcing     Find reliable contractors quickly                 │
+│ 🔶 Project Estimates       Get estimates for maintenance projects            │
+│ 🔶 Permit Services         Building permit assistance                        │
+│                                                                              │
+│ [Explore All Services →]                                                      │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+TESTIMONIAL:
+"Managing 450 units used to mean chaos. Now our maintenance coordination
+is streamlined and our owners get professional reports automatically."
+— David Park, Regional Property Manager
+
+FINAL CTA:
+"Ready to Streamline Your Property Portfolio?"
+[Start Free Trial]  [Schedule Demo]
+
+OUTPUT: Full landing page at 1440px desktop + 375px mobile
+```
+
+---
+
+## PROMPT 58: Portal Dashboard with Topbar Navigation (Template)
+
+```
+Design a generic portal dashboard template showing the topbar navigation in context.
+This template works for all 6 portals - shows the layout structure.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF
+
+FULL PAGE LAYOUT:
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│ TOPBAR NAVIGATION (64px)                                                                 │
+│ [Logo]   Dashboard   Features ▼   Services ▼                    🔔  ⚙️  👤             │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                          │
+│ PAGE HEADER (with breadcrumbs and actions)                                              │
+│ ┌─────────────────────────────────────────────────────────────────────────────────┐    │
+│ │ Dashboard                                                        [+ New Project] │    │
+│ │ Home > Dashboard                                                                  │    │
+│ └─────────────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                          │
+│ STATS ROW (4 cards)                                                                     │
+│ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐                        │
+│ │ 🏗️ Active   │ │ 📋 Pending  │ │ 💰 Revenue  │ │ 📊 This     │                        │
+│ │ Projects    │ │ Items       │ │ This Month  │ │ Month       │                        │
+│ │ 12          │ │ 8           │ │ $45,200     │ │ $125K       │                        │
+│ │ ↑ 2 vs LM  │ │ ↓ 3 vs LM  │ │ ↑ 12%       │ │ 85% of goal │                        │
+│ └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘                        │
+│                                                                                          │
+│ MAIN CONTENT AREA                                                                        │
+│ ┌───────────────────────────────────────────────────────────────────────────────────┐  │
+│ │                                                                                    │  │
+│ │  PROJECTS / ITEMS TABLE OR CARDS                                                   │  │
+│ │                                                                                    │  │
+│ │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐             │  │
+│ │  │ Project Card │ │ Project Card │ │ Project Card │ │ Project Card │             │  │
+│ │  │              │ │              │ │              │ │              │             │  │
+│ │  └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘             │  │
+│ │                                                                                    │  │
+│ │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐             │  │
+│ │  │ Project Card │ │ Project Card │ │ Project Card │ │ Project Card │             │  │
+│ │  │              │ │              │ │              │ │              │             │  │
+│ │  └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘             │  │
+│ │                                                                                    │  │
+│ └───────────────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                          │
+│ SIDEBAR PANELS (optional - contextual)                                                  │
+│ ┌─────────────────────────┐                                                             │
+│ │ QUICK ACTIONS           │                                                             │
+│ │ + New Estimate          │                                                             │
+│ │ + Submit Bid            │                                                             │
+│ │ + Add Project           │                                                             │
+│ └─────────────────────────┘                                                             │
+│                                                                                          │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+
+KEY DIFFERENCES FROM SIDEBAR LAYOUT:
+1. Full-width content area (no 240px sidebar taking space)
+2. Topbar contains all primary navigation
+3. Features and Services accessed via dropdowns
+4. More horizontal real estate for dashboards
+5. Contextual actions in page header, not sidebar
+
+DROPDOWN INTERACTION:
+- Click to open, click outside to close
+- Smooth fade + slide down animation (200ms)
+- Hover state on menu items
+- Active page indicated with teal left border
+
+RESPONSIVE BEHAVIOR:
+- 1440px+: Full desktop layout shown above
+- 768px-1439px: Compress stats to 2x2 grid
+- <768px: Mobile topbar with hamburger menu, stacked layout
+
+OUTPUT: Dashboard template at 1440px showing topbar navigation in context
+```
+
+---
+
+## PROMPT 59: Services Dropdown Mega-Menu
+
+```
+Design the Services dropdown mega-menu that appears on all portal topbars.
+Services are accessible from every portal through this dropdown.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF, Green #38A169
+
+TRIGGER: "Services" in topbar navigation
+
+DROPDOWN STRUCTURE:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           SERVICES                                               │
+│ ═══════════════════════════════════════════════════════════════════════════════ │
+│                                                                                  │
+│ ┌───────────────────────────────────┐  ┌───────────────────────────────────┐   │
+│ │ 🔧 CONTRACTOR SOURCING            │  │ 📐 ESTIMATION SERVICES            │   │
+│ │                                    │  │                                    │   │
+│ │ Find Contractors      [Popular]    │  │ Get Estimate            [AI]      │   │
+│ │ Browse our network of vetted       │  │ AI-powered construction cost      │   │
+│ │ contractors in your area          │  │ estimation in 24-48 hours         │   │
+│ │                                    │  │                                    │   │
+│ │ Request Bids                       │  │ Assembly Library                   │   │
+│ │ Post your project and receive      │  │ Browse 1,200+ pre-built           │   │
+│ │ competitive bids                   │  │ construction assemblies           │   │
+│ └───────────────────────────────────┘  └───────────────────────────────────┘   │
+│                                                                                  │
+│ ┌───────────────────────────────────┐  ┌───────────────────────────────────┐   │
+│ │ 📄 PERMIT SERVICES                │  │ 💼 PM SERVICES                    │   │
+│ │                                    │  │                                    │   │
+│ │ Permit Assistance                  │  │ Project Management                 │   │
+│ │ Expert help with building          │  │ Managed PM services for your      │   │
+│ │ permit applications                │  │ construction project              │   │
+│ │                                    │  │                                    │   │
+│ │ Inspection Coordination            │  │ Remote PM                          │   │
+│ │ Schedule and track building        │  │ Full remote project oversight     │   │
+│ │ inspections                        │  │ by our expert team                │   │
+│ └───────────────────────────────────┘  └───────────────────────────────────┘   │
+│                                                                                  │
+│ ─────────────────────────────────────────────────────────────────────────────── │
+│                                                                                  │
+│ [View All Services →]                                    [Compare Services →]    │
+│                                                                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+STYLING:
+- Width: 680px max
+- Background: White with subtle shadow
+- Section headers: 12px semibold, sky blue, uppercase
+- Item labels: 14px semibold
+- Descriptions: 13px regular, gray-600
+- Badges: Pill style (Popular = orange, AI = teal, New = green)
+- Hover: Light gray background on item
+
+ANIMATION:
+- Fade in + slide down from topbar
+- Duration: 200ms ease-out
+- Slight scale from 0.98 to 1
+
+NOTE: Pricing NOT shown in dropdown - only at service detail pages and checkout
+
+OUTPUT: Services mega-menu dropdown at full size with all sections
+```
+
+---
+
+## PROMPT 60: Features Dropdown - Homeowner Portal
+
+```
+Design the Features dropdown specific to the Homeowner Portal.
+Each portal has unique features in their dropdown.
+
+BRAND: Sky Blue #4A90D9
+
+TRIGGER: "Features" in topbar navigation (app.kealee.com)
+
+DROPDOWN STRUCTURE:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                         YOUR FEATURES                                            │
+│ ═══════════════════════════════════════════════════════════════════════════════ │
+│                                                                                  │
+│ ┌────────────────────────────────────────┐  ┌────────────────────────────────┐  │
+│ │ 📁 PROJECT MANAGEMENT                  │  │ 💳 PAYMENTS & TRUST            │  │
+│ │                                         │  │                                 │  │
+│ │ 🔹 My Projects                          │  │ 🔹 Escrow Account               │  │
+│ │    View and manage your projects        │  │    Secure payment protection    │  │
+│ │                                         │  │                                 │  │
+│ │ 🔹 Documents                            │  │ 🔹 Payment History              │  │
+│ │    Project files and contracts          │  │    View payment records         │  │
+│ │                                         │  │                                 │  │
+│ │ 🔹 Progress Reports                     │  │ 🔹 Payment Schedule             │  │
+│ │    Track project milestones             │  │    Upcoming payments            │  │
+│ │                                         │  │                                 │  │
+│ └────────────────────────────────────────┘  └────────────────────────────────┘  │
+│                                                                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+WIDTH: 560px
+COLUMNS: 2
+
+OUTPUT: Features dropdown for Homeowner portal
+```
+
+---
+
 *Generated for Kealee Platform v10 - February 2026*
-*Includes 3-Portal Architecture, Full Service Integration, Contractor Dashboard, Assembly Library (1,247 assemblies), and Complete Logo System*
+*Includes 6-Portal Architecture (Homeowner, Developer, Business Owner, Property Manager, Contractor, Professional), Topbar Navigation with Dropdowns, Full Service Integration, Assembly Library (1,247 assemblies), and Complete Logo System*
