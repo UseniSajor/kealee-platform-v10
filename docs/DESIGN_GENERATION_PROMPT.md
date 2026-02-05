@@ -3329,5 +3329,375 @@ OUTPUT: Full à la carte services page at 1440px with cart sidebar
 
 ---
 
+## PROMPT 48: Assembly Library - Main Browser
+
+```
+Design the Assembly Library browser interface for the Contractor Portal.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF, Green #38A169
+CONTEXT: Part of Estimation Tools - accessed from /estimation/assemblies
+
+HEADER:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Assembly Library                                        1,247 assemblies    │
+│ Browse and add pre-built construction assemblies to your estimates         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+SEARCH & FILTER BAR:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 🔍 [Search assemblies...                              ]  [Division ▼]      │
+│ [Category ▼]  [Unit ▼]  [Price Range ▼]  [Tags]  [Clear Filters]          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+LAYOUT: 3-column layout
+
+LEFT SIDEBAR (240px) - CSI DIVISIONS:
+┌─────────────────────────────────┐
+│ CSI DIVISIONS                   │
+│ ─────────────────────────────── │
+│ ○ All Divisions (1,247)         │
+│ ─────────────────────────────── │
+│ ● 03 Concrete (85)              │
+│   04 Masonry (72)               │
+│   05 Metals (68)                │
+│   06 Wood & Plastics (95)       │
+│   07 Thermal & Moisture (88)    │
+│   08 Openings (76)              │
+│   09 Finishes (120)             │
+│   10 Specialties (42)           │
+│   11 Equipment (55)             │
+│   12 Furnishings (38)           │
+│   21 Fire Suppression (28)      │
+│   22 Plumbing (78)              │
+│   23 HVAC (92)                  │
+│   26 Electrical (105)           │
+│   31 Earthwork (35)             │
+│   32 Exterior Improve. (48)     │
+│   33 Utilities (42)             │
+│ ─────────────────────────────── │
+│ CATEGORIES                      │
+│ ─────────────────────────────── │
+│   Kitchen (85)                  │
+│   Bathroom (72)                 │
+│   Basement (38)                 │
+│   Exterior (95)                 │
+│   Mechanical (88)               │
+└─────────────────────────────────┘
+
+MAIN CONTENT - ASSEMBLY GRID:
+
+VIEW TOGGLE:
+[Grid] [List] [Table]                          Sort: [Most Used ▼]
+
+ASSEMBLY CARDS (Grid view - 3 across):
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ┌───────────────────────┐ ┌───────────────────────┐ ┌───────────────────────┐│
+│ │ 🧱 8" CMU Block Wall  │ │ 🪵 2x4 Stud Wall     │ │ 🎨 Drywall L4 Finish │ │
+│ │ ─────────────────────  │ │ ─────────────────────  │ │ ─────────────────────  │ │
+│ │ Division: 04 Masonry   │ │ Division: 06 Wood     │ │ Division: 09 Finishes │ │
+│ │ ─────────────────────  │ │ ─────────────────────  │ │ ─────────────────────  │ │
+│ │ $18.60/SF              │ │ $5.72/SF              │ │ $2.88/SF              │ │
+│ │ ─────────────────────  │ │ ─────────────────────  │ │ ─────────────────────  │ │
+│ │ Mat: $8.50 Lab: $9.75  │ │ Mat: $2.15 Lab: $3.45 │ │ Mat: $0.85 Lab: $1.95 │ │
+│ │ ─────────────────────  │ │ ─────────────────────  │ │ ─────────────────────  │ │
+│ │ ⭐ 4.8 (124 uses)      │ │ ⭐ 4.9 (256 uses)     │ │ ⭐ 4.7 (189 uses)     │ │
+│ │ ─────────────────────  │ │ ─────────────────────  │ │ ─────────────────────  │ │
+│ │ [Preview] [+ Add]      │ │ [Preview] [+ Add]     │ │ [Preview] [+ Add]     │ │
+│ └───────────────────────┘ └───────────────────────┘ └───────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+TAGS ON CARDS:
+- "Standard" badge (teal) for Kealee library
+- "Custom" badge (orange) for org-created
+- "Popular" badge (green) for high usage
+
+RIGHT SIDEBAR (280px) - QUICK ADD PANEL:
+┌─────────────────────────────────┐
+│ ADDING TO ESTIMATE             │
+│ ─────────────────────────────── │
+│ Kitchen Renovation             │
+│ 123 Main St                    │
+│ ─────────────────────────────── │
+│ Recently Added:                │
+│ • 8" CMU Block Wall (24 SF)    │
+│ • 2x4 Stud Wall (120 SF)       │
+│ ─────────────────────────────── │
+│ Subtotal: $583.20              │
+│ ─────────────────────────────── │
+│ [View Estimate →]              │
+└─────────────────────────────────┘
+
+PAGINATION:
+Showing 1-24 of 85 assemblies     [< Prev] 1 2 3 4 ... [Next >]
+
+OUTPUT: Full assembly library browser at 1440px
+```
+
+---
+
+## PROMPT 49: Assembly Library - Assembly Detail Modal
+
+```
+Design the assembly detail modal/drawer for viewing full assembly information.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF, Green #38A169
+
+MODAL (800px wide, slide-in from right or centered):
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 8" CMU Block Wall                                                     [X]  │
+│ Assembly Code: KA-04-001  |  Division: 04 - Masonry                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│ DESCRIPTION                                                                 │
+│ ─────────────────────────────────────────────────────────────────────────── │
+│ Standard 8-inch CMU block wall with mortar, grout cores at 48" O.C.,       │
+│ and vertical rebar. Suitable for foundation walls, retaining walls,        │
+│ and structural applications.                                               │
+│                                                                             │
+│ COST BREAKDOWN                                           Unit: SF           │
+│ ┌─────────────────────────────────────────────────────────────────────────┐ │
+│ │ Component          │ Quantity │ Unit │ Unit Cost │ Total                │ │
+│ ├────────────────────┼──────────┼──────┼───────────┼──────────────────────┤ │
+│ │ MATERIALS                                                               │ │
+│ │ 8" CMU Block       │ 1.125    │ EA   │ $2.85     │ $3.21                │ │
+│ │ Mortar             │ 0.015    │ CY   │ $145.00   │ $2.18                │ │
+│ │ Grout              │ 0.008    │ CY   │ $165.00   │ $1.32                │ │
+│ │ Rebar #4           │ 0.35     │ LB   │ $1.25     │ $0.44                │ │
+│ │ Wire Ties          │ 0.12     │ EA   │ $0.15     │ $0.02                │ │
+│ │ Waste Factor (5%)  │          │      │           │ $0.36                │ │
+│ │ ─────────────────────────────────────────────────────────────────────── │ │
+│ │ Material Subtotal                                   $7.53                │ │
+│ ├────────────────────┼──────────┼──────┼───────────┼──────────────────────┤ │
+│ │ LABOR                                                                   │ │
+│ │ Mason              │ 0.085    │ HR   │ $65.00    │ $5.53                │ │
+│ │ Mason Helper       │ 0.085    │ HR   │ $45.00    │ $3.83                │ │
+│ │ ─────────────────────────────────────────────────────────────────────── │ │
+│ │ Labor Subtotal                                      $9.36                │ │
+│ ├────────────────────┼──────────┼──────┼───────────┼──────────────────────┤ │
+│ │ EQUIPMENT                                                               │ │
+│ │ Scaffolding        │ 0.01     │ DAY  │ $35.00    │ $0.35                │ │
+│ │ ─────────────────────────────────────────────────────────────────────── │ │
+│ │ Equipment Subtotal                                  $0.35                │ │
+│ └─────────────────────────────────────────────────────────────────────────┘ │
+│                                                                             │
+│ COST SUMMARY                                                                │
+│ ┌─────────────────────────────────────────────────────────────────────────┐ │
+│ │ Materials:           $7.53/SF                                           │ │
+│ │ Labor:               $9.36/SF                                           │ │
+│ │ Equipment:           $0.35/SF                                           │ │
+│ │ ─────────────────────────────────────────────────────────────────────── │ │
+│ │ TOTAL:              $17.24/SF         Labor Hours: 0.17/SF             │ │
+│ └─────────────────────────────────────────────────────────────────────────┘ │
+│                                                                             │
+│ REGIONAL PRICING                                                            │
+│ ┌─────────────────────────────────────────────────────────────────────────┐ │
+│ │ DC Metro: $18.60/SF (+8%)    │ Baltimore: $16.55/SF (-4%)              │ │
+│ │ NOVA: $19.15/SF (+11%)       │ Prince Georges: $17.24/SF (base)       │ │
+│ └─────────────────────────────────────────────────────────────────────────┘ │
+│                                                                             │
+│ TAGS: CMU, block, wall, foundation, masonry, structural                    │
+│                                                                             │
+│ USAGE STATS                                                                 │
+│ ⭐ 4.8 rating  |  Used 124 times  |  Last updated: Feb 1, 2026            │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ ADD TO ESTIMATE                                                             │
+│ ─────────────────────────────────────────────────────────────────────────── │
+│ Quantity: [____24____] SF    Region: [DC Metro ▼]    Total: $446.40       │
+│ ─────────────────────────────────────────────────────────────────────────── │
+│ [Cancel]                                    [Add to Estimate] (orange)     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+OUTPUT: Assembly detail modal at 800px width
+```
+
+---
+
+## PROMPT 50: Assembly Library - Custom Assembly Creator
+
+```
+Design the custom assembly creation interface for contractors.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF, Green #38A169
+PLAN REQUIREMENT: Professional plan and above
+
+HEADER:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Create Custom Assembly                                               [X]   │
+│ Build your own assembly from scratch or modify a standard assembly         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+STEP INDICATOR:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ● Basic Info  ──────  ○ Line Items  ──────  ○ Pricing  ──────  ○ Review   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+### STEP 1: BASIC INFO
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ASSEMBLY DETAILS                                                            │
+│ ─────────────────────────────────────────────────────────────────────────── │
+│ Assembly Name *                                                             │
+│ [Custom Kitchen Backsplash Tile Assembly___________________________]       │
+│                                                                             │
+│ Short Name                                                                  │
+│ [Kitchen Backsplash_________________________________________________]       │
+│                                                                             │
+│ Description                                                                 │
+│ [4x4 ceramic tile backsplash with thinset, grout, and trim pieces.  ]      │
+│ [Standard residential kitchen installation._________________________]       │
+│                                                                             │
+│ CLASSIFICATION                                                              │
+│ ─────────────────────────────────────────────────────────────────────────── │
+│ CSI Division *         CSI Subdivision                                      │
+│ [09 - Finishes ▼]     [09 30 00 - Tiling ▼]                               │
+│                                                                             │
+│ Category              Unit of Measure *                                     │
+│ [Kitchen ▼]          [SF - Square Feet ▼]                                  │
+│                                                                             │
+│ Tags (comma separated)                                                      │
+│ [tile, backsplash, kitchen, ceramic, residential___________________]       │
+│                                                                             │
+│ ─────────────────────────────────────────────────────────────────────────── │
+│ ○ Start from Scratch                                                        │
+│ ● Copy from Existing Assembly: [Select assembly... ▼]                      │
+│   Suggested: "Ceramic Floor Tile" (KA-09-002)                              │
+│ ─────────────────────────────────────────────────────────────────────────── │
+│                                               [Cancel]  [Next: Line Items] │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+### STEP 2: LINE ITEMS
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ LINE ITEMS                                              [+ Add Line Item]  │
+│ ─────────────────────────────────────────────────────────────────────────── │
+│ │ Type     │ Item Name           │ Qty  │ Unit │ Cost  │ Total   │ ⋮ │    │
+│ ├──────────┼─────────────────────┼──────┼──────┼───────┼─────────┼───┤    │
+│ │ Material │ 4x4 Ceramic Tile    │ 1.05 │ SF   │ $3.25 │ $3.41   │ ⋮ │    │
+│ │ Material │ Thinset Mortar      │ 0.02 │ BAG  │ $18.00│ $0.36   │ ⋮ │    │
+│ │ Material │ Grout               │ 0.01 │ BAG  │ $12.00│ $0.12   │ ⋮ │    │
+│ │ Material │ Tile Spacers        │ 4    │ EA   │ $0.02 │ $0.08   │ ⋮ │    │
+│ │ Material │ Edge Trim           │ 0.1  │ LF   │ $4.50 │ $0.45   │ ⋮ │    │
+│ │ Labor    │ Tile Setter         │ 0.12 │ HR   │ $55.00│ $6.60   │ ⋮ │    │
+│ │ Labor    │ Helper              │ 0.06 │ HR   │ $35.00│ $2.10   │ ⋮ │    │
+│ └──────────┴─────────────────────┴──────┴──────┴───────┴─────────┴───┘    │
+│                                                                             │
+│ Waste Factor: [5___]%                                                       │
+│ ─────────────────────────────────────────────────────────────────────────── │
+│                                         [← Back]  [Next: Pricing]          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+### STEP 3: PRICING & STEP 4: REVIEW
+
+(See full prompt for complete wizard flow)
+
+OUTPUT: Custom assembly creator wizard at 800px width, all 4 steps
+```
+
+---
+
+## PROMPT 51: Estimate Builder with Assembly Integration
+
+```
+Design the estimate builder showing how assemblies integrate into estimates.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF, Green #38A169
+
+LAYOUT: Split view - Divisions left, Line Items right
+
+HEADER:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Estimate: Kitchen Renovation - 123 Main St                      [Save] [×] │
+│ Client: Sarah Mitchell  |  Created: Feb 3, 2026  |  Status: Draft         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+TOOLBAR:
+[+ Add Assembly] [+ Add Line Item] [Import Template]  │  [Preview] [Export]
+
+LEFT PANEL - DIVISIONS (320px):
+┌─────────────────────────────────┐
+│ ESTIMATE DIVISIONS              │
+│ ─────────────────────────────── │
+│ ▼ 03 Concrete          $2,450  │
+│ ▼ 06 Wood & Plastics   $4,280  │
+│ ▼ 09 Finishes          $6,850  │
+│ ▼ 22 Plumbing          $3,245  │
+│ ▼ 26 Electrical        $2,180  │
+│ ─────────────────────────────── │
+│ [+ Add Division]                │
+└─────────────────────────────────┘
+
+RIGHT PANEL - LINE ITEMS:
+Shows assembly items with 🔗 icon indicating linked assemblies
+Click to expand and see assembly breakdown
+
+ESTIMATE SUMMARY (Bottom sticky):
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Direct Costs: $19,005  │ Overhead: $1,900  │ Profit: $3,135  │ Cont: $1,202│
+│ TOTAL ESTIMATE: $25,243.40                         Labor Hours: 185.5      │
+│ [Adjust Markups]                         [Download PDF] [Send to Client]   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+OUTPUT: Estimate builder with assembly integration at 1440px
+```
+
+---
+
+## PROMPT 52: CSI Division Browse View
+
+```
+Design the CSI Division browse view showing subdivisions and assemblies.
+
+BREADCRUMB: Assembly Library > 09 - Finishes
+
+HEADER:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 🎨 Division 09: Finishes                                     120 assemblies│
+│ Plaster, gypsum board, tile, flooring, ceilings, and paint                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+SUBDIVISION CARDS (Grid - 3 across):
+Each card shows:
+- Subdivision code and name
+- Assembly count
+- 2-3 popular assemblies
+- [Browse →] button
+
+POPULAR IN THIS DIVISION:
+Horizontal list of top 5 most-used assemblies
+
+OUTPUT: Division browse view at 1440px
+```
+
+---
+
+## PROMPT 53: Assembly Library Mobile View
+
+```
+Design mobile-optimized assembly library for tablet/phone use on job sites.
+
+WIDTH: 375px (phone) and 768px (tablet)
+
+PHONE VIEW (375px):
+- Header with back button and search
+- Horizontal scroll quick filters
+- Division accordion (collapsible)
+- Stacked assembly cards
+- Bottom sticky: Estimate summary + CTA
+
+TABLET VIEW (768px):
+- Split layout: Divisions left, Cards right
+- 2-column card grid
+- Sticky estimate summary
+
+QUICK ADD MODAL:
+Simple form for quantity + region selection
+
+OUTPUT: Mobile assembly library at 375px and 768px
+```
+
+---
+
 *Generated for Kealee Platform v10 - February 2026*
-*Includes 3-Portal Architecture, Full Service Integration, Contractor Dashboard, and Complete Logo System*
+*Includes 3-Portal Architecture, Full Service Integration, Contractor Dashboard, Assembly Library (1,247 assemblies), and Complete Logo System*

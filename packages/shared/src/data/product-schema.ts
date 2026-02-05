@@ -2414,6 +2414,554 @@ export const ALACARTE_PLAN_DISCOUNTS: Record<string, number> = {
   enterprise: 0.20, // 20% off
 };
 
+// =============================================================================
+// ASSEMBLY LIBRARY - CSI MASTERFORMAT DIVISIONS
+// 1000+ Pre-built construction cost assemblies
+// =============================================================================
+
+export interface CSIDivision {
+  code: string;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  subdivisions: CSISubdivision[];
+  assemblyCount: number;
+}
+
+export interface CSISubdivision {
+  code: string;
+  name: string;
+  assemblyCount: number;
+}
+
+export interface AssemblyItem {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  divisionCode: string;
+  subdivisionCode?: string;
+  category: string;
+  unit: string;
+  materialCost: number;
+  laborCost: number;
+  equipmentCost: number;
+  totalCost: number;
+  laborHours: number;
+  tags: string[];
+}
+
+// CSI MasterFormat 2020 Divisions (Construction Industry Standard)
+export const CSI_DIVISIONS: CSIDivision[] = [
+  {
+    code: '01',
+    name: 'General Requirements',
+    description: 'Administrative and procedural requirements for construction',
+    icon: 'ClipboardList',
+    color: '#6B7280',
+    assemblyCount: 45,
+    subdivisions: [
+      { code: '01 10 00', name: 'Summary', assemblyCount: 5 },
+      { code: '01 20 00', name: 'Price and Payment Procedures', assemblyCount: 8 },
+      { code: '01 30 00', name: 'Administrative Requirements', assemblyCount: 12 },
+      { code: '01 40 00', name: 'Quality Requirements', assemblyCount: 10 },
+      { code: '01 50 00', name: 'Temporary Facilities and Controls', assemblyCount: 10 },
+    ],
+  },
+  {
+    code: '03',
+    name: 'Concrete',
+    description: 'Cast-in-place concrete, precast concrete, and cementitious materials',
+    icon: 'Box',
+    color: '#9CA3AF',
+    assemblyCount: 85,
+    subdivisions: [
+      { code: '03 10 00', name: 'Concrete Forming and Accessories', assemblyCount: 15 },
+      { code: '03 20 00', name: 'Concrete Reinforcing', assemblyCount: 12 },
+      { code: '03 30 00', name: 'Cast-in-Place Concrete', assemblyCount: 25 },
+      { code: '03 40 00', name: 'Precast Concrete', assemblyCount: 18 },
+      { code: '03 50 00', name: 'Cast Decks and Underlayment', assemblyCount: 8 },
+      { code: '03 60 00', name: 'Grouting', assemblyCount: 7 },
+    ],
+  },
+  {
+    code: '04',
+    name: 'Masonry',
+    description: 'Unit masonry, stone, and masonry restoration',
+    icon: 'Layers',
+    color: '#B45309',
+    assemblyCount: 72,
+    subdivisions: [
+      { code: '04 20 00', name: 'Unit Masonry', assemblyCount: 35 },
+      { code: '04 40 00', name: 'Stone Assemblies', assemblyCount: 15 },
+      { code: '04 50 00', name: 'Refractory Masonry', assemblyCount: 8 },
+      { code: '04 70 00', name: 'Manufactured Masonry', assemblyCount: 14 },
+    ],
+  },
+  {
+    code: '05',
+    name: 'Metals',
+    description: 'Structural metal framing, metal fabrications, and ornamental metals',
+    icon: 'Wrench',
+    color: '#4B5563',
+    assemblyCount: 68,
+    subdivisions: [
+      { code: '05 10 00', name: 'Structural Metal Framing', assemblyCount: 22 },
+      { code: '05 20 00', name: 'Metal Joists', assemblyCount: 10 },
+      { code: '05 30 00', name: 'Metal Decking', assemblyCount: 12 },
+      { code: '05 40 00', name: 'Cold-Formed Metal Framing', assemblyCount: 14 },
+      { code: '05 50 00', name: 'Metal Fabrications', assemblyCount: 10 },
+    ],
+  },
+  {
+    code: '06',
+    name: 'Wood, Plastics, and Composites',
+    description: 'Rough carpentry, finish carpentry, and architectural woodwork',
+    icon: 'TreePine',
+    color: '#92400E',
+    assemblyCount: 95,
+    subdivisions: [
+      { code: '06 10 00', name: 'Rough Carpentry', assemblyCount: 30 },
+      { code: '06 20 00', name: 'Finish Carpentry', assemblyCount: 25 },
+      { code: '06 40 00', name: 'Architectural Woodwork', assemblyCount: 20 },
+      { code: '06 50 00', name: 'Structural Plastics', assemblyCount: 8 },
+      { code: '06 60 00', name: 'Plastic Fabrications', assemblyCount: 12 },
+    ],
+  },
+  {
+    code: '07',
+    name: 'Thermal and Moisture Protection',
+    description: 'Waterproofing, insulation, roofing, and siding',
+    icon: 'Umbrella',
+    color: '#0369A1',
+    assemblyCount: 88,
+    subdivisions: [
+      { code: '07 10 00', name: 'Dampproofing and Waterproofing', assemblyCount: 12 },
+      { code: '07 20 00', name: 'Thermal Protection', assemblyCount: 18 },
+      { code: '07 30 00', name: 'Steep Slope Roofing', assemblyCount: 20 },
+      { code: '07 40 00', name: 'Roofing and Siding Panels', assemblyCount: 15 },
+      { code: '07 50 00', name: 'Membrane Roofing', assemblyCount: 12 },
+      { code: '07 60 00', name: 'Flashing and Sheet Metal', assemblyCount: 11 },
+    ],
+  },
+  {
+    code: '08',
+    name: 'Openings',
+    description: 'Doors, windows, entrances, and glazing',
+    icon: 'DoorOpen',
+    color: '#7C3AED',
+    assemblyCount: 76,
+    subdivisions: [
+      { code: '08 10 00', name: 'Doors and Frames', assemblyCount: 22 },
+      { code: '08 30 00', name: 'Specialty Doors and Frames', assemblyCount: 10 },
+      { code: '08 40 00', name: 'Entrances, Storefronts', assemblyCount: 14 },
+      { code: '08 50 00', name: 'Windows', assemblyCount: 18 },
+      { code: '08 80 00', name: 'Glazing', assemblyCount: 12 },
+    ],
+  },
+  {
+    code: '09',
+    name: 'Finishes',
+    description: 'Plaster, gypsum board, tile, flooring, ceilings, and paint',
+    icon: 'Paintbrush',
+    color: '#DC2626',
+    assemblyCount: 120,
+    subdivisions: [
+      { code: '09 20 00', name: 'Plaster and Gypsum Board', assemblyCount: 25 },
+      { code: '09 30 00', name: 'Tiling', assemblyCount: 22 },
+      { code: '09 50 00', name: 'Ceilings', assemblyCount: 18 },
+      { code: '09 60 00', name: 'Flooring', assemblyCount: 28 },
+      { code: '09 70 00', name: 'Wall Finishes', assemblyCount: 12 },
+      { code: '09 90 00', name: 'Painting and Coating', assemblyCount: 15 },
+    ],
+  },
+  {
+    code: '10',
+    name: 'Specialties',
+    description: 'Visual display, compartments, lockers, and signage',
+    icon: 'Tags',
+    color: '#059669',
+    assemblyCount: 42,
+    subdivisions: [
+      { code: '10 10 00', name: 'Visual Display Units', assemblyCount: 8 },
+      { code: '10 20 00', name: 'Interior Specialties', assemblyCount: 15 },
+      { code: '10 40 00', name: 'Safety Specialties', assemblyCount: 10 },
+      { code: '10 70 00', name: 'Exterior Specialties', assemblyCount: 9 },
+    ],
+  },
+  {
+    code: '11',
+    name: 'Equipment',
+    description: 'Commercial, residential, and industrial equipment',
+    icon: 'Settings2',
+    color: '#0891B2',
+    assemblyCount: 55,
+    subdivisions: [
+      { code: '11 20 00', name: 'Commercial Equipment', assemblyCount: 18 },
+      { code: '11 30 00', name: 'Residential Equipment', assemblyCount: 20 },
+      { code: '11 40 00', name: 'Foodservice Equipment', assemblyCount: 12 },
+      { code: '11 70 00', name: 'Healthcare Equipment', assemblyCount: 5 },
+    ],
+  },
+  {
+    code: '12',
+    name: 'Furnishings',
+    description: 'Art, window treatments, furniture, and rugs',
+    icon: 'Armchair',
+    color: '#D97706',
+    assemblyCount: 38,
+    subdivisions: [
+      { code: '12 20 00', name: 'Window Treatments', assemblyCount: 10 },
+      { code: '12 30 00', name: 'Casework', assemblyCount: 15 },
+      { code: '12 50 00', name: 'Furniture', assemblyCount: 8 },
+      { code: '12 60 00', name: 'Multiple Seating', assemblyCount: 5 },
+    ],
+  },
+  {
+    code: '21',
+    name: 'Fire Suppression',
+    description: 'Fire suppression sprinkler systems and equipment',
+    icon: 'Flame',
+    color: '#EF4444',
+    assemblyCount: 28,
+    subdivisions: [
+      { code: '21 10 00', name: 'Water-Based Fire-Suppression', assemblyCount: 18 },
+      { code: '21 20 00', name: 'Fire-Extinguishing Systems', assemblyCount: 10 },
+    ],
+  },
+  {
+    code: '22',
+    name: 'Plumbing',
+    description: 'Plumbing piping, fixtures, and equipment',
+    icon: 'Droplet',
+    color: '#3B82F6',
+    assemblyCount: 78,
+    subdivisions: [
+      { code: '22 10 00', name: 'Plumbing Piping and Pumps', assemblyCount: 25 },
+      { code: '22 30 00', name: 'Plumbing Equipment', assemblyCount: 18 },
+      { code: '22 40 00', name: 'Plumbing Fixtures', assemblyCount: 35 },
+    ],
+  },
+  {
+    code: '23',
+    name: 'HVAC',
+    description: 'Heating, ventilating, and air conditioning',
+    icon: 'Wind',
+    color: '#06B6D4',
+    assemblyCount: 92,
+    subdivisions: [
+      { code: '23 10 00', name: 'Facility Fuel Systems', assemblyCount: 8 },
+      { code: '23 20 00', name: 'HVAC Piping and Pumps', assemblyCount: 20 },
+      { code: '23 30 00', name: 'HVAC Air Distribution', assemblyCount: 25 },
+      { code: '23 50 00', name: 'Central Heating Equipment', assemblyCount: 18 },
+      { code: '23 70 00', name: 'Central HVAC Equipment', assemblyCount: 21 },
+    ],
+  },
+  {
+    code: '26',
+    name: 'Electrical',
+    description: 'Electrical distribution, lighting, and communications',
+    icon: 'Zap',
+    color: '#FBBF24',
+    assemblyCount: 105,
+    subdivisions: [
+      { code: '26 10 00', name: 'Medium-Voltage Electrical', assemblyCount: 12 },
+      { code: '26 20 00', name: 'Low-Voltage Electrical', assemblyCount: 28 },
+      { code: '26 30 00', name: 'Facility Electrical Power', assemblyCount: 18 },
+      { code: '26 40 00', name: 'Electrical and Cathodic Protection', assemblyCount: 8 },
+      { code: '26 50 00', name: 'Lighting', assemblyCount: 39 },
+    ],
+  },
+  {
+    code: '31',
+    name: 'Earthwork',
+    description: 'Site clearing, excavation, and earth moving',
+    icon: 'Mountain',
+    color: '#78716C',
+    assemblyCount: 35,
+    subdivisions: [
+      { code: '31 10 00', name: 'Site Clearing', assemblyCount: 8 },
+      { code: '31 20 00', name: 'Earth Moving', assemblyCount: 15 },
+      { code: '31 30 00', name: 'Earthwork Methods', assemblyCount: 12 },
+    ],
+  },
+  {
+    code: '32',
+    name: 'Exterior Improvements',
+    description: 'Paving, site improvements, and planting',
+    icon: 'TreeDeciduous',
+    color: '#22C55E',
+    assemblyCount: 48,
+    subdivisions: [
+      { code: '32 10 00', name: 'Bases, Ballasts, and Paving', assemblyCount: 20 },
+      { code: '32 30 00', name: 'Site Improvements', assemblyCount: 15 },
+      { code: '32 90 00', name: 'Planting', assemblyCount: 13 },
+    ],
+  },
+  {
+    code: '33',
+    name: 'Utilities',
+    description: 'Water, sewer, electrical, and communications utilities',
+    icon: 'Cable',
+    color: '#6366F1',
+    assemblyCount: 42,
+    subdivisions: [
+      { code: '33 10 00', name: 'Water Utilities', assemblyCount: 14 },
+      { code: '33 30 00', name: 'Sanitary Sewerage', assemblyCount: 12 },
+      { code: '33 40 00', name: 'Storm Drainage', assemblyCount: 10 },
+      { code: '33 70 00', name: 'Electrical Utilities', assemblyCount: 6 },
+    ],
+  },
+];
+
+// Sample assemblies (representative examples from each category)
+export const SAMPLE_ASSEMBLIES: AssemblyItem[] = [
+  // Division 03 - Concrete
+  {
+    id: 'KA-03-001',
+    code: 'KA-03-001',
+    name: '4" Concrete Slab on Grade',
+    description: 'Standard 4-inch reinforced concrete slab on grade with vapor barrier and wire mesh',
+    divisionCode: '03',
+    subdivisionCode: '03 30 00',
+    category: 'Concrete',
+    unit: 'SF',
+    materialCost: 3.25,
+    laborCost: 2.85,
+    equipmentCost: 0.45,
+    totalCost: 6.55,
+    laborHours: 0.045,
+    tags: ['slab', 'foundation', 'concrete', 'residential'],
+  },
+  {
+    id: 'KA-03-002',
+    code: 'KA-03-002',
+    name: '6" Concrete Slab on Grade',
+    description: 'Heavy-duty 6-inch reinforced concrete slab for garage or commercial applications',
+    divisionCode: '03',
+    subdivisionCode: '03 30 00',
+    category: 'Concrete',
+    unit: 'SF',
+    materialCost: 4.85,
+    laborCost: 3.25,
+    equipmentCost: 0.55,
+    totalCost: 8.65,
+    laborHours: 0.052,
+    tags: ['slab', 'garage', 'commercial', 'heavy-duty'],
+  },
+  // Division 04 - Masonry
+  {
+    id: 'KA-04-001',
+    code: 'KA-04-001',
+    name: '8" CMU Block Wall',
+    description: 'Standard 8-inch CMU block wall with mortar, grout cores at 48" O.C., vertical rebar',
+    divisionCode: '04',
+    subdivisionCode: '04 20 00',
+    category: 'Masonry',
+    unit: 'SF',
+    materialCost: 8.50,
+    laborCost: 9.75,
+    equipmentCost: 0.35,
+    totalCost: 18.60,
+    laborHours: 0.125,
+    tags: ['CMU', 'block', 'wall', 'foundation'],
+  },
+  {
+    id: 'KA-04-002',
+    code: 'KA-04-002',
+    name: 'Brick Veneer Wall',
+    description: 'Modular brick veneer with metal ties, air space, and mortar',
+    divisionCode: '04',
+    subdivisionCode: '04 20 00',
+    category: 'Masonry',
+    unit: 'SF',
+    materialCost: 12.25,
+    laborCost: 14.50,
+    equipmentCost: 0.45,
+    totalCost: 27.20,
+    laborHours: 0.185,
+    tags: ['brick', 'veneer', 'exterior', 'facade'],
+  },
+  // Division 06 - Wood
+  {
+    id: 'KA-06-001',
+    code: 'KA-06-001',
+    name: '2x4 Wood Stud Wall',
+    description: 'Interior 2x4 wood stud wall at 16" O.C. with single top and bottom plates',
+    divisionCode: '06',
+    subdivisionCode: '06 10 00',
+    category: 'Wood Framing',
+    unit: 'SF',
+    materialCost: 2.15,
+    laborCost: 3.45,
+    equipmentCost: 0.12,
+    totalCost: 5.72,
+    laborHours: 0.055,
+    tags: ['framing', 'stud wall', 'interior', 'residential'],
+  },
+  {
+    id: 'KA-06-002',
+    code: 'KA-06-002',
+    name: '2x6 Exterior Wall Framing',
+    description: 'Exterior 2x6 wood stud wall at 16" O.C. with double top plate',
+    divisionCode: '06',
+    subdivisionCode: '06 10 00',
+    category: 'Wood Framing',
+    unit: 'SF',
+    materialCost: 3.45,
+    laborCost: 4.25,
+    equipmentCost: 0.15,
+    totalCost: 7.85,
+    laborHours: 0.068,
+    tags: ['framing', 'exterior', 'structural', 'residential'],
+  },
+  // Division 09 - Finishes
+  {
+    id: 'KA-09-001',
+    code: 'KA-09-001',
+    name: '1/2" Drywall - Level 4 Finish',
+    description: 'Standard 1/2-inch gypsum board with Level 4 finish, taped and mudded',
+    divisionCode: '09',
+    subdivisionCode: '09 20 00',
+    category: 'Finishes',
+    unit: 'SF',
+    materialCost: 0.85,
+    laborCost: 1.95,
+    equipmentCost: 0.08,
+    totalCost: 2.88,
+    laborHours: 0.032,
+    tags: ['drywall', 'gypsum', 'interior', 'finish'],
+  },
+  {
+    id: 'KA-09-002',
+    code: 'KA-09-002',
+    name: 'Ceramic Floor Tile',
+    description: '12x12 ceramic floor tile with thinset mortar and grout',
+    divisionCode: '09',
+    subdivisionCode: '09 30 00',
+    category: 'Finishes',
+    unit: 'SF',
+    materialCost: 4.50,
+    laborCost: 6.25,
+    equipmentCost: 0.15,
+    totalCost: 10.90,
+    laborHours: 0.095,
+    tags: ['tile', 'ceramic', 'flooring', 'bathroom', 'kitchen'],
+  },
+  {
+    id: 'KA-09-003',
+    code: 'KA-09-003',
+    name: 'Interior Paint - 2 Coats',
+    description: 'Two coats latex paint on prepared drywall surfaces',
+    divisionCode: '09',
+    subdivisionCode: '09 90 00',
+    category: 'Finishes',
+    unit: 'SF',
+    materialCost: 0.35,
+    laborCost: 0.85,
+    equipmentCost: 0.05,
+    totalCost: 1.25,
+    laborHours: 0.014,
+    tags: ['paint', 'interior', 'latex', 'walls'],
+  },
+  // Division 22 - Plumbing
+  {
+    id: 'KA-22-001',
+    code: 'KA-22-001',
+    name: 'Standard Bathroom Rough-In',
+    description: 'Complete bathroom rough-in including supply, waste, and vent piping for toilet, sink, and tub/shower',
+    divisionCode: '22',
+    subdivisionCode: '22 10 00',
+    category: 'Plumbing',
+    unit: 'EA',
+    materialCost: 485.00,
+    laborCost: 725.00,
+    equipmentCost: 35.00,
+    totalCost: 1245.00,
+    laborHours: 12.5,
+    tags: ['bathroom', 'rough-in', 'plumbing', 'residential'],
+  },
+  {
+    id: 'KA-22-002',
+    code: 'KA-22-002',
+    name: 'Kitchen Sink Installation',
+    description: 'Double-bowl stainless steel kitchen sink with faucet, disposal, and connections',
+    divisionCode: '22',
+    subdivisionCode: '22 40 00',
+    category: 'Plumbing',
+    unit: 'EA',
+    materialCost: 425.00,
+    laborCost: 285.00,
+    equipmentCost: 0,
+    totalCost: 710.00,
+    laborHours: 4.5,
+    tags: ['kitchen', 'sink', 'fixture', 'stainless'],
+  },
+  // Division 26 - Electrical
+  {
+    id: 'KA-26-001',
+    code: 'KA-26-001',
+    name: 'Duplex Receptacle Installation',
+    description: '20A duplex receptacle with box, wiring, and coverplate',
+    divisionCode: '26',
+    subdivisionCode: '26 20 00',
+    category: 'Electrical',
+    unit: 'EA',
+    materialCost: 28.50,
+    laborCost: 65.00,
+    equipmentCost: 0,
+    totalCost: 93.50,
+    laborHours: 1.0,
+    tags: ['outlet', 'receptacle', 'electrical', '20A'],
+  },
+  {
+    id: 'KA-26-002',
+    code: 'KA-26-002',
+    name: 'Recessed LED Downlight',
+    description: '6-inch LED recessed downlight with housing, trim, and wiring',
+    divisionCode: '26',
+    subdivisionCode: '26 50 00',
+    category: 'Electrical',
+    unit: 'EA',
+    materialCost: 85.00,
+    laborCost: 95.00,
+    equipmentCost: 0,
+    totalCost: 180.00,
+    laborHours: 1.5,
+    tags: ['lighting', 'LED', 'recessed', 'downlight'],
+  },
+];
+
+// Assembly categories for filtering
+export const ASSEMBLY_CATEGORIES = [
+  { id: 'kitchen', name: 'Kitchen', icon: 'ChefHat', count: 85 },
+  { id: 'bathroom', name: 'Bathroom', icon: 'Bath', count: 72 },
+  { id: 'bedroom', name: 'Bedroom', icon: 'Bed', count: 28 },
+  { id: 'living-spaces', name: 'Living Spaces', icon: 'Sofa', count: 45 },
+  { id: 'basement', name: 'Basement', icon: 'ArrowDown', count: 38 },
+  { id: 'garage', name: 'Garage', icon: 'Car', count: 25 },
+  { id: 'exterior', name: 'Exterior', icon: 'Home', count: 95 },
+  { id: 'roofing', name: 'Roofing', icon: 'Umbrella', count: 42 },
+  { id: 'foundation', name: 'Foundation', icon: 'Layers', count: 35 },
+  { id: 'framing', name: 'Framing', icon: 'Grid3X3', count: 55 },
+  { id: 'mechanical', name: 'Mechanical', icon: 'Cog', count: 88 },
+  { id: 'electrical', name: 'Electrical', icon: 'Zap', count: 105 },
+  { id: 'plumbing', name: 'Plumbing', icon: 'Droplet', count: 78 },
+  { id: 'hvac', name: 'HVAC', icon: 'Wind', count: 92 },
+  { id: 'sitework', name: 'Sitework', icon: 'TreeDeciduous', count: 65 },
+];
+
+// Assembly library stats
+export const ASSEMBLY_LIBRARY_STATS = {
+  totalAssemblies: 1247,
+  totalDivisions: 18,
+  totalSubdivisions: 85,
+  lastUpdated: '2026-02-01',
+  costDatabaseVersion: '2026.1',
+  regionalCoverages: ['DC', 'Baltimore', 'NOVA', 'Prince Georges', 'Montgomery', 'Howard'],
+};
+
 // Navigation structure for Professional dashboard
 // Includes: Architects, designers, engineers
 export const PROFESSIONAL_NAVIGATION: NavItem[] = [

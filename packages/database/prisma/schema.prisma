@@ -7347,3 +7347,333 @@ model RolePermission {
   @@unique([roleKey, permissionKey])
   @@map("role_permissions")
 }
+
+// ============================================================================
+// ESTIMATION ASSEMBLY LIBRARY (1000+ Pre-built Assemblies)
+// CSI MasterFormat organized construction cost assemblies
+// ============================================================================
+
+enum AssemblyStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  DEPRECATED
+}
+
+enum AssemblyType {
+  STANDARD // Kealee-provided standard assembly
+  CUSTOM // Organization-created custom assembly
+  MODIFIED // Modified version of standard assembly
+}
+
+enum UnitOfMeasure {
+  // Linear
+  LF // Linear Feet
+  LY // Linear Yards
+  IN // Inches
+  // Area
+  SF // Square Feet
+  SY // Square Yards
+  // Volume
+  CF // Cubic Feet
+  CY // Cubic Yards
+  // Count
+  EA // Each
+  PR // Pair
+  SET // Set
+  // Weight
+  LB // Pounds
+  TON // Tons
+  // Time
+  HR // Hours
+  DAY // Days
+  // Other
+  LS // Lump Sum
+  GAL // Gallons
+  BF // Board Feet
+  MBF // Thousand Board Feet
+  MSF // Thousand Square Feet
+  CLF // Hundred Linear Feet
+}
+
+// CSI MasterFormat Division (Top-level categories: 01-49)
+model CSIDivision {
+  id          String @id @default(uuid())
+  code        String @unique // "03", "04", "05", etc.
+  name        String // "Concrete", "Masonry", "Metals"
+  description String?
+  order       Int    @default(0)
+  isActive    Boolean @default(true)
+
+  // Visual
+  iconName    String? // Lucide icon name
+  colorHex    String? // Division color for UI
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subdivisions CSISubdivision[]
+  assemblies   Assembly[]
+
+  @@index([code])
+  @@index([isActive])
+  @@map("csi_divisions")
+}
+
+// CSI Subdivision (Second-level: 03 10 00, 03 20 00, etc.)
+model CSISubdivision {
+  id          String @id @default(uuid())
+  divisionId  String
+  code        String @unique // "03 10 00", "03 20 00"
+  name        String // "Concrete Forming", "Concrete Reinforcing"
+  description String?
+  order       Int    @default(0)
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  division   CSIDivision @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+  assemblies Assembly[]
+
+  @@index([divisionId])
+  @@index([code])
+  @@map("csi_subdivisions")
+}
+
+// Assembly Category (Organizational grouping)
+model AssemblyCategory {
+  id          String @id @default(uuid())
+  name        String // "Kitchen Assemblies", "Bathroom Assemblies"
+  slug        String @unique
+  description String?
+  parentId    String? // For subcategories
+  order       Int    @default(0)
+  isActive    Boolean @default(true)
+
+  // Visual
+  iconName    String?
+  imageUrl    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent     AssemblyCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children   AssemblyCategory[] @relation("CategoryHierarchy")
+  assemblies Assembly[]
+
+  @@index([parentId])
+  @@index([slug])
+  @@map("assembly_categories")
+}
+
+// Main Assembly model (Pre-built construction assemblies)
+model Assembly {
+  id          String @id @default(uuid())
+
+  // Identification
+  code        String // Unique assembly code: "KA-03-001" (Kealee Assembly)
+  name        String // "8-inch CMU Block Wall"
+  shortName   String? // "8\" CMU Wall"
+  description String?
+
+  // Classification
+  type        AssemblyType @default(STANDARD)
+  status      AssemblyStatus @default(PUBLISHED)
+  divisionId  String? // CSI Division
+  subdivisionId String? // CSI Subdivision
+  categoryId  String? // Assembly Category
+
+  // Measurement
+  unitOfMeasure UnitOfMeasure @default(SF)
+  unitLabel     String? // Custom label like "per linear foot"
+
+  // Pricing (Base costs - updated periodically)
+  baseMaterialCost Decimal @db.Decimal(12, 2) // Material cost per unit
+  baseLaborCost    Decimal @db.Decimal(12, 2) // Labor cost per unit
+  baseEquipmentCost Decimal @default(0) @db.Decimal(12, 2) // Equipment cost per unit
+  baseTotalCost    Decimal @db.Decimal(12, 2) // Total cost per unit
+
+  // Labor
+  laborHours       Decimal @default(0) @db.Decimal(8, 4) // Labor hours per unit
+  crewSize         Decimal @default(1) @db.Decimal(4, 2) // Default crew size
+  productivityRate Decimal? @db.Decimal(10, 4) // Units per hour
+
+  // Regional pricing factors (stored as JSON)
+  regionalFactors Json? // { "DC": 1.05, "Baltimore": 0.98, ... }
+
+  // Organization (for custom assemblies)
+  organizationId String? // Null for standard Kealee assemblies
+  isPublic       Boolean @default(true) // Visible to all users
+  isStandard     Boolean @default(true) // Kealee standard library
+
+  // Source & Version
+  sourceAssemblyId String? // Parent assembly if modified
+  version          String @default("1.0")
+  effectiveDate    DateTime @default(now())
+  expirationDate   DateTime?
+
+  // Usage tracking
+  usageCount   Int @default(0)
+  lastUsedAt   DateTime?
+  avgRating    Decimal? @db.Decimal(3, 2)
+  ratingCount  Int @default(0)
+
+  // Search optimization
+  tags         String[] // Searchable tags
+  keywords     String? // Full-text search keywords
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+
+  // Relations
+  division      CSIDivision?      @relation(fields: [divisionId], references: [id])
+  subdivision   CSISubdivision?   @relation(fields: [subdivisionId], references: [id])
+  category      AssemblyCategory? @relation(fields: [categoryId], references: [id])
+  organization  Org?              @relation(fields: [organizationId], references: [id])
+  sourceAssembly Assembly?        @relation("AssemblyVersions", fields: [sourceAssemblyId], references: [id])
+
+  // Child relations
+  derivedAssemblies Assembly[]         @relation("AssemblyVersions")
+  lineItems         AssemblyLineItem[]
+  estimateItems     EstimateAssemblyUsage[]
+
+  @@unique([code, organizationId])
+  @@index([divisionId])
+  @@index([subdivisionId])
+  @@index([categoryId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([type])
+  @@index([isPublic, isStandard])
+  @@map("assemblies")
+}
+
+// Assembly Line Items (Components that make up an assembly)
+model AssemblyLineItem {
+  id          String @id @default(uuid())
+  assemblyId  String
+
+  // Item details
+  itemCode    String? // Material/labor code
+  name        String // "8\" CMU Block", "Mason Labor"
+  description String?
+
+  // Type
+  itemType    String // "material", "labor", "equipment", "subcontract"
+
+  // Measurement
+  quantity    Decimal @db.Decimal(12, 4) // Quantity per assembly unit
+  unit        UnitOfMeasure @default(EA)
+  wasteFactor Decimal @default(0) @db.Decimal(5, 4) // 0.05 = 5% waste
+
+  // Pricing
+  unitCost    Decimal @db.Decimal(12, 4) // Cost per unit
+  totalCost   Decimal @db.Decimal(12, 2) // quantity * unitCost * (1 + wasteFactor)
+
+  // Labor specific
+  laborHours  Decimal? @db.Decimal(8, 4)
+  laborRate   Decimal? @db.Decimal(10, 2)
+  crewCode    String? // Crew type identifier
+
+  // Ordering
+  order       Int @default(0)
+  isOptional  Boolean @default(false)
+  isIncluded  Boolean @default(true)
+
+  // Source reference
+  costDatabaseRef String? // RSMeans or other cost database reference
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assembly Assembly @relation(fields: [assemblyId], references: [id], onDelete: Cascade)
+
+  @@index([assemblyId])
+  @@index([itemType])
+  @@map("assembly_line_items")
+}
+
+// Track assembly usage in estimates
+model EstimateAssemblyUsage {
+  id          String @id @default(uuid())
+  estimateId  String
+  assemblyId  String
+
+  // Usage details
+  quantity    Decimal @db.Decimal(12, 4)
+  unitCostOverride Decimal? @db.Decimal(12, 2) // If cost was modified
+  totalCost   Decimal @db.Decimal(12, 2)
+
+  // Location in estimate
+  divisionCode String? // CSI division for organization
+  lineNumber   Int?
+
+  // Modifications
+  isModified  Boolean @default(false)
+  modifications Json? // Track what was changed
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assembly Assembly @relation(fields: [assemblyId], references: [id])
+
+  @@index([estimateId])
+  @@index([assemblyId])
+  @@map("estimate_assembly_usage")
+}
+
+// Regional cost indices for pricing adjustments
+model RegionalCostIndex {
+  id          String @id @default(uuid())
+  regionCode  String @unique // "DC", "BALTIMORE", "NOVA"
+  regionName  String
+
+  // Cost factors (1.0 = national average)
+  materialFactor   Decimal @default(1.0) @db.Decimal(5, 4)
+  laborFactor      Decimal @default(1.0) @db.Decimal(5, 4)
+  equipmentFactor  Decimal @default(1.0) @db.Decimal(5, 4)
+  overallFactor    Decimal @default(1.0) @db.Decimal(5, 4)
+
+  // Effective dates
+  effectiveDate    DateTime @default(now())
+  expirationDate   DateTime?
+  isActive         Boolean @default(true)
+
+  // Source
+  sourceDatabase   String? // "RSMeans", "ENR", etc.
+  lastUpdated      DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([regionCode])
+  @@index([isActive])
+  @@map("regional_cost_indices")
+}
+
+// Assembly usage analytics
+model AssemblyAnalytics {
+  id          String @id @default(uuid())
+  assemblyId  String
+
+  // Period
+  periodType  String // "daily", "weekly", "monthly"
+  periodStart DateTime
+  periodEnd   DateTime
+
+  // Metrics
+  usageCount  Int @default(0)
+  uniqueUsers Int @default(0)
+  uniqueOrgs  Int @default(0)
+  avgQuantity Decimal? @db.Decimal(12, 4)
+  totalValue  Decimal? @db.Decimal(14, 2)
+
+  createdAt DateTime @default(now())
+
+  @@unique([assemblyId, periodType, periodStart])
+  @@index([assemblyId])
+  @@index([periodStart])
+  @@map("assembly_analytics")
+}
