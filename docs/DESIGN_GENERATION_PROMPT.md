@@ -2619,5 +2619,715 @@ OUTPUT: 3 mobile landing pages at 375px width, with all scroll states
 
 ---
 
+## PROMPT 41: Contractor Portal - Multi-Project Dashboard
+
+```
+Design the main dashboard view for the Contractor Portal (contractor.kealee.com/dashboard).
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A (accent), Teal #2ABFBF, Green #38A169
+CONTEXT: Logged-in contractor dashboard - requires active subscription
+
+LAYOUT (1440px):
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ [Sidebar Nav]  │  HEADER: "Dashboard" + User Profile + Notifications        │
+├────────────────┼────────────────────────────────────────────────────────────┤
+│                │  ┌─────────────────────────────────────────────────────┐   │
+│ Dashboard      │  │ WELCOME BANNER                                      │   │
+│ Projects       │  │ "Good morning, [Name]" + Quick actions              │   │
+│ Estimation ▼   │  └─────────────────────────────────────────────────────┘   │
+│ Bidding ▼      │                                                            │
+│ Schedule       │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐      │
+│ Team ▼         │  │ Active   │ │ Pending  │ │ This     │ │ Revenue  │      │
+│ Permits ▼      │  │ Projects │ │ Bids     │ │ Month    │ │ YTD      │      │
+│ Finances ▼     │  │ 12       │ │ 5        │ │ $125K    │ │ $1.2M    │      │
+│ Documents      │  └──────────┘ └──────────┘ └──────────┘ └──────────┘      │
+│ Reports        │                                                            │
+│ Settings       │  ┌─────────────────────────────────────────────────────┐   │
+│                │  │ PROJECT CARDS (Kanban-style)                        │   │
+│ ─────────────  │  │ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐    │   │
+│ QUICK ACTIONS  │  │ │In Progress│ │Scheduled│ │Bidding │ │Completed│    │   │
+│ + New Estimate │  │ │   (5)    │ │   (3)   │ │  (4)   │ │  (15)   │    │   │
+│ + Submit Bid   │  │ └─────────┘ └─────────┘ └─────────┘ └─────────┘    │   │
+│ + Add Project  │  └─────────────────────────────────────────────────────┘   │
+└────────────────┴────────────────────────────────────────────────────────────┘
+
+STATS CARDS (4 across):
+- Active Projects: Large number, trend arrow, "vs last month"
+- Pending Bids: Count with "3 expiring soon" warning
+- This Month Revenue: Dollar amount with progress bar to goal
+- Revenue YTD: Total with sparkline chart
+
+PROJECT CARDS (Horizontal scroll or grid):
+Each card shows:
+- Project name & address
+- Client name
+- Status badge (In Progress, Scheduled, Bidding, etc.)
+- Progress bar (% complete)
+- Next milestone date
+- Budget vs. actual mini-chart
+- Quick actions: View, Edit, Invoice
+
+KANBAN VIEW TABS:
+- All Projects | In Progress | Scheduled | Bidding | Completed
+
+SIDEBAR NAVIGATION:
+- Kealee logo at top
+- Navigation items with icons
+- Expandable sections (▼)
+- Quick Actions section at bottom
+- User avatar + plan badge at bottom
+
+SUBSCRIPTION BADGE:
+Show current plan in sidebar: "Professional Plan" with upgrade link
+
+NOTIFICATIONS:
+- Bell icon with count badge
+- Dropdown showing recent alerts
+
+OUTPUT: Full dashboard at 1440px with sidebar navigation
+```
+
+---
+
+## PROMPT 42: Contractor Portal - Bid Management
+
+```
+Design the Bid Management section for the Contractor Portal.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF, Green #38A169
+
+LAYOUT: 3-tab interface within dashboard
+
+TAB NAVIGATION:
+┌──────────────────────────────────────────────────────────────────┐
+│  🔍 Opportunities  │  📤 Submitted Bids  │  🏆 Won Projects      │
+└──────────────────────────────────────────────────────────────────┘
+
+### TAB 1: OPPORTUNITIES (Marketplace Integration)
+
+HEADER:
+- "Find New Projects" title
+- Filter bar: Location | Project Type | Budget Range | Posted Date
+- Search input
+- "Refresh" button
+
+OPPORTUNITY CARDS (List or Grid view toggle):
+┌─────────────────────────────────────────────────────────────────┐
+│ 🏠 Kitchen Renovation - Bethesda, MD                            │
+│ Posted: 2 days ago  |  Budget: $45,000 - $55,000               │
+│ Owner: Sarah M.  |  Timeline: March 2026                        │
+│ ─────────────────────────────────────────────────────────────── │
+│ Scope: Full kitchen gut renovation including cabinets,          │
+│ countertops, appliances, plumbing, electrical...                │
+│ ─────────────────────────────────────────────────────────────── │
+│ Requirements: ✓ Licensed  ✓ Insured  ✓ 5+ years experience     │
+│ ─────────────────────────────────────────────────────────────── │
+│ Bids: 4 submitted  |  Deadline: Feb 15, 2026                   │
+│ ─────────────────────────────────────────────────────────────── │
+│ [View Details]  [Submit Bid →] (orange)                         │
+└─────────────────────────────────────────────────────────────────┘
+
+MARKETPLACE COMMISSION NOTE:
+"3.5% platform fee on awarded contracts" (subtle, at bottom)
+
+### TAB 2: SUBMITTED BIDS
+
+FILTERS: All | Pending Review | Under Consideration | Declined
+
+BID CARDS:
+┌─────────────────────────────────────────────────────────────────┐
+│ Kitchen Renovation - Bethesda, MD                               │
+│ ─────────────────────────────────────────────────────────────── │
+│ Your Bid: $52,500  |  Submitted: Jan 28, 2026                  │
+│ Status: ⏳ PENDING REVIEW                                       │
+│ ─────────────────────────────────────────────────────────────── │
+│ Timeline: 6 weeks  |  Start: March 10, 2026                    │
+│ ─────────────────────────────────────────────────────────────── │
+│ [View Bid]  [Edit Bid]  [Withdraw]                              │
+└─────────────────────────────────────────────────────────────────┘
+
+STATUS BADGES:
+- Pending Review (gray)
+- Under Consideration (orange)
+- Shortlisted (teal)
+- Awarded (green)
+- Declined (red)
+- Withdrawn (gray strikethrough)
+
+### TAB 3: WON PROJECTS
+
+SUCCESS METRICS:
+┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
+│ Won      │ │ Total    │ │ Win      │ │ Avg Bid  │
+│ Projects │ │ Value    │ │ Rate     │ │ Value    │
+│ 23       │ │ $1.2M    │ │ 34%      │ │ $52K     │
+└──────────┘ └──────────┘ └──────────┘ └──────────┘
+
+WON PROJECT CARDS:
+- Project details
+- Contract value
+- Start date
+- "Convert to Project" button (if not already)
+- Contract status
+
+EMPTY STATE:
+"No won projects yet. Keep bidding!"
+[Browse Opportunities →]
+
+OUTPUT: Full bid management interface with all 3 tabs at 1440px
+```
+
+---
+
+## PROMPT 43: Contractor Portal - Estimation Tools
+
+```
+Design the Estimation Tools section for the Contractor Portal.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF, Green #38A169
+
+LAYOUT: Estimation workspace with sidebar tools
+
+TAB NAVIGATION:
+┌────────────────────────────────────────────────────────────────────┐
+│  📝 New Estimate  │  📚 Assembly Library  │  📋 Templates  │  📊 History  │
+└────────────────────────────────────────────────────────────────────┘
+
+### TAB 1: NEW ESTIMATE (Primary workspace)
+
+HEADER:
+- "Create Estimate" title
+- Project selector dropdown
+- "Import from Template" button
+- "AI Assist" toggle (teal badge)
+
+ESTIMATE BUILDER:
+┌─────────────────────────────────────────────────────────────────────┐
+│ PROJECT: Kitchen Renovation - 123 Main St                          │
+├─────────────────────────────────────────────────────────────────────┤
+│ DIVISIONS:                          │ ESTIMATE SUMMARY             │
+│ ┌─────────────────────────────────┐ │ ┌─────────────────────────┐  │
+│ │ + Add Division                  │ │ │ Materials:    $18,500   │  │
+│ │ ▼ 03 - Concrete         $2,400 │ │ │ Labor:        $12,200   │  │
+│ │ ▼ 06 - Wood & Plastics  $8,500 │ │ │ Equipment:     $1,800   │  │
+│ │ ▼ 09 - Finishes         $6,200 │ │ │ ─────────────────────── │  │
+│ │ ▼ 22 - Plumbing         $4,800 │ │ │ Direct Cost:  $32,500   │  │
+│ │ ▼ 26 - Electrical       $3,600 │ │ │ Overhead 10%:  $3,250   │  │
+│ │                                 │ │ │ Profit 15%:    $5,363   │  │
+│ │                                 │ │ │ Contingency 5%: $2,056  │  │
+│ │                                 │ │ │ ─────────────────────── │  │
+│ │                                 │ │ │ TOTAL:       $43,169    │  │
+│ │                                 │ │ └─────────────────────────┘  │
+│ └─────────────────────────────────┘ │                              │
+│                                     │ [Adjust Markups]             │
+│ LINE ITEMS (expanded division):     │ [Download PDF]               │
+│ ┌─────────────────────────────────┐ │ [Send to Client]             │
+│ │ Item         Qty   Unit   Cost │ │                              │
+│ │ ─────────────────────────────── │ │ PLAN LIMITS:                │
+│ │ Base cabinets  12  LF   $3,600 │ │ Estimates this month: 8/10  │
+│ │ Wall cabinets   8  LF   $2,400 │ │ [Upgrade for more →]        │
+│ │ Countertops    24  SF   $2,160 │ │                              │
+│ │ + Add Line Item                 │ │                              │
+│ └─────────────────────────────────┘ │                              │
+└─────────────────────────────────────────────────────────────────────┘
+
+MARKUP CONTROLS:
+- Overhead %: slider or input (default 10%)
+- Profit %: slider or input (default 15%)
+- Contingency %: slider or input (default 5%)
+- "Apply Company Defaults" button
+
+### TAB 2: ASSEMBLY LIBRARY
+
+SEARCH & FILTER:
+- Search: "Search 1,000+ assemblies..."
+- Categories: All | Residential | Commercial | Specialty
+- Divisions: CSI MasterFormat dropdown
+
+ASSEMBLY CARDS:
+┌─────────────────────────────────────────────────────────────────┐
+│ 🧱 8" CMU Block Wall Assembly                                   │
+│ Division: 04 - Masonry  |  Category: Residential               │
+│ ─────────────────────────────────────────────────────────────── │
+│ Includes: CMU blocks, mortar, rebar, labor                     │
+│ Unit: SF  |  Base Cost: $18.50/SF                              │
+│ ─────────────────────────────────────────────────────────────── │
+│ [Preview]  [Add to Estimate]  [Customize]                       │
+└─────────────────────────────────────────────────────────────────┘
+
+PLAN FEATURE CALLOUT:
+"Professional & Business plans include custom assembly creation"
+[Upgrade to Create Custom Assemblies →]
+
+### TAB 3: TEMPLATES
+
+MY TEMPLATES:
+- Kitchen Renovation Template
+- Bathroom Remodel Template
+- Basement Finishing Template
+- + Create New Template
+
+KEALEE TEMPLATES:
+- Starter templates provided by platform
+
+### TAB 4: HISTORY
+
+ESTIMATE LIST:
+Table with: Project | Created | Status | Total | Actions
+Statuses: Draft | Sent | Accepted | Declined | Expired
+
+OUTPUT: Full estimation interface with all 4 tabs at 1440px
+```
+
+---
+
+## PROMPT 44: Contractor Portal - Team Collaboration
+
+```
+Design the Team Collaboration section for the Contractor Portal.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF, Green #38A169
+
+TAB NAVIGATION:
+┌────────────────────────────────────────────────────────────────┐
+│  👥 Team Members  │  🔧 Subcontractors  │  ✉️ Invitations      │
+└────────────────────────────────────────────────────────────────┘
+
+### TAB 1: TEAM MEMBERS
+
+HEADER:
+- "Your Team" title
+- "Invite Team Member" button (orange)
+- View toggle: Grid | List
+
+PLAN LIMIT INDICATOR:
+┌─────────────────────────────────────────────────────────────────┐
+│ 👥 Team Members: 7 of 10 used (Professional Plan)              │
+│ ████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 70% │
+│ [Upgrade to Business for unlimited team members →]              │
+└─────────────────────────────────────────────────────────────────┘
+
+TEAM MEMBER CARDS:
+┌─────────────────────────────────────────────────────────────────┐
+│ 👤 John Smith                                     [Owner] badge │
+│ john@company.com                                                │
+│ ─────────────────────────────────────────────────────────────── │
+│ Role: Project Manager                                           │
+│ Projects: 5 assigned  |  Last active: Today                    │
+│ ─────────────────────────────────────────────────────────────── │
+│ Permissions: ✓ Projects ✓ Estimates ✓ Bids ✓ Finances          │
+│ ─────────────────────────────────────────────────────────────── │
+│ [Edit Permissions]  [Remove]                                    │
+└─────────────────────────────────────────────────────────────────┘
+
+ROLE BADGES:
+- Owner (sky blue)
+- Admin (teal)
+- Project Manager (green)
+- Estimator (orange)
+- Field Staff (gray)
+
+### TAB 2: SUBCONTRACTORS
+
+HEADER:
+- "Your Subcontractor Network"
+- "Add Subcontractor" button
+- Search bar
+
+SUBCONTRACTOR CARDS:
+┌─────────────────────────────────────────────────────────────────┐
+│ 🔧 ABC Plumbing Services                          ⭐ Preferred  │
+│ Contact: Mike Johnson | (301) 555-0123                         │
+│ ─────────────────────────────────────────────────────────────── │
+│ Specialty: Plumbing | License: MD-PLB-12345                    │
+│ ─────────────────────────────────────────────────────────────── │
+│ Projects Together: 8  |  Rating: ⭐⭐⭐⭐⭐ (5.0)              │
+│ ─────────────────────────────────────────────────────────────── │
+│ Status: ✓ Verified  ✓ Insured  ✓ Licensed                      │
+│ ─────────────────────────────────────────────────────────────── │
+│ [View Profile]  [Invite to Bid]  [Message]                      │
+└─────────────────────────────────────────────────────────────────┘
+
+SUBCONTRACTOR PORTAL ACCESS:
+"Subcontractors can access their own portal to view assigned tasks, submit invoices, and communicate."
+[Send Portal Invite →]
+
+### TAB 3: INVITATIONS
+
+PENDING INVITATIONS:
+Table with: Email | Role | Sent Date | Status | Actions
+Actions: Resend | Cancel
+
+INVITATION MODAL:
+┌─────────────────────────────────────────────────────────────────┐
+│ Invite Team Member                                        [X]   │
+│ ─────────────────────────────────────────────────────────────── │
+│ Email: [_________________________]                              │
+│ Role:  [Project Manager ▼]                                      │
+│                                                                 │
+│ Permissions:                                                    │
+│ ☑ View Projects    ☑ Create Estimates    ☐ Manage Finances    │
+│ ☑ Submit Bids      ☑ View Team           ☐ Admin Settings     │
+│ ─────────────────────────────────────────────────────────────── │
+│ [Cancel]                            [Send Invitation] (orange)  │
+└─────────────────────────────────────────────────────────────────┘
+
+OUTPUT: Full team management interface with all 3 tabs at 1440px
+```
+
+---
+
+## PROMPT 45: Contractor Portal - Scheduling & Gantt
+
+```
+Design the Scheduling section with Gantt chart for the Contractor Portal.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF, Green #38A169
+
+LAYOUT: Full-width scheduling workspace
+
+HEADER:
+┌─────────────────────────────────────────────────────────────────┐
+│ Schedule                                                        │
+│ Project: [All Projects ▼] | View: [Gantt ▼] | [+ Add Task]     │
+└─────────────────────────────────────────────────────────────────┘
+
+VIEW TOGGLES:
+┌────────────────────────────────────────────────────────────────┐
+│  📊 Gantt  │  📅 Calendar  │  📋 List  │  👥 Resources         │
+└────────────────────────────────────────────────────────────────┘
+
+### GANTT VIEW (Primary):
+
+TIMELINE CONTROLS:
+- Zoom: Day | Week | Month | Quarter
+- Date range selector
+- "Today" button
+- Scroll navigation arrows
+
+GANTT CHART:
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Tasks                    │ Jan 27  │ Feb 3   │ Feb 10  │ Feb 17  │ ... │
+├──────────────────────────┼─────────┼─────────┼─────────┼─────────┼─────┤
+│ ▼ Kitchen Renovation     │ ████████████████████████████████████████    │
+│   ├─ Demolition          │ ████░░░░│         │         │         │     │
+│   ├─ Rough Plumbing      │    │████│█████░░░ │         │         │     │
+│   ├─ Rough Electrical    │    │████│█████░░░ │         │         │     │
+│   ├─ Drywall             │         │    │████│█████░░░ │         │     │
+│   ├─ Cabinet Install     │         │         │    │████│█████░░░ │     │
+│   └─ Final Finishes      │         │         │         │    │████│████ │
+├──────────────────────────┼─────────┼─────────┼─────────┼─────────┼─────┤
+│ ▼ Bathroom Remodel       │         │████████████████████████          │
+│   ├─ Demo                │         │████░░░░ │         │         │     │
+│   └─ ...                 │         │         │         │         │     │
+└─────────────────────────────────────────────────────────────────────────┘
+
+GANTT BAR COLORS:
+- On Track: Green
+- At Risk: Orange
+- Delayed: Red
+- Completed: Gray (striped)
+- Milestone: Diamond marker
+
+DEPENDENCY LINES:
+- Show task dependencies with arrows
+- Finish-to-Start (FS) default
+- Dotted line for constraints
+
+### CALENDAR VIEW:
+
+MONTH CALENDAR:
+- Tasks shown as bars across days
+- Color-coded by project
+- Click day to see details
+- Drag to reschedule
+
+### LIST VIEW:
+
+TABLE:
+| Task | Project | Start | End | Duration | Status | Assigned | Progress |
+With sorting and filtering
+
+### RESOURCES VIEW:
+
+RESOURCE ALLOCATION:
+┌─────────────────────────────────────────────────────────────────┐
+│ Resource                 │ Mon │ Tue │ Wed │ Thu │ Fri │ Util% │
+├──────────────────────────┼─────┼─────┼─────┼─────┼─────┼───────┤
+│ John Smith (PM)          │ 8h  │ 8h  │ 4h  │ 8h  │ 6h  │ 85%   │
+│ Mike Johnson (Plumber)   │ 8h  │ 8h  │ 8h  │ 0h  │ 0h  │ 60%   │
+│ ABC Electric (Sub)       │ 0h  │ 0h  │ 8h  │ 8h  │ 8h  │ 60%   │
+└─────────────────────────────────────────────────────────────────┘
+
+Utilization bar: Green (<80%), Orange (80-100%), Red (>100%)
+
+TASK DETAIL SIDEBAR (Click task):
+┌─────────────────────────────────────────────────────────────────┐
+│ Rough Plumbing                                             [X]  │
+│ ─────────────────────────────────────────────────────────────── │
+│ Project: Kitchen Renovation                                     │
+│ Status: [In Progress ▼]                                        │
+│ ─────────────────────────────────────────────────────────────── │
+│ Start: Feb 3, 2026     End: Feb 10, 2026                       │
+│ Duration: 5 days       Progress: 60%                           │
+│ ─────────────────────────────────────────────────────────────── │
+│ Assigned: Mike Johnson, ABC Plumbing                           │
+│ Dependencies: Demolition (FS)                                  │
+│ ─────────────────────────────────────────────────────────────── │
+│ Notes: Waiting on permit inspection...                         │
+│ ─────────────────────────────────────────────────────────────── │
+│ [Edit Task]  [Delete]  [Mark Complete]                          │
+└─────────────────────────────────────────────────────────────────┘
+
+OUTPUT: Full scheduling interface with Gantt at 1440px
+```
+
+---
+
+## PROMPT 46: Contractor Portal - Financial Tracking
+
+```
+Design the Financial Tracking section for the Contractor Portal.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF, Green #38A169
+
+TAB NAVIGATION:
+┌────────────────────────────────────────────────────────────────────┐
+│  📊 Overview  │  🧾 Invoices  │  💰 Payments  │  📈 Reports        │
+└────────────────────────────────────────────────────────────────────┘
+
+### TAB 1: FINANCIAL OVERVIEW
+
+HEADER STATS (4 cards):
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│ Revenue MTD  │ │ Outstanding  │ │ Paid This    │ │ Cash Flow    │
+│ $45,200      │ │ Invoices     │ │ Month        │ │ Projection   │
+│ ↑ 12% vs LM │ │ $28,500      │ │ $32,800      │ │ +$16,700     │
+└──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘
+
+REVENUE CHART:
+- Line chart: Revenue by month (trailing 12 months)
+- Bar overlay: Expenses
+- Toggle: Revenue | Profit | Cash Flow
+
+PROJECT FINANCIALS TABLE:
+┌─────────────────────────────────────────────────────────────────────┐
+│ Project           │ Contract  │ Billed   │ Paid     │ Remaining   │
+├───────────────────┼───────────┼──────────┼──────────┼─────────────┤
+│ Kitchen Reno      │ $52,500   │ $31,500  │ $21,000  │ $21,000     │
+│ Bathroom Remodel  │ $28,000   │ $14,000  │ $14,000  │ $14,000     │
+│ Basement Finish   │ $65,000   │ $19,500  │ $13,000  │ $45,500     │
+└─────────────────────────────────────────────────────────────────────┘
+
+UPCOMING PAYMENTS:
+List of expected incoming payments with dates
+
+### TAB 2: INVOICES
+
+HEADER:
+- "Invoices" title
+- [+ Create Invoice] button (orange)
+- Filter: All | Draft | Sent | Paid | Overdue
+
+INVOICE LIST:
+┌─────────────────────────────────────────────────────────────────────┐
+│ INV-2026-0042                                    SENT - Due Feb 15 │
+│ ─────────────────────────────────────────────────────────────────── │
+│ Client: Sarah Mitchell | Project: Kitchen Renovation               │
+│ Amount: $10,500.00 (Milestone 3: Cabinet Installation)            │
+│ ─────────────────────────────────────────────────────────────────── │
+│ Sent: Jan 28, 2026 | Due: Feb 15, 2026 | Days until due: 10       │
+│ ─────────────────────────────────────────────────────────────────── │
+│ [View] [Send Reminder] [Mark Paid] [Download PDF]                  │
+└─────────────────────────────────────────────────────────────────────┘
+
+INVOICE STATUS BADGES:
+- Draft (gray)
+- Sent (sky blue)
+- Viewed (teal)
+- Paid (green)
+- Overdue (red)
+- Partially Paid (orange)
+
+CREATE INVOICE MODAL:
+┌─────────────────────────────────────────────────────────────────────┐
+│ Create Invoice                                               [X]   │
+│ ─────────────────────────────────────────────────────────────────── │
+│ Project: [Kitchen Renovation ▼]                                    │
+│ Client: Sarah Mitchell (auto-filled)                               │
+│ ─────────────────────────────────────────────────────────────────── │
+│ Invoice Type: ○ Milestone  ○ Progress  ○ Final  ○ Custom          │
+│ ─────────────────────────────────────────────────────────────────── │
+│ Milestone: [Milestone 3: Cabinet Installation ▼]                   │
+│ Amount: $10,500.00 (from contract)                                 │
+│ ─────────────────────────────────────────────────────────────────── │
+│ Due Date: [Feb 15, 2026]                                           │
+│ Notes: [_________________________________________________]        │
+│ ─────────────────────────────────────────────────────────────────── │
+│ Attach: [+ Add Photos] [+ Add Documents]                           │
+│ ─────────────────────────────────────────────────────────────────── │
+│ [Save Draft]                              [Send Invoice] (orange)  │
+└─────────────────────────────────────────────────────────────────────┘
+
+### TAB 3: PAYMENTS
+
+PAYMENT HISTORY:
+Table with: Date | Invoice | Project | Amount | Method | Status
+
+PAYMENT METHODS ON FILE:
+- Bank Account (ACH) - ****4567
+- [+ Add Payment Method]
+
+ESCROW INTEGRATION:
+┌─────────────────────────────────────────────────────────────────────┐
+│ 🛡️ Kealee Escrow Protection                                       │
+│ ─────────────────────────────────────────────────────────────────── │
+│ Funds in Escrow: $21,000.00                                        │
+│ Ready for Release: $10,500.00 (pending milestone approval)        │
+│ ─────────────────────────────────────────────────────────────────── │
+│ Escrow protects both you and your clients. Funds are released     │
+│ when milestones are approved.                                      │
+│ ─────────────────────────────────────────────────────────────────── │
+│ [View Escrow Details →]                                            │
+└─────────────────────────────────────────────────────────────────────┘
+
+### TAB 4: REPORTS
+
+REPORT TYPES:
+- Profit & Loss by Project
+- Revenue by Month
+- Outstanding Receivables Aging
+- Cash Flow Forecast
+- Tax Summary (1099 ready)
+
+REPORT CARD:
+┌─────────────────────────────────────────────────────────────────┐
+│ 📊 Profit & Loss by Project                                     │
+│ See profit margins across all your projects                     │
+│ [Generate Report] [Schedule Monthly]                            │
+└─────────────────────────────────────────────────────────────────┘
+
+PLAN FEATURE CALLOUT:
+"Advanced reporting & analytics available on Business plan"
+[Upgrade for Advanced Reports →]
+
+OUTPUT: Full financial tracking interface with all 4 tabs at 1440px
+```
+
+---
+
+## PROMPT 47: À La Carte Services Page (Homeowner & Contractor)
+
+```
+Design the À La Carte Services page showing individual purchasable services.
+
+BRAND: Sky Blue #4A90D9, Orange #E8793A, Teal #2ABFBF, Green #38A169
+
+PURPOSE: Display individual services that can be purchased without a subscription
+AVAILABLE TO: Homeowners and Contractors
+
+HEADER:
+- "Services & Pricing" title
+- "These services are available individually or included with your subscription"
+- Current plan badge (if logged in): "Professional Plan - 20% discount applied"
+
+CATEGORY TABS:
+┌────────────────────────────────────────────────────────────────────────┐
+│  All  │  📋 Project Controls  │  📐 Estimation  │  📄 Permits  │  💰 Finance │
+└────────────────────────────────────────────────────────────────────────┘
+
+### PROJECT CONTROLS SERVICES:
+
+SERVICE CARDS (Grid 3-across):
+┌─────────────────────────────────────────┐
+│ 📋 Site Analysis Report                 │
+│ ─────────────────────────────────────── │
+│ Comprehensive site assessment           │
+│ documenting existing conditions,        │
+│ constraints, and opportunities.         │
+│ ─────────────────────────────────────── │
+│ $125                                    │
+│ Turnaround: 2-3 business days          │
+│ ─────────────────────────────────────── │
+│ [Add to Cart] (orange)                  │
+└─────────────────────────────────────────┘
+
+PROJECT CONTROLS GRID:
+| Service | Price | Turnaround |
+|---------|-------|------------|
+| Site Analysis Report | $125 | 2-3 days |
+| Scope of Work Development | $195 | 3-5 days |
+| Permit Requirements Research | $95 | 1-2 days |
+| Contractor Vetting & Verification | $175 | 3-5 days |
+| Bid Leveling & Analysis | $245 | 2-3 days |
+| Construction Contract Review | $295 | 3-5 days |
+| Draw Request Review | $145 | 1-2 days |
+| Punch List Development | $225 | 2-3 days |
+| Project Closeout Review | $175 | 2-3 days |
+| Warranty Claim Assistance | $150 | Ongoing |
+| Permit Application Preparation | $295 | 3-5 days |
+
+### ESTIMATION SERVICES:
+
+PRICING TIERS (Featured cards):
+┌───────────────────┬───────────────────┬───────────────────┬───────────────────┐
+│ BASIC             │ STANDARD ★        │ PREMIUM           │ ENTERPRISE        │
+│ $299              │ $799              │ $1,999            │ $4,999            │
+├───────────────────┼───────────────────┼───────────────────┼───────────────────┤
+│ 24-hour turnaround│ 48-hour turnaround│ 3-5 business days │ 5-7 business days │
+├───────────────────┼───────────────────┼───────────────────┼───────────────────┤
+│ Projects <$50K    │ Projects <$250K   │ Projects <$1M     │ Projects $1M+     │
+├───────────────────┼───────────────────┼───────────────────┼───────────────────┤
+│ ✓ Labor breakdown │ ✓ Everything in   │ ✓ Everything in   │ ✓ Everything in   │
+│ ✓ Material takeoff│   Basic, plus:    │   Standard, plus: │   Premium, plus:  │
+│ ✓ Basic timeline  │ ✓ Supplier quotes │ ✓ Value engineer  │ ✓ Multi-phase     │
+│ ✓ PDF report      │ ✓ Profit analysis │ ✓ Risk assessment │ ✓ Dedicated PM    │
+│                   │ ✓ Excel breakdown │ ✓ Schedule integ  │ ✓ Ongoing support │
+├───────────────────┼───────────────────┼───────────────────┼───────────────────┤
+│ [Request Estimate]│ [Request Estimate]│ [Request Estimate]│ [Contact Sales]   │
+└───────────────────┴───────────────────┴───────────────────┴───────────────────┘
+
+### PERMIT SERVICES:
+
+PERMIT PACKAGES:
+| Package | Price | Includes |
+|---------|-------|----------|
+| Permit Research | $95 | Requirements research only |
+| Permit Preparation | $295 | Application preparation |
+| Full Permit Service | $495-$2,995 | End-to-end handling |
+
+### VOLUME DISCOUNTS:
+
+DISCOUNT TABLE:
+┌─────────────────────────────────────────────────────────────────┐
+│ 💰 Volume Discounts                                             │
+│ ─────────────────────────────────────────────────────────────── │
+│ 3+ services:  5% off    │ Professional Plan: 10% off           │
+│ 5+ services: 10% off    │ Business Plan: 15% off               │
+│ 10+ services: 15% off   │ Enterprise Plan: 20% off             │
+└─────────────────────────────────────────────────────────────────┘
+
+### CART SIDEBAR (Sticky):
+
+┌─────────────────────────────────────────┐
+│ 🛒 Your Cart (3 items)                  │
+│ ─────────────────────────────────────── │
+│ Site Analysis Report         $125       │
+│ Standard Estimate            $799       │
+│ Permit Preparation           $295       │
+│ ─────────────────────────────────────── │
+│ Subtotal:                  $1,219       │
+│ Pro Plan Discount (10%):   -$122        │
+│ ─────────────────────────────────────── │
+│ Total:                     $1,097       │
+│ ─────────────────────────────────────── │
+│ [Checkout] (orange, full-width)         │
+└─────────────────────────────────────────┘
+
+OUTPUT: Full à la carte services page at 1440px with cart sidebar
+```
+
+---
+
 *Generated for Kealee Platform v10 - February 2026*
-*Includes 3-Portal Architecture, Full Service Integration, and Complete Logo System*
+*Includes 3-Portal Architecture, Full Service Integration, Contractor Dashboard, and Complete Logo System*
