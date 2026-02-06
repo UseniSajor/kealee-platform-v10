@@ -382,11 +382,10 @@ export const leadsService = {
         }
       }
 
-      // Calculate performance metrics
-      // Note: These fields don't exist in schema yet, so we'll use calculated values
-      const verified = profile.user.status === 'ACTIVE' // Placeholder: use user status as proxy
-      const performanceScore = null // TODO: Calculate from project performance
-      const rating = null // TODO: Calculate from satisfaction surveys
+      // Calculate performance metrics from actual data
+      const verified = profile.user.status === 'ACTIVE'
+      const performanceScore = profile.performanceScore ? Number(profile.performanceScore) : null
+      const rating = profile.rating ? Number(profile.rating) : null
 
       candidates.push({
         profileId: profile.id,
@@ -405,40 +404,73 @@ export const leadsService = {
       })
     }
 
-    // Sort candidates by selection criteria:
-    // 1. verified (desc)
-    // 2. lastWonAt (asc, nulls first - front of queue)
-    // 3. performanceScore (desc)
-    // 4. rating (desc)
-    // 5. projectsCompleted (desc)
-    candidates.sort((a, b) => {
-      // 1. Verified first
-      if (a.verified !== b.verified) {
-        return a.verified ? -1 : 1
+    // SOP v2 Section 6.2 - Weighted Bid Scoring Algorithm
+    // Weights: Price 30%, Timeline 20%, Rating 20%, Performance 15%, Availability 10%, Response 5%
+    // Fair rotation: within equal scores, prioritize least-recently-won
+    const BID_SCORE_WEIGHTS = {
+      PRICE_VS_SRP: 0.30,
+      TIMELINE: 0.20,
+      RATING: 0.20,
+      PAST_PERFORMANCE: 0.15,
+      AVAILABILITY: 0.10,
+      RESPONSE_QUALITY: 0.05,
+    }
+
+    // Calculate composite score for each candidate
+    for (const candidate of candidates) {
+      let score = 0
+
+      // Rating (0-5 scale, normalized to 0-100)
+      if (candidate.rating !== null) {
+        score += (candidate.rating / 5) * 100 * BID_SCORE_WEIGHTS.RATING
+      } else {
+        score += 50 * BID_SCORE_WEIGHTS.RATING // Default 50% for unrated
       }
 
-      // 2. Fair Rotation: Last won at (asc, nulls first)
+      // Past Performance (0-100 scale)
+      if (candidate.performanceScore !== null) {
+        score += candidate.performanceScore * BID_SCORE_WEIGHTS.PAST_PERFORMANCE
+      } else {
+        score += 50 * BID_SCORE_WEIGHTS.PAST_PERFORMANCE
+      }
+
+      // Availability (based on pipeline capacity remaining)
+      const maxPipeline = Number(candidate.maxPipelineValue) || 1000000
+      const pipelineUsed = Number(candidate.currentPipelineValue) || 0
+      const availabilityScore = Math.max(0, (1 - pipelineUsed / maxPipeline)) * 100
+      score += availabilityScore * BID_SCORE_WEIGHTS.AVAILABILITY
+
+      // Response Quality (based on verified status + projects completed)
+      const responseScore = (candidate.verified ? 60 : 20) +
+        Math.min(40, candidate.projectsCompleted * 4) // Up to 40 bonus for completed projects
+      score += responseScore * BID_SCORE_WEIGHTS.RESPONSE_QUALITY
+
+      // Price and Timeline scores applied during quote comparison (not at lead distribution)
+      // At distribution stage, give base scores for these weights
+      score += 70 * BID_SCORE_WEIGHTS.PRICE_VS_SRP
+      score += 70 * BID_SCORE_WEIGHTS.TIMELINE
+
+      ;(candidate as any).compositeScore = Math.round(score * 100) / 100
+    }
+
+    // Sort by composite score (desc), then fair rotation for tiebreakers
+    candidates.sort((a, b) => {
+      const scoreA = (a as any).compositeScore || 0
+      const scoreB = (b as any).compositeScore || 0
+
+      // Primary: Composite score (higher is better)
+      if (Math.abs(scoreA - scoreB) > 1) {
+        return scoreB - scoreA
+      }
+
+      // Tiebreaker: Fair Rotation - least recently won first
       if (a.lastWonAt !== b.lastWonAt) {
         if (!a.lastWonAt) return -1
         if (!b.lastWonAt) return 1
         return a.lastWonAt.getTime() - b.lastWonAt.getTime()
       }
 
-      // 3. Performance score
-      if (a.performanceScore !== b.performanceScore) {
-        if (a.performanceScore === null) return 1
-        if (b.performanceScore === null) return -1
-        return b.performanceScore - a.performanceScore
-      }
-
-      // 4. Rating
-      if (a.rating !== b.rating) {
-        if (a.rating === null) return 1
-        if (b.rating === null) return -1
-        return b.rating - a.rating
-      }
-
-      // 5. Projects completed
+      // Final tiebreaker: Projects completed
       return b.projectsCompleted - a.projectsCompleted
     })
 

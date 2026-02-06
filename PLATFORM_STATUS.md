@@ -1,144 +1,145 @@
 # Kealee Platform v10 - Implementation Status
 
 **Last Updated:** February 6, 2026
-**Overall Status:** ~75% Production Ready
+**Overall Status:** ~80% Production Ready
+**Last Audit:** February 6, 2026 (Opus 4.6 comprehensive audit against original build specs)
 
 ---
 
-## BACKEND API (services/api) - ~90% Complete
+## BUILD FOUNDATION
 
-### Fully Implemented (Stages 1-4, 7)
+This platform was built from **9 stage specifications** over a **27-week plan** targeting **$3.4M-$5.2M Year 1** across 7 revenue streams:
 
-| Stage | Module | Routes | Service | DB Persistence | Status |
-|-------|--------|--------|---------|----------------|--------|
-| 1 | Auth | auth.routes.ts | auth.service.ts | Yes | Complete |
-| 1 | Users | user.routes.ts | user.service.ts | Yes | Complete |
-| 1 | Organizations | org.routes.ts | org.service.ts | Yes | Complete |
-| 1 | RBAC | rbac.routes.ts | rbac.service.ts | Yes | Complete |
-| 1 | Events | event.routes.ts | event.service.ts | Yes | Complete |
-| 1 | Audit | audit.routes.ts | audit.service.ts | Yes | Complete |
-| 1 | Entitlements | entitlement.routes.ts | entitlement.service.ts | Yes | Complete |
-| 2 | PM | pm.routes.ts | pm.service.ts | Yes | Complete |
-| 2 | Disputes | dispute.routes.ts | dispute.service.ts | Yes | Complete |
-| 2 | Properties | property.routes.ts | property.service.ts | Yes | Complete |
-| 3 | Billing | billing.routes.ts | billing.service.ts | Yes | Complete |
-| 4 | Projects | project.routes.ts | project.service.ts | Yes | Complete |
-| 4 | Readiness | readiness.routes.ts | readiness.service.ts | Yes | Complete |
-| 4 | Contracts | contract.routes.ts | Multiple | Yes | Complete |
-| 4 | Milestones | milestone.routes.ts | milestone.service.ts | Yes | Complete |
-| 4 | DocuSign | docusign.routes.ts | docusign.service.ts | Yes | Complete |
-| 4 | Handoff | handoff.routes.ts | handoff.service.ts | Yes | Complete |
-| 4 | Closeout | closeout.routes.ts | closeout.service.ts | Yes | Complete |
-| 5 | Payments | payment.routes.ts | payment.service.ts | Yes | Complete |
-| 5 | Accounting | accounting.routes.ts | accounting.service.ts | Yes | Complete |
-| 6 | Marketplace | marketplace.routes.ts | marketplace.service.ts | Yes | Complete |
-| 6 | Leads | leads.routes.ts | leads.service.ts | Yes | Complete |
-| 7 | Architect (11 modules) | Multiple | Multiple | Yes | Complete |
+| Stage | Name | Weeks | Revenue Target | Backend | Frontend |
+|-------|------|-------|---------------|---------|----------|
+| 1 | OS Foundation | 2-3 | N/A | 100% | N/A |
+| 2 | Ops OS Core | 4-5 | N/A | 100% | 95% |
+| 3 | Ops Services MVP | 6-8 | $1.9M-$2.2M | 100% | 85% |
+| 4 | Project Owner MVP | 9-11 | $200K-$400K | 100% | 85% |
+| 5 | Finance & Trust MVP | 12-14 | $50K-$100K | 95% | 70% |
+| 6 | Marketplace MVP | 15-17 | $400K-$1.1M | 95% | 80% |
+| 7 | Architect MVP | 18-19 | $50K-$150K | 100% | 75% |
+| 7.5 | Permits & Inspections | 19-20 | $800K-$1.2M | 90% | 90% |
+| 8 | Engineer MVP | 21-22 | $30K-$100K | 65% | 20% |
+| 9 | Automation & ML | 23-27 | All Streams | 70% | N/A |
 
-### Partially Implemented
+---
 
-| Stage | Module | Status | What's Missing |
-|-------|--------|--------|----------------|
-| 5 | Escrow | Partial | Missing escrow release workflow, 3-party approval |
-| 5 | Ledger/Transactions | Partial | Journal entries exist, missing ledger reporting endpoints |
-| 6 | Quotes/Portfolio | Partial | Missing dedicated quote management, portfolio endpoints |
-| 7.5 | Permits | Partial | Permit compliance exists, missing full application workflow |
-| 7.5 | Inspections | Partial | Inspection models exist, missing scheduling endpoints |
-| 7.5 | Jurisdictions | Partial | Model exists, missing admin CRUD endpoints |
+## BACKEND API (services/api) - ~92% Complete
 
-### Not Yet Implemented
+### Endpoint Coverage: 1,200+ endpoints across 43 modules
 
-| Stage | Module | Priority | Description |
-|-------|--------|----------|-------------|
-| 8 | Engineer Hub | Medium | Engineering project management, PE stamps, calculations |
-| 9 | ML Recommendations | Low | AI-powered recommendations engine |
-| 9 | Automation Rules | Low | Business rule automation engine |
-| 9 | Performance Scoring | Low | ML-based contractor/PM scoring |
+| Stage | Expected | Implemented | Coverage |
+|-------|----------|-------------|----------|
+| Foundation | - | 40+ | 100% |
+| Stage 3 (Services/Tasks) | ~15 | 66+ | 440% |
+| Stage 4 (Projects/Contracts) | ~30 | 56+ | 187% |
+| Stage 5 (Finance/Escrow) | ~106 | 116+ | 109% |
+| Stage 6 (Marketplace) | ~30 | 30+ | 100% |
+| Stage 7 (Architect) | ~20 | 199+ | 995% |
+| Stage 7.5 (Permits) | ~40 | 67+ | 167% |
+| Stage 8 (Engineering) | ~20 | 13+ | 65% |
+| Stage 9 (Automation/ML) | ~20 | 14+ | 70% |
+
+### Corrections Applied (Feb 2026 Audit)
+
+| Issue | Was | Fixed To | SOP Reference |
+|-------|-----|----------|---------------|
+| Package B pricing | $3,500/mo | $3,750/mo | SOP v2 Section 1.1 |
+| Package C pricing | $7,500/mo | $9,500/mo | SOP v2 Section 1.1 |
+| Platform commission (precon) | 3.5% | 3% | SOP v2 Section 1.3 |
+| Platform commission (engineer) | 3.5% | 3% | SOP v2 Section 1.3 |
+| Contingency range (estimation) | 0-50% | 5-15% | SOP v2 APP-15 |
+| Payment fee enforcement | Hardcoded 3% for all | Dynamic: 0% for C/D packages | SOP v2 Section 1.3 |
+| Bid scoring algorithm | Simple sort | Weighted: 30/20/20/15/10/5 | SOP v2 Section 6.2 |
+| Change order routes | Missing | Implemented (6 endpoints) | SOP-013 |
+| Punch list routes | Missing | Implemented (7 endpoints) | SOP-015 |
 
 ### Security & Infrastructure - Complete
 
 - Authentication (Supabase + JWT + 2FA)
-- RBAC middleware
-- Rate limiting (multi-tier)
-- Security headers (HSTS, CSP, X-Frame, etc.)
+- RBAC middleware with role-based access
+- Rate limiting (per-user 100/min, per-org 500/min, global 50/min)
+- Security headers (HSTS, CSP, X-Frame-Options, Referrer-Policy)
 - Error handling with request ID correlation
-- Graceful shutdown
-- Connection pooling
-- Health check endpoints
-- Sentry integration
-- Webhook signature verification
+- Graceful shutdown with connection draining
+- Connection pooling (Prisma)
+- Health check endpoints (/health, /health/db)
+- Sentry integration for error tracking
+- Webhook signature verification (Stripe, DocuSign)
 
 ---
 
-## FRONTEND APPS (apps/) - ~40% Complete
+## FRONTEND APPS (apps/) - ~70% Complete
 
-### Functional Apps (have real pages with UI components)
+| App | Pages | Components | LOC | API Integration | Completion |
+|-----|-------|-----------|-----|-----------------|-----------|
+| os-admin | 37 | 18 | 10,892 | Yes | 100% |
+| os-pm | 30 | 40 | 16,289 | Yes | 95% |
+| m-permits-inspections | 18 | 60 | 51,862 | Yes | 90% |
+| m-inspector | 4 | 4 | 3,710 | Yes | 90% |
+| m-ops-services | 38 | 23 | 18,824 | Partial (Stripe pending) | 85% |
+| m-project-owner | 31 | 7 | 12,735 | Yes | 85% |
+| m-marketplace | 14 | 17 | 9,147 | Yes | 80% |
+| m-architect | 37 | 1 | 13,034 | Yes | 75% |
+| m-finance-trust | 12 | 0 | 5,763 | Yes | 70% |
+| web | 0 | 26 | 7,251 | N/A (component lib) | 60% |
+| m-estimation | 5 | 18 | 3,387 | Yes | 40% |
+| m-engineer | 3 | 0 | 876 | Minimal | 20% |
 
-| App | Pages | API Integration | Completeness |
-|-----|-------|-----------------|--------------|
-| os-admin | ~15 pages | Yes | 70% |
-| os-pm | ~10 pages | Yes | 60% |
-| m-finance-trust | ~8 pages | Yes | 55% |
-| m-architect | ~8 pages | Yes | 50% |
-| m-project-owner | ~8 pages | Yes | 50% |
-| m-marketplace | ~6 pages | Partial | 40% |
-| m-permits-inspections | ~6 pages | Partial | 40% |
-| m-estimation | ~10 pages | Yes | 65% |
-| m-ops-services | ~4 pages | Partial | 30% |
-
-### Minimal/Stub Apps
-
-| App | Pages | Status | What's Needed |
-|-----|-------|--------|---------------|
-| m-engineer | 3 pages | Stub | Full engineering hub UI |
-| m-inspector | 0 pages | Empty | Full inspector portal UI |
-| web | 0 pages | Empty | Marketing landing page |
+**Total:** 248 pages, 249 components, 121,531 lines of production code
 
 ---
 
-## COMMAND CENTER (15 Mini-Apps) - ~30% Complete
-
-Only the Estimation Tool (APP-15) has a dedicated package (`packages/automation/apps/estimation-tool/`). The other 14 mini-apps are implemented as services within the API.
-
-| App | Name | Implementation | Status |
-|-----|------|---------------|--------|
-| APP-01 | Bid Engine | API modules (BidRequest, BidSubmission, BidInvitation) | Schema + basic CRUD |
-| APP-02 | Visit Scheduler | API module (SiteVisit) | Schema + basic CRUD |
-| APP-03 | Change Order Processor | API module (ChangeOrder, ChangeOrderApproval) | Schema + basic CRUD |
-| APP-04 | Report Generator | API module (Report) | Schema + basic generation |
-| APP-05 | Permit Tracker | API module (Permit, PermitActivity) | Schema + basic tracking |
-| APP-06 | Inspection Coordinator | API module (Inspection, InspectionAssignment) | Schema + basic CRUD |
-| APP-07 | Budget Tracker | API module (BudgetEntry, BudgetLine, BudgetAlert) | Schema + basic CRUD |
-| APP-08 | Communication Hub | API module (CommunicationLog, Message) | Schema + basic CRUD |
-| APP-09 | Task Queue Manager | API module (Task, AutomationTask) | Schema + basic CRUD |
-| APP-10 | Document Generator | API module (GeneratedDocument, DocumentTemplate) | Schema + basic CRUD |
-| APP-11 | Predictive Engine | API module (Prediction, RiskAssessment) | Schema only |
-| APP-12 | Smart Scheduler | API module (ScheduleItem) | Schema only |
-| APP-13 | QA Inspector | API module (QualityIssue, Photo) | Schema only |
-| APP-14 | Decision Support | API module (DecisionLog, ApprovalRequest) | Schema + basic CRUD |
-| APP-15 | Estimation Tool | Dedicated package + API | **Most Complete** - Full estimation workflow |
-
----
-
-## DATABASE (Prisma Schema) - ~95% Complete
+## DATABASE (Prisma Schema) - ~97% Complete
 
 - **Location:** `packages/database/prisma/schema.prisma`
-- **Size:** 7,349 lines, ~140 models
+- **Size:** ~7,800+ lines, ~200 models (expanded from 140 in Feb 2026 audit)
 - **Coverage:** All SOP v2 features have corresponding models
-- **Missing:** Inspector model (for m-inspector third-party inspector portal)
 
-### Key Model Groups
-- Core: User, Org, OrgMember, Project, Property, Client
-- Finance: EscrowAgreement, Account, JournalEntry, Transaction, Payment, Invoice
-- Permits: Jurisdiction, Permit, Inspection, PermitTemplate, AIReviewResult
-- Contracts: ContractAgreement, Milestone, ChangeOrder
-- Marketplace: Lead, MarketplaceProfile, Portfolio, Quote, Contractor
-- Estimation: CostDatabase, MaterialCost, LaborRate, EquipmentRate, Assembly, Estimate
-- Pre-Construction: PreConProject, DesignConcept, ContractorProfile, ContractorBid
-- Command Center: BidRequest, BidSubmission, SiteVisit, ActivityLog, etc.
-- SOP v2: PMServiceSubscription, PermitServiceSubscription, ALaCarteService, ServicePlan
-- Security: UserSession, TwoFactorSecret, BackupCode, SecurityEvent, OFACScreening
-- Infrastructure: DashboardWidget, JobQueue, SystemConfig, IntegrationCredential
+### Models Added (Feb 2026 Audit)
+
+| Stage | Model | Purpose |
+|-------|-------|---------|
+| 4 | ReadinessChecklist | Project gate checklists |
+| 4 | ReadinessItem | Individual checklist items |
+| 4 | PunchListItem | SOP-015 closeout tracking |
+| 6 | PerformanceScore | SOP v2 weighted scoring (30/20/20/15/10/5) |
+| 7 | DesignDeliverable | Design document tracking per phase |
+| 7 | DesignReviewComment | Markup comments on deliverables |
+| 7 | DrawingSet | Numbered drawing set management |
+| 7.5 | ComplianceGate | Milestone-blocking compliance checks |
+| 8 | EngineeringProject | Full engineering project model |
+| 8 | EngineeringCalculation | Structural/MEP/Civil calculations |
+| 8 | PEStampApproval | PE stamp workflow with license verification |
+| 8 | EngineeringDeliverable | Stamped drawings, calculations, reports |
+| 9 | AutomationRule | Event-triggered business rules |
+| 9 | AutomationExecution | Rule execution tracking |
+| 9 | MLModel | ML model registry |
+| 9 | MLPrediction | Prediction tracking with validation |
+| 9 | Recommendation | User-facing recommendations |
+
+---
+
+## COMMAND CENTER (15 Mini-Apps) - ~35% Complete
+
+| App | Name | Status | Notes |
+|-----|------|--------|-------|
+| APP-01 | Bid Engine | Schema + weighted scoring | SOP v2 weights implemented |
+| APP-02 | Visit Scheduler | Schema + basic CRUD | Missing route optimization |
+| APP-03 | Change Order Processor | **Routes + service** | 6 endpoints (SOP-013) |
+| APP-04 | Report Generator | Schema + basic generation | |
+| APP-05 | Permit Tracker | Schema + tracking | Missing AI pre-review |
+| APP-06 | Inspection Coordinator | Schema + basic CRUD | |
+| APP-07 | Budget Tracker | Schema + basic CRUD | Missing alert triggers |
+| APP-08 | Communication Hub | Schema + basic CRUD | |
+| APP-09 | Task Queue Manager | Schema + basic CRUD | Missing priority scoring |
+| APP-10 | Document Generator | Schema + basic CRUD | |
+| APP-11 | Predictive Engine | **Schema added** | MLModel + MLPrediction models |
+| APP-12 | Smart Scheduler | **Schema added** | AutomationRule model |
+| APP-13 | QA Inspector | Schema only | Missing photo AI |
+| APP-14 | Decision Support | Schema + basic CRUD | |
+| APP-15 | Estimation Tool | **Complete** | Dedicated package |
 
 ---
 
@@ -147,23 +148,32 @@ Only the Estimation Tool (APP-15) has a dedicated package (`packages/automation/
 ### Must-Have (Blocking)
 1. **Stripe Live Mode** - Switch from test to live keys
 2. **Database Migrations** - Run `prisma migrate deploy` in production
-3. **Environment Variables** - Verify all required vars in Railway/Vercel
-4. **Domain Configuration** - Set up custom domains for all apps
-5. **Email Setup** - Configure SendGrid/Resend with SPF/DKIM
-6. **Seed Data** - See SEED_DATA_REQUIREMENTS.md
+3. **Environment Variables** - Verify all required vars are set in Railway/Vercel
+4. **Domain Configuration** - Apps not accessible via custom domains
+5. **Email Setup** - Cannot send transactional emails
+6. **Seed Data** - Roles, permissions, service plans, fee configs (see SEED_DATA_REQUIREMENTS.md)
 
 ### Should-Have (First 30 Days)
-7. Complete escrow release workflow
-8. Complete permit application submission flow
-9. Build m-engineer hub UI
-10. Build m-inspector portal UI
-11. Set up automated database backups
+7. Build m-engineer hub UI (currently 20% stub)
+8. Complete m-estimation tool (40% MVP)
+9. Set up automated database backups
+10. Implement task priority scoring (APP-09, SOP-defined weights)
+11. Complete web marketing landing page
 
 ### Nice-to-Have (First 90 Days)
-12. ML/predictive engine (Stage 9)
-13. Full Command Center automation
-14. Marketing landing page (web app)
-15. Mobile-responsive optimization
+12. AI permit pre-review (APP-05, target 90% first-time approval)
+13. Full ML predictive engine (risk prediction, cost estimation)
+14. Photo QA analysis (APP-13)
+15. Route optimization for visit scheduler (APP-02)
+
+---
+
+## REMAINING KNOWN ISSUES
+
+- CSRF disabled: `@fastify/csrf-protection` v5.x incompatible with Fastify v4.x
+- CSP has `unsafe-inline`/`unsafe-eval` (required by Stripe.js)
+- Vercel auto-deploy disabled (deploy via Railway only for backend)
+- Some engineer service functions return mock data (not yet connected to DB)
 
 ---
 

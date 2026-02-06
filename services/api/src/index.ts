@@ -258,6 +258,8 @@ import { taskGeneratorRoutes } from './modules/tasks/task-generator.routes'
 import { complianceCheckpointRoutes } from './modules/compliance/compliance-checkpoint.routes'
 import { complianceGatesRoutes } from './modules/compliance/compliance-gates.routes'
 import { stripeWebhookRoutes } from './routes/stripe-webhook.routes'
+import { changeOrderRoutes } from './modules/change-orders/change-order.routes'
+import { punchListRoutes } from './modules/punch-list/punch-list.routes'
 import testRoutes from './routes/test.routes'
 // import { createGraphQLServer } from './graphql/server' // DISABLED: GraphQL not critical for MVP
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware'
@@ -450,6 +452,8 @@ const start = async () => {
     // Note: disputeRoutes already registered above at '/disputes'
     await fastify.register(permitComplianceRoutes, { prefix: '/permits' })
     await fastify.register(closeoutRoutes, { prefix: '/closeout' })
+    await fastify.register(changeOrderRoutes, { prefix: '/change-orders' })
+    await fastify.register(punchListRoutes, { prefix: '/punch-list' })
     await fastify.register(handoffRoutes, { prefix: '/handoff' })
     await fastify.register(docusignRoutes, { prefix: '/docusign' })
     await fastify.register(designProjectRoutes, { prefix: '/architect' })

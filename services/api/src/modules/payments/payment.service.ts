@@ -5,7 +5,41 @@ import { milestonePaymentService } from './milestone-payment.service'
 // Prisma types available through prismaAny
 
 const DEFAULT_HOLDBACK_PERCENTAGE = 10 // 10% holdback
-const PLATFORM_FEE_PERCENTAGE = 0.03 // 3% platform fee
+const DEFAULT_PLATFORM_FEE_PERCENTAGE = 0.03 // 3% standard platform fee (SOP v2 Section 1.3)
+const PACKAGE_CD_FEE_PERCENTAGE = 0 // 0% for Package C/D subscribers (SOP v2 Section 1.3)
+
+/**
+ * Get platform fee percentage based on contractor's package tier.
+ * Package C/D subscribers pay 0% marketplace fee per SOP v2.
+ */
+async function getPlatformFeeRate(contractorId: string): Promise<number> {
+  try {
+    // Check if contractor has an active C or D package subscription
+    const subscription = await prismaAny.pMServiceSubscription.findFirst({
+      where: {
+        userId: contractorId,
+        status: 'ACTIVE',
+        packageTier: { in: ['PACKAGE_C', 'PACKAGE_D'] },
+      },
+    })
+
+    if (subscription) {
+      return PACKAGE_CD_FEE_PERCENTAGE // 0% for C/D packages
+    }
+
+    // Try MarketplaceFeeConfig for the current active config
+    const feeConfig = await prismaAny.marketplaceFeeConfig.findFirst({
+      where: { isActive: true },
+      orderBy: { effectiveFrom: 'desc' },
+    })
+
+    return feeConfig
+      ? Number(feeConfig.standardPlatformFee)
+      : DEFAULT_PLATFORM_FEE_PERCENTAGE
+  } catch {
+    return DEFAULT_PLATFORM_FEE_PERCENTAGE
+  }
+}
 
 export const paymentService = {
   /**
@@ -704,8 +738,9 @@ export const paymentService = {
     try {
       const stripe = getStripe()
 
-      // Calculate 3% platform fee
-      const platformFee = Math.round(releaseAmount * PLATFORM_FEE_PERCENTAGE * 100) / 100
+      // Calculate platform fee based on contractor's package tier (0% for C/D, 3% standard)
+      const feeRate = await getPlatformFeeRate(milestone.contract.contractorId)
+      const platformFee = Math.round(releaseAmount * feeRate * 100) / 100
       const contractorPayout = Math.round((releaseAmount - platformFee) * 100) / 100
 
       // Get contractor's Stripe account ID
@@ -718,7 +753,7 @@ export const paymentService = {
         throw new ValidationError('Contractor does not have a Stripe account connected')
       }
 
-      // Create Stripe transfer to contractor (97% of milestone amount)
+      // Create Stripe transfer to contractor (minus platform fee, 0% for C/D packages)
       const transfer = await stripe.transfers.create({
         amount: Math.round(contractorPayout * 100), // Convert to cents
         currency: 'usd',

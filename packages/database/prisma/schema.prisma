@@ -1524,6 +1524,13 @@ model Project {
   // Project Phase tracking
   phases ProjectPhase[]
 
+  // Stage 4: Readiness & Punch List
+  readinessChecklists ReadinessChecklist[]
+  punchListItems      PunchListItem[]
+
+  // Stage 7.5: Compliance Gates
+  complianceGates ComplianceGate[]
+
   @@index([clientId])
   @@index([orgId])
   @@index([propertyId])
@@ -1819,6 +1826,15 @@ model User {
   // Command Center Infrastructure relations
   dashboardWidgets DashboardWidget[]
   aiConversations  AIConversation[]
+
+  // Stage 6: Performance Scoring
+  performanceScore PerformanceScore? @relation
+
+  // Stage 8: Engineering Hub
+  engineeringProjects EngineeringProject[]
+
+  // Stage 9: Automation & ML
+  recommendations Recommendation[]
 }
 
 // ============================================================================
@@ -7346,4 +7362,573 @@ model RolePermission {
 
   @@unique([roleKey, permissionKey])
   @@map("role_permissions")
+}
+
+// ============================================================================
+// STAGE 4: PROJECT READINESS GATES
+// ============================================================================
+
+model ReadinessChecklist {
+  id        String @id @default(uuid())
+  projectId String
+  name      String
+  category  String // PRE_CONTRACT, PRE_CONSTRUCTION, PRE_CLOSEOUT
+
+  isComplete Boolean @default(false)
+  completedAt DateTime?
+  completedBy String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  items   ReadinessItem[]
+
+  @@index([projectId])
+  @@index([category])
+  @@map("readiness_checklists")
+}
+
+model ReadinessItem {
+  id          String  @id @default(uuid())
+  checklistId String
+  label       String
+  description String?
+  itemType    ReadinessItemType @default(CHECKBOX)
+
+  isRequired  Boolean @default(true)
+  isComplete  Boolean @default(false)
+  completedAt DateTime?
+  completedBy String?
+  response    String?   // For Q&A type items
+  documentUrl String?   // For document upload type items
+  verifiedAt  DateTime? // For external verification type items
+  sortOrder   Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  checklist ReadinessChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+
+  @@index([checklistId])
+  @@map("readiness_items")
+}
+
+enum ReadinessItemType {
+  CHECKBOX
+  DOCUMENT_UPLOAD
+  QA_RESPONSE
+  DATE_CONFIRMATION
+  EXTERNAL_VERIFICATION
+  SIGNATURE
+}
+
+// ============================================================================
+// STAGE 4: PUNCH LIST (SOP-015)
+// ============================================================================
+
+model PunchListItem {
+  id        String @id @default(uuid())
+  projectId String
+  milestoneId String?
+
+  title       String
+  description String?
+  category    String?  // STRUCTURAL, FINISH, MEP, EXTERIOR, etc.
+  location    String?  // Room/area description
+  priority    PunchListPriority @default(NORMAL)
+  status      PunchListStatus   @default(OPEN)
+
+  photoUrls     String[]
+  assignedTo    String?
+  dueDate       DateTime?
+  completedAt   DateTime?
+  verifiedAt    DateTime?
+  verifiedBy    String?
+  rejectionNote String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([status])
+  @@map("punch_list_items")
+}
+
+enum PunchListPriority {
+  LOW
+  NORMAL
+  HIGH
+  CRITICAL
+}
+
+enum PunchListStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  VERIFIED
+  REJECTED
+}
+
+// ============================================================================
+// STAGE 6: MARKETPLACE PERFORMANCE SCORING
+// ============================================================================
+
+model PerformanceScore {
+  id            String @id @default(uuid())
+  contractorId  String
+  profileId     String?
+
+  // SOP v2 Section 6.2 scoring weights
+  priceVsSRP       Decimal? @db.Decimal(5, 2) // 30% weight
+  timelineScore    Decimal? @db.Decimal(5, 2) // 20% weight
+  contractorRating Decimal? @db.Decimal(5, 2) // 20% weight
+  pastPerformance  Decimal? @db.Decimal(5, 2) // 15% weight
+  availability     Decimal? @db.Decimal(5, 2) // 10% weight
+  responseQuality  Decimal? @db.Decimal(5, 2) // 5% weight
+
+  compositeScore Decimal? @db.Decimal(5, 2) // Weighted composite
+  projectsScored Int     @default(0)
+  lastScoredAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contractor User @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+
+  @@unique([contractorId])
+  @@index([compositeScore])
+  @@map("performance_scores")
+}
+
+// ============================================================================
+// STAGE 7: DESIGN DELIVERABLES & WORKFLOW
+// ============================================================================
+
+model DesignDeliverable {
+  id              String @id @default(uuid())
+  designProjectId String
+  name            String
+  description     String?
+  phase           DesignDeliverablePhase
+  deliverableType String // SD_PLANS, DD_PLANS, CD_SET, RENDERING, etc.
+
+  status    DeliverableStatus @default(PENDING)
+  dueDate   DateTime?
+  fileUrl   String?
+  fileSize  Int?
+  version   Int      @default(1)
+  isLatest  Boolean  @default(true)
+
+  submittedAt  DateTime?
+  submittedBy  String?
+  approvedAt   DateTime?
+  approvedBy   String?
+  rejectedAt   DateTime?
+  rejectionNote String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  comments DesignReviewComment[]
+
+  @@index([designProjectId])
+  @@index([phase])
+  @@map("design_deliverables")
+}
+
+model DesignReviewComment {
+  id            String @id @default(uuid())
+  deliverableId String
+  authorId      String
+  content       String
+  pageNumber    Int?
+  coordinates   Json?   // x, y position on drawing
+  isResolved    Boolean @default(false)
+  resolvedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deliverable DesignDeliverable @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
+
+  @@index([deliverableId])
+  @@map("design_review_comments")
+}
+
+model DrawingSet {
+  id              String @id @default(uuid())
+  designProjectId String
+  name            String
+  setNumber       String // A-001, S-001, M-001, etc.
+  discipline      String // ARCHITECTURAL, STRUCTURAL, MECHANICAL, ELECTRICAL, PLUMBING
+  revision        String @default("0")
+
+  sheetCount Int     @default(0)
+  status     String  @default("DRAFT") // DRAFT, IN_REVIEW, APPROVED, ISSUED
+  issuedAt   DateTime?
+  issuedFor  String? // PERMIT, BID, CONSTRUCTION, RECORD
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([designProjectId])
+  @@map("drawing_sets")
+}
+
+enum DesignDeliverablePhase {
+  PRE_DESIGN
+  SCHEMATIC_DESIGN
+  DESIGN_DEVELOPMENT
+  CONSTRUCTION_DOCUMENTS
+  BIDDING
+  CONSTRUCTION_ADMIN
+}
+
+enum DeliverableStatus {
+  PENDING
+  IN_PROGRESS
+  SUBMITTED
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  REVISION_REQUIRED
+}
+
+// ============================================================================
+// STAGE 7.5: COMPLIANCE GATES
+// ============================================================================
+
+model ComplianceGate {
+  id        String @id @default(uuid())
+  projectId String
+  permitId  String?
+  milestoneId String?
+
+  gateType  ComplianceGateType
+  name      String
+  description String?
+  isBlocking  Boolean @default(true)
+
+  status    ComplianceGateStatus @default(PENDING)
+  checkedAt DateTime?
+  checkedBy String?
+  overrideReason String?
+  overrideBy     String?
+
+  expiresAt DateTime? // Permit expiration date
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([status])
+  @@map("compliance_gates")
+}
+
+enum ComplianceGateType {
+  PERMIT_VALID
+  INSPECTION_PASSED
+  INSURANCE_CURRENT
+  LICENSE_VALID
+  BOND_ACTIVE
+  LIEN_WAIVER_SIGNED
+}
+
+enum ComplianceGateStatus {
+  PENDING
+  PASSED
+  FAILED
+  WAIVED
+  EXPIRED
+}
+
+// ============================================================================
+// STAGE 8: ENGINEERING HUB (Full Models)
+// ============================================================================
+
+model EngineeringProject {
+  id          String @id @default(uuid())
+  userId      String
+  projectId   String? // Link to main Project
+  orgId       String?
+
+  projectName   String
+  description   String?
+  disciplines   String[] // STRUCTURAL, MEP, CIVIL, GEOTECHNICAL
+  packageTier   String   // BASIC_REVIEW, STANDARD_DESIGN, PREMIUM_SERVICE, ENTERPRISE
+  projectType   String?  // RESIDENTIAL, COMMERCIAL, INDUSTRIAL
+
+  status        EngineeringProjectStatus @default(QUOTE_REQUESTED)
+  assignedEngineerId String?
+
+  totalPrice    Decimal  @db.Decimal(12, 2)
+  platformFee   Decimal  @db.Decimal(12, 2)
+  paymentStatus String   @default("PENDING") // PENDING, PAID, REFUNDED
+
+  dueDate       DateTime?
+  completedAt   DateTime?
+  deliveredAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user          User                    @relation(fields: [userId], references: [id])
+  calculations  EngineeringCalculation[]
+  stampApprovals PEStampApproval[]
+  deliverables  EngineeringDeliverable[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("engineering_projects")
+}
+
+model EngineeringCalculation {
+  id        String @id @default(uuid())
+  projectId String
+  discipline String // STRUCTURAL, MEP, CIVIL, etc.
+
+  name         String
+  description  String?
+  calcType     String  // LOAD_ANALYSIS, MEMBER_SIZING, FOUNDATION, HVAC_LOAD, ELECTRICAL_LOAD, etc.
+  version      Int     @default(1)
+
+  inputData    Json?   // Calculation inputs
+  outputData   Json?   // Calculation results
+  assumptions  String[]
+  references   String[] // Code references (IBC 2021 Section X, etc.)
+
+  status       String  @default("DRAFT") // DRAFT, CALCULATED, REVIEWED, APPROVED
+  calculatedBy String?
+  reviewedBy   String?
+  reviewedAt   DateTime?
+  approvedBy   String?
+  approvedAt   DateTime?
+
+  fileUrl      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project EngineeringProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([discipline])
+  @@map("engineering_calculations")
+}
+
+model PEStampApproval {
+  id        String @id @default(uuid())
+  projectId String
+  engineerId String
+
+  state           String // State where PE license is held
+  licenseNumber   String
+  expirationDate  DateTime
+  stampType       String  // STRUCTURAL, CIVIL, MECHANICAL, ELECTRICAL
+  discipline      String
+
+  status          PEStampStatus @default(PENDING)
+  stampedDocUrl   String?
+  stampedAt       DateTime?
+  revokedAt       DateTime?
+  revokedReason   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project EngineeringProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([engineerId])
+  @@map("pe_stamp_approvals")
+}
+
+model EngineeringDeliverable {
+  id        String @id @default(uuid())
+  projectId String
+
+  name         String
+  deliverableType String // STAMPED_DRAWINGS, CALCULATIONS, REPORT, SPECIFICATIONS
+  description  String?
+  fileUrl      String?
+  fileSize     Int?
+  version      Int     @default(1)
+
+  status       String  @default("PENDING") // PENDING, IN_PROGRESS, READY, DELIVERED
+  deliveredAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project EngineeringProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("engineering_deliverables")
+}
+
+enum EngineeringProjectStatus {
+  QUOTE_REQUESTED
+  QUOTE_SENT
+  PENDING_PAYMENT
+  PAYMENT_RECEIVED
+  ASSIGNED
+  IN_PROGRESS
+  UNDER_REVIEW
+  REVISIONS_REQUESTED
+  COMPLETED
+  DELIVERED
+}
+
+enum PEStampStatus {
+  PENDING
+  APPROVED
+  STAMPED
+  REVOKED
+}
+
+// ============================================================================
+// STAGE 9: AUTOMATION & ML HUB
+// ============================================================================
+
+model AutomationRule {
+  id          String @id @default(uuid())
+  name        String
+  description String?
+  category    String // PERMIT_COMPLIANCE, PROJECT_LIFECYCLE, FINANCIAL, SCHEDULING
+
+  triggerEvent  String   // Event type that triggers this rule
+  conditions    Json     // Conditions to evaluate
+  actions       Json     // Actions to execute when conditions met
+
+  isActive    Boolean  @default(true)
+  priority    Int      @default(100) // Lower = higher priority
+  cooldownMs  Int?     // Minimum time between executions
+
+  executionCount Int   @default(0)
+  lastExecutedAt DateTime?
+  errorCount     Int   @default(0)
+  lastErrorAt    DateTime?
+
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  executions AutomationExecution[]
+
+  @@index([triggerEvent])
+  @@index([isActive])
+  @@map("automation_rules")
+}
+
+model AutomationExecution {
+  id     String @id @default(uuid())
+  ruleId String
+
+  triggerEvent String
+  triggerData  Json?
+  result       String // SUCCESS, FAILURE, SKIPPED
+  resultData   Json?
+  errorMessage String?
+  durationMs   Int?
+
+  executedAt DateTime @default(now())
+
+  rule AutomationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([ruleId])
+  @@index([executedAt])
+  @@map("automation_executions")
+}
+
+model MLModel {
+  id          String @id @default(uuid())
+  name        String
+  modelType   MLModelType
+  version     String
+  description String?
+
+  status      String  @default("TRAINING") // TRAINING, ACTIVE, DEPRECATED
+  accuracy    Decimal? @db.Decimal(5, 4)
+  inputSchema Json?   // Expected input format
+  outputSchema Json?  // Expected output format
+
+  trainingDataSize Int?
+  lastTrainedAt    DateTime?
+  lastPredictionAt DateTime?
+  predictionCount  Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  predictions MLPrediction[]
+
+  @@index([modelType])
+  @@index([status])
+  @@map("ml_models")
+}
+
+model MLPrediction {
+  id      String @id @default(uuid())
+  modelId String
+
+  entityType String // PROJECT, CONTRACTOR, PERMIT, etc.
+  entityId   String
+  inputData  Json
+  prediction Json
+  confidence Decimal? @db.Decimal(5, 4)
+
+  isValidated   Boolean   @default(false)
+  actualOutcome Json?
+  validatedAt   DateTime?
+  validatedBy   String?
+
+  createdAt DateTime @default(now())
+
+  model MLModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@index([modelId])
+  @@index([entityType, entityId])
+  @@map("ml_predictions")
+}
+
+model Recommendation {
+  id          String @id @default(uuid())
+  userId      String
+  entityType  String // CONTRACTOR, MATERIAL, SCHEDULE, etc.
+
+  title       String
+  description String?
+  score       Decimal @db.Decimal(5, 2) // 0-100 relevance score
+  reasoning   String? // Why this was recommended
+  data        Json?   // Recommendation-specific data
+
+  status      String  @default("PENDING") // PENDING, ACCEPTED, REJECTED, EXPIRED
+  acceptedAt  DateTime?
+  rejectedAt  DateTime?
+  rejectedReason String?
+
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entityType])
+  @@index([status])
+  @@map("recommendations")
+}
+
+enum MLModelType {
+  RISK_PREDICTION
+  COST_ESTIMATION
+  TIMELINE_PREDICTION
+  CONTRACTOR_MATCHING
+  CHURN_PREDICTION
+  FRAUD_DETECTION
+  QUALITY_PREDICTION
 }

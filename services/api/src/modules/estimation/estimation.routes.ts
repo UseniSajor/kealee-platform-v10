@@ -32,7 +32,7 @@ const estimateRequestSchema = z.object({
   customRequirements: z.array(z.string()).optional(),
   includePermits: z.boolean().optional(),
   includeContingency: z.boolean().optional(),
-  contingencyPercent: z.number().min(0).max(50).optional(),
+  contingencyPercent: z.number().min(5).max(15).optional(),
 })
 
 const laborEstimateSchema = z.object({

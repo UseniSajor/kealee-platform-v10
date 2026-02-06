@@ -89,7 +89,7 @@ export async function engineerRoutes(fastify: FastifyInstance) {
         discipline,
         basePrice,
       })),
-      platformCommission: '3.5%',
+      platformCommission: '3%',
       rushFee: '50% additional',
       emergencyFee: '100% additional',
     };

@@ -36,7 +36,7 @@ export const DESIGN_PACKAGE_FEES: Record<DesignPackageTier, number> = {
   PREMIUM: 999,
 }
 
-export const PLATFORM_COMMISSION_RATE = 0.035 // 3.5% of contract value
+export const PLATFORM_COMMISSION_RATE = 0.03 // 3% of contract value (per SOP v2 Section 1.3)
 
 export interface CreatePreConInput {
   name: string

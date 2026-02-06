@@ -43,7 +43,7 @@ export const ENGINEERING_DISCIPLINE_BASE_FEES: Record<EngineeringDiscipline, num
   GEOTECHNICAL: 1800,
 };
 
-export const PLATFORM_COMMISSION_RATE = 0.035; // 3.5%
+export const PLATFORM_COMMISSION_RATE = 0.03; // 3% (per SOP v2 Section 1.3)
 
 // Turnaround times in days
 export const TURNAROUND_TIMES: Record<EngineeringPackageTier, { min: number; max: number }> = {
@@ -217,7 +217,7 @@ export async function markProjectPaid(projectId: string): Promise<EngineeringPro
     disciplines: ['STRUCTURAL'],
     packageTier: 'STANDARD_DESIGN',
     totalPrice: 4500,
-    platformFee: 158,
+    platformFee: 135,
     paymentStatus: 'PAID',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -240,7 +240,7 @@ export async function assignEngineer(
     packageTier: 'STANDARD_DESIGN',
     assignedEngineerId: engineerId,
     totalPrice: 4500,
-    platformFee: 158,
+    platformFee: 135,
     paymentStatus: 'PAID',
     createdAt: new Date(),
     updatedAt: new Date(),
