@@ -1693,10 +1693,97 @@ OPS SERVICES:
 
 ---
 
-**Document Version:** 2.0  
-**Created:** January 30, 2026  
-**Sources:** All chat sessions, PM Execution Framework, Production Build Plan, PM App Specifications  
-**Status:** Complete Reference Document with Corrections  
+**Document Version:** 2.1
+**Created:** January 30, 2026
+**Last Updated:** February 6, 2026
+**Sources:** All chat sessions, PM Execution Framework, Production Build Plan, PM App Specifications
+**Status:** Updated with implementation status and corrections
+
+---
+
+# ADDENDUM: IMPLEMENTATION STATUS (February 2026)
+
+## Current Build State
+
+### Frontend Apps (12 apps in apps/)
+
+| App | Purpose | Status | Completeness |
+|-----|---------|--------|-------------|
+| os-admin | Platform administration | Functional | 70% |
+| os-pm | PM workspace | Functional | 60% |
+| m-marketplace | Central hub, marketing, sales | Partial | 40% |
+| m-project-owner | Homeowner project dashboard | Functional | 50% |
+| m-ops-services | GC/Builder service portal | Partial | 30% |
+| m-architect | Design services hub | Functional | 50% |
+| m-engineer | Engineering services hub | Stub | 10% - needs full hub UI |
+| m-permits-inspections | Permit tracking & acceleration | Partial | 40% |
+| m-finance-trust | Escrow & payment protection | Functional | 55% |
+| m-estimation | Cost estimation tool | Functional | 65% |
+| m-inspector | Third-party inspection portal | Empty | 0% - needs full build |
+| web | Marketing landing page | Empty | 0% - needs full build |
+
+### Backend API (services/api)
+
+**Complete:** Auth, Users, Orgs, RBAC, Events, Audit, Entitlements, PM, Disputes, Properties, Billing, Projects, Readiness, Contracts (full suite), Milestones, DocuSign, Handoff, Closeout, Payments, Accounting, Marketplace, Leads, Architect (11 modules)
+
+**Partial:** Escrow release workflow, Permit application workflow, Inspection scheduling
+
+**Not Started:** Engineer Hub API, ML/Automation API (Stage 9)
+
+### Command Center (15 Mini-Apps)
+
+All 15 apps have database models in the Prisma schema. APP-15 (Estimation Tool) has a dedicated package. The remaining 14 apps are implemented as API route modules with basic CRUD operations. Full automation logic (BullMQ workers, AI processing, scheduling) is pending for most apps.
+
+### Database (Prisma Schema)
+
+~140 models covering all platform features. Schema is comprehensive and matches this SOP document. Key additions since v2.0:
+- SOP v2 service subscription models (PMServiceSubscription, PermitServiceSubscription, ALaCarteService)
+- Platform fee configuration (PlatformFeeConfig, MarketplaceFeeConfig)
+- Service plans (ServicePlan)
+- Roles and permissions (Role, Permission, RolePermission)
+- Command Center infrastructure (DashboardWidget, JobQueue, JobSchedule, SystemConfig)
+- Integration credentials (IntegrationCredential, AIConversation)
+
+### Security & Production Hardening (Completed Feb 2026)
+
+- Graceful shutdown handler (SIGTERM/SIGINT)
+- Test routes gated in production
+- CORS tightened with explicit origins
+- Error handler hardened (no stack traces in production)
+- Request ID traceability
+- Unhandled rejection/exception handlers
+- Environment validation (fatal exit on missing required vars)
+- Connection pool configured
+- Webhook signature verification
+
+### Seed Data Requirements
+
+See `SEED_DATA_REQUIREMENTS.md` for complete list of data needed per app, including:
+- Roles & Permissions (6 roles, 50+ permissions)
+- Service Plans (8 plans matching Stripe products)
+- Platform fee configs
+- Estimation data (materials, labor, equipment from BLS/RSMeans)
+- Jurisdiction data for permits
+- Document and message templates
+
+### Deployment Architecture
+
+- **Backend:** Railway (Fastify API + PostgreSQL + Redis)
+- **Frontend:** Vercel (all Next.js apps, auto-deploy disabled for manual control)
+- **Database:** PostgreSQL via Railway (Prisma ORM)
+- **Auth:** Supabase (JWT + 2FA/TOTP)
+- **Payments:** Stripe Connect (test mode, 36 products created)
+- **Monitoring:** Sentry (error tracking), structured request logging
+
+## Changes from SOP v2.0
+
+1. **m-inspector** added as a separate app (third-party inspection services portal)
+2. **m-estimation** built as a full wizard-flow app with project creation through export
+3. **web** app added for marketing landing page (not yet built)
+4. **Security hardening** completed for production deployment
+5. **Vercel auto-deploy disabled** - manual deployment control via Railway
+6. **4 previously disabled modules re-enabled:** Audit routes, Accounting routes, Compliance Gates, Stripe Webhooks
+7. **Production readiness at ~75%** - See PRODUCTION_READINESS_CHECKLIST.md
 
 ---
 

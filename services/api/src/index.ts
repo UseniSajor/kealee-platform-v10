@@ -252,20 +252,12 @@ import { stripeConnectRoutes } from './routes/stripe-connect.routes'
 import { estimationRoutes } from './modules/estimation/estimation.routes'
 import { preconRoutes } from './modules/precon/precon.routes'
 import { engineerRoutes } from './modules/engineer/engineer.routes'
-// Analytics temporarily disabled
-// import { analyticsRoutes } from './modules/analytics/analytics.routes'
+// Note: analyticsRoutes dynamically imported below when registering routes
 import { monitoringDashboardRoutes } from './modules/monitoring/monitoring-dashboard.routes'
 import { taskGeneratorRoutes } from './modules/tasks/task-generator.routes'
 import { complianceCheckpointRoutes } from './modules/compliance/compliance-checkpoint.routes'
 import { complianceGatesRoutes } from './modules/compliance/compliance-gates.routes'
-// Temporarily disabled - type issues in route handlers
-// import { complianceRoutes } from './routes/compliance.routes'
-// Deposit temporarily disabled
-// import { depositRoutes } from './routes/deposit.routes'
-// Stripe webhook temporarily disabled
 import { stripeWebhookRoutes } from './routes/stripe-webhook.routes'
-// Oversight temporarily disabled
-// import { oversightRoutes } from './routes/oversight.routes'
 import testRoutes from './routes/test.routes'
 // import { createGraphQLServer } from './graphql/server' // DISABLED: GraphQL not critical for MVP
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware'
@@ -452,9 +444,10 @@ const start = async () => {
     await fastify.register(milestoneReviewRoutes, { prefix: '/milestones' })
     await fastify.register(marketplaceRoutes, { prefix: '/marketplace' })
     await fastify.register(leadsRoutes, { prefix: '/marketplace' })
+    await fastify.register(quotesRoutes, { prefix: '/marketplace' })
+    await fastify.register(designRoutes, { prefix: '/marketplace' })
     await fastify.register(paymentRoutes, { prefix: '/payments' })
-    // Temporarily disabled - needs service method fixes
-    // await fastify.register(disputeRoutes, { prefix: '/disputes' })
+    // Note: disputeRoutes already registered above at '/disputes'
     await fastify.register(permitComplianceRoutes, { prefix: '/permits' })
     await fastify.register(closeoutRoutes, { prefix: '/closeout' })
     await fastify.register(handoffRoutes, { prefix: '/handoff' })
@@ -500,8 +493,7 @@ const start = async () => {
     await fastify.register(servicePlanRoutes, { prefix: '/ops-services' })
     await fastify.register(workflowRoutes, { prefix: '/workflow' })
     await fastify.register(fileRoutes, { prefix: '/files' })
-    // Analytics temporarily disabled
-    // await fastify.register(analyticsRoutes)
+    // Note: analyticsRoutes dynamically imported and registered above at '/analytics'
     await fastify.register(monitoringDashboardRoutes)
     await fastify.register(taskGeneratorRoutes, { prefix: '/tasks' })
     await fastify.register(complianceCheckpointRoutes, { prefix: '/compliance' })
@@ -515,12 +507,10 @@ const start = async () => {
     // Engineering Services
     await fastify.register(engineerRoutes, { prefix: '/engineer' })
     await fastify.register(complianceGatesRoutes, { prefix: '/compliance' })
-    // Temporarily disabled - type issues in route handlers
-    // await fastify.register(complianceRoutes, { prefix: '/api/compliance' })
-    // Deposit temporarily disabled
-    // await fastify.register(depositRoutes, { prefix: '/api/deposits' })
+    // Note: complianceRoutes already registered above as complianceMonitoringRoutes at '/compliance/monitoring'
+    // Note: depositRoutes already registered above at '/deposits'
     await fastify.register(stripeWebhookRoutes, { prefix: '/webhooks' })
-    // Oversight temporarily disabled
+    // TODO: Implement oversight module for admin dashboard monitoring
     // await fastify.register(oversightRoutes, { prefix: '/api/admin/oversight' })
 
     // Register new API routes for PM workspace
