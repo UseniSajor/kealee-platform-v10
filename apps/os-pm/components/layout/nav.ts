@@ -4,6 +4,7 @@ import {
   BookOpen,
   CalendarDays,
   ClipboardCheck,
+  Cpu,
   DollarSign,
   FileEdit,
   FileText,
@@ -12,6 +13,7 @@ import {
   Home,
   Image,
   LayoutDashboard,
+  Link2,
   MessageSquare,
   NotebookPen,
   Timer,
@@ -31,7 +33,7 @@ export type PmNavItem = {
 // Navigation organized by functional area
 export const pmNavItems: PmNavItem[] = [
   // Core
-  { href: "/", label: "Dashboard", icon: LayoutDashboard, match: "exact", section: "Core" },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, match: "startsWith", section: "Core" },
   { href: "/work-queue", label: "Work Queue", icon: FolderKanban, match: "startsWith", section: "Core" },
   { href: "/scheduling", label: "Scheduling", icon: CalendarDays, match: "startsWith", section: "Core" },
   { href: "/clients", label: "Clients", icon: Users, match: "startsWith", section: "Core" },
@@ -61,5 +63,8 @@ export const pmNavItems: PmNavItem[] = [
   { href: "/analytics", label: "Analytics", icon: BarChart3, match: "startsWith", section: "Portals" },
   { href: "/reports", label: "Reports", icon: FileText, match: "startsWith", section: "Portals" },
   { href: "/communication", label: "Communication", icon: MessageSquare, match: "startsWith", section: "Portals" },
-]
 
+  // AI & Integrations
+  { href: "/command-center", label: "Command Center", icon: Cpu, match: "startsWith", section: "AI & Ops" },
+  { href: "/integrations", label: "Integrations", icon: Link2, match: "startsWith", section: "AI & Ops" },
+]

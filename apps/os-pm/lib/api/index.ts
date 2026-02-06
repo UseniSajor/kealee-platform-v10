@@ -35,6 +35,14 @@ import type {
   Task,
   UpdateProjectInput,
   UpdateTaskInput,
+  AIAgent,
+  MiniAppConnection,
+  AutomationRule,
+  JobQueueItem,
+  SystemHealthMetric,
+  IntegrationItem,
+  WebhookItem,
+  SyncLogEntry,
 } from "@/lib/types/index"
 
 export const api = {
@@ -375,6 +383,90 @@ export const api = {
   dashboard: {
     kpis: async () => {
       const { data } = await apiClient.get<ApiResponse<DashboardReport>>("/pm/dashboard/kpis")
+      return data
+    },
+  },
+
+  // Command Center & AI Agents
+  commandCenter: {
+    agents: async () => {
+      const { data } = await apiClient.get<ApiListResponse<AIAgent>>("/pm/command-center/agents")
+      return data
+    },
+    agentAction: async (agentId: string, action: "pause" | "resume" | "restart") => {
+      const { data } = await apiClient.post<ApiResponse<{ agent: AIAgent }>>(`/pm/command-center/agents/${agentId}/${action}`)
+      return data
+    },
+    connections: async () => {
+      const { data } = await apiClient.get<ApiListResponse<MiniAppConnection>>("/pm/command-center/connections")
+      return data
+    },
+    automationRules: async () => {
+      const { data } = await apiClient.get<ApiListResponse<AutomationRule>>("/pm/command-center/automation-rules")
+      return data
+    },
+    toggleRule: async (ruleId: string, isActive: boolean) => {
+      const { data } = await apiClient.patch<ApiResponse<{ rule: AutomationRule }>>(`/pm/command-center/automation-rules/${ruleId}`, { isActive })
+      return data
+    },
+    jobQueue: async (query?: { status?: string }) => {
+      const { data } = await apiClient.get<ApiListResponse<JobQueueItem>>("/pm/command-center/jobs", { params: query })
+      return data
+    },
+    systemHealth: async () => {
+      const { data } = await apiClient.get<ApiResponse<{ metrics: SystemHealthMetric[] }>>("/pm/command-center/health")
+      return data
+    },
+    chat: async (message: string, context?: { projectId?: string }) => {
+      const { data } = await apiClient.post<ApiResponse<{ reply: string; actions?: Array<{ type: string; description: string }> }>>("/pm/command-center/chat", { message, context })
+      return data
+    },
+    runDiagnostics: async () => {
+      const { data } = await apiClient.post<ApiResponse<{ report: Record<string, unknown> }>>("/pm/command-center/diagnostics")
+      return data
+    },
+  },
+
+  // Integrations
+  integrations: {
+    list: async () => {
+      const { data } = await apiClient.get<ApiListResponse<IntegrationItem>>("/pm/integrations")
+      return data
+    },
+    get: async (id: string) => {
+      const { data } = await apiClient.get<ApiResponse<{ integration: IntegrationItem }>>(`/pm/integrations/${id}`)
+      return data
+    },
+    connect: async (id: string, config?: Record<string, unknown>) => {
+      const { data } = await apiClient.post<ApiResponse<{ integration: IntegrationItem }>>(`/pm/integrations/${id}/connect`, config)
+      return data
+    },
+    disconnect: async (id: string) => {
+      const { data } = await apiClient.post<ApiResponse<{ ok: true }>>(`/pm/integrations/${id}/disconnect`)
+      return data
+    },
+    sync: async (id: string) => {
+      const { data } = await apiClient.post<ApiResponse<{ syncId: string }>>(`/pm/integrations/${id}/sync`)
+      return data
+    },
+    webhooks: async () => {
+      const { data } = await apiClient.get<ApiListResponse<WebhookItem>>("/pm/integrations/webhooks")
+      return data
+    },
+    createWebhook: async (webhook: { url: string; event: string; direction: "incoming" | "outgoing" }) => {
+      const { data } = await apiClient.post<ApiResponse<{ webhook: WebhookItem }>>("/pm/integrations/webhooks", webhook)
+      return data
+    },
+    syncLogs: async (query?: { integration?: string; limit?: number }) => {
+      const { data } = await apiClient.get<ApiListResponse<SyncLogEntry>>("/pm/integrations/sync-logs", { params: query })
+      return data
+    },
+    apiKeys: async () => {
+      const { data } = await apiClient.get<ApiResponse<{ keys: Array<{ id: string; prefix: string; createdAt: string; lastUsedAt: string | null }> }>>("/pm/integrations/api-keys")
+      return data
+    },
+    generateApiKey: async (name: string) => {
+      const { data } = await apiClient.post<ApiResponse<{ key: string; id: string }>>("/pm/integrations/api-keys", { name })
       return data
     },
   },

@@ -597,3 +597,100 @@ export type DashboardReport = {
   projectsByStatus: { status: string; count: number }[]
   laborUtilization: { name: string; hours: number; capacity: number }[]
 }
+
+// ----------------------------
+// Command Center / AI Agents
+// ----------------------------
+
+export type AIAgentStatus = "ACTIVE" | "WATCHING" | "IDLE" | "ERROR" | "PAUSED"
+
+export type AIAgent = {
+  id: string
+  name: string
+  description: string
+  status: AIAgentStatus
+  type: string
+  lastRunAt?: string | null
+  nextRunAt?: string | null
+  tasksCompletedToday: number
+  accuracy?: number | null
+  errorRate?: number | null
+  config?: Record<string, unknown>
+}
+
+export type MiniAppConnection = {
+  id: string
+  appId: string
+  name: string
+  status: "CONNECTED" | "DISCONNECTED" | "ERROR" | "SYNCING"
+  lastSyncAt?: string | null
+  dataFlow: "bidirectional" | "read-only" | "write-only" | "hub"
+  healthPercent: number
+  recordsSynced?: number | null
+}
+
+export type AutomationRule = {
+  id: string
+  name: string
+  description?: string | null
+  trigger: string
+  action: string
+  isActive: boolean
+  lastTriggeredAt?: string | null
+  triggerCount: number
+  createdAt: string
+}
+
+export type JobQueueItem = {
+  id: string
+  name: string
+  status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "CANCELLED"
+  progress?: number | null
+  createdAt: string
+  startedAt?: string | null
+  completedAt?: string | null
+  error?: string | null
+}
+
+export type SystemHealthMetric = {
+  name: string
+  value: string
+  status: "healthy" | "warning" | "critical"
+  detail?: string | null
+}
+
+// ----------------------------
+// Integrations
+// ----------------------------
+
+export type IntegrationItem = {
+  id: string
+  name: string
+  category: string
+  description: string
+  status: "CONNECTED" | "AVAILABLE" | "COMING_SOON" | "ERROR"
+  lastSyncAt?: string | null
+  syncDirection?: string | null
+  recordsSynced?: number | null
+  healthPercent?: number | null
+  config?: Record<string, unknown>
+}
+
+export type WebhookItem = {
+  id: string
+  url: string
+  event: string
+  direction: "incoming" | "outgoing"
+  callsThisWeek: number
+  isActive: boolean
+  lastCalledAt?: string | null
+}
+
+export type SyncLogEntry = {
+  id: string
+  integration: string
+  action: string
+  recordCount: number
+  status: "success" | "failed" | "partial"
+  timestamp: string
+}
