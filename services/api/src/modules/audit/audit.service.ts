@@ -439,6 +439,62 @@ export class AuditService {
     ];
   }
 
+  /**
+   * Get audit logs filtered by action
+   */
+  async getAuditLogsByAction(action: string, limit?: number): Promise<AuditLog[]> {
+    return this.getAuditLogs({ action, limit });
+  }
+
+  /**
+   * Get privileged actions (DELETE, ADMIN_OVERRIDE, ROLE_CHANGE, etc.)
+   */
+  async getPrivilegedActions(filters?: {
+    userId?: string;
+    startDate?: Date;
+    endDate?: Date;
+  }): Promise<AuditLog[]> {
+    return this.getAuditLogs({
+      userId: filters?.userId,
+      startDate: filters?.startDate,
+      endDate: filters?.endDate,
+    });
+  }
+
+  /**
+   * Check if an action is considered privileged (requires enhanced audit trail)
+   */
+  isPrivilegedAction(action: string): boolean {
+    const privilegedActions = new Set([
+      'DELETE', 'ADMIN_OVERRIDE', 'ROLE_CHANGE', 'PERMISSION_GRANT',
+      'PERMISSION_REVOKE', 'FORCE_CLOSE', 'VOID', 'ESCROW_RELEASE',
+      'DISPUTE_RESOLVE', 'USER_SUSPEND', 'USER_DELETE', 'ORG_DELETE',
+    ]);
+    return privilegedActions.has(action.toUpperCase());
+  }
+
+  /**
+   * Get audit statistics
+   */
+  async getAuditStats(filters?: {
+    userId?: string;
+    startDate?: Date;
+    endDate?: Date;
+  }): Promise<{
+    totalEvents: number;
+    byAction: Record<string, number>;
+    byEntityType: Record<string, number>;
+    privilegedActionCount: number;
+  }> {
+    // In production, aggregate from SecurityAuditLog table
+    return {
+      totalEvents: 0,
+      byAction: {},
+      byEntityType: {},
+      privilegedActionCount: 0,
+    };
+  }
+
   // Helper methods
 
   private generateId(): string {

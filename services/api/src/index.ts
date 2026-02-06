@@ -189,8 +189,7 @@ import { userRoutes } from './modules/users/user.routes'
 import { rbacRoutes } from './modules/rbac/rbac.routes'
 import { entitlementRoutes } from './modules/entitlements/entitlement.routes'
 import { eventRoutes } from './modules/events/event.routes'
-// Temporarily disabled - needs service method fixes
-// import { auditRoutes } from './modules/audit/audit.routes'
+import { auditRoutes } from './modules/audit/audit.routes'
 import { pmRoutes } from './modules/pm/pm.routes'
 import { billingRoutes } from './modules/billing/billing.routes'
 import { projectRoutes } from './modules/projects/project.routes'
@@ -248,8 +247,7 @@ import { serviceRequestRoutes } from './modules/ops-services/service-request.rou
 import { servicePlanRoutes } from './modules/ops-services/service-plan.routes'
 import { workflowRoutes } from './modules/workflow/workflow.routes'
 import { fileRoutes } from './modules/files/file.routes'
-// Temporarily disabled - DTO type mismatches
-// import { accountingRoutes } from './routes/accounting.routes'
+import { accountingRoutes } from './routes/accounting.routes'
 import { stripeConnectRoutes } from './routes/stripe-connect.routes'
 import { estimationRoutes } from './modules/estimation/estimation.routes'
 import { preconRoutes } from './modules/precon/precon.routes'
@@ -259,14 +257,13 @@ import { engineerRoutes } from './modules/engineer/engineer.routes'
 import { monitoringDashboardRoutes } from './modules/monitoring/monitoring-dashboard.routes'
 import { taskGeneratorRoutes } from './modules/tasks/task-generator.routes'
 import { complianceCheckpointRoutes } from './modules/compliance/compliance-checkpoint.routes'
-// Temporarily disabled - missing @kealee/compliance package
-// import { complianceGatesRoutes } from './modules/compliance/compliance-gates.routes'
+import { complianceGatesRoutes } from './modules/compliance/compliance-gates.routes'
 // Temporarily disabled - type issues in route handlers
 // import { complianceRoutes } from './routes/compliance.routes'
 // Deposit temporarily disabled
 // import { depositRoutes } from './routes/deposit.routes'
 // Stripe webhook temporarily disabled
-// import { stripeWebhookRoutes } from './routes/stripe-webhook.routes'
+import { stripeWebhookRoutes } from './routes/stripe-webhook.routes'
 // Oversight temporarily disabled
 // import { oversightRoutes } from './routes/oversight.routes'
 import testRoutes from './routes/test.routes'
@@ -427,8 +424,7 @@ const start = async () => {
     await fastify.register(rbacRoutes, { prefix: '/rbac' })
     await fastify.register(entitlementRoutes, { prefix: '/entitlements' })
     await fastify.register(eventRoutes, { prefix: '/events' })
-    // Temporarily disabled - needs service method fixes
-    // await fastify.register(auditRoutes, { prefix: '/audit' })
+    await fastify.register(auditRoutes, { prefix: '/audit' })
     await fastify.register(pmRoutes, { prefix: '/pm' })
     await fastify.register(billingRoutes, { prefix: '/billing' })
     await fastify.register(escrowRoutes, { prefix: '/escrow' })
@@ -441,8 +437,7 @@ const start = async () => {
     await fastify.register(analyticsRoutes, { prefix: '/analytics' })
     await fastify.register(complianceMonitoringRoutes, { prefix: '/compliance/monitoring' })
 
-    // Temporarily disabled - DTO type mismatches
-    // await fastify.register(accountingRoutes, { prefix: '/accounting' })
+    await fastify.register(accountingRoutes, { prefix: '/accounting' })
     await fastify.register(stripeConnectRoutes, { prefix: '/connect' })
     await fastify.register(projectRoutes, { prefix: '/projects' })
     await fastify.register(propertyRoutes, { prefix: '/properties' })
@@ -519,14 +514,12 @@ const start = async () => {
 
     // Engineering Services
     await fastify.register(engineerRoutes, { prefix: '/engineer' })
-    // Temporarily disabled - missing @kealee/compliance package
-    // await fastify.register(complianceGatesRoutes, { prefix: '/compliance' })
+    await fastify.register(complianceGatesRoutes, { prefix: '/compliance' })
     // Temporarily disabled - type issues in route handlers
     // await fastify.register(complianceRoutes, { prefix: '/api/compliance' })
     // Deposit temporarily disabled
     // await fastify.register(depositRoutes, { prefix: '/api/deposits' })
-    // Stripe webhook temporarily disabled
-    // await fastify.register(stripeWebhookRoutes, { prefix: '/webhooks' })
+    await fastify.register(stripeWebhookRoutes, { prefix: '/webhooks' })
     // Oversight temporarily disabled
     // await fastify.register(oversightRoutes, { prefix: '/api/admin/oversight' })
 
