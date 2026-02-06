@@ -1530,6 +1530,11 @@ model Project {
   dailyLogs           DailyLog[]
   dispatchAssignments DispatchAssignment[]
 
+  // V10 Spec relations
+  projectMemberships  ProjectMembership[]
+  weeklyReports       WeeklyReport[]
+  qaInspectionResults QAInspectionResult[]
+
   @@index([clientId])
   @@index([orgId])
   @@index([propertyId])
@@ -1825,6 +1830,10 @@ model User {
   // Command Center Infrastructure relations
   dashboardWidgets DashboardWidget[]
   aiConversations  AIConversation[]
+
+  // V10 Spec relations
+  projectMemberships ProjectMembership[]
+  reviews            Review[]            @relation("ReviewAuthor")
 }
 
 // ============================================================================
@@ -1904,6 +1913,10 @@ model Org {
   dailyLogs           DailyLog[]
   dispatchAssignments DispatchAssignment[]
   priceBookItems      PriceBookItem[]
+
+  // V10 Spec relations
+  subscriptions Subscription[]
+  proposals     Proposal[]
 
   @@index([slug])
   @@index([status])
@@ -2107,6 +2120,9 @@ model ContractAgreement {
   complianceChecks ComplianceCheck[] @relation("ComplianceCheckContract")
   bonds            BondTracking[]    @relation("ContractBonds")
   complianceAlerts ComplianceAlert[] @relation("ComplianceAlertContract")
+
+  // V10 Spec relations
+  contractParties ContractParty[]
 
   @@index([projectId])
   @@index([ownerId])
@@ -5427,6 +5443,7 @@ model BidRequest {
   awardedContractor Contractor?     @relation("AwardedContractor", fields: [awardedContractorId], references: [id])
   bidInvitations    BidInvitation[]
   bidSubmissions    BidSubmission[]
+  bidEvaluations    BidEvaluation[]
 
   @@index([projectId])
   @@index([status])
@@ -5484,8 +5501,9 @@ model BidSubmission {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  bidRequest BidRequest @relation(fields: [bidRequestId], references: [id], onDelete: Cascade)
-  contractor Contractor @relation(fields: [contractorId], references: [id])
+  bidRequest     BidRequest      @relation(fields: [bidRequestId], references: [id], onDelete: Cascade)
+  contractor     Contractor      @relation(fields: [contractorId], references: [id])
+  bidEvaluations BidEvaluation[]
 
   @@index([bidRequestId])
   @@index([contractorId])
@@ -7387,29 +7405,29 @@ model RFI {
   projectId String
   orgId     String
 
-  number      Int // Sequential RFI number per project
-  subject     String
-  question    String @db.Text
-  answer      String? @db.Text
-  status      RFIStatus @default(DRAFT)
-  priority    RFIPriority @default(MEDIUM)
+  number   Int // Sequential RFI number per project
+  subject  String
+  question String      @db.Text
+  answer   String?     @db.Text
+  status   RFIStatus   @default(DRAFT)
+  priority RFIPriority @default(MEDIUM)
 
   // Parties
-  createdById   String
-  assignedToId  String?
-  answeredById  String?
+  createdById  String
+  assignedToId String?
+  answeredById String?
 
   // Tracking
-  dueDate       DateTime?
-  answeredAt    DateTime?
-  closedAt      DateTime?
+  dueDate    DateTime?
+  answeredAt DateTime?
+  closedAt   DateTime?
 
   // References
-  costImpact    Decimal? @db.Decimal(12, 2)
+  costImpact     Decimal? @db.Decimal(12, 2)
   scheduleImpact Int? // days
-  drawingRef    String?
-  specSection   String?
-  location      String?
+  drawingRef     String?
+  specSection    String?
+  location       String?
 
   // Linked entities
   changeOrderId String?
@@ -7420,7 +7438,7 @@ model RFI {
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   org     Org     @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
-  responses RFIResponse[]
+  responses   RFIResponse[]
   attachments RFIAttachment[]
 
   @@index([projectId, number])
@@ -7435,7 +7453,7 @@ model RFIResponse {
   rfiId String
 
   responderId String
-  message     String @db.Text
+  message     String  @db.Text
   isOfficial  Boolean @default(false)
 
   createdAt DateTime @default(now())
@@ -7495,33 +7513,33 @@ model Submittal {
   projectId String
   orgId     String
 
-  number        Int // Sequential submittal number per project
-  title         String
-  description   String? @db.Text
-  status        SubmittalStatus @default(DRAFT)
-  type          SubmittalType @default(OTHER)
+  number      Int // Sequential submittal number per project
+  title       String
+  description String?         @db.Text
+  status      SubmittalStatus @default(DRAFT)
+  type        SubmittalType   @default(OTHER)
 
   // CSI reference
   specSection   String? // e.g., "03 30 00"
   specParagraph String?
 
   // Parties
-  submittedById  String?
-  reviewerId     String?
+  submittedById   String?
+  reviewerId      String?
   subcontractorId String?
 
   // Tracking
-  submitDate     DateTime?
-  dueDate        DateTime?
-  reviewedDate   DateTime?
-  requiredDate   DateTime? // When material/product is needed on site
+  submitDate   DateTime?
+  dueDate      DateTime?
+  reviewedDate DateTime?
+  requiredDate DateTime? // When material/product is needed on site
 
   // Review
   reviewComments String? @db.Text
-  revisionNumber Int @default(0)
+  revisionNumber Int     @default(0)
 
   // Distribution
-  distributedTo  String[] // User IDs who received copies
+  distributedTo String[] // User IDs who received copies
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -7545,7 +7563,7 @@ model SubmittalAttachment {
   fileUrl  String
   fileSize Int
   mimeType String?
-  version  Int @default(1)
+  version  Int     @default(1)
 
   uploadedById String
   createdAt    DateTime @default(now())
@@ -7575,16 +7593,16 @@ model DailyLog {
   projectId String
   orgId     String
 
-  logDate   DateTime @db.Date
+  logDate     DateTime @db.Date
   createdById String
 
   // Weather
-  weatherCondition  WeatherCondition?
-  temperatureHigh   Int? // Fahrenheit
-  temperatureLow    Int?
-  precipitation     Boolean @default(false)
-  windSpeed         Int? // mph
-  weatherNotes      String?
+  weatherCondition WeatherCondition?
+  temperatureHigh  Int? // Fahrenheit
+  temperatureLow   Int?
+  precipitation    Boolean           @default(false)
+  windSpeed        Int? // mph
+  weatherNotes     String?
 
   // Work summary
   workPerformed     String? @db.Text
@@ -7592,21 +7610,21 @@ model DailyLog {
   equipmentOnSite   String? @db.Text
 
   // Visitors
-  visitors          String? @db.Text
+  visitors String? @db.Text
 
   // Safety
-  safetyIncidents   Int @default(0)
-  safetyNotes       String? @db.Text
+  safetyIncidents Int     @default(0)
+  safetyNotes     String? @db.Text
 
   // Delays
-  delayHours        Decimal? @db.Decimal(5, 2)
-  delayReason       String?
+  delayHours  Decimal? @db.Decimal(5, 2)
+  delayReason String?
 
   // Status
-  isSubmitted       Boolean @default(false)
-  submittedAt       DateTime?
-  approvedById      String?
-  approvedAt        DateTime?
+  isSubmitted  Boolean   @default(false)
+  submittedAt  DateTime?
+  approvedById String?
+  approvedAt   DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -7614,8 +7632,8 @@ model DailyLog {
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   org     Org     @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
-  crewEntries  DailyLogCrewEntry[]
-  photos       DailyLogPhoto[]
+  crewEntries DailyLogCrewEntry[]
+  photos      DailyLogPhoto[]
 
   @@unique([projectId, logDate])
   @@index([projectId])
@@ -7627,11 +7645,11 @@ model DailyLogCrewEntry {
   id         String @id @default(uuid())
   dailyLogId String
 
-  companyName  String
-  trade        String?
-  workerCount  Int @default(0)
-  hoursWorked  Decimal @db.Decimal(5, 2)
-  description  String?
+  companyName String
+  trade       String?
+  workerCount Int     @default(0)
+  hoursWorked Decimal @db.Decimal(5, 2)
+  description String?
 
   createdAt DateTime @default(now())
 
@@ -7645,9 +7663,9 @@ model DailyLogPhoto {
   id         String @id @default(uuid())
   dailyLogId String
 
-  fileUrl     String
-  caption     String?
-  category    String? // progress, safety, weather, delivery, etc.
+  fileUrl  String
+  caption  String?
+  category String? // progress, safety, weather, delivery, etc.
 
   createdAt DateTime @default(now())
 
@@ -7683,39 +7701,39 @@ model DispatchAssignment {
 
   // Job info
   title       String
-  description String? @db.Text
-  status      DispatchStatus @default(UNASSIGNED)
+  description String?          @db.Text
+  status      DispatchStatus   @default(UNASSIGNED)
   priority    DispatchPriority @default(NORMAL)
 
   // Assignment
-  assignedToId  String? // Tech or crew lead
-  crewIds       String[] // Additional crew members
+  assignedToId String? // Tech or crew lead
+  crewIds      String[] // Additional crew members
 
   // Schedule
-  scheduledDate DateTime?
-  scheduledStart String? // Time HH:MM
-  scheduledEnd   String? // Time HH:MM
+  scheduledDate     DateTime?
+  scheduledStart    String? // Time HH:MM
+  scheduledEnd      String? // Time HH:MM
   estimatedDuration Int? // minutes
-  isMultiDay    Boolean @default(false)
-  endDate       DateTime?
+  isMultiDay        Boolean   @default(false)
+  endDate           DateTime?
 
   // Recurring
-  isRecurring     Boolean @default(false)
-  recurrenceRule  String? // iCal RRULE format
+  isRecurring    Boolean @default(false)
+  recurrenceRule String? // iCal RRULE format
 
   // Location
-  address       String?
-  latitude      Decimal? @db.Decimal(10, 8)
-  longitude     Decimal? @db.Decimal(11, 8)
+  address   String?
+  latitude  Decimal? @db.Decimal(10, 8)
+  longitude Decimal? @db.Decimal(11, 8)
 
   // Tracking
-  enRouteAt     DateTime?
-  arrivedAt     DateTime?
-  completedAt   DateTime?
+  enRouteAt      DateTime?
+  arrivedAt      DateTime?
+  completedAt    DateTime?
   actualDuration Int? // minutes
 
   // Notes
-  notes         String? @db.Text
+  notes           String? @db.Text
   completionNotes String? @db.Text
 
   createdAt DateTime @default(now())
@@ -7748,23 +7766,23 @@ model PriceBookItem {
   orgId String
 
   name        String
-  description String? @db.Text
+  description String?           @db.Text
   category    PriceBookCategory
   sku         String?
 
   // Pricing
-  unitPrice   Decimal @db.Decimal(12, 2)
-  unit        String // each, hr, sf, lf, cy, etc.
-  costPrice   Decimal? @db.Decimal(12, 2) // Internal cost
-  markup      Decimal? @db.Decimal(5, 4) // Markup percentage
+  unitPrice Decimal  @db.Decimal(12, 2)
+  unit      String // each, hr, sf, lf, cy, etc.
+  costPrice Decimal? @db.Decimal(12, 2) // Internal cost
+  markup    Decimal? @db.Decimal(5, 4) // Markup percentage
 
   // Categorization
-  trade       String? // Plumbing, Electrical, etc.
-  csiCode     String? // CSI MasterFormat code
-  tags        String[]
+  trade   String? // Plumbing, Electrical, etc.
+  csiCode String? // CSI MasterFormat code
+  tags    String[]
 
   // Status
-  isActive    Boolean @default(true)
+  isActive Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -7775,4 +7793,991 @@ model PriceBookItem {
   @@index([orgId, isActive])
   @@index([sku])
   @@map("price_book_items")
+}
+
+// ============================================================================
+// V10 SPEC GAP: CORE ENUMS
+// Reference enums for type safety. Existing models (User.role, Project.status)
+// use String fields for flexibility; new models use typed enums.
+// ============================================================================
+
+enum UserRole {
+  ADMIN
+  PM
+  PM_SUPERVISOR
+  FIELD_WORKER
+  CLIENT
+  SUBCONTRACTOR
+  INSPECTOR
+  ARCHITECT
+  ENGINEER
+  OWNER
+  OPERATIONS_MANAGER
+}
+
+enum OrgType {
+  GENERAL_CONTRACTOR
+  SUBCONTRACTOR
+  OWNER
+  ARCHITECT
+  ENGINEER
+  DESIGN_BUILD
+  SPECIALTY_CONTRACTOR
+}
+
+enum ProjectStatusEnum {
+  PLANNING
+  BIDDING
+  PRE_CONSTRUCTION
+  ACTIVE
+  ON_HOLD
+  SUBSTANTIALLY_COMPLETE
+  COMPLETED
+  CLOSED
+  CANCELLED
+}
+
+enum ProjectType {
+  RESIDENTIAL
+  COMMERCIAL
+  INDUSTRIAL
+  INFRASTRUCTURE
+  MIXED_USE
+  RENOVATION
+  NEW_CONSTRUCTION
+}
+
+// ============================================================================
+// V10 SPEC: PROJECT MEMBERSHIP
+// Explicit project-level team membership and role tracking
+// ============================================================================
+
+enum ProjectMemberRole {
+  PROJECT_MANAGER
+  SUPERINTENDENT
+  ESTIMATOR
+  FOREMAN
+  FIELD_WORKER
+  SUBCONTRACTOR
+  CLIENT_REP
+  ARCHITECT
+  ENGINEER
+  INSPECTOR
+  OBSERVER
+}
+
+model ProjectMembership {
+  id        String  @id @default(uuid())
+  projectId String
+  userId    String
+  orgId     String?
+
+  role        ProjectMemberRole
+  permissions Json? // Granular permissions override
+
+  // Status
+  isActive  Boolean   @default(true)
+  invitedAt DateTime  @default(now())
+  joinedAt  DateTime?
+  removedAt DateTime?
+  removedBy String?
+
+  // Notification preferences per project
+  notifyOnRFI         Boolean @default(true)
+  notifyOnChangeOrder Boolean @default(true)
+  notifyOnDailyLog    Boolean @default(true)
+  notifyOnSubmittal   Boolean @default(true)
+  notifyOnSchedule    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+  @@index([role])
+  @@index([isActive])
+  @@map("project_memberships")
+}
+
+// ============================================================================
+// V10 SPEC: SUBSCRIPTION (generic platform subscription)
+// ============================================================================
+
+enum PlatformSubscriptionTier {
+  FREE
+  STARTER
+  PROFESSIONAL
+  BUSINESS
+  ENTERPRISE
+}
+
+enum PlatformSubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  PAUSED
+  CANCELLED
+  EXPIRED
+}
+
+model Subscription {
+  id     String  @id @default(uuid())
+  orgId  String
+  userId String? // Account owner
+
+  tier   PlatformSubscriptionTier
+  status PlatformSubscriptionStatus @default(TRIALING)
+
+  // Pricing
+  monthlyPrice    Decimal  @db.Decimal(10, 2)
+  annualPrice     Decimal? @db.Decimal(10, 2)
+  billingInterval String   @default("MONTHLY") // MONTHLY, ANNUAL
+
+  // Dates
+  trialStartDate DateTime?
+  trialEndDate   DateTime?
+  startDate      DateTime?
+  endDate        DateTime?
+  cancelledAt    DateTime?
+  cancelReason   String?
+
+  // Stripe integration
+  stripeSubscriptionId String? @unique
+  stripeCustomerId     String?
+  stripePriceId        String?
+
+  // Feature limits
+  maxProjects      Int      @default(3)
+  maxUsers         Int      @default(5)
+  maxStorageGB     Int      @default(10)
+  maxApiCalls      Int      @default(1000) // per day
+  aiCreditsMonthly Int      @default(100)
+  aiCreditsUsed    Int      @default(0)
+  includedApps     String[] // APP-01, APP-06, etc.
+
+  // Usage tracking
+  currentProjects Int @default(0)
+  currentUsers    Int @default(0)
+  storageUsedMB   Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@index([status])
+  @@index([stripeSubscriptionId])
+  @@map("subscriptions")
+}
+
+// ============================================================================
+// V10 SPEC: REVIEW (contractor/service provider ratings)
+// ============================================================================
+
+enum ReviewTargetType {
+  CONTRACTOR
+  SUBCONTRACTOR
+  PM
+  PROJECT
+  SERVICE
+}
+
+model Review {
+  id        String  @id @default(uuid())
+  projectId String?
+  orgId     String?
+
+  // Who
+  reviewerId   String // User who left the review
+  targetType   ReviewTargetType
+  targetId     String // Contractor ID, User ID, or Project ID
+  targetUserId String? // If reviewing a specific user
+
+  // Ratings (1-5 scale)
+  overallRating         Int // 1-5
+  qualityRating         Int? // Quality of work
+  timelinessRating      Int? // On-time delivery
+  communicationRating   Int? // Communication quality
+  budgetRating          Int? // Budget adherence
+  safetyRating          Int? // Safety practices
+  professionalismRating Int? // Professionalism
+
+  // Content
+  title       String?
+  comment     String    @db.Text
+  response    String?   @db.Text // Response from reviewed party
+  respondedAt DateTime?
+
+  // Verification
+  isVerified         Boolean   @default(false)
+  verifiedAt         DateTime?
+  verificationMethod String? // PROJECT_COMPLETION, PAYMENT_CONFIRMED, MANUAL
+
+  // Moderation
+  isPublic    Boolean   @default(true)
+  isFlagged   Boolean   @default(false)
+  flagReason  String?
+  moderatedAt DateTime?
+  moderatedBy String?
+
+  // Helpfulness
+  helpfulCount    Int @default(0)
+  notHelpfulCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reviewer User @relation("ReviewAuthor", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@index([targetType, targetId])
+  @@index([reviewerId])
+  @@index([projectId])
+  @@index([overallRating])
+  @@index([isPublic, isVerified])
+  @@map("reviews")
+}
+
+// ============================================================================
+// V10 SPEC: PROPOSAL & PROPOSAL LINE ITEM
+// ============================================================================
+
+enum ProposalStatus {
+  DRAFT
+  INTERNAL_REVIEW
+  SENT
+  VIEWED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  REVISED
+  WITHDRAWN
+}
+
+model Proposal {
+  id        String  @id @default(uuid())
+  projectId String?
+  orgId     String
+  clientId  String?
+  leadId    String?
+
+  // Identification
+  proposalNumber String  @unique
+  version        Int     @default(1)
+  parentId       String? // For revisions
+
+  // Content
+  title       String
+  summary     String? @db.Text
+  scopeOfWork String? @db.Text
+  exclusions  String? @db.Text
+  assumptions String? @db.Text
+  terms       String? @db.Text
+
+  // Financial
+  subtotal    Decimal  @db.Decimal(14, 2)
+  taxRate     Decimal? @db.Decimal(5, 4)
+  taxAmount   Decimal? @db.Decimal(14, 2)
+  discount    Decimal? @db.Decimal(14, 2)
+  totalAmount Decimal  @db.Decimal(14, 2)
+
+  // Schedule
+  estimatedStartDate DateTime?
+  estimatedEndDate   DateTime?
+  estimatedDuration  Int? // working days
+  validUntil         DateTime?
+
+  // Status
+  status          ProposalStatus @default(DRAFT)
+  sentAt          DateTime?
+  viewedAt        DateTime?
+  acceptedAt      DateTime?
+  rejectedAt      DateTime?
+  rejectionReason String?
+
+  // Document
+  documentUrl  String?
+  signatureUrl String?
+  signedAt     DateTime?
+  signedBy     String?
+
+  // Metadata
+  preparedById String?
+  templateId   String?
+  tags         String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  org       Org                @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  lineItems ProposalLineItem[]
+
+  @@index([orgId])
+  @@index([clientId])
+  @@index([projectId])
+  @@index([status])
+  @@index([proposalNumber])
+  @@map("proposals")
+}
+
+model ProposalLineItem {
+  id         String @id @default(uuid())
+  proposalId String
+
+  // Item details
+  sortOrder   Int     @default(0)
+  category    String? // Division/section
+  description String
+  quantity    Decimal @db.Decimal(12, 4)
+  unit        String  @default("EA") // EA, SF, LF, HR, etc.
+  unitPrice   Decimal @db.Decimal(12, 2)
+  totalPrice  Decimal @db.Decimal(14, 2)
+
+  // Cost breakdown
+  materialCost  Decimal? @db.Decimal(12, 2)
+  laborCost     Decimal? @db.Decimal(12, 2)
+  equipmentCost Decimal? @db.Decimal(12, 2)
+  markup        Decimal? @db.Decimal(5, 4)
+  marginPercent Decimal? @db.Decimal(5, 4)
+
+  // Categorization
+  csiCode     String? // CSI MasterFormat
+  trade       String? // Plumbing, Electrical, etc.
+  isOptional  Boolean @default(false)
+  isAlternate Boolean @default(false)
+  notes       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@index([proposalId])
+  @@index([category])
+  @@map("proposal_line_items")
+}
+
+// ============================================================================
+// V10 SPEC: CONTRACT PARTY
+// Multi-party contract linkage for complex construction agreements
+// ============================================================================
+
+enum ContractPartyRole {
+  OWNER
+  GENERAL_CONTRACTOR
+  SUBCONTRACTOR
+  ARCHITECT
+  ENGINEER
+  CONSULTANT
+  SURETY
+  LENDER
+  INSPECTOR
+}
+
+model ContractParty {
+  id           String  @id @default(uuid())
+  contractId   String
+  userId       String?
+  orgId        String?
+  contractorId String?
+
+  role              ContractPartyRole
+  isPrimary         Boolean           @default(false)
+  signatureRequired Boolean           @default(true)
+
+  // Signature
+  signedAt     DateTime?
+  signedBy     String?
+  signatureUrl String?
+  signatureIp  String?
+
+  // Contact info override
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+
+  // Obligations
+  obligations  Json? // Array of party-specific obligations
+  paymentTerms Json? // Party-specific payment terms
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contract ContractAgreement @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+  @@index([userId])
+  @@index([orgId])
+  @@index([role])
+  @@map("contract_parties")
+}
+
+// ============================================================================
+// V10 SPEC: FINANCIAL TRANSACTION (generic ledger)
+// ============================================================================
+
+enum FinancialTransactionType {
+  INVOICE
+  PAYMENT
+  REFUND
+  CREDIT
+  DEBIT
+  ESCROW_DEPOSIT
+  ESCROW_RELEASE
+  FEE
+  ADJUSTMENT
+  WRITE_OFF
+}
+
+enum FinancialTransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REVERSED
+  DISPUTED
+}
+
+model FinancialTransaction {
+  id        String  @id @default(uuid())
+  orgId     String
+  projectId String?
+
+  // Transaction details
+  transactionType FinancialTransactionType
+  status          FinancialTransactionStatus @default(PENDING)
+  referenceNumber String                     @unique
+  description     String
+
+  // Amounts
+  amount    Decimal  @db.Decimal(14, 2)
+  currency  String   @default("USD")
+  taxAmount Decimal? @db.Decimal(14, 2)
+  feeAmount Decimal? @db.Decimal(14, 2)
+  netAmount Decimal? @db.Decimal(14, 2)
+
+  // Parties
+  fromAccountId String?
+  toAccountId   String?
+  payerId       String?
+  payeeId       String?
+
+  // Related entities
+  invoiceId         String?
+  paymentId         String?
+  contractId        String?
+  changeOrderId     String?
+  escrowAgreementId String?
+
+  // Payment method
+  paymentMethod   String? // CARD, ACH, CHECK, WIRE, CASH
+  stripePaymentId String?
+
+  // Dates
+  transactionDate DateTime  @default(now())
+  dueDate         DateTime?
+  clearedDate     DateTime?
+
+  // Reconciliation
+  isReconciled  Boolean   @default(false)
+  reconciledAt  DateTime?
+  reconciledBy  String?
+  bankReference String?
+
+  // Metadata
+  metadata Json?
+  notes    String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orgId])
+  @@index([projectId])
+  @@index([transactionType])
+  @@index([status])
+  @@index([referenceNumber])
+  @@index([transactionDate])
+  @@index([isReconciled])
+  @@map("financial_transactions")
+}
+
+// ============================================================================
+// V10 SPEC: AUTOMATION EVENT
+// Event tracking for Command Center mini-apps
+// ============================================================================
+
+enum AutomationEventSeverity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+model AutomationEvent {
+  id    String  @id @default(uuid())
+  orgId String?
+
+  // Event identification
+  eventType String // e.g., 'kealee.bid.analysis_complete'
+  source    String // APP-01, APP-02, etc.
+  severity  AutomationEventSeverity @default(INFO)
+
+  // Context
+  projectId  String?
+  userId     String?
+  jobId      String?
+  entityType String? // 'ChangeOrder', 'Permit', etc.
+  entityId   String?
+
+  // Event data
+  title       String
+  description String? @db.Text
+  payload     Json?
+  metadata    Json?
+
+  // Processing
+  isProcessed      Boolean   @default(false)
+  processedAt      DateTime?
+  processingResult Json?
+
+  // Acknowledgment
+  isAcknowledged Boolean   @default(false)
+  acknowledgedAt DateTime?
+  acknowledgedBy String?
+
+  createdAt DateTime @default(now())
+
+  @@index([orgId])
+  @@index([eventType])
+  @@index([source])
+  @@index([severity])
+  @@index([projectId])
+  @@index([isProcessed])
+  @@index([createdAt])
+  @@map("automation_events")
+}
+
+// ============================================================================
+// V10 SPEC: BID EVALUATION (formal scoring for bid analysis)
+// ============================================================================
+
+model BidEvaluation {
+  id              String  @id @default(uuid())
+  bidRequestId    String
+  bidSubmissionId String
+  evaluatorId     String?
+
+  // Scoring (1-100 scale)
+  overallScore       Int
+  priceScore         Int?
+  qualificationScore Int?
+  scheduleScore      Int?
+  safetyScore        Int?
+  referencesScore    Int?
+  complianceScore    Int?
+
+  // Weighted scores
+  weightedTotal       Decimal? @db.Decimal(8, 4)
+  priceWeight         Decimal? @default(0.35) @db.Decimal(5, 4)
+  qualificationWeight Decimal? @default(0.25) @db.Decimal(5, 4)
+  scheduleWeight      Decimal? @default(0.15) @db.Decimal(5, 4)
+  safetyWeight        Decimal? @default(0.10) @db.Decimal(5, 4)
+  referencesWeight    Decimal? @default(0.10) @db.Decimal(5, 4)
+  complianceWeight    Decimal? @default(0.05) @db.Decimal(5, 4)
+
+  // AI analysis
+  aiRecommendation String? // AWARD, SHORTLIST, REJECT, NEEDS_REVIEW
+  aiConfidence     Decimal? @db.Decimal(5, 4) // 0.0 - 1.0
+  aiReasoning      String?  @db.Text
+  riskFlags        String[] // Array of risk identifiers
+
+  // Price analysis
+  priceVariance   Decimal? @db.Decimal(8, 4) // % from engineer's estimate
+  isLowBid        Boolean  @default(false)
+  isBelowEstimate Boolean  @default(false)
+
+  // Evaluator notes
+  notes          String? @db.Text
+  strengthNotes  String? @db.Text
+  weaknessNotes  String? @db.Text
+  conditionNotes String? @db.Text
+
+  // Status
+  status      String    @default("DRAFT") // DRAFT, SUBMITTED, FINALIZED
+  submittedAt DateTime?
+  finalizedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bidRequest    BidRequest    @relation(fields: [bidRequestId], references: [id], onDelete: Cascade)
+  bidSubmission BidSubmission @relation(fields: [bidSubmissionId], references: [id], onDelete: Cascade)
+
+  @@unique([bidRequestId, bidSubmissionId])
+  @@index([bidRequestId])
+  @@index([bidSubmissionId])
+  @@index([overallScore])
+  @@index([aiRecommendation])
+  @@map("bid_evaluations")
+}
+
+// ============================================================================
+// V10 SPEC: WEEKLY REPORT
+// Automated weekly report generation and distribution
+// ============================================================================
+
+enum WeeklyReportStatus {
+  GENERATING
+  DRAFT
+  REVIEW
+  APPROVED
+  SENT
+  FAILED
+}
+
+model WeeklyReport {
+  id        String @id @default(uuid())
+  projectId String
+  orgId     String
+
+  // Report identification
+  reportNumber  Int
+  weekStartDate DateTime
+  weekEndDate   DateTime
+
+  // Status
+  status      WeeklyReportStatus @default(GENERATING)
+  generatedAt DateTime?
+  reviewedAt  DateTime?
+  reviewedBy  String?
+  approvedAt  DateTime?
+  approvedBy  String?
+  sentAt      DateTime?
+
+  // Content sections (generated by APP-04)
+  executiveSummary    String? @db.Text
+  scheduleUpdate      Json? // { percentComplete, daysAhead/Behind, milestones }
+  budgetSummary       Json? // { spent, remaining, variance, projectedTotal }
+  workCompleted       Json? // Array of completed work items
+  workPlanned         Json? // Array of upcoming work items
+  issuesAndRisks      Json? // Array of { issue, severity, mitigation }
+  changeOrderSummary  Json? // { pending, approved, totalImpact }
+  safetyReport        Json? // { incidents, nearMisses, toolboxTalks }
+  weatherImpact       Json? // { daysLost, outlook }
+  photos              Json? // Array of { url, caption, category }
+  subcontractorStatus Json? // Array of { name, trade, status }
+
+  // Distribution
+  recipients      String[] // Email addresses
+  ccRecipients    String[]
+  documentUrl     String? // Generated PDF URL
+  clientPortalUrl String? // Link for client portal
+
+  // AI insights
+  aiInsights        String? @db.Text
+  aiRiskScore       Int? // 0-100
+  aiRecommendations Json? // Array of recommendations
+
+  // Metadata
+  dataSnapshotAt DateTime? // When data was captured
+  metadata       Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, weekStartDate])
+  @@index([projectId])
+  @@index([orgId])
+  @@index([status])
+  @@index([weekStartDate])
+  @@map("weekly_reports")
+}
+
+// ============================================================================
+// V10 SPEC: QA INSPECTION RESULT
+// Quality assurance inspection tracking (APP-13)
+// ============================================================================
+
+enum QAResultStatus {
+  SCHEDULED
+  IN_PROGRESS
+  PASS
+  FAIL
+  CONDITIONAL_PASS
+  NEEDS_REINSPECTION
+  CANCELLED
+}
+
+enum QASeverity {
+  MINOR
+  MODERATE
+  MAJOR
+  CRITICAL
+}
+
+model QAInspectionResult {
+  id        String @id @default(uuid())
+  projectId String
+  orgId     String
+
+  // Inspection details
+  inspectionType   String // ROUGH_IN, FRAMING, ELECTRICAL, PLUMBING, FIRE, FINAL, etc.
+  inspectionNumber Int
+  inspectorId      String?
+  inspectorName    String?
+
+  // Location
+  location      String? // Building/floor/area
+  tradeCategory String? // MECHANICAL, ELECTRICAL, PLUMBING, STRUCTURAL, etc.
+
+  // Schedule
+  scheduledDate DateTime?
+  completedDate DateTime?
+  duration      Int? // minutes
+
+  // Results
+  status       QAResultStatus @default(SCHEDULED)
+  overallScore Int? // 0-100
+
+  // Checklist results
+  checklistItems Json? // Array of { item, category, pass, notes, photos }
+  totalItems     Int   @default(0)
+  passedItems    Int   @default(0)
+  failedItems    Int   @default(0)
+  naItems        Int   @default(0)
+
+  // Deficiencies
+  deficiencies    Json? // Array of { id, description, severity, location, photo, dueDate, status }
+  deficiencyCount Int   @default(0)
+  criticalCount   Int   @default(0)
+
+  // AI analysis (APP-13)
+  aiAnalysis       String? @db.Text
+  aiRiskAssessment Json? // { score, factors, recommendations }
+  predictedIssues  Json? // AI-predicted potential issues
+
+  // Follow-up
+  reinspectionRequired Boolean   @default(false)
+  reinspectionDate     DateTime?
+  reinspectionId       String? // Link to follow-up inspection
+  correctiveActions    Json? // Array of { action, assignedTo, dueDate, status }
+
+  // Documentation
+  photos        String[] // URLs
+  documentUrl   String? // Generated report PDF
+  notes         String?  @db.Text
+  clientVisible Boolean  @default(false)
+
+  // Sign-off
+  signedOffBy  String?
+  signedOffAt  DateTime?
+  signatureUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([orgId])
+  @@index([inspectionType])
+  @@index([status])
+  @@index([scheduledDate])
+  @@index([inspectorId])
+  @@map("qa_inspection_results")
+}
+
+// ============================================================================
+// V10 SPEC: DECISION QUEUE
+// Approval workflow queue for Command Center (APP-14)
+// ============================================================================
+
+enum DecisionStatus {
+  PENDING
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  DEFERRED
+  ESCALATED
+  AUTO_APPROVED
+  EXPIRED
+}
+
+enum DecisionPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+  CRITICAL
+}
+
+enum DecisionCategory {
+  CHANGE_ORDER
+  BUDGET_ADJUSTMENT
+  SCHEDULE_CHANGE
+  MATERIAL_SUBSTITUTION
+  SUBCONTRACTOR_APPROVAL
+  SAFETY_CONCERN
+  PERMIT_ISSUE
+  DESIGN_CHANGE
+  PAYMENT_RELEASE
+  CONTRACT_AMENDMENT
+  RFI_RESPONSE
+  OTHER
+}
+
+model DecisionQueue {
+  id        String  @id @default(uuid())
+  projectId String?
+  orgId     String
+
+  // Decision details
+  title       String
+  description String           @db.Text
+  category    DecisionCategory
+  priority    DecisionPriority @default(NORMAL)
+  status      DecisionStatus   @default(PENDING)
+
+  // Related entity
+  entityType String? // ChangeOrder, BudgetLine, etc.
+  entityId   String?
+
+  // Requester
+  requestedById String
+  requestedAt   DateTime @default(now())
+
+  // Assignment
+  assignedToId String?
+  assignedAt   DateTime?
+
+  // Decision
+  decidedById String?
+  decidedAt   DateTime?
+  decision    String? // Free-text decision rationale
+  conditions  String[] // Array of conditions for approval
+
+  // Escalation
+  escalatedFromId  String? // Previous DecisionQueue id
+  escalatedToId    String? // User id escalated to
+  escalationReason String?
+  escalatedAt      DateTime?
+
+  // AI recommendation (APP-14)
+  aiRecommendation String? // APPROVE, REJECT, DEFER, ESCALATE
+  aiConfidence     Decimal?  @db.Decimal(5, 4)
+  aiReasoning      String?   @db.Text
+  aiAnalyzedAt     DateTime?
+
+  // Impact analysis
+  costImpact     Decimal? @db.Decimal(14, 2)
+  scheduleImpact Int? // days
+  riskLevel      String? // LOW, MEDIUM, HIGH, CRITICAL
+
+  // SLA tracking
+  dueDate           DateTime?
+  slaDeadline       DateTime?
+  isOverdue         Boolean   @default(false)
+  overdueNotifiedAt DateTime?
+
+  // Metadata
+  attachments String[] // URLs
+  metadata    Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orgId])
+  @@index([projectId])
+  @@index([category])
+  @@index([priority])
+  @@index([status])
+  @@index([assignedToId])
+  @@index([requestedById])
+  @@index([dueDate])
+  @@index([isOverdue])
+  @@map("decision_queue")
+}
+
+// ============================================================================
+// V10 SPEC: APP HEALTH METRIC
+// Application health monitoring for Command Center (APP-15)
+// ============================================================================
+
+enum HealthStatus {
+  HEALTHY
+  DEGRADED
+  UNHEALTHY
+  OFFLINE
+  MAINTENANCE
+}
+
+model AppHealthMetric {
+  id String @id @default(uuid())
+
+  // App identification
+  appId       String // APP-01, APP-02, etc.
+  appName     String
+  environment String @default("production") // production, staging, development
+
+  // Health status
+  status        HealthStatus @default(HEALTHY)
+  statusMessage String?
+
+  // Performance metrics
+  uptime         Decimal? @db.Decimal(8, 4) // percentage 0-100
+  responseTimeMs Int? // average response time
+  p95ResponseMs  Int? // 95th percentile
+  p99ResponseMs  Int? // 99th percentile
+  errorRate      Decimal? @db.Decimal(8, 6) // percentage 0-100
+  throughput     Int? // requests per minute
+
+  // Resource utilization
+  cpuUsagePercent Decimal? @db.Decimal(5, 2)
+  memoryUsageMB   Int?
+  memoryLimitMB   Int?
+  diskUsageMB     Int?
+
+  // Queue metrics (BullMQ)
+  queueDepth           Int? // Jobs waiting
+  activeJobs           Int?
+  completedJobs24h     Int? // Last 24 hours
+  failedJobs24h        Int?
+  averageJobDurationMs Int?
+
+  // Error tracking
+  lastErrorMessage  String?
+  lastErrorAt       DateTime?
+  consecutiveErrors Int       @default(0)
+
+  // Dependencies
+  databaseConnected Boolean @default(true)
+  redisConnected    Boolean @default(true)
+  externalApisUp    Boolean @default(true)
+  dependencyStatus  Json? // { service: status }
+
+  // Version
+  version       String?
+  deployedAt    DateTime?
+  lastRestartAt DateTime?
+
+  // Alerting
+  alertsSent    Int       @default(0)
+  lastAlertAt   DateTime?
+  isSilenced    Boolean   @default(false)
+  silencedUntil DateTime?
+
+  // Snapshot timestamp
+  recordedAt DateTime @default(now())
+
+  @@index([appId])
+  @@index([status])
+  @@index([environment])
+  @@index([recordedAt])
+  @@map("app_health_metrics")
 }
