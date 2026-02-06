@@ -12,13 +12,17 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import Stripe from 'stripe';
 
-// Initialize Stripe (in production, use environment variable)
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_xxx', {
+// Initialize Stripe - requires STRIPE_SECRET_KEY env var (no fallback to test keys)
+const stripeKey = process.env.STRIPE_SECRET_KEY;
+if (!stripeKey) {
+  console.error('STRIPE_SECRET_KEY is not set. Stripe webhook handler will not function.');
+}
+const stripe = new Stripe(stripeKey || '', {
   apiVersion: '2023-10-16',
 });
 
-// Webhook secret for verifying signatures
-const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_xxx';
+// Webhook secret for verifying signatures - requires env var
+const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 
 // Event types we handle
 const HANDLED_EVENTS = [

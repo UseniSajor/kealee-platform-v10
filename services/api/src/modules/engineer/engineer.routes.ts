@@ -5,6 +5,7 @@
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { authenticateUser } from '../auth/auth.middleware';
 import { z } from 'zod';
 import {
   calculateQuote,
@@ -98,9 +99,9 @@ export async function engineerRoutes(fastify: FastifyInstance) {
    * POST /engineer/quote
    * Request a quote for engineering services
    */
-  fastify.post('/quote', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.post('/quote', { preHandler: [authenticateUser] }, async (request: FastifyRequest, reply: FastifyReply) => {
     const body = QuoteRequestSchema.parse(request.body);
-    const userId = (request as any).userId || 'anonymous';
+    const userId = (request as any).user?.id || (request as any).userId;
 
     const quote = await calculateQuote({
       userId,
@@ -118,13 +119,9 @@ export async function engineerRoutes(fastify: FastifyInstance) {
    * POST /engineer/projects
    * Create a new engineering project
    */
-  fastify.post('/projects', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.post('/projects', { preHandler: [authenticateUser] }, async (request: FastifyRequest, reply: FastifyReply) => {
     const body = CreateProjectSchema.parse(request.body);
-    const userId = (request as any).userId;
-
-    if (!userId) {
-      return reply.status(401).send({ error: 'Authentication required' });
-    }
+    const userId = (request as any).user?.id || (request as any).userId;
 
     const project = await createEngineeringProject(userId, body.quoteId, body);
 
@@ -138,12 +135,8 @@ export async function engineerRoutes(fastify: FastifyInstance) {
    * GET /engineer/projects
    * Get user's engineering projects
    */
-  fastify.get('/projects', async (request: FastifyRequest, reply: FastifyReply) => {
-    const userId = (request as any).userId;
-
-    if (!userId) {
-      return reply.status(401).send({ error: 'Authentication required' });
-    }
+  fastify.get('/projects', { preHandler: [authenticateUser] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const userId = (request as any).user?.id || (request as any).userId;
 
     const projects = await getUserProjects(userId);
 
@@ -157,7 +150,7 @@ export async function engineerRoutes(fastify: FastifyInstance) {
    * GET /engineer/projects/:id
    * Get project details
    */
-  fastify.get('/projects/:id', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get('/projects/:id', { preHandler: [authenticateUser] }, async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
 
     const project = await getProjectById(id);
@@ -176,7 +169,7 @@ export async function engineerRoutes(fastify: FastifyInstance) {
    * POST /engineer/projects/:id/pay
    * Mark project as paid (called after Stripe payment)
    */
-  fastify.post('/projects/:id/pay', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.post('/projects/:id/pay', { preHandler: [authenticateUser] }, async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
 
     const project = await markProjectPaid(id);
@@ -191,7 +184,7 @@ export async function engineerRoutes(fastify: FastifyInstance) {
    * POST /engineer/projects/:id/assign
    * Assign an engineer to a project (admin only)
    */
-  fastify.post('/projects/:id/assign', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.post('/projects/:id/assign', { preHandler: [authenticateUser] }, async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
     const body = AssignEngineerSchema.parse(request.body);
 
@@ -207,7 +200,7 @@ export async function engineerRoutes(fastify: FastifyInstance) {
    * PATCH /engineer/projects/:id/status
    * Update project status
    */
-  fastify.patch('/projects/:id/status', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.patch('/projects/:id/status', { preHandler: [authenticateUser] }, async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
     const body = UpdateStatusSchema.parse(request.body);
 
@@ -223,7 +216,7 @@ export async function engineerRoutes(fastify: FastifyInstance) {
    * POST /engineer/projects/:id/deliverables
    * Add a deliverable to a project
    */
-  fastify.post('/projects/:id/deliverables', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.post('/projects/:id/deliverables', { preHandler: [authenticateUser] }, async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
     const body = AddDeliverableSchema.parse(request.body);
 
@@ -242,7 +235,7 @@ export async function engineerRoutes(fastify: FastifyInstance) {
    * GET /engineer/engineers
    * Get available engineers (admin only)
    */
-  fastify.get('/engineers', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get('/engineers', { preHandler: [authenticateUser] }, async (request: FastifyRequest, reply: FastifyReply) => {
     const { discipline } = request.query as { discipline?: string };
 
     const engineers = await getAvailableEngineers(
@@ -322,8 +315,8 @@ export async function engineerRoutes(fastify: FastifyInstance) {
    * GET /engineer/dashboard
    * Get dashboard data for engineer portal
    */
-  fastify.get('/dashboard', async (request: FastifyRequest, reply: FastifyReply) => {
-    const userId = (request as any).userId;
+  fastify.get('/dashboard', { preHandler: [authenticateUser] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const userId = (request as any).user?.id || (request as any).userId;
 
     // Return dashboard stats
     return {

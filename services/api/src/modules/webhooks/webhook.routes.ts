@@ -3,9 +3,13 @@
  */
 
 import {FastifyInstance, FastifyRequest, FastifyReply} from 'fastify';
+import {authenticateUser} from '../auth/auth.middleware';
 import {webhookService} from './webhook.service';
 
 export async function webhookRoutes(fastify: FastifyInstance) {
+  // All webhook management routes require authentication
+  fastify.addHook('preHandler', authenticateUser);
+
   // POST /api/v1/webhooks - Create webhook
   fastify.post(
     '/api/v1/webhooks',
