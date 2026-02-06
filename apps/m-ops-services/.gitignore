@@ -1,2 +1,5 @@
 .vercel
 .env*.local
+
+# development lead storage
+data/leads.json

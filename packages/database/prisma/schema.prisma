@@ -8781,3 +8781,379 @@ model AppHealthMetric {
   @@index([recordedAt])
   @@map("app_health_metrics")
 }
+
+// ============================================================================
+// KEALEE DEVELOPMENT - Owner's Rep Lead Management
+// ============================================================================
+
+enum DevelopmentLeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL_SENT
+  NEGOTIATING
+  WON
+  LOST
+  ARCHIVED
+}
+
+enum DevelopmentLeadSource {
+  WEBSITE
+  REFERRAL
+  LINKEDIN
+  EMAIL
+  PHONE
+  OTHER
+}
+
+enum DevelopmentLeadPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum DevelopmentProjectStage {
+  PRE_ACQUISITION
+  UNDER_CONTRACT
+  DESIGN
+  PERMITTING
+  BIDDING
+  IN_CONSTRUCTION
+  STALLED_RESCUE
+}
+
+enum DevelopmentAssetType {
+  MULTIFAMILY
+  MIXED_USE
+  TOWNHOMES
+  SFD
+  COMMERCIAL
+  INDUSTRIAL
+  OTHER
+}
+
+// Development Lead (from website intake or manual entry)
+model DevelopmentLead {
+  id String @id @default(uuid())
+
+  // Contact Information
+  fullName String
+  company  String
+  email    String
+  phone    String?
+  role     String // Owner, Developer, Investor, Asset Manager, Non-profit, Other
+
+  // Project Details
+  location     String
+  assetType    DevelopmentAssetType
+  units        String // Can be number or "N/A" for non-unit-based
+  notUnitBased Boolean                 @default(false)
+  projectStage DevelopmentProjectStage
+  budgetRange  String // "< $1M", "$1–5M", etc.
+  timeline     String // "0–3 mo", "3–6 mo", etc.
+
+  // Needs Assessment
+  needsHelp String[] // Array of selected needs
+  message   String   @db.Text // Project summary
+
+  // Lead Management
+  status     DevelopmentLeadStatus   @default(NEW)
+  priority   DevelopmentLeadPriority @default(MEDIUM)
+  source     DevelopmentLeadSource   @default(WEBSITE)
+  assignedTo String? // User ID of assigned team member
+
+  // Deal Information
+  estimatedValue Decimal?  @db.Decimal(12, 2)
+  proposalSentAt DateTime?
+  proposalAmount Decimal?  @db.Decimal(12, 2)
+  closedAt       DateTime?
+  closedAmount   Decimal?  @db.Decimal(12, 2)
+  lostReason     String?
+
+  // Communication
+  lastContactedAt DateTime?
+  nextFollowUpAt  DateTime?
+
+  // Metadata
+  consent     Boolean  @default(false)
+  ipAddress   String?
+  userAgent   String?
+  submittedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  notes      DevelopmentLeadNote[]
+  activities DevelopmentLeadActivity[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([assignedTo])
+  @@index([email])
+  @@index([createdAt])
+  @@index([nextFollowUpAt])
+  @@map("development_leads")
+}
+
+// Notes on development leads
+model DevelopmentLeadNote {
+  id     String @id @default(uuid())
+  leadId String
+
+  content   String  @db.Text
+  createdBy String // User ID
+  isPrivate Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lead DevelopmentLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([createdBy])
+  @@index([createdAt])
+  @@map("development_lead_notes")
+}
+
+// Activity log for development leads
+model DevelopmentLeadActivity {
+  id     String @id @default(uuid())
+  leadId String
+
+  activityType String // STATUS_CHANGED, EMAIL_SENT, CALL_MADE, MEETING_SCHEDULED, PROPOSAL_SENT, NOTE_ADDED, etc.
+  description  String @db.Text
+  metadata     Json? // Additional activity data
+
+  createdBy String // User ID
+  createdAt DateTime @default(now())
+
+  lead DevelopmentLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([activityType])
+  @@index([createdAt])
+  @@map("development_lead_activities")
+}
+
+// ============================================================================
+// GC OPERATIONS SERVICES - Contractor Lead Management
+// ============================================================================
+
+enum GCOpsLeadStatus {
+  NEW
+  CONTACTED
+  TRIAL_ACTIVE
+  TRIAL_ENDED
+  CONVERTED
+  CHURNED
+  ARCHIVED
+}
+
+// GC Operations Service Lead (contractors seeking ops support)
+model GCOpsLead {
+  id String @id @default(uuid())
+
+  // Contact Information
+  fullName String
+  company  String
+  email    String
+  phone    String?
+  role     String // Owner, PM, Ops Manager, etc.
+
+  // Business Details
+  gcType              String // Residential GC, Commercial, Multi-Family, etc.
+  teamSize            String // Solo, 2-5, 6-15, etc.
+  projectsPerYear     String // 1-5, 6-15, etc.
+  averageProjectValue String // < $250K, $250K-$1M, etc.
+  serviceArea         String
+
+  // Needs Assessment
+  challenges      String[] // Array of selected challenges
+  packageInterest String // Package A/B/C/D or consultation
+  message         String   @db.Text
+
+  // Lead Management
+  status     GCOpsLeadStatus @default(NEW)
+  priority   String          @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  source     String          @default("WEBSITE") // WEBSITE, REFERRAL, etc.
+  assignedTo String? // User ID
+
+  // Trial & Conversion
+  trialStartDate  DateTime?
+  trialEndDate    DateTime?
+  convertedDate   DateTime?
+  churnedDate     DateTime?
+  churnReason     String?
+  selectedPackage String? // Final package chosen
+  monthlyValue    Decimal?  @db.Decimal(10, 2)
+
+  // Communication
+  lastContactedAt DateTime?
+  nextFollowUpAt  DateTime?
+
+  // Metadata
+  consent     Boolean  @default(false)
+  submittedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  notes      GCOpsLeadNote[]
+  activities GCOpsLeadActivity[]
+
+  @@index([status])
+  @@index([email])
+  @@index([assignedTo])
+  @@index([createdAt])
+  @@map("gc_ops_leads")
+}
+
+// Notes on GC ops leads
+model GCOpsLeadNote {
+  id     String @id @default(uuid())
+  leadId String
+
+  content   String  @db.Text
+  createdBy String
+  isPrivate Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lead GCOpsLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([createdAt])
+  @@map("gc_ops_lead_notes")
+}
+
+// Activity log for GC ops leads
+model GCOpsLeadActivity {
+  id     String @id @default(uuid())
+  leadId String
+
+  activityType String // LEAD_CREATED, STATUS_CHANGED, TRIAL_STARTED, etc.
+  description  String @db.Text
+  metadata     Json?
+
+  createdBy String
+  createdAt DateTime @default(now())
+
+  lead GCOpsLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([activityType])
+  @@index([createdAt])
+  @@map("gc_ops_lead_activities")
+}
+
+// ============================================================================
+// PERMIT SERVICES - Contractor Permit Lead Management
+// ============================================================================
+
+enum PermitServiceLeadStatus {
+  NEW
+  CONTACTED
+  FIRST_PERMIT_ACTIVE
+  ACTIVE_CLIENT
+  CHURNED
+  ARCHIVED
+}
+
+// Permit Service Lead (contractors seeking permit services)
+model PermitServiceLead {
+  id String @id @default(uuid())
+
+  // Contact Information
+  fullName String
+  company  String
+  email    String
+  phone    String?
+  role     String
+
+  // Contractor Details
+  contractorType  String // General, Electrical, Plumbing, HVAC, etc.
+  licenseNumber   String?
+  yearsInBusiness String
+  jurisdictions   String[] // Cities/counties they work in
+  permitsPerMonth String
+
+  // Service Needs
+  servicesNeeded String[] // Services they're interested in
+  urgency        String // Timeline urgency
+  message        String   @db.Text
+
+  // Lead Management
+  status     PermitServiceLeadStatus @default(NEW)
+  priority   String                  @default("MEDIUM")
+  source     String                  @default("WEBSITE")
+  assignedTo String?
+
+  // Client Status
+  firstPermitDate       DateTime?
+  becameClientDate      DateTime?
+  churnedDate           DateTime?
+  churnReason           String?
+  totalPermitsProcessed Int       @default(0)
+  monthlyValue          Decimal?  @db.Decimal(10, 2)
+
+  // Communication
+  lastContactedAt DateTime?
+  nextFollowUpAt  DateTime?
+
+  // Metadata
+  consent     Boolean  @default(false)
+  submittedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  notes      PermitServiceLeadNote[]
+  activities PermitServiceLeadActivity[]
+
+  @@index([status])
+  @@index([email])
+  @@index([assignedTo])
+  @@index([createdAt])
+  @@map("permit_service_leads")
+}
+
+// Notes on permit service leads
+model PermitServiceLeadNote {
+  id     String @id @default(uuid())
+  leadId String
+
+  content   String  @db.Text
+  createdBy String
+  isPrivate Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lead PermitServiceLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([createdAt])
+  @@map("permit_service_lead_notes")
+}
+
+// Activity log for permit service leads
+model PermitServiceLeadActivity {
+  id     String @id @default(uuid())
+  leadId String
+
+  activityType String
+  description  String @db.Text
+  metadata     Json?
+
+  createdBy String
+  createdAt DateTime @default(now())
+
+  lead PermitServiceLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([activityType])
+  @@index([createdAt])
+  @@map("permit_service_lead_activities")
+}

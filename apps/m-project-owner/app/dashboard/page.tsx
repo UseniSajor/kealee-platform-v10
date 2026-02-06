@@ -264,12 +264,8 @@ export default function DashboardPage() {
                   <span className="text-gray-600">Design Package</span>
                   <span className="font-medium text-gray-900">$199 - $999</span>
                 </div>
-                <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Platform Commission</span>
-                  <span className="font-medium text-gray-900">3.5%</span>
-                </div>
                 <p className="text-xs text-gray-500 pt-2">
-                  Platform commission is paid by the contractor, not you. It's automatically collected when the contract is signed.
+                  All applicable fees are displayed at checkout for complete transparency.
                 </p>
               </div>
               <Link
