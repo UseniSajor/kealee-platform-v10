@@ -282,6 +282,12 @@ import { environment, logEnvironment, validateProductionConfig, getSafeConfig } 
 
 const fastify = Fastify({
   logger: true,
+  // Generate unique request IDs for traceability in production
+  genReqId: (req) => {
+    return req.headers['x-request-id'] as string || `req-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+  },
+  // Trust proxy headers when behind Railway/load balancer
+  trustProxy: true,
 })
 
 // Start server
@@ -306,34 +312,13 @@ const start = async () => {
       console.log('   - External services may be mocked');
       console.log('');
     }
-    // AFTER: const fastify = Fastify({ ... })
-    // BEFORE: registering routes
+    // NOTE: All routes are registered below after plugin initialization.
+    // Duplicate /api scope removed - routes are registered individually with their prefixes.
 
-    fastify.register(async function apiScope(api) {
-      // All these become /api/<prefix>/<route>
-      await api.register(stripeConnectRoutes, { prefix: '/connect' })
-      await api.register(projectRoutes, { prefix: '/projects' })
-      await api.register(propertyRoutes, { prefix: '/properties' })
-      await api.register(readinessRoutes, { prefix: '/readiness' })
-
-      await api.register(contractTemplateRoutes, { prefix: '/contracts' })
-      await api.register(contractRoutes, { prefix: '/contracts' })
-      await api.register(contractDashboardRoutes, { prefix: '/contracts' })
-      await api.register(contractComplianceRoutes, { prefix: '/contracts' })
-      await api.register(contractSecurityRoutes, { prefix: '/contracts' })
-
-      await api.register(milestoneRoutes, { prefix: '/milestones' })
-      await api.register(milestoneUploadRoutes, { prefix: '/milestones' })
-      await api.register(milestoneReviewRoutes, { prefix: '/milestones' })
-
-      await api.register(marketplaceRoutes, { prefix: '/marketplace' })
-      await api.register(leadsRoutes, { prefix: '/marketplace' })
-      await api.register(quotesRoutes, { prefix: '/marketplace' })
-      await api.register(designRoutes, { prefix: '/marketplace' })
-
-      await api.register(paymentRoutes, { prefix: '/payments' })
-    }, { prefix: '/api' })
-
+    // Attach X-Request-ID to all responses for client-side correlation
+    fastify.addHook('onRequest', async (request, reply) => {
+      reply.header('X-Request-ID', request.id)
+    })
 
     // Register plugins
     // CORS configuration - allow all client-facing and internal domains
@@ -392,9 +377,11 @@ const start = async () => {
       runFirst: true,
     })
 
-    // Register Swagger/OpenAPI documentation
-    await fastify.register(swagger, swaggerConfig as any)
-    await fastify.register(swaggerUI, swaggerUIConfig)
+    // Register Swagger/OpenAPI documentation (disabled in production for security)
+    if (!environment.isProduction) {
+      await fastify.register(swagger, swaggerConfig as any)
+      await fastify.register(swaggerUI, swaggerUIConfig)
+    }
 
     // Register rate limiting (global)
     await registerGlobalRateLimit(fastify)
@@ -430,8 +417,10 @@ const start = async () => {
     const { registerHealthChecks } = require('./middleware/health-check.middleware')
     registerHealthChecks(fastify)
 
-    // Register routes
-    await fastify.register(testRoutes, { prefix: '/api' })
+    // Register routes (test routes only in non-production)
+    if (!environment.isProduction) {
+      await fastify.register(testRoutes, { prefix: '/api' })
+    }
     await fastify.register(authRoutes, { prefix: '/auth' })
     await fastify.register(orgRoutes, { prefix: '/orgs' })
     await fastify.register(userRoutes, { prefix: '/users' })
@@ -613,5 +602,57 @@ const start = async () => {
     process.exit(1)
   }
 }
+
+// ============================================================================
+// GRACEFUL SHUTDOWN
+// ============================================================================
+
+async function gracefulShutdown(signal: string) {
+  console.log(`\n${signal} received. Starting graceful shutdown...`)
+
+  try {
+    // 1. Stop accepting new connections
+    await fastify.close()
+    console.log('Server closed - no longer accepting connections')
+
+    // 2. Flush remaining request logs
+    const { flushAllLogs } = require('./middleware/request-logger.middleware')
+    await flushAllLogs()
+    console.log('Request logs flushed')
+
+    // 3. Disconnect Prisma
+    await prisma.$disconnect()
+    console.log('Database connections closed')
+
+    console.log('Graceful shutdown complete')
+    process.exit(0)
+  } catch (err) {
+    console.error('Error during graceful shutdown:', err)
+    process.exit(1)
+  }
+}
+
+// Handle termination signals (Railway sends SIGTERM on deploy)
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
+process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+
+// Handle uncaught errors in production - log and exit cleanly
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason)
+  if (environment.isProduction) {
+    const { captureException } = require('./middleware/sentry.middleware')
+    captureException(reason instanceof Error ? reason : new Error(String(reason)))
+  }
+})
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error)
+  if (environment.isProduction) {
+    const { captureException } = require('./middleware/sentry.middleware')
+    captureException(error)
+  }
+  // Uncaught exceptions leave the process in an undefined state - must exit
+  gracefulShutdown('uncaughtException')
+})
 
 start()

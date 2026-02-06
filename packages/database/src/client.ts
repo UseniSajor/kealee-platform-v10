@@ -87,13 +87,39 @@ if (process.env.NODE_ENV !== 'production' && resolvedDatabaseUrl) {
   }
 }
 
+/**
+ * Build DATABASE_URL with connection pool parameters for production.
+ * Prisma's connection_limit controls the pool size per service instance.
+ * Configurable via DATABASE_POOL_SIZE env var (default: 10).
+ */
+function buildPooledUrl(url: string | undefined): string | undefined {
+  if (!url) return undefined
+
+  try {
+    const parsed = new URL(url)
+    // Only add pool params if not already present in the URL
+    if (!parsed.searchParams.has('connection_limit')) {
+      const poolSize = process.env.DATABASE_POOL_SIZE || '10'
+      parsed.searchParams.set('connection_limit', poolSize)
+    }
+    if (!parsed.searchParams.has('pool_timeout')) {
+      parsed.searchParams.set('pool_timeout', '30')
+    }
+    return parsed.toString()
+  } catch {
+    return url
+  }
+}
+
+const pooledDatabaseUrl = buildPooledUrl(resolvedDatabaseUrl)
+
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    datasources: resolvedDatabaseUrl
+    datasources: pooledDatabaseUrl
       ? {
           db: {
-            url: resolvedDatabaseUrl,
+            url: pooledDatabaseUrl,
           },
         }
       : undefined,

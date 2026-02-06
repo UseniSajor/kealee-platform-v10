@@ -141,23 +141,28 @@ export interface CORSConfig {
  */
 export const PRODUCTION_CORS: CORSConfig = {
   origin: (origin) => {
-    const allowedOrigins = [
+    // Explicit list of allowed origins - avoids overly broad wildcards
+    const allowedExactOrigins = new Set([
       'https://kealee.com',
       'https://www.kealee.com',
       'https://app.kealee.com',
-      'https://*.kealee.com',
-      'https://*.vercel.app', // For preview deployments
-    ];
+      'https://ops.kealee.com',
+      'https://pm.kealee.com',
+      'https://admin.kealee.com',
+      'https://architect.kealee.com',
+      'https://permits.kealee.com',
+    ]);
 
-    if (!origin) return true; // Allow requests with no origin (mobile apps, Postman, etc.)
+    // Allow requests with no origin (server-to-server, mobile apps)
+    if (!origin) return true;
 
-    return allowedOrigins.some((allowed) => {
-      if (allowed.includes('*')) {
-        const regex = new RegExp(allowed.replace('*', '.*'));
-        return regex.test(origin);
-      }
-      return allowed === origin;
-    });
+    // Check exact match first (most common case)
+    if (allowedExactOrigins.has(origin)) return true;
+
+    // Allow Vercel preview deploys scoped to kealee project only
+    if (/^https:\/\/kealee-[a-z0-9-]+\.vercel\.app$/.test(origin)) return true;
+
+    return false;
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

@@ -199,11 +199,16 @@ export function validateProductionConfig(): void {
   const missing = requiredProductionVars.filter(varName => !process.env[varName]);
 
   if (missing.length > 0) {
-    console.error('❌ Missing required production environment variables:');
+    console.error('');
+    console.error('='.repeat(80));
+    console.error('FATAL: Missing required production environment variables:');
+    console.error('='.repeat(80));
     missing.forEach(varName => console.error(`   - ${varName}`));
-    console.error('⚠️  App will start but some features may not work until these are added.');
-    // Don't throw - let app start with warnings
-    // throw new Error(`Missing required production environment variables: ${missing.join(', ')}`);
+    console.error('');
+    console.error('The application cannot start safely in production without these variables.');
+    console.error('Set them in your Railway dashboard under Service -> Variables.');
+    console.error('='.repeat(80));
+    process.exit(1);
   }
 
   // Validate production values don't contain "test", "demo", "staging", etc.

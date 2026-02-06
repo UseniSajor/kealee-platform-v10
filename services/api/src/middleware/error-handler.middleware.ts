@@ -49,6 +49,7 @@ export async function errorHandler(
         })),
         timestamp: new Date().toISOString(),
         path: request.url,
+        requestId: request.id,
       },
     })
   }
@@ -63,6 +64,7 @@ export async function errorHandler(
         details: error.details,
         timestamp: new Date().toISOString(),
         path: request.url,
+        requestId: request.id,
       },
     })
   }
@@ -93,16 +95,19 @@ export async function errorHandler(
     })
   }
 
-  // Handle unknown errors
+  // Handle unknown errors - never leak internal details in production/staging
   const isDevelopment = process.env.NODE_ENV === 'development'
+  const isLocalDev = isDevelopment && !process.env.RAILWAY_ENVIRONMENT_NAME
+
   return reply.code(500).send({
     error: {
-      message: isDevelopment ? error.message : 'Internal server error',
+      message: isLocalDev ? error.message : 'Internal server error',
       code: 'INTERNAL_ERROR',
       statusCode: 500,
-      ...(isDevelopment && { stack: error.stack }),
+      ...(isLocalDev && { stack: error.stack }),
       timestamp: new Date().toISOString(),
       path: request.url,
+      requestId: request.id,
     },
   })
 }
@@ -121,6 +126,7 @@ export async function notFoundHandler(
       statusCode: 404,
       timestamp: new Date().toISOString(),
       path: request.url,
+      requestId: request.id,
     },
   })
 }
