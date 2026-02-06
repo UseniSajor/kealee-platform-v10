@@ -1524,6 +1524,12 @@ model Project {
   // Project Phase tracking
   phases ProjectPhase[]
 
+  // PM Core Module relationships
+  rfis                RFI[]
+  submittals          Submittal[]
+  dailyLogs           DailyLog[]
+  dispatchAssignments DispatchAssignment[]
+
   @@index([clientId])
   @@index([orgId])
   @@index([propertyId])
@@ -1891,6 +1897,13 @@ model Org {
 
   // Command Center Infrastructure relations
   integrationCredentials IntegrationCredential[]
+
+  // PM Core Module relationships
+  rfis                RFI[]
+  submittals          Submittal[]
+  dailyLogs           DailyLog[]
+  dispatchAssignments DispatchAssignment[]
+  priceBookItems      PriceBookItem[]
 
   @@index([slug])
   @@index([status])
@@ -7346,4 +7359,420 @@ model RolePermission {
 
   @@unique([roleKey, permissionKey])
   @@map("role_permissions")
+}
+
+// ============================================================================
+// PM CORE MODULES - RFIs, Submittals, Daily Logs, Dispatch, Price Book
+// Added for Procore/Buildertrend feature parity
+// ============================================================================
+
+enum RFIStatus {
+  DRAFT
+  OPEN
+  PENDING_REVIEW
+  ANSWERED
+  CLOSED
+  VOID
+}
+
+enum RFIPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model RFI {
+  id        String @id @default(uuid())
+  projectId String
+  orgId     String
+
+  number      Int // Sequential RFI number per project
+  subject     String
+  question    String @db.Text
+  answer      String? @db.Text
+  status      RFIStatus @default(DRAFT)
+  priority    RFIPriority @default(MEDIUM)
+
+  // Parties
+  createdById   String
+  assignedToId  String?
+  answeredById  String?
+
+  // Tracking
+  dueDate       DateTime?
+  answeredAt    DateTime?
+  closedAt      DateTime?
+
+  // References
+  costImpact    Decimal? @db.Decimal(12, 2)
+  scheduleImpact Int? // days
+  drawingRef    String?
+  specSection   String?
+  location      String?
+
+  // Linked entities
+  changeOrderId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  org     Org     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  responses RFIResponse[]
+  attachments RFIAttachment[]
+
+  @@index([projectId, number])
+  @@index([status])
+  @@index([assignedToId])
+  @@index([dueDate])
+  @@map("rfis")
+}
+
+model RFIResponse {
+  id    String @id @default(uuid())
+  rfiId String
+
+  responderId String
+  message     String @db.Text
+  isOfficial  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  rfi RFI @relation(fields: [rfiId], references: [id], onDelete: Cascade)
+
+  @@index([rfiId])
+  @@map("rfi_responses")
+}
+
+model RFIAttachment {
+  id    String @id @default(uuid())
+  rfiId String
+
+  fileName String
+  fileUrl  String
+  fileSize Int
+  mimeType String?
+
+  uploadedById String
+  createdAt    DateTime @default(now())
+
+  rfi RFI @relation(fields: [rfiId], references: [id], onDelete: Cascade)
+
+  @@index([rfiId])
+  @@map("rfi_attachments")
+}
+
+// --- Submittals ---
+
+enum SubmittalStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  APPROVED_AS_NOTED
+  REJECTED
+  RESUBMIT
+  CLOSED
+}
+
+enum SubmittalType {
+  SHOP_DRAWING
+  PRODUCT_DATA
+  SAMPLE
+  MOCK_UP
+  DESIGN_MIX
+  TEST_REPORT
+  CERTIFICATE
+  OPERATION_MANUAL
+  WARRANTY
+  OTHER
+}
+
+model Submittal {
+  id        String @id @default(uuid())
+  projectId String
+  orgId     String
+
+  number        Int // Sequential submittal number per project
+  title         String
+  description   String? @db.Text
+  status        SubmittalStatus @default(DRAFT)
+  type          SubmittalType @default(OTHER)
+
+  // CSI reference
+  specSection   String? // e.g., "03 30 00"
+  specParagraph String?
+
+  // Parties
+  submittedById  String?
+  reviewerId     String?
+  subcontractorId String?
+
+  // Tracking
+  submitDate     DateTime?
+  dueDate        DateTime?
+  reviewedDate   DateTime?
+  requiredDate   DateTime? // When material/product is needed on site
+
+  // Review
+  reviewComments String? @db.Text
+  revisionNumber Int @default(0)
+
+  // Distribution
+  distributedTo  String[] // User IDs who received copies
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  org     Org     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  attachments SubmittalAttachment[]
+
+  @@index([projectId, number])
+  @@index([status])
+  @@index([dueDate])
+  @@map("submittals")
+}
+
+model SubmittalAttachment {
+  id          String @id @default(uuid())
+  submittalId String
+
+  fileName String
+  fileUrl  String
+  fileSize Int
+  mimeType String?
+  version  Int @default(1)
+
+  uploadedById String
+  createdAt    DateTime @default(now())
+
+  submittal Submittal @relation(fields: [submittalId], references: [id], onDelete: Cascade)
+
+  @@index([submittalId])
+  @@map("submittal_attachments")
+}
+
+// --- Daily Logs ---
+
+enum WeatherCondition {
+  CLEAR
+  PARTLY_CLOUDY
+  CLOUDY
+  RAIN
+  HEAVY_RAIN
+  SNOW
+  WIND
+  FOG
+  STORM
+}
+
+model DailyLog {
+  id        String @id @default(uuid())
+  projectId String
+  orgId     String
+
+  logDate   DateTime @db.Date
+  createdById String
+
+  // Weather
+  weatherCondition  WeatherCondition?
+  temperatureHigh   Int? // Fahrenheit
+  temperatureLow    Int?
+  precipitation     Boolean @default(false)
+  windSpeed         Int? // mph
+  weatherNotes      String?
+
+  // Work summary
+  workPerformed     String? @db.Text
+  materialsReceived String? @db.Text
+  equipmentOnSite   String? @db.Text
+
+  // Visitors
+  visitors          String? @db.Text
+
+  // Safety
+  safetyIncidents   Int @default(0)
+  safetyNotes       String? @db.Text
+
+  // Delays
+  delayHours        Decimal? @db.Decimal(5, 2)
+  delayReason       String?
+
+  // Status
+  isSubmitted       Boolean @default(false)
+  submittedAt       DateTime?
+  approvedById      String?
+  approvedAt        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  org     Org     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  crewEntries  DailyLogCrewEntry[]
+  photos       DailyLogPhoto[]
+
+  @@unique([projectId, logDate])
+  @@index([projectId])
+  @@index([logDate])
+  @@map("daily_logs")
+}
+
+model DailyLogCrewEntry {
+  id         String @id @default(uuid())
+  dailyLogId String
+
+  companyName  String
+  trade        String?
+  workerCount  Int @default(0)
+  hoursWorked  Decimal @db.Decimal(5, 2)
+  description  String?
+
+  createdAt DateTime @default(now())
+
+  dailyLog DailyLog @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+
+  @@index([dailyLogId])
+  @@map("daily_log_crew_entries")
+}
+
+model DailyLogPhoto {
+  id         String @id @default(uuid())
+  dailyLogId String
+
+  fileUrl     String
+  caption     String?
+  category    String? // progress, safety, weather, delivery, etc.
+
+  createdAt DateTime @default(now())
+
+  dailyLog DailyLog @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+
+  @@index([dailyLogId])
+  @@map("daily_log_photos")
+}
+
+// --- Dispatch & Field Service ---
+
+enum DispatchStatus {
+  UNASSIGNED
+  ASSIGNED
+  EN_ROUTE
+  ON_SITE
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum DispatchPriority {
+  LOW
+  NORMAL
+  HIGH
+  EMERGENCY
+}
+
+model DispatchAssignment {
+  id        String @id @default(uuid())
+  projectId String
+  orgId     String
+
+  // Job info
+  title       String
+  description String? @db.Text
+  status      DispatchStatus @default(UNASSIGNED)
+  priority    DispatchPriority @default(NORMAL)
+
+  // Assignment
+  assignedToId  String? // Tech or crew lead
+  crewIds       String[] // Additional crew members
+
+  // Schedule
+  scheduledDate DateTime?
+  scheduledStart String? // Time HH:MM
+  scheduledEnd   String? // Time HH:MM
+  estimatedDuration Int? // minutes
+  isMultiDay    Boolean @default(false)
+  endDate       DateTime?
+
+  // Recurring
+  isRecurring     Boolean @default(false)
+  recurrenceRule  String? // iCal RRULE format
+
+  // Location
+  address       String?
+  latitude      Decimal? @db.Decimal(10, 8)
+  longitude     Decimal? @db.Decimal(11, 8)
+
+  // Tracking
+  enRouteAt     DateTime?
+  arrivedAt     DateTime?
+  completedAt   DateTime?
+  actualDuration Int? // minutes
+
+  // Notes
+  notes         String? @db.Text
+  completionNotes String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  org     Org     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([assignedToId])
+  @@index([scheduledDate])
+  @@index([status])
+  @@map("dispatch_assignments")
+}
+
+// --- Price Book ---
+
+enum PriceBookCategory {
+  LABOR
+  MATERIAL
+  EQUIPMENT
+  SUBCONTRACT
+  SERVICE
+  ASSEMBLY
+  FLAT_RATE
+}
+
+model PriceBookItem {
+  id    String @id @default(uuid())
+  orgId String
+
+  name        String
+  description String? @db.Text
+  category    PriceBookCategory
+  sku         String?
+
+  // Pricing
+  unitPrice   Decimal @db.Decimal(12, 2)
+  unit        String // each, hr, sf, lf, cy, etc.
+  costPrice   Decimal? @db.Decimal(12, 2) // Internal cost
+  markup      Decimal? @db.Decimal(5, 4) // Markup percentage
+
+  // Categorization
+  trade       String? // Plumbing, Electrical, etc.
+  csiCode     String? // CSI MasterFormat code
+  tags        String[]
+
+  // Status
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, category])
+  @@index([orgId, isActive])
+  @@index([sku])
+  @@map("price_book_items")
 }

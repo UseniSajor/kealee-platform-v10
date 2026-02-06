@@ -269,3 +269,331 @@ export type PhotoItem = {
   gpsLongitude?: number | null
 }
 
+// ----------------------------
+// RFIs
+// ----------------------------
+
+export type RFIStatus = "DRAFT" | "OPEN" | "PENDING_REVIEW" | "ANSWERED" | "CLOSED" | "VOID"
+export type RFIPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT"
+
+export type RFIItem = {
+  id: string
+  projectId: string
+  number: number
+  subject: string
+  question: string
+  answer?: string | null
+  status: RFIStatus
+  priority: RFIPriority
+  createdById: string
+  assignedToId?: string | null
+  answeredById?: string | null
+  dueDate?: string | null
+  answeredAt?: string | null
+  closedAt?: string | null
+  costImpact?: number | null
+  scheduleImpact?: number | null
+  drawingRef?: string | null
+  specSection?: string | null
+  location?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export const CreateRFISchema = z.object({
+  projectId: IdSchema,
+  subject: z.string().min(1),
+  question: z.string().min(1),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).default("MEDIUM"),
+  assignedToId: z.string().optional(),
+  dueDate: IsoDateSchema.optional(),
+  drawingRef: z.string().optional(),
+  specSection: z.string().optional(),
+  location: z.string().optional(),
+})
+export type CreateRFIInput = z.input<typeof CreateRFISchema>
+
+// ----------------------------
+// Submittals
+// ----------------------------
+
+export type SubmittalStatus = "DRAFT" | "SUBMITTED" | "UNDER_REVIEW" | "APPROVED" | "APPROVED_AS_NOTED" | "REJECTED" | "RESUBMIT" | "CLOSED"
+export type SubmittalType = "SHOP_DRAWING" | "PRODUCT_DATA" | "SAMPLE" | "MOCK_UP" | "DESIGN_MIX" | "TEST_REPORT" | "CERTIFICATE" | "OPERATION_MANUAL" | "WARRANTY" | "OTHER"
+
+export type SubmittalItem = {
+  id: string
+  projectId: string
+  number: number
+  title: string
+  description?: string | null
+  status: SubmittalStatus
+  type: SubmittalType
+  specSection?: string | null
+  submittedById?: string | null
+  reviewerId?: string | null
+  subcontractorId?: string | null
+  submitDate?: string | null
+  dueDate?: string | null
+  reviewedDate?: string | null
+  requiredDate?: string | null
+  reviewComments?: string | null
+  revisionNumber: number
+  createdAt: string
+  updatedAt: string
+}
+
+export const CreateSubmittalSchema = z.object({
+  projectId: IdSchema,
+  title: z.string().min(1),
+  description: z.string().optional(),
+  type: z.enum(["SHOP_DRAWING", "PRODUCT_DATA", "SAMPLE", "MOCK_UP", "DESIGN_MIX", "TEST_REPORT", "CERTIFICATE", "OPERATION_MANUAL", "WARRANTY", "OTHER"]).default("OTHER"),
+  specSection: z.string().optional(),
+  reviewerId: z.string().optional(),
+  subcontractorId: z.string().optional(),
+  dueDate: IsoDateSchema.optional(),
+  requiredDate: IsoDateSchema.optional(),
+})
+export type CreateSubmittalInput = z.input<typeof CreateSubmittalSchema>
+
+// ----------------------------
+// Daily Logs
+// ----------------------------
+
+export type WeatherCondition = "CLEAR" | "PARTLY_CLOUDY" | "CLOUDY" | "RAIN" | "HEAVY_RAIN" | "SNOW" | "WIND" | "FOG" | "STORM"
+
+export type DailyLogItem = {
+  id: string
+  projectId: string
+  logDate: string
+  createdById: string
+  weatherCondition?: WeatherCondition | null
+  temperatureHigh?: number | null
+  temperatureLow?: number | null
+  precipitation: boolean
+  windSpeed?: number | null
+  weatherNotes?: string | null
+  workPerformed?: string | null
+  materialsReceived?: string | null
+  equipmentOnSite?: string | null
+  visitors?: string | null
+  safetyIncidents: number
+  safetyNotes?: string | null
+  delayHours?: number | null
+  delayReason?: string | null
+  isSubmitted: boolean
+  submittedAt?: string | null
+  approvedById?: string | null
+  approvedAt?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export const CreateDailyLogSchema = z.object({
+  projectId: IdSchema,
+  logDate: IsoDateSchema,
+  weatherCondition: z.enum(["CLEAR", "PARTLY_CLOUDY", "CLOUDY", "RAIN", "HEAVY_RAIN", "SNOW", "WIND", "FOG", "STORM"]).optional(),
+  temperatureHigh: z.number().optional(),
+  temperatureLow: z.number().optional(),
+  workPerformed: z.string().optional(),
+  materialsReceived: z.string().optional(),
+  safetyIncidents: z.number().default(0),
+  safetyNotes: z.string().optional(),
+})
+export type CreateDailyLogInput = z.input<typeof CreateDailyLogSchema>
+
+// ----------------------------
+// Change Orders
+// ----------------------------
+
+export type ChangeOrderStatus = "DRAFT" | "PENDING" | "APPROVED" | "REJECTED" | "VOID"
+
+export type ChangeOrderItem = {
+  id: string
+  projectId: string
+  number: number
+  title: string
+  description?: string | null
+  status: ChangeOrderStatus
+  reason?: string | null
+  costImpact: number
+  scheduleImpact?: number | null
+  requestedById?: string | null
+  approvedById?: string | null
+  requestedAt?: string | null
+  approvedAt?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+// ----------------------------
+// Dispatch
+// ----------------------------
+
+export type DispatchStatus = "UNASSIGNED" | "ASSIGNED" | "EN_ROUTE" | "ON_SITE" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
+export type DispatchPriority = "LOW" | "NORMAL" | "HIGH" | "EMERGENCY"
+
+export type DispatchItem = {
+  id: string
+  projectId: string
+  title: string
+  description?: string | null
+  status: DispatchStatus
+  priority: DispatchPriority
+  assignedToId?: string | null
+  crewIds: string[]
+  scheduledDate?: string | null
+  scheduledStart?: string | null
+  scheduledEnd?: string | null
+  estimatedDuration?: number | null
+  isMultiDay: boolean
+  address?: string | null
+  notes?: string | null
+  completedAt?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export const CreateDispatchSchema = z.object({
+  projectId: IdSchema,
+  title: z.string().min(1),
+  description: z.string().optional(),
+  priority: z.enum(["LOW", "NORMAL", "HIGH", "EMERGENCY"]).default("NORMAL"),
+  assignedToId: z.string().optional(),
+  scheduledDate: IsoDateSchema.optional(),
+  scheduledStart: z.string().optional(),
+  scheduledEnd: z.string().optional(),
+  estimatedDuration: z.number().optional(),
+  address: z.string().optional(),
+})
+export type CreateDispatchInput = z.input<typeof CreateDispatchSchema>
+
+// ----------------------------
+// Price Book
+// ----------------------------
+
+export type PriceBookCategory = "LABOR" | "MATERIAL" | "EQUIPMENT" | "SUBCONTRACT" | "SERVICE" | "ASSEMBLY" | "FLAT_RATE"
+
+export type PriceBookItemType = {
+  id: string
+  name: string
+  description?: string | null
+  category: PriceBookCategory
+  sku?: string | null
+  unitPrice: number
+  unit: string
+  costPrice?: number | null
+  markup?: number | null
+  trade?: string | null
+  csiCode?: string | null
+  tags: string[]
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export const CreatePriceBookItemSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+  category: z.enum(["LABOR", "MATERIAL", "EQUIPMENT", "SUBCONTRACT", "SERVICE", "ASSEMBLY", "FLAT_RATE"]),
+  sku: z.string().optional(),
+  unitPrice: z.number().nonnegative(),
+  unit: z.string().min(1),
+  costPrice: z.number().optional(),
+  markup: z.number().optional(),
+  trade: z.string().optional(),
+  csiCode: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+})
+export type CreatePriceBookItemInput = z.input<typeof CreatePriceBookItemSchema>
+
+// ----------------------------
+// Scheduling
+// ----------------------------
+
+export type ScheduleItemType = {
+  id: string
+  projectId: string
+  name: string
+  type: string
+  startDate: string
+  endDate: string
+  resource?: string | null
+  status: string
+  isCriticalPath: boolean
+  dependencies: string[]
+  percentComplete: number
+}
+
+// ----------------------------
+// Subcontractor
+// ----------------------------
+
+export type SubcontractorItem = {
+  id: string
+  name: string
+  email?: string | null
+  phone?: string | null
+  company?: string | null
+  trades: string[]
+  licenseNumber?: string | null
+  insuranceExpiry?: string | null
+  rating?: number | null
+  status: string
+  projectCount: number
+}
+
+// ----------------------------
+// CRM / Lead
+// ----------------------------
+
+export type CRMLeadItem = {
+  id: string
+  name: string
+  email?: string | null
+  phone?: string | null
+  source?: string | null
+  status: string
+  value?: number | null
+  assignedTo?: string | null
+  lastContactDate?: string | null
+  nextFollowUp?: string | null
+  notes?: string | null
+  createdAt: string
+}
+
+// ----------------------------
+// Client Portal
+// ----------------------------
+
+export type ClientPortalProject = {
+  id: string
+  name: string
+  status: string
+  progress: number
+  currentPhase: string
+  budget: number
+  spent: number
+  pendingChangeOrders: number
+  pendingSelections: number
+  upcomingInspections: number
+  recentPhotos: number
+}
+
+// ----------------------------
+// Dashboard KPIs
+// ----------------------------
+
+export type DashboardKPI = {
+  label: string
+  value: number | string
+  change?: number | null
+  changeLabel?: string | null
+  trend?: "up" | "down" | "flat"
+}
+
+export type DashboardReport = {
+  kpis: DashboardKPI[]
+  revenueByMonth: { month: string; revenue: number; cost: number }[]
+  projectsByStatus: { status: string; count: number }[]
+  laborUtilization: { name: string; hours: number; capacity: number }[]
+}

@@ -4,18 +4,34 @@ import { apiClient } from "@/lib/api/client"
 import type {
   ApiListResponse,
   ApiResponse,
+  ChangeOrderItem,
   Client,
+  ClientPortalProject,
+  CreateDailyLogInput,
+  CreateDispatchInput,
+  CreatePriceBookItemInput,
   CreateProjectInput,
+  CreateRFIInput,
+  CreateSubmittalInput,
   CreateTaskInput,
+  CRMLeadItem,
+  DailyLogItem,
+  DashboardReport,
+  DispatchItem,
   DocumentItem,
   DocumentUploadResponse,
   Permit,
   PermitCheckStatusResponse,
   PermitScheduleInspectionInput,
   PhotoItem,
+  PriceBookItemType,
   Project,
   ProjectBudget,
   ProjectTimeline,
+  RFIItem,
+  ScheduleItemType,
+  SubcontractorItem,
+  SubmittalItem,
   Task,
   UpdateProjectInput,
   UpdateTaskInput,
@@ -190,6 +206,175 @@ export const api = {
         gpsLatitude: gps.lat,
         gpsLongitude: gps.lon,
       })
+      return data
+    },
+  },
+
+  rfis: {
+    list: async (projectId?: string) => {
+      const { data } = await apiClient.get<ApiListResponse<RFIItem>>("/pm/rfis", { params: projectId ? { projectId } : undefined })
+      return data
+    },
+    get: async (rfiId: string) => {
+      const { data } = await apiClient.get<ApiResponse<{ rfi: RFIItem }>>(`/pm/rfis/${rfiId}`)
+      return data
+    },
+    create: async (input: CreateRFIInput) => {
+      const { data } = await apiClient.post<ApiResponse<{ rfi: RFIItem }>>("/pm/rfis", input)
+      return data
+    },
+    update: async (rfiId: string, input: Partial<CreateRFIInput> & { status?: string; answer?: string }) => {
+      const { data } = await apiClient.patch<ApiResponse<{ rfi: RFIItem }>>(`/pm/rfis/${rfiId}`, input)
+      return data
+    },
+    delete: async (rfiId: string) => {
+      const { data } = await apiClient.delete<ApiResponse<{ ok: true }>>(`/pm/rfis/${rfiId}`)
+      return data
+    },
+  },
+
+  submittals: {
+    list: async (projectId?: string) => {
+      const { data } = await apiClient.get<ApiListResponse<SubmittalItem>>("/pm/submittals", { params: projectId ? { projectId } : undefined })
+      return data
+    },
+    get: async (submittalId: string) => {
+      const { data } = await apiClient.get<ApiResponse<{ submittal: SubmittalItem }>>(`/pm/submittals/${submittalId}`)
+      return data
+    },
+    create: async (input: CreateSubmittalInput) => {
+      const { data } = await apiClient.post<ApiResponse<{ submittal: SubmittalItem }>>("/pm/submittals", input)
+      return data
+    },
+    update: async (submittalId: string, input: Partial<CreateSubmittalInput> & { status?: string; reviewComments?: string }) => {
+      const { data } = await apiClient.patch<ApiResponse<{ submittal: SubmittalItem }>>(`/pm/submittals/${submittalId}`, input)
+      return data
+    },
+  },
+
+  dailyLogs: {
+    list: async (projectId?: string) => {
+      const { data } = await apiClient.get<ApiListResponse<DailyLogItem>>("/pm/daily-logs", { params: projectId ? { projectId } : undefined })
+      return data
+    },
+    get: async (logId: string) => {
+      const { data } = await apiClient.get<ApiResponse<{ log: DailyLogItem }>>(`/pm/daily-logs/${logId}`)
+      return data
+    },
+    create: async (input: CreateDailyLogInput) => {
+      const { data } = await apiClient.post<ApiResponse<{ log: DailyLogItem }>>("/pm/daily-logs", input)
+      return data
+    },
+    update: async (logId: string, input: Partial<CreateDailyLogInput>) => {
+      const { data } = await apiClient.patch<ApiResponse<{ log: DailyLogItem }>>(`/pm/daily-logs/${logId}`, input)
+      return data
+    },
+    submit: async (logId: string) => {
+      const { data } = await apiClient.post<ApiResponse<{ log: DailyLogItem }>>(`/pm/daily-logs/${logId}/submit`)
+      return data
+    },
+  },
+
+  changeOrders: {
+    list: async (projectId?: string) => {
+      const { data } = await apiClient.get<ApiListResponse<ChangeOrderItem>>("/pm/change-orders", { params: projectId ? { projectId } : undefined })
+      return data
+    },
+    get: async (coId: string) => {
+      const { data } = await apiClient.get<ApiResponse<{ changeOrder: ChangeOrderItem }>>(`/pm/change-orders/${coId}`)
+      return data
+    },
+    approve: async (coId: string) => {
+      const { data } = await apiClient.post<ApiResponse<{ changeOrder: ChangeOrderItem }>>(`/pm/change-orders/${coId}/approve`)
+      return data
+    },
+    reject: async (coId: string, reason: string) => {
+      const { data } = await apiClient.post<ApiResponse<{ changeOrder: ChangeOrderItem }>>(`/pm/change-orders/${coId}/reject`, { reason })
+      return data
+    },
+  },
+
+  dispatch: {
+    list: async (query?: { status?: string; date?: string; assignedTo?: string }) => {
+      const { data } = await apiClient.get<ApiListResponse<DispatchItem>>("/pm/dispatch", { params: query })
+      return data
+    },
+    get: async (id: string) => {
+      const { data } = await apiClient.get<ApiResponse<{ dispatch: DispatchItem }>>(`/pm/dispatch/${id}`)
+      return data
+    },
+    create: async (input: CreateDispatchInput) => {
+      const { data } = await apiClient.post<ApiResponse<{ dispatch: DispatchItem }>>("/pm/dispatch", input)
+      return data
+    },
+    update: async (id: string, input: Partial<CreateDispatchInput> & { status?: string }) => {
+      const { data } = await apiClient.patch<ApiResponse<{ dispatch: DispatchItem }>>(`/pm/dispatch/${id}`, input)
+      return data
+    },
+  },
+
+  priceBook: {
+    list: async (query?: { category?: string; search?: string; active?: boolean }) => {
+      const { data } = await apiClient.get<ApiListResponse<PriceBookItemType>>("/pm/price-book", { params: query })
+      return data
+    },
+    get: async (id: string) => {
+      const { data } = await apiClient.get<ApiResponse<{ item: PriceBookItemType }>>(`/pm/price-book/${id}`)
+      return data
+    },
+    create: async (input: CreatePriceBookItemInput) => {
+      const { data } = await apiClient.post<ApiResponse<{ item: PriceBookItemType }>>("/pm/price-book", input)
+      return data
+    },
+    update: async (id: string, input: Partial<CreatePriceBookItemInput>) => {
+      const { data } = await apiClient.patch<ApiResponse<{ item: PriceBookItemType }>>(`/pm/price-book/${id}`, input)
+      return data
+    },
+    delete: async (id: string) => {
+      const { data } = await apiClient.delete<ApiResponse<{ ok: true }>>(`/pm/price-book/${id}`)
+      return data
+    },
+  },
+
+  scheduling: {
+    list: async (projectId: string) => {
+      const { data } = await apiClient.get<ApiListResponse<ScheduleItemType>>(`/pm/projects/${projectId}/schedule`)
+      return data
+    },
+    update: async (projectId: string, items: ScheduleItemType[]) => {
+      const { data } = await apiClient.put<ApiResponse<{ items: ScheduleItemType[] }>>(`/pm/projects/${projectId}/schedule`, { items })
+      return data
+    },
+  },
+
+  subcontractors: {
+    list: async (query?: { trade?: string; search?: string }) => {
+      const { data } = await apiClient.get<ApiListResponse<SubcontractorItem>>("/pm/subcontractors", { params: query })
+      return data
+    },
+    get: async (id: string) => {
+      const { data } = await apiClient.get<ApiResponse<{ subcontractor: SubcontractorItem }>>(`/pm/subcontractors/${id}`)
+      return data
+    },
+  },
+
+  crm: {
+    leads: async (query?: { status?: string; source?: string }) => {
+      const { data } = await apiClient.get<ApiListResponse<CRMLeadItem>>("/pm/crm/leads", { params: query })
+      return data
+    },
+  },
+
+  clientPortal: {
+    projects: async () => {
+      const { data } = await apiClient.get<ApiListResponse<ClientPortalProject>>("/pm/client-portal/projects")
+      return data
+    },
+  },
+
+  dashboard: {
+    kpis: async () => {
+      const { data } = await apiClient.get<ApiResponse<DashboardReport>>("/pm/dashboard/kpis")
       return data
     },
   },
