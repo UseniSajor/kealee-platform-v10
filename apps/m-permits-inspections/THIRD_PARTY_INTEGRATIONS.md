@@ -15,50 +15,34 @@ These integrations enhance the permits system with:
 
 ---
 
-## 1️⃣ PermitZIP Integration
+## 1️⃣ Direct Jurisdiction Integrations (Building Our Own System)
 
-### **What It Is:**
-- Permit processing service with 6,000+ jurisdiction database
-- API for permit submission and status tracking
-- Real-time updates from building departments
+### **Kealee Native Approach:**
+Instead of relying on third-party services, we're building direct integrations:
 
-### **What We Use It For:**
-- ✅ **Jurisdiction data** (6,000+ jurisdictions vs our 25)
-- ✅ **Permit submission** (automated filing)
-- ✅ **Status tracking** (real-time updates)
-- ✅ **Fee calculations** (jurisdiction-specific)
+- ✅ **Direct jurisdiction portals** (web scraping where needed)
+- ✅ **Custom API integrations** (Accela, Tyler, etc.)
+- ✅ **In-house jurisdiction database** (25 and growing)
+- ✅ **Proprietary tracking system** (no dependencies)
 
-### **Integration Status:**
-- ✅ **Framework created:** `/services/api/src/integrations/permitzip.ts`
-- ⏳ **API key needed:** Contact PermitZIP for partnership
-- ⏳ **Testing:** Once API key obtained
+### **Why Direct vs Third-Party:**
+- ✅ **Full control** over user experience
+- ✅ **Lower costs** (no per-transaction fees)
+- ✅ **Better margins** (keep full revenue)
+- ✅ **Custom features** (not limited by API)
+- ✅ **Competitive advantage** (unique offering)
 
-### **Features Implemented:**
-```typescript
-// Search jurisdictions
-await permitZIPService.searchJurisdictions({ state: 'CA', city: 'San Francisco' });
+### **Current Status:**
+- ✅ 25 jurisdictions seeded
+- ✅ Direct submission capability
+- ✅ Status tracking system
+- ✅ Growing on-demand
 
-// Submit permit
-await permitZIPService.submitPermit({ jurisdictionId, permitType, documents });
-
-// Check status
-await permitZIPService.checkPermitStatus(confirmationNumber);
-
-// Sync entire database
-await permitZIPService.syncJurisdictionDatabase();
-```
-
-### **Cost:**
-- Contact PermitZIP for pricing
-- Likely partnership or per-transaction fee
-- Worth it for 6,000+ jurisdiction coverage
-
-### **Next Steps:**
-1. Contact PermitZIP: https://www.permitzip.com/contact
-2. Request API access/partnership
-3. Get API key
-4. Add to environment: `PERMITZIP_API_KEY=xxx`
-5. Run sync: `npx tsx scripts/sync-permitzip.ts`
+### **Growth Strategy:**
+- Add jurisdictions as customers request them
+- Build direct integrations with major metros
+- Scrape jurisdiction portals for status updates
+- Scale organically with revenue
 
 ---
 

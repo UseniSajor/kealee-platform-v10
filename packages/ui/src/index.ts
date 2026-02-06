@@ -206,6 +206,11 @@ export { default as tokensDefault } from './tokens';
 export * from './themes';
 
 // ========================================
+// Marketing Components
+// ========================================
+export * from './components/marketing';
+
+// ========================================
 // Utilities
 // ========================================
 export { cn } from './lib/utils';

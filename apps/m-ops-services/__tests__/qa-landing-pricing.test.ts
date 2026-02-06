@@ -68,12 +68,10 @@ describe('Landing Page QA Tests', () => {
       'Finance & Trust',
       'Permits & Inspections',
       'Marketplace',
-      'Architecture Services',
-      'Engineering Services',
     ];
 
-    it('should display all 8 platform modules', () => {
-      expect(expectedModules).toHaveLength(8);
+    it('should display all 6 platform modules', () => {
+      expect(expectedModules).toHaveLength(6);
     });
 
     it('should mark Pre-Construction as NEW', () => {

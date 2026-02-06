@@ -451,7 +451,7 @@ export default function NewPreConPage() {
 
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <p className="text-sm text-gray-600">
-                <strong>Note:</strong> The platform commission (3.5% of contract value) is paid by the contractor when the contract is signed, not by you.
+                <strong>Note:</strong> All applicable fees will be displayed at checkout for complete transparency.
               </p>
             </div>
           </div>

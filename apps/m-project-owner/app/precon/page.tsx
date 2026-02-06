@@ -4,6 +4,34 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+/**
+ * SOP v2 - PRECON WORKFLOW (m-project-owner)
+ *
+ * This is the 8-phase project lifecycle pipeline:
+ * 1. INTAKE - Project submitted, design package selected
+ * 2. DESIGN_IN_PROGRESS - Architects working on designs (m-architect)
+ * 3. DESIGN_APPROVED - Client approved the design
+ * 4. SRP_GENERATED - Suggested Retail Price calculated (APP-15 Estimation)
+ * 5. MARKETPLACE_READY - Listed on m-marketplace for contractor bidding
+ * 6. AWARDED - Contractor selected via Fair Bid Rotation
+ * 7. CONTRACT_RATIFIED - Contract signed, escrow funded (m-finance-trust)
+ * 8. COMPLETED - Project finished, final payment released
+ *
+ * Integration points:
+ * - m-architect: Design work
+ * - m-marketplace: Contractor matching via Fair Bid Rotation
+ * - m-finance-trust: Escrow deposits and milestone releases
+ * - m-ops-services: Client may subscribe to PM packages
+ * - os-pm: PM executes the project management
+ *
+ * Design Package Fees (paid upfront to start):
+ * - BASIC: $199
+ * - STANDARD: $499 (most popular)
+ * - PREMIUM: $999
+ *
+ * Platform Fee: 3.5% (paid by contractor, NOT homeowner)
+ */
+
 interface PreConProject {
   id: string
   name: string
@@ -158,6 +186,24 @@ export default function PreConListPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* SOP v2 Integration Notice */}
+        <div className="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-4">
+          <div className="flex items-start gap-4">
+            <div className="text-2xl">🔗</div>
+            <div className="flex-1">
+              <h4 className="font-semibold text-indigo-900">SOP v2 Integrated Workflow</h4>
+              <p className="text-sm text-indigo-700 mt-1">
+                Your project flows through multiple modules: <strong>m-architect</strong> for design →{' '}
+                <strong>m-marketplace</strong> for contractor matching → <strong>m-finance-trust</strong> for secure payments.
+                Need PM help? Subscribe to a service package via <strong>m-ops-services</strong>.
+              </p>
+            </div>
+            <div className="text-xs text-indigo-600 bg-white px-3 py-1 rounded-full border border-indigo-200">
+              All fees shown at checkout
+            </div>
+          </div>
+        </div>
+
         {/* Pipeline Overview */}
         {dashboard && (
           <div className="mb-8">
@@ -299,7 +345,7 @@ export default function PreConListPage() {
                 ))}
               </div>
               <p className="text-sm text-gray-500 mt-4">
-                Platform commission (3.5% of contract value) is paid by the contractor, not you.
+                All applicable fees are displayed at checkout for complete transparency.
               </p>
             </div>
           </div>

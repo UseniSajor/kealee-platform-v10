@@ -291,19 +291,15 @@ export default function EngineerHomePage() {
         </div>
       </section>
 
-      {/* Platform Fee Notice */}
+      {/* Transparent Pricing Notice */}
       <section className="py-12 bg-blue-50">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <h3 className="text-xl font-bold mb-2">Transparent Platform Fees</h3>
+          <h3 className="text-xl font-bold mb-2">Transparent Pricing</h3>
           <p className="text-zinc-600 mb-4">
-            Kealee charges a 3.5% platform commission on engineering services, which is
-            included in your quoted price. No hidden fees—ever.
+            Get clear, upfront quotes with all costs displayed at checkout.
+            No hidden fees—ever.
           </p>
           <div className="flex justify-center gap-8 text-sm">
-            <div>
-              <span className="font-bold text-blue-600">3.5%</span>
-              <span className="text-zinc-500 ml-1">Platform Fee</span>
-            </div>
             <div>
               <span className="font-bold text-blue-600">$0</span>
               <span className="text-zinc-500 ml-1">Hidden Charges</span>
@@ -399,7 +395,7 @@ export default function EngineerHomePage() {
             </div>
           </div>
           <div className="border-t border-zinc-800 pt-8 text-center text-sm text-zinc-500">
-            © 2026 Kealee Platform. All rights reserved.
+            © 2026 Kealee. All rights reserved.
           </div>
         </div>
       </footer>

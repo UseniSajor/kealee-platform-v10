@@ -1,342 +1,296 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Check, DraftingCompass, FileText, Users, Clock, Share2, BarChart3, Zap, Layers, Eye } from 'lucide-react'
+import { DraftingCompass, FileText, Users, Clock, Share2, BarChart3, Briefcase, Building, Send, FolderOpen, UserCheck, ArrowRight } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Architect Hub | Kealee Platform - Professional Design Project Management',
-  description: 'Manage design projects, deliverables, client reviews, and team collaboration. Seamless integration with permits, engineering, and construction teams.',
-  keywords: 'architect software, design project management, architectural deliverables, plan review, design collaboration, construction design',
+  title: 'Design Professional Portal | Kealee',
+  description: 'Portal for Kealee design professionals. Manage project owner design requests, marketplace walk-ins, and coordinate permit submissions.',
+  keywords: 'architect portal, design professional, construction design services, permit coordination',
   openGraph: {
-    title: 'Kealee Architect Hub - Professional Design Project Management',
-    description: 'Streamline your design workflow with integrated project management, client collaboration, and seamless handoff to permits and construction.',
+    title: 'Kealee Design Professional Portal',
+    description: 'Manage design projects for project owners and marketplace clients. Seamless permit coordination.',
     type: 'website',
   },
 }
 
-export default function ArchitectLandingPage() {
+export default function ArchitectPortalPage() {
+  const stats = [
+    { label: 'Active Projects', value: '24', change: '+3 this week' },
+    { label: 'Pending Reviews', value: '8', change: '5 urgent' },
+    { label: 'Permits Submitted', value: '12', change: 'This month' },
+    { label: 'Client Approvals', value: '6', change: 'Awaiting' },
+  ]
+
+  const projectSources = [
+    {
+      icon: <Users className="h-6 w-6" />,
+      title: 'Project Owner Requests',
+      description: 'Design projects from project owners who purchased design packages through m-ops-services or m-project-owner.',
+      count: '14 active',
+      color: 'bg-blue-500',
+      link: '/projects?source=owner',
+    },
+    {
+      icon: <Building className="h-6 w-6" />,
+      title: 'Marketplace Walk-ins',
+      description: 'Clients who found us through the marketplace needing architectural design services.',
+      count: '10 active',
+      color: 'bg-emerald-500',
+      link: '/projects?source=marketplace',
+    },
+  ]
+
+  const quickActions = [
+    { icon: <FolderOpen className="h-5 w-5" />, label: 'View All Projects', href: '/projects' },
+    { icon: <FileText className="h-5 w-5" />, label: 'Pending Deliverables', href: '/deliverables' },
+    { icon: <UserCheck className="h-5 w-5" />, label: 'Client Reviews', href: '/reviews' },
+    { icon: <Send className="h-5 w-5" />, label: 'Submit to Permits', href: '/permits/submit' },
+  ]
+
+  const recentProjects = [
+    { id: 'PRJ-2024-001', name: 'Smith Residence Addition', client: 'John Smith', source: 'Project Owner', phase: 'Construction Documents', status: 'In Progress', permitReady: true },
+    { id: 'PRJ-2024-002', name: 'Downtown Office Buildout', client: 'ABC Corp', source: 'Marketplace', phase: 'Design Development', status: 'Client Review', permitReady: false },
+    { id: 'PRJ-2024-003', name: 'Garcia Kitchen Remodel', client: 'Maria Garcia', source: 'Project Owner', phase: 'Schematic Design', status: 'In Progress', permitReady: false },
+    { id: 'PRJ-2024-004', name: 'Historic Rowhouse Renovation', client: 'Heritage LLC', source: 'Marketplace', phase: 'Construction Documents', status: 'Pending Approval', permitReady: true },
+  ]
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-neutral-50 to-white">
+    <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
-      <nav className="border-b border-neutral-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <DraftingCompass className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold text-neutral-900">Kealee Architect</span>
+      <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <DraftingCompass className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <span className="text-xl font-bold text-gray-900">Design Portal</span>
+              <span className="text-xs text-gray-500 block">Kealee Architecture Services</span>
+            </div>
           </div>
           <div className="flex items-center gap-4">
-            <Link 
-              href="/login" 
-              className="px-4 py-2 text-neutral-700 hover:text-neutral-900"
-            >
-              Log In
+            <Link href="/schedule" className="text-gray-600 hover:text-gray-900 text-sm">
+              Schedule
             </Link>
-            <Link 
-              href="/projects/new" 
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+            <Link href="/team" className="text-gray-600 hover:text-gray-900 text-sm">
+              Team
+            </Link>
+            <Link
+              href="/login"
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
             >
-              Get Started
+              Sign In
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
-        <div className="max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-6">
-            <Zap className="h-4 w-4" />
-            <span>Professional Design Workflow</span>
-          </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-neutral-900 mb-6">
-            Design Projects
-            <span className="block text-primary mt-2">Done Right</span>
-          </h1>
-          <p className="text-xl text-neutral-600 mb-8 max-w-2xl mx-auto">
-            The only design platform built for architects working in construction. Manage phases, 
-            deliverables, client reviews, and seamlessly hand off to permits—all in one place.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              href="/projects/new"
-              className="px-8 py-4 bg-primary text-white rounded-lg text-lg font-semibold hover:bg-primary/90 transition-colors shadow-lg"
-            >
-              Start Design Project
-            </Link>
-            <Link 
-              href="/login"
-              className="px-8 py-4 bg-white border-2 border-neutral-200 text-neutral-900 rounded-lg text-lg font-semibold hover:border-primary transition-colors"
-            >
-              View Demo
-            </Link>
-          </div>
-          <p className="text-sm text-neutral-500 mt-4">Free for architects • 3% platform fee on projects</p>
-        </div>
-      </section>
-
-      {/* Features Grid */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-neutral-900 mb-4">
-            Built for Professional Architects
-          </h2>
-          <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-            Everything you need to manage design projects from pre-design through construction documents
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Design Professional Portal</h1>
+          <p className="text-gray-600 mt-1">
+            Manage design projects for project owners and marketplace clients
           </p>
         </div>
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <Layers className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Phase Management</h3>
-            <p className="text-neutral-600">
-              Organize projects by phases: Pre-Design, Schematic Design, Design Development, and Construction Documents.
-            </p>
-          </div>
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <FileText className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Deliverable Tracking</h3>
-            <p className="text-neutral-600">
-              Track all design deliverables with status, versions, and approval workflows.
-            </p>
-          </div>
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <Users className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Team Collaboration</h3>
-            <p className="text-neutral-600">
-              Assign roles (Principal, Project Architect, Designer, Drafter) with appropriate permissions.
-            </p>
-          </div>
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <Eye className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Client Review Portal</h3>
-            <p className="text-neutral-600">
-              Share designs with clients for review and feedback. Collect comments directly on deliverables.
-            </p>
-          </div>
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <Share2 className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Seamless Handoff</h3>
-            <p className="text-neutral-600">
-              Direct integration with Kealee Permits. Submit permit applications with one click from completed designs.
-            </p>
-          </div>
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <BarChart3 className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Project Integration</h3>
-            <p className="text-neutral-600">
-              Link to Project Owner projects for budget, timeline, and milestone visibility.
-            </p>
-          </div>
-        </div>
-      </section>
 
-      {/* Workflow */}
-      <section className="bg-neutral-100 py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-neutral-900 mb-4">
-              Your Complete Design Workflow
-            </h2>
-          </div>
-          <div className="max-w-4xl mx-auto space-y-6">
-            <div className="bg-white p-6 rounded-xl">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <DraftingCompass className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">Project Setup</h3>
-                  <p className="text-neutral-600">
-                    Link to existing Project Owner projects or create standalone design projects. Define project type, 
-                    phases, and assign team members with appropriate roles.
-                  </p>
-                </div>
-              </div>
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {stats.map((stat) => (
+            <div key={stat.label} className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+              <div className="text-sm font-medium text-gray-700">{stat.label}</div>
+              <div className="text-xs text-gray-500 mt-1">{stat.change}</div>
             </div>
-            <div className="bg-white p-6 rounded-xl">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Layers className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">Phase-by-Phase Design</h3>
-                  <p className="text-neutral-600">
-                    Progress through design phases with clear milestones. Track deliverables, manage versions, 
-                    and maintain design history throughout the project lifecycle.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white p-6 rounded-xl">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Eye className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">Client Collaboration</h3>
-                  <p className="text-neutral-600">
-                    Invite clients to review portal for feedback. Collect comments directly on deliverables 
-                    and maintain a clear audit trail of all design decisions.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white p-6 rounded-xl">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Share2 className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">Permit Submission</h3>
-                  <p className="text-neutral-600">
-                    When designs are complete, submit directly to Kealee Permits module. No file exports, 
-                    no separate uploads—seamless handoff to permit processing.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
-      </section>
 
-      {/* Benefits */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-neutral-900 mb-4">
-              Why Architects Choose Kealee
-            </h2>
-          </div>
-          <div className="space-y-6">
-            <div className="flex gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Zap className="h-6 w-6 text-primary" />
+        {/* Project Sources */}
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {projectSources.map((source) => (
+            <Link
+              key={source.title}
+              href={source.link}
+              className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:border-indigo-300 transition-all group"
+            >
+              <div className="flex items-start justify-between">
+                <div className={`w-12 h-12 ${source.color} rounded-lg flex items-center justify-center text-white`}>
+                  {source.icon}
                 </div>
+                <span className="text-sm font-medium text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
+                  {source.count}
+                </span>
               </div>
-              <div>
-                <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-                  Built for Construction Projects
-                </h3>
-                <p className="text-neutral-600">
-                  Unlike generic design tools, Kealee Architect understands the construction workflow. 
-                  Designed to integrate with permits, engineering, and project management from day one.
-                </p>
+              <h3 className="text-lg font-semibold text-gray-900 mt-4 group-hover:text-indigo-600 transition-colors">
+                {source.title}
+              </h3>
+              <p className="text-sm text-gray-600 mt-2">{source.description}</p>
+              <div className="flex items-center gap-1 text-indigo-600 text-sm font-medium mt-4">
+                View Projects <ArrowRight className="h-4 w-4" />
               </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-primary" />
-                </div>
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-                  Save Time on Admin
-                </h3>
-                <p className="text-neutral-600">
-                  Reduce time spent on project management and client coordination. Focus on design while 
-                  Kealee handles deliverables tracking, version control, and client feedback collection.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Share2 className="h-6 w-6 text-primary" />
-                </div>
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-                  Seamless Permits Integration
-                </h3>
-                <p className="text-neutral-600">
-                  No more exporting files, uploading to permit portals, and tracking separately. 
-                  Submit permit applications directly from completed designs with all documentation automatically attached.
-                </p>
-              </div>
-            </div>
-          </div>
+            </Link>
+          ))}
         </div>
-      </section>
 
-      {/* CTA Section */}
-      <section className="bg-primary py-16">
-        <div className="container mx-auto px-4 text-center">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Ready to Streamline Your Design Workflow?
-            </h2>
-            <p className="text-xl text-primary-foreground/90 mb-8">
-              Join architects managing design projects more efficiently with Kealee.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link 
-                href="/projects/new"
-                className="px-8 py-4 bg-white text-primary rounded-lg text-lg font-semibold hover:bg-neutral-100 transition-colors"
+        {/* Quick Actions */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {quickActions.map((action) => (
+              <Link
+                key={action.label}
+                href={action.href}
+                className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition-all"
               >
-                Start Design Project
+                <div className="text-indigo-600">{action.icon}</div>
+                <span className="text-sm font-medium text-gray-900">{action.label}</span>
               </Link>
-              <Link 
-                href="/login"
-                className="px-8 py-4 bg-primary-foreground/10 text-white border-2 border-white/20 rounded-lg text-lg font-semibold hover:bg-primary-foreground/20 transition-colors"
-              >
-                View Demo
-              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Permit Coordination Banner */}
+        <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-xl p-6 mb-8 text-white">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Send className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Permit Coordination</h3>
+                <p className="text-indigo-100 text-sm mt-1">
+                  Submit completed designs directly to m-permits for plan review and permit applications.
+                  Track submission status and respond to review comments.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/permits/submit"
+              className="px-6 py-3 bg-white text-indigo-600 rounded-lg font-semibold text-sm hover:bg-indigo-50 transition-colors whitespace-nowrap"
+            >
+              Submit to Permits
+            </Link>
+          </div>
+        </div>
+
+        {/* Recent Projects Table */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">Recent Projects</h2>
+            <Link href="/projects" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+              View All →
+            </Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phase</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Permit Ready</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {recentProjects.map((project) => (
+                  <tr key={project.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">{project.name}</div>
+                      <div className="text-xs text-gray-500">{project.id}</div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{project.client}</td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                        project.source === 'Project Owner'
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'bg-emerald-100 text-emerald-700'
+                      }`}>
+                        {project.source}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{project.phase}</td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                        project.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700' :
+                        project.status === 'Client Review' ? 'bg-purple-100 text-purple-700' :
+                        'bg-orange-100 text-orange-700'
+                      }`}>
+                        {project.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      {project.permitReady ? (
+                        <Link
+                          href={`/permits/submit?project=${project.id}`}
+                          className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700"
+                        >
+                          <Send className="h-3 w-3" /> Submit
+                        </Link>
+                      ) : (
+                        <span className="text-xs text-gray-400">Not ready</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Workflow Overview */}
+        <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6">Design Workflow</h2>
+          <div className="grid md:grid-cols-4 gap-4">
+            <div className="text-center p-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Briefcase className="h-6 w-6 text-blue-600" />
+              </div>
+              <h4 className="font-medium text-gray-900">1. Receive Request</h4>
+              <p className="text-xs text-gray-500 mt-1">From project owners or marketplace</p>
+            </div>
+            <div className="text-center p-4">
+              <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <DraftingCompass className="h-6 w-6 text-indigo-600" />
+              </div>
+              <h4 className="font-medium text-gray-900">2. Design Phases</h4>
+              <p className="text-xs text-gray-500 mt-1">SD → DD → CD with client reviews</p>
+            </div>
+            <div className="text-center p-4">
+              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <UserCheck className="h-6 w-6 text-purple-600" />
+              </div>
+              <h4 className="font-medium text-gray-900">3. Client Approval</h4>
+              <p className="text-xs text-gray-500 mt-1">Get sign-off on final designs</p>
+            </div>
+            <div className="text-center p-4">
+              <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Send className="h-6 w-6 text-emerald-600" />
+              </div>
+              <h4 className="font-medium text-gray-900">4. Submit to Permits</h4>
+              <p className="text-xs text-gray-500 mt-1">Direct handoff to m-permits</p>
             </div>
           </div>
         </div>
-      </section>
+      </main>
 
       {/* Footer */}
-      <footer className="bg-neutral-900 text-neutral-400 py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <DraftingCompass className="h-6 w-6 text-primary" />
-                <span className="text-white font-semibold">Kealee Architect</span>
-              </div>
-              <p className="text-sm">
-                Professional design project management for architects.
-              </p>
+      <footer className="bg-gray-900 text-gray-400 py-8 mt-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <DraftingCompass className="h-5 w-5 text-indigo-400" />
+              <span className="text-white font-medium">Kealee Design Portal</span>
             </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/projects/new" className="hover:text-white">New Project</Link></li>
-                <li><Link href="/login" className="hover:text-white">Sign In</Link></li>
-                <li><Link href="/login" className="hover:text-white">Pricing</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Resources</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="#" className="hover:text-white">Documentation</Link></li>
-                <li><Link href="#" className="hover:text-white">Support</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="#" className="hover:text-white">About</Link></li>
-                <li><Link href="#" className="hover:text-white">Contact</Link></li>
-              </ul>
+            <div className="flex gap-6 text-sm">
+              <Link href="/help" className="hover:text-white">Help</Link>
+              <Link href="/team" className="hover:text-white">Team</Link>
+              <Link href="https://kealee.com" className="hover:text-white">Main Site</Link>
             </div>
           </div>
-          <div className="border-t border-neutral-800 mt-8 pt-8 text-center text-sm">
-            <p>© {new Date().getFullYear()} Kealee Platform. All rights reserved.</p>
+          <div className="border-t border-gray-800 mt-6 pt-6 text-center text-sm">
+            <p>© {new Date().getFullYear()} Kealee. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -408,11 +408,11 @@ export default function PreConDetailPage() {
                 </div>
                 <div className="flex items-center justify-between py-2">
                   <div>
-                    <p className="font-medium text-gray-900">Platform Commission</p>
-                    <p className="text-sm text-gray-500">3.5% of contract</p>
+                    <p className="font-medium text-gray-900">Additional Fees</p>
+                    <p className="text-sm text-gray-500">Shown at checkout</p>
                   </div>
                   <div className="text-right">
-                    <span className="text-gray-500 text-sm">Paid by contractor</span>
+                    <span className="text-gray-500 text-sm">Transparent pricing</span>
                   </div>
                 </div>
               </div>
