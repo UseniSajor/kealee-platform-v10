@@ -541,6 +541,10 @@ const start = async () => {
     // Oversight temporarily disabled
     // await fastify.register(oversightRoutes, { prefix: '/api/admin/oversight' })
 
+    // Command Center dashboard routes (APP-15)
+    const { commandCenterRoutes } = await import('./routes/command-center/index')
+    await fastify.register(commandCenterRoutes, { prefix: '/api/v1/command-center' })
+
     // Register new API routes for PM workspace
     const { clientRoutes } = await import('./routes/client.routes')
     const { taskRoutes } = await import('./routes/task.routes')
