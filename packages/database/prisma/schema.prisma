@@ -1519,7 +1519,10 @@ model Project {
   projectManagers   ProjectManager[]
 
   // Command Center Infrastructure relations
-  aiConversations AIConversation[]
+  aiConversations  AIConversation[]
+  automationTasks  AutomationTask[]
+  bidEvaluations   BidEvaluation[]
+  weeklyReports    WeeklyReport[]
 
   // Project Phase tracking
   phases ProjectPhase[]
@@ -5772,10 +5775,12 @@ model AutomationTask {
   status       String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, FAILED
   priority     String    @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
   projectId    String?
+  clientId     String?
   assignedPmId String?
+  sourceApp    String? // "APP-01" through "APP-15"
   payload      Json?
   result       Json?
-  error        String?
+  error        String?   @db.Text
   retryCount   Int       @default(0)
   maxRetries   Int       @default(3)
   dueAt        DateTime?
@@ -5786,9 +5791,13 @@ model AutomationTask {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
   @@index([type])
   @@index([status])
   @@index([projectId])
+  @@index([sourceApp])
+  @@index([assignedPmId])
   @@index([scheduledAt])
   @@map("automation_tasks")
 }
@@ -7722,4 +7731,185 @@ model PermitServiceLeadActivity {
   @@index([activityType])
   @@index([createdAt])
   @@map("permit_service_lead_activities")
+}
+
+// ============================================================================
+// COMMAND CENTER MODELS (Prompt 1 of 25)
+// ============================================================================
+
+enum TaskStatus {
+  PENDING
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELED
+}
+
+// APP-15: Automation Event Bus
+model AutomationEvent {
+  id          String   @id @default(uuid())
+  eventType   String
+  sourceApp   String // "APP-01" through "APP-15"
+  projectId   String?
+  payload     Json
+  processedBy String[]
+  createdAt   DateTime @default(now())
+
+  @@index([eventType])
+  @@index([sourceApp])
+  @@index([projectId])
+  @@index([createdAt])
+  @@map("automation_events")
+}
+
+// APP-01: Bid Evaluation
+model BidEvaluation {
+  id        String @id @default(uuid())
+  projectId String
+  trade     String
+  status    String @default("collecting")
+
+  // Scoring weights
+  weightPrice        Decimal @default(0.30) @db.Decimal(3, 2)
+  weightTimeline     Decimal @default(0.25) @db.Decimal(3, 2)
+  weightQuality      Decimal @default(0.25) @db.Decimal(3, 2)
+  weightProximity    Decimal @default(0.10) @db.Decimal(3, 2)
+  weightAvailability Decimal @default(0.10) @db.Decimal(3, 2)
+
+  dueDate          DateTime?
+  selectedBidId    String?
+  aiRecommendation String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  bids    Bid[]
+
+  @@index([projectId])
+  @@index([status])
+  @@map("bid_evaluations")
+}
+
+// APP-01: Individual Bid within an Evaluation
+model Bid {
+  id           String @id @default(uuid())
+  evaluationId String
+  contractorId String
+
+  amount   Decimal @db.Decimal(12, 2)
+  timeline Int // days
+
+  qualityScore      Decimal? @db.Decimal(5, 2)
+  proximityScore    Decimal? @db.Decimal(5, 2)
+  availabilityScore Decimal? @db.Decimal(5, 2)
+  totalScore        Decimal? @db.Decimal(5, 2)
+
+  rank   Int?
+  notes  String? @db.Text
+  scope  String? @db.Text
+  status String  @default("submitted")
+
+  createdAt DateTime @default(now())
+
+  evaluation BidEvaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  @@index([evaluationId])
+  @@index([contractorId])
+  @@index([totalScore])
+  @@map("bids")
+}
+
+// APP-09: Weekly Report
+model WeeklyReport {
+  id        String   @id @default(uuid())
+  projectId String
+  weekStart DateTime
+  weekEnd   DateTime
+
+  summary String  @db.Text // AI-generated
+  metrics Json
+  risks   Json?
+
+  photos       String[]
+  fileUrl      String?
+  sentToClient Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([weekEnd])
+  @@map("weekly_reports")
+}
+
+// APP-13: QA Inspection Result (Photo AI Analysis)
+model QAInspectionResult {
+  id          String  @id @default(uuid())
+  projectId   String
+  siteVisitId String?
+
+  photoUrl       String
+  analysisResult Json
+  issuesFound    Json?
+  overallScore   Decimal? @db.Decimal(5, 2)
+  reviewedByPm   Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@index([siteVisitId])
+  @@map("qa_inspection_results")
+}
+
+// APP-15: Decision Queue for PM Actions
+model DecisionQueue {
+  id        String @id @default(uuid())
+  projectId String
+  pmId      String
+
+  type  String // bid_award, change_order, payment_release, schedule_change
+  title String
+
+  context          Json
+  aiRecommendation String?  @db.Text
+  aiConfidence     Decimal? @db.Decimal(5, 4)
+  options          Json
+
+  decision  String? // approved, rejected, deferred
+  decidedAt DateTime?
+  decidedBy String?
+  reasoning String?  @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([pmId])
+  @@index([projectId])
+  @@index([type])
+  @@index([decision])
+  @@map("decision_queue")
+}
+
+// APP-15: App Health Metrics for Dashboard
+model AppHealthMetric {
+  id    String @id @default(uuid())
+  appId String // "APP-01" through "APP-15"
+
+  timestamp DateTime @default(now())
+
+  jobsTotal   Int
+  jobsSuccess Int
+  jobsFailed  Int
+
+  avgDuration Decimal @db.Decimal(10, 2) // ms
+  queueDepth  Int
+  errorRate   Decimal @db.Decimal(5, 4)
+
+  metadata Json?
+
+  @@index([appId])
+  @@index([timestamp])
+  @@map("app_health_metrics")
 }
