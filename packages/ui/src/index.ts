@@ -213,5 +213,16 @@ export * from './components/marketing';
 // ========================================
 // Utilities
 // ========================================
-export { cn } from './lib/utils';
-export * from './utils';
+export {
+  cn,
+  formatCurrency,
+  formatNumber,
+  formatDate,
+  formatRelativeDate,
+  truncate,
+  generateId,
+  debounce,
+  capitalize,
+  kebabCase,
+  isDefined,
+} from './utils';

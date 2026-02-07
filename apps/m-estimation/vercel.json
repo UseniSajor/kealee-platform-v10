@@ -1,4 +1,29 @@
 {
+  "buildCommand": "cd ../.. && npx pnpm@8.15.9 build --filter=m-estimation",
+  "installCommand": "cd ../.. && PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npx pnpm@8.15.9 install --no-frozen-lockfile",
   "framework": "nextjs",
-  "ignoreCommand": "cd ../.. && npx turbo-ignore m-estimation"
+  "ignoreCommand": "cd ../.. && npx turbo-ignore m-estimation",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ]
 }
