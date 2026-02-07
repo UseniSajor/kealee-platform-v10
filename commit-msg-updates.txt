@@ -1,0 +1,47 @@
+fix: Complete all API endpoints, fix syntax errors, update contact info
+
+Updates and fixes across all three service websites:
+
+API Enhancements:
+- Added complete CRUD endpoints for GC Operations leads
+- Added complete CRUD endpoints for Permit Service leads  
+- Created notes and activities endpoints for all services
+- Added statistics endpoints (trial tracking, conversion metrics)
+- Total: 31 fully functional API endpoints across all services
+
+Bug Fixes:
+- Fixed missing ArrowRight import in permits how-it-works page
+- Fixed apostrophe syntax errors (changed contractions to full words)
+- Fixed component path for AIPermitFeatures (moved to src/components)
+- Resolved all build errors in permits service
+
+Contact Information Updates:
+- Updated phone number to (301) 575-8777 across all services
+- Updated in headers, footers, and contact pages
+- Added phone to Development footer
+
+Navigation Improvements:
+- Removed Development link from GC Operations footer
+- GC Operations maintains its own context on port 3006
+- Fixed pricing page navigation
+
+Content Enhancements:
+- Added 12 detailed a la carte service cards for GC Operations
+- Each card includes description and 5 feature bullets
+- Added specialized permit types (zoning, historic review, subdivision)
+- Updated pricing tables with specialized submissions
+- Enhanced AI features sections with detailed capabilities
+
+Port Configuration:
+- Development: Port 3005
+- GC Operations: Port 3006 (dedicated)
+- Permits: Port 5173 (configured)
+
+Documentation:
+- Created comprehensive guides for admin dashboards
+- Added platform execution flow documentation
+- Added AI token cost analysis
+- Created deployment guides
+- Added API endpoint reference documentation
+
+All services now fully functional with no errors.

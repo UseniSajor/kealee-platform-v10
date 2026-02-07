@@ -1524,6 +1524,11 @@ model Project {
   // Project Phase tracking
   phases ProjectPhase[]
 
+  // User Responsibilities Tracking relations (from Kealee_User_Responsibilities_Guide.md)
+  dailyLogs    DailyLog[]
+  fileUploads  FileUpload[]
+  receipts     Receipt[]
+
   @@index([clientId])
   @@index([orgId])
   @@index([propertyId])
@@ -1819,6 +1824,12 @@ model User {
   // Command Center Infrastructure relations
   dashboardWidgets DashboardWidget[]
   aiConversations  AIConversation[]
+
+  // User Responsibilities Tracking relations (from Kealee_User_Responsibilities_Guide.md)
+  dailyLogs       DailyLog[]     @relation("DailyLogContractor")
+  uploadedFiles   FileUpload[]   @relation("FileUploadUser")
+  uploadedReceipts Receipt[]     @relation("ReceiptUploadedBy")
+  userActions     UserAction[]   @relation("UserActionHistory")
 }
 
 // ============================================================================
@@ -2120,6 +2131,7 @@ model Milestone {
   evidence            Evidence[]
   payouts             Payout[] // Payouts from this milestone
   lienWaivers         LienWaiver[] // Lien waivers for this milestone
+  fileUploads         FileUpload[] // File uploads associated with this milestone
 
   @@index([contractId])
   @@index([status])
@@ -3963,11 +3975,20 @@ model Lead {
   lostReason         String?
   stageChangedAt     DateTime?
   srp                Decimal?
+
+  // Marketplace pricing (set by estimating engine)
+  suggestedPrice     Decimal?  @db.Decimal(12, 2)
+  priceRange         Json?     // { "low": number, "mid": number, "high": number }
+  projectType        String?   // "kitchen_renovation", "bathroom_remodel", etc.
+  sqft               Decimal?  @db.Decimal(10, 2)
+  qualityTier        String?   // "low", "mid", "high"
+
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 
   project Project? @relation(fields: [projectId], references: [id])
   quotes  Quote[]
+  quickEstimates QuickEstimate[]
 
   @@index([projectId])
   @@index([stage])
@@ -6173,6 +6194,7 @@ model Assembly {
   id             String             @id @default(uuid())
   costDatabaseId String
   csiCode        String?
+  code           String?            @unique // Marketplace code: "KIT-CAB-STD", "BATH-TILE-FLR"
   category       AssemblyCategory
   subcategory    String?
   name           String
@@ -6191,6 +6213,22 @@ model Assembly {
   tags           String[]           @default([])
   notes          String?
   metadata       Json?
+
+  // Marketplace pricing tiers (low / mid / high quality)
+  materialCostLow   Decimal?  @db.Decimal(10, 2)
+  materialCostMid   Decimal?  @db.Decimal(10, 2)
+  materialCostHigh  Decimal?  @db.Decimal(10, 2)
+  laborCostLow      Decimal?  @db.Decimal(10, 2)
+  laborCostMid      Decimal?  @db.Decimal(10, 2)
+  laborCostHigh     Decimal?  @db.Decimal(10, 2)
+  laborHoursPerUnit Decimal?  @db.Decimal(6, 2)
+
+  // Regional cost multipliers (JSON map: { "DC": 1.15, "Baltimore": 1.0, ... })
+  regionMultiplier  Json?
+
+  // Trades required for this assembly
+  tradesRequired    String[]  @default([])
+
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
@@ -6200,6 +6238,7 @@ model Assembly {
 
   @@index([costDatabaseId])
   @@index([csiCode])
+  @@index([code])
   @@index([category])
   @@index([name])
   @@map("assemblies")
@@ -7722,4 +7761,338 @@ model PermitServiceLeadActivity {
   @@index([activityType])
   @@index([createdAt])
   @@map("permit_service_lead_activities")
+}
+
+// ============================================================================
+// USER RESPONSIBILITIES TRACKING (Based on Kealee_User_Responsibilities_Guide.md)
+// ============================================================================
+
+// Contractor daily log entries (Guide Section 5 - During Project)
+model DailyLog {
+  id        String   @id @default(uuid())
+  projectId String
+  contractorId String  // User who created the log
+  
+  // Daily work information
+  date         DateTime @default(now())
+  workPerformed String   @db.Text // What was done today
+  crewCount    Int?     // Number of workers on site
+  hoursWorked  Float?   // Total hours worked
+  
+  // Conditions
+  weather      String?  // Weather conditions
+  temperature  String?  // Temperature
+  
+  // Progress & Issues
+  progressNotes String?  @db.Text
+  issues        String?  @db.Text // Any problems encountered
+  safetyIncidents String? @db.Text
+  
+  // Materials & Equipment
+  materialsDelivered String? @db.Text
+  equipmentUsed      String? @db.Text
+  
+  // Subcontractors
+  subsOnSite   String[] // List of subcontractors present
+  
+  // Photos (references to Document records)
+  photoIds     String[] // Array of document IDs
+  
+  // Metadata
+  metadata     Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  contractor User @relation("DailyLogContractor", fields: [contractorId], references: [id])
+  
+  @@index([projectId])
+  @@index([contractorId])
+  @@index([date])
+  @@map("daily_logs")
+}
+
+// Enhanced file upload tracking (Guide Section 10)
+enum FileCategory {
+  // Site & Progress
+  SITE_PHOTO
+  PROGRESS_PHOTO
+  INSPECTION_CORRECTION_PHOTO
+  EXISTING_CONDITION_PHOTO
+  
+  // Financial
+  RECEIPT
+  INVOICE
+  SUBCONTRACTOR_INVOICE
+  LIEN_WAIVER
+  
+  // Legal & Compliance
+  LICENSE
+  INSURANCE_CERTIFICATE
+  WORKERS_COMP_CERTIFICATE
+  PERMIT_DOCUMENT
+  PERMIT_APPLICATION
+  PERMIT_APPROVAL
+  
+  // Design & Plans
+  FLOOR_PLAN
+  DESIGN_FILE
+  STAMPED_DRAWING
+  AS_BUILT
+  SPECIFICATION
+  RENDERING
+  
+  // Portfolio & Marketing
+  PORTFOLIO_PHOTO
+  COMPANY_LOGO
+  PROFILE_PHOTO
+  
+  // Project Documents
+  CONTRACT
+  CHANGE_ORDER
+  WARRANTY
+  CLOSEOUT_PACKAGE
+  
+  // Other
+  OTHER
+}
+
+enum UploadedByRole {
+  HOMEOWNER
+  DEVELOPER
+  PROPERTY_MANAGER
+  CONTRACTOR
+  SUBCONTRACTOR
+  ARCHITECT
+  ENGINEER
+  KEALEE_PM
+  KEALEE_ADMIN
+}
+
+// File upload record with validation metadata
+model FileUpload {
+  id        String   @id @default(uuid())
+  
+  // File information
+  fileName     String
+  fileUrl      String   // S3 URL
+  fileSize     Int      // Bytes
+  mimeType     String
+  category     FileCategory
+  
+  // Context
+  projectId    String?
+  propertyId   String?
+  milestoneId  String?
+  leadId       String?
+  organizationId String?
+  
+  // Upload metadata
+  uploadedById String
+  uploadedByRole UploadedByRole
+  
+  // Validation
+  isValidated  Boolean @default(false)
+  validatedAt  DateTime?
+  validatedBy  String?
+  
+  // AI Analysis (for photos)
+  aiAnalysis   Json?    // QA findings, defects, etc.
+  aiProcessed  Boolean  @default(false)
+  aiProcessedAt DateTime?
+  
+  // OCR Results (for receipts)
+  ocrData      Json?    // Vendor, amount, date, etc.
+  ocrProcessed Boolean  @default(false)
+  ocrProcessedAt DateTime?
+  
+  // Tags & Search
+  tags         String[]
+  description  String?  @db.Text
+  location     String?  // "Kitchen - North Wall"
+  
+  // Metadata
+  metadata     Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  uploadedBy User @relation("FileUploadUser", fields: [uploadedById], references: [id])
+  project    Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestone  Milestone? @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  receipt    Receipt? // Reverse relation for receipts
+  
+  @@index([projectId])
+  @@index([uploadedById])
+  @@index([category])
+  @@index([createdAt])
+  @@index([isValidated])
+  @@map("file_uploads")
+}
+
+// Contractor portfolio items (Guide Section 5 - At Signup)
+model PortfolioItem {
+  id             String   @id @default(uuid())
+  contractorId   String   // Organization ID
+  
+  // Portfolio details
+  projectName    String?
+  projectType    String?  // "Kitchen Remodel", "New Construction", etc.
+  description    String?  @db.Text
+  
+  // Images
+  imageUrls      String[] // Array of S3 URLs
+  thumbnailUrl   String?
+  
+  // Project info
+  completedDate  DateTime?
+  location       String?
+  projectValue   Decimal?  @db.Decimal(12, 2)
+  squareFootage  Int?
+  
+  // Display
+  displayOrder   Int       @default(0)
+  isFeatured     Boolean   @default(false)
+  isPublished    Boolean   @default(true)
+  
+  // Metadata
+  metadata       Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([contractorId])
+  @@index([projectType])
+  @@index([isFeatured])
+  @@index([displayOrder])
+  @@map("portfolio_items")
+}
+
+// Receipt tracking with OCR (Guide Section 5 - During Project)
+model Receipt {
+  id        String   @id @default(uuid())
+  projectId String
+  uploadedById String
+  
+  // Receipt information
+  vendor       String?
+  amount       Decimal?  @db.Decimal(12, 2)
+  category     String?   // "Materials", "Equipment Rental", "Subcontractor", etc.
+  purchaseDate DateTime?
+  
+  // File reference
+  fileUploadId String?   @unique
+  imageUrl     String    // Original receipt image
+  
+  // OCR extracted data
+  ocrRawData   Json?     // Raw OCR output
+  ocrConfidence Float?   // OCR confidence score (0-1)
+  
+  // Budget tracking
+  budgetLineItemId String?
+  isApproved    Boolean   @default(false)
+  approvedBy    String?
+  approvedAt    DateTime?
+  
+  // Notes
+  notes         String?   @db.Text
+  internalNotes String?   @db.Text // PM-only notes
+  
+  // Status
+  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED, DISPUTED
+  
+  // Metadata
+  metadata      Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadedBy User    @relation("ReceiptUploadedBy", fields: [uploadedById], references: [id])
+  fileUpload FileUpload? @relation(fields: [fileUploadId], references: [id])
+  
+  @@index([projectId])
+  @@index([uploadedById])
+  @@index([status])
+  @@index([purchaseDate])
+  @@map("receipts")
+}
+
+// User action tracking (for audit and analytics)
+model UserAction {
+  id        String   @id @default(uuid())
+  userId    String
+  userRole  String   // HOMEOWNER, CONTRACTOR, ARCHITECT, PM, ADMIN
+  
+  // Action details
+  action    String   // "CREATE_PROJECT", "UPLOAD_PHOTO", "APPROVE_MILESTONE", etc.
+  entity    String   // "Project", "Milestone", "Document", etc.
+  entityId  String?
+  
+  // Context
+  projectId String?
+  organizationId String?
+  
+  // Details
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  
+  createdAt DateTime @default(now())
+  
+  user User @relation("UserActionHistory", fields: [userId], references: [id])
+  
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("user_actions")
+}
+
+// ============================================================================
+// MARKETPLACE ESTIMATING ENGINE
+// Quick estimates for lead pricing, bid validation, and instant quotes
+// ============================================================================
+
+model QuickEstimate {
+  id            String   @id @default(uuid())
+  projectId     String?
+  leadId        String?
+  createdBy     String?  // userId or null for anonymous/marketing
+
+  // Inputs
+  projectType   String              // "kitchen_renovation", "bathroom_remodel", etc.
+  sqft          Decimal? @db.Decimal(10, 2)
+  location      String              // city/region for multiplier
+  qualityTier   String   @default("mid")  // "low", "mid", "high"
+  description   String?  @db.Text
+
+  // Results
+  materialTotal   Decimal  @db.Decimal(12, 2)
+  laborTotal      Decimal  @db.Decimal(12, 2)
+  subtotal        Decimal  @db.Decimal(12, 2)
+  overhead        Decimal  @db.Decimal(12, 2)
+  profit          Decimal  @db.Decimal(12, 2)
+  contingency     Decimal  @db.Decimal(12, 2)
+  grandTotal      Decimal  @db.Decimal(12, 2)
+
+  // Price range
+  priceLow        Decimal  @db.Decimal(12, 2)
+  priceMid        Decimal  @db.Decimal(12, 2)
+  priceHigh       Decimal  @db.Decimal(12, 2)
+
+  breakdown       Json     // detailed line-by-line breakdown
+  assumptions     Json?    // what was assumed
+
+  status          String   @default("draft")  // "draft", "sent", "accepted"
+  createdAt       DateTime @default(now())
+
+  lead            Lead?    @relation(fields: [leadId], references: [id])
+
+  @@index([projectId])
+  @@index([leadId])
+  @@index([projectType])
+  @@index([createdAt])
+  @@map("quick_estimates")
 }

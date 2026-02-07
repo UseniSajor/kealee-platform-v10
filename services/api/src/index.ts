@@ -251,6 +251,17 @@ import { fileRoutes } from './modules/files/file.routes'
 // Temporarily disabled - DTO type mismatches
 // import { accountingRoutes } from './routes/accounting.routes'
 import { stripeConnectRoutes } from './routes/stripe-connect.routes'
+
+// File Upload Pipeline (connects user uploads → Supabase Storage → Command Center)
+import { uploadRoutes } from './modules/uploads/upload.routes'
+
+// Marketplace Estimating Engine (assembly library, quick pricing, bid validation)
+import { marketplaceEstimatingRoutes } from './modules/marketplace-estimating/marketplace-estimating.routes'
+
+// User Responsibilities Routes (from Kealee_User_Responsibilities_Guide.md)
+import contractorUploadsRoutes from './modules/contractor/contractor-uploads.routes'
+import clientActionsRoutes from './modules/client/client-actions.routes'
+import architectUploadsRoutes from './modules/architect/architect-uploads.routes'
 import { estimationRoutes } from './modules/estimation/estimation.routes'
 import { preconRoutes } from './modules/precon/precon.routes'
 import { engineerRoutes } from './modules/engineer/engineer.routes'
@@ -516,9 +527,18 @@ const start = async () => {
     await fastify.register(servicePlanRoutes, { prefix: '/ops-services' })
     await fastify.register(workflowRoutes, { prefix: '/workflow' })
     await fastify.register(fileRoutes, { prefix: '/files' })
+    // File Upload Pipeline (site photos, receipts, documents → Supabase → Command Center)
+    await fastify.register(uploadRoutes, { prefix: '/api/v1/uploads' })
+    // Marketplace Estimating Engine (assembly library, quick pricing, bid validation)
+    await fastify.register(marketplaceEstimatingRoutes, { prefix: '/api/v1' })
     // Analytics temporarily disabled
     // await fastify.register(analyticsRoutes)
     await fastify.register(monitoringDashboardRoutes)
+
+    // User Responsibilities Routes (from Kealee_User_Responsibilities_Guide.md)
+    await fastify.register(contractorUploadsRoutes, { prefix: '/api/contractor' })
+    await fastify.register(clientActionsRoutes, { prefix: '/api/client' })
+    await fastify.register(architectUploadsRoutes, { prefix: '/api/architect' })
     await fastify.register(taskGeneratorRoutes, { prefix: '/tasks' })
     await fastify.register(complianceCheckpointRoutes, { prefix: '/compliance' })
 

@@ -1,0 +1,29 @@
+{
+  "name": "@kealee/estimating",
+  "version": "1.0.0",
+  "description": "Marketplace estimating engine - assembly library, quick pricing, bid validation",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "seed": "tsx src/seed-assemblies.ts"
+  },
+  "dependencies": {
+    "@kealee/database": "workspace:*",
+    "@prisma/client": "^5.22.0",
+    "decimal.js": "^10.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.16",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}

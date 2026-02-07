@@ -211,6 +211,33 @@ export interface EventPayloads {
     userId?: string
   }
 
+  // File Upload Events (connects to Command Center processing pipeline)
+  'site_photo.uploaded': {
+    documentId: string
+    projectId: string
+    url: string
+    siteVisitId?: string | null
+  }
+  'receipt.uploaded': {
+    documentId: string
+    projectId: string
+    url: string
+  }
+  'receipt.ocr.completed': {
+    documentId: string
+    projectId: string
+    vendor: string
+    amount: number
+    category: string
+    confidence: number
+  }
+  'document.uploaded': {
+    documentId: string
+    projectId?: string | null
+    type: string
+    url: string
+  }
+
   // Error handling event
   'error': Error
 }

@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "pnpm --filter @kealee/database db:generate && pnpm --filter @kealee/workflow-engine run build && tsc --incremental false",
+    "build": "pnpm --filter @kealee/database db:generate && pnpm --filter @kealee/storage run build && pnpm --filter @kealee/estimating run build && pnpm --filter @kealee/workflow-engine run build && tsc --incremental false",
     "build:ts": "tsc --incremental false",
     "start": "node dist/index.js",
     "db:migrate:deploy": "pnpm --filter @kealee/database db:migrate:deploy",
@@ -30,6 +30,8 @@
     "@fastify/swagger": "^8.14.0",
     "@fastify/swagger-ui": "^2.1.0",
     "@kealee/database": "workspace:*",
+    "@kealee/estimating": "workspace:*",
+    "@kealee/storage": "workspace:*",
     "@kealee/workflow-engine": "workspace:*",
     "@prisma/client": "^5.22.0",
     "axios": "^1.6.7",
