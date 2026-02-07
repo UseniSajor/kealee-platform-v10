@@ -77,7 +77,7 @@ export default function GCContactPage() {
 
       if (response.ok) {
         setSubmitStatus('success')
-        setSubmitMessage(result.message || 'Thank you! We'll be in touch within 24 hours to start your free trial.')
+        setSubmitMessage(result.message || 'Thank you! We will be in touch within 24 hours to start your free trial.')
         reset()
         window.scrollTo({ top: 0, behavior: 'smooth' })
       } else {
@@ -352,8 +352,8 @@ export default function GCContactPage() {
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">Phone</p>
-                      <a href="tel:+15551234567" className="text-blue-600 hover:underline">
-                        (555) 123-4567
+                      <a href="tel:+13015758777" className="text-blue-600 hover:underline">
+                        (301) 575-8777
                       </a>
                     </div>
                   </div>
@@ -369,7 +369,7 @@ export default function GCContactPage() {
                   <div className="space-y-3 text-sm text-gray-700">
                     <div>
                       <p className="font-medium text-gray-900">1. Quick Call (15 min)</p>
-                      <p>We'll call within 24 hours to understand your needs.</p>
+                      <p>We will call within 24 hours to understand your needs.</p>
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">2. Onboarding (Week 1)</p>

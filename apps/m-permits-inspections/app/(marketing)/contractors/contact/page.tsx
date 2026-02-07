@@ -53,7 +53,7 @@ export default function PermitContactPage() {
 
       if (response.ok) {
         setSubmitStatus('success')
-        setSubmitMessage('Thank you! We'll contact you within 24 hours to get started.')
+        setSubmitMessage("Thank you! We'll contact you within 24 hours to get started.")
         setFormData({
           fullName: "",
           company: "",
@@ -90,7 +90,7 @@ export default function PermitContactPage() {
               Get Started with Permit Services
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed">
-              Submit your first permit free. We'll review it, submit it, and track it through approval.
+              Submit your first permit free. We will review it, submit it, and track it through approval.
             </p>
           </div>
         </div>
@@ -281,8 +281,8 @@ export default function PermitContactPage() {
                     </a>
                   </p>
                   <p>
-                    <a href="tel:+15551234567" className="text-emerald-600 hover:underline">
-                      (555) 123-4567
+                    <a href="tel:+13015758777" className="text-emerald-600 hover:underline">
+                      (301) 575-8777
                     </a>
                   </p>
                 </div>

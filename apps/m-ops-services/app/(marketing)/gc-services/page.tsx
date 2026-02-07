@@ -108,7 +108,7 @@ export default function GCServicesHomePage() {
                 variant="outline"
                 className="border-2 border-gray-300 hover:border-blue-600 rounded-2xl h-14 px-8 text-lg font-semibold"
               >
-                <Link href="/gc-services/pricing">View Pricing</Link>
+                <Link href="/gc-services/pricing">View All Pricing</Link>
               </Button>
             </div>
 

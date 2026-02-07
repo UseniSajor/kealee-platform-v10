@@ -83,7 +83,7 @@ export default function ContractorsHomePage() {
               },
               {
                 problem: "Working across multiple jurisdictions?",
-                solution: "We handle jurisdiction-specific requirements and process variations so you don't have to learn every city's rules.",
+                solution: "We handle jurisdiction-specific requirements and process variations so you do not have to learn every city's rules.",
               },
             ].map((item, idx) => (
               <div key={idx} className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
@@ -237,6 +237,10 @@ export default function ContractorsHomePage() {
               "Foundation Permits",
               "Framing Permits",
               "Site Development",
+              "Zoning & Variance Submissions",
+              "Historic Review Submissions",
+              "Subdivision Submissions",
+              "Land Use Approvals",
               "And More...",
             ].map((type) => (
               <div key={type} className="bg-gray-50 rounded-lg p-4 text-center border border-gray-200">

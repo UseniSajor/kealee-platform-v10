@@ -18,6 +18,9 @@ export default function PermitServicesPage() {
         "Fee calculation and payment processing",
         "Electronic submission to jurisdiction",
         "Application tracking number and confirmation",
+        "Zoning and variance submission coordination",
+        "Historic review board submissions",
+        "Subdivision and land use approvals",
       ],
     },
     {

@@ -48,11 +48,11 @@ export default function GCServicesLayout({
             {/* Desktop CTA */}
             <div className="hidden md:flex items-center space-x-3">
               <a
-                href="tel:+15551234567"
+                href="tel:+13015758777"
                 className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors inline-flex items-center space-x-1"
               >
                 <Phone className="h-4 w-4" />
-                <span>Call Us</span>
+                <span>(301) 575-8777</span>
               </a>
               <Button
                 asChild
@@ -126,7 +126,6 @@ export default function GCServicesLayout({
             <div>
               <h3 className="font-semibold text-white mb-4">Company</h3>
               <ul className="space-y-2">
-                <li><Link href="/development" className="text-sm hover:text-blue-600 transition-colors">Development Services</Link></li>
                 <li><Link href="/terms" className="text-sm hover:text-blue-600 transition-colors">Terms</Link></li>
                 <li><Link href="/privacy" className="text-sm hover:text-blue-600 transition-colors">Privacy</Link></li>
               </ul>
@@ -141,8 +140,8 @@ export default function GCServicesLayout({
                   </a>
                 </li>
                 <li>
-                  <a href="tel:+15551234567" className="hover:text-blue-600 transition-colors">
-                    (555) 123-4567
+                  <a href="tel:+13015758777" className="hover:text-blue-600 transition-colors">
+                    (301) 575-8777
                   </a>
                 </li>
                 <li className="pt-2">

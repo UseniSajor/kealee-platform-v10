@@ -45,11 +45,11 @@ export default function ContractorsLayout({
 
             <div className="hidden md:flex items-center space-x-3">
               <a
-                href="tel:+15551234567"
+                href="tel:+13015758777"
                 className="text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors inline-flex items-center space-x-1"
               >
                 <Phone className="h-4 w-4" />
-                <span>Call Us</span>
+                <span>(301) 575-8777</span>
               </a>
               <Link
                 href="/contractors/contact"
@@ -137,8 +137,8 @@ export default function ContractorsLayout({
                   </a>
                 </li>
                 <li>
-                  <a href="tel:+15551234567" className="hover:text-emerald-600 transition-colors">
-                    (555) 123-4567
+                  <a href="tel:+13015758777" className="hover:text-emerald-600 transition-colors">
+                    (301) 575-8777
                   </a>
                 </li>
               </ul>

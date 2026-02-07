@@ -80,12 +80,90 @@ export default function GCPricingPage() {
   ]
 
   const alaCarte = [
-    { name: "Permit Application Assistance", price: "$325", unit: "per permit" },
-    { name: "Inspection Scheduling", price: "$200", unit: "per inspection" },
-    { name: "Weekly Client Report (one-time)", price: "$150", unit: "per report" },
-    { name: "Document Organization (project)", price: "$400", unit: "per project" },
-    { name: "Contractor Coordination (day)", price: "$500", unit: "per day" },
-    { name: "Site Visit & Reporting", price: "$350", unit: "per visit" },
+    { 
+      name: "Permit Application Assistance", 
+      price: "$325", 
+      unit: "per permit",
+      description: "Complete permit application preparation, review, and submission to jurisdiction. Includes tracking until approval.",
+      features: ["Application form completion", "Document checklist", "Fee calculation", "Submission coordination", "Status tracking"]
+    },
+    { 
+      name: "Inspection Scheduling & Coordination", 
+      price: "$200", 
+      unit: "per inspection",
+      description: "Schedule inspections with jurisdiction, send reminders, coordinate access, and track results.",
+      features: ["Schedule with jurisdiction", "24hr reminder notifications", "Inspector coordination", "Results tracking", "Re-inspection if needed"]
+    },
+    { 
+      name: "Weekly Client Report", 
+      price: "$150", 
+      unit: "per report",
+      description: "Professional client-ready progress report with photos, schedule updates, and action items.",
+      features: ["Progress summary", "Photo documentation", "Schedule status", "Action items", "Professional formatting"]
+    },
+    { 
+      name: "Document Organization", 
+      price: "$400", 
+      unit: "per project",
+      description: "Full project documentation organization including POs, invoices, change orders, lien waivers, and receipts.",
+      features: ["Folder structure setup", "Document cataloging", "Digital organization", "Easy retrieval system", "Ongoing maintenance"]
+    },
+    { 
+      name: "Vendor & Sub Coordination", 
+      price: "$500", 
+      unit: "per day",
+      description: "Daily vendor delivery and subcontractor coordination to keep your project on schedule.",
+      features: ["Delivery tracking", "Sub scheduling", "Follow-up calls", "Schedule coordination", "Issue resolution"]
+    },
+    { 
+      name: "Site Visit & Progress Report", 
+      price: "$350", 
+      unit: "per visit",
+      description: "On-site visit with comprehensive photo documentation and written progress report.",
+      features: ["Site walkthrough", "Progress photos", "Quality observations", "Written report", "Action item list"]
+    },
+    { 
+      name: "Change Order Review & Documentation", 
+      price: "$250", 
+      unit: "per change order",
+      description: "Review change order requests, verify scope and pricing, and document for client approval.",
+      features: ["Scope verification", "Cost analysis", "Pricing review", "Documentation", "Client presentation"]
+    },
+    { 
+      name: "Budget Tracking & Analysis", 
+      price: "$450", 
+      unit: "per project/month",
+      description: "Monthly budget tracking with variance analysis and cost-to-complete projections.",
+      features: ["Budget vs actual tracking", "Variance analysis", "Cost projections", "Monthly report", "Alert notifications"]
+    },
+    { 
+      name: "RFI Management", 
+      price: "$75", 
+      unit: "per RFI",
+      description: "Log, track, and coordinate responses to Requests for Information from subs and vendors.",
+      features: ["RFI logging", "Response tracking", "Distribution to parties", "Resolution documentation", "Archive management"]
+    },
+    { 
+      name: "Submittal Tracking", 
+      price: "$100", 
+      unit: "per submittal",
+      description: "Track shop drawings, product submittals, and samples through the approval process.",
+      features: ["Submittal logging", "Approval tracking", "Architect coordination", "Status updates", "Approved document filing"]
+    },
+    { 
+      name: "Schedule Management", 
+      price: "$600", 
+      unit: "per project/month",
+      description: "Monthly schedule updates with critical path analysis and milestone tracking.",
+      features: ["Schedule updates", "Critical path tracking", "Milestone monitoring", "Delay alerts", "Recovery planning"]
+    },
+    { 
+      name: "Safety Documentation Management", 
+      price: "$300", 
+      unit: "per project/month",
+      description: "Manage safety documentation, toolbox talks, and OSHA compliance records.",
+      features: ["Safety doc organization", "Toolbox talk tracking", "OSHA logs", "Incident reporting", "Compliance verification"]
+    },
   ]
 
   return (
@@ -105,8 +183,16 @@ export default function GCPricingPage() {
       </section>
 
       {/* Packages */}
-      <section className="py-16 bg-white">
+      <section id="packages" className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Monthly Operations Packages
+            </h2>
+            <p className="text-lg text-gray-600">
+              Comprehensive operations support with predictable monthly pricing
+            </p>
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {packages.map((pkg) => (
               <Card
@@ -168,41 +254,66 @@ export default function GCPricingPage() {
 
       {/* À La Carte */}
       <section className="py-16 bg-gray-50">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              À La Carte Services
+              À La Carte Services for GCs & Builders
             </h2>
-            <p className="text-lg text-gray-600">
-              Need help with specific tasks? Purchase services individually.
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Need help with specific tasks or individual projects? Purchase professional services individually without a monthly commitment.
             </p>
           </div>
 
-          <Card className="bg-white border-gray-200">
-            <CardContent className="pt-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {alaCarte.map((service) => (
-                  <div key={service.name} className="flex items-start justify-between border-b border-gray-200 pb-4">
-                    <div>
-                      <div className="font-medium text-gray-900">{service.name}</div>
-                      <div className="text-sm text-gray-600">{service.unit}</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {alaCarte.map((service) => (
+              <Card key={service.name} className="bg-white border-gray-200 hover:shadow-lg transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900 flex-1 pr-4">
+                      {service.name}
+                    </h3>
+                    <div className="text-right shrink-0">
+                      <div className="text-2xl font-bold text-blue-600">{service.price}</div>
+                      <div className="text-xs text-gray-600">{service.unit}</div>
                     </div>
-                    <div className="text-xl font-bold text-blue-600">{service.price}</div>
                   </div>
-                ))}
-              </div>
+                  
+                  <p className="text-sm text-gray-600 mb-4">
+                    {service.description}
+                  </p>
+                  
+                  <div className="border-t border-gray-200 pt-4">
+                    <p className="text-xs font-medium text-gray-700 mb-2">Includes:</p>
+                    <ul className="space-y-1">
+                      {service.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-start space-x-2 text-xs text-gray-600">
+                          <CheckCircle2 className="h-3 w-3 text-blue-600 mt-0.5 shrink-0" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
-              <div className="mt-6 text-center">
-                <Button
-                  asChild
-                  variant="outline"
-                  className="border-2 border-gray-300 hover:border-blue-600 rounded-2xl"
-                >
-                  <Link href="/gc-services/contact">Request À La Carte Services</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="mt-12 text-center">
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 max-w-3xl mx-auto mb-6">
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Bundle & Save
+              </h3>
+              <p className="text-gray-700">
+                Purchasing multiple services regularly? Our monthly packages (Package A-D above) provide better value and guaranteed availability. <Link href="#packages" className="text-blue-600 hover:underline font-medium">Compare packages</Link>
+              </p>
+            </div>
+            <Button
+              asChild
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl h-12 px-8"
+            >
+              <Link href="/gc-services/contact">Request À La Carte Services</Link>
+            </Button>
+          </div>
         </div>
       </section>
 

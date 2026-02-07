@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { CheckCircle2, FileCheck, Zap, Clock, AlertCircle } from "lucide-react"
+import { CheckCircle2, FileCheck, Zap, Clock, AlertCircle, ArrowRight } from "lucide-react"
 
 export const metadata = {
   title: "How It Works - Permit Services | Kealee",
@@ -129,7 +129,7 @@ export default function PermitHowItWorksPage() {
               },
               {
                 title: "Proactive Status Tracking",
-                description: "We don't just submit and wait. We follow up daily with jurisdictions and keep you updated on progress.",
+                description: "We do not just submit and wait. We follow up daily with jurisdictions and keep you updated on progress.",
               },
               {
                 title: "Contractor-Focused Service",

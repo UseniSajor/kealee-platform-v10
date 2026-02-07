@@ -88,6 +88,10 @@ export default function PermitPricingPage() {
     { type: "Demolition Permit", price: "$200" },
     { type: "Occupancy Permit", price: "$150" },
     { type: "Sign Permit", price: "$125" },
+    { type: "Zoning & Variance Submission", price: "$750" },
+    { type: "Historic Review Submission", price: "$650" },
+    { type: "Subdivision Submission", price: "$1,200" },
+    { type: "Land Use Approval", price: "$850" },
   ]
 
   return (

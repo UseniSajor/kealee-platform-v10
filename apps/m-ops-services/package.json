@@ -4,8 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3005",
+    "dev:gc": "next dev -p 3006",
+    "dev:dev": "next dev -p 3005",
     "build": "next build",
     "start": "next start -p 3005",
+    "start:gc": "next start -p 3006",
     "lint": "eslint .",
     "deploy:staging": "vercel --yes --prod=false"
   },

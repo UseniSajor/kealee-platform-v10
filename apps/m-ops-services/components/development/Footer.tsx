@@ -17,6 +17,11 @@ export function Footer() {
             <p className="text-sm text-gray-400">
               Owner's Representative & Development Advisory for real estate projects nationwide. Licensed design and legal counsel coordination when required.
             </p>
+            <p className="text-sm text-gray-400 mt-2">
+              <a href="tel:+13015758777" className="hover:text-orange-600 transition-colors">
+                (301) 575-8777
+              </a>
+            </p>
           </div>
 
           {/* Quick Links */}
