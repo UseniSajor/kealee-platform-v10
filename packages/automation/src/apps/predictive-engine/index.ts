@@ -49,16 +49,7 @@ export function registerPredictiveEngineEvents(): void {
     }
   });
 
-  // Daily cron: analyze all active projects at 6am
-  predictiveEngineQueue.add(
-    'analyze-all',
-    {},
-    {
-      repeat: { pattern: '0 6 * * *' }, // Daily at 6am
-    },
-  ).catch((err) => {
-    console.error('[PredictiveEngine] Failed to add cron job:', err.message);
-  });
+  // NOTE: Daily cron (analyze-all) is registered centrally in infrastructure/cron.ts
 
   console.log('[PredictiveEngine] Event subscriptions registered');
 }

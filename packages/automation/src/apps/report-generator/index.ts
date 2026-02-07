@@ -32,16 +32,7 @@ export function registerReportGeneratorEvents(): void {
     }
   });
 
-  // Weekly cron: every Friday at 4pm
-  reportGeneratorQueue.add(
-    'weekly-cron',
-    {},
-    {
-      repeat: { pattern: '0 16 * * 5' }, // Friday 4pm
-    },
-  ).catch((err) => {
-    console.error('[ReportGenerator] Failed to add cron job:', err.message);
-  });
+  // NOTE: Weekly cron (weekly-cron) is registered centrally in infrastructure/cron.ts
 
   console.log('[ReportGenerator] Event subscriptions registered');
 }

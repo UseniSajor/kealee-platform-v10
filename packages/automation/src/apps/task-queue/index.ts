@@ -56,27 +56,7 @@ export function registerTaskQueueEvents(): void {
     }
   });
 
-  // Daily cron: check overdue tasks at 8am
-  taskQueueQueue.add(
-    'check-overdue',
-    {},
-    {
-      repeat: { pattern: '0 8 * * *' }, // Daily at 8am
-    },
-  ).catch((err) => {
-    console.error('[TaskQueue] Failed to add overdue cron:', err.message);
-  });
-
-  // Weekly cron: rebalance workload every Monday at 7am
-  taskQueueQueue.add(
-    'rebalance-workload',
-    {},
-    {
-      repeat: { pattern: '0 7 * * 1' }, // Monday at 7am
-    },
-  ).catch((err) => {
-    console.error('[TaskQueue] Failed to add rebalance cron:', err.message);
-  });
+  // NOTE: Crons (check-overdue, rebalance-workload) registered centrally in infrastructure/cron.ts
 
   console.log('[TaskQueue] Event subscriptions registered');
 }

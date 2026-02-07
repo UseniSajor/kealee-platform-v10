@@ -1,4 +1,3 @@
-import { PrismaClient } from '@prisma/client';
 import { createQueue, addJob, QUEUE_NAMES } from '../../infrastructure/queues.js';
 import { eventBus } from '../../infrastructure/event-bus.js';
 import { EVENT_TYPES } from '../../infrastructure/event-types.js';
@@ -6,8 +5,6 @@ import { VisitSchedulerService } from './visit-scheduler.service.js';
 
 export { VisitSchedulerService } from './visit-scheduler.service.js';
 export { visitSchedulerWorker } from './visit-scheduler.worker.js';
-
-const prisma = new PrismaClient();
 
 export const visitSchedulerQueue = createQueue(QUEUE_NAMES.VISIT_SCHEDULER);
 export const visitSchedulerService = new VisitSchedulerService();
@@ -36,34 +33,7 @@ export function registerVisitSchedulerEvents(): void {
     }
   });
 
-  // Weekly cron: schedule visits for all active PMs (every Monday at 6am)
-  visitSchedulerQueue.add(
-    'schedule-weekly-cron',
-    {},
-    {
-      repeat: { pattern: '0 6 * * 1' }, // Monday 6am
-    },
-  ).catch((err) => {
-    console.error('[VisitScheduler] Failed to add cron job:', err.message);
-  });
+  // NOTE: Weekly cron (schedule-weekly-all) is registered centrally in infrastructure/cron.ts
 
   console.log('[VisitScheduler] Event subscriptions registered');
-}
-
-/**
- * Cron handler: schedule weekly visits for all active PMs.
- * Called by the repeatable 'schedule-weekly-cron' job.
- */
-export async function scheduleWeeklyForAllPMs(): Promise<void> {
-  const activePMs = await prisma.projectManager.findMany({
-    where: { removedAt: null },
-    select: { userId: true },
-    distinct: ['userId'],
-  });
-
-  for (const pm of activePMs) {
-    await addJob(visitSchedulerQueue, 'schedule-weekly', {
-      pmId: pm.userId,
-    });
-  }
 }

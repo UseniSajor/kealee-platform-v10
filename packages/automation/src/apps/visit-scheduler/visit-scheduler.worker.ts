@@ -87,6 +87,22 @@ async function processor(job: Job<VisitSchedulerPayload>): Promise<any> {
         break;
       }
 
+      case 'schedule-weekly-all': {
+        // Cron job: schedule weekly visits for all active PMs
+        const activePMs = await prisma.projectManager.findMany({
+          where: { removedAt: null },
+          select: { userId: true },
+          distinct: ['userId'],
+        });
+
+        for (const pm of activePMs) {
+          await service.scheduleWeeklyVisits(pm.userId);
+        }
+
+        result = { pmCount: activePMs.length };
+        break;
+      }
+
       default:
         throw new Error(`Unknown job name: ${job.name}`);
     }

@@ -42,16 +42,7 @@ export function registerBudgetTrackerEvents(): void {
     }
   });
 
-  // Daily cron: create snapshots for all active projects (midnight)
-  budgetTrackerQueue.add(
-    'daily-snapshots',
-    {},
-    {
-      repeat: { pattern: '0 0 * * *' }, // Daily at midnight
-    },
-  ).catch((err) => {
-    console.error('[BudgetTracker] Failed to add cron job:', err.message);
-  });
+  // NOTE: Daily cron (daily-snapshots) is registered centrally in infrastructure/cron.ts
 
   console.log('[BudgetTracker] Event subscriptions registered');
 }

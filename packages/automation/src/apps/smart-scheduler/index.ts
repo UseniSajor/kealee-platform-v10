@@ -54,16 +54,7 @@ export function registerSmartSchedulerEvents(): void {
     }
   });
 
-  // Weekly cron: optimize all active projects (Sunday 10pm)
-  smartSchedulerQueue.add(
-    'optimize-all',
-    {},
-    {
-      repeat: { pattern: '0 22 * * 0' }, // Sunday at 10pm
-    },
-  ).catch((err) => {
-    console.error('[SmartScheduler] Failed to add cron job:', err.message);
-  });
+  // NOTE: Weekly cron (optimize-all) is registered centrally in infrastructure/cron.ts
 
   console.log('[SmartScheduler] Event subscriptions registered');
 }

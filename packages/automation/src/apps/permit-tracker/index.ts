@@ -31,27 +31,7 @@ export function registerPermitTrackerEvents(): void {
     }
   });
 
-  // Daily cron: check status for all submitted permits (8am)
-  permitTrackerQueue.add(
-    'check-submitted',
-    {},
-    {
-      repeat: { pattern: '0 8 * * *' }, // Daily at 8am
-    },
-  ).catch((err) => {
-    console.error('[PermitTracker] Failed to add status check cron:', err.message);
-  });
-
-  // Daily cron: check permit expirations (9am)
-  permitTrackerQueue.add(
-    'check-expirations',
-    {},
-    {
-      repeat: { pattern: '0 9 * * *' }, // Daily at 9am
-    },
-  ).catch((err) => {
-    console.error('[PermitTracker] Failed to add expiration cron:', err.message);
-  });
+  // NOTE: Crons (check-submitted, check-expirations) registered centrally in infrastructure/cron.ts
 
   console.log('[PermitTracker] Event subscriptions registered');
 }

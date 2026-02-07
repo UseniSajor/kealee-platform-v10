@@ -7,7 +7,6 @@ import { addJob } from './infrastructure/queues.js';
 // ── APP-01 through APP-15 imports ──────────────────────────────────────────
 import {
   registerBidEngineEvents,
-  bidEngineQueue,
 } from './apps/bid-engine/index.js';
 
 import {
@@ -67,7 +66,6 @@ import {
 
 import {
   registerQAInspectorEvents,
-  qaInspectorQueue,
 } from './apps/qa-inspector/index.js';
 
 import {
@@ -77,7 +75,6 @@ import {
 
 import {
   registerDashboardJobs,
-  dashboardQueue,
 } from './apps/dashboard/index.js';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -529,33 +526,10 @@ export class EventRouter {
   }
 
   // ═══ CHAIN 4: WEEKLY CYCLE ══════════════════════════════════════════════
-  // Monday 6am cron + Friday 4pm cron
+  // Monday 6am + Friday 4pm crons are registered centrally in infrastructure/cron.ts
+  // (jobs: weekly-monday-chain, weekly-friday-chain on the dashboard queue)
   private registerChain4_WeeklyCycle(): void {
-    // Monday 6am: analysis + optimization + overdue checks + visit scheduling
-    dashboardQueue.add(
-      'weekly-monday-chain',
-      {},
-      {
-        repeat: { pattern: '0 6 * * 1' }, // Monday 6am
-        jobId: 'weekly-monday-chain-repeat',
-      },
-    ).catch((err) => {
-      console.error('[EventRouter] Failed to add Monday chain cron:', err.message);
-    });
-
-    // Friday 4pm: generate + send weekly reports
-    dashboardQueue.add(
-      'weekly-friday-chain',
-      {},
-      {
-        repeat: { pattern: '0 16 * * 5' }, // Friday 4pm
-        jobId: 'weekly-friday-chain-repeat',
-      },
-    ).catch((err) => {
-      console.error('[EventRouter] Failed to add Friday chain cron:', err.message);
-    });
-
-    console.log('[EventRouter] Chain 4 (Weekly Cycle) registered');
+    console.log('[EventRouter] Chain 4 (Weekly Cycle) registered (crons in infrastructure/cron.ts)');
   }
 
   /**

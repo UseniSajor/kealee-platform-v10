@@ -42,16 +42,7 @@ export function registerInspectionCoordEvents(): void {
     }
   });
 
-  // Daily cron: check for inspections due in next 48 hours and send reminders
-  inspectionQueue.add(
-    'check-upcoming',
-    { hoursAhead: 48 },
-    {
-      repeat: { pattern: '0 7 * * *' }, // Daily at 7am
-    },
-  ).catch((err) => {
-    console.error('[InspectionCoord] Failed to add cron job:', err.message);
-  });
+  // NOTE: Cron (check-upcoming) is registered centrally in infrastructure/cron.ts
 
   console.log('[InspectionCoord] Event subscriptions registered');
 }

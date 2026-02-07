@@ -15,7 +15,8 @@
 import { PrismaClient } from '@prisma/client';
 import { eventBus } from '../infrastructure/event-bus.js';
 import { checkRedisHealth, closeAllConnections } from '../infrastructure/redis.js';
-import { EventRouter, eventRouter } from '../event-router.js';
+import { registerAllCrons, removeAllCrons } from '../infrastructure/cron.js';
+import { eventRouter } from '../event-router.js';
 
 // ── Worker imports (APP-01 through APP-15) ─────────────────────────────────
 import { bidEngineWorker, bidEngineQueue, bidEngineService } from '../apps/bid-engine/index.js';
@@ -76,7 +77,15 @@ async function gracefulShutdown(signal: string): Promise<void> {
     console.error('[CommandCenter] EventBus stop error:', (err as Error).message);
   }
 
-  // 2. Close all workers (drain current jobs, stop accepting new ones)
+  // 2. Remove repeatable cron jobs
+  try {
+    await removeAllCrons();
+    console.log('[CommandCenter] Cron jobs removed');
+  } catch (err) {
+    console.error('[CommandCenter] Cron removal error:', (err as Error).message);
+  }
+
+  // 3. Close all workers (drain current jobs, stop accepting new ones)
   console.log('[CommandCenter] Stopping all workers...');
   const workerClosePromises = ALL_WORKERS.map(async ({ name, worker }) => {
     try {
@@ -142,22 +151,27 @@ async function main(): Promise<void> {
   console.log('[CommandCenter] Registering event handlers...');
   eventRouter.registerAll();
 
-  // 5. Workers are already started by their module-level createWorker() calls
+  // 5. Register all cron jobs centrally
+  console.log('[CommandCenter] Registering cron jobs...');
+  await registerAllCrons();
+
+  // 6. Workers are already started by their module-level createWorker() calls
   //    Just log that they're running
   console.log('[CommandCenter] Workers active:');
   ALL_WORKERS.forEach(({ name }) => {
     console.log(`[CommandCenter]   • ${name}`);
   });
 
-  // 6. Register shutdown handlers
+  // 7. Register shutdown handlers
   process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
   process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-  // 7. Log startup complete
+  // 8. Log startup complete
   console.log('');
   console.log('╔══════════════════════════════════════════════════════════════╗');
   console.log('║  Command Center: 14 workers + 1 monitor active              ║');
   console.log('║  Event Router: 5 cross-app chains registered                ║');
+  console.log('║  Cron Scheduler: all repeatable jobs registered              ║');
   console.log('║  Ready to process jobs                                      ║');
   console.log('╚══════════════════════════════════════════════════════════════╝');
 }
@@ -176,6 +190,8 @@ export {
   eventRouter,
   eventBus,
   prisma,
+  registerAllCrons,
+  removeAllCrons,
 
   // APP-01: Bid Engine
   bidEngineQueue,
