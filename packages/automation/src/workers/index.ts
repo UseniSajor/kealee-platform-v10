@@ -17,6 +17,7 @@ import { eventBus } from '../infrastructure/event-bus.js';
 import { checkRedisHealth, closeAllConnections } from '../infrastructure/redis.js';
 import { registerAllCrons, removeAllCrons } from '../infrastructure/cron.js';
 import { eventRouter } from '../event-router.js';
+import { registerAllFlows } from '../flows/index.js';
 
 // ── Worker imports (APP-01 through APP-15) ─────────────────────────────────
 import { bidEngineWorker, bidEngineQueue, bidEngineService } from '../apps/bid-engine/index.js';
@@ -151,26 +152,31 @@ async function main(): Promise<void> {
   console.log('[CommandCenter] Registering event handlers...');
   eventRouter.registerAll();
 
-  // 5. Register all cron jobs centrally
+  // 5. Register automation flows (onboarding, subscription lifecycle)
+  console.log('[CommandCenter] Registering automation flows...');
+  registerAllFlows();
+
+  // 6. Register all cron jobs centrally
   console.log('[CommandCenter] Registering cron jobs...');
   await registerAllCrons();
 
-  // 6. Workers are already started by their module-level createWorker() calls
+  // 7. Workers are already started by their module-level createWorker() calls
   //    Just log that they're running
   console.log('[CommandCenter] Workers active:');
   ALL_WORKERS.forEach(({ name }) => {
     console.log(`[CommandCenter]   • ${name}`);
   });
 
-  // 7. Register shutdown handlers
+  // 8. Register shutdown handlers
   process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
   process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-  // 8. Log startup complete
+  // 9. Log startup complete
   console.log('');
   console.log('╔══════════════════════════════════════════════════════════════╗');
   console.log('║  Command Center: 14 workers + 1 monitor active              ║');
   console.log('║  Event Router: 5 cross-app chains registered                ║');
+  console.log('║  Automation Flows: onboarding + subscription registered      ║');
   console.log('║  Cron Scheduler: all repeatable jobs registered              ║');
   console.log('║  Ready to process jobs                                      ║');
   console.log('╚══════════════════════════════════════════════════════════════╝');
@@ -192,6 +198,7 @@ export {
   prisma,
   registerAllCrons,
   removeAllCrons,
+  registerAllFlows,
 
   // APP-01: Bid Engine
   bidEngineQueue,
