@@ -7,6 +7,16 @@ const prisma = new PrismaClient();
 const service = new DashboardService();
 const SOURCE_APP = 'APP-15';
 
+// Lazy import to avoid circular dependency — eventRouter imports dashboard/index
+let _eventRouter: any = null;
+async function getEventRouter() {
+  if (!_eventRouter) {
+    const mod = await import('../../event-router.js');
+    _eventRouter = mod.eventRouter;
+  }
+  return _eventRouter;
+}
+
 interface CollectMetricsPayload {
   force?: boolean;
 }
@@ -48,6 +58,21 @@ async function processor(job: Job<DashboardPayload>): Promise<any> {
         });
 
         result = { deletedCount: deleted.count, retentionDays };
+        break;
+      }
+
+      // Weekly cycle chains dispatched by EventRouter
+      case 'weekly-monday-chain': {
+        const router = await getEventRouter();
+        await router.executeMondayCycle();
+        result = { cycle: 'monday', timestamp: new Date().toISOString() };
+        break;
+      }
+
+      case 'weekly-friday-chain': {
+        const router = await getEventRouter();
+        await router.executeFridayCycle();
+        result = { cycle: 'friday', timestamp: new Date().toISOString() };
         break;
       }
 
