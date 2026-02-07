@@ -11,7 +11,7 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getSession();
 
   // Protected routes
-  const protectedPaths = ['/dashboard', '/projects', '/account', '/settings'];
+  const protectedPaths = ['/dashboard', '/projects', '/account', '/settings', '/approvals', '/reports'];
   const isProtectedPath = protectedPaths.some(path => 
     request.nextUrl.pathname.startsWith(path)
   );
@@ -45,6 +45,8 @@ export const config = {
     '/projects/:path*',
     '/account/:path*',
     '/settings/:path*',
+    '/approvals/:path*',
+    '/reports/:path*',
     '/login',
     '/signup',
   ],
