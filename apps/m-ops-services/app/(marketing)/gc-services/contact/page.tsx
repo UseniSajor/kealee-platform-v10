@@ -77,7 +77,7 @@ export default function GCContactPage() {
 
       if (response.ok) {
         setSubmitStatus('success')
-        setSubmitMessage(result.message || 'Thank you! We'll be in touch within 24 hours to start your free trial.')
+        setSubmitMessage(result.message || "Thank you! We'll be in touch within 24 hours to start your free trial.")
         reset()
         window.scrollTo({ top: 0, behavior: 'smooth' })
       } else {
