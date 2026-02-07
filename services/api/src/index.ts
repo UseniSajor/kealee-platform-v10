@@ -545,6 +545,23 @@ const start = async () => {
     const { commandCenterRoutes } = await import('./routes/command-center/index')
     await fastify.register(commandCenterRoutes, { prefix: '/api/v1/command-center' })
 
+    // Command Center per-app routes (decisions, bids, visits, reports, predictions, qa, budget)
+    const { decisionRoutes } = await import('./routes/decisions/index')
+    const { bidRoutes } = await import('./routes/bids/index')
+    const { visitRoutes } = await import('./routes/visits/index')
+    const { ccReportRoutes } = await import('./routes/reports/index')
+    const { predictionRoutes } = await import('./routes/predictions/index')
+    const { qaRoutes } = await import('./routes/qa/index')
+    const { budgetRoutes } = await import('./routes/budget/index')
+
+    await fastify.register(decisionRoutes, { prefix: '/api/v1/decisions' })
+    await fastify.register(bidRoutes, { prefix: '/api/v1/bids' })
+    await fastify.register(visitRoutes, { prefix: '/api/v1/visits' })
+    await fastify.register(ccReportRoutes, { prefix: '/api/v1/reports' })
+    await fastify.register(predictionRoutes, { prefix: '/api/v1/predictions' })
+    await fastify.register(qaRoutes, { prefix: '/api/v1/qa' })
+    await fastify.register(budgetRoutes, { prefix: '/api/v1/budget' })
+
     // Register new API routes for PM workspace
     const { clientRoutes } = await import('./routes/client.routes')
     const { taskRoutes } = await import('./routes/task.routes')
