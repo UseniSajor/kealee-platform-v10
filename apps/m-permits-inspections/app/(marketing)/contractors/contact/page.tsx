@@ -53,7 +53,7 @@ export default function PermitContactPage() {
 
       if (response.ok) {
         setSubmitStatus('success')
-        setSubmitMessage('Thank you! We'll contact you within 24 hours to get started.')
+        setSubmitMessage("Thank you! We'll contact you within 24 hours to get started.")
         setFormData({
           fullName: "",
           company: "",
