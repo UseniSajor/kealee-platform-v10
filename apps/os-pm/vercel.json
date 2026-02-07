@@ -2,6 +2,7 @@
   "buildCommand": "cd ../.. && npx pnpm@8.15.9 build --filter=os-pm",
   "installCommand": "cd ../.. && PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npx pnpm@8.15.9 install --no-frozen-lockfile",
   "framework": "nextjs",
+  "ignoreCommand": "cd ../.. && npx turbo-ignore os-pm",
   "rewrites": [
     {
       "source": "/(.*)",
