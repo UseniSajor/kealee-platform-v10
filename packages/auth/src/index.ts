@@ -82,3 +82,15 @@ export { useAuth } from './hooks/useAuth';
 export { useRequireAuth } from './hooks/useRequireAuth';
 export { useProfile } from './hooks/useProfile';
 export type { Profile } from './hooks/useProfile';
+
+// Server-side auth (SSR)
+export {
+  createSupabaseServerClient,
+  createSupabaseAdminClient,
+  getCurrentUser as getServerUser,
+  requireAuth,
+  requireRole,
+  APP_ALLOWED_ROLES,
+  ROLE_APP_REDIRECT,
+} from './supabase-auth';
+export type { AuthUser, CookieStore } from './supabase-auth';

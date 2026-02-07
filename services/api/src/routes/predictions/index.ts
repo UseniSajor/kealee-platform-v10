@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { prisma } from '@kealee/database'
 import {
   authenticateUser,
+  requirePM,
   type AuthenticatedRequest,
 } from '../../middleware/auth.middleware'
 import { validateParams } from '../../middleware/validation.middleware'
@@ -31,16 +32,20 @@ const predictionIdParamsSchema = z.object({
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function verifyProjectMembership(
+async function verifyProjectMembershipLocal(
   userId: string,
   projectId: string,
+  userEmail?: string,
+  organizationId?: string | null,
 ): Promise<boolean> {
   const project = await prisma.project.findFirst({
     where: {
       id: projectId,
       OR: [
-        { ownerId: userId },
-        { members: { some: { userId } } },
+        { pmId: userId },
+        { projectManagers: { some: { userId } } },
+        ...(userEmail ? [{ client: { email: userEmail } }] : []),
+        ...(organizationId ? [{ orgId: organizationId }] : []),
       ],
     },
     select: { id: true },
@@ -76,9 +81,10 @@ function computeRiskLevel(predictions: Array<{ probability: any; impact: string 
 // ---------------------------------------------------------------------------
 
 export async function predictionRoutes(fastify: FastifyInstance) {
-  // All routes require authentication
+  // All routes require authentication + PM/ADMIN role
   fastify.addHook('onRequest', async (request, reply) => {
     await authenticateUser(request, reply)
+    await requirePM(request, reply)
   })
 
   // -------------------------------------------------------------------------
@@ -94,7 +100,7 @@ export async function predictionRoutes(fastify: FastifyInstance) {
         const user = (request as AuthenticatedRequest).user!
         const { projectId } = request.params as z.infer<typeof projectIdParamsSchema>
 
-        const isMember = await verifyProjectMembership(user.id, projectId)
+        const isMember = await verifyProjectMembershipLocal(user.id, projectId, user.email, user.organizationId)
         if (!isMember && user.role !== 'admin') {
           return reply.code(403).send({ error: 'Not a member of this project' })
         }
@@ -153,7 +159,7 @@ export async function predictionRoutes(fastify: FastifyInstance) {
           return reply.code(404).send({ error: 'Prediction not found' })
         }
 
-        const isMember = await verifyProjectMembership(user.id, prediction.projectId)
+        const isMember = await verifyProjectMembershipLocal(user.id, prediction.projectId, user.email, user.organizationId)
         if (!isMember && user.role !== 'admin') {
           return reply.code(403).send({ error: 'Not a member of this project' })
         }

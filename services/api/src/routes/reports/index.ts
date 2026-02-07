@@ -62,16 +62,20 @@ const reportQuerySchema = z.object({
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function verifyProjectMembership(
+async function verifyProjectMembershipLocal(
   userId: string,
   projectId: string,
+  userEmail?: string,
+  organizationId?: string | null,
 ): Promise<boolean> {
   const project = await prisma.project.findFirst({
     where: {
       id: projectId,
       OR: [
-        { ownerId: userId },
-        { members: { some: { userId } } },
+        { pmId: userId },
+        { projectManagers: { some: { userId } } },
+        ...(userEmail ? [{ client: { email: userEmail } }] : []),
+        ...(organizationId ? [{ orgId: organizationId }] : []),
       ],
     },
     select: { id: true },
@@ -106,7 +110,7 @@ export async function ccReportRoutes(fastify: FastifyInstance) {
         const { projectId } = request.params as z.infer<typeof projectIdParamsSchema>
         const { type } = request.body as z.infer<typeof generateBodySchema>
 
-        const isMember = await verifyProjectMembership(user.id, projectId)
+        const isMember = await verifyProjectMembershipLocal(user.id, projectId, user.email, user.organizationId)
         if (!isMember && user.role !== 'admin') {
           return reply.code(403).send({ error: 'Not a member of this project' })
         }
@@ -148,7 +152,7 @@ export async function ccReportRoutes(fastify: FastifyInstance) {
         const { projectId } = request.params as z.infer<typeof projectIdParamsSchema>
         const { limit, after } = request.query as z.infer<typeof reportQuerySchema>
 
-        const isMember = await verifyProjectMembership(user.id, projectId)
+        const isMember = await verifyProjectMembershipLocal(user.id, projectId, user.email, user.organizationId)
         if (!isMember && user.role !== 'admin') {
           return reply.code(403).send({ error: 'Not a member of this project' })
         }

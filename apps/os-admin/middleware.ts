@@ -2,6 +2,9 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// Roles allowed in the admin dashboard
+const ALLOWED_ROLES = ['admin', 'super_admin'];
+
 export async function middleware(request: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req: request, res });
@@ -18,15 +21,31 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Check for admin role in User table
+  // Check for user in User table
   const { data: user } = await supabase
     .from('User')
     .select('role, status')
     .eq('id', session.user.id)
     .single();
 
-  // Allow if user exists and is active (admin check is optional for os-admin)
+  // Must be ACTIVE
   if (!user || user.status !== 'ACTIVE') {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/unauthorized';
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // Enforce admin role — check OrgMember.roleKey first, fallback to User.role
+  const { data: membership } = await supabase
+    .from('OrgMember')
+    .select('roleKey')
+    .eq('userId', session.user.id)
+    .limit(1)
+    .single();
+
+  const effectiveRole = (membership?.roleKey || user.role || 'user').toLowerCase();
+
+  if (!ALLOWED_ROLES.includes(effectiveRole)) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/unauthorized';
     return NextResponse.redirect(redirectUrl);
@@ -37,6 +56,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!login|unauthorized|_next/static|_next/image|favicon.ico|api).*)',
+    '/((?!login|signup|unauthorized|_next/static|_next/image|favicon.ico|api).*)',
   ],
 };

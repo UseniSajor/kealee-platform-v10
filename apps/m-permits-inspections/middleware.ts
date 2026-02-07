@@ -26,7 +26,7 @@ export async function middleware(request: NextRequest) {
 
   // Redirect to dashboard if accessing auth pages with active session
   const authPaths = ['/login', '/signup'];
-  const isAuthPath = authPaths.some(path => 
+  const isAuthPath = authPaths.some(path =>
     request.nextUrl.pathname.startsWith(path)
   );
 
@@ -34,6 +34,38 @@ export async function middleware(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/dashboard';
     return NextResponse.redirect(redirectUrl);
+  }
+
+  // Role check for protected routes — PM/admin/inspector only
+  const ALLOWED_ROLES = ['pm', 'admin', 'super_admin', 'inspector'];
+
+  if (isProtectedPath && session) {
+    const { data: user } = await supabase
+      .from('User')
+      .select('role, status')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!user || user.status !== 'ACTIVE') {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/unauthorized';
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    const { data: membership } = await supabase
+      .from('OrgMember')
+      .select('roleKey')
+      .eq('userId', session.user.id)
+      .limit(1)
+      .single();
+
+    const effectiveRole = (membership?.roleKey || user.role || 'user').toLowerCase();
+
+    if (!ALLOWED_ROLES.includes(effectiveRole)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/unauthorized';
+      return NextResponse.redirect(redirectUrl);
+    }
   }
 
   return res;

@@ -14,6 +14,7 @@ import { prisma } from '@kealee/database'
 import {
   authenticateUser,
   requirePM,
+  requireSelfOrAdmin,
   type AuthenticatedRequest,
 } from '../../middleware/auth.middleware'
 import {
@@ -59,13 +60,17 @@ const historyQuerySchema = z.object({
 async function verifyProjectMembership(
   userId: string,
   projectId: string,
+  userEmail?: string,
+  organizationId?: string | null,
 ): Promise<boolean> {
   const project = await prisma.project.findFirst({
     where: {
       id: projectId,
       OR: [
-        { ownerId: userId },
-        { members: { some: { userId } } },
+        { pmId: userId },
+        { projectManagers: { some: { userId } } },
+        ...(userEmail ? [{ client: { email: userEmail } }] : []),
+        ...(organizationId ? [{ orgId: organizationId }] : []),
       ],
     },
     select: { id: true },
@@ -92,6 +97,7 @@ export async function decisionRoutes(fastify: FastifyInstance) {
       preHandler: [
         validateParams(pmIdParamsSchema),
         requirePM,
+        requireSelfOrAdmin('pmId'),
       ],
     },
     async (request, reply) => {
@@ -130,24 +136,24 @@ export async function decisionRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/client/:userId',
     {
-      preHandler: [validateParams(userIdParamsSchema)],
+      preHandler: [
+        validateParams(userIdParamsSchema),
+        requireSelfOrAdmin('userId'),
+      ],
     },
     async (request, reply) => {
       try {
         const user = (request as AuthenticatedRequest).user!
         const { userId } = request.params as z.infer<typeof userIdParamsSchema>
 
-        // Users can only view their own client decisions unless PM/admin
-        if (user.id !== userId && user.role !== 'pm' && user.role !== 'admin') {
-          return reply.code(403).send({ error: 'Insufficient permissions' })
-        }
-
-        // Get projects owned by or involving this user
+        // Get projects involving this user (as PM, project manager, client, or org member)
         const userProjects = await prisma.project.findMany({
           where: {
             OR: [
-              { ownerId: userId },
-              { members: { some: { userId } } },
+              { pmId: userId },
+              { projectManagers: { some: { userId } } },
+              ...(user.email ? [{ client: { email: user.email } }] : []),
+              ...(user.organizationId ? [{ orgId: user.organizationId }] : []),
             ],
           },
           select: { id: true },
@@ -272,8 +278,8 @@ export async function decisionRoutes(fastify: FastifyInstance) {
         const { limit, after } = request.query as z.infer<typeof historyQuerySchema>
 
         // Verify project membership
-        const isMember = await verifyProjectMembership(user.id, projectId)
-        if (!isMember && user.role !== 'admin') {
+        const isMember = await verifyProjectMembership(user.id, projectId, user.email, user.organizationId)
+        if (!isMember && !['admin', 'super_admin'].includes(user.role)) {
           return reply.code(403).send({ error: 'Not a member of this project' })
         }
 

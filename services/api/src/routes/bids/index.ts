@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { prisma } from '@kealee/database'
 import {
   authenticateUser,
+  requireProjectMembership,
   type AuthenticatedRequest,
 } from '../../middleware/auth.middleware'
 import { validateParams } from '../../middleware/validation.middleware'
@@ -32,16 +33,20 @@ const acceptBidParamsSchema = z.object({
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function verifyProjectMembership(
+async function verifyProjectMembershipLocal(
   userId: string,
   projectId: string,
+  userEmail?: string,
+  organizationId?: string | null,
 ): Promise<boolean> {
   const project = await prisma.project.findFirst({
     where: {
       id: projectId,
       OR: [
-        { ownerId: userId },
-        { members: { some: { userId } } },
+        { pmId: userId },
+        { projectManagers: { some: { userId } } },
+        ...(userEmail ? [{ client: { email: userEmail } }] : []),
+        ...(organizationId ? [{ orgId: organizationId }] : []),
       ],
     },
     select: { id: true },
@@ -72,7 +77,7 @@ export async function bidRoutes(fastify: FastifyInstance) {
         const user = (request as AuthenticatedRequest).user!
         const { projectId } = request.params as z.infer<typeof projectIdParamsSchema>
 
-        const isMember = await verifyProjectMembership(user.id, projectId)
+        const isMember = await verifyProjectMembershipLocal(user.id, projectId, user.email, user.organizationId)
         if (!isMember && user.role !== 'admin') {
           return reply.code(403).send({ error: 'Not a member of this project' })
         }
@@ -152,7 +157,7 @@ export async function bidRoutes(fastify: FastifyInstance) {
           return reply.code(404).send({ error: 'Evaluation not found' })
         }
 
-        const isMember = await verifyProjectMembership(user.id, evaluation.projectId)
+        const isMember = await verifyProjectMembershipLocal(user.id, evaluation.projectId, user.email, user.organizationId)
         if (!isMember && user.role !== 'admin') {
           return reply.code(403).send({ error: 'Not a member of this project' })
         }
