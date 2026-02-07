@@ -21,6 +21,20 @@ const nextConfig = {
       ],
     },
   },
+  webpack: (config) => {
+    // Resolve @kealee/ui/* subpath imports to local shadcn components/ui/ directory.
+    // Without this, transpilePackages causes webpack to look inside the @kealee/ui
+    // package which doesn't have these subpath exports.
+    const uiDir = path.resolve(__dirname, 'components/ui')
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@kealee/ui/button': path.join(uiDir, 'button'),
+      '@kealee/ui/card': path.join(uiDir, 'card'),
+      '@kealee/ui/input': path.join(uiDir, 'input'),
+      '@kealee/ui/label': path.join(uiDir, 'label'),
+    }
+    return config
+  },
 }
 
 module.exports = nextConfig
