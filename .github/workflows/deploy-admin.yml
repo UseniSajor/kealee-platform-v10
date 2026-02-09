@@ -1,0 +1,57 @@
+name: Deploy Admin Dashboard
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/os-admin/**'
+      - 'packages/ui/**'
+      - 'packages/database/**'
+      - '.github/workflows/deploy-admin.yml'
+
+  # Allow manual trigger from the Actions tab
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8.12.0'
+
+jobs:
+  deploy:
+    name: Deploy os-admin to Vercel
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build os-admin
+        run: pnpm build --filter=os-admin
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_OS_ADMIN }}
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_OS_ADMIN }}
+          working-directory: apps/os-admin
+          vercel-args: '--prod --yes'
+          scope: ${{ secrets.VERCEL_ORG_ID }}

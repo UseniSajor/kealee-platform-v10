@@ -2,6 +2,9 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// Roles allowed in the PM dashboard
+const ALLOWED_ROLES = ['pm', 'admin', 'super_admin'];
+
 export async function middleware(request: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req: request, res });
@@ -10,7 +13,7 @@ export async function middleware(request: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // Require authentication for ALL pages
+  // Require authentication for all protected pages
   if (!session) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/login';
@@ -25,8 +28,24 @@ export async function middleware(request: NextRequest) {
     .eq('id', session.user.id)
     .single();
 
-  // Allow if user exists and is active
+  // Must be ACTIVE
   if (!user || user.status !== 'ACTIVE') {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/unauthorized';
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // Enforce PM or admin role
+  const { data: membership } = await supabase
+    .from('OrgMember')
+    .select('roleKey')
+    .eq('userId', session.user.id)
+    .limit(1)
+    .single();
+
+  const effectiveRole = (membership?.roleKey || user.role || 'user').toLowerCase();
+
+  if (!ALLOWED_ROLES.includes(effectiveRole)) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/unauthorized';
     return NextResponse.redirect(redirectUrl);
@@ -37,6 +56,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!login|unauthorized|_next/static|_next/image|favicon.ico|api).*)',
+    '/((?!login|signup|unauthorized|_next/static|_next/image|favicon.ico|api).*)',
   ],
 };
