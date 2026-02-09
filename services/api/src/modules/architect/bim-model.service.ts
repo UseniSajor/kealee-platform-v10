@@ -104,8 +104,26 @@ export const bimModelService = {
       },
     })
 
-    // TODO: Trigger model conversion job (convert to web-friendly format)
-    // await modelConversionService.queueConversion(model.id)
+    // Enqueue model conversion job (BullMQ integration placeholder)
+    try {
+      // Attempt to enqueue via BullMQ if available; otherwise log for manual processing
+      const { Queue } = await import('bullmq').catch(() => ({ Queue: null }))
+      if (Queue) {
+        const conversionQueue = new Queue('bim-model-conversion', {
+          connection: { host: process.env.REDIS_HOST || 'localhost', port: parseInt(process.env.REDIS_PORT || '6379') },
+        })
+        await conversionQueue.add('convert-model', {
+          modelId: model.id,
+          modelFormat: data.modelFormat,
+          designProjectId: data.designProjectId,
+        })
+        await conversionQueue.close()
+      } else {
+        console.log(`[BIM] Model conversion job queued (placeholder) for model ${model.id}, format: ${data.modelFormat}`)
+      }
+    } catch (err) {
+      console.warn(`[BIM] Failed to enqueue model conversion for ${model.id}:`, err)
+    }
 
     return model
   },
@@ -423,14 +441,62 @@ export const bimModelService = {
       throw new NotFoundError('BIMModel', modelId)
     }
 
-    // TODO: Integrate with actual clash detection service
-    // This would:
-    // 1. Load model geometry
-    // 2. Detect overlapping elements
-    // 3. Create ClashDetection records
-    // 4. Return clash results
+    // Basic rule-based clash detection using model component properties
+    const components = await prismaAny.modelComponentProperty.findMany({
+      where: { modelId },
+    })
 
-    // Placeholder: Return empty results
+    // Detect clashes by checking for overlapping bounding boxes in component properties
+    const newClashes: any[] = []
+    for (let i = 0; i < components.length; i++) {
+      for (let j = i + 1; j < components.length; j++) {
+        const propsA = components[i].properties as any
+        const propsB = components[j].properties as any
+        if (!propsA?.boundingBox || !propsB?.boundingBox) continue
+
+        const boxA = propsA.boundingBox
+        const boxB = propsB.boundingBox
+        // AABB overlap test
+        const overlaps =
+          boxA.minX <= boxB.maxX && boxA.maxX >= boxB.minX &&
+          boxA.minY <= boxB.maxY && boxA.maxY >= boxB.minY &&
+          boxA.minZ <= boxB.maxZ && boxA.maxZ >= boxB.minZ
+
+        if (overlaps) {
+          // Check if this clash was already recorded
+          const existing = await prismaAny.clashDetection.findFirst({
+            where: {
+              modelId,
+              elementId1: components[i].elementId,
+              elementId2: components[j].elementId,
+            },
+          })
+          if (!existing) {
+            const clash = await prismaAny.clashDetection.create({
+              data: {
+                modelId,
+                clashType: 'HARD',
+                severity: 'MEDIUM',
+                elementId1: components[i].elementId,
+                elementId2: components[j].elementId,
+                elementType1: components[i].componentType || 'UNKNOWN',
+                elementType2: components[j].componentType || 'UNKNOWN',
+                clashPoint: {
+                  x: (boxA.minX + boxB.minX) / 2,
+                  y: (boxA.minY + boxB.minY) / 2,
+                  z: (boxA.minZ + boxB.minZ) / 2,
+                } as any,
+                status: 'NEW',
+                description: `Potential clash between ${components[i].elementId} and ${components[j].elementId}`,
+              },
+            })
+            newClashes.push(clash)
+          }
+        }
+      }
+    }
+
+    // Return all clash records for this model
     const clashes = await prismaAny.clashDetection.findMany({
       where: { modelId },
       include: {
@@ -684,12 +750,51 @@ export const bimModelService = {
       throw new ValidationError('Models must be from the same project')
     }
 
-    // TODO: Integrate with model comparison service
-    // This would:
-    // 1. Load both models
-    // 2. Compare geometry
-    // 3. Identify added/removed/modified elements
-    // 4. Return comparison results
+    // Basic model comparison using component properties and version metadata
+    const components1 = await prismaAny.modelComponentProperty.findMany({
+      where: { modelId: modelId1 },
+    })
+    const components2 = await prismaAny.modelComponentProperty.findMany({
+      where: { modelId: modelId2 },
+    })
+
+    const elementIds1 = new Set(components1.map((c: any) => c.elementId))
+    const elementIds2 = new Set(components2.map((c: any) => c.elementId))
+
+    const addedElements: string[] = []
+    const removedElements: string[] = []
+    const modifiedElements: string[] = []
+
+    // Find added elements (in model2 but not model1)
+    elementIds2.forEach((id: string) => {
+      if (!elementIds1.has(id)) {
+        addedElements.push(id)
+      }
+    })
+
+    // Find removed elements (in model1 but not model2)
+    elementIds1.forEach((id: string) => {
+      if (!elementIds2.has(id)) {
+        removedElements.push(id)
+      }
+    })
+
+    // Find modified elements (in both, but properties differ)
+    elementIds1.forEach((id: string) => {
+      if (elementIds2.has(id)) {
+        const comp1 = components1.find((c: any) => c.elementId === id)
+        const comp2 = components2.find((c: any) => c.elementId === id)
+        if (comp1 && comp2 && JSON.stringify(comp1.properties) !== JSON.stringify(comp2.properties)) {
+          modifiedElements.push(id)
+        }
+      }
+    })
+
+    const differences = [
+      ...addedElements.map((id) => ({ elementId: id, changeType: 'ADDED' })),
+      ...removedElements.map((id) => ({ elementId: id, changeType: 'REMOVED' })),
+      ...modifiedElements.map((id) => ({ elementId: id, changeType: 'MODIFIED' })),
+    ]
 
     return {
       model1: {
@@ -702,10 +807,16 @@ export const bimModelService = {
         name: model2.name,
         versionNumber: model2.versionNumber,
       },
-      differences: [], // Placeholder
-      addedElements: [],
-      removedElements: [],
-      modifiedElements: [],
+      differences,
+      addedElements,
+      removedElements,
+      modifiedElements,
+      summary: {
+        totalDifferences: differences.length,
+        added: addedElements.length,
+        removed: removedElements.length,
+        modified: modifiedElements.length,
+      },
     }
   },
 

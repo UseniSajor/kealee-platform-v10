@@ -10,6 +10,8 @@ import {
   DisputeResolutionType,
   EscrowHoldReason,
 } from '@kealee/database'
+import { notificationService } from '../notifications/notification.service'
+import { auditService } from '../audit/audit.service'
 
 export interface InitiateDisputeDTO {
   escrowId: string  // Changed from escrowAgreementId to match schema
@@ -199,8 +201,57 @@ export class DisputeService {
       return { dispute, hold }
     })
 
-    // TODO: Send notifications to all parties
-    // TODO: Auto-assign mediator based on workload
+    // Send notifications to all parties
+    await Promise.all([
+      notificationService.send({
+        userId: initiatedBy,
+        type: 'DISPUTE_OPENED',
+        title: 'Dispute Filed',
+        message: `Your dispute "${title}" has been filed for $${disputedAmount.toFixed(2)}. We will review it shortly.`,
+        data: { disputeId: result.dispute.id, disputeNumber, amount: disputedAmount },
+        channels: ['email', 'push'],
+      }),
+      notificationService.send({
+        userId: respondentId,
+        type: 'DISPUTE_OPENED',
+        title: 'New Dispute Opened Against You',
+        message: `A dispute "${title}" for $${disputedAmount.toFixed(2)} has been filed. Please review and respond.`,
+        data: { disputeId: result.dispute.id, disputeNumber, amount: disputedAmount },
+        channels: ['email', 'push'],
+      }),
+    ])
+
+    // Auto-assign mediator based on workload (find mediator with fewest active disputes)
+    try {
+      const mediators = await prisma.user.findMany({
+        where: {
+          role: 'MEDIATOR',
+          status: 'ACTIVE',
+        },
+        select: {
+          id: true,
+          _count: {
+            select: {
+              mediatedDisputes: {
+                where: {
+                  status: { in: ['UNDER_REVIEW', 'MEDIATION'] },
+                },
+              },
+            },
+          },
+        },
+      })
+
+      if (mediators.length > 0) {
+        const leastBusy = mediators.sort(
+          (a, b) => a._count.mediatedDisputes - b._count.mediatedDisputes
+        )[0]
+        await DisputeService.assignMediator(result.dispute.id, leastBusy.id)
+      }
+    } catch (err) {
+      // Auto-assignment is best-effort; log but don't fail the dispute creation
+      console.warn('Auto-assign mediator failed:', err)
+    }
 
     return result.dispute
   }
@@ -282,8 +333,29 @@ export class DisputeService {
       })
     }
 
-    // TODO: Notify other party of new evidence
-    // TODO: Notify mediator if assigned
+    // Notify other party of new evidence
+    const otherPartyId =
+      submittedBy === dispute.initiatedBy
+        ? dispute.respondentId
+        : dispute.initiatedBy
+    await notificationService.send({
+      userId: otherPartyId,
+      type: 'DISPUTE_MESSAGE',
+      title: 'New Evidence Submitted',
+      message: `New evidence "${fileName}" has been submitted for dispute ${dispute.disputeNumber}.`,
+      data: { disputeId, evidenceId: evidence.id, fileName },
+    })
+
+    // Notify mediator if assigned
+    if (dispute.mediatorId && submittedBy !== dispute.mediatorId) {
+      await notificationService.send({
+        userId: dispute.mediatorId,
+        type: 'DISPUTE_MESSAGE',
+        title: 'New Evidence Submitted',
+        message: `New evidence "${fileName}" has been submitted for dispute ${dispute.disputeNumber} that you are mediating.`,
+        data: { disputeId, evidenceId: evidence.id, fileName },
+      })
+    }
 
     return evidence
   }
@@ -338,7 +410,26 @@ export class DisputeService {
       },
     })
 
-    // TODO: Notify other parties of new message (unless internal)
+    // Notify other parties of new message (unless internal)
+    if (!isInternal) {
+      const recipientIds = [
+        dispute.initiatedBy,
+        dispute.respondentId,
+        dispute.mediatorId,
+      ].filter((id): id is string => !!id && id !== senderId)
+
+      await Promise.all(
+        recipientIds.map((recipientId) =>
+          notificationService.send({
+            userId: recipientId,
+            type: 'DISPUTE_MESSAGE',
+            title: 'New Dispute Message',
+            message: `New message in dispute ${dispute.disputeNumber}: "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"`,
+            data: { disputeId, messageId: disputeMessage.id },
+          })
+        )
+      )
+    }
 
     return disputeMessage
   }
@@ -380,8 +471,33 @@ export class DisputeService {
       },
     })
 
-    // TODO: Send notification to mediator
-    // TODO: Notify both parties that mediator has been assigned
+    // Send notification to mediator
+    await notificationService.send({
+      userId: mediatorId,
+      type: 'DISPUTE_OPENED',
+      title: 'You Have Been Assigned as Mediator',
+      message: `You have been assigned to mediate dispute ${dispute.disputeNumber}: "${dispute.title}". Disputed amount: $${dispute.disputedAmount.toNumber().toFixed(2)}.`,
+      data: { disputeId, disputeNumber: dispute.disputeNumber },
+      channels: ['email', 'push'],
+    })
+
+    // Notify both parties that mediator has been assigned
+    await Promise.all([
+      notificationService.send({
+        userId: dispute.initiatedBy,
+        type: 'DISPUTE_MESSAGE',
+        title: 'Mediator Assigned to Your Dispute',
+        message: `A mediator (${updated.mediator?.name || 'assigned'}) has been assigned to dispute ${dispute.disputeNumber}. The mediation process will begin shortly.`,
+        data: { disputeId, mediatorId },
+      }),
+      notificationService.send({
+        userId: dispute.respondentId,
+        type: 'DISPUTE_MESSAGE',
+        title: 'Mediator Assigned to Dispute',
+        message: `A mediator (${updated.mediator?.name || 'assigned'}) has been assigned to dispute ${dispute.disputeNumber}. The mediation process will begin shortly.`,
+        data: { disputeId, mediatorId },
+      }),
+    ])
 
     return updated
   }
@@ -505,14 +621,113 @@ export class DisputeService {
         },
       })
 
-      // TODO: Create escrow transactions for releases
-      // TODO: Create payouts if amounts awarded
+      // Create escrow transactions for resolution amounts
+      if (ownerAmount > 0) {
+        await tx.escrowTransaction.create({
+          data: {
+            escrowId: dispute.escrowAgreementId,
+            type: 'REFUND',
+            amount: new Decimal(ownerAmount),
+            balanceBefore: dispute.escrowAgreement.currentBalance,
+            balanceAfter: dispute.escrowAgreement.currentBalance.sub(ownerAmount),
+            currency: dispute.escrowAgreement.currency,
+            status: 'COMPLETED',
+            reference: `dispute-resolution:${disputeId}:owner`,
+            processedDate: new Date(),
+            initiatedBy: mediatorId,
+            metadata: {
+              disputeId,
+              resolutionType,
+              recipientType: 'owner',
+            },
+          },
+        })
+      }
+
+      if (contractorAmount > 0) {
+        await tx.escrowTransaction.create({
+          data: {
+            escrowId: dispute.escrowAgreementId,
+            type: 'RELEASE',
+            amount: new Decimal(contractorAmount),
+            balanceBefore: dispute.escrowAgreement.currentBalance,
+            balanceAfter: dispute.escrowAgreement.currentBalance.sub(contractorAmount),
+            currency: dispute.escrowAgreement.currency,
+            status: 'PROCESSING',
+            reference: `dispute-resolution:${disputeId}:contractor`,
+            scheduledDate: new Date(),
+            initiatedBy: mediatorId,
+            metadata: {
+              disputeId,
+              resolutionType,
+              recipientType: 'contractor',
+            },
+          },
+        })
+      }
+
+      if (refundAmount > 0) {
+        await tx.escrowTransaction.create({
+          data: {
+            escrowId: dispute.escrowAgreementId,
+            type: 'REFUND',
+            amount: new Decimal(refundAmount),
+            balanceBefore: dispute.escrowAgreement.currentBalance,
+            balanceAfter: dispute.escrowAgreement.currentBalance.sub(refundAmount),
+            currency: dispute.escrowAgreement.currency,
+            status: 'COMPLETED',
+            reference: `dispute-resolution:${disputeId}:refund`,
+            processedDate: new Date(),
+            initiatedBy: mediatorId,
+            metadata: {
+              disputeId,
+              resolutionType,
+              recipientType: 'refund',
+            },
+          },
+        })
+      }
 
       return { resolution, dispute: updatedDispute }
     })
 
-    // TODO: Notify all parties of resolution
-    // TODO: Send appeal instructions
+    // Notify all parties of resolution
+    const ownerId = dispute.escrowAgreement.contract.ownerId
+    const contractorId = dispute.escrowAgreement.contract.contractorId
+    const partyIds = [ownerId, contractorId, dispute.mediatorId].filter(
+      (id): id is string => !!id
+    )
+
+    await Promise.all(
+      partyIds.map((userId) =>
+        notificationService.send({
+          userId,
+          type: 'DISPUTE_RESOLVED',
+          title: 'Dispute Resolved',
+          message: `Dispute ${dispute.disputeNumber} has been resolved via ${resolutionType}. Owner: $${ownerAmount.toFixed(2)}, Contractor: $${contractorAmount.toFixed(2)}, Refund: $${refundAmount.toFixed(2)}. You may appeal within 7 days.`,
+          data: {
+            disputeId,
+            resolutionType,
+            ownerAmount,
+            contractorAmount,
+            refundAmount,
+            appealDeadline: appealDeadline.toISOString(),
+          },
+          channels: ['email', 'push'],
+        })
+      )
+    )
+
+    auditService.log({
+      userId: mediatorId,
+      action: 'RESOLVE',
+      entityType: 'DISPUTE',
+      entityId: disputeId,
+      description: `Dispute ${dispute.disputeNumber} resolved via ${resolutionType}`,
+      metadata: { ownerAmount, contractorAmount, refundAmount, reasoning },
+      category: 'FINANCIAL',
+      severity: 'CRITICAL',
+    })
 
     return result
   }
@@ -578,8 +793,47 @@ export class DisputeService {
       },
     })
 
-    // TODO: Notify mediator and admins of appeal
-    // TODO: Trigger admin review process
+    // Notify mediator of appeal
+    if (dispute.mediatorId) {
+      await notificationService.send({
+        userId: dispute.mediatorId,
+        type: 'DISPUTE_ESCALATED',
+        title: 'Dispute Appeal Filed',
+        message: `An appeal has been filed for dispute ${dispute.disputeNumber}. Reason: ${appealReason.substring(0, 200)}`,
+        data: { disputeId, appealedBy, appealReason },
+        channels: ['email', 'push'],
+      })
+    }
+
+    // Notify admins of appeal for review
+    const admins = await prisma.user.findMany({
+      where: { role: 'ADMIN', status: 'ACTIVE' },
+      select: { id: true },
+    })
+
+    await Promise.all(
+      admins.map((admin) =>
+        notificationService.send({
+          userId: admin.id,
+          type: 'DISPUTE_ESCALATED',
+          title: 'Dispute Appeal Requires Review',
+          message: `An appeal has been filed for dispute ${dispute.disputeNumber} and requires admin review.`,
+          data: { disputeId, appealedBy, appealReason },
+          channels: ['email', 'push'],
+        })
+      )
+    )
+
+    auditService.log({
+      userId: appealedBy,
+      action: 'APPEAL',
+      entityType: 'DISPUTE',
+      entityId: disputeId,
+      description: `Appeal filed for dispute ${dispute.disputeNumber}`,
+      metadata: { appealReason },
+      category: 'OPERATIONAL',
+      severity: 'WARNING',
+    })
 
     return updated
   }

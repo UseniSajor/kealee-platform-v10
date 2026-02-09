@@ -2,6 +2,7 @@ import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
+import { notificationService } from '../notifications/notification.service'
 
 export const collaborationService = {
   /**
@@ -237,8 +238,19 @@ export const collaborationService = {
       },
     })
 
-    // TODO: Send notification to signer
-    // await notificationService.notifySignatureRequest(signature.id)
+    // Send notification to signer
+    await notificationService.sendNotification({
+      userId: data.signerId,
+      type: 'SIGNATURE_REQUEST',
+      title: 'Signature Requested',
+      message: `You have been requested to sign a document (${data.targetType})`,
+      metadata: {
+        signatureId: signature.id,
+        targetType: data.targetType,
+        targetId: data.targetId,
+        designProjectId: data.designProjectId,
+      },
+    })
 
     return signature
   },
@@ -401,8 +413,23 @@ export const collaborationService = {
       },
     })
 
-    // TODO: Send notifications to attendees
-    // await notificationService.notifyMeetingMinute(meeting.id, data.attendeeIds)
+    // Send notifications to attendees
+    for (const attendeeId of data.attendeeIds) {
+      if (attendeeId !== data.createdById) {
+        await notificationService.sendNotification({
+          userId: attendeeId,
+          type: 'MEETING_MINUTE_CREATED',
+          title: 'Meeting Minutes Available',
+          message: `Meeting minutes for "${data.title}" have been posted`,
+          metadata: {
+            meetingId: meeting.id,
+            meetingTitle: data.title,
+            meetingDate: data.meetingDate.toISOString(),
+            designProjectId: data.designProjectId,
+          },
+        })
+      }
+    }
 
     return meeting
   },
@@ -584,10 +611,22 @@ export const collaborationService = {
       },
     })
 
-    // TODO: Send notification to assigned user
-    // if (data.assignedToId) {
-    //   await notificationService.notifyActionItemAssigned(actionItem.id, data.assignedToId)
-    // }
+    // Send notification to assigned user
+    if (data.assignedToId) {
+      await notificationService.sendNotification({
+        userId: data.assignedToId,
+        type: 'ACTION_ITEM_ASSIGNED',
+        title: 'Action Item Assigned',
+        message: `You have been assigned an action item: "${data.title}"`,
+        metadata: {
+          actionItemId: actionItem.id,
+          actionItemTitle: data.title,
+          dueDate: data.dueDate?.toISOString(),
+          designProjectId: data.designProjectId,
+          assignedById: data.assignedById,
+        },
+      })
+    }
 
     return actionItem
   },

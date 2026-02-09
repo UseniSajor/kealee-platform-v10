@@ -1,10 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Shield, Lock, Mail, Eye, EyeOff, CheckCircle } from 'lucide-react';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const supabase = createClientComponentClient();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -17,18 +21,58 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Implement actual Supabase auth
-      console.log('Logging in:', { email, password });
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Redirect to dashboard
-      window.location.href = '/dashboard';
-    } catch (err) {
-      setError('Invalid email or password');
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (authError) {
+        throw authError;
+      }
+
+      // Redirect to dashboard on success
+      router.push('/dashboard');
+      router.refresh();
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : 'Invalid email or password'
+      );
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setError('');
+    try {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (oauthError) throw oauthError;
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to sign in with Google'
+      );
+    }
+  };
+
+  const handleGitHubLogin = async () => {
+    setError('');
+    try {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (oauthError) throw oauthError;
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to sign in with GitHub'
+      );
     }
   };
 
@@ -232,6 +276,7 @@ export default function LoginPage() {
               <div className="grid grid-cols-2 gap-4">
                 <button
                   type="button"
+                  onClick={handleGoogleLogin}
                   className="px-4 py-3 border border-slate-300 rounded-lg font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
                 >
                   <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -256,6 +301,7 @@ export default function LoginPage() {
                 </button>
                 <button
                   type="button"
+                  onClick={handleGitHubLogin}
                   className="px-4 py-3 border border-slate-300 rounded-lg font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
                 >
                   <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">

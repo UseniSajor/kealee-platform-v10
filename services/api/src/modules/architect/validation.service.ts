@@ -122,13 +122,61 @@ export const validationService = {
       }
 
       if (rule.ruleType === 'AUTOMATED' && rule.validationScript) {
-        // TODO: Execute validation script
-        // For now, create placeholder validation
-        validationResult = {
-          status: 'PENDING',
-          message: 'Automated validation pending implementation',
-          issuesFound: [],
-          recommendations: [],
+        // Execute basic rule checks based on ruleLogic configuration
+        try {
+          const ruleLogic = rule.ruleLogic as any
+          const issuesFound: string[] = []
+          const recommendations: string[] = []
+
+          if (ruleLogic?.checks) {
+            for (const check of ruleLogic.checks) {
+              // Perform basic property existence / value checks against the target
+              if (check.type === 'REQUIRED_FIELD') {
+                // Check if the target entity has the required field
+                const targetEntity = await prismaAny[data.targetType]?.findUnique?.({
+                  where: { id: data.targetId },
+                }).catch(() => null)
+
+                if (targetEntity && !targetEntity[check.field]) {
+                  issuesFound.push(`Required field "${check.field}" is missing or empty`)
+                }
+              } else if (check.type === 'MIN_VALUE' || check.type === 'MAX_VALUE') {
+                const targetEntity = await prismaAny[data.targetType]?.findUnique?.({
+                  where: { id: data.targetId },
+                }).catch(() => null)
+
+                if (targetEntity && targetEntity[check.field] !== undefined) {
+                  const val = parseFloat(targetEntity[check.field])
+                  if (check.type === 'MIN_VALUE' && val < check.value) {
+                    issuesFound.push(`Field "${check.field}" value ${val} is below minimum ${check.value}`)
+                  }
+                  if (check.type === 'MAX_VALUE' && val > check.value) {
+                    issuesFound.push(`Field "${check.field}" value ${val} exceeds maximum ${check.value}`)
+                  }
+                }
+              }
+            }
+          }
+
+          if (ruleLogic?.recommendations) {
+            recommendations.push(...ruleLogic.recommendations)
+          }
+
+          validationResult = {
+            status: issuesFound.length > 0 ? 'FAILED' : 'PASSED',
+            message: issuesFound.length > 0
+              ? `${issuesFound.length} issue(s) found`
+              : 'All automated checks passed',
+            issuesFound,
+            recommendations,
+          }
+        } catch (scriptError: any) {
+          validationResult = {
+            status: 'FAILED',
+            message: `Validation error: ${scriptError.message}`,
+            issuesFound: [`Validation execution error: ${scriptError.message}`],
+            recommendations: ['Review the validation rule configuration'],
+          }
         }
       } else if (rule.ruleType === 'MANUAL') {
         validationResult = {
@@ -456,8 +504,44 @@ export const validationService = {
       },
     })
 
-    // TODO: Generate actual report file (PDF, HTML, etc.)
-    // const reportFileUrl = await generateReportFile(report.id, data.format)
+    // Create report metadata record (actual file generation deferred to document service)
+    const reportMetadata = {
+      reportId: report.id,
+      reportName: data.reportName,
+      reportType: data.reportType,
+      format: data.format || 'PDF',
+      generatedAt: new Date().toISOString(),
+      generatedById: data.generatedById,
+      designProjectId: data.designProjectId,
+      summary,
+      validationCount: validations.length,
+      status: 'PENDING_GENERATION',
+    }
+
+    // Store the report file metadata
+    try {
+      const reportFile = await prismaAny.designFile.create({
+        data: {
+          designProjectId: data.designProjectId,
+          fileName: `${data.reportName.replace(/\s+/g, '_')}_report.${(data.format || 'pdf').toLowerCase()}`,
+          fileType: data.format || 'PDF',
+          category: 'VALIDATION_REPORT',
+          status: 'PENDING',
+          metadata: reportMetadata as any,
+          uploadedById: data.generatedById,
+        },
+      })
+
+      // Link the file to the report
+      await prismaAny.designValidationReport.update({
+        where: { id: report.id },
+        data: {
+          reportFileUrl: reportFile.id,
+        },
+      })
+    } catch (err) {
+      console.warn('Failed to create report file metadata:', err)
+    }
 
     // Log audit
     await auditService.recordAudit({

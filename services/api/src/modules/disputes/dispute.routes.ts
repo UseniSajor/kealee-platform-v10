@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
+import { prisma } from '@kealee/database'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { DisputeService } from './dispute.service'
@@ -102,8 +103,20 @@ export async function disputeRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const user = (request as any).user as { id: string }
       const { projectId } = request.params as { projectId: string }
-      // TODO: Implement listProjectDisputes filter
-      const disputes = await DisputeService.listDisputes({ projectId })
+      const query = request.query as {
+        status?: string
+        type?: string
+        limit?: string
+        offset?: string
+      }
+      const filters: any = { projectId }
+      if (query.status) filters.status = query.status
+      if (query.type) filters.type = query.type
+      if (query.limit) filters.limit = parseInt(query.limit, 10)
+      if (query.offset) filters.offset = parseInt(query.offset, 10)
+      // Filter to only show disputes the user is party to
+      filters.userId = user.id
+      const disputes = await DisputeService.listDisputes(filters)
       return reply.send({ disputes })
     }
   )
@@ -122,8 +135,35 @@ export async function disputeRoutes(fastify: FastifyInstance) {
       const user = (request as any).user as { id: string }
       const { disputeId } = request.params as { disputeId: string }
       const { notes } = request.body as { notes?: string }
-      // TODO: Implement requestMediation method
-      const dispute = await DisputeService.assignMediator(disputeId, user.id)
+      // Find an available mediator (least active disputes) and assign them
+      const mediators = await prisma.user.findMany({
+        where: {
+          role: 'MEDIATOR',
+          status: 'ACTIVE',
+        },
+        select: {
+          id: true,
+          _count: {
+            select: {
+              mediatedDisputes: {
+                where: {
+                  status: { in: ['UNDER_REVIEW', 'MEDIATION'] },
+                },
+              },
+            },
+          },
+        },
+      })
+
+      if (mediators.length === 0) {
+        return reply.code(400).send({ error: 'No mediators available at this time' })
+      }
+
+      const leastBusy = mediators.sort(
+        (a, b) => a._count.mediatedDisputes - b._count.mediatedDisputes
+      )[0]
+
+      const dispute = await DisputeService.assignMediator(disputeId, leastBusy.id)
       return reply.send({ dispute })
     }
   )

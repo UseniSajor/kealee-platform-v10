@@ -566,8 +566,34 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
         }
       }
 
-      // Update user/organization record with license info
-      // TODO: Create or update LicenseTracking record
+      // Create or update LicenseTracking record
+      await prismaAny.licenseTracking.upsert({
+        where: {
+          userId_licenseNumber: {
+            userId,
+            licenseNumber: request.body.licenseNumber,
+          },
+        },
+        create: {
+          userId,
+          licenseNumber: request.body.licenseNumber,
+          licenseState: request.body.licenseState,
+          licenseType: 'ARCHITECT',
+          expirationDate: request.body.expirationDate
+            ? new Date(request.body.expirationDate)
+            : undefined,
+          status: 'PENDING_VERIFICATION',
+          documentFileIds: uploads.map((u: any) => u.id),
+        },
+        update: {
+          licenseState: request.body.licenseState,
+          expirationDate: request.body.expirationDate
+            ? new Date(request.body.expirationDate)
+            : undefined,
+          status: 'PENDING_VERIFICATION',
+          documentFileIds: uploads.map((u: any) => u.id),
+        },
+      })
 
       return reply.code(201).send({
         success: true,

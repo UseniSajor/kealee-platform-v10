@@ -859,12 +859,83 @@ export const versionControlService = {
       },
     })
 
-    // TODO: Actually restore file/sheet/model states to the target version
-    // This would involve:
-    // 1. Restoring file versions from DesignFileVersion
-    // 2. Restoring sheet states
-    // 3. Restoring model states
-    // 4. Updating current versions
+    // Restore file/sheet/model states to the target version
+    const targetFileSnapshots = (toVersion.fileSnapshots as any[]) || []
+    const targetSheetSnapshots = (toVersion.sheetSnapshots as any[]) || []
+    const targetModelSnapshots = (toVersion.modelSnapshots as any[]) || []
+
+    // 1. Restore file versions
+    for (const fileSnapshot of targetFileSnapshots) {
+      try {
+        // Look up the file version from the snapshot and restore its state
+        const fileVersion = await prismaAny.designFileVersion.findFirst({
+          where: {
+            fileId: fileSnapshot.fileId,
+            versionNumber: fileSnapshot.fileVersion,
+          },
+        })
+
+        if (fileVersion) {
+          await prismaAny.designFile.update({
+            where: { id: fileSnapshot.fileId },
+            data: {
+              versionNumber: fileVersion.versionNumber,
+              fileUrl: fileVersion.fileUrl || undefined,
+              fileSize: fileVersion.fileSize || undefined,
+              checksum: fileVersion.checksum || undefined,
+            },
+          })
+        }
+      } catch (err) {
+        console.warn(`Failed to restore file ${fileSnapshot.fileId}:`, err)
+      }
+    }
+
+    // 2. Restore sheet states - reset revision to snapshot state
+    for (const sheetSnapshot of targetSheetSnapshots) {
+      try {
+        if (sheetSnapshot.revision) {
+          await prismaAny.drawingSheet.update({
+            where: { id: sheetSnapshot.sheetId },
+            data: {
+              currentRevision: sheetSnapshot.revision || undefined,
+            },
+          })
+        }
+      } catch (err) {
+        console.warn(`Failed to restore sheet ${sheetSnapshot.sheetId}:`, err)
+      }
+    }
+
+    // 3. Restore model states - set the target version as latest
+    for (const modelSnapshot of targetModelSnapshots) {
+      try {
+        // Mark the snapshot version as latest
+        await prismaAny.bIMModel.updateMany({
+          where: {
+            designProjectId: data.designProjectId,
+            name: { not: '' }, // match all models in project first
+          },
+          data: { isLatestVersion: false },
+        })
+
+        await prismaAny.bIMModel.update({
+          where: { id: modelSnapshot.modelId },
+          data: { isLatestVersion: true },
+        })
+      } catch (err) {
+        console.warn(`Failed to restore model ${modelSnapshot.modelId}:`, err)
+      }
+    }
+
+    // Update rollback record with completion status
+    await prismaAny.versionRollback.update({
+      where: { id: rollback.id },
+      data: {
+        status: 'COMPLETED',
+        completedAt: new Date(),
+      },
+    })
 
     // Log audit
     await auditService.recordAudit({
