@@ -1,0 +1,20 @@
+{
+  "name": "@kealee/audit",
+  "version": "1.0.0",
+  "description": "Kealee Platform Audit Logging — append-only audit trail with batched writes and sensitive data redaction",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "@kealee/database": "workspace:*",
+    "@kealee/observability": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "typescript": "^5.6.0"
+  }
+}
