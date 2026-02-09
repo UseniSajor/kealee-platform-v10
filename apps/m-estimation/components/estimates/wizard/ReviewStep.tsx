@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { calculateCostBreakdown } from '@/lib/calculations';
+import { exportToPDF, exportToExcel, exportToCSV, type Estimate } from '@/lib/export';
 
 interface ReviewStepProps {
   data: any;
@@ -44,8 +45,46 @@ export function ReviewStep({
   );
 
   const handleExport = (format: 'pdf' | 'excel' | 'csv') => {
-    console.log(`Exporting as ${format}...`);
-    // Will trigger download
+    // Build estimate object for export from wizard data
+    const estimateForExport: Estimate = {
+      name: basicInfo?.projectName || 'Untitled Estimate',
+      projectType: basicInfo?.projectType,
+      clientName: basicInfo?.clientName,
+      location: basicInfo?.location,
+      sections: (sections || []).map((s: any) => ({
+        id: s.id,
+        division: s.division,
+        name: s.name,
+        lineItems: (s.items || s.lineItems || []).map((item: any) => ({
+          id: item.id,
+          description: item.description,
+          quantity: item.quantity,
+          unit: item.unit,
+          unitCost: item.unitCost,
+          totalCost: item.quantity * item.unitCost,
+          type: item.type || 'material',
+        })),
+        subtotal: (s.items || s.lineItems || []).reduce(
+          (sum: number, item: any) => sum + item.quantity * item.unitCost,
+          0
+        ),
+      })),
+      settings: settings || {},
+      notes: settings?.notes,
+      exclusions: settings?.exclusions,
+    };
+
+    switch (format) {
+      case 'pdf':
+        exportToPDF(estimateForExport);
+        break;
+      case 'excel':
+        exportToExcel(estimateForExport);
+        break;
+      case 'csv':
+        exportToCSV(estimateForExport);
+        break;
+    }
   };
 
   return (
