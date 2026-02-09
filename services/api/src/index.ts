@@ -523,11 +523,11 @@ const start = async () => {
     await fastify.register(qualityControlRoutes, { prefix: '/architect' })
     await fastify.register(permitPackageRoutes, { prefix: '/architect' })
     await fastify.register(constructionHandoffRoutes, { prefix: '/architect' })
-    // TODO: Implement these routes
-    // await fastify.register(onboardingRoutes, { prefix: '/architect' })
-    // await fastify.register(templateLibraryRoutes, { prefix: '/architect' })
-    // await fastify.register(performanceBenchmarkRoutes, { prefix: '/architect' })
-    // await fastify.register(backupDRRoutes, { prefix: '/architect' })
+    // Architect onboarding, templates, benchmarks, and backup/DR
+    const { onboardingRoutes } = await import('./modules/architect/onboarding.routes')
+    const { backupDRRoutes } = await import('./modules/architect/backup-dr.routes')
+    await fastify.register(onboardingRoutes, { prefix: '/architect' })
+    await fastify.register(backupDRRoutes, { prefix: '/architect' })
     await fastify.register(jurisdictionRoutes, { prefix: '/permits' })
     await fastify.register(jurisdictionConfigRoutes, { prefix: '/permits' })
     await fastify.register(jurisdictionStaffRoutes, { prefix: '/permits' })
@@ -656,6 +656,114 @@ const start = async () => {
     await fastify.register(googlePlacesRoutes, { prefix: '/api/google-places' })
 
     // Note: File routes already registered at line 284 with prefix '/files'
+
+    // ══════════════════════════════════════════════════════════════
+    // Phase 1: New API routes for previously unserved Prisma models
+    // ══════════════════════════════════════════════════════════════
+
+    // Finance & Accounting
+    const { accountRoutes } = await import('./modules/finance/account.routes')
+    const { journalEntryRoutes } = await import('./modules/finance/journal-entry.routes')
+    const { accountBalanceRoutes } = await import('./modules/finance/account-balance.routes')
+    const { payoutRoutes } = await import('./modules/finance/payout.routes')
+    const { statementRoutes } = await import('./modules/finance/statement.routes')
+    const { paymentMethodRoutes } = await import('./modules/finance/payment-method.routes')
+    const { scheduledPaymentRoutes } = await import('./modules/finance/scheduled-payment.routes')
+    const { platformFeeRoutes } = await import('./modules/finance/platform-fee.routes')
+    await fastify.register(accountRoutes, { prefix: '/accounting/accounts' })
+    await fastify.register(journalEntryRoutes, { prefix: '/accounting/journal-entries' })
+    await fastify.register(accountBalanceRoutes, { prefix: '/accounting/balances' })
+    await fastify.register(payoutRoutes, { prefix: '/accounting/payouts' })
+    await fastify.register(statementRoutes, { prefix: '/accounting/statements' })
+    await fastify.register(paymentMethodRoutes, { prefix: '/accounting/payment-methods' })
+    await fastify.register(scheduledPaymentRoutes, { prefix: '/accounting/scheduled-payments' })
+    await fastify.register(platformFeeRoutes, { prefix: '/accounting/platform-fees' })
+
+    // Security & Auth
+    const { securityRoutes } = await import('./modules/security/security.routes')
+    const { authSecurityRoutes } = await import('./modules/security/auth-security.routes')
+    await fastify.register(securityRoutes, { prefix: '/security' })
+    await fastify.register(authSecurityRoutes, { prefix: '/security/auth' })
+
+    // Compliance & Licensing
+    const { complianceRulesRoutes } = await import('./modules/compliance/compliance-rules.routes')
+    const { licenseTrackingRoutes } = await import('./modules/compliance/license-tracking.routes')
+    const { ofacRoutes } = await import('./modules/compliance/ofac.routes')
+    await fastify.register(complianceRulesRoutes, { prefix: '/compliance/rules' })
+    await fastify.register(licenseTrackingRoutes, { prefix: '/compliance/licensing' })
+    await fastify.register(ofacRoutes, { prefix: '/compliance/ofac' })
+
+    // Financial Audit
+    const { financialAuditRoutes } = await import('./modules/audit/financial-audit.routes')
+    await fastify.register(financialAuditRoutes, { prefix: '/audit/financial' })
+
+    // Analytics Snapshots, KPIs, Fraud Detection
+    const { analyticsSnapshotRoutes } = await import('./modules/analytics/analytics-snapshot.routes')
+    const { fraudDetectionRoutes } = await import('./modules/analytics/fraud-detection.routes')
+    await fastify.register(analyticsSnapshotRoutes, { prefix: '/analytics/snapshots' })
+    await fastify.register(fraudDetectionRoutes, { prefix: '/analytics/fraud' })
+
+    // Notifications
+    const { notificationRoutes } = await import('./modules/notifications/notification.routes')
+    await fastify.register(notificationRoutes, { prefix: '/notifications' })
+
+    // System Config, Jobs, AI Conversations
+    const { systemConfigRoutes } = await import('./modules/system/system-config.routes')
+    const { jobManagementRoutes } = await import('./modules/system/job-management.routes')
+    const { aiConversationRoutes } = await import('./modules/system/ai-conversation.routes')
+    await fastify.register(systemConfigRoutes, { prefix: '/system' })
+    await fastify.register(jobManagementRoutes, { prefix: '/system/jobs' })
+    await fastify.register(aiConversationRoutes, { prefix: '/ai/conversations' })
+
+    // App Health & Monitoring
+    const { appHealthRoutes } = await import('./modules/monitoring/app-health.routes')
+    await fastify.register(appHealthRoutes, { prefix: '/monitoring' })
+
+    // Permit Templates, Analytics, API Integrations
+    const { permitTemplateRoutes } = await import('./modules/permits/permit-template.routes')
+    const { permitAnalyticsRoutes } = await import('./modules/permits/permit-analytics.routes')
+    const { apiIntegrationRoutes } = await import('./modules/permits/api-integration.routes')
+    await fastify.register(permitTemplateRoutes, { prefix: '/permits/templates' })
+    await fastify.register(permitAnalyticsRoutes, { prefix: '/permits/analytics' })
+    await fastify.register(apiIntegrationRoutes, { prefix: '/permits/integrations' })
+
+    // Project Phase History
+    const { projectHistoryRoutes } = await import('./modules/projects/project-history.routes')
+    await fastify.register(projectHistoryRoutes, { prefix: '/projects' })
+
+    // Portfolios & Contractor Projects
+    const { portfolioRoutes } = await import('./modules/marketplace/portfolio.routes')
+    await fastify.register(portfolioRoutes, { prefix: '/marketplace/portfolios' })
+
+    // Pre-Construction Extras
+    const { preconExtrasRoutes } = await import('./modules/precon/precon-extras.routes')
+    await fastify.register(preconExtrasRoutes, { prefix: '/precon' })
+
+    // Approval Rules, Attachments, Comments
+    const { approvalManagementRoutes } = await import('./modules/approvals/approval.routes')
+    await fastify.register(approvalManagementRoutes, { prefix: '/approvals' })
+
+    // Webhook Logs & Retries
+    const { webhookLogRoutes } = await import('./modules/webhooks/webhook-logs.routes')
+    await fastify.register(webhookLogRoutes, { prefix: '/webhooks' })
+
+    // Estimation Data (Materials, Labor, Equipment)
+    const { estimationDataRoutes } = await import('./modules/estimation/estimation-data.routes')
+    await fastify.register(estimationDataRoutes, { prefix: '/estimation/data' })
+
+    // Communication Logs, Activity, Issues
+    const { communicationRoutes: commRoutes } = await import('./modules/communication/communication.routes')
+    await fastify.register(commRoutes, { prefix: '/communication' })
+
+    // Subscriptions (PM, Permit, A-la-carte, Marketplace Fees)
+    const { subscriptionRoutes } = await import('./modules/subscriptions/subscription.routes')
+    await fastify.register(subscriptionRoutes, { prefix: '/subscriptions' })
+
+    // Tracking (User Actions, Quick Estimates, Automation Events, Crew Check-ins)
+    const { trackingRoutes } = await import('./modules/tracking/tracking.routes')
+    await fastify.register(trackingRoutes, { prefix: '/tracking' })
+
+    // ══════════════════════════════════════════════════════════════
 
     // GraphQL DISABLED FOR MVP - Uncomment when needed
     /*
