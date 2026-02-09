@@ -1,7 +1,12 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { ProjectHealth, type GCProjectHealth } from "@/components/portal/ProjectHealth";
 import { GCSuccessDashboard } from "@/components/portal/GCSuccessDashboard";
+import { api } from "@/lib/api";
+import { getCurrentUser, getCurrentUserOrgs, getPrimaryOrgId } from "@/lib/auth";
 
 function formatMoney(n: number) {
   return n.toLocaleString(undefined, {
@@ -11,65 +16,184 @@ function formatMoney(n: number) {
   });
 }
 
-export default function PortalHomePage() {
-  // TODO: Replace with real org/company lookup once auth is wired.
-  const gcCompanyName = "Acme Construction LLC";
-  const currentPackage = {
+type PortalData = {
+  gcCompanyName: string;
+  currentPackage: {
+    name: string;
+    label: string;
+    includedProjects: number;
+    serviceHoursMonthly: number;
+  };
+  currentPackagePriceMonthly: number;
+  stats: {
+    activeProjectsUsed: number;
+    activeProjectsLimit: number;
+    openServiceRequests: number;
+    pendingPermits: number;
+    upcomingInspections: number;
+    overdueInvoices: number;
+    serviceHoursUsed: number;
+    serviceHoursLimit: number;
+  };
+  projects: GCProjectHealth[];
+  activity: string[];
+  successMetrics: {
+    hoursSavedPerWeek: number;
+    projectDelayReductionDays: number;
+    permitApprovalAvgDays: number;
+    permitApprovalIndustryDays: number;
+    monthlyCostSavings: number;
+    clientSatisfactionScore: number;
+    benchmarkPercentile: number;
+    avgCompletionDeltaDays: number;
+  };
+};
+
+const defaultData: PortalData = {
+  gcCompanyName: "Your Company",
+  currentPackage: {
     name: "Package B",
     label: "Growing Team",
     includedProjects: 3,
     serviceHoursMonthly: 40,
-  };
-  const currentPackagePriceMonthly = 3750;
-
-  // TODO: Replace with real API data.
-  const stats = {
-    activeProjectsUsed: 3,
+  },
+  currentPackagePriceMonthly: 3750,
+  stats: {
+    activeProjectsUsed: 0,
     activeProjectsLimit: 3,
-    openServiceRequests: 2,
-    pendingPermits: 1,
-    upcomingInspections: 3,
+    openServiceRequests: 0,
+    pendingPermits: 0,
+    upcomingInspections: 0,
     overdueInvoices: 0,
-    serviceHoursUsed: 12,
+    serviceHoursUsed: 0,
     serviceHoursLimit: 40,
-  };
+  },
+  projects: [],
+  activity: [],
+  successMetrics: {
+    hoursSavedPerWeek: 0,
+    projectDelayReductionDays: 0,
+    permitApprovalAvgDays: 0,
+    permitApprovalIndustryDays: 28,
+    monthlyCostSavings: 0,
+    clientSatisfactionScore: 0,
+    benchmarkPercentile: 0,
+    avgCompletionDeltaDays: 0,
+  },
+};
 
-  const projects: GCProjectHealth[] = [
-    {
-      id: "p1",
-      name: "123 Main St Remodel",
-      address: "123 Main St • Residential",
-      status: "On Track",
-      progressPct: 62,
-      budgetTotal: 180000,
-      budgetActual: 112000,
-    },
-    {
-      id: "p2",
-      name: "Oak Ridge Custom Build",
-      address: "Oak Ridge • Residential",
-      status: "At Risk",
-      progressPct: 38,
-      budgetTotal: 620000,
-      budgetActual: 255000,
-    },
-    {
-      id: "p3",
-      name: "Downtown Tenant Improvement",
-      address: "Downtown • Commercial",
-      status: "Delayed",
-      progressPct: 71,
-      budgetTotal: 950000,
-      budgetActual: 1005000,
-    },
-  ];
+export default function PortalHomePage() {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<PortalData>(defaultData);
 
-  const activity = [
-    "Permit approved for 123 Main St",
-    "Inspection scheduled for tomorrow",
-    "Weekly report generated",
-    "New contractor added to project",
-  ];
+  useEffect(() => {
+    async function loadPortalData() {
+      try {
+        // Fetch org data, subscription, projects, and service requests in parallel
+        const orgId = await getPrimaryOrgId();
+
+        const [orgsResult, subscriptionResult, projectsResult, serviceRequestsResult] = await Promise.all([
+          orgId ? api.getOrg(orgId).catch(() => ({ org: null })) : Promise.resolve({ org: null }),
+          api.getMySubscription().catch(() => ({ subscription: null })),
+          orgId ? api.getProjects({ orgId }).catch(() => ({ projects: [] })) : Promise.resolve({ projects: [] }),
+          api.listServiceRequests({ status: 'open' }).catch(() => ({ serviceRequests: [] })),
+        ]);
+
+        const org = orgsResult.org;
+        const subscription = subscriptionResult.subscription;
+        const projectsList = projectsResult.projects || [];
+        const openRequests = serviceRequestsResult.serviceRequests || [];
+
+        // Derive package info from subscription
+        const planSlug = subscription?.servicePlan?.slug || '';
+        const planName = subscription?.servicePlan?.name || 'Package B';
+        const includedProjects = subscription?.servicePlan?.includedProjects || 3;
+        const serviceHoursMonthly = subscription?.servicePlan?.serviceHoursMonthly || 40;
+        const priceMonthly = subscription?.servicePlan?.priceMonthly || 3750;
+
+        // Map projects to health format
+        const mappedProjects: GCProjectHealth[] = projectsList.slice(0, 10).map((p: any) => ({
+          id: p.id,
+          name: p.name || 'Unnamed Project',
+          address: p.address || p.category || '',
+          status: p.status === 'ACTIVE' ? 'On Track' : p.status === 'AT_RISK' ? 'At Risk' : p.status === 'DELAYED' ? 'Delayed' : 'On Track',
+          progressPct: p.progressPercent || 0,
+          budgetTotal: p.budgetTotal || 0,
+          budgetActual: p.budgetActual || 0,
+        }));
+
+        // Derive stats
+        const activeProjects = projectsList.filter((p: any) => p.status === 'ACTIVE' || p.status === 'IN_PROGRESS').length;
+        const pendingPermits = projectsList.reduce((sum: number, p: any) => sum + (p.pendingPermits || 0), 0);
+        const upcomingInspections = projectsList.reduce((sum: number, p: any) => sum + (p.upcomingInspections || 0), 0);
+
+        // Build activity from recent service requests and project updates
+        const recentActivity: string[] = [];
+        openRequests.slice(0, 4).forEach((sr: any) => {
+          recentActivity.push(`Service request: ${sr.title || 'New request'}`);
+        });
+        if (recentActivity.length === 0) {
+          recentActivity.push('No recent activity');
+        }
+
+        // Fetch subscription metrics for success tracking
+        let metricsResult: any = null;
+        if (orgId) {
+          metricsResult = await api.getSubscriptionMetrics({ orgId }).catch(() => null);
+        }
+        const metrics = metricsResult?.metrics || {};
+
+        setData({
+          gcCompanyName: org?.name || 'Your Company',
+          currentPackage: {
+            name: planName,
+            label: planSlug,
+            includedProjects,
+            serviceHoursMonthly,
+          },
+          currentPackagePriceMonthly: priceMonthly,
+          stats: {
+            activeProjectsUsed: activeProjects || mappedProjects.length,
+            activeProjectsLimit: includedProjects,
+            openServiceRequests: openRequests.length,
+            pendingPermits,
+            upcomingInspections,
+            overdueInvoices: 0,
+            serviceHoursUsed: metrics?.serviceHoursUsed || 0,
+            serviceHoursLimit: serviceHoursMonthly,
+          },
+          projects: mappedProjects,
+          activity: recentActivity,
+          successMetrics: {
+            hoursSavedPerWeek: metrics?.hoursSavedPerWeek || 0,
+            projectDelayReductionDays: metrics?.projectDelayReductionDays || 0,
+            permitApprovalAvgDays: metrics?.permitApprovalAvgDays || 0,
+            permitApprovalIndustryDays: 28,
+            monthlyCostSavings: metrics?.monthlyCostSavings || 0,
+            clientSatisfactionScore: metrics?.clientSatisfactionScore || 0,
+            benchmarkPercentile: metrics?.benchmarkPercentile || 0,
+            avgCompletionDeltaDays: metrics?.avgCompletionDeltaDays || 0,
+          },
+        });
+      } catch (e) {
+        console.error('Failed to load portal data:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadPortalData();
+  }, []);
+
+  const {
+    gcCompanyName,
+    currentPackage,
+    currentPackagePriceMonthly,
+    stats,
+    projects,
+    activity,
+    successMetrics,
+  } = data;
 
   const projectsPct =
     stats.activeProjectsLimit > 0
@@ -81,17 +205,15 @@ export default function PortalHomePage() {
       : 0;
   const nearingLimits = projectsPct >= 85 || hoursPct >= 85;
 
-  // TODO: Replace with real success tracking (service requests time saved, permit cycles, schedule variance, etc.)
-  const successMetrics = {
-    hoursSavedPerWeek: 11,
-    projectDelayReductionDays: 3,
-    permitApprovalAvgDays: 12,
-    permitApprovalIndustryDays: 28,
-    monthlyCostSavings: 8200,
-    clientSatisfactionScore: 9.1,
-    benchmarkPercentile: 75,
-    avgCompletionDeltaDays: -2,
-  } as const;
+  if (loading) {
+    return (
+      <section className="space-y-8">
+        <div className="rounded-2xl border border-black/10 bg-white p-8 text-center text-sm text-zinc-600 shadow-sm">
+          Loading portal data...
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="space-y-8">
@@ -282,4 +404,3 @@ export default function PortalHomePage() {
     </section>
   );
 }
-

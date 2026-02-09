@@ -49,10 +49,100 @@ export async function POST(request: NextRequest) {
       })
     );
 
-    // TODO: Integrate with actual AI service (OpenAI, Anthropic, etc.)
-    // For now, simulate AI review
-    const reviewResult = await simulateAIReview(uploadedFiles, jurisdiction, permitTypes);
+    // Call the AI scope analysis backend service
+    const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+    // Build a description from the uploaded file names and permit context
+    const fileNames = uploadedFiles.map((f) => f.name).join(', ');
+    const description = `Permit review for ${jurisdiction} jurisdiction. ` +
+      `Permit types: ${permitTypes.join(', ')}. ` +
+      `Documents submitted: ${fileNames}. ` +
+      `Please analyze for code compliance, missing documents, and potential issues.`;
+
+    try {
+      const analysisResponse = await fetch(`${API_URL}/api/v1/scope-analysis/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description,
+          projectType: permitTypes[0] || 'building',
+          address: jurisdiction,
+        }),
+      });
+
+      if (analysisResponse.ok) {
+        const analysis = await analysisResponse.json();
+
+        // Map scope analysis result to permit review format
+        const issues: any[] = [];
+        const suggestions: string[] = [];
+
+        // Convert assumptions to suggestions
+        if (analysis.assumptions) {
+          for (const assumption of analysis.assumptions) {
+            suggestions.push(assumption);
+          }
+        }
+
+        // Convert clarifying questions to issues
+        if (analysis.clarifyingQuestions) {
+          for (const question of analysis.clarifyingQuestions) {
+            issues.push({
+              type: 'info',
+              message: question,
+              suggestion: 'Please provide additional information.',
+            });
+          }
+        }
+
+        // Check for missing documents based on uploaded files
+        const hasSitePlan = uploadedFiles.some((f) =>
+          f.name.toLowerCase().includes('site') || f.name.toLowerCase().includes('plan')
+        );
+        const hasFloorPlan = uploadedFiles.some((f) =>
+          f.name.toLowerCase().includes('floor')
+        );
+
+        if (!hasSitePlan) {
+          issues.push({
+            type: 'warning',
+            message: 'Site plan not detected. Most jurisdictions require a site plan.',
+            suggestion: 'Upload a site plan showing property boundaries and building location.',
+          });
+        }
+        if (!hasFloorPlan) {
+          issues.push({
+            type: 'warning',
+            message: 'Floor plan not detected. Required for building permits.',
+            suggestion: 'Upload floor plans showing room layouts and dimensions.',
+          });
+        }
+
+        const score = Math.min(100, Math.max(0, analysis.confidence || 75));
+
+        return NextResponse.json({
+          score,
+          issues,
+          suggestions,
+          jurisdiction,
+          permitTypes,
+          estimatedApprovalTime: `${analysis.estimatedDuration || 21}-${(analysis.estimatedDuration || 21) + 10} days`,
+          confidence: (analysis.confidence || 75) / 100,
+          files: uploadedFiles,
+          aiAnalysis: {
+            summary: analysis.summary,
+            tradesRequired: analysis.tradesRequired,
+            lineItems: analysis.lineItems?.length || 0,
+            estimatedTotal: analysis.estimatedTotal,
+          },
+        });
+      }
+    } catch (aiError) {
+      console.error('AI scope analysis service unavailable, using document-based review:', aiError);
+    }
+
+    // Fallback: basic document-based review if AI service is unavailable
+    const reviewResult = await fallbackDocumentReview(uploadedFiles, jurisdiction, permitTypes);
     return NextResponse.json(reviewResult);
   } catch (error) {
     console.error('Error in AI review:', error);
@@ -63,24 +153,19 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function simulateAIReview(
+async function fallbackDocumentReview(
   files: Array<{ name: string; key: string; url: string }>,
   jurisdiction: string,
   permitTypes: string[]
 ): Promise<any> {
-  // Simulate AI processing delay
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-
-  // Simulate review results based on file types and names
   const issues: any[] = [];
   const suggestions: string[] = [];
 
-  // Check for common issues
   const hasSitePlan = files.some((f) =>
     f.name.toLowerCase().includes('site') || f.name.toLowerCase().includes('plan')
   );
   const hasFloorPlan = files.some((f) =>
-    f.name.toLowerCase().includes('floor') || f.name.toLowerCase().includes('plan')
+    f.name.toLowerCase().includes('floor')
   );
   const hasElevations = files.some((f) =>
     f.name.toLowerCase().includes('elevation') || f.name.toLowerCase().includes('elev')
@@ -93,7 +178,6 @@ async function simulateAIReview(
       suggestion: 'Upload a site plan showing property boundaries and building location.',
     });
   }
-
   if (!hasFloorPlan) {
     issues.push({
       type: 'warning',
@@ -101,7 +185,6 @@ async function simulateAIReview(
       suggestion: 'Upload floor plans showing room layouts and dimensions.',
     });
   }
-
   if (!hasElevations) {
     issues.push({
       type: 'info',
@@ -110,18 +193,13 @@ async function simulateAIReview(
     });
   }
 
-  // Calculate score
-  const baseScore = 85;
-  const deduction = issues.length * 5;
-  const score = Math.max(60, baseScore - deduction);
-
-  // Add suggestions
-  if (jurisdiction.includes('DC')) {
-    suggestions.push('DC typically requires property survey for additions');
-  }
   if (permitTypes.includes('electrical')) {
     suggestions.push('Electrical permits may require load calculations');
   }
+
+  const baseScore = 85;
+  const deduction = issues.length * 5;
+  const score = Math.max(60, baseScore - deduction);
 
   return {
     score,
@@ -129,8 +207,8 @@ async function simulateAIReview(
     suggestions,
     jurisdiction,
     permitTypes,
-    estimatedApprovalTime: jurisdiction.includes('DC') ? '14-21 days' : '21-30 days',
-    confidence: 0.85,
+    estimatedApprovalTime: '21-30 days',
+    confidence: 0.65,
     files,
   };
 }

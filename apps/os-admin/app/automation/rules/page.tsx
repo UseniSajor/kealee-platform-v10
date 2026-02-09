@@ -15,6 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Plus, Bot, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { apiRequest } from '@/lib/api'
 
 interface AutomationRule {
   id: string
@@ -43,19 +44,25 @@ export default function AutomationRulesPage() {
     try {
       setLoading(true)
       setError(null)
-      // Note: This endpoint may need to be created in the API
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/automation/rules`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
+      // Fetch workflow phase configurations from the real API endpoint
+      const data = await apiRequest<{ phases: any[] }>('/workflow/phases')
 
-      if (response.ok) {
-        const data = await response.json()
-        setRules(data.rules || [])
-      } else {
-        setRules([])
-      }
+      // Map workflow phases to the automation rule interface for display
+      const phaseRules: AutomationRule[] = (data.phases || []).map((phase: any, idx: number) => ({
+        id: phase.id || `phase-${idx}`,
+        name: phase.name || phase.phase || `Phase ${idx + 1}`,
+        description: phase.description || '',
+        trigger: phase.gateConditions ? 'Gate Check' : 'Phase Transition',
+        action: phase.actions ? phase.actions.join(', ') : 'Advance Phase',
+        status: phase.isActive !== false ? 'active' as const : 'inactive' as const,
+        approvalStatus: phase.requiresApproval ? 'pending' as const : 'approved' as const,
+        createdBy: 'system',
+        createdAt: phase.createdAt || new Date().toISOString(),
+        lastExecuted: phase.lastExecuted,
+        executionCount: phase.executionCount || 0,
+      }))
+
+      setRules(phaseRules)
     } catch (err: any) {
       console.error('Rules fetch error:', err)
       setError(err.message || 'Failed to load automation rules')

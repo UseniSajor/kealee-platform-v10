@@ -14,6 +14,7 @@ import {
   BarChart3,
   TrendingUp,
   Shield,
+  X,
 } from "lucide-react"
 
 import { api } from "@/lib/api"
@@ -28,6 +29,24 @@ export default function QualityControlPage() {
     status?: string
     phase?: string
   }>({})
+
+  // Create checklist modal state
+  const [showCreateModal, setShowCreateModal] = React.useState(false)
+  const [checklistName, setChecklistName] = React.useState("")
+  const [checklistPhase, setChecklistPhase] = React.useState("")
+
+  const createChecklistMutation = useMutation({
+    mutationFn: () => api.createQCChecklist(projectId, {
+      checklistName,
+      phase: checklistPhase || undefined,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["qc-checklists", projectId] })
+      setShowCreateModal(false)
+      setChecklistName("")
+      setChecklistPhase("")
+    },
+  })
 
   // Fetch QC checklists
   const { data: checklistsData } = useQuery({
@@ -92,9 +111,7 @@ export default function QualityControlPage() {
               <p className="text-neutral-600">Quality control checklists, error tracking, and continuous improvement</p>
             </div>
             <button
-              onClick={() => {
-                // TODO: Open create checklist modal
-              }}
+              onClick={() => setShowCreateModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
             >
               <Plus className="h-4 w-4" />
@@ -219,6 +236,61 @@ export default function QualityControlPage() {
           </div>
         </div>
       </div>
+
+      {/* Create Checklist Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">New QC Checklist</h3>
+              <button onClick={() => setShowCreateModal(false)} className="text-neutral-400 hover:text-neutral-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">Checklist Name *</label>
+                <input
+                  type="text"
+                  value={checklistName}
+                  onChange={(e) => setChecklistName(e.target.value)}
+                  placeholder="e.g. SD Phase QC Review"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">Phase</label>
+                <select
+                  value={checklistPhase}
+                  onChange={(e) => setChecklistPhase(e.target.value)}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg"
+                >
+                  <option value="">Select Phase</option>
+                  <option value="PRE_DESIGN">Pre-Design</option>
+                  <option value="SCHEMATIC_DESIGN">Schematic Design</option>
+                  <option value="DESIGN_DEVELOPMENT">Design Development</option>
+                  <option value="CONSTRUCTION_DOCUMENTS">Construction Documents</option>
+                </select>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => createChecklistMutation.mutate()}
+                  disabled={!checklistName || createChecklistMutation.isPending}
+                  className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {createChecklistMutation.isPending ? "Creating..." : "Create Checklist"}
+                </button>
+                <button onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50">
+                  Cancel
+                </button>
+              </div>
+              {createChecklistMutation.isError && (
+                <p className="text-sm text-red-600">Failed to create checklist. Please try again.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

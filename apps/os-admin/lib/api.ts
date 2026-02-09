@@ -109,6 +109,14 @@ export const api = {
   removeOrgMember: (orgId: string, userId: string) =>
     apiRequest(`/orgs/${orgId}/members/${userId}`, { method: 'DELETE' }),
 
+  // Projects
+  getProjects: (params?: { limit?: number }) => {
+    const query = new URLSearchParams()
+    if (params?.limit) query.append('limit', params.limit.toString())
+    const suffix = query.toString() ? `?${query.toString()}` : ''
+    return apiRequest<{ projects: any[] }>(`/projects${suffix}`)
+  },
+
   // Module Entitlements
   getOrgEntitlements: (orgId: string) =>
     apiRequest<{ entitlements: any[] }>(`/entitlements/orgs/${orgId}`),

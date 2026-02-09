@@ -36,6 +36,30 @@ const addEvidenceSchema = z.object({
 })
 
 export async function disputeRoutes(fastify: FastifyInstance) {
+  // GET /disputes - Admin list all disputes with optional filters
+  fastify.get(
+    '/',
+    {
+      preHandler: [authenticateUser],
+    },
+    async (request, reply) => {
+      const query = request.query as {
+        status?: string
+        type?: string
+        priority?: string
+        limit?: string
+        offset?: string
+      }
+      const filters: any = {}
+      if (query.status) filters.status = query.status
+      if (query.type) filters.type = query.type
+      if (query.limit) filters.limit = parseInt(query.limit, 10)
+      if (query.offset) filters.offset = parseInt(query.offset, 10)
+      const disputes = await DisputeService.listDisputes(filters)
+      return reply.send({ disputes })
+    }
+  )
+
   // Initiate dispute (Prompt 3.5)
   fastify.post(
     '/',

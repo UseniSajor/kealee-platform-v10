@@ -556,10 +556,45 @@ export default function FieldStatusPage() {
   // ---------- Data fetching ----------
   const fetchFleet = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/v1/check-in/fleet`);
+      const res = await fetch(`${API_BASE}/api/v1/check-in/fleet`, {
+        credentials: 'include',
+      });
       if (res.ok) {
-        const data: FleetResponse = await res.json();
-        setProjects(data.projects);
+        const json = await res.json();
+        // Backend returns { success: true, data: [...] }
+        const rawProjects = json.data || json.projects || json || [];
+        const mapped: ProjectSite[] = rawProjects.map((p: any) => {
+          const crew = (p.crewOnSite || p.crew || []).map((c: any) => ({
+            userId: c.userId,
+            userName: c.userName,
+            role: c.role || 'Crew',
+            checkInAt: c.arrivedAt || c.checkInAt,
+            hoursOnSite: c.hoursOnSite ?? (
+              c.arrivedAt
+                ? (Date.now() - new Date(c.arrivedAt).getTime()) / 3600000
+                : 0
+            ),
+          }));
+          // Map backend status 'on-site' to frontend 'active'
+          let status: 'active' | 'empty' | 'overdue' = 'empty';
+          if (p.status === 'on-site' || p.status === 'active') status = 'active';
+          else if (p.status === 'overdue') status = 'overdue';
+          else if (p.status === 'empty') status = 'empty';
+
+          return {
+            projectId: p.projectId,
+            projectName: p.projectName,
+            address: p.address || '',
+            latitude: p.latitude ?? 0,
+            longitude: p.longitude ?? 0,
+            status,
+            crew,
+            crewCount: crew.length,
+            totalHours: crew.reduce((sum: number, c: any) => sum + (c.hoursOnSite || 0), 0),
+            clientId: p.clientId,
+          };
+        });
+        setProjects(mapped);
       } else {
         // Fallback to mock data on error
         setProjects(generateMockData());

@@ -57,20 +57,31 @@ export default function CheckoutPage() {
     setProcessing(true);
 
     try {
-      // TODO: Replace with actual Stripe Checkout integration
-      // const response = await fetch('/api/checkout', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     packageId,
-      //     ...formData,
-      //   }),
-      // });
-      
-      // Simulate processing
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      
-      router.push('/checkout/success');
+      // Create Stripe Checkout session via backend
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          packageId,
+          email: formData.email,
+          name: formData.name,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Checkout failed' }));
+        throw new Error(error.error || 'Failed to create checkout session');
+      }
+
+      const data = await response.json();
+
+      if (data.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+      } else {
+        // Fallback: redirect to success page with session ID
+        router.push(`/checkout/success?session_id=${data.id || data.sessionId}`);
+      }
     } catch (error) {
       console.error('Error processing checkout:', error);
       setProcessing(false);

@@ -83,6 +83,8 @@ function formatTimeAgo(dateStr: string): string {
 // COMPONENT
 // ============================================================================
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
 export default function AutonomousActionsPage() {
   const [actions, setActions] = useState<AutonomousAction[]>([]);
   const [stats, setStats] = useState<AutonomyStats | null>(null);
@@ -92,16 +94,74 @@ export default function AutonomousActionsPage() {
   const [filterApp, setFilterApp] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
-  // Placeholder fetch — replace with actual API calls
+  // Load projects list on mount
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        const res = await fetch(`${API_BASE}/projects`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          const projectList = (data.projects || data || []).map((p: any) => ({
+            projectId: p.id,
+            projectName: p.name || p.title || 'Unnamed',
+            autonomyLevel: p.autonomyLevel ?? 1,
+            autonomyRules: p.autonomyRules ?? null,
+            enabledAt: p.autonomyEnabledAt ?? null,
+            enabledBy: p.autonomyEnabledBy ?? null,
+          }));
+          setProjects(projectList);
+          if (projectList.length > 0 && !selectedProject) {
+            setSelectedProject(projectList[0].projectId);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load projects:', err);
+      }
+    }
+    loadProjects();
+  }, []);
+
+  // Fetch actions and stats for the selected project
   const fetchData = useCallback(async () => {
+    if (!selectedProject) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      // These would be real API calls in production:
-      // const res = await fetch(`/api/autonomy/projects/${selectedProject}/actions`);
-      // const data = await res.json();
-      // setActions(data.actions);
+      const [actionsRes, statsRes] = await Promise.all([
+        fetch(`${API_BASE}/autonomy/projects/${selectedProject}/actions?pageSize=50`, {
+          credentials: 'include',
+        }),
+        fetch(`${API_BASE}/autonomy/projects/${selectedProject}/stats?days=7`, {
+          credentials: 'include',
+        }),
+      ]);
 
-      // Placeholder data for UI rendering
+      if (actionsRes.ok) {
+        const actionsData = await actionsRes.json();
+        setActions(actionsData.actions || []);
+      } else {
+        setActions([]);
+      }
+
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        setStats(statsData);
+      } else {
+        setStats({
+          totalActions: 0,
+          autoApproved: 0,
+          autoRejected: 0,
+          autoExecuted: 0,
+          escalated: 0,
+          revertedCount: 0,
+          reviewedCount: 0,
+          estimatedHoursSaved: 0,
+        });
+      }
+    } catch (err) {
+      console.warn('Failed to fetch autonomy data:', err);
       setActions([]);
       setStats({
         totalActions: 0,
@@ -123,12 +183,32 @@ export default function AutonomousActionsPage() {
   }, [fetchData]);
 
   const handleRevert = async (actionId: string) => {
-    // await fetch(`/api/autonomy/actions/${actionId}/revert`, { method: 'POST' });
+    try {
+      const res = await fetch(`${API_BASE}/autonomy/actions/${actionId}/revert`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        console.error('Failed to revert action:', await res.text());
+      }
+    } catch (err) {
+      console.error('Error reverting action:', err);
+    }
     fetchData();
   };
 
   const handleReview = async (actionId: string) => {
-    // await fetch(`/api/autonomy/actions/${actionId}/review`, { method: 'POST' });
+    try {
+      const res = await fetch(`${API_BASE}/autonomy/actions/${actionId}/review`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        console.error('Failed to mark action as reviewed:', await res.text());
+      }
+    } catch (err) {
+      console.error('Error marking action reviewed:', err);
+    }
     fetchData();
   };
 
@@ -180,6 +260,17 @@ export default function AutonomousActionsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-6">
+        <select
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          value={selectedProject}
+          onChange={e => setSelectedProject(e.target.value)}
+        >
+          <option value="">Select Project</option>
+          {projects.map(p => (
+            <option key={p.projectId} value={p.projectId}>{p.projectName}</option>
+          ))}
+        </select>
+
         <select
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
           value={filterDecision}

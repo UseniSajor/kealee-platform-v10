@@ -68,6 +68,8 @@ function getScoreBarColor(score: number): string {
 // COMPONENT
 // ============================================================================
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
 export default function ContractorRankingsPage() {
   const [contractors, setContractors] = useState<ContractorRanking[]>([]);
   const [selectedContractor, setSelectedContractor] = useState<ContractorDetail | null>(null);
@@ -76,15 +78,51 @@ export default function ContractorRankingsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Placeholder — replace with actual API call
-    // fetch('/api/scoring/leaderboard')
-    setContractors([]);
-    setLoading(false);
+    async function loadLeaderboard() {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (tradeFilter) params.set('trade', tradeFilter);
+        if (regionFilter) params.set('region', regionFilter);
+        params.set('limit', '50');
+
+        const res = await fetch(`${API_BASE}/scoring/leaderboard?${params.toString()}`, {
+          credentials: 'include',
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setContractors(data.contractors || []);
+        } else {
+          console.warn('Leaderboard API returned', res.status);
+          setContractors([]);
+        }
+      } catch (err) {
+        console.warn('Failed to load contractor leaderboard:', err);
+        setContractors([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadLeaderboard();
   }, [tradeFilter, regionFilter]);
 
   const loadContractorDetail = async (contractorId: string) => {
-    // fetch(`/api/scoring/contractors/${contractorId}/full`)
-    setSelectedContractor(null); // Would be populated from API
+    try {
+      const res = await fetch(`${API_BASE}/scoring/contractors/${contractorId}/full`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSelectedContractor(data);
+      } else {
+        console.warn('Contractor detail API returned', res.status);
+        setSelectedContractor(null);
+      }
+    } catch (err) {
+      console.warn('Failed to load contractor detail:', err);
+      setSelectedContractor(null);
+    }
   };
 
   return (

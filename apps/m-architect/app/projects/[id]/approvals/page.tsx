@@ -15,6 +15,7 @@ import {
   Filter,
   AlertCircle,
   Users,
+  X,
 } from "lucide-react"
 
 import { api } from "@/lib/api"
@@ -29,6 +30,36 @@ export default function ApprovalsPage() {
     approvalStatus?: string
     entityType?: string
   }>({})
+
+  // Create approval request modal state
+  const [showCreateModal, setShowCreateModal] = React.useState(false)
+  const [requestTitle, setRequestTitle] = React.useState("")
+  const [requestDescription, setRequestDescription] = React.useState("")
+  const [entityType, setEntityType] = React.useState("DELIVERABLE")
+  const [entityId, setEntityId] = React.useState("")
+  const [priority, setPriority] = React.useState("MEDIUM")
+  const [deadline, setDeadline] = React.useState("")
+
+  const createApprovalMutation = useMutation({
+    mutationFn: () => api.createApprovalRequest(projectId, {
+      entityType,
+      entityId,
+      requestTitle,
+      requestDescription: requestDescription || undefined,
+      priority,
+      deadline: deadline || undefined,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["approval-requests", projectId] })
+      setShowCreateModal(false)
+      setRequestTitle("")
+      setRequestDescription("")
+      setEntityType("DELIVERABLE")
+      setEntityId("")
+      setPriority("MEDIUM")
+      setDeadline("")
+    },
+  })
 
   // Fetch approval requests
   const { data: requestsData } = useQuery({
@@ -105,9 +136,7 @@ export default function ApprovalsPage() {
               <p className="text-neutral-600">Multi-tier approval workflows with delegation and certificates</p>
             </div>
             <button
-              onClick={() => {
-                // TODO: Open create approval request modal
-              }}
+              onClick={() => setShowCreateModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
             >
               <Plus className="h-4 w-4" />
@@ -251,6 +280,104 @@ export default function ApprovalsPage() {
           </div>
         </div>
       </div>
+
+      {/* Create Approval Request Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">New Approval Request</h3>
+              <button onClick={() => setShowCreateModal(false)} className="text-neutral-400 hover:text-neutral-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">Request Title *</label>
+                <input
+                  type="text"
+                  value={requestTitle}
+                  onChange={(e) => setRequestTitle(e.target.value)}
+                  placeholder="e.g. Phase 2 Deliverable Approval"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">Description</label>
+                <textarea
+                  value={requestDescription}
+                  onChange={(e) => setRequestDescription(e.target.value)}
+                  placeholder="Describe the approval request..."
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">Entity Type *</label>
+                <select
+                  value={entityType}
+                  onChange={(e) => setEntityType(e.target.value)}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg"
+                >
+                  <option value="DELIVERABLE">Deliverable</option>
+                  <option value="SHEET">Sheet</option>
+                  <option value="PHASE">Phase</option>
+                  <option value="PROJECT">Project</option>
+                  <option value="VALIDATION">Validation</option>
+                  <option value="REVISION">Revision</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">Entity ID *</label>
+                <input
+                  type="text"
+                  value={entityId}
+                  onChange={(e) => setEntityId(e.target.value)}
+                  placeholder="Enter the ID of the entity to approve"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">Priority</label>
+                <select
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value)}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg"
+                >
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">High</option>
+                  <option value="URGENT">Urgent</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">Deadline</label>
+                <input
+                  type="date"
+                  value={deadline}
+                  onChange={(e) => setDeadline(e.target.value)}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg"
+                />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => createApprovalMutation.mutate()}
+                  disabled={!requestTitle || !entityId || createApprovalMutation.isPending}
+                  className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {createApprovalMutation.isPending ? "Creating..." : "Create Request"}
+                </button>
+                <button onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50">
+                  Cancel
+                </button>
+              </div>
+              {createApprovalMutation.isError && (
+                <p className="text-sm text-red-600">Failed to create approval request. Please try again.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

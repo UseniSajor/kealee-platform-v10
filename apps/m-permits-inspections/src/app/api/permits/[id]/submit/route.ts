@@ -75,14 +75,122 @@ export async function POST(
       source: 'USER',
     });
 
-    // TODO: If jurisdiction has API integration, submit via API
-    // Otherwise, mark as submitted and jurisdiction will process manually
+    // Check if jurisdiction has API integration and submit via API
+    const { data: integration } = await supabase
+      .from('APIIntegration')
+      .select('*')
+      .eq('jurisdictionId', permit.jurisdictionId)
+      .eq('isActive', true)
+      .single();
+
+    let apiSubmitResult = null;
+
+    if (integration) {
+      // Submit via the jurisdiction's API integration
+      try {
+        const submitEndpoint = integration.endpoints?.submit || '/permits/submit';
+        const apiUrl = `${integration.apiUrl}${submitEndpoint}`;
+
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+
+        if (integration.apiKey) {
+          headers['X-API-Key'] = integration.apiKey;
+        }
+        if (integration.clientId && integration.clientSecret) {
+          headers['Authorization'] = `Basic ${Buffer.from(
+            `${integration.clientId}:${integration.clientSecret}`
+          ).toString('base64')}`;
+        }
+
+        // Map permit data using field mappings
+        const fieldMappings = integration.fieldMappings || {};
+        const submitPayload: Record<string, any> = {
+          permitType: permit.permitType,
+          address: permit.address,
+          applicantName: permit.applicantName,
+          applicantEmail: permit.applicantEmail,
+          valuation: permit.valuation,
+          scope: permit.scope,
+          documents: permit.plans || [],
+        };
+
+        // Apply field mappings
+        const mappedPayload: Record<string, any> = {};
+        for (const [internalField, externalField] of Object.entries(fieldMappings)) {
+          if (submitPayload[internalField] !== undefined) {
+            mappedPayload[externalField as string] = submitPayload[internalField];
+          }
+        }
+        const finalPayload = Object.keys(mappedPayload).length > 0 ? mappedPayload : submitPayload;
+
+        const apiResponse = await fetch(apiUrl, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(finalPayload),
+        });
+
+        const apiData = await apiResponse.json().catch(() => ({}));
+
+        // Log the API call
+        await supabase.from('APICall').insert({
+          integrationId: integration.id,
+          endpoint: submitEndpoint,
+          method: 'POST',
+          action: 'SUBMIT_APPLICATION',
+          permitId: params.id,
+          success: apiResponse.ok,
+          statusCode: apiResponse.status,
+          requestPayload: finalPayload,
+          responsePayload: apiData,
+        });
+
+        if (apiResponse.ok) {
+          apiSubmitResult = apiData;
+
+          // Update permit with external reference number
+          const refNumberField = fieldMappings.permitNumber || 'permitNumber';
+          const externalRef = apiData[refNumberField] || apiData.referenceNumber || apiData.id;
+
+          if (externalRef) {
+            await supabase
+              .from('Permit')
+              .update({
+                jurisdictionRefNumber: externalRef,
+                jurisdictionStatus: 'SUBMITTED',
+                submittedVia: 'API',
+              })
+              .eq('id', params.id);
+          }
+        }
+      } catch (apiError) {
+        console.error('API submission error (non-fatal):', apiError);
+        // Non-fatal: permit is still marked as submitted in our system
+      }
+    }
+
+    // Also trigger routing via the backend routing service
+    const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    try {
+      await fetch(`${API_URL}/permits/permits/${params.id}/route`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (routingError) {
+      console.error('Backend routing trigger error (non-fatal):', routingError);
+    }
 
     return NextResponse.json({
       success: true,
       data: {
         submissionId: submission.id,
         confirmationNumber: submission.confirmationNumber,
+        apiSubmitResult: apiSubmitResult || undefined,
+        submittedViaApi: !!apiSubmitResult,
       },
     });
   } catch (error) {

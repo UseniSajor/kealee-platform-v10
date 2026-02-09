@@ -36,31 +36,83 @@ export default function PermitStatusPage() {
 
   const fetchPermitStatus = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/permits/${permitId}/status`);
-      // const data = await response.json();
-      
-      // Mock data
-      const mockPermit: PermitStatus = {
-        id: permitId,
-        status: 'under_review',
-        submittedAt: '2024-01-15T10:30:00Z',
-        estimatedApprovalDate: '2024-02-05T00:00:00Z',
-        currentStep: 'review',
-        steps: [
-          { id: 'submitted', name: 'Application Submitted', status: 'completed', completedAt: '2024-01-15T10:30:00Z' },
-          { id: 'review', name: 'Under Review', status: 'current' },
-          { id: 'inspection', name: 'Site Inspection', status: 'upcoming' },
-          { id: 'approval', name: 'Approval', status: 'upcoming' },
-        ],
-        documents: [
-          { id: '1', name: 'Site Plan.pdf', status: 'approved' },
-          { id: '2', name: 'Floor Plan.pdf', status: 'approved' },
-          { id: '3', name: 'Elevations.pdf', status: 'pending' },
-        ],
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_URL}/api/permits/${permitId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: Failed to fetch permit`);
+      }
+
+      const data = await response.json();
+      const permit = data.permit;
+
+      // Map backend permit data to our PermitStatus interface
+      const statusMap: Record<string, PermitStatus['status']> = {
+        'DRAFT': 'submitted',
+        'SUBMITTED': 'submitted',
+        'IN_REVIEW': 'under_review',
+        'UNDER_REVIEW': 'under_review',
+        'APPROVED': 'approved',
+        'REJECTED': 'rejected',
+        'CORRECTIONS_REQUIRED': 'requires_changes',
       };
-      
-      setPermit(mockPermit);
+
+      const permitStatus = statusMap[permit.status] || statusMap[permit.kealeeStatus] || 'submitted';
+
+      // Build steps from permit data
+      const steps: PermitStatus['steps'] = [
+        {
+          id: 'submitted',
+          name: 'Application Submitted',
+          status: permit.submittedAt ? 'completed' : 'upcoming',
+          completedAt: permit.submittedAt || undefined,
+        },
+        {
+          id: 'review',
+          name: 'Under Review',
+          status: permitStatus === 'under_review' ? 'current' :
+                  ['approved', 'rejected', 'requires_changes'].includes(permitStatus) ? 'completed' : 'upcoming',
+          completedAt: permit.reviewCompletedAt || undefined,
+        },
+        {
+          id: 'inspection',
+          name: 'Site Inspection',
+          status: permit.inspectionCompletedAt ? 'completed' :
+                  (permitStatus === 'approved' && !permit.inspectionCompletedAt) ? 'current' : 'upcoming',
+          completedAt: permit.inspectionCompletedAt || undefined,
+        },
+        {
+          id: 'approval',
+          name: 'Approval',
+          status: permitStatus === 'approved' ? 'completed' : 'upcoming',
+          completedAt: permit.approvedAt || undefined,
+        },
+      ];
+
+      // Map documents
+      const documents = (permit.documents || []).map((doc: any) => ({
+        id: doc.id,
+        name: doc.fileName || doc.name || 'Document',
+        status: doc.status?.toLowerCase() === 'approved' ? 'approved' :
+                doc.status?.toLowerCase() === 'rejected' ? 'rejected' : 'pending',
+      }));
+
+      const mappedPermit: PermitStatus = {
+        id: permit.id,
+        status: permitStatus,
+        submittedAt: permit.submittedAt || permit.createdAt,
+        estimatedApprovalDate: permit.estimatedApprovalDate || permit.dueDate || '',
+        currentStep: steps.find(s => s.status === 'current')?.id || 'submitted',
+        steps,
+        documents,
+      };
+
+      setPermit(mappedPermit);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching permit status:', error);

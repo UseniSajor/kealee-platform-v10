@@ -1,14 +1,9 @@
 // apps/m-ops-services/app/api/stripe/checkout/route.ts
-// Stripe Checkout Session creation
+// Stripe Checkout Session creation - proxies to backend API
 
 import { NextRequest, NextResponse } from 'next/server';
 
-const PACKAGE_PRICES: Record<string, number> = {
-  a: 1750,
-  b: 4500,
-  c: 8500,
-  d: 16500,
-};
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,56 +17,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const price = PACKAGE_PRICES[packageId];
-    if (!price) {
+    // Proxy to backend Stripe checkout endpoint
+    const backendResponse = await fetch(`${API_BASE_URL}/api/stripe/create-checkout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // Forward auth token if present
+        ...(request.headers.get('authorization')
+          ? { Authorization: request.headers.get('authorization')! }
+          : {}),
+      },
+      body: JSON.stringify({
+        packageId,
+        successUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/pricing`,
+        customerEmail: email,
+      }),
+    });
+
+    if (!backendResponse.ok) {
+      const error = await backendResponse.json().catch(() => ({ error: 'Backend checkout failed' }));
       return NextResponse.json(
-        { error: 'Invalid package ID' },
-        { status: 400 }
+        { error: error.error || error.message || 'Failed to create checkout session' },
+        { status: backendResponse.status }
       );
     }
 
-    // TODO: Integrate with actual Stripe API
-    // For now, return mock checkout session
-    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      customer_email: email,
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: `Package ${packageId.toUpperCase()} - Project Management`,
-            },
-            unit_amount: price * 100, // Convert to cents
-            recurring: {
-              interval: 'month',
-            },
-          },
-          quantity: 1,
-        },
-      ],
-      mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
-      subscription_data: {
-        trial_period_days: 14,
-        metadata: {
-          packageId,
-          customerName: name,
-        },
-      },
-      metadata: {
-        packageId,
-        customerName: name,
-      },
-    });
+    const data = await backendResponse.json();
 
     return NextResponse.json({
-      id: session.id,
-      url: session.url,
-      customerId: session.customer,
+      id: data.sessionId || data.id,
+      url: data.url,
+      customerId: data.customerId,
     });
   } catch (error) {
     console.error('Error creating Stripe checkout session:', error);

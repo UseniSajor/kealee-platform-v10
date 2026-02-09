@@ -162,4 +162,66 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ rating }),
     }),
+
+  // Org & User
+  getMyOrgs: () => apiRequest<{ orgs: any[] }>(`/orgs/my`),
+
+  getOrg: (orgId: string) => apiRequest<{ org: any }>(`/orgs/${orgId}`),
+
+  getOrgMembers: (orgId: string) => apiRequest<{ members: any[] }>(`/orgs/${orgId}/members`),
+
+  // Projects
+  getProjects: (filters?: { orgId?: string; status?: string }) => {
+    const params = new URLSearchParams()
+    if (filters?.orgId) params.append('orgId', filters.orgId)
+    if (filters?.status) params.append('status', filters.status)
+    const query = params.toString()
+    return apiRequest<{ projects: any[] }>(`/projects${query ? `?${query}` : ''}`)
+  },
+
+  getProjectStats: (orgId: string) => apiRequest<{ stats: any }>(`/projects/stats?orgId=${orgId}`),
+
+  // Reports
+  getReports: (filters?: { type?: string; page?: string; limit?: string }) => {
+    const params = new URLSearchParams()
+    if (filters?.type) params.append('type', filters.type)
+    if (filters?.page) params.append('page', filters.page)
+    if (filters?.limit) params.append('limit', filters.limit)
+    const query = params.toString()
+    return apiRequest<{ reports: any[]; pagination: any }>(`/api/reports${query ? `?${query}` : ''}`)
+  },
+
+  getReport: (reportId: string) => apiRequest<{ report: any }>(`/api/reports/${reportId}`),
+
+  generateReport: (data: {
+    type: 'weekly' | 'monthly' | 'custom'
+    startDate: string
+    endDate: string
+  }) => apiRequest<{ report: any }>(`/api/reports/generate`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  getReportDownloadUrl: (reportId: string) => apiRequest<{ downloadUrl: string | null; reportId: string }>(`/api/reports/${reportId}/download`),
+
+  // Subscription details + invoices
+  getSubscriptionDetails: (orgId: string) => apiRequest<{ details: any }>(`/billing/subscriptions/${orgId}/details`),
+
+  getSubscriptionMetrics: (filters?: { orgId?: string }) => {
+    const params = new URLSearchParams()
+    if (filters?.orgId) params.append('orgId', filters.orgId)
+    const query = params.toString()
+    return apiRequest<{ metrics: any }>(`/billing/reports/subscription-metrics${query ? `?${query}` : ''}`)
+  },
+
+  // Stripe checkout via backend
+  createStripeCheckout: (data: {
+    packageId: string
+    successUrl: string
+    cancelUrl: string
+    customerEmail?: string
+  }) => apiRequest<{ sessionId: string; url: string }>(`/api/stripe/create-checkout`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
 }

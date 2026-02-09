@@ -14,6 +14,7 @@ import {
   Filter,
   Shield,
   FileText,
+  X,
 } from "lucide-react"
 
 import { api } from "@/lib/api"
@@ -28,6 +29,33 @@ export default function StampsPage() {
     applicationStatus?: string
     targetType?: string
   }>({})
+
+  // Create stamp template modal state
+  const [showCreateModal, setShowCreateModal] = React.useState(false)
+  const [stampType, setStampType] = React.useState("ARCHITECT_SEAL")
+  const [stampName, setStampName] = React.useState("")
+  const [licenseNumber, setLicenseNumber] = React.useState("")
+  const [licenseState, setLicenseState] = React.useState("")
+  const [licenseExpiration, setLicenseExpiration] = React.useState("")
+
+  const createTemplateMutation = useMutation({
+    mutationFn: () => api.createStampTemplate({
+      stampType,
+      stampName,
+      licenseNumber,
+      licenseState,
+      licenseExpirationDate: licenseExpiration || undefined,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["stamp-templates"] })
+      setShowCreateModal(false)
+      setStampType("ARCHITECT_SEAL")
+      setStampName("")
+      setLicenseNumber("")
+      setLicenseState("")
+      setLicenseExpiration("")
+    },
+  })
 
   // Fetch stamp templates
   const { data: templatesData } = useQuery({
@@ -103,9 +131,7 @@ export default function StampsPage() {
               <p className="text-neutral-600">Digital seal management and stamp application workflow</p>
             </div>
             <button
-              onClick={() => {
-                // TODO: Open create stamp template modal
-              }}
+              onClick={() => setShowCreateModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
             >
               <Plus className="h-4 w-4" />
@@ -315,6 +341,91 @@ export default function StampsPage() {
           )}
         </div>
       </div>
+
+      {/* Create Stamp Template Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">New Stamp Template</h3>
+              <button onClick={() => setShowCreateModal(false)} className="text-neutral-400 hover:text-neutral-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">Stamp Type</label>
+                <select
+                  value={stampType}
+                  onChange={(e) => setStampType(e.target.value)}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg"
+                >
+                  <option value="ARCHITECT_SEAL">Architect Seal</option>
+                  <option value="ENGINEER_SEAL">Engineer Seal</option>
+                  <option value="SURVEYOR_SEAL">Surveyor Seal</option>
+                  <option value="REVIEW_STAMP">Review Stamp</option>
+                  <option value="APPROVAL_STAMP">Approval Stamp</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">Stamp Name *</label>
+                <input
+                  type="text"
+                  value={stampName}
+                  onChange={(e) => setStampName(e.target.value)}
+                  placeholder="e.g. John Doe, RA"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">License Number *</label>
+                <input
+                  type="text"
+                  value={licenseNumber}
+                  onChange={(e) => setLicenseNumber(e.target.value)}
+                  placeholder="e.g. 12345"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">License State *</label>
+                <input
+                  type="text"
+                  value={licenseState}
+                  onChange={(e) => setLicenseState(e.target.value)}
+                  placeholder="e.g. CA"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg"
+                  maxLength={2}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">License Expiration</label>
+                <input
+                  type="date"
+                  value={licenseExpiration}
+                  onChange={(e) => setLicenseExpiration(e.target.value)}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg"
+                />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => createTemplateMutation.mutate()}
+                  disabled={!stampName || !licenseNumber || !licenseState || createTemplateMutation.isPending}
+                  className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {createTemplateMutation.isPending ? "Creating..." : "Create Template"}
+                </button>
+                <button onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50">
+                  Cancel
+                </button>
+              </div>
+              {createTemplateMutation.isError && (
+                <p className="text-sm text-red-600">Failed to create stamp template. Please try again.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

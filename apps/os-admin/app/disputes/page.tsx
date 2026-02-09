@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { api } from '@/lib/api'
+import { apiRequest } from '@/lib/api'
 import { Gavel, Search, Filter, AlertCircle, CheckCircle, XCircle, Clock } from 'lucide-react'
 import Link from 'next/link'
 
@@ -49,28 +49,16 @@ export default function DisputesQueuePage() {
     try {
       setLoading(true)
       setError(null)
-      
-      // Note: This endpoint may need to be created in the API
+
+      // Build query params for the disputes API
       const params = new URLSearchParams()
       if (filters.status !== 'all') params.append('status', filters.status)
       if (filters.type !== 'all') params.append('type', filters.type)
       if (filters.priority !== 'all') params.append('priority', filters.priority)
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/disputes?${params.toString()}`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-
-      if (response.ok) {
-        const data = await response.json()
-        setDisputes(data.disputes || [])
-      } else {
-        setDisputes([])
-      }
+      const suffix = params.toString() ? `?${params.toString()}` : ''
+      const data = await apiRequest<{ disputes: any[] }>(`/disputes${suffix}`)
+      setDisputes(data.disputes || [])
     } catch (err: any) {
       console.error('Disputes fetch error:', err)
       setError(err.message || 'Failed to load disputes')

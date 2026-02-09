@@ -101,6 +101,23 @@ interface CircuitStatus {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
+/** Authenticated fetch helper - retrieves JWT from cookie and adds Authorization header */
+async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const cookies = typeof document !== 'undefined' ? document.cookie.split(';') : []
+  const tokenCookie = cookies.find(c => c.trim().startsWith('sb-access-token='))
+  const token = tokenCookie ? tokenCookie.split('=')[1] : null
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string> || {}),
+  }
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
+  return fetch(url, { ...options, headers })
+}
+
 const APP_NAMES: Record<string, string> = {
   'APP-01': 'Bid Engine',
   'APP-02': 'Cost Database',
@@ -184,13 +201,13 @@ export default function AlertsDashboardPage() {
         params.set('acknowledged', alertFilter.acknowledged === 'acknowledged' ? 'true' : 'false')
       }
       params.set('limit', String(PAGE_SIZE))
-      params.set('offset', String(alertPage * PAGE_SIZE))
+      params.set('page', String(alertPage + 1))
 
-      const res = await fetch(`${API_BASE}/automation/alerts?${params}`)
+      const res = await authFetch(`${API_BASE}/monitoring/alerts?${params}`)
       if (res.ok) {
         const data = await res.json()
-        setAlerts(data.items ?? [])
-        setAlertTotal(data.total ?? 0)
+        setAlerts(data.data ?? [])
+        setAlertTotal(data.pagination?.total ?? 0)
       } else {
         setAlerts([])
       }
@@ -204,9 +221,20 @@ export default function AlertsDashboardPage() {
 
   const fetchAlertStats = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/automation/alerts/stats`)
+      // Derive alert stats from the alerts list endpoint (no dedicated stats endpoint)
+      const res = await authFetch(`${API_BASE}/monitoring/alerts?limit=100`)
       if (res.ok) {
-        setAlertStats(await res.json())
+        const data = await res.json()
+        const allAlerts: Alert[] = data.data ?? []
+        const total = data.pagination?.total ?? allAlerts.length
+        const unacknowledged = allAlerts.filter((a) => !a.acknowledged).length
+        const byLevel: Record<string, number> = {}
+        const bySource: Record<string, number> = {}
+        for (const alert of allAlerts) {
+          byLevel[alert.level] = (byLevel[alert.level] || 0) + 1
+          bySource[alert.source] = (bySource[alert.source] || 0) + 1
+        }
+        setAlertStats({ total, unacknowledged, byLevel, bySource })
       }
     } catch (err) {
       console.error('Failed to fetch alert stats:', err)
@@ -220,13 +248,13 @@ export default function AlertsDashboardPage() {
       if (dlqFilter.appId !== 'all') params.set('appId', dlqFilter.appId)
       if (dlqFilter.status !== 'all') params.set('status', dlqFilter.status)
       params.set('limit', String(PAGE_SIZE))
-      params.set('offset', String(dlqPage * PAGE_SIZE))
+      params.set('page', String(dlqPage + 1))
 
-      const res = await fetch(`${API_BASE}/automation/dead-letters?${params}`)
+      const res = await authFetch(`${API_BASE}/monitoring/dead-letters?${params}`)
       if (res.ok) {
         const data = await res.json()
-        setDeadLetters(data.items ?? [])
-        setDlqTotal(data.total ?? 0)
+        setDeadLetters(data.data ?? [])
+        setDlqTotal(data.pagination?.total ?? 0)
       } else {
         setDeadLetters([])
       }
@@ -240,9 +268,20 @@ export default function AlertsDashboardPage() {
 
   const fetchDlqStats = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/automation/dead-letters/stats`)
+      // Derive DLQ stats from the dead-letters list endpoint (no dedicated stats endpoint)
+      const res = await authFetch(`${API_BASE}/monitoring/dead-letters?limit=100`)
       if (res.ok) {
-        setDlqStats(await res.json())
+        const data = await res.json()
+        const allEntries: DeadLetterJob[] = data.data ?? []
+        const total = data.pagination?.total ?? allEntries.length
+        const pending = allEntries.filter((e) => e.status === 'pending').length
+        const retried = allEntries.filter((e) => e.status === 'retried').length
+        const discarded = allEntries.filter((e) => e.status === 'discarded').length
+        const byApp: Record<string, number> = {}
+        for (const entry of allEntries.filter((e) => e.status === 'pending')) {
+          byApp[entry.appId] = (byApp[entry.appId] || 0) + 1
+        }
+        setDlqStats({ total, pending, retried, discarded, byApp })
       }
     } catch (err) {
       console.error('Failed to fetch DLQ stats:', err)
@@ -252,9 +291,38 @@ export default function AlertsDashboardPage() {
   const fetchCircuits = useCallback(async () => {
     try {
       setCircuitsLoading(true)
-      const res = await fetch(`${API_BASE}/automation/circuits`)
+      // Circuit breaker status is derived from app health metrics
+      // Fetch health metrics and map to circuit status
+      const res = await authFetch(`${API_BASE}/monitoring/health-metrics?limit=50`)
       if (res.ok) {
-        setCircuits(await res.json())
+        const data = await res.json()
+        const metrics = data.data ?? []
+        // Group by appId and derive circuit status from health metrics
+        const appMetrics = new Map<string, any[]>()
+        for (const m of metrics) {
+          if (!appMetrics.has(m.appId)) appMetrics.set(m.appId, [])
+          appMetrics.get(m.appId)!.push(m)
+        }
+        const circuitStatuses: CircuitStatus[] = []
+        for (const [appId, appData] of appMetrics) {
+          const failures = appData.filter((m: any) => m.status === 'error' || m.status === 'UNHEALTHY').length
+          const successes = appData.filter((m: any) => m.status === 'ok' || m.status === 'HEALTHY').length
+          const state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' =
+            failures === 0 ? 'CLOSED' :
+            failures > successes ? 'OPEN' : 'HALF_OPEN'
+          const lastFailure = appData.find((m: any) => m.status === 'error' || m.status === 'UNHEALTHY')?.timestamp
+          const lastSuccess = appData.find((m: any) => m.status === 'ok' || m.status === 'HEALTHY')?.timestamp
+          circuitStatuses.push({
+            name: appId,
+            state,
+            failures,
+            successes,
+            lastFailure: lastFailure || null,
+            lastSuccess: lastSuccess || null,
+            nextRetry: null,
+          })
+        }
+        setCircuits(circuitStatuses)
       } else {
         setCircuits([])
       }
@@ -285,8 +353,9 @@ export default function AlertsDashboardPage() {
 
   async function acknowledgeAlert(alertId: string) {
     try {
-      const res = await fetch(`${API_BASE}/automation/alerts/${alertId}/acknowledge`, {
-        method: 'POST',
+      const res = await authFetch(`${API_BASE}/monitoring/alerts/${alertId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ acknowledged: true }),
       })
       if (res.ok) {
         toast.success('Alert acknowledged')
@@ -302,23 +371,19 @@ export default function AlertsDashboardPage() {
 
   async function acknowledgeAllAlerts() {
     try {
-      const params: Record<string, string> = {}
-      if (alertFilter.source !== 'all') params.source = alertFilter.source
-      if (alertFilter.level !== 'all') params.level = alertFilter.level
-
-      const res = await fetch(`${API_BASE}/automation/alerts/acknowledge-all`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        toast.success(`${data.count ?? 0} alerts acknowledged`)
-        fetchAlerts()
-        fetchAlertStats()
-      } else {
-        toast.error('Failed to acknowledge alerts')
+      // No bulk acknowledge endpoint - acknowledge each unacknowledged alert individually
+      const unacknowledged = alerts.filter((a) => !a.acknowledged)
+      let count = 0
+      for (const alert of unacknowledged) {
+        const res = await authFetch(`${API_BASE}/monitoring/alerts/${alert.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ acknowledged: true }),
+        })
+        if (res.ok) count++
       }
+      toast.success(`${count} alerts acknowledged`)
+      fetchAlerts()
+      fetchAlertStats()
     } catch {
       toast.error('Failed to acknowledge alerts')
     }
@@ -326,7 +391,7 @@ export default function AlertsDashboardPage() {
 
   async function retryDeadLetter(dlqId: string) {
     try {
-      const res = await fetch(`${API_BASE}/automation/dead-letters/${dlqId}/retry`, {
+      const res = await authFetch(`${API_BASE}/monitoring/dead-letters/${dlqId}/retry`, {
         method: 'POST',
       })
       if (res.ok) {
@@ -343,10 +408,8 @@ export default function AlertsDashboardPage() {
 
   async function discardDeadLetter(dlqId: string) {
     try {
-      const res = await fetch(`${API_BASE}/automation/dead-letters/${dlqId}/discard`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: 'Discarded by admin' }),
+      const res = await authFetch(`${API_BASE}/monitoring/dead-letters/${dlqId}`, {
+        method: 'DELETE',
       })
       if (res.ok) {
         toast.success('Job discarded')
@@ -362,19 +425,18 @@ export default function AlertsDashboardPage() {
 
   async function retryAllForApp(appId: string) {
     try {
-      const res = await fetch(`${API_BASE}/automation/dead-letters/retry-all`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appId }),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        toast.success(`${data.retried ?? 0} jobs re-queued for ${APP_NAMES[appId] ?? appId}`)
-        fetchDeadLetters()
-        fetchDlqStats()
-      } else {
-        toast.error('Failed to retry jobs')
+      // No bulk retry endpoint - retry each pending dead letter for this app individually
+      const pendingForApp = deadLetters.filter((dl) => dl.appId === appId && dl.status === 'pending')
+      let retried = 0
+      for (const dl of pendingForApp) {
+        const res = await authFetch(`${API_BASE}/monitoring/dead-letters/${dl.id}/retry`, {
+          method: 'POST',
+        })
+        if (res.ok) retried++
       }
+      toast.success(`${retried} jobs re-queued for ${APP_NAMES[appId] ?? appId}`)
+      fetchDeadLetters()
+      fetchDlqStats()
     } catch {
       toast.error('Failed to retry jobs')
     }
@@ -382,15 +444,10 @@ export default function AlertsDashboardPage() {
 
   async function resetCircuit(name: string) {
     try {
-      const res = await fetch(`${API_BASE}/automation/circuits/${name}/reset`, {
-        method: 'POST',
-      })
-      if (res.ok) {
-        toast.success(`Circuit breaker "${name}" reset`)
-        fetchCircuits()
-      } else {
-        toast.error('Failed to reset circuit')
-      }
+      // Circuit breaker state is derived from health metrics.
+      // Refresh the circuit data to reflect latest health status.
+      toast.success(`Refreshing circuit breaker status for "${name}"`)
+      await fetchCircuits()
     } catch {
       toast.error('Failed to reset circuit')
     }

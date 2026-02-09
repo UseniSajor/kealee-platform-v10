@@ -507,7 +507,47 @@ export default function PMAnalyticsPage() {
       }
 
       const json = await res.json()
-      setData(json)
+      // Backend returns { success, data: { workload, performance, automationImpact, budgetAccuracy } }
+      const raw = json.data || json
+
+      // Map backend response shape to frontend DashboardData
+      const mapped: DashboardData = {
+        workload: {
+          activeProjects: raw.workload?.activeProjects ?? 0,
+          totalBudgetManaged: raw.workload?.totalBudgetManaged ?? 0,
+          openTasks: raw.workload?.openTasks ?? 0,
+          overdueTasks: raw.workload?.overdueTasks ?? 0,
+        },
+        performance: {
+          score: raw.performance?.pmScore ?? raw.performance?.score ?? 0,
+          trend: typeof raw.performance?.scoreTrend === 'number'
+            ? raw.performance.scoreTrend
+            : raw.performance?.trend ?? 0,
+          projectsOnTimePercent: raw.performance?.projectsOnTime ?? raw.performance?.projectsOnTimePercent ?? 0,
+          projectsOnBudgetPercent: raw.performance?.projectsOnBudget ?? raw.performance?.projectsOnBudgetPercent ?? 0,
+          decisionsThisMonth: raw.performance?.decisionsThisMonth ?? 0,
+        },
+        automation: {
+          tasksAutomated: raw.automationImpact?.tasksAutomated ?? raw.automation?.tasksAutomated ?? 0,
+          hoursRecovered: raw.automationImpact?.hoursRecovered ?? raw.automation?.hoursRecovered ?? 0,
+          decisionsAutomated: raw.automationImpact?.decisionsAutomated ?? raw.automation?.decisionsAutomated ?? 0,
+          approvalRate: raw.automationImpact?.approvalRate ?? raw.automation?.approvalRate ?? 0,
+          breakdown: raw.automationImpact?.breakdown ?? raw.automation?.breakdown ?? [],
+        },
+        budgetAccuracy: {
+          projects: (raw.budgetAccuracy?.budgetByProject || raw.budgetAccuracy?.projects || []).map((p: any) => ({
+            projectId: p.projectId || p.projectName || '',
+            projectName: p.projectName || '',
+            budget: p.budget ?? 0,
+            spent: p.spent ?? 0,
+            variance: p.variance ?? 0,
+          })),
+          avgVariance: raw.budgetAccuracy?.avgVariance ?? 0,
+        },
+        upcomingDeadlines: raw.upcomingDeadlines || [],
+      }
+
+      setData(mapped)
     } catch (err) {
       // Fall back to demo data so the page is always usable during development
       console.warn("Analytics API unavailable, using demo data:", err)
