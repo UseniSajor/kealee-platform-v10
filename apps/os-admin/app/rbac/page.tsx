@@ -17,13 +17,6 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Shield, Key, X } from 'lucide-react'
 import { toast } from 'sonner'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 
 interface Role {
   id: string
@@ -262,49 +255,60 @@ export default function RBACPage() {
             </Card>
           )}
 
-          {/* Permissions Dialog */}
-          <Dialog open={permModalOpen} onOpenChange={setPermModalOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  Permissions for {selRole?.name || 'Role'}
-                </DialogTitle>
-                <DialogDescription>
-                  Permissions assigned to the <strong>{selRole?.key}</strong> role
-                </DialogDescription>
-              </DialogHeader>
-              <div className="mt-4">
-                {rolePerms.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center py-4">
-                    No permissions assigned to this role
+          {/* Permissions Modal */}
+          {permModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              {/* Backdrop */}
+              <div 
+                className="absolute inset-0 bg-black/50" 
+                onClick={() => setPermModalOpen(false)}
+              />
+              
+              {/* Modal */}
+              <div className="relative z-10 w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
+                <div className="mb-4">
+                  <h2 className="text-lg font-semibold">
+                    Permissions for {selRole?.name || 'Role'}
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Permissions assigned to the <strong>{selRole?.key}</strong> role
                   </p>
-                ) : (
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {rolePerms.map((perm) => (
-                      <div
-                        key={perm.id}
-                        className="flex items-center justify-between rounded-md border p-3"
-                      >
-                        <div>
-                          <p className="text-sm font-medium">{perm.name}</p>
-                          <p className="text-xs text-gray-500">{perm.key}</p>
+                </div>
+                
+                <div className="mt-4">
+                  {rolePerms.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No permissions assigned to this role
+                    </p>
+                  ) : (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {rolePerms.map((perm) => (
+                        <div
+                          key={perm.id}
+                          className="flex items-center justify-between rounded-md border p-3"
+                        >
+                          <div>
+                            <p className="text-sm font-medium">{perm.name}</p>
+                            <p className="text-xs text-gray-500">{perm.key}</p>
+                          </div>
+                          {perm.description && (
+                            <p className="text-xs text-gray-400 ml-4">{perm.description}</p>
+                          )}
                         </div>
-                        {perm.description && (
-                          <p className="text-xs text-gray-400 ml-4">{perm.description}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="mt-6 flex justify-end">
+                  <Button variant="outline" onClick={() => setPermModalOpen(false)}>
+                    <X className="mr-2 h-4 w-4" />
+                    Close
+                  </Button>
+                </div>
               </div>
-              <div className="mt-4 flex justify-end">
-                <Button variant="outline" onClick={() => setPermModalOpen(false)}>
-                  <X className="mr-2 h-4 w-4" />
-                  Close
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+            </div>
+          )}
         </div>
       </AppLayout>
     </ProtectedRoute>
