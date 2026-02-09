@@ -68,7 +68,18 @@ export async function POST(request: NextRequest) {
       .insert({
         ...body,
         clientId: session.user.id,
-        pmUserId: session.user.id, // TODO: Get from project
+        pmUserId: await (async () => {
+          // Look up the project's assigned PM; fall back to current user
+          if (body.projectId) {
+            const { data: project } = await supabase
+              .from('Project')
+              .select('pmUserId')
+              .eq('id', body.projectId)
+              .single();
+            if (project?.pmUserId) return project.pmUserId;
+          }
+          return session.user.id;
+        })(),
       })
       .select()
       .single();

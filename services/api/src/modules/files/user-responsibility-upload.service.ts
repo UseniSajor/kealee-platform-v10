@@ -550,8 +550,24 @@ export class UserResponsibilityUploadService {
 
     // Project members have access to project files
     if (fileUpload.projectId && fileUpload.project) {
-      // TODO: Check if user is project member (client, contractor, or PM)
-      // For now, return false
+      // Check if user is project client, PM, or contractor member
+      const project = await prismaAny.project.findUnique({
+        where: { id: fileUpload.projectId },
+        select: {
+          ownerId: true,
+          clientId: true,
+          pmUserId: true,
+          contracts: { select: { contractorId: true } },
+        },
+      })
+      if (project) {
+        const isClient = project.clientId === userId || project.ownerId === userId
+        const isPM = project.pmUserId === userId
+        const isContractor = project.contracts?.some((c: any) => c.contractorId === userId)
+        if (isClient || isPM || isContractor) {
+          return true
+        }
+      }
       return false
     }
 

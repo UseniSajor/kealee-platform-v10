@@ -103,7 +103,26 @@ class PaymentWebhookService {
       userId: paymentIntent.metadata?.ownerId || undefined,
     })
 
-    // TODO: Send notification email to project owner
+    // Send notification to project owner about failed payment
+    const ownerId = paymentIntent.metadata?.ownerId
+    if (ownerId) {
+      await prismaAny.notification.create({
+        data: {
+          userId: ownerId,
+          type: 'PAYMENT_FAILED',
+          title: 'Payment Failed',
+          message: 'A payment has failed. Please retry.',
+          data: {
+            milestoneId,
+            paymentIntentId: paymentIntent.id,
+          },
+          channels: ['email', 'push'],
+          status: 'PENDING',
+        },
+      }).catch((err: any) => {
+        console.warn('Failed to create payment failure notification:', err)
+      })
+    }
   }
 
   /**

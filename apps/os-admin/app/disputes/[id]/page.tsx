@@ -31,6 +31,7 @@ export default function DisputeDetailPage() {
   const disputeId = params.id as string
   const [dispute, setDispute] = useState<DisputeDetail | null>(null)
   const [loading, setLoading] = useState(true)
+  const [transitioning, setTransitioning] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -38,6 +39,22 @@ export default function DisputeDetailPage() {
       fetchDispute()
     }
   }, [disputeId])
+
+    async function transitionStatus(newStatus: string) {
+    try {
+      setTransitioning(true)
+      setError(null)
+      await apiRequest(`/disputes/${disputeId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: newStatus }),
+      })
+      await fetchDispute()
+    } catch (err: any) {
+      setError(err.message || 'Failed to update dispute status')
+    } finally {
+      setTransitioning(false)
+    }
+  }
 
   async function fetchDispute() {
     try {
@@ -162,15 +179,15 @@ export default function DisputeDetailPage() {
                 <CardContent className="space-y-3">
                   <Button
                     className="w-full"
-                    disabled={dispute.status !== 'OPEN'}
-                    onClick={() => {/* TODO: Implement status transition */}}
+                    disabled={dispute.status !== 'OPEN' || transitioning}
+                    onClick={() => transitionStatus('INVESTIGATING')}
                   >
                     Move to Investigating
                   </Button>
-                  <Button className="w-full" variant="outline" disabled={dispute.status === 'RESOLVED' || dispute.status === 'CLOSED'}>
+                  <Button className="w-full" variant="outline" disabled={dispute.status === 'RESOLVED' || dispute.status === 'CLOSED' || transitioning} onClick={() => transitionStatus('IN_MEDIATION')}>
                     Request Mediation
                   </Button>
-                  <Button className="w-full" variant="destructive" disabled={dispute.status === 'RESOLVED' || dispute.status === 'CLOSED'}>
+                  <Button className="w-full" variant="destructive" disabled={dispute.status === 'RESOLVED' || dispute.status === 'CLOSED' || transitioning} onClick={() => transitionStatus('RESOLVED')}>
                     Resolve Dispute
                   </Button>
                 </CardContent>

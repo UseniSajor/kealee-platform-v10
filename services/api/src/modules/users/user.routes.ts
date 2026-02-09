@@ -5,6 +5,7 @@ import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateQuery, validateParams } from '../../middleware/validation.middleware'
 import { updateUserSchema, listUsersQuerySchema } from '../../schemas'
 import { NotFoundError, AuthorizationError } from '../../errors/app.error'
+import { prisma } from '@kealee/database'
 import { RATE_LIMIT_CONFIG } from '../../middleware/rate-limit.middleware'
 import { z } from 'zod'
 
@@ -115,8 +116,13 @@ export async function userRoutes(fastify: FastifyInstance) {
 
         // Users can only update their own profile unless they have admin permissions
         if (user.id !== id) {
-          // TODO: Check if user has admin permission
-          throw new AuthorizationError('You can only update your own profile')
+          // Check if user has admin permission via OrgMember role
+          const adminMembership = await prisma.orgMember.findFirst({
+            where: { userId: user.id, roleKey: { in: ["admin", "super_admin"] } },
+          })
+          if (!adminMembership) {
+            throw new AuthorizationError("You can only update your own profile")
+          }
         }
 
         const updatedUser = await userService.updateUser(id, {

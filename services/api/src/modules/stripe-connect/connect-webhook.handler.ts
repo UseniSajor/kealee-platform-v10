@@ -109,8 +109,35 @@ export class ConnectWebhookHandler {
 
     console.log(`Deauthorized connected account ${connectedAccount.id}`)
 
-    // TODO: Send notification to platform admins
-    // TODO: Notify contractor that their account was disconnected
+    // Notify platform admins about the disconnected account
+    const adminsDeauth = await prisma.orgMember.findMany({
+      where: { roleKey: 'admin' },
+      select: { userId: true },
+    })
+    for (const admin of adminsDeauth) {
+      await prisma.notification.create({
+        data: {
+          userId: admin.userId,
+          type: 'ACCOUNT_DISCONNECTED',
+          title: 'Connected Account Disconnected',
+          message: 'A connected account has been deauthorized by the user.',
+          channels: ['email', 'push'],
+          data: { connectedAccountId: connectedAccount.id, stripeAccountId: account },
+        },
+      })
+    }
+
+    // Notify the contractor
+    await prisma.notification.create({
+      data: {
+        userId: connectedAccount.userId,
+        type: 'ACCOUNT_DISCONNECTED',
+        title: 'Stripe Account Disconnected',
+        message: 'Your Stripe connected account has been disconnected. Please reconnect to continue receiving payouts.',
+        channels: ['email', 'push'],
+        data: { connectedAccountId: connectedAccount.id, stripeAccountId: account },
+      },
+    })
   }
 
   /**
@@ -123,6 +150,7 @@ export class ConnectWebhookHandler {
     // Find our payout record
     const ourPayout = await prisma.payout.findFirst({
       where: { stripePayoutId: payout.id },
+      include: { connectedAccount: true },
     })
 
     if (!ourPayout) {
@@ -143,9 +171,39 @@ export class ConnectWebhookHandler {
 
     console.log(`Payout ${ourPayout.id} marked as PAID`)
 
-    // TODO: Create journal entry for accounting
-    // TODO: Send confirmation email to contractor
-    // TODO: Update milestone status if linked
+        // Create journal entry for accounting
+    const entryNumber = `JE-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`
+    await prisma.journalEntry.create({
+      data: {
+        entryNumber,
+        description: `Payout ${ourPayout.id} paid to contractor via Stripe`,
+        reference: 'PAYOUT_PAID',
+        referenceId: ourPayout.id,
+        entryDate: new Date(),
+        status: 'POSTED',
+        postedAt: new Date(),
+      },
+    })
+
+    // Send confirmation notification to contractor
+    await prisma.notification.create({
+      data: {
+        userId: ourPayout.connectedAccount.userId,
+        type: 'PAYOUT_PAID',
+        title: 'Payout Received',
+        message: `Your payout of ${ourPayout.amount} ${ourPayout.currency} has been deposited.`,
+        channels: ['email', 'push'],
+        data: { payoutId: ourPayout.id, amount: ourPayout.amount.toString(), currency: ourPayout.currency },
+      },
+    })
+
+    // Update milestone status if linked
+    if (ourPayout.milestoneId) {
+      await prisma.milestone.update({
+        where: { id: ourPayout.milestoneId },
+        data: { status: 'PAID' },
+      })
+    }
   }
 
   /**
@@ -158,6 +216,7 @@ export class ConnectWebhookHandler {
     // Find our payout record
     const ourPayout = await prisma.payout.findFirst({
       where: { stripePayoutId: payout.id },
+      include: { connectedAccount: true },
     })
 
     if (!ourPayout) {
@@ -180,9 +239,49 @@ export class ConnectWebhookHandler {
       `Payout ${ourPayout.id} FAILED: ${payout.failure_message}`
     )
 
-    // TODO: Send notification to contractor about failed payout
-    // TODO: Notify platform admins
-    // TODO: Automatically retry payout after X hours
+        // Notify contractor about the failed payout
+    await prisma.notification.create({
+      data: {
+        userId: ourPayout.connectedAccount.userId,
+        type: 'PAYOUT_FAILED',
+        title: 'Payout Failed',
+        message: `Your payout of ${ourPayout.amount} ${ourPayout.currency} has failed: ${payout.failure_message || 'Unknown error'}. We will retry automatically.`,
+        channels: ['email', 'push'],
+        data: { payoutId: ourPayout.id, amount: ourPayout.amount.toString(), failureCode: payout.failure_code || 'unknown' },
+      },
+    })
+
+    // Notify platform admins
+    const failAdmins = await prisma.orgMember.findMany({
+      where: { roleKey: 'admin' },
+      select: { userId: true },
+    })
+    for (const admin of failAdmins) {
+      await prisma.notification.create({
+        data: {
+          userId: admin.userId,
+          type: 'PAYOUT_FAILED',
+          title: 'Contractor Payout Failed',
+          message: `Payout ${ourPayout.id} failed: ${payout.failure_message || 'Unknown error'}`,
+          channels: ['email', 'push'],
+          data: { payoutId: ourPayout.id, connectedAccountId: ourPayout.connectedAccountId, failureCode: payout.failure_code || 'unknown' },
+        },
+      })
+    }
+
+    // Schedule automatic retry after 6 hours
+    await prisma.jobQueue.create({
+      data: {
+        queueName: 'payout-retry',
+        jobId: `retry-payout-${ourPayout.id}-${Date.now()}`,
+        jobName: 'retry-failed-payout',
+        status: 'WAITING',
+        priority: 1,
+        data: { payoutId: ourPayout.id, connectedAccountId: ourPayout.connectedAccountId, amount: ourPayout.amount.toString(), currency: ourPayout.currency, attempt: 1 },
+        delay: 6 * 60 * 60 * 1000,
+        maxAttempts: 3,
+      },
+    })
   }
 
   /**

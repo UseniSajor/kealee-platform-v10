@@ -1,15 +1,24 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-// Mock auth hook - replace with actual implementation
 function useAuth() {
-  // TODO: Implement actual auth check
-  return {
-    isAuthenticated: true,
-    user: { name: 'User', role: 'pm' },
-  }
+  const [isAuth, setIsAuth] = useState(false)
+  const [user, setUser] = useState(null as {name:string;role:string}|null)
+  useEffect(() => {
+    try {
+      const tk = document.cookie.split('; ').find(r=>r.startsWith('sb-access-token='))
+      const t = tk ? tk.split('=')[1] : localStorage.getItem('sb-access-token')
+      if(t){
+        const p=JSON.parse(atob(t.split('.')[1]))
+        setIsAuth(true)
+        setUser({name:p.email||'User',role:p.user_role||p.role||'pm'})
+      }
+    } catch { setIsAuth(false); setUser(null) }
+  }, [])
+  return { isAuthenticated: isAuth, user }
 }
 
 export function InternalNavigation() {

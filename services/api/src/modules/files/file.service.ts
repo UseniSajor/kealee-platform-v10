@@ -232,8 +232,29 @@ class FileService {
 
     // Check access (user must be the uploader or have project access)
     if (file.uploadedBy !== userId) {
-      // TODO: Check if user has access through project membership
-      throw new Error('Access denied')
+      // Check if user has access through project membership
+      const meta = file.metadata as any
+      const projectId = meta?.projectId
+      if (projectId) {
+        const project = await prismaAny.project.findUnique({
+          where: { id: projectId },
+          select: {
+            ownerId: true,
+            pmUserId: true,
+            contracts: { select: { contractorId: true } },
+          },
+        })
+        const isMember = project && (
+          project.ownerId === userId ||
+          project.pmUserId === userId ||
+          project.contracts?.some((c: any) => c.contractorId === userId)
+        )
+        if (!isMember) {
+          throw new Error('Access denied')
+        }
+      } else {
+        throw new Error('Access denied')
+      }
     }
 
     return {

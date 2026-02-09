@@ -170,7 +170,23 @@ export async function paymentRoutes(fastify: FastifyInstance) {
       if (!invoice) {
         return reply.code(404).send({ error: 'Invoice not found' })
       }
-      // TODO: Check user access
+      // Check user is project PM, client, or admin
+      if (invoice.projectId) {
+        const project = await prismaAny.project.findUnique({
+          where: { id: invoice.projectId },
+          select: { ownerId: true, pmUserId: true },
+        })
+        const userRecord = await prismaAny.user.findUnique({
+          where: { id: user.id },
+          select: { role: true },
+        })
+        const isAdmin = userRecord?.role === 'ADMIN'
+        const isOwner = project?.ownerId === user.id
+        const isPM = project?.pmUserId === user.id
+        if (!isAdmin && !isOwner && !isPM) {
+          return reply.code(403).send({ error: 'Access denied' })
+        }
+      }
       return reply.send({ invoice })
     }
   )

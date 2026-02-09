@@ -46,7 +46,14 @@ const contractorUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       // Verify user has contractor role
-      // TODO: Implement proper role checking
+      // Verify user has contractor role via Prisma user query
+      const dbUser = await prismaAny.user.findUnique({
+        where: { id: userId },
+        select: { role: true },
+      })
+      if (!dbUser || dbUser.role !== 'CONTRACTOR') {
+        return reply.code(403).send({ error: 'User does not have CONTRACTOR role' })
+      }
       const userRole: UploadedByRole = 'CONTRACTOR'
 
       const parts = request.parts()

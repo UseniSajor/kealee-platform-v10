@@ -27,6 +27,7 @@ export function ACHVerificationModal({
   const [amount1, setAmount1] = useState('');
   const [amount2, setAmount2] = useState('');
   const [error, setError] = useState('');
+  const [isResending, setIsResending] = useState(false);
 
   if (!isOpen) return null;
 
@@ -64,6 +65,27 @@ export function ACHVerificationModal({
       onClose();
     } catch (err: any) {
       setError(err.message || 'Verification failed. Please check the amounts and try again.');
+    }
+  };
+
+  const handleResendDeposits = async () => {
+    try {
+      setIsResending(true);
+      setError('');
+      const res = await fetch('/api/deposits/resend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentMethodId: paymentMethod.id }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to resend deposits');
+      }
+      alert('Micro-deposits have been resent. Please check your bank account in 1-2 business days.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to resend deposits');
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -211,13 +233,11 @@ export function ACHVerificationModal({
           <div className="text-center">
             <button
               type="button"
-              className="text-sm text-blue-600 hover:underline"
-              onClick={() => {
-                // TODO: Implement resend deposits
-                alert('Resend deposits feature coming soon!');
-              }}
+              className="text-sm text-blue-600 hover:underline disabled:opacity-50"
+              disabled={isResending || isVerifying}
+              onClick={handleResendDeposits}
             >
-              Haven't received deposits? Resend
+              {isResending ? 'Resending...' : "Haven't received deposits? Resend"}
             </button>
           </div>
         </form>

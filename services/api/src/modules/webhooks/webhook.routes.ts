@@ -4,6 +4,7 @@
 
 import {FastifyInstance, FastifyRequest, FastifyReply} from 'fastify';
 import {webhookService} from './webhook.service';
+import {prisma} from '@kealee/database';
 
 export async function webhookRoutes(fastify: FastifyInstance) {
   // POST /api/v1/webhooks - Create webhook
@@ -59,11 +60,16 @@ export async function webhookRoutes(fastify: FastifyInstance) {
       try {
         const {jurisdictionId, organizationId} = request.query as any;
 
-        // TODO: Implement getWebhooks method in webhook service
-        // For now, return empty array
-        const webhooks: any[] = [];
+        const where: any = {};
+        if (jurisdictionId) where.jurisdictionId = jurisdictionId;
+        if (organizationId) where.orgId = organizationId;
 
-        return reply.send({data: webhooks});
+        const webhooks = await prisma.webhook.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+        });
+
+        return reply.send({ data: webhooks });
       } catch (error: any) {
         return reply.status(500).send({error: error.message});
       }
@@ -83,8 +89,11 @@ export async function webhookRoutes(fastify: FastifyInstance) {
       try {
         const {id} = request.params;
 
-        // TODO: Implement deactivateWebhook method in webhook service
-        // For now, return success
+        await prisma.webhook.update({
+          where: { id },
+          data: { isActive: false },
+        });
+
         return reply.status(204).send();
       } catch (error: any) {
         return reply.status(500).send({error: error.message});

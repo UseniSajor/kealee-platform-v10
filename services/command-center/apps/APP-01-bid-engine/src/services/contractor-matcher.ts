@@ -60,12 +60,15 @@ export class ContractorMatcher {
     });
 
     // Score and filter contractors
-    const matches = contractors
-      .map(contractor => this.scoreContractor(contractor as unknown as ContractorProfile & {
+    const matchPromises = contractors.map(contractor =>
+      this.scoreContractor(contractor as unknown as ContractorProfile & {
         contractorProjects: unknown[];
         reviews: unknown[];
         credentials: unknown[];
-      }, criteria))
+      }, criteria)
+    );
+    const scored = await Promise.all(matchPromises);
+    const matches = scored
       .filter((match): match is MatchResult =>
         match !== null && match.score >= 0.4
       )
@@ -88,14 +91,14 @@ export class ContractorMatcher {
   /**
    * Score a single contractor against criteria
    */
-  private scoreContractor(
+  private async scoreContractor(
     contractor: ContractorProfile & {
       contractorProjects: unknown[];
       reviews: unknown[];
       credentials: unknown[];
     },
     criteria: MatchCriteria
-  ): MatchResult | null {
+  ): Promise<MatchResult | null> {
     let score = 0;
     const matchReasons: string[] = [];
 
@@ -204,7 +207,7 @@ export class ContractorMatcher {
       score: score / 100,
       matchReasons,
       distance: Math.round(distance * 10) / 10,
-      availability: true, // TODO: Check against active projects calendar
+      availability: await (async()=>{try{const ac=await prisma.contractorProject.count({where:{contractorId:contractor.id,status:{in:["IN_PROGRESS","SCHEDULED"]}}});return ac<4}catch{return true}})(),
       estimatedResponseRate,
     };
   }

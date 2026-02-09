@@ -557,9 +557,60 @@ async function processTaskQueueJob(job: Job<TaskQueueJob>): Promise<unknown> {
     case 'GET_WORKLOAD':
       return service.getPMWorkload(job.data.pmId);
 
-    case 'REBALANCE_WORKLOADS':
-      // TODO: Implement workload rebalancing
-      return { rebalanced: false };
+    case "REBALANCE_WORKLOADS": {
+      // Workload rebalancing: find overloaded PMs and reassign excess tasks
+      const allPMs = await prisma.user.findMany({
+        where: { role: "PM", status: "ACTIVE" },
+        select: { id: true },
+      });
+
+      if (allPMs.length < 2) {
+        return { rebalanced: false, reason: "Not enough PMs for rebalancing" };
+      }
+
+      const workloads = await Promise.all(
+        allPMs.map(pm => service.getPMWorkload(pm.id))
+      );
+
+      const totalTasks = workloads.reduce((sum, w) => sum + w.activeTaskCount + w.pendingTaskCount, 0);
+      const avgTasks = Math.ceil(totalTasks / workloads.length);
+      const maxThreshold = avgTasks + 3;
+
+      const overloaded = workloads.filter(w => (w.activeTaskCount + w.pendingTaskCount) > maxThreshold);
+      const underUtilized = workloads
+        .filter(w => (w.activeTaskCount + w.pendingTaskCount) < avgTasks)
+        .sort((a, b) => (a.activeTaskCount + a.pendingTaskCount) - (b.activeTaskCount + b.pendingTaskCount));
+
+      let reassigned = 0;
+
+      for (const overPM of overloaded) {
+        const excessCount = (overPM.activeTaskCount + overPM.pendingTaskCount) - avgTasks;
+
+        const excessTasks = await prisma.automationTask.findMany({
+          where: {
+            assignedPmId: overPM.pmId,
+            status: { in: ["PENDING", "ASSIGNED"] },
+          },
+          orderBy: { priority: "desc" },
+          take: excessCount,
+        } as any) as any[];
+
+        for (const task of excessTasks) {
+          const targetPM = underUtilized.find(u => (u.activeTaskCount + u.pendingTaskCount) < avgTasks);
+          if (!targetPM) break;
+
+          await prisma.automationTask.update({
+            where: { id: task.id },
+            data: { assignedPmId: targetPM.pmId },
+          });
+
+          targetPM.pendingTaskCount++;
+          reassigned++;
+        }
+      }
+
+      return { rebalanced: reassigned > 0, tasksReassigned: reassigned };
+    }
 
     default:
       throw new Error(`Unknown job type`);

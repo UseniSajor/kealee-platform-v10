@@ -6,6 +6,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 import { authenticateUser, requireRole, type AuthenticatedRequest } from '../middleware/auth.middleware'
+import { prisma } from '@kealee/database'
 import { ConnectOnboardingService } from '../modules/stripe-connect/connect-onboarding.service'
 import { PayoutService } from '../modules/stripe-connect/payout.service'
 import { ConnectWebhookHandler } from '../modules/stripe-connect/connect-webhook.handler'
@@ -425,11 +426,9 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
       const connectedAccount =
         await ConnectOnboardingService.getConnectedAccount(user.id)
 
-      if (
-        connectedAccount?.id !== payout.connectedAccountId &&
-        // TODO: Check if user is admin
-        false
-      ) {
+      const isAdmin = user.role === 'admin' || user.role === 'super_admin'
+
+      if (connectedAccount?.id !== payout.connectedAccountId && !isAdmin) {
         return reply.code(403).send({ error: 'Access denied' })
       }
 
