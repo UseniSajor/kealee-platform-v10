@@ -1,6 +1,7 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { PWAProvider } from './pwa-provider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -24,6 +25,15 @@ export const metadata: Metadata = {
   authors: [{ name: 'Kealee LLC' }],
   creator: 'Kealee',
   publisher: 'Kealee',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Kealee Pro',
+  },
+  formatDetection: {
+    telephone: true,
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -59,6 +69,15 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: '#1a1a2e',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -66,7 +85,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={inter.className}>{children}</body>
+      <head>
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="mobile-web-app-capable" content="yes" />
+      </head>
+      <body className={`${inter.className} overscroll-none`}>
+        <PWAProvider />
+        {children}
+      </body>
     </html>
   );
 }

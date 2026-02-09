@@ -1,20 +1,25 @@
 /**
  * APP-12: SMART SCHEDULER
  * AI-powered intelligent scheduling and resource optimization
+ * with weather-aware auto-rescheduling and GPS crew tracking.
  * Automation Level: AI-driven
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { Worker, Job } from 'bullmq';
 import { PrismaClient } from '@prisma/client';
-import { createWorker, queues, JOB_OPTIONS, QUEUE_NAMES } from '../../../shared/queue.js';
+import { createWorker, queues, JOB_OPTIONS, QUEUE_NAMES, scheduleRecurringJob } from '../../../shared/queue.js';
 import { getEventBus, EVENT_TYPES } from '../../../shared/events.js';
 import { generateJSON, generateText } from '../../../shared/ai/claude.js';
-import { getWeatherForecast } from '../../../shared/integrations/weather.js';
+import { getDailyForecast, findNextWorkableDay, getWeatherForecast, mapWeatherCode } from '../../../shared/integrations/weather.js';
 import { addWorkingDays, isWorkingDay, formatDate, getWorkingDays } from '../../../shared/utils/date.js';
+import { autonomyEngine } from '../../../shared/autonomy/index.js';
+import { crewTrackingService } from './crew-tracking.js';
+import { createLogger } from '@kealee/observability';
 
 const prisma = new PrismaClient();
 const eventBus = getEventBus('smart-scheduler');
+const logger = createLogger('smart-scheduler');
 
 // ============================================================================
 // TYPES
@@ -107,6 +112,17 @@ interface ResolutionOption {
   description: string;
   impact: { duration: number; cost: number };
   changes: ScheduleChange[];
+}
+
+interface WeatherRisk {
+  scheduleItemId: string;
+  taskName: string;
+  trade: string;
+  date: Date;
+  workabilityScore: number;
+  restrictions: string[];
+  suggestedNewDate: Date | null;
+  weatherCode: number;
 }
 
 // ============================================================================
@@ -420,6 +436,48 @@ ${optimizationPrompt}` as any);
       recommendations.push('Consider rescheduling weather-sensitive tasks');
       recommendations.push('Prepare contingency plans for outdoor work');
       recommendations.push('Monitor weather forecasts daily');
+
+      // ── Autonomy: Auto-reschedule weather-impacted tasks ──
+      for (const impacted of impactedTasks) {
+        try {
+          const result = await autonomyEngine.evaluateAndAct({
+            projectId,
+            category: 'schedule_adjustment',
+            appSource: 'APP-12',
+            actionType: 'weather_reschedule',
+            description: `Auto-reschedule task due to weather: ${impacted.issue}`,
+            confidence: 75,
+            days: 1, // Each weather impact is typically 1 day
+            metadata: {
+              taskId: impacted.taskId,
+              originalDate: impacted.date,
+              weatherIssue: impacted.issue,
+            },
+          });
+
+          if (result.decision === 'AUTO_EXECUTED') {
+            // Actually reschedule the task by 1 working day
+            const task = await prisma.task.findUnique({
+              where: { id: impacted.taskId },
+            } as any);
+
+            if (task) {
+              const newStart = addWorkingDays(impacted.date, 1);
+              await prisma.task.update({
+                where: { id: impacted.taskId },
+                data: {
+                  startDate: newStart,
+                  endDate: addWorkingDays(newStart, (task as any).duration || 1),
+                } as any,
+              });
+              recommendations.push(`Auto-rescheduled task ${impacted.taskId} to ${formatDate(newStart)}`);
+            }
+          }
+        } catch {
+          // Autonomy check failed — keep recommendation for manual action
+        }
+      }
+      // ── End Autonomy ──
     }
 
     return { impactedTasks, recommendations };
@@ -597,6 +655,424 @@ ${optimizationPrompt}` as any);
 
     return rescheduled;
   }
+
+  // ==========================================================================
+  // WEATHER-AWARE SCHEDULING (NEW)
+  // ==========================================================================
+
+  /**
+   * Daily weather check — called by 6 AM cron.
+   * Scans all active projects with coordinates, checks 7-day forecast,
+   * auto-reschedules weather-sensitive ScheduleItems via autonomy engine.
+   */
+  async dailyWeatherCheck(): Promise<{
+    projectsChecked: number;
+    itemsAtRisk: number;
+    autoRescheduled: number;
+    escalated: number;
+  }> {
+    logger.info('Starting daily weather check');
+
+    // Find all active projects with GPS coordinates
+    const projects = await prisma.project.findMany({
+      where: {
+        status: 'ACTIVE',
+        latitude: { not: null },
+        longitude: { not: null },
+      },
+      select: {
+        id: true,
+        name: true,
+        latitude: true,
+        longitude: true,
+        orgId: true,
+        autonomyLevel: true,
+        autonomyRules: true,
+      },
+    } as any);
+
+    let itemsAtRisk = 0;
+    let autoRescheduled = 0;
+    let escalated = 0;
+
+    for (const project of projects) {
+      if (project.latitude == null || project.longitude == null) continue;
+
+      try {
+        const result = await this.checkProjectWeather(project);
+        itemsAtRisk += result.atRisk;
+        autoRescheduled += result.rescheduled;
+        escalated += result.escalated;
+      } catch (err) {
+        logger.error(
+          { err, projectId: project.id },
+          'Weather check failed for project'
+        );
+      }
+    }
+
+    logger.info(
+      { projectsChecked: projects.length, itemsAtRisk, autoRescheduled, escalated },
+      'Daily weather check complete'
+    );
+
+    return {
+      projectsChecked: projects.length,
+      itemsAtRisk,
+      autoRescheduled,
+      escalated,
+    };
+  }
+
+  /**
+   * Check weather for a single project and reschedule as needed.
+   */
+  private async checkProjectWeather(project: {
+    id: string;
+    name?: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    orgId?: string | null;
+    autonomyLevel: number;
+  }): Promise<{ atRisk: number; rescheduled: number; escalated: number }> {
+    if (!project.latitude || !project.longitude) {
+      return { atRisk: 0, rescheduled: 0, escalated: 0 };
+    }
+
+    // Get weather-sensitive schedule items in the next 7 days
+    const now = new Date();
+    const weekFromNow = addWorkingDays(now, 7);
+
+    const scheduleItems = await (prisma as any).scheduleItem.findMany({
+      where: {
+        projectId: project.id,
+        weatherSensitive: true,
+        status: { in: ['PENDING', 'IN_PROGRESS'] },
+        startDate: { gte: now, lte: weekFromNow },
+      },
+      orderBy: { startDate: 'asc' },
+    });
+
+    if (scheduleItems.length === 0) {
+      return { atRisk: 0, rescheduled: 0, escalated: 0 };
+    }
+
+    let atRisk = 0;
+    let rescheduled = 0;
+    let escalatedCount = 0;
+
+    // Get unique trades for batch forecast queries
+    const trades = [...new Set(scheduleItems.map((si: any) => si.trade).filter(Boolean))] as string[];
+
+    // Pre-fetch forecasts per trade
+    const forecastByTrade = new Map<string, Awaited<ReturnType<typeof getDailyForecast>>>();
+    for (const trade of trades) {
+      forecastByTrade.set(
+        trade,
+        await getDailyForecast(project.latitude, project.longitude, 7, trade)
+      );
+    }
+    // Default forecast (no trade)
+    const defaultForecast = await getDailyForecast(project.latitude, project.longitude, 7);
+
+    for (const item of scheduleItems) {
+      const trade = item.trade?.toLowerCase() || '';
+      const forecast = forecastByTrade.get(trade) || defaultForecast;
+      const itemDateStr = new Date(item.startDate).toISOString().split('T')[0];
+
+      const dayForecast = forecast.find(
+        f => f.date.toISOString().split('T')[0] === itemDateStr
+      );
+
+      if (!dayForecast || dayForecast.isWorkable) continue;
+
+      // This item is at risk
+      atRisk++;
+
+      // Calculate days to shift
+      const daysShift = 1; // Start with 1 day shift
+      const confidence = 100 - dayForecast.workabilityScore; // Invert: low workability = high confidence to reschedule
+
+      try {
+        const result = await autonomyEngine.evaluateAndAct({
+          projectId: project.id,
+          category: 'schedule_adjustment',
+          appSource: 'APP-12',
+          actionType: 'weather_reschedule',
+          description: `Weather-based reschedule: ${item.taskName} (${trade || 'general'}) — ${dayForecast.restrictions.join(', ')}`,
+          confidence: Math.min(95, Math.max(50, confidence)),
+          days: daysShift,
+          metadata: {
+            scheduleItemId: item.id,
+            taskName: item.taskName,
+            trade: item.trade,
+            originalDate: item.startDate,
+            workabilityScore: dayForecast.workabilityScore,
+            restrictions: dayForecast.restrictions,
+          },
+        });
+
+        if (result.decision === 'AUTO_EXECUTED') {
+          // Find next workable day
+          const nextWorkable = await findNextWorkableDay(
+            project.latitude,
+            project.longitude,
+            addWorkingDays(new Date(item.startDate), 1),
+            trade || undefined
+          );
+
+          if (nextWorkable) {
+            const newEndDate = addWorkingDays(nextWorkable, item.duration || 1);
+
+            // Update schedule item
+            await (prisma as any).scheduleItem.update({
+              where: { id: item.id },
+              data: {
+                startDate: nextWorkable,
+                endDate: newEndDate,
+              },
+            });
+
+            // Cascade to dependents
+            await this.cascadeDependents(project.id, item.id, newEndDate);
+
+            // Log to WeatherLog
+            await (prisma as any).weatherLog.upsert({
+              where: {
+                projectId_date: {
+                  projectId: project.id,
+                  date: new Date(itemDateStr),
+                },
+              },
+              create: {
+                projectId: project.id,
+                date: new Date(itemDateStr),
+                condition: dayForecast.conditions,
+                temperature: dayForecast.temp.avg,
+                windSpeed: dayForecast.windSpeed,
+                precipitation: dayForecast.precipitation,
+                workable: false,
+                notes: `Auto-rescheduled: ${item.taskName} → ${formatDate(nextWorkable)}`,
+              },
+              update: {
+                notes: `Auto-rescheduled: ${item.taskName} → ${formatDate(nextWorkable)}`,
+              },
+            });
+
+            // Publish event
+            await eventBus.publish(EVENT_TYPES.SCHEDULE_WEATHER_RESCHEDULED, {
+              projectId: project.id,
+              scheduleItemId: item.id,
+              taskName: item.taskName,
+              trade: item.trade,
+              originalDate: item.startDate,
+              newDate: nextWorkable,
+              restrictions: dayForecast.restrictions,
+              autoRescheduled: true,
+            });
+
+            rescheduled++;
+            logger.info(
+              {
+                projectId: project.id,
+                taskName: item.taskName,
+                from: formatDate(new Date(item.startDate)),
+                to: formatDate(nextWorkable),
+              },
+              'Auto-rescheduled weather-impacted task'
+            );
+          }
+        } else {
+          // Escalated — publish alert for PM
+          await eventBus.publish(EVENT_TYPES.SCHEDULE_WEATHER_ALERT, {
+            projectId: project.id,
+            scheduleItemId: item.id,
+            taskName: item.taskName,
+            trade: item.trade,
+            date: item.startDate,
+            workabilityScore: dayForecast.workabilityScore,
+            restrictions: dayForecast.restrictions,
+          });
+          escalatedCount++;
+        }
+      } catch (err) {
+        logger.error(
+          { err, projectId: project.id, itemId: item.id },
+          'Failed to process weather reschedule'
+        );
+      }
+    }
+
+    return { atRisk, rescheduled, escalated: escalatedCount };
+  }
+
+  /**
+   * Cascade schedule changes to dependent items (BFS).
+   * When a schedule item is moved forward, all dependents must shift too.
+   */
+  private async cascadeDependents(
+    projectId: string,
+    movedItemId: string,
+    newEndDate: Date
+  ): Promise<void> {
+    // BFS queue
+    const queue: Array<{ itemId: string; minStartDate: Date }> = [
+      { itemId: movedItemId, minStartDate: newEndDate },
+    ];
+    const visited = new Set<string>();
+
+    while (queue.length > 0) {
+      const { itemId, minStartDate } = queue.shift()!;
+      if (visited.has(itemId)) continue;
+      visited.add(itemId);
+
+      // Find all items that depend on this one
+      const allItems = await (prisma as any).scheduleItem.findMany({
+        where: { projectId },
+        select: { id: true, dependencies: true, startDate: true, endDate: true, duration: true },
+      });
+
+      for (const item of allItems) {
+        if (visited.has(item.id)) continue;
+        if (!item.dependencies?.includes(itemId)) continue;
+
+        // This item depends on the moved item
+        const currentStart = new Date(item.startDate);
+        if (currentStart < minStartDate) {
+          // Need to shift forward
+          const newStart = addWorkingDays(minStartDate, 1);
+          const newEnd = addWorkingDays(newStart, item.duration || 1);
+
+          await (prisma as any).scheduleItem.update({
+            where: { id: item.id },
+            data: { startDate: newStart, endDate: newEnd },
+          });
+
+          // Continue cascading
+          queue.push({ itemId: item.id, minStartDate: newEnd });
+
+          logger.info(
+            { projectId, taskId: item.id, from: formatDate(currentStart), to: formatDate(newStart) },
+            'Cascaded schedule shift to dependent'
+          );
+        }
+      }
+    }
+  }
+
+  /**
+   * Get weather risks for a project — shows at-risk schedule items
+   * with workability scores and suggested reschedule dates.
+   */
+  async getWeatherRisks(projectId: string): Promise<{
+    risks: WeatherRisk[];
+    forecast: Array<{
+      date: string;
+      conditions: string;
+      icon: string;
+      tempHigh: number;
+      tempLow: number;
+      workabilityScore: number;
+      isWorkable: boolean;
+      windSpeed: number;
+      precipProbability: number;
+    }>;
+    summary: string;
+  }> {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { latitude: true, longitude: true },
+    });
+
+    if (!project?.latitude || !project?.longitude) {
+      return {
+        risks: [],
+        forecast: [],
+        summary: 'Project has no GPS coordinates configured.',
+      };
+    }
+
+    // Get 7-day forecast
+    const forecast = await getDailyForecast(project.latitude, project.longitude, 7);
+
+    // Get weather-sensitive schedule items
+    const now = new Date();
+    const weekFromNow = addWorkingDays(now, 7);
+
+    const scheduleItems = await (prisma as any).scheduleItem.findMany({
+      where: {
+        projectId,
+        weatherSensitive: true,
+        status: { in: ['PENDING', 'IN_PROGRESS'] },
+        startDate: { gte: now, lte: weekFromNow },
+      },
+      orderBy: { startDate: 'asc' },
+    });
+
+    const risks: WeatherRisk[] = [];
+
+    for (const item of scheduleItems) {
+      const trade = item.trade?.toLowerCase() || '';
+      // Get trade-specific forecast
+      const tradeForecast = trade
+        ? await getDailyForecast(project.latitude, project.longitude, 7, trade)
+        : forecast;
+
+      const itemDateStr = new Date(item.startDate).toISOString().split('T')[0];
+      const dayForecast = tradeForecast.find(
+        f => f.date.toISOString().split('T')[0] === itemDateStr
+      );
+
+      if (dayForecast && !dayForecast.isWorkable) {
+        // Find suggested new date
+        const suggestedDate = await findNextWorkableDay(
+          project.latitude,
+          project.longitude,
+          addWorkingDays(new Date(item.startDate), 1),
+          trade || undefined
+        );
+
+        risks.push({
+          scheduleItemId: item.id,
+          taskName: item.taskName,
+          trade: item.trade || 'general',
+          date: item.startDate,
+          workabilityScore: dayForecast.workabilityScore,
+          restrictions: dayForecast.restrictions,
+          suggestedNewDate: suggestedDate,
+          weatherCode: dayForecast.weatherCode,
+        });
+      }
+    }
+
+    // Build forecast summary for UI
+    const forecastData = forecast.map(f => {
+      const wInfo = mapWeatherCode(f.weatherCode);
+      return {
+        date: f.date.toISOString().split('T')[0],
+        conditions: wInfo.description,
+        icon: wInfo.icon,
+        tempHigh: f.temp.max,
+        tempLow: f.temp.min,
+        workabilityScore: f.workabilityScore,
+        isWorkable: f.isWorkable,
+        windSpeed: f.windSpeed,
+        precipProbability: Math.round(f.precipitationProbability * 100),
+      };
+    });
+
+    const atRiskCount = risks.length;
+    let summary: string;
+    if (atRiskCount === 0) {
+      summary = 'All weather-sensitive tasks have favorable conditions this week.';
+    } else if (atRiskCount <= 2) {
+      summary = `${atRiskCount} task${atRiskCount > 1 ? 's' : ''} at risk due to weather. Consider rescheduling.`;
+    } else {
+      summary = `${atRiskCount} tasks at risk due to weather this week. Schedule adjustments recommended.`;
+    }
+
+    return { risks, forecast: forecastData, summary };
+  }
 }
 
 const schedulerService = new SmartSchedulerService();
@@ -630,6 +1106,22 @@ async function processSchedulerJob(job: Job): Promise<any> {
 
     case 'GENERATE_LOOKAHEAD':
       return await generateLookahead(data.projectId, data.weeks);
+
+    // ── New weather + crew job types ──
+    case 'DAILY_WEATHER_CHECK':
+      return await schedulerService.dailyWeatherCheck();
+
+    case 'GET_WEATHER_RISKS':
+      return await schedulerService.getWeatherRisks(data.projectId);
+
+    case 'CREW_CHECK_IN':
+      return await crewTrackingService.recordCheckIn(data);
+
+    case 'GET_ON_SITE_CREW':
+      return await crewTrackingService.getOnSiteCrew(data.projectId);
+
+    case 'GET_DAILY_CREW_REPORT':
+      return await crewTrackingService.getDailyCrewReport(data.projectId, data.date ? new Date(data.date) : undefined);
 
     default:
       throw new Error(`Unknown job type: ${type}`);
@@ -690,6 +1182,31 @@ export const smartSchedulerWorker = createWorker(
 );
 
 // ============================================================================
+// CRON JOBS
+// ============================================================================
+
+/**
+ * Register recurring weather check — runs daily at 6 AM Pacific.
+ */
+async function registerCronJobs() {
+  try {
+    await scheduleRecurringJob(
+      'SMART_SCHEDULER',
+      'daily-weather-check',
+      { type: 'DAILY_WEATHER_CHECK' },
+      '0 6 * * *',
+      'America/Los_Angeles'
+    );
+    logger.info('Registered daily weather check cron (6 AM PT)');
+  } catch (err) {
+    logger.error({ err }, 'Failed to register weather check cron');
+  }
+}
+
+// Register on module load
+registerCronJobs();
+
+// ============================================================================
 // ROUTES
 // ============================================================================
 
@@ -734,7 +1251,7 @@ export async function smartSchedulerRoutes(fastify: FastifyInstance) {
   });
 
   /**
-   * Check weather impact
+   * Check weather impact (legacy endpoint)
    */
   fastify.post('/projects/:projectId/weather-impact', async (request: FastifyRequest, reply: FastifyReply) => {
     const { projectId } = request.params as { projectId: string };
@@ -742,6 +1259,39 @@ export async function smartSchedulerRoutes(fastify: FastifyInstance) {
 
     const impact = await schedulerService.checkWeatherImpact(projectId, { lat, lon });
     return impact;
+  });
+
+  /**
+   * Get weather risks for a project — 7-day forecast with at-risk tasks
+   */
+  fastify.get('/projects/:projectId/weather-risks', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { projectId } = request.params as { projectId: string };
+
+    const risks = await schedulerService.getWeatherRisks(projectId);
+    return risks;
+  });
+
+  /**
+   * Trigger manual weather check for a specific project
+   */
+  fastify.post('/projects/:projectId/weather-check', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { projectId } = request.params as { projectId: string };
+
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { id: true, name: true, latitude: true, longitude: true, orgId: true, autonomyLevel: true },
+    });
+
+    if (!project) {
+      return reply.code(404).send({ error: 'Project not found' });
+    }
+
+    if (!project.latitude || !project.longitude) {
+      return reply.code(400).send({ error: 'Project has no GPS coordinates' });
+    }
+
+    const result = await (schedulerService as any).checkProjectWeather(project);
+    return result;
   });
 
   /**
@@ -790,6 +1340,57 @@ export async function smartSchedulerRoutes(fastify: FastifyInstance) {
 
     const lookahead = await generateLookahead(projectId, parseInt(weeks));
     return lookahead;
+  });
+
+  // ──────────────────────────────────────────────────────────────
+  // CREW TRACKING ROUTES
+  // ──────────────────────────────────────────────────────────────
+
+  /**
+   * Record crew check-in or check-out
+   */
+  fastify.post('/projects/:projectId/crew/check-in', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { projectId } = request.params as { projectId: string };
+    const body = request.body as {
+      userId: string;
+      type: 'ARRIVE' | 'DEPART';
+      latitude: number;
+      longitude: number;
+      notes?: string;
+      photo?: string;
+    };
+
+    const result = await crewTrackingService.recordCheckIn({
+      projectId,
+      ...body,
+    });
+
+    return result;
+  });
+
+  /**
+   * Get crew members currently on site
+   */
+  fastify.get('/projects/:projectId/crew/on-site', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { projectId } = request.params as { projectId: string };
+
+    const crew = await crewTrackingService.getOnSiteCrew(projectId);
+    return { onSite: crew, count: crew.length };
+  });
+
+  /**
+   * Get daily crew report
+   */
+  fastify.get('/projects/:projectId/crew/daily-report', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { projectId } = request.params as { projectId: string };
+    const { date } = request.query as { date?: string };
+
+    const report = await crewTrackingService.getDailyCrewReport(
+      projectId,
+      date ? new Date(date) : undefined
+    );
+
+    return report;
   });
 
   /**

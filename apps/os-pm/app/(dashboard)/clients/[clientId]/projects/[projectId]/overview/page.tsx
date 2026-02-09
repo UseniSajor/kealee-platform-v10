@@ -2,7 +2,6 @@ import Link from "next/link"
 import {
   Activity,
   CalendarClock,
-  CloudSun,
   FileCheck2,
   Gauge,
   HardHat,
@@ -12,6 +11,8 @@ import {
 
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
+import { WeatherForecastBar } from "@kealee/ui/components/scheduling/WeatherForecastBar"
+import { CrewStatus } from "@kealee/ui/components/scheduling/CrewStatus"
 import { cn } from "@/lib/utils"
 
 type Metric = { label: string; value: string; helper?: string; icon: React.ComponentType<{ className?: string }> }
@@ -204,37 +205,9 @@ export default async function ProjectOverviewPage({
         </div>
 
         <div className="space-y-6">
-          <Card className="py-0">
-            <CardHeader>
-              <CardTitle className="text-base">Weather forecast</CardTitle>
-            </CardHeader>
-            <CardContent className="pb-4 space-y-3">
-              <div className="flex items-start gap-3 rounded-xl border bg-white p-4">
-                <div className="rounded-lg border bg-sky-50 p-2 text-sky-700">
-                  <CloudSun className="h-4 w-4" />
-                </div>
-                <div className="min-w-0">
-                  <div className="font-medium text-neutral-900">API integration placeholder</div>
-                  <div className="text-sm text-neutral-600 mt-1">
-                    Connect a weather provider (e.g. OpenWeather) once the project has a site address / coordinates.
-                  </div>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-center">
-                {[
-                  { day: "Thu", hi: "72°", lo: "58°" },
-                  { day: "Fri", hi: "70°", lo: "56°" },
-                  { day: "Sat", hi: "68°", lo: "55°" },
-                ].map((d) => (
-                  <div key={d.day} className="rounded-xl border bg-white p-3">
-                    <div className="text-sm font-medium text-neutral-900">{d.day}</div>
-                    <div className="text-sm text-neutral-700 mt-1">{d.hi}</div>
-                    <div className="text-xs text-neutral-500">{d.lo}</div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <WeatherForecastBar projectId={projectId} />
+
+          <CrewStatus projectId={projectId} />
 
           <Card className="py-0">
             <CardHeader>

@@ -19,6 +19,7 @@
   "dependencies": {
     "@kealee/database": "workspace:*",
     "@prisma/client": "^5.22.0",
+    "@anthropic-ai/sdk": "^0.39.0",
     "decimal.js": "^10.4.3"
   },
   "devDependencies": {

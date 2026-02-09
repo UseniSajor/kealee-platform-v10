@@ -6,6 +6,9 @@
 import { EventEmitter } from 'events';
 import { Redis } from 'ioredis';
 import { v4 as uuid } from 'uuid';
+import { getTraceId, createLogger } from '@kealee/observability';
+
+const logger = createLogger('event-bus');
 
 // Event type definitions
 export const EVENT_TYPES = {
@@ -93,6 +96,24 @@ export const EVENT_TYPES = {
   QA_ISSUE_DETECTED: 'kealee.ai.qa_issue_detected',
   RECOMMENDATION_GENERATED: 'kealee.ai.recommendation_generated',
   INSIGHT_GENERATED: 'kealee.ai.insight_generated',
+
+  // Autonomous Action events
+  AUTONOMOUS_ACTION_EXECUTED: 'kealee.autonomy.action_executed',
+  AUTONOMOUS_ACTION_ESCALATED: 'kealee.autonomy.action_escalated',
+  AUTONOMOUS_ACTION_REVERTED: 'kealee.autonomy.action_reverted',
+  AUTONOMOUS_ACTION_REVIEWED: 'kealee.autonomy.action_reviewed',
+
+  // Schedule Weather events (APP-12)
+  SCHEDULE_WEATHER_RESCHEDULED: 'kealee.schedule.weather_rescheduled',
+  SCHEDULE_WEATHER_ALERT: 'kealee.schedule.weather_alert',
+
+  // Crew Tracking events (APP-12)
+  CREW_ARRIVED: 'kealee.crew.arrived',
+  CREW_DEPARTED: 'kealee.crew.departed',
+
+  // Contractor Scoring events
+  CONTRACTOR_SCORE_UPDATED: 'kealee.scoring.contractor_updated',
+  CONTRACTOR_SCORE_RECALCULATED: 'kealee.scoring.contractor_recalculated',
 } as const;
 
 export type EventType = typeof EVENT_TYPES[keyof typeof EVENT_TYPES];
@@ -132,13 +153,15 @@ export class EventBus extends EventEmitter {
   }
 
   private setupSubscriber() {
+    const busLogger = logger.child({ source: this.source });
+
     this.subscriber.subscribe(this.channel, (err) => {
       if (err) {
-        console.error('[EventBus] Subscribe error:', err);
+        busLogger.error({ err }, 'Subscribe error');
         return;
       }
       this.isConnected = true;
-      console.log(`[EventBus] Connected - source: ${this.source}`);
+      busLogger.info('Connected to event bus');
     });
 
     this.subscriber.on('message', async (channel, message) => {
@@ -152,14 +175,15 @@ export class EventBus extends EventEmitter {
         this.emit('*', event);
 
       } catch (error) {
-        console.error('[EventBus] Parse error:', error);
+        busLogger.error({ err: error }, 'Event parse error');
       }
     });
   }
 
   private setupErrorHandlers() {
-    this.publisher.on('error', (err) => console.error('[EventBus] Publisher error:', err));
-    this.subscriber.on('error', (err) => console.error('[EventBus] Subscriber error:', err));
+    const busLogger = logger.child({ source: this.source });
+    this.publisher.on('error', (err) => busLogger.error({ err }, 'Publisher error'));
+    this.subscriber.on('error', (err) => busLogger.error({ err }, 'Subscriber error'));
   }
 
   /**
@@ -170,12 +194,15 @@ export class EventBus extends EventEmitter {
     data: T,
     options: { correlationId?: string; metadata?: Record<string, unknown> } = {}
   ): Promise<string> {
+    // Auto-populate correlationId from active OTel trace if not explicitly provided
+    const correlationId = options.correlationId || getTraceId();
+
     const event: KealeeEvent<T> = {
       id: uuid(),
       type,
       source: this.source,
       timestamp: new Date().toISOString(),
-      correlationId: options.correlationId,
+      correlationId,
       data,
       metadata: options.metadata,
     };
@@ -248,7 +275,7 @@ export class EventBus extends EventEmitter {
     await this.publisher.quit();
     await this.subscriber.quit();
     this.isConnected = false;
-    console.log(`[EventBus] Disconnected - source: ${this.source}`);
+    logger.info({ source: this.source }, 'Disconnected from event bus');
   }
 }
 

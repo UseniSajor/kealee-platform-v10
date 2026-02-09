@@ -1,10 +1,29 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Providers } from './providers'
+import { PWAProvider } from './pwa-provider'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'OS PM - Project Management',
-  description: 'Project Management Dashboard',
+  title: 'Kealee PM - Project Management',
+  description: 'Construction project management dashboard with AI-powered tools',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Kealee PM',
+  },
+  formatDetection: {
+    telephone: true,
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#1a1a2e',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({
@@ -14,7 +33,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <head>
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="mobile-web-app-capable" content="yes" />
+      </head>
+      <body className="overscroll-none">
+        <PWAProvider />
         <Providers>
           {children}
         </Providers>

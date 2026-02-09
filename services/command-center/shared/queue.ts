@@ -5,6 +5,9 @@
 
 import { Queue, Worker, Job, QueueEvents } from 'bullmq';
 import { Redis } from 'ioredis';
+import { getTraceId, withSpan, createLogger } from '@kealee/observability';
+
+const logger = createLogger('queue-infrastructure');
 
 // Redis connection factory
 const createRedisConnection = () => new Redis(process.env.REDIS_URL!, {
@@ -98,23 +101,43 @@ export function createWorker<T = unknown>(
   } = {}
 ): Worker<T> {
   const { concurrency = 5, limiter } = options;
+  const workerLogger = logger.child({ queue: queueName });
 
-  const worker = new Worker(queueName, processor, {
+  // Wrap processor with tracing — each job gets its own span
+  const tracedProcessor = async (job: Job<T>) => {
+    const jobData = job.data as any;
+    const traceId = jobData?._traceId;
+
+    return withSpan(
+      `worker.${queueName}.${job.name}`,
+      async (span) => {
+        if (traceId) span.setAttribute('kealee.parent_trace_id', traceId);
+        span.setAttribute('kealee.job_id', job.id || 'unknown');
+        span.setAttribute('kealee.job_name', job.name);
+        span.setAttribute('kealee.queue', queueName);
+
+        return processor(job);
+      },
+      { 'kealee.queue': queueName, 'kealee.job_name': job.name },
+    );
+  };
+
+  const worker = new Worker(queueName, tracedProcessor, {
     connection: createRedisConnection(),
     concurrency,
     limiter: limiter ?? { max: 100, duration: 60000 },
   });
 
   worker.on('completed', (job) => {
-    console.log(`[${queueName}] Job ${job.id} completed`);
+    workerLogger.info({ jobId: job.id, jobName: job.name }, 'Job completed');
   });
 
   worker.on('failed', (job, err) => {
-    console.error(`[${queueName}] Job ${job?.id} failed:`, err.message);
+    workerLogger.error({ jobId: job?.id, jobName: job?.name, err: err.message }, 'Job failed');
   });
 
   worker.on('error', (err) => {
-    console.error(`[${queueName}] Worker error:`, err);
+    workerLogger.error({ err }, 'Worker error');
   });
 
   return worker;
@@ -127,7 +150,13 @@ export async function addJob<T>(
   data: T,
   options: typeof JOB_OPTIONS[keyof typeof JOB_OPTIONS] = JOB_OPTIONS.DEFAULT
 ): Promise<Job<T>> {
-  return queues[queueKey].add(jobName, data, options);
+  // Inject traceId into job data for cross-boundary trace propagation
+  const traceId = getTraceId();
+  const enrichedData = traceId
+    ? { ...data, _traceId: traceId } as T
+    : data;
+
+  return queues[queueKey].add(jobName, enrichedData, options);
 }
 
 // Schedule recurring job
@@ -171,7 +200,7 @@ export async function getAllQueueMetrics() {
 
 // Graceful shutdown
 export async function shutdownQueues(): Promise<void> {
-  console.log('Shutting down queues...');
+  logger.info('Shutting down queues...');
 
   await Promise.all([
     ...Object.values(queues).map(q => q.close()),
@@ -179,5 +208,5 @@ export async function shutdownQueues(): Promise<void> {
   ]);
 
   await connection.quit();
-  console.log('Queues shutdown complete');
+  logger.info('Queues shutdown complete');
 }

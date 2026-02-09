@@ -1,5 +1,6 @@
 import { prismaAny } from '../../utils/prisma-helper'
 import { AuthorizationError, NotFoundError } from '../../errors/app.error'
+import { auditService } from '../audit/audit.service'
 
 export const contractService = {
   async createContract(data: {
@@ -69,10 +70,12 @@ export const contractService = {
       throw new AuthorizationError('Not authorized to update this contract')
     }
 
-    return prismaAny.contractAgreement.update({
+    const updated = await prismaAny.contractAgreement.update({
       where: { id },
       data,
     })
+    auditService.log({ userId, action: 'UPDATE', entityType: 'CONTRACT', entityId: id, description: 'Updated contract', category: 'COMPLIANCE' });
+    return updated
   },
 
   async addMilestone(id: string, userId: string, data: {

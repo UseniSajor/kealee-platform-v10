@@ -9,3 +9,15 @@ export type { SuggestedPriceResult, BidValidationResult, AssemblyLibraryQuery } 
 
 export { PROJECT_TYPE_ASSEMBLIES, getProjectTypes, getAssembliesForProjectType } from './project-type-mappings'
 export type { AssemblyMapping, ProjectTypeConfig } from './project-type-mappings'
+
+export { MARKETPLACE_ASSEMBLIES, seedAssemblyLibrary } from './seed-assemblies'
+
+export { ScopeAnalyzer } from './scope-analyzer'
+export type {
+  ScopeAnalysisInput,
+  ScopeAnalysisResult,
+  ScopeLineItem,
+  ScopeAssumption,
+  ClarifyingQuestion,
+  RefinementInput,
+} from './scope-analyzer'

@@ -6,6 +6,13 @@
 import { PrismaClient, EstimateType, EstimateStatus, LineItemType } from '@prisma/client';
 import { v4 as uuid } from 'uuid';
 import Decimal from 'decimal.js';
+import {
+  notifyEstimateCreated,
+  notifyEstimateUpdated,
+  notifyEstimateStatusChanged,
+  notifyEstimateLocked,
+  notifyEstimateUnlocked,
+} from '@kealee/realtime';
 
 const prisma = new PrismaClient();
 
@@ -146,7 +153,19 @@ export class EstimateBuilder {
       },
     });
 
-    return this.mapToEstimate(estimate);
+    const mapped = this.mapToEstimate(estimate);
+
+    // Broadcast real-time event (fire-and-forget)
+    notifyEstimateCreated({
+      estimateId: mapped.id,
+      projectId: mapped.projectId,
+      organizationId: mapped.organizationId,
+      name: mapped.name,
+      status: mapped.status,
+      totalCost: mapped.totals.grandTotal,
+    }).catch((err: unknown) => console.error('[Realtime] estimate.created broadcast failed:', err));
+
+    return mapped;
   }
 
   /**
@@ -240,7 +259,31 @@ export class EstimateBuilder {
       },
     });
 
-    return this.mapToEstimate(estimate);
+    const mapped = this.mapToEstimate(estimate);
+
+    // Broadcast real-time event (fire-and-forget)
+    if (updates.status && updates.status !== existing.status) {
+      notifyEstimateStatusChanged({
+        estimateId: mapped.id,
+        projectId: mapped.projectId,
+        organizationId: mapped.organizationId,
+        name: mapped.name,
+        status: mapped.status,
+        previousStatus: existing.status,
+        totalCost: mapped.totals.grandTotal,
+      }).catch((err: unknown) => console.error('[Realtime] estimate.status_changed broadcast failed:', err));
+    } else {
+      notifyEstimateUpdated({
+        estimateId: mapped.id,
+        projectId: mapped.projectId,
+        organizationId: mapped.organizationId,
+        name: mapped.name,
+        status: mapped.status,
+        totalCost: mapped.totals.grandTotal,
+      }).catch((err: unknown) => console.error('[Realtime] estimate.updated broadcast failed:', err));
+    }
+
+    return mapped;
   }
 
   /**
@@ -388,7 +431,18 @@ export class EstimateBuilder {
       },
     });
 
-    return this.mapToEstimate(estimate);
+    const lockedMapped = this.mapToEstimate(estimate);
+
+    notifyEstimateLocked({
+      estimateId: lockedMapped.id,
+      projectId: lockedMapped.projectId,
+      organizationId: lockedMapped.organizationId,
+      name: lockedMapped.name,
+      status: lockedMapped.status,
+      updatedBy: userId,
+    }, userId).catch((err: unknown) => console.error('[Realtime] estimate.locked broadcast failed:', err));
+
+    return lockedMapped;
   }
 
   /**
@@ -418,7 +472,17 @@ export class EstimateBuilder {
       },
     });
 
-    return this.mapToEstimate(estimate);
+    const unlockedMapped = this.mapToEstimate(estimate);
+
+    notifyEstimateUnlocked({
+      estimateId: unlockedMapped.id,
+      projectId: unlockedMapped.projectId,
+      organizationId: unlockedMapped.organizationId,
+      name: unlockedMapped.name,
+      status: unlockedMapped.status,
+    }).catch((err: unknown) => console.error('[Realtime] estimate.unlocked broadcast failed:', err));
+
+    return unlockedMapped;
   }
 
   /**

@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "@kealee/database": "workspace:*",
+    "@kealee/realtime": "workspace:*",
     "@prisma/client": "^5.22.0",
     "bullmq": "^5.12.12",
     "decimal.js": "^10.4.3",

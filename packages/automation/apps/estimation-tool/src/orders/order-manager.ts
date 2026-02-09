@@ -8,6 +8,11 @@
 
 import { PrismaClient, Estimate, EstimateStatus, EstimateType, Prisma } from '@prisma/client';
 import { v4 as uuid } from 'uuid';
+import {
+  notifyOrderCreated,
+  notifyOrderAssigned,
+  notifyOrderCompleted,
+} from '@kealee/realtime';
 
 const prisma = new PrismaClient();
 
@@ -267,7 +272,23 @@ export class OrderManager {
       },
     });
 
-    return this.mapEstimateToOrder(estimate);
+    const order = this.mapEstimateToOrder(estimate);
+
+    // Broadcast order created event
+    notifyOrderCreated({
+      orderId: order.id,
+      projectId: order.projectId,
+      organizationId: order.organizationId,
+      title: order.title,
+      type: order.type,
+      status: order.status,
+      priority: order.priority,
+      assignedTo: order.assignedTo,
+    }, input.createdBy).catch((err: unknown) =>
+      console.error('[Realtime] order.created broadcast failed:', err)
+    );
+
+    return order;
   }
 
   /**
@@ -529,7 +550,23 @@ export class OrderManager {
       },
     });
 
-    return this.mapEstimateToOrder(estimate);
+    const assignedOrder = this.mapEstimateToOrder(estimate);
+
+    // Broadcast order assigned event
+    notifyOrderAssigned({
+      orderId: assignedOrder.id,
+      projectId: assignedOrder.projectId,
+      organizationId: assignedOrder.organizationId,
+      title: assignedOrder.title,
+      type: assignedOrder.type,
+      status: assignedOrder.status,
+      assignedTo,
+      assignedTeam: options?.team,
+    }, assignedTo).catch((err: unknown) =>
+      console.error('[Realtime] order.assigned broadcast failed:', err)
+    );
+
+    return assignedOrder;
   }
 
   /**
@@ -614,7 +651,21 @@ export class OrderManager {
       },
     });
 
-    return this.mapEstimateToOrder(estimate);
+    const completedOrder = this.mapEstimateToOrder(estimate);
+
+    // Broadcast order completed event
+    notifyOrderCompleted({
+      orderId: completedOrder.id,
+      projectId: completedOrder.projectId,
+      organizationId: completedOrder.organizationId,
+      title: completedOrder.title,
+      type: completedOrder.type,
+      status: completedOrder.status,
+    }).catch((err: unknown) =>
+      console.error('[Realtime] order.completed broadcast failed:', err)
+    );
+
+    return completedOrder;
   }
 
   /**

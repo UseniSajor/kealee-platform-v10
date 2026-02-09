@@ -1,9 +1,11 @@
 import type { LucideIcon } from "lucide-react"
 import {
+  BarChart3,
   FileText,
   FolderKanban,
   Image,
   LayoutDashboard,
+  MapPin,
   MessageSquare,
   Timer,
   Users,
@@ -28,6 +30,8 @@ export const pmNavItems: PmNavItem[] = [
   { href: "/documents", label: "Documents", icon: FileText, match: "startsWith" },
   { href: "/photos", label: "Photos", icon: Image, match: "startsWith" },
   { href: "/communication", label: "Communication", icon: MessageSquare, match: "startsWith" },
+  { href: "/field-status", label: "Field Status", icon: MapPin, match: "startsWith" },
+  { href: "/analytics", label: "Analytics", icon: BarChart3, match: "startsWith" },
   { href: "/clients/demo-client/projects/demo-project/overview", label: "Project Overview", icon: FolderKanban },
   { href: "/clients/demo-client/projects/demo-project/timeline", label: "Project Timeline", icon: FolderKanban },
   { href: "/clients/demo-client/projects/demo-project/budget", label: "Project Budget", icon: FolderKanban },

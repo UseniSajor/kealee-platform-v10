@@ -16,6 +16,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
+import { cacheMiddleware, CACHE_TTL } from '../../middleware/cache.middleware'
 import { prismaAny } from '../../utils/prisma-helper'
 import { EstimatingService } from '@kealee/estimating'
 
@@ -171,7 +172,13 @@ export async function marketplaceEstimatingRoutes(fastify: FastifyInstance) {
   // ─── GET /assemblies ──────────────────────────────────────────────
   fastify.get(
     '/assemblies',
-    { preHandler: [validateQuery(assemblyQuerySchema)] },
+    { preHandler: [
+      cacheMiddleware({
+        ttl: CACHE_TTL.ASSEMBLY_LIBRARY,
+        key: (req) => `assemblies:${JSON.stringify(req.query)}`,
+      }),
+      validateQuery(assemblyQuerySchema),
+    ] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const query = request.query as z.infer<typeof assemblyQuerySchema>
 
@@ -195,7 +202,13 @@ export async function marketplaceEstimatingRoutes(fastify: FastifyInstance) {
   // ─── GET /assemblies/:code ────────────────────────────────────────
   fastify.get(
     '/assemblies/:code',
-    { preHandler: [validateParams(z.object({ code: z.string().min(1) }))] },
+    { preHandler: [
+      cacheMiddleware({
+        ttl: CACHE_TTL.ASSEMBLY_LIBRARY,
+        key: (req) => `assembly:${(req.params as any).code}`,
+      }),
+      validateParams(z.object({ code: z.string().min(1) })),
+    ] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { code } = request.params as { code: string }
 

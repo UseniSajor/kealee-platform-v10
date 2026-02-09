@@ -1,15 +1,21 @@
 /**
  * KEALEE COMMAND CENTER - WEATHER INTEGRATION
- * OpenWeatherMap API for weather-aware scheduling
+ * Open-Meteo API for weather-aware scheduling (free, no API key required)
  */
 
 import axios from 'axios';
 
 const WEATHER_API = axios.create({
-  baseURL: 'https://api.openweathermap.org/data/2.5',
+  baseURL: 'https://api.open-meteo.com/v1',
 });
 
-const API_KEY = process.env.OPENWEATHER_API_KEY!;
+// Common query params for imperial units
+const UNIT_PARAMS = {
+  temperature_unit: 'fahrenheit',
+  wind_speed_unit: 'mph',
+  precipitation_unit: 'inch',
+  timezone: 'auto',
+};
 
 export interface WeatherConditions {
   temp: number;
@@ -35,6 +41,7 @@ export interface DailyForecast {
   isWorkable: boolean;
   workabilityScore: number;
   restrictions: string[];
+  weatherCode: number;
 }
 
 export interface HourlyForecast {
@@ -47,7 +54,68 @@ export interface HourlyForecast {
   isWorkable: boolean;
 }
 
-// Work conditions thresholds
+// ============================================================================
+// WMO WEATHER CODE MAPPING
+// ============================================================================
+
+/** Map WMO weather codes to human-readable conditions and icons */
+function mapWeatherCode(code: number): { description: string; icon: string; conditions: string } {
+  const mapping: Record<number, { description: string; icon: string; conditions: string }> = {
+    0: { description: 'Clear sky', icon: '☀️', conditions: 'Clear' },
+    1: { description: 'Mainly clear', icon: '🌤️', conditions: 'Clear' },
+    2: { description: 'Partly cloudy', icon: '⛅', conditions: 'Clouds' },
+    3: { description: 'Overcast', icon: '☁️', conditions: 'Clouds' },
+    45: { description: 'Fog', icon: '🌫️', conditions: 'Fog' },
+    48: { description: 'Depositing rime fog', icon: '🌫️', conditions: 'Fog' },
+    51: { description: 'Light drizzle', icon: '🌦️', conditions: 'Drizzle' },
+    53: { description: 'Moderate drizzle', icon: '🌦️', conditions: 'Drizzle' },
+    55: { description: 'Dense drizzle', icon: '🌧️', conditions: 'Drizzle' },
+    56: { description: 'Freezing drizzle', icon: '🌧️', conditions: 'Drizzle' },
+    57: { description: 'Dense freezing drizzle', icon: '🌧️', conditions: 'Drizzle' },
+    61: { description: 'Slight rain', icon: '🌦️', conditions: 'Rain' },
+    63: { description: 'Moderate rain', icon: '🌧️', conditions: 'Rain' },
+    65: { description: 'Heavy rain', icon: '🌧️', conditions: 'Rain' },
+    66: { description: 'Freezing rain', icon: '🌧️', conditions: 'Rain' },
+    67: { description: 'Heavy freezing rain', icon: '🌧️', conditions: 'Rain' },
+    71: { description: 'Slight snow', icon: '🌨️', conditions: 'Snow' },
+    73: { description: 'Moderate snow', icon: '🌨️', conditions: 'Snow' },
+    75: { description: 'Heavy snow', icon: '❄️', conditions: 'Snow' },
+    77: { description: 'Snow grains', icon: '❄️', conditions: 'Snow' },
+    80: { description: 'Slight rain showers', icon: '🌦️', conditions: 'Rain' },
+    81: { description: 'Moderate rain showers', icon: '🌧️', conditions: 'Rain' },
+    82: { description: 'Violent rain showers', icon: '⛈️', conditions: 'Rain' },
+    85: { description: 'Slight snow showers', icon: '🌨️', conditions: 'Snow' },
+    86: { description: 'Heavy snow showers', icon: '❄️', conditions: 'Snow' },
+    95: { description: 'Thunderstorm', icon: '⛈️', conditions: 'Thunderstorm' },
+    96: { description: 'Thunderstorm with hail', icon: '⛈️', conditions: 'Thunderstorm' },
+    99: { description: 'Thunderstorm with heavy hail', icon: '⛈️', conditions: 'Thunderstorm' },
+  };
+
+  return mapping[code] || { description: 'Unknown', icon: '❓', conditions: 'Unknown' };
+}
+
+/**
+ * Derive precipitation probability from weather code (for current weather
+ * where Open-Meteo doesn't provide a probability field).
+ */
+function precipProbFromCode(code: number): number {
+  if (code === 0 || code === 1) return 0;
+  if (code === 2 || code === 3) return 0.05;
+  if (code >= 45 && code <= 48) return 0.1; // Fog
+  if (code >= 51 && code <= 57) return 0.5; // Drizzle
+  if (code >= 61 && code <= 67) return 0.7; // Rain
+  if (code >= 71 && code <= 77) return 0.7; // Snow
+  if (code >= 80 && code <= 82) return 0.6; // Rain showers
+  if (code >= 85 && code <= 86) return 0.6; // Snow showers
+  if (code >= 95) return 0.8; // Thunderstorm
+  return 0.2;
+}
+
+// ============================================================================
+// WORK THRESHOLDS
+// ============================================================================
+
+// Default work conditions thresholds
 const WORK_THRESHOLDS = {
   minTemp: 32,           // °F - below freezing
   maxTemp: 100,          // °F - extreme heat
@@ -56,17 +124,32 @@ const WORK_THRESHOLDS = {
   minVisibility: 1,      // miles
 };
 
-// Trade-specific thresholds
+// Trade-specific thresholds — override defaults per trade
 const TRADE_THRESHOLDS: Record<string, Partial<typeof WORK_THRESHOLDS>> = {
+  // Exterior / height work — most weather-sensitive
   roofing: { maxWind: 15, maxPrecipitation: 0.1 },
   concrete: { minTemp: 40, maxTemp: 90, maxPrecipitation: 0.2 },
   painting: { minTemp: 50, maxTemp: 85, maxPrecipitation: 0.1 },
   framing: { maxWind: 20, maxPrecipitation: 0.4 },
   excavation: { maxPrecipitation: 0.5 },
+  masonry: { minTemp: 40, maxTemp: 100, maxWind: 20, maxPrecipitation: 0.15 },
+  crane_ops: { maxWind: 20, maxPrecipitation: 0.2 },
+  landscaping: { maxPrecipitation: 0.4, minTemp: 35 },
+
+  // MEP — moderate sensitivity
   electrical: { maxPrecipitation: 0.2 },
   plumbing: { maxPrecipitation: 0.3 },
   hvac: { minTemp: 35, maxTemp: 95 },
+
+  // Interior trades — very weather-tolerant
+  drywall: { minTemp: 40, maxPrecipitation: 0.9 },
+  flooring: { minTemp: 45, maxPrecipitation: 0.9 },
+  cabinetry: { minTemp: 40, maxPrecipitation: 0.9 },
 };
+
+// ============================================================================
+// API FUNCTIONS
+// ============================================================================
 
 /**
  * Get current weather conditions
@@ -75,33 +158,43 @@ export async function getCurrentWeather(
   lat: number,
   lng: number
 ): Promise<WeatherConditions> {
-  const response = await WEATHER_API.get('/weather', {
+  const response = await WEATHER_API.get('/forecast', {
     params: {
-      lat,
-      lon: lng,
-      units: 'imperial',
-      appid: API_KEY,
+      latitude: lat,
+      longitude: lng,
+      current: [
+        'temperature_2m',
+        'relative_humidity_2m',
+        'apparent_temperature',
+        'wind_speed_10m',
+        'wind_gusts_10m',
+        'weather_code',
+        'cloud_cover',
+        'precipitation',
+      ].join(','),
+      ...UNIT_PARAMS,
     },
   });
 
-  const data = response.data;
+  const current = response.data.current;
+  const weatherInfo = mapWeatherCode(current.weather_code);
 
   return {
-    temp: data.main.temp,
-    feelsLike: data.main.feels_like,
-    humidity: data.main.humidity,
-    windSpeed: data.wind.speed,
-    windGust: data.wind.gust,
-    description: data.weather[0].description,
-    icon: data.weather[0].icon,
-    precipitation: data.rain?.['1h'] || data.snow?.['1h'] || 0,
-    visibility: (data.visibility || 10000) / 1609.34, // Convert to miles
-    clouds: data.clouds.all,
+    temp: current.temperature_2m,
+    feelsLike: current.apparent_temperature,
+    humidity: current.relative_humidity_2m,
+    windSpeed: current.wind_speed_10m,
+    windGust: current.wind_gusts_10m,
+    description: weatherInfo.description,
+    icon: weatherInfo.icon,
+    precipitation: current.precipitation || 0,
+    visibility: 10, // Open-Meteo doesn't provide visibility in free tier — default 10 mi
+    clouds: current.cloud_cover || 0,
   };
 }
 
 /**
- * Get daily forecast for the next 7 days
+ * Get daily forecast for the next N days (max 16)
  */
 export async function getDailyForecast(
   lat: number,
@@ -111,49 +204,39 @@ export async function getDailyForecast(
 ): Promise<DailyForecast[]> {
   const response = await WEATHER_API.get('/forecast', {
     params: {
-      lat,
-      lon: lng,
-      units: 'imperial',
-      appid: API_KEY,
+      latitude: lat,
+      longitude: lng,
+      daily: [
+        'temperature_2m_max',
+        'temperature_2m_min',
+        'precipitation_probability_max',
+        'wind_speed_10m_max',
+        'precipitation_sum',
+        'weather_code',
+      ].join(','),
+      forecast_days: Math.min(days, 16),
+      ...UNIT_PARAMS,
     },
   });
 
-  // Group by day
-  const dailyData = new Map<string, typeof response.data.list>();
-
-  for (const item of response.data.list) {
-    const date = item.dt_txt.split(' ')[0];
-    if (!dailyData.has(date)) {
-      dailyData.set(date, []);
-    }
-    dailyData.get(date)!.push(item);
-  }
-
-  const forecasts: DailyForecast[] = [];
+  const daily = response.data.daily;
   const thresholds = trade
     ? { ...WORK_THRESHOLDS, ...TRADE_THRESHOLDS[trade.toLowerCase()] }
     : WORK_THRESHOLDS;
 
-  for (const [dateStr, items] of dailyData) {
-    if (forecasts.length >= days) break;
+  const forecasts: DailyForecast[] = [];
 
-    const temps = items.map((i: { main: { temp: number } }) => i.main.temp);
-    const winds = items.map((i: { wind: { speed: number } }) => i.wind.speed);
-    const precips = items.map((i: { pop: number }) => i.pop || 0);
-    const humidities = items.map((i: { main: { humidity: number } }) => i.main.humidity);
+  for (let i = 0; i < daily.time.length && i < days; i++) {
+    const minTemp = daily.temperature_2m_min[i];
+    const maxTemp = daily.temperature_2m_max[i];
+    const avgTemp = Math.round((minTemp + maxTemp) / 2);
+    const maxWind = daily.wind_speed_10m_max[i];
+    const precipProb = (daily.precipitation_probability_max[i] || 0) / 100; // Convert % → 0-1
+    const precipSum = daily.precipitation_sum[i] || 0;
+    const weatherCode = daily.weather_code[i];
+    const weatherInfo = mapWeatherCode(weatherCode);
 
-    const minTemp = Math.min(...temps);
-    const maxTemp = Math.max(...temps);
-    const avgTemp = temps.reduce((a: number, b: number) => a + b, 0) / temps.length;
-    const maxWind = Math.max(...winds);
-    const avgPrecipProb = precips.reduce((a: number, b: number) => a + b, 0) / precips.length;
-    const avgHumidity = humidities.reduce((a: number, b: number) => a + b, 0) / humidities.length;
-
-    // Get predominant conditions
-    const midItem = items[Math.floor(items.length / 2)];
-    const conditions = midItem.weather[0].main;
-
-    // Calculate workability
+    // Calculate workability score
     const restrictions: string[] = [];
     let workabilityScore = 100;
 
@@ -169,24 +252,25 @@ export async function getDailyForecast(
       restrictions.push(`Wind speed exceeds ${thresholds.maxWind} mph`);
       workabilityScore -= 25;
     }
-    if (avgPrecipProb > thresholds.maxPrecipitation) {
-      restrictions.push(`High precipitation probability (${Math.round(avgPrecipProb * 100)}%)`);
+    if (precipProb > thresholds.maxPrecipitation) {
+      restrictions.push(`High precipitation probability (${Math.round(precipProb * 100)}%)`);
       workabilityScore -= 30;
     }
 
     workabilityScore = Math.max(0, workabilityScore);
 
     forecasts.push({
-      date: new Date(dateStr),
-      temp: { min: minTemp, max: maxTemp, avg: Math.round(avgTemp) },
-      conditions,
-      precipitation: avgPrecipProb,
-      precipitationProbability: avgPrecipProb,
+      date: new Date(daily.time[i]),
+      temp: { min: minTemp, max: maxTemp, avg: avgTemp },
+      conditions: weatherInfo.conditions,
+      precipitation: precipSum,
+      precipitationProbability: precipProb,
       windSpeed: maxWind,
-      humidity: Math.round(avgHumidity),
+      humidity: 0, // Open-Meteo daily doesn't include humidity — set 0
       isWorkable: workabilityScore >= 60,
       workabilityScore,
       restrictions,
+      weatherCode,
     });
   }
 
@@ -194,38 +278,54 @@ export async function getDailyForecast(
 }
 
 /**
- * Get hourly forecast for the next 48 hours
+ * Get hourly forecast for the next N hours
  */
 export async function getHourlyForecast(
   lat: number,
   lng: number,
   hours = 48
 ): Promise<HourlyForecast[]> {
+  const forecastDays = Math.min(Math.ceil(hours / 24), 16);
+
   const response = await WEATHER_API.get('/forecast', {
     params: {
-      lat,
-      lon: lng,
-      units: 'imperial',
-      appid: API_KEY,
+      latitude: lat,
+      longitude: lng,
+      hourly: [
+        'temperature_2m',
+        'precipitation_probability',
+        'wind_speed_10m',
+        'weather_code',
+        'precipitation',
+      ].join(','),
+      forecast_days: forecastDays,
+      ...UNIT_PARAMS,
     },
   });
 
+  const hourly = response.data.hourly;
   const forecasts: HourlyForecast[] = [];
 
-  for (const item of response.data.list.slice(0, Math.ceil(hours / 3))) {
+  for (let i = 0; i < hourly.time.length && i < hours; i++) {
+    const temp = hourly.temperature_2m[i];
+    const precipProb = (hourly.precipitation_probability[i] || 0) / 100;
+    const windSpeed = hourly.wind_speed_10m[i];
+    const weatherCode = hourly.weather_code[i];
+    const weatherInfo = mapWeatherCode(weatherCode);
+
     const isWorkable =
-      item.main.temp >= WORK_THRESHOLDS.minTemp &&
-      item.main.temp <= WORK_THRESHOLDS.maxTemp &&
-      item.wind.speed <= WORK_THRESHOLDS.maxWind &&
-      (item.pop || 0) <= WORK_THRESHOLDS.maxPrecipitation;
+      temp >= WORK_THRESHOLDS.minTemp &&
+      temp <= WORK_THRESHOLDS.maxTemp &&
+      windSpeed <= WORK_THRESHOLDS.maxWind &&
+      precipProb <= WORK_THRESHOLDS.maxPrecipitation;
 
     forecasts.push({
-      time: new Date(item.dt * 1000),
-      temp: item.main.temp,
-      conditions: item.weather[0].main,
-      precipitation: item.rain?.['3h'] || item.snow?.['3h'] || 0,
-      precipitationProbability: item.pop || 0,
-      windSpeed: item.wind.speed,
+      time: new Date(hourly.time[i]),
+      temp,
+      conditions: weatherInfo.conditions,
+      precipitation: hourly.precipitation[i] || 0,
+      precipitationProbability: precipProb,
+      windSpeed,
       isWorkable,
     });
   }
@@ -247,7 +347,7 @@ export async function isWorkableTime(
   conditions: WeatherConditions | null;
   restrictions: string[];
 }> {
-  const forecast = await getDailyForecast(lat, lng, 7, trade);
+  const forecast = await getDailyForecast(lat, lng, 14, trade);
   const targetDateStr = targetTime.toISOString().split('T')[0];
 
   const dayForecast = forecast.find(
@@ -302,7 +402,7 @@ export async function getWeatherForecast(
   days = 7
 ): Promise<any> {
   const forecast = await getDailyForecast(lat, lon, days);
-  // Return in OpenWeatherMap-like format for compatibility
+  // Return in OpenWeatherMap-like format for backward compatibility
   return {
     daily: forecast.map(f => ({
       dt: Math.floor(f.date.getTime() / 1000),
@@ -389,3 +489,15 @@ export async function getWeatherImpactSummary(
     recommendation,
   };
 }
+
+/**
+ * Export trade thresholds for UI display
+ */
+export function getTradeThresholds(): Record<string, Partial<typeof WORK_THRESHOLDS>> {
+  return { ...TRADE_THRESHOLDS };
+}
+
+/**
+ * Export weather code mapper for UI display
+ */
+export { mapWeatherCode };

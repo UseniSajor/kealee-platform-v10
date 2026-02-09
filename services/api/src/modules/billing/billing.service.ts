@@ -3,6 +3,7 @@ import IORedis from 'ioredis'
 import Stripe from 'stripe'
 import { prismaAny } from '../../utils/prisma-helper'
 
+import { auditService } from '../audit/audit.service'
 import { entitlementService } from '../entitlements/entitlement.service'
 import { eventService } from '../events/event.service'
 import { OPS_SERVICES_MODULE_KEY, type BillingInterval, type GCPlanSlug, getPlanSlugFromPriceId, getPriceIdForPlan, mapStripeSubscriptionStatus } from './billing.constants'
@@ -484,6 +485,8 @@ export class BillingService {
       payload: { sessionId: session.id, planSlug: input.planSlug, interval: input.interval },
     })
 
+    auditService.log({ userId: input.orgId, action: 'CREATE', entityType: 'PAYMENT', entityId: session.id, description: 'Created checkout session', category: 'FINANCIAL', severity: 'INFO' });
+
     return session
   }
 
@@ -546,6 +549,8 @@ export class BillingService {
         // Ignore other events
         break
     }
+
+    auditService.log({ userId: 'system', action: 'UPDATE', entityType: 'PAYMENT', entityId: event.id, description: 'Webhook: ' + event.type, category: 'FINANCIAL', severity: 'INFO', source: 'webhook' });
 
     return { received: true, type: event.type, id: event.id }
   }
@@ -758,6 +763,8 @@ export class BillingService {
       },
     })
 
+    auditService.log({ userId: 'system', action: 'UPDATE', entityType: 'PAYMENT', entityId: invoice.id, description: 'Webhook: invoice.paid', category: 'FINANCIAL', severity: 'INFO', source: 'webhook' });
+
     const recipient: string | undefined =
       invoice.customer_email || invoice.customer_details?.email || undefined
 
@@ -820,6 +827,8 @@ export class BillingService {
 
     // Sync subscription status in database
     await this.syncSubscription(updatedSubscription, 'customer.subscription.updated')
+
+    auditService.log({ userId: orgId, action: 'DELETE', entityType: 'SUBSCRIPTION', entityId: subscription.stripeId, description: 'Cancelled subscription', category: 'FINANCIAL', severity: 'CRITICAL' });
 
     return updatedSubscription
   }
@@ -885,6 +894,8 @@ export class BillingService {
         interval,
       },
     })
+
+    auditService.log({ userId: orgId, action: 'UPDATE', entityType: 'SUBSCRIPTION', entityId: subscription.stripeId, previousValue: { plan: subscription.servicePlan?.slug || 'unknown' }, newValue: { plan: newPlanSlug }, description: 'Changed subscription plan', category: 'FINANCIAL', severity: 'CRITICAL' });
 
     return updatedSubscription
   }

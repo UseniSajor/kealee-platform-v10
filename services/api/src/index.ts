@@ -176,6 +176,11 @@ function validateStartupGuards() {
 // Run startup guards immediately after environment loading
 validateStartupGuards()
 
+// Initialize OpenTelemetry tracing BEFORE importing Fastify
+// so auto-instrumentations can monkey-patch HTTP, Fastify, and IORedis
+import { initTracing } from '@kealee/observability';
+initTracing('kealee-api');
+
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
@@ -189,8 +194,8 @@ import { userRoutes } from './modules/users/user.routes'
 import { rbacRoutes } from './modules/rbac/rbac.routes'
 import { entitlementRoutes } from './modules/entitlements/entitlement.routes'
 import { eventRoutes } from './modules/events/event.routes'
-// Temporarily disabled - needs service method fixes
-// import { auditRoutes } from './modules/audit/audit.routes'
+import { auditRoutes } from './modules/audit/audit.routes'
+import { registerAuditMiddleware } from './middleware/audit.middleware'
 import { pmRoutes } from './modules/pm/pm.routes'
 import { billingRoutes } from './modules/billing/billing.routes'
 import { projectRoutes } from './modules/projects/project.routes'
@@ -423,10 +428,22 @@ const start = async () => {
     fastify.addHook('onRequest', sentryRequestHandler)
     fastify.addHook('onResponse', sentryResponseHandler)
 
+    // Register OpenTelemetry tracing plugin (adds request.traceId + x-trace-id header)
+    const { tracingPlugin } = require('@kealee/observability')
+    await fastify.register(tracingPlugin)
+
     // Initialize event-driven architecture - TEMPORARILY DISABLED
     // const { escrowEventHandlers } = require('./events/escrow-event-handlers')
     // escrowEventHandlers.registerHandlers()
     console.log('⚠️  Escrow event handlers temporarily disabled')
+
+    // Register performance monitoring (response time tracking, slow query alerts)
+    const { registerPerformanceMonitoring } = require('./middleware/performance.middleware')
+    await registerPerformanceMonitoring(fastify)
+
+    // Register API response cache plugin (Redis-backed with in-memory fallback)
+    const { registerCachePlugin } = require('./middleware/cache.middleware')
+    await registerCachePlugin(fastify)
 
     // Register request/response logging
     const { requestLogger, responseLogger } = require('./middleware/request-logger.middleware')
@@ -449,8 +466,7 @@ const start = async () => {
     await fastify.register(rbacRoutes, { prefix: '/rbac' })
     await fastify.register(entitlementRoutes, { prefix: '/entitlements' })
     await fastify.register(eventRoutes, { prefix: '/events' })
-    // Temporarily disabled - needs service method fixes
-    // await fastify.register(auditRoutes, { prefix: '/audit' })
+    await fastify.register(auditRoutes, { prefix: '/audit' })
     await fastify.register(pmRoutes, { prefix: '/pm' })
     await fastify.register(billingRoutes, { prefix: '/billing' })
     await fastify.register(escrowRoutes, { prefix: '/escrow' })
@@ -459,8 +475,10 @@ const start = async () => {
 
     // Analytics and Compliance - Now enabled
     const { analyticsRoutes } = await import('./modules/analytics/analytics.routes')
+    const { analyticsDashboardRoutes } = await import('./modules/analytics/analytics-dashboard.routes')
     const { complianceRoutes: complianceMonitoringRoutes } = await import('./modules/compliance/compliance.routes')
     await fastify.register(analyticsRoutes, { prefix: '/analytics' })
+    await fastify.register(analyticsDashboardRoutes, { prefix: '/analytics' })
     await fastify.register(complianceMonitoringRoutes, { prefix: '/compliance/monitoring' })
 
     // Temporarily disabled - DTO type mismatches
@@ -529,6 +547,9 @@ const start = async () => {
     await fastify.register(fileRoutes, { prefix: '/files' })
     // File Upload Pipeline (site photos, receipts, documents → Supabase → Command Center)
     await fastify.register(uploadRoutes, { prefix: '/api/v1/uploads' })
+    // Chunked uploads for large files (>5MB)
+    const { chunkedUploadRoutes } = await import('./modules/uploads/chunked-upload.routes')
+    await fastify.register(chunkedUploadRoutes, { prefix: '/api/v1/uploads' })
     // Marketplace Estimating Engine (assembly library, quick pricing, bid validation)
     await fastify.register(marketplaceEstimatingRoutes, { prefix: '/api/v1' })
     // Analytics temporarily disabled
@@ -550,6 +571,35 @@ const start = async () => {
 
     // Engineering Services
     await fastify.register(engineerRoutes, { prefix: '/engineer' })
+
+    // Site Check-In / Crew Tracking
+    const { checkInRoutes } = await import('./modules/check-in/check-in.routes')
+    await fastify.register(checkInRoutes, { prefix: '/api/v1/check-in' })
+
+    // IoT Sensor Data Ingestion
+    const { sensorRoutes } = await import('./modules/sensors/sensor.routes')
+    await fastify.register(sensorRoutes, { prefix: '/api/v1/sensors' })
+
+    // Web Push Notifications
+    const { pushRoutes } = await import('./modules/push/push.routes')
+    await fastify.register(pushRoutes, { prefix: '/api/v1/push' })
+
+    // AI Scope Analysis
+    const { scopeAnalysisRoutes } = await import('./modules/scope-analysis/scope-analysis.routes')
+    await fastify.register(scopeAnalysisRoutes, { prefix: '/api/v1/scope-analysis' })
+
+    // Conversational AI Chat
+    const { chatRoutes } = await import('./modules/chat/chat.routes')
+    await fastify.register(chatRoutes, { prefix: '/chat' })
+
+    // Autonomous Action Engine
+    const { autonomyRoutes } = await import('./modules/autonomy/autonomy.routes')
+    await fastify.register(autonomyRoutes, { prefix: '/autonomy' })
+
+    // Contractor Reliability Scoring
+    const { scoringRoutes } = await import('./modules/scoring/scoring.routes')
+    await fastify.register(scoringRoutes, { prefix: '/scoring' })
+
     // Temporarily disabled - missing @kealee/compliance package
     // await fastify.register(complianceGatesRoutes, { prefix: '/compliance' })
     // Temporarily disabled - type issues in route handlers
@@ -629,6 +679,16 @@ const start = async () => {
     } as any)
     */
     // GraphQL disabled - end comment block
+
+    // ── Audit Middleware ──
+    // Auto-audit all mutating API requests (POST/PUT/PATCH/DELETE)
+    registerAuditMiddleware(fastify)
+
+    // Graceful shutdown: flush pending audit logs
+    fastify.addHook('onClose', async () => {
+      const { auditService } = await import('./modules/audit/audit.service')
+      await auditService.shutdown()
+    })
 
     // Railway provides PORT env var, default to 3000 for local dev
     const port = Number(process.env.PORT) || 3000

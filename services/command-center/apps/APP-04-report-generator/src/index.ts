@@ -25,6 +25,8 @@ import { sendReport, sendEmail } from '../../../shared/integrations/email.js';
 import { getReportPeriod, formatDate } from '../../../shared/utils/date.js';
 import { formatCurrency, calculateBudgetSummary } from '../../../shared/utils/money.js';
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { progressAnalysisService, ProgressAnalysisResult, AreaProgress } from '../../APP-13-qa-inspector/src/progress-analysis.js';
+import { beforeAfterService, BeforeAfterPairResult } from '../../APP-13-qa-inspector/src/before-after.js';
 
 const prisma = new PrismaClient();
 
@@ -96,6 +98,34 @@ export interface ReportContent {
   }>;
   nextSteps: string[];
   narrative: string;
+
+  // Enhanced QA visual progress sections
+  visualProgress?: {
+    overallProgressPercent: number;
+    phaseDetected: string;
+    areaBreakdown: Array<{
+      area: string;
+      progressPercent: number;
+      currentPhase: string;
+      isStalled: boolean;
+      description: string;
+    }>;
+    stalledAreas: string[];
+    highlights: string[];
+    concerns: string[];
+    comparisonSummary: string;
+  };
+  beforeAfterPairs?: Array<{
+    area: string;
+    beforePhotoUrl: string;
+    afterPhotoUrl: string;
+    beforeDate: string;
+    afterDate: string;
+    beforePhase: string;
+    afterPhase: string;
+    progressPercent: number;
+    progressDescription: string;
+  }>;
 }
 
 // ============================================================================
@@ -115,14 +145,18 @@ class ReportGeneratorService {
     });
 
     // Gather report data
-    const [activities, issues, budget, milestones, photos, visits] = await Promise.all([
+    const [activities, issues, budget, milestones, photos, visits, beforeAfterPairs] = await Promise.all([
       this.getActivities(config.projectId, config.periodStart, config.periodEnd),
       this.getIssues(config.projectId, config.periodStart, config.periodEnd),
       this.getBudgetData(config.projectId),
       this.getMilestones(config.projectId),
       config.includePhotos ? this.getPhotos(config.projectId, config.periodStart, config.periodEnd) : [],
       this.getVisits(config.projectId, config.periodStart, config.periodEnd),
+      this.getBeforeAfterPairs(config.projectId),
     ]);
+
+    // Get latest progress analysis from most recent completed visit
+    const latestProgressAnalysis = await this.getLatestProgressAnalysis(config.projectId);
 
     // Calculate progress
     const progress = this.calculateProgress(project, milestones);
@@ -142,15 +176,25 @@ class ReportGeneratorService {
       ...milestones.filter(m => m.status === 'PENDING').slice(0, 3).map(m => m.name),
     ];
 
-    // Generate AI narrative
-    const narrative = await generateReportNarrative({
+    // Build enhanced highlights and concerns from visual progress analysis
+    if (latestProgressAnalysis) {
+      highlights.push(...latestProgressAnalysis.highlights);
+      if (latestProgressAnalysis.stalledAreas.length > 0) {
+        issueDescriptions.push(
+          `Areas with no progress detected: ${latestProgressAnalysis.stalledAreas.join(', ')}`
+        );
+      }
+    }
+
+    // Generate AI narrative with enhanced visual progress data
+    const narrativeInput: any = {
       projectName: project.name,
       periodStart: config.periodStart,
       periodEnd: config.periodEnd,
       reportType: config.type.toLowerCase() as 'daily' | 'weekly' | 'monthly' | 'final',
       progress: {
-        phase: progress.phase,
-        percentComplete: progress.percentComplete,
+        phase: latestProgressAnalysis?.phaseDetected || progress.phase,
+        percentComplete: latestProgressAnalysis?.overallProgressPercent || progress.percentComplete,
       },
       schedule: {
         status: schedule.status,
@@ -164,7 +208,27 @@ class ReportGeneratorService {
       highlights,
       issues: issueDescriptions,
       nextSteps,
-    });
+    };
+
+    // Add visual progress context if available
+    if (latestProgressAnalysis) {
+      narrativeInput.visualProgress = {
+        overallPercent: latestProgressAnalysis.overallProgressPercent,
+        areaBreakdown: latestProgressAnalysis.areaBreakdown.map((a: AreaProgress) =>
+          `${a.area}: ${a.progressPercent}% (${a.currentPhase})${a.isStalled ? ' [STALLED]' : ''}`
+        ),
+        stalledAreas: latestProgressAnalysis.stalledAreas,
+        comparisonSummary: latestProgressAnalysis.comparisonSummary,
+      };
+    }
+
+    if (beforeAfterPairs.length > 0) {
+      narrativeInput.beforeAfterInsights = beforeAfterPairs.slice(0, 5).map((p: BeforeAfterPairResult) =>
+        `${p.area}: ${p.beforePhase} → ${p.afterPhase} (${p.progressPercent}%)`
+      );
+    }
+
+    const narrative = await generateReportNarrative(narrativeInput);
 
     // Build report content
     const content: ReportContent = {
@@ -196,6 +260,35 @@ class ReportGeneratorService {
       })),
       nextSteps,
       narrative,
+
+      // Enhanced visual progress sections
+      visualProgress: latestProgressAnalysis ? {
+        overallProgressPercent: latestProgressAnalysis.overallProgressPercent,
+        phaseDetected: latestProgressAnalysis.phaseDetected,
+        areaBreakdown: latestProgressAnalysis.areaBreakdown.map((a: AreaProgress) => ({
+          area: a.area,
+          progressPercent: a.progressPercent,
+          currentPhase: a.currentPhase,
+          isStalled: a.isStalled,
+          description: a.description,
+        })),
+        stalledAreas: latestProgressAnalysis.stalledAreas,
+        highlights: latestProgressAnalysis.highlights,
+        concerns: latestProgressAnalysis.concerns,
+        comparisonSummary: latestProgressAnalysis.comparisonSummary,
+      } : undefined,
+
+      beforeAfterPairs: beforeAfterPairs.length > 0 ? beforeAfterPairs.slice(0, 10).map((p: BeforeAfterPairResult) => ({
+        area: p.area,
+        beforePhotoUrl: p.beforePhotoUrl,
+        afterPhotoUrl: p.afterPhotoUrl,
+        beforeDate: p.beforeDate,
+        afterDate: p.afterDate,
+        beforePhase: p.beforePhase,
+        afterPhase: p.afterPhase,
+        progressPercent: p.progressPercent,
+        progressDescription: p.progressDescription,
+      })) : undefined,
     };
 
     // Save report
@@ -400,6 +493,45 @@ class ReportGeneratorService {
         status: 'COMPLETED',
       },
     });
+  }
+
+  private async getLatestProgressAnalysis(projectId: string): Promise<ProgressAnalysisResult | null> {
+    // Get the latest completed visit with progress analysis in its findings
+    const latestVisit = await prisma.siteVisit.findFirst({
+      where: {
+        projectId,
+        status: 'COMPLETED',
+      },
+      orderBy: { completedAt: 'desc' },
+      select: {
+        id: true,
+        findings: true,
+      },
+    });
+
+    if (!latestVisit) return null;
+
+    const findings = latestVisit.findings as any;
+    const progressAnalysis = findings?.progressAnalysis;
+
+    if (!progressAnalysis) return null;
+
+    return {
+      projectId,
+      siteVisitId: latestVisit.id,
+      overallProgressPercent: progressAnalysis.overallProgressPercent || 0,
+      phaseDetected: progressAnalysis.phaseDetected || 'Unknown',
+      areaBreakdown: progressAnalysis.areaBreakdown || [],
+      stalledAreas: progressAnalysis.stalledAreas || [],
+      highlights: progressAnalysis.highlights || [],
+      concerns: progressAnalysis.concerns || [],
+      comparisonSummary: progressAnalysis.comparisonSummary || '',
+      analyzedAt: new Date(progressAnalysis.analyzedAt || Date.now()),
+    };
+  }
+
+  private async getBeforeAfterPairs(projectId: string): Promise<BeforeAfterPairResult[]> {
+    return beforeAfterService.getProjectPairs(projectId, { limit: 10 });
   }
 
   private calculateProgress(project: { currentPhase?: string | null }, milestones: any[]) {

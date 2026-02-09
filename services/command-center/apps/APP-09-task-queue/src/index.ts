@@ -23,6 +23,7 @@ import { sendEmail, EMAIL_TEMPLATES } from '../../../shared/integrations/email.j
 import { sendUrgentTaskSMS } from '../../../shared/integrations/sms.js';
 import { addWorkingDays, daysUntilDeadline, formatDate } from '../../../shared/utils/date.js';
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { autonomyEngine } from '../../../shared/autonomy/index.js';
 
 const prisma = new PrismaClient();
 
@@ -347,6 +348,32 @@ class TaskQueueService {
 
       // Escalate after 1 day overdue
       if (overdueDays >= 1) {
+        // ── Autonomy: Auto-escalate overdue tasks ──
+        try {
+          const autoResult = await autonomyEngine.evaluateAndAct({
+            projectId: task.projectId,
+            category: 'task_escalation',
+            appSource: 'APP-09',
+            actionType: 'task_escalate',
+            description: `Auto-escalate overdue task: "${task.title}" (${overdueDays} days overdue)`,
+            confidence: Math.min(95, 60 + overdueDays * 5),
+            days: overdueDays,
+            metadata: {
+              taskId: task.id,
+              taskTitle: task.title,
+              overdueDays,
+              assignedPmId: task.assignedPmId,
+              currentPriority: task.priority,
+            },
+          });
+
+          // If autonomy is not enabled or escalation was handled, still do the update
+          // The autonomy engine logs it; the actual escalation still runs below
+        } catch {
+          // Autonomy check failed — proceed with normal escalation
+        }
+        // ── End Autonomy ──
+
         await prisma.automationTask.update({
           where: { id: task.id },
           data: {
