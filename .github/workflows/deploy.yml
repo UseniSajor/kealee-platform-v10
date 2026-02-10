@@ -45,7 +45,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --frozen-lockfile
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --no-frozen-lockfile
 
       - name: Build API
         run: |

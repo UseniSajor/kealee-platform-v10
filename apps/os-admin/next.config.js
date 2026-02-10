@@ -28,6 +28,11 @@ const nextConfig = {
         ...config.resolve.fallback,
         fs: false,
         module: false,
+        child_process: false,
+        async_hooks: false,
+        net: false,
+        tls: false,
+        dns: false,
       };
     }
     return config;
