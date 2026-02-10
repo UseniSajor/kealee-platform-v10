@@ -2,8 +2,38 @@
   "name": "@kealee/ui",
   "version": "1.0.0",
   "description": "Kealee Platform Design System - UI Component Library",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./button": {
+      "types": "./src/components/Button.tsx",
+      "default": "./src/components/Button.tsx"
+    },
+    "./card": {
+      "types": "./src/components/Card.tsx",
+      "default": "./src/components/Card.tsx"
+    },
+    "./input": {
+      "types": "./src/components/Input.tsx",
+      "default": "./src/components/Input.tsx"
+    },
+    "./label": {
+      "types": "./src/components/Label.tsx",
+      "default": "./src/components/Label.tsx"
+    },
+    "./components": {
+      "types": "./src/components/index.ts",
+      "default": "./src/components/index.ts"
+    },
+    "./*": {
+      "types": "./src/*.ts",
+      "default": "./src/*.ts"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
