@@ -128,7 +128,7 @@ export function WebVitals({
     if (typeof window === 'undefined') return;
 
     // Dynamic import web-vitals library
-    import('web-vitals').then(({ onLCP, onFID, onCLS, onTTFB, onINP, onFCP }) => {
+    import('web-vitals').then((webVitals) => {
       const handleMetric = (metric: any) => {
         reportMetric({
           name: metric.name,
@@ -140,12 +140,15 @@ export function WebVitals({
         });
       };
 
-      onLCP(handleMetric);
-      onFID(handleMetric);
-      onCLS(handleMetric);
-      onTTFB(handleMetric);
-      onINP(handleMetric);
-      onFCP(handleMetric);
+      webVitals.onLCP(handleMetric);
+      webVitals.onCLS(handleMetric);
+      webVitals.onTTFB(handleMetric);
+      webVitals.onINP(handleMetric);
+      webVitals.onFCP(handleMetric);
+      // onFID was removed in web-vitals v4; use onINP instead
+      if ('onFID' in webVitals && typeof (webVitals as any).onFID === 'function') {
+        (webVitals as any).onFID(handleMetric);
+      }
     }).catch(() => {
       // web-vitals not installed — degrade gracefully
       if (debug) console.warn('[WebVitals] web-vitals package not available');

@@ -33,11 +33,22 @@ const nextConfig = {
     if (!isServer) {
       // Don't bundle canvas on the client side
       config.resolve.alias.canvas = false;
+      // Prevent Prisma/Node.js modules from being bundled into client-side code
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        child_process: false,
+        'fs/promises': false,
+        async_hooks: false,
+        net: false,
+        tls: false,
+        dns: false,
+      };
     }
     // Externalize canvas for server-side
     config.externals = config.externals || [];
     config.externals.push('canvas');
-    
+
     return config;
   },
 };
