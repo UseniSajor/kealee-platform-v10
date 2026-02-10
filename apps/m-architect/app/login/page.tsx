@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn } from '@kealee/auth';
+import { signIn } from '@kealee/auth/client';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';

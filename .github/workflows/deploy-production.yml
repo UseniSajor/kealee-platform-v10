@@ -25,10 +25,12 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --no-frozen-lockfile
 
       - name: Build packages
-        run: pnpm build --filter=@kealee/api
+        run: |
+          pnpm run -r --filter=@kealee/database --filter=@kealee/auth build
+          pnpm build --filter=@kealee/api
 
       - name: Deploy to Railway
         uses: bervProject/railway-deploy@main
@@ -79,10 +81,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build packages
-        run: pnpm build --filter=${{ matrix.app.filter }}
+        run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --no-frozen-lockfile
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25

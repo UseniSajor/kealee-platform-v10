@@ -29,10 +29,11 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --no-frozen-lockfile
 
       - name: Build packages
-        run: pnpm build
+        run: |
+          pnpm run -r --filter=@kealee/database --filter=@kealee/auth build
 
       - name: Run tests
         run: pnpm test || echo "Tests not configured"

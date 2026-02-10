@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRequireAuth } from '@kealee/auth';
+import { useRequireAuth } from '@kealee/auth/client';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import {

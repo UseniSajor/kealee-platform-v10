@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signUp } from '@kealee/auth';
+import { signUp } from '@kealee/auth/client';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
 function calculatePasswordStrength(password: string): number {

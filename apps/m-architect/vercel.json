@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd ../.. && npx pnpm@8.15.9 build --filter=m-architect",
+  "buildCommand": "cd ../.. && npx pnpm@8.15.9 run -r --filter=@kealee/database --filter=@kealee/auth build && npx pnpm@8.15.9 run --filter=m-architect build",
   "installCommand": "cd ../.. && PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npx pnpm@8.15.9 install --no-frozen-lockfile",
   "framework": "nextjs",
   "rewrites": [

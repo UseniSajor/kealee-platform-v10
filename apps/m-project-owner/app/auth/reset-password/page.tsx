@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { updatePassword } from '@kealee/auth';
+import { updatePassword } from '@kealee/auth/client';
 import { Loader2, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
 export default function ResetPasswordPage() {

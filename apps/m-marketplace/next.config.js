@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  transpilePackages: ['@kealee/ui'],
   typescript: {
     ignoreBuildErrors: true,
   },
