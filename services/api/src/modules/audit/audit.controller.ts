@@ -47,8 +47,8 @@ const trackChangeSchema = z.object({
   entityType: z.string(),
   entityId: z.string(),
   field: z.string(),
-  oldValue: z.any(),
-  newValue: z.any(),
+  oldValue: z.any().default(null),
+  newValue: z.any().default(null),
   changedBy: z.string(),
   reason: z.string().optional(),
 });
@@ -130,7 +130,15 @@ export class AuditController {
   async trackChange(request: FastifyRequest<{ Body: any }>, reply: FastifyReply) {
     try {
       const data = trackChangeSchema.parse(request.body);
-      const changeLog = await auditService.trackChange(data);
+      const changeLog = await auditService.trackChange({
+        entityType: data.entityType,
+        entityId: data.entityId,
+        field: data.field,
+        oldValue: data.oldValue ?? null,
+        newValue: data.newValue ?? null,
+        changedBy: data.changedBy,
+        reason: data.reason,
+      });
 
       return reply.status(201).send({
         success: true,

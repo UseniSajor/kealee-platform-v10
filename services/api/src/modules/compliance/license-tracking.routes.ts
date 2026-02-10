@@ -483,7 +483,7 @@ export async function licenseTrackingRoutes(fastify: FastifyInstance) {
                 select: { id: true, email: true, firstName: true, lastName: true },
               },
               contract: {
-                select: { id: true, title: true },
+                select: { id: true, status: true, projectId: true },
               },
             },
           }),

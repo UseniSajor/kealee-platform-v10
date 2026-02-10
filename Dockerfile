@@ -198,7 +198,7 @@ RUN echo "=== STEP: Building workflow-engine package ===" && \
 
 # Build other workspace packages (optional - best effort)
 RUN echo "=== STEP: Building other workspace packages ===" && \
-    for pkg in compliance types analytics api-client; do \
+    for pkg in compliance types analytics api-client observability ai-chat audit estimating realtime storage; do \
       echo "Building @kealee/$pkg..." && \
       if [ -d "packages/$pkg" ]; then \
         rm -rf packages/$pkg/dist && \

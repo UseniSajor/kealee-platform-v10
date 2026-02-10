@@ -161,6 +161,7 @@ export class StripeWebhookSecurityService {
           performedBy: 'system',
           description: 'Webhook event ' + event.type + ' - ' + status,
           source: 'webhook',
+          category: 'FINANCIAL',
           afterData: { eventId: event.id, eventType: event.type, status, error: error || null, timestamp: new Date(event.created * 1000).toISOString() },
         },
       })

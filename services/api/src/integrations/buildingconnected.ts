@@ -154,8 +154,9 @@ export class BuildingConnectedService {
             integrationType: 'API_DIRECT',
             apiUrl: j.contact.portalUrl || null,
             portalUrl: j.contact.website || null,
-            phone: j.contact.phone || null,
-            email: j.contact.email || null,
+            requiredDocuments: [],
+            feeSchedule: {},
+            formTemplates: [],
           },
         });
         importedCount++;

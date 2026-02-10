@@ -338,6 +338,31 @@ export class NotificationService {
   }
 
   /**
+   * Send notification with a simplified payload (used by architect and other modules)
+   * Maps the `metadata` field to `data` and delegates to the `send` method.
+   */
+  async sendNotification(payload: {
+    userId: string
+    type: string
+    title: string
+    message: string
+    metadata?: Record<string, any>
+  }): Promise<void> {
+    try {
+      await this.send({
+        userId: payload.userId,
+        type: payload.type as NotificationType,
+        title: payload.title,
+        message: payload.message,
+        data: payload.metadata,
+      })
+    } catch (error) {
+      // Best-effort notification: log but don't throw so callers are not disrupted
+      console.warn(`[Notification] sendNotification failed for user ${payload.userId}, type ${payload.type}:`, error)
+    }
+  }
+
+  /**
    * Send ACH verification required notification
    */
   async notifyACHVerificationRequired(userId: string, paymentMethodId: string): Promise<void> {

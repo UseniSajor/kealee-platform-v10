@@ -3,9 +3,12 @@ import { authService } from './auth.service'
 
 export interface AuthenticatedRequest extends FastifyRequest {
   user: {
+    id: string
     userId: string
     email: string
-    role?: string
+    role: string
+    organizationId?: string | null
+    profile?: any
     [key: string]: any
   }
 }

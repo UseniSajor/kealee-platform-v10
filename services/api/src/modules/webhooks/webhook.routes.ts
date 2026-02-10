@@ -91,7 +91,7 @@ export async function webhookRoutes(fastify: FastifyInstance) {
 
         await prisma.webhook.update({
           where: { id },
-          data: { isActive: false },
+          data: { active: false },
         });
 
         return reply.status(204).send();

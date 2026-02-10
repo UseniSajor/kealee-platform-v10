@@ -771,7 +771,7 @@ export const permitPackageService = {
     }
 
     // Query the permits module for current status via Prisma
-    let permitStatus = null
+    let permitStatus: { status: string; reviewStatus: string | null; updatedAt: Date } | null = null
     try {
       // Look up the linked permit record by the submission reference
       const submission = await prismaAny.permitPackageSubmission.findUnique({

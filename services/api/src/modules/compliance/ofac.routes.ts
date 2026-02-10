@@ -109,10 +109,7 @@ export async function ofacRoutes(fastify: FastifyInstance) {
             entityType,
             matchFound,
             matchScore,
-            matchDetails: null,
-            requestData: requestData ?? null,
-            sdnListVersion: null,
-            error: null,
+            requestData: requestData ?? undefined,
           },
         })
 

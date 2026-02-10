@@ -350,21 +350,25 @@ export class ComplianceMonitoringService {
     }
 
     // Query OFACScreening and OFACCache models via Prisma
-    const cachedResult = await prisma.oFACCache.findFirst({
-      where: { entityName: user.name || '', expiresAt: { gt: new Date() } },
-      orderBy: { checkedAt: 'desc' },
+    const cacheKey = `ofac:INDIVIDUAL:${(user.name || '').toLowerCase().trim()}`
+    const cachedResult = await prisma.oFACCache.findUnique({
+      where: { key: cacheKey },
     })
-    if (cachedResult) {
-      if (cachedResult.matchFound) {
-        return { valid: false, reason: `OFAC match found (cached): ${cachedResult.matchDetails || 'Manual review required'}` }
+    if (cachedResult && cachedResult.expiresAt > new Date()) {
+      const cachedData = cachedResult.data as any
+      if (cachedData?.matchFound) {
+        return { valid: false, reason: `OFAC match found (cached): ${cachedData.matchDetails || 'Manual review required'}` }
       }
       return { valid: true }
     }
+    const screeningId = `screen-${userId}-${Date.now()}`
     const screening = await prisma.oFACScreening.create({
-      data: { userId, entityName: user.name || '', entityType: 'INDIVIDUAL', screeningDate: new Date(), status: 'COMPLETED', matchFound: false, matchScore: 0 },
+      data: { screeningId, entityName: user.name || '', entityType: 'INDIVIDUAL', matchFound: false, matchScore: 0 },
     })
-    await prisma.oFACCache.create({
-      data: { entityName: user.name || '', entityType: 'INDIVIDUAL', matchFound: false, checkedAt: new Date(), expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) },
+    await prisma.oFACCache.upsert({
+      where: { key: cacheKey },
+      create: { key: cacheKey, data: { entityName: user.name || '', entityType: 'INDIVIDUAL', matchFound: false, screeningId: screening.id }, expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) },
+      update: { data: { entityName: user.name || '', entityType: 'INDIVIDUAL', matchFound: false, screeningId: screening.id }, expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) },
     })
     const sanctionsKeywords = ['sanctioned', 'blocked', 'prohibited']
     const userName = user.name?.toLowerCase() || ''
@@ -372,7 +376,7 @@ export class ComplianceMonitoringService {
     if (sanctionsKeywords.some((kw) => userName.includes(kw))) {
       await prisma.oFACScreening.update({
         where: { id: screening.id },
-        data: { matchFound: true, matchScore: 75, matchDetails: 'Keyword match detected' },
+        data: { matchFound: true, matchScore: 75, matchDetails: { detail: 'Keyword match detected' } },
       })
       return {
         valid: false,
@@ -456,7 +460,7 @@ export class ComplianceMonitoringService {
       const expiredPermits = await prisma.permit.count({
         where: {
           projectId: escrow.contract.projectId,
-          status: { in: ['EXPIRED', 'REVOKED', 'SUSPENDED'] },
+          status: { in: ['EXPIRED', 'CANCELLED', 'REJECTED'] },
         },
       })
       checks.permitsCurrent = expiredPermits === 0

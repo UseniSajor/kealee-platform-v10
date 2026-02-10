@@ -4,7 +4,7 @@
  */
 
 import Stripe from 'stripe'
-import { prisma } from '@kealee/database'
+import { prisma, ConnectedAccountStatus } from '@kealee/database'
 import { ConnectOnboardingService } from './connect-onboarding.service'
 import { PayoutService } from './payout.service'
 
@@ -41,19 +41,19 @@ export class ConnectWebhookHandler {
       account.payouts_enabled === true
 
     // Determine status
-    let status = connectedAccount.status
+    let status: ConnectedAccountStatus = connectedAccount.status
 
     if (hasCompletedOnboarding && payoutsEnabled) {
-      status = 'ACTIVE'
+      status = ConnectedAccountStatus.ACTIVE
     } else if (account.requirements?.disabled_reason) {
-      status = 'DISABLED'
+      status = ConnectedAccountStatus.DISABLED
     } else if (
       (account.requirements?.currently_due?.length || 0) > 0 ||
       (account.requirements?.past_due?.length || 0) > 0
     ) {
-      status = 'RESTRICTED'
+      status = ConnectedAccountStatus.RESTRICTED
     } else if (account.details_submitted) {
-      status = 'PENDING' // Waiting for Stripe verification
+      status = ConnectedAccountStatus.PENDING // Waiting for Stripe verification
     }
 
     // Update database
@@ -182,6 +182,7 @@ export class ConnectWebhookHandler {
         entryDate: new Date(),
         status: 'POSTED',
         postedAt: new Date(),
+        createdBy: 'system:stripe-webhook',
       },
     })
 

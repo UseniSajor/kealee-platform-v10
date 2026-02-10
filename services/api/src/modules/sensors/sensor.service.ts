@@ -490,7 +490,7 @@ class SensorService {
     });
 
     const deviceIds = devices.map((d: any) => d.id);
-    const deviceMap = new Map(devices.map((d: any) => [d.id, d]));
+    const deviceMap = new Map<string, any>(devices.map((d: any) => [d.id, d]));
 
     const since = options.since || new Date(Date.now() - 24 * 60 * 60 * 1000);
 

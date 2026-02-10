@@ -301,11 +301,14 @@ export class LienWaiverService {
     const pdfBuffer = Buffer.from(pdfContent, 'utf-8')
 
     // Update waiver with document reference
+    const existingMeta = (lienWaiver.metadata && typeof lienWaiver.metadata === 'object' && !Array.isArray(lienWaiver.metadata))
+      ? lienWaiver.metadata as Record<string, unknown>
+      : {}
     await prisma.lienWaiver.update({
       where: { id: lienWaiver.id },
       data: {
         metadata: {
-          ...(lienWaiver.metadata as object || {}),
+          ...existingMeta,
           documentGenerated: true,
           documentSize: pdfBuffer.length,
           generatedAt: new Date().toISOString(),
@@ -450,11 +453,14 @@ export class LienWaiverService {
     // Create the waiver record with pending signature status.
     // Future integration: When DocuSign/HelloSign API is configured,
     // this will send the waiver document for e-signature via their API.
+    const updatedMeta = (updated.metadata && typeof updated.metadata === 'object' && !Array.isArray(updated.metadata))
+      ? updated.metadata as Record<string, unknown>
+      : {}
     await prisma.lienWaiver.update({
       where: { id: lienWaiverId },
       data: {
         metadata: {
-          ...(updated.metadata as object || {}),
+          ...updatedMeta,
           signatureProvider: 'pending_integration',
           signatureRequestedAt: new Date().toISOString(),
           note: 'DocuSign/HelloSign integration pending. Waiver sent for manual signature.',
@@ -583,15 +589,17 @@ export class LienWaiverService {
     // Generate unconditional waiver if payment has cleared and current waiver is conditional
     if (waiver.waiverType === 'CONDITIONAL') {
       // Check if the associated escrow transaction is completed (payment cleared)
-      const escrowTransaction = await prisma.escrowTransaction.findUnique({
-        where: { id: waiver.escrowTransactionId },
-      })
+      const escrowTransaction = waiver.escrowTransactionId
+        ? await prisma.escrowTransaction.findUnique({
+            where: { id: waiver.escrowTransactionId },
+          })
+        : null
 
       if (escrowTransaction && escrowTransaction.status === 'COMPLETED') {
         // Generate an unconditional waiver since payment has cleared
         try {
           await LienWaiverService.generateWaiver({
-            escrowTransactionId: waiver.escrowTransactionId,
+            escrowTransactionId: waiver.escrowTransactionId!,
             contractId: waiver.contractId,
             projectId: waiver.projectId,
             milestoneId: waiver.milestoneId || undefined,

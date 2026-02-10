@@ -372,7 +372,7 @@ export type ActionType = keyof typeof ROLE_PERMISSIONS
  * Check if a user role has permission to perform an action
  */
 export function hasPermission(userRole: UserRole, action: ActionType): boolean {
-  const allowedRoles = ROLE_PERMISSIONS[action]
+  const allowedRoles = ROLE_PERMISSIONS[action] as readonly string[]
   return allowedRoles.includes(userRole)
 }
 

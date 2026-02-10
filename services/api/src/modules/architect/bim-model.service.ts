@@ -758,8 +758,8 @@ export const bimModelService = {
       where: { modelId: modelId2 },
     })
 
-    const elementIds1 = new Set(components1.map((c: any) => c.elementId))
-    const elementIds2 = new Set(components2.map((c: any) => c.elementId))
+    const elementIds1 = new Set<string>(components1.map((c: any) => c.elementId))
+    const elementIds2 = new Set<string>(components2.map((c: any) => c.elementId))
 
     const addedElements: string[] = []
     const removedElements: string[] = []

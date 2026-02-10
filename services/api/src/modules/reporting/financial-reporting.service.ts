@@ -251,16 +251,15 @@ export class FinancialReportingService {
       .filter((t) => t.type === 'REFUND')
       .reduce((sum, t) => sum + t.amount.toNumber(), 0)
 
-    // Get chargebacks from Payment records where type='CHARGEBACK'
+    // Get chargebacks from Payment records via metadata
     const chargebackPayments = await prisma.payment.findMany({
       where: {
-        type: 'CHARGEBACK' as any,
         createdAt: { gte: startDate, lte: endDate },
-        status: 'COMPLETED',
+        status: 'refunded',
       },
     }).catch(() => [])
     const chargebacks = chargebackPayments.reduce(
-      (sum: number, p: any) => sum + (Number(p.amount) || 0), 0
+      (sum: number, p: any) => sum + (Number(p.refundAmount) || 0), 0
     )
 
     const netFinancing = -(refunds + chargebacks)
@@ -318,16 +317,15 @@ export class FinancialReportingService {
     // Expenses
     const stripeFees = await this.getStripeFees(startDate, endDate)
     const refunds = await this.getRefundTotal(startDate, endDate)
-    // Chargebacks: query Payment records where type='CHARGEBACK'
+    // Chargebacks: query Payment records via refunded status
     const chargebackRecords = await prisma.payment.findMany({
       where: {
-        type: 'CHARGEBACK' as any,
         createdAt: { gte: startDate, lte: endDate },
-        status: 'COMPLETED',
+        status: 'refunded',
       },
     }).catch(() => [])
     const chargebacks = chargebackRecords.reduce(
-      (sum: number, p: any) => sum + (Number(p.amount) || 0), 0
+      (sum: number, p: any) => sum + (Number(p.refundAmount) || 0), 0
     )
     // Dispute fees: query Dispute records for fee amounts
     const disputeRecords = await prisma.dispute.findMany({
@@ -335,10 +333,10 @@ export class FinancialReportingService {
         createdAt: { gte: startDate, lte: endDate },
         status: { in: ['RESOLVED', 'CLOSED'] as any },
       },
-      select: { amount: true },
+      select: { disputedAmount: true },
     }).catch(() => [])
     const disputeFees = disputeRecords.reduce(
-      (sum: number, d: any) => sum + (Number(d.amount) || 0) * 0.02, 0
+      (sum: number, d: any) => sum + (Number(d.disputedAmount) || 0) * 0.02, 0
     )
 
     const totalExpenses = stripeFees + refunds + chargebacks + disputeFees
@@ -583,15 +581,15 @@ export class FinancialReportingService {
     const totalRevenue =
       platformFeesCollected + processingFees + instantPayoutFeesCollected
 
-    // Breakdown by project type
-    // Query distinct project types from Project model
-    const projectTypes = await prisma.project.findMany({
-      select: { type: true },
-      distinct: ['type' as any],
+    // Breakdown by project status
+    // Query distinct project statuses from Project model
+    const projectStatuses = await prisma.project.findMany({
+      select: { status: true },
+      distinct: ['status'],
     }).catch(() => [])
     const byProjectType: Record<string, number> = {}
-    for (const pt of projectTypes) {
-      if ((pt as any).type) byProjectType[(pt as any).type] = 0
+    for (const pt of projectStatuses) {
+      if (pt.status) byProjectType[pt.status] = 0
     }
 
     // Breakdown by contract size
@@ -1098,15 +1096,15 @@ export class FinancialReportingService {
     startDate: Date,
     endDate: Date
   ): Promise<Record<string, { revenue: number; profit: number }>> {
-    // Query distinct project categories from Project model
+    // Query distinct project statuses from Project model
     const projects = await prisma.project.findMany({
-      select: { type: true },
-      distinct: ['type' as any],
+      select: { status: true },
+      distinct: ['status'],
     }).catch(() => [])
 
     const breakdown: Record<string, { revenue: number; profit: number }> = {}
     for (const project of projects) {
-      const category = (project as any).type || 'UNCATEGORIZED'
+      const category = project.status || 'UNCATEGORIZED'
       const categoryFees = await prisma.escrowTransaction.findMany({
         where: {
           type: 'FEE',
@@ -1114,7 +1112,7 @@ export class FinancialReportingService {
           status: 'COMPLETED',
           escrow: {
             contract: {
-              project: { type: category as any },
+              project: { status: category },
             },
           },
         },

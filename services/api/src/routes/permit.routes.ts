@@ -12,6 +12,7 @@ import { prisma } from '@kealee/database';
 async function reviewPermitWithAI(permit: any): Promise<{ score: number; issues: any[]; suggestions: any[] }> {
   try {
     // Try to use @kealee/automation AI service
+    // @ts-ignore -- dynamic import, may not be built yet
     const { analyzePermitCompliance } = await import('@kealee/automation/src/infrastructure/ai');
     const result = await analyzePermitCompliance(permit);
     return result;

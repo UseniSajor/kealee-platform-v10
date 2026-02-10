@@ -289,7 +289,7 @@ export class UserResponsibilityUploadService {
    */
   private getCategoryRequirements(
     category: FileCategory
-  ): { formats: string[]; maxSize: number; uploadedBy?: UploadedByRole[] } | null {
+  ): { formats: readonly string[]; maxSize: number; uploadedBy?: readonly UploadedByRole[] } | null {
     const categoryMap: Record<string, keyof typeof PHOTO_REQUIREMENTS | keyof typeof DOCUMENT_REQUIREMENTS> = {
       SITE_PHOTO: 'SITE_VISIT',
       PROGRESS_PHOTO: 'SITE_VISIT',
@@ -526,7 +526,7 @@ export class UserResponsibilityUploadService {
     }
 
     // Check access permissions
-    const hasAccess = this.checkFileAccess(fileUpload, userId, userRole)
+    const hasAccess = await this.checkFileAccess(fileUpload, userId, userRole)
     if (!hasAccess) {
       throw new Error('Access denied')
     }
@@ -537,7 +537,7 @@ export class UserResponsibilityUploadService {
   /**
    * Check if user has access to view/download file
    */
-  private checkFileAccess(fileUpload: any, userId: string, userRole: string): boolean {
+  private async checkFileAccess(fileUpload: any, userId: string, userRole: string): Promise<boolean> {
     // Uploader always has access
     if (fileUpload.uploadedById === userId) {
       return true
