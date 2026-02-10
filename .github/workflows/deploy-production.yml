@@ -65,6 +65,9 @@ jobs:
           - name: os-admin
             filter: os-admin
             project_id: ${{ secrets.VERCEL_PROJECT_ID_OS_ADMIN }}
+          - name: m-estimation
+            filter: m-estimation
+            project_id: ${{ secrets.VERCEL_PROJECT_ID_ESTIMATION }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
