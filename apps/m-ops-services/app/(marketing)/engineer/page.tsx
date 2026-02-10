@@ -187,7 +187,7 @@ export default function EngineerPage() {
       <section className="mb-16">
         <h2 className="text-2xl font-black text-center mb-4">Pricing</h2>
         <p className="text-center text-zinc-600 mb-10 max-w-2xl mx-auto">
-          Transparent pricing based on project scope. All quotes include PE stamp.
+          Clear pricing based on project scope. All quotes include PE stamp.
         </p>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {pricing.map((item) => (

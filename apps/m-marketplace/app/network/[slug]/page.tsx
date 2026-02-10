@@ -15,7 +15,7 @@ const mockProfiles: Record<string, any> = {
     principalName: 'James Rodriguez',
     type: 'gc',
     tagline: 'Building Excellence Since 2012',
-    bio: 'Capital City Builders is a full-service general contractor specializing in residential and commercial construction throughout the DC-Baltimore corridor. With over a decade of experience, we\'ve built our reputation on quality craftsmanship, transparent communication, and delivering projects on time and within budget. Our team of skilled professionals is committed to turning your vision into reality.',
+    bio: 'Capital City Builders is a full-service general contractor specializing in residential and commercial construction throughout the DC-Baltimore corridor. With over a decade of experience, we\'ve built our reputation on quality craftsmanship, clear communication, and delivering projects on time and within budget. Our team of skilled professionals is committed to turning your vision into reality.',
     logo: null,
     coverPhoto: null,
     trades: ['Residential Construction', 'Commercial Buildouts', 'Renovations', 'Additions', 'Custom Homes'],

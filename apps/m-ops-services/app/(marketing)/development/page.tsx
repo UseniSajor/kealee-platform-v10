@@ -357,7 +357,7 @@ export default function DevelopmentHomePage() {
             Ready to Protect Your Project?
           </h2>
           <p className="text-xl mb-8 opacity-95">
-            Request a complimentary project review. We'll assess your needs and provide a transparent scope and fee proposal within 48 hours.
+            Request a complimentary project review. We'll assess your needs and provide a clear scope and fee proposal within 48 hours.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button

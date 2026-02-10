@@ -133,7 +133,7 @@ const COMPONENT_COLORS: Record<string, string> = {
   Safety: 'bg-red-500',
 };
 
-const API_BASE = 'http://localhost:3002';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
 
 // ============================================================================
 // MAIN PAGE (with Suspense boundary for useSearchParams)

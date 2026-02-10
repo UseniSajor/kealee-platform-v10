@@ -32,7 +32,7 @@ export default function HowItWorksPage() {
               Our Process
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed">
-              Our proven four-step process keeps your project on track from initial assessment through successful delivery and close-out. Clear accountability, transparent reporting, and proactive risk management at every stage.
+              Our proven four-step process keeps your project on track from initial assessment through successful delivery and close-out. Clear accountability, detailed reporting, and proactive risk management at every stage.
             </p>
           </div>
         </div>

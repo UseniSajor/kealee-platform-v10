@@ -10,21 +10,25 @@ const PACKAGES = {
   a: {
     name: 'Package A - Starter',
     price: 1750,
+    annualPrice: 1400,
     features: ['5-10 hours/week PM time', 'Single project focus', 'Email support'],
   },
   b: {
     name: 'Package B - Professional',
     price: 4500,
+    annualPrice: 3600,
     features: ['15-20 hours/week PM time', 'Up to 3 concurrent projects', 'Priority support'],
   },
   c: {
     name: 'Package C - Premium',
     price: 8500,
-    features: ['30-40 hours/week PM time', 'Unlimited projects', '24/7 priority support'],
+    annualPrice: 6800,
+    features: ['30-40 hours/week PM time', 'Up to 20 projects', '24/7 priority support'],
   },
   d: {
     name: 'Package D - Enterprise',
     price: 16500,
+    annualPrice: 13200,
     features: ['40+ hours/week PM time', 'Portfolio management', 'Dedicated account manager'],
   },
 };
@@ -171,6 +175,12 @@ export default function CheckoutPage() {
                     <span className="text-gray-600">Monthly</span>
                     <span className="text-xl font-bold text-gray-900">
                       ${pkg.price.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm mb-2">
+                    <span className="text-gray-600">Annual billing</span>
+                    <span className="text-green-600 font-semibold">
+                      ${pkg.annualPrice.toLocaleString()}/mo
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-sm">

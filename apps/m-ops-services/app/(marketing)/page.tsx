@@ -167,7 +167,7 @@ export default function MarketingHomePage() {
           </h1>
           <p className="mx-auto mt-4 max-w-3xl text-lg text-zinc-600">
             From pre-construction design to final closeout. Streamline every phase of your
-            construction project with integrated tools, transparent pricing, and guaranteed
+            construction project with integrated tools, clear pricing, and guaranteed
             escrow-backed payments.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">

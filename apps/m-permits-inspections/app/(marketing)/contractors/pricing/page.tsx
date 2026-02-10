@@ -3,7 +3,7 @@ import { CheckCircle2, ArrowRight } from "lucide-react"
 
 export const metadata = {
   title: "Pricing - Permit Services for Contractors | Kealee",
-  description: "Transparent permit service pricing: per-permit, monthly unlimited, or enterprise packages. First permit free.",
+  description: "Clear permit service pricing: per-permit, monthly unlimited, or enterprise packages. First permit free.",
 }
 
 export default function PermitPricingPage() {
@@ -101,7 +101,7 @@ export default function PermitPricingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Transparent Permit Pricing
+              Clear Permit Pricing
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed">
               Pay per permit or choose unlimited monthly service. First permit free for new contractors.
@@ -173,7 +173,7 @@ export default function PermitPricingPage() {
               Pay-Per-Permit Pricing
             </h2>
             <p className="text-lg text-gray-600">
-              Transparent pricing for individual permits
+              Clear pricing for individual permits
             </p>
           </div>
 

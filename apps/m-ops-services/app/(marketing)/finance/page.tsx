@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Finance & Trust | Kealee',
-  description: 'Secure escrow management, milestone payments, and transparent financial tracking for all parties.',
+  description: 'Secure escrow management, milestone payments, and clear financial tracking for all parties.',
 };
 
 export default function FinancePage() {
@@ -108,7 +108,7 @@ export default function FinancePage() {
           Finance & Trust
         </h1>
         <p className="mt-4 text-xl text-zinc-600 max-w-3xl mx-auto">
-          Secure, transparent financial management for construction projects.
+          Secure, clear financial management for construction projects.
           Escrow-backed milestone payments protect everyone.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
@@ -215,7 +215,7 @@ export default function FinancePage() {
       {/* Fees */}
       <section className="mb-16">
         <div className="rounded-2xl bg-zinc-50 p-8">
-          <h2 className="text-xl font-black text-center mb-6">Transparent Fees</h2>
+          <h2 className="text-xl font-black text-center mb-6">Clear Fees</h2>
           <div className="max-w-md mx-auto">
             <div className="space-y-3">
               {fees.map((item) => (

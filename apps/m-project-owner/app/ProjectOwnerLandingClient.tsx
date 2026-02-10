@@ -151,7 +151,7 @@ const ownerPackages = [
     period: 'mo',
     description: 'For developers and property management companies.',
     features: [
-      'Unlimited projects',
+      'Up to 20 projects',
       'Everything in Professional',
       'White-label options',
       'Custom integrations',

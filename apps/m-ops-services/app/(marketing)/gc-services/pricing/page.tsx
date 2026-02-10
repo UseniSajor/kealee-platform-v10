@@ -5,7 +5,7 @@ import { CheckCircle2, ArrowRight } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Pricing - Operations Services for GCs | Kealee",
-  description: "Transparent pricing for operations support: $1,750-$16,500/month based on project volume. 14-day free trial. No setup fees.",
+  description: "Clear pricing for operations support: $1,750-$16,500/month based on project volume. 14-day free trial. No setup fees.",
 }
 
 export default function GCPricingPage() {
@@ -15,6 +15,7 @@ export default function GCPricingPage() {
       label: "Solo GC",
       price: "$1,750",
       period: "/month",
+      annualPrice: "$1,400",
       idealFor: "1-3 active projects • Solo operators • Residential focus",
       features: [
         "Permit + inspection tracking for up to 3 projects",
@@ -30,6 +31,7 @@ export default function GCPricingPage() {
       label: "Growing Team",
       price: "$3,750",
       period: "/month",
+      annualPrice: "$3,000",
       idealFor: "3-8 active projects • Small teams • Commercial & residential",
       features: [
         "Multi-project coordination across all active jobs",
@@ -47,6 +49,7 @@ export default function GCPricingPage() {
       label: "Multiple Projects",
       price: "$9,500",
       period: "/month",
+      annualPrice: "$7,600",
       idealFor: "8-15 active projects • Established firms • Multi-region",
       features: [
         "Enterprise-level multi-project operations coverage",
@@ -64,6 +67,7 @@ export default function GCPricingPage() {
       label: "Enterprise GC",
       price: "$16,500",
       period: "/month",
+      annualPrice: "$13,200",
       idealFor: "15+ projects • Multi-region operations • $20M+ annual revenue",
       features: [
         "Full operations department replacement",
@@ -79,7 +83,7 @@ export default function GCPricingPage() {
     },
   ]
 
-  const alaCarte = [
+  const individualServices = [
     { 
       name: "Permit Application Assistance", 
       price: "$325", 
@@ -173,7 +177,7 @@ export default function GCPricingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Transparent Pricing for Operations Support
+              Clear Pricing for Operations Support
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed">
               Choose the package that matches your project volume. All packages include a 14-day free trial—no credit card required.
@@ -187,10 +191,13 @@ export default function GCPricingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Monthly Operations Packages
+              Operations Packages
             </h2>
             <p className="text-lg text-gray-600">
-              Comprehensive operations support with predictable monthly pricing
+              Comprehensive operations support with predictable monthly pricing.
+              <span className="ml-1 px-2 py-0.5 bg-green-100 text-green-700 text-sm rounded-full font-medium">
+                Save 20% with annual billing
+              </span>
             </p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -217,6 +224,11 @@ export default function GCPricingPage() {
                     <div className="text-right">
                       <div className="text-4xl font-bold text-gray-900">{pkg.price}</div>
                       <div className="text-gray-600">{pkg.period}</div>
+                      {pkg.annualPrice && (
+                        <div className="text-sm text-green-600 font-medium mt-1">
+                          {pkg.annualPrice}/mo billed annually
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -252,12 +264,12 @@ export default function GCPricingPage() {
         </div>
       </section>
 
-      {/* À La Carte */}
+      {/* Individual Services */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              À La Carte Services for GCs & Builders
+              Individual Services for GCs & Builders
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Need help with specific tasks or individual projects? Purchase professional services individually without a monthly commitment.
@@ -265,7 +277,7 @@ export default function GCPricingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {alaCarte.map((service) => (
+            {individualServices.map((service) => (
               <Card key={service.name} className="bg-white border-gray-200 hover:shadow-lg transition-shadow">
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between mb-4">

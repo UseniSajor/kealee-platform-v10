@@ -63,7 +63,7 @@ export default function TermsPage() {
               <li>Free trials are available for select packages as advertised</li>
               <li>Package upgrades take effect immediately upon confirmation</li>
               <li>Downgrades take effect at the next billing cycle</li>
-              <li>À la carte services are billed per service upon completion</li>
+              <li>Individual services are billed per service upon completion</li>
             </ul>
           </div>
         </section>
@@ -154,7 +154,7 @@ export default function TermsPage() {
               <li>Monthly subscriptions can be canceled at any time</li>
               <li>Cancellation takes effect at the end of the current billing period</li>
               <li>Free trial cancellations incur no charges if done before trial ends</li>
-              <li>À la carte services are final once work has commenced</li>
+              <li>Individual services are final once work has commenced</li>
               <li>Escrow funds are released or returned according to project agreement terms</li>
             </ul>
           </div>

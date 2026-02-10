@@ -107,7 +107,7 @@ export default function ContactPage() {
               Request a Project Review
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed">
-              Tell us about your project and we'll provide a complimentary assessment with a transparent scope and fee proposal within 48 hours.
+              Tell us about your project and we'll provide a complimentary assessment with a clear scope and fee proposal within 48 hours.
             </p>
           </div>
         </div>
@@ -461,7 +461,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">48-Hour Proposal</p>
-                      <p>You'll receive a transparent scope and fee proposal within 48 hours.</p>
+                      <p>You'll receive a clear scope and fee proposal within 48 hours.</p>
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">No Obligation</p>

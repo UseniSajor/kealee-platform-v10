@@ -1,14 +1,17 @@
 'use client';
 
+import { useState } from 'react';
 import { Check, ArrowRight, Star } from 'lucide-react';
 
 export default function PricingPage() {
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
+
   const packages = [
     {
       id: 'a',
       name: 'Package A',
       subtitle: 'Starter',
-      price: 1750,
+      price: billingPeriod === 'monthly' ? 1750 : 1400,
       bestFor: 'Small projects, limited PM needs',
       features: [
         '5-10 hours/week PM time',
@@ -24,7 +27,7 @@ export default function PricingPage() {
       id: 'b',
       name: 'Package B',
       subtitle: 'Professional',
-      price: 4500,
+      price: billingPeriod === 'monthly' ? 4500 : 3600,
       bestFor: 'Growing projects, multiple workstreams',
       features: [
         '15-20 hours/week PM time',
@@ -41,11 +44,11 @@ export default function PricingPage() {
       id: 'c',
       name: 'Package C',
       subtitle: 'Premium',
-      price: 8500,
+      price: billingPeriod === 'monthly' ? 8500 : 6800,
       bestFor: 'Complex projects, full PM coverage',
       features: [
         '30-40 hours/week PM time',
-        'Unlimited projects',
+        'Up to 20 projects',
         '24/7 priority support',
         'Daily progress reports',
         'Dedicated PM assigned',
@@ -60,7 +63,7 @@ export default function PricingPage() {
       id: 'd',
       name: 'Package D',
       subtitle: 'Enterprise',
-      price: 16500,
+      price: billingPeriod === 'monthly' ? 16500 : 13200,
       bestFor: 'Portfolio management, institutional',
       features: [
         '40+ hours/week PM time',
@@ -89,6 +92,29 @@ export default function PricingPage() {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Choose the package that fits your needs. All packages include 14-day free trial. Cancel anytime.
           </p>
+
+          {/* Billing Toggle */}
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <span className={`font-medium ${billingPeriod === 'monthly' ? 'text-gray-900' : 'text-gray-500'}`}>
+              Monthly
+            </span>
+            <button
+              onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'annual' : 'monthly')}
+              className={`w-14 h-8 rounded-full p-1 transition ${
+                billingPeriod === 'annual' ? 'bg-blue-600' : 'bg-gray-300'
+              }`}
+            >
+              <div className={`w-6 h-6 bg-white rounded-full transition transform ${
+                billingPeriod === 'annual' ? 'translate-x-6' : ''
+              }`} />
+            </button>
+            <span className={`font-medium ${billingPeriod === 'annual' ? 'text-gray-900' : 'text-gray-500'}`}>
+              Annual
+              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-sm rounded-full">
+                Save 20%
+              </span>
+            </span>
+          </div>
         </div>
 
         {/* Pricing Cards */}

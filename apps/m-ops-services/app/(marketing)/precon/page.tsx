@@ -35,7 +35,7 @@ export default function PreconPage() {
     {
       number: '05',
       title: 'Bid Collection',
-      description: 'Receive competitive bids with transparent pricing breakdowns.',
+      description: 'Receive competitive bids with clear pricing breakdowns.',
       features: ['Standardized bids', 'Side-by-side comparison', 'Direct messaging'],
     },
     {
@@ -86,7 +86,7 @@ export default function PreconPage() {
         </h1>
         <p className="mt-4 text-xl text-zinc-600 max-w-3xl mx-auto">
           From initial design to contractor award—all with guaranteed escrow-backed
-          payments. Start your project right with transparent pricing and verified contractors.
+          payments. Start your project right with clear pricing and verified contractors.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           <Link
@@ -179,9 +179,9 @@ export default function PreconPage() {
         </div>
       </section>
 
-      {/* Transparent Pricing */}
+      {/* Clear Pricing */}
       <section className="rounded-2xl bg-zinc-50 p-8 text-center">
-        <h2 className="text-xl font-black mb-4">Transparent Pricing</h2>
+        <h2 className="text-xl font-black mb-4">Clear Pricing</h2>
         <p className="text-zinc-600 max-w-xl mx-auto">
           All fees are clearly displayed at checkout. No hidden costs.
           Escrow-backed protection for all parties.

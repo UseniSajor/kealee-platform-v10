@@ -402,21 +402,21 @@ export function HomePageClient({
 
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Starter</span>
+                      <span className="text-gray-600">Essentials</span>
                       <span className="font-mono font-semibold" style={{ color: brand.orange }}>
                         $99/mo
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Professional</span>
+                      <span className="text-gray-600">Performance</span>
                       <span className="font-mono font-semibold" style={{ color: brand.orange }}>
-                        $299/mo
+                        $199/mo
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Business</span>
+                      <span className="text-gray-600">Scale</span>
                       <span className="font-mono font-semibold" style={{ color: brand.orange }}>
-                        $599/mo
+                        $349/mo
                       </span>
                     </div>
                     <div className="flex justify-between">

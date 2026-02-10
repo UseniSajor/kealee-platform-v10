@@ -242,7 +242,7 @@ export default function EngineerHomePage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-black">Engineering Packages</h2>
-            <p className="text-zinc-500 mt-2">Transparent pricing for every project size</p>
+            <p className="text-zinc-500 mt-2">Clear pricing for every project size</p>
           </div>
           <div className="grid grid-cols-4 gap-6">
             {packages.map((pkg) => (
@@ -291,10 +291,10 @@ export default function EngineerHomePage() {
         </div>
       </section>
 
-      {/* Transparent Pricing Notice */}
+      {/* Clear Pricing Notice */}
       <section className="py-12 bg-blue-50">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <h3 className="text-xl font-bold mb-2">Transparent Pricing</h3>
+          <h3 className="text-xl font-bold mb-2">Clear Pricing</h3>
           <p className="text-zinc-600 mb-4">
             Get clear, upfront quotes with all costs displayed at checkout.
             No hidden fees—ever.

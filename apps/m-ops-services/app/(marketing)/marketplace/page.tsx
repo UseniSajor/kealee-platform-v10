@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Contractor Marketplace | Kealee',
-  description: 'Connect with verified contractors, vendors, and suppliers. Quality leads and transparent bidding.',
+  description: 'Connect with verified contractors, vendors, and suppliers. Quality leads and clear bidding.',
 };
 
 export default function MarketplacePage() {
@@ -20,7 +20,7 @@ export default function MarketplacePage() {
     },
     {
       icon: '💰',
-      title: 'Transparent Pricing',
+      title: 'Clear Pricing',
       description: 'All fees clearly displayed at checkout—no surprises.',
     },
     {

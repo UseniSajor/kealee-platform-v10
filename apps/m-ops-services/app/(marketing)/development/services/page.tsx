@@ -479,7 +479,7 @@ export default function ServicesPage() {
             Not Sure Which Tier Is Right for You?
           </h2>
           <p className="text-lg text-gray-600 mb-8">
-            Request a project review and we'll recommend the best service tier for your needs—with a transparent scope and fee proposal.
+            Request a project review and we'll recommend the best service tier for your needs—with a clear scope and fee proposal.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button

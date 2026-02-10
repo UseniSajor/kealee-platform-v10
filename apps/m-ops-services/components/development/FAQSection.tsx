@@ -20,7 +20,7 @@ export function FAQSection() {
     },
     {
       question: "How do you charge for your services?",
-      answer: "Tier 1 is a fixed fee ($7,500–$15,000). Tier 2 is typically a monthly retainer plus milestone fees, scaled to project complexity. Tier 3 includes a reduced retainer with 5–10% of the sponsor promote. We provide transparent fee proposals upfront.",
+      answer: "Tier 1 is a fixed fee ($7,500–$15,000). Tier 2 is typically a monthly retainer plus milestone fees, scaled to project complexity. Tier 3 includes a reduced retainer with 5–10% of the sponsor promote. We provide clear fee proposals upfront.",
     },
     {
       question: "Can you help with entitlements and permitting?",
