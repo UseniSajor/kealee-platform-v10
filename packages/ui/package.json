@@ -29,10 +29,15 @@
       "types": "./src/components/index.ts",
       "default": "./src/components/index.ts"
     },
-    "./*": {
-      "types": "./src/*.ts",
-      "default": "./src/*.ts"
-    }
+    "./components/*": {
+      "types": "./src/components/*.tsx",
+      "default": "./src/components/*.tsx"
+    },
+    "./components/scheduling/*": {
+      "types": "./src/components/scheduling/*.tsx",
+      "default": "./src/components/scheduling/*.tsx"
+    },
+    "./*": "./src/*"
   },
   "scripts": {
     "build": "tsc",
