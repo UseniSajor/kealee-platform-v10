@@ -1,14 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRequireAuth } from '@kealee/auth/client';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { ArrowLeft, Calendar, FileText, Loader2, Download } from 'lucide-react';
 import Link from 'next/link';
 
 export default function NewReportPage() {
-  const { user } = useRequireAuth();
   const [reportType, setReportType] = useState<'weekly' | 'monthly' | 'custom'>('weekly');
   const [dateRange, setDateRange] = useState({
     start: '',

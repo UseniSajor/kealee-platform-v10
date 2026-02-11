@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRequireAuth } from '@kealee/auth/client';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import {
@@ -32,7 +31,6 @@ interface Report {
 }
 
 export default function ReportsPage() {
-  const { user } = useRequireAuth();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'weekly' | 'monthly'>('all');

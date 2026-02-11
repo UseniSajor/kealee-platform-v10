@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { cn } from "@/lib/utils"
 
-type Channel = "messages" | "email" | "calls" | "meetings"
+type Channel = "messages" | "sms" | "email" | "calls" | "meetings"
 
 type Conversation = { id: string; name: string; last: string; unread: number }
 type ChatMessage = { id: string; at: string; from: "me" | "them"; text: string }
@@ -94,13 +94,7 @@ export default function CommunicationPage() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Communication</h1>
-          <p className="text-neutral-600 mt-1">Messaging, email, call logs, and meeting scheduler (integrations are placeholders).</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => alert("Settings (placeholder)")}>
-            <Settings className="h-4 w-4" />
-            Settings
-          </Button>
+          <p className="text-neutral-600 mt-1">Messaging, SMS/WhatsApp (via Twilio), email, call logs, and meeting scheduler.</p>
         </div>
       </div>
 
@@ -108,6 +102,7 @@ export default function CommunicationPage() {
         {(
           [
             { id: "messages", label: "Messages" },
+            { id: "sms", label: "SMS / WhatsApp" },
             { id: "email", label: "Email" },
             { id: "calls", label: "Calls" },
             { id: "meetings", label: "Meetings" },
@@ -206,6 +201,117 @@ export default function CommunicationPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      ) : null}
+
+      {tab === "sms" ? (
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <Card className="py-0 xl:col-span-2">
+            <CardHeader>
+              <CardTitle className="text-base">Send SMS / WhatsApp</CardTitle>
+            </CardHeader>
+            <CardContent className="pb-4 space-y-4">
+              <div className="rounded-xl border bg-white p-4 space-y-4">
+                <div>
+                  <div className="text-xs font-medium text-neutral-700 mb-1">Recipient Phone (E.164 format)</div>
+                  <Input placeholder="+1 (555) 123-4567" />
+                </div>
+                <div>
+                  <div className="text-xs font-medium text-neutral-700 mb-1">Channel</div>
+                  <div className="flex gap-2">
+                    <Button variant="default" size="sm">SMS</Button>
+                    <Button variant="outline" size="sm">WhatsApp</Button>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs font-medium text-neutral-700 mb-1">Message</div>
+                  <textarea
+                    className="min-h-[100px] w-full rounded-md border bg-white px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    placeholder="Type your message..."
+                  />
+                </div>
+                <div>
+                  <div className="text-xs font-medium text-neutral-700 mb-1">Or use a template</div>
+                  <select className="w-full rounded-md border bg-white px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                    <option value="">Select template...</option>
+                    <option value="NEW_LEAD">New Lead Notification</option>
+                    <option value="BID_SUBMITTED">Bid Submitted</option>
+                    <option value="INSPECTION_REMINDER">Inspection Reminder</option>
+                    <option value="MILESTONE_COMPLETE">Milestone Complete</option>
+                    <option value="PAYMENT_RELEASED">Payment Released</option>
+                    <option value="SCHEDULE_DISRUPTION">Schedule Disruption</option>
+                    <option value="CHANGE_ORDER">Change Order</option>
+                    <option value="DOCUMENT_READY">Document Ready</option>
+                    <option value="DECISION_NEEDED">Decision Needed</option>
+                    <option value="BUDGET_ALERT">Budget Alert</option>
+                    <option value="WEEKLY_REPORT">Weekly Report</option>
+                  </select>
+                </div>
+                <Button>
+                  <Send className="h-4 w-4" />
+                  Send Message
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="space-y-6">
+            <Card className="py-0">
+              <CardHeader>
+                <CardTitle className="text-base">Twilio Configuration</CardTitle>
+              </CardHeader>
+              <CardContent className="pb-4 space-y-3">
+                <div className="rounded-xl border bg-white p-4">
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-600">Status</span>
+                      <span className={cn(
+                        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
+                        "bg-amber-50 text-amber-700 border-amber-200"
+                      )}>
+                        Needs Configuration
+                      </span>
+                    </div>
+                    <div className="text-xs text-neutral-600">
+                      Set the following environment variables on your deployment:
+                    </div>
+                    <div className="rounded-lg bg-neutral-50 p-3 font-mono text-xs space-y-1">
+                      <div>TWILIO_ACCOUNT_SID=AC...</div>
+                      <div>TWILIO_AUTH_TOKEN=...</div>
+                      <div>TWILIO_PHONE_NUMBER=+1...</div>
+                    </div>
+                    <div className="text-xs text-neutral-600 mt-2">
+                      Get credentials from <a href="https://console.twilio.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">console.twilio.com</a>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="py-0">
+              <CardHeader>
+                <CardTitle className="text-base">SMS Templates</CardTitle>
+              </CardHeader>
+              <CardContent className="pb-4 space-y-2">
+                <div className="text-xs text-neutral-600 mb-2">
+                  Pre-built templates from <code className="bg-neutral-100 px-1 rounded">@kealee/communications</code>
+                </div>
+                {[
+                  { name: "Welcome", desc: "Onboarding message for new clients" },
+                  { name: "Inspection Reminder", desc: "Upcoming inspection alert" },
+                  { name: "Payment Released", desc: "Escrow payment notification" },
+                  { name: "Schedule Disruption", desc: "Delay or change notification" },
+                  { name: "Decision Needed", desc: "Request for client approval" },
+                  { name: "Budget Alert", desc: "Budget threshold warning" },
+                ].map((t) => (
+                  <div key={t.name} className="rounded-lg border bg-white p-3">
+                    <div className="font-medium text-neutral-900 text-sm">{t.name}</div>
+                    <div className="text-xs text-neutral-600 mt-0.5">{t.desc}</div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       ) : null}
 

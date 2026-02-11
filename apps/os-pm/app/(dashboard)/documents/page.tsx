@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Download, FileSignature, FileText, Plus, ShieldCheck } from "lucide-react"
+import { Check, Copy, Download, Eye, FileSignature, FileText, Plus, ShieldCheck, X } from "lucide-react"
 
 import { DocumentUpload } from "@/components/projects/DocumentUpload"
 import { Button } from "@kealee/ui/button"
@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { cn } from "@/lib/utils"
 
-type DocTemplate = { id: string; name: string; description: string; tags: string[] }
+type DocTemplate = { id: string; name: string; description: string; tags: string[]; content: string }
 type SignRequest = { id: string; docName: string; recipient: string; status: "draft" | "sent" | "completed"; sentAt?: string }
 
 function uid(prefix: string) {
@@ -39,15 +39,49 @@ function downloadText(text: string, filename: string, mime = "text/plain;charset
 
 export default function DocumentsPage() {
   const [query, setQuery] = React.useState("")
+  const [previewTemplate, setPreviewTemplate] = React.useState<DocTemplate | null>(null)
+  const [copiedId, setCopiedId] = React.useState<string | null>(null)
+
   const templates: DocTemplate[] = React.useMemo(
     () => [
-      { id: "tpl-1", name: "Change Order", description: "Standard change order template.", tags: ["contract", "scope"] },
-      { id: "tpl-2", name: "RFI", description: "Request for information form.", tags: ["engineering", "clarification"] },
-      { id: "tpl-3", name: "Submittal Cover Sheet", description: "Covers permit / plan submittals.", tags: ["permits"] },
-      { id: "tpl-4", name: "Lien Waiver", description: "Conditional/unconditional waiver.", tags: ["finance", "legal"] },
+      {
+        id: "tpl-1",
+        name: "Change Order",
+        description: "Standard change order template.",
+        tags: ["contract", "scope"],
+        content: "CHANGE ORDER\n\nProject: ________________________\nChange Order #: ________\nDate: ________\n\nDescription of Change:\n____________________________________________________________\n____________________________________________________________\n\nReason for Change:\n____________________________________________________________\n\nCost Impact:\n  Additional Cost: $________\n  Credit Amount:   $________\n  Net Change:      $________\n\nSchedule Impact: ________ calendar days\n\nApprovals:\nContractor: _________________ Date: ________\nOwner:      _________________ Date: ________\nArchitect:  _________________ Date: ________",
+      },
+      {
+        id: "tpl-2",
+        name: "RFI",
+        description: "Request for information form.",
+        tags: ["engineering", "clarification"],
+        content: "REQUEST FOR INFORMATION (RFI)\n\nRFI #: ________\nDate: ________\nProject: ________________________\n\nTo: ________________________\nFrom: ________________________\nSpec Section: ________\nDrawing Ref: ________\n\nQuestion / Request:\n____________________________________________________________\n____________________________________________________________\n____________________________________________________________\n\nSuggested Solution:\n____________________________________________________________\n____________________________________________________________\n\nResponse Required By: ________\nCost Impact:  [ ] Yes  [ ] No  [ ] To Be Determined\nSchedule Impact:  [ ] Yes  [ ] No  [ ] To Be Determined\n\nResponse:\n____________________________________________________________\n____________________________________________________________\n\nResponded By: _________________ Date: ________",
+      },
+      {
+        id: "tpl-3",
+        name: "Submittal Cover Sheet",
+        description: "Covers permit / plan submittals.",
+        tags: ["permits"],
+        content: "SUBMITTAL COVER SHEET\n\nProject: ________________________\nSubmittal #: ________\nDate: ________\nSpec Section: ________\n\nDescription:\n____________________________________________________________\n\nSubmitted By: ________________________\nContractor: ________________________\n\nItems Enclosed:\n[ ] Shop Drawings (________ sheets)\n[ ] Product Data (________ pages)\n[ ] Samples (________ items)\n[ ] Certificates / Test Reports\n[ ] Other: ________________________\n\nAction Taken:\n[ ] Approved\n[ ] Approved as Noted\n[ ] Revise and Resubmit\n[ ] Rejected\n[ ] For Information Only\n\nReviewer: _________________ Date: ________\nComments:\n____________________________________________________________",
+      },
+      {
+        id: "tpl-4",
+        name: "Lien Waiver",
+        description: "Conditional/unconditional waiver.",
+        tags: ["finance", "legal"],
+        content: "CONDITIONAL LIEN WAIVER AND RELEASE ON PROGRESS PAYMENT\n\nProject: ________________________\nOwner: ________________________\nClaimant: ________________________\n\nOn receipt of payment in the sum of $________ for work performed through ________,\nthe undersigned waives and releases any mechanic's lien, stop notice, or bond right\nthe undersigned has on the above-referenced project to the following extent:\n\nThis release covers a progress payment for all labor, services, equipment, and\nmaterials furnished to the project through the date shown above.\n\nThis release does not cover retention, pending modifications, or claims for\nextra work not included in the payment amount.\n\nConditional upon receipt of payment.\n\nClaimant: _________________________\nSignature: _________________________\nTitle: _________________________\nDate: ________",
+      },
     ],
     []
   )
+
+  function handleUseTemplate(template: DocTemplate) {
+    const filename = `${template.name.replace(/\s+/g, "-").toLowerCase()}-${new Date().toISOString().slice(0, 10)}.txt`
+    downloadText(template.content, filename)
+    setCopiedId(template.id)
+    setTimeout(() => setCopiedId(null), 2000)
+  }
 
   const [signRequests, setSignRequests] = React.useState<SignRequest[]>([
     { id: "s1", docName: "Change Order - CO-12.pdf", recipient: "client@company.com", status: "sent", sentAt: "2026-01-10 14:05" },
@@ -137,12 +171,13 @@ export default function DocumentsPage() {
                         </div>
                       </div>
                       <div className="flex flex-col gap-2">
-                        <Button variant="outline" size="sm" onClick={() => alert("Open template (placeholder)")}>
-                          <FileText className="h-4 w-4" />
-                          Open
+                        <Button variant="outline" size="sm" onClick={() => setPreviewTemplate(t)}>
+                          <Eye className="h-4 w-4" />
+                          Preview
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => alert("Create doc from template (placeholder)")}>
-                          Use
+                        <Button variant="outline" size="sm" onClick={() => handleUseTemplate(t)}>
+                          {copiedId === t.id ? <Check className="h-4 w-4" /> : <Download className="h-4 w-4" />}
+                          {copiedId === t.id ? "Downloaded" : "Use"}
                         </Button>
                       </div>
                     </div>
@@ -213,6 +248,34 @@ export default function DocumentsPage() {
           </Card>
         </div>
       </div>
+
+      {/* Template Preview Modal */}
+      {previewTemplate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setPreviewTemplate(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b">
+              <div>
+                <h3 className="font-bold text-neutral-900">{previewTemplate.name}</h3>
+                <p className="text-sm text-neutral-600 mt-0.5">{previewTemplate.description}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => handleUseTemplate(previewTemplate)}>
+                  <Download className="h-4 w-4" />
+                  Download
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setPreviewTemplate(null)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+              <pre className="whitespace-pre-wrap font-mono text-sm text-neutral-800 leading-relaxed">
+                {previewTemplate.content}
+              </pre>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
