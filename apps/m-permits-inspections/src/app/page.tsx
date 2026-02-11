@@ -8,7 +8,7 @@ import { redirect } from 'next/navigation';
 import { createServerClient } from '@/lib/supabase/server';
 import { Metadata } from 'next';
 import Link from 'next/link'
-import { Check, Building2, FileCheck, Clock, Shield, Zap, Users, BarChart3 } from 'lucide-react'
+import { Check, Building2, FileCheck, Clock, Shield, Zap, Users, BarChart3, ShoppingCart } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Permits & Inspections Management Platform | Kealee',
@@ -46,8 +46,11 @@ export default async function HomePage() {
             <Link href="/public/search" className="text-neutral-600 hover:text-neutral-900">
               Search Permits
             </Link>
-            <Link 
-              href="/auth/login" 
+            <button id="cart-trigger" className="relative text-gray-700 hover:text-blue-600 transition" aria-label="Cart">
+              <ShoppingCart className="h-5 w-5" />
+            </button>
+            <Link
+              href="/auth/login"
               className="px-4 py-2 text-neutral-700 hover:text-neutral-900"
             >
               Log In

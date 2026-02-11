@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { DraftingCompass, FileText, Users, Clock, Share2, BarChart3, Briefcase, Building, Send, FolderOpen, UserCheck, ArrowRight } from 'lucide-react'
+import { DraftingCompass, FileText, Users, Clock, Share2, BarChart3, Briefcase, Building, Send, FolderOpen, UserCheck, ArrowRight, ShoppingCart } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Design Professional Portal | Kealee',
@@ -75,6 +75,9 @@ export default function ArchitectPortalPage() {
             <Link href="/team" className="text-gray-600 hover:text-gray-900 text-sm">
               Team
             </Link>
+            <button id="cart-trigger" className="relative text-gray-700 hover:text-blue-600 transition" aria-label="Cart">
+              <ShoppingCart className="h-5 w-5" />
+            </button>
             <Link
               href="/login"
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"

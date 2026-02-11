@@ -53,7 +53,7 @@ const benefits = [
   {
     icon: Shield,
     title: "Professional Client Experience",
-    description: "Compete with larger GCs on professionalism. Consistent communication builds trust and referrals.",
+    description: "Compete with larger firms on professionalism. Consistent communication builds trust and referrals.",
     examples: [
       "Weekly photo reports",
       "Proactive status updates",
@@ -98,7 +98,7 @@ const painPoints = [
 
 const whoUses = [
   {
-    type: "Solo GCs",
+    type: "Solo Contractors",
     size: "1-2 projects at a time",
     package: "Package A",
     saves: "6-10 hrs/week",
@@ -112,7 +112,7 @@ const whoUses = [
     description: "Full coordination support to scale without admin overhead"
   },
   {
-    type: "Established GCs",
+    type: "Established Builders",
     size: "5-10 active projects",
     package: "Package C",
     saves: "20-30 hrs/week",
@@ -136,10 +136,10 @@ export default function ContractorsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Why General Contractors Choose Kealee
+              Why GCs, Builders &amp; Contractors Choose Kealee
             </h1>
             <p className="text-xl text-slate-300 mb-8">
-              Stop losing time and money on administrative tasks. Let us handle the operations while you focus on building quality projects.
+              Whether you&apos;re a general contractor, custom builder, or specialty contractor — stop losing time and money on administrative tasks. Let us handle the operations while you focus on building quality projects.
             </p>
             <Link
               href="/packages"
@@ -159,7 +159,7 @@ export default function ContractorsPage() {
             Transform Your Operations
           </h2>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-            GCs who use Kealee save time, improve margins, and deliver better client experiences
+            Contractors who use Kealee save time, improve margins, and deliver better client experiences
           </p>
         </div>
 
@@ -194,7 +194,7 @@ export default function ContractorsPage() {
               Sound Familiar?
             </h2>
             <p className="text-xl text-slate-600">
-              Here&apos;s how we solve common GC frustrations
+              Here&apos;s how we solve common contractor frustrations
             </p>
           </div>
 
@@ -228,7 +228,7 @@ export default function ContractorsPage() {
               Find Your Fit
             </h2>
             <p className="text-xl text-slate-600">
-              We support GCs of all sizes - from solo operators to enterprise builders
+              We support contractors of all sizes — from solo operators to enterprise builders
             </p>
           </div>
 
@@ -309,7 +309,7 @@ export default function ContractorsPage() {
         {/* What You Get */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-slate-900 text-center mb-12">
-            What GCs Get with Kealee
+            What Contractors Get with Kealee
           </h2>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -378,7 +378,7 @@ export default function ContractorsPage() {
         {/* Testimonials */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-slate-900 text-center mb-12">
-            What GCs Are Saying
+            What Contractors Are Saying
           </h2>
 
           <div className="grid md:grid-cols-2 gap-8">
@@ -420,7 +420,7 @@ export default function ContractorsPage() {
             Ready to Stop Drowning in Admin Work?
           </h2>
           <p className="text-xl mb-8 text-emerald-50">
-            Join hundreds of GCs who have reclaimed their time and improved their margins
+            Join hundreds of contractors who have reclaimed their time and improved their margins
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

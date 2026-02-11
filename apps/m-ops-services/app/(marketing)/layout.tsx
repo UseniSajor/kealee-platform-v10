@@ -2,17 +2,18 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Menu, X, Phone } from 'lucide-react'
+import { Menu, X, Phone, ShoppingCart } from 'lucide-react'
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navLinks = [
+    { label: 'Home', href: '/' },
     { label: 'Services', href: '/packages' },
     { label: 'Pricing', href: '/pricing' },
     { label: 'How It Works', href: '/how-it-works' },
     { label: 'Case Studies', href: '/case-studies' },
-    { label: 'For GCs', href: '/contractors' },
+    { label: 'For Contractors', href: '/contractors' },
   ]
 
   return (
@@ -40,6 +41,9 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
                 <Phone className="h-4 w-4" />
                 (301) 575-8777
               </a>
+              <button id="cart-trigger" className="relative text-zinc-700 hover:text-sky-600 transition" aria-label="Cart">
+                <ShoppingCart className="h-5 w-5" />
+              </button>
               <Link href="/login" className="text-sm font-medium text-zinc-700 hover:text-sky-600 transition">
                 Portal Login
               </Link>
@@ -88,7 +92,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
                 <span className="text-lg font-bold text-white">Kealee <span className="text-sky-400">Ops</span></span>
               </div>
               <p className="text-sm text-zinc-400">
-                Professional operations management for general contractors. Save 20+ hours per week with our PM managed service packages.
+                Professional operations management for GCs, builders, and contractors. Save 20+ hours per week with our PM managed service packages.
               </p>
             </div>
 

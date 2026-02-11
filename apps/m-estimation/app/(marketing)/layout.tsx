@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X, Phone } from "lucide-react"
+import { Menu, X, Phone, ShoppingCart } from "lucide-react"
 
 export default function MarketingLayout({
   children,
@@ -44,6 +44,9 @@ export default function MarketingLayout({
             </nav>
 
             <div className="hidden md:flex items-center space-x-3">
+              <button id="cart-trigger" className="relative text-gray-700 hover:text-blue-600 transition" aria-label="Cart">
+                <ShoppingCart className="h-5 w-5" />
+              </button>
               <a
                 href="tel:+13015758777"
                 className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors inline-flex items-center space-x-1"

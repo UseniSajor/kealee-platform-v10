@@ -335,6 +335,17 @@ export type {
 } from './hooks/use-chunked-upload';
 
 // ========================================
+// Cart Components
+// ========================================
+export {
+  CartProvider,
+  CartButton,
+  CartPanel,
+  useCart,
+} from './components/Cart';
+export type { CartItem } from './components/Cart';
+
+// ========================================
 // Utilities
 // ========================================
 export { cn } from './lib/utils';

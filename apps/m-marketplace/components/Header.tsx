@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ShoppingCart } from 'lucide-react';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -59,6 +59,13 @@ export function Header() {
             >
               Contact
             </Link>
+            <button
+              id="cart-trigger"
+              className="relative text-gray-700 hover:text-blue-600 transition"
+              aria-label="Cart"
+            >
+              <ShoppingCart size={20} />
+            </button>
             <Link
               href="https://app.kealee.com/login"
               className="text-gray-700 hover:text-blue-600 transition"

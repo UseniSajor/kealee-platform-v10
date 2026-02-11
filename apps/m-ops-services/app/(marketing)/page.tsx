@@ -71,7 +71,7 @@ export default function OpsServicesHomePage() {
           <div className="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-8 text-center">
             <div>
               <div className="text-3xl font-black text-sky-500">150+</div>
-              <div className="mt-1 text-sm text-zinc-600">GCs served</div>
+              <div className="mt-1 text-sm text-zinc-600">Contractors served</div>
             </div>
             <div>
               <div className="text-3xl font-black text-sky-500">22 hrs/week</div>
@@ -101,19 +101,19 @@ export default function OpsServicesHomePage() {
         </div>
       </section>
 
-      {/* Four Core Services */}
+      {/* Five Core Services */}
       <section className="bg-zinc-50 py-16">
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center">
             <h2 className="text-3xl font-black tracking-tight text-zinc-900">
-              Four Core Services
+              Our Core Services
             </h2>
             <p className="mx-auto mt-3 max-w-2xl text-lg text-zinc-600">
-              Everything you need to run construction projects professionally
+              Everything GCs, builders, and contractors need to run construction projects professionally
             </p>
           </div>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {/* PM Managed Services - Highlighted */}
             <Link
               href="/packages"
@@ -142,7 +142,7 @@ export default function OpsServicesHomePage() {
                 PM Software Platform
               </h3>
               <p className="mt-2 text-sm text-zinc-600">
-                Self-service project management tools for GCs who prefer to manage operations in-house.
+                Self-service project management tools for contractors who prefer to manage operations in-house.
               </p>
               <div className="mt-4 text-sm font-black text-sky-500 group-hover:underline">
                 Learn more →
@@ -171,13 +171,29 @@ export default function OpsServicesHomePage() {
               className="group rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:border-sky-500 hover:shadow-md"
             >
               <h3 className="text-xl font-black text-zinc-900">
-                Escrow & Finance
+                Escrow &amp; Finance
               </h3>
               <p className="mt-2 text-sm text-zinc-600">
                 Secure escrow accounts with milestone-based payment releases and financial tracking.
               </p>
               <div className="mt-4 text-sm font-black text-sky-500 group-hover:underline">
                 Explore escrow →
+              </div>
+            </Link>
+
+            {/* Developer Services */}
+            <Link
+              href="/developer"
+              className="group rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:border-sky-500 hover:shadow-md"
+            >
+              <h3 className="text-xl font-black text-zinc-900">
+                Developer Services
+              </h3>
+              <p className="mt-2 text-sm text-zinc-600">
+                Feasibility studies, pro forma analysis, entitlement support, and full development management.
+              </p>
+              <div className="mt-4 text-sm font-black text-sky-500 group-hover:underline">
+                View developer services →
               </div>
             </Link>
           </div>
@@ -257,7 +273,7 @@ export default function OpsServicesHomePage() {
       <section className="bg-zinc-50 py-16">
         <div className="mx-auto max-w-7xl px-6">
           <h2 className="text-center text-3xl font-black tracking-tight text-zinc-900">
-            Common GC Challenges We Solve
+            Common Contractor Challenges We Solve
           </h2>
 
           <div className="mt-10 grid gap-6 md:grid-cols-2">
@@ -340,7 +356,7 @@ export default function OpsServicesHomePage() {
           </div>
 
           <p className="mt-6 text-sm text-sky-100">
-            Join 150+ general contractors using Kealee Ops Services
+            Join 150+ GCs, builders, and contractors using Kealee Ops Services
           </p>
         </div>
       </section>
