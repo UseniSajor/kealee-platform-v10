@@ -1,25 +1,192 @@
 // ============================================================
-// HOME PAGE
-// Shows landing page for unauthenticated users
-// Redirects authenticated users to dashboard
+// HOME PAGE — Kealee Permits & Inspections
+// Enhanced marketing landing with expanded services, packages,
+// green color theme, and updated navigation
 // ============================================================
 
 import { redirect } from 'next/navigation';
 import { createServerClient } from '@/lib/supabase/server';
 import { Metadata } from 'next';
-import Link from 'next/link'
-import { Check, Building2, FileCheck, Clock, Shield, Zap, Users, BarChart3, ShoppingCart } from 'lucide-react'
+import Link from 'next/link';
+import {
+  Check,
+  Building2,
+  FileCheck,
+  Clock,
+  Shield,
+  Zap,
+  Users,
+  BarChart3,
+  ShoppingCart,
+  MapPin,
+  Scale,
+  Landmark,
+  History,
+  Search,
+  Globe,
+  FileText,
+  AlertTriangle,
+  ArrowRight,
+  Star,
+  Phone,
+  Mail,
+} from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Permits & Inspections Management Platform | Kealee',
-  description: 'Streamline permit applications, plan reviews, and inspections for building departments, contractors, and property owners. AI-powered compliance, digital workflows, and seamless integrations.',
-  keywords: 'permit management, building permits, inspection scheduling, plan review, building department software, permit tracking',
+  description:
+    'Streamline permit applications, plan reviews, inspections, zoning changes, historical permits, and code compliance. AI-powered workflows for building departments, contractors, and property owners.',
+  keywords:
+    'permit management, building permits, inspection scheduling, plan review, building department software, permit tracking, zoning changes, historical permits, code compliance',
   openGraph: {
     title: 'Kealee Permits & Inspections - Modern Permit Management Platform',
-    description: 'Digital permit processing, AI-powered compliance checks, and inspection management all in one platform.',
+    description:
+      'Digital permit processing, AI-powered compliance checks, zoning research, historical permit archives, and inspection management.',
     type: 'website',
   },
-}
+};
+
+const permitPackages = [
+  {
+    name: 'Package A',
+    subtitle: 'Single Permit',
+    price: '$495',
+    period: 'one-time',
+    popular: false,
+    features: [
+      'Single permit application filing',
+      'AI compliance pre-check',
+      'Document preparation & review',
+      'Status tracking until approval',
+      'Basic inspection coordination',
+    ],
+  },
+  {
+    name: 'Package B',
+    subtitle: 'Builder',
+    price: '$1,295',
+    period: '/mo',
+    popular: true,
+    features: [
+      'Up to 10 permits per month',
+      'Priority AI compliance review',
+      'Dedicated permit coordinator',
+      'Inspection scheduling & tracking',
+      'Zoning verification included',
+      'Historical permit research',
+      'Weekly status reports',
+    ],
+  },
+  {
+    name: 'Package C',
+    subtitle: 'Enterprise',
+    price: '$2,995',
+    period: '/mo',
+    popular: false,
+    features: [
+      'Up to 50 permits per month',
+      'Multi-jurisdiction coverage',
+      'Full compliance management',
+      'Dedicated account manager',
+      'Expedited processing (48-72 hr)',
+      'Zoning change monitoring',
+      'Custom reporting & analytics',
+      'API access & integrations',
+    ],
+  },
+  {
+    name: 'Package D',
+    subtitle: 'Portfolio',
+    price: '$7,500',
+    period: '/mo',
+    popular: false,
+    features: [
+      'Unlimited permits',
+      'All jurisdictions covered',
+      'White-glove concierge service',
+      'SLA-guaranteed turnaround',
+      'Historical records research',
+      'Variance & zoning applications',
+      'Executive dashboard & reporting',
+      'Dedicated team of specialists',
+    ],
+  },
+];
+
+const services = [
+  {
+    icon: FileCheck,
+    title: 'Permit Applications',
+    description:
+      'Complete digital application filing with AI pre-review that catches errors before submission. Residential, commercial, and specialty permits.',
+  },
+  {
+    icon: Clock,
+    title: 'Inspection Scheduling',
+    description:
+      'Calendar-based scheduling with route optimization, mobile inspector integration, and real-time result notifications.',
+  },
+  {
+    icon: Shield,
+    title: 'Code Compliance',
+    description:
+      'Automated building code compliance checks against local, state, and federal requirements. Stay current with code updates.',
+  },
+  {
+    icon: Scale,
+    title: 'Zoning Verification',
+    description:
+      'Verify zoning classifications, permitted uses, setback requirements, and density allowances before starting your project.',
+  },
+  {
+    icon: Landmark,
+    title: 'Zoning Changes & Variances',
+    description:
+      'Navigate rezoning applications, conditional use permits, special exceptions, and variance requests with expert guidance.',
+  },
+  {
+    icon: History,
+    title: 'Historical Permit Research',
+    description:
+      'Access historical permit records, past inspections, violations, and compliance history for any property. Due diligence made easy.',
+  },
+  {
+    icon: Users,
+    title: 'Plan Review Management',
+    description:
+      'PDF markup, discipline-specific review workflows, comment threading, and revision tracking for efficient plan reviews.',
+  },
+  {
+    icon: Globe,
+    title: 'Multi-Jurisdiction Filing',
+    description:
+      'File permits across multiple jurisdictions from a single platform. We handle jurisdiction-specific requirements and forms.',
+  },
+  {
+    icon: FileText,
+    title: 'Certificate of Occupancy',
+    description:
+      'Manage CO applications, final inspections, and occupancy certificates. Track requirements and outstanding items to completion.',
+  },
+  {
+    icon: AlertTriangle,
+    title: 'Violation Resolution',
+    description:
+      'Address code violations, open permits, and compliance issues. We help you clear violations and get back on track.',
+  },
+  {
+    icon: Search,
+    title: 'Property Due Diligence',
+    description:
+      'Comprehensive permit and zoning research for property acquisitions. Open permits, violations, zoning restrictions, and entitlements.',
+  },
+  {
+    icon: BarChart3,
+    title: 'Reporting & Analytics',
+    description:
+      'Real-time dashboards, permit status tracking, processing time analytics, and custom reports for your portfolio.',
+  },
+];
 
 export default async function HomePage() {
   const supabase = createServerClient();
@@ -27,281 +194,552 @@ export default async function HomePage() {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // Redirect authenticated users to dashboard
   if (session) {
     redirect('/dashboard');
   }
 
-  // Show landing page for unauthenticated users
   return (
-    <div className="min-h-screen bg-gradient-to-b from-neutral-50 to-white">
+    <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="border-b border-neutral-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold text-neutral-900">Kealee Permits</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/public/search" className="text-neutral-600 hover:text-neutral-900">
-              Search Permits
+      <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 z-50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-9 h-9 bg-emerald-600 rounded-lg flex items-center justify-center">
+                <Building2 className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-lg font-bold text-gray-900">
+                Kealee <span className="text-emerald-600">Permits</span>
+              </span>
             </Link>
-            <button id="cart-trigger" className="relative text-gray-700 hover:text-blue-600 transition" aria-label="Cart">
-              <ShoppingCart className="h-5 w-5" />
-            </button>
-            <Link
-              href="/auth/login"
-              className="px-4 py-2 text-neutral-700 hover:text-neutral-900"
-            >
-              Log In
-            </Link>
-            <Link 
-              href="/auth/login" 
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              Get Started
-            </Link>
+
+            <div className="hidden md:flex items-center gap-6">
+              <Link
+                href="/"
+                className="text-sm font-medium text-gray-700 hover:text-emerald-600 transition"
+              >
+                Home
+              </Link>
+              <Link
+                href="#services"
+                className="text-sm font-medium text-gray-700 hover:text-emerald-600 transition"
+              >
+                Services
+              </Link>
+              <Link
+                href="#pricing"
+                className="text-sm font-medium text-gray-700 hover:text-emerald-600 transition"
+              >
+                Pricing
+              </Link>
+              <Link
+                href="#how-it-works"
+                className="text-sm font-medium text-gray-700 hover:text-emerald-600 transition"
+              >
+                How It Works
+              </Link>
+              <a
+                href="tel:+13015758777"
+                className="flex items-center gap-1 text-sm text-gray-600 hover:text-emerald-600 transition"
+              >
+                <Phone className="h-4 w-4" />
+                (301) 575-8777
+              </a>
+              <button
+                id="cart-trigger"
+                className="relative text-gray-700 hover:text-emerald-600 transition"
+                aria-label="Cart"
+              >
+                <ShoppingCart className="h-5 w-5" />
+              </button>
+              <Link
+                href="/auth/login"
+                className="text-sm font-medium text-gray-700 hover:text-emerald-600 transition"
+              >
+                Log In
+              </Link>
+              <Link
+                href="/auth/login"
+                className="inline-flex items-center px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold transition"
+              >
+                Get Started
+              </Link>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
-        <div className="max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-6">
-            <Zap className="h-4 w-4" />
-            <span>Get Approved 40% Faster with AI Review</span>
+      <section className="pt-28 pb-20 bg-gradient-to-br from-emerald-50 via-white to-green-50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-4xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-semibold mb-6">
+              <Zap className="h-4 w-4" />
+              AI-Powered — Get Approved 40% Faster
+            </div>
+            <h1 className="text-5xl md:text-6xl font-black tracking-tight text-gray-900">
+              Permits, Inspections &
+              <span className="block text-emerald-600 mt-2">
+                Zoning Made Simple
+              </span>
+            </h1>
+            <p className="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
+              From initial zoning verification to certificate of occupancy—we handle every step of the permitting process. AI catches errors before you submit, and we track everything until approval.
+            </p>
+
+            {/* Stats */}
+            <div className="mt-8 flex flex-wrap justify-center gap-8">
+              <div>
+                <div className="text-3xl font-black text-emerald-600">40%</div>
+                <div className="mt-1 text-sm text-gray-600">Faster approvals</div>
+              </div>
+              <div>
+                <div className="text-3xl font-black text-emerald-600">60%</div>
+                <div className="mt-1 text-sm text-gray-600">Fewer rejections</div>
+              </div>
+              <div>
+                <div className="text-3xl font-black text-emerald-600">14 days</div>
+                <div className="mt-1 text-sm text-gray-600">Avg. approval time</div>
+              </div>
+              <div>
+                <div className="text-3xl font-black text-emerald-600">500+</div>
+                <div className="mt-1 text-sm text-gray-600">Jurisdictions</div>
+              </div>
+            </div>
+
+            {/* CTAs */}
+            <div className="mt-10 flex flex-wrap justify-center gap-4">
+              <Link
+                href="/permits/new"
+                className="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-8 py-4 text-base font-bold text-white shadow-lg transition hover:bg-emerald-700 gap-2"
+              >
+                Start Your Permit Application
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+              <Link
+                href="/public/search"
+                className="inline-flex items-center justify-center rounded-2xl border-2 border-gray-200 bg-white px-8 py-4 text-base font-bold text-gray-900 shadow-sm transition hover:border-emerald-600"
+              >
+                Check Permit Status
+              </Link>
+            </div>
+            <p className="mt-4 text-sm text-gray-500">
+              Takes 5 minutes to start &bull; AI reviews instantly &bull; No payment until submission
+            </p>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-neutral-900 mb-6">
-            Getting Permits Doesn&apos;t Have to Be Painful
-            <span className="block text-emerald-600 mt-2">We Make It Easy</span>
-          </h1>
-          <p className="text-xl text-neutral-600 mb-4 max-w-2xl mx-auto">
-            Stop worrying about permits slowing down your project. Our AI catches errors before you submit, and we track everything until approval.
-          </p>
-          <p className="text-lg text-neutral-500 mb-8 max-w-2xl mx-auto">
-            ✅ No more rejected applications • ✅ No more chasing status • ✅ Average approval in 14 days
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              href="/permits/new"
-              className="px-8 py-4 bg-emerald-600 text-white rounded-lg text-lg font-semibold hover:bg-emerald-700 transition-colors shadow-lg inline-flex items-center justify-center gap-2"
-            >
-              Start Your Permit Application
-              <ArrowRight className="h-5 w-5" />
-            </Link>
-            <Link 
-              href="/public/search"
-              className="px-8 py-4 bg-white border-2 border-neutral-200 text-neutral-900 rounded-lg text-lg font-semibold hover:border-emerald-600 transition-colors"
-            >
-              Check Permit Status
-            </Link>
-          </div>
-          <p className="text-sm text-neutral-500 mt-4">
-            💚 Takes 5 minutes • AI reviews instantly • No payment until submission
-          </p>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-neutral-900 mb-4">
-            Everything You Need for Permit Management
-          </h2>
-          <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-            Built for building departments, contractors, and property owners
-          </p>
+      {/* Services Grid */}
+      <section id="services" className="py-20 bg-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-black tracking-tight text-gray-900">
+              Complete Permit & Zoning Services
+            </h2>
+            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+              Everything you need for permits, inspections, zoning, historical research, and compliance—all in one platform
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {services.map((service) => {
+              const Icon = service.icon;
+              return (
+                <div
+                  key={service.title}
+                  className="p-6 bg-white rounded-2xl border border-gray-200 hover:border-emerald-500 hover:shadow-lg transition group"
+                >
+                  <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-emerald-600 transition">
+                    <Icon className="h-6 w-6 text-emerald-600 group-hover:text-white transition" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    {service.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {service.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
         </div>
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <FileCheck className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Digital Applications</h3>
-            <p className="text-neutral-600">
-              Multi-step wizard with AI pre-review. Upload plans, calculate fees, and submit in minutes.
+      </section>
+
+      {/* How It Works */}
+      <section id="how-it-works" className="py-20 bg-emerald-50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-black tracking-tight text-gray-900">
+              How It Works
+            </h2>
+            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+              From application to approval in four simple steps
             </p>
           </div>
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <Users className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Plan Review Tools</h3>
-            <p className="text-neutral-600">
-              PDF markup, comment threads, and discipline-specific workflows for efficient reviews.
+
+          <div className="grid md:grid-cols-4 gap-8 max-w-5xl mx-auto">
+            {[
+              {
+                step: '1',
+                title: 'Submit Your Application',
+                description:
+                  'Fill out the digital application form. Our AI pre-reviews for errors and missing info before submission.',
+              },
+              {
+                step: '2',
+                title: 'We Handle the Filing',
+                description:
+                  'We file with the correct jurisdiction, pay fees, and coordinate with reviewers on your behalf.',
+              },
+              {
+                step: '3',
+                title: 'Track Every Step',
+                description:
+                  'Monitor plan reviews, respond to comments, schedule inspections, and get real-time status updates.',
+              },
+              {
+                step: '4',
+                title: 'Get Your Permit',
+                description:
+                  'Receive your approved permit. We coordinate final inspections through certificate of occupancy.',
+              },
+            ].map((item) => (
+              <div key={item.step} className="text-center">
+                <div className="w-14 h-14 bg-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-black text-white">
+                    {item.step}
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-gray-600">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Permit Packages */}
+      <section id="pricing" className="py-20 bg-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-black tracking-tight text-gray-900">
+              Permit Service Packages
+            </h2>
+            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+              Choose the level of permit support that matches your project volume
             </p>
           </div>
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <Clock className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Inspection Scheduling</h3>
-            <p className="text-neutral-600">
-              Calendar-based scheduling with route optimization and mobile inspector app integration.
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {permitPackages.map((pkg) => (
+              <div
+                key={pkg.name}
+                className={
+                  pkg.popular
+                    ? 'rounded-2xl border-2 border-emerald-500 bg-white p-6 shadow-xl relative'
+                    : 'rounded-2xl border border-gray-200 bg-white p-6 shadow-sm'
+                }
+              >
+                {pkg.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-4 py-1 text-xs font-bold text-white">
+                      <Star className="h-3 w-3" /> MOST POPULAR
+                    </span>
+                  </div>
+                )}
+                <div className="mb-4">
+                  <h3 className="text-lg font-black text-gray-900">
+                    {pkg.name}
+                  </h3>
+                  <p className="text-sm text-gray-500">{pkg.subtitle}</p>
+                  <div className="mt-3">
+                    <span className="text-3xl font-black text-emerald-600">
+                      {pkg.price}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      {pkg.period}
+                    </span>
+                  </div>
+                </div>
+
+                <ul className="space-y-3 mb-6">
+                  {pkg.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-gray-700">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  href="/auth/login"
+                  className={
+                    pkg.popular
+                      ? 'block w-full py-3 text-center rounded-xl bg-emerald-600 text-white font-bold text-sm transition hover:bg-emerald-700'
+                      : 'block w-full py-3 text-center rounded-xl bg-gray-900 text-white font-bold text-sm transition hover:bg-gray-800'
+                  }
+                >
+                  Get Started
+                </Link>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-500">
+              All packages include AI compliance pre-check and real-time tracking.{' '}
+              <Link href="/auth/login" className="text-emerald-600 font-semibold hover:underline">
+                Contact us for custom enterprise solutions →
+              </Link>
             </p>
           </div>
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <Shield className="h-6 w-6 text-primary" />
+        </div>
+      </section>
+
+      {/* Zoning & Historical Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <h2 className="text-3xl font-black tracking-tight text-gray-900">
+                Zoning Research & Historical Records
+              </h2>
+              <p className="mt-4 text-lg text-gray-600">
+                Don&apos;t start a project without knowing the full permitting history. Our research services give you complete visibility into any property.
+              </p>
+
+              <div className="mt-8 space-y-6">
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <MapPin className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Zoning Classification Lookup</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Verify current zoning, permitted uses, density allowances, setback requirements, and overlay districts.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <Landmark className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Rezoning & Variance Applications</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Navigate the rezoning process, conditional use permits, special exceptions, and variance hearings.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <History className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Historical Permit Archives</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Access the complete permitting history for any property—past permits, inspections, violations, and compliance records.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <AlertTriangle className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Open Permits & Violations</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Discover open permits, unresolved violations, and outstanding compliance issues before closing on a property.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">AI Compliance Check</h3>
-            <p className="text-neutral-600">
-              Automatic code compliance verification before submission saves time and reduces rejections.
-            </p>
-          </div>
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <BarChart3 className="h-6 w-6 text-primary" />
+
+            <div className="space-y-6">
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Property Due Diligence Report</h3>
+                <ul className="space-y-3">
+                  {[
+                    'Current zoning classification & permitted uses',
+                    'Complete permit history (all years)',
+                    'Open permits & code violations',
+                    'Inspection results & compliance status',
+                    'Zoning overlay districts & restrictions',
+                    'Pending zoning changes in the area',
+                    'Environmental & historic district flags',
+                    'Utility & infrastructure connections',
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-gray-700">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/auth/login"
+                  className="mt-6 block w-full py-3 text-center rounded-xl bg-emerald-600 text-white font-bold text-sm transition hover:bg-emerald-700"
+                >
+                  Order Due Diligence Report
+                </Link>
+              </div>
             </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Real-Time Tracking</h3>
-            <p className="text-neutral-600">
-              Track permit status, review progress, and inspection results from anywhere.
-            </p>
-          </div>
-          <div className="p-6 bg-white rounded-xl border border-neutral-200 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-              <Building2 className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-2">Multi-Jurisdiction</h3>
-            <p className="text-neutral-600">
-              Manage permits across multiple jurisdictions with jurisdiction-specific workflows.
-            </p>
           </div>
         </div>
       </section>
 
       {/* Who It's For */}
-      <section className="bg-neutral-100 py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-neutral-900 mb-4">
+      <section className="py-20 bg-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-black tracking-tight text-gray-900">
               Built for Everyone in Construction
             </h2>
+            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+              Whether you are a contractor, builder, building department, or property owner
+            </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            <div className="bg-white p-8 rounded-xl">
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-4">Building Departments</h3>
+            <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                Building Departments
+              </h3>
               <ul className="space-y-3">
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-neutral-600">Replace legacy permit systems</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-neutral-600">Digital application intake</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-neutral-600">Inspection scheduling calendar</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-neutral-600">Public transparency portal</span>
-                </li>
+                {[
+                  'Replace legacy permit systems',
+                  'Digital application intake & processing',
+                  'Inspection scheduling & route optimization',
+                  'Public search & status portal',
+                  'Analytics & processing metrics',
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-600 text-sm">{item}</span>
+                  </li>
+                ))}
               </ul>
             </div>
-            <div className="bg-white p-8 rounded-xl">
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-4">Contractors</h3>
+            <div className="bg-emerald-50 p-8 rounded-2xl border-2 border-emerald-500">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                Contractors & Builders
+              </h3>
               <ul className="space-y-3">
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-neutral-600">Online permit applications</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-neutral-600">Real-time status tracking</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-neutral-600">Expedited processing option</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-neutral-600">Integration with design software</span>
-                </li>
+                {[
+                  'Online permit applications with AI review',
+                  'Real-time status tracking & alerts',
+                  'Expedited processing options',
+                  'Zoning verification before bidding',
+                  'Historical permit research for properties',
+                  'Multi-project portfolio management',
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 text-sm">{item}</span>
+                  </li>
+                ))}
               </ul>
             </div>
-            <div className="bg-white p-8 rounded-xl">
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-4">Property Owners</h3>
+            <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                Property Owners & Developers
+              </h3>
               <ul className="space-y-3">
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-neutral-600">Track all project permits</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-neutral-600">Linked to project timeline</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-neutral-600">Automatic compliance gates</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-neutral-600">Public permit search</span>
-                </li>
+                {[
+                  'Track all project permits in one place',
+                  'Property due diligence reports',
+                  'Zoning change notifications',
+                  'Automatic compliance gates',
+                  'Linked to project timelines',
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-600 text-sm">{item}</span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Benefits */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-neutral-900 mb-4">
+      {/* Integrations & Benefits */}
+      <section className="py-20 bg-gray-50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-black tracking-tight text-gray-900">
               Why Choose Kealee Permits?
             </h2>
           </div>
-          <div className="space-y-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <div className="flex gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Zap className="h-6 w-6 text-primary" />
-                </div>
+              <div className="flex-shrink-0 w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <Zap className="h-6 w-6 text-emerald-600" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-                  AI-Powered Pre-Review
-                </h3>
-                <p className="text-neutral-600">
-                  Our AI analyzes your permit application before submission, catching common issues 
-                  and code violations early. Save time and reduce rejections by up to 60%.
+                <h3 className="font-bold text-gray-900 mb-1">AI Pre-Review</h3>
+                <p className="text-sm text-gray-600">
+                  Catches common code violations and missing documents before submission—reducing rejections by 60%.
                 </p>
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Building2 className="h-6 w-6 text-primary" />
-                </div>
+              <div className="flex-shrink-0 w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <Globe className="h-6 w-6 text-emerald-600" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-                  Seamless Integration
-                </h3>
-                <p className="text-neutral-600">
-                  Connect with Kealee Architect for direct design handoff, Kealee Project Owner 
-                  for automatic timeline updates, and Kealee Finance for compliance enforcement. 
-                  All in one platform.
+                <h3 className="font-bold text-gray-900 mb-1">Multi-Jurisdiction</h3>
+                <p className="text-sm text-gray-600">
+                  File across 500+ jurisdictions from a single platform. We handle local requirements automatically.
                 </p>
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-primary" />
-                </div>
+              <div className="flex-shrink-0 w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <Clock className="h-6 w-6 text-emerald-600" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-                  Faster Processing
-                </h3>
-                <p className="text-neutral-600">
-                  Expedited processing available with 48-72 hour review guarantees. Digital workflows 
-                  eliminate paperwork delays and enable faster approvals.
+                <h3 className="font-bold text-gray-900 mb-1">Expedited Processing</h3>
+                <p className="text-sm text-gray-600">
+                  48-72 hour review guarantees available. Digital workflows eliminate paperwork delays.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <Building2 className="h-6 w-6 text-emerald-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 mb-1">Platform Integration</h3>
+                <p className="text-sm text-gray-600">
+                  Connects with Kealee Architect, Project Owner, and Finance for seamless project management.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <Shield className="h-6 w-6 text-emerald-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 mb-1">Compliance Monitoring</h3>
+                <p className="text-sm text-gray-600">
+                  Stay current with code updates. Automatic notifications when regulations change affecting your permits.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <BarChart3 className="h-6 w-6 text-emerald-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 mb-1">Real-Time Dashboard</h3>
+                <p className="text-sm text-gray-600">
+                  Track every permit, inspection, and review from a single dashboard. Never miss a deadline.
                 </p>
               </div>
             </div>
@@ -310,73 +748,142 @@ export default async function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-primary py-16">
-        <div className="container mx-auto px-4 text-center">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Ready to Streamline Your Permit Process?
-            </h2>
-            <p className="text-xl text-primary-foreground/90 mb-8">
-              Join building departments, contractors, and property owners using Kealee Permits.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link 
-                href="/auth/login"
-                className="px-8 py-4 bg-white text-primary rounded-lg text-lg font-semibold hover:bg-neutral-100 transition-colors"
-              >
-                Start Free Trial
-              </Link>
-              <Link 
-                href="/public/search"
-                className="px-8 py-4 bg-primary-foreground/10 text-white border-2 border-white/20 rounded-lg text-lg font-semibold hover:bg-primary-foreground/20 transition-colors"
-              >
-                View Demo
-              </Link>
-            </div>
+      <section className="py-20 bg-gradient-to-br from-emerald-600 to-green-700">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl font-black tracking-tight text-white">
+            Ready to Streamline Your Permit Process?
+          </h2>
+          <p className="mt-4 text-lg text-emerald-50 max-w-2xl mx-auto">
+            Join contractors, builders, and building departments using Kealee Permits to save time, reduce rejections, and get approvals faster.
+          </p>
+
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <Link
+              href="/auth/login"
+              className="inline-flex items-center justify-center rounded-2xl bg-white px-8 py-4 text-base font-bold text-gray-900 shadow-lg transition hover:bg-gray-50 gap-2"
+            >
+              Start Free Trial
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+            <Link
+              href="/public/search"
+              className="inline-flex items-center justify-center rounded-2xl border-2 border-white px-8 py-4 text-base font-bold text-white transition hover:bg-white/10"
+            >
+              Search Permits
+            </Link>
           </div>
+
+          <p className="mt-6 text-sm text-emerald-100">
+            No credit card required &bull; Full access to Package B features &bull; Cancel anytime
+          </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-neutral-900 text-neutral-400 py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
+      <footer className="bg-gray-900 text-gray-300">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Building2 className="h-6 w-6 text-primary" />
-                <span className="text-white font-semibold">Kealee Permits</span>
+                <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
+                  <Building2 className="h-4 w-4 text-white" />
+                </div>
+                <span className="text-lg font-bold text-white">
+                  Kealee <span className="text-emerald-400">Permits</span>
+                </span>
               </div>
-              <p className="text-sm">
-                Modern permit and inspection management for the construction industry.
+              <p className="text-sm text-gray-400">
+                Modern permit and inspection management for contractors, builders, building departments, and property owners.
               </p>
             </div>
+
             <div>
-              <h4 className="text-white font-semibold mb-4">Product</h4>
+              <h3 className="text-white font-semibold mb-4">Services</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/public/search" className="hover:text-white">Public Search</Link></li>
-                <li><Link href="/auth/login" className="hover:text-white">Sign In</Link></li>
-                <li><Link href="/auth/login" className="hover:text-white">Pricing</Link></li>
+                <li>
+                  <Link href="#services" className="hover:text-white transition">
+                    Permit Applications
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#services" className="hover:text-white transition">
+                    Inspection Scheduling
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#services" className="hover:text-white transition">
+                    Zoning Verification
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#services" className="hover:text-white transition">
+                    Historical Research
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#services" className="hover:text-white transition">
+                    Code Compliance
+                  </Link>
+                </li>
               </ul>
             </div>
+
             <div>
-              <h4 className="text-white font-semibold mb-4">For</h4>
+              <h3 className="text-white font-semibold mb-4">Resources</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link href="#" className="hover:text-white">Building Departments</Link></li>
-                <li><Link href="#" className="hover:text-white">Contractors</Link></li>
-                <li><Link href="#" className="hover:text-white">Property Owners</Link></li>
+                <li>
+                  <Link href="#how-it-works" className="hover:text-white transition">
+                    How It Works
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#pricing" className="hover:text-white transition">
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/public/search" className="hover:text-white transition">
+                    Public Permit Search
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/public/faq" className="hover:text-white transition">
+                    FAQ
+                  </Link>
+                </li>
               </ul>
             </div>
+
             <div>
-              <h4 className="text-white font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="#" className="hover:text-white">About</Link></li>
-                <li><Link href="#" className="hover:text-white">Contact</Link></li>
-                <li><Link href="#" className="hover:text-white">Support</Link></li>
+              <h3 className="text-white font-semibold mb-4">Contact</h3>
+              <ul className="space-y-3 text-sm">
+                <li>
+                  <a href="mailto:permits@kealee.com" className="hover:text-white transition flex items-center gap-2">
+                    <Mail className="h-4 w-4" /> permits@kealee.com
+                  </a>
+                </li>
+                <li>
+                  <a href="tel:+13015758777" className="hover:text-white transition flex items-center gap-2">
+                    <Phone className="h-4 w-4" /> (301) 575-8777
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-neutral-800 mt-8 pt-8 text-center text-sm">
-            <p>© {new Date().getFullYear()} Kealee. All rights reserved.</p>
+
+          <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
+            <p>&copy; {new Date().getFullYear()} Kealee LLC. All rights reserved.</p>
+            <div className="flex gap-6 mt-4 md:mt-0">
+              <Link href="/privacy" className="hover:text-white transition">
+                Privacy
+              </Link>
+              <Link href="/terms" className="hover:text-white transition">
+                Terms
+              </Link>
+              <a href="https://kealee.com" className="hover:text-white transition">
+                kealee.com
+              </a>
+            </div>
           </div>
         </div>
       </footer>
