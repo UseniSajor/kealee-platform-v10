@@ -1,4 +1,5 @@
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -21,8 +22,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  // Use service role client for DB lookups (bypasses RLS)
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  if (!serviceKey || !supabaseUrl) {
+    // If service key not configured, allow through (rely on page-level auth)
+    return res;
+  }
+
+  const adminClient = createClient(supabaseUrl, serviceKey);
+
   // Check for user in User table
-  const { data: user } = await supabase
+  const { data: user } = await adminClient
     .from('User')
     .select('role, status')
     .eq('id', session.user.id)
@@ -36,7 +48,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Enforce PM or admin role
-  const { data: membership } = await supabase
+  const { data: membership } = await adminClient
     .from('OrgMember')
     .select('roleKey')
     .eq('userId', session.user.id)

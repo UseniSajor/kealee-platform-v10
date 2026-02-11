@@ -1,11 +1,8 @@
-import { Metadata } from 'next'
-import Link from 'next/link'
-import { Search, SlidersHorizontal, Home, BedDouble, Bath, Car, Ruler, ChevronRight, Star, Heart } from 'lucide-react'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Stock House Plans | Kealee',
-  description: 'Browse thousands of ready-to-build house plans from licensed architects and designers. Filter by style, size, bedrooms, and more.',
-}
+import { useState, useMemo } from 'react'
+import Link from 'next/link'
+import { Search, SlidersHorizontal, Home, BedDouble, Bath, Car, Ruler, ChevronRight, Star, Heart, X } from 'lucide-react'
 
 const styles = [
   { name: 'Modern Farmhouse', count: 420, slug: 'modern-farmhouse' },
@@ -22,7 +19,7 @@ const styles = [
   { name: 'A-Frame', count: 75, slug: 'a-frame' },
 ]
 
-const featuredPlans = [
+const allPlans = [
   {
     slug: 'summit-farmhouse-2450',
     name: 'Summit Farmhouse',
@@ -178,7 +175,130 @@ const collections = [
   { name: 'Narrow Lot', description: 'Designs optimized for lots under 50 ft wide', count: 175, slug: 'narrow-lot' },
 ]
 
+type SortOption = 'popular' | 'newest' | 'price-asc' | 'price-desc' | 'sqft-asc' | 'sqft-desc' | 'rating'
+
+function parseSqftRange(value: string): [number, number] | null {
+  switch (value) {
+    case 'Under 1,000': return [0, 999]
+    case '1,000 - 1,500': return [1000, 1500]
+    case '1,500 - 2,000': return [1500, 2000]
+    case '2,000 - 2,500': return [2000, 2500]
+    case '2,500 - 3,000': return [2500, 3000]
+    case '3,000 - 4,000': return [3000, 4000]
+    case '4,000+': return [4000, Infinity]
+    default: return null
+  }
+}
+
 export default function StockPlansPage() {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [bedsFilter, setBedsFilter] = useState('')
+  const [bathsFilter, setBathsFilter] = useState('')
+  const [storiesFilter, setStoriesFilter] = useState('')
+  const [garageFilter, setGarageFilter] = useState('')
+  const [sqftFilter, setSqftFilter] = useState('')
+  const [styleFilter, setStyleFilter] = useState('')
+  const [sortBy, setSortBy] = useState<SortOption>('popular')
+
+  const hasActiveFilters = searchQuery || bedsFilter || bathsFilter || storiesFilter || garageFilter || sqftFilter || styleFilter
+
+  function clearFilters() {
+    setSearchQuery('')
+    setBedsFilter('')
+    setBathsFilter('')
+    setStoriesFilter('')
+    setGarageFilter('')
+    setSqftFilter('')
+    setStyleFilter('')
+  }
+
+  const filteredPlans = useMemo(() => {
+    let results = [...allPlans]
+
+    // Text search
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      results = results.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.style.toLowerCase().includes(q) ||
+          p.designer.toLowerCase().includes(q)
+      )
+    }
+
+    // Style filter
+    if (styleFilter) {
+      results = results.filter((p) => p.style.toLowerCase().replace(/\s+/g, '-') === styleFilter)
+    }
+
+    // Bedrooms
+    if (bedsFilter) {
+      const min = parseInt(bedsFilter)
+      if (!isNaN(min)) results = results.filter((p) => p.beds >= min)
+    }
+
+    // Bathrooms
+    if (bathsFilter) {
+      const min = parseInt(bathsFilter)
+      if (!isNaN(min)) results = results.filter((p) => p.baths >= min)
+    }
+
+    // Stories
+    if (storiesFilter) {
+      const val = parseFloat(storiesFilter)
+      if (!isNaN(val)) results = results.filter((p) => p.stories === val)
+    }
+
+    // Garage
+    if (garageFilter === '0') {
+      results = results.filter((p) => p.garages === 0)
+    } else if (garageFilter) {
+      const min = parseInt(garageFilter)
+      if (!isNaN(min)) results = results.filter((p) => p.garages >= min)
+    }
+
+    // Sq Ft Range
+    if (sqftFilter) {
+      const range = parseSqftRange(sqftFilter)
+      if (range) {
+        results = results.filter((p) => p.sqft >= range[0] && p.sqft <= range[1])
+      }
+    }
+
+    // Sort
+    switch (sortBy) {
+      case 'price-asc':
+        results.sort((a, b) => a.price - b.price)
+        break
+      case 'price-desc':
+        results.sort((a, b) => b.price - a.price)
+        break
+      case 'sqft-asc':
+        results.sort((a, b) => a.sqft - b.sqft)
+        break
+      case 'sqft-desc':
+        results.sort((a, b) => b.sqft - a.sqft)
+        break
+      case 'rating':
+        results.sort((a, b) => b.rating - a.rating)
+        break
+      case 'newest':
+        // Reverse the original order as a proxy for newest
+        results.reverse()
+        break
+      case 'popular':
+      default:
+        results.sort((a, b) => b.reviews - a.reviews)
+        break
+    }
+
+    return results
+  }, [searchQuery, bedsFilter, bathsFilter, storiesFilter, garageFilter, sqftFilter, styleFilter, sortBy])
+
+  function handleStyleClick(slug: string) {
+    setStyleFilter(slug === styleFilter ? '' : slug)
+  }
+
   return (
     <div className="w-full">
       {/* Hero */}
@@ -195,56 +315,93 @@ export default function StockPlansPage() {
 
           {/* Search Bar */}
           <div className="max-w-4xl mx-auto">
-            <div className="flex flex-col md:flex-row gap-3">
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              className="flex flex-col md:flex-row gap-3"
+            >
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search by plan name, style, or keyword..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by plan name, style, or designer..."
                   className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm"
                 />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
-              <button className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition text-sm">
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition text-sm"
+              >
                 <Search className="h-4 w-4" />
                 Search Plans
               </button>
-            </div>
+            </form>
 
             {/* Quick Filters */}
             <div className="flex flex-wrap items-center gap-3 mt-4">
               <span className="text-sm text-gray-500 font-medium">Quick filters:</span>
               <div className="flex flex-wrap gap-2">
-                <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                  <option>Bedrooms</option>
-                  <option>1+</option>
-                  <option>2+</option>
-                  <option>3+</option>
-                  <option>4+</option>
-                  <option>5+</option>
+                <select
+                  value={bedsFilter}
+                  onChange={(e) => setBedsFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                >
+                  <option value="">Bedrooms</option>
+                  <option value="1">1+</option>
+                  <option value="2">2+</option>
+                  <option value="3">3+</option>
+                  <option value="4">4+</option>
+                  <option value="5">5+</option>
                 </select>
-                <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                  <option>Bathrooms</option>
-                  <option>1+</option>
-                  <option>2+</option>
-                  <option>3+</option>
-                  <option>4+</option>
+                <select
+                  value={bathsFilter}
+                  onChange={(e) => setBathsFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                >
+                  <option value="">Bathrooms</option>
+                  <option value="1">1+</option>
+                  <option value="2">2+</option>
+                  <option value="3">3+</option>
+                  <option value="4">4+</option>
                 </select>
-                <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                  <option>Stories</option>
-                  <option>1 Story</option>
-                  <option>1.5 Stories</option>
-                  <option>2 Stories</option>
-                  <option>3 Stories</option>
+                <select
+                  value={storiesFilter}
+                  onChange={(e) => setStoriesFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                >
+                  <option value="">Stories</option>
+                  <option value="1">1 Story</option>
+                  <option value="1.5">1.5 Stories</option>
+                  <option value="2">2 Stories</option>
+                  <option value="3">3 Stories</option>
                 </select>
-                <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                  <option>Garage</option>
-                  <option>None</option>
-                  <option>1 Car</option>
-                  <option>2 Car</option>
-                  <option>3+ Car</option>
+                <select
+                  value={garageFilter}
+                  onChange={(e) => setGarageFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                >
+                  <option value="">Garage</option>
+                  <option value="0">None</option>
+                  <option value="1">1+ Car</option>
+                  <option value="2">2+ Car</option>
+                  <option value="3">3+ Car</option>
                 </select>
-                <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                  <option>Sq Ft Range</option>
+                <select
+                  value={sqftFilter}
+                  onChange={(e) => setSqftFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                >
+                  <option value="">Sq Ft Range</option>
                   <option>Under 1,000</option>
                   <option>1,000 - 1,500</option>
                   <option>1,500 - 2,000</option>
@@ -254,10 +411,15 @@ export default function StockPlansPage() {
                   <option>4,000+</option>
                 </select>
               </div>
-              <button className="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition">
-                <SlidersHorizontal className="h-4 w-4" />
-                All Filters
-              </button>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+                >
+                  <X className="h-4 w-4" />
+                  Clear Filters
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -268,66 +430,134 @@ export default function StockPlansPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-gray-900">Browse by Style</h2>
-            <Link href="/plans/styles" className="text-sm text-blue-600 hover:underline font-medium">
-              View All Styles
-            </Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {styles.map((style) => (
-              <Link
+              <button
                 key={style.slug}
-                href={`/plans?style=${style.slug}`}
-                className="group rounded-xl border border-gray-200 bg-gray-50 p-4 text-center hover:border-blue-300 hover:bg-blue-50 transition-all"
+                onClick={() => handleStyleClick(style.slug)}
+                className={`group rounded-xl border p-4 text-center transition-all ${
+                  styleFilter === style.slug
+                    ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500/20'
+                    : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50'
+                }`}
               >
-                <div className="w-12 h-12 mx-auto mb-2 bg-gray-200 rounded-lg flex items-center justify-center group-hover:bg-blue-100 transition">
-                  <Home className="h-6 w-6 text-gray-400 group-hover:text-blue-600 transition" />
+                <div className={`w-12 h-12 mx-auto mb-2 rounded-lg flex items-center justify-center transition ${
+                  styleFilter === style.slug ? 'bg-blue-100' : 'bg-gray-200 group-hover:bg-blue-100'
+                }`}>
+                  <Home className={`h-6 w-6 transition ${
+                    styleFilter === style.slug ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-600'
+                  }`} />
                 </div>
-                <p className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition">{style.name}</p>
+                <p className={`text-sm font-semibold transition ${
+                  styleFilter === style.slug ? 'text-blue-600' : 'text-gray-900 group-hover:text-blue-600'
+                }`}>{style.name}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{style.count} plans</p>
-              </Link>
+              </button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Featured Plans */}
+      {/* Plan Results */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Featured Plans</h2>
-              <p className="text-gray-600 mt-1">Hand-picked designs from top platform architects</p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {hasActiveFilters ? 'Search Results' : 'Featured Plans'}
+              </h2>
+              <p className="text-gray-600 mt-1">
+                {hasActiveFilters
+                  ? `${filteredPlans.length} plan${filteredPlans.length !== 1 ? 's' : ''} found`
+                  : 'Hand-picked designs from top platform architects'}
+              </p>
             </div>
             <div className="hidden md:flex items-center gap-3">
-              <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-                <option>Sort: Most Popular</option>
-                <option>Newest</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
-                <option>Sq Ft: Small to Large</option>
-                <option>Sq Ft: Large to Small</option>
-                <option>Highest Rated</option>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+              >
+                <option value="popular">Sort: Most Popular</option>
+                <option value="newest">Newest</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="sqft-asc">Sq Ft: Small to Large</option>
+                <option value="sqft-desc">Sq Ft: Large to Small</option>
+                <option value="rating">Highest Rated</option>
               </select>
             </div>
           </div>
 
-          {/* Results Count */}
-          <p className="text-sm text-gray-500 mb-6">Showing 2,847 plans</p>
+          {/* Active filter tags */}
+          {hasActiveFilters && (
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              {searchQuery && (
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
+                  &ldquo;{searchQuery}&rdquo;
+                  <button onClick={() => setSearchQuery('')} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
+                </span>
+              )}
+              {styleFilter && (
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
+                  Style: {styles.find(s => s.slug === styleFilter)?.name}
+                  <button onClick={() => setStyleFilter('')} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
+                </span>
+              )}
+              {bedsFilter && (
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
+                  {bedsFilter}+ Beds
+                  <button onClick={() => setBedsFilter('')} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
+                </span>
+              )}
+              {bathsFilter && (
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
+                  {bathsFilter}+ Baths
+                  <button onClick={() => setBathsFilter('')} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
+                </span>
+              )}
+              {storiesFilter && (
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
+                  {storiesFilter} {parseFloat(storiesFilter) === 1 ? 'Story' : 'Stories'}
+                  <button onClick={() => setStoriesFilter('')} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
+                </span>
+              )}
+              {garageFilter && (
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
+                  {garageFilter === '0' ? 'No Garage' : `${garageFilter}+ Car Garage`}
+                  <button onClick={() => setGarageFilter('')} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
+                </span>
+              )}
+              {sqftFilter && (
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
+                  {sqftFilter} sqft
+                  <button onClick={() => setSqftFilter('')} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Plan Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredPlans.map((plan) => (
-              <PlanCard key={plan.slug} plan={plan} />
-            ))}
-          </div>
-
-          {/* Load More */}
-          <div className="mt-10 text-center">
-            <button className="inline-flex items-center justify-center px-8 py-3 border border-gray-300 rounded-xl text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 transition">
-              Load More Plans
-            </button>
-            <p className="text-xs text-gray-500 mt-2">Showing 9 of 2,847 plans</p>
-          </div>
+          {filteredPlans.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredPlans.map((plan) => (
+                <PlanCard key={plan.slug} plan={plan} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <Home className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No plans match your filters</h3>
+              <p className="text-gray-600 mb-6">Try adjusting your search criteria or clearing some filters.</p>
+              <button
+                onClick={clearFilters}
+                className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition text-sm"
+              >
+                Clear All Filters
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -447,7 +677,7 @@ export default function StockPlansPage() {
 }
 
 /* ── Plan Card Component ────────────────────────────────── */
-function PlanCard({ plan }: { plan: typeof featuredPlans[number] }) {
+function PlanCard({ plan }: { plan: typeof allPlans[number] }) {
   return (
     <Link
       href={`/plans/${plan.slug}`}

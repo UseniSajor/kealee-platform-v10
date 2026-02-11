@@ -52,7 +52,7 @@ const permitPackages = [
       'Dedicated permit coordinator',
       'Inspection scheduling & tracking',
       'Zoning verification included',
-      'Historical permit research',
+      'Historic district permit guidance',
       'Weekly status reports',
     ],
   },
@@ -84,7 +84,7 @@ const permitPackages = [
       'All jurisdictions covered',
       'White-glove concierge service',
       'SLA-guaranteed turnaround',
-      'Historical records research',
+      'Historic district compliance research',
       'Variance & zoning applications',
       'Executive dashboard & reporting',
       'Dedicated team of specialists',
@@ -125,9 +125,9 @@ const services = [
   },
   {
     icon: History,
-    title: 'Historical Permit Research',
+    title: 'Historic District Permits',
     description:
-      'Access historical permit records, past inspections, violations, and compliance history for any property. Due diligence made easy.',
+      'Navigate permits for properties in designated historic areas. We handle landmark commission reviews, preservation requirements, and district-specific compliance.',
   },
   {
     icon: Users,
@@ -308,7 +308,7 @@ export default function PermitsLanding() {
               Complete Permit & Zoning Services
             </h2>
             <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-              Everything you need for permits, inspections, zoning, historical research, and compliance—all in one platform
+              Everything you need for permits, inspections, zoning, historic districts, and compliance—all in one platform
             </p>
           </div>
 
@@ -469,13 +469,13 @@ export default function PermitsLanding() {
         </div>
       </section>
 
-      {/* Zoning & Historical Section */}
+      {/* Zoning & Historic Districts Section */}
       <section className="py-20 bg-gray-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-3xl font-black tracking-tight text-gray-900">
-                Zoning Research & Historical Records
+                Zoning Research & Historic Districts
               </h2>
               <p className="mt-4 text-lg text-gray-600">
                 Don&apos;t start a project without knowing the full permitting history. Our research services give you complete visibility into any property.
@@ -511,9 +511,9 @@ export default function PermitsLanding() {
                     <History className="h-5 w-5 text-emerald-600" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900">Historical Permit Archives</h3>
+                    <h3 className="font-bold text-gray-900">Historic District Permits</h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      Access the complete permitting history for any property—past permits, inspections, violations, and compliance records.
+                      Permits for properties in designated historic areas—landmark commission reviews, preservation requirements, and district-specific approvals.
                     </p>
                   </div>
                 </div>
@@ -605,7 +605,7 @@ export default function PermitsLanding() {
                   'Real-time status tracking & alerts',
                   'Expedited processing options',
                   'Zoning verification before bidding',
-                  'Historical permit research for properties',
+                  'Historic district permit guidance',
                   'Multi-project portfolio management',
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2">
@@ -787,7 +787,7 @@ export default function PermitsLanding() {
                 </li>
                 <li>
                   <a href="#services" className="hover:text-white transition">
-                    Historical Research
+                    Historic District Permits
                   </a>
                 </li>
                 <li>
