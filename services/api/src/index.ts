@@ -481,6 +481,8 @@ const start = async () => {
     await fastify.register(analyticsDashboardRoutes, { prefix: '/analytics' })
     await fastify.register(complianceMonitoringRoutes, { prefix: '/compliance/monitoring' })
 
+    console.log('✅ Analytics & Compliance routes registered')
+
     // Temporarily disabled - DTO type mismatches
     // await fastify.register(accountingRoutes, { prefix: '/accounting' })
     await fastify.register(stripeConnectRoutes, { prefix: '/connect' })
@@ -556,6 +558,8 @@ const start = async () => {
     // await fastify.register(analyticsRoutes)
     await fastify.register(monitoringDashboardRoutes)
 
+    console.log('✅ Core routes registered (connect, projects, contracts, marketplace, etc.)')
+
     // User Responsibilities Routes (from Kealee_User_Responsibilities_Guide.md)
     await fastify.register(contractorUploadsRoutes, { prefix: '/api/contractor' })
     await fastify.register(clientActionsRoutes, { prefix: '/api/client' })
@@ -611,6 +615,8 @@ const start = async () => {
     // Oversight temporarily disabled
     // await fastify.register(oversightRoutes, { prefix: '/api/admin/oversight' })
 
+    console.log('✅ Extended routes registered (user responsibilities, precon, sensors, AI, etc.)')
+
     // Command Center dashboard routes (APP-15)
     const { commandCenterRoutes } = await import('./routes/command-center/index')
     await fastify.register(commandCenterRoutes, { prefix: '/api/v1/command-center' })
@@ -656,6 +662,8 @@ const start = async () => {
     await fastify.register(googlePlacesRoutes, { prefix: '/api/google-places' })
 
     // Note: File routes already registered at line 284 with prefix '/files'
+
+    console.log('✅ Command center & PM workspace routes registered')
 
     // ══════════════════════════════════════════════════════════════
     // Phase 1: New API routes for previously unserved Prisma models
@@ -788,9 +796,12 @@ const start = async () => {
     */
     // GraphQL disabled - end comment block
 
+    console.log('✅ Phase 1 routes registered (finance, security, compliance, analytics, notifications, system)')
+
     // ── Audit Middleware ──
     // Auto-audit all mutating API requests (POST/PUT/PATCH/DELETE)
     registerAuditMiddleware(fastify)
+    console.log('✅ Audit middleware registered')
 
     // Graceful shutdown: flush pending audit logs
     fastify.addHook('onClose', async () => {
@@ -800,6 +811,7 @@ const start = async () => {
 
     // Railway provides PORT env var, default to 3000 for local dev
     const port = Number(process.env.PORT) || 3000
+    console.log(`🔌 Starting server on port ${port}...`)
 
     await fastify.listen({ port, host: '0.0.0.0' })
 
@@ -817,10 +829,21 @@ const start = async () => {
     // console.log(`GraphQL:      /graphql`); // GraphQL disabled for MVP
     console.log('='.repeat(60));
     console.log('');
-  } catch (err) {
+  } catch (err: any) {
+    console.error('')
+    console.error('='.repeat(60))
+    console.error('❌ FATAL: Server failed to start')
+    console.error('='.repeat(60))
+    console.error('Error:', err?.message || err)
+    console.error('Stack:', err?.stack || '(no stack)')
+    console.error('='.repeat(60))
     fastify.log.error(err)
     process.exit(1)
   }
 }
 
-start()
+start().catch((err) => {
+  console.error('❌ Unhandled startup error:', err?.message || err)
+  console.error('Stack:', err?.stack || '(no stack)')
+  process.exit(1)
+})
