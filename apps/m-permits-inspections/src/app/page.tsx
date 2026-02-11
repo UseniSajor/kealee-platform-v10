@@ -230,7 +230,13 @@ export default async function HomePage() {
                 href="#pricing"
                 className="text-sm font-medium text-gray-700 hover:text-emerald-600 transition"
               >
-                Pricing
+                Packages
+              </Link>
+              <Link
+                href="#individual-pricing"
+                className="text-sm font-medium text-gray-700 hover:text-emerald-600 transition"
+              >
+                Individual Pricing
               </Link>
               <Link
                 href="#how-it-works"
@@ -494,6 +500,132 @@ export default async function HomePage() {
               <Link href="/auth/login" className="text-emerald-600 font-semibold hover:underline">
                 Contact us for custom enterprise solutions →
               </Link>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Individual Service Pricing */}
+      <section id="individual-pricing" className="py-20 bg-gray-50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-black tracking-tight text-gray-900">
+              Individual Service Pricing
+            </h2>
+            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+              Need a single service without a package? Purchase individual permit and zoning services on demand.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {[
+              {
+                icon: FileCheck,
+                title: 'Permit Application Filing',
+                price: '$495',
+                unit: 'per permit',
+                description: 'Single permit filing with AI compliance pre-check, document prep, and status tracking through approval.',
+              },
+              {
+                icon: Clock,
+                title: 'Inspection Coordination',
+                price: '$150',
+                unit: 'per inspection',
+                description: 'Schedule, coordinate, and track a single inspection with real-time result notifications.',
+              },
+              {
+                icon: Shield,
+                title: 'Code Compliance Review',
+                price: '$350',
+                unit: 'per review',
+                description: 'AI-powered compliance check against local, state, and federal building codes for your plans.',
+              },
+              {
+                icon: Scale,
+                title: 'Zoning Verification Report',
+                price: '$275',
+                unit: 'per property',
+                description: 'Full zoning classification, permitted uses, setbacks, density, and overlay district report.',
+              },
+              {
+                icon: Landmark,
+                title: 'Variance / Rezoning Application',
+                price: '$1,650',
+                unit: 'starting at',
+                description: 'Preparation and filing of rezoning, conditional use, special exception, or variance applications.',
+              },
+              {
+                icon: History,
+                title: 'Historic District Review',
+                price: '$895',
+                unit: 'per project',
+                description: 'Landmark commission filing, preservation compliance review, and district-specific approval coordination.',
+              },
+              {
+                icon: Search,
+                title: 'Property Due Diligence Report',
+                price: '$450',
+                unit: 'per property',
+                description: 'Comprehensive permit history, open violations, zoning restrictions, and environmental flags.',
+              },
+              {
+                icon: FileText,
+                title: 'Certificate of Occupancy',
+                price: '$395',
+                unit: 'per certificate',
+                description: 'CO application management, final inspection coordination, and occupancy certificate tracking.',
+              },
+              {
+                icon: AlertTriangle,
+                title: 'Violation Resolution',
+                price: '$500',
+                unit: 'per violation',
+                description: 'Address code violations and open permits. Includes response filing, re-inspection coordination, and clearance.',
+              },
+            ].map((service) => {
+              const Icon = service.icon;
+              return (
+                <div
+                  key={service.title}
+                  className="bg-white rounded-2xl border border-gray-200 p-6 hover:border-emerald-500 hover:shadow-lg transition group"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center group-hover:bg-emerald-600 transition">
+                      <Icon className="h-5 w-5 text-emerald-600 group-hover:text-white transition" />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xl font-black text-emerald-600">{service.price}</div>
+                      <div className="text-xs text-gray-500">{service.unit}</div>
+                    </div>
+                  </div>
+                  <h3 className="text-base font-bold text-gray-900 mb-2">{service.title}</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">{service.description}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-12 text-center">
+            <div className="inline-flex flex-col sm:flex-row gap-4 items-center">
+              <Link
+                href="/auth/login"
+                className="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-8 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-emerald-700 gap-2"
+              >
+                Order a Service
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <a href="#pricing" className="text-sm font-semibold text-emerald-600 hover:underline">
+                Or save with a package &uarr;
+              </a>
+            </div>
+            <p className="mt-4 text-sm text-gray-500">
+              Volume discounts available for 5+ services.{' '}
+              <a href="mailto:permits@kealee.com" className="text-emerald-600 font-semibold hover:underline">
+                Contact us for a quote
+              </a>
+            </p>
+            <p className="mt-3 text-xs text-gray-400">
+              * Prices do not include plan preparation or government permit fees. These are billed separately.
             </p>
           </div>
         </div>
@@ -838,7 +970,12 @@ export default async function HomePage() {
                 </li>
                 <li>
                   <Link href="#pricing" className="hover:text-white transition">
-                    Pricing
+                    Packages
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#individual-pricing" className="hover:text-white transition">
+                    Individual Pricing
                   </Link>
                 </li>
                 <li>
