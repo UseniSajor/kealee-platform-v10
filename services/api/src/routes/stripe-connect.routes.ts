@@ -167,7 +167,6 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
    */
   fastify.post('/accounts/me/onboarding-link', {
     schema: {
-      body: GenerateOnboardingLinkSchema,
       tags: ['Stripe Connect'],
       summary: 'Generate onboarding link',
       security: [{ bearerAuth: [] }],
@@ -274,7 +273,6 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
    */
   fastify.put('/accounts/me/tax-information', {
     schema: {
-      body: UpdateTaxInformationSchema,
       tags: ['Stripe Connect'],
       summary: 'Update tax information',
       security: [{ bearerAuth: [] }],
@@ -309,7 +307,6 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
    */
   fastify.post('/payouts', {
     schema: {
-      body: CreatePayoutSchema,
       tags: ['Stripe Connect'],
       summary: 'Create payout',
       security: [{ bearerAuth: [] }],
