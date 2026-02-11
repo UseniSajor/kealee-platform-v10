@@ -1,10 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase environment variables are not set')
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Use createClientComponentClient so the Supabase instance shares
+// auth cookies set by the middleware / auth-helpers, ensuring
+// getSession() returns the active session on client components.
+export const supabase = createClientComponentClient()

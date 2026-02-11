@@ -1,3 +1,5 @@
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 interface ApiOptions {
@@ -7,11 +9,15 @@ interface ApiOptions {
 }
 
 async function getAuthToken(): Promise<string | null> {
-  if (typeof document === 'undefined') return null
+  if (typeof window === 'undefined') return null
 
-  const cookies = document.cookie.split(';')
-  const tokenCookie = cookies.find(c => c.trim().startsWith('sb-access-token='))
-  return tokenCookie ? tokenCookie.split('=')[1] : null
+  try {
+    const supabase = createClientComponentClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    return session?.access_token || null
+  } catch {
+    return null
+  }
 }
 
 export async function apiRequest<T>(

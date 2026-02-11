@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -211,9 +212,20 @@ export default function AnalyticsPage() {
       setLoading(true)
       setError(null)
 
+      const supabase = createClientComponentClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
       const res = await fetch(
         `${API_BASE}/analytics/dashboard/platform?period=${dateRange}`,
-        { credentials: 'include' }
+        { credentials: 'include', headers }
       )
       if (!res.ok) throw new Error('Failed to load platform analytics')
       const json = await res.json()
