@@ -1,5 +1,3 @@
-import { api as apiClient } from '@kealee/api-client'
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 interface ApiOptions {
@@ -14,30 +12,6 @@ async function getAuthToken(): Promise<string | null> {
   const cookies = document.cookie.split(';')
   const tokenCookie = cookies.find(c => c.trim().startsWith('sb-access-token='))
   return tokenCookie ? tokenCookie.split('=')[1] : null
-}
-
-// Create a compatible leadApiClient using the available api export
-const leadApiClient = {
-  listLeads: (query?: any) => 
-    apiClient.get<any>(`/leads${query ? '?' + new URLSearchParams(query).toString() : ''}`),
-  
-  getLead: (id: string) => 
-    apiClient.get<any>(`/leads/${id}`),
-  
-  updateLeadStage: (id: string, stage: any) => 
-    apiClient.put<any>(`/leads/${id}/stage`, { stage }),
-  
-  assignSalesRep: (id: string, salesRepId: string) => 
-    apiClient.put<any>(`/leads/${id}/assign`, { salesRepId }),
-  
-  awardContractor: (id: string, profileId: string) => 
-    apiClient.put<any>(`/leads/${id}/award`, { profileId }),
-  
-  closeLost: (id: string, reason: string) => 
-    apiClient.put<any>(`/leads/${id}/close`, { reason, status: 'lost' }),
-  
-  distributeLead: (id: string, distributionCount?: number) => 
-    apiClient.post<any>(`/leads/${id}/distribute`, { distributionCount }),
 }
 
 export async function apiRequest<T>(
