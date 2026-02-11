@@ -487,14 +487,16 @@ export default function PermitsLanding() {
             </p>
           </div>
 
+          {/* Professional Services */}
+          <h3 className="text-xl font-bold text-gray-900 mb-6">Professional Services</h3>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {[
               {
-                icon: FileCheck,
-                title: 'Permit Application Filing',
-                price: '$495',
-                unit: 'per permit',
-                description: 'Single permit filing with AI compliance pre-check, document prep, and status tracking through approval.',
+                icon: Shield,
+                title: 'AI Compliance Pre-Review',
+                price: '$350',
+                unit: 'per review',
+                description: 'AI-powered compliance check against local, state, and federal building codes before submission.',
               },
               {
                 icon: Clock,
@@ -502,13 +504,6 @@ export default function PermitsLanding() {
                 price: '$150',
                 unit: 'per inspection',
                 description: 'Schedule, coordinate, and track a single inspection with real-time result notifications.',
-              },
-              {
-                icon: Shield,
-                title: 'Code Compliance Review',
-                price: '$350',
-                unit: 'per review',
-                description: 'AI-powered compliance check against local, state, and federal building codes for your plans.',
               },
               {
                 icon: Scale,
@@ -552,6 +547,34 @@ export default function PermitsLanding() {
                 unit: 'per violation',
                 description: 'Address code violations and open permits. Includes response filing, re-inspection coordination, and clearance.',
               },
+              {
+                icon: Users,
+                title: 'Plan Review Management',
+                price: '$400',
+                unit: 'per review',
+                description: 'PDF markup, discipline-specific review workflows, comment threading, and revision tracking.',
+              },
+              {
+                icon: Globe,
+                title: 'Multi-Jurisdiction Filing',
+                price: '$200',
+                unit: 'add-on per jurisdiction',
+                description: 'File across additional jurisdictions from a single engagement. We handle local requirements and forms.',
+              },
+              {
+                icon: Zap,
+                title: 'Expedited Processing',
+                price: '$350',
+                unit: 'add-on per permit',
+                description: 'Priority review coordination with 48-72 hour processing when jurisdictions allow.',
+              },
+              {
+                icon: FileCheck,
+                title: 'Resubmittal Management',
+                price: '$250',
+                unit: 'per resubmittal',
+                description: 'Correction list review, updated plan preparation, resubmittal filing, and follow-up through approval.',
+              },
             ].map((service) => {
               const Icon = service.icon;
               return (
@@ -573,6 +596,39 @@ export default function PermitsLanding() {
                 </div>
               );
             })}
+          </div>
+
+          {/* Per-Permit Pricing Table */}
+          <h3 className="text-xl font-bold text-gray-900 mt-16 mb-6">Per-Permit Filing Prices</h3>
+          <div className="bg-white rounded-2xl border border-gray-200 p-8 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+              {[
+                { type: 'Residential Building Permit', price: '$325' },
+                { type: 'Commercial Building Permit', price: '$500' },
+                { type: 'Electrical Permit', price: '$150' },
+                { type: 'Plumbing Permit', price: '$150' },
+                { type: 'HVAC / Mechanical Permit', price: '$175' },
+                { type: 'Roofing Permit', price: '$125' },
+                { type: 'Solar / PV Permit', price: '$250' },
+                { type: 'Pool / Spa Permit', price: '$275' },
+                { type: 'Fence Permit', price: '$100' },
+                { type: 'Demolition Permit', price: '$200' },
+                { type: 'Occupancy Permit', price: '$150' },
+                { type: 'Sign Permit', price: '$125' },
+                { type: 'Zoning & Variance Submission', price: '$750' },
+                { type: 'Historic Review Submission', price: '$650' },
+                { type: 'Subdivision Submission', price: '$1,200' },
+                { type: 'Land Use Approval', price: '$850' },
+              ].map((permit) => (
+                <div key={permit.type} className="flex items-center justify-between border-b border-gray-100 pb-3">
+                  <span className="text-sm text-gray-900 font-medium">{permit.type}</span>
+                  <span className="text-sm text-emerald-600 font-bold ml-4">{permit.price}</span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-6 text-xs text-gray-500">
+              Per-permit prices include application preparation, AI compliance review, submission, and status tracking. Complex or commercial permits may require custom pricing.
+            </p>
           </div>
 
           <div className="mt-12 text-center">
