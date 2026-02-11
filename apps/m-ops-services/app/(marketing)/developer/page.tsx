@@ -24,7 +24,7 @@ export default function DeveloperPage() {
               closeout. We guide your project from concept to completion.
             </p>
             <Link
-              href="#contact"
+              href="/contact"
               className="inline-block bg-violet-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-violet-700 transition-colors"
             >
               Start Your Project
@@ -247,7 +247,7 @@ export default function DeveloperPage() {
                   </li>
                 </ul>
                 <Link
-                  href="#contact"
+                  href="/contact"
                   className="block w-full bg-violet-600 text-white text-center py-3 rounded-lg font-bold hover:bg-violet-700 transition-colors"
                 >
                   Get Started
@@ -295,7 +295,7 @@ export default function DeveloperPage() {
                   </li>
                 </ul>
                 <Link
-                  href="#contact"
+                  href="/contact"
                   className="block w-full bg-violet-600 text-white text-center py-3 rounded-lg font-bold hover:bg-violet-700 transition-colors"
                 >
                   Get Started
@@ -338,7 +338,7 @@ export default function DeveloperPage() {
                   </li>
                 </ul>
                 <Link
-                  href="#contact"
+                  href="/contact"
                   className="block w-full bg-violet-600 text-white text-center py-3 rounded-lg font-bold hover:bg-violet-700 transition-colors"
                 >
                   Contact Us
@@ -361,7 +361,7 @@ export default function DeveloperPage() {
               Schedule a complimentary consultation today.
             </p>
             <Link
-              href="#contact"
+              href="/contact"
               className="inline-block bg-white text-violet-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-zinc-50 transition-colors"
             >
               Schedule Consultation

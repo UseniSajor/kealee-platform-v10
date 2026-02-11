@@ -833,10 +833,33 @@ export default function SiteToolsPage() {
             <div className="mt-3 grid gap-2">
               <button
                 type="button"
-                onClick={() => alert("This would attach checklist + photos to an inspection service request (wire next).")}
+                onClick={async () => {
+                  try {
+                    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+                    const completedItems = checklist.filter(c => c.done).map(c => c.label);
+                    const totalPhotos = photos.length;
+                    const res = await fetch(`${API_URL}/ops-services/service-requests`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      credentials: 'include',
+                      body: JSON.stringify({
+                        type: 'INSPECTION',
+                        description: `Inspection request with ${completedItems.length} checklist items completed and ${totalPhotos} site photos attached.`,
+                        metadata: { checklistItems: completedItems, photoCount: totalPhotos },
+                      }),
+                    });
+                    if (res.ok) {
+                      alert('Inspection service request created successfully.');
+                    } else {
+                      alert('Failed to create service request. Please try again.');
+                    }
+                  } catch {
+                    alert('Network error. Please check your connection.');
+                  }
+                }}
                 className="h-12 rounded-xl bg-[var(--primary)] px-4 text-sm font-black text-[var(--primary-foreground)] hover:opacity-95"
               >
-                Create inspection service request (stub)
+                Create inspection service request
               </button>
               <button
                 type="button"

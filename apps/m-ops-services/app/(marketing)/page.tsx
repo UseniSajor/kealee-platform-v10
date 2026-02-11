@@ -92,10 +92,10 @@ export default function OpsServicesHomePage() {
               See Packages
             </Link>
             <Link
-              href="/demo"
+              href="/schedule"
               className="inline-flex items-center justify-center rounded-2xl border border-zinc-200 bg-white px-8 py-4 text-base font-black text-zinc-900 shadow-sm transition hover:bg-zinc-50"
             >
-              Book a Demo
+              Schedule Consultation
             </Link>
           </div>
         </div>

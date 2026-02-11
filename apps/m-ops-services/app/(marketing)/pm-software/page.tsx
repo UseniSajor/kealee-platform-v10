@@ -144,7 +144,7 @@ export default function PMSoftwarePage() {
                   </li>
                 </ul>
                 <Link
-                  href="#contact"
+                  href="/contact"
                   className="block w-full bg-sky-600 text-white text-center py-3 rounded-lg font-bold hover:bg-sky-700 transition-colors"
                 >
                   Start Free Trial
@@ -184,7 +184,7 @@ export default function PMSoftwarePage() {
                   </li>
                 </ul>
                 <Link
-                  href="#contact"
+                  href="/contact"
                   className="block w-full bg-sky-600 text-white text-center py-3 rounded-lg font-bold hover:bg-sky-700 transition-colors"
                 >
                   Start Free Trial
@@ -221,7 +221,7 @@ export default function PMSoftwarePage() {
                   </li>
                 </ul>
                 <Link
-                  href="#contact"
+                  href="/contact"
                   className="block w-full bg-sky-600 text-white text-center py-3 rounded-lg font-bold hover:bg-sky-700 transition-colors"
                 >
                   Start Free Trial
@@ -257,7 +257,7 @@ export default function PMSoftwarePage() {
                   </li>
                 </ul>
                 <Link
-                  href="#contact"
+                  href="/contact"
                   className="block w-full bg-sky-600 text-white text-center py-3 rounded-lg font-bold hover:bg-sky-700 transition-colors"
                 >
                   Contact Sales
@@ -319,7 +319,7 @@ export default function PMSoftwarePage() {
               No credit card required. Full access to all features for 14 days.
             </p>
             <Link
-              href="#contact"
+              href="/contact"
               className="inline-block bg-white text-sky-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-zinc-50 transition-colors"
             >
               Get Started Now

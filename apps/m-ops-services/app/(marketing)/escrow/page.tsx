@@ -338,7 +338,7 @@ export default function EscrowPage() {
               Set up a secure escrow account today and eliminate payment disputes on your next project.
             </p>
             <Link
-              href="#contact"
+              href="/contact"
               className="inline-block bg-white text-sky-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-zinc-50 transition-colors"
             >
               Get Started with Escrow
