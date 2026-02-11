@@ -735,9 +735,9 @@ const start = async () => {
     const { portfolioRoutes } = await import('./modules/marketplace/portfolio.routes')
     await fastify.register(portfolioRoutes, { prefix: '/marketplace/portfolios' })
 
-    // Pre-Construction Extras
+    // Pre-Construction Extras (registered under /precon/v2 to avoid route conflicts with main precon routes)
     const { preconExtrasRoutes } = await import('./modules/precon/precon-extras.routes')
-    await fastify.register(preconExtrasRoutes, { prefix: '/precon' })
+    await fastify.register(preconExtrasRoutes, { prefix: '/precon/v2' })
 
     // Approval Rules, Attachments, Comments
     const { approvalManagementRoutes } = await import('./modules/approvals/approval.routes')
