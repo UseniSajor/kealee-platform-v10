@@ -220,4 +220,222 @@ export async function marketplaceEstimatingRoutes(fastify: FastifyInstance) {
       return reply.send({ assembly })
     }
   )
+
+  // ─── POST /assemblies — Create new assembly ─────────────────────
+  fastify.post(
+    '/assemblies',
+    {
+      preHandler: [
+        authenticateUser,
+        validateBody(
+          z.object({
+            code: z.string().optional(),
+            name: z.string().min(1),
+            category: z.string().min(1),
+            description: z.string().optional(),
+            unit: z.string().min(1),
+            unitCost: z.number().min(0),
+            laborCost: z.number().min(0).optional(),
+            materialCost: z.number().min(0).optional(),
+            equipmentCost: z.number().min(0).optional(),
+            laborHours: z.number().min(0).optional(),
+            complexity: z.string().optional(),
+            tags: z.array(z.string()).optional(),
+            costDatabaseId: z.string().uuid().optional(),
+          })
+        ),
+      ],
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const body = request.body as any
+
+      try {
+        // Find a default cost database if none provided
+        let costDatabaseId = body.costDatabaseId
+        if (!costDatabaseId) {
+          const defaultDb = await prismaAny.costDatabase.findFirst({
+            where: { isActive: true, isDefault: true },
+          })
+          if (!defaultDb) {
+            const anyDb = await prismaAny.costDatabase.findFirst({ where: { isActive: true } })
+            costDatabaseId = anyDb?.id
+          } else {
+            costDatabaseId = defaultDb.id
+          }
+        }
+
+        if (!costDatabaseId) {
+          return reply.code(400).send({ error: 'No cost database found. Create one first.' })
+        }
+
+        const assembly = await prismaAny.assembly.create({
+          data: {
+            costDatabaseId,
+            code: body.code || `CUSTOM-${Date.now()}`,
+            name: body.name,
+            category: body.category,
+            description: body.description,
+            unit: body.unit,
+            unitCost: body.unitCost,
+            laborCost: body.laborCost || 0,
+            materialCost: body.materialCost || 0,
+            equipmentCost: body.equipmentCost || 0,
+            laborHours: body.laborHours || 0,
+            complexity: body.complexity || 'STANDARD',
+            tags: body.tags || [],
+          },
+        })
+
+        return reply.code(201).send({ assembly })
+      } catch (err: any) {
+        fastify.log.error(err)
+        return reply.code(400).send({ error: err.message || 'Failed to create assembly' })
+      }
+    }
+  )
+
+  // ─── PUT /assemblies/:id — Update assembly ──────────────────────
+  fastify.put(
+    '/assemblies/:id',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(z.object({ id: z.string().min(1) })),
+      ],
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { id } = request.params as { id: string }
+      const body = request.body as any
+
+      try {
+        // Try finding by ID first, then by code
+        let where: any = { id }
+        const existing = await prismaAny.assembly.findUnique({ where })
+        if (!existing) {
+          const byCode = await prismaAny.assembly.findFirst({ where: { code: id } })
+          if (!byCode) return reply.code(404).send({ error: 'Assembly not found' })
+          where = { id: byCode.id }
+        }
+
+        const updateData: any = {}
+        if (body.name) updateData.name = body.name
+        if (body.description !== undefined) updateData.description = body.description
+        if (body.unit) updateData.unit = body.unit
+        if (body.unitCost !== undefined) updateData.unitCost = body.unitCost
+        if (body.laborCost !== undefined) updateData.laborCost = body.laborCost
+        if (body.materialCost !== undefined) updateData.materialCost = body.materialCost
+        if (body.equipmentCost !== undefined) updateData.equipmentCost = body.equipmentCost
+        if (body.laborHours !== undefined) updateData.laborHours = body.laborHours
+        if (body.complexity) updateData.complexity = body.complexity
+        if (body.tags) updateData.tags = body.tags
+
+        const assembly = await prismaAny.assembly.update({ where, data: updateData })
+        return reply.send({ assembly })
+      } catch (err: any) {
+        fastify.log.error(err)
+        return reply.code(400).send({ error: err.message || 'Failed to update assembly' })
+      }
+    }
+  )
+
+  // ─── DELETE /assemblies/:id — Delete assembly ───────────────────
+  fastify.delete(
+    '/assemblies/:id',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(z.object({ id: z.string().min(1) })),
+      ],
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { id } = request.params as { id: string }
+
+      try {
+        let where: any = { id }
+        const existing = await prismaAny.assembly.findUnique({ where })
+        if (!existing) {
+          const byCode = await prismaAny.assembly.findFirst({ where: { code: id } })
+          if (!byCode) return reply.code(404).send({ error: 'Assembly not found' })
+          where = { id: byCode.id }
+        }
+
+        await prismaAny.assembly.delete({ where })
+        return reply.send({ success: true })
+      } catch (err: any) {
+        fastify.log.error(err)
+        return reply.code(400).send({ error: err.message || 'Failed to delete assembly' })
+      }
+    }
+  )
+
+  // ─── GET /assembly-library/templates — Pre-built assembly templates ─
+  fastify.get(
+    '/assembly-library/templates',
+    { preHandler: [authenticateUser] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const templates = await prismaAny.assembly.findMany({
+          where: { isActive: true, isTemplate: true },
+          orderBy: { name: 'asc' },
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            category: true,
+            description: true,
+            unit: true,
+            unitCost: true,
+            laborCost: true,
+            materialCost: true,
+            laborHours: true,
+            complexity: true,
+            tags: true,
+          },
+        })
+
+        return reply.send({ templates })
+      } catch (err: any) {
+        fastify.log.error(err)
+        return reply.send({ templates: [] })
+      }
+    }
+  )
+
+  // ─── POST /assembly-library/create-from-template ────────────────
+  fastify.post(
+    '/assembly-library/create-from-template',
+    {
+      preHandler: [
+        authenticateUser,
+        validateBody(z.object({ templateCode: z.string().min(1) })),
+      ],
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { templateCode } = request.body as { templateCode: string }
+
+      try {
+        const template = await prismaAny.assembly.findFirst({
+          where: { code: templateCode, isTemplate: true },
+        })
+
+        if (!template) {
+          return reply.code(404).send({ error: `Template ${templateCode} not found` })
+        }
+
+        const { id, code, isTemplate, createdAt, updatedAt, ...data } = template
+        const assembly = await prismaAny.assembly.create({
+          data: {
+            ...data,
+            code: `${code}-copy-${Date.now()}`,
+            isTemplate: false,
+          },
+        })
+
+        return reply.code(201).send({ assembly })
+      } catch (err: any) {
+        fastify.log.error(err)
+        return reply.code(400).send({ error: err.message || 'Failed to create from template' })
+      }
+    }
+  )
 }

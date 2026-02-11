@@ -759,6 +759,10 @@ const start = async () => {
     const { estimationDataRoutes } = await import('./modules/estimation/estimation-data.routes')
     await fastify.register(estimationDataRoutes, { prefix: '/estimation/data' })
 
+    // Extended Estimation Routes (Estimates CRUD, Takeoffs, Databases, Regional Indices, Leads)
+    const { estimationExtendedRoutes } = await import('./modules/estimation/estimation-extended.routes')
+    await fastify.register(estimationExtendedRoutes, { prefix: '/estimation' })
+
     // Communication Logs, Activity, Issues
     const { communicationRoutes: commRoutes } = await import('./modules/communication/communication.routes')
     await fastify.register(commRoutes, { prefix: '/communication' })
