@@ -14,16 +14,8 @@ import {
   BatchFileUploadRequest,
 } from '../../types/user-responsibilities.types'
 import { FileCategory, UploadedByRole } from '@prisma/client'
-import multipart from '@fastify/multipart'
-
 const contractorUploadsRoutes: FastifyPluginAsync = async (fastify) => {
-  // Register multipart plugin for file uploads
-  fastify.register(multipart, {
-    limits: {
-      fileSize: 100 * 1024 * 1024, // 100MB max
-      files: 20, // Max 20 files per upload
-    },
-  })
+  // multipart plugin is registered globally in index.ts
 
   // ============================================================================
   // SITE PHOTO UPLOADS

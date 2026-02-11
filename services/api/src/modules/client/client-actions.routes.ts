@@ -14,10 +14,8 @@ import {
   LeaveReviewInput,
 } from '../../types/user-responsibilities.types'
 import { FileCategory, UploadedByRole } from '@prisma/client'
-import multipart from '@fastify/multipart'
-
 const clientActionsRoutes: FastifyPluginAsync = async (fastify) => {
-  fastify.register(multipart)
+  // multipart plugin is registered globally in index.ts
 
   // ============================================================================
   // PROJECT POSTING

@@ -12,15 +12,8 @@ import {
   ReviewDesignInput,
 } from '../../types/user-responsibilities.types'
 import { FileCategory, UploadedByRole } from '@prisma/client'
-import multipart from '@fastify/multipart'
-
 const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
-  fastify.register(multipart, {
-    limits: {
-      fileSize: 100 * 1024 * 1024, // 100MB max for design files
-      files: 30,
-    },
-  })
+  // multipart plugin is registered globally in index.ts
 
   // ============================================================================
   // DESIGN FILE UPLOADS
