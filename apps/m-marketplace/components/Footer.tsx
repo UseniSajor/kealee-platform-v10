@@ -24,36 +24,44 @@ export function Footer() {
             <h3 className="text-white font-semibold mb-4">Services</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a
-                  href="https://ops.kealee.com"
-                  className="hover:text-white transition"
-                >
-                  Ops Services
-                </a>
+                <Link href="/services/architect" className="hover:text-white transition">
+                  Architecture
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://app.kealee.com"
-                  className="hover:text-white transition"
-                >
-                  Project Owner Portal
-                </a>
+                <Link href="/services/estimation" className="hover:text-white transition">
+                  Estimation
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://architect.kealee.com"
-                  className="hover:text-white transition"
-                >
-                  Architect Services
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://permits.kealee.com"
-                  className="hover:text-white transition"
-                >
+                <Link href="/services/permits" className="hover:text-white transition">
                   Permits & Inspections
-                </a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/services/ops" className="hover:text-white transition">
+                  Operations Services
+                </Link>
+              </li>
+              <li>
+                <Link href="/services/pm-software" className="hover:text-white transition">
+                  PM Software
+                </Link>
+              </li>
+              <li>
+                <Link href="/plans" className="hover:text-white transition">
+                  Stock Plans
+                </Link>
+              </li>
+              <li>
+                <Link href="/services" className="hover:text-white transition">
+                  All Services
+                </Link>
+              </li>
+              <li>
+                <Link href="/portals" className="hover:text-white transition">
+                  Portal Access
+                </Link>
               </li>
             </ul>
           </div>

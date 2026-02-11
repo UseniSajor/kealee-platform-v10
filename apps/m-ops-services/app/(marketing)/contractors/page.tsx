@@ -142,10 +142,10 @@ export default function ContractorsPage() {
               Stop losing time and money on administrative tasks. Let us handle the operations while you focus on building quality projects.
             </p>
             <Link
-              href="/pricing"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
+              href="/packages"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-sky-500 text-white rounded-xl font-semibold hover:bg-sky-600 transition-colors"
             >
-              See Packages & Pricing
+              See Packages &amp; Pricing
               <ArrowRight className="h-5 w-5" />
             </Link>
           </div>
@@ -424,20 +424,20 @@ export default function ContractorsPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/pricing"
-              className="px-8 py-3 bg-white text-emerald-600 rounded-lg font-semibold hover:bg-emerald-50 transition-colors"
+              href="/packages"
+              className="px-8 py-3 bg-white text-sky-600 rounded-xl font-semibold hover:bg-sky-50 transition-colors"
             >
               View Packages
             </Link>
             <Link
-              href="/signup"
-              className="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white/10 transition-colors"
+              href="/contact"
+              className="px-8 py-3 border-2 border-white text-white rounded-xl font-semibold hover:bg-white/10 transition-colors"
             >
-              Start Free Trial
+              Get Started
             </Link>
             <Link
               href="/case-studies"
-              className="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white/10 transition-colors"
+              className="px-8 py-3 border-2 border-white text-white rounded-xl font-semibold hover:bg-white/10 transition-colors"
             >
               Read Case Studies
             </Link>

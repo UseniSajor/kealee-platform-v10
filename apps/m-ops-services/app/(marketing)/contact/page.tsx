@@ -7,7 +7,10 @@ export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    subject: '',
+    company: '',
+    phone: '',
+    projectCount: '',
+    interestedPackage: '',
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
@@ -22,48 +25,39 @@ export default function ContactPage() {
     {
       icon: '📧',
       label: 'Email',
-      value: 'support@kealee.com',
-      link: 'mailto:support@kealee.com',
+      value: 'ops@kealee.com',
+      link: 'mailto:ops@kealee.com',
     },
     {
       icon: '📞',
       label: 'Phone',
-      value: '(202) 555-0199',
-      link: 'tel:+12025550199',
+      value: '(301) 575-8777',
+      link: 'tel:+13015758777',
     },
     {
-      icon: '📍',
-      label: 'Address',
-      value: '1401 H Street NW, Suite 300, Washington, DC 20005',
+      icon: '🕐',
+      label: 'Response Time',
+      value: 'Within 2 business hours',
       link: null,
     },
-  ];
-
-  const departments = [
-    { name: 'General Inquiries', email: 'info@kealee.com' },
-    { name: 'Sales & Demos', email: 'sales@kealee.com' },
-    { name: 'Technical Support', email: 'support@kealee.com' },
-    { name: 'Billing Questions', email: 'billing@kealee.com' },
-    { name: 'Press & Media', email: 'press@kealee.com' },
-    { name: 'Partnerships', email: 'partners@kealee.com' },
   ];
 
   if (submitted) {
     return (
       <main className="mx-auto max-w-2xl px-6 py-16 text-center">
-        <div className="rounded-2xl border border-black/10 bg-white p-12 shadow-sm">
+        <div className="rounded-2xl border border-zinc-200 bg-white p-12 shadow-sm">
           <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
             <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="text-2xl font-black">Message Sent</h1>
+          <h1 className="text-2xl font-bold">Message Sent</h1>
           <p className="mt-3 text-zinc-600">
-            Thanks for reaching out! We'll get back to you within 24 hours.
+            Thanks for reaching out! A member of our ops team will get back to you within 2 business hours.
           </p>
           <Link
             href="/"
-            className="mt-8 inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-6 py-3 text-sm font-bold text-white transition hover:opacity-95"
+            className="mt-8 inline-flex items-center justify-center rounded-xl bg-sky-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-sky-600"
           >
             Back to Home
           </Link>
@@ -76,23 +70,23 @@ export default function ContactPage() {
     <main className="mx-auto max-w-6xl px-6 py-12">
       <Link
         href="/"
-        className="inline-flex items-center gap-2 text-[var(--primary)] hover:underline mb-8"
+        className="inline-flex items-center gap-2 text-sky-600 hover:underline mb-8"
       >
-        ← Back to Home
+        &larr; Back to Home
       </Link>
 
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-black tracking-tight">Contact Us</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-zinc-900">Get Started with Kealee Ops</h1>
         <p className="mt-3 text-lg text-zinc-600">
-          Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+          Tell us about your business and we&apos;ll recommend the right package for you. Free consultation, no commitment.
         </p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
-        {/* Contact Info */}
+        {/* Contact Info Sidebar */}
         <div className="space-y-6">
-          <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-black mb-4">Get in Touch</h2>
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <h2 className="text-lg font-bold mb-4 text-zinc-900">Get in Touch</h2>
             <div className="space-y-4">
               {contactInfo.map((item) => (
                 <div key={item.label} className="flex items-start gap-3">
@@ -102,7 +96,7 @@ export default function ContactPage() {
                     {item.link ? (
                       <a
                         href={item.link}
-                        className="text-zinc-900 hover:text-[var(--primary)] transition"
+                        className="text-zinc-900 hover:text-sky-600 transition"
                       >
                         {item.value}
                       </a>
@@ -115,25 +109,8 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-black mb-4">Department Emails</h2>
-            <div className="space-y-3">
-              {departments.map((dept) => (
-                <div key={dept.name} className="flex items-center justify-between">
-                  <span className="text-sm text-zinc-700">{dept.name}</span>
-                  <a
-                    href={`mailto:${dept.email}`}
-                    className="text-sm text-[var(--primary)] hover:underline"
-                  >
-                    {dept.email}
-                  </a>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-black mb-4">Office Hours</h2>
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <h2 className="text-lg font-bold mb-4 text-zinc-900">Office Hours</h2>
             <div className="space-y-2 text-sm text-zinc-700">
               <div className="flex justify-between">
                 <span>Monday - Friday</span>
@@ -149,15 +126,28 @@ export default function ContactPage() {
               </div>
             </div>
             <p className="mt-4 text-xs text-zinc-500">
-              Emergency support for Package C & D clients available 24/7
+              Emergency support for Package C &amp; D clients available 24/7
             </p>
+          </div>
+
+          <div className="rounded-2xl border border-sky-200 bg-sky-50 p-6">
+            <h2 className="text-lg font-bold mb-2 text-zinc-900">Book a Demo</h2>
+            <p className="text-sm text-zinc-600 mb-4">
+              Prefer to see the platform in action first? Schedule a 30-minute walkthrough with our team.
+            </p>
+            <Link
+              href="/demo"
+              className="inline-flex items-center justify-center rounded-xl border border-sky-500 bg-white px-5 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-50 transition"
+            >
+              Schedule Demo
+            </Link>
           </div>
         </div>
 
         {/* Contact Form */}
         <div className="lg:col-span-2">
-          <div className="rounded-2xl border border-black/10 bg-white p-8 shadow-sm">
-            <h2 className="text-xl font-black mb-6">Send a Message</h2>
+          <div className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
+            <h2 className="text-xl font-bold mb-6 text-zinc-900">Tell Us About Your Business</h2>
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
@@ -169,7 +159,7 @@ export default function ContactPage() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
-                    className="w-full px-4 py-2.5 border border-black/10 rounded-lg focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
+                    className="w-full px-4 py-2.5 border border-zinc-200 rounded-lg focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
                     placeholder="John Smith"
                   />
                 </div>
@@ -182,70 +172,127 @@ export default function ContactPage() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
-                    className="w-full px-4 py-2.5 border border-black/10 rounded-lg focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
+                    className="w-full px-4 py-2.5 border border-zinc-200 rounded-lg focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
                     placeholder="john@example.com"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
-                  Subject *
-                </label>
-                <select
-                  value={formData.subject}
-                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  required
-                  className="w-full px-4 py-2.5 border border-black/10 rounded-lg focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
-                >
-                  <option value="">Select a topic...</option>
-                  <option value="general">General Inquiry</option>
-                  <option value="sales">Sales & Pricing</option>
-                  <option value="support">Technical Support</option>
-                  <option value="billing">Billing Question</option>
-                  <option value="partnership">Partnership Opportunity</option>
-                  <option value="feedback">Product Feedback</option>
-                  <option value="other">Other</option>
-                </select>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
+                    Company Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.company}
+                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-zinc-200 rounded-lg focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                    placeholder="Smith Construction LLC"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-zinc-200 rounded-lg focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                    placeholder="(555) 555-5555"
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
+                    Current # of Projects
+                  </label>
+                  <select
+                    value={formData.projectCount}
+                    onChange={(e) => setFormData({ ...formData, projectCount: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-zinc-200 rounded-lg focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                  >
+                    <option value="">Select...</option>
+                    <option value="1">1 project</option>
+                    <option value="2-3">2-3 projects</option>
+                    <option value="4-5">4-5 projects</option>
+                    <option value="6-10">6-10 projects</option>
+                    <option value="10+">10+ projects</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
+                    Interested In
+                  </label>
+                  <select
+                    value={formData.interestedPackage}
+                    onChange={(e) => setFormData({ ...formData, interestedPackage: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-zinc-200 rounded-lg focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                  >
+                    <option value="">Select a service...</option>
+                    <option value="package-a">PM Package A — Starter ($1,750/mo)</option>
+                    <option value="package-b">PM Package B — Professional ($3,750/mo)</option>
+                    <option value="package-c">PM Package C — Premium ($9,500/mo)</option>
+                    <option value="package-d">PM Package D — Enterprise ($16,500/mo)</option>
+                    <option value="pm-software">PM Software Platform</option>
+                    <option value="individual">Individual Services</option>
+                    <option value="escrow">Escrow &amp; Finance</option>
+                    <option value="developer">Developer Services</option>
+                    <option value="not-sure">Not Sure Yet</option>
+                  </select>
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
-                  Message *
+                  Tell Us About Your Needs
                 </label>
                 <textarea
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  required
-                  rows={6}
-                  className="w-full px-4 py-2.5 border border-black/10 rounded-lg focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 resize-none"
-                  placeholder="How can we help you?"
+                  rows={5}
+                  className="w-full px-4 py-2.5 border border-zinc-200 rounded-lg focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 resize-none"
+                  placeholder="What challenges are you facing? How many team members do you have? What types of projects do you work on?"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 bg-[var(--primary)] text-white font-bold rounded-xl hover:opacity-95 transition"
+                className="w-full py-3 bg-sky-500 text-white font-semibold rounded-xl hover:bg-sky-600 transition"
               >
-                Send Message
+                Get My Free Consultation
               </button>
+              <p className="text-center text-xs text-zinc-500">
+                We&apos;ll respond within 2 business hours. No spam, no pressure.
+              </p>
             </form>
           </div>
         </div>
       </div>
 
       {/* FAQ CTA */}
-      <div className="mt-12 text-center p-8 rounded-2xl bg-zinc-50 border border-black/5">
-        <h2 className="text-xl font-black">Looking for Quick Answers?</h2>
+      <div className="mt-12 text-center p-8 rounded-2xl bg-zinc-50 border border-zinc-200">
+        <h2 className="text-xl font-bold text-zinc-900">Not Sure Which Package Is Right?</h2>
         <p className="mt-2 text-zinc-600">
-          Check out our frequently asked questions for immediate help.
+          See how our packages compare or learn more about how our services work.
         </p>
-        <Link
-          href="/how-it-works"
-          className="mt-4 inline-flex items-center justify-center rounded-xl border border-black/10 bg-white px-6 py-2.5 text-sm font-bold text-zinc-900 hover:bg-zinc-50 transition"
-        >
-          How It Works →
-        </Link>
+        <div className="mt-4 flex flex-wrap justify-center gap-4">
+          <Link
+            href="/packages"
+            className="inline-flex items-center justify-center rounded-xl bg-sky-500 px-6 py-2.5 text-sm font-semibold text-white hover:bg-sky-600 transition"
+          >
+            Compare Packages
+          </Link>
+          <Link
+            href="/how-it-works"
+            className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-6 py-2.5 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 transition"
+          >
+            How It Works
+          </Link>
+        </div>
       </div>
     </main>
   );

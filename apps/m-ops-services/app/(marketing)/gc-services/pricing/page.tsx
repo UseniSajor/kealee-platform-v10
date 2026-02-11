@@ -323,7 +323,7 @@ export default function GCPricingPage() {
               asChild
               className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl h-12 px-8"
             >
-              <Link href="/gc-services/contact">Request À La Carte Services</Link>
+              <Link href="/gc-services/contact">Request Individual Services</Link>
             </Button>
           </div>
         </div>

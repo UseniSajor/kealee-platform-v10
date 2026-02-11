@@ -94,6 +94,7 @@
     "@fastify/multipart": "^9.1.0",
     "@fastify/swagger": "^8.15.0",
     "@fastify/swagger-ui": "^2.0.0",
+    "@sentry/nextjs": "10",
     "@sentry/node": "^10.36.0",
     "@supabase/supabase-js": "^2.39.0",
     "bullmq": "^5.0.0",

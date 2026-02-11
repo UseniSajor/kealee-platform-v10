@@ -216,6 +216,115 @@ class ApiClient {
     });
   }
 
+  // Assemblies - Extended
+  async getAssemblyById(id: string) {
+    return this.request(`/api/v1/assemblies/${encodeURIComponent(id)}`);
+  }
+
+  async updateAssembly(id: string, data: any) {
+    return this.request(`/api/v1/assemblies/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteAssembly(id: string) {
+    return this.request(`/api/v1/assemblies/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getAssemblyTemplates() {
+    return this.request('/api/v1/assembly-library/templates');
+  }
+
+  async createFromTemplate(templateCode: string) {
+    return this.request('/api/v1/assembly-library/create-from-template', {
+      method: 'POST',
+      body: JSON.stringify({ templateCode }),
+    });
+  }
+
+  // Cost Database - Extended
+  async getCostDatabases() {
+    return this.request('/estimation/databases');
+  }
+
+  async getRegionalIndices() {
+    return this.request('/estimation/regional-indices');
+  }
+
+  // Takeoff - Extended
+  async getTakeoffs() {
+    return this.request('/estimation/takeoffs');
+  }
+
+  async getTakeoff(id: string) {
+    return this.request(`/estimation/takeoffs/${id}`);
+  }
+
+  async createTakeoff(data: any) {
+    return this.request('/estimation/takeoffs', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async addMeasurement(takeoffId: string, data: any) {
+    return this.request(`/estimation/takeoffs/${takeoffId}/measurements`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getTakeoffSummary(id: string) {
+    return this.request(`/estimation/takeoffs/${id}/summary`);
+  }
+
+  // AI - Extended
+  async aiScopeAnalysis(data: { description: string; projectType?: string }) {
+    return this.request('/api/ai/scope-analysis', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async aiCostPrediction(data: any) {
+    return this.request('/api/ai/cost-prediction', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async aiValueEngineering(estimateId: string) {
+    return this.request('/api/ai/value-engineering', {
+      method: 'POST',
+      body: JSON.stringify({ estimateId }),
+    });
+  }
+
+  async aiCompareEstimates(estimateIds: string[]) {
+    return this.request('/api/ai/compare-estimates', {
+      method: 'POST',
+      body: JSON.stringify({ estimateIds }),
+    });
+  }
+
+  async aiBenchmark(estimateId: string) {
+    return this.request('/api/ai/benchmark', {
+      method: 'POST',
+      body: JSON.stringify({ estimateId }),
+    });
+  }
+
+  // Marketing / Leads
+  async submitEstimationLead(data: any) {
+    return this.request('/estimation/leads', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
   // Stats / Metrics
   async getStats() {
     return this.request('/estimation/metrics');

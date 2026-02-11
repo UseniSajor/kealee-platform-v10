@@ -1,545 +1,349 @@
 import Link from "next/link";
+import { Metadata } from "next";
 
 import { HeroGC } from "@/components/marketing/HeroGC";
 import { GCTestimonials } from "@/components/marketing/GCTestimonials";
 import { ROICalculator } from "@/components/marketing/ROICalculator";
 import { OnDemandOps } from "@/components/marketing/OnDemandOps";
 
-const gcPackages = [
+export const metadata: Metadata = {
+  title: "Your Operations Department, On Demand | Kealee Ops Services",
+  description: "Outsource your PM operations to a dedicated team. Packages starting at $1,750/mo. Get permits, reporting, and vendor coordination handled—so you can focus on building.",
+};
+
+const packages = [
   {
     name: "Package A",
-    label: "Solo GC",
-    price: "$1,750/mo",
-    highlight: false,
+    price: "$1,750",
+    popular: false,
     benefits: [
-      "Permits + inspections tracking (so you stop chasing statuses)",
-      "Client-ready weekly updates (without losing your Saturday)",
-      "Vendor follow-ups + doc organization (POs, COs, receipts)",
+      "Permits and inspections tracking",
+      "Client-ready weekly updates",
+      "Vendor follow-ups and doc organization",
     ],
   },
   {
     name: "Package B",
-    label: "Growing Team",
-    price: "$3,750/mo",
-    highlight: true,
-    badge: "⭐ MOST POPULAR",
+    price: "$3,750",
+    popular: true,
     benefits: [
-      "We work with your operation to handle admin + coordination",
-      "Permit/delivery follow-ups to protect schedule and margin",
-      "Weekly reporting + action items so subs stay accountable",
+      "Full admin and coordination support",
+      "Permit and delivery follow-ups",
+      "Weekly reporting with action items",
     ],
   },
   {
     name: "Package C",
-    label: "Multiple Projects",
-    price: "$9,500/mo",
-    highlight: false,
+    price: "$9,500",
+    popular: false,
     benefits: [
-      "Multi-project ops coverage for active pipelines",
-      "Centralized vendor/sub comms with consistent status cadence",
-      "Proactive risk tracking: permits, inspections, delays, COs",
+      "Multi-project ops coverage",
+      "Centralized vendor and sub comms",
+      "Proactive risk tracking for all projects",
     ],
   },
   {
     name: "Package D",
-    label: "Enterprise GC",
-    price: "$16,500/mo",
-    highlight: false,
+    price: "$16,500",
+    popular: false,
     benefits: [
-      "Enterprise ops team coverage + escalations",
-      "Standardized workflows + reporting across regions/crews",
-      "SLA-style response + structured weekly executive reporting",
+      "Enterprise ops team coverage",
+      "Standardized workflows across regions",
+      "SLA-style response and executive reporting",
     ],
   },
 ];
 
-const platformModules = [
-  {
-    name: "Project Management",
-    icon: "📋",
-    description: "Full-service construction project management with milestone tracking, contractor coordination, and real-time progress updates.",
-    link: "/os-pm",
-    features: ["Milestone tracking", "Progress photos", "Budget management", "Team collaboration"],
-  },
-  {
-    name: "Pre-Construction",
-    icon: "🏗️",
-    description: "Streamlined pre-con workflow from design to contractor bidding with escrow-backed contracts.",
-    link: "/precon",
-    features: ["Design packages", "SRP generation", "Contractor marketplace", "Escrow protection"],
-    badge: "NEW",
-  },
-  {
-    name: "Estimation Engine",
-    icon: "📊",
-    description: "AI-powered cost estimation with labor, materials, and timeline projections for accurate project bidding.",
-    link: "/estimation",
-    features: ["Labor estimation", "Material takeoffs", "Timeline projection", "Profit analysis"],
-    badge: "NEW",
-  },
-  {
-    name: "Finance & Trust",
-    icon: "💰",
-    description: "Secure escrow management, milestone payments, and financial tracking for all parties.",
-    link: "/finance",
-    features: ["Escrow accounts", "Milestone releases", "ACH/Wire transfers", "Financial reporting"],
-  },
-  {
-    name: "Permits & Inspections",
-    icon: "📝",
-    description: "Automated permit tracking, inspection scheduling, and AI-powered document review for compliance.",
-    link: "/permits",
-    features: ["Permit tracking", "Inspection scheduling", "AI document review", "Compliance alerts"],
-  },
-  {
-    name: "Marketplace",
-    icon: "🏪",
-    description: "Connect with verified contractors, vendors, and suppliers. Quality leads and competitive bidding.",
-    link: "/marketplace",
-    features: ["Verified contractors", "Quality leads", "Bid management", "Reviews & ratings"],
-  },
-];
-
-const serviceCategories = [
-  {
-    category: "À La Carte Services",
-    items: [
-      { name: "Permit Application Assistance", price: "$325", description: "Full permit preparation and submission" },
-      { name: "Inspection Scheduling", price: "$200", description: "Coordinate and track inspections" },
-      { name: "Document Organization", price: "$400", description: "Organize project documentation" },
-      { name: "Contractor Coordination", price: "$500", description: "Manage subcontractor communications" },
-      { name: "Site Visit & Reporting", price: "$350", description: "On-site progress documentation" },
-      { name: "Budget Analysis", price: "$450", description: "Cost tracking and variance reports" },
-    ],
-  },
-  {
-    category: "Contractor/Vendor",
-    items: [
-      { name: "Marketplace Subscription", price: "$299/mo", description: "Basic listing + 5 leads/month" },
-      { name: "Lead Purchase", price: "$50-500", description: "Per qualified lead (project size based)" },
-    ],
-  },
-  {
-    category: "Estimation Services",
-    items: [
-      { name: "Basic Estimate", price: "$299", description: "Labor + materials breakdown" },
-      { name: "Standard Estimate", price: "$799", description: "Full timeline + resource planning" },
-      { name: "Premium Estimate", price: "$1,999", description: "Detailed BOQ + profit optimization" },
-    ],
-  },
-];
-
-export default function MarketingHomePage() {
+export default function OpsServicesHomePage() {
   return (
-    <main className="mx-auto max-w-7xl px-6 py-10">
-      {/* Header */}
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div className="text-xl font-black tracking-tight">
-          Kealee
-        </div>
-        <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-700">
-          <Link className="hover:text-zinc-950" href="#platform">
-            Platform
-          </Link>
-          <Link className="hover:text-zinc-950" href="#pricing">
-            Pricing
-          </Link>
-          <Link className="hover:text-zinc-950" href="/how-it-works">
-            How it works
-          </Link>
-          <Link className="hover:text-zinc-950" href="/case-studies">
-            Case studies
-          </Link>
-          <Link className="hover:text-zinc-950" href="/contractors">
-            For Contractors
-          </Link>
-          <Link className="hover:text-zinc-950" href="/login">
-            Login
-          </Link>
-        </nav>
-      </header>
-
+    <main className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="mt-10">
+      <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="text-center">
-          <h1 className="text-4xl font-black tracking-tight md:text-5xl">
-            The Complete Construction Management Platform
+          <h1 className="text-5xl font-black tracking-tight text-zinc-900 md:text-6xl">
+            Your Operations Department, On Demand
           </h1>
-          <p className="mx-auto mt-4 max-w-3xl text-lg text-zinc-600">
-            From pre-construction design to final closeout. Streamline every phase of your
-            construction project with integrated tools, clear pricing, and guaranteed
-            escrow-backed payments.
+          <p className="mx-auto mt-6 max-w-3xl text-xl text-zinc-600">
+            Outsource your PM operations to a dedicated team that handles permits, reporting, vendor coordination, and admin work—so you can focus on building and growing your business.
           </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
+
+          {/* Stats */}
+          <div className="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-8 text-center">
+            <div>
+              <div className="text-3xl font-black text-sky-500">150+</div>
+              <div className="mt-1 text-sm text-zinc-600">GCs served</div>
+            </div>
+            <div>
+              <div className="text-3xl font-black text-sky-500">22 hrs/week</div>
+              <div className="mt-1 text-sm text-zinc-600">saved</div>
+            </div>
+            <div>
+              <div className="text-3xl font-black text-sky-500">$3.2M</div>
+              <div className="mt-1 text-sm text-zinc-600">avg project value</div>
+            </div>
+          </div>
+
+          {/* CTAs */}
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
-              href="/signup"
-              className="inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-6 py-3 text-sm font-extrabold text-[var(--primary-foreground)] shadow-sm transition hover:opacity-95"
+              href="/packages"
+              className="inline-flex items-center justify-center rounded-2xl bg-sky-500 px-8 py-4 text-base font-black text-white shadow-sm transition hover:bg-sky-600"
             >
-              Get Started Free
+              See Packages
             </Link>
             <Link
               href="/demo"
-              className="inline-flex items-center justify-center rounded-xl border border-black/10 bg-white px-6 py-3 text-sm font-bold text-zinc-900 shadow-sm transition hover:bg-zinc-50"
+              className="inline-flex items-center justify-center rounded-2xl border border-zinc-200 bg-white px-8 py-4 text-base font-black text-zinc-900 shadow-sm transition hover:bg-zinc-50"
             >
-              Request Demo
+              Book a Demo
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Platform Modules */}
-      <section id="platform" className="mt-16">
-        <div className="text-center">
-          <h2 className="text-3xl font-black tracking-tight">
-            One Platform, Every Phase
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-zinc-600">
-            6 integrated modules covering the entire construction lifecycle
-          </p>
-        </div>
+      {/* Four Core Services */}
+      <section className="bg-zinc-50 py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="text-center">
+            <h2 className="text-3xl font-black tracking-tight text-zinc-900">
+              Four Core Services
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-lg text-zinc-600">
+              Everything you need to run construction projects professionally
+            </p>
+          </div>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {platformModules.map((module) => (
+          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {/* PM Managed Services - Highlighted */}
             <Link
-              key={module.name}
-              href={module.link}
-              className="group rounded-2xl border border-black/10 bg-white p-5 shadow-sm transition hover:border-[var(--primary)] hover:shadow-md"
+              href="/packages"
+              className="group rounded-2xl border-2 border-sky-500 bg-white p-6 shadow-lg transition hover:shadow-xl"
             >
-              <div className="flex items-start justify-between">
-                <span className="text-2xl">{module.icon}</span>
-                {module.badge && (
-                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                    {module.badge}
-                  </span>
-                )}
+              <div className="mb-3 inline-block rounded-lg bg-sky-100 px-3 py-1 text-xs font-black text-sky-700">
+                MOST POPULAR
               </div>
-              <h3 className="mt-3 text-base font-extrabold">{module.name}</h3>
-              <p className="mt-2 text-sm text-zinc-600 line-clamp-2">{module.description}</p>
-              <ul className="mt-3 flex flex-wrap gap-1">
-                {module.features.slice(0, 3).map((f) => (
-                  <li key={f} className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] text-zinc-700">
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-3 text-sm font-bold text-[var(--primary)] group-hover:underline">
+              <h3 className="text-xl font-black text-zinc-900">
+                PM Managed Services
+              </h3>
+              <p className="mt-2 text-sm text-zinc-600">
+                Full operations support with dedicated team handling permits, reporting, and vendor coordination.
+              </p>
+              <div className="mt-4 text-sm font-black text-sky-500 group-hover:underline">
+                View packages →
+              </div>
+            </Link>
+
+            {/* PM Software */}
+            <Link
+              href="/pm-software"
+              className="group rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:border-sky-500 hover:shadow-md"
+            >
+              <h3 className="text-xl font-black text-zinc-900">
+                PM Software Platform
+              </h3>
+              <p className="mt-2 text-sm text-zinc-600">
+                Self-service project management tools for GCs who prefer to manage operations in-house.
+              </p>
+              <div className="mt-4 text-sm font-black text-sky-500 group-hover:underline">
                 Learn more →
               </div>
             </Link>
-          ))}
-        </div>
-      </section>
 
-      {/* GC Services Section */}
-      <section className="mt-16">
-        <HeroGC />
-        <div className="mt-5 flex flex-wrap gap-3">
-          <Link
-            href="/signup"
-            className="inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-2.5 text-sm font-extrabold text-[var(--primary-foreground)] shadow-sm transition hover:opacity-95"
-          >
-            Start Free 14-Day Trial (Package B)
-          </Link>
-          <Link
-            href="/pricing"
-            className="inline-flex items-center justify-center rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm font-bold text-zinc-900 shadow-sm transition hover:bg-zinc-50"
-          >
-            View All Packages
-          </Link>
-        </div>
-      </section>
-
-      {/* Pain Points */}
-      <section className="mt-12">
-        <h2 className="text-2xl font-black tracking-tight">
-          General Contractor pain points (solved)
-        </h2>
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          {[
-            {
-              q: "Losing 20+ hours/week on admin?",
-              a: "We take permits, inspections, vendor comms, and reporting off your plate so you can stay on site and sell the next job.",
-            },
-            {
-              q: "Permit delays killing margins?",
-              a: "Proactive tracking + follow-ups reduce schedule slip and the expensive domino effect it creates across trades.",
-            },
-            {
-              q: "Sub/vendor coordination eating your evenings?",
-              a: "Centralized comms and consistent updates keep everyone aligned—without you playing phone tag all day.",
-            },
-            {
-              q: "Weekly reporting always behind?",
-              a: "We produce consistent, client-ready weekly updates with action items—so you look sharp and stay ahead of surprises.",
-            },
-          ].map((item) => (
-            <div
-              key={item.q}
-              className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
+            {/* Individual Services */}
+            <Link
+              href="/individual-services"
+              className="group rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:border-sky-500 hover:shadow-md"
             >
-              <div className="text-base font-extrabold">{item.q}</div>
-              <div className="mt-2 text-sm leading-relaxed text-zinc-700">
-                {item.a}
+              <h3 className="text-xl font-black text-zinc-900">
+                Individual Services
+              </h3>
+              <p className="mt-2 text-sm text-zinc-600">
+                Pay-per-service options for permit filing, inspections, estimates, and more.
+              </p>
+              <div className="mt-4 text-sm font-black text-sky-500 group-hover:underline">
+                Browse services →
               </div>
-            </div>
-          ))}
+            </Link>
+
+            {/* Escrow & Finance */}
+            <Link
+              href="/escrow"
+              className="group rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:border-sky-500 hover:shadow-md"
+            >
+              <h3 className="text-xl font-black text-zinc-900">
+                Escrow & Finance
+              </h3>
+              <p className="mt-2 text-sm text-zinc-600">
+                Secure escrow accounts with milestone-based payment releases and financial tracking.
+              </p>
+              <div className="mt-4 text-sm font-black text-sky-500 group-hover:underline">
+                Explore escrow →
+              </div>
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* GC Packages */}
-      <section id="pricing" className="mt-12">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-black tracking-tight">
-              Operations Packages for GCs
+      {/* PM Managed Services Feature */}
+      <section className="py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="text-center">
+            <h2 className="text-3xl font-black tracking-tight text-zinc-900">
+              PM Managed Services Packages
             </h2>
-            <p className="mt-2 max-w-2xl text-sm text-zinc-700">
-              Pick the level of ops coverage you need today—upgrade as you take
-              on more work.
+            <p className="mx-auto mt-3 max-w-2xl text-lg text-zinc-600">
+              Choose the level of operations support that matches your workload
             </p>
           </div>
-          <div className="text-sm text-zinc-700">
-            Free trial on{" "}
-            <span className="font-extrabold text-zinc-900">Package B</span>
-          </div>
-        </div>
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-4">
-          {gcPackages.map((p) => (
-            <div
-              key={p.name}
-              className={[
-                "rounded-2xl border bg-white p-5 shadow-sm",
-                p.highlight
-                  ? "border-[var(--primary)] ring-1 ring-[var(--primary)]/20"
-                  : "border-black/10",
-              ].join(" ")}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-sm font-black">{p.name}</div>
-                  <div className="mt-1 text-sm text-zinc-700">{p.label}</div>
+          <div className="mt-10 grid gap-6 lg:grid-cols-4">
+            {packages.map((pkg) => (
+              <div
+                key={pkg.name}
+                className={
+                  pkg.popular
+                    ? "rounded-2xl border-2 border-sky-500 bg-white p-6 shadow-lg"
+                    : "rounded-2xl border border-black/10 bg-white p-6 shadow-sm"
+                }
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-lg font-black text-zinc-900">
+                      {pkg.name}
+                    </h3>
+                    <div className="mt-2 text-2xl font-black text-sky-500">
+                      {pkg.price}
+                      <span className="text-sm font-normal text-zinc-500">/mo</span>
+                    </div>
+                  </div>
+                  {pkg.popular && (
+                    <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-black text-sky-700">
+                      MOST POPULAR
+                    </span>
+                  )}
                 </div>
-                {"badge" in p && p.badge ? (
-                  <span className="rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-black text-sky-700">
-                    {p.badge}
-                  </span>
-                ) : null}
-              </div>
 
-              <div className="mt-3 text-xl font-black">{p.price}</div>
-              <ul className="mt-3 list-disc space-y-2 pl-4 text-sm text-zinc-800">
-                {p.benefits.map((b) => (
-                  <li key={b}>{b}</li>
-                ))}
-              </ul>
+                <ul className="mt-6 space-y-3 text-sm text-zinc-700">
+                  {pkg.benefits.map((benefit) => (
+                    <li key={benefit} className="flex items-start gap-2">
+                      <span className="mt-0.5 text-sky-500">✓</span>
+                      <span>{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
 
-              <div className="mt-4">
                 <Link
-                  href="/signup"
-                  className="text-sm font-extrabold text-[color:var(--primary)] hover:underline"
+                  href="/packages"
+                  className="mt-6 block w-full rounded-xl bg-zinc-900 py-3 text-center text-sm font-black text-white transition hover:bg-zinc-800"
                 >
-                  Start trial →
+                  Learn More
                 </Link>
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
 
-      {/* Service Categories */}
-      <section className="mt-16">
-        <div className="text-center">
-          <h2 className="text-2xl font-black tracking-tight">
-            Service Pricing
-          </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-sm text-zinc-600">
-            Flexible pricing options to fit your project needs.
-          </p>
-        </div>
-
-        <div className="mt-8 grid gap-6 md:grid-cols-3">
-          {serviceCategories.map((category) => (
-            <div
-              key={category.category}
-              className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
+          <div className="mt-8 text-center">
+            <Link
+              href="/packages"
+              className="text-base font-black text-sky-500 hover:underline"
             >
-              <h3 className="text-lg font-black">{category.category}</h3>
-              <div className="mt-4 space-y-3">
-                {category.items.map((item) => (
-                  <div key={item.name} className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="text-sm font-semibold">{item.name}</div>
-                      <div className="text-xs text-zinc-500">{item.description}</div>
-                    </div>
-                    <div className="text-sm font-black text-[var(--primary)]">{item.price}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+              Compare all packages in detail →
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* On-Demand Ops */}
-      <section className="mt-12">
-        <OnDemandOps />
+      {/* Pain Points Section */}
+      <section className="bg-zinc-50 py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <h2 className="text-center text-3xl font-black tracking-tight text-zinc-900">
+            Common GC Challenges We Solve
+          </h2>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+              <h3 className="text-xl font-black text-zinc-900">
+                Drowning in admin?
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+                We handle permits, vendor follow-ups, and weekly reports so you can stay on the jobsite and focus on the work that actually makes money.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+              <h3 className="text-xl font-black text-zinc-900">
+                Can't scale without hiring?
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+                Get a full ops team without W-2 overhead, benefits, or training costs. Scale your support up or down as projects change.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+              <h3 className="text-xl font-black text-zinc-900">
+                Projects running over budget?
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+                Professional oversight catches issues early—before they turn into expensive delays or change orders that eat your margin.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+              <h3 className="text-xl font-black text-zinc-900">
+                No time for estimating?
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+                Our team handles takeoffs and bid support, giving you accurate numbers fast so you can respond to opportunities quickly.
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* ROI Calculator */}
-      <section className="mt-12">
-        <ROICalculator />
-      </section>
-
-      {/* Pre-Con Workflow Highlight */}
-      <section className="mt-16 rounded-2xl bg-gradient-to-br from-emerald-50 to-cyan-50 p-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div>
-            <span className="inline-block rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700 mb-3">
-              NEW FEATURE
-            </span>
-            <h2 className="text-2xl font-black tracking-tight">
-              Pre-Construction Workflow
-            </h2>
-            <p className="mt-2 max-w-xl text-sm text-zinc-700">
-              Streamlined bidding to contractor selection—with secure escrow-backed
-              payments. Connect with verified contractors and manage your project
-              from a single platform.
-            </p>
-            <div className="mt-4 flex items-center gap-6 text-sm">
-              <div>
-                <div className="font-black text-emerald-700">8 Phases</div>
-                <div className="text-zinc-500">Full workflow</div>
-              </div>
-              <div>
-                <div className="font-black text-emerald-700">Verified</div>
-                <div className="text-zinc-500">Contractors</div>
-              </div>
-              <div>
-                <div className="font-black text-emerald-700">Escrow</div>
-                <div className="text-zinc-500">Protected</div>
-              </div>
-            </div>
-          </div>
-          <Link
-            href="/precon"
-            className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700"
-          >
-            Start Pre-Con Project →
-          </Link>
-        </div>
-      </section>
-
-      {/* Estimation Engine Highlight */}
-      <section className="mt-6 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div>
-            <span className="inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700 mb-3">
-              NEW FEATURE
-            </span>
-            <h2 className="text-2xl font-black tracking-tight">
-              AI-Powered Estimation Engine
-            </h2>
-            <p className="mt-2 max-w-xl text-sm text-zinc-700">
-              Get accurate cost estimates with our APP-15 Estimation Engine. Labor rates,
-              material costs, timeline projections, and profit analysis—all powered by
-              real market data.
-            </p>
-            <div className="mt-4 flex items-center gap-6 text-sm">
-              <div>
-                <div className="font-black text-blue-700">$299-$4,999</div>
-                <div className="text-zinc-500">Estimation tiers</div>
-              </div>
-              <div>
-                <div className="font-black text-blue-700">AI-Powered</div>
-                <div className="text-zinc-500">Market data</div>
-              </div>
-              <div>
-                <div className="font-black text-blue-700">24hr</div>
-                <div className="text-zinc-500">Turnaround</div>
-              </div>
-            </div>
-          </div>
-          <Link
-            href="/estimation"
-            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700"
-          >
-            Get Estimate →
-          </Link>
+      <section className="py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <ROICalculator />
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="mt-12">
-        <GCTestimonials />
-      </section>
-
-      {/* CTA */}
-      <section className="mt-12 rounded-2xl bg-[var(--primary)] p-6 text-[var(--primary-foreground)] shadow-sm">
-        <h2 className="text-xl font-black">
-          Ready to Transform Your Construction Business?
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm opacity-95">
-          Join thousands of contractors, project owners, and construction professionals
-          using Kealee to streamline their operations.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Link
-            href="/signup"
-            className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-black text-zinc-900 shadow-sm transition hover:bg-zinc-50"
-          >
-            Start Free Trial
-          </Link>
-          <Link
-            href="/demo"
-            className="inline-flex items-center justify-center rounded-xl border border-white/30 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/10"
-          >
-            Schedule Demo
-          </Link>
+      <section className="bg-zinc-50 py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <GCTestimonials />
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="mt-12 border-t border-black/10 pt-6">
-        <div className="grid gap-8 md:grid-cols-4">
-          <div>
-            <div className="text-sm font-black">Kealee</div>
-            <p className="mt-2 text-xs text-zinc-500">
-              The complete construction management platform for modern builders.
-            </p>
+      {/* CTA Section */}
+      <section className="bg-gradient-to-br from-sky-500 to-sky-600 py-16">
+        <div className="mx-auto max-w-4xl px-6 text-center">
+          <h2 className="text-4xl font-black tracking-tight text-white">
+            Start Your 14-Day Free Trial
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-sky-50">
+            No credit card required. Full access to Package B features. Cancel anytime.
+          </p>
+
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <Link
+              href="/signup"
+              className="inline-flex items-center justify-center rounded-2xl bg-white px-8 py-4 text-base font-black text-zinc-900 shadow-lg transition hover:bg-zinc-50"
+            >
+              Start Free Trial
+            </Link>
+            <Link
+              href="/packages"
+              className="inline-flex items-center justify-center rounded-2xl border-2 border-white px-8 py-4 text-base font-black text-white transition hover:bg-white/10"
+            >
+              View All Packages
+            </Link>
           </div>
-          <div>
-            <div className="text-xs font-bold text-zinc-500 uppercase">Platform</div>
-            <div className="mt-2 flex flex-col gap-1 text-sm text-zinc-700">
-              <Link className="hover:text-zinc-950" href="/precon">Pre-Construction</Link>
-              <Link className="hover:text-zinc-950" href="/estimation">Estimation</Link>
-              <Link className="hover:text-zinc-950" href="/marketplace">Marketplace</Link>
-              <Link className="hover:text-zinc-950" href="/finance">Finance & Trust</Link>
-            </div>
-          </div>
-          <div>
-            <div className="text-xs font-bold text-zinc-500 uppercase">Services</div>
-            <div className="mt-2 flex flex-col gap-1 text-sm text-zinc-700">
-              <Link className="hover:text-zinc-950" href="/os-pm">Project Management</Link>
-              <Link className="hover:text-zinc-950" href="/permits">Permits & Inspections</Link>
-              <Link className="hover:text-zinc-950" href="/pricing">Pricing</Link>
-            </div>
-          </div>
-          <div>
-            <div className="text-xs font-bold text-zinc-500 uppercase">Company</div>
-            <div className="mt-2 flex flex-col gap-1 text-sm text-zinc-700">
-              <Link className="hover:text-zinc-950" href="/how-it-works">How it works</Link>
-              <Link className="hover:text-zinc-950" href="/case-studies">Case studies</Link>
-              <Link className="hover:text-zinc-950" href="/contractors">For Contractors</Link>
-              <Link className="hover:text-zinc-950" href="/terms">Terms of Service</Link>
-              <Link className="hover:text-zinc-950" href="/privacy">Privacy Policy</Link>
-            </div>
-          </div>
+
+          <p className="mt-6 text-sm text-sky-100">
+            Join 150+ general contractors using Kealee Ops Services
+          </p>
         </div>
-        <div className="mt-8 border-t border-black/5 pt-4 text-xs text-zinc-500">
-          © 2026 Kealee. All rights reserved.
-        </div>
-      </footer>
+      </section>
     </main>
   );
 }
