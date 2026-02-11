@@ -2,10 +2,6 @@
 
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Button } from "@kealee/ui/button"
-import { Input } from "@kealee/ui/input"
-import { Label } from "@kealee/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import Link from "next/link"
 
@@ -56,68 +52,106 @@ export function LoginClient() {
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle className="text-2xl text-center">Admin Dashboard Login</CardTitle>
-        <p className="text-sm text-neutral-600 text-center">
-          Sign in to manage the Kealee Platform
-        </p>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleLogin} className="space-y-4">
+    <div className="space-y-6">
+      {/* Mobile logo - only shows on small screens */}
+      <div className="lg:hidden flex items-center justify-center gap-3 mb-4">
+        <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+          <span className="text-white font-bold text-lg">K</span>
+        </div>
+        <span className="text-white text-2xl font-bold tracking-tight">Kealee</span>
+      </div>
+
+      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 shadow-2xl">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-white">Welcome back</h1>
+          <p className="text-slate-400 mt-2 text-sm">
+            Sign in to the Admin Console
+          </p>
+        </div>
+
+        <form onSubmit={handleLogin} className="space-y-5">
           {unauthorized && !error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded text-sm">
-              Unauthorized: Admin access only
+            <div className="bg-red-500/10 border border-red-500/20 text-red-300 p-3 rounded-lg text-sm flex items-center gap-2">
+              <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              Unauthorized: Admin access required
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
+            <label htmlFor="email" className="block text-sm font-medium text-slate-300">
+              Email address
+            </label>
+            <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@kealee.com"
               required
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
+            <div className="flex items-center justify-between">
+              <label htmlFor="password" className="block text-sm font-medium text-slate-300">
+                Password
+              </label>
+              <Link href="/forgot-password" className="text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                Forgot password?
+              </Link>
+            </div>
+            <input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
           </div>
 
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded text-sm">{error}</div>
+            <div className="bg-red-500/10 border border-red-500/20 text-red-300 p-3 rounded-lg text-sm">
+              {error}
+            </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Signing in..." : "Sign In"}
-          </Button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg shadow-lg shadow-blue-600/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Signing in...
+              </span>
+            ) : (
+              "Sign In"
+            )}
+          </button>
 
-          <div className="relative">
+          <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+              <div className="w-full border-t border-white/10" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-neutral-500">Or continue with</span>
+              <span className="bg-transparent px-3 text-slate-500">Or continue with</span>
             </div>
           </div>
 
-          <Button
+          <button
             type="button"
-            variant="outline"
-            className="w-full"
             onClick={handleGoogleLogin}
+            className="w-full py-3 px-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-white/20"
           >
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+            <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
                 fill="#4285F4"
@@ -136,16 +170,16 @@ export function LoginClient() {
               />
             </svg>
             Continue with Google
-          </Button>
+          </button>
 
-          <p className="text-sm text-neutral-600 text-center">
+          <p className="text-sm text-slate-500 text-center pt-2">
             Don&apos;t have an account?{" "}
-            <Link className="text-primary hover:underline" href="/signup">
+            <Link className="text-blue-400 hover:text-blue-300 transition-colors" href="/signup">
               Sign up
             </Link>
           </p>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
