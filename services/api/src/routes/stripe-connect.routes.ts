@@ -362,7 +362,6 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/payouts', {
     schema: {
-      querystring: ListPayoutsQuerySchema,
       tags: ['Stripe Connect'],
       summary: 'List payouts',
       security: [{ bearerAuth: [] }],
@@ -400,7 +399,6 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/payouts/:id', {
     schema: {
-      params: z.object({ id: z.string().uuid() }),
       tags: ['Stripe Connect'],
       summary: 'Get payout details',
       security: [{ bearerAuth: [] }],
@@ -482,7 +480,6 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/admin/accounts', {
     schema: {
-      querystring: ListAccountsQuerySchema,
       tags: ['Stripe Connect - Admin'],
       summary: 'List all connected accounts',
       security: [{ bearerAuth: [] }],
