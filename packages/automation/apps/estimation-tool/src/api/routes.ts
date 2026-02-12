@@ -35,6 +35,7 @@ import { costPredictor } from '../ai/cost-predictor.js';
 import { assemblySuggester } from '../ai/assembly-suggester.js';
 import { valueEngineer } from '../ai/value-engineer.js';
 import { comparisonAnalyzer } from '../ai/comparison-analyzer.js';
+import { aiTakeoffService } from '../ai/ai-takeoff.js';
 
 import { orderManager } from '../orders/order-manager.js';
 import { assignmentEngine } from '../orders/assignment-engine.js';
@@ -448,6 +449,30 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
     Body: { estimateId: string; options?: any };
   }>) => {
     return comparisonAnalyzer.benchmarkEstimate(request.body.estimateId, request.body.options);
+  });
+
+  // AI Takeoff - Process uploaded plans/photos
+  app.post('/api/ai/takeoff', async (request: FastifyRequest<{
+    Body: {
+      projectId?: string;
+      estimateId?: string;
+      organizationId: string;
+      files: Array<{ url: string; fileName: string; fileType: string; pageCount?: number; discipline?: string }>;
+      options?: { disciplines?: string[]; detailLevel?: string; autoLink?: boolean; scaleOverride?: string };
+    };
+  }>) => {
+    return aiTakeoffService.processFiles(request.body as any);
+  });
+
+  // AI Progress Photo Analysis
+  app.post('/api/ai/analyze-photo', async (request: FastifyRequest<{
+    Body: { projectId: string; photoUrl: string; options?: { compareToSchedule?: boolean } };
+  }>) => {
+    return aiTakeoffService.analyzeProgressPhoto(
+      request.body.projectId,
+      request.body.photoUrl,
+      request.body.options
+    );
   });
 
   // ===== ORDER ROUTES =====

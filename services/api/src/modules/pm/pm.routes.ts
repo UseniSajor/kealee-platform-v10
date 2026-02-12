@@ -11,21 +11,65 @@ import { prismaAny } from "../../utils/prisma-helper"
 import { z } from "zod"
 import { validateParams, validateQuery, validateBody } from "../../middleware/validation.middleware"
 
+// PM Feature route imports
+import { pmChangeOrderRoutes } from "./pm-change-orders.routes"
+import { pmDailyLogRoutes } from "./pm-daily-logs.routes"
+import { pmPunchListRoutes } from "./pm-punch-list.routes"
+import { pmInspectionsRoutes } from "./pm-inspections.routes"
+import { pmScheduleRoutes } from "./pm-schedule.routes"
+import { pmBudgetRoutes } from "./pm-budget.routes"
+import { pmDocumentRoutes } from "./pm-documents.routes"
+import { pmPhotoRoutes } from "./pm-photos.routes"
+import { pmRfisRoutes } from "./pm-rfis.routes"
+import { pmSubmittalsRoutes } from "./pm-submittals.routes"
+import { pmMeetingsRoutes } from "./pm-meetings.routes"
+import { pmSafetyRoutes } from "./pm-safety.routes"
+import { pmDrawingRoutes } from "./pm-drawings.routes"
+import { pmSelectionRoutes } from "./pm-selections.routes"
+import { pmWarrantyRoutes } from "./pm-warranty.routes"
+import { pmTimeTrackingRoutes } from "./pm-time-tracking.routes"
+import { pmBidRoutes } from "./pm-bids.routes"
+import { pmTeamRoutes } from "./pm-team.routes"
+import { pmProjectRoutes } from "./pm-projects.routes"
+import { pmReportRoutes } from "./pm-reports.routes"
+
 export async function pmRoutes(fastify: FastifyInstance) {
   // Register productivity dashboard routes
   await fastify.register(pmProductivityRoutes)
-  
+
   // Register real-time update routes
   await fastify.register(pmRealtimeRoutes)
-  
+
   // Register focus mode routes
   await fastify.register(pmFocusModeRoutes, { prefix: '/focus-mode' })
-  
+
   // Register task context routes
   await fastify.register(pmTaskContextRoutes)
-  
+
   // Register approval workflow routes
   await fastify.register(pmApprovalRoutes)
+
+  // ── PM Feature Routes ──
+  await fastify.register(pmProjectRoutes, { prefix: '/projects' })
+  await fastify.register(pmChangeOrderRoutes, { prefix: '/change-orders' })
+  await fastify.register(pmDailyLogRoutes, { prefix: '/daily-logs' })
+  await fastify.register(pmPunchListRoutes, { prefix: '/punch-list' })
+  await fastify.register(pmInspectionsRoutes, { prefix: '/inspections' })
+  await fastify.register(pmScheduleRoutes, { prefix: '/schedule' })
+  await fastify.register(pmBudgetRoutes, { prefix: '/budget' })
+  await fastify.register(pmDocumentRoutes, { prefix: '/documents' })
+  await fastify.register(pmPhotoRoutes, { prefix: '/photos' })
+  await fastify.register(pmRfisRoutes, { prefix: '/rfis' })
+  await fastify.register(pmSubmittalsRoutes, { prefix: '/submittals' })
+  await fastify.register(pmMeetingsRoutes, { prefix: '/meetings' })
+  await fastify.register(pmSafetyRoutes, { prefix: '/safety' })
+  await fastify.register(pmDrawingRoutes, { prefix: '/drawings' })
+  await fastify.register(pmSelectionRoutes, { prefix: '/selections' })
+  await fastify.register(pmWarrantyRoutes, { prefix: '/warranty' })
+  await fastify.register(pmTimeTrackingRoutes, { prefix: '/time-tracking' })
+  await fastify.register(pmBidRoutes, { prefix: '/bids' })
+  await fastify.register(pmTeamRoutes, { prefix: '/team' })
+  await fastify.register(pmReportRoutes, { prefix: '/reports' })
   
   // GET /pm/stats - PM dashboard stats
   fastify.get("/stats", { preHandler: authenticateUser }, async (request, reply) => {

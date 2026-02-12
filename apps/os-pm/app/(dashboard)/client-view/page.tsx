@@ -14,12 +14,14 @@ import {
   FileCheck,
   FileQuestion,
   Image,
+  Loader2,
   MessageSquare,
   TrendingUp,
 } from "lucide-react"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { cn } from "@/lib/utils"
+import { useProjects } from "@/hooks/useProjects"
 
 interface Milestone {
   id: string
@@ -44,52 +46,6 @@ interface PendingApproval {
   submittedDate: string
   amount: number | null
 }
-
-const PROJECT = {
-  name: "Riverside Commons",
-  address: "1240 River Blvd, Sacramento, CA",
-  overallProgress: 38,
-  budgetTotal: 4250000,
-  budgetSpent: 1615000,
-  scheduledCompletion: "2026-09-15",
-  openRFIs: 4,
-  pendingApprovals: 3,
-}
-
-const MOCK_MILESTONES: Milestone[] = [
-  { id: "MS-01", name: "Site Mobilization", date: "2025-11-01", status: "completed" },
-  { id: "MS-02", name: "Excavation Complete", date: "2025-12-15", status: "completed" },
-  { id: "MS-03", name: "Foundation Complete", date: "2026-02-20", status: "in-progress" },
-  { id: "MS-04", name: "Structural Steel Erection", date: "2026-04-01", status: "upcoming" },
-  { id: "MS-05", name: "Dry-In / Weather Tight", date: "2026-05-15", status: "upcoming" },
-  { id: "MS-06", name: "Rough-In Complete", date: "2026-06-20", status: "upcoming" },
-  { id: "MS-07", name: "Drywall Complete", date: "2026-07-10", status: "upcoming" },
-  { id: "MS-08", name: "Substantial Completion", date: "2026-09-15", status: "upcoming" },
-]
-
-const MOCK_PHOTOS = [
-  { id: "P-01", date: "2026-02-12", caption: "Foundation wall forming - Grid C" },
-  { id: "P-02", date: "2026-02-11", caption: "Rebar placement - Section 2" },
-  { id: "P-03", date: "2026-02-09", caption: "Concrete pour - Footings A-C" },
-  { id: "P-04", date: "2026-02-07", caption: "Excavation east side" },
-  { id: "P-05", date: "2026-02-06", caption: "Footing excavation D-F" },
-  { id: "P-06", date: "2026-02-04", caption: "Site overview aerial" },
-]
-
-const MOCK_ACTIVITY: ActivityItem[] = [
-  { id: "A-01", type: "rfi", description: "RFI-001 response received - Foundation rebar spacing clarified by architect", date: "2026-02-12", user: "Sarah Kim" },
-  { id: "A-02", type: "submittal", description: "SUB-003 Approved - Structural steel shop drawings accepted with comments", date: "2026-02-11", user: "Structural Engineer" },
-  { id: "A-03", type: "daily-log", description: "Daily log filed - 24 crew, 192 hours. No delays.", date: "2026-02-12", user: "Mike Torres" },
-  { id: "A-04", type: "change-order", description: "CO-014 Submitted - Kitchen countertop allowance overage ($1,800)", date: "2026-02-10", user: "Sarah Kim" },
-  { id: "A-05", type: "photo", description: "12 new site photos uploaded - Foundation progress", date: "2026-02-12", user: "Mike Torres" },
-  { id: "A-06", type: "rfi", description: "RFI-005 issued - Roof drain location conflict with structural member", date: "2026-02-09", user: "Sarah Kim" },
-]
-
-const MOCK_PENDING: PendingApproval[] = [
-  { id: "PA-01", type: "submittal", title: "SUB-005 - Elevator Cab Finishes", description: "Interior finish selections for passenger elevator cab. 3 options presented.", submittedDate: "2026-02-08", amount: null },
-  { id: "PA-02", type: "change-order", title: "CO-014 - Countertop Allowance Overage", description: "Owner-selected Cambria quartz exceeds allowance by $1,800. Approval needed to proceed.", submittedDate: "2026-02-10", amount: 1800 },
-  { id: "PA-03", type: "selection", title: "Dining Room Chandelier Selection", description: "3 lighting options presented for owner review. Due by March 10.", submittedDate: "2026-02-07", amount: null },
-]
 
 const ACTIVITY_ICONS: Record<ActivityItem["type"], React.ElementType> = {
   rfi: FileQuestion,
@@ -120,7 +76,37 @@ function formatFullDate(d: string) {
 }
 
 export default function ClientViewPage() {
-  const budgetPercent = Math.round((PROJECT.budgetSpent / PROJECT.budgetTotal) * 100)
+  const { data, isLoading } = useProjects()
+  const projects = data?.items ?? data ?? []
+  const PROJECT = projects[0] ?? {
+    name: "",
+    address: "",
+    overallProgress: 0,
+    budgetTotal: 0,
+    budgetSpent: 0,
+    scheduledCompletion: "",
+    openRFIs: 0,
+    pendingApprovals: 0,
+    milestones: [],
+    photos: [],
+    activity: [],
+    pendingApprovalItems: [],
+  }
+
+  const milestones: Milestone[] = PROJECT.milestones ?? []
+  const photos: { id: string; date: string; caption: string }[] = PROJECT.photos ?? []
+  const activity: ActivityItem[] = PROJECT.activity ?? []
+  const pendingApprovalItems: PendingApproval[] = PROJECT.pendingApprovalItems ?? PROJECT.pendingApprovals ?? []
+
+  const budgetPercent = PROJECT.budgetTotal > 0 ? Math.round((PROJECT.budgetSpent / PROJECT.budgetTotal) * 100) : 0
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -195,7 +181,7 @@ export default function ClientViewPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-2">
-              {MOCK_PHOTOS.map((photo) => (
+              {photos.map((photo) => (
                 <div key={photo.id} className="aspect-square bg-gray-200 rounded-lg flex flex-col items-center justify-center p-2 hover:bg-gray-300 transition-colors cursor-pointer">
                   <Image size={20} className="text-gray-400 mb-1" />
                   <p className="text-[10px] text-gray-500 text-center leading-tight">{photo.caption}</p>
@@ -215,7 +201,7 @@ export default function ClientViewPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {MOCK_MILESTONES.map((ms, i) => (
+              {milestones.map((ms, i) => (
                 <div key={ms.id} className="flex items-start gap-3">
                   <div className="flex flex-col items-center">
                     {ms.status === "completed" ? (
@@ -225,7 +211,7 @@ export default function ClientViewPage() {
                     ) : (
                       <Circle size={18} className="text-gray-300 shrink-0" />
                     )}
-                    {i < MOCK_MILESTONES.length - 1 && <div className={cn("w-0.5 h-6 mt-1", ms.status === "completed" ? "bg-green-300" : "bg-gray-200")} />}
+                    {i < milestones.length - 1 && <div className={cn("w-0.5 h-6 mt-1", ms.status === "completed" ? "bg-green-300" : "bg-gray-200")} />}
                   </div>
                   <div className="min-w-0 -mt-0.5">
                     <p className={cn("text-sm font-medium", ms.status === "completed" ? "text-gray-500 line-through" : ms.status === "in-progress" ? "text-blue-700" : "text-gray-700")}>{ms.name}</p>
@@ -243,7 +229,7 @@ export default function ClientViewPage() {
           <CardTitle className="flex items-center gap-2"><MessageSquare size={18} />Recent Activity</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {MOCK_ACTIVITY.map((item) => {
+          {activity.map((item) => {
             const Icon = ACTIVITY_ICONS[item.type]
             return (
               <div key={item.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
@@ -263,7 +249,7 @@ export default function ClientViewPage() {
           <CardTitle className="flex items-center gap-2"><Clock size={18} />Pending Approvals</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {MOCK_PENDING.map((item) => (
+          {pendingApprovalItems.map((item) => (
             <div key={item.id} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">

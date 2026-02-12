@@ -9,11 +9,13 @@ import {
   Clock,
   Filter,
   List,
+  Loader2,
   Plus,
   RefreshCw,
   Search,
   XCircle,
 } from "lucide-react"
+import { useInspections } from "@/hooks/useInspections"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
@@ -71,69 +73,6 @@ const TYPE_LABELS: Record<InspectionType, string> = {
   final: "Final",
 }
 
-const MOCK_INSPECTIONS: Inspection[] = [
-  {
-    id: "INS-001", type: "foundation", description: "Foundation footing inspection - Grid Lines A-C",
-    date: "2026-02-06", time: "9:00 AM", inspector: "Robert Davis",
-    status: "passed", project: "Riverside Commons", location: "Building A - Foundation",
-    notes: "All footings conform to approved plans. Rebar spacing verified. Soil bearing confirmed per geotech report.",
-  },
-  {
-    id: "INS-002", type: "foundation", description: "Foundation wall inspection before backfill",
-    date: "2026-02-10", time: "10:00 AM", inspector: "Robert Davis",
-    status: "passed", project: "Riverside Commons", location: "Building A - Foundation Walls",
-    notes: "Walls properly formed and poured. Waterproofing membrane applied per spec. Drain tile installed correctly.",
-  },
-  {
-    id: "INS-003", type: "rough-plumbing", description: "Underground plumbing rough-in inspection",
-    date: "2026-02-12", time: "2:00 PM", inspector: "Maria Chen",
-    status: "scheduled", project: "Riverside Commons", location: "Building A - Below Slab",
-    notes: "Pressure test required at time of inspection. All cleanouts must be accessible.",
-  },
-  {
-    id: "INS-004", type: "framing", description: "Structural framing inspection - 1st floor",
-    date: "2026-03-25", time: "9:00 AM", inspector: "Robert Davis",
-    status: "scheduled", project: "Riverside Commons", location: "Building A - Level 1",
-    notes: "Shear wall nailing and hold-down anchors to be verified. Engineering calcs on site.",
-  },
-  {
-    id: "INS-005", type: "rough-electrical", description: "Rough electrical inspection - all floors",
-    date: "2026-04-28", time: "10:00 AM", inspector: "James Park",
-    status: "scheduled", project: "Riverside Commons", location: "Building A - All Levels",
-    notes: "Panel schedules, wire sizing, and AFCI/GFCI protection to be reviewed.",
-  },
-  {
-    id: "INS-006", type: "rough-hvac", description: "Rough HVAC and ductwork inspection",
-    date: "2026-05-05", time: "9:00 AM", inspector: "Maria Chen",
-    status: "scheduled", project: "Riverside Commons", location: "Building A - All Levels",
-    notes: "Duct sizing per Manual D. Fire/smoke dampers at rated assemblies. Refrigerant line pressure test.",
-  },
-  {
-    id: "INS-007", type: "insulation", description: "Insulation inspection before drywall",
-    date: "2026-05-08", time: "1:00 PM", inspector: "Robert Davis",
-    status: "scheduled", project: "Summit Residences", location: "Building B - All Levels",
-    notes: "R-values per energy code. Vapor barrier installation. Air sealing at penetrations.",
-  },
-  {
-    id: "INS-008", type: "rough-plumbing", description: "Water supply and DWV rough-in inspection",
-    date: "2026-02-01", time: "10:00 AM", inspector: "Maria Chen",
-    status: "failed", project: "Oakwood Office", location: "Building C - Level 2",
-    notes: "FAILED: 3 joints on 2\" copper supply line did not hold pressure test. Insufficient slope on 3\" horizontal drain line in ceiling space. Re-inspection required after corrections.",
-  },
-  {
-    id: "INS-009", type: "rough-plumbing", description: "Water supply and DWV re-inspection",
-    date: "2026-02-14", time: "10:00 AM", inspector: "Maria Chen",
-    status: "pending-reinspection", project: "Oakwood Office", location: "Building C - Level 2",
-    notes: "Re-inspection of failed items from INS-008. Contractor reports corrections complete.",
-  },
-  {
-    id: "INS-010", type: "final", description: "Final building inspection",
-    date: "2026-09-20", time: "9:00 AM", inspector: "Robert Davis",
-    status: "scheduled", project: "Riverside Commons", location: "Building A - Complete",
-    notes: "Final walk-through. All systems operational. CO prerequisites: fire alarm test, elevator cert, health dept approval.",
-  },
-]
-
 function formatDate(d: string) {
   return new Date(d + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
@@ -147,27 +86,23 @@ export default function InspectionsPage() {
   const [statusFilter, setStatusFilter] = React.useState<string>("all")
   const [view, setView] = React.useState<ViewMode>("list")
 
-  const filtered = React.useMemo(() => {
-    return MOCK_INSPECTIONS.filter((ins) => {
-      if (statusFilter !== "all" && ins.status !== statusFilter) return false
-      if (search) {
-        const q = search.toLowerCase()
-        return ins.description.toLowerCase().includes(q) || ins.inspector.toLowerCase().includes(q) || TYPE_LABELS[ins.type].toLowerCase().includes(q) || ins.project.toLowerCase().includes(q)
-      }
-      return true
-    })
-  }, [search, statusFilter])
+  const { data, isLoading } = useInspections({ status: statusFilter !== "all" ? statusFilter : undefined, search: search || undefined })
+  const inspections = data?.items ?? []
 
-  const stats = React.useMemo(() => ({
-    scheduled: MOCK_INSPECTIONS.filter((i) => i.status === "scheduled").length,
-    passed: MOCK_INSPECTIONS.filter((i) => i.status === "passed").length,
-    failed: MOCK_INSPECTIONS.filter((i) => i.status === "failed").length,
-    pendingReinspection: MOCK_INSPECTIONS.filter((i) => i.status === "pending-reinspection").length,
-  }), [])
+  if (isLoading) return (<div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-gray-400" /></div>)
 
-  const calendarWeeks = React.useMemo(() => {
+  const filtered = inspections
+
+  const stats = {
+    scheduled: inspections.filter((i) => i.status === "scheduled").length,
+    passed: inspections.filter((i) => i.status === "passed").length,
+    failed: inspections.filter((i) => i.status === "failed").length,
+    pendingReinspection: inspections.filter((i) => i.status === "pending-reinspection").length,
+  }
+
+  const calendarWeeks = (() => {
     const inspectionDates = new Map<string, Inspection[]>()
-    MOCK_INSPECTIONS.forEach((ins) => {
+    inspections.forEach((ins) => {
       const existing = inspectionDates.get(ins.date) ?? []
       existing.push(ins)
       inspectionDates.set(ins.date, existing)
@@ -191,7 +126,7 @@ export default function InspectionsPage() {
     }
     if (week.length > 0) { while (week.length < 7) week.push(null); weeks.push(week) }
     return weeks
-  }, [])
+  })()
 
   return (
     <div className="space-y-6">

@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useParams } from "next/navigation"
 import {
   AlertTriangle,
   ArrowLeft,
@@ -11,6 +12,7 @@ import {
   DollarSign,
   FileText,
   FolderOpen,
+  Loader2,
   MessageSquare,
   Paperclip,
   Send,
@@ -22,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { cn } from "@/lib/utils"
+import { useRFI, useAddRFIResponse, useCloseRFI } from "@/hooks/useRFIs"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -63,61 +66,37 @@ const PRIORITY_LABELS: Record<RFIPriority, string> = {
 }
 
 // ---------------------------------------------------------------------------
-// Mock data
-// ---------------------------------------------------------------------------
-
-const MOCK_RFI = {
-  id: "1",
-  number: "RFI-001",
-  subject: "Column alignment discrepancy between grids C3 and C5",
-  status: "open" as RFIStatus,
-  priority: "high" as RFIPriority,
-  projectName: "Riverside Commons",
-  from: "Mike Torres",
-  fromCompany: "Torres General Contractors",
-  assignedTo: "Anderson Architects",
-  createdDate: "2026-01-28",
-  dueDate: "2026-02-14",
-  drawingRef: "S-201, S-202",
-  specRef: "Section 03 30 00 - Cast-in-Place Concrete",
-  costImpact: "$18,500 estimated if columns require repositioning",
-  scheduleImpact: "3-5 day delay to foundation pour if redesign required",
-  question:
-    "Drawing S-201 shows column grid line C3 at 24'-0\" on center from C2, but the architectural plan A-102 dimensions it at 22'-6\". The structural plan S-202 at Level 2 references the 24'-0\" dimension for the transfer beam above. We need clarification on the correct column spacing before we can proceed with the foundation formwork at Grid C3 through C5.\n\nAdditionally, if the 22'-6\" dimension on the architectural plan is correct, the transfer beam span on S-202 will need to be recalculated. Please advise which drawing governs and whether a revised structural calculation is required.",
-}
-
-const MOCK_RESPONSES = [
-  {
-    id: "r1",
-    user: "Sarah Kim",
-    initials: "SK",
-    role: "Project Manager",
-    company: "Kealee PM",
-    date: "2026-01-29",
-    avatarColor: "bg-purple-100 text-purple-700",
-    content:
-      "I have reviewed both drawings and can confirm the discrepancy between S-201 and A-102. I am forwarding this to the structural engineer for formal review. In the meantime, please hold off on forming the foundations at Grid C3 through C5. The rest of the foundation work on grids A through C2 can proceed as planned.",
-  },
-  {
-    id: "r2",
-    user: "James Chen",
-    initials: "JC",
-    role: "Structural Engineer",
-    company: "Structural Solutions LLC",
-    date: "2026-01-31",
-    avatarColor: "bg-green-100 text-green-700",
-    content:
-      "After reviewing the original design intent and checking the transfer beam calculations, the correct dimension is 24'-0\" as shown on S-201. The A-102 architectural plan contains a drafting error that will be corrected in the next revision (ASI-007). You may proceed with formwork based on the S-201 structural dimensions. An updated A-102 will be issued within 48 hours. No structural recalculation is needed for the transfer beam.",
-  },
-]
-
-// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export default function RFIDetailPage() {
+  const params = useParams()
+  const id = params.id as string
+  const { data, isLoading } = useRFI(id)
+  const addResponse = useAddRFIResponse()
+  const closeRFI = useCloseRFI()
   const [response, setResponse] = React.useState("")
-  const rfi = MOCK_RFI
+
+  const rfi = data?.rfi ?? data?.item ?? data ?? null
+
+  if (isLoading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-gray-400" /></div>
+  if (!rfi) return <div className="text-center py-12">RFI not found</div>
+
+  const status = (rfi.status as RFIStatus) || "open"
+  const priority = (rfi.priority as RFIPriority) || "medium"
+  const responses = rfi.responses || []
+
+  function handleSendResponse() {
+    if (!response.trim()) return
+    addResponse.mutate(
+      { rfiId: id, content: response },
+      { onSuccess: () => setResponse("") }
+    )
+  }
+
+  function handleCloseRFI() {
+    closeRFI.mutate(id)
+  }
 
   return (
     <div className="space-y-6">
@@ -139,30 +118,35 @@ export default function RFIDetailPage() {
             <span
               className={cn(
                 "px-2.5 py-0.5 rounded-full text-xs font-medium",
-                STATUS_STYLES[rfi.status]
+                STATUS_STYLES[status] || STATUS_STYLES.open
               )}
             >
-              {STATUS_LABELS[rfi.status]}
+              {STATUS_LABELS[status] || status}
             </span>
             <span
               className={cn(
                 "px-2.5 py-0.5 rounded-full text-xs font-medium",
-                PRIORITY_STYLES[rfi.priority]
+                PRIORITY_STYLES[priority] || PRIORITY_STYLES.medium
               )}
             >
-              {PRIORITY_LABELS[rfi.priority]}
+              {PRIORITY_LABELS[priority] || priority}
             </span>
           </div>
           <p className="text-lg text-gray-700">{rfi.subject}</p>
         </div>
         <div className="flex gap-2 shrink-0">
-          <Button variant="outline" className="gap-2">
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={handleCloseRFI}
+            disabled={closeRFI.isPending}
+          >
             <CheckCircle2 size={16} />
-            Close RFI
+            {closeRFI.isPending ? "Closing..." : "Close RFI"}
           </Button>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={handleSendResponse} disabled={!response.trim() || addResponse.isPending}>
             <Send size={16} />
-            Respond
+            {addResponse.isPending ? "Sending..." : "Respond"}
           </Button>
         </div>
       </div>
@@ -179,23 +163,29 @@ export default function RFIDetailPage() {
             <CardContent>
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-700 shrink-0">
-                  MT
+                  {(rfi.from || rfi.fromUser || "??")
+                    .split(" ")
+                    .map((n: string) => n[0])
+                    .join("")
+                    .slice(0, 2)}
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-gray-900">
-                    {rfi.from}
+                    {rfi.from || rfi.fromUser || "Unknown"}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {rfi.fromCompany} &middot;{" "}
-                    {new Date(rfi.createdDate + "T00:00:00").toLocaleDateString(
-                      "en-US",
-                      { month: "long", day: "numeric", year: "numeric" }
-                    )}
+                    {rfi.fromCompany || ""} {rfi.fromCompany ? "\u00B7 " : ""}
+                    {rfi.createdDate || rfi.createdAt
+                      ? new Date((rfi.createdDate || rfi.createdAt) + (String(rfi.createdDate || rfi.createdAt).includes("T") ? "" : "T00:00:00")).toLocaleDateString(
+                          "en-US",
+                          { month: "long", day: "numeric", year: "numeric" }
+                        )
+                      : ""}
                   </p>
                 </div>
               </div>
               <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-                {rfi.question}
+                {rfi.question || rfi.description || ""}
               </p>
             </CardContent>
           </Card>
@@ -205,35 +195,42 @@ export default function RFIDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageSquare size={18} />
-                Responses ({MOCK_RESPONSES.length})
+                Responses ({responses.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {MOCK_RESPONSES.map((r) => (
+              {responses.map((r: any) => (
                 <div key={r.id} className="border rounded-lg p-4">
                   <div className="flex items-start gap-3 mb-3">
                     <div
                       className={cn(
                         "w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
-                        r.avatarColor
+                        r.avatarColor || "bg-gray-100 text-gray-700"
                       )}
                     >
-                      {r.initials}
+                      {r.initials ||
+                        (r.user || "?")
+                          .split(" ")
+                          .map((n: string) => n[0])
+                          .join("")
+                          .slice(0, 2)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-sm font-semibold text-gray-900">
-                          {r.user}
+                          {r.user || r.userName || "Unknown"}
                         </p>
                         <span className="text-xs text-gray-400">
-                          {r.role}, {r.company}
+                          {r.role ? `${r.role}, ` : ""}{r.company || ""}
                         </span>
                       </div>
                       <p className="text-xs text-gray-400">
-                        {new Date(r.date + "T00:00:00").toLocaleDateString(
-                          "en-US",
-                          { month: "long", day: "numeric", year: "numeric" }
-                        )}
+                        {r.date || r.createdAt
+                          ? new Date((r.date || r.createdAt) + (String(r.date || r.createdAt).includes("T") ? "" : "T00:00:00")).toLocaleDateString(
+                              "en-US",
+                              { month: "long", day: "numeric", year: "numeric" }
+                            )
+                          : ""}
                       </p>
                     </div>
                   </div>
@@ -257,9 +254,14 @@ export default function RFIDetailPage() {
                     <Paperclip size={14} />
                     Attach File
                   </Button>
-                  <Button size="sm" className="gap-1.5">
+                  <Button
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={handleSendResponse}
+                    disabled={!response.trim() || addResponse.isPending}
+                  >
                     <Send size={14} />
-                    Send Response
+                    {addResponse.isPending ? "Sending..." : "Send Response"}
                   </Button>
                 </div>
               </div>
@@ -279,40 +281,44 @@ export default function RFIDetailPage() {
                 {
                   icon: FolderOpen,
                   label: "Project",
-                  value: rfi.projectName,
+                  value: rfi.projectName || rfi.project || "N/A",
                 },
-                { icon: User, label: "From", value: `${rfi.from} (${rfi.fromCompany})` },
+                { icon: User, label: "From", value: `${rfi.from || rfi.fromUser || "N/A"}${rfi.fromCompany ? ` (${rfi.fromCompany})` : ""}` },
                 {
                   icon: User,
                   label: "Assigned To",
-                  value: rfi.assignedTo,
+                  value: rfi.assignedTo || "N/A",
                 },
                 {
                   icon: Calendar,
                   label: "Created",
-                  value: new Date(
-                    rfi.createdDate + "T00:00:00"
-                  ).toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  }),
+                  value: rfi.createdDate || rfi.createdAt
+                    ? new Date(
+                        (rfi.createdDate || rfi.createdAt) + (String(rfi.createdDate || rfi.createdAt).includes("T") ? "" : "T00:00:00")
+                      ).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "N/A",
                 },
                 {
                   icon: Clock,
                   label: "Due Date",
-                  value: new Date(
-                    rfi.dueDate + "T00:00:00"
-                  ).toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  }),
+                  value: rfi.dueDate
+                    ? new Date(
+                        rfi.dueDate + (String(rfi.dueDate).includes("T") ? "" : "T00:00:00")
+                      ).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "N/A",
                 },
                 {
                   icon: AlertTriangle,
                   label: "Priority",
-                  value: PRIORITY_LABELS[rfi.priority],
+                  value: PRIORITY_LABELS[priority] || priority,
                 },
               ].map((item) => (
                 <div key={item.label} className="flex items-start gap-3">
@@ -332,62 +338,74 @@ export default function RFIDetailPage() {
           </Card>
 
           {/* -- References -- */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText size={16} />
-                References
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <p className="text-xs text-gray-500 mb-1">Drawing Reference</p>
-                <p className="text-sm font-medium text-gray-900">
-                  {rfi.drawingRef}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 mb-1">
-                  Specification Reference
-                </p>
-                <p className="text-sm font-medium text-gray-900">
-                  {rfi.specRef}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {(rfi.drawingRef || rfi.specRef) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText size={16} />
+                  References
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {rfi.drawingRef && (
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Drawing Reference</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {rfi.drawingRef}
+                    </p>
+                  </div>
+                )}
+                {rfi.specRef && (
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">
+                      Specification Reference
+                    </p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {rfi.specRef}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* -- Impact Assessment -- */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp size={16} />
-                Impact Assessment
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <DollarSign size={14} className="text-red-500" />
-                  <p className="text-xs font-medium text-gray-700">
-                    Cost Impact
-                  </p>
-                </div>
-                <p className="text-sm text-gray-600 ml-6">{rfi.costImpact}</p>
-              </div>
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Clock size={14} className="text-orange-500" />
-                  <p className="text-xs font-medium text-gray-700">
-                    Schedule Impact
-                  </p>
-                </div>
-                <p className="text-sm text-gray-600 ml-6">
-                  {rfi.scheduleImpact}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {(rfi.costImpact || rfi.scheduleImpact) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp size={16} />
+                  Impact Assessment
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {rfi.costImpact && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <DollarSign size={14} className="text-red-500" />
+                      <p className="text-xs font-medium text-gray-700">
+                        Cost Impact
+                      </p>
+                    </div>
+                    <p className="text-sm text-gray-600 ml-6">{rfi.costImpact}</p>
+                  </div>
+                )}
+                {rfi.scheduleImpact && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Clock size={14} className="text-orange-500" />
+                      <p className="text-xs font-medium text-gray-700">
+                        Schedule Impact
+                      </p>
+                    </div>
+                    <p className="text-sm text-gray-600 ml-6">
+                      {rfi.scheduleImpact}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

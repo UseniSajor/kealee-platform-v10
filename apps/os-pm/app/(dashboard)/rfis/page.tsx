@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Clock,
   FileQuestion,
+  Loader2,
   MessageSquare,
   Paperclip,
   Plus,
@@ -17,6 +18,7 @@ import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { cn } from "@/lib/utils"
+import { useRFIs } from "@/hooks/useRFIs"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -24,24 +26,6 @@ import { cn } from "@/lib/utils"
 
 type RFIStatus = "draft" | "open" | "answered" | "closed"
 type RFIPriority = "low" | "medium" | "high" | "critical"
-
-interface RFI {
-  id: string
-  number: string
-  subject: string
-  projectName: string
-  from: string
-  to: string
-  status: RFIStatus
-  priority: RFIPriority
-  costImpact: boolean
-  scheduleImpact: boolean
-  responseCount: number
-  attachmentCount: number
-  createdDate: string
-  dueDate: string
-  drawingRef: string
-}
 
 // ---------------------------------------------------------------------------
 // Status & priority style maps
@@ -76,149 +60,6 @@ const PRIORITY_LABELS: Record<RFIPriority, string> = {
 }
 
 // ---------------------------------------------------------------------------
-// Mock data  8 realistic construction RFIs
-// ---------------------------------------------------------------------------
-
-const MOCK_RFIS: RFI[] = [
-  {
-    id: "1",
-    number: "RFI-001",
-    subject: "Column alignment discrepancy between grids C3 and C5",
-    projectName: "Riverside Commons",
-    from: "Mike Torres - Torres GC",
-    to: "Anderson Architects",
-    status: "open",
-    priority: "high",
-    costImpact: true,
-    scheduleImpact: true,
-    responseCount: 2,
-    attachmentCount: 3,
-    createdDate: "2026-01-28",
-    dueDate: "2026-02-14",
-    drawingRef: "S-201",
-  },
-  {
-    id: "2",
-    number: "RFI-002",
-    subject: "Window head height and sill detail clarification at east elevation",
-    projectName: "Riverside Commons",
-    from: "Sarah Kim - Kealee PM",
-    to: "Anderson Architects",
-    status: "answered",
-    priority: "medium",
-    costImpact: false,
-    scheduleImpact: true,
-    responseCount: 4,
-    attachmentCount: 2,
-    createdDate: "2026-01-22",
-    dueDate: "2026-02-05",
-    drawingRef: "A-301",
-  },
-  {
-    id: "3",
-    number: "RFI-003",
-    subject: "MEP routing conflict at Level 3 corridor ceiling plenum",
-    projectName: "Oakwood Office Park",
-    from: "James Chen - Valley Mechanical",
-    to: "MEP Engineers LLC",
-    status: "open",
-    priority: "critical",
-    costImpact: true,
-    scheduleImpact: true,
-    responseCount: 1,
-    attachmentCount: 5,
-    createdDate: "2026-02-03",
-    dueDate: "2026-02-17",
-    drawingRef: "M-301, E-301, P-301",
-  },
-  {
-    id: "4",
-    number: "RFI-004",
-    subject: "Exterior cladding attachment detail at parapet condition",
-    projectName: "Summit Residences",
-    from: "Carlos Rivera - Premier Facades",
-    to: "Anderson Architects",
-    status: "closed",
-    priority: "high",
-    costImpact: true,
-    scheduleImpact: false,
-    responseCount: 3,
-    attachmentCount: 4,
-    createdDate: "2026-01-15",
-    dueDate: "2026-01-29",
-    drawingRef: "A-501, A-502",
-  },
-  {
-    id: "5",
-    number: "RFI-005",
-    subject: "Foundation rebar spacing vs. structural notes discrepancy",
-    projectName: "Riverside Commons",
-    from: "Mike Torres - Torres GC",
-    to: "Structural Engineer",
-    status: "open",
-    priority: "high",
-    costImpact: false,
-    scheduleImpact: true,
-    responseCount: 2,
-    attachmentCount: 2,
-    createdDate: "2026-02-06",
-    dueDate: "2026-02-18",
-    drawingRef: "S-201, S-001",
-  },
-  {
-    id: "6",
-    number: "RFI-006",
-    subject: "Fire rating requirements for corridor partition walls at Building B",
-    projectName: "Oakwood Office Park",
-    from: "Interior Solutions Inc",
-    to: "Anderson Architects",
-    status: "draft",
-    priority: "medium",
-    costImpact: true,
-    scheduleImpact: false,
-    responseCount: 0,
-    attachmentCount: 1,
-    createdDate: "2026-02-10",
-    dueDate: "2026-02-24",
-    drawingRef: "A-210",
-  },
-  {
-    id: "7",
-    number: "RFI-007",
-    subject: "Elevator pit waterproofing membrane specification and detail",
-    projectName: "Summit Residences",
-    from: "Sarah Kim - Kealee PM",
-    to: "Anderson Architects",
-    status: "answered",
-    priority: "critical",
-    costImpact: true,
-    scheduleImpact: true,
-    responseCount: 5,
-    attachmentCount: 3,
-    createdDate: "2026-01-20",
-    dueDate: "2026-02-03",
-    drawingRef: "S-101, A-010",
-  },
-  {
-    id: "8",
-    number: "RFI-008",
-    subject: "ADA-compliant restroom clearance dimensions at Level 1",
-    projectName: "Riverside Commons",
-    from: "Valley Plumbing Co",
-    to: "Anderson Architects",
-    status: "closed",
-    priority: "low",
-    costImpact: false,
-    scheduleImpact: false,
-    responseCount: 2,
-    attachmentCount: 1,
-    createdDate: "2026-01-10",
-    dueDate: "2026-01-24",
-    drawingRef: "A-120",
-  },
-]
-
-// ---------------------------------------------------------------------------
 // Filter tabs
 // ---------------------------------------------------------------------------
 
@@ -238,29 +79,26 @@ export default function RFIsPage() {
   const [search, setSearch] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState<string>("all")
 
-  const filtered = React.useMemo(() => {
-    return MOCK_RFIS.filter((rfi) => {
-      if (statusFilter !== "all" && rfi.status !== statusFilter) return false
-      if (search) {
-        const q = search.toLowerCase()
-        return (
-          rfi.number.toLowerCase().includes(q) ||
-          rfi.subject.toLowerCase().includes(q) ||
-          rfi.projectName.toLowerCase().includes(q) ||
-          rfi.from.toLowerCase().includes(q) ||
-          rfi.to.toLowerCase().includes(q)
-        )
-      }
-      return true
-    })
-  }, [search, statusFilter])
+  const { data, isLoading } = useRFIs({
+    status: statusFilter !== "all" ? statusFilter : undefined,
+    search: search || undefined,
+  })
+  const items = data?.items ?? []
 
   const stats = React.useMemo(() => {
-    const open = MOCK_RFIS.filter((r) => r.status === "open").length
-    const answered = MOCK_RFIS.filter((r) => r.status === "answered").length
-    const closed = MOCK_RFIS.filter((r) => r.status === "closed").length
+    const open = items.filter((r: any) => r.status === "open").length
+    const answered = items.filter((r: any) => r.status === "answered").length
+    const closed = items.filter((r: any) => r.status === "closed").length
     return { open, answered, closed, avgResponse: 6.2 }
-  }, [])
+  }, [items])
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -360,7 +198,7 @@ export default function RFIsPage() {
 
       {/* ---- RFI cards list ---- */}
       <div className="space-y-3">
-        {filtered.length === 0 && (
+        {items.length === 0 && (
           <Card>
             <CardContent className="p-8 text-center text-gray-400">
               No RFIs match your current filters.
@@ -368,7 +206,7 @@ export default function RFIsPage() {
           </Card>
         )}
 
-        {filtered.map((rfi) => (
+        {items.map((rfi: any) => (
           <Link key={rfi.id} href={`/rfis/${rfi.id}`} className="block">
             <Card className="hover:shadow-md transition-shadow cursor-pointer">
               <CardContent className="p-4">
@@ -382,18 +220,18 @@ export default function RFIsPage() {
                       <span
                         className={cn(
                           "px-2 py-0.5 rounded-full text-xs font-medium",
-                          STATUS_STYLES[rfi.status]
+                          STATUS_STYLES[rfi.status as RFIStatus]
                         )}
                       >
-                        {STATUS_LABELS[rfi.status]}
+                        {STATUS_LABELS[rfi.status as RFIStatus]}
                       </span>
                       <span
                         className={cn(
                           "px-2 py-0.5 rounded-full text-xs font-medium",
-                          PRIORITY_STYLES[rfi.priority]
+                          PRIORITY_STYLES[rfi.priority as RFIPriority]
                         )}
                       >
-                        {PRIORITY_LABELS[rfi.priority]}
+                        {PRIORITY_LABELS[rfi.priority as RFIPriority]}
                       </span>
                     </div>
 
@@ -449,18 +287,14 @@ export default function RFIsPage() {
                     <div className="text-[11px] text-gray-400 text-right">
                       <div>
                         Created{" "}
-                        {new Date(
-                          rfi.createdDate + "T00:00:00"
-                        ).toLocaleDateString("en-US", {
+                        {new Date(rfi.createdDate).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
                         })}
                       </div>
                       <div>
                         Due{" "}
-                        {new Date(
-                          rfi.dueDate + "T00:00:00"
-                        ).toLocaleDateString("en-US", {
+                        {new Date(rfi.dueDate).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
                         })}

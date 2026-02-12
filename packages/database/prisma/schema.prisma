@@ -1544,6 +1544,17 @@ model Project {
   fileUploads  FileUpload[]
   receipts     Receipt[]
 
+  // PM Feature relations
+  rfis             RFI[]
+  submittals       Submittal[]
+  meetings         Meeting[]
+  selections       Selection[]
+  warranties       Warranty[]
+  warrantyClaims   WarrantyClaim[]
+  timeEntries      TimeEntry[]
+  safetyIncidents  SafetyIncident[]
+  toolboxTalks     ToolboxTalk[]
+
   @@index([clientId])
   @@index([orgId])
   @@index([propertyId])
@@ -1853,6 +1864,23 @@ model User {
   uploadedFiles   FileUpload[]   @relation("FileUploadUser")
   uploadedReceipts Receipt[]     @relation("ReceiptUploadedBy")
   userActions     UserAction[]   @relation("UserActionHistory")
+
+  // PM Feature relations
+  createdRFIs          RFI[]              @relation("RFICreator")
+  assignedRFIs         RFI[]              @relation("RFIAssignee")
+  closedRFIs           RFI[]              @relation("RFICloser")
+  rfiResponses         RFIResponse[]      @relation("RFIResponder")
+  createdSubmittals    Submittal[]        @relation("SubmittalCreator")
+  assignedSubmittals   Submittal[]        @relation("SubmittalAssignee")
+  submittalReviews     SubmittalReview[]  @relation("SubmittalReviewer")
+  createdMeetings      Meeting[]          @relation("MeetingCreator")
+  meetingActionItems   MeetingActionItem[] @relation("ActionItemAssignee")
+  createdSelections    Selection[]        @relation("SelectionCreator")
+  approvedSelections   Selection[]        @relation("SelectionApprover")
+  timeEntries          TimeEntry[]        @relation("TimeEntryUser")
+  approvedTimeEntries  TimeEntry[]        @relation("TimeEntryApprover")
+  reportedIncidents    SafetyIncident[]   @relation("IncidentReporter")
+  filedWarrantyClaims  WarrantyClaim[]    @relation("WarrantyClaimFiler")
 }
 
 // ============================================================================
@@ -8672,4 +8700,571 @@ model SensorReading {
   @@index([alert])
   @@index([timestamp])
   @@map("sensor_readings")
+}
+
+// ============================================================================
+// PM FEATURE MODELS - Construction Project Management
+// ============================================================================
+
+// ── Enums ──
+
+enum RFIStatus {
+  DRAFT
+  OPEN
+  ANSWERED
+  CLOSED
+  VOID
+}
+
+enum RFIPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum SubmittalStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  APPROVED_AS_NOTED
+  REJECTED
+  REVISE_RESUBMIT
+}
+
+enum SubmittalType {
+  PRODUCT_DATA
+  SHOP_DRAWING
+  SAMPLE
+  MOCK_UP
+  DESIGN_MIX
+  TEST_REPORT
+  CERTIFICATE
+  MAINTENANCE_DATA
+}
+
+enum MeetingType {
+  OAC
+  PROGRESS
+  SAFETY
+  PRECONSTRUCTION
+  COORDINATION
+  OWNER
+  SUBCONTRACTOR
+  CLOSEOUT
+}
+
+enum MeetingStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum SelectionStatus {
+  PENDING
+  OPTIONS_PROVIDED
+  SELECTED
+  APPROVED
+  ORDERED
+  INSTALLED
+}
+
+enum WarrantyStatus {
+  ACTIVE
+  EXPIRING_SOON
+  EXPIRED
+  CLAIMED
+}
+
+enum ClaimStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  DENIED
+  RESOLVED
+}
+
+enum TimeEntryType {
+  REGULAR
+  OVERTIME
+  DOUBLE_TIME
+  PTO
+  HOLIDAY
+}
+
+enum IncidentSeverity {
+  NEAR_MISS
+  FIRST_AID
+  MEDICAL
+  LOST_TIME
+  FATALITY
+}
+
+enum IncidentStatus {
+  REPORTED
+  INVESTIGATING
+  CORRECTIVE_ACTION
+  CLOSED
+}
+
+enum DrawingDiscipline {
+  ARCHITECTURAL
+  STRUCTURAL
+  MECHANICAL
+  ELECTRICAL
+  PLUMBING
+  CIVIL
+  LANDSCAPE
+  FIRE_PROTECTION
+}
+
+enum DrawingStatus {
+  CURRENT
+  SUPERSEDED
+  VOID
+  FOR_REVIEW
+  DRAWING_APPROVED
+}
+
+// ── RFI (Request for Information) ──
+
+model RFI {
+  id        String @id @default(uuid())
+  projectId String
+
+  rfiNumber       Int       @default(autoincrement())
+  subject         String
+  question        String    @db.Text
+  status          RFIStatus @default(DRAFT)
+  priority        RFIPriority @default(MEDIUM)
+
+  createdById     String
+  assignedToId    String?
+  dueDate         DateTime?
+
+  costImpact      Boolean   @default(false)
+  scheduleImpact  Boolean   @default(false)
+  drawingRef      String?
+  specSection     String?
+  distributionList String[]
+
+  closedAt        DateTime?
+  closedById      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User         @relation("RFICreator", fields: [createdById], references: [id])
+  assignedTo User?       @relation("RFIAssignee", fields: [assignedToId], references: [id])
+  closedBy  User?        @relation("RFICloser", fields: [closedById], references: [id])
+  responses RFIResponse[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdById])
+  @@index([assignedToId])
+  @@index([projectId, status])
+  @@map("rfis")
+}
+
+model RFIResponse {
+  id          String  @id @default(uuid())
+  rfiId       String
+  responderId String
+  response    String  @db.Text
+  isOfficial  Boolean @default(false)
+  attachmentIds String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rfi       RFI  @relation(fields: [rfiId], references: [id], onDelete: Cascade)
+  responder User @relation("RFIResponder", fields: [responderId], references: [id])
+
+  @@index([rfiId])
+  @@index([responderId])
+  @@map("rfi_responses")
+}
+
+// ── Submittals ──
+
+model Submittal {
+  id        String @id @default(uuid())
+  projectId String
+
+  submittalNumber  Int            @default(autoincrement())
+  title            String
+  description      String?        @db.Text
+  type             SubmittalType  @default(PRODUCT_DATA)
+  status           SubmittalStatus @default(DRAFT)
+  specSection      String?
+
+  createdById      String
+  assignedToId     String?
+  dueDate          DateTime?
+  receivedDate     DateTime?
+  approvedDate     DateTime?
+
+  contractorId     String?
+  subcontractorName String?
+  copies           Int            @default(1)
+  remarks          String?        @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project    Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy  User              @relation("SubmittalCreator", fields: [createdById], references: [id])
+  assignedTo User?             @relation("SubmittalAssignee", fields: [assignedToId], references: [id])
+  reviews    SubmittalReview[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([type])
+  @@index([specSection])
+  @@index([projectId, status])
+  @@map("submittals")
+}
+
+model SubmittalReview {
+  id          String          @id @default(uuid())
+  submittalId String
+  reviewerId  String
+  status      SubmittalStatus
+  comments    String?         @db.Text
+  reviewedAt  DateTime        @default(now())
+  stampUrl    String?
+
+  createdAt DateTime @default(now())
+
+  submittal Submittal @relation(fields: [submittalId], references: [id], onDelete: Cascade)
+  reviewer  User      @relation("SubmittalReviewer", fields: [reviewerId], references: [id])
+
+  @@index([submittalId])
+  @@index([reviewerId])
+  @@map("submittal_reviews")
+}
+
+// ── Meetings ──
+
+model Meeting {
+  id        String @id @default(uuid())
+  projectId String
+
+  meetingNumber    Int          @default(autoincrement())
+  title            String
+  type             MeetingType  @default(PROGRESS)
+  date             DateTime
+  startTime        String?      // "09:00"
+  endTime          String?      // "10:30"
+  location         String?
+  agenda           String?      @db.Text
+  minutes          String?      @db.Text
+  status           MeetingStatus @default(SCHEDULED)
+  createdById      String
+  recurringSchedule Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project     Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy   User                @relation("MeetingCreator", fields: [createdById], references: [id])
+  attendees   MeetingAttendee[]
+  actionItems MeetingActionItem[]
+
+  @@index([projectId])
+  @@index([date])
+  @@index([type])
+  @@index([status])
+  @@index([projectId, date])
+  @@map("meetings")
+}
+
+model MeetingAttendee {
+  id        String  @id @default(uuid())
+  meetingId String
+  userId    String?
+  name      String
+  email     String?
+  company   String?
+  role      String?
+  attended  Boolean @default(false)
+  signatureUrl String?
+
+  createdAt DateTime @default(now())
+
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
+  @@map("meeting_attendees")
+}
+
+model MeetingActionItem {
+  id             String    @id @default(uuid())
+  meetingId      String
+  description    String    @db.Text
+  assignedToId   String?
+  assignedToName String?
+  dueDate        DateTime?
+  status         String    @default("OPEN") // OPEN, IN_PROGRESS, COMPLETED, OVERDUE
+  priority       String    @default("MEDIUM") // LOW, MEDIUM, HIGH
+  completedAt    DateTime?
+  notes          String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  meeting    Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  assignedTo User?   @relation("ActionItemAssignee", fields: [assignedToId], references: [id])
+
+  @@index([meetingId])
+  @@index([assignedToId])
+  @@index([status])
+  @@map("meeting_action_items")
+}
+
+// ── Selections (Material/Finish Selections) ──
+
+model Selection {
+  id        String @id @default(uuid())
+  projectId String
+
+  title            String
+  description      String?        @db.Text
+  category         String         // FLOORING, COUNTERTOPS, FIXTURES, PAINT, TILE, APPLIANCES, HARDWARE, LIGHTING, CABINETRY, OTHER
+  specSection      String?
+  location         String?
+  status           SelectionStatus @default(PENDING)
+  dueDate          DateTime?
+  selectedOptionId String?
+  approvedById     String?
+  approvedAt       DateTime?
+  budgetAllowance  Decimal?       @db.Decimal(12, 2)
+  actualCost       Decimal?       @db.Decimal(12, 2)
+  createdById      String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User              @relation("SelectionCreator", fields: [createdById], references: [id])
+  approvedBy User?            @relation("SelectionApprover", fields: [approvedById], references: [id])
+  options   SelectionOption[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([category])
+  @@index([projectId, status])
+  @@map("selections")
+}
+
+model SelectionOption {
+  id           String  @id @default(uuid())
+  selectionId  String
+  name         String
+  description  String? @db.Text
+  vendor       String?
+  manufacturer String?
+  modelNumber  String?
+  color        String?
+  finish       String?
+  leadTime     String?
+  unitCost     Decimal? @db.Decimal(12, 2)
+  totalCost    Decimal? @db.Decimal(12, 2)
+  imageUrls    String[]
+  specSheetUrl String?
+  isRecommended Boolean @default(false)
+  isSelected   Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  selection Selection @relation(fields: [selectionId], references: [id], onDelete: Cascade)
+
+  @@index([selectionId])
+  @@map("selection_options")
+}
+
+// ── Warranty ──
+
+model Warranty {
+  id        String @id @default(uuid())
+  projectId String
+
+  title           String
+  description     String?        @db.Text
+  type            String         // MANUFACTURER, CONTRACTOR, EXTENDED
+  provider        String
+  contactName     String?
+  contactEmail    String?
+  contactPhone    String?
+  startDate       DateTime
+  endDate         DateTime
+  duration        Int            // months
+  coverageDetails String?        @db.Text
+  documentUrl     String?
+  status          WarrantyStatus @default(ACTIVE)
+  notificationSentAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  claims  WarrantyClaim[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([endDate])
+  @@index([projectId, status])
+  @@map("warranties")
+}
+
+model WarrantyClaim {
+  id          String @id @default(uuid())
+  warrantyId  String
+  projectId   String
+
+  title         String
+  description   String      @db.Text
+  status        ClaimStatus @default(SUBMITTED)
+  filedDate     DateTime    @default(now())
+  filedById     String
+  resolvedDate  DateTime?
+  resolution    String?     @db.Text
+  photos        String[]
+  estimatedCost Decimal?    @db.Decimal(12, 2)
+  actualCost    Decimal?    @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  warranty Warranty @relation(fields: [warrantyId], references: [id], onDelete: Cascade)
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  filedBy  User     @relation("WarrantyClaimFiler", fields: [filedById], references: [id])
+
+  @@index([warrantyId])
+  @@index([projectId])
+  @@index([status])
+  @@map("warranty_claims")
+}
+
+// ── Time Tracking ──
+
+model TimeEntry {
+  id        String @id @default(uuid())
+  projectId String
+  userId    String
+
+  date         DateTime
+  hours        Decimal       @db.Decimal(5, 2)
+  type         TimeEntryType @default(REGULAR)
+  costCode     String?
+  description  String?       @db.Text
+  trade        String?
+  approved     Boolean       @default(false)
+  approvedById String?
+  approvedAt   DateTime?
+  billable     Boolean       @default(true)
+  hourlyRate   Decimal?      @db.Decimal(10, 2)
+  totalCost    Decimal?      @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user       User    @relation("TimeEntryUser", fields: [userId], references: [id])
+  approvedBy User?   @relation("TimeEntryApprover", fields: [approvedById], references: [id])
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([date])
+  @@index([approved])
+  @@index([projectId, userId, date])
+  @@map("time_entries")
+}
+
+// ── Safety ──
+
+model SafetyIncident {
+  id        String @id @default(uuid())
+  projectId String
+
+  incidentNumber        Int              @default(autoincrement())
+  title                 String
+  description           String           @db.Text
+  date                  DateTime
+  time                  String?          // "14:30"
+  location              String?
+  severity              IncidentSeverity @default(NEAR_MISS)
+  status                IncidentStatus   @default(REPORTED)
+  reportedById          String
+  witnesses             String[]
+  injuredParty          String?
+  injuryDescription     String?          @db.Text
+  immediateAction       String?          @db.Text
+  rootCause             String?          @db.Text
+  correctiveAction      String?          @db.Text
+  correctiveActionDueDate DateTime?
+  photos                String[]
+  oshaRecordable        Boolean          @default(false)
+  notifiedParties       String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  reportedBy User    @relation("IncidentReporter", fields: [reportedById], references: [id])
+
+  @@index([projectId])
+  @@index([severity])
+  @@index([status])
+  @@index([date])
+  @@index([projectId, status])
+  @@map("safety_incidents")
+}
+
+model ToolboxTalk {
+  id        String @id @default(uuid())
+  projectId String
+
+  title             String
+  topic             String
+  content           String?   @db.Text
+  presenterId       String?
+  presenterName     String?
+  date              DateTime
+  duration          Int?      // minutes
+  weatherConditions String?
+  signInSheetUrl    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  attendees ToolboxTalkAttendee[]
+
+  @@index([projectId])
+  @@index([date])
+  @@index([projectId, date])
+  @@map("toolbox_talks")
+}
+
+model ToolboxTalkAttendee {
+  id            String   @id @default(uuid())
+  toolboxTalkId String
+  name          String
+  company       String?
+  trade         String?
+  signedAt      DateTime @default(now())
+
+  createdAt DateTime @default(now())
+
+  toolboxTalk ToolboxTalk @relation(fields: [toolboxTalkId], references: [id], onDelete: Cascade)
+
+  @@index([toolboxTalkId])
+  @@map("toolbox_talk_attendees")
 }

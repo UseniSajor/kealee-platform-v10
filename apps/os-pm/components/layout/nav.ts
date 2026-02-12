@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react"
 import {
   BarChart3,
   Briefcase,
+  Calculator,
   CalendarClock,
   CalendarDays,
   CheckSquare,
@@ -25,6 +26,7 @@ import {
   Timer,
   TrendingUp,
   Users,
+  Wand2,
   Wrench,
   Zap,
 } from "lucide-react"
@@ -64,6 +66,13 @@ export const navSections: NavSection[] = [
       { href: "/change-orders", label: "Change Orders", icon: FileCheck, match: "startsWith" },
       { href: "/bids", label: "Bids", icon: Gavel, match: "startsWith" },
       { href: "/contracts", label: "Contracts", icon: Scale, match: "startsWith" },
+    ],
+  },
+  {
+    label: "Estimation",
+    items: [
+      { href: "/estimates", label: "Estimates", icon: Calculator, match: "startsWith" },
+      { href: "/estimates/ai-takeoff", label: "AI Takeoff", icon: Wand2, match: "startsWith" },
     ],
   },
   {

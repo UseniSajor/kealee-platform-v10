@@ -6,11 +6,13 @@ import {
   CheckCircle2,
   Clock,
   Inbox,
+  Loader2,
   Plus,
   RotateCcw,
   Search,
   XCircle,
 } from "lucide-react"
+import { useSubmittals } from "@/hooks/useSubmittals"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
@@ -56,139 +58,6 @@ const STATUS_LABELS: Record<SubmittalStatus, string> = {
   "revise-resubmit": "Revise & Resubmit",
 }
 
-const MOCK_SUBMITTALS: Submittal[] = [
-  {
-    id: "1",
-    number: "SUB-001",
-    title: "Concrete Mix Design - 5000 PSI",
-    specSection: "03 30 00",
-    specTitle: "Cast-in-Place Concrete",
-    submittedBy: "Atlas Concrete Inc.",
-    reviewer: "Martinez Structural Engineers",
-    status: "approved",
-    submitDate: "2026-01-15",
-    requiredDate: "2026-01-29",
-    ballInCourt: "Resolved",
-  },
-  {
-    id: "2",
-    number: "SUB-002",
-    title: "Structural Steel Shop Drawings",
-    specSection: "05 12 00",
-    specTitle: "Structural Steel Framing",
-    submittedBy: "Ironworks Fabricators LLC",
-    reviewer: "Martinez Structural Engineers",
-    status: "under-review",
-    submitDate: "2026-01-22",
-    requiredDate: "2026-02-12",
-    ballInCourt: "Structural Engineer",
-  },
-  {
-    id: "3",
-    number: "SUB-003",
-    title: "HVAC Rooftop Units - Carrier 50XC",
-    specSection: "23 74 00",
-    specTitle: "Packaged Outdoor HVAC Equipment",
-    submittedBy: "ProAir Mechanical Corp.",
-    reviewer: "Summit MEP Consultants",
-    status: "approved-as-noted",
-    submitDate: "2026-01-25",
-    requiredDate: "2026-02-08",
-    ballInCourt: "Contractor",
-  },
-  {
-    id: "4",
-    number: "SUB-004",
-    title: "Plumbing Fixtures - Kohler Commercial",
-    specSection: "22 40 00",
-    specTitle: "Plumbing Fixtures",
-    submittedBy: "Western Plumbing Solutions",
-    reviewer: "Summit MEP Consultants",
-    status: "pending",
-    submitDate: "2026-02-01",
-    requiredDate: "2026-02-15",
-    ballInCourt: "MEP Engineer",
-  },
-  {
-    id: "5",
-    number: "SUB-005",
-    title: "Electrical Distribution Panels",
-    specSection: "26 24 16",
-    specTitle: "Panelboards",
-    submittedBy: "Apex Electrical Contractors",
-    reviewer: "Summit MEP Consultants",
-    status: "rejected",
-    submitDate: "2026-01-28",
-    requiredDate: "2026-02-11",
-    ballInCourt: "Electrical Contractor",
-  },
-  {
-    id: "6",
-    number: "SUB-006",
-    title: "TPO Roofing Membrane System",
-    specSection: "07 54 23",
-    specTitle: "Thermoplastic Polyolefin Roofing",
-    submittedBy: "Summit Roofing Co.",
-    reviewer: "Whitfield Architects",
-    status: "under-review",
-    submitDate: "2026-02-03",
-    requiredDate: "2026-02-17",
-    ballInCourt: "Architect",
-  },
-  {
-    id: "7",
-    number: "SUB-007",
-    title: "Curtain Wall Shop Drawings - North Elevation",
-    specSection: "08 44 13",
-    specTitle: "Glazed Aluminum Curtain Walls",
-    submittedBy: "Clearview Glass Systems",
-    reviewer: "Whitfield Architects",
-    status: "revise-resubmit",
-    submitDate: "2026-01-20",
-    requiredDate: "2026-02-03",
-    ballInCourt: "Curtain Wall Sub",
-  },
-  {
-    id: "8",
-    number: "SUB-008",
-    title: "Fire Suppression Sprinkler Layout",
-    specSection: "21 13 13",
-    specTitle: "Wet-Pipe Sprinkler Systems",
-    submittedBy: "Guardian Fire Protection",
-    reviewer: "Summit MEP Consultants",
-    status: "approved",
-    submitDate: "2026-01-18",
-    requiredDate: "2026-02-01",
-    ballInCourt: "Resolved",
-  },
-  {
-    id: "9",
-    number: "SUB-009",
-    title: "Elevator Equipment - Otis Gen3",
-    specSection: "14 21 00",
-    specTitle: "Electric Traction Elevators",
-    submittedBy: "Otis Elevator Company",
-    reviewer: "Whitfield Architects",
-    status: "pending",
-    submitDate: "2026-02-05",
-    requiredDate: "2026-02-19",
-    ballInCourt: "Architect",
-  },
-  {
-    id: "10",
-    number: "SUB-010",
-    title: "Door Hardware Schedule & Catalog Cuts",
-    specSection: "08 71 00",
-    specTitle: "Door Hardware",
-    submittedBy: "Pacific Door & Hardware",
-    reviewer: "Whitfield Architects",
-    status: "under-review",
-    submitDate: "2026-02-06",
-    requiredDate: "2026-02-20",
-    ballInCourt: "Architect",
-  },
-]
-
 const FILTER_TABS = [
   { key: "all", label: "All" },
   { key: "pending", label: "Pending" },
@@ -203,37 +72,25 @@ export default function SubmittalsPage() {
   const [search, setSearch] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState<string>("all")
 
-  const filtered = React.useMemo(() => {
-    return MOCK_SUBMITTALS.filter((s) => {
-      if (statusFilter !== "all" && s.status !== statusFilter) return false
-      if (search) {
-        const q = search.toLowerCase()
-        return (
-          s.number.toLowerCase().includes(q) ||
-          s.title.toLowerCase().includes(q) ||
-          s.specSection.includes(q) ||
-          s.submittedBy.toLowerCase().includes(q)
-        )
-      }
-      return true
-    })
-  }, [search, statusFilter])
+  const { data, isLoading } = useSubmittals({ status: statusFilter !== "all" ? statusFilter : undefined, search: search || undefined })
+  const submittals = data?.items ?? []
 
-  const stats = React.useMemo(
-    () => ({
-      total: MOCK_SUBMITTALS.length,
-      pending: MOCK_SUBMITTALS.filter(
-        (s) => s.status === "pending" || s.status === "under-review"
-      ).length,
-      approved: MOCK_SUBMITTALS.filter(
-        (s) => s.status === "approved" || s.status === "approved-as-noted"
-      ).length,
-      rejected: MOCK_SUBMITTALS.filter((s) => s.status === "rejected").length,
-      revise: MOCK_SUBMITTALS.filter((s) => s.status === "revise-resubmit")
-        .length,
-    }),
-    []
-  )
+  if (isLoading) return (<div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-gray-400" /></div>)
+
+  const filtered = submittals
+
+  const stats = {
+    total: submittals.length,
+    pending: submittals.filter(
+      (s) => s.status === "pending" || s.status === "under-review"
+    ).length,
+    approved: submittals.filter(
+      (s) => s.status === "approved" || s.status === "approved-as-noted"
+    ).length,
+    rejected: submittals.filter((s) => s.status === "rejected").length,
+    revise: submittals.filter((s) => s.status === "revise-resubmit")
+      .length,
+  }
 
   return (
     <div className="space-y-6">

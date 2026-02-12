@@ -9,6 +9,7 @@ import {
   ClipboardCheck,
   ClipboardList,
   Clock,
+  Loader2,
   Plus,
   Search,
   User,
@@ -18,6 +19,7 @@ import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { cn } from "@/lib/utils"
+import { useToolboxTalks } from "@/hooks/useSafety"
 
 type TalkCategory =
   | "fall-protection"
@@ -67,97 +69,42 @@ const STATUS_STYLES: Record<TalkStatus, string> = {
   cancelled: "bg-gray-100 text-gray-800",
 }
 
-const MOCK_TALKS: ToolboxTalk[] = [
-  {
-    id: "1", title: "Fall Protection Refresher", date: "2026-02-14", time: "7:00 AM",
-    presenter: "Dave Martinez", attendeeCount: 24, category: "fall-protection",
-    status: "scheduled", duration: "30 min", location: "Site Trailer - Conference Room",
-    description: "Review of fall protection requirements for all workers on the project, including harness inspection, tie-off points, and guardrail systems.",
-  },
-  {
-    id: "2", title: "Electrical Safety - Lockout/Tagout Procedures", date: "2026-02-18", time: "7:00 AM",
-    presenter: "Lisa Chen", attendeeCount: 18, category: "electrical-safety",
-    status: "scheduled", duration: "45 min", location: "Site Trailer - Conference Room",
-    description: "Lockout/tagout procedures for all electrical panels and equipment. Includes hands-on demonstration with practice locks.",
-  },
-  {
-    id: "3", title: "Excavation Safety & Trench Protocol", date: "2026-02-21", time: "6:30 AM",
-    presenter: "Carlos Rivera", attendeeCount: 12, category: "excavation",
-    status: "scheduled", duration: "30 min", location: "Building A - Staging Area",
-    description: "Safe excavation practices including trench inspection, shoring requirements, and emergency rescue procedures for work near utility trenches.",
-  },
-  {
-    id: "4", title: "PPE Requirements & Inspection", date: "2026-02-07", time: "7:00 AM",
-    presenter: "Angela Cruz", attendeeCount: 32, category: "ppe",
-    status: "completed", duration: "20 min", location: "Site Trailer - Conference Room",
-    description: "Review of project-specific PPE requirements, proper inspection of hard hats, safety glasses, high-vis vests, and steel-toe boots.",
-  },
-  {
-    id: "5", title: "Heat Stress Prevention & Hydration", date: "2026-02-03", time: "6:30 AM",
-    presenter: "Dave Martinez", attendeeCount: 28, category: "heat-stress",
-    status: "completed", duration: "25 min", location: "Building A - Staging Area",
-    description: "Recognizing signs of heat exhaustion and heat stroke. Hydration schedules, shade break requirements, and buddy system protocols.",
-  },
-  {
-    id: "6", title: "Scaffolding Safety & Inspection Checklist", date: "2026-01-28", time: "7:00 AM",
-    presenter: "Tom Reeves", attendeeCount: 16, category: "scaffolding",
-    status: "completed", duration: "35 min", location: "Building B - Ground Level",
-    description: "Scaffold erection and dismantling safety. Daily inspection requirements, load capacity awareness, and fall protection on scaffolds.",
-  },
-  {
-    id: "7", title: "Electrical Hazard Awareness for Non-Electrical Workers", date: "2026-01-21", time: "7:00 AM",
-    presenter: "Lisa Chen", attendeeCount: 22, category: "electrical-safety",
-    status: "completed", duration: "30 min", location: "Site Trailer - Conference Room",
-    description: "Recognizing electrical hazards in the field. Safe practices around energized equipment, overhead power lines, and temporary power systems.",
-  },
-  {
-    id: "8", title: "Fall Protection for Roof Work", date: "2026-01-14", time: "6:30 AM",
-    presenter: "Carlos Rivera", attendeeCount: 14, category: "fall-protection",
-    status: "completed", duration: "40 min", location: "Building B - Ground Level",
-    description: "Specific fall protection requirements for roofing activities. Includes guardrail systems, safety nets, and personal fall arrest systems for leading edge work.",
-  },
-]
-
-const MOCK_SIGN_IN = [
-  { name: "Jake Wilson", company: "Torres Construction", signed: true, time: "6:55 AM" },
-  { name: "Maria Santos", company: "Pacific Steel", signed: true, time: "6:58 AM" },
-  { name: "Tom Reeves", company: "Custom Cabinets LLC", signed: true, time: "7:01 AM" },
-  { name: "Angela Cruz", company: "ProCoat Painting", signed: true, time: "6:52 AM" },
-  { name: "Roberto Diaz", company: "Valley Plumbing", signed: false, time: "" },
-]
-
 export default function ToolboxTalksPage() {
   const [search, setSearch] = React.useState("")
   const [categoryFilter, setCategoryFilter] = React.useState<string>("all")
   const [selectedTalkId, setSelectedTalkId] = React.useState<string | null>(null)
 
+  const { data, isLoading } = useToolboxTalks({
+    category: categoryFilter !== "all" ? categoryFilter : undefined,
+    search: search || undefined,
+  })
+  const talks: ToolboxTalk[] = data?.items ?? []
+  const signIn: { name: string; company: string; signed: boolean; time: string }[] = data?.signIn ?? []
+
   const filtered = React.useMemo(() => {
-    return MOCK_TALKS.filter((talk) => {
-      if (categoryFilter !== "all" && talk.category !== categoryFilter) return false
-      if (search) {
-        const q = search.toLowerCase()
-        return (
-          talk.title.toLowerCase().includes(q) ||
-          talk.presenter.toLowerCase().includes(q) ||
-          talk.description.toLowerCase().includes(q)
-        )
-      }
-      return true
-    })
-  }, [search, categoryFilter])
+    return talks
+  }, [talks])
 
   const stats = React.useMemo(
     () => ({
-      total: MOCK_TALKS.length,
-      completed: MOCK_TALKS.filter((t) => t.status === "completed").length,
-      upcoming: MOCK_TALKS.filter((t) => t.status === "scheduled").length,
-      totalAttendees: MOCK_TALKS.filter((t) => t.status === "completed").reduce(
+      total: talks.length,
+      completed: talks.filter((t) => t.status === "completed").length,
+      upcoming: talks.filter((t) => t.status === "scheduled").length,
+      totalAttendees: talks.filter((t) => t.status === "completed").reduce(
         (sum, t) => sum + t.attendeeCount,
         0
       ),
     }),
-    []
+    [talks]
   )
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -306,9 +253,9 @@ export default function ToolboxTalksPage() {
               {selectedTalkId ? (
                 <div className="space-y-3">
                   <p className="text-sm text-gray-600 mb-4">
-                    {MOCK_TALKS.find((t) => t.id === selectedTalkId)?.title}
+                    {talks.find((t) => t.id === selectedTalkId)?.title}
                   </p>
-                  {MOCK_SIGN_IN.map((worker, i) => (
+                  {signIn.length > 0 ? signIn.map((worker, i) => (
                     <div
                       key={i}
                       className="flex items-center justify-between border rounded-lg p-3"
@@ -343,12 +290,16 @@ export default function ToolboxTalksPage() {
                         )}
                       </div>
                     </div>
-                  ))}
-                  <div className="pt-2 border-t mt-3">
-                    <p className="text-xs text-gray-500">
-                      {MOCK_SIGN_IN.filter((w) => w.signed).length} of {MOCK_SIGN_IN.length} signed in
-                    </p>
-                  </div>
+                  )) : (
+                    <p className="text-sm text-gray-400 text-center py-4">Select a talk to view sign-in records</p>
+                  )}
+                  {signIn.length > 0 && (
+                    <div className="pt-2 border-t mt-3">
+                      <p className="text-xs text-gray-500">
+                        {signIn.filter((w) => w.signed).length} of {signIn.length} signed in
+                      </p>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-400">

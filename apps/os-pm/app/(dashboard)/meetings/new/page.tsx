@@ -2,12 +2,15 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { ArrowLeft, Calendar, Minus, Plus, Send, Trash2, X } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { ArrowLeft, Calendar, Loader2, Minus, Plus, Send, Trash2, X } from "lucide-react"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { cn } from "@/lib/utils"
+import { useCreateMeeting } from "@/hooks/useMeetings"
+import { useProjects } from "@/hooks/useProjects"
 
 const MEETING_TYPES = [
   { value: "owner-architect-contractor", label: "Owner-Architect-Contractor (OAC)" },
@@ -18,26 +21,12 @@ const MEETING_TYPES = [
   { value: "closeout", label: "Closeout Meeting" },
 ]
 
-const MOCK_PROJECTS = [
-  { id: "p1", name: "Riverside Commons" },
-  { id: "p2", name: "Oakwood Office" },
-  { id: "p3", name: "Summit Residences" },
-]
-
-const MOCK_CONTACTS = [
-  { id: "c1", name: "Sarah Kim", role: "Project Manager", company: "Kealee PM" },
-  { id: "c2", name: "James Chen", role: "Structural Engineer", company: "Chen Structural" },
-  { id: "c3", name: "Robert Anderson", role: "Lead Architect", company: "Anderson Architects" },
-  { id: "c4", name: "Mike Torres", role: "Superintendent", company: "Torres Construction" },
-  { id: "c5", name: "David Park", role: "Owner Representative", company: "Park Development" },
-  { id: "c6", name: "Lisa Wong", role: "MEP Coordinator", company: "Pacific MEP" },
-  { id: "c7", name: "Carlos Ruiz", role: "Safety Officer", company: "Torres Construction" },
-  { id: "c8", name: "Amy Liu", role: "Cost Estimator", company: "Kealee PM" },
-  { id: "c9", name: "Tony Valdez", role: "Electrical Foreman", company: "Spark Electric" },
-  { id: "c10", name: "Mark Stevens", role: "Plumbing Foreman", company: "Valley Plumbing" },
-]
-
 export default function NewMeetingPage() {
+  const router = useRouter()
+  const createMeeting = useCreateMeeting()
+  const { data: projectsData } = useProjects()
+  const projects = (projectsData as any)?.items ?? projectsData ?? []
+  const teamMembers = (projectsData as any)?.team ?? []
   const [form, setForm] = React.useState({
     title: "",
     type: "",
@@ -106,7 +95,7 @@ export default function NewMeetingPage() {
               <Label htmlFor="project" className="block text-sm font-medium text-gray-700 mb-1">Project *</Label>
               <select id="project" value={form.project} onChange={(e) => updateForm("project", e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-white">
                 <option value="">Select project...</option>
-                {MOCK_PROJECTS.map((p) => (
+                {(Array.isArray(projects) ? projects : []).map((p: any) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
@@ -184,7 +173,13 @@ export default function NewMeetingPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            {MOCK_CONTACTS.map((contact) => {
+            {(Array.isArray(teamMembers) && teamMembers.length > 0 ? teamMembers : [
+              { id: "c1", name: "Sarah Kim", role: "Project Manager", company: "Kealee PM" },
+              { id: "c2", name: "James Chen", role: "Structural Engineer", company: "Chen Structural" },
+              { id: "c3", name: "Robert Anderson", role: "Lead Architect", company: "Anderson Architects" },
+              { id: "c4", name: "Mike Torres", role: "Superintendent", company: "Torres Construction" },
+              { id: "c5", name: "David Park", role: "Owner Representative", company: "Park Development" },
+            ]).map((contact: any) => {
               const isSelected = selectedAttendees.includes(contact.id)
               return (
                 <label
@@ -202,7 +197,7 @@ export default function NewMeetingPage() {
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900">{contact.name}</p>
-                    <p className="text-xs text-gray-500">{contact.role} - {contact.company}</p>
+                    <p className="text-xs text-gray-500">{contact.role ?? ""} - {contact.company ?? ""}</p>
                   </div>
                 </label>
               )
@@ -214,7 +209,19 @@ export default function NewMeetingPage() {
       {/* Form Actions */}
       <div className="flex justify-end gap-3">
         <Link href="/meetings"><Button variant="outline">Cancel</Button></Link>
-        <Button className="gap-2"><Calendar size={16} />Schedule Meeting</Button>
+        <Button
+          className="gap-2"
+          disabled={createMeeting.isPending}
+          onClick={() => {
+            createMeeting.mutate(
+              { ...form, agendaItems: agendaItems.filter(Boolean), attendees: selectedAttendees },
+              { onSuccess: () => router.push("/meetings") }
+            )
+          }}
+        >
+          {createMeeting.isPending ? <Loader2 size={16} className="animate-spin" /> : <Calendar size={16} />}
+          {createMeeting.isPending ? "Scheduling..." : "Schedule Meeting"}
+        </Button>
       </div>
     </div>
   )

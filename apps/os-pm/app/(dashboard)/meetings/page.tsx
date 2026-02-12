@@ -2,11 +2,12 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Calendar, CheckSquare, Clock, Filter, MapPin, Plus, Search, Users } from "lucide-react"
+import { Calendar, CheckSquare, Clock, Filter, Loader2, MapPin, Plus, Search, Users } from "lucide-react"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { cn } from "@/lib/utils"
+import { useMeetings } from "@/hooks/useMeetings"
 
 type MeetingType = "owner-architect-contractor" | "progress" | "safety" | "coordination" | "pre-construction" | "closeout"
 type MeetingStatus = "scheduled" | "in-progress" | "completed" | "cancelled"
@@ -71,118 +72,39 @@ const ATTENDEE_COLORS = [
   "bg-teal-100 text-teal-700",
 ]
 
-const MOCK_MEETINGS: Meeting[] = [
-  {
-    id: "1", title: "Weekly OAC Meeting #14", date: "2026-02-16", time: "10:00 AM - 11:30 AM",
-    location: "Riverside Commons - Jobsite Trailer", type: "owner-architect-contractor", status: "scheduled",
-    attendees: [
-      { name: "Sarah Kim", initials: "SK", color: ATTENDEE_COLORS[0] },
-      { name: "James Chen", initials: "JC", color: ATTENDEE_COLORS[1] },
-      { name: "Robert Anderson", initials: "RA", color: ATTENDEE_COLORS[2] },
-      { name: "Mike Torres", initials: "MT", color: ATTENDEE_COLORS[3] },
-    ],
-    actionItems: 6, project: "Riverside Commons",
-  },
-  {
-    id: "2", title: "Bi-Weekly Progress Meeting", date: "2026-02-17", time: "2:00 PM - 3:00 PM",
-    location: "Conference Room B - Main Office", type: "progress", status: "scheduled",
-    attendees: [
-      { name: "Sarah Kim", initials: "SK", color: ATTENDEE_COLORS[0] },
-      { name: "David Park", initials: "DP", color: ATTENDEE_COLORS[4] },
-      { name: "Lisa Wong", initials: "LW", color: ATTENDEE_COLORS[5] },
-    ],
-    actionItems: 3, project: "Oakwood Office",
-  },
-  {
-    id: "3", title: "Safety Orientation - New Subcontractors", date: "2026-02-18", time: "7:00 AM - 8:00 AM",
-    location: "Riverside Commons - Jobsite Trailer", type: "safety", status: "scheduled",
-    attendees: [
-      { name: "Mike Torres", initials: "MT", color: ATTENDEE_COLORS[3] },
-      { name: "Carlos Ruiz", initials: "CR", color: ATTENDEE_COLORS[1] },
-      { name: "Tony Valdez", initials: "TV", color: ATTENDEE_COLORS[2] },
-    ],
-    actionItems: 0, project: "Riverside Commons",
-  },
-  {
-    id: "4", title: "MEP Coordination Meeting", date: "2026-02-14", time: "9:00 AM - 10:30 AM",
-    location: "Virtual - Microsoft Teams", type: "coordination", status: "in-progress",
-    attendees: [
-      { name: "James Chen", initials: "JC", color: ATTENDEE_COLORS[1] },
-      { name: "Sarah Kim", initials: "SK", color: ATTENDEE_COLORS[0] },
-      { name: "Amy Liu", initials: "AL", color: ATTENDEE_COLORS[5] },
-      { name: "Mark Stevens", initials: "MS", color: ATTENDEE_COLORS[4] },
-      { name: "Tony Valdez", initials: "TV", color: ATTENDEE_COLORS[2] },
-    ],
-    actionItems: 4, project: "Summit Residences",
-  },
-  {
-    id: "5", title: "Pre-Construction Kickoff - Phase 2", date: "2026-02-20", time: "1:00 PM - 3:00 PM",
-    location: "Main Office - Large Conference Room", type: "pre-construction", status: "scheduled",
-    attendees: [
-      { name: "Sarah Kim", initials: "SK", color: ATTENDEE_COLORS[0] },
-      { name: "Robert Anderson", initials: "RA", color: ATTENDEE_COLORS[2] },
-      { name: "David Park", initials: "DP", color: ATTENDEE_COLORS[4] },
-      { name: "Lisa Wong", initials: "LW", color: ATTENDEE_COLORS[5] },
-      { name: "Mike Torres", initials: "MT", color: ATTENDEE_COLORS[3] },
-      { name: "James Chen", initials: "JC", color: ATTENDEE_COLORS[1] },
-    ],
-    actionItems: 0, project: "Riverside Commons",
-  },
-  {
-    id: "6", title: "Weekly OAC Meeting #13", date: "2026-02-09", time: "10:00 AM - 11:30 AM",
-    location: "Riverside Commons - Jobsite Trailer", type: "owner-architect-contractor", status: "completed",
-    attendees: [
-      { name: "Sarah Kim", initials: "SK", color: ATTENDEE_COLORS[0] },
-      { name: "James Chen", initials: "JC", color: ATTENDEE_COLORS[1] },
-      { name: "Robert Anderson", initials: "RA", color: ATTENDEE_COLORS[2] },
-      { name: "Mike Torres", initials: "MT", color: ATTENDEE_COLORS[3] },
-    ],
-    actionItems: 8, project: "Riverside Commons",
-  },
-  {
-    id: "7", title: "Project Closeout Review", date: "2026-02-07", time: "3:00 PM - 4:30 PM",
-    location: "Main Office - Conference Room A", type: "closeout", status: "completed",
-    attendees: [
-      { name: "Sarah Kim", initials: "SK", color: ATTENDEE_COLORS[0] },
-      { name: "David Park", initials: "DP", color: ATTENDEE_COLORS[4] },
-      { name: "Robert Anderson", initials: "RA", color: ATTENDEE_COLORS[2] },
-    ],
-    actionItems: 5, project: "Oakwood Office",
-  },
-  {
-    id: "8", title: "Safety Stand-Down Meeting", date: "2026-02-03", time: "7:00 AM - 8:30 AM",
-    location: "Summit Residences - Jobsite", type: "safety", status: "cancelled",
-    attendees: [
-      { name: "Mike Torres", initials: "MT", color: ATTENDEE_COLORS[3] },
-      { name: "Carlos Ruiz", initials: "CR", color: ATTENDEE_COLORS[1] },
-    ],
-    actionItems: 0, project: "Summit Residences",
-  },
-]
-
 export default function MeetingsPage() {
   const [search, setSearch] = React.useState("")
   const [tab, setTab] = React.useState<"upcoming" | "past" | "all">("upcoming")
 
+  const typeFilter = tab === "upcoming" ? "upcoming" : tab === "past" ? "past" : undefined
+  const { data, isLoading } = useMeetings({
+    type: typeFilter,
+    search: search || undefined,
+  })
+  const meetings: Meeting[] = data?.items ?? []
+
   const filtered = React.useMemo(() => {
-    const now = new Date()
-    return MOCK_MEETINGS.filter((m) => {
+    return meetings.filter((m) => {
       if (tab === "upcoming" && (m.status === "completed" || m.status === "cancelled")) return false
       if (tab === "past" && m.status !== "completed" && m.status !== "cancelled") return false
-      if (search) {
-        const q = search.toLowerCase()
-        return m.title.toLowerCase().includes(q) || m.project.toLowerCase().includes(q) || m.location.toLowerCase().includes(q)
-      }
       return true
     })
-  }, [search, tab])
+  }, [meetings, tab])
 
   const stats = React.useMemo(() => ({
-    total: MOCK_MEETINGS.length,
-    upcoming: MOCK_MEETINGS.filter((m) => m.status === "scheduled" || m.status === "in-progress").length,
-    completed: MOCK_MEETINGS.filter((m) => m.status === "completed").length,
-    actionItems: MOCK_MEETINGS.reduce((sum, m) => sum + m.actionItems, 0),
-  }), [])
+    total: meetings.length,
+    upcoming: meetings.filter((m) => m.status === "scheduled" || m.status === "in-progress").length,
+    completed: meetings.filter((m) => m.status === "completed").length,
+    actionItems: meetings.reduce((sum, m) => sum + (m.actionItems ?? 0), 0),
+  }), [meetings])
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

@@ -2,9 +2,11 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   FileUp,
+  Loader2,
   Plus,
   Save,
   Send,
@@ -15,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { cn } from "@/lib/utils"
+import { useCreateChangeOrder } from "@/hooks/useChangeOrders"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -69,6 +72,8 @@ function formatCurrency(value: number): string {
 // ---------------------------------------------------------------------------
 
 export default function NewChangeOrderPage() {
+  const router = useRouter()
+  const createChangeOrder = useCreateChangeOrder()
   const [form, setForm] = React.useState({
     project: "",
     title: "",
@@ -412,13 +417,32 @@ export default function NewChangeOrderPage() {
         <Link href="/change-orders">
           <Button variant="outline">Cancel</Button>
         </Link>
-        <Button variant="outline" className="gap-2">
-          <Save size={16} />
+        <Button
+          variant="outline"
+          className="gap-2"
+          disabled={createChangeOrder.isPending}
+          onClick={() => {
+            createChangeOrder.mutate(
+              { ...form, lineItems, status: "draft" },
+              { onSuccess: () => router.push("/change-orders") }
+            )
+          }}
+        >
+          {createChangeOrder.isPending ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
           Save Draft
         </Button>
-        <Button className="gap-2">
-          <Send size={16} />
-          Submit for Approval
+        <Button
+          className="gap-2"
+          disabled={createChangeOrder.isPending}
+          onClick={() => {
+            createChangeOrder.mutate(
+              { ...form, lineItems, status: "submitted" },
+              { onSuccess: () => router.push("/change-orders") }
+            )
+          }}
+        >
+          {createChangeOrder.isPending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+          {createChangeOrder.isPending ? "Submitting..." : "Submit for Approval"}
         </Button>
       </div>
     </div>

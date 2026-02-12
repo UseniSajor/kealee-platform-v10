@@ -10,6 +10,7 @@ import {
   CheckCircle,
   Clock,
   ExternalLink,
+  Loader2,
   MessageSquare,
   Minus,
   Package,
@@ -20,92 +21,34 @@ import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { cn } from "@/lib/utils"
+import { useSelection } from "@/hooks/useSelections"
 
-interface SelectionOption {
-  id: string
-  name: string
-  manufacturer: string
-  price: number
-  leadTime: string
-  specs: string[]
-  isSelected: boolean
-}
-
-const MOCK_SELECTION = {
-  id: "SEL-002",
-  category: "Countertops",
-  itemName: "Kitchen Island Countertop",
-  room: "Kitchen",
-  project: "Riverside Commons",
-  allowanceBudget: 6000,
-  selectedOptionId: "OPT-2",
-  selectedCost: 7800,
-  status: "ordered" as const,
-  dueDate: "2026-02-15",
-  notes: "Owner prefers light-colored quartz with subtle veining. Island is 4ft x 8ft with waterfall edge on one side.",
-}
-
-const MOCK_OPTIONS: SelectionOption[] = [
-  {
-    id: "OPT-1",
-    name: "Granite - Colonial White",
-    manufacturer: "MSI Surfaces",
-    price: 4800,
-    leadTime: "2-3 weeks",
-    specs: ["3cm thick slab", "Polished finish", "Natural stone - each slab unique", "Sealed on-site", "Heat resistant"],
-    isSelected: false,
-  },
-  {
-    id: "OPT-2",
-    name: "Quartz - Brittanicca",
-    manufacturer: "Cambria",
-    price: 7800,
-    leadTime: "3-4 weeks",
-    specs: ["3cm thick slab", "Polished finish", "Non-porous surface", "No sealing required", "Stain resistant", "10-year limited warranty"],
-    isSelected: true,
-  },
-  {
-    id: "OPT-3",
-    name: "Quartz - Calacatta Classique",
-    manufacturer: "Silestone",
-    price: 6200,
-    leadTime: "2-3 weeks",
-    specs: ["2cm thick slab", "Suede finish available", "HybriQ+ technology", "N-Boost treatment", "25-year warranty"],
-    isSelected: false,
-  },
-  {
-    id: "OPT-4",
-    name: "Marble - Calacatta Gold",
-    manufacturer: "Italy Import - Polycor",
-    price: 11500,
-    leadTime: "6-8 weeks",
-    specs: ["3cm thick slab", "Honed or polished", "Natural stone - unique veining", "Requires periodic sealing", "Premium grade import"],
-    isSelected: false,
-  },
-]
-
-const WORKFLOW_STEPS = [
-  { label: "Selection Made", status: "complete" as const, date: "Feb 5" },
-  { label: "Owner Approved", status: "complete" as const, date: "Feb 8" },
-  { label: "Ordered", status: "active" as const, date: "Feb 10" },
-  { label: "Delivered", status: "pending" as const, date: "---" },
-  { label: "Installed", status: "pending" as const, date: "---" },
-]
-
-const COMMENTS = [
-  { id: "c1", user: "John Mitchell", role: "Owner", date: "2026-02-05", content: "We love the Cambria Brittanicca. The veining pattern is exactly what we were looking for. Please proceed with ordering." },
-  { id: "c2", user: "Sarah Kim", role: "Project Manager", date: "2026-02-08", content: "Approved by owner. Note this is $1,800 over allowance. Change order CO-014 initiated for the overage." },
-  { id: "c3", user: "Mike Torres", role: "Site Superintendent", date: "2026-02-10", content: "Order placed with Cambria. Template scheduled for Feb 20 after cabinets are set. Expected fabrication 2 weeks after template." },
-]
 
 function formatCurrency(n: number) {
   return "$" + n.toLocaleString()
 }
 
-export default function SelectionDetailPage() {
+export default function SelectionDetailPage({ params }: { params: { id: string } }) {
   const [comment, setComment] = React.useState("")
-  const sel = MOCK_SELECTION
-  const variance = sel.selectedCost - sel.allowanceBudget
+  const { data: selection, isLoading } = useSelection(params.id)
+
+  if (isLoading) return (
+    <div className="flex items-center justify-center h-64">
+      <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+    </div>
+  )
+
+  if (!selection) return (
+    <div className="flex items-center justify-center h-64">
+      <p className="text-gray-500">Selection not found</p>
+    </div>
+  )
+
+  const sel = selection
+  const options = selection.options ?? []
+  const workflowSteps = selection.workflowSteps ?? []
+  const comments = selection.comments ?? []
+  const variance = (sel.selectedCost ?? 0) - (sel.allowanceBudget ?? 0)
 
   return (
     <div className="space-y-6">
@@ -156,7 +99,7 @@ export default function SelectionDetailPage() {
         <CardHeader><CardTitle>Approval Workflow</CardTitle></CardHeader>
         <CardContent>
           <div className="flex items-center justify-between max-w-2xl mx-auto">
-            {WORKFLOW_STEPS.map((step, i) => (
+            {workflowSteps.map((step, i) => (
               <React.Fragment key={step.label}>
                 <div className="flex flex-col items-center gap-1">
                   <div className={cn(
@@ -172,7 +115,7 @@ export default function SelectionDetailPage() {
                   <p className={cn("text-xs font-medium text-center", step.status === "pending" ? "text-gray-400" : "text-gray-700")}>{step.label}</p>
                   <p className="text-[10px] text-gray-400">{step.date}</p>
                 </div>
-                {i < WORKFLOW_STEPS.length - 1 && (
+                {i < workflowSteps.length - 1 && (
                   <div className={cn("flex-1 h-0.5 mx-2", i < 2 ? "bg-green-500" : "bg-gray-200")} />
                 )}
               </React.Fragment>
@@ -184,7 +127,7 @@ export default function SelectionDetailPage() {
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Options Comparison</h2>
         <div className="grid md:grid-cols-2 gap-4">
-          {MOCK_OPTIONS.map((opt) => {
+          {options.map((opt) => {
             const optVariance = opt.price - sel.allowanceBudget
             return (
               <Card key={opt.id} className={cn("transition-shadow", opt.isSelected && "ring-2 ring-blue-500 shadow-md")}>
@@ -243,7 +186,7 @@ export default function SelectionDetailPage() {
       <Card>
         <CardHeader><CardTitle>Comments</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          {COMMENTS.map((c) => (
+          {comments.map((c) => (
             <div key={c.id} className="border rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">

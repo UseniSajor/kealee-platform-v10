@@ -9,6 +9,7 @@ import {
   Clock,
   FileText,
   Filter,
+  Loader2,
   Search,
   Shield,
   ShieldAlert,
@@ -16,6 +17,7 @@ import {
   ShieldX,
   Wrench,
 } from "lucide-react"
+import { useWarranties } from "@/hooks/useWarranty"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
@@ -66,26 +68,6 @@ const CLAIM_STATUS_STYLES: Record<ClaimStatus, string> = {
   denied: "bg-red-100 text-red-800",
 }
 
-const MOCK_WARRANTIES: WarrantyItem[] = [
-  { id: "W-001", system: "Roofing - TPO Membrane", contractor: "Summit Roofing Inc.", startDate: "2025-08-15", endDate: "2045-08-15", duration: "20 years", status: "active", claimsCount: 0, project: "Riverside Commons" },
-  { id: "W-002", system: "HVAC - RTU Units (3)", contractor: "Pacific Mechanical", startDate: "2025-11-01", endDate: "2030-11-01", duration: "5 years", status: "active", claimsCount: 1, project: "Riverside Commons" },
-  { id: "W-003", system: "Plumbing - Piping & Fixtures", contractor: "Valley Plumbing Co.", startDate: "2025-09-20", endDate: "2026-09-20", duration: "1 year", status: "active", claimsCount: 1, project: "Riverside Commons" },
-  { id: "W-004", system: "Electrical - Main Distribution", contractor: "Spark Electric LLC", startDate: "2025-10-10", endDate: "2026-10-10", duration: "1 year", status: "active", claimsCount: 0, project: "Riverside Commons" },
-  { id: "W-005", system: "Windows - Aluminum Storefront", contractor: "ClearView Glass & Glazing", startDate: "2025-07-01", endDate: "2035-07-01", duration: "10 years", status: "active", claimsCount: 0, project: "Riverside Commons" },
-  { id: "W-006", system: "Flooring - Hardwood (Common Areas)", contractor: "Heritage Floor Co.", startDate: "2025-12-01", endDate: "2026-12-01", duration: "1 year", status: "active", claimsCount: 1, project: "Riverside Commons" },
-  { id: "W-007", system: "Interior Paint - All Surfaces", contractor: "Pro Coat Painters", startDate: "2025-06-15", endDate: "2026-03-15", duration: "9 months", status: "expiring", claimsCount: 0, project: "Oakwood Office" },
-  { id: "W-008", system: "Appliances - Kitchen Package", contractor: "Sub-Zero / Wolf (Mfg)", startDate: "2025-11-15", endDate: "2027-11-15", duration: "2 years", status: "active", claimsCount: 1, project: "Riverside Commons" },
-  { id: "W-009", system: "Elevator - Hydraulic Passenger", contractor: "Otis Elevator Company", startDate: "2025-10-01", endDate: "2026-10-01", duration: "1 year", status: "active", claimsCount: 0, project: "Summit Residences" },
-  { id: "W-010", system: "Fire Suppression - Sprinkler System", contractor: "Guardian Fire Protection", startDate: "2025-04-01", endDate: "2026-04-01", duration: "1 year", status: "expiring", claimsCount: 0, project: "Oakwood Office" },
-]
-
-const MOCK_CLAIMS: WarrantyClaim[] = [
-  { id: "CLM-001", warrantyId: "W-002", itemSystem: "HVAC - RTU Units", issueDescription: "RTU-2 compressor cycling on and off repeatedly. Excessive noise during startup. Unit not maintaining set temperature in Zone 3.", reportedDate: "2026-02-05", status: "in-progress", assignedTo: "Pacific Mechanical", priority: "high" },
-  { id: "CLM-002", warrantyId: "W-003", itemSystem: "Plumbing - Fixtures", issueDescription: "Second floor restroom faucet leaking at base. Slow drip from hot water supply connection under vanity.", reportedDate: "2026-02-08", status: "open", assignedTo: "Valley Plumbing Co.", priority: "medium" },
-  { id: "CLM-003", warrantyId: "W-006", itemSystem: "Flooring - Hardwood", issueDescription: "Cupping visible on 3 hardwood planks near exterior wall in lobby. Possible moisture intrusion from below.", reportedDate: "2026-01-20", status: "resolved", assignedTo: "Heritage Floor Co.", priority: "medium" },
-  { id: "CLM-004", warrantyId: "W-008", itemSystem: "Appliances - Refrigerator", issueDescription: "Sub-Zero refrigerator ice maker not producing ice. Water supply confirmed connected and pressurized. Display shows error code E4.", reportedDate: "2026-02-10", status: "open", assignedTo: "Sub-Zero / Wolf (Mfg)", priority: "low" },
-]
-
 function formatDate(d: string) {
   return new Date(d + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
 }
@@ -98,23 +80,20 @@ export default function WarrantyPage() {
   const [search, setSearch] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState<string>("all")
 
-  const filteredWarranties = React.useMemo(() => {
-    return MOCK_WARRANTIES.filter((w) => {
-      if (statusFilter !== "all" && w.status !== statusFilter) return false
-      if (search) {
-        const q = search.toLowerCase()
-        return w.system.toLowerCase().includes(q) || w.contractor.toLowerCase().includes(q)
-      }
-      return true
-    })
-  }, [search, statusFilter])
+  const { data, isLoading } = useWarranties({ status: statusFilter !== "all" ? statusFilter : undefined, search: search || undefined })
+  const warranties = data?.items ?? []
+  const claims = data?.claims ?? []
 
-  const stats = React.useMemo(() => ({
-    active: MOCK_WARRANTIES.filter((w) => w.status === "active").length,
-    expiring: MOCK_WARRANTIES.filter((w) => w.status === "expiring").length,
-    openClaims: MOCK_CLAIMS.filter((c) => c.status === "open" || c.status === "in-progress").length,
-    resolvedClaims: MOCK_CLAIMS.filter((c) => c.status === "resolved").length,
-  }), [])
+  if (isLoading) return (<div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-gray-400" /></div>)
+
+  const filteredWarranties = warranties
+
+  const stats = {
+    active: warranties.filter((w) => w.status === "active").length,
+    expiring: warranties.filter((w) => w.status === "expiring").length,
+    openClaims: claims.filter((c) => c.status === "open" || c.status === "in-progress").length,
+    resolvedClaims: claims.filter((c) => c.status === "resolved").length,
+  }
 
   return (
     <div className="space-y-6">
@@ -218,7 +197,7 @@ export default function WarrantyPage() {
           <CardTitle className="flex items-center gap-2"><Wrench size={20} />Active Warranty Claims</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {MOCK_CLAIMS.map((claim) => (
+          {claims.map((claim) => (
             <div key={claim.id} className={cn("border rounded-lg p-4", claim.priority === "high" && "border-red-200 bg-red-50/30")}>
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
                 <div className="flex items-center gap-3">

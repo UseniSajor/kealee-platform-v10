@@ -10,6 +10,7 @@ import {
   Clock,
   DollarSign,
   Filter,
+  Loader2,
   Minus,
   Package,
   Plus,
@@ -17,6 +18,7 @@ import {
   ShoppingCart,
   Tag,
 } from "lucide-react"
+import { useSelections } from "@/hooks/useSelections"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
@@ -59,24 +61,6 @@ const CATEGORY_COLORS: Record<CategoryType, string> = {
 
 const CATEGORIES: ("All" | CategoryType)[] = ["All", "Flooring", "Countertops", "Fixtures", "Lighting", "Appliances", "Cabinets", "Paint", "Tile"]
 
-const MOCK_SELECTIONS: Selection[] = [
-  { id: "SEL-001", category: "Flooring", itemName: "Master Bedroom Hardwood", selectedOption: "White Oak 5\" Engineered", allowanceBudget: 8500, selectedCost: 9200, status: "approved", dueDate: "2026-02-20", project: "Riverside Commons", room: "Master Suite" },
-  { id: "SEL-002", category: "Countertops", itemName: "Kitchen Island Countertop", selectedOption: "Cambria Quartz - Brittanicca", allowanceBudget: 6000, selectedCost: 7800, status: "ordered", dueDate: "2026-02-15", project: "Riverside Commons", room: "Kitchen" },
-  { id: "SEL-003", category: "Fixtures", itemName: "Master Bath Faucet Set", selectedOption: "Kohler Purist - Brushed Nickel", allowanceBudget: 1200, selectedCost: 980, status: "approved", dueDate: "2026-03-01", project: "Riverside Commons", room: "Master Bath" },
-  { id: "SEL-004", category: "Lighting", itemName: "Dining Room Chandelier", selectedOption: null, allowanceBudget: 2500, selectedCost: null, status: "pending", dueDate: "2026-03-10", project: "Riverside Commons", room: "Dining Room" },
-  { id: "SEL-005", category: "Appliances", itemName: "Kitchen Range", selectedOption: "Wolf 36\" Dual Fuel Range", allowanceBudget: 8000, selectedCost: 9450, status: "ordered", dueDate: "2026-02-10", project: "Riverside Commons", room: "Kitchen" },
-  { id: "SEL-006", category: "Cabinets", itemName: "Kitchen Cabinetry", selectedOption: "Kraftmaid Shaker - Dove White", allowanceBudget: 18000, selectedCost: 17200, status: "installed", dueDate: "2026-01-30", project: "Riverside Commons", room: "Kitchen" },
-  { id: "SEL-007", category: "Paint", itemName: "Interior Wall Paint", selectedOption: "Benjamin Moore - Simply White OC-117", allowanceBudget: 3500, selectedCost: 3200, status: "approved", dueDate: "2026-03-15", project: "Riverside Commons", room: "All Interiors" },
-  { id: "SEL-008", category: "Tile", itemName: "Master Shower Tile", selectedOption: "Carrara Marble Hex Mosaic", allowanceBudget: 4500, selectedCost: 5100, status: "selected", dueDate: "2026-03-05", project: "Riverside Commons", room: "Master Bath" },
-  { id: "SEL-009", category: "Flooring", itemName: "Living Area Carpet", selectedOption: null, allowanceBudget: 4200, selectedCost: null, status: "pending", dueDate: "2026-03-20", project: "Riverside Commons", room: "Living Room" },
-  { id: "SEL-010", category: "Fixtures", itemName: "Kitchen Sink", selectedOption: "Blanco Silgranit - Undermount", allowanceBudget: 900, selectedCost: 850, status: "installed", dueDate: "2026-01-25", project: "Riverside Commons", room: "Kitchen" },
-  { id: "SEL-011", category: "Lighting", itemName: "Recessed Light Package", selectedOption: "Halo 6\" LED Retrofit (24 units)", allowanceBudget: 2400, selectedCost: 2160, status: "ordered", dueDate: "2026-02-25", project: "Riverside Commons", room: "Whole House" },
-  { id: "SEL-012", category: "Countertops", itemName: "Master Bath Vanity Top", selectedOption: null, allowanceBudget: 2200, selectedCost: null, status: "pending", dueDate: "2026-03-12", project: "Riverside Commons", room: "Master Bath" },
-  { id: "SEL-013", category: "Tile", itemName: "Kitchen Backsplash", selectedOption: "Subway Tile 3x6 - Glossy White", allowanceBudget: 1800, selectedCost: 1450, status: "approved", dueDate: "2026-03-08", project: "Riverside Commons", room: "Kitchen" },
-  { id: "SEL-014", category: "Appliances", itemName: "Refrigerator", selectedOption: "Sub-Zero 36\" Built-In", allowanceBudget: 9000, selectedCost: 10200, status: "selected", dueDate: "2026-02-28", project: "Riverside Commons", room: "Kitchen" },
-  { id: "SEL-015", category: "Cabinets", itemName: "Master Bath Vanity", selectedOption: "Custom Walnut Double Vanity", allowanceBudget: 5500, selectedCost: 6100, status: "approved", dueDate: "2026-03-01", project: "Riverside Commons", room: "Master Bath" },
-]
-
 function formatCurrency(n: number) {
   return "$" + n.toLocaleString()
 }
@@ -89,24 +73,20 @@ export default function SelectionsPage() {
   const [search, setSearch] = React.useState("")
   const [activeCategory, setActiveCategory] = React.useState<"All" | CategoryType>("All")
 
-  const filtered = React.useMemo(() => {
-    return MOCK_SELECTIONS.filter((s) => {
-      if (activeCategory !== "All" && s.category !== activeCategory) return false
-      if (search) {
-        const q = search.toLowerCase()
-        return s.itemName.toLowerCase().includes(q) || (s.selectedOption?.toLowerCase().includes(q) ?? false) || s.category.toLowerCase().includes(q)
-      }
-      return true
-    })
-  }, [search, activeCategory])
+  const { data, isLoading } = useSelections({ category: activeCategory !== "All" ? activeCategory : undefined, search: search || undefined })
+  const selections = data?.items ?? []
 
-  const budgetSummary = React.useMemo(() => {
-    const totalAllowance = MOCK_SELECTIONS.reduce((sum, s) => sum + s.allowanceBudget, 0)
-    const totalSelected = MOCK_SELECTIONS.filter((s) => s.selectedCost !== null).reduce((sum, s) => sum + (s.selectedCost ?? 0), 0)
-    const pendingBudget = MOCK_SELECTIONS.filter((s) => s.selectedCost === null).reduce((sum, s) => sum + s.allowanceBudget, 0)
+  if (isLoading) return (<div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-gray-400" /></div>)
+
+  const filtered = selections
+
+  const budgetSummary = (() => {
+    const totalAllowance = selections.reduce((sum, s) => sum + s.allowanceBudget, 0)
+    const totalSelected = selections.filter((s) => s.selectedCost !== null).reduce((sum, s) => sum + (s.selectedCost ?? 0), 0)
+    const pendingBudget = selections.filter((s) => s.selectedCost === null).reduce((sum, s) => sum + s.allowanceBudget, 0)
     const variance = totalSelected - (totalAllowance - pendingBudget)
     return { totalAllowance, totalSelected, pendingBudget, variance }
-  }, [])
+  })()
 
   return (
     <div className="space-y-6">

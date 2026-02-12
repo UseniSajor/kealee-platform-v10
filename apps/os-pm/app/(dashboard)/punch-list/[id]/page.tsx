@@ -8,6 +8,7 @@ import {
   Camera,
   CheckCircle2,
   Clock,
+  Loader2,
   MapPin,
   MessageSquare,
   RotateCcw,
@@ -20,6 +21,7 @@ import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { cn } from "@/lib/utils"
+import { usePunchItem } from "@/hooks/usePunchList"
 
 type PunchStatus = "open" | "in-progress" | "completed" | "verified"
 
@@ -37,75 +39,26 @@ const STATUS_LABELS: Record<PunchStatus, string> = {
   verified: "Verified",
 }
 
-const MOCK_ITEM = {
-  id: "1",
-  number: "PI-001",
-  title: "Drywall touch-up needed at seam",
-  status: "open" as PunchStatus,
-  priority: "medium" as const,
-  location: "Unit 302 - Kitchen",
-  trade: "Drywall",
-  assignee: "Mike Torres",
-  assigneeCompany: "Torres Construction",
-  createdDate: "2026-02-03",
-  dueDate: "2026-02-14",
-  createdBy: "Sarah Kim",
-  description:
-    "Visible seam joint cracking along the kitchen ceiling near the range hood area. The tape is bubbling and there is a hairline crack running approximately 18 inches along the seam. This needs to be retaped, mudded, sanded, and repainted to match the surrounding ceiling finish.",
-  drawingRef: "A-302 - Unit 302 Floor Plan",
-  specRef: "09 29 00 - Gypsum Board",
-}
 
-const MOCK_PHOTOS = [
-  { id: "p1", label: "Ceiling seam crack - wide view", date: "2026-02-03" },
-  { id: "p2", label: "Close-up of tape bubbling", date: "2026-02-03" },
-  { id: "p3", label: "Location context - near range hood", date: "2026-02-03" },
-]
-
-const MOCK_ACTIVITY = [
-  {
-    id: "a1",
-    user: "Sarah Kim",
-    role: "Project Manager",
-    date: "2026-02-03",
-    type: "created",
-    content: "Created punch list item PI-001. Found during walkthrough of Unit 302.",
-  },
-  {
-    id: "a2",
-    user: "Sarah Kim",
-    role: "Project Manager",
-    date: "2026-02-03",
-    type: "assigned",
-    content: "Assigned to Mike Torres (Torres Construction) for drywall repair.",
-  },
-  {
-    id: "a3",
-    user: "Mike Torres",
-    role: "Superintendent",
-    date: "2026-02-05",
-    type: "comment",
-    content: "Reviewed the crack. Looks like it was caused by settling. Will retape and apply two coats of mud. Scheduling for Thursday.",
-  },
-  {
-    id: "a4",
-    user: "Sarah Kim",
-    role: "Project Manager",
-    date: "2026-02-06",
-    type: "comment",
-    content: "Thanks Mike. Please make sure the paint color matches - it is SW 7015 Repose Gray.",
-  },
-]
-
-const STATUS_HISTORY = [
-  { date: "2026-02-03", status: "Created", by: "Sarah Kim" },
-  { date: "2026-02-03", status: "Assigned", by: "Sarah Kim" },
-  { date: "2026-02-05", status: "Acknowledged", by: "Mike Torres" },
-]
-
-export default function PunchItemDetailPage() {
+export default function PunchItemDetailPage({ params }: { params: { id: string } }) {
   const [comment, setComment] = React.useState("")
-  const item = MOCK_ITEM
+  const { data: item, isLoading } = usePunchItem(params.id)
+
+  if (isLoading) return (
+    <div className="flex items-center justify-center h-64">
+      <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+    </div>
+  )
+
+  if (!item) return (
+    <div className="flex items-center justify-center h-64">
+      <p className="text-gray-500">Punch list item not found</p>
+    </div>
+  )
+
+  const photos = item.photos ?? []
+  const activity = item.activity ?? []
+  const statusHistory = item.statusHistory ?? []
 
   return (
     <div className="space-y-6">
@@ -155,7 +108,7 @@ export default function PunchItemDetailPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Camera size={18} />
-                  Photos ({MOCK_PHOTOS.length})
+                  Photos ({photos.length})
                 </CardTitle>
                 <Button variant="outline" size="sm" className="gap-1">
                   <Camera size={14} />
@@ -165,7 +118,7 @@ export default function PunchItemDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-3">
-                {MOCK_PHOTOS.map((photo) => (
+                {photos.map((photo: any) => (
                   <div key={photo.id} className="group relative">
                     <div className="aspect-square rounded-lg bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
                       <Camera size={24} className="text-gray-400" />
@@ -216,24 +169,24 @@ export default function PunchItemDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageSquare size={18} />
-                Activity Log ({MOCK_ACTIVITY.length})
+                Activity Log ({activity.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {MOCK_ACTIVITY.map((activity) => (
-                <div key={activity.id} className="border rounded-lg p-4">
+              {activity.map((a: any) => (
+                <div key={a.id} className="border rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700">
-                      {activity.user
+                      {a.user
                         .split(" ")
-                        .map((n) => n[0])
+                        .map((n: string) => n[0])
                         .join("")}
                     </div>
                     <div>
-                      <p className="text-sm font-medium">{activity.user}</p>
+                      <p className="text-sm font-medium">{a.user}</p>
                       <p className="text-xs text-gray-400">
-                        {activity.role} -{" "}
-                        {new Date(activity.date + "T00:00:00").toLocaleDateString("en-US", {
+                        {a.role} -{" "}
+                        {new Date(a.date + "T00:00:00").toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
                           year: "numeric",
@@ -243,17 +196,17 @@ export default function PunchItemDetailPage() {
                     <span
                       className={cn(
                         "ml-auto px-2 py-0.5 rounded-full text-xs font-medium",
-                        activity.type === "created"
+                        a.type === "created"
                           ? "bg-blue-50 text-blue-600"
-                          : activity.type === "assigned"
+                          : a.type === "assigned"
                             ? "bg-purple-50 text-purple-600"
                             : "bg-gray-50 text-gray-600"
                       )}
                     >
-                      {activity.type.charAt(0).toUpperCase() + activity.type.slice(1)}
+                      {a.type.charAt(0).toUpperCase() + a.type.slice(1)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-700">{activity.content}</p>
+                  <p className="text-sm text-gray-700">{a.content}</p>
                 </div>
               ))}
               <div className="flex gap-2 mt-4">
@@ -360,11 +313,11 @@ export default function PunchItemDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {STATUS_HISTORY.map((h, i) => (
+                {statusHistory.map((h: any, i: number) => (
                   <div key={i} className="flex gap-3">
                     <div className="flex flex-col items-center">
                       <div className="w-2 h-2 rounded-full bg-blue-500 mt-2" />
-                      {i < STATUS_HISTORY.length - 1 && <div className="w-px flex-1 bg-gray-200" />}
+                      {i < statusHistory.length - 1 && <div className="w-px flex-1 bg-gray-200" />}
                     </div>
                     <div className="pb-3">
                       <p className="text-sm font-medium">{h.status}</p>

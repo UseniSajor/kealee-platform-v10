@@ -11,6 +11,7 @@ import {
   CloudSnow,
   Droplets,
   HardHat,
+  Loader2,
   Plus,
   Sun,
   Thermometer,
@@ -22,24 +23,9 @@ import {
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { cn } from "@/lib/utils"
+import { useDailyLogs } from "@/hooks/useDailyLogs"
 
 type WeatherType = "sunny" | "cloudy" | "rainy" | "snowy" | "windy"
-
-interface DailyLog {
-  id: string
-  date: string
-  dayOfWeek: string
-  weather: WeatherType
-  tempHigh: number
-  tempLow: number
-  crewCount: number
-  workPerformed: string[]
-  hoursLogged: number
-  materialsReceived: string[]
-  visitors: string[]
-  delaysNoted: string | null
-  project: string
-}
 
 const WEATHER_ICONS: Record<WeatherType, React.ElementType> = {
   sunny: Sun,
@@ -57,106 +43,57 @@ const WEATHER_COLORS: Record<WeatherType, string> = {
   windy: "text-teal-500 bg-teal-50",
 }
 
-const MOCK_DAILY_LOGS: DailyLog[] = [
-  {
-    id: "DL-007", date: "2026-02-12", dayOfWeek: "Thursday",
-    weather: "sunny", tempHigh: 58, tempLow: 42,
-    crewCount: 24, hoursLogged: 192,
-    workPerformed: ["Continued foundation wall forming on grid lines C-F", "Installed underground plumbing rough-in at elevator pit", "Received and staged structural steel delivery"],
-    materialsReceived: ["W12x26 structural steel beams (12 ea)", "4\" PVC DWV pipe (200 LF)"],
-    visitors: ["Building Inspector - Davis County", "Owner representative - John Mitchell"],
-    delaysNoted: null, project: "Riverside Commons",
-  },
-  {
-    id: "DL-006", date: "2026-02-11", dayOfWeek: "Wednesday",
-    weather: "cloudy", tempHigh: 52, tempLow: 38,
-    crewCount: 22, hoursLogged: 176,
-    workPerformed: ["Stripped footing forms at grid lines A-C", "Placed rebar for foundation walls section 2", "Backfilled and compacted utility trenches"],
-    materialsReceived: ["#5 rebar (4 tons)", "Form ties and hardware"],
-    visitors: ["Geotechnical engineer - soil compaction testing"],
-    delaysNoted: null, project: "Riverside Commons",
-  },
-  {
-    id: "DL-005", date: "2026-02-10", dayOfWeek: "Tuesday",
-    weather: "rainy", tempHigh: 48, tempLow: 36,
-    crewCount: 12, hoursLogged: 72,
-    workPerformed: ["Interior work only due to rain - layout for MEP penetrations", "Reviewed shop drawings with steel fabricator"],
-    materialsReceived: [],
-    visitors: [],
-    delaysNoted: "Heavy rain from 6AM to 2PM. Exterior concrete work postponed. Lost approximately 4 hours of productive time for exterior crews.",
-    project: "Riverside Commons",
-  },
-  {
-    id: "DL-004", date: "2026-02-09", dayOfWeek: "Monday",
-    weather: "cloudy", tempHigh: 50, tempLow: 34,
-    crewCount: 26, hoursLogged: 208,
-    workPerformed: ["Poured concrete for footings at grid lines A-C (42 CY)", "Set anchor bolts for structural steel base plates", "Installed perimeter drain tile and waterproofing"],
-    materialsReceived: ["Ready-mix concrete (42 CY)", "Bituthene waterproofing membrane (800 SF)"],
-    visitors: ["Architect - site observation visit"],
-    delaysNoted: null, project: "Riverside Commons",
-  },
-  {
-    id: "DL-003", date: "2026-02-08", dayOfWeek: "Sunday",
-    weather: "sunny", tempHigh: 55, tempLow: 40,
-    crewCount: 8, hoursLogged: 48,
-    workPerformed: ["Weekend crew - continued rebar placement for footings", "Dewatering pump maintenance and monitoring"],
-    materialsReceived: [],
-    visitors: [],
-    delaysNoted: null, project: "Riverside Commons",
-  },
-  {
-    id: "DL-002", date: "2026-02-07", dayOfWeek: "Saturday",
-    weather: "windy", tempHigh: 46, tempLow: 32,
-    crewCount: 14, hoursLogged: 84,
-    workPerformed: ["Excavated for grade beams at building east side", "Installed vapor barrier under slab-on-grade area"],
-    materialsReceived: ["10-mil vapor barrier (2000 SF)"],
-    visitors: [],
-    delaysNoted: "High winds (35+ mph gusts) halted crane operations from 1PM onward. Crane crew reassigned to ground-level tasks.",
-    project: "Riverside Commons",
-  },
-  {
-    id: "DL-001", date: "2026-02-06", dayOfWeek: "Friday",
-    weather: "sunny", tempHigh: 54, tempLow: 38,
-    crewCount: 28, hoursLogged: 224,
-    workPerformed: ["Completed footing excavation for grid lines D-F", "Placed mudsill and leveling pads", "Installed temporary power distribution panel", "OSHA safety walk-through with site superintendent"],
-    materialsReceived: ["Temporary electrical panel and wire", "Mudsill lumber (2x6 PT)"],
-    visitors: ["OSHA compliance officer", "Electrical subcontractor foreman"],
-    delaysNoted: null, project: "Riverside Commons",
-  },
-]
-
 function formatDate(d: string) {
-  return new Date(d + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })
+  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
 
 function formatFullDate(d: string) {
-  return new Date(d + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })
+  return new Date(d).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })
 }
 
 export default function DailyLogsPage() {
-  const [expandedLog, setExpandedLog] = React.useState<string | null>("DL-007")
+  const [expandedLog, setExpandedLog] = React.useState<string | null>(null)
   const [weekOffset, setWeekOffset] = React.useState(0)
 
+  const { data, isLoading } = useDailyLogs({})
+  const items = data?.items ?? []
+
+  // Auto-expand first log
+  React.useEffect(() => {
+    if (items.length > 0 && expandedLog === null) {
+      setExpandedLog(items[0].id)
+    }
+  }, [items, expandedLog])
+
   const stats = React.useMemo(() => {
-    const totalLogs = MOCK_DAILY_LOGS.length
-    const avgCrew = Math.round(MOCK_DAILY_LOGS.reduce((sum, l) => sum + l.crewCount, 0) / totalLogs)
-    const totalHours = MOCK_DAILY_LOGS.reduce((sum, l) => sum + l.hoursLogged, 0)
-    const delayDays = MOCK_DAILY_LOGS.filter((l) => l.delaysNoted).length
+    const totalLogs = items.length
+    const avgCrew = totalLogs > 0 ? Math.round(items.reduce((sum: number, l: any) => sum + (l.crewCount || 0), 0) / totalLogs) : 0
+    const totalHours = items.reduce((sum: number, l: any) => sum + (l.hoursLogged || 0), 0)
+    const delayDays = items.filter((l: any) => l.delaysNoted).length
     return { totalLogs, avgCrew, totalHours, delayDays }
-  }, [])
+  }, [items])
 
   const weekDays = React.useMemo(() => {
-    const today = new Date("2026-02-12T00:00:00")
+    const today = new Date()
     const startOfWeek = new Date(today)
     startOfWeek.setDate(today.getDate() - today.getDay() + (weekOffset * 7))
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(startOfWeek)
       d.setDate(startOfWeek.getDate() + i)
       const dateStr = d.toISOString().split("T")[0]
-      const log = MOCK_DAILY_LOGS.find((l) => l.date === dateStr)
-      return { date: d, dateStr, dayLabel: d.toLocaleDateString("en-US", { weekday: "short" }), dayNum: d.getDate(), hasLog: !!log, isToday: dateStr === "2026-02-12" }
+      const log = items.find((l: any) => l.date?.startsWith(dateStr))
+      const todayStr = new Date().toISOString().split("T")[0]
+      return { date: d, dateStr, dayLabel: d.toLocaleDateString("en-US", { weekday: "short" }), dayNum: d.getDate(), hasLog: !!log, logId: log?.id, isToday: dateStr === todayStr }
     })
-  }, [weekOffset])
+  }, [weekOffset, items])
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -198,8 +135,7 @@ export default function DailyLogsPage() {
               <button
                 key={d.dateStr}
                 onClick={() => {
-                  const log = MOCK_DAILY_LOGS.find((l) => l.date === d.dateStr)
-                  if (log) setExpandedLog(log.id)
+                  if (d.logId) setExpandedLog(d.logId)
                 }}
                 className={cn(
                   "flex flex-col items-center p-2 rounded-lg transition-colors border",
@@ -217,9 +153,12 @@ export default function DailyLogsPage() {
       </Card>
 
       <div className="space-y-4">
-        {MOCK_DAILY_LOGS.map((log) => {
-          const WeatherIcon = WEATHER_ICONS[log.weather]
+        {items.map((log: any) => {
+          const WeatherIcon = WEATHER_ICONS[log.weather as WeatherType] || Cloud
           const isExpanded = expandedLog === log.id
+          const workPerformed = log.workPerformed ?? []
+          const materialsReceived = log.materialsReceived ?? []
+          const visitors = log.visitors ?? []
           return (
             <Card key={log.id} className={cn("transition-shadow", isExpanded && "ring-2 ring-blue-200")}>
               <CardContent className="p-0">
@@ -232,14 +171,14 @@ export default function DailyLogsPage() {
                       <p className="text-xs text-gray-500">{log.dayOfWeek}</p>
                       <p className="text-lg font-bold text-gray-900">{formatDate(log.date)}</p>
                     </div>
-                    <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded-lg", WEATHER_COLORS[log.weather])}>
+                    <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded-lg", WEATHER_COLORS[log.weather as WeatherType] || "text-gray-500 bg-gray-100")}>
                       <WeatherIcon size={16} />
                       <span className="text-sm font-medium">{log.tempHigh}F</span>
                     </div>
                     <div className="hidden sm:flex items-center gap-4 text-sm text-gray-600">
                       <span className="flex items-center gap-1"><Users size={14} />{log.crewCount} crew</span>
                       <span className="flex items-center gap-1"><Clock size={14} />{log.hoursLogged} hrs</span>
-                      {log.materialsReceived.length > 0 && <span className="flex items-center gap-1"><Truck size={14} />{log.materialsReceived.length} deliveries</span>}
+                      {materialsReceived.length > 0 && <span className="flex items-center gap-1"><Truck size={14} />{materialsReceived.length} deliveries</span>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -256,7 +195,7 @@ export default function DailyLogsPage() {
                       <div>
                         <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5"><HardHat size={14} />Work Performed</h4>
                         <ul className="space-y-1">
-                          {log.workPerformed.map((item, i) => (
+                          {workPerformed.map((item: string, i: number) => (
                             <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
                               <span className="text-blue-500 mt-1">-</span>{item}
                             </li>
@@ -267,24 +206,24 @@ export default function DailyLogsPage() {
                         <div>
                           <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5"><Thermometer size={14} />Weather</h4>
                           <p className="text-sm text-gray-600">
-                            {log.weather.charAt(0).toUpperCase() + log.weather.slice(1)} - High: {log.tempHigh}F / Low: {log.tempLow}F
+                            {(log.weather ?? "").charAt(0).toUpperCase() + (log.weather ?? "").slice(1)} - High: {log.tempHigh}F / Low: {log.tempLow}F
                           </p>
                         </div>
-                        {log.materialsReceived.length > 0 && (
+                        {materialsReceived.length > 0 && (
                           <div>
                             <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5"><Truck size={14} />Materials Received</h4>
                             <ul className="space-y-1">
-                              {log.materialsReceived.map((item, i) => (
+                              {materialsReceived.map((item: string, i: number) => (
                                 <li key={i} className="text-sm text-gray-600">- {item}</li>
                               ))}
                             </ul>
                           </div>
                         )}
-                        {log.visitors.length > 0 && (
+                        {visitors.length > 0 && (
                           <div>
                             <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5"><Users size={14} />Visitors</h4>
                             <ul className="space-y-1">
-                              {log.visitors.map((item, i) => (
+                              {visitors.map((item: string, i: number) => (
                                 <li key={i} className="text-sm text-gray-600">- {item}</li>
                               ))}
                             </ul>

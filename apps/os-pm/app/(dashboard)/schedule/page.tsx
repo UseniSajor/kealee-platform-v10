@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Calendar, Diamond, GanttChart, LayoutList, Search, Target, AlertTriangle, CheckCircle2 } from "lucide-react"
+import { Calendar, Diamond, GanttChart, LayoutList, Loader2, Search, Target, AlertTriangle, CheckCircle2 } from "lucide-react"
+import { useScheduleItems } from "@/hooks/useSchedule"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
@@ -26,28 +27,6 @@ const STATUS_LABELS: Record<TaskStatus, string> = {
 }
 const PHASES = ["Foundation", "Framing", "Rough-In", "Drywall", "Finish", "Punch"]
 
-const MOCK_TASKS: ScheduleTask[] = [
-  { id: "T-001", name: "Excavation & Grading", phase: "Foundation", assignee: "Mike Torres", assigneeInitials: "MT", startDate: "2026-02-02", endDate: "2026-02-13", progress: 100, status: "complete", isMilestone: false, dependencies: [] },
-  { id: "T-002", name: "Footing Pour", phase: "Foundation", assignee: "Mike Torres", assigneeInitials: "MT", startDate: "2026-02-16", endDate: "2026-02-20", progress: 75, status: "on-track", isMilestone: false, dependencies: ["T-001"] },
-  { id: "T-003", name: "Foundation Walls", phase: "Foundation", assignee: "Sarah Kim", assigneeInitials: "SK", startDate: "2026-02-23", endDate: "2026-03-06", progress: 30, status: "in-progress", isMilestone: false, dependencies: ["T-002"] },
-  { id: "M-001", name: "Foundation Complete", phase: "Foundation", assignee: "PM Office", assigneeInitials: "PM", startDate: "2026-03-06", endDate: "2026-03-06", progress: 0, status: "not-started", isMilestone: true, dependencies: ["T-003"] },
-  { id: "T-004", name: "Floor Framing", phase: "Framing", assignee: "Jake Hernandez", assigneeInitials: "JH", startDate: "2026-03-09", endDate: "2026-03-20", progress: 0, status: "not-started", isMilestone: false, dependencies: ["M-001"] },
-  { id: "T-005", name: "Wall Framing", phase: "Framing", assignee: "Jake Hernandez", assigneeInitials: "JH", startDate: "2026-03-23", endDate: "2026-04-03", progress: 0, status: "not-started", isMilestone: false, dependencies: ["T-004"] },
-  { id: "T-006", name: "Roof Framing", phase: "Framing", assignee: "Jake Hernandez", assigneeInitials: "JH", startDate: "2026-04-06", endDate: "2026-04-17", progress: 0, status: "not-started", isMilestone: false, dependencies: ["T-005"] },
-  { id: "M-002", name: "Dry-In Milestone", phase: "Framing", assignee: "PM Office", assigneeInitials: "PM", startDate: "2026-04-17", endDate: "2026-04-17", progress: 0, status: "not-started", isMilestone: true, dependencies: ["T-006"] },
-  { id: "T-007", name: "Electrical Rough-In", phase: "Rough-In", assignee: "Lisa Dunn", assigneeInitials: "LD", startDate: "2026-04-20", endDate: "2026-05-01", progress: 0, status: "not-started", isMilestone: false, dependencies: ["M-002"] },
-  { id: "T-008", name: "Plumbing Rough-In", phase: "Rough-In", assignee: "Tom Reyes", assigneeInitials: "TR", startDate: "2026-04-20", endDate: "2026-05-08", progress: 0, status: "not-started", isMilestone: false, dependencies: ["M-002"] },
-  { id: "T-009", name: "HVAC Rough-In", phase: "Rough-In", assignee: "Tom Reyes", assigneeInitials: "TR", startDate: "2026-04-27", endDate: "2026-05-08", progress: 0, status: "not-started", isMilestone: false, dependencies: ["M-002"] },
-  { id: "T-010", name: "Drywall Hanging", phase: "Drywall", assignee: "Carlos Vega", assigneeInitials: "CV", startDate: "2026-05-11", endDate: "2026-05-22", progress: 0, status: "not-started", isMilestone: false, dependencies: ["T-007","T-008","T-009"] },
-  { id: "T-011", name: "Drywall Taping & Mud", phase: "Drywall", assignee: "Carlos Vega", assigneeInitials: "CV", startDate: "2026-05-25", endDate: "2026-06-05", progress: 0, status: "not-started", isMilestone: false, dependencies: ["T-010"] },
-  { id: "T-012", name: "Interior Paint", phase: "Finish", assignee: "Nina Brooks", assigneeInitials: "NB", startDate: "2026-06-08", endDate: "2026-06-19", progress: 0, status: "not-started", isMilestone: false, dependencies: ["T-011"] },
-  { id: "T-013", name: "Trim & Cabinets", phase: "Finish", assignee: "Jake Hernandez", assigneeInitials: "JH", startDate: "2026-06-15", endDate: "2026-06-26", progress: 0, status: "not-started", isMilestone: false, dependencies: ["T-011"] },
-  { id: "T-014", name: "Flooring Install", phase: "Finish", assignee: "Nina Brooks", assigneeInitials: "NB", startDate: "2026-06-22", endDate: "2026-07-03", progress: 0, status: "not-started", isMilestone: false, dependencies: ["T-012"] },
-  { id: "T-015", name: "Punch List Walk", phase: "Punch", assignee: "PM Office", assigneeInitials: "PM", startDate: "2026-07-06", endDate: "2026-07-10", progress: 0, status: "behind", isMilestone: false, dependencies: ["T-012","T-013","T-014"] },
-  { id: "T-016", name: "Punch List Corrections", phase: "Punch", assignee: "All Trades", assigneeInitials: "AT", startDate: "2026-07-13", endDate: "2026-07-17", progress: 0, status: "not-started", isMilestone: false, dependencies: ["T-015"] },
-  { id: "M-003", name: "Substantial Completion", phase: "Punch", assignee: "PM Office", assigneeInitials: "PM", startDate: "2026-07-17", endDate: "2026-07-17", progress: 0, status: "not-started", isMilestone: true, dependencies: ["T-016"] },
-]
-
 function parseDate(d: string) { return new Date(d + "T00:00:00") }
 function daysBetween(a: Date, b: Date) { return Math.round((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24)) }
 function formatDate(d: string) { return new Date(d + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) }
@@ -57,21 +36,20 @@ export default function SchedulePage() {
   const [search, setSearch] = React.useState("")
   const [phaseFilter, setPhaseFilter] = React.useState<string>("all")
   const [assigneeFilter, setAssigneeFilter] = React.useState<string>("all")
-  const assignees = React.useMemo(() => [...new Set(MOCK_TASKS.map((t) => t.assignee))], [])
-  const filteredTasks = React.useMemo(() => {
-    return MOCK_TASKS.filter((t) => {
-      if (phaseFilter !== "all" && t.phase !== phaseFilter) return false
-      if (assigneeFilter !== "all" && t.assignee !== assigneeFilter) return false
-      if (search) { const q = search.toLowerCase(); return t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q) || t.assignee.toLowerCase().includes(q) }
-      return true
-    })
-  }, [search, phaseFilter, assigneeFilter])
-  const stats = React.useMemo(() => ({
-    total: MOCK_TASKS.filter((t) => !t.isMilestone).length,
-    onTrack: MOCK_TASKS.filter((t) => t.status === "on-track" || t.status === "complete").length,
-    behind: MOCK_TASKS.filter((t) => t.status === "behind").length,
-    milestones: MOCK_TASKS.filter((t) => t.isMilestone && t.status !== "complete").length,
-  }), [])
+
+  const { data, isLoading } = useScheduleItems({ phase: phaseFilter !== "all" ? phaseFilter : undefined, assignedTo: assigneeFilter !== "all" ? assigneeFilter : undefined, search: search || undefined })
+  const tasks = data?.items ?? []
+
+  if (isLoading) return (<div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-gray-400" /></div>)
+
+  const assignees = [...new Set(tasks.map((t) => t.assignee))]
+  const filteredTasks = tasks
+  const stats = {
+    total: tasks.filter((t) => !t.isMilestone).length,
+    onTrack: tasks.filter((t) => t.status === "on-track" || t.status === "complete").length,
+    behind: tasks.filter((t) => t.status === "behind").length,
+    milestones: tasks.filter((t) => t.isMilestone && t.status !== "complete").length,
+  }
   const ganttStart = parseDate("2026-02-01")
   const ganttEnd = parseDate("2026-07-31")
   const totalDays = daysBetween(ganttStart, ganttEnd)

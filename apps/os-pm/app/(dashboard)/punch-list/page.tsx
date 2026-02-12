@@ -20,6 +20,7 @@ import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { cn } from "@/lib/utils"
+import { usePunchList } from "@/hooks/usePunchList"
 
 type PunchStatus = "open" | "in-progress" | "completed" | "verified"
 type PunchPriority = "low" | "medium" | "high"
@@ -59,84 +60,6 @@ const PRIORITY_STYLES: Record<PunchPriority, string> = {
   high: "bg-red-100 text-red-700",
 }
 
-const MOCK_PUNCH_ITEMS: PunchItem[] = [
-  {
-    id: "1", number: "PI-001", title: "Drywall touch-up needed at seam",
-    location: "Unit 302 - Kitchen", trade: "Drywall", assignee: "Mike Torres",
-    status: "open", priority: "medium", photoCount: 3, createdDate: "2026-02-03", dueDate: "2026-02-14",
-    description: "Visible seam joint cracking along the kitchen ceiling near the range hood area.",
-  },
-  {
-    id: "2", number: "PI-002", title: "Outlet not working - east wall",
-    location: "Unit 305 - Living Room", trade: "Electrical", assignee: "Spark Electric",
-    status: "open", priority: "high", photoCount: 1, createdDate: "2026-02-04", dueDate: "2026-02-12",
-    description: "Duplex outlet on east wall is completely dead. No power on either receptacle.",
-  },
-  {
-    id: "3", number: "PI-003", title: "Paint scuff on hallway wall",
-    location: "3rd Floor - Corridor", trade: "Paint", assignee: "ProCoat Painting",
-    status: "in-progress", priority: "low", photoCount: 2, createdDate: "2026-02-01", dueDate: "2026-02-15",
-    description: "Large scuff mark approximately 4 feet from floor level on north corridor wall.",
-  },
-  {
-    id: "4", number: "PI-004", title: "Cabinet door alignment off",
-    location: "Unit 401 - Kitchen", trade: "Carpentry", assignee: "Custom Cabinets LLC",
-    status: "open", priority: "medium", photoCount: 4, createdDate: "2026-02-05", dueDate: "2026-02-18",
-    description: "Upper cabinet doors on the south wall are misaligned. Gap is uneven - wider at top than bottom.",
-  },
-  {
-    id: "5", number: "PI-005", title: "Grout missing between floor tiles",
-    location: "Unit 302 - Bathroom", trade: "Tile", assignee: "Precision Tile Co",
-    status: "in-progress", priority: "high", photoCount: 2, createdDate: "2026-01-30", dueDate: "2026-02-10",
-    description: "Multiple grout lines missing in the master bathroom floor near the shower transition.",
-  },
-  {
-    id: "6", number: "PI-006", title: "Door hardware loose on entry",
-    location: "Unit 410 - Entry", trade: "Hardware", assignee: "Mike Torres",
-    status: "completed", priority: "medium", photoCount: 1, createdDate: "2026-01-28", dueDate: "2026-02-08",
-    description: "Lever handle on unit entry door is loose and wobbles. Screws need tightening or backing plate replaced.",
-  },
-  {
-    id: "7", number: "PI-007", title: "HVAC register not flush with ceiling",
-    location: "Unit 305 - Bedroom 2", trade: "HVAC", assignee: "Climate Control Co",
-    status: "open", priority: "low", photoCount: 1, createdDate: "2026-02-06", dueDate: "2026-02-20",
-    description: "Supply register in bedroom 2 is protruding about 1/4 inch below the ceiling plane.",
-  },
-  {
-    id: "8", number: "PI-008", title: "Baseboard gap at corner joint",
-    location: "Unit 401 - Living Room", trade: "Carpentry", assignee: "Custom Cabinets LLC",
-    status: "verified", priority: "low", photoCount: 2, createdDate: "2026-01-25", dueDate: "2026-02-05",
-    description: "Baseboard molding has visible gap at inside corner joint on west wall. Needs caulk and touch-up.",
-  },
-  {
-    id: "9", number: "PI-009", title: "Slow drain in kitchen sink",
-    location: "Unit 308 - Kitchen", trade: "Plumbing", assignee: "Valley Plumbing",
-    status: "open", priority: "high", photoCount: 0, createdDate: "2026-02-07", dueDate: "2026-02-13",
-    description: "Kitchen sink drains very slowly. Takes over 30 seconds for water to clear. Possible trap issue.",
-  },
-  {
-    id: "10", number: "PI-010", title: "Window screen torn",
-    location: "Unit 302 - Bedroom 1", trade: "Glazing", assignee: "ClearView Windows",
-    status: "in-progress", priority: "low", photoCount: 1, createdDate: "2026-02-02", dueDate: "2026-02-16",
-    description: "Screen on bedroom window has a 3-inch tear in lower right corner. Needs replacement screen.",
-  },
-  {
-    id: "11", number: "PI-011", title: "Ceiling light fixture flickering",
-    location: "Unit 410 - Dining Area", trade: "Electrical", assignee: "Spark Electric",
-    status: "completed", priority: "medium", photoCount: 0, createdDate: "2026-02-01", dueDate: "2026-02-10",
-    description: "Recessed LED light fixture in dining area flickers intermittently. May be faulty driver or loose connection.",
-  },
-  {
-    id: "12", number: "PI-012", title: "Caulking gap around bathtub",
-    location: "Unit 305 - Bathroom", trade: "Plumbing", assignee: "Valley Plumbing",
-    status: "open", priority: "medium", photoCount: 3, createdDate: "2026-02-08", dueDate: "2026-02-19",
-    description: "Caulking bead is missing along the left side of the bathtub where it meets the tile surround.",
-  },
-]
-
-const TRADES = [...new Set(MOCK_PUNCH_ITEMS.map((i) => i.trade))].sort()
-const LOCATIONS = [...new Set(MOCK_PUNCH_ITEMS.map((i) => i.location.split(" - ")[0]))].sort()
-
 export default function PunchListPage() {
   const [search, setSearch] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState<string>("all")
@@ -144,38 +67,44 @@ export default function PunchListPage() {
   const [tradeFilter, setTradeFilter] = React.useState<string>("all")
   const [locationFilter, setLocationFilter] = React.useState<string>("all")
 
+  const { data, isLoading } = usePunchList({
+    status: statusFilter !== "all" ? statusFilter : undefined,
+    search: search || undefined,
+  })
+  const items: PunchItem[] = data?.items ?? []
+
+  const TRADES = React.useMemo(() => [...new Set(items.map((i) => i.trade))].sort(), [items])
+  const LOCATIONS = React.useMemo(() => [...new Set(items.map((i) => i.location.split(" - ")[0]))].sort(), [items])
+
   const filtered = React.useMemo(() => {
-    return MOCK_PUNCH_ITEMS.filter((item) => {
-      if (statusFilter !== "all" && item.status !== statusFilter) return false
+    return items.filter((item) => {
       if (priorityFilter !== "all" && item.priority !== priorityFilter) return false
       if (tradeFilter !== "all" && item.trade !== tradeFilter) return false
       if (locationFilter !== "all" && !item.location.startsWith(locationFilter)) return false
-      if (search) {
-        const q = search.toLowerCase()
-        return (
-          item.number.toLowerCase().includes(q) ||
-          item.title.toLowerCase().includes(q) ||
-          item.location.toLowerCase().includes(q) ||
-          item.trade.toLowerCase().includes(q) ||
-          item.assignee.toLowerCase().includes(q)
-        )
-      }
       return true
     })
-  }, [search, statusFilter, priorityFilter, tradeFilter, locationFilter])
+  }, [items, priorityFilter, tradeFilter, locationFilter])
 
   const stats = React.useMemo(() => {
     const now = new Date()
     return {
-      total: MOCK_PUNCH_ITEMS.length,
-      open: MOCK_PUNCH_ITEMS.filter((i) => i.status === "open").length,
-      inProgress: MOCK_PUNCH_ITEMS.filter((i) => i.status === "in-progress").length,
-      completed: MOCK_PUNCH_ITEMS.filter((i) => i.status === "completed" || i.status === "verified").length,
-      overdue: MOCK_PUNCH_ITEMS.filter(
+      total: items.length,
+      open: items.filter((i) => i.status === "open").length,
+      inProgress: items.filter((i) => i.status === "in-progress").length,
+      completed: items.filter((i) => i.status === "completed" || i.status === "verified").length,
+      overdue: items.filter(
         (i) => new Date(i.dueDate) < now && i.status !== "completed" && i.status !== "verified"
       ).length,
     }
-  }, [])
+  }, [items])
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

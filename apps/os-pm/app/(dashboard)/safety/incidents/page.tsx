@@ -8,6 +8,7 @@ import {
   Calendar,
   Clock,
   Filter,
+  Loader2,
   MapPin,
   Plus,
   Search,
@@ -18,6 +19,7 @@ import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { cn } from "@/lib/utils"
+import { useSafetyIncidents } from "@/hooks/useSafety"
 
 type IncidentSeverity = "minor" | "moderate" | "serious" | "critical"
 type IncidentType = "near-miss" | "first-aid" | "recordable" | "lost-time"
@@ -72,76 +74,39 @@ const TYPE_STYLES: Record<IncidentType, string> = {
   "lost-time": "bg-red-50 text-red-700",
 }
 
-const MOCK_INCIDENTS: Incident[] = [
-  {
-    id: "1", number: "INC-001", title: "Tripping hazard - unsecured extension cord",
-    date: "2026-02-10", time: "09:15 AM", severity: "minor", type: "near-miss",
-    location: "Building A - 2nd Floor", reportedBy: "Jake Wilson", status: "resolved",
-    description: "Worker tripped over unsecured extension cord running across the hallway on the 2nd floor. No injury occurred but could have resulted in a fall.",
-  },
-  {
-    id: "2", number: "INC-002", title: "Worker struck by falling debris from overhead work",
-    date: "2026-02-07", time: "02:30 PM", severity: "moderate", type: "first-aid",
-    location: "Building B - Roof Level", reportedBy: "Maria Santos", status: "investigating",
-    description: "A small piece of concrete fell from the roof edge during demolition and struck a worker on the hard hat. Worker was not injured but had minor neck strain from the impact.",
-  },
-  {
-    id: "3", number: "INC-003", title: "Near-miss: forklift close call in parking area",
-    date: "2026-02-05", time: "07:45 AM", severity: "minor", type: "near-miss",
-    location: "Staging Area - East Lot", reportedBy: "Tom Reeves", status: "closed",
-    description: "Forklift operator backed up without a spotter and nearly struck a pedestrian worker who was walking behind. No contact was made.",
-  },
-  {
-    id: "4", number: "INC-004", title: "Chemical spill - paint thinner in storage room",
-    date: "2026-02-01", time: "11:00 AM", severity: "serious", type: "recordable",
-    location: "Building A - Storage Room B", reportedBy: "Angela Cruz", status: "resolved",
-    description: "A 5-gallon container of paint thinner tipped over and spilled onto the floor. Two workers reported eye and throat irritation. Area was evacuated and cleaned per HAZMAT protocol.",
-  },
-  {
-    id: "5", number: "INC-005", title: "Ladder slip - worker fell from 6-foot step ladder",
-    date: "2026-01-22", time: "01:15 PM", severity: "moderate", type: "first-aid",
-    location: "Building C - Unit 201", reportedBy: "Dave Martinez", status: "closed",
-    description: "Electrician slipped off a 6-foot step ladder while reaching overhead. Worker fell approximately 4 feet. First aid was administered on site for a sprained wrist.",
-  },
-  {
-    id: "6", number: "INC-006", title: "Heat exhaustion incident during concrete pour",
-    date: "2026-01-15", time: "03:00 PM", severity: "serious", type: "lost-time",
-    location: "Building A - Foundation", reportedBy: "Carlos Rivera", status: "closed",
-    description: "Concrete crew member exhibited signs of heat exhaustion during an afternoon pour. Worker was transported to the hospital, treated, and released. Required 3 days off work for recovery.",
-  },
-]
-
 export default function SafetyIncidentsPage() {
   const [search, setSearch] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState<string>("all")
   const [severityFilter, setSeverityFilter] = React.useState<string>("all")
 
+  const { data, isLoading } = useSafetyIncidents({
+    status: statusFilter !== "all" ? statusFilter : undefined,
+    severity: severityFilter !== "all" ? severityFilter : undefined,
+    search: search || undefined,
+  })
+  const incidents: Incident[] = data?.items ?? []
+
   const filtered = React.useMemo(() => {
-    return MOCK_INCIDENTS.filter((inc) => {
-      if (statusFilter !== "all" && inc.status !== statusFilter) return false
-      if (severityFilter !== "all" && inc.severity !== severityFilter) return false
-      if (search) {
-        const q = search.toLowerCase()
-        return (
-          inc.number.toLowerCase().includes(q) ||
-          inc.title.toLowerCase().includes(q) ||
-          inc.location.toLowerCase().includes(q) ||
-          inc.reportedBy.toLowerCase().includes(q)
-        )
-      }
-      return true
-    })
-  }, [search, statusFilter, severityFilter])
+    return incidents
+  }, [incidents])
 
   const stats = React.useMemo(
     () => ({
-      total: MOCK_INCIDENTS.length,
-      open: MOCK_INCIDENTS.filter((i) => i.status === "reported" || i.status === "investigating").length,
-      resolved: MOCK_INCIDENTS.filter((i) => i.status === "resolved" || i.status === "closed").length,
-      critical: MOCK_INCIDENTS.filter((i) => i.severity === "serious" || i.severity === "critical").length,
+      total: incidents.length,
+      open: incidents.filter((i) => i.status === "reported" || i.status === "investigating").length,
+      resolved: incidents.filter((i) => i.status === "resolved" || i.status === "closed").length,
+      critical: incidents.filter((i) => i.severity === "serious" || i.severity === "critical").length,
     }),
-    []
+    [incidents]
   )
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

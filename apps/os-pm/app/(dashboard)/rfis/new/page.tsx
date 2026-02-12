@@ -2,9 +2,11 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   FileText,
+  Loader2,
   Paperclip,
   Save,
   Send,
@@ -16,12 +18,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { cn } from "@/lib/utils"
+import { useCreateRFI } from "@/hooks/useRFIs"
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export default function NewRFIPage() {
+  const router = useRouter()
+  const createRFI = useCreateRFI()
   const [form, setForm] = React.useState({
     subject: "",
     project: "",
@@ -221,13 +226,32 @@ export default function NewRFIPage() {
         <Link href="/rfis">
           <Button variant="outline">Cancel</Button>
         </Link>
-        <Button variant="outline" className="gap-2">
-          <Save size={16} />
+        <Button
+          variant="outline"
+          className="gap-2"
+          disabled={createRFI.isPending}
+          onClick={() => {
+            createRFI.mutate(
+              { ...form, status: "draft" },
+              { onSuccess: () => router.push("/rfis") }
+            )
+          }}
+        >
+          {createRFI.isPending ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
           Save as Draft
         </Button>
-        <Button className="gap-2">
-          <Send size={16} />
-          Submit RFI
+        <Button
+          className="gap-2"
+          disabled={createRFI.isPending}
+          onClick={() => {
+            createRFI.mutate(
+              { ...form, status: "open" },
+              { onSuccess: () => router.push("/rfis") }
+            )
+          }}
+        >
+          {createRFI.isPending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+          {createRFI.isPending ? "Submitting..." : "Submit RFI"}
         </Button>
       </div>
     </div>
