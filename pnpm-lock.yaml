@@ -1708,6 +1708,9 @@ importers:
       '@kealee/observability':
         specifier: workspace:*
         version: link:../../packages/observability
+      '@kealee/scoring':
+        specifier: workspace:*
+        version: link:../../packages/scoring
       '@prisma/client':
         specifier: ^5.20.0
         version: 5.22.0(prisma@5.22.0)
