@@ -11,7 +11,7 @@ const nextConfig = {
   },
   transpilePackages: ['@kealee/shared-ai', '@kealee/database'],
   images: {
-    domains: ['localhost', 'supabase.co'],
+    domains: ['localhost', 'supabase.co', 'images.unsplash.com'],
     remotePatterns: [
       {
         protocol: 'https',

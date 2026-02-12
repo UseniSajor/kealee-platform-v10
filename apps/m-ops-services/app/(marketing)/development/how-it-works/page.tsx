@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import Link from "next/link"
+import Image from "next/image"
 import { Button, Card, CardContent, CardHeader, CardTitle, Separator } from "@/components/ui"
 import { ProcessSteps } from "@/components/development/ProcessSteps"
 import {
@@ -25,13 +26,15 @@ export default function HowItWorksPage() {
   return (
     <div className="w-full">
       {/* Hero */}
-      <section className="bg-gradient-to-b from-gray-50 to-white py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-16 lg:py-24">
+        <Image src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1920&q=80&auto=format&fit=crop" alt="Steel frame construction" fill className="object-cover" sizes="100vw" priority />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6">
               Our Process
             </h1>
-            <p className="text-xl text-gray-600 leading-relaxed">
+            <p className="text-xl text-white/80 leading-relaxed">
               Our proven four-step process keeps your project on track from initial assessment through successful delivery and close-out. Clear accountability, detailed reporting, and proactive risk management at every stage.
             </p>
           </div>

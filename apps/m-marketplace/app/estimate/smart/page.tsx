@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import Image from 'next/image';
 import {
   HardHat,
   ArrowRight,
@@ -21,6 +22,7 @@ import {
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { sectionImages } from '@kealee/ui';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -800,7 +802,28 @@ export default function SmartEstimatePage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
 
-      <main className="flex-grow pt-24 pb-20 px-4 md:px-6">
+      {/* Hero Banner */}
+      <section className="relative pt-24 pb-12 overflow-hidden">
+        <Image
+          src={sectionImages.tapeMeasure.src}
+          alt={sectionImages.tapeMeasure.alt}
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative text-center px-4 md:px-6">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            Smart Estimate
+          </h1>
+          <p className="text-lg text-white/85 max-w-xl mx-auto">
+            AI-powered construction cost estimates using real assembly data.
+          </p>
+        </div>
+      </section>
+
+      <main className="flex-grow pb-20 pt-8 px-4 md:px-6">
         {step === 'form' && renderForm()}
         {step === 'processing' && renderProcessing()}
         {step === 'results' && renderResults()}

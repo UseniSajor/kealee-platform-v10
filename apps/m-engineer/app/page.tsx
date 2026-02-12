@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const services = [
@@ -134,13 +135,22 @@ export default function EngineerHomePage() {
       </header>
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-20">
-        <div className="max-w-7xl mx-auto px-6">
+      <section className="relative py-20 lg:py-28 overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1920&q=80&auto=format&fit=crop"
+          alt="Engineering and surveying in the field"
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 max-w-7xl mx-auto px-6">
           <div className="max-w-3xl">
-            <h1 className="text-5xl font-black mb-6">
+            <h1 className="text-5xl font-black mb-6 text-white">
               Professional Engineering Services On Demand
             </h1>
-            <p className="text-xl opacity-90 mb-8">
+            <p className="text-xl text-gray-200 mb-8">
               Licensed structural, MEP, and civil engineers ready to deliver stamped
               drawings for your construction projects. Fast turnaround, competitive pricing,
               guaranteed permit approval.

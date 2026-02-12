@@ -1,7 +1,9 @@
 import { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
+import { heroImages } from '@kealee/ui'
 
 export const metadata: Metadata = {
   title: 'Portal Access | Kealee',
@@ -83,10 +85,19 @@ export default function PortalsPage() {
       <main className="pt-16 min-h-screen">
         <div className="w-full">
           {/* Hero */}
-          <section className="bg-gradient-to-b from-gray-50 to-white py-16 lg:py-20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">Portal Access</h1>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <section className="relative py-16 lg:py-20 overflow-hidden">
+            <Image
+              src={heroImages.modernArchitecture.src}
+              alt={heroImages.modernArchitecture.alt}
+              fill
+              className="object-cover"
+              sizes="100vw"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+              <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6">Portal Access</h1>
+              <p className="text-xl text-white/85 max-w-3xl mx-auto">
                 Access your Kealee portal to manage projects, track permits, view estimates, and more. Choose your portal below to get started.
               </p>
             </div>

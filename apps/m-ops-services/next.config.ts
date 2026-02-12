@@ -13,6 +13,14 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   transpilePackages: ['@kealee/ui'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+    ],
+  },
   // Externalize Prisma so it doesn't get bundled on the client
   serverExternalPackages: ['@prisma/client', '@kealee/database'],
   webpack: (config, { isServer }) => {

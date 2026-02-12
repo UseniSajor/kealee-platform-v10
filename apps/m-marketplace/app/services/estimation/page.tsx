@@ -1,5 +1,7 @@
 import { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
+import { heroImages } from '@kealee/ui'
 
 export const metadata: Metadata = {
   title: 'AI Estimation Engine | Kealee',
@@ -61,24 +63,35 @@ export default function EstimationServicePage() {
         </Link>
 
         {/* Hero */}
-        <div className="text-center mb-16">
-          <span className="inline-block rounded-full bg-blue-100 px-4 py-1.5 text-sm font-bold text-blue-700 mb-4">
-            AI-POWERED
-          </span>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
-            AI Estimation Engine
-          </h1>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
-            Get accurate cost estimates powered by AI and validated by expert estimators.
-            Labor, materials, timeline, and profit analysis — delivered fast.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link href="/contact" className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700">
-              Get an Estimate
-            </Link>
-            <Link href="/portals" className="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50">
-              Go to Portal
-            </Link>
+        <div className="relative text-center mb-16 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-16 overflow-hidden">
+          <Image
+            src={heroImages.blueprintReview.src}
+            alt={heroImages.blueprintReview.alt}
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+          <div className="relative">
+            <span className="inline-block rounded-full bg-blue-100 px-4 py-1.5 text-sm font-bold text-blue-700 mb-4">
+              AI-POWERED
+            </span>
+            <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
+              AI Estimation Engine
+            </h1>
+            <p className="mt-4 text-xl text-white/85 max-w-3xl mx-auto">
+              Get accurate cost estimates powered by AI and validated by expert estimators.
+              Labor, materials, timeline, and profit analysis — delivered fast.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <Link href="/contact" className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700">
+                Get an Estimate
+              </Link>
+              <Link href="/portals" className="inline-flex items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-white/20">
+                Go to Portal
+              </Link>
+            </div>
           </div>
         </div>
 

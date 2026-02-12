@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { CheckCircle2, AlertCircle, Lightbulb, TrendingUp, Star } from "lucide-react";
 
 export const metadata = {
@@ -100,13 +101,15 @@ export default function CaseStudiesPage() {
   return (
     <div className="w-full">
       {/* Hero */}
-      <section className="bg-gradient-to-b from-zinc-50 to-white py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-16 lg:py-24">
+        <Image src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80&auto=format&fit=crop" alt="Modern home" fill className="object-cover" sizes="100vw" priority />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6">
               Case Studies
             </h1>
-            <p className="text-xl text-zinc-600 leading-relaxed">
+            <p className="text-xl text-white/80 leading-relaxed">
               See how GCs are saving time and growing with Kealee Ops. Real contractors, real results, real impact on their businesses.
             </p>
           </div>

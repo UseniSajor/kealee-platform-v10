@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 type Tab = 'packages' | 'software' | 'individual' | 'escrow'
 
@@ -18,12 +19,14 @@ export default function PricingPage() {
   return (
     <div className="w-full">
       {/* Hero */}
-      <section className="bg-gradient-to-b from-zinc-50 to-white py-16">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 mb-4">
+      <section className="relative py-16">
+        <Image src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&q=80&auto=format&fit=crop" alt="Construction site" fill className="object-cover" sizes="100vw" priority />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Clear, Simple Pricing
           </h1>
-          <p className="text-xl text-zinc-600 max-w-2xl mx-auto">
+          <p className="text-xl text-white/80 max-w-2xl mx-auto">
             From on-demand services to full PM teams — find the right fit for your business.
           </p>
         </div>

@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Check, HelpCircle, ArrowRight, Zap, Star, Building2, Briefcase, Crown, Users, Wrench } from 'lucide-react';
 import Link from 'next/link';
+import { heroImages } from '@kealee/ui';
 
 /**
  * PRICING PAGE - Two distinct pricing models:
@@ -370,28 +372,39 @@ export default function PricingPage() {
         <div className="container mx-auto px-6">
 
           {/* Hero */}
-          <div className="text-center mb-16 max-w-4xl mx-auto">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              Clear Pricing, Real Results
-            </h1>
-            <p className="text-xl text-gray-600 mb-8">
-              Choose software access or full-service management. No hidden fees, cancel anytime.
-            </p>
+          <div className="relative -mx-6 -mt-32 mb-16 pt-32 pb-16 px-6 overflow-hidden">
+            <Image
+              src={heroImages.constructionSite.src}
+              alt={heroImages.constructionSite.alt}
+              fill
+              className="object-cover"
+              sizes="100vw"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+            <div className="relative text-center max-w-4xl mx-auto">
+              <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4">
+                Clear Pricing, Real Results
+              </h1>
+              <p className="text-xl text-white/85 mb-8">
+                Choose software access or full-service management. No hidden fees, cancel anytime.
+              </p>
 
-            {/* Trust badges */}
-            <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500">
-              <span className="flex items-center gap-2">
-                <Check className="text-green-500" size={16} />
-                No setup fees
-              </span>
-              <span className="flex items-center gap-2">
-                <Check className="text-green-500" size={16} />
-                Cancel anytime
-              </span>
-              <span className="flex items-center gap-2">
-                <Check className="text-green-500" size={16} />
-                30-day money-back
-              </span>
+              {/* Trust badges */}
+              <div className="flex flex-wrap justify-center gap-6 text-sm text-white/80">
+                <span className="flex items-center gap-2">
+                  <Check className="text-green-400" size={16} />
+                  No setup fees
+                </span>
+                <span className="flex items-center gap-2">
+                  <Check className="text-green-400" size={16} />
+                  Cancel anytime
+                </span>
+                <span className="flex items-center gap-2">
+                  <Check className="text-green-400" size={16} />
+                  30-day money-back
+                </span>
+              </div>
             </div>
           </div>
 

@@ -1,5 +1,7 @@
 import { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
+import { heroImages } from '@kealee/ui'
 
 export const metadata: Metadata = {
   title: 'Operations Services | Kealee',
@@ -32,15 +34,26 @@ export default function OpsServicePage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <Link href="/services" className="inline-flex items-center gap-2 text-blue-600 hover:underline mb-8 text-sm">&larr; All Services</Link>
 
-        <div className="text-center mb-16">
-          <span className="inline-block rounded-full bg-sky-100 px-4 py-1.5 text-sm font-bold text-sky-700 mb-4">MANAGED SERVICES</span>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">Operations Services</h1>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
-            Your operations department, on demand. Professional PM teams handle permits, coordination, reporting, and admin so you can focus on building.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <a href="https://ops.kealee.com" className="inline-flex items-center justify-center rounded-xl bg-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600">Learn More at ops.kealee.com</a>
-            <Link href="/contact" className="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50">Contact Sales</Link>
+        <div className="relative text-center mb-16 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-16 overflow-hidden">
+          <Image
+            src={heroImages.constructionSite.src}
+            alt={heroImages.constructionSite.alt}
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+          <div className="relative">
+            <span className="inline-block rounded-full bg-sky-100 px-4 py-1.5 text-sm font-bold text-sky-700 mb-4">MANAGED SERVICES</span>
+            <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">Operations Services</h1>
+            <p className="mt-4 text-xl text-white/85 max-w-3xl mx-auto">
+              Your operations department, on demand. Professional PM teams handle permits, coordination, reporting, and admin so you can focus on building.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <a href="https://ops.kealee.com" className="inline-flex items-center justify-center rounded-xl bg-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600">Learn More at ops.kealee.com</a>
+              <Link href="/contact" className="inline-flex items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-white/20">Contact Sales</Link>
+            </div>
           </div>
         </div>
 

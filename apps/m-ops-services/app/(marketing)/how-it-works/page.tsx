@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { CheckCircle2, Users, Phone, Rocket, FileText, TrendingUp, Shield, Zap, Clock, BarChart3 } from "lucide-react";
 
 export const metadata = {
@@ -149,13 +150,15 @@ export default function HowItWorksPage() {
   return (
     <div className="w-full">
       {/* Hero */}
-      <section className="bg-gradient-to-b from-zinc-50 to-white py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-16 lg:py-24">
+        <Image src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1920&q=80&auto=format&fit=crop" alt="Steel frame construction" fill className="object-cover" sizes="100vw" priority />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6">
               How It Works
             </h1>
-            <p className="text-xl text-zinc-600 leading-relaxed">
+            <p className="text-xl text-white/80 leading-relaxed">
               Getting started with Kealee Ops is simple. Choose your package, complete a quick onboarding call, and start saving time within 48 hours.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
@@ -167,7 +170,7 @@ export default function HowItWorksPage() {
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center rounded-2xl border-2 border-zinc-200 px-6 py-3 text-sm font-bold text-gray-700 transition hover:border-zinc-300 hover:bg-zinc-50"
+                className="inline-flex items-center justify-center rounded-2xl border-2 border-white/30 px-6 py-3 text-sm font-bold text-white transition hover:border-white/50 hover:bg-white/10"
               >
                 Start Free Trial
               </Link>

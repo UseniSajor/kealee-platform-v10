@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Check,
   Building2,
@@ -246,40 +247,49 @@ export default function PermitsLanding() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-28 pb-20 bg-gradient-to-br from-emerald-50 via-white to-green-50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="relative pt-28 pb-20 overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80&auto=format&fit=crop"
+          alt="City skyline with modern buildings"
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-semibold mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-300 rounded-full text-sm font-semibold mb-6 backdrop-blur-sm border border-emerald-400/30">
               <Zap className="h-4 w-4" />
               AI-Powered — Get Approved 40% Faster
             </div>
-            <h1 className="text-5xl md:text-6xl font-black tracking-tight text-gray-900">
+            <h1 className="text-5xl md:text-6xl font-black tracking-tight text-white">
               Permits, Inspections &
-              <span className="block text-emerald-600 mt-2">
+              <span className="block text-emerald-400 mt-2">
                 Zoning Made Simple
               </span>
             </h1>
-            <p className="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="mt-6 text-xl text-gray-200 max-w-3xl mx-auto">
               From initial zoning verification to certificate of occupancy—we handle every step of the permitting process. AI catches errors before you submit, and we track everything until approval.
             </p>
 
             {/* Stats */}
             <div className="mt-8 flex flex-wrap justify-center gap-8">
               <div>
-                <div className="text-3xl font-black text-emerald-600">40%</div>
-                <div className="mt-1 text-sm text-gray-600">Faster approvals</div>
+                <div className="text-3xl font-black text-emerald-400">40%</div>
+                <div className="mt-1 text-sm text-gray-300">Faster approvals</div>
               </div>
               <div>
-                <div className="text-3xl font-black text-emerald-600">60%</div>
-                <div className="mt-1 text-sm text-gray-600">Fewer rejections</div>
+                <div className="text-3xl font-black text-emerald-400">60%</div>
+                <div className="mt-1 text-sm text-gray-300">Fewer rejections</div>
               </div>
               <div>
-                <div className="text-3xl font-black text-emerald-600">14 days</div>
-                <div className="mt-1 text-sm text-gray-600">Avg. approval time</div>
+                <div className="text-3xl font-black text-emerald-400">14 days</div>
+                <div className="mt-1 text-sm text-gray-300">Avg. approval time</div>
               </div>
               <div>
-                <div className="text-3xl font-black text-emerald-600">500+</div>
-                <div className="mt-1 text-sm text-gray-600">Jurisdictions</div>
+                <div className="text-3xl font-black text-emerald-400">500+</div>
+                <div className="mt-1 text-sm text-gray-300">Jurisdictions</div>
               </div>
             </div>
 
@@ -294,12 +304,12 @@ export default function PermitsLanding() {
               </Link>
               <Link
                 href="/permits/status"
-                className="inline-flex items-center justify-center rounded-2xl border-2 border-gray-200 bg-white px-8 py-4 text-base font-bold text-gray-900 shadow-sm transition hover:border-emerald-600"
+                className="inline-flex items-center justify-center rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm px-8 py-4 text-base font-bold text-white shadow-sm transition hover:bg-white/20"
               >
                 Check Permit Status
               </Link>
             </div>
-            <p className="mt-4 text-sm text-gray-500">
+            <p className="mt-4 text-sm text-gray-300">
               Takes 5 minutes to start &bull; AI reviews instantly &bull; No payment until submission
             </p>
           </div>

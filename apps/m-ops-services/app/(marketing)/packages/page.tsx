@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -10,13 +11,15 @@ export default function PackagesPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-sky-50 to-white py-20">
-        <div className="container mx-auto px-4">
+      <section className="relative py-20">
+        <Image src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1920&q=80&auto=format&fit=crop" alt="Construction workers on site" fill className="object-cover" sizes="100vw" priority />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl font-bold text-zinc-900 mb-6">
+            <h1 className="text-5xl font-bold text-white mb-6">
               PM Managed Service Packages
             </h1>
-            <p className="text-xl text-zinc-600">
+            <p className="text-xl text-white/80">
               Choose the right level of operations support for your construction projects.
               From basic permit tracking to full portfolio management, we scale with your needs.
             </p>

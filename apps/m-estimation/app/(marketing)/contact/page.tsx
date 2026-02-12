@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { CheckCircle2, Mail, Phone, Clock, Send, Loader2 } from "lucide-react"
 import { apiClient } from "@/lib/api"
 
@@ -84,14 +85,25 @@ export default function ContactPage() {
   return (
     <div className="w-full">
       {/* Hero */}
-      <section className="bg-gradient-to-b from-blue-50 to-white py-12 lg:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-            Get Your Estimate
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Tell us about your project and we will provide a free initial estimate. No commitment required.
-          </p>
+      <section className="relative py-16 lg:py-24 px-4 overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1920&q=80&auto=format&fit=crop"
+          alt="Professional team meeting to discuss project estimates"
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10">
+          <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4">
+              Get Your Estimate
+            </h1>
+            <p className="text-xl text-white/90 max-w-2xl mx-auto">
+              Tell us about your project and we will provide a free initial estimate. No commitment required.
+            </p>
+          </div>
         </div>
       </section>
 

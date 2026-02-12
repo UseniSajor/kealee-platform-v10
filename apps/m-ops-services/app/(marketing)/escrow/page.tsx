@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -10,13 +11,15 @@ export default function EscrowPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-sky-50 to-white py-20">
-        <div className="container mx-auto px-4">
+      <section className="relative py-20">
+        <Image src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1920&q=80&auto=format&fit=crop" alt="Financial planning" fill className="object-cover" sizes="100vw" priority />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl font-bold text-zinc-900 mb-6">
+            <h1 className="text-5xl font-bold text-white mb-6">
               Construction Escrow & Finance
             </h1>
-            <p className="text-xl text-zinc-600">
+            <p className="text-xl text-white/80">
               Protect your construction payments with secure, milestone-based escrow accounts.
               Built for contractors, project owners, and lenders.
             </p>

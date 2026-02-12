@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import Link from "next/link"
+import Image from "next/image"
 import { Button, Card, CardContent, Badge, Separator } from "@/components/ui"
 import { ServiceTiers } from "@/components/development/ServiceTiers"
 import { ProcessSteps } from "@/components/development/ProcessSteps"
@@ -26,16 +27,18 @@ export default function DevelopmentHomePage() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-gray-50 to-white py-20 lg:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-20 lg:py-28">
+        <Image src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80&auto=format&fit=crop" alt="City skyline" fill className="object-cover" sizes="100vw" priority />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <Badge className="mb-6 bg-orange-100 text-orange-800 px-4 py-2 text-sm font-medium">
               Owner's Rep Services • Nationwide
             </Badge>
-            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
               Owner's Representation & Development Advisory for Real Estate Projects That Can't Afford Mistakes
             </h1>
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+            <p className="text-xl text-white/80 mb-8 leading-relaxed">
               Kealee Development protects owner capital by managing entitlement, design, and construction risk—acting as your senior development partner from feasibility through Certificate of Occupancy. Backed by AI-powered project analytics and automated risk monitoring.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -48,7 +51,7 @@ export default function DevelopmentHomePage() {
               <Button
                 asChild
                 variant="outline"
-                className="border-2 border-gray-300 hover:border-orange-600 rounded-2xl h-14 px-8 text-lg font-semibold"
+                className="border-2 border-white/30 hover:border-orange-400 text-white rounded-2xl h-14 px-8 text-lg font-semibold"
               >
                 <a href="/kealee-development-1pager.pdf" download className="inline-flex items-center space-x-2">
                   <Download className="h-5 w-5" />
@@ -58,21 +61,21 @@ export default function DevelopmentHomePage() {
             </div>
 
             {/* Trust Bullets */}
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600">
+            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-white/80">
               <div className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-orange-600" />
+                <CheckCircle2 className="h-5 w-5 text-orange-400" />
                 <span>20+ Years Experience</span>
               </div>
               <div className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-orange-600" />
+                <CheckCircle2 className="h-5 w-5 text-orange-400" />
                 <span>Licensed General Contractor</span>
               </div>
               <div className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-orange-600" />
+                <CheckCircle2 className="h-5 w-5 text-orange-400" />
                 <span>Nationwide Coverage</span>
               </div>
               <div className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-orange-600" />
+                <CheckCircle2 className="h-5 w-5 text-orange-400" />
                 <span>350+ Projects Delivered</span>
               </div>
             </div>

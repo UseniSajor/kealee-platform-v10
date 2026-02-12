@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { 
-  Clock, 
-  TrendingUp, 
-  Users, 
+import Image from "next/image";
+import {
+  Clock,
+  TrendingUp,
+  Users,
   Shield, 
   Target, 
   Zap,
@@ -132,13 +133,15 @@ export default function ContractorsPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       
       {/* Hero */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative text-white py-20">
+        <Image src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1920&q=80&auto=format&fit=crop" alt="Construction workers on site" fill className="object-cover" sizes="100vw" priority />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Why GCs, Builders &amp; Contractors Choose Kealee
             </h1>
-            <p className="text-xl text-slate-300 mb-8">
+            <p className="text-xl text-white/80 mb-8">
               Whether you&apos;re a general contractor, custom builder, or specialty contractor — stop losing time and money on administrative tasks. Let us handle the operations while you focus on building quality projects.
             </p>
             <Link

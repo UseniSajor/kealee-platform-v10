@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Metadata } from "next";
 
 import { HeroGC } from "@/components/marketing/HeroGC";
@@ -58,28 +59,38 @@ export default function OpsServicesHomePage() {
   return (
     <main className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="mx-auto max-w-7xl px-6 py-16">
+      <section className="relative">
+        <Image
+          src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&q=80&auto=format&fit=crop"
+          alt="Construction site aerial view"
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 mx-auto max-w-7xl px-6 py-16">
         <div className="text-center">
-          <h1 className="text-5xl font-black tracking-tight text-zinc-900 md:text-6xl">
+          <h1 className="text-5xl font-black tracking-tight text-white md:text-6xl">
             Your Operations Department, On Demand
           </h1>
-          <p className="mx-auto mt-6 max-w-3xl text-xl text-zinc-600">
+          <p className="mx-auto mt-6 max-w-3xl text-xl text-white/80">
             Outsource your PM operations to a dedicated team that handles permits, reporting, vendor coordination, and admin work—so you can focus on building and growing your business.
           </p>
 
           {/* Stats */}
           <div className="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-8 text-center">
             <div>
-              <div className="text-3xl font-black text-sky-500">150+</div>
-              <div className="mt-1 text-sm text-zinc-600">Contractors served</div>
+              <div className="text-3xl font-black text-sky-400">150+</div>
+              <div className="mt-1 text-sm text-white/70">Contractors served</div>
             </div>
             <div>
-              <div className="text-3xl font-black text-sky-500">22 hrs/week</div>
-              <div className="mt-1 text-sm text-zinc-600">saved</div>
+              <div className="text-3xl font-black text-sky-400">22 hrs/week</div>
+              <div className="mt-1 text-sm text-white/70">saved</div>
             </div>
             <div>
-              <div className="text-3xl font-black text-sky-500">$3.2M</div>
-              <div className="mt-1 text-sm text-zinc-600">avg project value</div>
+              <div className="text-3xl font-black text-sky-400">$3.2M</div>
+              <div className="mt-1 text-sm text-white/70">avg project value</div>
             </div>
           </div>
 
@@ -98,6 +109,7 @@ export default function OpsServicesHomePage() {
               Schedule Consultation
             </Link>
           </div>
+        </div>
         </div>
       </section>
 

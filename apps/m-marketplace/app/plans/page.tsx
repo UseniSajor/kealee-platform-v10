@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Search, SlidersHorizontal, Home, BedDouble, Bath, Car, Ruler, ChevronRight, Star, Heart, X } from 'lucide-react'
+import { heroImages } from '@kealee/ui'
 
 const styles = [
   { name: 'Modern Farmhouse', count: 420, slug: 'modern-farmhouse' },
@@ -302,13 +304,22 @@ export default function StockPlansPage() {
   return (
     <div className="w-full">
       {/* Hero */}
-      <section className="bg-white border-b border-gray-200 py-12 lg:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative border-b border-gray-200 py-12 lg:py-16 overflow-hidden">
+        <Image
+          src={heroImages.modernHome.src}
+          alt={heroImages.modernHome.alt}
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-10">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4">
               Stock House Plans
             </h1>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-white/85">
               Browse ready-to-build plans from licensed architects and designers on the Kealee platform. Every plan is permit-ready and available for instant download.
             </p>
           </div>

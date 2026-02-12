@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Calculator, FileText, Target, TrendingUp, DollarSign, Package, CheckCircle2, ArrowRight, Clock, Brain } from "lucide-react"
 
 export const metadata = {
@@ -68,14 +69,25 @@ export default function ServicesPage() {
   return (
     <div className="w-full">
       {/* Hero */}
-      <section className="bg-gradient-to-b from-blue-50 to-white py-16 lg:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            Estimation Services
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            From quick budgets to detailed bid-ready estimates, we provide the right level of detail for every stage of your project.
-          </p>
+      <section className="relative py-16 lg:py-24 px-4 overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1920&q=80&auto=format&fit=crop"
+          alt="Construction blueprints and architectural plans"
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10">
+          <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6">
+              Estimation Services
+            </h1>
+            <p className="text-xl text-white/90 max-w-3xl mx-auto">
+              From quick budgets to detailed bid-ready estimates, we provide the right level of detail for every stage of your project.
+            </p>
+          </div>
         </div>
       </section>
 

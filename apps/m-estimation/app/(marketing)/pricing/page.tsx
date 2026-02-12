@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { CheckCircle2, Zap } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
@@ -116,14 +117,25 @@ export default function PricingPage() {
   return (
     <div className="w-full">
       {/* Hero */}
-      <section className="bg-gradient-to-b from-blue-50 to-white py-16 lg:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            Clear, Simple Pricing
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Choose a platform subscription for ongoing access, or order individual estimation services as needed. First estimate free on every plan.
-          </p>
+      <section className="relative py-16 lg:py-24 px-4 overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1920&q=80&auto=format&fit=crop"
+          alt="Financial planning and cost analysis workspace"
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10">
+          <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6">
+              Clear, Simple Pricing
+            </h1>
+            <p className="text-xl text-white/90 max-w-3xl mx-auto">
+              Choose a platform subscription for ongoing access, or order individual estimation services as needed. First estimate free on every plan.
+            </p>
+          </div>
         </div>
       </section>
 

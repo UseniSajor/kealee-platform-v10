@@ -1,7 +1,9 @@
+import Image from 'next/image';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Target, Users, Award, Heart, TrendingUp, Shield } from 'lucide-react';
 import Link from 'next/link';
+import { heroImages } from '@kealee/ui';
 
 export default function AboutPage() {
   const values = [
@@ -40,13 +42,22 @@ export default function AboutPage() {
       <Header />
 
       {/* Hero */}
-      <section className="pt-32 pb-20 bg-gradient-to-br from-blue-50 to-white">
-        <div className="container mx-auto px-6">
+      <section className="relative pt-32 pb-20 overflow-hidden">
+        <Image
+          src={heroImages.teamCollaboration.src}
+          alt={heroImages.teamCollaboration.alt}
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative container mx-auto px-6">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-5xl lg:text-6xl font-bold text-white mb-6">
               Building the Future of Construction Management
             </h1>
-            <p className="text-xl text-gray-600 leading-relaxed">
+            <p className="text-xl text-white/85 leading-relaxed">
               Kealee was founded by construction professionals who were frustrated with expensive, complicated project management tools. We built the platform we wished existed - simple, affordable, and actually useful.
             </p>
           </div>

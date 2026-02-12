@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import Link from "next/link"
+import Image from "next/image"
 import { Button, Card, CardContent, Badge } from "@/components/ui"
 import { AIFeaturesShowcase } from "@/components/gc-services/AIFeaturesShowcase"
 import {
@@ -84,16 +85,18 @@ export default function GCServicesHomePage() {
   return (
     <div className="w-full">
       {/* Hero */}
-      <section className="bg-gradient-to-b from-blue-50 to-white py-20 lg:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-20 lg:py-28">
+        <Image src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1920&q=80&auto=format&fit=crop" alt="Construction workers on site" fill className="object-cover" sizes="100vw" priority />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <Badge className="mb-6 bg-blue-100 text-blue-800 px-4 py-2 text-sm font-medium">
               Professional Operations Support for GCs & Builders
             </Badge>
-            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
               Get Your Weekends Back. Let Us Handle Your Operations.
             </h1>
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+            <p className="text-xl text-white/80 mb-8 leading-relaxed">
               Stop losing 20+ hours per week on admin chaos. Kealee Operations Services becomes your outsourced operations department—powered by AI-driven risk monitoring and automated workflows. We handle permits, vendor coordination, weekly reporting, and documentation so you can stay on-site and sell the next job.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -106,23 +109,23 @@ export default function GCServicesHomePage() {
               <Button
                 asChild
                 variant="outline"
-                className="border-2 border-gray-300 hover:border-blue-600 rounded-2xl h-14 px-8 text-lg font-semibold"
+                className="border-2 border-white/30 hover:border-blue-400 text-white rounded-2xl h-14 px-8 text-lg font-semibold"
               >
                 <Link href="/gc-services/pricing">View All Pricing</Link>
               </Button>
             </div>
 
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600">
+            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-white/80">
               <div className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-blue-600" />
+                <CheckCircle2 className="h-5 w-5 text-blue-400" />
                 <span>14-Day Free Trial</span>
               </div>
               <div className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-blue-600" />
+                <CheckCircle2 className="h-5 w-5 text-blue-400" />
                 <span>No Credit Card Required</span>
               </div>
               <div className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-blue-600" />
+                <CheckCircle2 className="h-5 w-5 text-blue-400" />
                 <span>Cancel Anytime</span>
               </div>
             </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -10,16 +11,18 @@ export default function DeveloperPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-violet-50 to-white py-20">
-        <div className="container mx-auto px-4">
+      <section className="relative py-20">
+        <Image src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80&auto=format&fit=crop" alt="City skyline" fill className="object-cover" sizes="100vw" priority />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-block bg-violet-100 text-violet-700 px-4 py-2 rounded-full text-sm font-bold mb-6">
               DEVELOPMENT
             </div>
-            <h1 className="text-5xl font-bold text-zinc-900 mb-6">
+            <h1 className="text-5xl font-bold text-white mb-6">
               Developer Services
             </h1>
-            <p className="text-xl text-zinc-600 mb-8">
+            <p className="text-xl text-white/80 mb-8">
               End-to-end real estate development services from feasibility through construction
               closeout. We guide your project from concept to completion.
             </p>

@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Briefcase, MapPin, Clock, ChevronRight, Heart, Home, DollarSign, BookOpen, Laptop, Calendar, Users, Zap } from 'lucide-react';
 import Link from 'next/link';
+import { heroImages } from '@kealee/ui';
 
 interface JobOpening {
   id: string;
@@ -138,26 +140,37 @@ export default function CareersPage() {
     <div className="min-h-screen bg-white">
       <Header />
 
-      <main className="pt-32 pb-20">
-        <div className="container mx-auto px-6">
+      {/* Hero */}
+      <section className="relative pt-32 pb-20 overflow-hidden">
+        <Image
+          src={heroImages.teamCollaboration.src}
+          alt={heroImages.teamCollaboration.alt}
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative text-center max-w-4xl mx-auto px-6">
+          <h1 className="text-5xl lg:text-6xl font-bold text-white mb-6">
+            Build Your Career at Kealee
+          </h1>
+          <p className="text-xl text-white/85 mb-8">
+            Join a team of builders transforming how construction gets done.
+            We're solving real problems for real contractors—and we need your help.
+          </p>
+          <a
+            href="#openings"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition"
+          >
+            View Open Positions
+            <ChevronRight size={20} />
+          </a>
+        </div>
+      </section>
 
-          {/* Hero */}
-          <div className="text-center mb-20 max-w-4xl mx-auto">
-            <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Build Your Career at Kealee
-            </h1>
-            <p className="text-xl text-gray-600 mb-8">
-              Join a team of builders transforming how construction gets done.
-              We're solving real problems for real contractors—and we need your help.
-            </p>
-            <a
-              href="#openings"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition"
-            >
-              View Open Positions
-              <ChevronRight size={20} />
-            </a>
-          </div>
+      <main className="pb-20">
+        <div className="container mx-auto px-6">
 
           {/* Why Kealee */}
           <div className="bg-blue-600 rounded-3xl p-12 mb-20 text-white max-w-6xl mx-auto">
