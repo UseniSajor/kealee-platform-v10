@@ -1,0 +1,54 @@
+"use client"
+import * as React from "react"
+import { ArrowLeft, Plus, Paperclip, Send, Trash2, UserPlus } from "lucide-react"
+import { Button } from "@kealee/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
+import { Input } from "@kealee/ui/input"
+import { cn } from "@/lib/utils"
+const tradeOptions=["Concrete","Steel","Electrical","Plumbing","HVAC","Drywall","Painting","Roofing","Masonry","Flooring","Fire Protection","Glazing"]
+export default function NewBidPackagePage(){
+  const[name,setName]=React.useState("")
+  const[trade,setTrade]=React.useState("")
+  const[desc,setDesc]=React.useState("")
+  const[dueDate,setDueDate]=React.useState("")
+  const[preBidDate,setPreBidDate]=React.useState("")
+  const[scopeItems,setScopeItems]=React.useState<string[]>([""])
+  const[contractors,setContractors]=React.useState<string[]>([""])
+  const addScope=()=>setScopeItems([...scopeItems,""])
+  const removeScope=(i:number)=>setScopeItems(scopeItems.filter((_,idx)=>idx!==i))
+  const updateScope=(i:number,v:string)=>{const n=[...scopeItems];n[i]=v;setScopeItems(n)}
+  const addContractor=()=>setContractors([...contractors,""])
+  const removeContractor=(i:number)=>setContractors(contractors.filter((_,idx)=>idx!==i))
+  const updateContractor=(i:number,v:string)=>{const n=[...contractors];n[i]=v;setContractors(n)}
+  return(
+    <div className="space-y-6 max-w-3xl">
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" size="icon" onClick={()=>window.history.back()}><ArrowLeft className="h-4 w-4"/></Button>
+        <h1 className="text-xl font-bold">Create Bid Package</h1></div>
+      <Card><CardHeader><CardTitle>Package Details</CardTitle></CardHeader><CardContent className="space-y-4">
+        <div><label className="text-sm font-medium">Package Name</label><Input placeholder="e.g. BP-009 Roofing" value={name} onChange={e=>setName(e.target.value)} className="mt-1"/></div>
+        <div><label className="text-sm font-medium">Trade</label>
+          <select value={trade} onChange={e=>setTrade(e.target.value)} className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+            <option value="">Select trade...</option>
+            {tradeOptions.map(t=><option key={t} value={t}>{t}</option>)}
+          </select></div>
+        <div><label className="text-sm font-medium">Description</label>
+          <textarea value={desc} onChange={e=>setDesc(e.target.value)} placeholder="Describe the scope of work..." className="mt-1 flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y"/></div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div><label className="text-sm font-medium">Due Date</label><Input type="date" value={dueDate} onChange={e=>setDueDate(e.target.value)} className="mt-1"/></div>
+          <div><label className="text-sm font-medium">Pre-Bid Meeting Date</label><Input type="date" value={preBidDate} onChange={e=>setPreBidDate(e.target.value)} className="mt-1"/></div>
+        </div>
+      </CardContent></Card>
+      <Card><CardHeader className="flex flex-row items-center justify-between"><CardTitle>Scope Items</CardTitle><Button variant="outline" size="sm" onClick={addScope}><Plus className="mr-2 h-4 w-4"/>Add Item</Button></CardHeader>
+        <CardContent className="space-y-2">{scopeItems.map((item,i)=><div key={i} className="flex items-center gap-2"><span className="text-sm text-muted-foreground w-6">{i+1}.</span><Input placeholder="Scope item description..." value={item} onChange={e=>updateScope(i,e.target.value)}/>
+          {scopeItems.length>1&&<Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={()=>removeScope(i)}><Trash2 className="h-4 w-4 text-red-500"/></Button>}</div>)}
+        </CardContent></Card>
+      <Card><CardHeader className="flex flex-row items-center justify-between"><CardTitle>Invite Contractors</CardTitle><Button variant="outline" size="sm" onClick={addContractor}><UserPlus className="mr-2 h-4 w-4"/>Add Contractor</Button></CardHeader>
+        <CardContent className="space-y-2">{contractors.map((c,i)=><div key={i} className="flex items-center gap-2"><Input placeholder="Contractor name or email..." value={c} onChange={e=>updateContractor(i,e.target.value)}/>
+          {contractors.length>1&&<Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={()=>removeContractor(i)}><Trash2 className="h-4 w-4 text-red-500"/></Button>}</div>)}
+        </CardContent></Card>
+      <Card><CardHeader><CardTitle>Attach Documents</CardTitle></CardHeader><CardContent><div className="flex items-center justify-center rounded-lg border-2 border-dashed py-8"><div className="text-center"><Paperclip className="mx-auto h-8 w-8 text-muted-foreground mb-2"/><p className="text-sm font-medium">Drop files here or click to browse</p><p className="text-xs text-muted-foreground mt-1">PDF, DWG, or image files up to 50MB</p></div></div></CardContent></Card>
+      <div className="flex justify-end gap-3"><Button variant="outline" onClick={()=>window.history.back()}>Cancel</Button><Button variant="outline">Save as Draft</Button><Button><Send className="mr-2 h-4 w-4"/>Send to Contractors</Button></div>
+    </div>
+  )
+}

@@ -3,8 +3,25 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Roles allowed in the PM dashboard
-const ALLOWED_ROLES = ['pm', 'admin', 'super_admin'];
+// All roles allowed in Kealee PM (both internal and external)
+const ALLOWED_ROLES = [
+  // Internal Kealee staff
+  'pm', 'pm_supervisor', 'admin', 'super_admin',
+  // External users (GCs, builders, contractors)
+  'contractor', 'gc', 'builder', 'architect', 'engineer', 'owner', 'client',
+];
+
+// Routes restricted to internal Kealee staff only
+const INTERNAL_ONLY_ROUTES = [
+  '/work-queue',
+  '/pipeline',
+  '/autonomous-actions',
+  '/contractor-rankings',
+  '/contractor-payments',
+  '/clients',
+];
+
+const INTERNAL_ROLES = ['pm', 'pm_supervisor', 'admin', 'super_admin'];
 
 export async function middleware(request: NextRequest) {
   const res = NextResponse.next();
@@ -47,7 +64,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Enforce PM or admin role
+  // Get org membership for role
   const { data: membership } = await adminClient
     .from('OrgMember')
     .select('roleKey')
@@ -57,17 +74,32 @@ export async function middleware(request: NextRequest) {
 
   const effectiveRole = (membership?.roleKey || user.role || 'user').toLowerCase();
 
+  // Check if user has any allowed role
   if (!ALLOWED_ROLES.includes(effectiveRole)) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/unauthorized';
     return NextResponse.redirect(redirectUrl);
   }
 
+  // Check internal-only route restrictions
+  const pathname = request.nextUrl.pathname;
+  const isInternalRoute = INTERNAL_ONLY_ROUTES.some((route) => pathname.startsWith(route));
+
+  if (isInternalRoute && !INTERNAL_ROLES.includes(effectiveRole)) {
+    // External user trying to access internal tool — redirect to dashboard
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/';
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // Set role header for downstream pages
+  res.headers.set('x-user-role', effectiveRole);
+
   return res;
 }
 
 export const config = {
   matcher: [
-    '/((?!login|signup|unauthorized|_next/static|_next/image|favicon.ico|api).*)',
+    '/((?!login|signup|unauthorized|_next/static|_next/image|favicon.ico|api|icon-|manifest).*)',
   ],
 };

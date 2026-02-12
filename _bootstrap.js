@@ -1,0 +1,1 @@
+const fs=require("fs");const data=fs.readFileSync("_gen_b64.txt","utf8");const script=Buffer.from(data,"base64").toString("utf8");fs.writeFileSync("_gen_decoded.js",script);console.log("Decoded",script.length,"chars");require("./_gen_decoded.js");

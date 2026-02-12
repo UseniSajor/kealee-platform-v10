@@ -1,0 +1,1 @@
+const fs=require("fs"),p=require("path");const b=p.resolve("apps/os-pm/app/(dashboard)");const d=JSON.parse(fs.readFileSync(p.resolve("tmp/parts.json"),"utf8"));for(const[r,b64]of Object.entries(d)){const f=p.join(b,r);fs.mkdirSync(p.dirname(f),{recursive:true});fs.writeFileSync(f,Buffer.from(b64,"base64").toString("utf8"),"utf8");console.log("W:",r);}

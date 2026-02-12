@@ -7,11 +7,13 @@ import {
   Calendar,
   DollarSign,
   FolderKanban,
+  Plus,
   Search,
   TrendingUp,
 } from "lucide-react"
 
 import { api } from "@/lib/api-client"
+import { useRole } from "@/lib/role-context"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
@@ -32,6 +34,7 @@ type Project = {
 }
 
 export default function ProjectsPage() {
+  const { isInternal } = useRole()
   const [projects, setProjects] = React.useState<Project[]>([])
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState("")
@@ -161,8 +164,13 @@ export default function ProjectsPage() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Projects</h1>
-          <p className="text-neutral-600 mt-1">All projects across your assigned clients.</p>
+          <p className="text-neutral-600 mt-1">
+            {isInternal ? "All projects across your assigned clients." : "Your construction projects and portfolio."}
+          </p>
         </div>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />New Project
+        </Button>
       </div>
 
       {/* Filters */}
@@ -255,7 +263,7 @@ export default function ProjectsPage() {
           {filtered.map((project) => (
             <Link
               key={project.id}
-              href={`/clients/${project.clientId}/projects/${project.id}/overview`}
+              href={isInternal ? `/clients/${project.clientId}/projects/${project.id}/overview` : `/projects/${project.id}`}
               className="block"
             >
               <Card className="hover:border-primary hover:shadow-md transition-all h-full">

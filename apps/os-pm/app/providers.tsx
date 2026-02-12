@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useState, Component, ReactNode, ErrorInfo } from "react"
 import { Toaster } from "sonner"
+import { RoleProvider } from "@/lib/role-context"
 
 // Inline ErrorBoundary to avoid package transpilation issues
 interface ErrorBoundaryProps {
@@ -51,10 +52,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient())
   return (
     <QueryClientProvider client={queryClient}>
-      <ErrorBoundary>
-        {children}
-        <Toaster position="top-right" />
-      </ErrorBoundary>
+      <RoleProvider>
+        <ErrorBoundary>
+          {children}
+          <Toaster position="top-right" />
+        </ErrorBoundary>
+      </RoleProvider>
     </QueryClientProvider>
   )
 }

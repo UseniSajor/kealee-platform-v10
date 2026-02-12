@@ -1,0 +1,79 @@
+import React from "react"
+import { useState, useMemo } from "react"
+import { AlertCircle, Camera, ChevronRight, MapPin, Plus, Search, User } from "lucide-react"
+import { Button } from "@kealee/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
+import { Input } from "@kealee/ui/input"
+import { cn } from "@/lib/utils"
+type Priority = "Critical" | "High" | "Medium" | "Low"
+type Status = "Open" | "In Progress" | "Ready for Review" | "Closed"
+interface PunchItem { id: string; title: string; location: string; status: Status; assignee: string; priority: Priority; }
+const PC: Record<Priority, string> = { Critical: "bg-red-100 text-red-800", High: "bg-orange-100 text-orange-800", Medium: "bg-yellow-100 text-yellow-800", Low: "bg-green-100 text-green-800" }
+const SC: Record<Status, string> = { Open: "bg-blue-100 text-blue-800", "In Progress": "bg-amber-100 text-amber-800", "Ready for Review": "bg-purple-100 text-purple-800", Closed: "bg-gray-100 text-gray-600" }
+const DATA: PunchItem[] = [
+  { id: "PI-001", title: "Drywall patch - Unit 302", location: "Building A Floor 3", status: "Open", assignee: "Martinez Drywall", priority: "High" },
+  { id: "PI-002", title: "Paint touch-up - Lobby", location: "Building A Lobby", status: "In Progress", assignee: "ProCoat Painters", priority: "Medium" },
+]
+export default function PunchListPage() {
+  const [query, setQuery] = useState("")
+  return (<div className="space-y-6"><h1 className="text-2xl font-bold">Punch List</h1></div>)
+}
+line 22
+line 23
+line 24
+line 25
+line 26
+line 27
+line 28
+line 29
+line 30
+line 31
+line 32
+line 33
+line 34
+line 35
+line 36
+line 37
+line 38
+line 39
+line 40
+line 41
+line 42
+line 43
+line 44
+line 45
+line 46
+line 47
+line 48
+line 49
+line 50
+line 51
+line 52
+line 53
+line 54
+line 55
+line 56
+line 57
+line 58
+line 59
+line 60
+line 61
+line 62
+line 63
+line 64
+line 65
+line 66
+line 67
+line 68
+line 69
+line 70
+line 71
+line 72
+line 73
+line 74
+line 75
+line 76
+line 77
+line 78
+line 79
+line 80

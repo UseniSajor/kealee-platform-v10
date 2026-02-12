@@ -1,0 +1,17 @@
+"use client"
+
+import * as React from "react"
+import { useState, useMemo } from "react"
+import { AlertCircle, Camera, ChevronRight, MapPin, Plus, Search, User } from "lucide-react"
+import { Button } from "@kealee/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
+import { Input } from "@kealee/ui/input"
+import { cn } from "@/lib/utils"
+
+type Priority = "Critical" | "High" | "Medium" | "Low"
+type Status = "Open" | "In Progress" | "Ready for Review" | "Closed"
+
+interface PunchItem {
+  id: string; title: string; location: string; status: Status
+  assignee: string; priority: Priority; trade: string; createdAt: string; photoCount: number
+}

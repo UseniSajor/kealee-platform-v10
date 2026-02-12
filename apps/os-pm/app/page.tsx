@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation"
 
-// Root page redirects to work-queue (main dashboard view)
-// Authentication is handled by middleware
+// Root page redirects to the dashboard
+// Internal PMs and external GCs both land here
+// The dashboard page itself handles role-based content
 export default function HomePage() {
-  redirect("/work-queue")
+  redirect("/projects")
 }

@@ -4,8 +4,8 @@ import { PWAProvider } from './pwa-provider'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Kealee PM - Project Management',
-  description: 'Construction project management dashboard with AI-powered tools',
+  title: 'Kealee PM | Construction Project Management Software',
+  description: 'Full-featured construction PM software for GCs, builders, and contractors. Schedule, budget, RFIs, submittals, daily logs, punch lists, and more. Powered by Kealee.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,

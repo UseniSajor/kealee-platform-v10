@@ -1,0 +1,27 @@
+
+const PRIORITY_COLORS: Record<Priority, string> = {
+  Critical: "bg-red-100 text-red-800 border-red-200",
+  High: "bg-orange-100 text-orange-800 border-orange-200",
+  Medium: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  Low: "bg-green-100 text-green-800 border-green-200",
+}
+
+const STATUS_COLORS: Record<Status, string> = {
+  Open: "bg-blue-100 text-blue-800",
+  "In Progress": "bg-amber-100 text-amber-800",
+  "Ready for Review": "bg-purple-100 text-purple-800",
+  Closed: "bg-gray-100 text-gray-600",
+}
+
+const MOCK_ITEMS: PunchItem[] = [
+  { id: "PI-001", title: "Drywall patch needed - Unit 302", location: "Building A, Floor 3, Unit 302", status: "Open", assignee: "Martinez Drywall Co.", priority: "High", trade: "Drywall", createdAt: "2026-02-05", photoCount: 3 },
+  { id: "PI-002", title: "Paint touch-up - Lobby", location: "Building A, Main Lobby", status: "In Progress", assignee: "ProCoat Painters", priority: "Medium", trade: "Painting", createdAt: "2026-02-03", photoCount: 2 },
+  { id: "PI-003", title: "HVAC grille misaligned - Conference Room", location: "Building B, Floor 2, Room 210", status: "Open", assignee: "Apex Mechanical", priority: "Low", trade: "HVAC", createdAt: "2026-02-06", photoCount: 1 },
+  { id: "PI-004", title: "Fire caulking missing at penetration", location: "Building A, Floor 1, Electrical Room", status: "Open", assignee: "SafeGuard Firestop", priority: "Critical", trade: "Firestopping", createdAt: "2026-02-07", photoCount: 4 },
+  { id: "PI-005", title: "Carpet seam separation - Suite 400", location: "Building B, Floor 4, Suite 400", status: "Ready for Review", assignee: "FloorCraft Inc.", priority: "Medium", trade: "Flooring", createdAt: "2026-01-28", photoCount: 2 },
+  { id: "PI-006", title: "Door hardware not latching - Stairwell B", location: "Building A, Stairwell B, Floor 2", status: "Closed", assignee: "Allied Door & Hardware", priority: "High", trade: "Doors & Hardware", createdAt: "2026-01-20", photoCount: 1 },
+  { id: "PI-007", title: "Light fixture flickering - Parking Garage", location: "Parking Garage, Level P2", status: "In Progress", assignee: "BrightStar Electric", priority: "Medium", trade: "Electrical", createdAt: "2026-02-04", photoCount: 0 },
+  { id: "PI-008", title: "Cracked tile at elevator threshold", location: "Building A, Floor 1, Elevator 2", status: "Open", assignee: "Precision Tile Works", priority: "High", trade: "Tile", createdAt: "2026-02-08", photoCount: 5 },
+]
+
+const STATUSES: Status[] = ["Open", "In Progress", "Ready for Review", "Closed"]

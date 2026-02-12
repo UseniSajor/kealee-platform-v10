@@ -52,7 +52,20 @@ export default function PortalLayout({
             })}
           </nav>
 
-          <div className="mt-6 rounded-2xl border border-black/10 bg-zinc-50 p-4 text-xs text-zinc-700">
+          {/* PM Software CTA */}
+          <a
+            href={process.env.NEXT_PUBLIC_PM_URL || "/"}
+            className="mt-6 flex items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-xs text-sky-800 hover:bg-sky-100 transition"
+          >
+            <div>
+              <div className="font-black text-sky-900">Open PM Software &rarr;</div>
+              <div className="mt-1">
+                Schedule, budget, RFIs, submittals, daily logs, and more.
+              </div>
+            </div>
+          </a>
+
+          <div className="mt-4 rounded-2xl border border-black/10 bg-zinc-50 p-4 text-xs text-zinc-700">
             <div className="font-black text-zinc-900">Site mode</div>
             <div className="mt-1">
               Optimized for gloves, quick actions, and offline use.

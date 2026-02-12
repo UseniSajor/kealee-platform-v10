@@ -1,0 +1,3 @@
+const fs=require("fs"),p=require("path"),b=p.join(process.cwd(),"apps/os-pm/app/(dashboard)");
+function w(r,c){fs.writeFileSync(p.join(b,r),c,"utf8");console.log("OK:",r,c.length,"chars");}
+// placeholder
