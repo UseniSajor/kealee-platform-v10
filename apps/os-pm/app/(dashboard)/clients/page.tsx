@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRequireAuth } from '@kealee/auth';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import type { PMClient } from '@/lib/types';
@@ -20,7 +19,6 @@ import {
 import Link from 'next/link';
 
 export default function ClientsPage() {
-  const { user } = useRequireAuth();
   const [clients, setClients] = useState<PMClient[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

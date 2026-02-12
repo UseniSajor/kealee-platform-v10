@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { api } from "@/lib/api";
+import { getPrimaryOrgId } from "@/lib/auth";
 
 type GCTeamRole =
   | "Owner/Principal"
@@ -185,14 +187,37 @@ function checkboxIcon(value: boolean) {
 }
 
 export default function TeamPage() {
-  // TODO: Replace with real GC + projects from DB
+  const [projectsFromApi, setProjectsFromApi] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        const orgId = await getPrimaryOrgId();
+        if (!orgId) return;
+        const result = await api.getProjects({ orgId });
+        const mapped = (result.projects || []).map((p: any) => ({
+          id: p.id,
+          name: p.name || 'Unnamed Project',
+        }));
+        if (mapped.length > 0) {
+          setProjectsFromApi(mapped);
+        }
+      } catch {
+        // Fall back to default projects
+      }
+    }
+    loadProjects();
+  }, []);
+
   const projects = useMemo(
-    () => [
-      { id: "p1", name: "123 Main St Remodel" },
-      { id: "p2", name: "Oak Ridge Custom Build" },
-      { id: "p3", name: "Downtown Tenant Improvement" },
-    ],
-    []
+    () => projectsFromApi.length > 0
+      ? projectsFromApi
+      : [
+          { id: "p1", name: "123 Main St Remodel" },
+          { id: "p2", name: "Oak Ridge Custom Build" },
+          { id: "p3", name: "Downtown Tenant Improvement" },
+        ],
+    [projectsFromApi]
   );
 
   const [permissions] = useState<PermissionMatrix>(defaultPermissions());

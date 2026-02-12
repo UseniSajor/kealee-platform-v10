@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { AIPermitFeatures } from "@/components/permits/AIPermitFeatures"
 import { CheckCircle2, Zap, Shield, Clock, FileCheck, AlertCircle } from "lucide-react"
 
@@ -12,17 +13,26 @@ export default function ContractorsHomePage() {
   return (
     <div className="w-full">
       {/* Hero */}
-      <section className="bg-gradient-to-b from-emerald-50 to-white py-20 lg:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-20 lg:py-28 overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1920&q=80&auto=format&fit=crop"
+          alt="Construction workers on a building site"
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-300 rounded-full text-sm font-medium mb-6 backdrop-blur-sm border border-emerald-400/30">
               <Zap className="h-4 w-4" />
               <span>Permits Approved 40% Faster with AI Review</span>
             </div>
-            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
               Stop Chasing Permits. Start Building.
             </h1>
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+            <p className="text-xl text-gray-200 mb-8 leading-relaxed">
               Professional permit and inspection services for contractors, developers, and property owners. AI-powered compliance review, automated tracking, and expert coordination—we handle the paperwork so you can focus on your project.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -34,23 +44,23 @@ export default function ContractorsHomePage() {
               </Link>
               <Link
                 href="/contractors/pricing"
-                className="inline-flex items-center justify-center px-8 py-4 bg-white border-2 border-gray-300 hover:border-emerald-600 text-gray-900 rounded-2xl text-lg font-semibold transition-colors"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white/10 border-2 border-white/30 hover:bg-white/20 text-white rounded-2xl text-lg font-semibold transition-colors backdrop-blur-sm"
               >
                 View Pricing
               </Link>
             </div>
 
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600">
+            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-200">
               <div className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                 <span>First Permit Free</span>
               </div>
               <div className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                 <span>AI Compliance Check</span>
               </div>
               <div className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                 <span>Average 14-Day Approval</span>
               </div>
             </div>

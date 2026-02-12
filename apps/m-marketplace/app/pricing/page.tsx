@@ -1,18 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Check, HelpCircle, ArrowRight, Zap, Star, Building2, Briefcase, Crown, Users, Wrench } from 'lucide-react';
 import Link from 'next/link';
+import { heroImages } from '@kealee/ui';
 
 /**
  * PRICING PAGE - Two distinct pricing models:
  *
  * 1. PLATFORM ACCESS (SaaS) - For software/tool access
- *    - Starter: $99/user/mo
- *    - Professional: $199/user/mo
- *    - Business: $349/user/mo
+ *    - Essentials: $99/user/mo
+ *    - Performance: $199/user/mo
+ *    - Scale: $349/user/mo
  *    - Enterprise: Custom
  *
  * 2. PM MANAGED SERVICES (A/B/C/D Packages) - For GC/Builder/Contractors
@@ -23,9 +25,9 @@ import Link from 'next/link';
  *
  * 3. PERMIT SERVICES (A/B/C/D Packages)
  *    - Permit A - Basic: $495 one-time
- *    - Permit B - Full Service: $1,295 one-time (MOST POPULAR)
- *    - Permit C - Premium: $2,995 one-time
- *    - Permit D - Enterprise: $7,500/month
+ *    - Permit B - Full Service: $1,295/month (up to 10 permits/month) (MOST POPULAR)
+ *    - Permit C - Premium: $2,995/month (up to 50 permits/month)
+ *    - Permit D - Enterprise: $7,500/month (custom permits/month)
  */
 
 export default function PricingPage() {
@@ -35,7 +37,7 @@ export default function PricingPage() {
   // PLATFORM ACCESS - SaaS pricing for software tools
   const platformPlans = [
     {
-      name: 'Starter',
+      name: 'Essentials',
       description: 'For small teams getting started',
       price: billingPeriod === 'monthly' ? 99 : 79,
       period: '/user/mo',
@@ -52,7 +54,7 @@ export default function PricingPage() {
       cta: { label: 'Start Free Trial', href: 'https://app.kealee.com/signup' },
     },
     {
-      name: 'Professional',
+      name: 'Performance',
       description: 'For growing construction firms',
       price: billingPeriod === 'monthly' ? 199 : 159,
       period: '/user/mo',
@@ -61,8 +63,8 @@ export default function PricingPage() {
       popular: true,
       features: [
         'Up to 20 users',
-        'Up to 15 active projects',
-        'Everything in Starter',
+        'Up to 10 active projects',
+        'Everything in Essentials',
         'Budget tracking & forecasting',
         'RFI & submittal management',
         'Client portal access',
@@ -73,7 +75,7 @@ export default function PricingPage() {
       cta: { label: 'Start Free Trial', href: 'https://app.kealee.com/signup' },
     },
     {
-      name: 'Business',
+      name: 'Scale',
       description: 'For established contractors',
       price: billingPeriod === 'monthly' ? 349 : 279,
       period: '/user/mo',
@@ -81,8 +83,8 @@ export default function PricingPage() {
       color: 'purple',
       features: [
         'Up to 50 users',
-        'Unlimited projects',
-        'Everything in Professional',
+        'Up to 20 active projects',
+        'Everything in Performance',
         'Custom workflows',
         'API access',
         'SSO integration',
@@ -102,7 +104,7 @@ export default function PricingPage() {
       features: [
         'Unlimited users',
         'Unlimited projects',
-        'Everything in Business',
+        'Everything in Scale',
         'Custom integrations',
         'On-premise deployment option',
         'Unlimited storage',
@@ -119,7 +121,7 @@ export default function PricingPage() {
     {
       name: 'Package A',
       tier: 'Starter',
-      price: 1750,
+      price: billingPeriod === 'monthly' ? 1750 : 1400,
       period: 'month',
       hours: '5-10 hrs/week',
       projects: '1 concurrent',
@@ -141,7 +143,7 @@ export default function PricingPage() {
     {
       name: 'Package B',
       tier: 'Professional',
-      price: 3750,
+      price: billingPeriod === 'monthly' ? 3750 : 3000,
       period: 'month',
       hours: '15-20 hrs/week',
       projects: 'Up to 3',
@@ -164,10 +166,10 @@ export default function PricingPage() {
     {
       name: 'Package C',
       tier: 'Premium',
-      price: 9500,
+      price: billingPeriod === 'monthly' ? 9500 : 7600,
       period: 'month',
       hours: '30-40 hrs/week',
-      projects: 'Unlimited',
+      projects: 'Up to 20',
       support: '24/7 Priority',
       description: 'Complete PM service with full support',
       features: [
@@ -189,7 +191,7 @@ export default function PricingPage() {
     {
       name: 'Package D',
       tier: 'Enterprise',
-      price: 16500,
+      price: billingPeriod === 'monthly' ? 16500 : 13200,
       period: 'month',
       hours: '40+ hrs/week',
       projects: 'Portfolio',
@@ -237,15 +239,15 @@ export default function PricingPage() {
     {
       name: 'Permit B',
       tier: 'Full Service',
-      price: 1295,
-      period: 'one-time',
-      description: 'Multiple permits with AI review',
+      price: billingPeriod === 'monthly' ? 1295 : 1036,
+      period: 'month',
+      description: 'Up to 10 permits per month with AI review',
       features: [
-        'Up to 3 permit types',
+        'Up to 10 permits per month',
         'AI document review',
         'Complete application prep',
         'Expedited processing',
-        '1 resubmittal included',
+        '1 resubmittal included per permit',
         'Inspection scheduling',
         'Approval guarantee',
       ],
@@ -257,11 +259,11 @@ export default function PricingPage() {
     {
       name: 'Permit C',
       tier: 'Premium',
-      price: 2995,
-      period: 'one-time',
-      description: 'Unlimited permits with full coordination',
+      price: billingPeriod === 'monthly' ? 2995 : 2396,
+      period: 'month',
+      description: 'Up to 50 permits per month with full coordination',
       features: [
-        'Unlimited permit types',
+        'Up to 50 permits per month',
         'Full AI analysis',
         'Architect/engineer coordination',
         'Jurisdiction liaison',
@@ -279,10 +281,11 @@ export default function PricingPage() {
     {
       name: 'Permit D',
       tier: 'Enterprise',
-      price: 7500,
+      price: billingPeriod === 'monthly' ? 7500 : 6000,
       period: 'month',
-      description: 'Monthly subscription for portfolios',
+      description: 'Custom permits per month for portfolios',
       features: [
+        'Custom permit volume',
         'Dedicated permit team',
         'Multi-jurisdiction expertise',
         'Portfolio dashboard',
@@ -300,7 +303,7 @@ export default function PricingPage() {
     },
   ];
 
-  // OPERATIONS SERVICES - A la carte
+  // OPERATIONS SERVICES - Individual
   const operationsServices = [
     {
       category: 'Project Controls',
@@ -357,7 +360,7 @@ export default function PricingPage() {
     },
     {
       q: 'Are there any hidden fees?',
-      a: 'No hidden fees. All applicable fees are transparently displayed at checkout based on the Suggested Retail Price (SRP).',
+      a: 'No hidden fees. All applicable fees are clearly displayed at checkout based on the Suggested Retail Price (SRP).',
     },
   ];
 
@@ -369,28 +372,39 @@ export default function PricingPage() {
         <div className="container mx-auto px-6">
 
           {/* Hero */}
-          <div className="text-center mb-16 max-w-4xl mx-auto">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              Transparent Pricing, Real Results
-            </h1>
-            <p className="text-xl text-gray-600 mb-8">
-              Choose software access or full-service management. No hidden fees, cancel anytime.
-            </p>
+          <div className="relative -mx-6 -mt-32 mb-16 pt-32 pb-16 px-6 overflow-hidden">
+            <Image
+              src={heroImages.constructionSite.src}
+              alt={heroImages.constructionSite.alt}
+              fill
+              className="object-cover"
+              sizes="100vw"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+            <div className="relative text-center max-w-4xl mx-auto">
+              <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4">
+                Clear Pricing, Real Results
+              </h1>
+              <p className="text-xl text-white/85 mb-8">
+                Choose software access or full-service management. No hidden fees, cancel anytime.
+              </p>
 
-            {/* Trust badges */}
-            <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500">
-              <span className="flex items-center gap-2">
-                <Check className="text-green-500" size={16} />
-                No setup fees
-              </span>
-              <span className="flex items-center gap-2">
-                <Check className="text-green-500" size={16} />
-                Cancel anytime
-              </span>
-              <span className="flex items-center gap-2">
-                <Check className="text-green-500" size={16} />
-                30-day money-back
-              </span>
+              {/* Trust badges */}
+              <div className="flex flex-wrap justify-center gap-6 text-sm text-white/80">
+                <span className="flex items-center gap-2">
+                  <Check className="text-green-400" size={16} />
+                  No setup fees
+                </span>
+                <span className="flex items-center gap-2">
+                  <Check className="text-green-400" size={16} />
+                  Cancel anytime
+                </span>
+                <span className="flex items-center gap-2">
+                  <Check className="text-green-400" size={16} />
+                  30-day money-back
+                </span>
+              </div>
             </div>
           </div>
 
@@ -401,7 +415,7 @@ export default function PricingPage() {
                 { id: 'platform', label: 'Platform Access', icon: Users, description: 'Software tools' },
                 { id: 'pm-services', label: 'PM Services', icon: Wrench, description: 'Managed by experts' },
                 { id: 'permits', label: 'Permit Services', icon: Building2, description: 'Permit handling' },
-                { id: 'operations', label: 'Operations', icon: Briefcase, description: 'A la carte' },
+                { id: 'operations', label: 'Operations', icon: Briefcase, description: 'Individual' },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -444,7 +458,7 @@ export default function PricingPage() {
                 <p className="font-medium">
                   <Building2 className="inline mr-2" size={18} />
                   <strong>Permit Services</strong> - We handle permit applications, submissions, and inspections.
-                  Choose one-time packages or ongoing portfolio management.
+                  Choose individual permits or monthly packages.
                 </p>
               </div>
             )}
@@ -452,7 +466,7 @@ export default function PricingPage() {
               <div className="bg-purple-50 text-purple-800 px-6 py-4 rounded-xl inline-block max-w-2xl">
                 <p className="font-medium">
                   <Briefcase className="inline mr-2" size={18} />
-                  <strong>Operations Services</strong> - A la carte professional services.
+                  <strong>Operations Services</strong> - Individual professional services.
                   Pay only for what you need with no subscriptions or minimums.
                 </p>
               </div>
@@ -549,6 +563,30 @@ export default function PricingPage() {
 
           {/* PM MANAGED SERVICES - A/B/C/D Packages */}
           {activeTab === 'pm-services' && (
+            <>
+              {/* Billing Toggle */}
+              <div className="flex justify-center items-center gap-4 mb-12">
+                <span className={`font-medium ${billingPeriod === 'monthly' ? 'text-gray-900' : 'text-gray-500'}`}>
+                  Monthly
+                </span>
+                <button
+                  onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'annual' : 'monthly')}
+                  className={`w-14 h-8 rounded-full p-1 transition ${
+                    billingPeriod === 'annual' ? 'bg-green-600' : 'bg-gray-300'
+                  }`}
+                >
+                  <div className={`w-6 h-6 bg-white rounded-full transition transform ${
+                    billingPeriod === 'annual' ? 'translate-x-6' : ''
+                  }`} />
+                </button>
+                <span className={`font-medium ${billingPeriod === 'annual' ? 'text-gray-900' : 'text-gray-500'}`}>
+                  Annual
+                  <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-sm rounded-full">
+                    Save 20%
+                  </span>
+                </span>
+              </div>
+
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto mb-20">
               {pmPackages.map((pkg, idx) => (
                 <div
@@ -656,10 +694,35 @@ export default function PricingPage() {
                 </div>
               ))}
             </div>
+            </>
           )}
 
           {/* PERMIT SERVICES - A/B/C/D Packages */}
           {activeTab === 'permits' && (
+            <>
+              {/* Billing Toggle */}
+              <div className="flex justify-center items-center gap-4 mb-12">
+                <span className={`font-medium ${billingPeriod === 'monthly' ? 'text-gray-900' : 'text-gray-500'}`}>
+                  Monthly
+                </span>
+                <button
+                  onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'annual' : 'monthly')}
+                  className={`w-14 h-8 rounded-full p-1 transition ${
+                    billingPeriod === 'annual' ? 'bg-orange-500' : 'bg-gray-300'
+                  }`}
+                >
+                  <div className={`w-6 h-6 bg-white rounded-full transition transform ${
+                    billingPeriod === 'annual' ? 'translate-x-6' : ''
+                  }`} />
+                </button>
+                <span className={`font-medium ${billingPeriod === 'annual' ? 'text-gray-900' : 'text-gray-500'}`}>
+                  Annual
+                  <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-sm rounded-full">
+                    Save 20%
+                  </span>
+                </span>
+              </div>
+
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto mb-20">
               {permitPackages.map((pkg, idx) => (
                 <div
@@ -753,9 +816,10 @@ export default function PricingPage() {
                 </div>
               ))}
             </div>
+            </>
           )}
 
-          {/* OPERATIONS SERVICES - A la carte */}
+          {/* OPERATIONS SERVICES - Individual */}
           {activeTab === 'operations' && (
             <div className="max-w-5xl mx-auto mb-20">
               <div className="grid md:grid-cols-2 gap-8">
@@ -824,7 +888,7 @@ export default function PricingPage() {
             <p className="text-sm text-gray-600">
               Our fair rotation algorithm ensures all qualified contractors get opportunities.
               Contractors bid competitively based on Suggested Retail Price (SRP), and all applicable
-              fees are transparently displayed at checkout.
+              fees are clearly displayed at checkout.
             </p>
           </div>
 

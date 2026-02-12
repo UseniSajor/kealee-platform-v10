@@ -12,6 +12,18 @@ import {
   Search,
   SlidersHorizontal,
   RotateCw,
+  LayoutDashboard,
+  FolderOpen,
+  FileText,
+  BarChart3,
+  Ruler,
+  Calculator,
+  ClipboardList,
+  CalendarCheck,
+  Building2,
+  ShieldCheck,
+  DollarSign,
+  Clock,
 } from 'lucide-react';
 
 import {
@@ -25,8 +37,13 @@ import {
   TestimonialCard,
   SplitCTA,
   NetworkProfileCard,
+  ImageSection,
+  PortalPreview,
   Badge,
   brand,
+  heroImages,
+  sectionImages,
+  portalImages,
   FlowNode,
   CTASection,
   Stat,
@@ -108,7 +125,8 @@ export function HomePageClient({
           'DC-Baltimore Corridor',
           'Escrow Protected',
         ]}
-        bgPattern
+        backgroundImage={heroImages.constructionSite.src}
+        backgroundImageAlt={heroImages.constructionSite.alt}
       />
 
       {/* SECTION 2 - END-TO-END PLATFORM FLOW */}
@@ -402,21 +420,21 @@ export function HomePageClient({
 
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Starter</span>
+                      <span className="text-gray-600">Essentials</span>
                       <span className="font-mono font-semibold" style={{ color: brand.orange }}>
                         $99/mo
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Professional</span>
+                      <span className="text-gray-600">Performance</span>
                       <span className="font-mono font-semibold" style={{ color: brand.orange }}>
-                        $299/mo
+                        $199/mo
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Business</span>
+                      <span className="text-gray-600">Scale</span>
                       <span className="font-mono font-semibold" style={{ color: brand.orange }}>
-                        $599/mo
+                        $349/mo
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -489,6 +507,188 @@ export function HomePageClient({
           />
         </div>
       </motion.section>
+
+      {/* SECTION 6.5 - SEE WHAT YOU GET - Portal Previews */}
+      <motion.section {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-[#F7FAFC]">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <SectionLabel text="SEE WHAT YOU GET" color="teal" className="mb-4" />
+            <h2
+              className="text-3xl lg:text-4xl font-bold mb-4"
+              style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}
+            >
+              Powerful Tools for Every Role
+            </h2>
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: brand.gray[600] }}>
+              Each portal is purpose-built for your role in the construction process.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <PortalPreview
+              portalName="Project Owner Portal"
+              portalUrl="app.kealee.com/projects"
+              description="Your command center for tracking every milestone, payment, and document in your construction project."
+              heroImage={portalImages.projectOwner.src}
+              heroImageAlt={portalImages.projectOwner.alt}
+              accentColor="navy"
+              sidebarItems={[
+                { icon: LayoutDashboard, label: 'Dashboard' },
+                { icon: FolderOpen, label: 'Projects' },
+                { icon: FileText, label: 'Documents' },
+                { icon: BarChart3, label: 'Reports' },
+              ]}
+              stats={[
+                { label: 'Active Projects', value: '3' },
+                { label: 'Next Milestone', value: 'Day 45' },
+                { label: 'Budget Used', value: '62%' },
+              ]}
+              features={[
+                'Real-time milestone tracking',
+                'Escrow payment management',
+                'Document sharing & approvals',
+              ]}
+              ctaHref="/services/pm-software"
+            />
+            <PortalPreview
+              portalName="Architect Portal"
+              portalUrl="app.kealee.com/architect"
+              description="Portfolio management, plan uploads, and seamless handoff to permitting — all in one place."
+              heroImage={portalImages.architect.src}
+              heroImageAlt={portalImages.architect.alt}
+              accentColor="teal"
+              sidebarItems={[
+                { icon: LayoutDashboard, label: 'Dashboard' },
+                { icon: Palette, label: 'Portfolio' },
+                { icon: FileText, label: 'Plans' },
+                { icon: ClipboardList, label: 'Reviews' },
+              ]}
+              stats={[
+                { label: 'Active Designs', value: '7' },
+                { label: 'Plans Uploaded', value: '24' },
+                { label: 'Permit Ready', value: '5' },
+              ]}
+              features={[
+                'Plan upload & version control',
+                'Client review & approval workflow',
+                'Direct permit submission handoff',
+              ]}
+              ctaHref="/services/architect"
+            />
+            <PortalPreview
+              portalName="Permits Portal"
+              portalUrl="app.kealee.com/permits"
+              description="AI-powered permit review, auto form-filling, and real-time status tracking across 3,000+ jurisdictions."
+              heroImage={portalImages.permits.src}
+              heroImageAlt={portalImages.permits.alt}
+              accentColor="green"
+              sidebarItems={[
+                { icon: LayoutDashboard, label: 'Dashboard' },
+                { icon: FileCheck, label: 'Permits' },
+                { icon: CalendarCheck, label: 'Inspections' },
+                { icon: Building2, label: 'Jurisdictions' },
+              ]}
+              stats={[
+                { label: 'Pending Permits', value: '12' },
+                { label: 'Approved', value: '48' },
+                { label: 'Avg. Turnaround', value: '8 days' },
+              ]}
+              features={[
+                'AI compliance pre-review',
+                'Auto form filling from plans',
+                'Inspection scheduling & tracking',
+              ]}
+              ctaHref="/services/permits"
+            />
+            <PortalPreview
+              portalName="Estimation Tool"
+              portalUrl="app.kealee.com/estimation"
+              description="Build accurate estimates with assembly-based takeoffs, cost databases, and professional reports."
+              heroImage={portalImages.estimation.src}
+              heroImageAlt={portalImages.estimation.alt}
+              accentColor="orange"
+              sidebarItems={[
+                { icon: Calculator, label: 'Estimates' },
+                { icon: Ruler, label: 'Takeoff' },
+                { icon: DollarSign, label: 'Cost DB' },
+                { icon: BarChart3, label: 'Reports' },
+              ]}
+              stats={[
+                { label: 'Estimates', value: '156' },
+                { label: 'Assemblies', value: '89' },
+                { label: 'Avg. Accuracy', value: '96%' },
+              ]}
+              features={[
+                'Assembly-based cost estimating',
+                'RSMeans cost database integration',
+                'Professional PDF report generation',
+              ]}
+              ctaHref="/services/estimation"
+            />
+            <PortalPreview
+              portalName="Ops Services"
+              portalUrl="app.kealee.com/ops"
+              description="Your dedicated operations team handles permits, reporting, vendor coordination, and admin work."
+              heroImage={portalImages.opsServices.src}
+              heroImageAlt={portalImages.opsServices.alt}
+              accentColor="orange"
+              sidebarItems={[
+                { icon: ClipboardList, label: 'Tasks' },
+                { icon: Users, label: 'Vendors' },
+                { icon: FileText, label: 'Reports' },
+                { icon: Clock, label: 'Timeline' },
+              ]}
+              stats={[
+                { label: 'Hours Saved/Week', value: '22' },
+                { label: 'Active Tasks', value: '34' },
+                { label: 'On-Time Rate', value: '98%' },
+              ]}
+              features={[
+                'Dedicated PM coordination team',
+                'Weekly progress reporting',
+                'Vendor & sub management',
+              ]}
+              ctaHref="/services/ops"
+            />
+            <PortalPreview
+              portalName="Marketplace"
+              portalUrl="marketplace.kealee.com"
+              description="Find verified contractors, compare bids, and connect with professionals in the DC-Baltimore corridor."
+              heroImage={portalImages.marketplace.src}
+              heroImageAlt={portalImages.marketplace.alt}
+              accentColor="teal"
+              sidebarItems={[
+                { icon: Search, label: 'Search' },
+                { icon: Users, label: 'Network' },
+                { icon: ShieldCheck, label: 'Verified' },
+                { icon: Gavel, label: 'Bids' },
+              ]}
+              stats={[
+                { label: 'Professionals', value: '500+' },
+                { label: 'Jurisdictions', value: '3,000+' },
+                { label: 'Projects Posted', value: '1,200+' },
+              ]}
+              features={[
+                'Verified contractor profiles',
+                'Fair bid rotation system',
+                'Trade-specific search & filtering',
+              ]}
+              ctaHref="/network"
+            />
+          </div>
+        </div>
+      </motion.section>
+
+      {/* SECTION 6.75 - Built for Construction */}
+      <ImageSection
+        title="Built for the Way Construction Actually Works"
+        subtitle="Real Projects. Real Results."
+        description="From custom homes to commercial build-outs, Kealee connects every phase of your project. Design flows into permits, permits flow into construction, and every stakeholder stays on the same page."
+        imageSrc={sectionImages.homeRenovation.src}
+        imageAlt={sectionImages.homeRenovation.alt}
+        imagePosition="right"
+        accentColor="orange"
+      />
 
       {/* SECTION 7 - STATS BAR */}
       <StatsBar stats={stats} />

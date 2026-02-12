@@ -158,17 +158,77 @@ export function GCBilling() {
     ? new Date(subscription.currentPeriodEnd).toISOString()
     : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
   
-  const serviceHoursUsed = 12; // TODO: Calculate from actual service requests
+  const [serviceHoursUsed, setServiceHoursUsed] = useState(0);
+  const [savedHoursThisMonth, setSavedHoursThisMonth] = useState(0);
   const serviceHoursLimit = plans.find(p => p.id === currentPackageId)?.serviceHoursMonthly || 40;
-  const savedHoursThisMonth = 44; // TODO: Calculate from actual data
+
+  // Fetch service hours from actual service requests
+  useEffect(() => {
+    async function loadUsageData() {
+      try {
+        const orgId = await getPrimaryOrgId();
+        if (!orgId) return;
+
+        // Get subscription details which include usage metrics
+        const [detailsResult, metricsResult] = await Promise.all([
+          api.getSubscriptionDetails(orgId).catch(() => ({ details: null })),
+          api.getSubscriptionMetrics({ orgId }).catch(() => ({ metrics: null })),
+        ]);
+
+        const details = detailsResult.details;
+        const metrics = metricsResult.metrics;
+
+        if (details?.serviceHoursUsed !== undefined) {
+          setServiceHoursUsed(details.serviceHoursUsed);
+        } else if (metrics?.serviceHoursUsed !== undefined) {
+          setServiceHoursUsed(metrics.serviceHoursUsed);
+        }
+
+        if (metrics?.hoursSaved !== undefined) {
+          setSavedHoursThisMonth(metrics.hoursSaved);
+        } else if (details?.estimatedHoursSaved !== undefined) {
+          setSavedHoursThisMonth(details.estimatedHoursSaved);
+        }
+      } catch {
+        // Keep defaults
+      }
+    }
+    if (!loading) {
+      loadUsageData();
+    }
+  }, [loading]);
 
   const currentPlan = plans.find((p) => p.id === currentPackageId) || plans[0] || plans[1];
 
-  const invoices: Invoice[] = useMemo(() => {
-    // TODO: Fetch real invoices from Stripe
-    // For now, return empty array - will be populated when we add invoice fetching
-    return [];
-  }, []);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+
+  // Fetch real invoices from Stripe via subscription details
+  useEffect(() => {
+    async function loadInvoices() {
+      try {
+        const orgId = await getPrimaryOrgId();
+        if (!orgId) return;
+        const result = await api.getSubscriptionDetails(orgId);
+        const details = result.details;
+        if (details?.invoices && Array.isArray(details.invoices)) {
+          const mapped: Invoice[] = details.invoices.map((inv: any) => ({
+            id: inv.id || inv.stripeId || `inv_${Date.now()}`,
+            date: inv.date || inv.createdAt || new Date().toISOString(),
+            amount: (inv.amountPaid || inv.amount || 0) / 100,
+            status: inv.status === 'paid' ? 'Paid' : inv.status === 'open' ? 'Due' : inv.status === 'uncollectible' ? 'Failed' : 'Paid',
+            pdfUrl: inv.invoicePdf || inv.hostedInvoiceUrl || null,
+            taxReceiptUrl: inv.hostedInvoiceUrl || null,
+          }));
+          setInvoices(mapped);
+        }
+      } catch {
+        // Keep empty invoices
+      }
+    }
+    if (!loading) {
+      loadInvoices();
+    }
+  }, [loading]);
 
   const hoursPct =
     serviceHoursLimit > 0 ? Math.min(100, (serviceHoursUsed / serviceHoursLimit) * 100) : 0;

@@ -344,8 +344,28 @@ class ArchitectReviewWorkflowService {
       userId,
     })
 
-    // TODO: Create permit application via permits API
-    // await permitService.createApplicationFromDesign(deliverable.designProject.projectId, files)
+    // Create permit application record via direct Prisma call
+    try {
+      await prismaAny.permit.create({
+        data: {
+          projectId: deliverable.designProject.projectId,
+          permitType: 'BUILDING',
+          status: 'DRAFT',
+          applicationDate: new Date(),
+          description: `Permit application from approved design deliverable: ${deliverable.name}`,
+          metadata: {
+            sourceType: 'DESIGN_DELIVERABLE',
+            sourceDeliverableId: deliverableId,
+            designProjectId: deliverable.designProjectId,
+            fileCount: files.length,
+            fileIds: files.map((f: any) => f.id),
+          } as any,
+        },
+      })
+    } catch (error: any) {
+      // Log but do not throw - permit creation is best-effort from the architect module
+      console.warn('Failed to create permit application from design handoff:', error.message)
+    }
 
     return {
       success: true,

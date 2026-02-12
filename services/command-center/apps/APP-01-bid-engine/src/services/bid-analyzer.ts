@@ -8,16 +8,19 @@ import { BidAnalysis, BidComparison, BidRecommendation } from '../types.js';
 import { generateBidComparisonNarrative } from '../../../../shared/ai/claude.js';
 import { formatCurrency } from '../../../../shared/utils/money.js';
 import { getEventBus, EVENT_TYPES } from '../../../../shared/events.js';
+import { autonomyEngine } from '../../../../shared/autonomy/index.js';
 
 const prisma = new PrismaClient();
 
 export class BidAnalyzer {
-  // Scoring weights
+  // Updated scoring weights — now includes contractor reliability
   private readonly WEIGHTS = {
-    price: 0.35,
-    timeline: 0.25,
-    scope: 0.25,
-    qualifications: 0.15,
+    price: 0.25,       // was 0.35 — still important but balanced by reliability
+    timeline: 0.10,    // was 0.25 — timeline detail matters less than actual track record
+    reliability: 0.25, // NEW — from ContractorScore.overallScore
+    scope: 0.15,       // was 0.25 — scope clarity still valued
+    qualifications: 0.10, // was 0.15 — complemented by reliability data
+    availability: 0.05,   // NEW — bonus for no overlapping projects
   };
 
   /**
@@ -141,6 +144,60 @@ export class BidAnalyzer {
       }
     );
 
+    // ── Autonomy: Auto-reject late bids and auto-award clear winners ──
+    try {
+      // Auto-reject bids submitted after deadline
+      if (bidRequest.deadline && new Date() > new Date(bidRequest.deadline)) {
+        const lateBids = bidRequest.bidSubmissions.filter(
+          s => s.submittedAt && new Date(s.submittedAt) > new Date(bidRequest.deadline!)
+        );
+        for (const lateBid of lateBids) {
+          await autonomyEngine.evaluateAndAct({
+            projectId: bidRequest.projectId,
+            category: 'bid_management',
+            appSource: 'APP-01',
+            actionType: 'bid_reject_late',
+            description: `Auto-reject late bid from ${lateBid.contractor.companyName} (submitted after deadline)`,
+            confidence: 95,
+            metadata: {
+              bidSubmissionId: lateBid.id,
+              bidRequestId,
+              contractorName: lateBid.contractor.companyName,
+              submittedAt: lateBid.submittedAt,
+              deadline: bidRequest.deadline,
+            },
+          });
+        }
+      }
+
+      // Auto-award if clear winner (score >85, gap >15 from #2)
+      if (analyses.length >= 2 && analyses[0].overallScore > 85) {
+        const gap = analyses[0].overallScore - analyses[1].overallScore;
+        if (gap > 15) {
+          await autonomyEngine.evaluateAndAct({
+            projectId: bidRequest.projectId,
+            category: 'bid_management',
+            appSource: 'APP-01',
+            actionType: 'bid_award',
+            description: `Auto-recommend award to ${analyses[0].contractorName} (score ${analyses[0].overallScore}, ${gap}pt gap)`,
+            confidence: Math.min(95, 70 + gap),
+            amount: analyses[0].amount,
+            metadata: {
+              bidRequestId,
+              winnerId: analyses[0].submissionId,
+              winnerName: analyses[0].contractorName,
+              winnerScore: analyses[0].overallScore,
+              runnerUpScore: analyses[1].overallScore,
+              gap,
+            },
+          });
+        }
+      }
+    } catch (err) {
+      console.warn('[BidAnalyzer] Autonomy check failed:', err);
+    }
+    // ── End Autonomy ──
+
     return comparison;
   }
 
@@ -191,12 +248,61 @@ export class BidAnalyzer {
       concerns
     );
 
-    // Calculate weighted overall score
+    // Reliability Score (0-100) — from ContractorScore
+    let reliabilityScore = 50; // Default for unscored contractors
+    try {
+      const contractorScore = await (prisma as any).contractorScore?.findUnique?.({
+        where: { contractorId: submission.contractor.id },
+      });
+      if (contractorScore) {
+        reliabilityScore = contractorScore.overallScore;
+        if (contractorScore.confidence === 'high' && contractorScore.overallScore >= 80) {
+          strengths.push(`High reliability score (${contractorScore.overallScore}/100, verified)`);
+        } else if (contractorScore.confidence === 'medium' && contractorScore.overallScore >= 70) {
+          strengths.push(`Good reliability track record (${contractorScore.overallScore}/100)`);
+        } else if (contractorScore.overallScore < 50) {
+          concerns.push(`Below-average reliability score (${contractorScore.overallScore}/100)`);
+        }
+      } else {
+        strengths.push('New contractor — building track record');
+      }
+    } catch {
+      // ContractorScore not available — use default
+    }
+
+    // Availability Score (0-100) — bonus for no overlapping projects
+    let availabilityScore = 70; // Default
+    try {
+      const activeProjects = await prisma.contractorProject.count({
+        where: {
+          contractorId: submission.contractor.id,
+          status: { in: ['IN_PROGRESS', 'SCHEDULED'] },
+        },
+      });
+      if (activeProjects === 0) {
+        availabilityScore = 100;
+        strengths.push('Fully available — no concurrent projects');
+      } else if (activeProjects <= 2) {
+        availabilityScore = 80;
+      } else if (activeProjects <= 4) {
+        availabilityScore = 50;
+        concerns.push(`Currently managing ${activeProjects} active projects`);
+      } else {
+        availabilityScore = 30;
+        concerns.push(`Heavy workload (${activeProjects} active projects)`);
+      }
+    } catch {
+      // Availability check failed — use default
+    }
+
+    // Calculate weighted overall score (now with 6 factors)
     const overallScore =
       priceScore * this.WEIGHTS.price +
       timelineScore * this.WEIGHTS.timeline +
+      reliabilityScore * this.WEIGHTS.reliability +
       scopeScore * this.WEIGHTS.scope +
-      qualificationScore * this.WEIGHTS.qualifications;
+      qualificationScore * this.WEIGHTS.qualifications +
+      availabilityScore * this.WEIGHTS.availability;
 
     // Determine recommendation
     const recommendation = this.getRecommendation(overallScore, concerns);

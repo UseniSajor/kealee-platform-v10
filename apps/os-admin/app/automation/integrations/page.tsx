@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Webhook, CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react'
+import { apiRequest } from '@/lib/api'
 
 interface WebhookIntegration {
   id: string
@@ -34,19 +35,79 @@ export default function IntegrationsPage() {
     try {
       setLoading(true)
       setError(null)
-      // Note: This endpoint may need to be created in the API
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/webhooks`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
 
-      if (response.ok) {
-        const data = await response.json()
-        setIntegrations(data.webhooks || [])
-      } else {
-        setIntegrations([])
+      // Fetch webhook status summary and logs from real API endpoints
+      const [statusData, logsData] = await Promise.all([
+        apiRequest<{ status: string; summary: { totalAttempts: number; totalErrors: number; recentErrors: number }; recentLogs: any[] }>('/webhooks/status').catch(() => ({
+          status: 'ok',
+          summary: { totalAttempts: 0, totalErrors: 0, recentErrors: 0 },
+          recentLogs: [],
+        })),
+        apiRequest<{ data: any[]; pagination: any }>('/webhooks/logs?limit=50').catch(() => ({
+          data: [],
+          pagination: { total: 0 },
+        })),
+      ])
+
+      // Build webhook integrations from log data grouped by webhook action/event type
+      const logsByEvent = new Map<string, any[]>()
+      for (const log of (logsData.data || [])) {
+        const key = log.webhookId || log.action || log.id
+        if (!logsByEvent.has(key)) logsByEvent.set(key, [])
+        logsByEvent.get(key)!.push(log)
       }
+
+      const webhookIntegrations: WebhookIntegration[] = []
+
+      // Create a summary integration from the status endpoint
+      const summary = statusData.summary
+      if (summary.totalAttempts > 0 || summary.totalErrors > 0) {
+        const successCount = summary.totalAttempts - summary.totalErrors
+        const failureCount = summary.totalErrors
+        const health: 'healthy' | 'degraded' | 'down' =
+          summary.recentErrors === 0 ? 'healthy' :
+          summary.recentErrors < 5 ? 'degraded' : 'down'
+
+        webhookIntegrations.push({
+          id: 'stripe-webhooks',
+          name: 'Stripe Webhooks',
+          url: '/webhooks/stripe',
+          events: ['checkout.session.completed', 'invoice.paid', 'subscription.updated'],
+          status: health === 'down' ? 'error' : 'active',
+          lastDelivery: statusData.recentLogs?.[0]?.createdAt,
+          successCount,
+          failureCount,
+          retryCount: 0,
+          health,
+        })
+      }
+
+      // Add individual webhook log entries as integrations
+      for (const [key, logs] of logsByEvent) {
+        if (key === 'stripe-webhooks') continue
+        const successes = logs.filter((l: any) => l.status === 'SUCCESS' || l.status === 'success').length
+        const failures = logs.filter((l: any) => l.status === 'FAILED' || l.status === 'failed' || l.status === 'error').length
+        const retries = logs.filter((l: any) => l.retryCount > 0).length
+        const lastLog = logs[0]
+        const health: 'healthy' | 'degraded' | 'down' =
+          failures === 0 ? 'healthy' :
+          failures < logs.length / 2 ? 'degraded' : 'down'
+
+        webhookIntegrations.push({
+          id: key,
+          name: lastLog.eventType || lastLog.action || key,
+          url: lastLog.url || lastLog.endpoint || key,
+          events: [lastLog.eventType || lastLog.action || 'webhook'].filter(Boolean),
+          status: health === 'down' ? 'error' : 'active',
+          lastDelivery: lastLog.createdAt,
+          successCount: successes,
+          failureCount: failures,
+          retryCount: retries,
+          health,
+        })
+      }
+
+      setIntegrations(webhookIntegrations)
     } catch (err: any) {
       console.error('Integrations fetch error:', err)
       setError(err.message || 'Failed to load webhook integrations')

@@ -10,6 +10,10 @@
 
 import { Prisma, PrismaClient } from '@prisma/client';
 import { v4 as uuid } from 'uuid';
+import {
+  notifyBidSubmitted,
+  notifyBidSyncComplete,
+} from '@kealee/realtime';
 
 const prisma = new PrismaClient();
 
@@ -116,6 +120,14 @@ export class BidEngineSync {
         // This sync just tracks the relationship between bid requests and estimates
       }
 
+      // Broadcast bid sync complete event
+      notifyBidSyncComplete({
+        projectId: '',
+        organizationId,
+      }).catch((err: unknown) =>
+        console.error('[Realtime] bid.sync_complete broadcast failed:', err)
+      );
+
     } catch (error) {
       result.success = false;
       result.details.errors?.push(String(error));
@@ -191,6 +203,18 @@ export class BidEngineSync {
 
       // In production, would also call bid engine API
       // await this.callBidEngineAPI('POST', '/api/bids/submit', { bidId, ...submission });
+
+      // Broadcast bid submitted event
+      notifyBidSubmitted({
+        bidId,
+        bidRequestId: submission.bidRequestId,
+        estimateId: submission.estimateId,
+        amount: submission.amount,
+        projectId: estimate.projectId || '',
+        organizationId: estimate.organizationId,
+      }).catch((err: unknown) =>
+        console.error('[Realtime] bid.submitted broadcast failed:', err)
+      );
 
       return { success: true, bidId };
 

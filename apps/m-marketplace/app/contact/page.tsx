@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Mail, Phone, MapPin, Send, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { sectionImages } from '@kealee/ui';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -52,19 +54,30 @@ export default function ContactPage() {
     <div className="min-h-screen bg-white">
       <Header />
 
-      <main className="pt-32 pb-20">
+      {/* Hero */}
+      <section className="relative pt-32 pb-16 overflow-hidden">
+        <Image
+          src={sectionImages.officeWorkspace.src}
+          alt={sectionImages.officeWorkspace.alt}
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative container mx-auto px-6 text-center">
+          <h1 className="text-5xl font-bold text-white mb-4">
+            Get in Touch
+          </h1>
+          <p className="text-xl text-white/85">
+            Have questions? We'd love to hear from you.
+          </p>
+        </div>
+      </section>
+
+      <main className="pb-20 pt-16">
         <div className="container mx-auto px-6">
           <div className="max-w-6xl mx-auto">
-            
-            {/* Header */}
-            <div className="text-center mb-16">
-              <h1 className="text-5xl font-bold text-gray-900 mb-4">
-                Get in Touch
-              </h1>
-              <p className="text-xl text-gray-600">
-                Have questions? We'd love to hear from you.
-              </p>
-            </div>
 
             {sent ? (
               <div className="max-w-2xl mx-auto bg-green-50 border-2 border-green-200 rounded-2xl p-8 text-center">

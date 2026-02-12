@@ -12,6 +12,10 @@ import { getEventBus, EVENT_TYPES } from '../../../shared/events.js';
 import { generateJSON, generateText, analyzeConstructionPhoto } from '../../../shared/ai/claude.js';
 import { sendEmail } from '../../../shared/integrations/email.js';
 import { formatDate } from '../../../shared/utils/date.js';
+import { autonomyEngine } from '../../../shared/autonomy/index.js';
+import { progressAnalysisService } from './progress-analysis.js';
+import { visualTimelineService } from './visual-timeline.js';
+import { beforeAfterService } from './before-after.js';
 
 const prisma = new PrismaClient();
 const eventBus = getEventBus('qa-inspector');
@@ -407,6 +411,15 @@ async function processQAJob(job: Job): Promise<any> {
     case 'VERIFY_CORRECTION':
       return await verifyCorrection(data.findingId, data.verifiedBy, data.photos);
 
+    case 'ANALYZE_PROGRESS':
+      return await progressAnalysisService.analyzeProgress(data);
+
+    case 'ANALYZE_VISIT_PROGRESS':
+      return await progressAnalysisService.analyzeVisitProgress(data.siteVisitId);
+
+    case 'AUTO_PAIR_PHOTOS':
+      return await beforeAfterService.autoPairPhotos(data);
+
     default:
       throw new Error(`Unknown job type: ${type}`);
   }
@@ -453,6 +466,49 @@ async function analyzePhotoJob(data: { photoId: string; inspectionId: string }) 
       photos: [photo.url],
     });
   }
+
+  // ── Autonomy: Auto-create corrective tasks for minor/observation findings ──
+  const inspectionRecord = await (prisma as any).qAInspection.findUnique({
+    where: { id: data.inspectionId },
+    select: { projectId: true },
+  });
+
+  if (inspectionRecord?.projectId) {
+    for (const issue of analysis.issues.filter(i => i.severity === 'minor' || i.severity === 'observation')) {
+      try {
+        const result = await autonomyEngine.evaluateAndAct({
+          projectId: inspectionRecord.projectId,
+          category: 'qa_action',
+          appSource: 'APP-13',
+          actionType: 'qa_create_task',
+          description: `Auto-create corrective task for ${issue.severity} QA finding: ${issue.description}`,
+          confidence: issue.severity === 'observation' ? 85 : 75,
+          severity: issue.severity as 'minor' | 'observation',
+          metadata: {
+            inspectionId: data.inspectionId,
+            issueDescription: issue.description,
+            issueLocation: issue.location,
+            recommendation: issue.recommendation,
+          },
+        });
+
+        if (result.decision === 'AUTO_EXECUTED') {
+          await createFinding({
+            inspectionId: data.inspectionId,
+            severity: issue.severity,
+            category: issue.category,
+            description: issue.description,
+            location: issue.location,
+            recommendation: issue.recommendation,
+            photos: [photo.url],
+          });
+        }
+      } catch {
+        // Autonomy check failed — minor finding left for manual review
+      }
+    }
+  }
+  // ── End Autonomy ──
 
   return analysis;
 }
@@ -902,6 +958,144 @@ export async function qaInspectorRoutes(fastify: FastifyInstance) {
 
     const finding = await verifyCorrection(findingId, verifiedBy, photos);
     return finding;
+  });
+
+  // ========================================================================
+  // PROGRESS TRACKING ROUTES
+  // ========================================================================
+
+  /**
+   * Analyze progress for a site visit (auto-fetches previous visit photos)
+   */
+  fastify.post('/visits/:visitId/analyze-progress', async (request: FastifyRequest) => {
+    const { visitId } = request.params as { visitId: string };
+
+    const job = await queues.QA_INSPECTOR.add(
+      'analyze-visit-progress',
+      { type: 'ANALYZE_VISIT_PROGRESS', siteVisitId: visitId },
+      JOB_OPTIONS.DEFAULT
+    );
+
+    return { jobId: job.id, status: 'analyzing' };
+  });
+
+  /**
+   * Analyze progress with explicit photos
+   */
+  fastify.post('/progress/analyze', async (request: FastifyRequest) => {
+    const data = request.body as {
+      projectId: string;
+      currentPhotos: string[];
+      previousPhotos?: string[];
+      siteVisitId?: string;
+      projectPhase?: string;
+      areas?: string[];
+    };
+
+    const job = await queues.QA_INSPECTOR.add(
+      'analyze-progress',
+      { type: 'ANALYZE_PROGRESS', ...data },
+      JOB_OPTIONS.DEFAULT
+    );
+
+    return { jobId: job.id, status: 'analyzing' };
+  });
+
+  // ========================================================================
+  // VISUAL TIMELINE ROUTES
+  // ========================================================================
+
+  /**
+   * Get project visual timeline
+   */
+  fastify.get('/projects/:projectId/timeline', async (request: FastifyRequest) => {
+    const { projectId } = request.params as { projectId: string };
+    const { type, startDate, endDate, limit, offset } = request.query as {
+      type?: string;
+      startDate?: string;
+      endDate?: string;
+      limit?: string;
+      offset?: string;
+    };
+
+    const filters: any = {};
+    if (type) filters.type = type.split(',');
+    if (startDate) filters.startDate = new Date(startDate);
+    if (endDate) filters.endDate = new Date(endDate);
+    if (limit) filters.limit = parseInt(limit);
+    if (offset) filters.offset = parseInt(offset);
+
+    return visualTimelineService.getProjectTimeline(projectId, filters);
+  });
+
+  /**
+   * Get photos grouped by area
+   */
+  fastify.get('/projects/:projectId/photos-by-area', async (request: FastifyRequest) => {
+    const { projectId } = request.params as { projectId: string };
+    return visualTimelineService.getPhotosByArea(projectId);
+  });
+
+  // ========================================================================
+  // BEFORE/AFTER COMPARISON ROUTES
+  // ========================================================================
+
+  /**
+   * Auto-pair photos from two visits
+   */
+  fastify.post('/before-after/auto-pair', async (request: FastifyRequest) => {
+    const data = request.body as {
+      projectId: string;
+      currentVisitId: string;
+      previousVisitId: string;
+      currentPhotos: string[];
+      previousPhotos: string[];
+      currentPhotoUrls: string[];
+      previousPhotoUrls: string[];
+    };
+
+    const job = await queues.QA_INSPECTOR.add(
+      'auto-pair-photos',
+      { type: 'AUTO_PAIR_PHOTOS', ...data },
+      JOB_OPTIONS.DEFAULT
+    );
+
+    return { jobId: job.id, status: 'pairing' };
+  });
+
+  /**
+   * Get before/after pairs for a project
+   */
+  fastify.get('/projects/:projectId/before-after', async (request: FastifyRequest) => {
+    const { projectId } = request.params as { projectId: string };
+    const { area, limit, offset } = request.query as {
+      area?: string;
+      limit?: string;
+      offset?: string;
+    };
+
+    return beforeAfterService.getProjectPairs(projectId, {
+      area,
+      limit: limit ? parseInt(limit) : undefined,
+      offset: offset ? parseInt(offset) : undefined,
+    });
+  });
+
+  /**
+   * Get areas that have before/after pairs
+   */
+  fastify.get('/projects/:projectId/before-after/areas', async (request: FastifyRequest) => {
+    const { projectId } = request.params as { projectId: string };
+    return beforeAfterService.getAreasWithPairs(projectId);
+  });
+
+  /**
+   * Delete a before/after pair
+   */
+  fastify.delete('/before-after/:pairId', async (request: FastifyRequest) => {
+    const { pairId } = request.params as { pairId: string };
+    await beforeAfterService.deletePair(pairId);
+    return { deleted: true };
   });
 
   /**

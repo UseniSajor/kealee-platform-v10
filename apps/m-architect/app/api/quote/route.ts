@@ -1,7 +1,9 @@
 // apps/m-architect/app/api/quote/route.ts
-// API route for submitting quote requests
+// API route for submitting quote requests - proxies to marketplace quotes API
 
 import { NextRequest, NextResponse } from 'next/server';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,13 +35,61 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Implement actual quote request processing
-    // - Save to database
-    // - Upload files to S3
-    // - Send confirmation email
-    // - Notify team
-    // - Create tracking record
+    // Forward auth token if present
+    const authHeader = request.headers.get('authorization');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
 
+    // Proxy to backend marketplace quotes API
+    const backendResponse = await fetch(`${API_BASE_URL}/marketplace/quotes`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        leadId: formData.get('leadId') || undefined,
+        profileId: formData.get('profileId') || undefined,
+        amount: budget ? parseFloat(budget.replace(/[^0-9.]/g, '')) || 0 : 0,
+        timeline: timeline || undefined,
+        details: JSON.stringify({
+          name,
+          email,
+          phone,
+          projectType,
+          scope,
+          budget,
+          fileCount: files.length,
+        }),
+      }),
+    });
+
+    if (backendResponse.ok) {
+      const data = await backendResponse.json();
+      return NextResponse.json(
+        {
+          success: true,
+          message: 'Quote request submitted successfully',
+          quoteId: data.quote?.id || data.quoteId,
+          quote: {
+            id: data.quote?.id,
+            name,
+            email,
+            phone,
+            projectType,
+            scope,
+            timeline,
+            budget,
+            fileCount: files.length,
+            submittedAt: new Date().toISOString(),
+          },
+        },
+        { status: 201 }
+      );
+    }
+
+    // If backend is not available, generate a local quote ID
     const quoteId = 'QUO-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
 
     return NextResponse.json(

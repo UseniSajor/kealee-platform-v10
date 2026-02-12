@@ -6,7 +6,7 @@ import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, ShieldAlert } from 'lucide-react'
 
 // Week 5 Task 55: Automation dashboard (ML governance & approvals) — UI-first.
 export default function AutomationDashboardPage() {
@@ -48,6 +48,33 @@ export default function AutomationDashboardPage() {
                 <Link href="/automation/integrations">
                   <Button variant="outline" className="w-full justify-between">
                     View Integrations <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card className="lg:col-span-2 border-orange-200">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <ShieldAlert className="h-6 w-6 text-orange-500" />
+                  <div>
+                    <CardTitle>Alerts &amp; Monitoring</CardTitle>
+                    <CardDescription>
+                      System alerts, dead letter queue management, and circuit breaker status
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="outline">Alerts</Badge>
+                  <Badge variant="outline">Dead Letter Queue</Badge>
+                  <Badge variant="outline">Circuit Breakers</Badge>
+                  <Badge variant="outline">Health Metrics</Badge>
+                </div>
+                <Link href="/automation/alerts">
+                  <Button variant="outline" className="w-full justify-between">
+                    View Alerts Dashboard <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
               </CardContent>

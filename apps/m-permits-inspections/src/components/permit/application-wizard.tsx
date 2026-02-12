@@ -156,11 +156,58 @@ export function PermitApplicationWizard({draftId, onSave}: PermitApplicationWiza
   const handleSubmit = async (data: WizardFormData) => {
     setIsSubmitting(true);
     try {
-      // TODO: Submit to API
-      console.log('Submitting permit application:', data);
-      // await submitPermitApplication(data);
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+      // Map wizard form data to backend /permits/applications schema
+      const payload = {
+        jurisdictionId: data.jurisdictionId,
+        permitType: (data.permitType || 'BUILDING').toUpperCase(),
+        projectData: {
+          address: data.address,
+          parcelId: data.parcelNumber || undefined,
+          valuation: data.valuation || 0,
+          scope: data.scope || '',
+          ownerName: data.applicantName || '',
+          squareFootage: data.squareFootage || undefined,
+        },
+        documents: [
+          ...(data.plans || []).map(url => ({ type: 'plan', url })),
+          ...(data.calculations || []).map(url => ({ type: 'calculations', url })),
+          ...(data.reports || []).map(url => ({ type: 'report', url })),
+        ],
+        expedited: false,
+      };
+
+      const response = await fetch(`${API_URL}/permits/applications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Submission failed (HTTP ${response.status})`);
+      }
+
+      const result = await response.json();
+
+      // Clean up saved draft after successful submission
+      if (savedDraftId) {
+        try {
+          await applicationStorageService.deleteApplication(savedDraftId);
+        } catch {
+          // Ignore cleanup errors
+        }
+      }
+
+      // Redirect to the permit status page
+      window.location.href = `/permits/status/${result.id || result.application?.id}`;
     } catch (error) {
       console.error('Submission error:', error);
+      alert(error instanceof Error ? error.message : 'Failed to submit application. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

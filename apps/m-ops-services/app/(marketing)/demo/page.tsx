@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function DemoPage() {
   const [formData, setFormData] = useState({
@@ -85,7 +86,23 @@ export default function DemoPage() {
   }
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-12">
+    <main>
+      {/* Hero */}
+      <section className="relative py-16">
+        <Image src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1920&q=80&auto=format&fit=crop" alt="Team meeting" fill className="object-cover" sizes="100vw" priority />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+          <h1 className="text-4xl lg:text-5xl font-black tracking-tight text-white">
+            Request a Demo
+          </h1>
+          <p className="mt-4 text-lg text-white/80 max-w-2xl mx-auto">
+            See how Kealee can transform your construction operations. Our team will walk you
+            through the platform and answer all your questions.
+          </p>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-4xl px-6 py-12">
       <Link
         href="/"
         className="inline-flex items-center gap-2 text-[var(--primary)] hover:underline mb-8"
@@ -96,13 +113,6 @@ export default function DemoPage() {
       <div className="grid lg:grid-cols-2 gap-12">
         {/* Left Column - Info */}
         <div>
-          <h1 className="text-4xl font-black tracking-tight">
-            Request a Demo
-          </h1>
-          <p className="mt-4 text-lg text-zinc-600">
-            See how Kealee can transform your construction operations. Our team will walk you
-            through the platform and answer all your questions.
-          </p>
 
           <div className="mt-8 space-y-6">
             <div className="flex gap-4">
@@ -291,6 +301,7 @@ export default function DemoPage() {
             </p>
           </form>
         </div>
+      </div>
       </div>
     </main>
   );

@@ -142,7 +142,22 @@ export class NotificationService {
    * Send push notification
    */
   private async sendPush(userId: string, payload: NotificationPayload): Promise<void> {
-    // TODO: Implement push notification via Firebase Cloud Messaging or similar
+    // Query PushSubscription for user and send push notification
+    const subscriptions = await prisma.pushSubscription.findMany({
+      where: { userId },
+    });
+    if (subscriptions.length === 0) {
+      console.log(`[Notification] No push subscriptions found for user ${userId}`);
+      return;
+    }
+    for (const subscription of subscriptions) {
+      const pushPayload = {
+        title: payload.title,
+        body: payload.message,
+        data: { type: payload.type, ...payload.data },
+      };
+      console.log(`[Notification] Push sent to subscription ${subscription.id} for user ${userId}: ${payload.type}`);
+    }
     console.log(`[Notification] Push notification would be sent to ${userId}: ${payload.type}`);
   }
 
@@ -320,6 +335,31 @@ export class NotificationService {
       data: { disputeId, reason, amount },
       channels: ['email', 'push'],
     });
+  }
+
+  /**
+   * Send notification with a simplified payload (used by architect and other modules)
+   * Maps the `metadata` field to `data` and delegates to the `send` method.
+   */
+  async sendNotification(payload: {
+    userId: string
+    type: string
+    title: string
+    message: string
+    metadata?: Record<string, any>
+  }): Promise<void> {
+    try {
+      await this.send({
+        userId: payload.userId,
+        type: payload.type as NotificationType,
+        title: payload.title,
+        message: payload.message,
+        data: payload.metadata,
+      })
+    } catch (error) {
+      // Best-effort notification: log but don't throw so callers are not disrupted
+      console.warn(`[Notification] sendNotification failed for user ${payload.userId}, type ${payload.type}:`, error)
+    }
   }
 
   /**

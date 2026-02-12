@@ -2,8 +2,43 @@
   "name": "@kealee/ui",
   "version": "1.0.0",
   "description": "Kealee Platform Design System - UI Component Library",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./button": {
+      "types": "./src/components/Button.tsx",
+      "default": "./src/components/Button.tsx"
+    },
+    "./card": {
+      "types": "./src/components/Card.tsx",
+      "default": "./src/components/Card.tsx"
+    },
+    "./input": {
+      "types": "./src/components/Input.tsx",
+      "default": "./src/components/Input.tsx"
+    },
+    "./label": {
+      "types": "./src/components/Label.tsx",
+      "default": "./src/components/Label.tsx"
+    },
+    "./components": {
+      "types": "./src/components/index.ts",
+      "default": "./src/components/index.ts"
+    },
+    "./components/*": {
+      "types": "./src/components/*.tsx",
+      "default": "./src/components/*.tsx"
+    },
+    "./components/scheduling/*": {
+      "types": "./src/components/scheduling/*.tsx",
+      "default": "./src/components/scheduling/*.tsx"
+    },
+    "./*": "./src/*"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -28,6 +63,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^2.0.0",
+    "web-vitals": "^4.2.0",
     "zod": "^4.3.5"
   },
   "devDependencies": {

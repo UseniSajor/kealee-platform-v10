@@ -36,17 +36,32 @@ export default function ScheduleInspectionPage() {
     setSubmitting(true);
 
     try {
-      // TODO: Replace with actual API call
-      // await fetch('/api/inspections/schedule', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // });
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Schedule inspection via the visits API
+      const response = await fetch(`${API_URL}/api/v1/visits`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          permitId: formData.permitId,
+          visitType: formData.inspectionType,
+          scheduledDate: formData.preferredDate,
+          scheduledTime: formData.preferredTime,
+          contactPhone: formData.contactPhone,
+          specialInstructions: formData.specialInstructions,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to schedule inspection (HTTP ${response.status})`);
+      }
+
       setSubmitted(true);
     } catch (error) {
       console.error('Error scheduling inspection:', error);
+      alert(error instanceof Error ? error.message : 'Failed to schedule inspection. Please try again.');
     } finally {
       setSubmitting(false);
     }

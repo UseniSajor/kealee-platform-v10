@@ -356,12 +356,35 @@ export const paymentService = {
       },
     })
 
-    // TODO: Send email notifications
-    // await emailService.sendPaymentNotification({
-    //   to: milestone.contract.contractor.email,
-    //   milestoneName: milestone.name,
-    //   amount: releaseAmount,
-    // })
+    // Send notification records for payer (owner) and payee (contractor)
+    const contractorId = milestone.contract.contractor?.id
+    const ownerId = milestone.contract.owner?.id || milestone.contract.project?.ownerId
+    if (contractorId) {
+      await prismaAny.notification.create({
+        data: {
+          userId: contractorId,
+          type: 'PAYMENT_RECEIVED',
+          title: 'Payment Received',
+          message: 'Payment released for milestone: ' + milestone.name,
+          data: { milestoneId, amount: releaseAmount, transactionId: transaction.id },
+          channels: ['email', 'push'],
+          status: 'PENDING',
+        },
+      }).catch(() => {})
+    }
+    if (ownerId) {
+      await prismaAny.notification.create({
+        data: {
+          userId: ownerId,
+          type: 'PAYMENT_RELEASED',
+          title: 'Payment Released',
+          message: 'Payment released for milestone: ' + milestone.name,
+          data: { milestoneId, amount: releaseAmount, transactionId: transaction.id },
+          channels: ['email'],
+          status: 'PENDING',
+        },
+      }).catch(() => {})
+    }
 
     return {
       transaction,

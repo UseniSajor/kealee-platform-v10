@@ -14,13 +14,14 @@ export class ContractorMatcher {
   private readonly MIN_RATING = 3.5;
   private readonly MAX_MATCHES = 10;
 
-  // Scoring weights
+  // Scoring weights — now includes reliability from ContractorScore
   private readonly WEIGHTS = {
-    distance: 25,
-    tradeMatch: 25,
-    rating: 20,
-    history: 15,
-    credentials: 15,
+    distance: 20,     // was 25
+    tradeMatch: 20,   // was 25
+    reliability: 25,  // NEW — from ContractorScore
+    rating: 15,       // was 20
+    history: 10,      // was 15
+    credentials: 10,  // was 15
   };
 
   /**
@@ -59,12 +60,15 @@ export class ContractorMatcher {
     });
 
     // Score and filter contractors
-    const matches = contractors
-      .map(contractor => this.scoreContractor(contractor as unknown as ContractorProfile & {
+    const matchPromises = contractors.map(contractor =>
+      this.scoreContractor(contractor as unknown as ContractorProfile & {
         contractorProjects: unknown[];
         reviews: unknown[];
         credentials: unknown[];
-      }, criteria))
+      }, criteria)
+    );
+    const scored = await Promise.all(matchPromises);
+    const matches = scored
       .filter((match): match is MatchResult =>
         match !== null && match.score >= 0.4
       )
@@ -87,18 +91,18 @@ export class ContractorMatcher {
   /**
    * Score a single contractor against criteria
    */
-  private scoreContractor(
+  private async scoreContractor(
     contractor: ContractorProfile & {
       contractorProjects: unknown[];
       reviews: unknown[];
       credentials: unknown[];
     },
     criteria: MatchCriteria
-  ): MatchResult | null {
+  ): Promise<MatchResult | null> {
     let score = 0;
     const matchReasons: string[] = [];
 
-    // Distance score (0-25 points)
+    // Distance score (0-20 points)
     const distance = calculateDistance(
       criteria.location,
       { lat: contractor.latitude, lng: contractor.longitude }
@@ -112,7 +116,7 @@ export class ContractorMatcher {
     score += distanceScore;
     matchReasons.push(`${Math.round(distance)} miles from project`);
 
-    // Trade match score (0-25 points)
+    // Trade match score (0-20 points)
     const matchedTrades = contractor.trades.filter(t =>
       criteria.trades.map(ct => ct.toLowerCase()).includes(t.toLowerCase())
     );
@@ -120,13 +124,32 @@ export class ContractorMatcher {
     score += tradeScore;
     matchReasons.push(`${matchedTrades.length}/${criteria.trades.length} required trades`);
 
-    // Rating score (0-20 points)
-    // Scale: 3.0-5.0 rating maps to 0-20 points
+    // Reliability score (0-25 points) — from ContractorScore
+    let reliabilityScore = 12.5; // Default: 50/100 * 25 weight
+    try {
+      const contractorScore = await (prisma as any).contractorScore?.findUnique?.({
+        where: { contractorId: contractor.id },
+      });
+      if (contractorScore) {
+        reliabilityScore = (contractorScore.overallScore / 100) * this.WEIGHTS.reliability;
+        if (contractorScore.overallScore >= 80) {
+          matchReasons.push(`High reliability (${contractorScore.overallScore}/100)`);
+        } else if (contractorScore.overallScore >= 60) {
+          matchReasons.push(`Good reliability (${contractorScore.overallScore}/100)`);
+        }
+      }
+    } catch {
+      // ContractorScore not available — use default
+    }
+    score += reliabilityScore;
+
+    // Rating score (0-15 points)
+    // Scale: 3.0-5.0 rating maps to 0-15 points
     const ratingScore = ((contractor.rating - 3) / 2) * this.WEIGHTS.rating;
     score += Math.max(0, ratingScore);
     matchReasons.push(`${contractor.rating.toFixed(1)}★ rating (${contractor.reviewCount} reviews)`);
 
-    // Project history score (0-15 points)
+    // Project history score (0-10 points)
     const projects = contractor.contractorProjects as Array<{ contractValue?: number }>;
     const similarProjects = projects.filter(p => {
       const budget = Number(p.contractValue || 0);
@@ -135,13 +158,13 @@ export class ContractorMatcher {
         budget <= criteria.budgetRange.max * 2
       );
     });
-    const historyScore = Math.min(similarProjects.length, 5) * 3;
+    const historyScore = Math.min(similarProjects.length, 5) * 2;
     score += historyScore;
     if (similarProjects.length > 0) {
       matchReasons.push(`${similarProjects.length} similar projects completed`);
     }
 
-    // Credential score (0-15 points)
+    // Credential score (0-10 points)
     const requiredCreds = criteria.requiredCredentials || ['LICENSE', 'INSURANCE', 'BOND'];
     const credentials = contractor.credentials as Array<{ type: string }>;
     const validCredentials = credentials.filter(c =>
@@ -151,12 +174,24 @@ export class ContractorMatcher {
     score += credScore;
     matchReasons.push(`${validCredentials.length}/${requiredCreds.length} credentials verified`);
 
-    // Calculate estimated response rate based on history
-    const reviews = contractor.reviews as Array<{ responseTime?: number }>;
-    const avgResponseTime = reviews.length > 0
-      ? reviews.reduce((sum, r) => sum + (r.responseTime || 48), 0) / reviews.length
-      : 48;
-    const estimatedResponseRate = Math.max(0.3, Math.min(0.95, 1 - avgResponseTime / 168));
+    // Use ContractorScore responsiveness instead of ad-hoc calculation
+    let estimatedResponseRate = 0.65; // Default
+    try {
+      const contractorScore = await (prisma as any).contractorScore?.findUnique?.({
+        where: { contractorId: contractor.id },
+        select: { responsivenessScore: true },
+      });
+      if (contractorScore) {
+        estimatedResponseRate = contractorScore.responsivenessScore / 100;
+      }
+    } catch {
+      // Fallback to reviews-based calculation
+      const reviews = contractor.reviews as Array<{ responseTime?: number }>;
+      const avgResponseTime = reviews.length > 0
+        ? reviews.reduce((sum, r) => sum + (r.responseTime || 48), 0) / reviews.length
+        : 48;
+      estimatedResponseRate = Math.max(0.3, Math.min(0.95, 1 - avgResponseTime / 168));
+    }
 
     return {
       contractorId: contractor.id,
@@ -172,7 +207,7 @@ export class ContractorMatcher {
       score: score / 100,
       matchReasons,
       distance: Math.round(distance * 10) / 10,
-      availability: true, // TODO: Check against active projects calendar
+      availability: await (async()=>{try{const ac=await prisma.contractorProject.count({where:{contractorId:contractor.id,status:{in:["IN_PROGRESS","SCHEDULED"]}}});return ac<4}catch{return true}})(),
       estimatedResponseRate,
     };
   }

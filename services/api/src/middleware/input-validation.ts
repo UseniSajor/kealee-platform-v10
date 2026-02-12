@@ -4,7 +4,7 @@
  */
 
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { z, ZodSchema } from 'zod';
+import { z, ZodType } from 'zod';
 import DOMPurify from 'isomorphic-dompurify';
 
 /**
@@ -115,7 +115,7 @@ export function sanitizeObject(obj: any): any {
 /**
  * Validate request body against Zod schema
  */
-export function validateBody<T>(schema: ZodSchema<T>) {
+export function validateBody(schema: ZodType<any, any, any>) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const validated = schema.parse(request.body);
@@ -136,7 +136,7 @@ export function validateBody<T>(schema: ZodSchema<T>) {
 /**
  * Validate query parameters against Zod schema
  */
-export function validateQuery<T>(schema: ZodSchema<T>) {
+export function validateQuery(schema: ZodType<any, any, any>) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const validated = schema.parse(request.query);
@@ -157,7 +157,7 @@ export function validateQuery<T>(schema: ZodSchema<T>) {
 /**
  * Validate URL parameters against Zod schema
  */
-export function validateParams<T>(schema: ZodSchema<T>) {
+export function validateParams(schema: ZodType<any, any, any>) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const validated = schema.parse(request.params);

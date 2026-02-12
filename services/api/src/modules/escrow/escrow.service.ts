@@ -8,6 +8,7 @@
 import { prisma, Decimal } from '@kealee/database'
 import { journalEntryService } from '../finance/journal-entry.service'
 import { PayoutService } from '../stripe-connect/payout.service'
+import { auditService } from '../audit/audit.service'
 import type { EscrowAgreement, EscrowTransaction, EscrowHold } from '@kealee/database'
 import {
   InsufficientEscrowBalanceError,
@@ -147,6 +148,8 @@ export class EscrowService {
       },
     })
 
+    auditService.log({ userId: createdBy, action: 'CREATE', entityType: 'ESCROW', entityId: escrow.id, newValue: { amount: totalContractAmount.toNumber() }, description: 'Created escrow agreement', category: 'FINANCIAL', severity: 'CRITICAL' });
+
     return escrow
   }
 
@@ -239,6 +242,8 @@ export class EscrowService {
 
       return transaction
     })
+
+    auditService.log({ userId: initiatedBy, action: 'CREATE', entityType: 'PAYMENT', entityId: result.id, newValue: { amount: amount.toNumber() }, description: 'Recorded escrow deposit', category: 'FINANCIAL', severity: 'CRITICAL' });
 
     return result
   }
@@ -396,6 +401,8 @@ export class EscrowService {
       await this.failEscrowTransaction(result.id, error.message)
       throw error
     }
+
+    auditService.log({ userId: initiatedBy, action: 'APPROVE', entityType: 'ESCROW', entityId: escrowId, description: 'Released escrow payment', category: 'FINANCIAL', severity: 'CRITICAL' });
 
     return result
   }
@@ -561,6 +568,8 @@ export class EscrowService {
 
       return hold
     })
+
+    auditService.log({ userId: placedBy, action: 'UPDATE', entityType: 'ESCROW', entityId: escrowId, description: 'Placed hold on escrow', category: 'FINANCIAL', severity: 'WARNING' });
 
     return result
   }
@@ -1146,9 +1155,61 @@ export class EscrowService {
         },
       })
 
-      // TODO: Create alert for finance team
-      // TODO: Create audit log entry
-      // await auditService.logBalanceDiscrepancy(...)
+      // Create alert notification for finance team / admins
+      const admins = await prisma.user.findMany({
+        where: { role: { in: ['ADMIN', 'FINANCE'] }, status: 'ACTIVE' },
+        select: { id: true },
+      })
+
+      for (const admin of admins) {
+        try {
+          await prisma.notification.create({
+            data: {
+              userId: admin.id,
+              type: 'PAYMENT_FAILED',
+              title: 'Escrow Balance Discrepancy Detected',
+              message: `Balance discrepancy of $${currentDiscrepancy.abs().toNumber().toFixed(2)} detected for escrow ${escrow.escrowAccountNumber}. Immediate investigation required.`,
+              data: {
+                escrowId,
+                escrowAccountNumber: escrow.escrowAccountNumber,
+                discrepancy: currentDiscrepancy.toNumber(),
+              },
+              channels: ['email', 'push'] as any,
+              status: 'PENDING',
+            },
+          })
+        } catch (notifyErr) {
+          console.warn('Failed to create alert for admin:', notifyErr)
+        }
+      }
+
+      // Create audit log entry for balance discrepancy
+      auditService.log({
+        userId: 'SYSTEM',
+        action: 'BALANCE_DISCREPANCY',
+        entityType: 'ESCROW',
+        entityId: escrowId,
+        description: `Balance discrepancy detected for escrow ${escrow.escrowAccountNumber}`,
+        metadata: {
+          recorded: {
+            current: escrow.currentBalance.toNumber(),
+            available: escrow.availableBalance.toNumber(),
+            held: escrow.heldBalance.toNumber(),
+          },
+          calculated: {
+            current: calculatedCurrent.toNumber(),
+            available: calculatedAvailable.toNumber(),
+            held: heldBalance.toNumber(),
+          },
+          discrepancies: {
+            current: currentDiscrepancy.toNumber(),
+            available: availableDiscrepancy.toNumber(),
+            held: heldDiscrepancy.toNumber(),
+          },
+        },
+        category: 'FINANCIAL',
+        severity: 'CRITICAL',
+      })
     }
 
     return {
@@ -1203,8 +1264,24 @@ export class EscrowService {
       },
     })
 
-    // TODO: Create audit log entry
-    // await auditService.logBalanceReconciliation(...)
+    // Create audit log entry for balance reconciliation
+    auditService.log({
+      userId: performedBy,
+      action: 'RECONCILE',
+      entityType: 'ESCROW',
+      entityId: escrowId,
+      description: `Escrow balances reconciled for ${(await prisma.escrowAgreement.findUnique({ where: { id: escrowId }, select: { escrowAccountNumber: true } }))?.escrowAccountNumber || escrowId}`,
+      metadata: {
+        before: {
+          current: calculated.currentBalance.toNumber(),
+          available: calculated.availableBalance.toNumber(),
+          held: calculated.heldBalance.toNumber(),
+        },
+        discrepancy: calculated.discrepancy.toNumber(),
+      },
+      category: 'FINANCIAL',
+      severity: 'CRITICAL',
+    })
 
     return reconciledEscrow
   }

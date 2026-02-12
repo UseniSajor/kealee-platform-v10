@@ -17,12 +17,13 @@ type PricingTab = 'pm' | 'permits';
 
 export function Pricing() {
   const [activeTab, setActiveTab] = useState<PricingTab>('pm');
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
 
   const pmPackages = [
     {
       name: 'Package A',
       tier: 'Starter',
-      price: 1750,
+      price: billingPeriod === 'monthly' ? 1750 : 1400,
       period: 'month',
       hours: '5-10 hrs/week',
       projects: '1 concurrent',
@@ -44,7 +45,7 @@ export function Pricing() {
     {
       name: 'Package B',
       tier: 'Professional',
-      price: 3750,
+      price: billingPeriod === 'monthly' ? 3750 : 3000,
       period: 'month',
       hours: '15-20 hrs/week',
       projects: 'Up to 3',
@@ -67,10 +68,10 @@ export function Pricing() {
     {
       name: 'Package C',
       tier: 'Premium',
-      price: 9500,
+      price: billingPeriod === 'monthly' ? 9500 : 7600,
       period: 'month',
       hours: '30-40 hrs/week',
-      projects: 'Unlimited',
+      projects: 'Up to 20',
       support: '24/7 Priority',
       description: 'Complete PM service with full support',
       features: [
@@ -92,7 +93,7 @@ export function Pricing() {
     {
       name: 'Package D',
       tier: 'Enterprise',
-      price: 16500,
+      price: billingPeriod === 'monthly' ? 16500 : 13200,
       period: 'month',
       hours: '40+ hrs/week',
       projects: 'Portfolio',
@@ -139,15 +140,15 @@ export function Pricing() {
     {
       name: 'Permit B',
       tier: 'Full Service',
-      price: 1295,
-      period: 'one-time',
-      description: 'Multiple permits with AI review',
+      price: billingPeriod === 'monthly' ? 1295 : 1036,
+      period: 'month',
+      description: 'Up to 10 permits per month with AI review',
       features: [
-        'Up to 3 permit types',
+        'Up to 10 permits per month',
         'AI document review',
         'Complete application prep',
         'Expedited processing',
-        '1 resubmittal included',
+        '1 resubmittal included per permit',
         'Inspection scheduling',
         'Approval guarantee',
       ],
@@ -159,11 +160,11 @@ export function Pricing() {
     {
       name: 'Permit C',
       tier: 'Premium',
-      price: 2995,
-      period: 'one-time',
-      description: 'Unlimited permits with full coordination',
+      price: billingPeriod === 'monthly' ? 2995 : 2396,
+      period: 'month',
+      description: 'Up to 50 permits per month with full coordination',
       features: [
-        'Unlimited permit types',
+        'Up to 50 permits per month',
         'Full AI analysis',
         'Architect/engineer coordination',
         'Jurisdiction liaison',
@@ -181,10 +182,11 @@ export function Pricing() {
     {
       name: 'Permit D',
       tier: 'Enterprise',
-      price: 7500,
+      price: billingPeriod === 'monthly' ? 7500 : 6000,
       period: 'month',
-      description: 'Monthly subscription for portfolios',
+      description: 'Custom permits per month for portfolios',
       features: [
+        'Custom permit volume',
         'Dedicated permit team',
         'Multi-jurisdiction expertise',
         'Portfolio dashboard',
@@ -211,7 +213,7 @@ export function Pricing() {
         {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-            Transparent Pricing, Real Results
+            Clear Pricing, Real Results
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
             Choose the service level that fits your project. No hidden fees, cancel anytime.
@@ -239,6 +241,29 @@ export function Pricing() {
             >
               Permit Services
             </button>
+          </div>
+
+          {/* Billing Toggle */}
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <span className={`font-medium ${billingPeriod === 'monthly' ? 'text-gray-900' : 'text-gray-500'}`}>
+              Monthly
+            </span>
+            <button
+              onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'annual' : 'monthly')}
+              className={`w-14 h-8 rounded-full p-1 transition ${
+                billingPeriod === 'annual' ? 'bg-blue-600' : 'bg-gray-300'
+              }`}
+            >
+              <div className={`w-6 h-6 bg-white rounded-full transition transform ${
+                billingPeriod === 'annual' ? 'translate-x-6' : ''
+              }`} />
+            </button>
+            <span className={`font-medium ${billingPeriod === 'annual' ? 'text-gray-900' : 'text-gray-500'}`}>
+              Annual
+              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-sm rounded-full">
+                Save 20%
+              </span>
+            </span>
           </div>
         </div>
 
@@ -367,7 +392,7 @@ export function Pricing() {
           <p className="text-sm text-gray-600">
             Our fair rotation algorithm ensures all qualified contractors get opportunities.
             Contractors bid competitively based on Suggested Retail Price (SRP), and all applicable
-            fees are transparently displayed at checkout.
+            fees are clearly displayed at checkout.
           </p>
         </div>
 

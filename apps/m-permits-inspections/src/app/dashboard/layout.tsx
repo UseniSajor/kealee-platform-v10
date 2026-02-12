@@ -22,9 +22,16 @@ export default async function DashboardLayout({
     redirect('/auth/login');
   }
 
-  // Get user role from metadata or user table
-  // For now, default to CLIENT
-  const role = 'CLIENT'; // TODO: Fetch from user metadata
+  // Get user role from Supabase user metadata, app_metadata, or fall back to CLIENT
+  const userMetadata = session.user.user_metadata || {};
+  const appMetadata = session.user.app_metadata || {};
+  const role = (
+    appMetadata.role ||
+    userMetadata.role ||
+    appMetadata.user_role ||
+    userMetadata.user_role ||
+    'CLIENT'
+  ) as string;
 
   return (
     <div className="min-h-screen bg-gray-50">

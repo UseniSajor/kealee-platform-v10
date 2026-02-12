@@ -319,6 +319,26 @@ export const api = {
     return apiRequest<{ report: any }>(`/pm/reports/weekly${qs ? `?${qs}` : ""}`)
   },
 
+  // Leads / Sales Pipeline
+  listLeads: (filters?: {
+    estimatedValueMin?: number
+    estimatedValueMax?: number
+    city?: string
+    state?: string
+    projectType?: string
+    assignedSalesRepId?: string
+  }) => {
+    const params = new URLSearchParams()
+    if (filters?.estimatedValueMin !== undefined) params.set("estimatedValueMin", String(filters.estimatedValueMin))
+    if (filters?.estimatedValueMax !== undefined) params.set("estimatedValueMax", String(filters.estimatedValueMax))
+    if (filters?.city) params.set("city", filters.city)
+    if (filters?.state) params.set("state", filters.state)
+    if (filters?.projectType) params.set("projectType", filters.projectType)
+    if (filters?.assignedSalesRepId) params.set("assignedSalesRepId", filters.assignedSalesRepId)
+    const qs = params.toString()
+    return apiRequest<{ leads: any[]; total: number }>(`/marketplace/leads${qs ? `?${qs}` : ""}`)
+  },
+
   // Other PM operations
   getWorkflowStatus: (projectId: string, phase: string) =>
     apiRequest<{ status: any }>(`/workflow/status/${projectId}?phase=${phase}`),

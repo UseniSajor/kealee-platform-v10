@@ -33,6 +33,7 @@ interface PermitFormData {
   applicantName: string;
   applicantEmail: string;
   applicantPhone: string;
+  projectValuation: number;
   permitId: string | null;
 }
 
@@ -50,6 +51,7 @@ export default function NewPermitPage() {
     applicantName: '',
     applicantEmail: '',
     applicantPhone: '',
+    projectValuation: 0,
     permitId: null,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -105,7 +107,7 @@ export default function NewPermitPage() {
         jurisdictionId: formData.jurisdictionId!,
         permitTypes: formData.permitTypes,
         projectDetails: {
-          valuation: 0, // TODO: Add valuation field
+          valuation: formData.projectValuation,
         },
         applicantInfo: {
           name: formData.applicantName,
@@ -825,6 +827,31 @@ function StepPayment({
           </div>
         </div>
       </Card>
+
+      {/* Project Valuation */}
+      <div className="space-y-4">
+        <h3 className="text-xl font-semibold text-gray-900">Project Valuation</h3>
+        <div>
+          <Input
+            label="Estimated Project Value ($)"
+            type="number"
+            required
+            value={formData.projectValuation > 0 ? String(formData.projectValuation) : ''}
+            onChange={(e) => {
+              const val = parseFloat(e.target.value);
+              setFormData({
+                ...formData,
+                projectValuation: isNaN(val) || val < 0 ? 0 : val,
+              });
+            }}
+            placeholder="e.g. 50000"
+            leftIcon={<CreditCard size={20} />}
+          />
+          <p className="text-sm text-gray-500 mt-1">
+            Total estimated cost of the construction work. This is used to calculate permit fees.
+          </p>
+        </div>
+      </div>
 
       {/* Applicant Information */}
       <div className="space-y-4">

@@ -4,6 +4,7 @@
  */
 
 import axios from 'axios';
+import { prisma } from '@kealee/database';
 
 const BC_API_URL = process.env.BUILDINGCONNECTED_API_URL || 'https://api.buildingconnected.com/v1';
 const BC_API_KEY = process.env.BUILDINGCONNECTED_API_KEY;
@@ -130,10 +131,42 @@ export class BuildingConnectedService {
     const jurisdictions = await this.getAllJurisdictions();
     console.log(`📥 Retrieved ${jurisdictions.length} jurisdictions`);
 
-    // TODO: Import into Prisma
-    // Would map BC jurisdiction data to Kealee schema
+    // Import jurisdiction data into Prisma
+    let importedCount = 0;
+    for (const j of jurisdictions) {
+      try {
+        await prisma.jurisdiction.upsert({
+          where: { code: 'BC-' + j.location.state + '-' + j.id },
+          update: {
+            name: j.name,
+            state: j.location.state,
+            county: j.location.county || null,
+            city: j.location.city || null,
+            apiUrl: j.contact.portalUrl || null,
+            portalUrl: j.contact.website || null,
+          },
+          create: {
+            code: 'BC-' + j.location.state + '-' + j.id,
+            name: j.name,
+            state: j.location.state,
+            county: j.location.county || null,
+            city: j.location.city || null,
+            integrationType: 'API_DIRECT',
+            apiUrl: j.contact.portalUrl || null,
+            portalUrl: j.contact.website || null,
+            requiredDocuments: [],
+            feeSchedule: {},
+            formTemplates: [],
+          },
+        });
+        importedCount++;
+      } catch (err) {
+        console.error('Failed to import jurisdiction ' + j.id + ':', err);
+      }
+    }
 
-    return jurisdictions.length;
+    console.log('Imported ' + importedCount + ' of ' + jurisdictions.length + ' jurisdictions');
+    return importedCount;
   }
 }
 

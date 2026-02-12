@@ -23,6 +23,7 @@ import { sendEmail, EMAIL_TEMPLATES } from '../../../shared/integrations/email.j
 import { sendUrgentTaskSMS } from '../../../shared/integrations/sms.js';
 import { addWorkingDays, daysUntilDeadline, formatDate } from '../../../shared/utils/date.js';
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { autonomyEngine } from '../../../shared/autonomy/index.js';
 
 const prisma = new PrismaClient();
 
@@ -347,6 +348,32 @@ class TaskQueueService {
 
       // Escalate after 1 day overdue
       if (overdueDays >= 1) {
+        // ── Autonomy: Auto-escalate overdue tasks ──
+        try {
+          const autoResult = await autonomyEngine.evaluateAndAct({
+            projectId: task.projectId,
+            category: 'task_escalation',
+            appSource: 'APP-09',
+            actionType: 'task_escalate',
+            description: `Auto-escalate overdue task: "${task.title}" (${overdueDays} days overdue)`,
+            confidence: Math.min(95, 60 + overdueDays * 5),
+            days: overdueDays,
+            metadata: {
+              taskId: task.id,
+              taskTitle: task.title,
+              overdueDays,
+              assignedPmId: task.assignedPmId,
+              currentPriority: task.priority,
+            },
+          });
+
+          // If autonomy is not enabled or escalation was handled, still do the update
+          // The autonomy engine logs it; the actual escalation still runs below
+        } catch {
+          // Autonomy check failed — proceed with normal escalation
+        }
+        // ── End Autonomy ──
+
         await prisma.automationTask.update({
           where: { id: task.id },
           data: {
@@ -530,9 +557,60 @@ async function processTaskQueueJob(job: Job<TaskQueueJob>): Promise<unknown> {
     case 'GET_WORKLOAD':
       return service.getPMWorkload(job.data.pmId);
 
-    case 'REBALANCE_WORKLOADS':
-      // TODO: Implement workload rebalancing
-      return { rebalanced: false };
+    case "REBALANCE_WORKLOADS": {
+      // Workload rebalancing: find overloaded PMs and reassign excess tasks
+      const allPMs = await prisma.user.findMany({
+        where: { role: "PM", status: "ACTIVE" },
+        select: { id: true },
+      });
+
+      if (allPMs.length < 2) {
+        return { rebalanced: false, reason: "Not enough PMs for rebalancing" };
+      }
+
+      const workloads = await Promise.all(
+        allPMs.map(pm => service.getPMWorkload(pm.id))
+      );
+
+      const totalTasks = workloads.reduce((sum, w) => sum + w.activeTaskCount + w.pendingTaskCount, 0);
+      const avgTasks = Math.ceil(totalTasks / workloads.length);
+      const maxThreshold = avgTasks + 3;
+
+      const overloaded = workloads.filter(w => (w.activeTaskCount + w.pendingTaskCount) > maxThreshold);
+      const underUtilized = workloads
+        .filter(w => (w.activeTaskCount + w.pendingTaskCount) < avgTasks)
+        .sort((a, b) => (a.activeTaskCount + a.pendingTaskCount) - (b.activeTaskCount + b.pendingTaskCount));
+
+      let reassigned = 0;
+
+      for (const overPM of overloaded) {
+        const excessCount = (overPM.activeTaskCount + overPM.pendingTaskCount) - avgTasks;
+
+        const excessTasks = await prisma.automationTask.findMany({
+          where: {
+            assignedPmId: overPM.pmId,
+            status: { in: ["PENDING", "ASSIGNED"] },
+          },
+          orderBy: { priority: "desc" },
+          take: excessCount,
+        } as any) as any[];
+
+        for (const task of excessTasks) {
+          const targetPM = underUtilized.find(u => (u.activeTaskCount + u.pendingTaskCount) < avgTasks);
+          if (!targetPM) break;
+
+          await prisma.automationTask.update({
+            where: { id: task.id },
+            data: { assignedPmId: targetPM.pmId },
+          });
+
+          targetPM.pendingTaskCount++;
+          reassigned++;
+        }
+      }
+
+      return { rebalanced: reassigned > 0, tasksReassigned: reassigned };
+    }
 
     default:
       throw new Error(`Unknown job type`);

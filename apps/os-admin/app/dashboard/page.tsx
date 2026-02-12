@@ -41,14 +41,16 @@ export default function DashboardPage() {
         const todayStart = today.toISOString()
         const todayEnd = new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString()
 
-        // Fetch users, orgs, and recent events in parallel
-        const [usersData, orgsData, usersTodayData, orgsTodayData, eventsData] = await Promise.all([
+        // Fetch users, orgs, projects, and recent events in parallel
+        const [usersData, orgsData, usersTodayData, orgsTodayData, projectsData, eventsData] = await Promise.all([
           api.getUsers({ limit: 1 }).catch(() => ({ users: [], pagination: { total: 0 } })),
           api.getOrgs({ limit: 1 }).catch(() => ({ orgs: [], pagination: { total: 0 } })),
           // Get users created today by fetching all and filtering (API doesn't have date filter yet)
           api.getUsers({ limit: 1000 }).catch(() => ({ users: [], pagination: { total: 0 } })),
           // Get orgs created today
           api.getOrgs({ limit: 1000 }).catch(() => ({ orgs: [], pagination: { total: 0 } })),
+          // Get projects from the real API endpoint
+          api.getProjects({ limit: 1000 }).catch(() => ({ projects: [] })),
           // Get recent events for activity feed
           api.getRecentEvents(10).catch(() => ({ events: [] })),
         ])
@@ -64,6 +66,13 @@ export default function DashboardPage() {
           return created >= today
         }).length || 0
 
+        // Calculate project counts from the real projects API
+        const allProjects = projectsData.projects || []
+        const projectsToday = allProjects.filter((project: any) => {
+          const created = new Date(project.createdAt)
+          return created >= today
+        }).length
+
         setStats({
           users: {
             total: usersData.pagination?.total || 0,
@@ -74,8 +83,8 @@ export default function DashboardPage() {
             today: orgsToday,
           },
           projects: {
-            total: 0, // Projects API not implemented yet
-            today: 0,
+            total: allProjects.length,
+            today: projectsToday,
           },
         })
 

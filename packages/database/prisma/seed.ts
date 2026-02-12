@@ -1,5 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
+import { seedMessageTemplates } from "./seed-templates";
+import { seedDocumentTemplates } from "./seed-doc-templates";
 
 const prisma = new PrismaClient();
 
@@ -638,7 +640,53 @@ async function main() {
   console.log("✅ DC-area jurisdictions seeded");
 
   // ============================================================================
-  // 8. SEED SUMMARY
+  // 8. MESSAGE TEMPLATES
+  // ============================================================================
+  console.log("📧 Seeding message templates...");
+  const msgCount = await seedMessageTemplates(prisma);
+  console.log("✅ Message templates seeded");
+
+  // ============================================================================
+  // 9. DOCUMENT TEMPLATES
+  // ============================================================================
+  console.log("📄 Seeding document templates...");
+  const docCount = await seedDocumentTemplates(prisma);
+  console.log("✅ Document templates seeded");
+
+  // ============================================================================
+  // 10. ASSEMBLY LIBRARY (optional — requires @kealee/estimating build)
+  // ============================================================================
+  let assemblyCount = 0;
+  try {
+    const { seedAssemblyLibrary } = await import("../../estimating/src/seed-assemblies");
+    console.log("🔧 Seeding assembly library...");
+
+    // Ensure a default cost database exists for seed data
+    const costDb = await (prisma as any).costDatabase.upsert({
+      where: { id: "kealee-marketplace-2025" },
+      update: {
+        name: "Kealee Marketplace 2025",
+        version: "2025.1",
+        region: "DC-Baltimore Corridor",
+        isActive: true,
+      },
+      create: {
+        id: "kealee-marketplace-2025",
+        name: "Kealee Marketplace 2025",
+        version: "2025.1",
+        region: "DC-Baltimore Corridor",
+        isActive: true,
+      },
+    });
+
+    assemblyCount = await seedAssemblyLibrary(prisma, costDb.id);
+    console.log("✅ Assembly library seeded");
+  } catch (err) {
+    console.log("⏭️  Assembly library skipped (build @kealee/estimating first, then re-run seed)");
+  }
+
+  // ============================================================================
+  // 11. SEED SUMMARY
   // ============================================================================
   console.log("\n🎉 Database seed completed successfully!");
   console.log("\n📋 Summary:");
@@ -649,6 +697,13 @@ async function main() {
   console.log(`   ✅ Default Org: ${defaultOrg.name} (ID: ${defaultOrg.id})`);
   console.log(`   ✅ Org Membership: Admin user added to default org with admin role`);
   console.log(`   ✅ Jurisdictions: ${jurisdictions.length} (DC, Montgomery, Prince George's, Arlington, Fairfax)`);
+  console.log(`   ✅ Message Templates: ${msgCount} (20 events × 3 channels)`);
+  console.log(`   ✅ Document Templates: ${docCount} (contract, change order, SOW, invoice, punch list, closeout, subcontract, NTP)`);
+  if (assemblyCount > 0) {
+    console.log(`   ✅ Assemblies: ${assemblyCount} (marketplace pricing library)`);
+  } else {
+    console.log(`   ⏭️  Assemblies: skipped (build @kealee/estimating first)`);
+  }
   
   console.log("\n⚠️  IMPORTANT NEXT STEPS:");
   console.log("   1. ✅ Stripe Setup:");

@@ -87,8 +87,42 @@ export const constructionHandoffService = {
     // Add specifications if requested
     let specifications: any[] = []
     if (data.includeSpecifications) {
-      // TODO: Get specifications from project
-      // For now, placeholder
+      // Query project documents for specification files
+      const specFiles = await prismaAny.designFile.findMany({
+        where: {
+          designProjectId: data.designProjectId,
+          status: 'ACTIVE',
+          OR: [
+            { category: 'SPECIFICATION' },
+            { fileType: { in: ['SPECIFICATION', 'SPEC'] } },
+            { tags: { has: 'specification' } },
+          ],
+        },
+        orderBy: { createdAt: 'asc' },
+      })
+
+      if (specFiles.length > 0) {
+        specifications = await Promise.all(
+          specFiles.map((specFile: any, index: number) =>
+            prismaAny.iFCPackageDocument.create({
+              data: {
+                packageId: ifcPackage.id,
+                documentType: 'SPECIFICATION',
+                documentName: specFile.fileName || specFile.name || `Specification ${index + 1}`,
+                discipline: specFile.discipline || 'GENERAL',
+                sourceType: 'DESIGN_FILE',
+                sourceId: specFile.id,
+                sourceFileUrl: specFile.fileUrl || undefined,
+                fileUrl: specFile.fileUrl || '',
+                fileName: specFile.fileName || `spec_${index + 1}.pdf`,
+                fileType: specFile.fileType || 'PDF',
+                orderIndex: documents.length + index + 1,
+                isIncluded: true,
+              },
+            })
+          )
+        )
+      }
     }
 
     // Update package with counts

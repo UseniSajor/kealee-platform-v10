@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '../index';
+import { supabase } from '../supabase-client';
 import { useAuth } from './useAuth';
 
 export interface Profile {

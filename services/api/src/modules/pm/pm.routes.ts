@@ -423,9 +423,19 @@ export async function pmRoutes(fastify: FastifyInstance) {
         const { weekStart, weekEnd, pmId } = request.body as { weekStart: string; weekEnd: string; pmId?: string }
 
         const report = await pmService.generateWeeklyReport(pmId || user.id, new Date(weekStart))
-        // TODO: Generate PDF using puppeteer or similar
-        // For now, return report data
-        return reply.send({ report, pdfUrl: null })
+        // Create a report record with metadata instead of actual PDF
+        const reportRecord = await prismaAny.generatedDocument.create({
+          data: {
+            entityType: 'WeeklyReport',
+            entityId: pmId || user.id,
+            type: 'WEEKLY_REPORT',
+            title: 'Weekly Report ' + weekStart + ' - ' + weekEnd,
+            content: JSON.stringify(report),
+            mimeType: 'application/json',
+            metadata: { pmId: pmId || user.id, weekStart, weekEnd },
+          },
+        }).catch(() => null)
+        return reply.send({ report, reportId: reportRecord?.id || null, pdfUrl: null })
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({

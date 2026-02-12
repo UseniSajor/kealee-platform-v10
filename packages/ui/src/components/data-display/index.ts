@@ -35,3 +35,18 @@ export {
   type TrendDirection,
   type TrendSentiment,
 } from './MetricCard';
+
+export {
+  VisualTimeline,
+  type VisualTimelineProps,
+  type VisualTimelineEntry,
+  type VisualTimelinePhoto,
+} from './VisualTimeline';
+
+export {
+  BeforeAfterSlider,
+  BeforeAfterGallery,
+  type BeforeAfterSliderProps,
+  type BeforeAfterGalleryProps,
+  type BeforeAfterPair,
+} from './BeforeAfterSlider';

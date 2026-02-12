@@ -258,9 +258,68 @@ export default function PermitApplicationForm({
 
   const handleSaveDraft = async () => {
     const formData = form.getValues();
-    // Save draft logic - could use localStorage or API
-    console.log('Saving draft:', formData);
-    // TODO: Implement draft saving
+    setLoading(true);
+    setError(null);
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+      // Save draft via the backend application save endpoint
+      // First, create or update a draft application
+      const payload = {
+        jurisdictionId: formData.jurisdictionId,
+        permitType: (formData.permitType || 'BUILDING').toUpperCase(),
+        projectData: {
+          address: formData.propertyAddress?.street || '',
+          valuation: formData.projectDetails?.valuation || 0,
+          scope: formData.projectDetails?.scopeOfWork || formData.projectDetails?.description || '',
+          ownerName: '',
+          squareFootage: formData.projectDetails?.squareFootage || undefined,
+        },
+        documents: [],
+        expedited: formData.priority === 'expedited' || formData.priority === 'emergency',
+      };
+
+      // Create application as draft via the backend
+      const response = await fetch(`${API_URL}/permits/applications`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to save draft');
+      }
+
+      const result = await response.json();
+
+      // Also save locally for quick resume
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('permit-draft', JSON.stringify({
+          ...formData,
+          draftId: result.id || result.application?.id,
+          savedAt: new Date().toISOString(),
+        }));
+      }
+
+      // Show success feedback
+      alert('Draft saved successfully');
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to save draft';
+      setError(errorMessage);
+
+      // Fallback: save to localStorage if API fails
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('permit-draft', JSON.stringify({
+          ...formData,
+          savedAt: new Date().toISOString(),
+        }));
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCalculateFees = async () => {

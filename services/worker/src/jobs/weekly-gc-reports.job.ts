@@ -1,4 +1,5 @@
 import { reportsQueue } from '../queues/reports.queue'
+import { prisma } from '@kealee/database'
 import { CronJobResult } from '../types/cron.types'
 
 function startOfWeekISO(d: Date) {
@@ -45,23 +46,52 @@ export async function executeWeeklyGCReports(): Promise<CronJobResult> {
       }
     }
 
-    // TODO: Pull real data from database:
-    // - GC's projects, permits, inspections, budget
     const weekOf = startOfWeekISO(new Date())
+    const nextWeek = new Date()
+    nextWeek.setDate(nextWeek.getDate() + 7)
+
+    // Pull real data from database for project stats, milestone progress, budget data
+    const [projectsActive, permitsPending, inspectionsNext7Days, budgetAgg, milestoneStats] = await Promise.all([
+      (prisma as any).project.count({ where: { status: 'ACTIVE' } }),
+      (prisma as any).permit.count({ where: { status: 'PENDING' } }),
+      (prisma as any).inspection.count({
+        where: {
+          scheduledDate: { gte: new Date(), lte: nextWeek },
+        },
+      }),
+      (prisma as any).payment.aggregate({
+        where: { createdAt: { gte: new Date(weekOf) } },
+        _sum: { amount: true },
+      }),
+      (prisma as any).milestone.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
+    ])
+
+    const budgetUsed = Number(budgetAgg._sum?.amount || 0)
+    const completedMilestones = milestoneStats.find((s: any) => s.status === 'APPROVED')?._count?.id || 0
+    const totalMilestones = milestoneStats.reduce((sum: number, s: any) => sum + (s._count?.id || 0), 0)
+
     const reportData = {
       weekOf,
-      summary:
-        'Weekly portfolio summary (stub). Wire project/permit/inspection/budget sources to replace this content.',
+      summary: 'Weekly portfolio summary: ' + projectsActive + ' active projects, ' + permitsPending + ' permits pending, ' + inspectionsNext7Days + ' inspections in next 7 days.',
       aiInsights: [
-        'Schedule slipping by 3 days on Project X (stub insight)',
-        'Budget overrun risk in electrical category (stub insight)',
-        'Permit approval expected next week (stub insight)',
+        totalMilestones > 0
+          ? completedMilestones + '/' + totalMilestones + ' milestones completed across all projects'
+          : 'No milestones tracked this period',
+        permitsPending > 0
+          ? permitsPending + ' permit(s) pending review'
+          : 'All permits are up to date',
+        inspectionsNext7Days > 0
+          ? inspectionsNext7Days + ' inspection(s) scheduled in the next 7 days'
+          : 'No inspections scheduled for next week',
       ],
       metrics: {
-        'Projects Active': 0,
-        'Permits Pending': 0,
-        'Inspections Next 7 Days': 0,
-        'Budget Used': '$0',
+        'Projects Active': projectsActive,
+        'Permits Pending': permitsPending,
+        'Inspections Next 7 Days': inspectionsNext7Days,
+        'Budget Used': '$' + budgetUsed.toLocaleString(),
       },
     }
 
@@ -102,4 +132,3 @@ export async function executeWeeklyGCReports(): Promise<CronJobResult> {
     }
   }
 }
-

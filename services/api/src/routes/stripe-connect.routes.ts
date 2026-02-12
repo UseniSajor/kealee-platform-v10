@@ -2,12 +2,15 @@
  * Stripe Connect API Routes
  * Handles contractor onboarding, payout management, and webhooks
  */
+
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 import { authenticateUser, requireRole, type AuthenticatedRequest } from '../middleware/auth.middleware'
+import { prisma } from '@kealee/database'
 import { ConnectOnboardingService } from '../modules/stripe-connect/connect-onboarding.service'
 import { PayoutService } from '../modules/stripe-connect/payout.service'
 import { ConnectWebhookHandler } from '../modules/stripe-connect/connect-webhook.handler'
+
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -84,13 +87,15 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
       body: {
         type: 'object',
         additionalProperties: false,
-        required: ['accountType', 'country', 'businessType'],
         properties: {
-          accountType: { type: 'string' }, // tighten enum if you have it
-          country: { type: 'string', minLength: 2, maxLength: 2 }, // "US"
-          businessType: { type: 'string' }, // tighten enum if you have it
-          platformFeePercentage: { type: 'number', minimum: 0, maximum: 100 },
+          accountType: { type: 'string', enum: ['STANDARD', 'EXPRESS'], default: 'EXPRESS' },
+          businessType: { type: 'string', enum: ['individual', 'company', 'non_profit'] },
+          country: { type: 'string', minLength: 2, maxLength: 2 },
+          platformFeePercentage: { type: 'number', minimum: 0, maximum: 30 },
         },
+        // accountType is optional in Zod because default(), but AJV doesn't "apply defaults" unless configured.
+        // So we do NOT require it. Let Zod default it.
+        required: [],
       },
       tags: ['Stripe Connect'],
       summary: 'Create connected account',
@@ -99,9 +104,9 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
     handler: async (request: AuthenticatedRequest, reply: FastifyReply) => {
       const user = request.user
       if (!user) return reply.code(401).send({ error: 'Not authenticated' })
-  
+
       const body = CreateConnectedAccountSchema.parse(request.body)
-  
+
       const existing = await ConnectOnboardingService.getConnectedAccount(user.id)
       if (existing) {
         return reply.code(409).send({
@@ -109,7 +114,7 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
           connectedAccount: existing,
         })
       }
-  
+
       const result = await ConnectOnboardingService.createConnectedAccount({
         userId: user.id,
         accountType: body.accountType,
@@ -118,14 +123,13 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
         businessType: body.businessType,
         platformFeePercentage: body.platformFeePercentage,
       })
-  
+
       return reply.code(201).send({
         connectedAccount: result.connectedAccount,
         message: 'Connected account created successfully',
       })
     },
   })
-  
 
   /**
    * GET /api/connect/accounts/me
@@ -269,7 +273,6 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
    */
   fastify.put('/accounts/me/tax-information', {
     schema: {
-
       tags: ['Stripe Connect'],
       summary: 'Update tax information',
       security: [{ bearerAuth: [] }],
@@ -418,11 +421,9 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
       const connectedAccount =
         await ConnectOnboardingService.getConnectedAccount(user.id)
 
-      if (
-        connectedAccount?.id !== payout.connectedAccountId &&
-        // TODO: Check if user is admin
-        false
-      ) {
+      const isAdmin = user.role === 'admin' || user.role === 'super_admin'
+
+      if (connectedAccount?.id !== payout.connectedAccountId && !isAdmin) {
         return reply.code(403).send({ error: 'Access denied' })
       }
 
@@ -543,3 +544,4 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
     },
   })
 }
+

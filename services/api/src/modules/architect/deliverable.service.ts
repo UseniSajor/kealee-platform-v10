@@ -2,6 +2,7 @@ import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
+import { notificationService } from '../notifications/notification.service'
 
 export const deliverableService = {
   /**
@@ -386,12 +387,26 @@ export const deliverableService = {
       },
     })
 
-    // TODO: Send notification to team members
-    // await notificationService.notifyTeamMembers(deliverable.designProjectId, {
-    //   type: 'DELIVERABLE_APPROVED',
-    //   deliverableId,
-    //   deliverableName: deliverable.name,
-    // })
+    // Send notification to team members
+    const teamMembers = await prismaAny.designProjectTeamMember.findMany({
+      where: { designProjectId: deliverable.designProjectId },
+      select: { userId: true },
+    })
+    for (const member of teamMembers) {
+      if (member.userId !== userId) {
+        await notificationService.sendNotification({
+          userId: member.userId,
+          type: 'DELIVERABLE_APPROVED',
+          title: 'Deliverable Approved',
+          message: `Deliverable "${deliverable.name}" has been approved`,
+          metadata: {
+            deliverableId,
+            deliverableName: deliverable.name,
+            designProjectId: deliverable.designProjectId,
+          },
+        })
+      }
+    }
 
     return updated
   },
@@ -448,13 +463,27 @@ export const deliverableService = {
       },
     })
 
-    // TODO: Send notification
-    // await notificationService.notifyTeamMembers(deliverable.designProjectId, {
-    //   type: 'DELIVERABLE_ISSUED',
-    //   deliverableId,
-    //   deliverableName: deliverable.name,
-    //   issuedTo,
-    // })
+    // Send notification to team members
+    const teamMembersForIssue = await prismaAny.designProjectTeamMember.findMany({
+      where: { designProjectId: deliverable.designProjectId },
+      select: { userId: true },
+    })
+    for (const member of teamMembersForIssue) {
+      if (member.userId !== userId) {
+        await notificationService.sendNotification({
+          userId: member.userId,
+          type: 'DELIVERABLE_ISSUED',
+          title: 'Deliverable Issued',
+          message: `Deliverable "${deliverable.name}" has been issued${issuedTo ? ` to ${issuedTo}` : ''}`,
+          metadata: {
+            deliverableId,
+            deliverableName: deliverable.name,
+            designProjectId: deliverable.designProjectId,
+            issuedTo,
+          },
+        })
+      }
+    }
 
     return updated
   },

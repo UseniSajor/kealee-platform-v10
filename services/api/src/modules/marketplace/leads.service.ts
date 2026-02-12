@@ -384,9 +384,31 @@ export const leadsService = {
 
       // Calculate performance metrics
       // Note: These fields don't exist in schema yet, so we'll use calculated values
-      const verified = profile.user.status === 'ACTIVE' // Placeholder: use user status as proxy
-      const performanceScore = null // TODO: Calculate from project performance
-      const rating = null // TODO: Calculate from satisfaction surveys
+      const verified = profile.user.status === 'ACTIVE'
+
+      // Performance score: on-time rate from completed milestones
+      let performanceScore: number | null = null
+      const completedMilestones = await prismaAny.milestone.findMany({
+        where: { contract: { contractorId: profile.userId }, status: 'PAID' },
+        select: { completedAt: true, dueDate: true },
+      }).catch(() => [])
+      if (completedMilestones.length > 0) {
+        const onTimeCount = completedMilestones.filter(
+          (m: any) => !m.dueDate || !m.completedAt || m.completedAt <= m.dueDate
+        ).length
+        performanceScore = Math.round((onTimeCount / completedMilestones.length) * 100)
+      }
+
+      // Rating: average from contractor reviews
+      let rating: number | null = null
+      const reviews = await prismaAny.contractorReview.findMany({
+        where: { contractorId: profile.userId },
+        select: { rating: true },
+      }).catch(() => [])
+      if (reviews.length > 0) {
+        const totalRating = reviews.reduce((sum: number, r: any) => sum + (r.rating || 0), 0)
+        rating = Math.round((totalRating / reviews.length) * 10) / 10
+      }
 
       candidates.push({
         profileId: profile.id,

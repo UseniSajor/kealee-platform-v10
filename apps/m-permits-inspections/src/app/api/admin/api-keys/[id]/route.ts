@@ -3,6 +3,7 @@
  */
 
 import {NextRequest, NextResponse} from 'next/server';
+import {createServerClient} from '@/lib/supabase/server';
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3001';
 
@@ -14,11 +15,16 @@ export async function DELETE(
   try {
     const {id} = params;
 
+    // Get Supabase session token for authentication
+    const supabase = createServerClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    const authToken = session?.access_token || '';
+
     const response = await fetch(`${API_BASE_URL}/api/v1/api-keys/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        // TODO: Add authentication header
+        'Authorization': `Bearer ${authToken}`,
       },
     });
 

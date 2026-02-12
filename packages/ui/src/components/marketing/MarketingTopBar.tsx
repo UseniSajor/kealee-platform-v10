@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, Bell, ChevronRight } from 'lucide-react';
+import { Search, Bell, ChevronRight, ShoppingCart } from 'lucide-react';
 import { brand } from './brand';
 
 export interface BreadcrumbItem {
@@ -82,6 +82,9 @@ export function MarketingTopBar({
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
           </button>
         )}
+        <button id="cart-trigger" className="relative text-gray-700 hover:text-blue-600 transition" aria-label="Cart">
+          <ShoppingCart className="h-5 w-5" />
+        </button>
         <Link
           href="/login"
           className="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"

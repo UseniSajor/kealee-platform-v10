@@ -61,9 +61,20 @@ export default function OrgDetailPage() {
       const data = await api.getOrg(orgId)
       setOrg(data.org)
 
-      // Fetch members (would need API endpoint)
-      // For now, using placeholder
-      setMembers([])
+      // The GET /orgs/:id endpoint includes members with user details
+      if (data.org?.members) {
+        setMembers(data.org.members.map((m: any) => ({
+          id: m.id,
+          userId: m.userId,
+          role: m.roleKey || m.role,
+          user: m.user ? {
+            name: m.user.name || 'Unknown',
+            email: m.user.email || 'N/A',
+          } : undefined,
+        })))
+      } else {
+        setMembers([])
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load organization')
     } finally {

@@ -1,4 +1,4 @@
-import { api as apiClient } from '@kealee/api-client'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -9,35 +9,15 @@ interface ApiOptions {
 }
 
 async function getAuthToken(): Promise<string | null> {
-  if (typeof document === 'undefined') return null
+  if (typeof window === 'undefined') return null
 
-  const cookies = document.cookie.split(';')
-  const tokenCookie = cookies.find(c => c.trim().startsWith('sb-access-token='))
-  return tokenCookie ? tokenCookie.split('=')[1] : null
-}
-
-// Create a compatible leadApiClient using the available api export
-const leadApiClient = {
-  listLeads: (query?: any) => 
-    apiClient.get<any>(`/leads${query ? '?' + new URLSearchParams(query).toString() : ''}`),
-  
-  getLead: (id: string) => 
-    apiClient.get<any>(`/leads/${id}`),
-  
-  updateLeadStage: (id: string, stage: any) => 
-    apiClient.put<any>(`/leads/${id}/stage`, { stage }),
-  
-  assignSalesRep: (id: string, salesRepId: string) => 
-    apiClient.put<any>(`/leads/${id}/assign`, { salesRepId }),
-  
-  awardContractor: (id: string, profileId: string) => 
-    apiClient.put<any>(`/leads/${id}/award`, { profileId }),
-  
-  closeLost: (id: string, reason: string) => 
-    apiClient.put<any>(`/leads/${id}/close`, { reason, status: 'lost' }),
-  
-  distributeLead: (id: string, distributionCount?: number) => 
-    apiClient.post<any>(`/leads/${id}/distribute`, { distributionCount }),
+  try {
+    const supabase = createClientComponentClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    return session?.access_token || null
+  } catch {
+    return null
+  }
 }
 
 export async function apiRequest<T>(
@@ -108,6 +88,14 @@ export const api = {
     apiRequest<{ member: any }>(`/orgs/${orgId}/members/${userId}`, { method: 'PUT', body: { roleKey } }),
   removeOrgMember: (orgId: string, userId: string) =>
     apiRequest(`/orgs/${orgId}/members/${userId}`, { method: 'DELETE' }),
+
+  // Projects
+  getProjects: (params?: { limit?: number }) => {
+    const query = new URLSearchParams()
+    if (params?.limit) query.append('limit', params.limit.toString())
+    const suffix = query.toString() ? `?${query.toString()}` : ''
+    return apiRequest<{ projects: any[] }>(`/projects${suffix}`)
+  },
 
   // Module Entitlements
   getOrgEntitlements: (orgId: string) =>

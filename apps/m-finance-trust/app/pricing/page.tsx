@@ -8,7 +8,7 @@ export default function PricingPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-            Transparent, Fair Pricing
+            Simple, Fair Pricing
           </h1>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto">
             Simple, affordable fees that protect both homeowners and contractors. No hidden costs, no surprises.

@@ -176,6 +176,11 @@ function validateStartupGuards() {
 // Run startup guards immediately after environment loading
 validateStartupGuards()
 
+// Initialize OpenTelemetry tracing BEFORE importing Fastify
+// so auto-instrumentations can monkey-patch HTTP, Fastify, and IORedis
+import { initTracing } from '@kealee/observability';
+initTracing('kealee-api');
+
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
@@ -189,8 +194,8 @@ import { userRoutes } from './modules/users/user.routes'
 import { rbacRoutes } from './modules/rbac/rbac.routes'
 import { entitlementRoutes } from './modules/entitlements/entitlement.routes'
 import { eventRoutes } from './modules/events/event.routes'
-// Temporarily disabled - needs service method fixes
-// import { auditRoutes } from './modules/audit/audit.routes'
+import { auditRoutes } from './modules/audit/audit.routes'
+import { registerAuditMiddleware } from './middleware/audit.middleware'
 import { pmRoutes } from './modules/pm/pm.routes'
 import { billingRoutes } from './modules/billing/billing.routes'
 import { projectRoutes } from './modules/projects/project.routes'
@@ -251,6 +256,17 @@ import { fileRoutes } from './modules/files/file.routes'
 // Temporarily disabled - DTO type mismatches
 // import { accountingRoutes } from './routes/accounting.routes'
 import { stripeConnectRoutes } from './routes/stripe-connect.routes'
+
+// File Upload Pipeline (connects user uploads → Supabase Storage → Command Center)
+import { uploadRoutes } from './modules/uploads/upload.routes'
+
+// Marketplace Estimating Engine (assembly library, quick pricing, bid validation)
+import { marketplaceEstimatingRoutes } from './modules/marketplace-estimating/marketplace-estimating.routes'
+
+// User Responsibilities Routes (from Kealee_User_Responsibilities_Guide.md)
+import contractorUploadsRoutes from './modules/contractor/contractor-uploads.routes'
+import clientActionsRoutes from './modules/client/client-actions.routes'
+import architectUploadsRoutes from './modules/architect/architect-uploads.routes'
 import { estimationRoutes } from './modules/estimation/estimation.routes'
 import { preconRoutes } from './modules/precon/precon.routes'
 import { engineerRoutes } from './modules/engineer/engineer.routes'
@@ -412,10 +428,22 @@ const start = async () => {
     fastify.addHook('onRequest', sentryRequestHandler)
     fastify.addHook('onResponse', sentryResponseHandler)
 
+    // Register OpenTelemetry tracing plugin (adds request.traceId + x-trace-id header)
+    const { tracingPlugin } = require('@kealee/observability')
+    await fastify.register(tracingPlugin)
+
     // Initialize event-driven architecture - TEMPORARILY DISABLED
     // const { escrowEventHandlers } = require('./events/escrow-event-handlers')
     // escrowEventHandlers.registerHandlers()
     console.log('⚠️  Escrow event handlers temporarily disabled')
+
+    // Register performance monitoring (response time tracking, slow query alerts)
+    const { registerPerformanceMonitoring } = require('./middleware/performance.middleware')
+    await registerPerformanceMonitoring(fastify)
+
+    // Register API response cache plugin (Redis-backed with in-memory fallback)
+    const { registerCachePlugin } = require('./middleware/cache.middleware')
+    await registerCachePlugin(fastify)
 
     // Register request/response logging
     const { requestLogger, responseLogger } = require('./middleware/request-logger.middleware')
@@ -438,8 +466,7 @@ const start = async () => {
     await fastify.register(rbacRoutes, { prefix: '/rbac' })
     await fastify.register(entitlementRoutes, { prefix: '/entitlements' })
     await fastify.register(eventRoutes, { prefix: '/events' })
-    // Temporarily disabled - needs service method fixes
-    // await fastify.register(auditRoutes, { prefix: '/audit' })
+    await fastify.register(auditRoutes, { prefix: '/audit' })
     await fastify.register(pmRoutes, { prefix: '/pm' })
     await fastify.register(billingRoutes, { prefix: '/billing' })
     await fastify.register(escrowRoutes, { prefix: '/escrow' })
@@ -448,9 +475,13 @@ const start = async () => {
 
     // Analytics and Compliance - Now enabled
     const { analyticsRoutes } = await import('./modules/analytics/analytics.routes')
+    const { analyticsDashboardRoutes } = await import('./modules/analytics/analytics-dashboard.routes')
     const { complianceRoutes: complianceMonitoringRoutes } = await import('./modules/compliance/compliance.routes')
     await fastify.register(analyticsRoutes, { prefix: '/analytics' })
+    await fastify.register(analyticsDashboardRoutes, { prefix: '/analytics' })
     await fastify.register(complianceMonitoringRoutes, { prefix: '/compliance/monitoring' })
+
+    console.log('✅ Analytics & Compliance routes registered')
 
     // Temporarily disabled - DTO type mismatches
     // await fastify.register(accountingRoutes, { prefix: '/accounting' })
@@ -494,11 +525,11 @@ const start = async () => {
     await fastify.register(qualityControlRoutes, { prefix: '/architect' })
     await fastify.register(permitPackageRoutes, { prefix: '/architect' })
     await fastify.register(constructionHandoffRoutes, { prefix: '/architect' })
-    // TODO: Implement these routes
-    // await fastify.register(onboardingRoutes, { prefix: '/architect' })
-    // await fastify.register(templateLibraryRoutes, { prefix: '/architect' })
-    // await fastify.register(performanceBenchmarkRoutes, { prefix: '/architect' })
-    // await fastify.register(backupDRRoutes, { prefix: '/architect' })
+    // Architect onboarding, templates, benchmarks, and backup/DR
+    const { onboardingRoutes } = await import('./modules/architect/onboarding.routes')
+    const { backupDRRoutes } = await import('./modules/architect/backup-dr.routes')
+    await fastify.register(onboardingRoutes, { prefix: '/architect' })
+    await fastify.register(backupDRRoutes, { prefix: '/architect' })
     await fastify.register(jurisdictionRoutes, { prefix: '/permits' })
     await fastify.register(jurisdictionConfigRoutes, { prefix: '/permits' })
     await fastify.register(jurisdictionStaffRoutes, { prefix: '/permits' })
@@ -516,9 +547,23 @@ const start = async () => {
     await fastify.register(servicePlanRoutes, { prefix: '/ops-services' })
     await fastify.register(workflowRoutes, { prefix: '/workflow' })
     await fastify.register(fileRoutes, { prefix: '/files' })
+    // File Upload Pipeline (site photos, receipts, documents → Supabase → Command Center)
+    await fastify.register(uploadRoutes, { prefix: '/api/v1/uploads' })
+    // Chunked uploads for large files (>5MB)
+    const { chunkedUploadRoutes } = await import('./modules/uploads/chunked-upload.routes')
+    await fastify.register(chunkedUploadRoutes, { prefix: '/api/v1/uploads' })
+    // Marketplace Estimating Engine (assembly library, quick pricing, bid validation)
+    await fastify.register(marketplaceEstimatingRoutes, { prefix: '/api/v1' })
     // Analytics temporarily disabled
     // await fastify.register(analyticsRoutes)
     await fastify.register(monitoringDashboardRoutes)
+
+    console.log('✅ Core routes registered (connect, projects, contracts, marketplace, etc.)')
+
+    // User Responsibilities Routes (from Kealee_User_Responsibilities_Guide.md)
+    await fastify.register(contractorUploadsRoutes, { prefix: '/api/contractor' })
+    await fastify.register(clientActionsRoutes, { prefix: '/api/client' })
+    await fastify.register(architectUploadsRoutes, { prefix: '/api/architect' })
     await fastify.register(taskGeneratorRoutes, { prefix: '/tasks' })
     await fastify.register(complianceCheckpointRoutes, { prefix: '/compliance' })
 
@@ -530,6 +575,35 @@ const start = async () => {
 
     // Engineering Services
     await fastify.register(engineerRoutes, { prefix: '/engineer' })
+
+    // Site Check-In / Crew Tracking
+    const { checkInRoutes } = await import('./modules/check-in/check-in.routes')
+    await fastify.register(checkInRoutes, { prefix: '/api/v1/check-in' })
+
+    // IoT Sensor Data Ingestion
+    const { sensorRoutes } = await import('./modules/sensors/sensor.routes')
+    await fastify.register(sensorRoutes, { prefix: '/api/v1/sensors' })
+
+    // Web Push Notifications
+    const { pushRoutes } = await import('./modules/push/push.routes')
+    await fastify.register(pushRoutes, { prefix: '/api/v1/push' })
+
+    // AI Scope Analysis
+    const { scopeAnalysisRoutes } = await import('./modules/scope-analysis/scope-analysis.routes')
+    await fastify.register(scopeAnalysisRoutes, { prefix: '/api/v1/scope-analysis' })
+
+    // Conversational AI Chat
+    const { chatRoutes } = await import('./modules/chat/chat.routes')
+    await fastify.register(chatRoutes, { prefix: '/chat' })
+
+    // Autonomous Action Engine
+    const { autonomyRoutes } = await import('./modules/autonomy/autonomy.routes')
+    await fastify.register(autonomyRoutes, { prefix: '/autonomy' })
+
+    // Contractor Reliability Scoring
+    const { scoringRoutes } = await import('./modules/scoring/scoring.routes')
+    await fastify.register(scoringRoutes, { prefix: '/scoring' })
+
     // Temporarily disabled - missing @kealee/compliance package
     // await fastify.register(complianceGatesRoutes, { prefix: '/compliance' })
     // Temporarily disabled - type issues in route handlers
@@ -540,6 +614,8 @@ const start = async () => {
     // await fastify.register(stripeWebhookRoutes, { prefix: '/webhooks' })
     // Oversight temporarily disabled
     // await fastify.register(oversightRoutes, { prefix: '/api/admin/oversight' })
+
+    console.log('✅ Extended routes registered (user responsibilities, precon, sensors, AI, etc.)')
 
     // Command Center dashboard routes (APP-15)
     const { commandCenterRoutes } = await import('./routes/command-center/index')
@@ -587,6 +663,120 @@ const start = async () => {
 
     // Note: File routes already registered at line 284 with prefix '/files'
 
+    console.log('✅ Command center & PM workspace routes registered')
+
+    // ══════════════════════════════════════════════════════════════
+    // Phase 1: New API routes for previously unserved Prisma models
+    // ══════════════════════════════════════════════════════════════
+
+    // Finance & Accounting
+    const { accountRoutes } = await import('./modules/finance/account.routes')
+    const { journalEntryRoutes } = await import('./modules/finance/journal-entry.routes')
+    const { accountBalanceRoutes } = await import('./modules/finance/account-balance.routes')
+    const { payoutRoutes } = await import('./modules/finance/payout.routes')
+    const { statementRoutes } = await import('./modules/finance/statement.routes')
+    const { paymentMethodRoutes } = await import('./modules/finance/payment-method.routes')
+    const { scheduledPaymentRoutes } = await import('./modules/finance/scheduled-payment.routes')
+    const { platformFeeRoutes } = await import('./modules/finance/platform-fee.routes')
+    await fastify.register(accountRoutes, { prefix: '/accounting/accounts' })
+    await fastify.register(journalEntryRoutes, { prefix: '/accounting/journal-entries' })
+    await fastify.register(accountBalanceRoutes, { prefix: '/accounting/balances' })
+    await fastify.register(payoutRoutes, { prefix: '/accounting/payouts' })
+    await fastify.register(statementRoutes, { prefix: '/accounting/statements' })
+    await fastify.register(paymentMethodRoutes, { prefix: '/accounting/payment-methods' })
+    await fastify.register(scheduledPaymentRoutes, { prefix: '/accounting/scheduled-payments' })
+    await fastify.register(platformFeeRoutes, { prefix: '/accounting/platform-fees' })
+
+    // Security & Auth
+    const { securityRoutes } = await import('./modules/security/security.routes')
+    const { authSecurityRoutes } = await import('./modules/security/auth-security.routes')
+    await fastify.register(securityRoutes, { prefix: '/security' })
+    await fastify.register(authSecurityRoutes, { prefix: '/security/auth' })
+
+    // Compliance & Licensing
+    const { complianceRulesRoutes } = await import('./modules/compliance/compliance-rules.routes')
+    const { licenseTrackingRoutes } = await import('./modules/compliance/license-tracking.routes')
+    const { ofacRoutes } = await import('./modules/compliance/ofac.routes')
+    await fastify.register(complianceRulesRoutes, { prefix: '/compliance/rules' })
+    await fastify.register(licenseTrackingRoutes, { prefix: '/compliance/licensing' })
+    await fastify.register(ofacRoutes, { prefix: '/compliance/ofac' })
+
+    // Financial Audit
+    const { financialAuditRoutes } = await import('./modules/audit/financial-audit.routes')
+    await fastify.register(financialAuditRoutes, { prefix: '/audit/financial' })
+
+    // Analytics Snapshots, KPIs, Fraud Detection
+    const { analyticsSnapshotRoutes } = await import('./modules/analytics/analytics-snapshot.routes')
+    const { fraudDetectionRoutes } = await import('./modules/analytics/fraud-detection.routes')
+    await fastify.register(analyticsSnapshotRoutes, { prefix: '/analytics/snapshots' })
+    await fastify.register(fraudDetectionRoutes, { prefix: '/analytics/fraud' })
+
+    // Notifications
+    const { notificationRoutes } = await import('./modules/notifications/notification.routes')
+    await fastify.register(notificationRoutes, { prefix: '/notifications' })
+
+    // System Config, Jobs, AI Conversations
+    const { systemConfigRoutes } = await import('./modules/system/system-config.routes')
+    const { jobManagementRoutes } = await import('./modules/system/job-management.routes')
+    const { aiConversationRoutes } = await import('./modules/system/ai-conversation.routes')
+    await fastify.register(systemConfigRoutes, { prefix: '/system' })
+    await fastify.register(jobManagementRoutes, { prefix: '/system/jobs' })
+    await fastify.register(aiConversationRoutes, { prefix: '/ai/conversations' })
+
+    // App Health & Monitoring
+    const { appHealthRoutes } = await import('./modules/monitoring/app-health.routes')
+    await fastify.register(appHealthRoutes, { prefix: '/monitoring' })
+
+    // Permit Templates, Analytics, API Integrations
+    const { permitTemplateRoutes } = await import('./modules/permits/permit-template.routes')
+    const { permitAnalyticsRoutes } = await import('./modules/permits/permit-analytics.routes')
+    const { apiIntegrationRoutes } = await import('./modules/permits/api-integration.routes')
+    await fastify.register(permitTemplateRoutes, { prefix: '/permits/templates' })
+    await fastify.register(permitAnalyticsRoutes, { prefix: '/permits/analytics' })
+    await fastify.register(apiIntegrationRoutes, { prefix: '/permits/integrations' })
+
+    // Project Phase History
+    const { projectHistoryRoutes } = await import('./modules/projects/project-history.routes')
+    await fastify.register(projectHistoryRoutes, { prefix: '/projects' })
+
+    // Portfolios & Contractor Projects
+    const { portfolioRoutes } = await import('./modules/marketplace/portfolio.routes')
+    await fastify.register(portfolioRoutes, { prefix: '/marketplace/portfolios' })
+
+    // Pre-Construction Extras (registered under /precon/v2 to avoid route conflicts with main precon routes)
+    const { preconExtrasRoutes } = await import('./modules/precon/precon-extras.routes')
+    await fastify.register(preconExtrasRoutes, { prefix: '/precon/v2' })
+
+    // Approval Rules, Attachments, Comments
+    const { approvalManagementRoutes } = await import('./modules/approvals/approval.routes')
+    await fastify.register(approvalManagementRoutes, { prefix: '/approvals' })
+
+    // Webhook Logs & Retries
+    const { webhookLogRoutes } = await import('./modules/webhooks/webhook-logs.routes')
+    await fastify.register(webhookLogRoutes, { prefix: '/webhooks' })
+
+    // Estimation Data (Materials, Labor, Equipment)
+    const { estimationDataRoutes } = await import('./modules/estimation/estimation-data.routes')
+    await fastify.register(estimationDataRoutes, { prefix: '/estimation/data' })
+
+    // Extended Estimation Routes (Estimates CRUD, Takeoffs, Databases, Regional Indices, Leads)
+    const { estimationExtendedRoutes } = await import('./modules/estimation/estimation-extended.routes')
+    await fastify.register(estimationExtendedRoutes, { prefix: '/estimation' })
+
+    // Communication Logs, Activity, Issues
+    const { communicationRoutes: commRoutes } = await import('./modules/communication/communication.routes')
+    await fastify.register(commRoutes, { prefix: '/communication' })
+
+    // Subscriptions (PM, Permit, A-la-carte, Marketplace Fees)
+    const { subscriptionRoutes } = await import('./modules/subscriptions/subscription.routes')
+    await fastify.register(subscriptionRoutes, { prefix: '/subscriptions' })
+
+    // Tracking (User Actions, Quick Estimates, Automation Events, Crew Check-ins)
+    const { trackingRoutes } = await import('./modules/tracking/tracking.routes')
+    await fastify.register(trackingRoutes, { prefix: '/tracking' })
+
+    // ══════════════════════════════════════════════════════════════
+
     // GraphQL DISABLED FOR MVP - Uncomment when needed
     /*
     const graphQLServer = createGraphQLServer()
@@ -610,8 +800,22 @@ const start = async () => {
     */
     // GraphQL disabled - end comment block
 
+    console.log('✅ Phase 1 routes registered (finance, security, compliance, analytics, notifications, system)')
+
+    // ── Audit Middleware ──
+    // Auto-audit all mutating API requests (POST/PUT/PATCH/DELETE)
+    registerAuditMiddleware(fastify)
+    console.log('✅ Audit middleware registered')
+
+    // Graceful shutdown: flush pending audit logs
+    fastify.addHook('onClose', async () => {
+      const { auditService } = await import('./modules/audit/audit.service')
+      await auditService.shutdown()
+    })
+
     // Railway provides PORT env var, default to 3000 for local dev
     const port = Number(process.env.PORT) || 3000
+    console.log(`🔌 Starting server on port ${port}...`)
 
     await fastify.listen({ port, host: '0.0.0.0' })
 
@@ -629,10 +833,21 @@ const start = async () => {
     // console.log(`GraphQL:      /graphql`); // GraphQL disabled for MVP
     console.log('='.repeat(60));
     console.log('');
-  } catch (err) {
+  } catch (err: any) {
+    console.error('')
+    console.error('='.repeat(60))
+    console.error('❌ FATAL: Server failed to start')
+    console.error('='.repeat(60))
+    console.error('Error:', err?.message || err)
+    console.error('Stack:', err?.stack || '(no stack)')
+    console.error('='.repeat(60))
     fastify.log.error(err)
     process.exit(1)
   }
 }
 
-start()
+start().catch((err) => {
+  console.error('❌ Unhandled startup error:', err?.message || err)
+  console.error('Stack:', err?.stack || '(no stack)')
+  process.exit(1)
+})

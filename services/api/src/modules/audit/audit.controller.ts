@@ -1,13 +1,30 @@
 /**
  * Audit Controller
- * Handles audit trail and activity logging endpoints
+ * Handles audit trail and activity logging endpoints.
+ *
+ * Routes:
+ *   POST /log                          — Create audit log entry
+ *   POST /activity                     — Log user activity
+ *   POST /track-change                 — Track field-level changes
+ *   GET  /search                       — Search audit logs (paginated)
+ *   GET  /trail/:entityType/:entityId  — Get entity audit trail
+ *   GET  /user/:userId                 — Get user audit trail
+ *   GET  /project/:projectId           — Get project audit trail
+ *   GET  /stats                        — Get audit statistics
+ *   GET  /export/csv                   — Export audit logs as CSV
+ *   GET  /report                       — Generate audit report
+ *   GET  /verify/:logId                — Verify audit log integrity
+ *   GET  /:id                          — Get single audit log by ID
  */
 
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { auditService } from './audit.service';
 import { z } from 'zod';
 
-// Request schemas
+// ============================================================================
+// REQUEST SCHEMAS
+// ============================================================================
+
 const logAuditSchema = z.object({
   userId: z.string(),
   action: z.string(),
@@ -30,55 +47,45 @@ const trackChangeSchema = z.object({
   entityType: z.string(),
   entityId: z.string(),
   field: z.string(),
-  oldValue: z.any(),
-  newValue: z.any(),
+  oldValue: z.any().default(null),
+  newValue: z.any().default(null),
   changedBy: z.string(),
   reason: z.string().optional(),
 });
 
-const auditTrailSchema = z.object({
-  entityType: z.string(),
-  entityId: z.string(),
-});
-
-const userActivitySchema = z.object({
-  userId: z.string(),
-  activityType: z.string().optional(),
-  startDate: z.string().transform(str => new Date(str)).optional(),
-  endDate: z.string().transform(str => new Date(str)).optional(),
-  limit: z.number().min(1).max(100).default(50).optional(),
-});
-
-const searchAuditLogsSchema = z.object({
+const searchQuerySchema = z.object({
   userId: z.string().optional(),
+  userEmail: z.string().optional(),
   action: z.string().optional(),
   entityType: z.string().optional(),
   entityId: z.string().optional(),
-  startDate: z.string().transform(str => new Date(str)).optional(),
-  endDate: z.string().transform(str => new Date(str)).optional(),
-  limit: z.number().min(1).max(100).default(50).optional(),
-  offset: z.number().min(0).default(0).optional(),
+  projectId: z.string().optional(),
+  organizationId: z.string().optional(),
+  source: z.string().optional(),
+  severity: z.string().optional(),
+  category: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  limit: z.coerce.number().min(1).max(200).default(50).optional(),
+  offset: z.coerce.number().min(0).default(0).optional(),
 });
 
 const auditReportSchema = z.object({
-  startDate: z.string().transform(str => new Date(str)),
-  endDate: z.string().transform(str => new Date(str)),
+  startDate: z.string().transform((str) => new Date(str)),
+  endDate: z.string().transform((str) => new Date(str)),
 });
+
+// ============================================================================
+// CONTROLLER
+// ============================================================================
 
 export class AuditController {
   /**
    * POST /api/audit/log
-   * Create audit log entry
    */
-  async logAudit(
-    request: FastifyRequest<{
-      Body: any;
-    }>,
-    reply: FastifyReply
-  ) {
+  async logAudit(request: FastifyRequest<{ Body: any }>, reply: FastifyReply) {
     try {
       const data = logAuditSchema.parse(request.body);
-
       const auditLog = await auditService.logAudit(data);
 
       return reply.status(201).send({
@@ -97,17 +104,10 @@ export class AuditController {
 
   /**
    * POST /api/audit/activity
-   * Log user activity
    */
-  async logActivity(
-    request: FastifyRequest<{
-      Body: any;
-    }>,
-    reply: FastifyReply
-  ) {
+  async logActivity(request: FastifyRequest<{ Body: any }>, reply: FastifyReply) {
     try {
       const data = logActivitySchema.parse(request.body);
-
       const activityLog = await auditService.logActivity(data);
 
       return reply.status(201).send({
@@ -126,23 +126,16 @@ export class AuditController {
 
   /**
    * POST /api/audit/track-change
-   * Track field-level changes
    */
-  async trackChange(
-    request: FastifyRequest<{
-      Body: any;
-    }>,
-    reply: FastifyReply
-  ) {
+  async trackChange(request: FastifyRequest<{ Body: any }>, reply: FastifyReply) {
     try {
       const data = trackChangeSchema.parse(request.body);
-
       const changeLog = await auditService.trackChange({
         entityType: data.entityType,
         entityId: data.entityId,
         field: data.field,
-        oldValue: data.oldValue,
-        newValue: data.newValue,
+        oldValue: data.oldValue ?? null,
+        newValue: data.newValue ?? null,
         changedBy: data.changedBy,
         reason: data.reason,
       });
@@ -162,109 +155,17 @@ export class AuditController {
   }
 
   /**
-   * GET /api/audit/trail/:entityType/:entityId
-   * Get audit trail for entity
-   */
-  async getAuditTrail(
-    request: FastifyRequest<{
-      Params: { entityType: string; entityId: string };
-    }>,
-    reply: FastifyReply
-  ) {
-    try {
-      const { entityType, entityId } = auditTrailSchema.parse(request.params);
-
-      const trail = await auditService.getAuditTrail(entityType, entityId);
-
-      return reply.status(200).send({
-        success: true,
-        data: trail,
-        count: trail.length,
-      });
-    } catch (error: any) {
-      request.log.error(error);
-      return reply.status(400).send({
-        success: false,
-        error: error.message || 'Failed to fetch audit trail',
-      });
-    }
-  }
-
-  /**
-   * GET /api/audit/activity/:userId
-   * Get user activity history
-   */
-  async getUserActivity(
-    request: FastifyRequest<{
-      Params: { userId: string };
-      Querystring: any;
-    }>,
-    reply: FastifyReply
-  ) {
-    try {
-      const { userId } = request.params;
-      const queryData = request.query as any;
-      const filters = userActivitySchema.parse({ userId, ...queryData });
-
-      const activity = await auditService.getUserActivity(userId, filters);
-
-      return reply.status(200).send({
-        success: true,
-        data: activity,
-        count: activity.length,
-      });
-    } catch (error: any) {
-      request.log.error(error);
-      return reply.status(400).send({
-        success: false,
-        error: error.message || 'Failed to fetch user activity',
-      });
-    }
-  }
-
-  /**
-   * GET /api/audit/changes/:entityType/:entityId
-   * Get change history for entity
-   */
-  async getChangeHistory(
-    request: FastifyRequest<{
-      Params: { entityType: string; entityId: string };
-    }>,
-    reply: FastifyReply
-  ) {
-    try {
-      const { entityType, entityId } = request.params;
-
-      const changes = await auditService.getChangeHistory(entityType, entityId);
-
-      return reply.status(200).send({
-        success: true,
-        data: changes,
-        count: changes.length,
-      });
-    } catch (error: any) {
-      request.log.error(error);
-      return reply.status(400).send({
-        success: false,
-        error: error.message || 'Failed to fetch change history',
-      });
-    }
-  }
-
-  /**
    * GET /api/audit/search
-   * Search audit logs
    */
-  async searchAuditLogs(
-    request: FastifyRequest<{
-      Querystring: any;
-    }>,
-    reply: FastifyReply
-  ) {
+  async searchAuditLogs(request: FastifyRequest<{ Querystring: any }>, reply: FastifyReply) {
     try {
-      const filters = searchAuditLogsSchema.parse(request.query);
+      const filters = searchQuerySchema.parse(request.query);
 
-      const result = await auditService.searchAuditLogs(filters);
+      const result = await auditService.searchAuditLogs({
+        ...filters,
+        startDate: filters.startDate ? new Date(filters.startDate) : undefined,
+        endDate: filters.endDate ? new Date(filters.endDate) : undefined,
+      });
 
       return reply.status(200).send({
         success: true,
@@ -286,18 +187,180 @@ export class AuditController {
   }
 
   /**
+   * GET /api/audit/trail/:entityType/:entityId
+   */
+  async getAuditTrail(
+    request: FastifyRequest<{ Params: { entityType: string; entityId: string } }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const { entityType, entityId } = request.params;
+      const trail = await auditService.getAuditTrail(entityType, entityId);
+
+      return reply.status(200).send({
+        success: true,
+        data: trail,
+        count: trail.length,
+      });
+    } catch (error: any) {
+      request.log.error(error);
+      return reply.status(400).send({
+        success: false,
+        error: error.message || 'Failed to fetch audit trail',
+      });
+    }
+  }
+
+  /**
+   * GET /api/audit/user/:userId
+   */
+  async getUserAuditLogs(
+    request: FastifyRequest<{ Params: { userId: string }; Querystring: any }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const { userId } = request.params;
+      const query = request.query as any;
+      const filters = {
+        action: query.action,
+        entityType: query.entityType,
+        startDate: query.startDate ? new Date(query.startDate) : undefined,
+        endDate: query.endDate ? new Date(query.endDate) : undefined,
+        limit: query.limit ? parseInt(query.limit) : 50,
+        offset: query.offset ? parseInt(query.offset) : 0,
+      };
+
+      const result = await auditService.getUserAuditLogs(userId, filters);
+
+      return reply.status(200).send({
+        success: true,
+        data: result.logs,
+        pagination: {
+          total: result.total,
+          page: result.page,
+          totalPages: result.totalPages,
+          limit: filters.limit,
+        },
+      });
+    } catch (error: any) {
+      request.log.error(error);
+      return reply.status(400).send({
+        success: false,
+        error: error.message || 'Failed to fetch user audit logs',
+      });
+    }
+  }
+
+  /**
+   * GET /api/audit/project/:projectId
+   */
+  async getProjectAuditLogs(
+    request: FastifyRequest<{ Params: { projectId: string }; Querystring: any }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const { projectId } = request.params;
+      const query = request.query as any;
+      const filters = {
+        action: query.action,
+        entityType: query.entityType,
+        userId: query.userId,
+        startDate: query.startDate ? new Date(query.startDate) : undefined,
+        endDate: query.endDate ? new Date(query.endDate) : undefined,
+        limit: query.limit ? parseInt(query.limit) : 50,
+        offset: query.offset ? parseInt(query.offset) : 0,
+      };
+
+      const result = await auditService.getProjectAuditLogs(projectId, filters);
+
+      return reply.status(200).send({
+        success: true,
+        data: result.logs,
+        pagination: {
+          total: result.total,
+          page: result.page,
+          totalPages: result.totalPages,
+          limit: filters.limit,
+        },
+      });
+    } catch (error: any) {
+      request.log.error(error);
+      return reply.status(400).send({
+        success: false,
+        error: error.message || 'Failed to fetch project audit logs',
+      });
+    }
+  }
+
+  /**
+   * GET /api/audit/stats
+   */
+  async getStats(
+    request: FastifyRequest<{ Querystring: any }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const query = request.query as any;
+      const filters = {
+        projectId: query.projectId,
+        startDate: query.startDate ? new Date(query.startDate) : undefined,
+        endDate: query.endDate ? new Date(query.endDate) : undefined,
+      };
+
+      const stats = await auditService.getStats(filters);
+
+      return reply.status(200).send({
+        success: true,
+        data: stats,
+      });
+    } catch (error: any) {
+      request.log.error(error);
+      return reply.status(400).send({
+        success: false,
+        error: error.message || 'Failed to fetch audit stats',
+      });
+    }
+  }
+
+  /**
+   * GET /api/audit/export/csv
+   */
+  async exportCsv(
+    request: FastifyRequest<{ Querystring: any }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const filters = searchQuerySchema.parse(request.query);
+
+      const csv = await auditService.exportAuditLogsCsv({
+        ...filters,
+        startDate: filters.startDate ? new Date(filters.startDate) : undefined,
+        endDate: filters.endDate ? new Date(filters.endDate) : undefined,
+        limit: 10000, // Max export size
+      });
+
+      reply.header('Content-Type', 'text/csv');
+      reply.header('Content-Disposition', `attachment; filename="audit-logs-${new Date().toISOString().split('T')[0]}.csv"`);
+
+      return reply.status(200).send(csv);
+    } catch (error: any) {
+      request.log.error(error);
+      return reply.status(400).send({
+        success: false,
+        error: error.message || 'Failed to export audit logs',
+      });
+    }
+  }
+
+  /**
    * GET /api/audit/report
-   * Generate audit report
    */
   async generateAuditReport(
-    request: FastifyRequest<{
-      Querystring: { startDate: string; endDate: string };
-    }>,
+    request: FastifyRequest<{ Querystring: { startDate: string; endDate: string } }>,
     reply: FastifyReply
   ) {
     try {
       const { startDate, endDate } = auditReportSchema.parse(request.query);
-
       const report = await auditService.generateAuditReport(startDate, endDate);
 
       return reply.status(200).send({
@@ -316,17 +379,13 @@ export class AuditController {
 
   /**
    * GET /api/audit/verify/:logId
-   * Verify audit log integrity
    */
   async verifyIntegrity(
-    request: FastifyRequest<{
-      Params: { logId: string };
-    }>,
+    request: FastifyRequest<{ Params: { logId: string } }>,
     reply: FastifyReply
   ) {
     try {
       const { logId } = request.params;
-
       const verification = await auditService.verifyIntegrity(logId);
 
       return reply.status(200).send({
@@ -341,7 +400,37 @@ export class AuditController {
       });
     }
   }
+
+  /**
+   * GET /api/audit/:id
+   */
+  async getAuditById(
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const { id } = request.params;
+      const log = await auditService.getAuditById(id);
+
+      if (!log) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Audit log entry not found',
+        });
+      }
+
+      return reply.status(200).send({
+        success: true,
+        data: log,
+      });
+    } catch (error: any) {
+      request.log.error(error);
+      return reply.status(400).send({
+        success: false,
+        error: error.message || 'Failed to fetch audit log',
+      });
+    }
+  }
 }
 
 export const auditController = new AuditController();
-

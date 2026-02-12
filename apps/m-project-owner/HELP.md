@@ -335,7 +335,7 @@ A: Yes, projects in DRAFT or READINESS status can be edited. Once in CONTRACTING
 A: Contact support to cancel a project. Cancellation policies depend on project status and contract terms.
 
 **Q: Can I use Kealee for multiple projects?**  
-A: Yes, you can manage unlimited projects from your dashboard.
+A: Yes, you can manage multiple projects from your dashboard based on your subscription plan.
 
 ### Payments
 

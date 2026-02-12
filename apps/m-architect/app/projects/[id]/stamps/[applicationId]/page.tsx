@@ -26,6 +26,12 @@ export default function StampApplicationDetailPage() {
   const [showVerifyModal, setShowVerifyModal] = React.useState(false)
   const [verificationNotes, setVerificationNotes] = React.useState("")
   const [isVerified, setIsVerified] = React.useState(true)
+  const [tamperCheckResult, setTamperCheckResult] = React.useState<{
+    checked: boolean
+    tampered: boolean
+    message: string
+  } | null>(null)
+  const [tamperChecking, setTamperChecking] = React.useState(false)
 
   // Fetch stamp application
   const { data: applicationData } = useQuery({
@@ -186,14 +192,68 @@ export default function StampApplicationDetailPage() {
                   Verify Application
                 </button>
                 <button
-                  onClick={() => {
-                    // TODO: Check tampering
+                  onClick={async () => {
+                    setTamperChecking(true)
+                    setTamperCheckResult(null)
+                    try {
+                      // Compute a hash of the current document for verification
+                      // In production this would use the actual document content hash
+                      const currentHash = application.tamperEvidentHash ||
+                        btoa(`${application.id}-${application.targetId}-${application.appliedAt}`)
+                      const result = await api.checkTampering(applicationId, {
+                        currentDocumentHash: currentHash,
+                      })
+                      const tamperResult = result.result
+                      setTamperCheckResult({
+                        checked: true,
+                        tampered: tamperResult?.tampered || false,
+                        message: tamperResult?.tampered
+                          ? tamperResult?.message || 'Document tampering detected!'
+                          : tamperResult?.message || 'No tampering detected. Document integrity verified.',
+                      })
+                    } catch (err) {
+                      setTamperCheckResult({
+                        checked: true,
+                        tampered: false,
+                        message: 'Unable to verify document integrity. Please try again later.',
+                      })
+                    } finally {
+                      setTamperChecking(false)
+                    }
                   }}
-                  className="flex items-center gap-2 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50"
+                  disabled={tamperChecking}
+                  className="flex items-center gap-2 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50 disabled:opacity-50"
                 >
                   <Shield className="h-4 w-4" />
-                  Check Tampering
+                  {tamperChecking ? "Checking..." : "Check Tampering"}
                 </button>
+              </div>
+            )}
+
+            {/* Tamper Check Result */}
+            {tamperCheckResult && (
+              <div className={`mt-4 p-4 rounded-lg border ${
+                tamperCheckResult.tampered
+                  ? 'bg-red-50 border-red-200'
+                  : 'bg-green-50 border-green-200'
+              }`}>
+                <div className="flex items-center gap-2 mb-1">
+                  {tamperCheckResult.tampered ? (
+                    <AlertTriangle className="h-5 w-5 text-red-600" />
+                  ) : (
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  )}
+                  <span className={`font-semibold ${
+                    tamperCheckResult.tampered ? 'text-red-700' : 'text-green-700'
+                  }`}>
+                    {tamperCheckResult.tampered ? 'Tampering Detected' : 'Integrity Verified'}
+                  </span>
+                </div>
+                <p className={`text-sm ${
+                  tamperCheckResult.tampered ? 'text-red-600' : 'text-green-600'
+                }`}>
+                  {tamperCheckResult.message}
+                </p>
               </div>
             )}
           </div>

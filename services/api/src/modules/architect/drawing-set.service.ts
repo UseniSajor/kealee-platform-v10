@@ -642,15 +642,49 @@ export const drawingSetService = {
       throw new NotFoundError('DrawingSet', setId)
     }
 
-    // TODO: Integrate with PDF generation service
-    // This would:
-    // 1. Fetch all sheet PDFs
-    // 2. Combine them in order
-    // 3. Add sheet index page
-    // 4. Upload combined PDF
-    // 5. Return file URL
+    // Create a PDF metadata record (actual PDF generation deferred to a dedicated service)
+    const sheets = await prismaAny.drawingSheet.findMany({
+      where: { id: { in: set.sheetIds || [] } },
+      orderBy: [{ discipline: 'asc' }, { sequenceNumber: 'asc' }],
+      select: {
+        id: true,
+        sheetNumber: true,
+        sheetTitle: true,
+        discipline: true,
+        pdfFileId: true,
+      },
+    })
 
-    const pdfFileId = `generated-pdf-${setId}` // Placeholder
+    const pdfMetadata = {
+      generatedAt: new Date().toISOString(),
+      setId,
+      setName: set.name,
+      sheetCount: sheets.length,
+      sheets: sheets.map((s: any) => ({
+        sheetId: s.id,
+        sheetNumber: s.sheetNumber,
+        sheetTitle: s.sheetTitle,
+        discipline: s.discipline,
+        sourcePdfFileId: s.pdfFileId,
+      })),
+      format: 'PDF',
+      status: 'PENDING_GENERATION',
+    }
+
+    // Store the metadata record as a design file entry
+    const pdfRecord = await prismaAny.designFile.create({
+      data: {
+        designProjectId: set.designProjectId,
+        fileName: `${set.name || 'drawing-set'}.pdf`,
+        fileType: 'PDF',
+        category: 'DRAWING_SET_PDF',
+        status: 'PENDING',
+        metadata: pdfMetadata as any,
+        uploadedById: userId,
+      },
+    })
+
+    const pdfFileId = pdfRecord.id
 
     const updated = await prismaAny.drawingSet.update({
       where: { id: setId },

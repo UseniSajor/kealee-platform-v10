@@ -258,7 +258,7 @@ export default function DashboardPage() {
 
             {/* Fee Information */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-              <h3 className="font-semibold text-gray-900 mb-3">Transparent Pricing</h3>
+              <h3 className="font-semibold text-gray-900 mb-3">Clear Pricing</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between py-2 border-b border-gray-100">
                   <span className="text-gray-600">Design Package</span>

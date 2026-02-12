@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { brand, animations } from './brand';
@@ -20,6 +21,8 @@ export interface HeroSectionProps {
   ctas?: HeroCTA[];
   trustItems?: string[];
   bgPattern?: boolean;
+  backgroundImage?: string;
+  backgroundImageAlt?: string;
   className?: string;
 }
 
@@ -31,8 +34,11 @@ export function HeroSection({
   ctas = [],
   trustItems,
   bgPattern = false,
+  backgroundImage,
+  backgroundImageAlt = '',
   className = '',
 }: HeroSectionProps) {
+  const hasBackgroundImage = !!backgroundImage;
   const getButtonStyles = (variant: HeroCTA['variant']) => {
     switch (variant) {
       case 'primary':
@@ -60,8 +66,23 @@ export function HeroSection({
     <section
       className={`relative py-16 lg:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden ${className}`}
     >
-      {/* Optional subtle pattern background */}
-      {bgPattern && (
+      {/* Optional background image with dark overlay */}
+      {hasBackgroundImage && (
+        <>
+          <Image
+            src={backgroundImage}
+            alt={backgroundImageAlt}
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        </>
+      )}
+
+      {/* Optional subtle pattern background (only when no image) */}
+      {!hasBackgroundImage && bgPattern && (
         <div
           className="absolute inset-0 opacity-[0.02]"
           style={{
@@ -83,7 +104,7 @@ export function HeroSection({
           {...animations.fadeInUp}
           transition={{ ...animations.fadeInUp.transition, delay: 0.1 }}
           className="text-4xl sm:text-5xl lg:text-[56px] font-bold leading-tight mb-6"
-          style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}
+          style={{ fontFamily: '"Clash Display", sans-serif', color: hasBackgroundImage ? '#FFFFFF' : brand.navy }}
         >
           {headline}
         </motion.h1>
@@ -94,7 +115,7 @@ export function HeroSection({
             {...animations.fadeInUp}
             transition={{ ...animations.fadeInUp.transition, delay: 0.2 }}
             className="text-lg lg:text-xl leading-relaxed mb-8 max-w-2xl mx-auto"
-            style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', color: brand.gray[600] }}
+            style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', color: hasBackgroundImage ? 'rgba(255,255,255,0.85)' : brand.gray[600] }}
           >
             {subheadline}
           </motion.p>

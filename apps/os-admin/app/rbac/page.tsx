@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Shield, Key } from 'lucide-react'
+import { Plus, Shield, Key, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Role {
@@ -39,6 +39,9 @@ export default function RBACPage() {
   const [permissions, setPermissions] = useState<Permission[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [permModalOpen, setPermModalOpen] = useState(false)
+  const [selRole, setSelRole] = useState(null as Role | null)
+  const [rolePerms, setRolePerms] = useState([] as Permission[])
   const [activeTab, setActiveTab] = useState<'roles' | 'permissions'>('roles')
 
   useEffect(() => {
@@ -188,8 +191,10 @@ export default function RBACPage() {
                               onClick={async () => {
                                 try {
                                   const permissions = await api.getRolePermissions(role.key)
-                                  // TODO: Open modal/dialog to show permissions
-                                  alert(`Permissions for ${role.name}: ${permissions.permissions?.map((p: any) => p.name).join(', ') || 'None'}`)
+                                  setSelRole(role)
+                                  setRolePerms(permissions.permissions || [])
+                                  setPermModalOpen(true)
+                                  // alert(`Permissions for ${role.name}: ${permissions.permissions?.map((p: any) => p.name).join(', ') || 'None'}`)
                                 } catch (err: any) {
                                   alert('Failed to load permissions: ' + err.message)
                                 }
@@ -248,6 +253,61 @@ export default function RBACPage() {
                 </Table>
               </CardContent>
             </Card>
+          )}
+
+          {/* Permissions Modal */}
+          {permModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              {/* Backdrop */}
+              <div 
+                className="absolute inset-0 bg-black/50" 
+                onClick={() => setPermModalOpen(false)}
+              />
+              
+              {/* Modal */}
+              <div className="relative z-10 w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
+                <div className="mb-4">
+                  <h2 className="text-lg font-semibold">
+                    Permissions for {selRole?.name || 'Role'}
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Permissions assigned to the <strong>{selRole?.key}</strong> role
+                  </p>
+                </div>
+                
+                <div className="mt-4">
+                  {rolePerms.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No permissions assigned to this role
+                    </p>
+                  ) : (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {rolePerms.map((perm) => (
+                        <div
+                          key={perm.id}
+                          className="flex items-center justify-between rounded-md border p-3"
+                        >
+                          <div>
+                            <p className="text-sm font-medium">{perm.name}</p>
+                            <p className="text-xs text-gray-500">{perm.key}</p>
+                          </div>
+                          {perm.description && (
+                            <p className="text-xs text-gray-400 ml-4">{perm.description}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="mt-6 flex justify-end">
+                  <Button variant="outline" onClick={() => setPermModalOpen(false)}>
+                    <X className="mr-2 h-4 w-4" />
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </AppLayout>

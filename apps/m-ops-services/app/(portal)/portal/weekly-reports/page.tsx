@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { WeeklyReportViewer, type GCWeeklyReport } from "@/components/portal/WeeklyReportViewer";
+import { api } from "@/lib/api";
 
 function startOfWeekISO(d: Date) {
   const date = new Date(d);
@@ -14,7 +15,43 @@ function startOfWeekISO(d: Date) {
 }
 
 export default function WeeklyReportsPage() {
-  // TODO: Replace with DB + worker-generated PDFs. This UI is ready for wiring.
+  const [apiReports, setApiReports] = useState<GCWeeklyReport[] | null>(null);
+
+  useEffect(() => {
+    async function loadReports() {
+      try {
+        const result = await api.getReports({ type: 'weekly', limit: '20' });
+        if (result.reports && result.reports.length > 0) {
+          const mapped: GCWeeklyReport[] = result.reports.map((r: any) => {
+            const data = r.data || {};
+            return {
+              id: r.id,
+              weekOf: data.period?.split(' - ')[0] || r.createdAt || new Date().toISOString(),
+              projectName: data.projectName || null,
+              types: data.types || ['Project Status Report'],
+              generatedAt: r.createdAt,
+              generatedBy: { name: r.generatedByName || 'Kealee PM Team', email: r.generatedByEmail || 'pm@kealee.com' },
+              emailedTo: data.emailedTo || [],
+              pdfUrl: data.pdfUrl || null,
+              aiInsights: data.aiInsights || [],
+              summary: data.summary || r.title || '',
+              actionItems: data.actionItems || [],
+              permitInspection: data.permitInspection || [],
+              financial: data.financial || { budgetTotal: 0, actualToDate: 0, notes: [] },
+              risks: data.risks || [],
+              upcoming: data.upcoming || [],
+            };
+          });
+          setApiReports(mapped);
+        }
+      } catch {
+        // Fall back to demo reports if API not available
+      }
+    }
+    loadReports();
+  }, []);
+
+  // Fallback demo reports used when API returns no data
   const demoReports: GCWeeklyReport[] = [
     {
       id: "wr_2026_01_05_portfolio",
@@ -123,8 +160,17 @@ export default function WeeklyReportsPage() {
     },
   ];
 
-  const [activeId, setActiveId] = useState(demoReports[0]?.id || "");
-  const [reports, setReports] = useState<GCWeeklyReport[]>(demoReports);
+  const reportsSource = apiReports && apiReports.length > 0 ? apiReports : demoReports;
+  const [activeId, setActiveId] = useState(reportsSource[0]?.id || "");
+  const [reports, setReports] = useState<GCWeeklyReport[]>(reportsSource);
+
+  // Update reports when API data loads
+  useEffect(() => {
+    if (apiReports && apiReports.length > 0) {
+      setReports(apiReports);
+      setActiveId(apiReports[0]?.id || "");
+    }
+  }, [apiReports]);
 
   const active = useMemo(
     () => reports.find((r) => r.id === activeId) || reports[0],

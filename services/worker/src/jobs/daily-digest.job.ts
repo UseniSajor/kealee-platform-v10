@@ -1,4 +1,5 @@
 import { emailQueue } from '../queues/email.queue'
+import { prisma } from '@kealee/database'
 import { reportsQueue } from '../queues/reports.queue'
 import { CronJobResult } from '../types/cron.types'
 
@@ -14,9 +15,11 @@ export async function executeDailyDigest(): Promise<CronJobResult> {
 
     type DigestUser = { id: string; email: string }
 
-    // TODO: Fetch users who should receive daily digest
-    // For now, this is a placeholder implementation
-    const users: DigestUser[] = [] // await fetchUsersForDailyDigest()
+    // Fetch active users who should receive daily digest
+    const users: DigestUser[] = await (prisma as any).user.findMany({
+      where: { isActive: true },
+      select: { id: true, email: true },
+    })
 
     if (users.length === 0) {
       console.log('ℹ️ No users to send daily digest to')
@@ -29,14 +32,38 @@ export async function executeDailyDigest(): Promise<CronJobResult> {
       }
     }
 
-    // Generate daily summary data
+    // Generate daily summary data with real metrics
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    yesterday.setHours(0, 0, 0, 0)
+
+    const startOfMonth = new Date()
+    startOfMonth.setDate(1)
+    startOfMonth.setHours(0, 0, 0, 0)
+
+    const [projectsActive, tasksCompleted, revenueAgg] = await Promise.all([
+      (prisma as any).project.count({ where: { status: 'ACTIVE' } }),
+      (prisma as any).task.count({
+        where: {
+          status: 'COMPLETED',
+          completedAt: { gte: yesterday },
+        },
+      }),
+      (prisma as any).payment.aggregate({
+        where: { createdAt: { gte: startOfMonth } },
+        _sum: { amount: true },
+      }),
+    ])
+
+    const revenueTotal = Number(revenueAgg._sum?.amount || 0)
+
     const summaryData = {
       date: new Date().toISOString().split('T')[0],
       summary: 'Daily activity summary',
       metrics: {
-        projectsActive: 0, // TODO: Calculate from database
-        tasksCompleted: 0, // TODO: Calculate from database
-        revenue: '$0', // TODO: Calculate from database
+        projectsActive,
+        tasksCompleted,
+        revenue: "$" + revenueTotal.toLocaleString(),
       },
     }
 

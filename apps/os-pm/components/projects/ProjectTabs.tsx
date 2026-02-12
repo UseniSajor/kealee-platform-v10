@@ -13,7 +13,7 @@ type ProjectTabsProps = {
 
 type ProjectTab = {
   label: string
-  segment: "overview" | "timeline" | "budget" | "permits" | "documents" | "photos" | "contractors" | "reports" | "activity"
+  segment: "overview" | "timeline" | "budget" | "permits" | "documents" | "photos" | "contractors" | "reports" | "activity" | "audit"
 }
 
 const TABS: ProjectTab[] = [
@@ -26,6 +26,7 @@ const TABS: ProjectTab[] = [
   { label: "Contractors", segment: "contractors" },
   { label: "Reports", segment: "reports" },
   { label: "Activity", segment: "activity" },
+  { label: "Audit", segment: "audit" },
 ]
 
 function getActiveSegment(pathname: string, base: string): ProjectTab["segment"] {

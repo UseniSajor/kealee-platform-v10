@@ -1490,6 +1490,12 @@ model Project {
   actualEndDate      DateTime?
   budget             Decimal?  @db.Decimal(14, 2)
 
+  // Autonomy Configuration
+  autonomyLevel     Int       @default(1) // 1=recommend, 2=routine-auto, 3=full-auto
+  autonomyRules     Json?     // Category overrides e.g. { changeOrders: { maxAutoApprove: 500 } }
+  autonomyEnabledAt DateTime?
+  autonomyEnabledBy String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1510,6 +1516,7 @@ model Project {
   // Command Center relationships
   bidRequests       BidRequest[]
   siteVisits        SiteVisit[]
+  siteCheckIns      SiteCheckIn[]  @relation("ProjectCheckIns")
   changeOrders      ChangeOrder[]
   reports           Report[]
   budgetLines       BudgetLine[]
@@ -1519,19 +1526,35 @@ model Project {
   projectManagers   ProjectManager[]
 
   // Command Center Infrastructure relations
-  aiConversations  AIConversation[]
-  automationTasks  AutomationTask[]
-  bidEvaluations   BidEvaluation[]
-  weeklyReports    WeeklyReport[]
+  aiConversations      AIConversation[]
+  automationTasks      AutomationTask[]
+  bidEvaluations       BidEvaluation[]
+  weeklyReports        WeeklyReport[]
+  autonomousActionLogs AutonomousActionLog[]
+  beforeAfterPairs     BeforeAfterPair[]
 
   // Project Phase tracking
   phases ProjectPhase[]
+
+  // IoT Sensor Devices
+  sensorDevices SensorDevice[] @relation("ProjectSensors")
+
+  // User Responsibilities Tracking relations (from Kealee_User_Responsibilities_Guide.md)
+  dailyLogs    DailyLog[]
+  fileUploads  FileUpload[]
+  receipts     Receipt[]
 
   @@index([clientId])
   @@index([orgId])
   @@index([propertyId])
   @@index([pmId])
   @@index([status])
+
+  // ── Performance: Compound indexes for dashboard queries ──
+  @@index([clientId, status])        // Client dashboard: "my active projects"
+  @@index([pmId, status])            // PM dashboard: "my active projects"
+  @@index([orgId, status])           // Org-scoped project listing
+  @@index([status, createdAt])       // Admin: projects by status + time
 }
 
 // ============================================================================
@@ -1815,13 +1838,21 @@ model User {
 
   // Command Center relations
   siteVisits           SiteVisit[]              @relation("SiteVisitPM")
+  siteCheckIns         SiteCheckIn[]            @relation("UserCheckIns")
   changeOrderApprovals ChangeOrderApproval[]    @relation("ChangeOrderApprover")
   notificationPrefs    NotificationPreference[] @relation("UserNotificationPrefs")
+  pushSubscriptions    PushSubscription[]       @relation("UserPushSubscriptions")
   managedProjects      ProjectManager[]
 
   // Command Center Infrastructure relations
   dashboardWidgets DashboardWidget[]
   aiConversations  AIConversation[]
+
+  // User Responsibilities Tracking relations (from Kealee_User_Responsibilities_Guide.md)
+  dailyLogs       DailyLog[]     @relation("DailyLogContractor")
+  uploadedFiles   FileUpload[]   @relation("FileUploadUser")
+  uploadedReceipts Receipt[]     @relation("ReceiptUploadedBy")
+  userActions     UserAction[]   @relation("UserActionHistory")
 }
 
 // ============================================================================
@@ -2123,10 +2154,14 @@ model Milestone {
   evidence            Evidence[]
   payouts             Payout[] // Payouts from this milestone
   lienWaivers         LienWaiver[] // Lien waivers for this milestone
+  fileUploads         FileUpload[] // File uploads associated with this milestone
 
   @@index([contractId])
   @@index([status])
   @@index([dependsOnId])
+
+  // ── Performance: Compound indexes for milestone dashboards ──
+  @@index([contractId, status])      // Contract detail: milestones by status
 }
 
 model Evidence {
@@ -3667,6 +3702,15 @@ enum AuditEntityType {
   ACCOUNT
   STATEMENT
   REPORT
+  BID
+  CHANGE_ORDER
+  SCHEDULE_ITEM
+  QA_ISSUE
+  SUBSCRIPTION
+  ROLE
+  INVITATION
+  SESSION
+  DATA_EXPORT
 }
 
 enum AuditAction {
@@ -3683,6 +3727,10 @@ enum AuditAction {
   PRINT
   SEND
   SIGN
+  LOGIN
+  LOGOUT
+  ACCESS
+  ESCALATE
 }
 
 enum AuditCategory {
@@ -3731,6 +3779,8 @@ model AuditLog {
   // User Context
   performedBy String // User ID
   performedAt DateTime @default(now())
+  userEmail   String? // Denormalized for fast search
+  userRole    String? // Role at time of action
 
   // Session Context
   ipAddress String?
@@ -3745,7 +3795,16 @@ model AuditLog {
 
   // Description
   changeDescription String? @db.Text
+  description       String? @db.Text // Human-readable description
   businessReason    String? @db.Text // Why the change was made
+
+  // Scope
+  projectId      String? // Project scope
+  organizationId String? // Organization scope
+
+  // Tracing
+  traceId String? // Links to OpenTelemetry distributed trace
+  source  String? // Origin: 'api', 'command-center', 'webhook', 'cron', 'system'
 
   // Classification
   category AuditCategory
@@ -3770,6 +3829,11 @@ model AuditLog {
   @@index([category])
   @@index([severity])
   @@index([createdAt])
+  @@index([projectId])
+  @@index([organizationId])
+  @@index([userEmail])
+  @@index([traceId])
+  @@index([source])
 }
 
 model FinancialAuditEntry {
@@ -3966,15 +4030,28 @@ model Lead {
   lostReason         String?
   stageChangedAt     DateTime?
   srp                Decimal?
+
+  // Marketplace pricing (set by estimating engine)
+  suggestedPrice     Decimal?  @db.Decimal(12, 2)
+  priceRange         Json?     // { "low": number, "mid": number, "high": number }
+  projectType        String?   // "kitchen_renovation", "bathroom_remodel", etc.
+  sqft               Decimal?  @db.Decimal(10, 2)
+  qualityTier        String?   // "low", "mid", "high"
+
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 
   project Project? @relation(fields: [projectId], references: [id])
   quotes  Quote[]
+  quickEstimates QuickEstimate[]
 
   @@index([projectId])
   @@index([stage])
   @@index([status])
+
+  // ── Performance: Compound indexes for marketplace queries ──
+  @@index([stage, createdAt])        // Lead pipeline: filter by stage + sort by time
+  @@index([status, createdAt])       // Lead listing with time-based pagination
 }
 
 model MarketplaceProfile {
@@ -4673,6 +4750,11 @@ model Task {
   @@index([clientId])
   @@index([status])
   @@index([assignedTo])
+
+  // ── Performance: Compound indexes for task boards ──
+  @@index([projectId, status])       // Project detail: tasks by status
+  @@index([projectId, status, dueDate]) // Task board: filtered + sorted by due date
+  @@index([assignedTo, status])      // "My tasks" filtered by status
 }
 
 model TaskComment {
@@ -4763,6 +4845,9 @@ model Notification {
   @@index([type])
   @@index([status])
   @@index([createdAt])
+
+  // ── Performance: Compound indexes for notification bell ──
+  @@index([userId, status, createdAt]) // Notification bell: unread + recent
 }
 
 // ============================================================================
@@ -5310,6 +5395,7 @@ model Contractor {
   bidSubmissions     BidSubmission[]
   awardedBidRequests BidRequest[]           @relation("AwardedContractor")
   assignedPhases     ProjectPhase[]
+  score              ContractorScore?
 
   @@index([email])
   @@index([status])
@@ -5530,10 +5616,18 @@ model SiteVisit {
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   pm      User?   @relation("SiteVisitPM", fields: [pmId], references: [id])
 
+  // Before/After photo comparison pairs
+  beforePairs BeforeAfterPair[] @relation("BeforePairs")
+  afterPairs  BeforeAfterPair[] @relation("AfterPairs")
+
   @@index([projectId])
   @@index([pmId])
   @@index([scheduledAt])
   @@index([status])
+
+  // ── Performance: Compound indexes for visit calendar ──
+  @@index([projectId, scheduledAt])  // Project detail: upcoming visits
+  @@index([pmId, scheduledAt])       // PM calendar: my schedule
   @@map("site_visits")
 }
 
@@ -5710,6 +5804,10 @@ model Photo {
   @@index([projectId])
   @@index([visitId])
   @@index([category])
+
+  // ── Performance: Compound indexes for photo gallery ──
+  @@index([projectId, category])     // Photo gallery filtered by type
+  @@index([projectId, createdAt])    // Photo gallery sorted by date
   @@map("photos")
 }
 
@@ -5893,6 +5991,11 @@ model ScheduleItem {
   @@index([projectId])
   @@index([startDate])
   @@index([status])
+
+  // ── Performance: Compound indexes for schedule views ──
+  @@index([projectId, status])       // Gantt chart: project tasks by status
+  @@index([projectId, startDate])    // Timeline: project tasks sorted by date
+  @@index([assignedTo, status])      // "My schedule" filtered by status
   @@map("schedule_items")
 }
 
@@ -5913,6 +6016,28 @@ model WeatherLog {
   @@index([projectId])
   @@index([date])
   @@map("weather_logs")
+}
+
+// Crew GPS Check-In/Check-Out tracking
+model CrewCheckIn {
+  id          String   @id @default(uuid())
+  projectId   String
+  userId      String
+  type        String   // ARRIVE, DEPART
+  latitude    Decimal  @db.Decimal(10, 8)
+  longitude   Decimal  @db.Decimal(11, 8)
+  verified    Boolean  @default(false) // Within geofence?
+  distance    Decimal? @db.Decimal(10, 2) // Distance from site in meters
+  hoursOnSite Decimal? @db.Decimal(5, 2) // Calculated on DEPART
+  notes       String?
+  photo       String?  // Optional site photo URL
+
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([projectId, userId, createdAt])
+  @@map("crew_check_ins")
 }
 
 // APP-13: QA Inspector
@@ -6182,6 +6307,7 @@ model Assembly {
   id             String             @id @default(uuid())
   costDatabaseId String
   csiCode        String?
+  code           String?            @unique // Marketplace code: "KIT-CAB-STD", "BATH-TILE-FLR"
   category       AssemblyCategory
   subcategory    String?
   name           String
@@ -6200,6 +6326,22 @@ model Assembly {
   tags           String[]           @default([])
   notes          String?
   metadata       Json?
+
+  // Marketplace pricing tiers (low / mid / high quality)
+  materialCostLow   Decimal?  @db.Decimal(10, 2)
+  materialCostMid   Decimal?  @db.Decimal(10, 2)
+  materialCostHigh  Decimal?  @db.Decimal(10, 2)
+  laborCostLow      Decimal?  @db.Decimal(10, 2)
+  laborCostMid      Decimal?  @db.Decimal(10, 2)
+  laborCostHigh     Decimal?  @db.Decimal(10, 2)
+  laborHoursPerUnit Decimal?  @db.Decimal(6, 2)
+
+  // Regional cost multipliers (JSON map: { "DC": 1.15, "Baltimore": 1.0, ... })
+  regionMultiplier  Json?
+
+  // Trades required for this assembly
+  tradesRequired    String[]  @default([])
+
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
@@ -6209,6 +6351,7 @@ model Assembly {
 
   @@index([costDatabaseId])
   @@index([csiCode])
+  @@index([code])
   @@index([category])
   @@index([name])
   @@map("assemblies")
@@ -6634,6 +6777,9 @@ model BudgetSnapshot {
 
   @@index([projectId])
   @@index([snapshotDate])
+
+  // ── Performance: Compound index for budget chart queries ──
+  @@index([projectId, snapshotDate]) // Budget chart: project snapshots over time
   @@map("budget_snapshots")
 }
 
@@ -6775,6 +6921,31 @@ model NotificationPreference {
   @@map("notification_preferences")
 }
 
+// ============================================================================
+// PWA PUSH SUBSCRIPTIONS
+// ============================================================================
+
+model PushSubscription {
+  id           String   @id @default(uuid())
+  userId       String
+  endpoint     String   @unique   // Web Push endpoint URL
+  p256dh       String             // Public key for encryption
+  auth         String             // Authentication secret
+  userAgent    String?            // Device/browser identifier
+  platform     String?            // "iOS", "Android", "Windows", "macOS"
+  active       Boolean  @default(true)
+  lastUsed     DateTime?
+  failCount    Int      @default(0)  // Consecutive delivery failures
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation("UserPushSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([active])
+  @@map("push_subscriptions")
+}
+
 // APP-10: Document Generator - Additional Models
 
 model Document {
@@ -6812,6 +6983,10 @@ model Document {
   @@index([type])
   @@index([status])
   @@index([createdAt])
+
+  // ── Performance: Compound indexes for document galleries ──
+  @@index([projectId, type, createdAt]) // Doc gallery: filtered by type + sorted
+  @@index([projectId, status])          // Doc listing: project docs by status
   @@map("documents")
 }
 
@@ -7734,6 +7909,340 @@ model PermitServiceLeadActivity {
 }
 
 // ============================================================================
+// USER RESPONSIBILITIES TRACKING (Based on Kealee_User_Responsibilities_Guide.md)
+// ============================================================================
+
+// Contractor daily log entries (Guide Section 5 - During Project)
+model DailyLog {
+  id        String   @id @default(uuid())
+  projectId String
+  contractorId String  // User who created the log
+  
+  // Daily work information
+  date         DateTime @default(now())
+  workPerformed String   @db.Text // What was done today
+  crewCount    Int?     // Number of workers on site
+  hoursWorked  Float?   // Total hours worked
+  
+  // Conditions
+  weather      String?  // Weather conditions
+  temperature  String?  // Temperature
+  
+  // Progress & Issues
+  progressNotes String?  @db.Text
+  issues        String?  @db.Text // Any problems encountered
+  safetyIncidents String? @db.Text
+  
+  // Materials & Equipment
+  materialsDelivered String? @db.Text
+  equipmentUsed      String? @db.Text
+  
+  // Subcontractors
+  subsOnSite   String[] // List of subcontractors present
+  
+  // Photos (references to Document records)
+  photoIds     String[] // Array of document IDs
+  
+  // Metadata
+  metadata     Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  contractor User @relation("DailyLogContractor", fields: [contractorId], references: [id])
+  
+  @@index([projectId])
+  @@index([contractorId])
+  @@index([date])
+  @@map("daily_logs")
+}
+
+// Enhanced file upload tracking (Guide Section 10)
+enum FileCategory {
+  // Site & Progress
+  SITE_PHOTO
+  PROGRESS_PHOTO
+  INSPECTION_CORRECTION_PHOTO
+  EXISTING_CONDITION_PHOTO
+  
+  // Financial
+  RECEIPT
+  INVOICE
+  SUBCONTRACTOR_INVOICE
+  LIEN_WAIVER
+  
+  // Legal & Compliance
+  LICENSE
+  INSURANCE_CERTIFICATE
+  WORKERS_COMP_CERTIFICATE
+  PERMIT_DOCUMENT
+  PERMIT_APPLICATION
+  PERMIT_APPROVAL
+  
+  // Design & Plans
+  FLOOR_PLAN
+  DESIGN_FILE
+  STAMPED_DRAWING
+  AS_BUILT
+  SPECIFICATION
+  RENDERING
+  
+  // Portfolio & Marketing
+  PORTFOLIO_PHOTO
+  COMPANY_LOGO
+  PROFILE_PHOTO
+  
+  // Project Documents
+  CONTRACT
+  CHANGE_ORDER
+  WARRANTY
+  CLOSEOUT_PACKAGE
+  
+  // Other
+  OTHER
+}
+
+enum UploadedByRole {
+  HOMEOWNER
+  DEVELOPER
+  PROPERTY_MANAGER
+  CONTRACTOR
+  SUBCONTRACTOR
+  ARCHITECT
+  ENGINEER
+  KEALEE_PM
+  KEALEE_ADMIN
+}
+
+// File upload record with validation metadata
+model FileUpload {
+  id        String   @id @default(uuid())
+  
+  // File information
+  fileName     String
+  fileUrl      String   // S3 URL
+  fileSize     Int      // Bytes
+  mimeType     String
+  category     FileCategory
+  
+  // Context
+  projectId    String?
+  propertyId   String?
+  milestoneId  String?
+  leadId       String?
+  organizationId String?
+  
+  // Upload metadata
+  uploadedById String
+  uploadedByRole UploadedByRole
+  
+  // Validation
+  isValidated  Boolean @default(false)
+  validatedAt  DateTime?
+  validatedBy  String?
+  
+  // AI Analysis (for photos)
+  aiAnalysis   Json?    // QA findings, defects, etc.
+  aiProcessed  Boolean  @default(false)
+  aiProcessedAt DateTime?
+  
+  // OCR Results (for receipts)
+  ocrData      Json?    // Vendor, amount, date, etc.
+  ocrProcessed Boolean  @default(false)
+  ocrProcessedAt DateTime?
+  
+  // Tags & Search
+  tags         String[]
+  description  String?  @db.Text
+  location     String?  // "Kitchen - North Wall"
+  
+  // Metadata
+  metadata     Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  uploadedBy User @relation("FileUploadUser", fields: [uploadedById], references: [id])
+  project    Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestone  Milestone? @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  receipt    Receipt? // Reverse relation for receipts
+  
+  @@index([projectId])
+  @@index([uploadedById])
+  @@index([category])
+  @@index([createdAt])
+  @@index([isValidated])
+  @@map("file_uploads")
+}
+
+// Contractor portfolio items (Guide Section 5 - At Signup)
+model PortfolioItem {
+  id             String   @id @default(uuid())
+  contractorId   String   // Organization ID
+  
+  // Portfolio details
+  projectName    String?
+  projectType    String?  // "Kitchen Remodel", "New Construction", etc.
+  description    String?  @db.Text
+  
+  // Images
+  imageUrls      String[] // Array of S3 URLs
+  thumbnailUrl   String?
+  
+  // Project info
+  completedDate  DateTime?
+  location       String?
+  projectValue   Decimal?  @db.Decimal(12, 2)
+  squareFootage  Int?
+  
+  // Display
+  displayOrder   Int       @default(0)
+  isFeatured     Boolean   @default(false)
+  isPublished    Boolean   @default(true)
+  
+  // Metadata
+  metadata       Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([contractorId])
+  @@index([projectType])
+  @@index([isFeatured])
+  @@index([displayOrder])
+  @@map("portfolio_items")
+}
+
+// Receipt tracking with OCR (Guide Section 5 - During Project)
+model Receipt {
+  id        String   @id @default(uuid())
+  projectId String
+  uploadedById String
+  
+  // Receipt information
+  vendor       String?
+  amount       Decimal?  @db.Decimal(12, 2)
+  category     String?   // "Materials", "Equipment Rental", "Subcontractor", etc.
+  purchaseDate DateTime?
+  
+  // File reference
+  fileUploadId String?   @unique
+  imageUrl     String    // Original receipt image
+  
+  // OCR extracted data
+  ocrRawData   Json?     // Raw OCR output
+  ocrConfidence Float?   // OCR confidence score (0-1)
+  
+  // Budget tracking
+  budgetLineItemId String?
+  isApproved    Boolean   @default(false)
+  approvedBy    String?
+  approvedAt    DateTime?
+  
+  // Notes
+  notes         String?   @db.Text
+  internalNotes String?   @db.Text // PM-only notes
+  
+  // Status
+  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED, DISPUTED
+  
+  // Metadata
+  metadata      Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadedBy User    @relation("ReceiptUploadedBy", fields: [uploadedById], references: [id])
+  fileUpload FileUpload? @relation(fields: [fileUploadId], references: [id])
+  
+  @@index([projectId])
+  @@index([uploadedById])
+  @@index([status])
+  @@index([purchaseDate])
+  @@map("receipts")
+}
+
+// User action tracking (for audit and analytics)
+model UserAction {
+  id        String   @id @default(uuid())
+  userId    String
+  userRole  String   // HOMEOWNER, CONTRACTOR, ARCHITECT, PM, ADMIN
+  
+  // Action details
+  action    String   // "CREATE_PROJECT", "UPLOAD_PHOTO", "APPROVE_MILESTONE", etc.
+  entity    String   // "Project", "Milestone", "Document", etc.
+  entityId  String?
+  
+  // Context
+  projectId String?
+  organizationId String?
+  
+  // Details
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  
+  createdAt DateTime @default(now())
+  
+  user User @relation("UserActionHistory", fields: [userId], references: [id])
+  
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("user_actions")
+}
+
+// ============================================================================
+// MARKETPLACE ESTIMATING ENGINE
+// Quick estimates for lead pricing, bid validation, and instant quotes
+// ============================================================================
+
+model QuickEstimate {
+  id            String   @id @default(uuid())
+  projectId     String?
+  leadId        String?
+  createdBy     String?  // userId or null for anonymous/marketing
+
+  // Inputs
+  projectType   String              // "kitchen_renovation", "bathroom_remodel", etc.
+  sqft          Decimal? @db.Decimal(10, 2)
+  location      String              // city/region for multiplier
+  qualityTier   String   @default("mid")  // "low", "mid", "high"
+  description   String?  @db.Text
+
+  // Results
+  materialTotal   Decimal  @db.Decimal(12, 2)
+  laborTotal      Decimal  @db.Decimal(12, 2)
+  subtotal        Decimal  @db.Decimal(12, 2)
+  overhead        Decimal  @db.Decimal(12, 2)
+  profit          Decimal  @db.Decimal(12, 2)
+  contingency     Decimal  @db.Decimal(12, 2)
+  grandTotal      Decimal  @db.Decimal(12, 2)
+
+  // Price range
+  priceLow        Decimal  @db.Decimal(12, 2)
+  priceMid        Decimal  @db.Decimal(12, 2)
+  priceHigh       Decimal  @db.Decimal(12, 2)
+
+  breakdown       Json     // detailed line-by-line breakdown
+  assumptions     Json?    // what was assumed
+
+  status          String   @default("draft")  // "draft", "sent", "accepted"
+  createdAt       DateTime @default(now())
+
+  lead            Lead?    @relation(fields: [leadId], references: [id])
+
+  @@index([projectId])
+  @@index([leadId])
+  @@index([projectType])
+  @@index([createdAt])
+  @@map("quick_estimates")
+}
+
+// ============================================================================
 // COMMAND CENTER MODELS (Prompt 1 of 25)
 // ============================================================================
 
@@ -7821,7 +8330,7 @@ model Bid {
   @@map("bids")
 }
 
-// APP-09: Weekly Report
+// APP-04: Weekly Report
 model WeeklyReport {
   id        String   @id @default(uuid())
   projectId String
@@ -7864,7 +8373,7 @@ model QAInspectionResult {
   @@map("qa_inspection_results")
 }
 
-// APP-15: Decision Queue for PM Actions
+// APP-14: Decision Queue for PM Actions
 model DecisionQueue {
   id        String @id @default(uuid())
   projectId String
@@ -7912,4 +8421,255 @@ model AppHealthMetric {
   @@index([appId])
   @@index([timestamp])
   @@map("app_health_metrics")
+}
+
+// ============================================================================
+// ERROR HANDLING & OBSERVABILITY
+// Dead letter queue tracking, system alerts, and app health metrics
+// ============================================================================
+
+model DeadLetterLog {
+  id             String    @id @default(uuid())
+  originalQueue  String
+  jobId          String
+  jobName        String
+  appId          String
+  data           Json
+  error          String    @db.Text
+  attempts       Int
+  status         String    @default("pending") // pending, retried, discarded
+  retriedAt      DateTime?
+  discardedAt    DateTime?
+  discardReason  String?
+  pattern        String?   // error pattern hash for grouping
+  createdAt      DateTime  @default(now())
+
+  @@index([appId, createdAt])
+  @@index([status])
+  @@index([originalQueue])
+  @@index([createdAt])
+  @@map("dead_letter_logs")
+}
+
+model Alert {
+  id             String    @id @default(uuid())
+  level          String    // INFO, WARNING, ERROR, CRITICAL
+  source         String    // appId or 'system'
+  title          String
+  message        String    @db.Text
+  data           Json?
+  acknowledged   Boolean   @default(false)
+  acknowledgedBy String?
+  acknowledgedAt DateTime?
+  resolvedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([level, createdAt])
+  @@index([source])
+  @@index([acknowledged])
+  @@index([createdAt])
+  @@map("alerts")
+}
+
+// ============================================================================
+// AUTONOMOUS ACTION ENGINE
+// ============================================================================
+
+enum AutonomousDecision {
+  AUTO_APPROVED
+  AUTO_REJECTED
+  AUTO_EXECUTED
+  ESCALATED
+}
+
+model AutonomousActionLog {
+  id            String             @id @default(uuid())
+  projectId     String
+  appSource     String // e.g. "APP-03", "APP-01", "APP-07"
+  actionType    String // e.g. "change_order_approve", "bid_reject", "budget_acknowledge"
+  description   String
+  decision      AutonomousDecision
+  reasoning     String             @db.Text
+  data          Json? // Action-specific data (amounts, IDs, etc.)
+  confidence    Int                @default(0) // 0-100
+  autonomyLevel Int // The autonomy level that was active when this action was taken
+
+  // Review tracking
+  reviewedByPM Boolean   @default(false)
+  reviewedAt   DateTime?
+  revertedAt   DateTime?
+  revertedBy   String?
+
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+  @@index([appSource])
+  @@index([decision])
+  @@index([reviewedByPM])
+  @@map("autonomous_action_logs")
+}
+
+// ============================================================================
+// CONTRACTOR RELIABILITY SCORING
+// ============================================================================
+
+model ContractorScore {
+  id           String @id @default(uuid())
+  contractorId String @unique
+
+  // Component scores (0-100 each)
+  responsivenessScore    Int @default(50) // How fast they bid, reply, upload
+  uploadComplianceScore  Int @default(50) // Do they upload photos/receipts consistently
+  bidAccuracyScore       Int @default(50) // How close are bids to actual costs
+  scheduleAdherenceScore Int @default(50) // Do they finish milestones on time
+  qualityScore           Int @default(50) // QA inspection results
+  clientSatisfactionScore Int @default(50) // Client reviews
+  safetyScore            Int @default(50) // Safety violations from QA
+
+  // Composite
+  overallScore Int @default(50) // Weighted average
+
+  // Metadata
+  projectsCompleted  Int      @default(0)
+  totalBidsSubmitted Int      @default(0)
+  avgBidResponseTime Int? // hours
+  dataPoints         Int      @default(0) // how many data points feed the score
+  confidence         String   @default("low") // low, medium, high
+
+  lastCalculated DateTime @default(now())
+
+  contractor Contractor @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+
+  @@index([overallScore])
+  @@map("contractor_scores")
+}
+
+// ============================================================================
+// BEFORE/AFTER PHOTO COMPARISON PAIRS
+// ============================================================================
+
+model BeforeAfterPair {
+  id        String @id @default(uuid())
+  projectId String
+
+  area              String  // descriptive area name (e.g., "Kitchen North Wall")
+  beforePhotoUrl    String
+  afterPhotoUrl     String
+  beforeVisitId     String  // SiteVisit ID
+  afterVisitId      String  // SiteVisit ID
+  beforeDate        DateTime
+  afterDate         DateTime
+  matchConfidence   Int     @default(0) // 0-100 confidence in area match
+  progressDescription String?
+  beforePhase       String? // construction phase in before photo
+  afterPhase        String? // construction phase in after photo
+  progressPercent   Int     @default(0) // estimated area completion
+
+  createdAt DateTime @default(now())
+
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  beforeVisit SiteVisit @relation("BeforePairs", fields: [beforeVisitId], references: [id])
+  afterVisit  SiteVisit @relation("AfterPairs", fields: [afterVisitId], references: [id])
+
+  @@index([projectId, afterDate])
+  @@index([area])
+  @@map("before_after_pairs")
+}
+
+// ============================================================================
+// SITE CHECK-IN — GPS-verified on-site presence tracking
+// ============================================================================
+
+model SiteCheckIn {
+  id        String  @id @default(uuid())
+  userId    String
+  projectId String
+
+  // Check-in / Check-out
+  checkInAt  DateTime  @default(now())
+  checkOutAt DateTime?
+
+  // GPS coordinates at check-in
+  latitude   Float?
+  longitude  Float?
+
+  // Verification
+  verified        Boolean @default(false) // true if GPS within 200m of project
+  distanceMeters  Float?  // distance from project site
+  manualOverride  Boolean @default(false) // user overrode GPS warning
+  overrideNote    String? @db.Text
+
+  // Time on site (calculated at check-out)
+  minutesOnSite Int?
+
+  // Context
+  role       String? // CONTRACTOR, PM, INSPECTOR, etc.
+  orgId      String?
+  deviceInfo String? // mobile/desktop/tablet
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  user    User    @relation("UserCheckIns", fields: [userId], references: [id])
+  project Project @relation("ProjectCheckIns", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, checkInAt])
+  @@index([userId, checkInAt])
+  @@index([projectId, checkOutAt])
+  @@index([verified])
+  @@map("site_check_ins")
+}
+
+// ============================================================================
+// IoT SENSOR DATA
+// ============================================================================
+
+model SensorDevice {
+  id           String   @id @default(uuid())
+  projectId    String
+  type         String   // "temperature", "humidity", "vibration", "noise", "water_leak", "air_quality", "motion"
+  name         String   // "Kitchen Humidity Sensor", "Basement Temp #1"
+  location     String   // "Kitchen wall A", "Basement NE corner"
+  deviceId     String   @unique // hardware device identifier
+  status       String   @default("active") // active, offline, low_battery, error
+  batteryLevel Int?     // percentage, if applicable
+  lastReading  DateTime?
+  config       Json?    // threshold settings: { alertAbove: 80, alertBelow: 32, unit: "°F" }
+  metadata     Json?    // additional device metadata
+  installedAt  DateTime?
+  installedBy  String?
+  firmwareVersion String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  project  Project        @relation("ProjectSensors", fields: [projectId], references: [id], onDelete: Cascade)
+  readings SensorReading[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([type])
+  @@map("sensor_devices")
+}
+
+model SensorReading {
+  id        String   @id @default(uuid())
+  deviceId  String
+  value     Float
+  unit      String   // "°F", "%RH", "dB", "g", "ppm", "boolean"
+  timestamp DateTime @default(now())
+  alert     Boolean  @default(false) // true if this reading triggered an alert
+  alertType String?  // "above_threshold", "below_threshold", "rate_of_change", "offline"
+  metadata  Json?    // additional reading context
+
+  // Relationships
+  device SensorDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId, timestamp])
+  @@index([alert])
+  @@index([timestamp])
+  @@map("sensor_readings")
 }

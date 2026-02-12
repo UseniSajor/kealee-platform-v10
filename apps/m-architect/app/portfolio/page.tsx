@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Building2, Home, Store, Heart, GraduationCap, Warehouse, Filter, ArrowRight } from 'lucide-react';
 
@@ -111,6 +112,12 @@ export default function PortfolioPage() {
     },
   ];
 
+  const categoryImages: Record<string, string> = {
+    residential: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80&auto=format&fit=crop',
+    commercial: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80&auto=format&fit=crop',
+    retail: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80&auto=format&fit=crop',
+  };
+
   const filteredProjects = selectedCategory === 'all'
     ? projects
     : projects.filter(p => p.category === selectedCategory);
@@ -169,12 +176,22 @@ export default function PortfolioPage() {
               key={project.id}
               className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition group"
             >
-              {/* Project Image Placeholder */}
-              <div className="aspect-[4/3] bg-gradient-to-br from-blue-100 to-blue-200 relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Building2 className="text-blue-400" size={64} />
-                </div>
-                <div className="absolute top-4 left-4">
+              {/* Project Image */}
+              <div className="aspect-[4/3] relative overflow-hidden">
+                {categoryImages[project.category] ? (
+                  <Image
+                    src={categoryImages[project.category]}
+                    alt={project.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                    <Building2 className="text-blue-400" size={64} />
+                  </div>
+                )}
+                <div className="absolute top-4 left-4 z-10">
                   <span className="px-3 py-1 bg-white/90 backdrop-blur text-sm font-medium text-gray-700 rounded-full capitalize">
                     {project.category}
                   </span>

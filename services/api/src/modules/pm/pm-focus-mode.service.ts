@@ -133,10 +133,27 @@ export const pmFocusModeService = {
       action: enable ? 'SET_DND' : 'CLEAR_DND',
     })
 
-    // TODO: Implement actual integrations
-    // - Slack API: Set user's DND status
-    // - Teams API: Set user's presence to "Do Not Disturb"
-    // - Email: Pause email notifications
+    // Set notification preference to silenced during focus mode
+    await prismaAny.user.update({
+      where: { id: pmId },
+      data: {
+        notificationPreferences: enable
+          ? { silenced: true, focusMode: true, integrations }
+          : { silenced: false, focusMode: false },
+      },
+    }).catch(() => {})
+
+    // Create a focus session activity log entry
+    await prismaAny.auditLog.create({
+      data: {
+        entityType: 'User',
+        entityId: pmId,
+        action: enable ? 'FOCUS_MODE_ENABLED' : 'FOCUS_MODE_DISABLED',
+        details: { integrations, action: enable ? 'SET_DND' : 'CLEAR_DND' },
+        userId: pmId,
+        reason: enable ? 'Focus mode session started' : 'Focus mode session ended',
+      },
+    }).catch(() => {})
   },
 }
 

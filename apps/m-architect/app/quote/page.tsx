@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { ArrowRight, Upload, Check } from 'lucide-react';
 
 export default function QuoteRequestPage() {
@@ -29,17 +30,29 @@ export default function QuoteRequestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-2xl mx-auto px-6">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Header */}
+      <section className="relative py-16 lg:py-24 px-4 overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1920&q=80&auto=format&fit=crop"
+          alt="Architectural blueprints and design plans"
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 text-center max-w-2xl mx-auto">
+          <h1 className="text-4xl font-bold text-white mb-4">
             Get Your Free Quote
           </h1>
-          <p className="text-lg text-gray-600">
-            Tell us about your project and we'll provide a detailed quote within 24 hours
+          <p className="text-lg text-gray-200">
+            Tell us about your project and we&apos;ll provide a detailed quote within 24 hours
           </p>
         </div>
+      </section>
+
+      <div className="max-w-2xl mx-auto px-6 py-12">
 
         {/* Form */}
         <div className="bg-white rounded-2xl shadow-lg p-8 space-y-6">

@@ -5,6 +5,7 @@
 
 import Stripe from 'stripe';
 import { FastifyRequest } from 'fastify';
+import { prisma } from '@kealee/database';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2023-10-16',
@@ -150,7 +151,24 @@ export class StripeWebhookSecurityService {
    * Log webhook event for audit
    */
   async logWebhookEvent(event: Stripe.Event, status: 'SUCCESS' | 'FAILED', error?: string) {
-    // TODO: Integrate with audit service
+    // Log to audit service
+    try {
+      await prisma.auditLog.create({
+        data: {
+          entityType: 'PAYMENT',
+          entityId: event.id,
+          action: 'CREATE',
+          performedBy: 'system',
+          description: 'Webhook event ' + event.type + ' - ' + status,
+          source: 'webhook',
+          category: 'FINANCIAL',
+          afterData: { eventId: event.id, eventType: event.type, status, error: error || null, timestamp: new Date(event.created * 1000).toISOString() },
+        },
+      })
+    } catch (auditError) {
+      console.error('Failed to create audit log for webhook event:', auditError)
+    }
+
     console.log({
       eventId: event.id,
       eventType: event.type,

@@ -1,15 +1,19 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { ZodSchema } from 'zod'
+import { ZodType } from 'zod'
 
 /**
  * Validation middleware factory
  * Creates a middleware function that validates request body, query, or params
+ *
+ * Uses ZodType<any, any, any> instead of ZodSchema<T> to support schemas
+ * that use .transform(), .default(), .coerce, etc. where input and output
+ * types differ.
  */
 export function validateRequest(
   schema: {
-    body?: ZodSchema
-    query?: ZodSchema
-    params?: ZodSchema
+    body?: ZodType<any, any, any>
+    query?: ZodType<any, any, any>
+    params?: ZodType<any, any, any>
   }
 ) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
@@ -24,20 +28,20 @@ export function validateRequest(
 /**
  * Convenience function for body validation only
  */
-export function validateBody<T>(schema: ZodSchema<T>) {
+export function validateBody(schema: ZodType<any, any, any>) {
   return validateRequest({ body: schema })
 }
 
 /**
  * Convenience function for query validation only
  */
-export function validateQuery<T>(schema: ZodSchema<T>) {
+export function validateQuery(schema: ZodType<any, any, any>) {
   return validateRequest({ query: schema })
 }
 
 /**
  * Convenience function for params validation only
  */
-export function validateParams<T>(schema: ZodSchema<T>) {
+export function validateParams(schema: ZodType<any, any, any>) {
   return validateRequest({ params: schema })
 }

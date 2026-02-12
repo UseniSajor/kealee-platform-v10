@@ -5,6 +5,10 @@
 
 import { Worker, Queue, Job } from 'bullmq';
 import IORedis from 'ioredis';
+import {
+  notifyJobCompleted,
+  notifyJobFailed,
+} from '@kealee/realtime';
 
 // Import modules
 import { priceUpdater } from './cost-database/price-updater.js';
@@ -235,10 +239,38 @@ export function createWorker(): Worker<JobData, JobResult> {
 
   worker.on('completed', (job, result) => {
     console.log(`[Worker] Job ${job.id} completed:`, result.success);
+
+    // Broadcast job completed event
+    const { metadata } = job.data;
+    if (metadata?.userId) {
+      notifyJobCompleted({
+        jobId: job.id || '',
+        jobType: job.data.type,
+        organizationId: metadata.organizationId || '',
+        result: result.success ? 'success' : 'failure',
+      }, metadata.userId).catch((err: unknown) =>
+        console.error('[Realtime] job.completed broadcast failed:', err)
+      );
+    }
   });
 
   worker.on('failed', (job, error) => {
     console.error(`[Worker] Job ${job?.id} failed:`, error.message);
+
+    // Broadcast job failed event
+    if (job) {
+      const { metadata } = job.data;
+      if (metadata?.userId) {
+        notifyJobFailed({
+          jobId: job.id || '',
+          jobType: job.data.type,
+          organizationId: metadata.organizationId || '',
+          error: error.message,
+        }, metadata.userId).catch((err: unknown) =>
+          console.error('[Realtime] job.failed broadcast failed:', err)
+        );
+      }
+    }
   });
 
   worker.on('error', (error) => {

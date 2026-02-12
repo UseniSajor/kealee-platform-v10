@@ -1,7 +1,9 @@
 // apps/m-permits-inspections/app/api/permits/route.ts
-// API route for creating permit applications
+// API route for creating permit applications - proxies to backend /permits/applications
 
 import { NextRequest, NextResponse } from 'next/server';
+
+const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,32 +24,55 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!body.documents || body.documents.length === 0) {
+    // Forward auth header from the incoming request
+    const authHeader = request.headers.get('Authorization') || '';
+
+    // Map frontend payload to the backend /permits/applications schema
+    const backendPayload = {
+      jurisdictionId: body.jurisdiction,
+      permitType: (body.permitTypes[0] || 'BUILDING').toUpperCase(),
+      projectData: {
+        address: body.address,
+        parcelId: body.parcelNumber || undefined,
+        valuation: body.projectDetails?.valuation || body.valuation || 1000,
+        scope: body.projectDetails?.scopeOfWork || body.projectDetails?.description || body.scope || '',
+        ownerName: body.applicantInfo?.name || body.applicantName || '',
+        contractorName: body.applicantInfo?.contractorName || '',
+        contractorLicense: body.applicantInfo?.licenseNumber || '',
+        squareFootage: body.projectDetails?.squareFootage || undefined,
+      },
+      documents: (body.documents || []).map((doc: any) => ({
+        type: doc.type || 'general',
+        url: doc.url || doc.fileUrl || '',
+      })),
+      expedited: body.priority === 'expedited' || body.priority === 'emergency',
+    };
+
+    // Call the backend permit application service
+    const response = await fetch(`${API_URL}/permits/applications`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authHeader && { Authorization: authHeader }),
+      },
+      body: JSON.stringify(backendPayload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
       return NextResponse.json(
-        { success: false, error: 'At least one document is required' },
-        { status: 400 }
+        { success: false, error: data.error || 'Failed to create application on backend' },
+        { status: response.status }
       );
     }
-
-    // TODO: Implement actual permit creation logic
-    // - Save to database
-    // - Process payment via Stripe
-    // - Send confirmation email
-    // - Create tracking record
-
-    const applicationId = 'PER-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
 
     return NextResponse.json(
       {
         success: true,
         message: 'Permit application submitted successfully',
-        applicationId,
-        application: {
-          id: applicationId,
-          ...body,
-          status: 'submitted',
-          submittedAt: new Date().toISOString(),
-        },
+        applicationId: data.id || data.application?.id,
+        application: data,
       },
       { status: 201 }
     );

@@ -724,8 +724,17 @@ export const approvalService = {
     // Generate unique certificate number
     const certificateNumber = `CERT-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
 
-    // TODO: Generate actual certificate file (PDF, PNG, etc.)
-    // const certificateFileUrl = await generateCertificateFile(certificateNumber, data.certificateFormat)
+    // Build certificate metadata object (actual PDF generation deferred to a dedicated service)
+    const certificateMetadata = {
+      certNumber: certificateNumber,
+      projectName: request.requestTitle,
+      issuedDate: new Date().toISOString(),
+      type: data.certificateFormat || 'PDF',
+      issuedTo: data.issuedTo || null,
+      issuedBy: data.issuedBy || null,
+      approvalRequestId: requestId,
+      generatedAt: new Date().toISOString(),
+    }
 
     const certificate = await prismaAny.approvalCertificate.create({
       data: {
@@ -733,7 +742,7 @@ export const approvalService = {
         certificateNumber,
         certificateTitle: data.certificateTitle,
         certificateDescription: data.certificateDescription,
-        certificateData: data.certificateData as any,
+        certificateData: { ...(data.certificateData || {}), ...certificateMetadata } as any,
         certificateFormat: (data.certificateFormat as any) || 'PDF',
         issuedTo: data.issuedTo,
         issuedBy: data.issuedBy,

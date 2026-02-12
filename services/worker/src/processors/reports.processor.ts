@@ -243,6 +243,111 @@ async function addCustomContent(
 }
 
 /**
+ * Generate HTML report
+ */
+async function generateHTMLReport(
+  job: Job<ReportJobData>
+): Promise<ReportResult> {
+  const { type, title, data } = job.data
+  const ts=new Date().toISOString().replace(/[:.]/g,"-")
+  const filename=type+"-"+ts+".html"
+  const filePath=join(REPORTS_DIR,filename)
+
+  let body=""
+  for(const[key,value]of Object.entries(data)){
+    if(typeof value==="object"&&value!==null){
+      body+="<h2>"+key+"</h2><ul>"
+      const items=Array.isArray(value)?value:Object.entries(value)
+      for(const item of items){
+        if(Array.isArray(item)){
+          body+="<li><strong>"+item[0]+":</strong> "+String(item[1])+"</li>"
+        }else if(typeof item==="object"&&item!==null){
+          body+="<li>"+JSON.stringify(item)+"</li>"
+        }else{
+          body+="<li>"+String(item)+"</li>"
+        }
+      }
+      body+="</ul>"
+    }else{
+      body+="<h2>"+key+"</h2><p>"+String(value)+"</p>"
+    }
+  }
+
+  const html="<!DOCTYPE html><html><head><meta charset="utf-8"><title>"+title+"</title>"+
+    "<style>body{font-family:sans-serif;margin:40px}h1{color:#333}</style></head><body><h1>"+title+"</h1><p>Generated: "+new Date().toLocaleString()+"</p>"+body+"</body></html>"
+
+  const fsP=await import("fs/promises")
+  await fsP.writeFile(filePath,html,"utf8")
+  const stats=await fsP.stat(filePath)
+
+  return{
+    success:true,filePath,
+    fileUrl:REPORTS_URL_PREFIX+"/"+filename,
+    fileSize:stats.size,format:"html",pages:1,
+    generatedAt:new Date(),
+  }
+}
+
+/**
+ * Generate CSV report
+ */
+async function generateCSVReport(
+  job: Job<ReportJobData>
+): Promise<ReportResult> {
+  const { type, data } = job.data
+  const ts=new Date().toISOString().replace(/[:.]/g,"-")
+  const filename=type+"-"+ts+".csv"
+  const filePath=join(REPORTS_DIR,filename)
+
+  function escapeCsv(val:any):string{
+    const s=String(val!=null?val:"")
+    if(s.includes(",")||s.includes('"')||s.includes("
+")){
+      return '"'+ s.replace(/"/g,'""')+'"'
+    }
+    return s
+  }
+
+  let csvContent=""
+  const arrayData=Object.values(data).find(v=>Array.isArray(v)) as any[]|undefined
+
+  if(arrayData&&arrayData.length>0&&typeof arrayData[0]==="object"){
+    const headers=Object.keys(arrayData[0])
+    csvContent+=headers.map(escapeCsv).join(",")+"
+"
+    for(const row of arrayData){
+      csvContent+=headers.map(h=>escapeCsv(row[h])).join(",")+"
+"
+    }
+  }else{
+    csvContent+="Key,Value
+"
+    for(const[key,value]of Object.entries(data)){
+      if(typeof value==="object"&&value!==null&&!Array.isArray(value)){
+        for(const[k,v]of Object.entries(value)){
+          csvContent+=escapeCsv(key+"."+k)+","+escapeCsv(v)+"
+"
+        }
+      }else{
+        csvContent+=escapeCsv(key)+","+escapeCsv(value)+"
+"
+      }
+    }
+  }
+
+  const fsP=await import("fs/promises")
+  await fsP.writeFile(filePath,csvContent,"utf8")
+  const stats=await fsP.stat(filePath)
+
+  return{
+    success:true,filePath,
+    fileUrl:REPORTS_URL_PREFIX+"/"+filename,
+    fileSize:stats.size,format:"csv",pages:1,
+    generatedAt:new Date(),
+  }
+}
+
+/**
  * Process report job
  */
 async function processReportJob(job: Job<ReportJobData>): Promise<ReportResult> {
@@ -253,11 +358,9 @@ async function processReportJob(job: Job<ReportJobData>): Promise<ReportResult> 
       case 'pdf':
         return await generatePDFReport(job)
       case 'html':
-        // TODO: Implement HTML report generation
-        throw new Error('HTML report generation not yet implemented')
+        return await generateHTMLReport(job)
       case 'csv':
-        // TODO: Implement CSV report generation
-        throw new Error('CSV report generation not yet implemented')
+        return await generateCSVReport(job)
       default:
         throw new Error(`Unsupported report format: ${format}`)
     }

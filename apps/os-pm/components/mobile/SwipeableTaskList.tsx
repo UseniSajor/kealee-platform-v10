@@ -13,23 +13,56 @@ interface Task {
   estimatedEffort?: number
 }
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+
 interface SwipeableTaskListProps {
   tasks: Task[]
+  onTaskUpdate?: () => void
 }
 
-export function SwipeableTaskList({ tasks }: SwipeableTaskListProps) {
+export function SwipeableTaskList({ tasks, onTaskUpdate }: SwipeableTaskListProps) {
   const [swipedTask, setSwipedTask] = useState<string | null>(null)
 
-  const handleSwipe = (taskId: string, direction: "left" | "right") => {
+  const handleSwipe = async (taskId: string, direction: "left" | "right") => {
     setSwipedTask(taskId)
-    
+
     if (direction === "right") {
-      // Mark as complete
-      // TODO: Call API to complete task
-      console.log("Complete task:", taskId)
+      // Mark as complete via API
+      try {
+        const res = await fetch(`${API_BASE}/api/tasks/${taskId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ status: 'completed' }),
+        })
+        if (!res.ok) {
+          console.error("Failed to complete task:", await res.text())
+        } else {
+          onTaskUpdate?.()
+        }
+      } catch (err) {
+        console.error("Error completing task:", err)
+      }
     } else {
-      // Snooze or skip
-      console.log("Snooze task:", taskId)
+      // Snooze: push due date forward by 1 day
+      try {
+        const tomorrow = new Date()
+        tomorrow.setDate(tomorrow.getDate() + 1)
+        tomorrow.setHours(9, 0, 0, 0)
+        const res = await fetch(`${API_BASE}/api/tasks/${taskId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ dueDate: tomorrow.toISOString() }),
+        })
+        if (!res.ok) {
+          console.error("Failed to snooze task:", await res.text())
+        } else {
+          onTaskUpdate?.()
+        }
+      } catch (err) {
+        console.error("Error snoozing task:", err)
+      }
     }
 
     // Reset after animation

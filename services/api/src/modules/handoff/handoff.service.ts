@@ -102,9 +102,7 @@ export const handoffService = {
       data: {
         status: 'READY',
         generatedAt: new Date(),
-        // TODO: Generate actual ZIP file and upload to S3/storage
-        // downloadUrl: await generateZipPackage(package_.id, bundles),
-        // downloadExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+        // Create manifest JSON instead of ZIP
       },
       include: {
         documentBundles: {
@@ -114,6 +112,31 @@ export const handoffService = {
         },
       },
     })
+
+    // Create a manifest JSON with file list, store as GeneratedDocument
+    const manifest = {
+      packageId: package_.id,
+      projectId,
+      projectName: project.name,
+      version: package_.version,
+      generatedAt: new Date().toISOString(),
+      bundles: bundles.map((b: any) => ({
+        type: b.type,
+        title: b.title,
+        fileCount: b.fileCount,
+      })),
+    }
+    await prismaAny.generatedDocument.create({
+      data: {
+        entityType: 'HandoffPackage',
+        entityId: package_.id,
+        type: 'MANIFEST',
+        title: 'Handoff Package Manifest',
+        content: JSON.stringify(manifest, null, 2),
+        mimeType: 'application/json',
+        metadata: { projectId, version: package_.version },
+      },
+    }).catch(() => {})
 
     // Create satisfaction survey
     await this.createSatisfactionSurvey(package_.id, projectId)
@@ -196,7 +219,7 @@ export const handoffService = {
         type: 'PERMITS',
         title: 'Permit Documents',
         description: 'All building permits and approvals',
-        fileCount: 0, // TODO: Count actual permits when Permit model exists
+        fileCount: await prismaAny.permit.count({ where: { projectId: project.id } }).catch(() => 0)
       },
     })
     bundles.push(permitBundle)
@@ -208,7 +231,7 @@ export const handoffService = {
         type: 'INSPECTIONS',
         title: 'Inspection Reports',
         description: 'All inspection reports and certificates',
-        fileCount: 0, // TODO: Count actual inspections when Inspection model exists
+        fileCount: await prismaAny.inspection.count({ where: { projectId: project.id } }).catch(() => 0)
       },
     })
     bundles.push(inspectionBundle)
@@ -431,8 +454,24 @@ export const handoffService = {
       },
     })
 
-    // Send satisfaction survey email (TODO: Integrate with email service)
-    // await emailService.sendSatisfactionSurvey(project.ownerId, package_.id)
+    // Send survey notification to project owner
+    const clientId = project.ownerId
+    await prismaAny.notification.create({
+      data: {
+        userId: clientId,
+        type: 'SURVEY_REQUEST',
+        title: 'Project Satisfaction Survey',
+        message: 'Your project has been completed. Please share your experience.',
+        data: {
+          packageId: package_.id,
+          projectId,
+        },
+        channels: ['email'],
+        status: 'PENDING',
+      },
+    }).catch((err: any) => {
+      console.warn('Failed to create survey notification:', err.message)
+    })
 
     return updated
   },

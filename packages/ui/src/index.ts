@@ -120,6 +120,9 @@ export {
   Timeline,
   ProgressTracker,
   MetricCard,
+  VisualTimeline,
+  BeforeAfterSlider,
+  BeforeAfterGallery,
 } from './components/data-display';
 
 export type {
@@ -138,6 +141,12 @@ export type {
   MetricCardProps,
   TrendDirection,
   TrendSentiment,
+  VisualTimelineProps,
+  VisualTimelineEntry,
+  VisualTimelinePhoto,
+  BeforeAfterSliderProps,
+  BeforeAfterGalleryProps,
+  BeforeAfterPair,
 } from './components/data-display';
 
 // ========================================
@@ -206,9 +215,135 @@ export { default as tokensDefault } from './tokens';
 export * from './themes';
 
 // ========================================
+// Live / Realtime Components
+// ========================================
+export {
+  LiveNotificationBell,
+  LiveProjectFeed,
+  LiveBudgetTicker,
+  LiveProgressBar,
+  OnlineIndicator,
+  LiveToast,
+} from './components/live';
+
+export type {
+  LiveNotification,
+  LiveNotificationBellProps,
+  FeedItem,
+  LiveProjectFeedProps,
+  LiveBudgetTickerProps,
+  LiveProgressBarProps,
+  OnlineUser,
+  OnlineIndicatorProps,
+  LiveToastEvent,
+  LiveToastProps,
+} from './components/live';
+
+// ========================================
+// Scheduling Components
+// ========================================
+export { SiteCheckIn } from './components/scheduling/SiteCheckIn';
+export type { SiteCheckInProps } from './components/scheduling/SiteCheckIn';
+
+// ========================================
+// Sensor Components
+// ========================================
+export { default as SensorWidget } from './components/sensors/SensorWidget';
+export type { SensorWidgetProps } from './components/sensors/SensorWidget';
+
+// ========================================
+// PWA Components
+// ========================================
+export {
+  ServiceWorkerRegistration,
+  MobileBottomNav,
+  OfflineBanner,
+  PushPermission,
+} from './components/pwa';
+
+export type {
+  ServiceWorkerRegistrationProps,
+  MobileBottomNavProps,
+  MobileNavTab,
+  OfflineBannerProps,
+  PushPermissionProps,
+} from './components/pwa';
+
+// ========================================
+// PWA Hooks
+// ========================================
+export { useOfflineQueue } from './hooks/use-offline-queue';
+export type {
+  OfflineAction,
+  SyncStatus,
+  UseOfflineQueueReturn,
+} from './hooks/use-offline-queue';
+
+export { usePullToRefresh } from './hooks/use-pull-to-refresh';
+export type {
+  UsePullToRefreshOptions,
+  UsePullToRefreshReturn,
+} from './hooks/use-pull-to-refresh';
+
+// ========================================
 // Marketing Components
 // ========================================
 export * from './components/marketing';
+
+// ========================================
+// Chat Components
+// ========================================
+export { PlatformChat } from './components/PlatformChat';
+export type {
+  PlatformChatProps,
+  ChatAction as PlatformChatAction,
+  ChatSource as PlatformChatSource,
+  ConversationMessage as PlatformConversationMessage,
+} from './components/PlatformChat';
+
+// ========================================
+// Performance Components
+// ========================================
+export {
+  Skeleton as SkeletonShimmer,
+  DashboardSkeleton,
+  ProjectDetailSkeleton,
+  TableSkeleton as TableSkeletonShimmer,
+  CardGridSkeleton,
+  PhotoGallerySkeleton,
+  FormSkeleton,
+  TimelineSkeleton,
+  ImageOptimized,
+} from './components/performance';
+
+export { WebVitals } from './components/performance/WebVitals';
+
+// ========================================
+// Upload Components
+// ========================================
+export { UploadProgress } from './components/uploads/UploadProgress';
+
+// ========================================
+// Upload Hooks
+// ========================================
+export { useChunkedUpload } from './hooks/use-chunked-upload';
+export type {
+  UploadOptions,
+  UploadResult,
+  UploadStatus,
+  UseChunkedUploadReturn,
+} from './hooks/use-chunked-upload';
+
+// ========================================
+// Cart Components
+// ========================================
+export {
+  CartProvider,
+  CartButton,
+  CartPanel,
+  useCart,
+} from './components/Cart';
+export type { CartItem } from './components/Cart';
 
 // ========================================
 // Utilities

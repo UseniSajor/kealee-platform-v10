@@ -190,12 +190,31 @@ export class StatementGenerationService {
       },
     })
 
-    // TODO: Generate PDF document
-    // const pdfUrl = await this.generatePDF(statement, content)
-    // await prisma.statement.update({
-    //   where: { id: statement.id },
-    //   data: { documentUrl: pdfUrl },
-    // })
+    // Create a Statement record with HTML content metadata instead of PDF
+    const htmlContent = [
+      '<html><head><title>Financial Statement</title></head><body>',
+      '<h1>Financial Statement</h1>',
+      '<p>Period: ' + content.header.statementPeriod + '</p>',
+      '<p>Recipient: ' + content.header.recipientInfo.name + '</p>',
+      '<h2>Summary</h2>',
+      '<table>',
+      '<tr><td>Opening Balance</td><td>' + content.summary.openingBalance.toFixed(2) + '</td></tr>',
+      '<tr><td>Total Deposits</td><td>' + content.summary.totalDeposits.toFixed(2) + '</td></tr>',
+      '<tr><td>Total Releases</td><td>' + content.summary.totalReleases.toFixed(2) + '</td></tr>',
+      '<tr><td>Total Fees</td><td>' + content.summary.totalFees.toFixed(2) + '</td></tr>',
+      '<tr><td>Closing Balance</td><td>' + content.summary.closingBalance.toFixed(2) + '</td></tr>',
+      '</table></body></html>',
+    ].join('\n')
+    await prisma.statement.update({
+      where: { id: statement.id },
+      data: {
+        metadata: {
+          ...(content as any),
+          htmlContent,
+          generatedFormat: 'HTML',
+        },
+      },
+    })
 
     return { statement, content }
   }

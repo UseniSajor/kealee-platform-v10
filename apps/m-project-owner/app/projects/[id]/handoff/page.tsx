@@ -89,12 +89,33 @@ export default function HandoffPage({
     if (!package_) return
 
     try {
-      await api.recordHandoffDownload(params.id)
+      const result = await api.recordHandoffDownload(params.id)
       if (package_.downloadUrl) {
         window.open(package_.downloadUrl, '_blank')
       } else {
-        // TODO: Generate download link or show message
-        alert('Download link will be available soon. Package is being prepared.')
+        // Reload the package in case the backend generated a download URL during recording
+        const refreshed = await api.getHandoffPackage(params.id)
+        if (refreshed.package?.downloadUrl) {
+          window.open(refreshed.package.downloadUrl, '_blank')
+        } else {
+          // ZIP generation is not yet available -- collect all individual document URLs
+          // so the user can still access their files
+          const allDocUrls = package_.documentBundles.flatMap((bundle) =>
+            bundle.documents.map((doc) => doc.url)
+          )
+          if (allDocUrls.length > 0) {
+            // Open the first document to trigger a download action, and inform the
+            // user they can access individual documents from the bundles list below
+            window.open(allDocUrls[0], '_blank')
+            alert(
+              `Your handoff package contains ${allDocUrls.length} document(s). ` +
+              'A combined ZIP download is not yet available. ' +
+              'You can download individual documents from the document bundles below.'
+            )
+          } else {
+            alert('No documents are available for download yet. Please try again later.')
+          }
+        }
       }
       await loadPackage()
     } catch (e: unknown) {

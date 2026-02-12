@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import {
     Compass,
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { heroImages } from '@kealee/ui';
 
 const DESIGN_CATEGORIES = ['All Projects', 'Kitchens', 'Baths', 'ADUs', 'Home Extensions', 'Whole House'];
 
@@ -153,9 +155,11 @@ export default function DesignHubPage() {
                             className="relative hidden lg:block"
                         >
                             <div className="rounded-[4rem] overflow-hidden shadow-2xl relative">
-                                <img
-                                    src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop"
-                                    alt="Architectural Design"
+                                <Image
+                                    src={heroImages.modernArchitecture.src}
+                                    alt={heroImages.modernArchitecture.alt}
+                                    width={1200}
+                                    height={800}
                                     className="w-full h-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-indigo-900/10 mix-blend-overlay" />

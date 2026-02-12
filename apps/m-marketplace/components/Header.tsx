@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ShoppingCart } from 'lucide-react';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -23,18 +23,30 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <a
-              href="#services"
+            <Link
+              href="/services"
               className="text-gray-700 hover:text-blue-600 transition"
             >
               Services
-            </a>
-            <a
-              href="#pricing"
+            </Link>
+            <Link
+              href="/plans"
+              className="text-gray-700 hover:text-blue-600 transition"
+            >
+              Stock Plans
+            </Link>
+            <Link
+              href="/pricing"
               className="text-gray-700 hover:text-blue-600 transition"
             >
               Pricing
-            </a>
+            </Link>
+            <Link
+              href="/portals"
+              className="text-gray-700 hover:text-blue-600 transition"
+            >
+              Portals
+            </Link>
             <Link
               href="/about"
               className="text-gray-700 hover:text-blue-600 transition"
@@ -47,6 +59,13 @@ export function Header() {
             >
               Contact
             </Link>
+            <button
+              id="cart-trigger"
+              className="relative text-gray-700 hover:text-blue-600 transition"
+              aria-label="Cart"
+            >
+              <ShoppingCart size={20} />
+            </button>
             <Link
               href="https://app.kealee.com/login"
               className="text-gray-700 hover:text-blue-600 transition"
@@ -74,20 +93,34 @@ export function Header() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 space-y-4">
-            <a
-              href="#services"
+            <Link
+              href="/services"
               className="block text-gray-700 hover:text-blue-600"
               onClick={() => setMobileMenuOpen(false)}
             >
               Services
-            </a>
-            <a
-              href="#pricing"
+            </Link>
+            <Link
+              href="/plans"
+              className="block text-gray-700 hover:text-blue-600"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Stock Plans
+            </Link>
+            <Link
+              href="/pricing"
               className="block text-gray-700 hover:text-blue-600"
               onClick={() => setMobileMenuOpen(false)}
             >
               Pricing
-            </a>
+            </Link>
+            <Link
+              href="/portals"
+              className="block text-gray-700 hover:text-blue-600"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Portals
+            </Link>
             <Link
               href="/about"
               className="block text-gray-700 hover:text-blue-600"

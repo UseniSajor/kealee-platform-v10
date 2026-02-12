@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const services = [
@@ -134,13 +135,22 @@ export default function EngineerHomePage() {
       </header>
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-20">
-        <div className="max-w-7xl mx-auto px-6">
+      <section className="relative py-20 lg:py-28 overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1920&q=80&auto=format&fit=crop"
+          alt="Engineering and surveying in the field"
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 max-w-7xl mx-auto px-6">
           <div className="max-w-3xl">
-            <h1 className="text-5xl font-black mb-6">
+            <h1 className="text-5xl font-black mb-6 text-white">
               Professional Engineering Services On Demand
             </h1>
-            <p className="text-xl opacity-90 mb-8">
+            <p className="text-xl text-gray-200 mb-8">
               Licensed structural, MEP, and civil engineers ready to deliver stamped
               drawings for your construction projects. Fast turnaround, competitive pricing,
               guaranteed permit approval.
@@ -242,7 +252,7 @@ export default function EngineerHomePage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-black">Engineering Packages</h2>
-            <p className="text-zinc-500 mt-2">Transparent pricing for every project size</p>
+            <p className="text-zinc-500 mt-2">Clear pricing for every project size</p>
           </div>
           <div className="grid grid-cols-4 gap-6">
             {packages.map((pkg) => (
@@ -291,10 +301,10 @@ export default function EngineerHomePage() {
         </div>
       </section>
 
-      {/* Transparent Pricing Notice */}
+      {/* Clear Pricing Notice */}
       <section className="py-12 bg-blue-50">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <h3 className="text-xl font-bold mb-2">Transparent Pricing</h3>
+          <h3 className="text-xl font-bold mb-2">Clear Pricing</h3>
           <p className="text-zinc-600 mb-4">
             Get clear, upfront quotes with all costs displayed at checkout.
             No hidden fees—ever.

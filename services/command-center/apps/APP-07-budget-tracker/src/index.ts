@@ -22,6 +22,7 @@ import {
   CostCategory,
 } from '../../../shared/utils/money.js';
 import { formatDate, addMonths } from '../../../shared/utils/date.js';
+import { autonomyEngine } from '../../../shared/autonomy/index.js';
 
 const prisma = new PrismaClient();
 const eventBus = getEventBus('budget-tracker');
@@ -285,6 +286,38 @@ class BudgetService {
         });
       }
     }
+
+    // ── Autonomy: Auto-acknowledge low-severity alerts ──
+    for (const alert of alerts) {
+      if (alert.severity === 'warning' || alert.severity === 'info') {
+        try {
+          const variancePercent = Math.abs(alert.currentValue || 0);
+          const result = await autonomyEngine.evaluateAndAct({
+            projectId,
+            category: 'budget_variance',
+            appSource: 'APP-07',
+            actionType: 'budget_acknowledge',
+            description: `Auto-acknowledge ${alert.type} alert: ${alert.message}`,
+            confidence: alert.severity === 'info' ? 90 : 70,
+            percentage: variancePercent,
+            metadata: {
+              alertType: alert.type,
+              severity: alert.severity,
+              message: alert.message,
+              threshold: alert.threshold,
+              currentValue: alert.currentValue,
+            },
+          });
+
+          if (result.decision === 'AUTO_APPROVED') {
+            alert.acknowledged = true;
+          }
+        } catch {
+          // Autonomy check failed — leave alert unacknowledged
+        }
+      }
+    }
+    // ── End Autonomy ──
 
     return alerts as BudgetAlert[];
   }

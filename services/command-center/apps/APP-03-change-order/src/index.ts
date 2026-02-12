@@ -24,6 +24,7 @@ import { analyzeChangeOrderImpact } from '../../../shared/ai/claude.js';
 import { sendEmail, EMAIL_TEMPLATES } from '../../../shared/integrations/email.js';
 import { formatCurrency, calculateChangeOrderImpact } from '../../../shared/utils/money.js';
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { autonomyEngine } from '../../../shared/autonomy/index.js';
 
 const prisma = new PrismaClient();
 
@@ -241,8 +242,11 @@ class ChangeOrderService {
 
   /**
    * Initiate approval workflow
+   * Now checks autonomous action engine first — if the project has autonomy
+   * Level 2+ and the change order is within auto-approve thresholds,
+   * it auto-approves without human intervention.
    */
-  async initiateApproval(changeOrderId: string): Promise<{ approvers: string[] }> {
+  async initiateApproval(changeOrderId: string): Promise<{ approvers: string[]; autoApproved?: boolean }> {
     const changeOrder = await prisma.changeOrder.findUniqueOrThrow({
       where: { id: changeOrderId },
       include: {
@@ -251,6 +255,72 @@ class ChangeOrderService {
     });
 
     const analysis = changeOrder.impactAnalysis as unknown as ImpactAnalysis;
+    const estimatedCost = Number(changeOrder.estimatedCost || 0);
+
+    // ── Autonomy Check ──────────────────────────────────────
+    // Try autonomous approval for routine change orders
+    try {
+      const autonomyResult = await autonomyEngine.evaluateAndAct({
+        projectId: changeOrder.projectId,
+        category: 'change_order',
+        appSource: 'APP-03',
+        actionType: 'change_order_approve',
+        description: `Auto-approve change order ${changeOrder.changeOrderNumber}: ${changeOrder.description}`,
+        confidence: analysis?.recommendation === 'APPROVE' ? 85 : analysis?.recommendation === 'APPROVE_WITH_CONDITIONS' ? 65 : 40,
+        amount: estimatedCost,
+        metadata: {
+          changeOrderId,
+          changeOrderNumber: changeOrder.changeOrderNumber,
+          costPercent: analysis?.costImpact?.percentOfBudget,
+          recommendation: analysis?.recommendation,
+        },
+      });
+
+      if (autonomyResult.decision === 'AUTO_APPROVED') {
+        // Auto-approve the change order
+        await prisma.changeOrder.update({
+          where: { id: changeOrderId },
+          data: {
+            status: 'APPROVED',
+            approvedAt: new Date(),
+            approvedCost: changeOrder.estimatedCost,
+          },
+        });
+
+        // Update project budget
+        await queues.BUDGET_TRACKER.add(
+          'adjust-budget',
+          {
+            type: 'ADJUST_BUDGET',
+            projectId: changeOrder.projectId,
+            changeOrderId,
+            amount: estimatedCost,
+          },
+          JOB_OPTIONS.DEFAULT
+        );
+
+        // Emit approved event
+        await getEventBus('change-order').publish(
+          EVENT_TYPES.CHANGE_ORDER_APPROVED,
+          {
+            changeOrderId,
+            projectId: changeOrder.projectId,
+            projectName: changeOrder.project.name,
+            number: changeOrder.number,
+            approvedCost: estimatedCost,
+            autoApproved: true,
+          }
+        );
+
+        return { approvers: [], autoApproved: true };
+      }
+      // If ESCALATED, fall through to normal approval flow
+    } catch (err) {
+      // Autonomy check failed — fall through to manual approval
+      console.warn('[ChangeOrder] Autonomy check failed, proceeding with manual approval:', err);
+    }
+    // ── End Autonomy Check ──────────────────────────────────
+
     const approvers: string[] = [];
 
     // Determine required approvers based on impact

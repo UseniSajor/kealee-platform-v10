@@ -110,7 +110,10 @@
       "Bash(pnpm --filter=m-ops-services build:*)",
       "Bash(pnpm --filter=m-permits-inspections build:*)",
       "Bash(pnpm --filter=m-marketplace build:*)",
-      "Bash(pnpm --filter=m-project-owner build)"
+      "Bash(pnpm --filter=m-project-owner build)",
+      "Bash(pnpm why:*)",
+      "Bash(xargs:*)",
+      "Bash(wc:*)"
     ]
   }
 }

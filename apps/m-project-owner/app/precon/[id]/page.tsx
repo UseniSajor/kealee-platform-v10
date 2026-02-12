@@ -412,7 +412,7 @@ export default function PreConDetailPage() {
                     <p className="text-sm text-gray-500">Shown at checkout</p>
                   </div>
                   <div className="text-right">
-                    <span className="text-gray-500 text-sm">Transparent pricing</span>
+                    <span className="text-gray-500 text-sm">Clear pricing</span>
                   </div>
                 </div>
               </div>

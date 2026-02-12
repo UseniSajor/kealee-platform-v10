@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRequireAuth } from '@kealee/auth';
 import { api } from '@/lib/api-client';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { ArrowLeft, Users, CheckCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -24,7 +24,7 @@ interface PM {
 }
 
 export default function AssignClientPage() {
-  const { user } = useRequireAuth();
+  const [userId, setUserId] = useState<string | null>(null);
   const [availableClients, setAvailableClients] = useState<UnassignedClient[]>([]);
   const [pms, setPMs] = useState<PM[]>([]);
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
@@ -32,6 +32,9 @@ export default function AssignClientPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserId(session?.userId ?? null);
+    });
     loadData();
   }, []);
 
@@ -78,7 +81,7 @@ export default function AssignClientPage() {
     try {
       await api.requestClientAssignment({
         clientId: selectedClient,
-        pmId: user?.id || '',
+        pmId: userId || '',
       });
 
       toast.success('Assignment request submitted!');
@@ -200,14 +203,14 @@ export default function AssignClientPage() {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-600">Current Load</span>
                 <span className="text-sm font-semibold text-gray-900">
-                  {pms.find((pm: PM) => pm.id === user?.id)?.currentWorkload || 0}hrs / week
+                  {pms.find((pm: PM) => pm.id === userId)?.currentWorkload || 0}hrs / week
                 </span>
               </div>
               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-blue-600 rounded-full transition-all duration-500"
                   style={{
-                    width: `${Math.min(((pms.find((pm: PM) => pm.id === user?.id)?.currentWorkload || 0) / 40) * 100, 100)}%`
+                    width: `${Math.min(((pms.find((pm: PM) => pm.id === userId)?.currentWorkload || 0) / 40) * 100, 100)}%`
                   }}
                 />
               </div>
@@ -229,7 +232,7 @@ export default function AssignClientPage() {
                   </p>
                   <p className="font-semibold">
                     New total: {
-                      (pms.find((pm: PM) => pm.id === user?.id)?.currentWorkload || 0) +
+                      (pms.find((pm: PM) => pm.id === userId)?.currentWorkload || 0) +
                       (availableClients.find((c: UnassignedClient) => c.id === selectedClient)?.estimatedWorkload || 0)
                     }hrs/week
                   </p>

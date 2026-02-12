@@ -358,8 +358,24 @@ export const closeoutService = {
           },
         })
 
-        // TODO: Trigger Stripe transfer for final payment
-        // await stripe.transfers.create({ ... })
+        // Create a ScheduledPayment record for the final holdback release
+        await prismaAny.scheduledPayment.create({
+          data: {
+            escrowId: project.escrow.id,
+            projectId,
+            amount: holdbackAmount,
+            type: 'FINAL_HOLDBACK_RELEASE',
+            status: 'PENDING',
+            scheduledFor: new Date(),
+            metadata: {
+              closeoutChecklistId: checklist.id,
+              balanceBefore,
+              balanceAfter,
+              notes: 'Final holdback payment scheduled upon closeout completion',
+            },
+          },
+        })
+        console.log('Scheduled final holdback payment:', { projectId, amount: holdbackAmount })
       }
     }
 

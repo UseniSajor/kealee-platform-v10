@@ -182,8 +182,8 @@ describe('Pricing Page QA Tests', () => {
     });
   });
 
-  describe('A La Carte Services', () => {
-    it('should display all a la carte services with correct pricing', () => {
+  describe('Individual Services', () => {
+    it('should display all individual services with correct pricing', () => {
       const services = EXPECTED_PRICING.aLaCarte;
       expect(services.permitAssistance).toBe(325);
       expect(services.inspectionScheduling).toBe(200);

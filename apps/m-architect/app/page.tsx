@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
-import { DraftingCompass, FileText, Users, Clock, Share2, BarChart3, Briefcase, Building, Send, FolderOpen, UserCheck, ArrowRight } from 'lucide-react'
+import { DraftingCompass, FileText, Users, Clock, Share2, BarChart3, Briefcase, Building, Send, FolderOpen, UserCheck, ArrowRight, ShoppingCart } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Design Professional Portal | Kealee',
@@ -75,6 +76,9 @@ export default function ArchitectPortalPage() {
             <Link href="/team" className="text-gray-600 hover:text-gray-900 text-sm">
               Team
             </Link>
+            <button id="cart-trigger" className="relative text-gray-700 hover:text-blue-600 transition" aria-label="Cart">
+              <ShoppingCart className="h-5 w-5" />
+            </button>
             <Link
               href="/login"
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
@@ -85,15 +89,26 @@ export default function ArchitectPortalPage() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Design Professional Portal</h1>
-          <p className="text-gray-600 mt-1">
+      {/* Hero Section */}
+      <section className="relative py-16 lg:py-24 px-4 overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1920&q=80&auto=format&fit=crop"
+          alt="Modern architecture with clean geometric lines"
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="relative z-10 max-w-7xl mx-auto">
+          <h1 className="text-3xl lg:text-4xl font-bold text-white">Design Professional Portal</h1>
+          <p className="text-gray-200 mt-2 text-lg">
             Manage design projects for project owners and marketplace clients
           </p>
         </div>
+      </section>
 
+      <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {stats.map((stat) => (

@@ -130,22 +130,20 @@ async function onCheckoutCompleted(session: Stripe.Checkout.Session, fastify: Fa
     });
   }
 
-  // Record the event
+  // Log the event (no Event model in schema; use structured logging)
   if (orgId) {
-    await prisma.event.create({
-      data: {
-        entityType: 'Org',
-        entityId: orgId,
-        type: 'CHECKOUT_COMPLETED',
-        payload: {
-          sessionId: session.id,
-          planSlug,
-          customerId,
-          amountTotal: session.amount_total,
-          mode: session.mode,
-        },
+    fastify.log.info({
+      event: 'CHECKOUT_COMPLETED',
+      entityType: 'Org',
+      entityId: orgId,
+      payload: {
+        sessionId: session.id,
+        planSlug,
+        customerId,
+        amountTotal: session.amount_total,
+        mode: session.mode,
       },
-    });
+    }, `Checkout completed for org ${orgId}`);
   }
 }
 
@@ -165,21 +163,18 @@ async function onSubscriptionUpdated(subscription: Stripe.Subscription, fastify:
     ? await prisma.user.findFirst({ where: { stripeCustomerId: customerId } })
     : null;
 
-  // Record event
-  await prisma.event.create({
-    data: {
-      entityType: 'User',
-      entityId: user?.id || 'unknown',
-      type: 'SUBSCRIPTION_UPDATED',
-      userId: user?.id,
-      payload: {
-        subscriptionId: subscription.id,
-        status: subscription.status,
-        cancelAtPeriodEnd: subscription.cancel_at_period_end,
-        currentPeriodEnd: subscription.current_period_end,
-      },
+  // Log the event (no Event model in schema; use structured logging)
+  fastify.log.info({
+    event: 'SUBSCRIPTION_UPDATED',
+    entityType: 'User',
+    entityId: user?.id || 'unknown',
+    payload: {
+      subscriptionId: subscription.id,
+      status: subscription.status,
+      cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      currentPeriodEnd: subscription.current_period_end,
     },
-  });
+  }, `Subscription updated: ${subscription.id}`);
 }
 
 async function onSubscriptionDeleted(subscription: Stripe.Subscription, fastify: FastifyInstance) {
@@ -193,18 +188,16 @@ async function onSubscriptionDeleted(subscription: Stripe.Subscription, fastify:
     ? await prisma.user.findFirst({ where: { stripeCustomerId: customerId } })
     : null;
 
-  await prisma.event.create({
-    data: {
-      entityType: 'User',
-      entityId: user?.id || 'unknown',
-      type: 'SUBSCRIPTION_CANCELED',
-      userId: user?.id,
-      payload: {
-        subscriptionId: subscription.id,
-        canceledAt: new Date().toISOString(),
-      },
+  // Log the event (no Event model in schema; use structured logging)
+  fastify.log.info({
+    event: 'SUBSCRIPTION_CANCELED',
+    entityType: 'User',
+    entityId: user?.id || 'unknown',
+    payload: {
+      subscriptionId: subscription.id,
+      canceledAt: new Date().toISOString(),
     },
-  });
+  }, `Subscription canceled: ${subscription.id}`);
 }
 
 // ============================================================================
@@ -409,18 +402,17 @@ async function onTransferCreated(transfer: Stripe.Transfer, fastify: FastifyInst
   const milestoneId = transfer.metadata?.milestoneId;
 
   if (escrowId) {
-    await prisma.event.create({
-      data: {
-        entityType: 'EscrowAgreement',
-        entityId: escrowId,
-        type: 'ESCROW_TRANSFER_COMPLETED',
-        payload: {
-          transferId: transfer.id,
-          amount: transfer.amount,
-          destination: transfer.destination,
-          milestoneId,
-        },
+    // Log the event (no Event model in schema; use structured logging)
+    fastify.log.info({
+      event: 'ESCROW_TRANSFER_COMPLETED',
+      entityType: 'EscrowAgreement',
+      entityId: escrowId,
+      payload: {
+        transferId: transfer.id,
+        amount: transfer.amount,
+        destination: transfer.destination,
+        milestoneId,
       },
-    });
+    }, `Escrow transfer completed: ${transfer.id} for escrow ${escrowId}`);
   }
 }

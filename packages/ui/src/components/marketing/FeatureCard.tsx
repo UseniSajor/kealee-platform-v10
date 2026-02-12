@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { LucideIcon } from 'lucide-react';
 import { brand } from './brand';
 
@@ -8,6 +9,8 @@ export interface FeatureCardProps {
   title: string;
   description: string;
   accentColor?: 'teal' | 'orange' | 'navy' | 'green';
+  imageSrc?: string;
+  imageAlt?: string;
   className?: string;
 }
 
@@ -23,12 +26,28 @@ export function FeatureCard({
   title,
   description,
   accentColor = 'teal',
+  imageSrc,
+  imageAlt = '',
   className = '',
 }: FeatureCardProps) {
   const color = accentColors[accentColor];
 
   return (
     <div className={`text-center ${className}`}>
+      {/* Optional image above icon */}
+      {imageSrc && (
+        <div className="rounded-xl overflow-hidden mb-4 mx-auto max-w-sm">
+          <Image
+            src={imageSrc}
+            alt={imageAlt}
+            width={400}
+            height={240}
+            className="w-full h-40 object-cover"
+            sizes="(max-width: 768px) 100vw, 33vw"
+          />
+        </div>
+      )}
+
       {/* Icon */}
       <div
         className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center"

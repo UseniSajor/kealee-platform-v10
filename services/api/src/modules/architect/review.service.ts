@@ -2,6 +2,7 @@ import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
+import { notificationService } from '../notifications/notification.service'
 
 export const reviewService = {
   /**
@@ -113,8 +114,21 @@ export const reviewService = {
       },
     })
 
-    // TODO: Send notifications to reviewers
-    // await notificationService.notifyReviewers(reviewRequest.id, data.reviewerIds)
+    // Send notifications to reviewers
+    for (const reviewerId of data.reviewerIds) {
+      await notificationService.sendNotification({
+        userId: reviewerId,
+        type: 'REVIEW_REQUEST_CREATED',
+        title: 'New Review Request',
+        message: `You have been assigned as a reviewer for: "${data.title}"`,
+        metadata: {
+          reviewRequestId: reviewRequest.id,
+          reviewTitle: data.title,
+          designProjectId: data.designProjectId,
+          reviewDeadline: data.reviewDeadline?.toISOString(),
+        },
+      })
+    }
 
     return reviewRequest
   },
@@ -158,8 +172,20 @@ export const reviewService = {
       },
     })
 
-    // TODO: Send notifications to reviewers
-    // await notificationService.notifyReviewers(reviewRequestId, reviewRequest.reviewerIds)
+    // Send notifications to reviewers
+    for (const reviewerId of reviewRequest.reviewerIds) {
+      await notificationService.sendNotification({
+        userId: reviewerId,
+        type: 'REVIEW_REQUEST_SUBMITTED',
+        title: 'Review Request Submitted',
+        message: `Review request "${reviewRequest.title}" is now pending your review`,
+        metadata: {
+          reviewRequestId,
+          reviewTitle: reviewRequest.title,
+          designProjectId: reviewRequest.designProjectId,
+        },
+      })
+    }
 
     return updated
   },
@@ -466,10 +492,23 @@ export const reviewService = {
       },
     })
 
-    // TODO: Send notifications to mentioned users
-    // if (data.mentionedUserIds && data.mentionedUserIds.length > 0) {
-    //   await notificationService.notifyMentionedUsers(comment.id, data.mentionedUserIds)
-    // }
+    // Send notifications to mentioned users
+    if (data.mentionedUserIds && data.mentionedUserIds.length > 0) {
+      for (const mentionedUserId of data.mentionedUserIds) {
+        await notificationService.sendNotification({
+          userId: mentionedUserId,
+          type: 'MENTIONED_IN_REVIEW_COMMENT',
+          title: 'Mentioned in Review Comment',
+          message: `You were mentioned in a review comment: "${data.commentText.substring(0, 100)}"`,
+          metadata: {
+            commentId: comment.id,
+            reviewRequestId: data.reviewRequestId,
+            designProjectId: designProjectId,
+            commentedById: data.createdById,
+          },
+        })
+      }
+    }
 
     return comment
   },
@@ -755,8 +794,20 @@ export const reviewService = {
       },
     })
 
-    // TODO: Send actual notification
-    // await notificationService.sendReviewReminder(reminder.id, userId, reviewRequest)
+    // Send the review reminder notification
+    await notificationService.sendNotification({
+      userId,
+      type: 'REVIEW_REMINDER',
+      title: `Review Reminder: ${reminderType === 'OVERDUE' ? 'Overdue' : 'Due Soon'}`,
+      message: `Reminder: Review "${reviewRequest.title}" is ${reminderType === 'OVERDUE' ? 'overdue' : 'due soon'}`,
+      metadata: {
+        reviewRequestId,
+        reminderId: reminder.id,
+        reminderType,
+        reviewTitle: reviewRequest.title,
+        reviewDeadline: reviewRequest.reviewDeadline?.toISOString(),
+      },
+    })
 
     return reminder
   },

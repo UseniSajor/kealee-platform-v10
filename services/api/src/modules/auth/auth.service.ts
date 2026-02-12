@@ -1,5 +1,6 @@
 import { prismaAny } from '../../utils/prisma-helper'
 import { getSupabaseClient } from '../../utils/supabase-client'
+import { auditService } from '../audit/audit.service'
 
 export class AuthService {
   async signup(email: string, password: string, name: string) {
@@ -22,6 +23,8 @@ export class AuthService {
       },
     })
 
+    auditService.log({ userId: user.id, action: 'CREATE', entityType: 'USER', entityId: user.id, description: `User registered: ${email}`, category: 'SECURITY', severity: 'INFO' })
+
     return { user, session: authData.session }
   }
 
@@ -32,13 +35,19 @@ export class AuthService {
       password,
     })
 
-    if (error) throw error
+    if (error) {
+      auditService.log({ userId: 'unknown', action: 'LOGIN', entityType: 'SESSION', entityId: email, description: `Failed login attempt: ${email}`, category: 'SECURITY', severity: 'WARNING' })
+      throw error
+    }
+
+    auditService.log({ userId: data.session?.user?.id || 'unknown', userEmail: email, action: 'LOGIN', entityType: 'SESSION', entityId: data.session?.access_token?.substring(0, 8) || 'unknown', description: `User logged in: ${email}`, category: 'SECURITY', severity: 'INFO' })
 
     return { session: data.session }
   }
 
   async logout(accessToken: string) {
     const supabase = getSupabaseClient()
+    auditService.log({ userId: 'unknown', action: 'LOGOUT', entityType: 'SESSION', entityId: accessToken.substring(0, 8), description: 'User logged out', category: 'SECURITY', severity: 'INFO' })
     await supabase.auth.signOut()
   }
 

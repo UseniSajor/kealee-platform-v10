@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useProfile } from '@kealee/auth';
+import { useProfile } from '@kealee/auth/client';
 import { toast } from 'sonner';
 import {
   Bell,

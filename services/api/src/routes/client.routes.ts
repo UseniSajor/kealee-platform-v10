@@ -263,7 +263,32 @@ export async function clientRoutes(fastify: FastifyInstance) {
           },
         });
 
-        // TODO: Notify admin of assignment request
+        // Queue notification to admin via automation (APP-08: Communication Hub)
+        try {
+          const Redis = require('ioredis');
+          const { Queue } = require('bullmq');
+          const connection = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
+            maxRetriesPerRequest: null,
+            enableReadyCheck: false,
+          });
+          const queue = new Queue('communication-hub', { connection });
+          await queue.add('send-notification', {
+            type: 'assignment_request',
+            recipientRole: 'admin',
+            data: {
+              pmId: user.id,
+              pmName: user.name,
+              clientId,
+              clientName: assignmentRequest.client.name,
+              currentWorkload,
+              additionalWorkload: newWorkload,
+            },
+          });
+          await queue.close();
+        } catch (queueError) {
+          // Notification queue not available - admin will see request in dashboard
+          fastify.log.warn('Communication queue not available for assignment notification');
+        }
 
         return reply.code(201).send({
           request: assignmentRequest,

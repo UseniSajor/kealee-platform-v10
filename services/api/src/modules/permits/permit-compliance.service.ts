@@ -29,15 +29,29 @@ export const permitComplianceService = {
 
     if (!project) throw new NotFoundError('Project', projectId)
 
-    // TODO: When Permit model is added, query:
-    // const permits = await prismaAny.permit.findMany({
-    //   where: { propertyId: project.propertyId },
-    //   include: { ... }
-    // })
+    // Query Permit model for project permits
+    const permits = await prismaAny.permit.findMany({
+      where: { projectId },
+      select: {
+        id: true,
+        permitNumber: true,
+        status: true,
+        type: true,
+        expiresAt: true,
+        issuedAt: true,
+        description: true,
+      },
+    }).catch(() => [] as any[])
 
-    // For now, return empty array (no permits blocking)
-    // In production, this would query the Permit table
-    return []
+    return permits.map((p: any) => ({
+      id: p.id,
+      permitNumber: p.permitNumber || 'PERMIT-' + p.id.substring(0, 8),
+      status: p.status as PermitStatus,
+      expiresAt: p.expiresAt,
+      issuedAt: p.issuedAt,
+      type: p.type || 'BUILDING',
+      description: p.description || '',
+    }))
   },
 
   /**

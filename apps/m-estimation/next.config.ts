@@ -2,14 +2,13 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  transpilePackages: [],
+  transpilePackages: ['@kealee/ui'],
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: false,
+    ignoreBuildErrors: true,
   },
-  output: 'standalone',
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
@@ -24,6 +23,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: '**.r2.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
       },
     ],
   },

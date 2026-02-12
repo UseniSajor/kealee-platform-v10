@@ -53,12 +53,17 @@ export default function NewProjectPage() {
   const saveDraft = async () => {
     setIsSaving(true);
     try {
-      // TODO: Replace with actual API call
-      // await fetch('/api/projects/draft', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // });
+      const response = await fetch('/api/projects/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to save draft');
+      }
+
       setLastSaved(new Date());
     } catch (error) {
       console.error('Error saving draft:', error);
@@ -97,18 +102,23 @@ export default function NewProjectPage() {
     if (!validateCurrentStep()) return;
 
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/projects', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // });
-      
-      // For now, simulate success
-      router.push('/projects/success');
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to create project');
+      }
+
+      const data = await response.json();
+      const projectId = data.project?.id;
+      router.push(projectId ? `/projects/${projectId}` : '/projects/success');
     } catch (error) {
       console.error('Error creating project:', error);
-      setErrors({ submit: 'Failed to create project. Please try again.' });
+      setErrors({ submit: error instanceof Error ? error.message : 'Failed to create project. Please try again.' });
     }
   };
 
