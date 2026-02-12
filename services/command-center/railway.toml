@@ -1,26 +1,22 @@
 # KEALEE COMMAND CENTER - RAILWAY CONFIGURATION
 # Deploy to Railway.app
+# NOTE: The Dockerfile builds from the monorepo root to resolve workspace:* deps.
+# In Railway, set the "Root Directory" to "/" (repo root), NOT "services/command-center".
 
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "./Dockerfile"
+dockerfilePath = "services/command-center/Dockerfile"
 
 [deploy]
-# Number of instances
 numReplicas = 1
 
-# Health check configuration
+# Health check
 healthcheckPath = "/health"
 healthcheckTimeout = 10
 
 # Restart policy
 restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 3
-
-# Resource limits
-# Adjust based on your Railway plan
-# memoryMB = 512
-# cpuMillis = 500
+restartPolicyMaxRetries = 5
 
 [deploy.env]
 NODE_ENV = "production"

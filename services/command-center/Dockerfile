@@ -1,67 +1,100 @@
 # KEALEE COMMAND CENTER - DOCKER IMAGE
-# Multi-stage build for optimized production image
+# Multi-stage pnpm monorepo build for the Command Center API gateway.
+# This resolves workspace:* dependencies correctly from the monorepo root.
 
 # ============================================================================
 # BUILD STAGE
 # ============================================================================
-FROM node:20-alpine AS builder
+FROM node:20-slim AS builder
+
+# Build tools for native modules (prisma binary, ioredis)
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+    python3 \
+    make \
+    gcc \
+    g++ \
+  && rm -rf /var/lib/apt/lists/*
+
+# Install pnpm (match monorepo version)
+RUN npm install -g pnpm@8.12.0
+
+# Prisma config
+ENV PRISMA_CLIENT_ENGINE_TYPE=binary
+ENV PRISMA_HIDE_UPDATE_MESSAGE=true
 
 WORKDIR /app
 
-# Install dependencies for native modules
-RUN apk add --no-cache python3 make g++
+# ── Layer 1: Copy workspace manifests for dependency resolution ──
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/database/package.json ./packages/database/package.json
+COPY packages/communications/package.json ./packages/communications/package.json
+COPY packages/payments/package.json ./packages/payments/package.json
+COPY services/command-center/package.json ./services/command-center/package.json
 
-# Copy package files
-COPY package*.json ./
-COPY tsconfig.json ./
+# ── Layer 2: Install dependencies ──
+RUN pnpm install --filter @kealee/command-center... --prod=false --ignore-scripts
 
-# Install dependencies
-RUN npm ci --include=dev
+# ── Layer 3: Copy source code ──
+COPY packages/database/ ./packages/database/
+COPY packages/communications/src/ ./packages/communications/src/
+COPY packages/payments/src/ ./packages/payments/src/
+COPY services/command-center/ ./services/command-center/
 
-# Copy source code
-COPY . .
+# ── Layer 4: Generate Prisma client ──
+RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \
+    pnpm --filter @kealee/database db:generate 2>/dev/null || \
+    cd packages/database && npx prisma generate
 
-# Build TypeScript
-RUN npm run build
-
-# Prune dev dependencies
-RUN npm prune --production
+# ── Layer 5: Build the command center ──
+RUN cd services/command-center && pnpm run build && \
+    test -f dist/gateway/src/server.js || \
+    (echo "FATAL: dist/gateway/src/server.js missing!" && exit 1)
 
 # ============================================================================
 # PRODUCTION STAGE
 # ============================================================================
-FROM node:20-alpine AS production
+FROM node:20-slim AS production
+
+# dumb-init for proper PID 1 signal forwarding
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+    dumb-init \
+    wget \
+  && rm -rf /var/lib/apt/lists/*
+
+# Non-root user
+RUN groupadd -g 1001 nodejs && \
+    useradd -u 1001 -g nodejs -s /bin/sh nodejs
 
 WORKDIR /app
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
-
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
-
-# Copy built files and production dependencies
+# Copy built output and dependencies
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nodejs:nodejs /app/package.json ./
+COPY --from=builder --chown=nodejs:nodejs /app/services/command-center/dist ./services/command-center/dist
+COPY --from=builder --chown=nodejs:nodejs /app/services/command-center/package.json ./services/command-center/package.json
+COPY --from=builder --chown=nodejs:nodejs /app/services/command-center/node_modules ./services/command-center/node_modules
+COPY --from=builder --chown=nodejs:nodejs /app/packages/database/node_modules ./packages/database/node_modules
+COPY --from=builder --chown=nodejs:nodejs /app/packages/database/package.json ./packages/database/package.json
+COPY --from=builder --chown=nodejs:nodejs /app/packages/database/prisma ./packages/database/prisma
+COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=nodejs:nodejs /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 
-# Set environment
 ENV NODE_ENV=production
 ENV PORT=3001
 
-# Switch to non-root user
 USER nodejs
 
-# Expose port
+WORKDIR /app/services/command-center
+
 EXPOSE 3001
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3001/health || exit 1
 
-# Start with dumb-init
 ENTRYPOINT ["dumb-init", "--"]
-
-# Default command (gateway)
 CMD ["node", "dist/gateway/src/server.js"]

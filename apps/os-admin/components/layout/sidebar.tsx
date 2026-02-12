@@ -15,7 +15,8 @@ import {
   BarChart3,
   Settings as SettingsIcon,
   Boxes,
-  UserCircle2
+  UserCircle2,
+  Radar,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -27,6 +28,7 @@ const navigation = [
   { name: 'Financials', href: '/financials', icon: DollarSign },
   { name: 'Disputes', href: '/disputes', icon: Gavel },
   { name: 'Automation', href: '/automation', icon: Bot },
+  { name: 'Command Center', href: '/command-center', icon: Radar },
   { name: 'Monitoring', href: '/monitoring', icon: Activity },
   { name: 'Jurisdictions', href: '/jurisdictions', icon: MapPinned },
   { name: 'Project Managers', href: '/project-managers', icon: UsersRound },
