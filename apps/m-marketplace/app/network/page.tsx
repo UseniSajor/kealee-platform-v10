@@ -4,7 +4,7 @@
 import { Metadata } from 'next';
 import Image from 'next/image';
 import { NetworkSearchClient } from './NetworkSearchClient';
-import { sectionImages } from '@kealee/ui';
+const sectionImage = { src: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&q=80&auto=format&fit=crop', alt: 'Business professionals shaking hands' };
 
 export const dynamic = 'force-static';
 
@@ -190,8 +190,8 @@ export default function NetworkPage() {
       {/* Hero Banner */}
       <section className="relative h-64 overflow-hidden">
         <Image
-          src={sectionImages.handshake.src}
-          alt={sectionImages.handshake.alt}
+          src={sectionImage.src}
+          alt={sectionImage.alt}
           fill
           className="object-cover"
           sizes="100vw"

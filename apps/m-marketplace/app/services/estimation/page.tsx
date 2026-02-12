@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { heroImages } from '@kealee/ui'
+const heroImage = { src: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1920&q=80&auto=format&fit=crop', alt: 'Architectural blueprints being reviewed on a desk' };
 
 export const metadata: Metadata = {
   title: 'AI Estimation Engine | Kealee',
@@ -65,8 +65,8 @@ export default function EstimationServicePage() {
         {/* Hero */}
         <div className="relative text-center mb-16 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-16 overflow-hidden">
           <Image
-            src={heroImages.blueprintReview.src}
-            alt={heroImages.blueprintReview.alt}
+            src={heroImage.src}
+            alt={heroImage.alt}
             fill
             className="object-cover"
             sizes="100vw"

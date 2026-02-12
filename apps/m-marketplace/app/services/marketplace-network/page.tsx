@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { sectionImages } from '@kealee/ui'
+const sectionImage = { src: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80&auto=format&fit=crop', alt: 'Team working together around a table' };
 
 export const metadata: Metadata = {
   title: 'Contractor Network | Kealee',
@@ -43,8 +43,8 @@ export default function MarketplaceNetworkServicePage() {
 
         <div className="relative text-center mb-16 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-16 overflow-hidden">
           <Image
-            src={sectionImages.teamwork.src}
-            alt={sectionImages.teamwork.alt}
+            src={sectionImage.src}
+            alt={sectionImage.alt}
             fill
             className="object-cover"
             sizes="100vw"

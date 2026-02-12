@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { sectionImages } from '@kealee/ui'
+const sectionImage = { src: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80&auto=format&fit=crop', alt: 'Financial planning with calculator and documents' };
 
 export const metadata: Metadata = {
   title: 'Finance & Trust | Kealee',
@@ -46,8 +46,8 @@ export default function FinanceServicePage() {
 
         <div className="relative text-center mb-16 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-16 overflow-hidden">
           <Image
-            src={sectionImages.financialPlanning.src}
-            alt={sectionImages.financialPlanning.alt}
+            src={sectionImage.src}
+            alt={sectionImage.alt}
             fill
             className="object-cover"
             sizes="100vw"

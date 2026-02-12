@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
-import { heroImages } from '@kealee/ui'
+const heroImage = { src: 'https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1920&q=80&auto=format&fit=crop', alt: 'Modern glass and steel building facade' };
 
 export const metadata: Metadata = {
   title: 'Portal Access | Kealee',
@@ -87,8 +87,8 @@ export default function PortalsPage() {
           {/* Hero */}
           <section className="relative py-16 lg:py-20 overflow-hidden">
             <Image
-              src={heroImages.modernArchitecture.src}
-              alt={heroImages.modernArchitecture.alt}
+              src={heroImage.src}
+              alt={heroImage.alt}
               fill
               className="object-cover"
               sizes="100vw"

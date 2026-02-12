@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { heroImages } from '@kealee/ui'
+const heroImage = { src: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1920&q=80&auto=format&fit=crop', alt: 'Construction workers on scaffolding at golden hour' };
 
 export const metadata: Metadata = {
   title: 'Pre-Construction Services | Kealee',
@@ -31,8 +31,8 @@ export default function PreconServicePage() {
 
         <div className="relative text-center mb-16 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-16 overflow-hidden">
           <Image
-            src={heroImages.constructionWorkers.src}
-            alt={heroImages.constructionWorkers.alt}
+            src={heroImage.src}
+            alt={heroImage.alt}
             fill
             className="object-cover"
             sizes="100vw"

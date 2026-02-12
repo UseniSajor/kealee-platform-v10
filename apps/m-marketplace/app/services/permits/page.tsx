@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { heroImages } from '@kealee/ui'
+const heroImage = { src: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80&auto=format&fit=crop', alt: 'City skyline with modern high-rise buildings' };
 
 export const metadata: Metadata = {
   title: 'Permits & Inspections | Kealee',
@@ -45,8 +45,8 @@ export default function PermitsServicePage() {
         {/* Hero */}
         <div className="relative text-center mb-16 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-16 overflow-hidden">
           <Image
-            src={heroImages.citySkyline.src}
-            alt={heroImages.citySkyline.alt}
+            src={heroImage.src}
+            alt={heroImage.alt}
             fill
             className="object-cover"
             sizes="100vw"

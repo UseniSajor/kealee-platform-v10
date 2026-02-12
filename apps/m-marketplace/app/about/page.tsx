@@ -3,7 +3,10 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Target, Users, Award, Heart, TrendingUp, Shield } from 'lucide-react';
 import Link from 'next/link';
-import { heroImages } from '@kealee/ui';
+const heroImage = {
+  src: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1920&q=80&auto=format&fit=crop',
+  alt: 'Team collaborating around a conference table',
+};
 
 export default function AboutPage() {
   const values = [
@@ -44,8 +47,8 @@ export default function AboutPage() {
       {/* Hero */}
       <section className="relative pt-32 pb-20 overflow-hidden">
         <Image
-          src={heroImages.teamCollaboration.src}
-          alt={heroImages.teamCollaboration.alt}
+          src={heroImage.src}
+          alt={heroImage.alt}
           fill
           className="object-cover"
           sizes="100vw"
