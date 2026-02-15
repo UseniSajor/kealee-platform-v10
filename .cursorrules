@@ -1,0 +1,50 @@
+# Kealee Platform v10 — Cursor Rules
+
+## Read First
+- _docs/kealee-architecture.md
+
+## Claw Guardrails (NEVER VIOLATE)
+- Each claw ONLY writes to its designated Prisma models (use assertWritable)
+- Each event type has ONE claw publisher (see EVENT_OWNERSHIP in guardrails.ts)
+- Claws never react to their own events
+- Claw G is READ-ONLY to other domains
+- Claw F is a PURE REPRESENTATION LAYER — never mutates domain data
+- Claw H ORCHESTRATES but never makes domain decisions
+
+## Event System
+- All events use KealeeEventEnvelope from packages/events
+- Created via createEvent() helper
+- Type naming: domain.subdomain.action
+- Always include trigger for causal chain
+- Always include projectId + organizationId
+
+## AI
+- All AI calls through packages/ai/AIProvider
+- Claude primary, OpenAI fallback
+- Vision tasks always Claude
+- AI thinks inside workers — does not run claws
+
+## Communication
+- ALL project communication inside Kealee Messenger
+- External SMS/email = notification link only, never content
+- @kealee mentions route through Claw F kealee-messenger worker
+
+## Queue Processing
+- All heavy work in BullMQ queues, not request handlers
+- 3 retries with exponential backoff
+- Queue names in packages/queue/queue-registry.ts
+
+## Database
+- Shared Prisma in packages/database
+- Always scope by organizationId
+- Use transactions for multi-model writes within a claw
+
+## Stack
+- Frontend: Next.js on Vercel
+- API: Fastify on Railway
+- Command Center: Node.js + BullMQ on Railway
+- DB: PostgreSQL (Supabase) via Prisma
+- Cache/Events: Redis
+- Payments: Stripe (43 products)
+- AI: Anthropic Claude + OpenAI
+- Files: Supabase Storage

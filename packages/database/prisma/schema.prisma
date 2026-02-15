@@ -1555,6 +1555,10 @@ model Project {
   safetyIncidents  SafetyIncident[]
   toolboxTalks     ToolboxTalk[]
 
+  // Kealee Messenger & Claws relations
+  conversations    Conversation[]     @relation("ProjectConversations")
+  budgetItems      BudgetItem[]       @relation("ProjectBudgetItems")
+
   @@index([clientId])
   @@index([orgId])
   @@index([propertyId])
@@ -1881,6 +1885,11 @@ model User {
   approvedTimeEntries  TimeEntry[]        @relation("TimeEntryApprover")
   reportedIncidents    SafetyIncident[]   @relation("IncidentReporter")
   filedWarrantyClaims  WarrantyClaim[]    @relation("WarrantyClaimFiler")
+
+  // Kealee Messenger relations (Claw F)
+  conversationParticipants ConversationParticipant[] @relation("UserConversationParticipants")
+  chatMessages             ChatMessage[]             @relation("UserChatMessages")
+  chatMessageReads         ChatMessageRead[]         @relation("UserChatMessageReads")
 }
 
 // ============================================================================
@@ -5648,6 +5657,9 @@ model SiteVisit {
   beforePairs BeforeAfterPair[] @relation("BeforePairs")
   afterPairs  BeforeAfterPair[] @relation("AfterPairs")
 
+  // Claw C: visit checklists
+  checklists VisitChecklist[] @relation("SiteVisitChecklists")
+
   @@index([projectId])
   @@index([pmId])
   @@index([scheduledAt])
@@ -9267,4 +9279,224 @@ model ToolboxTalkAttendee {
 
   @@index([toolboxTalkId])
   @@map("toolbox_talk_attendees")
+}
+
+// ============================================================================
+// KEALEE CLAWS — ADDITIONAL MODELS (Phase 8)
+// Added for 8-Claw system. See: _docs/kealee-architecture.md
+// ============================================================================
+
+// ── Kealee Messenger (Claw F) ──────────────────────────────────────────────
+
+enum ConversationType {
+  DIRECT
+  GROUP
+  PROJECT_CHANNEL
+  SUPPORT
+  AI_ASSISTANT
+}
+
+enum ParticipantRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum ChatMessageType {
+  TEXT
+  FILE
+  IMAGE
+  SYSTEM
+  AI_RESPONSE
+  CHANGE_ORDER
+  PAYMENT
+  RFI
+}
+
+model Conversation {
+  id             String               @id @default(cuid())
+  projectId      String
+  organizationId String
+  type           ConversationType
+  name           String?
+  isArchived     Boolean              @default(false)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  project        Project              @relation("ProjectConversations", fields: [projectId], references: [id], onDelete: Cascade)
+  participants   ConversationParticipant[]
+  messages       ChatMessage[]
+
+  @@index([projectId])
+  @@index([organizationId])
+  @@index([type])
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             String          @id @default(cuid())
+  conversationId String
+  userId         String
+  role           ParticipantRole
+  lastReadAt     DateTime?
+  isMuted        Boolean         @default(false)
+  joinedAt       DateTime        @default(now())
+
+  conversation   Conversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User            @relation("UserConversationParticipants", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+  @@map("conversation_participants")
+}
+
+model ChatMessage {
+  id             String             @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String             @db.Text
+  type           ChatMessageType    @default(TEXT)
+  replyToId      String?
+  isEdited       Boolean            @default(false)
+  isPinned       Boolean            @default(false)
+  metadata       Json?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  conversation   Conversation       @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User               @relation("UserChatMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  replyTo        ChatMessage?       @relation("ChatMessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies        ChatMessage[]      @relation("ChatMessageReplies")
+  attachments    ChatMessageAttachment[]
+  readBy         ChatMessageRead[]
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("chat_messages")
+}
+
+model ChatMessageAttachment {
+  id        String @id @default(cuid())
+  messageId String
+  fileName  String
+  fileUrl   String
+  fileType  String
+  fileSize  Int
+
+  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@map("chat_message_attachments")
+}
+
+model ChatMessageRead {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+
+  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User        @relation("UserChatMessageReads", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+  @@map("chat_message_reads")
+}
+
+// ── Budget & Cost (Claw D) — missing models ────────────────────────────────
+
+enum BudgetCategory {
+  LABOR
+  MATERIAL
+  EQUIPMENT
+  SUBCONTRACTOR
+  PERMITS
+  OVERHEAD
+  CONTINGENCY
+}
+
+model BudgetItem {
+  id             String         @id @default(cuid())
+  projectId      String
+  organizationId String
+  category       BudgetCategory
+  description    String
+  estimatedCost  Decimal        @db.Decimal(12, 2)
+  actualCost     Decimal        @default(0) @db.Decimal(12, 2)
+  committedCost  Decimal        @default(0) @db.Decimal(12, 2)
+  varianceAmount Decimal        @default(0) @db.Decimal(12, 2)
+  variancePercent Decimal       @default(0) @db.Decimal(5, 2)
+  estimateId     String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  project        Project        @relation("ProjectBudgetItems", fields: [projectId], references: [id], onDelete: Cascade)
+  transactions   BudgetTransaction[]
+
+  @@index([projectId])
+  @@index([organizationId])
+  @@index([category])
+  @@map("budget_items")
+}
+
+model BudgetTransaction {
+  id             String    @id @default(cuid())
+  budgetItemId   String
+  projectId      String
+  organizationId String
+  amount         Decimal   @db.Decimal(12, 2)
+  type           String    // ESTIMATED, COMMITTED, ACTUAL, ADJUSTMENT
+  description    String?
+  referenceType  String?   // CHANGE_ORDER, PAYMENT, MANUAL
+  referenceId    String?
+  createdAt      DateTime  @default(now())
+
+  budgetItem     BudgetItem @relation(fields: [budgetItemId], references: [id], onDelete: Cascade)
+
+  @@index([budgetItemId])
+  @@index([projectId])
+  @@index([type])
+  @@map("budget_transactions")
+}
+
+// ── Schedule & Field Ops (Claw C) — missing models ─────────────────────────
+
+model VisitChecklist {
+  id          String   @id @default(cuid())
+  siteVisitId String
+  item        String
+  isChecked   Boolean  @default(false)
+  notes       String?
+  photoUrl    String?
+  checkedAt   DateTime?
+  checkedById String?
+  createdAt   DateTime @default(now())
+
+  siteVisit   SiteVisit @relation("SiteVisitChecklists", fields: [siteVisitId], references: [id], onDelete: Cascade)
+
+  @@index([siteVisitId])
+  @@map("visit_checklists")
+}
+
+// ── Documents & Communication (Claw F) — missing models ────────────────────
+
+model CommunicationTemplate {
+  id             String   @id @default(cuid())
+  organizationId String?
+  name           String
+  channel        String   // EMAIL, SMS, IN_APP
+  subject        String?
+  body           String   @db.Text
+  variables      Json?    // Template variables
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([channel])
+  @@index([organizationId])
+  @@map("communication_templates")
 }
