@@ -531,5 +531,9 @@ export async function billingRoutes(fastify: FastifyInstance) {
       }
     }
   )
+
+  // ── Software Package Billing Routes (S1–S4) ──
+  const { softwareBillingRoutes } = await import('./software-billing.routes')
+  await fastify.register(softwareBillingRoutes, { prefix: '/software' })
 }
 

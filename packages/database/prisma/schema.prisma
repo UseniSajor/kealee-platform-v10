@@ -1890,6 +1890,9 @@ model User {
   conversationParticipants ConversationParticipant[] @relation("UserConversationParticipants")
   chatMessages             ChatMessage[]             @relation("UserChatMessages")
   chatMessageReads         ChatMessageRead[]         @relation("UserChatMessageReads")
+
+  // Software subscription relations
+  softwareSubscriptions    SoftwareSubscription[]    @relation("UserSoftwareSubscriptions")
 }
 
 // ============================================================================
@@ -9499,4 +9502,67 @@ model CommunicationTemplate {
   @@index([channel])
   @@index([organizationId])
   @@map("communication_templates")
+}
+
+// ── Software-Only Subscriptions (S1-S4) ────────────────────────────────────
+// See: _docs/Kealee-Software-Only-Packages.md
+
+enum SoftwareTier {
+  S1 // Starter: $29-$79/mo
+  S2 // Builder: $149-$349/mo
+  S3 // Pro: $599-$1,299/mo
+  S4 // Enterprise: $1,999-$4,999/mo
+}
+
+enum SoftwareSubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELLED
+  PAUSED
+  EXPIRED
+}
+
+model SoftwareSubscription {
+  id             String                     @id @default(cuid())
+  userId         String
+  organizationId String?
+  softwareTier   SoftwareTier
+  pricingTier    String                     // basic, standard, plus
+  status         SoftwareSubscriptionStatus @default(ACTIVE)
+
+  // Limits (from Stripe metadata)
+  maxProjects    Int
+  maxUsers       Int
+
+  // Billing
+  monthlyPrice            Decimal  @db.Decimal(10, 2)
+  billingInterval         String   @default("month") // month or year
+  stripeSubscriptionId    String?  @unique
+  stripeCustomerId        String?
+  stripePriceId           String?
+  stripeCurrentPeriodEnd  DateTime?
+
+  // Trial
+  trialEndsAt    DateTime?
+  trialStartedAt DateTime?
+
+  // Lifecycle
+  startDate      DateTime  @default(now())
+  cancelledAt    DateTime?
+  cancelReason   String?
+  pausedAt       DateTime?
+  resumesAt      DateTime?
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user           User      @relation("UserSoftwareSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([softwareTier])
+  @@index([status])
+  @@index([stripeSubscriptionId])
+  @@map("software_subscriptions")
 }

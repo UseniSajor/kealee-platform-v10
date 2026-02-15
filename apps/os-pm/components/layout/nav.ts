@@ -30,6 +30,7 @@ import {
   Wrench,
   Zap,
   Command,
+  CreditCard,
 } from "lucide-react"
 
 export type PmNavItem = {
@@ -116,6 +117,12 @@ export const navSections: NavSection[] = [
     label: "Automation",
     items: [
       { href: "/command-center", label: "Command Center", icon: Command, match: "startsWith" },
+    ],
+  },
+  {
+    label: "Account",
+    items: [
+      { href: "/subscription", label: "Subscription", icon: CreditCard, match: "startsWith" },
     ],
   },
   {

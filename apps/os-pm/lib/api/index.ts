@@ -1134,5 +1134,43 @@ export const api = {
       return data
     },
   },
+
+  // ── Subscription & Billing ──
+  subscription: {
+    getUsage: async () => {
+      const { data } = await apiClient.get<any>("/billing/software/usage")
+      return data
+    },
+    getSubscription: async () => {
+      const { data } = await apiClient.get<any>("/billing/software/subscription")
+      return data
+    },
+    createCheckoutSession: async (input: {
+      tier: string
+      pricingTier: string
+      interval: "month" | "year"
+      successUrl: string
+      cancelUrl: string
+    }) => {
+      const { data } = await apiClient.post<any>("/billing/software/checkout-session", input)
+      return data
+    },
+    changePlan: async (input: {
+      newTier: string
+      newPricingTier: string
+      interval: "month" | "year"
+    }) => {
+      const { data } = await apiClient.post<any>("/billing/software/change-plan", input)
+      return data
+    },
+    cancel: async (immediately?: boolean) => {
+      const { data } = await apiClient.post<any>("/billing/software/cancel", { immediately: immediately || false })
+      return data
+    },
+    createPortalSession: async (returnUrl: string) => {
+      const { data } = await apiClient.post<any>("/billing/software/portal-session", { returnUrl })
+      return data
+    },
+  },
 }
 
