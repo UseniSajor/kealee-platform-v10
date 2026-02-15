@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   Calculator,
   DollarSign,
+  Loader2,
   Plus,
   Save,
   Send,
@@ -17,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { cn } from "@/lib/utils"
+import { api } from "@/lib/api"
 
 interface LineItem {
   id: string
@@ -44,6 +46,8 @@ function fmt(v: number) { return new Intl.NumberFormat("en-US", { style: "curren
 
 export default function NewEstimatePage() {
   const router = useRouter()
+  const [saving, setSaving] = React.useState(false)
+  const [creating, setCreating] = React.useState(false)
   const [form, setForm] = React.useState({
     name: "",
     projectName: "",
@@ -195,9 +199,81 @@ export default function NewEstimatePage() {
       {/* Actions */}
       <div className="flex justify-end gap-3 pb-8">
         <Link href="/estimates"><Button variant="outline">Cancel</Button></Link>
-        <Button variant="outline" className="gap-2"><Save size={16} /> Save Draft</Button>
-        <Button className="gap-2"><Send size={16} /> Create Estimate</Button>
+        <Button
+          variant="outline"
+          className="gap-2"
+          disabled={saving || creating}
+          onClick={async () => {
+            if (!form.name.trim()) return alert("Please enter an estimate name")
+            setSaving(true)
+            try {
+              const payload = buildPayload("DRAFT")
+              await api.estimates.create(payload)
+              router.push("/estimates")
+            } catch (err: any) {
+              console.error("Save draft failed:", err)
+              alert("Failed to save draft. Please try again.")
+            } finally {
+              setSaving(false)
+            }
+          }}
+        >
+          {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+          {saving ? "Saving..." : "Save Draft"}
+        </Button>
+        <Button
+          className="gap-2"
+          disabled={saving || creating}
+          onClick={async () => {
+            if (!form.name.trim()) return alert("Please enter an estimate name")
+            if (!form.projectName.trim()) return alert("Please enter a project name")
+            setCreating(true)
+            try {
+              const payload = buildPayload("ACTIVE")
+              await api.estimates.create(payload)
+              router.push("/estimates")
+            } catch (err: any) {
+              console.error("Create estimate failed:", err)
+              alert("Failed to create estimate. Please try again.")
+            } finally {
+              setCreating(false)
+            }
+          }}
+        >
+          {creating ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+          {creating ? "Creating..." : "Create Estimate"}
+        </Button>
       </div>
     </div>
   )
+
+  function buildPayload(status: "DRAFT" | "ACTIVE") {
+    return {
+      name: form.name,
+      projectName: form.projectName,
+      type: form.type,
+      status,
+      squareFootage: parseNum(form.squareFootage) || undefined,
+      buildingType: form.buildingType || undefined,
+      stories: parseInt(form.stories) || 1,
+      overheadPercent: parseNum(form.overheadPercent),
+      profitPercent: parseNum(form.profitPercent),
+      contingencyPercent: parseNum(form.contingencyPercent),
+      lineItems: lineItems
+        .filter(li => li.description.trim())
+        .map(li => ({
+          description: li.description,
+          category: li.category,
+          quantity: parseNum(li.qty),
+          unit: li.unit,
+          unitCost: parseNum(li.unitCost),
+        })),
+      subtotal,
+      overhead,
+      profit,
+      contingency,
+      total,
+      costPerSqFt: costPerSqFt > 0 ? costPerSqFt : undefined,
+    }
+  }
 }

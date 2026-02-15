@@ -29,6 +29,7 @@ import {
   Wand2,
   Wrench,
   Zap,
+  Command,
 } from "lucide-react"
 
 export type PmNavItem = {
@@ -109,6 +110,12 @@ export const navSections: NavSection[] = [
     items: [
       { href: "/selections", label: "Selections", icon: Palette, match: "startsWith" },
       { href: "/warranty", label: "Warranty", icon: Wrench, match: "startsWith" },
+    ],
+  },
+  {
+    label: "Automation",
+    items: [
+      { href: "/command-center", label: "Command Center", icon: Command, match: "startsWith" },
     ],
   },
   {
