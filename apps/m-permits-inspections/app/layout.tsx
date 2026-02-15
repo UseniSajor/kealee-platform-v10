@@ -6,8 +6,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Kealee - Permit Applications',
-  description: 'Get your permits approved 40% faster with AI-powered review',
+  title: 'Kealee Permits - AI-Powered Permit Applications',
+  description: 'Get your permits approved 40% faster with AI-powered review. Professional permit services, inspection coordination, and zoning verification.',
 };
 
 export default function RootLayout({
@@ -16,8 +16,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.className}>
-      <body>{children}</body>
+    <html lang="en" className={`${inter.className} scroll-smooth`}>
+      <body>
+        {children}
+      </body>
     </html>
   );
 }

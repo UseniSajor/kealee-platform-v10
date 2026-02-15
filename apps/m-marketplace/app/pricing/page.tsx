@@ -4,9 +4,11 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { Check, HelpCircle, ArrowRight, Zap, Star, Building2, Briefcase, Crown, Users, Wrench } from 'lucide-react';
+import { Check, HelpCircle, ArrowRight, Zap, Star, Building2, Briefcase, Crown, Users, Wrench, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { heroImages } from '@kealee/ui';
+import { AddToCartButton } from '@/components/CartButton';
+import { pmPackages as pmProducts, softwarePlans as swProducts, permitPackages as permitProducts, operationsProducts } from '@/lib/products';
 
 /**
  * PRICING PAGE - Two distinct pricing models:
@@ -545,16 +547,17 @@ export default function PricingPage() {
                       ))}
                     </ul>
 
-                    <Link
-                      href={plan.cta.href}
-                      className={`block w-full py-3 text-center font-semibold rounded-xl transition ${
-                        plan.popular
-                          ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                          : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-                      }`}
-                    >
-                      {plan.cta.label}
-                    </Link>
+                    <div className="space-y-2">
+                      {swProducts[idx] && (
+                        <AddToCartButton product={swProducts[idx]} variant={plan.popular ? 'primary' : 'secondary'} className="w-full" />
+                      )}
+                      <Link
+                        href={plan.cta.href}
+                        className="block w-full py-3 text-center font-semibold rounded-xl transition bg-gray-100 hover:bg-gray-200 text-gray-900 text-sm"
+                      >
+                        {plan.cta.label}
+                      </Link>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -676,21 +679,17 @@ export default function PricingPage() {
                   </ul>
 
                   {/* CTA */}
-                  <Link
-                    href={pkg.href}
-                    className={`
-                      block w-full py-3 text-center
-                      font-semibold
-                      rounded-lg
-                      transition-all duration-200
-                      ${pkg.popular
-                        ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl'
-                        : 'bg-gray-900 hover:bg-gray-800 text-white'
-                      }
-                    `}
-                  >
-                    {pkg.cta}
-                  </Link>
+                  <div className="space-y-2">
+                    {pmProducts[pmPackages.indexOf(pkg)] && (
+                      <AddToCartButton product={pmProducts[pmPackages.indexOf(pkg)]} variant={pkg.popular ? 'primary' : 'secondary'} className="w-full" />
+                    )}
+                    <Link
+                      href={pkg.href}
+                      className="block w-full py-3 text-center font-semibold rounded-lg transition-all duration-200 bg-gray-100 hover:bg-gray-200 text-gray-900 text-sm"
+                    >
+                      Learn More
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
@@ -798,21 +797,17 @@ export default function PricingPage() {
                   </ul>
 
                   {/* CTA */}
-                  <Link
-                    href={pkg.href}
-                    className={`
-                      block w-full py-3 text-center
-                      font-semibold
-                      rounded-lg
-                      transition-all duration-200
-                      ${pkg.popular
-                        ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-xl'
-                        : 'bg-gray-900 hover:bg-gray-800 text-white'
-                      }
-                    `}
-                  >
-                    {pkg.cta}
-                  </Link>
+                  <div className="space-y-2">
+                    {permitProducts[permitPackages.indexOf(pkg)] && (
+                      <AddToCartButton product={permitProducts[permitPackages.indexOf(pkg)]} variant={pkg.popular ? 'primary' : 'secondary'} className="w-full" />
+                    )}
+                    <Link
+                      href={pkg.href}
+                      className="block w-full py-3 text-center font-semibold rounded-lg transition-all duration-200 bg-gray-100 hover:bg-gray-200 text-gray-900 text-sm"
+                    >
+                      Learn More
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
@@ -823,21 +818,47 @@ export default function PricingPage() {
           {activeTab === 'operations' && (
             <div className="max-w-5xl mx-auto mb-20">
               <div className="grid md:grid-cols-2 gap-8">
-                {operationsServices.map((category, idx) => (
+                {operationsServices.map((category, idx) => {
+                  // Map service names to product IDs for Add to Cart
+                  const serviceProductMap: Record<string, number> = {
+                    'Project Scheduling (CPM)': 0,
+                    'Document Control Setup': 1,
+                    'RFI Management': 2,
+                    'Submittal Management': 3,
+                    'Conceptual Estimate': 4,
+                    'Schematic Estimate': 5,
+                    'Detailed Estimate': 6,
+                    'Value Engineering': 7,
+                    'Quality Control Inspection': 8,
+                    'Safety Plan Development': 9,
+                    'OSHA Compliance Review': 10,
+                    'BIM Coordination': 11,
+                    'Site Logistics Planning': 12,
+                    'Closeout Documentation': 13,
+                  }
+                  return (
                   <div key={idx} className="bg-white rounded-2xl border-2 border-gray-200 p-6">
                     <h3 className="text-lg font-bold text-gray-900 mb-4">{category.category}</h3>
                     <div className="space-y-3">
-                      {category.services.map((service, sIdx) => (
-                        <div key={sIdx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                          <span className="text-gray-700">{service.name}</span>
-                          <span className="font-semibold text-gray-900">
-                            ${service.price}{service.unit}
-                          </span>
+                      {category.services.map((service, sIdx) => {
+                        const productIdx = serviceProductMap[service.name]
+                        const product = productIdx !== undefined ? operationsProducts[productIdx] : undefined
+                        return (
+                        <div key={sIdx} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0 gap-3">
+                          <div className="flex-1">
+                            <span className="text-gray-700">{service.name}</span>
+                            <span className="ml-2 font-semibold text-gray-900">
+                              ${service.price}<span className="text-gray-500 text-sm font-normal">{service.unit}</span>
+                            </span>
+                          </div>
+                          {product && (
+                            <AddToCartButton product={product} variant="sm" />
+                          )}
                         </div>
-                      ))}
+                      )})}
                     </div>
                   </div>
-                ))}
+                )})}
               </div>
 
               <div className="mt-8 bg-green-50 rounded-xl p-6 text-center">
@@ -847,10 +868,17 @@ export default function PricingPage() {
                 </p>
               </div>
 
-              <div className="mt-8 text-center">
+              <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  href="/cart"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-xl transition"
+                >
+                  <ShoppingCart size={20} />
+                  View Cart & Checkout
+                </Link>
                 <Link
                   href="https://ops.kealee.com"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition"
                 >
                   Browse All Services
                   <ArrowRight size={20} />

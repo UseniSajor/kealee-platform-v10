@@ -11,7 +11,6 @@ import {
   Zap,
   Users,
   BarChart3,
-  ShoppingCart,
   MapPin,
   Scale,
   Landmark,
@@ -24,6 +23,7 @@ import {
   Star,
   Phone,
   Mail,
+  ShoppingCart,
 } from 'lucide-react';
 
 const permitPackages = [
@@ -222,13 +222,9 @@ export default function PermitsLanding() {
                 <Phone className="h-4 w-4" />
                 (301) 575-8777
               </a>
-              <button
-                id="cart-trigger"
-                className="relative text-gray-700 hover:text-emerald-600 transition"
-                aria-label="Cart"
-              >
+              <Link href="https://marketplace.kealee.com/cart" className="relative text-gray-700 hover:text-emerald-600 transition" aria-label="Cart">
                 <ShoppingCart className="h-5 w-5" />
-              </button>
+              </Link>
               <Link
                 href="/login"
                 className="text-sm font-medium text-gray-700 hover:text-emerald-600 transition"
@@ -249,8 +245,8 @@ export default function PermitsLanding() {
       {/* Hero Section */}
       <section className="relative pt-28 pb-20 overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80&auto=format&fit=crop"
-          alt="City skyline with modern buildings"
+          src="https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=1920&q=80&auto=format&fit=crop"
+          alt="Residential home under construction with framing"
           fill
           className="object-cover"
           sizes="100vw"
@@ -329,12 +325,15 @@ export default function PermitsLanding() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {services.map((service) => {
+            {services.map((service, idx) => {
               const Icon = service.icon;
+              // Find matching product for linking
+              const href = '#services';
               return (
-                <div
+                <Link
                   key={service.title}
-                  className="p-6 bg-white rounded-2xl border border-gray-200 hover:border-emerald-500 hover:shadow-lg transition group"
+                  href={href}
+                  className="p-6 bg-white rounded-2xl border border-gray-200 hover:border-emerald-500 hover:shadow-lg transition group block"
                 >
                   <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-emerald-600 transition">
                     <Icon className="h-6 w-6 text-emerald-600 group-hover:text-white transition" />
@@ -342,10 +341,13 @@ export default function PermitsLanding() {
                   <h3 className="text-lg font-bold text-gray-900 mb-2">
                     {service.title}
                   </h3>
-                  <p className="text-sm text-gray-600 leading-relaxed">
+                  <p className="text-sm text-gray-600 leading-relaxed mb-3">
                     {service.description}
                   </p>
-                </div>
+                  <span className="text-sm text-emerald-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
+                    Learn More <ArrowRight className="h-4 w-4" />
+                  </span>
+                </Link>
               );
             })}
           </div>
@@ -460,16 +462,20 @@ export default function PermitsLanding() {
                   ))}
                 </ul>
 
-                <Link
-                  href="/permits/new"
-                  className={
-                    pkg.popular
-                      ? 'block w-full py-3 text-center rounded-xl bg-emerald-600 text-white font-bold text-sm transition hover:bg-emerald-700'
-                      : 'block w-full py-3 text-center rounded-xl bg-gray-900 text-white font-bold text-sm transition hover:bg-gray-800'
-                  }
-                >
-                  Get Started
-                </Link>
+                <div className="space-y-2">
+                  <Link
+                    href="https://marketplace.kealee.com/pricing?tab=permits"
+                    className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm transition ${pkg.popular ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700'}`}
+                  >
+                    <ShoppingCart className="h-4 w-4" /> Get Started
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="block w-full py-2.5 text-center rounded-xl border-2 border-gray-200 text-gray-700 font-bold text-sm transition hover:border-emerald-300 hover:text-emerald-600"
+                  >
+                    Learn More
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
@@ -590,19 +596,29 @@ export default function PermitsLanding() {
               return (
                 <div
                   key={service.title}
-                  className="bg-white rounded-2xl border border-gray-200 p-6 hover:border-emerald-500 hover:shadow-lg transition group"
+                  className="bg-white rounded-2xl border border-gray-200 p-6 hover:border-emerald-500 hover:shadow-lg transition group flex flex-col"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center group-hover:bg-emerald-600 transition">
-                      <Icon className="h-5 w-5 text-emerald-600 group-hover:text-white transition" />
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center group-hover:bg-emerald-600 transition">
+                        <Icon className="h-5 w-5 text-emerald-600 group-hover:text-white transition" />
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xl font-black text-emerald-600">{service.price}</div>
+                        <div className="text-xs text-gray-500">{service.unit}</div>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-xl font-black text-emerald-600">{service.price}</div>
-                      <div className="text-xs text-gray-500">{service.unit}</div>
-                    </div>
+                    <h3 className="text-base font-bold text-gray-900 mb-2">{service.title}</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed mb-4">{service.description}</p>
                   </div>
-                  <h3 className="text-base font-bold text-gray-900 mb-2">{service.title}</h3>
-                  <p className="text-sm text-gray-600 leading-relaxed">{service.description}</p>
+                  <div className="flex items-center gap-2 mt-auto pt-3 border-t border-gray-100">
+                    <Link href="https://marketplace.kealee.com/pricing?tab=permits" className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition">
+                      Order Service
+                    </Link>
+                    <Link href="/contact" className="text-xs text-emerald-600 font-semibold hover:underline ml-auto">
+                      Details →
+                    </Link>
+                  </div>
                 </div>
               );
             })}
@@ -613,25 +629,28 @@ export default function PermitsLanding() {
           <div className="bg-white rounded-2xl border border-gray-200 p-8 max-w-5xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
               {[
-                { type: 'Residential Building Permit', price: '$325' },
-                { type: 'Commercial Building Permit', price: '$500' },
-                { type: 'Electrical Permit', price: '$150' },
-                { type: 'Plumbing Permit', price: '$150' },
-                { type: 'HVAC / Mechanical Permit', price: '$175' },
-                { type: 'Roofing Permit', price: '$125' },
-                { type: 'Solar / PV Permit', price: '$250' },
-                { type: 'Pool / Spa Permit', price: '$275' },
-                { type: 'Fence Permit', price: '$100' },
-                { type: 'Demolition Permit', price: '$200' },
-                { type: 'Occupancy Permit', price: '$150' },
-                { type: 'Sign Permit', price: '$125' },
-                { type: 'Zoning & Variance Submission', price: '$750' },
-                { type: 'Historic Review Submission', price: '$650' },
-                { type: 'Subdivision Submission', price: '$1,200' },
-                { type: 'Land Use Approval', price: '$850' },
+                { name: 'Building Permit', price: '$350-$500' },
+                { name: 'Electrical Permit', price: '$200-$350' },
+                { name: 'Plumbing Permit', price: '$200-$350' },
+                { name: 'Mechanical/HVAC Permit', price: '$200-$350' },
+                { name: 'Demolition Permit', price: '$250-$400' },
+                { name: 'Renovation Permit', price: '$300-$450' },
+                { name: 'Roofing Permit', price: '$175-$300' },
+                { name: 'Fence/Wall Permit', price: '$150-$250' },
+                { name: 'Sign Permit', price: '$150-$275' },
+                { name: 'Grading Permit', price: '$300-$500' },
+                { name: 'Fire Alarm Permit', price: '$200-$350' },
+                { name: 'Solar Panel Permit', price: '$200-$350' },
+                { name: 'Pool/Spa Permit', price: '$250-$400' },
+                { name: 'Foundation Permit', price: '$300-$450' },
+                { name: 'Zoning Variance', price: '$400-$600' },
+                { name: 'Certificate of Occupancy', price: '$250-$400' },
               ].map((permit) => (
-                <div key={permit.type} className="flex items-center justify-between border-b border-gray-100 pb-3">
-                  <span className="text-sm text-gray-900 font-medium">{permit.type}</span>
+                <div
+                  key={permit.name}
+                  className="flex items-center justify-between border-b border-gray-100 pb-3 px-2 -mx-2 rounded-lg"
+                >
+                  <span className="text-sm text-gray-900 font-medium">{permit.name}</span>
                   <span className="text-sm text-emerald-600 font-bold ml-4">{permit.price}</span>
                 </div>
               ))}
@@ -644,10 +663,10 @@ export default function PermitsLanding() {
           <div className="mt-12 text-center">
             <div className="inline-flex flex-col sm:flex-row gap-4 items-center">
               <Link
-                href="/permits/new"
+                href="https://marketplace.kealee.com/pricing?tab=permits"
                 className="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-8 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-emerald-700 gap-2"
               >
-                Order a Service
+                Order Permit Services
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <a href="#pricing" className="text-sm font-semibold text-emerald-600 hover:underline">
@@ -751,10 +770,10 @@ export default function PermitsLanding() {
                   ))}
                 </ul>
                 <Link
-                  href="/permits/new"
+                  href="https://marketplace.kealee.com/pricing?tab=permits"
                   className="mt-6 block w-full py-3 text-center rounded-xl bg-emerald-600 text-white font-bold text-sm transition hover:bg-emerald-700"
                 >
-                  Order Due Diligence Report
+                  Order Due Diligence Report — $450
                 </Link>
               </div>
             </div>

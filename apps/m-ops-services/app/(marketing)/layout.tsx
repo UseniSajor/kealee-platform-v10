@@ -41,9 +41,9 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
                 <Phone className="h-4 w-4" />
                 (301) 575-8777
               </a>
-              <button id="cart-trigger" className="relative text-zinc-700 hover:text-sky-600 transition" aria-label="Cart">
+              <Link href="https://marketplace.kealee.com/cart" className="relative text-zinc-700 hover:text-sky-600 transition" aria-label="Cart">
                 <ShoppingCart className="h-5 w-5" />
-              </button>
+              </Link>
               <Link href="/login" className="text-sm font-medium text-zinc-700 hover:text-sky-600 transition">
                 Portal Login
               </Link>

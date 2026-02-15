@@ -100,7 +100,7 @@ export default function PermitPricingPage() {
       {/* Hero */}
       <section className="relative py-16 lg:py-24 overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80&auto=format&fit=crop"
+          src="https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=1920&q=80&auto=format&fit=crop"
           alt="City skyline with modern buildings"
           fill
           className="object-cover"
