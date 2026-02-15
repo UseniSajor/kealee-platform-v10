@@ -925,6 +925,193 @@ export const api = {
     },
   },
 
+  // ── Estimation ──
+  estimates: {
+    list: async (filters?: Record<string, any>) => {
+      const { data } = await apiClient.get<any>("/estimation/project", { params: filters })
+      return data
+    },
+    get: async (id: string) => {
+      const { data } = await apiClient.get<any>(`/estimation/estimate/${id}`)
+      return data
+    },
+    create: async (input: any) => {
+      const { data } = await apiClient.post<any>("/estimation/estimate", input)
+      return data
+    },
+    update: async (id: string, input: any) => {
+      const { data } = await apiClient.put<any>(`/estimation/estimate/${id}`, input)
+      return data
+    },
+    delete: async (id: string) => {
+      const { data } = await apiClient.delete<any>(`/estimation/estimate/${id}`)
+      return data
+    },
+    duplicate: async (id: string) => {
+      const { data } = await apiClient.post<any>(`/estimation/estimate/${id}/duplicate`)
+      return data
+    },
+    summary: async (id: string) => {
+      const { data } = await apiClient.get<any>(`/estimation/estimate/${id}/summary`)
+      return data
+    },
+    calculate: async (id: string) => {
+      const { data } = await apiClient.post<any>(`/estimation/estimate/${id}/calculate`)
+      return data
+    },
+    export: async (id: string, format?: string) => {
+      const { data } = await apiClient.post<any>(`/estimation/estimate/${id}/export`, { format: format || "pdf" })
+      return data
+    },
+    // Sections
+    sections: async (estimateId: string) => {
+      const { data } = await apiClient.get<any>(`/estimation/estimates/${estimateId}/sections`)
+      return data
+    },
+    createSection: async (estimateId: string, input: any) => {
+      const { data } = await apiClient.post<any>(`/estimation/estimates/${estimateId}/sections`, input)
+      return data
+    },
+    createCsiSections: async (estimateId: string) => {
+      const { data } = await apiClient.post<any>(`/estimation/estimates/${estimateId}/sections/csi`)
+      return data
+    },
+    // Line items
+    lineItems: async (estimateId: string, filters?: Record<string, any>) => {
+      const { data } = await apiClient.get<any>(`/estimation/estimates/${estimateId}/items`, { params: filters })
+      return data
+    },
+    createLineItem: async (estimateId: string, input: any) => {
+      const { data } = await apiClient.post<any>(`/estimation/estimates/${estimateId}/items`, input)
+      return data
+    },
+    bulkCreateLineItems: async (estimateId: string, items: any[]) => {
+      const { data } = await apiClient.post<any>(`/estimation/estimates/${estimateId}/items/bulk`, { items })
+      return data
+    },
+    addFromAssembly: async (estimateId: string, input: any) => {
+      const { data } = await apiClient.post<any>(`/estimation/estimates/${estimateId}/items/from-assembly`, input)
+      return data
+    },
+    // Revisions
+    revisions: async (estimateId: string) => {
+      const { data } = await apiClient.get<any>(`/estimation/estimates/${estimateId}/revisions`)
+      return data
+    },
+    createRevision: async (estimateId: string, input: any) => {
+      const { data } = await apiClient.post<any>(`/estimation/estimates/${estimateId}/revisions`, input)
+      return data
+    },
+    metrics: async () => {
+      const { data } = await apiClient.get<any>("/estimation/metrics")
+      return data
+    },
+    forProject: async (projectId: string) => {
+      const { data } = await apiClient.get<any>(`/estimation/project/${projectId}`)
+      return data
+    },
+  },
+
+  // ── AI & Takeoff ──
+  aiTakeoff: {
+    run: async (input: { files: any[]; disciplines?: string[]; detailLevel?: string; autoLink?: boolean; projectName?: string }) => {
+      const { data } = await apiClient.post<any>("/estimation/ai/takeoff", input)
+      return data
+    },
+    analyzePhoto: async (input: { photoUrl: string; context?: string }) => {
+      const { data } = await apiClient.post<any>("/estimation/ai/analyze-photo", input)
+      return data
+    },
+    scopeAnalysis: async (input: any) => {
+      const { data } = await apiClient.post<any>("/estimation/ai/scope-analysis", input)
+      return data
+    },
+    costPrediction: async (input: any) => {
+      const { data } = await apiClient.post<any>("/estimation/ai/cost-prediction", input)
+      return data
+    },
+    suggestAssemblies: async (input: any) => {
+      const { data } = await apiClient.post<any>("/estimation/ai/suggest-assemblies", input)
+      return data
+    },
+    valueEngineering: async (input: any) => {
+      const { data } = await apiClient.post<any>("/estimation/ai/value-engineering", input)
+      return data
+    },
+    benchmark: async (input: any) => {
+      const { data } = await apiClient.post<any>("/estimation/ai/benchmark", input)
+      return data
+    },
+  },
+
+  // ── Cost Databases ──
+  costDatabases: {
+    list: async () => {
+      const { data } = await apiClient.get<any>("/estimation/databases")
+      return data
+    },
+    materials: async (filters?: Record<string, any>) => {
+      const { data } = await apiClient.get<any>("/estimation/data/materials", { params: filters })
+      return data
+    },
+    laborRates: async (filters?: Record<string, any>) => {
+      const { data } = await apiClient.get<any>("/estimation/data/labor-rates", { params: filters })
+      return data
+    },
+    equipmentRates: async (filters?: Record<string, any>) => {
+      const { data } = await apiClient.get<any>("/estimation/data/equipment-rates", { params: filters })
+      return data
+    },
+    regionalIndices: async () => {
+      const { data } = await apiClient.get<any>("/estimation/regional-indices")
+      return data
+    },
+  },
+
+  // ── Assemblies ──
+  assemblies: {
+    list: async (filters?: Record<string, any>) => {
+      const { data } = await apiClient.get<any>("/estimation/assemblies", { params: filters })
+      return data
+    },
+    get: async (id: string) => {
+      const { data } = await apiClient.get<any>(`/estimation/assemblies/${id}`)
+      return data
+    },
+    create: async (input: any) => {
+      const { data } = await apiClient.post<any>("/estimation/assemblies", input)
+      return data
+    },
+    templates: async () => {
+      const { data } = await apiClient.get<any>("/estimation/assembly-library/templates")
+      return data
+    },
+  },
+
+  // ── Takeoff Sessions ──
+  takeoffs: {
+    list: async () => {
+      const { data } = await apiClient.get<any>("/estimation/takeoffs")
+      return data
+    },
+    get: async (id: string) => {
+      const { data } = await apiClient.get<any>(`/estimation/takeoffs/${id}`)
+      return data
+    },
+    create: async (input: any) => {
+      const { data } = await apiClient.post<any>("/estimation/takeoffs", input)
+      return data
+    },
+    addMeasurement: async (id: string, input: any) => {
+      const { data } = await apiClient.post<any>(`/estimation/takeoffs/${id}/measurements`, input)
+      return data
+    },
+    summary: async (id: string) => {
+      const { data } = await apiClient.get<any>(`/estimation/takeoffs/${id}/summary`)
+      return data
+    },
+  },
+
   reports: {
     project: async (projectId: string) => {
       const { data } = await apiClient.get<any>(`/pm/reports/project/${projectId}`)

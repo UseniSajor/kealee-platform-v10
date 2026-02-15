@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   Brain,
@@ -19,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { cn } from "@/lib/utils"
+import { useRunAITakeoff } from "@/hooks/useEstimates"
 
 type ProcessingStatus = "idle" | "uploading" | "processing" | "complete" | "error"
 type DetailLevel = "QUICK" | "STANDARD" | "DETAILED"
@@ -80,13 +82,17 @@ function formatFileSize(bytes: number): string {
 }
 
 export default function AITakeoffPage() {
+  const router = useRouter()
   const [files, setFiles] = React.useState<UploadedFile[]>([])
   const [detailLevel, setDetailLevel] = React.useState<DetailLevel>("STANDARD")
   const [autoLink, setAutoLink] = React.useState(true)
   const [status, setStatus] = React.useState<ProcessingStatus>("idle")
   const [result, setResult] = React.useState<TakeoffResult | null>(null)
   const [projectName, setProjectName] = React.useState("")
+  const [errorMsg, setErrorMsg] = React.useState("")
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+
+  const aiTakeoff = useRunAITakeoff()
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const newFiles = Array.from(e.target.files || []).map(f => ({
@@ -94,7 +100,7 @@ export default function AITakeoffPage() {
       name: f.name,
       type: f.type.includes("pdf") ? "PDF" : f.type.includes("image") ? "JPG" : "PDF",
       size: f.size,
-      discipline: "ARCHITECTURAL", // Default, user can change
+      discipline: "ARCHITECTURAL",
       status: "pending" as const,
     }))
     setFiles(prev => [...prev, ...newFiles])
@@ -111,51 +117,66 @@ export default function AITakeoffPage() {
   async function runAITakeoff() {
     if (files.length === 0) return
     setStatus("processing")
-
-    // Simulate AI processing - in production this calls the estimation API
+    setErrorMsg("")
     setFiles(prev => prev.map(f => ({ ...f, status: "processing" as const })))
 
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 3000))
+    const startTime = Date.now()
 
-    // Simulate results
-    const mockItems: ExtractedItem[] = [
-      { id: "1", category: "EXTERIOR_FINISHES", description: "Exterior wall area - wood frame with siding", quantity: 3200, unit: "SF", confidence: 85, source: "AI_EXTRACTED", floor: "1st Floor", drawingRef: "A-101" },
-      { id: "2", category: "DRYWALL", description: '1/2" drywall - walls and ceilings', quantity: 8500, unit: "SF", confidence: 82, source: "AI_EXTRACTED", drawingRef: "A-102" },
-      { id: "3", category: "DOORS_HARDWARE", description: "Interior passage doors - hollow core", quantity: 14, unit: "EA", confidence: 92, source: "AI_EXTRACTED" },
-      { id: "4", category: "WINDOWS", description: "Vinyl double-hung windows", quantity: 18, unit: "EA", confidence: 90, source: "AI_EXTRACTED", drawingRef: "A-301" },
-      { id: "5", category: "FLOORING", description: "Engineered hardwood flooring", quantity: 950, unit: "SF", confidence: 78, source: "AI_EXTRACTED", floor: "1st Floor" },
-      { id: "6", category: "FLOORING", description: "Ceramic tile - bathrooms", quantity: 420, unit: "SF", confidence: 75, source: "AI_EXTRACTED" },
-      { id: "7", category: "ROOFING_ASSEMBLY", description: "Architectural shingle roofing", quantity: 2400, unit: "SF", confidence: 83, source: "AI_EXTRACTED", drawingRef: "A-501" },
-      { id: "8", category: "FOUNDATIONS", description: 'Continuous footings - 24"x12"', quantity: 180, unit: "LF", confidence: 82, source: "AI_EXTRACTED", drawingRef: "S-101" },
-      { id: "9", category: "CONCRETE_FLATWORK", description: "Slab on grade - 4\" with WWM", quantity: 2100, unit: "SF", confidence: 84, source: "AI_EXTRACTED", drawingRef: "S-102" },
-      { id: "10", category: "FRAMING", description: 'Wall framing - 2x4 studs @ 16" OC', quantity: 3200, unit: "SF", confidence: 80, source: "AI_EXTRACTED", drawingRef: "S-201" },
-      { id: "11", category: "ELECTRICAL_FINISH", description: "Duplex receptacle outlets", quantity: 42, unit: "EA", confidence: 88, source: "AI_EXTRACTED", drawingRef: "E-101" },
-      { id: "12", category: "PLUMBING_FINISH", description: "Bathroom lavatory", quantity: 3, unit: "EA", confidence: 90, source: "AI_EXTRACTED", drawingRef: "P-101" },
-      { id: "13", category: "PLUMBING_FINISH", description: "Water closet (toilet)", quantity: 3, unit: "EA", confidence: 92, source: "AI_EXTRACTED", drawingRef: "P-101" },
-      { id: "14", category: "CABINETRY", description: "Kitchen cabinets - base and upper", quantity: 32, unit: "LF", confidence: 85, source: "AI_EXTRACTED", drawingRef: "A-201" },
-      { id: "15", category: "PAINTING", description: "Interior paint - walls and ceilings", quantity: 8500, unit: "SF", confidence: 80, source: "AI_EXTRACTED" },
-      { id: "16", category: "INSULATION_ASSEMBLY", description: "Batt insulation - exterior walls R-19", quantity: 3200, unit: "SF", confidence: 76, source: "AI_EXTRACTED" },
-      { id: "17", category: "HVAC_ROUGH", description: "RTU - 5 ton", quantity: 1, unit: "EA", confidence: 88, source: "AI_EXTRACTED", drawingRef: "M-101" },
-      { id: "18", category: "SITEWORK", description: "Site grading and leveling", quantity: 5000, unit: "SF", confidence: 70, source: "AI_EXTRACTED", drawingRef: "C-101" },
-    ]
+    try {
+      const apiResult = await aiTakeoff.mutateAsync({
+        files: files.map(f => ({
+          name: f.name,
+          type: f.type,
+          size: f.size,
+          discipline: f.discipline,
+        })),
+        disciplines: [...new Set(files.map(f => f.discipline))],
+        detailLevel,
+        autoLink,
+        projectName: projectName || undefined,
+      })
 
-    const byCategory: Record<string, { count: number }> = {}
-    for (const item of mockItems) {
-      if (!byCategory[item.category]) byCategory[item.category] = { count: 0 }
-      byCategory[item.category].count++
+      const elapsed = (Date.now() - startTime) / 1000
+
+      // Normalize the API response
+      const items: ExtractedItem[] = (apiResult?.items ?? apiResult?.extractedItems ?? apiResult?.takeoff?.items ?? []).map((item: any, idx: number) => ({
+        id: item.id || String(idx + 1),
+        category: item.category || item.csiCode || "GENERAL",
+        description: item.description || item.name || "",
+        quantity: item.quantity || 0,
+        unit: item.unit || "EA",
+        confidence: item.confidence ?? item.confidenceScore ?? 80,
+        source: item.source || "AI_EXTRACTED",
+        floor: item.floor || item.level,
+        drawingRef: item.drawingRef || item.drawingReference,
+      }))
+
+      const byCategory: Record<string, { count: number }> = {}
+      for (const item of items) {
+        if (!byCategory[item.category]) byCategory[item.category] = { count: 0 }
+        byCategory[item.category].count++
+      }
+
+      const avgConf = items.length > 0
+        ? Math.round(items.reduce((s, i) => s + i.confidence, 0) / items.length)
+        : 0
+
+      setResult({
+        totalItems: items.length,
+        averageConfidence: avgConf,
+        items,
+        byCategory,
+        processingTime: parseFloat(elapsed.toFixed(1)),
+      })
+
+      setFiles(prev => prev.map(f => ({ ...f, status: "done" as const })))
+      setStatus("complete")
+    } catch (err: any) {
+      console.error("AI Takeoff error:", err)
+      setErrorMsg(err?.message || err?.response?.data?.error || "AI Takeoff failed. Please try again.")
+      setFiles(prev => prev.map(f => ({ ...f, status: "error" as const })))
+      setStatus("error")
     }
-
-    setResult({
-      totalItems: mockItems.length,
-      averageConfidence: Math.round(mockItems.reduce((s, i) => s + i.confidence, 0) / mockItems.length),
-      items: mockItems,
-      byCategory,
-      processingTime: 3.2,
-    })
-
-    setFiles(prev => prev.map(f => ({ ...f, status: "done" as const })))
-    setStatus("complete")
   }
 
   return (
@@ -175,6 +196,21 @@ export default function AITakeoffPage() {
           <p className="text-gray-500">Upload construction plans and photos for automatic quantity extraction</p>
         </div>
       </div>
+
+      {status === "error" && errorMsg && (
+        <Card className="border-red-200 bg-red-50/50">
+          <CardContent className="p-4 flex items-center gap-3">
+            <AlertTriangle size={20} className="text-red-500 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-red-800">AI Takeoff Error</p>
+              <p className="text-sm text-red-600">{errorMsg}</p>
+            </div>
+            <Button variant="outline" size="sm" className="ml-auto" onClick={() => { setStatus("idle"); setErrorMsg("") }}>
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {status !== "complete" ? (
         <>
@@ -214,6 +250,7 @@ export default function AITakeoffPage() {
                       </select>
                       {f.status === "processing" ? <Loader2 size={16} className="animate-spin text-purple-500" /> :
                        f.status === "done" ? <CheckCircle2 size={16} className="text-green-500" /> :
+                       f.status === "error" ? <AlertTriangle size={16} className="text-red-500" /> :
                        <button onClick={() => removeFile(f.id)} className="p-1 hover:bg-red-50 rounded"><X size={14} className="text-gray-400 hover:text-red-500" /></button>}
                     </div>
                   ))}
@@ -335,7 +372,9 @@ export default function AITakeoffPage() {
             </Button>
             <div className="flex gap-3">
               <Button variant="outline" className="gap-2"><FileText size={16} /> Export CSV</Button>
-              <Button className="gap-2"><CheckCircle2 size={16} /> Create Estimate from Takeoff</Button>
+              <Button className="gap-2" onClick={() => router.push("/estimates/new")}>
+                <CheckCircle2 size={16} /> Create Estimate from Takeoff
+              </Button>
             </div>
           </div>
         </>

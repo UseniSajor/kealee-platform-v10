@@ -6,47 +6,38 @@ import {
   Calculator,
   DollarSign,
   FileText,
+  Loader2,
   Plus,
   Search,
   TrendingUp,
-  Upload,
   Wand2,
 } from "lucide-react"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { cn } from "@/lib/utils"
+import { useEstimates, useEstimateMetrics } from "@/hooks/useEstimates"
 
-type EstimateStatus = "draft" | "in-progress" | "review" | "approved" | "sent"
-type EstimateType = "quick" | "detailed" | "bid" | "change-order"
-
-interface Estimate {
-  id: string
-  name: string
-  projectName: string
-  type: EstimateType
-  status: EstimateStatus
-  totalCost: number
-  sqft: number
-  costPerSqFt: number
-  preparedBy: string
-  createdAt: string
-  updatedAt: string
-  aiGenerated: boolean
-}
-
-const STATUS_STYLES: Record<EstimateStatus, string> = {
+const STATUS_STYLES: Record<string, string> = {
   draft: "bg-gray-100 text-gray-700",
   "in-progress": "bg-blue-100 text-blue-800",
+  in_progress: "bg-blue-100 text-blue-800",
   review: "bg-yellow-100 text-yellow-800",
+  pending_review: "bg-yellow-100 text-yellow-800",
   approved: "bg-green-100 text-green-800",
   sent: "bg-purple-100 text-purple-800",
+  delivered: "bg-purple-100 text-purple-800",
 }
 
-const TYPE_LABELS: Record<EstimateType, string> = {
+const TYPE_LABELS: Record<string, string> = {
   quick: "Quick Budget",
+  QUICK_BUDGET: "Quick Budget",
   detailed: "Detailed",
+  DETAILED: "Detailed",
+  PRELIMINARY: "Preliminary",
+  CONCEPTUAL: "Conceptual",
   bid: "Bid Estimate",
+  BID_ESTIMATE: "Bid Estimate",
   "change-order": "Change Order",
 }
 
@@ -57,18 +48,40 @@ function fmt(v: number) {
 export default function EstimatesPage() {
   const [search, setSearch] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState("all")
-  const [estimates, setEstimates] = React.useState<Estimate[]>([])
-  const [isLoading, setIsLoading] = React.useState(false)
 
-  // In production, this would use React Query to fetch from estimation API
-  // For now, show empty state encouraging users to create their first estimate
+  const { data, isLoading } = useEstimates({
+    search: search || undefined,
+    status: statusFilter !== "all" ? statusFilter : undefined,
+  })
+  const { data: metricsData } = useEstimateMetrics()
 
-  const stats = React.useMemo(() => ({
-    total: estimates.length,
-    totalValue: estimates.reduce((s, e) => s + e.totalCost, 0),
-    pending: estimates.filter(e => e.status === "review" || e.status === "in-progress").length,
-    aiGenerated: estimates.filter(e => e.aiGenerated).length,
-  }), [estimates])
+  const estimates: any[] = data?.estimates ?? data?.items ?? (Array.isArray(data) ? data : [])
+  const metrics = metricsData?.metrics ?? metricsData ?? null
+
+  const stats = React.useMemo(() => {
+    if (metrics && typeof metrics === "object") {
+      return {
+        total: metrics.totalEstimates ?? metrics.total ?? estimates.length,
+        totalValue: metrics.totalValue ?? estimates.reduce((s: number, e: any) => s + (e.totalCost || e.total || 0), 0),
+        pending: metrics.pending ?? metrics.pendingReview ?? estimates.filter((e: any) => ["review", "in-progress", "pending_review", "in_progress"].includes(e.status)).length,
+        aiGenerated: metrics.aiGenerated ?? estimates.filter((e: any) => e.aiGenerated).length,
+      }
+    }
+    return {
+      total: estimates.length,
+      totalValue: estimates.reduce((s: number, e: any) => s + (e.totalCost || e.total || 0), 0),
+      pending: estimates.filter((e: any) => ["review", "in-progress", "pending_review", "in_progress"].includes(e.status)).length,
+      aiGenerated: estimates.filter((e: any) => e.aiGenerated).length,
+    }
+  }, [estimates, metrics])
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -174,26 +187,35 @@ export default function EstimatesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {estimates.map((est) => (
-                    <tr key={est.id} className="border-b hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = `/estimates/${est.id}`}>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{est.name}</span>
-                          {est.aiGenerated && <Wand2 size={14} className="text-purple-500" />}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">{est.projectName}</td>
-                      <td className="px-4 py-3"><span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{TYPE_LABELS[est.type]}</span></td>
-                      <td className="px-4 py-3 text-right font-medium">{fmt(est.totalCost)}</td>
-                      <td className="px-4 py-3 text-right text-gray-600">{fmt(est.costPerSqFt)}</td>
-                      <td className="px-4 py-3">
-                        <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STATUS_STYLES[est.status])}>
-                          {est.status.charAt(0).toUpperCase() + est.status.slice(1).replace("-", " ")}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-gray-500">{new Date(est.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</td>
-                    </tr>
-                  ))}
+                  {estimates.map((est: any) => {
+                    const total = est.totalCost || est.total || 0
+                    const sqft = est.sqft || est.squareFootage || 0
+                    const costPerSqFt = sqft > 0 ? total / sqft : 0
+                    const statusKey = (est.status || "draft").toLowerCase().replace(/ /g, "-")
+                    const typeKey = est.type || est.estimateType || "detailed"
+                    return (
+                      <tr key={est.id} className="border-b hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = `/estimates/${est.id}`}>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{est.name || est.title || "Untitled"}</span>
+                            {est.aiGenerated && <Wand2 size={14} className="text-purple-500" />}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">{est.projectName || est.project?.name || "-"}</td>
+                        <td className="px-4 py-3"><span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{TYPE_LABELS[typeKey] || typeKey}</span></td>
+                        <td className="px-4 py-3 text-right font-medium">{fmt(total)}</td>
+                        <td className="px-4 py-3 text-right text-gray-600">{costPerSqFt > 0 ? fmt(costPerSqFt) : "-"}</td>
+                        <td className="px-4 py-3">
+                          <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STATUS_STYLES[statusKey] || "bg-gray-100 text-gray-700")}>
+                            {statusKey.charAt(0).toUpperCase() + statusKey.slice(1).replace(/-|_/g, " ")}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-500">
+                          {est.updatedAt ? new Date(est.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "-"}
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
