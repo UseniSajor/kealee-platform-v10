@@ -130,20 +130,23 @@ class ApiClient {
   }
 
   async predictCost(estimateData: any) {
-    return this.request('/estimation/estimate', {
+    return this.request('/estimation/ai/cost-prediction', {
       method: 'POST',
-      body: JSON.stringify({ ...estimateData, predictOnly: true }),
+      body: JSON.stringify(estimateData),
     });
   }
 
   async suggestAssemblies(projectType: string, location: string) {
-    return this.request(`/estimation/ai/suggest-assemblies?projectType=${encodeURIComponent(projectType)}&location=${encodeURIComponent(location)}`);
+    return this.request('/estimation/ai/suggest-assemblies', {
+      method: 'POST',
+      body: JSON.stringify({ projectType, location }),
+    });
   }
 
   async valueEngineer(estimateId: string) {
-    return this.request(`/estimation/estimate/${estimateId}`, {
+    return this.request('/estimation/ai/value-engineering', {
       method: 'POST',
-      body: JSON.stringify({ action: 'value-engineer' }),
+      body: JSON.stringify({ estimateId }),
     });
   }
 

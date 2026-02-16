@@ -1,17 +1,18 @@
 {
   "name": "@kealee/auth",
   "version": "1.0.0",
+  "type": "module",
   "description": "Kealee Platform Authentication Package - Supabase Integration",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "import": "./dist/index.js"
     },
     "./client": {
       "types": "./dist/client.d.ts",
-      "default": "./dist/client.js"
+      "import": "./dist/client.js"
     }
   },
   "scripts": {
@@ -32,7 +33,7 @@
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
-    "react": "^18.2.0",
-    "next": "14.2.35"
+    "react": ">=18.2.0",
+    "next": ">=14.0.0"
   }
 }
