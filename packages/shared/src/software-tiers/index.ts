@@ -199,12 +199,7 @@ export const SOFTWARE_TIERS: Record<SoftwareTier, TierConfig> = {
     name: 'Builder',
     tagline: 'Complete project management for growing GCs',
     featureCount: 20,
-    features: [
-      ...SOFTWARE_TIERS?.S1?.features ?? [],
-      'Owner Dashboard', 'Schedule Manager', 'Lien Waiver Workflow', 'Budget Reports',
-      'Scope Matrix', 'Permit Wizard', 'Inspection Scheduler', 'RFI Portal',
-      'Submittal Manager', 'COI Tracker', 'QC Inspections', 'Document Control',
-    ],
+    features: [], // Populated below (can't self-reference during const declaration)
     pricingTiers: [
       { label: 'S2 Basic', monthlyPrice: 149, annualPrice: 119, maxProjects: 5, maxUsers: 3, stripeLookupKey: 'software-s2-builder-basic-monthly', stripeAnnualLookupKey: 'software-s2-builder-basic-annual' },
       { label: 'S2 Standard', monthlyPrice: 249, annualPrice: 199, maxProjects: 7, maxUsers: 4, stripeLookupKey: 'software-s2-builder-standard-monthly', stripeAnnualLookupKey: 'software-s2-builder-standard-annual' },

@@ -14,31 +14,25 @@ export function MarketingFooter({ className = '' }: MarketingFooterProps) {
 
   const footerLinks = {
     platform: [
-      { label: 'Architecture & Design', href: '/architect' },
-      { label: 'Permits & Inspections', href: '/permits' },
-      { label: 'Ops & PM Services', href: '/ops' },
-      { label: 'Project Owner Portal', href: '/project-owner' },
+      { label: 'Architecture & Design', href: '/services/architect' },
+      { label: 'Permits & Inspections', href: '/services/permits' },
+      { label: 'Ops & PM Services', href: '/services/ops' },
+      { label: 'Project Owner Portal', href: '/portals' },
       { label: 'Construction Network', href: '/network' },
       { label: 'Pricing', href: '/pricing' },
     ],
     company: [
       { label: 'About Us', href: '/about' },
       { label: 'Careers', href: '/careers' },
-      { label: 'Press', href: '/press' },
       { label: 'Contact', href: '/contact' },
     ],
     resources: [
-      { label: 'Help Center', href: '/help' },
       { label: 'Blog', href: '/blog' },
-      { label: 'Case Studies', href: '/case-studies' },
-      { label: 'API Documentation', href: '/docs/api' },
-      { label: 'System Status', href: '/status' },
+      { label: 'Services', href: '/services' },
     ],
     legal: [
       { label: 'Terms of Service', href: '/terms' },
       { label: 'Privacy Policy', href: '/privacy' },
-      { label: 'Cookie Policy', href: '/cookies' },
-      { label: 'Licensing', href: '/licensing' },
     ],
   };
 

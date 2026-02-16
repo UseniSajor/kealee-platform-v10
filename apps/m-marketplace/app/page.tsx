@@ -42,7 +42,7 @@ const platformFlowNodes = [
     app: 'm-architect',
     appBadge: 'm-architect',
     features: ['Construction Drawings', '3D Renderings', 'Engineering'],
-    href: '/architect',
+    href: '/services/architect',
     color: 'teal' as const,
   },
   {
@@ -51,7 +51,7 @@ const platformFlowNodes = [
     app: 'm-permits',
     appBadge: 'm-permits',
     features: ['AI Review', 'Auto Form Filling', 'Status Tracking'],
-    href: '/permits',
+    href: '/services/permits',
     color: 'green' as const,
   },
   {
@@ -60,7 +60,7 @@ const platformFlowNodes = [
     app: 'm-ops-services',
     appBadge: 'm-ops',
     features: ['PM Software', 'Operations', 'Estimation'],
-    href: '/ops',
+    href: '/services/ops',
     color: 'orange' as const,
   },
   {
@@ -69,7 +69,7 @@ const platformFlowNodes = [
     app: 'm-permits',
     appBadge: 'm-permits',
     features: ['Scheduling', 'Checklists', 'Results'],
-    href: '/permits/inspections',
+    href: '/services/permits',
     color: 'green' as const,
   },
   {
@@ -78,7 +78,7 @@ const platformFlowNodes = [
     app: 'm-project-owner',
     appBadge: 'm-owner',
     features: ['Final Walkthrough', 'Warranty', 'Documents'],
-    href: '/project-owner',
+    href: '/portals',
     color: 'navy' as const,
   },
 ];
@@ -192,14 +192,14 @@ const splitCTASections = [
   {
     title: 'For Homeowners',
     subtitle: 'Start your project with confidence. Get design, permits, and trusted contractors.',
-    cta: { label: 'Start Your Project', href: '/project-owner' },
+    cta: { label: 'Start Your Project', href: '/portals' },
     bgVariant: 'white' as const,
     ctaColor: 'orange' as const,
   },
   {
     title: 'For Contractors',
     subtitle: 'Grow your business with PM tools, leads, and streamlined operations.',
-    cta: { label: 'Explore Tools', href: '/ops' },
+    cta: { label: 'Explore Tools', href: '/services/ops' },
     bgVariant: 'white' as const,
     ctaColor: 'navy' as const,
   },

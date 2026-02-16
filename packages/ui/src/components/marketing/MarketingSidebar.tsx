@@ -161,17 +161,17 @@ export function MarketingSidebar({ activeSection, className = '' }: MarketingSid
           Construction Network
         </div>
         <div className="space-y-1">
-          <Link href="/network/find" className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 py-1">
+          <Link href="/network" className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 py-1">
             <Users className="w-4 h-4" />
             <span>Find Professionals</span>
           </Link>
-          <Link href="/network/list" className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 py-1">
+          <Link href="/post-project" className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 py-1">
             <Briefcase className="w-4 h-4" />
-            <span>List Your Business</span>
+            <span>Post a Project</span>
           </Link>
-          <Link href="/network/bids" className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 py-1">
+          <Link href="/services" className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 py-1">
             <Gavel className="w-4 h-4" />
-            <span>View Open Bids</span>
+            <span>Browse Services</span>
           </Link>
         </div>
       </div>
@@ -215,7 +215,7 @@ export function MarketingSidebar({ activeSection, className = '' }: MarketingSid
                 ]}
               />
             </div>
-            <CTALink href="/architect" color={appAccents.architect}>
+            <CTALink href="/services/architect" color={appAccents.architect}>
               Start Design
             </CTALink>
           </div>
@@ -251,7 +251,7 @@ export function MarketingSidebar({ activeSection, className = '' }: MarketingSid
                 ]}
               />
             </div>
-            <CTALink href="/permits" color={appAccents.permits}>
+            <CTALink href="/services/permits" color={appAccents.permits}>
               Start Permit
             </CTALink>
           </div>
@@ -285,7 +285,7 @@ export function MarketingSidebar({ activeSection, className = '' }: MarketingSid
                 <PriceTier name="Subcontractor Mgmt" price="$750" />
                 <PriceTier name="Quality Control" price="$500" />
               </div>
-              <Link href="/ops/services" className="text-[10px] text-orange-600 hover:underline mt-1 inline-block">
+              <Link href="/services/ops" className="text-[10px] text-orange-600 hover:underline mt-1 inline-block">
                 + 8 more services
               </Link>
             </div>
@@ -298,7 +298,7 @@ export function MarketingSidebar({ activeSection, className = '' }: MarketingSid
                 <PriceTier name="Detailed Estimate" price="$499" />
                 <PriceTier name="Full Takeoff" price="$999" />
               </div>
-              <Link href="/ops/estimation" className="text-[10px] text-orange-600 hover:underline mt-1 inline-block">
+              <Link href="/services/estimation" className="text-[10px] text-orange-600 hover:underline mt-1 inline-block">
                 + 4 more services
               </Link>
             </div>
@@ -318,7 +318,7 @@ export function MarketingSidebar({ activeSection, className = '' }: MarketingSid
               </div>
             </div>
 
-            <CTALink href="/ops" color={appAccents.ops}>
+            <CTALink href="/services/ops" color={appAccents.ops}>
               Browse All Services
             </CTALink>
           </div>
@@ -359,7 +359,7 @@ export function MarketingSidebar({ activeSection, className = '' }: MarketingSid
               <div className="text-[10px] text-gray-500">Need a Dedicated PM?</div>
               <div className="text-xs text-gray-700">Add PM Services via os-pm (remote only)</div>
             </div>
-            <CTALink href="/project-owner" color={appAccents.projectOwner}>
+            <CTALink href="/portals" color={appAccents.projectOwner}>
               Start Project
             </CTALink>
           </div>

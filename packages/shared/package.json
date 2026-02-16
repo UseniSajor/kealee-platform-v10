@@ -1,0 +1,39 @@
+{
+  "name": "@kealee/shared",
+  "version": "1.0.0",
+  "description": "Shared types, constants, and utilities for the Kealee Platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js"
+    },
+    "./software-tiers": {
+      "types": "./dist/software-tiers/index.d.ts",
+      "require": "./dist/software-tiers/index.js"
+    },
+    "./feature-flags": {
+      "types": "./dist/feature-flags/index.d.ts",
+      "require": "./dist/feature-flags/index.js"
+    },
+    "./types/network": {
+      "types": "./dist/types/network.d.ts",
+      "require": "./dist/types/network.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "software-tiers": ["dist/software-tiers/index.d.ts"],
+      "feature-flags": ["dist/feature-flags/index.d.ts"],
+      "types/network": ["dist/types/network.d.ts"]
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
