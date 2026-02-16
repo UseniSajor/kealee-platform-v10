@@ -82,7 +82,7 @@ export function SignupClient() {
         <img
           src="/kealee-logo.png"
           alt="Kealee Construction"
-          className="h-12 w-auto mx-auto mb-2"
+          className="h-24 w-auto mx-auto mb-2"
         />
         <CardTitle className="text-2xl text-center">Create Your Account</CardTitle>
         <p className="text-sm text-neutral-600 text-center">

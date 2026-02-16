@@ -79,7 +79,7 @@ export default function LoginPage() {
               <img
                 src="/kealee-logo-transparent.png"
                 alt="Kealee Construction"
-                className="h-12 w-auto"
+                className="h-20 w-auto"
               />
               <div>
                 <h1 className="text-2xl font-bold">Finance & Trust</h1>
@@ -160,7 +160,7 @@ export default function LoginPage() {
               <img
                 src="/kealee-logo.png"
                 alt="Kealee Construction"
-                className="h-12 w-auto"
+                className="h-20 w-auto"
               />
             </div>
 

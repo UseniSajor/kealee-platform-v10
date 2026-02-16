@@ -18,7 +18,7 @@ export function Header() {
               <img
                 src="/kealee-logo.png"
                 alt="Kealee Construction"
-                className="h-10 w-auto"
+                className="h-12 w-auto"
               />
             </Link>
           </div>

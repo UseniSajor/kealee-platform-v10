@@ -44,7 +44,7 @@ export function Header({ onRequestReview }: HeaderProps) {
             <img
               src="/kealee-logo.png"
               alt="Kealee Construction"
-              className="h-9 w-auto"
+              className="h-12 w-auto"
             />
           </Link>
 

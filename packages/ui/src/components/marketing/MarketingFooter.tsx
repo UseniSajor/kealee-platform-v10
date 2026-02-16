@@ -54,7 +54,7 @@ export function MarketingFooter({ className = '' }: MarketingFooterProps) {
               <img
                 src="/kealee-logo-transparent.png"
                 alt="Kealee Construction"
-                className="h-10 w-auto"
+                className="h-14 w-auto"
               />
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">

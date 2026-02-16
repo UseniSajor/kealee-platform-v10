@@ -7,8 +7,15 @@ import { Button } from "@kealee/ui/button"
 import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
-import { signIn } from "@kealee/auth/client"
+import { createBrowserClient } from "@supabase/ssr"
 import { HardHat } from "lucide-react"
+
+function getSupabase() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
 
 export function LoginClient() {
   const router = useRouter()
@@ -27,7 +34,12 @@ export function LoginClient() {
     setError("")
 
     try {
-      await signIn(email, password)
+      const supabase = getSupabase()
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (authError) throw authError
       router.refresh()
       router.push(redirect)
     } catch (err: unknown) {
@@ -45,7 +57,7 @@ export function LoginClient() {
           <img
             src="/kealee-logo.png"
             alt="Kealee Construction"
-            className="h-16 w-auto mx-auto mb-4"
+            className="h-24 w-auto mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-neutral-900">Kealee PM</h1>
           <p className="text-sm text-neutral-500 mt-1">Construction Project Management Software</p>

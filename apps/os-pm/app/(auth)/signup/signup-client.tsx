@@ -91,7 +91,7 @@ export function SignupClient() {
           <img
             src="/kealee-logo.png"
             alt="Kealee Construction"
-            className="h-12 w-auto mx-auto mb-3"
+            className="h-24 w-auto mx-auto mb-3"
           />
           <h1 className="text-2xl font-bold text-neutral-900">Start Your Free Trial</h1>
           <p className="text-sm text-neutral-500 mt-1">14-day free trial. No credit card required.</p>

@@ -2,9 +2,15 @@
 
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { signIn } from "@kealee/auth/client"
 import { createBrowserClient } from "@supabase/ssr"
 import Link from "next/link"
+
+function getSupabase() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
 
 export function LoginClient() {
   const router = useRouter()
@@ -23,7 +29,12 @@ export function LoginClient() {
     setError("")
 
     try {
-      await signIn(email, password)
+      const supabase = getSupabase()
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (authError) throw authError
       router.refresh()
       router.push(redirectTo)
     } catch (err: unknown) {
@@ -36,10 +47,7 @@ export function LoginClient() {
   async function handleGoogleLogin() {
     setError("")
     try {
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
+      const supabase = getSupabase()
       await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -58,7 +66,7 @@ export function LoginClient() {
         <img
           src="/kealee-logo-transparent.png"
           alt="Kealee Construction"
-          className="h-12 w-auto"
+          className="h-20 w-auto"
         />
       </div>
 

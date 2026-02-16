@@ -45,7 +45,7 @@ function LoginForm() {
           <img
             src="/kealee-logo-transparent.png"
             alt="Kealee Construction"
-            className="h-16 w-auto mx-auto mb-4"
+            className="h-24 w-auto mx-auto mb-4"
           />
           <h1 className="text-3xl font-bold text-white mb-2">Operations Portal</h1>
           <p className="text-emerald-200">Sign in to manage your operations services</p>

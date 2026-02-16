@@ -54,7 +54,7 @@ export function Header({ leftSlot }: { leftSlot?: React.ReactNode }) {
           <img
             src="/kealee-logo.png"
             alt="Kealee Construction"
-            className="h-8 w-auto"
+            className="h-12 w-auto"
           />
         </div>
 
