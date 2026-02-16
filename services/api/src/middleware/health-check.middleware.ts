@@ -305,10 +305,8 @@ function calculateOverallStatus(checks: HealthStatus['checks']): 'healthy' | 'de
 export function registerHealthChecks(fastify: FastifyInstance) {
   const startTime = Date.now()
 
-  // Basic health check
-  fastify.get('/health', async () => {
-    return { status: 'ok', timestamp: new Date().toISOString() }
-  })
+  // Basic /health is registered early in index.ts for immediate availability
+  // Only register detailed health routes here
 
   // Detailed health check
   fastify.get('/health/detailed', async (): Promise<HealthStatus> => {

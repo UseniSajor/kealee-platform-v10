@@ -46,7 +46,7 @@ function LoginForm() {
         {/* Logo */}
         <div className="text-center mb-8">
           <img
-            src="/kealee-logo.png"
+            src="/kealee-logo-400w.png"
             alt="Kealee Construction"
             className="h-24 w-auto mx-auto mb-4"
           />

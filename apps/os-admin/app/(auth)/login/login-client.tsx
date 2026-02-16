@@ -64,7 +64,7 @@ export function LoginClient() {
       {/* Mobile logo - only shows on small screens */}
       <div className="lg:hidden flex items-center justify-center mb-4">
         <img
-          src="/kealee-logo-transparent.png"
+          src="/kealee-logo-400w.png"
           alt="Kealee Construction"
           className="h-20 w-auto"
         />

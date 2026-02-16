@@ -139,7 +139,7 @@ export function MarketingSidebar({ activeSection, className = '' }: MarketingSid
       <div className="p-4 border-b border-gray-100">
         <Link href="/" className="flex items-center gap-2">
           <img
-            src="/kealee-logo.png"
+            src="/kealee-logo-200w.png"
             alt="Kealee Construction"
             className="h-14 w-auto"
           />

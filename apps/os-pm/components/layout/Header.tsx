@@ -52,7 +52,7 @@ export function Header({ leftSlot }: { leftSlot?: React.ReactNode }) {
         {/* Brand - mobile only */}
         <div className="md:hidden">
           <img
-            src="/kealee-logo.png"
+            src="/kealee-logo-200w.png"
             alt="Kealee Construction"
             className="h-12 w-auto"
           />

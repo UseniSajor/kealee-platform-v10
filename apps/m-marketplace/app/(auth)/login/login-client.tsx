@@ -58,7 +58,7 @@ export function LoginClient() {
     <Card className="w-full max-w-md">
       <CardHeader>
         <img
-          src="/kealee-logo.png"
+          src="/kealee-logo-400w.png"
           alt="Kealee Construction"
           className="h-24 w-auto mx-auto mb-2"
         />

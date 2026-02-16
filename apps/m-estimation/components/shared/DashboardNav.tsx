@@ -31,7 +31,7 @@ export function DashboardNav() {
       {/* Logo */}
       <div className="h-16 flex items-center px-4 border-b">
         <img
-          src="/kealee-logo.png"
+          src="/kealee-logo-200w.png"
           alt="Kealee Construction"
           className="h-9 w-auto"
         />
