@@ -278,7 +278,7 @@ export default function ContractorsHomePage() {
               Get Started Free
             </Link>
             <a
-              href="mailto:getstarted@kealee.com"
+              href="mailto:permits@kealee.com"
               className="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white hover:bg-white/10 rounded-2xl text-lg font-semibold transition-colors"
             >
               Email Us

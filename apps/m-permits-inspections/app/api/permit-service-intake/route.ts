@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     // Email notification (console mode for dev)
     console.log("📨 PERMIT SERVICE EMAIL:");
-    console.log("To: getstarted@kealee.com");
+    console.log("To: permits@kealee.com");
     console.log(`Subject: New Permit Service Request: ${validatedData.company}`);
 
     return NextResponse.json({
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: "An error occurred. Please email getstarted@kealee.com" },
+      { error: "An error occurred. Please email permits@kealee.com" },
       { status: 500 }
     );
   }

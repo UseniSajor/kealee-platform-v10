@@ -50,11 +50,27 @@ export default function DemoPage() {
     }));
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setSubmitted(true);
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/demo-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        alert('Something went wrong. Please try again or email ops@kealee.com');
+      }
+    } catch {
+      alert('Network error. Please try again or email ops@kealee.com');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -291,9 +307,10 @@ export default function DemoPage() {
 
             <button
               type="submit"
-              className="w-full py-3 bg-[var(--primary)] text-white font-bold rounded-xl hover:opacity-95 transition"
+              disabled={isSubmitting}
+              className="w-full py-3 bg-[var(--primary)] text-white font-bold rounded-xl hover:opacity-95 transition disabled:opacity-50"
             >
-              Request Demo
+              {isSubmitting ? 'Submitting...' : 'Request Demo'}
             </button>
 
             <p className="text-xs text-center text-zinc-500">

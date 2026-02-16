@@ -10,7 +10,6 @@ import {
     Zap,
     Layers,
     Maximize2,
-    Loader2
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -67,34 +66,10 @@ const MOCK_DESIGNS = [
 
 export default function DesignHubPage() {
     const [activeCategory, setActiveCategory] = useState('All Projects');
-    const [loadingId, setLoadingId] = useState<string | null>(null);
 
-    const handleUnlock = async (packageId: string) => {
-        try {
-            setLoadingId(packageId);
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/marketplace/design/checkout`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Note: Auth token handling is required here in production
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ packageId })
-            });
-
-            const data = await response.json();
-
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                alert('Checkout failed: ' + (data.message || 'Unknown error'));
-            }
-        } catch (error) {
-            console.error('Checkout error:', error);
-            alert('An error occurred during checkout. Please try again.');
-        } finally {
-            setLoadingId(null);
-        }
+    const handleUnlock = (packageId: string) => {
+        // Redirect to contact page for design purchase inquiries
+        window.location.href = `/contact?interest=design&package=${packageId}`;
     };
 
     const container = {
@@ -243,20 +218,10 @@ export default function DesignHubPage() {
                                     <div className="pt-6 border-t border-neutral-50 flex items-center justify-between">
                                         <button
                                             onClick={() => handleUnlock(design.id)}
-                                            disabled={!!loadingId}
-                                            className="flex items-center gap-2 font-black text-sm text-indigo-600 group-hover:gap-4 transition-all disabled:opacity-50"
+                                            className="flex items-center gap-2 font-black text-sm text-indigo-600 group-hover:gap-4 transition-all"
                                         >
-                                            {loadingId === design.id ? (
-                                                <>
-                                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                                    Preparing...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    Unlock Package
+                                                    Get Started
                                                     <ArrowRight className="w-4 h-4" />
-                                                </>
-                                            )}
                                         </button>
                                         <div className="flex -space-x-2">
                                             {[1, 2, 3].map(i => (

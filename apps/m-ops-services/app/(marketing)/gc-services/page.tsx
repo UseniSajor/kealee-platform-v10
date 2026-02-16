@@ -42,7 +42,7 @@ export default function GCServicesHomePage() {
       label: "Growing Team",
       price: "$3,750",
       period: "/month",
-      description: "Full ops coverage for growing contractors with 3-8 active jobs",
+      description: "Full ops coverage for growing contractors with up to 5 active jobs",
       features: [
         "Multi-project coordination",
         "Weekly reporting + action items",

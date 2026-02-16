@@ -12,6 +12,7 @@ export default function PermitContactPage() {
     phone: "",
     role: "",
     contractorType: "",
+    yearsInBusiness: "",
     jurisdictions: [] as string[],
     permitsPerMonth: "",
     servicesNeeded: [] as string[],
@@ -62,6 +63,7 @@ export default function PermitContactPage() {
           phone: "",
           role: "",
           contractorType: "",
+          yearsInBusiness: "",
           jurisdictions: [],
           permitsPerMonth: "",
           servicesNeeded: [],
@@ -167,6 +169,24 @@ export default function PermitContactPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
+                        <label className="block text-sm font-medium text-gray-900 mb-2">Your Role *</label>
+                        <select
+                          value={formData.role}
+                          onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-transparent"
+                          required
+                        >
+                          <option value="">Select role</option>
+                          <option value="Owner">Owner</option>
+                          <option value="Project Manager">Project Manager</option>
+                          <option value="Foreman">Foreman</option>
+                          <option value="Estimator">Estimator</option>
+                          <option value="Developer">Developer</option>
+                          <option value="Property Owner">Property Owner</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                      <div>
                         <label className="block text-sm font-medium text-gray-900 mb-2">Contractor Type *</label>
                         <select
                           value={formData.contractorType}
@@ -179,6 +199,7 @@ export default function PermitContactPage() {
                           <option value="Electrical Contractor">Electrical Contractor</option>
                           <option value="Plumbing Contractor">Plumbing Contractor</option>
                           <option value="HVAC Contractor">HVAC Contractor</option>
+                          <option value="Framing Contractor">Framing Contractor</option>
                           <option value="Roofing Contractor">Roofing Contractor</option>
                           <option value="Developer">Developer</option>
                           <option value="Property Owner">Property Owner</option>
@@ -186,7 +207,25 @@ export default function PermitContactPage() {
                           <option value="Other Specialty">Other Specialty</option>
                         </select>
                       </div>
+                    </div>
 
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-900 mb-2">Years in Business *</label>
+                        <select
+                          value={formData.yearsInBusiness}
+                          onChange={(e) => setFormData({ ...formData, yearsInBusiness: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-transparent"
+                          required
+                        >
+                          <option value="">Select range</option>
+                          <option value="< 1 year">Less than 1 year</option>
+                          <option value="1-3 years">1-3 years</option>
+                          <option value="3-10 years">3-10 years</option>
+                          <option value="10-20 years">10-20 years</option>
+                          <option value="20+ years">20+ years</option>
+                        </select>
+                      </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-900 mb-2">Permits Per Month *</label>
                         <select
@@ -202,6 +241,44 @@ export default function PermitContactPage() {
                           <option value="30+ permits">30+ permits</option>
                         </select>
                       </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Jurisdictions *</label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {jurisdictionOptions.map((jurisdiction) => (
+                          <label key={jurisdiction} className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={formData.jurisdictions.includes(jurisdiction)}
+                              onChange={(e) => {
+                                const updated = e.target.checked
+                                  ? [...formData.jurisdictions, jurisdiction]
+                                  : formData.jurisdictions.filter((j) => j !== jurisdiction)
+                                setFormData({ ...formData, jurisdictions: updated })
+                              }}
+                              className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
+                            />
+                            <span className="text-sm text-gray-700">{jurisdiction}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Urgency *</label>
+                      <select
+                        value={formData.urgency}
+                        onChange={(e) => setFormData({ ...formData, urgency: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-transparent"
+                        required
+                      >
+                        <option value="">How soon do you need help?</option>
+                        <option value="No rush - planning ahead">No rush — planning ahead</option>
+                        <option value="Need within 2 weeks">Need within 2 weeks</option>
+                        <option value="Need within 1 week">Need within 1 week</option>
+                        <option value="Urgent - ASAP">Urgent — ASAP</option>
+                      </select>
                     </div>
 
                     <div>
@@ -286,8 +363,8 @@ export default function PermitContactPage() {
                 </h3>
                 <div className="space-y-2 text-sm">
                   <p>
-                    <a href="mailto:getstarted@kealee.com" className="text-emerald-600 hover:underline">
-                      getstarted@kealee.com
+                    <a href="mailto:permits@kealee.com" className="text-emerald-600 hover:underline">
+                      permits@kealee.com
                     </a>
                   </p>
                   <p>

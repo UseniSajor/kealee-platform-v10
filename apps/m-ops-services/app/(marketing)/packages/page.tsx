@@ -80,7 +80,7 @@ export default function PackagesPage() {
               </div>
               <div className="mb-6">
                 <p className="text-sm font-bold text-zinc-700 mb-1">15-20 hours/week</p>
-                <p className="text-sm text-zinc-600">Up to 3 projects</p>
+                <p className="text-sm text-zinc-600">Up to 5 projects</p>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start">
@@ -227,7 +227,7 @@ export default function PackagesPage() {
                     <tr>
                       <td className="py-4 px-6 text-zinc-700">Projects</td>
                       <td className="text-center py-4 px-6 text-zinc-600">1</td>
-                      <td className="text-center py-4 px-6 text-zinc-600 bg-sky-50">3</td>
+                      <td className="text-center py-4 px-6 text-zinc-600 bg-sky-50">Up to 5</td>
                       <td className="text-center py-4 px-6 text-zinc-600">Up to 20</td>
                       <td className="text-center py-4 px-6 text-zinc-600">Portfolio</td>
                     </tr>

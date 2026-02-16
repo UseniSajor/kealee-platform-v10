@@ -132,8 +132,8 @@ export default function ContractorsLayout({
               <h3 className="font-semibold text-white mb-4">Contact</h3>
               <ul className="space-y-3 text-sm">
                 <li>
-                  <a href="mailto:getstarted@kealee.com" className="hover:text-emerald-600 transition-colors">
-                    getstarted@kealee.com
+                  <a href="mailto:permits@kealee.com" className="hover:text-emerald-600 transition-colors">
+                    permits@kealee.com
                   </a>
                 </li>
                 <li>
