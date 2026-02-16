@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency, debounce } from '@/lib/utils';
 import { apiClient } from '@/lib/api';
+import Link from 'next/link';
 
 interface MaterialItem {
   id: string;
@@ -182,11 +183,19 @@ export default function CostDatabasePage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Cost Database</h1>
-        <p className="text-muted-foreground mt-1">
-          Browse materials, labor rates, and equipment costs
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Cost Database</h1>
+          <p className="text-muted-foreground mt-1">
+            Browse materials, labor rates, and equipment costs
+          </p>
+        </div>
+        <Link href="/cost-database/import">
+          <Button className="bg-amber-600 hover:bg-amber-700">
+            <Database className="h-4 w-4 mr-2" />
+            Import Cost Book
+          </Button>
+        </Link>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>

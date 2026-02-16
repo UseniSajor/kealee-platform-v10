@@ -6565,6 +6565,8 @@ model Estimate {
   revisions      Estimate[]         @relation("EstimateRevisions")
   sections       EstimateSection[]
   lineItems      EstimateLineItem[]
+  comparisons    EstimateComparison[] @relation("EstimateComparisons")
+  comparedTo     EstimateComparison[] @relation("ComparedEstimates")
 
   @@index([organizationId])
   @@index([projectId])
@@ -9565,4 +9567,389 @@ model SoftwareSubscription {
   @@index([status])
   @@index([stripeSubscriptionId])
   @@map("software_subscriptions")
+}
+
+// ============================================================================
+// ESTIMATION TOOL - ADDITIONAL MODELS (Comparisons, Takeoffs, Orders, etc.)
+// ============================================================================
+
+// Estimate Comparisons — compare estimates against each other or historical data
+model EstimateComparison {
+  id              String         @id @default(uuid())
+  estimateId      String
+  comparedToId    String?
+  type            ComparisonType
+  name            String?
+
+  // Comparison data
+  baseCost        Decimal        @db.Decimal(14, 2)
+  comparedCost    Decimal        @db.Decimal(14, 2)
+  variance        Decimal        @db.Decimal(14, 2)
+  variancePercent Decimal        @db.Decimal(8, 4)
+
+  // Breakdown
+  materialVariance  Decimal?     @db.Decimal(14, 2)
+  laborVariance     Decimal?     @db.Decimal(14, 2)
+  equipmentVariance Decimal?     @db.Decimal(14, 2)
+
+  // Analysis
+  factors         Json?
+  recommendations Json?
+  aiAnalysis      String?
+
+  createdAt       DateTime       @default(now())
+
+  estimate        Estimate       @relation("EstimateComparisons", fields: [estimateId], references: [id], onDelete: Cascade)
+  comparedTo      Estimate?      @relation("ComparedEstimates", fields: [comparedToId], references: [id])
+
+  @@index([estimateId])
+  @@map("estimate_comparisons")
+}
+
+enum ComparisonType {
+  REVISION
+  SIMILAR_PROJECT
+  MARKET_RATE
+  HISTORICAL
+  CONTRACTOR_BID
+}
+
+// Estimate History — audit trail for status changes and edits
+model EstimateHistory {
+  id             String          @id @default(uuid())
+  estimateId     String
+  action         EstimateAction
+  userId         String?
+  previousStatus EstimateStatus?
+  newStatus      EstimateStatus?
+  changes        Json?
+  notes          String?
+  createdAt      DateTime        @default(now())
+
+  @@index([estimateId])
+  @@index([createdAt])
+  @@map("estimate_history")
+}
+
+enum EstimateAction {
+  CREATED
+  UPDATED
+  STATUS_CHANGED
+  SUBMITTED
+  REVIEWED
+  APPROVED_ACTION
+  REJECTED_ACTION
+  SENT_ACTION
+  REVISED
+  EXPORTED
+  ARCHIVED_ACTION
+}
+
+// Takeoffs — plan-based quantity extraction sessions
+model Takeoff {
+  id            String        @id @default(uuid())
+  estimateId    String?
+  projectId     String?
+  name          String
+  description   String?
+  type          TakeoffType
+  status        TakeoffStatus @default(NOT_STARTED)
+
+  // Source documents
+  documentUrls  Json?
+  pageCount     Int?
+  scale         String?
+
+  // Totals
+  totalItems    Int           @default(0)
+  totalArea     Decimal?      @db.Decimal(14, 2)
+  totalLinear   Decimal?      @db.Decimal(14, 2)
+  totalCount    Int?
+
+  // AI processing
+  aiProcessed   Boolean       @default(false)
+  aiConfidence  Decimal?      @db.Decimal(5, 4)
+  aiNotes       String?
+
+  completedAt   DateTime?
+  completedById String?
+  metadata      Json?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  measurements  TakeoffMeasurement[]
+
+  @@index([estimateId])
+  @@index([projectId])
+  @@map("takeoffs")
+}
+
+enum TakeoffType {
+  GENERAL
+  SITEWORK
+  STRUCTURAL
+  ARCHITECTURAL
+  MECHANICAL
+  ELECTRICAL
+  PLUMBING
+  FIRE_PROTECTION
+}
+
+enum TakeoffStatus {
+  NOT_STARTED
+  TAKEOFF_IN_PROGRESS
+  TAKEOFF_COMPLETED
+  VERIFIED
+}
+
+// Takeoff Measurements — individual measurements within a takeoff
+model TakeoffMeasurement {
+  id              String          @id @default(uuid())
+  takeoffId       String
+  category        String
+  subcategory     String?
+  description     String
+  location        String?
+  floor           String?
+
+  // Measurement data
+  measurementType MeasurementType
+  length          Decimal?        @db.Decimal(12, 4)
+  width           Decimal?        @db.Decimal(12, 4)
+  height          Decimal?        @db.Decimal(12, 4)
+  depth           Decimal?        @db.Decimal(12, 4)
+  area            Decimal?        @db.Decimal(14, 2)
+  volume          Decimal?        @db.Decimal(14, 2)
+  count           Int?
+
+  unit            String
+  quantity        Decimal         @db.Decimal(12, 4)
+
+  // Source
+  pageNumber      Int?
+  coordinates     Json?
+  sourceMethod    TakeoffSource   @default(MANUAL)
+  confidence      Decimal?        @db.Decimal(5, 4)
+
+  // Linking
+  linkedToLineItem String?
+
+  notes           String?
+  metadata        Json?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  takeoff         Takeoff         @relation(fields: [takeoffId], references: [id], onDelete: Cascade)
+
+  @@index([takeoffId])
+  @@index([category])
+  @@map("takeoff_measurements")
+}
+
+enum MeasurementType {
+  LINEAR
+  AREA_MEASUREMENT
+  VOLUME_MEASUREMENT
+  COUNT_MEASUREMENT
+  WEIGHT
+}
+
+// Estimation Orders — service orders for estimation work
+model EstimationOrder {
+  id              String                @id @default(uuid())
+  organizationId  String?
+  clientId        String?
+  projectId       String?
+
+  // Order details
+  orderNumber     String                @unique
+  serviceType     EstimationServiceType
+  status          EstimationOrderStatus @default(ORDER_PENDING)
+  priority        OrderPriority         @default(ORDER_NORMAL)
+
+  // Pricing
+  price           Decimal               @db.Decimal(10, 2)
+  discount        Decimal               @default(0) @db.Decimal(10, 2)
+  total           Decimal               @db.Decimal(10, 2)
+  paidAt          DateTime?
+  stripePaymentId String?
+
+  // Project info
+  projectName     String
+  projectAddress  String?
+  projectType     String?
+  squareFootage   Decimal?              @db.Decimal(12, 2)
+  scopeDescription String?
+
+  // Documents
+  uploadedDocs    Json?
+
+  // Timeline
+  requestedTurnaround Int?
+  dueAt           DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  deliveredAt     DateTime?
+
+  // Assignment
+  assignedToId    String?
+  reviewedById    String?
+
+  // Output
+  estimateId      String?
+  deliverables    Json?
+
+  // Communication
+  notes           String?
+  internalNotes   String?
+  clientFeedback  String?
+  feedbackRating  Int?
+
+  metadata        Json?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  @@index([organizationId])
+  @@index([clientId])
+  @@index([status])
+  @@index([orderNumber])
+  @@map("estimation_orders")
+}
+
+enum EstimationOrderStatus {
+  ORDER_PENDING
+  ORDER_PAID
+  ORDER_ASSIGNED
+  ORDER_IN_PROGRESS
+  ORDER_UNDER_REVIEW
+  ORDER_COMPLETED
+  ORDER_DELIVERED
+  ORDER_REVISION_REQUESTED
+  ORDER_CANCELLED
+  ORDER_REFUNDED
+}
+
+enum OrderPriority {
+  ORDER_LOW
+  ORDER_NORMAL
+  ORDER_HIGH
+  ORDER_RUSH
+}
+
+// Regional Cost Indices — regional cost adjustment factors
+model RegionalCostIndex {
+  id             String   @id @default(uuid())
+  region         String
+  city           String?
+  state          String
+  indexValue      Decimal  @db.Decimal(6, 4)
+  laborIndex     Decimal? @db.Decimal(6, 4)
+  materialIndex  Decimal? @db.Decimal(6, 4)
+  equipmentIndex Decimal? @db.Decimal(6, 4)
+  effectiveDate  DateTime
+  source         String?
+  createdAt      DateTime @default(now())
+
+  @@unique([region, effectiveDate])
+  @@index([region])
+  @@index([state])
+  @@map("regional_cost_indices")
+}
+
+// Historical Project Costs — benchmarking data from past projects
+model HistoricalProjectCost {
+  id              String              @id @default(uuid())
+  organizationId  String?
+  projectType     String
+  buildingType    String?
+  region          String
+  city            String?
+  state           String?
+  squareFootage   Decimal             @db.Decimal(12, 2)
+  totalCost       Decimal             @db.Decimal(14, 2)
+  costPerSqFt     Decimal             @db.Decimal(10, 2)
+
+  // Breakdown
+  laborPercent    Decimal?            @db.Decimal(5, 2)
+  materialPercent Decimal?            @db.Decimal(5, 2)
+  equipmentPercent Decimal?           @db.Decimal(5, 2)
+
+  // Context
+  complexity      AssemblyComplexity?
+  quality         QualityLevel?
+  year            Int
+  quarter         Int?
+
+  // Flags
+  isVerified      Boolean             @default(false)
+  source          String?
+
+  notes           String?
+  metadata        Json?
+  createdAt       DateTime            @default(now())
+
+  @@index([projectType])
+  @@index([region])
+  @@index([year])
+  @@map("historical_project_costs")
+}
+
+enum QualityLevel {
+  ECONOMY
+  STANDARD_QUALITY
+  PREMIUM
+  LUXURY
+  CUSTOM_QUALITY
+}
+
+// AI Estimation Sessions — AI-powered estimation features
+model AIEstimationSession {
+  id              String          @id @default(uuid())
+  estimateId      String?
+  userId          String
+  sessionType     AISessionType
+  status          AIEstSessionStatus @default(AI_EST_ACTIVE)
+
+  // Input
+  inputType       String
+  inputData       Json
+
+  // Processing
+  processingSteps Json?
+  extractedData   Json?
+
+  // Output
+  generatedItems  Json?
+  confidence      Decimal?        @db.Decimal(5, 4)
+  warnings        Json?
+
+  // Feedback
+  accepted        Boolean?
+  feedbackNotes   String?
+
+  startedAt       DateTime        @default(now())
+  completedAt     DateTime?
+  metadata        Json?
+
+  @@index([estimateId])
+  @@index([userId])
+  @@index([sessionType])
+  @@map("ai_estimation_sessions")
+}
+
+enum AISessionType {
+  PLAN_ANALYSIS
+  SCOPE_EXTRACTION
+  COST_PREDICTION
+  ASSEMBLY_SUGGESTION
+  VALUE_ENGINEERING_AI
+  RISK_ASSESSMENT
+}
+
+enum AIEstSessionStatus {
+  AI_EST_ACTIVE
+  AI_EST_PROCESSING
+  AI_EST_COMPLETED
+  AI_EST_FAILED
+  AI_EST_CANCELLED
 }

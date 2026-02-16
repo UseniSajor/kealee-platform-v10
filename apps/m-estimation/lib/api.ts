@@ -328,6 +328,99 @@ class ApiClient {
   async getStats() {
     return this.request('/estimation/metrics');
   }
+
+  // ========================================================================
+  // Cost Book Import
+  // ========================================================================
+
+  // Upload a CSV cost book file
+  async importCostBookCSV(
+    file: File,
+    type: 'materials' | 'labor' | 'equipment' | 'assemblies',
+    costDatabaseId?: string,
+    overwrite?: boolean
+  ) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('type', type);
+    if (costDatabaseId) formData.append('costDatabaseId', costDatabaseId);
+    if (overwrite) formData.append('overwrite', 'true');
+
+    const authHeaders = await this.getAuthHeader();
+    try {
+      const response = await fetch(`${this.baseUrl}/estimation/cost-import/import/csv`, {
+        method: 'POST',
+        headers: { ...authHeaders },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: response.statusText }));
+        return { success: false, error: error.error || error.message || 'Upload failed' };
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Network error',
+      };
+    }
+  }
+
+  // Bulk import from JSON
+  async importCostBookJSON(
+    costDatabaseId: string,
+    type: 'materials' | 'labor' | 'equipment' | 'assemblies',
+    items: any[],
+    overwrite?: boolean
+  ) {
+    return this.request('/estimation/cost-import/import/json', {
+      method: 'POST',
+      body: JSON.stringify({ costDatabaseId, type, items, overwrite }),
+    });
+  }
+
+  // Download CSV template
+  async getCostBookTemplate(type: 'materials' | 'labor' | 'equipment' | 'assemblies') {
+    const authHeaders = await this.getAuthHeader();
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/estimation/cost-import/import/template/${type}`,
+        { headers: { ...authHeaders } }
+      );
+      if (!response.ok) return { success: false, error: 'Failed to download template' };
+      const text = await response.text();
+      return { success: true, data: text };
+    } catch {
+      return { success: false, error: 'Network error' };
+    }
+  }
+
+  // Create a new cost database
+  async createCostDatabase(data: {
+    name: string;
+    description?: string;
+    region: string;
+    type: 'CUSTOM' | 'IMPORTED';
+    version: string;
+    source?: string;
+  }) {
+    return this.request('/estimation/cost-import/databases', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // List cost databases (with item counts)
+  async listCostDatabases(params?: { region?: string; type?: string }) {
+    const filteredParams: Record<string, string> = {};
+    if (params?.region) filteredParams.region = params.region;
+    if (params?.type) filteredParams.type = params.type;
+    const query = new URLSearchParams(filteredParams).toString();
+    return this.request(`/estimation/cost-import/databases${query ? `?${query}` : ''}`);
+  }
 }
 
 export const apiClient = new ApiClient();

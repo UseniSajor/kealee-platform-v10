@@ -796,6 +796,10 @@ const start = async () => {
 
       const { estimationExtendedRoutes } = await import('./modules/estimation/estimation-extended.routes')
       await fastify.register(estimationExtendedRoutes, { prefix: '/estimation' })
+
+      // Cost Book Import (CSV/JSON bulk upload for cost databases)
+      const { costImportRoutes } = await import('./modules/estimation/cost-import.routes')
+      await fastify.register(costImportRoutes, { prefix: '/estimation/cost-import' })
     })
 
     await safeRegisterBlock('Phase 1 - Communication, Subscriptions, Tracking routes', async () => {
