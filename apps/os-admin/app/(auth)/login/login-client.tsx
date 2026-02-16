@@ -54,11 +54,12 @@ export function LoginClient() {
   return (
     <div className="space-y-6">
       {/* Mobile logo - only shows on small screens */}
-      <div className="lg:hidden flex items-center justify-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-lg">K</span>
-        </div>
-        <span className="text-white text-2xl font-bold tracking-tight">Kealee</span>
+      <div className="lg:hidden flex items-center justify-center mb-4">
+        <img
+          src="/kealee-logo-transparent.png"
+          alt="Kealee Construction"
+          className="h-12 w-auto"
+        />
       </div>
 
       <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 shadow-2xl">

@@ -72,9 +72,11 @@ export default function SignupPage() {
         
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-2xl font-bold">K</span>
-          </div>
+          <img
+            src="/kealee-logo.png"
+            alt="Kealee Construction"
+            className="h-16 w-auto mx-auto mb-4"
+          />
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Create Account
           </h1>

@@ -40,10 +40,12 @@ export function Header({ onRequestReview }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/development" className="flex items-center space-x-2">
-            <div className="font-bold text-xl text-gray-900">
-              Kealee <span className="text-orange-600">Development</span>
-            </div>
+          <Link href="/development" className="flex items-center">
+            <img
+              src="/kealee-logo.png"
+              alt="Kealee Construction"
+              className="h-9 w-auto"
+            />
           </Link>
 
           {/* Desktop Navigation */}

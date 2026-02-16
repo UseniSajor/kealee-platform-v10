@@ -45,7 +45,7 @@ export default function SeoHead({
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: 'Kealee Marketplace',
-    image: 'https://marketplace.kealee.com/logo.png',
+    image: 'https://marketplace.kealee.com/kealee-logo.png',
     '@id': 'https://marketplace.kealee.com',
     url: 'https://marketplace.kealee.com',
     telephone: '+1-555-123-4567',

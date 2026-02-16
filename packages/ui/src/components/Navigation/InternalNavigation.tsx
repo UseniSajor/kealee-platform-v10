@@ -39,8 +39,12 @@ export function InternalNavigation() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between py-4">
           {/* Logo ONLY - NO marketplace link */}
-          <Link href="/" className="text-xl font-bold text-blue-600">
-            Kealee
+          <Link href="/" className="flex items-center">
+            <img
+              src="/kealee-logo.png"
+              alt="Kealee Construction"
+              className="h-8 w-auto"
+            />
           </Link>
 
           {/* Internal Navigation */}

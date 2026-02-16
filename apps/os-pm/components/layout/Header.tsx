@@ -50,7 +50,13 @@ export function Header({ leftSlot }: { leftSlot?: React.ReactNode }) {
         {leftSlot ? <div className="md:hidden">{leftSlot}</div> : null}
 
         {/* Brand - mobile only */}
-        <div className="md:hidden font-bold text-lg text-blue-600">Kealee PM</div>
+        <div className="md:hidden">
+          <img
+            src="/kealee-logo.png"
+            alt="Kealee Construction"
+            className="h-8 w-auto"
+          />
+        </div>
 
         <div className="flex-1">
           <div className="relative max-w-xl hidden sm:block">

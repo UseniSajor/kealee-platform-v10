@@ -57,18 +57,11 @@ export function MarketingFooter({ className = '' }: MarketingFooterProps) {
           {/* Logo & Tagline */}
           <div className="col-span-2 md:col-span-4 lg:col-span-1 mb-4 lg:mb-0">
             <Link href="/" className="inline-flex items-center gap-2 mb-4">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg"
-                style={{ backgroundColor: brand.orange, color: '#FFFFFF', fontFamily: '"Clash Display", sans-serif' }}
-              >
-                K
-              </div>
-              <span
-                className="text-xl font-bold text-white"
-                style={{ fontFamily: '"Clash Display", sans-serif' }}
-              >
-                KEALEE
-              </span>
+              <img
+                src="/kealee-logo-transparent.png"
+                alt="Kealee Construction"
+                className="h-10 w-auto"
+              />
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">
               The DC-Baltimore corridor's end-to-end design/build platform.

@@ -88,9 +88,11 @@ export function SignupClient() {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Brand Header */}
         <div className="text-center">
-          <div className="mx-auto w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white mb-3">
-            <HardHat className="h-6 w-6" />
-          </div>
+          <img
+            src="/kealee-logo.png"
+            alt="Kealee Construction"
+            className="h-12 w-auto mx-auto mb-3"
+          />
           <h1 className="text-2xl font-bold text-neutral-900">Start Your Free Trial</h1>
           <p className="text-sm text-neutral-500 mt-1">14-day free trial. No credit card required.</p>
         </div>

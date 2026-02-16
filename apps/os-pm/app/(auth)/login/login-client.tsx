@@ -42,9 +42,11 @@ export function LoginClient() {
       <div className="w-full max-w-md space-y-6">
         {/* Brand Header */}
         <div className="text-center">
-          <div className="mx-auto w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white mb-4">
-            <HardHat className="h-8 w-8" />
-          </div>
+          <img
+            src="/kealee-logo.png"
+            alt="Kealee Construction"
+            className="h-16 w-auto mx-auto mb-4"
+          />
           <h1 className="text-2xl font-bold text-neutral-900">Kealee PM</h1>
           <p className="text-sm text-neutral-500 mt-1">Construction Project Management Software</p>
         </div>

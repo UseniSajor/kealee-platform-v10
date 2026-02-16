@@ -76,9 +76,13 @@ export default function LoginPage() {
         <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-600 to-blue-600 p-12 flex-col justify-between">
           <div>
             <div className="flex items-center gap-3 text-white mb-12">
-              <Shield className="h-10 w-10" />
+              <img
+                src="/kealee-logo-transparent.png"
+                alt="Kealee Construction"
+                className="h-12 w-auto"
+              />
               <div>
-                <h1 className="text-2xl font-bold">Kealee Finance</h1>
+                <h1 className="text-2xl font-bold">Finance & Trust</h1>
                 <p className="text-emerald-100">Secure Construction Escrow</p>
               </div>
             </div>
@@ -153,11 +157,11 @@ export default function LoginPage() {
             
             {/* Mobile Logo */}
             <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-              <Shield className="h-10 w-10 text-emerald-600" />
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900">Kealee Finance</h1>
-                <p className="text-slate-600">Secure Construction Escrow</p>
-              </div>
+              <img
+                src="/kealee-logo.png"
+                alt="Kealee Construction"
+                className="h-12 w-auto"
+              />
             </div>
 
             <div className="mb-8">

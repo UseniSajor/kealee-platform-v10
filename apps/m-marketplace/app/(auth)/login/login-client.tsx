@@ -57,6 +57,11 @@ export function LoginClient() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
+        <img
+          src="/kealee-logo.png"
+          alt="Kealee Construction"
+          className="h-12 w-auto mx-auto mb-2"
+        />
         <CardTitle className="text-2xl text-center">Marketplace Login</CardTitle>
         <p className="text-sm text-neutral-600 text-center">
           Connect with homeowners and contractors

@@ -14,11 +14,12 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">K</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">Kealee</span>
+            <Link href="/" className="flex items-center">
+              <img
+                src="/kealee-logo.png"
+                alt="Kealee Construction"
+                className="h-10 w-auto"
+              />
             </Link>
           </div>
 

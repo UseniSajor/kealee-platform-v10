@@ -29,9 +29,12 @@ export function DashboardNav() {
   return (
     <aside className="w-64 border-r bg-card flex flex-col">
       {/* Logo */}
-      <div className="h-16 flex items-center px-6 border-b">
-        <Calculator className="h-6 w-6 text-primary mr-2" />
-        <span className="font-bold text-lg">Kealee Estimation</span>
+      <div className="h-16 flex items-center px-4 border-b">
+        <img
+          src="/kealee-logo.png"
+          alt="Kealee Construction"
+          className="h-9 w-auto"
+        />
       </div>
 
       {/* Navigation */}

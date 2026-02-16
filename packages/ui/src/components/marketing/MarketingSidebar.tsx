@@ -138,21 +138,11 @@ export function MarketingSidebar({ activeSection, className = '' }: MarketingSid
       {/* Logo & Tagline */}
       <div className="p-4 border-b border-gray-100">
         <Link href="/" className="flex items-center gap-2">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white text-sm"
-            style={{ backgroundColor: brand.navy, fontFamily: '"Clash Display", sans-serif' }}
-          >
-            K
-          </div>
-          <div>
-            <div
-              className="font-bold text-lg leading-tight"
-              style={{ color: brand.navy, fontFamily: '"Clash Display", sans-serif' }}
-            >
-              KEALEE
-            </div>
-            <div className="text-[10px] text-gray-500 -mt-0.5">End-to-End Design/Build</div>
-          </div>
+          <img
+            src="/kealee-logo.png"
+            alt="Kealee Construction"
+            className="h-10 w-auto"
+          />
         </Link>
       </div>
 

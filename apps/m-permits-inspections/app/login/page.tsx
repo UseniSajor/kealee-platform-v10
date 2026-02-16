@@ -42,9 +42,11 @@ function LoginForm() {
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-slate-900 flex items-center justify-center px-6">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-2xl font-bold">K</span>
-          </div>
+          <img
+            src="/kealee-logo-transparent.png"
+            alt="Kealee Construction"
+            className="h-16 w-auto mx-auto mb-4"
+          />
           <h1 className="text-3xl font-bold text-white mb-2">Permits & Inspections</h1>
           <p className="text-blue-200">Sign in to manage permits and inspections</p>
         </div>

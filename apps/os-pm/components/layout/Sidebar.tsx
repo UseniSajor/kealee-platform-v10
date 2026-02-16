@@ -43,17 +43,18 @@ export function Sidebar() {
       <div className="flex items-center border-b px-3 py-4 gap-3">
         <Link
           href="/"
-          className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shrink-0"
+          className="shrink-0"
           aria-label="Kealee PM"
         >
-          K
+          <img
+            src={collapsed ? "/kealee-favicon.png" : "/kealee-logo.png"}
+            alt="Kealee Construction"
+            className={collapsed ? "h-9 w-9" : "h-9 w-auto"}
+          />
         </Link>
-        {!collapsed && (
+        {!collapsed && companyName && (
           <div className="min-w-0 flex-1">
-            <div className="font-bold text-sm text-neutral-900 truncate">Kealee PM</div>
-            {companyName && (
-              <div className="text-xs text-neutral-500 truncate">{companyName}</div>
-            )}
+            <div className="text-xs text-neutral-500 truncate">{companyName}</div>
           </div>
         )}
       </div>

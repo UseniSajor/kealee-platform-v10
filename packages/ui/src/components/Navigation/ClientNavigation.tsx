@@ -35,8 +35,12 @@ export function Navigation() {
               <span>← Marketplace</span>
             </Link>
             <div className="h-6 w-px bg-gray-300" />
-            <Link href="/" className="text-xl font-bold text-blue-600">
-              Kealee
+            <Link href="/" className="flex items-center">
+              <img
+                src="/kealee-logo.png"
+                alt="Kealee Construction"
+                className="h-8 w-auto"
+              />
             </Link>
           </div>
 
