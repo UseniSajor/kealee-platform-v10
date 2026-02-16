@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { apiClient } from '@/lib/api/client'
 import { useRole } from '@/lib/role-context'
 import { api } from '@/lib/api'
 import { toast } from 'sonner'
@@ -12,13 +10,10 @@ import {
   Shield,
   Building2,
   ChevronRight,
-  Check,
-  X,
   AlertTriangle,
   Loader2,
   CreditCard,
   ArrowUpRight,
-  BarChart3,
   Users,
   FolderKanban,
 } from 'lucide-react'
@@ -44,7 +39,6 @@ const PM_TIER_META: Record<string, string> = {
 const FEATURE_COUNTS: Record<string, number> = { S1: 8, S2: 20, S3: 35, S4: 50 }
 
 export default function SubscriptionPage() {
-  const router = useRouter()
   const { isInternal, tier: roleTier } = useRole()
   const [loading, setLoading] = useState(true)
   const [subscription, setSubscription] = useState<any>(null)
