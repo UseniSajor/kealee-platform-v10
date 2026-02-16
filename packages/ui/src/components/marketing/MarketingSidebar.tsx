@@ -139,9 +139,9 @@ export function MarketingSidebar({ activeSection, className = '' }: MarketingSid
       <div className="p-4 border-b border-gray-100">
         <Link href="/" className="flex items-center gap-2">
           <img
-            src="/kealee-logo-200w.png"
+            src="/kealee-logo-300w.png"
             alt="Kealee Construction"
-            className="h-14 w-auto"
+            className="h-8 w-auto"
           />
         </Link>
       </div>

@@ -110,7 +110,7 @@ export function generateSchemaMarkup(schemaMarkup?: any) {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: 'Kealee Marketplace',
-    image: 'https://marketplace.kealee.com/kealee-logo-400w.png',
+    image: 'https://marketplace.kealee.com/kealee-logo-800w.png',
     '@id': 'https://marketplace.kealee.com',
     url: 'https://marketplace.kealee.com',
     telephone: '+1-555-123-4567',

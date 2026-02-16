@@ -47,9 +47,9 @@ export function Sidebar() {
           aria-label="Kealee PM"
         >
           <img
-            src={collapsed ? "/kealee-icon-192x192.png" : "/kealee-logo-200w.png"}
+            src={collapsed ? "/kealee-icon-192x192.png" : "/kealee-logo-300w.png"}
             alt="Kealee Construction"
-            className={collapsed ? "h-9 w-9" : "h-9 w-auto"}
+            className={collapsed ? "h-8 w-8" : "h-8 w-auto"}
           />
         </Link>
         {!collapsed && companyName && (

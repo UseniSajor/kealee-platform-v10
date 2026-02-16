@@ -33,9 +33,9 @@ function LoginForm() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <img
-            src="/kealee-logo-400w.png"
+            src="/kealee-logo-600w.png"
             alt="Kealee Construction"
-            className="h-24 w-auto mx-auto mb-4"
+            className="h-20 w-auto mx-auto mb-4"
           />
           <h1 className="text-3xl font-bold text-white mb-2">Engineering Portal</h1>
           <p className="text-teal-200">Sign in to manage engineering projects</p>

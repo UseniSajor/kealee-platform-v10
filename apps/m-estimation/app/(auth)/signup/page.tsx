@@ -84,9 +84,9 @@ export default function SignupPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <img
-            src="/kealee-logo-400w.png"
+            src="/kealee-logo-600w.png"
             alt="Kealee Construction"
-            className="h-24 w-auto mx-auto mb-4"
+            className="h-20 w-auto mx-auto mb-4"
           />
           <h1 className="text-3xl font-bold text-white mb-2">
             Estimation Portal

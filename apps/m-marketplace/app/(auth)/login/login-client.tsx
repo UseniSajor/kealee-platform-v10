@@ -58,9 +58,9 @@ export function LoginClient() {
     <Card className="w-full max-w-md">
       <CardHeader>
         <img
-          src="/kealee-logo-400w.png"
+          src="/kealee-logo-600w.png"
           alt="Kealee Construction"
-          className="h-24 w-auto mx-auto mb-2"
+          className="h-20 w-auto mx-auto mb-2"
         />
         <CardTitle className="text-2xl text-center">Marketplace Login</CardTitle>
         <p className="text-sm text-neutral-600 text-center">

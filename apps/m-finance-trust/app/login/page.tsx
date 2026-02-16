@@ -77,9 +77,9 @@ export default function LoginPage() {
           <div>
             <div className="flex items-center gap-3 text-white mb-12">
               <img
-                src="/kealee-logo-400w.png"
+                src="/kealee-logo-600w.png"
                 alt="Kealee Construction"
-                className="h-20 w-auto"
+                className="h-16 w-auto"
               />
               <div>
                 <h1 className="text-2xl font-bold">Finance & Trust</h1>
@@ -158,7 +158,7 @@ export default function LoginPage() {
             {/* Mobile Logo */}
             <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
               <img
-                src="/kealee-logo-400w.png"
+                src="/kealee-logo-600w.png"
                 alt="Kealee Construction"
                 className="h-20 w-auto"
               />

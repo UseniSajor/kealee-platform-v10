@@ -52,9 +52,9 @@ export function MarketingFooter({ className = '' }: MarketingFooterProps) {
           <div className="col-span-2 md:col-span-4 lg:col-span-1 mb-4 lg:mb-0">
             <Link href="/" className="inline-flex items-center gap-2 mb-4">
               <img
-                src="/kealee-logo-200w.png"
+                src="/kealee-logo-300w.png"
                 alt="Kealee Construction"
-                className="h-14 w-auto"
+                className="h-8 w-auto"
               />
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">

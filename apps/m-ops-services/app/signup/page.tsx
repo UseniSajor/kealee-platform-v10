@@ -73,9 +73,9 @@ export default function SignupPage() {
         {/* Logo */}
         <div className="text-center mb-4">
           <img
-            src="/kealee-logo-400w.png"
+            src="/kealee-logo-600w.png"
             alt="Kealee Construction"
-            className="h-24 w-auto mx-auto mb-2"
+            className="h-20 w-auto mx-auto mb-2"
           />
           <h1 className="text-2xl font-bold text-gray-900 mb-1">
             Create Account
