@@ -18,9 +18,9 @@ FROM node:20-slim
 
 # === AGGRESSIVE CACHE INVALIDATION ===
 # Multiple cache-busting mechanisms to force Railway rebuild
-ARG BUILD_DATE=2026-01-21T14:30:00Z
-ARG BUILD_VERSION=6.1.0
-ARG CACHE_BUST=9241af0
+ARG BUILD_DATE=2026-02-16T18:00:00Z
+ARG BUILD_VERSION=6.3.0
+ARG CACHE_BUST=8540d2e-shared-pkg
 ARG RAILWAY_FORCE_REBUILD=true
 
 # Add unique timestamp to break cache
@@ -110,7 +110,7 @@ RUN echo "=== VERIFYING package.json has correct @fastify/multipart version ==="
 # Prisma postinstall will run during db:generate, so we don't need to run it here
 # NOTE: Removed --frozen-lockfile due to Railway cache issues - pnpm will update lockfile if needed
 RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true PUPPETEER_EXECUTABLE_PATH="" \
-    pnpm install --filter @kealee/api... --prod=false --ignore-scripts
+    pnpm install --filter @kealee/api... --filter @kealee/shared... --prod=false --ignore-scripts
 
 # ============================================================
 # Layer 3: Generate Prisma client
