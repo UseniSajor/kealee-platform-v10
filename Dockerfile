@@ -198,7 +198,7 @@ RUN echo "=== STEP: Building workflow-engine package ===" && \
 
 # Build other workspace packages (optional - best effort)
 RUN echo "=== STEP: Building other workspace packages ===" && \
-    for pkg in compliance types analytics api-client observability ai-chat audit estimating realtime storage; do \
+    for pkg in shared compliance types analytics api-client observability ai-chat audit estimating realtime storage; do \
       echo "Building @kealee/$pkg..." && \
       if [ -d "packages/$pkg" ]; then \
         rm -rf packages/$pkg/dist && \
@@ -224,6 +224,9 @@ RUN /bin/bash -c "export NODE_OPTIONS='--max-old-space-size=16384' && pnpm --fil
 
 # Build workflow-engine package
 RUN /bin/bash -c "export NODE_OPTIONS='--max-old-space-size=16384' && pnpm --filter @kealee/workflow-engine run build"
+
+# Build shared package (required by API for software-tiers feature gating)
+RUN /bin/bash -c "export NODE_OPTIONS='--max-old-space-size=16384' && pnpm --filter @kealee/shared run build"
 
 # Build API service TypeScript via pnpm build script
 RUN /bin/bash -c "export NODE_OPTIONS='--max-old-space-size=16384' && pnpm --filter @kealee/api run build:ts"
