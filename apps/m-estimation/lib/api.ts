@@ -3,7 +3,7 @@
  * Connects to backend estimation-tool package
  */
 
-import { createBrowserClient } from '@supabase/ssr';
+import { supabase } from '@kealee/auth/client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -22,10 +22,6 @@ class ApiClient {
 
   private async getAuthHeader(): Promise<Record<string, string>> {
     try {
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.access_token) {
         return { 'Authorization': `Bearer ${session.access_token}` };
@@ -123,14 +119,14 @@ class ApiClient {
 
   // AI Features - Scope Analysis
   async analyzeScope(description: string) {
-    return this.request('/api/v1/scope-analysis/analyze', {
+    return this.request('/estimation/ai/scope-analysis', {
       method: 'POST',
       body: JSON.stringify({ description }),
     });
   }
 
   async getProjectTypes() {
-    return this.request('/api/v1/scope-analysis/project-types');
+    return this.request('/estimation/ai/project-types');
   }
 
   async predictCost(estimateData: any) {
@@ -141,7 +137,7 @@ class ApiClient {
   }
 
   async suggestAssemblies(projectType: string, location: string) {
-    return this.request(`/api/v1/assemblies?projectType=${encodeURIComponent(projectType)}&location=${encodeURIComponent(location)}`);
+    return this.request(`/estimation/ai/suggest-assemblies?projectType=${encodeURIComponent(projectType)}&location=${encodeURIComponent(location)}`);
   }
 
   async valueEngineer(estimateId: string) {
@@ -162,15 +158,15 @@ class ApiClient {
     if (params?.category) filteredParams.category = params.category;
     if (params?.page) filteredParams.page = String(params.page);
     const query = new URLSearchParams(filteredParams).toString();
-    return this.request(`/api/v1/assemblies${query ? `?${query}` : ''}`);
+    return this.request(`/estimation/assemblies${query ? `?${query}` : ''}`);
   }
 
   async getAssembly(code: string) {
-    return this.request(`/api/v1/assemblies/${encodeURIComponent(code)}`);
+    return this.request(`/estimation/assemblies/${encodeURIComponent(code)}`);
   }
 
   async createAssembly(data: any) {
-    return this.request('/api/v1/assemblies', {
+    return this.request('/estimation/assemblies', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -218,28 +214,28 @@ class ApiClient {
 
   // Assemblies - Extended
   async getAssemblyById(id: string) {
-    return this.request(`/api/v1/assemblies/${encodeURIComponent(id)}`);
+    return this.request(`/estimation/assemblies/${encodeURIComponent(id)}`);
   }
 
   async updateAssembly(id: string, data: any) {
-    return this.request(`/api/v1/assemblies/${encodeURIComponent(id)}`, {
+    return this.request(`/estimation/assemblies/${encodeURIComponent(id)}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
   async deleteAssembly(id: string) {
-    return this.request(`/api/v1/assemblies/${encodeURIComponent(id)}`, {
+    return this.request(`/estimation/assemblies/${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
   }
 
   async getAssemblyTemplates() {
-    return this.request('/api/v1/assembly-library/templates');
+    return this.request('/estimation/assembly-library/templates');
   }
 
   async createFromTemplate(templateCode: string) {
-    return this.request('/api/v1/assembly-library/create-from-template', {
+    return this.request('/estimation/assembly-library/create-from-template', {
       method: 'POST',
       body: JSON.stringify({ templateCode }),
     });
@@ -283,35 +279,35 @@ class ApiClient {
 
   // AI - Extended
   async aiScopeAnalysis(data: { description: string; projectType?: string }) {
-    return this.request('/api/ai/scope-analysis', {
+    return this.request('/estimation/ai/scope-analysis', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async aiCostPrediction(data: any) {
-    return this.request('/api/ai/cost-prediction', {
+    return this.request('/estimation/ai/cost-prediction', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async aiValueEngineering(estimateId: string) {
-    return this.request('/api/ai/value-engineering', {
+    return this.request('/estimation/ai/value-engineering', {
       method: 'POST',
       body: JSON.stringify({ estimateId }),
     });
   }
 
   async aiCompareEstimates(estimateIds: string[]) {
-    return this.request('/api/ai/compare-estimates', {
+    return this.request('/estimation/ai/compare-estimates', {
       method: 'POST',
       body: JSON.stringify({ estimateIds }),
     });
   }
 
   async aiBenchmark(estimateId: string) {
-    return this.request('/api/ai/benchmark', {
+    return this.request('/estimation/ai/benchmark', {
       method: 'POST',
       body: JSON.stringify({ estimateId }),
     });

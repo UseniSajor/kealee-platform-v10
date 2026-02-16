@@ -3,12 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { signIn, supabase } from '@kealee/auth/client';
 import { Shield, Lock, Mail, Eye, EyeOff, CheckCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = createClientComponentClient();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -21,14 +20,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (authError) {
-        throw authError;
-      }
+      await signIn(email, password);
 
       // Redirect to dashboard on success
       router.push('/dashboard');

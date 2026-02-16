@@ -1,17 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Button } from "@kealee/ui/button"
 import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { signUp } from "@kealee/auth/client"
 import Link from "next/link"
 
 export function SignupClient() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -19,8 +18,6 @@ export function SignupClient() {
   const [lastName, setLastName] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-
-  const supabase = createClientComponentClient()
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
@@ -40,18 +37,11 @@ export function SignupClient() {
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            firstName,
-            lastName,
-            role: "admin",
-          },
-        },
+      await signUp(email, password, {
+        firstName,
+        lastName,
+        role: "admin",
       })
-      if (error) throw error
 
       router.push("/dashboard")
       router.refresh()

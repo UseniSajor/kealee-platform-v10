@@ -6,7 +6,8 @@ import { Button } from "@kealee/ui/button"
 import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { signIn } from "@kealee/auth/client"
+import { createBrowserClient } from "@supabase/ssr"
 import Link from "next/link"
 
 export function LoginClient() {
@@ -17,8 +18,6 @@ export function LoginClient() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const supabase = createClientComponentClient()
-
   const unauthorized = searchParams.get("error") === "unauthorized"
 
   async function handleLogin(e: React.FormEvent) {
@@ -27,11 +26,9 @@ export function LoginClient() {
     setError("")
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) throw error
-
-      router.push("/dashboard")
+      await signIn(email, password)
       router.refresh()
+      router.push("/dashboard")
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to sign in")
     } finally {
@@ -42,13 +39,16 @@ export function LoginClient() {
   async function handleGoogleLogin() {
     setError("")
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: window.location.origin + "/auth/callback",
         },
       })
-      if (error) throw error
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to sign in with Google")
     }

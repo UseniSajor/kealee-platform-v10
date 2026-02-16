@@ -2,7 +2,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['@kealee/ui'],
+  transpilePackages: ['@kealee/ui', '@kealee/auth'],
   eslint: {
     ignoreDuringBuilds: true,
   },

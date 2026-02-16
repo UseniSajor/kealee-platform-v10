@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Button } from "@kealee/ui/button"
 import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { signUp } from "@kealee/auth/client"
 import Link from "next/link"
 
 const MARKETPLACE_ROLES = [
@@ -16,7 +16,6 @@ const MARKETPLACE_ROLES = [
 
 export function SignupClient() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -26,8 +25,6 @@ export function SignupClient() {
   const [companyName, setCompanyName] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-
-  const supabase = createClientComponentClient()
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
@@ -53,19 +50,12 @@ export function SignupClient() {
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            firstName,
-            lastName,
-            role: selectedRole,
-            companyName,
-          },
-        },
+      await signUp(email, password, {
+        firstName,
+        lastName,
+        role: selectedRole,
+        companyName,
       })
-      if (error) throw error
 
       router.push("/dashboard")
       router.refresh()
@@ -79,13 +69,8 @@ export function SignupClient() {
   async function handleGoogleSignup() {
     setError("")
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: window.location.origin + "/auth/callback",
-        },
-      })
-      if (error) throw error
+      // Google OAuth is not yet supported via @kealee/auth — placeholder for future implementation
+      setError("Google sign-up is not yet available. Please use email and password.")
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to sign up with Google")
     }

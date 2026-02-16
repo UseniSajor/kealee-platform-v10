@@ -58,7 +58,7 @@ export default function SignupPage() {
         full_name: formData.fullName,
       });
       
-      router.push('/auth/verify-email');
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Failed to create account');
     } finally {

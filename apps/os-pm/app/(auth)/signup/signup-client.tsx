@@ -7,7 +7,7 @@ import { Button } from "@kealee/ui/button"
 import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { signUp } from "@kealee/auth/client"
 import { Check, HardHat } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -47,8 +47,6 @@ export function SignupClient() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const supabase = createClientComponentClient()
-
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -67,23 +65,16 @@ export function SignupClient() {
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            firstName,
-            lastName,
-            companyName,
-            trade,
-            role: "gc",
-            subscriptionTier: selectedTier,
-          },
-        },
+      await signUp(email, password, {
+        firstName,
+        lastName,
+        companyName,
+        trade,
+        role: "gc",
+        subscriptionTier: selectedTier,
       })
-      if (error) throw error
 
-      router.push("/")
+      router.push("/dashboard")
       router.refresh()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to create account")

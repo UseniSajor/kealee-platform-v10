@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { signIn } from '@kealee/auth/client';
 
 function LoginForm() {
   const router = useRouter();
@@ -19,10 +20,7 @@ function LoginForm() {
     if (!email || !password) { setError('Please fill in all fields'); return; }
     setLoading(true);
     try {
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      await signIn(email, password);
       router.push(redirect);
       router.refresh();
     } catch (err: any) {

@@ -7,7 +7,7 @@ import { Button } from "@kealee/ui/button"
 import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { signIn } from "@kealee/auth/client"
 import { HardHat } from "lucide-react"
 
 export function LoginClient() {
@@ -18,8 +18,6 @@ export function LoginClient() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const supabase = createClientComponentClient()
-
   const unauthorized = searchParams.get("error") === "unauthorized"
   const redirect = searchParams.get("redirect") || "/"
 
@@ -29,11 +27,9 @@ export function LoginClient() {
     setError("")
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) throw error
-
-      router.push(redirect)
+      await signIn(email, password)
       router.refresh()
+      router.push(redirect)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to sign in")
     } finally {

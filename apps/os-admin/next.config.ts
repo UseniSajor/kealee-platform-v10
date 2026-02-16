@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@kealee/ui'],
+  transpilePackages: ['@kealee/ui', '@kealee/auth'],
   typescript: {
     ignoreBuildErrors: true,
   },
