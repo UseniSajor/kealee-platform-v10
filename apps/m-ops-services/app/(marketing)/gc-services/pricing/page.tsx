@@ -33,7 +33,7 @@ export default function GCPricingPage() {
       price: "$3,750",
       period: "/month",
       annualPrice: "$3,000",
-      idealFor: "3-8 active projects • Small teams • Commercial & residential",
+      idealFor: "Up to 5 active projects • Small teams • Commercial & residential",
       features: [
         "Multi-project coordination across all active jobs",
         "Weekly client reporting with action items + photos",

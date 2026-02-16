@@ -11,11 +11,12 @@ export const pmPackages: ProductData[] = [
   { id: 'pm-pkg-d', name: 'PM Package D — Enterprise', price: 16500, priceLabel: '$16,500', unit: '/mo', category: 'pm-package', appSource: 'ops-services' },
 ]
 
-// ── PM Software Plans ───────────────────────────────────────
+// ── Software-Only Packages (S1–S4, Standard pricing shown) ──
 export const softwarePlans: ProductData[] = [
-  { id: 'sw-essentials', name: 'PM Software — Essentials', price: 99, priceLabel: '$99', unit: '/user/mo', category: 'software', appSource: 'ops-services' },
-  { id: 'sw-performance', name: 'PM Software — Performance', price: 199, priceLabel: '$199', unit: '/user/mo', category: 'software', appSource: 'ops-services' },
-  { id: 'sw-scale', name: 'PM Software — Scale', price: 349, priceLabel: '$349', unit: '/user/mo', category: 'software', appSource: 'ops-services' },
+  { id: 'sw-s1-starter', name: 'S1 Starter — Standard', price: 49, priceLabel: '$49', unit: '/mo', category: 'software', appSource: 'ops-services' },
+  { id: 'sw-s2-builder', name: 'S2 Builder — Standard', price: 249, priceLabel: '$249', unit: '/mo', category: 'software', appSource: 'ops-services' },
+  { id: 'sw-s3-pro', name: 'S3 Pro — Standard', price: 899, priceLabel: '$899', unit: '/mo', category: 'software', appSource: 'ops-services' },
+  { id: 'sw-s4-enterprise', name: 'S4 Enterprise — Standard', price: 3499, priceLabel: '$3,499', unit: '/mo', category: 'software', appSource: 'ops-services' },
 ]
 
 // ── Permit Service Packages ─────────────────────────────────

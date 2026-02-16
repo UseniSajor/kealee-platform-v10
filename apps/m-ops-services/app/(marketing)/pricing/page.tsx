@@ -113,7 +113,7 @@ function PackagesTab() {
       subtitle: 'Professional',
       price: '$3,750',
       hours: '15-20 hrs/week',
-      projects: '3 projects',
+      projects: 'Up to 5 projects',
       popular: true,
       features: ['Everything in Package A', 'Full PM support', 'Client communication management', 'Budget tracking & variance alerts', 'Change order documentation', 'Priority phone support'],
     },
@@ -174,15 +174,15 @@ function PackagesTab() {
 /* ── PM Software Tab ────────────────────────────────────── */
 function SoftwareTab() {
   const tiers = [
-    { name: 'Essentials', price: '$99', features: ['Up to 5 users', '3 active projects', 'Basic reporting', 'Email support'] },
-    { name: 'Performance', price: '$199', popular: true, features: ['Up to 20 users', '10 active projects', 'Advanced analytics', 'Integrations', 'Priority support'] },
-    { name: 'Scale', price: '$349', features: ['Up to 50 users', 'Up to 20 projects', 'Custom workflows', 'API access', 'Dedicated support'] },
-    { name: 'Enterprise', price: 'Custom', period: '', features: ['Unlimited users', 'Unlimited projects', 'SSO/SAML', 'Custom integrations', 'SLA guarantee', 'Account manager'] },
+    { name: 'S1 Starter', price: '$49', features: ['1 user', 'Up to 2 projects', 'Bid Tracker & Daily Reports', 'Punch List & Change Orders', 'Mobile field access', '8 features included'], cta: 'Start Trial' },
+    { name: 'S2 Builder', price: '$249', popular: true, features: ['Up to 4 users', 'Up to 7 projects', 'Everything in Starter', 'Schedule & Budget tools', 'RFIs, Submittals, Inspections', 'Permit Wizard & COI Tracker', '20 features included'], cta: 'Start Trial' },
+    { name: 'S3 Pro', price: '$899', features: ['Up to 10 users', 'Up to 20 projects', 'Everything in Builder', 'AIA Pay Apps & Cash Flow', 'AI Takeoff & Labor Analytics', 'Sub Management & Job Costing', '35 features included'], cta: 'Start Trial' },
+    { name: 'S4 Enterprise', price: '$3,499', features: ['Up to 35 users', 'Up to 75 projects', 'Everything in Pro', 'AI Meeting Minutes & Weather', 'Bid Analytics & Bonding', 'API Access & Integrations', 'All 50 features'], cta: 'Contact Sales' },
   ]
 
   return (
     <div>
-      <p className="text-center text-zinc-600 mb-8">Construction PM software for contractors and builders.</p>
+      <p className="text-center text-zinc-600 mb-8">Construction PM software for contractors and builders. Each tier shown at Standard pricing — Basic and Plus options also available.</p>
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {tiers.map((tier) => (
           <div key={tier.name} className={`rounded-2xl border bg-white p-6 shadow-sm flex flex-col ${tier.popular ? 'border-sky-500 ring-1 ring-sky-500/20' : 'border-zinc-200'}`}>
@@ -190,7 +190,7 @@ function SoftwareTab() {
             <h3 className="text-xl font-bold text-zinc-900">{tier.name}</h3>
             <div className="mt-3">
               <span className="text-3xl font-bold text-zinc-900">{tier.price}</span>
-              {tier.price !== 'Custom' && <span className="text-zinc-500">/mo</span>}
+              <span className="text-zinc-500">/mo</span>
             </div>
             <ul className="mt-4 space-y-2 flex-1">
               {tier.features.map((f) => (
@@ -200,13 +200,13 @@ function SoftwareTab() {
                 </li>
               ))}
             </ul>
-            <Link href="/contact" className={`mt-6 block text-center py-2.5 rounded-xl font-semibold transition ${tier.popular ? 'bg-sky-500 text-white hover:bg-sky-600' : 'border border-zinc-200 hover:bg-zinc-50'}`}>
-              {tier.name === 'Enterprise' ? 'Contact Sales' : 'Start Trial'}
+            <Link href={tier.cta === 'Contact Sales' ? '/contact' : 'https://app.kealee.com/signup'} className={`mt-6 block text-center py-2.5 rounded-xl font-semibold transition ${tier.popular ? 'bg-sky-500 text-white hover:bg-sky-600' : 'border border-zinc-200 hover:bg-zinc-50'}`}>
+              {tier.cta}
             </Link>
           </div>
         ))}
       </div>
-      <p className="text-center text-sm text-zinc-500 mt-6">Free 14-day trial on all plans. No credit card required.</p>
+      <p className="text-center text-sm text-zinc-500 mt-6">Free 14-day trial on all plans. Annual billing saves 20%.</p>
     </div>
   )
 }

@@ -11,13 +11,13 @@ import { AddToCartButton } from '@/components/CartButton';
 import { pmPackages as pmProducts, softwarePlans as swProducts, permitPackages as permitProducts, operationsProducts } from '@/lib/products';
 
 /**
- * PRICING PAGE - Two distinct pricing models:
+ * PRICING PAGE - Multiple product lines:
  *
- * 1. PLATFORM ACCESS (SaaS) - For software/tool access
- *    - Essentials: $99/user/mo
- *    - Performance: $199/user/mo
- *    - Scale: $349/user/mo
- *    - Enterprise: Custom
+ * 1. SOFTWARE-ONLY PACKAGES (S1–S4) - Self-serve PM software
+ *    - S1 Starter: $29-$79/mo (1-3 projects, 1 user, 8 features)
+ *    - S2 Builder: $149-$349/mo (5-10 projects, 3-5 users, 20 features)
+ *    - S3 Pro: $599-$1,299/mo (15-30 projects, 8-15 users, 35 features)
+ *    - S4 Enterprise: $1,999-$4,999/mo (50-100+ projects, 25-50 users, 50 features)
  *
  * 2. PM MANAGED SERVICES (A/B/C/D Packages) - For GC/Builder/Contractors
  *    - Package A - Starter: $1,750/month
@@ -36,83 +36,82 @@ export default function PricingPage() {
   const [activeTab, setActiveTab] = useState<'platform' | 'pm-services' | 'permits' | 'operations'>('platform');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
 
-  // PLATFORM ACCESS - SaaS pricing for software tools
+  // SOFTWARE-ONLY PACKAGES (S1–S4) - Self-serve PM software
   const platformPlans = [
     {
-      name: 'Essentials',
-      description: 'For small teams getting started',
-      price: billingPeriod === 'monthly' ? 99 : 79,
-      period: '/user/mo',
+      name: 'S1 Starter',
+      description: 'For solo GCs and small subs getting organized',
+      price: billingPeriod === 'monthly' ? 49 : 39,
+      period: '/mo',
       icon: Zap,
       color: 'gray',
       features: [
-        'Up to 5 users',
-        'Up to 3 active projects',
-        'Project dashboard',
-        'Document storage (10GB)',
-        'Basic reporting',
-        'Email support',
+        '1 user',
+        'Up to 2 projects',
+        'Bid Tracker & Daily Reports',
+        'Punch List & Change Orders',
+        'Contract Manager & Safety',
+        'Mobile field access',
+        'Progress Reports',
+        '8 features included',
       ],
       cta: { label: 'Start Free Trial', href: 'https://app.kealee.com/signup' },
     },
     {
-      name: 'Performance',
-      description: 'For growing construction firms',
-      price: billingPeriod === 'monthly' ? 199 : 159,
-      period: '/user/mo',
+      name: 'S2 Builder',
+      description: 'For growing GCs and established subcontractors',
+      price: billingPeriod === 'monthly' ? 249 : 199,
+      period: '/mo',
       icon: Building2,
       color: 'blue',
       popular: true,
       features: [
-        'Up to 20 users',
-        'Up to 10 active projects',
-        'Everything in Essentials',
-        'Budget tracking & forecasting',
-        'RFI & submittal management',
-        'Client portal access',
-        'Advanced reporting',
-        'Document storage (100GB)',
-        'Phone support',
+        'Up to 4 users',
+        'Up to 7 projects',
+        'Everything in Starter',
+        'Schedule & Budget tools',
+        'RFIs, Submittals, Inspections',
+        'Permit Wizard & COI Tracker',
+        'Document Control',
+        '20 features included',
       ],
       cta: { label: 'Start Free Trial', href: 'https://app.kealee.com/signup' },
     },
     {
-      name: 'Scale',
-      description: 'For established contractors',
-      price: billingPeriod === 'monthly' ? 349 : 279,
-      period: '/user/mo',
+      name: 'S3 Pro',
+      description: 'For mid-size GCs and multi-crew operations',
+      price: billingPeriod === 'monthly' ? 899 : 719,
+      period: '/mo',
       icon: Briefcase,
       color: 'purple',
       features: [
-        'Up to 50 users',
-        'Up to 20 active projects',
-        'Everything in Performance',
-        'Custom workflows',
-        'API access',
-        'SSO integration',
-        'Document storage (500GB)',
-        'Priority support',
-        'Dedicated success manager',
+        'Up to 10 users',
+        'Up to 20 projects',
+        'Everything in Builder',
+        'AIA Pay Apps & Cash Flow',
+        'AI Takeoff & Labor Analytics',
+        'Sub Management & Job Costing',
+        'Warranty & Selection Manager',
+        '35 features included',
       ],
       cta: { label: 'Start Free Trial', href: 'https://app.kealee.com/signup' },
     },
     {
-      name: 'Enterprise',
-      description: 'For large organizations',
-      price: null,
-      priceLabel: 'Custom',
+      name: 'S4 Enterprise',
+      description: 'For large GCs and multi-project operations',
+      price: billingPeriod === 'monthly' ? 3499 : 2799,
+      period: '/mo',
       icon: Crown,
       color: 'gray',
       features: [
-        'Unlimited users',
-        'Unlimited projects',
-        'Everything in Scale',
-        'Custom integrations',
-        'On-premise deployment option',
-        'Unlimited storage',
-        'SLA guarantee',
-        '24/7 premium support',
-        'Custom training',
+        'Up to 35 users',
+        'Up to 75 projects',
+        'Everything in Pro',
+        'AI Meeting Minutes & Weather',
+        'Bid Analytics & Bonding',
+        'API Access & Integration Hub',
+        'Dedicated support',
+        'All 50 features',
       ],
       cta: { label: 'Contact Sales', href: '/contact' },
     },
@@ -148,7 +147,7 @@ export default function PricingPage() {
       price: billingPeriod === 'monthly' ? 3750 : 3000,
       period: 'month',
       hours: '15-20 hrs/week',
-      projects: 'Up to 3',
+      projects: 'Up to 5',
       support: 'Priority (24hr)',
       description: 'Full PM support for active projects',
       features: [
@@ -528,14 +527,8 @@ export default function PricingPage() {
                     </div>
 
                     <div className="text-center mb-6">
-                      {plan.price ? (
-                        <>
-                          <span className="text-4xl font-bold text-gray-900">${plan.price}</span>
-                          <span className="text-gray-500">{plan.period}</span>
-                        </>
-                      ) : (
-                        <span className="text-4xl font-bold text-gray-900">{plan.priceLabel}</span>
-                      )}
+                      <span className="text-4xl font-bold text-gray-900">${plan.price.toLocaleString()}</span>
+                      <span className="text-gray-500">{plan.period}</span>
                     </div>
 
                     <ul className="space-y-3 mb-8">
