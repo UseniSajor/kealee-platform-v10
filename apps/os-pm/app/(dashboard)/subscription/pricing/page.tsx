@@ -45,6 +45,8 @@ interface SoftwarePackage {
   pricingTiers: PricingTier[]
   featureCount: number
   features: string[]
+  support: string
+  onboarding: string
 }
 
 const SOFTWARE_PACKAGES: SoftwarePackage[] = [
@@ -74,6 +76,8 @@ const SOFTWARE_PACKAGES: SoftwarePackage[] = [
       'Contract Manager',
       'Safety Manager',
     ],
+    support: 'Help center + community forum',
+    onboarding: 'Self-serve (video tutorials + templates)',
   },
   {
     key: 'S2',
@@ -106,6 +110,8 @@ const SOFTWARE_PACKAGES: SoftwarePackage[] = [
       'QC Inspections',
       'Document Control',
     ],
+    support: 'Email support (48hr response)',
+    onboarding: 'Self-serve + 1 onboarding call (30 min)',
   },
   {
     key: 'S3',
@@ -139,6 +145,8 @@ const SOFTWARE_PACKAGES: SoftwarePackage[] = [
       'Selection Manager',
       'Warranty Portal',
     ],
+    support: 'Priority email + chat (24hr response)',
+    onboarding: '2 onboarding calls + data migration assistance',
   },
   {
     key: 'S4',
@@ -172,6 +180,8 @@ const SOFTWARE_PACKAGES: SoftwarePackage[] = [
       'Capacity Tracker',
       'Integration Hub / API',
     ],
+    support: 'Dedicated account manager + phone support',
+    onboarding: 'Full onboarding program + custom training + data migration',
   },
 ]
 
@@ -236,7 +246,10 @@ export default function PricingPage() {
       <div className="text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">Choose Your Plan</h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Select the plan that fits your construction business. All plans include a 14-day free trial.
+          Software-only — pure platform access, no professional services. Designed for contractors who want the tools and can self-manage. All plans include a 14-day free trial.
+        </p>
+        <p className="text-sm text-gray-400 mt-2 max-w-xl mx-auto">
+          Packages A–D are full-service bundles (software + consulting + human expertise). The packages below are software-only.
         </p>
 
         {/* Billing Toggle */}
@@ -327,7 +340,7 @@ export default function PricingPage() {
                 </div>
 
                 {/* Limits */}
-                <div className="flex items-center gap-4 mb-5 text-sm">
+                <div className="flex items-center gap-4 mb-3 text-sm">
                   <div className="flex items-center gap-1.5 text-gray-600">
                     <FolderKanban size={14} />
                     <span>{typeof pricing.projects === 'string' ? pricing.projects : pricing.projects} projects</span>
@@ -336,6 +349,12 @@ export default function PricingPage() {
                     <Users size={14} />
                     <span>{pricing.users} users</span>
                   </div>
+                </div>
+
+                {/* Support & onboarding */}
+                <div className="text-xs text-gray-500 space-y-1 mb-5">
+                  <p><span className="font-medium text-gray-600">Support:</span> {pkg.support}</p>
+                  <p><span className="font-medium text-gray-600">Onboarding:</span> {pkg.onboarding}</p>
                 </div>
 
                 {/* CTA */}

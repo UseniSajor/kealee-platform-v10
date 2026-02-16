@@ -11,12 +11,15 @@ export const pmPackages: ProductData[] = [
   { id: 'pm-pkg-d', name: 'PM Package D — Enterprise', price: 16500, priceLabel: '$16,500', unit: '/mo', category: 'pm-package', appSource: 'ops-services' },
 ]
 
-// ── Software-Only Packages (S1–S4, Standard pricing shown) ──
+// ── Software-Only Packages (S1–S4) ──────────────────────────
+// Pure platform access — no professional services.
+// Each tier has 3 pricing sub-tiers (Basic / Standard / Plus).
+// "Standard" is the default shown in cart. Annual saves 20%.
 export const softwarePlans: ProductData[] = [
-  { id: 'sw-s1-starter', name: 'S1 Starter — Standard', price: 49, priceLabel: '$49', unit: '/mo', category: 'software', appSource: 'ops-services' },
-  { id: 'sw-s2-builder', name: 'S2 Builder — Standard', price: 249, priceLabel: '$249', unit: '/mo', category: 'software', appSource: 'ops-services' },
-  { id: 'sw-s3-pro', name: 'S3 Pro — Standard', price: 899, priceLabel: '$899', unit: '/mo', category: 'software', appSource: 'ops-services' },
-  { id: 'sw-s4-enterprise', name: 'S4 Enterprise — Standard', price: 3499, priceLabel: '$3,499', unit: '/mo', category: 'software', appSource: 'ops-services' },
+  { id: 'sw-s1-starter', name: 'S1 Starter', price: 49, priceLabel: '$29 – $79', unit: '/mo', category: 'software', appSource: 'ops-services' },
+  { id: 'sw-s2-builder', name: 'S2 Builder', price: 249, priceLabel: '$149 – $349', unit: '/mo', category: 'software', appSource: 'ops-services' },
+  { id: 'sw-s3-pro', name: 'S3 Pro', price: 899, priceLabel: '$599 – $1,299', unit: '/mo', category: 'software', appSource: 'ops-services' },
+  { id: 'sw-s4-enterprise', name: 'S4 Enterprise', price: 3499, priceLabel: '$1,999 – $4,999', unit: '/mo', category: 'software', appSource: 'ops-services' },
 ]
 
 // ── Permit Service Packages ─────────────────────────────────

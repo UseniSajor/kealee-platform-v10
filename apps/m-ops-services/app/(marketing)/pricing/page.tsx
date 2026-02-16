@@ -173,40 +173,127 @@ function PackagesTab() {
 
 /* ── PM Software Tab ────────────────────────────────────── */
 function SoftwareTab() {
-  const tiers = [
-    { name: 'S1 Starter', price: '$49', features: ['1 user', 'Up to 2 projects', 'Bid Tracker & Daily Reports', 'Punch List & Change Orders', 'Mobile field access', '8 features included'], cta: 'Start Trial' },
-    { name: 'S2 Builder', price: '$249', popular: true, features: ['Up to 4 users', 'Up to 7 projects', 'Everything in Starter', 'Schedule & Budget tools', 'RFIs, Submittals, Inspections', 'Permit Wizard & COI Tracker', '20 features included'], cta: 'Start Trial' },
-    { name: 'S3 Pro', price: '$899', features: ['Up to 10 users', 'Up to 20 projects', 'Everything in Builder', 'AIA Pay Apps & Cash Flow', 'AI Takeoff & Labor Analytics', 'Sub Management & Job Costing', '35 features included'], cta: 'Start Trial' },
-    { name: 'S4 Enterprise', price: '$3,499', features: ['Up to 35 users', 'Up to 75 projects', 'Everything in Pro', 'AI Meeting Minutes & Weather', 'Bid Analytics & Bonding', 'API Access & Integrations', 'All 50 features'], cta: 'Contact Sales' },
+  const packages = [
+    {
+      key: 'S1',
+      name: 'S1: Starter',
+      target: 'Solo GCs, Handymen, Small Subs',
+      priceRange: '$29 – $79/mo',
+      featureCount: 8,
+      tiers: [
+        { label: 'Basic', projects: '1 project', users: '1 user', price: '$29/mo' },
+        { label: 'Standard', projects: '2 projects', users: '1 user', price: '$49/mo' },
+        { label: 'Plus', projects: '3 projects', users: '1 user', price: '$79/mo' },
+      ],
+      features: ['Bid Tracker', 'Daily Reports', 'Punch List', 'Progress Reports', 'Mobile Field Access', 'Change Order Tracking', 'Contract Manager', 'Safety Manager'],
+      support: 'Help center + community forum',
+      onboarding: 'Self-serve (video tutorials + templates)',
+    },
+    {
+      key: 'S2',
+      name: 'S2: Builder',
+      target: 'Growing GCs, Established Subs',
+      priceRange: '$149 – $349/mo',
+      featureCount: 20,
+      popular: true,
+      tiers: [
+        { label: 'Basic', projects: 'Up to 5', users: '3 users', price: '$149/mo' },
+        { label: 'Standard', projects: 'Up to 7', users: '4 users', price: '$249/mo' },
+        { label: 'Plus', projects: 'Up to 10', users: '5 users', price: '$349/mo' },
+      ],
+      features: ['All S1 features +', 'Owner Dashboard', 'Schedule Manager', 'Lien Waiver Workflow', 'Budget Reports', 'Scope Matrix', 'Permit Wizard', 'Inspection Scheduler', 'RFI Portal', 'Submittal Manager', 'COI Tracker', 'QC Inspections'],
+      support: 'Email support (48hr response)',
+      onboarding: 'Self-serve + 1 onboarding call (30 min)',
+    },
+    {
+      key: 'S3',
+      name: 'S3: Pro',
+      target: 'Mid-Size GCs, Multi-Crew Firms',
+      priceRange: '$599 – $1,299/mo',
+      featureCount: 35,
+      tiers: [
+        { label: 'Basic', projects: 'Up to 15', users: '8 users', price: '$599/mo' },
+        { label: 'Standard', projects: 'Up to 20', users: '10 users', price: '$899/mo' },
+        { label: 'Plus', projects: 'Up to 30', users: '15 users', price: '$1,299/mo' },
+      ],
+      features: ['All S2 features +', 'AIA Pay Applications', 'Retention Manager', 'Sub Prequalification', 'Look-Ahead Scheduler', 'Cash Flow Dashboard', 'Job Cost Reports', 'Back-Charge Manager', 'Sub Ratings', 'AI Takeoff Analysis', 'Labor Analytics', 'As-Built Manager', 'Selection Manager', 'Warranty Portal'],
+      support: 'Priority email + chat (24hr response)',
+      onboarding: '2 onboarding calls + data migration assistance',
+    },
+    {
+      key: 'S4',
+      name: 'S4: Enterprise',
+      target: 'Large GCs, Multi-Project Ops',
+      priceRange: '$1,999 – $4,999/mo',
+      featureCount: 50,
+      tiers: [
+        { label: 'Basic', projects: 'Up to 50', users: '25 users', price: '$1,999/mo' },
+        { label: 'Standard', projects: 'Up to 75', users: '35 users', price: '$3,499/mo' },
+        { label: 'Plus', projects: '100+', users: '50 users', price: '$4,999/mo' },
+      ],
+      features: ['All S3 features +', 'Supplier Connect', 'AI Meeting Minutes', 'Weather Tracking', 'AP Manager', 'Code Monitor', 'Cost Intelligence', 'License Manager', 'AI Scope Analyzer', 'Bid Analytics', 'Bonding Dashboard', 'Tax Manager', 'Integration Hub / API'],
+      support: 'Dedicated account manager + phone support',
+      onboarding: 'Full onboarding program + custom training + data migration',
+    },
   ]
 
   return (
     <div>
-      <p className="text-center text-zinc-600 mb-8">Construction PM software for contractors and builders. Each tier shown at Standard pricing — Basic and Plus options also available.</p>
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {tiers.map((tier) => (
-          <div key={tier.name} className={`rounded-2xl border bg-white p-6 shadow-sm flex flex-col ${tier.popular ? 'border-sky-500 ring-1 ring-sky-500/20' : 'border-zinc-200'}`}>
-            {tier.popular && <span className="inline-block self-start rounded-full bg-sky-100 px-3 py-1 text-xs font-bold text-sky-700 mb-3">MOST POPULAR</span>}
-            <h3 className="text-xl font-bold text-zinc-900">{tier.name}</h3>
+      <div className="text-center mb-8">
+        <p className="text-zinc-600">
+          Software-only — pure platform access, no professional services. Designed for contractors who want the tools and can self-manage.
+        </p>
+        <p className="text-xs text-zinc-400 mt-2">
+          Packages A–D are full-service bundles (software + consulting + human expertise). The packages below are software-only.
+        </p>
+      </div>
+      <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+        {packages.map((pkg) => (
+          <div key={pkg.key} className={`rounded-2xl border bg-white p-6 shadow-sm flex flex-col ${pkg.popular ? 'border-sky-500 ring-1 ring-sky-500/20' : 'border-zinc-200'}`}>
+            {pkg.popular && <span className="inline-block self-start rounded-full bg-sky-100 px-3 py-1 text-xs font-bold text-sky-700 mb-3">MOST POPULAR</span>}
+            <h3 className="text-lg font-bold text-zinc-900">{pkg.name}</h3>
+            <p className="text-xs text-zinc-500 mt-1">{pkg.target}</p>
             <div className="mt-3">
-              <span className="text-3xl font-bold text-zinc-900">{tier.price}</span>
-              <span className="text-zinc-500">/mo</span>
+              <span className="text-xl font-bold text-zinc-900">{pkg.priceRange}</span>
             </div>
-            <ul className="mt-4 space-y-2 flex-1">
-              {tier.features.map((f) => (
+            <p className="text-xs text-sky-600 font-medium mt-1">{pkg.featureCount} features</p>
+
+            {/* Sub-tier pricing table */}
+            <div className="mt-4 bg-zinc-50 rounded-lg p-3 space-y-2 text-xs">
+              {pkg.tiers.map((t) => (
+                <div key={t.label} className="flex justify-between items-center">
+                  <div>
+                    <span className="font-semibold text-zinc-700">{t.label}</span>
+                    <span className="text-zinc-400 ml-1">· {t.projects} · {t.users}</span>
+                  </div>
+                  <span className="font-bold text-zinc-900">{t.price}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Support & onboarding */}
+            <div className="mt-3 text-xs text-zinc-500 space-y-1">
+              <p><span className="font-medium text-zinc-600">Support:</span> {pkg.support}</p>
+              <p><span className="font-medium text-zinc-600">Onboarding:</span> {pkg.onboarding}</p>
+            </div>
+
+            {/* Feature list */}
+            <ul className="mt-4 space-y-1.5 flex-1">
+              {pkg.features.map((f) => (
                 <li key={f} className="flex items-start gap-2 text-sm text-zinc-700">
                   <svg className="w-4 h-4 text-sky-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
                   {f}
                 </li>
               ))}
             </ul>
-            <Link href={tier.cta === 'Contact Sales' ? '/contact' : 'https://app.kealee.com/signup'} className={`mt-6 block text-center py-2.5 rounded-xl font-semibold transition ${tier.popular ? 'bg-sky-500 text-white hover:bg-sky-600' : 'border border-zinc-200 hover:bg-zinc-50'}`}>
-              {tier.cta}
+
+            <Link href={pkg.key === 'S4' ? '/contact' : 'https://app.kealee.com/signup'} className={`mt-6 block text-center py-2.5 rounded-xl font-semibold transition ${pkg.popular ? 'bg-sky-500 text-white hover:bg-sky-600' : 'border border-zinc-200 hover:bg-zinc-50'}`}>
+              {pkg.key === 'S4' ? 'Contact Sales' : 'Start Free Trial'}
             </Link>
           </div>
         ))}
       </div>
-      <p className="text-center text-sm text-zinc-500 mt-6">Free 14-day trial on all plans. Annual billing saves 20%.</p>
+      <p className="text-center text-sm text-zinc-500 mt-6">Free 14-day trial on all plans. Annual billing saves 20%. Software-only subscribers generate 85–95% gross margins — upgrade to full-service anytime.</p>
     </div>
   )
 }

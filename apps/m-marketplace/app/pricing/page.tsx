@@ -37,82 +37,86 @@ export default function PricingPage() {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
 
   // SOFTWARE-ONLY PACKAGES (S1–S4) - Self-serve PM software
+  // Pure platform access, no professional services. For contractors who want the tools and can self-manage.
   const platformPlans = [
     {
-      name: 'S1 Starter',
-      description: 'For solo GCs and small subs getting organized',
-      price: billingPeriod === 'monthly' ? 49 : 39,
-      period: '/mo',
+      name: 'S1: Starter',
+      description: 'Solo GCs, Handymen, Small Subs',
+      priceRange: '$29 – $79/mo',
       icon: Zap,
       color: 'gray',
-      features: [
-        '1 user',
-        'Up to 2 projects',
-        'Bid Tracker & Daily Reports',
-        'Punch List & Change Orders',
-        'Contract Manager & Safety',
-        'Mobile field access',
-        'Progress Reports',
-        '8 features included',
+      featureCount: 8,
+      tiers: [
+        { label: 'Basic', projects: '1 project', users: '1 user', monthly: 29, annual: 23 },
+        { label: 'Standard', projects: '2 projects', users: '1 user', monthly: 49, annual: 39 },
+        { label: 'Plus', projects: '3 projects', users: '1 user', monthly: 79, annual: 63 },
       ],
+      features: [
+        'Bid Tracker', 'Daily Reports', 'Punch List', 'Progress Reports',
+        'Mobile Field Access', 'Change Order Tracking', 'Contract Manager', 'Safety Manager',
+      ],
+      support: 'Help center + community forum',
       cta: { label: 'Start Free Trial', href: 'https://app.kealee.com/signup' },
     },
     {
-      name: 'S2 Builder',
-      description: 'For growing GCs and established subcontractors',
-      price: billingPeriod === 'monthly' ? 249 : 199,
-      period: '/mo',
+      name: 'S2: Builder',
+      description: 'Growing GCs, Established Subs',
+      priceRange: '$149 – $349/mo',
       icon: Building2,
       color: 'blue',
       popular: true,
-      features: [
-        'Up to 4 users',
-        'Up to 7 projects',
-        'Everything in Starter',
-        'Schedule & Budget tools',
-        'RFIs, Submittals, Inspections',
-        'Permit Wizard & COI Tracker',
-        'Document Control',
-        '20 features included',
+      featureCount: 20,
+      tiers: [
+        { label: 'Basic', projects: 'Up to 5', users: '3 users', monthly: 149, annual: 119 },
+        { label: 'Standard', projects: 'Up to 7', users: '4 users', monthly: 249, annual: 199 },
+        { label: 'Plus', projects: 'Up to 10', users: '5 users', monthly: 349, annual: 279 },
       ],
+      features: [
+        'All S1 features +', 'Owner Dashboard', 'Schedule Manager', 'Lien Waiver Workflow',
+        'Budget Reports', 'Permit Wizard', 'RFI Portal', 'Submittal Manager',
+        'COI Tracker', 'QC Inspections', 'Document Control',
+      ],
+      support: 'Email support (48hr response)',
       cta: { label: 'Start Free Trial', href: 'https://app.kealee.com/signup' },
     },
     {
-      name: 'S3 Pro',
-      description: 'For mid-size GCs and multi-crew operations',
-      price: billingPeriod === 'monthly' ? 899 : 719,
-      period: '/mo',
+      name: 'S3: Pro',
+      description: 'Mid-Size GCs, Multi-Crew Firms',
+      priceRange: '$599 – $1,299/mo',
       icon: Briefcase,
       color: 'purple',
-      features: [
-        'Up to 10 users',
-        'Up to 20 projects',
-        'Everything in Builder',
-        'AIA Pay Apps & Cash Flow',
-        'AI Takeoff & Labor Analytics',
-        'Sub Management & Job Costing',
-        'Warranty & Selection Manager',
-        '35 features included',
+      featureCount: 35,
+      tiers: [
+        { label: 'Basic', projects: 'Up to 15', users: '8 users', monthly: 599, annual: 479 },
+        { label: 'Standard', projects: 'Up to 20', users: '10 users', monthly: 899, annual: 719 },
+        { label: 'Plus', projects: 'Up to 30', users: '15 users', monthly: 1299, annual: 1039 },
       ],
+      features: [
+        'All S2 features +', 'AIA Pay Applications', 'Retention Manager', 'Sub Prequalification',
+        'Look-Ahead Scheduler', 'Cash Flow Dashboard', 'Job Cost Reports',
+        'AI Takeoff Analysis', 'Labor Analytics', 'Selection Manager', 'Warranty Portal',
+      ],
+      support: 'Priority email + chat (24hr response)',
       cta: { label: 'Start Free Trial', href: 'https://app.kealee.com/signup' },
     },
     {
-      name: 'S4 Enterprise',
-      description: 'For large GCs and multi-project operations',
-      price: billingPeriod === 'monthly' ? 3499 : 2799,
-      period: '/mo',
+      name: 'S4: Enterprise',
+      description: 'Large GCs, Multi-Project Ops',
+      priceRange: '$1,999 – $4,999/mo',
       icon: Crown,
       color: 'gray',
-      features: [
-        'Up to 35 users',
-        'Up to 75 projects',
-        'Everything in Pro',
-        'AI Meeting Minutes & Weather',
-        'Bid Analytics & Bonding',
-        'API Access & Integration Hub',
-        'Dedicated support',
-        'All 50 features',
+      featureCount: 50,
+      tiers: [
+        { label: 'Basic', projects: 'Up to 50', users: '25 users', monthly: 1999, annual: 1599 },
+        { label: 'Standard', projects: 'Up to 75', users: '35 users', monthly: 3499, annual: 2799 },
+        { label: 'Plus', projects: '100+', users: '50 users', monthly: 4999, annual: 3999 },
       ],
+      features: [
+        'All S3 features +', 'Supplier Connect', 'AI Meeting Minutes', 'Weather Tracking',
+        'AP Manager', 'Bid Analytics', 'Bonding Dashboard', 'Tax Manager',
+        'Integration Hub / API',
+      ],
+      support: 'Dedicated account manager + phone support',
       cta: { label: 'Contact Sales', href: '/contact' },
     },
   ];
@@ -440,8 +444,11 @@ export default function PricingPage() {
               <div className="bg-blue-50 text-blue-800 px-6 py-4 rounded-xl inline-block max-w-2xl">
                 <p className="font-medium">
                   <Users className="inline mr-2" size={18} />
-                  <strong>Platform Access</strong> - Software subscription for your team to manage projects with our tools.
-                  Ideal for firms who want to self-manage using powerful PM software.
+                  <strong>Software-Only Packages</strong> — Pure platform access, no professional services.
+                  Designed for contractors who want the tools and can self-manage.
+                </p>
+                <p className="text-xs mt-2 text-blue-600">
+                  Packages A–D are full-service bundles (software + consulting + human expertise). The packages below are software-only.
                 </p>
               </div>
             )}
@@ -474,7 +481,7 @@ export default function PricingPage() {
             )}
           </div>
 
-          {/* PLATFORM ACCESS - SaaS Plans */}
+          {/* SOFTWARE-ONLY PACKAGES (S1–S4) */}
           {activeTab === 'platform' && (
             <>
               {/* Billing Toggle */}
@@ -504,36 +511,58 @@ export default function PricingPage() {
                 {platformPlans.map((plan, idx) => (
                   <div
                     key={idx}
-                    className={`relative bg-white rounded-2xl border-2 p-8 ${
+                    className={`relative bg-white rounded-2xl border-2 p-6 flex flex-col ${
                       plan.popular ? 'border-blue-500 shadow-xl' : 'border-gray-200'
                     }`}
                   >
                     {plan.popular && (
                       <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                        <span className="px-4 py-1 bg-blue-600 text-white text-sm font-medium rounded-full">
+                        <span className="px-4 py-1 bg-blue-600 text-white text-sm font-medium rounded-full flex items-center gap-1">
+                          <Star size={14} />
                           Most Popular
                         </span>
                       </div>
                     )}
 
-                    <div className="text-center mb-6">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 ${
+                    <div className="text-center mb-4">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 ${
                         plan.popular ? 'bg-blue-100' : 'bg-gray-100'
                       }`}>
                         <plan.icon className={plan.popular ? 'text-blue-600' : 'text-gray-600'} size={24} />
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-                      <p className="text-sm text-gray-500">{plan.description}</p>
+                      <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
+                      <p className="text-xs text-gray-500">{plan.description}</p>
                     </div>
 
-                    <div className="text-center mb-6">
-                      <span className="text-4xl font-bold text-gray-900">${plan.price.toLocaleString()}</span>
-                      <span className="text-gray-500">{plan.period}</span>
+                    <div className="text-center mb-2">
+                      <span className="text-xl font-bold text-gray-900">{plan.priceRange}</span>
+                    </div>
+                    <p className="text-center text-xs text-blue-600 font-medium mb-4">{plan.featureCount} features</p>
+
+                    {/* Sub-tier pricing table */}
+                    <div className="bg-gray-50 rounded-lg p-3 mb-4 space-y-2 text-xs">
+                      {plan.tiers.map((t) => (
+                        <div key={t.label} className="flex justify-between items-center">
+                          <div>
+                            <span className="font-semibold text-gray-700">{t.label}</span>
+                            <span className="text-gray-400 ml-1">· {t.projects} · {t.users}</span>
+                          </div>
+                          <span className="font-bold text-gray-900">
+                            ${(billingPeriod === 'annual' ? t.annual : t.monthly).toLocaleString()}/mo
+                          </span>
+                        </div>
+                      ))}
                     </div>
 
-                    <ul className="space-y-3 mb-8">
+                    {/* Support */}
+                    <p className="text-xs text-gray-500 mb-4">
+                      <span className="font-medium text-gray-600">Support:</span> {plan.support}
+                    </p>
+
+                    {/* Feature list */}
+                    <ul className="space-y-2 mb-6 flex-1">
                       {plan.features.map((feature, fIdx) => (
-                        <li key={fIdx} className="flex items-start gap-3 text-sm text-gray-600">
+                        <li key={fIdx} className="flex items-start gap-2 text-sm text-gray-600">
                           <Check className="text-green-500 flex-shrink-0 mt-0.5" size={16} />
                           {feature}
                         </li>
