@@ -1,3 +1,5 @@
+import { createBrowserClient } from '@supabase/ssr'
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 interface ApiOptions {
@@ -6,13 +8,25 @@ interface ApiOptions {
   headers?: Record<string, string>
 }
 
+let _supabase: ReturnType<typeof createBrowserClient> | null = null
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  }
+  return _supabase
+}
+
 async function getAuthToken(): Promise<string | null> {
   if (typeof window === 'undefined') return null
-  
-  // Try to get token from Supabase session or cookie
-  const cookies = document.cookie.split(';')
-  const tokenCookie = cookies.find(c => c.trim().startsWith('sb-access-token='))
-  return tokenCookie ? tokenCookie.split('=')[1] : null
+  try {
+    const { data: { session } } = await getSupabase().auth.getSession()
+    return session?.access_token || null
+  } catch {
+    return null
+  }
 }
 
 async function apiRequest<T>(endpoint: string, options: ApiOptions = {}): Promise<T> {

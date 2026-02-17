@@ -107,9 +107,4 @@ export async function uploadFiles(
   )
 }
 
-async function getAuthToken(): Promise<string | null> {
-  if (typeof document === 'undefined') return null
-  const cookies = document.cookie.split(';')
-  const tokenCookie = cookies.find((c) => c.trim().startsWith('sb-access-token='))
-  return tokenCookie ? tokenCookie.split('=')[1] : null
-}
+import { getAuthToken } from './supabase'

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { supabase } from '@/lib/supabase'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -212,7 +212,6 @@ export default function AnalyticsPage() {
       setLoading(true)
       setError(null)
 
-      const supabase = createClientComponentClient()
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
 

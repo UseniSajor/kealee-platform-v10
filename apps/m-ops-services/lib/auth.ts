@@ -3,22 +3,29 @@
  * Gets current user and organization context
  */
 
+import { createBrowserClient } from '@supabase/ssr'
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
-async function getAuthToken(): Promise<string | null> {
-  if (typeof window !== 'undefined') {
-    // Try to get from localStorage (set by auth flow)
-    const token = localStorage.getItem('supabase.auth.token')
-    if (token) {
-      try {
-        const parsed = JSON.parse(token)
-        return parsed?.access_token || null
-      } catch {
-        return null
-      }
-    }
+let _supabase: ReturnType<typeof createBrowserClient> | null = null
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
   }
-  return null
+  return _supabase
+}
+
+async function getAuthToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null
+  try {
+    const { data: { session } } = await getSupabase().auth.getSession()
+    return session?.access_token || null
+  } catch {
+    return null
+  }
 }
 
 export async function getCurrentUser() {

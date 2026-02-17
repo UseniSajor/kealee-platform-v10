@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { supabase } from '@/lib/supabase'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -12,7 +12,6 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [authenticated, setAuthenticated] = useState(false)
-  const supabase = createClientComponentClient()
 
   useEffect(() => {
     const checkAuth = async () => {

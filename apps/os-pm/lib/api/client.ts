@@ -1,7 +1,7 @@
 "use client"
 
 import axios, { AxiosError, type AxiosInstance } from "axios"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { createBrowserClient } from "@supabase/ssr"
 
 export type ApiErrorPayload = {
   message?: string
@@ -28,11 +28,14 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
 
 let cachedToken: string | null = null
 let tokenInit = false
-let supabaseClient: ReturnType<typeof createClientComponentClient> | null = null
+let supabaseClient: ReturnType<typeof createBrowserClient> | null = null
 
 function getSupabase() {
   if (!supabaseClient) {
-    supabaseClient = createClientComponentClient()
+    supabaseClient = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
   }
   return supabaseClient
 }

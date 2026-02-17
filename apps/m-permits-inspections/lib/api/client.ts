@@ -3,6 +3,8 @@
  * Centralized API client with authentication and error handling
  */
 
+import { createBrowserClient } from '@supabase/ssr';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 interface ApiError {
@@ -11,34 +13,39 @@ interface ApiError {
   details?: any;
 }
 
+let _supabase: ReturnType<typeof createBrowserClient> | null = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+  }
+  return _supabase;
+}
+
 class ApiClient {
   private baseUrl: string;
-  private getAuthToken: () => string | null;
 
   constructor() {
     this.baseUrl = API_URL;
-    // Get auth token from Supabase session
-    this.getAuthToken = () => {
-      if (typeof window === 'undefined') return null;
-      // Try to get from localStorage or session
-      const session = localStorage.getItem('supabase.auth.token');
-      if (session) {
-        try {
-          const parsed = JSON.parse(session);
-          return parsed?.access_token || null;
-        } catch {
-          return null;
-        }
-      }
+  }
+
+  private async getAuthToken(): Promise<string | null> {
+    if (typeof window === 'undefined') return null;
+    try {
+      const { data: { session } } = await getSupabase().auth.getSession();
+      return session?.access_token || null;
+    } catch {
       return null;
-    };
+    }
   }
 
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const token = this.getAuthToken();
+    const token = await this.getAuthToken();
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),

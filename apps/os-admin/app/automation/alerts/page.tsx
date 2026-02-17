@@ -101,11 +101,14 @@ interface CircuitStatus {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
-/** Authenticated fetch helper - retrieves JWT from cookie and adds Authorization header */
+/** Authenticated fetch helper - retrieves JWT from Supabase session and adds Authorization header */
 async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
-  const cookies = typeof document !== 'undefined' ? document.cookie.split(';') : []
-  const tokenCookie = cookies.find(c => c.trim().startsWith('sb-access-token='))
-  const token = tokenCookie ? tokenCookie.split('=')[1] : null
+  let token: string | null = null
+  if (typeof window !== 'undefined') {
+    const { supabase } = await import('@/lib/supabase')
+    const { data: { session } } = await supabase.auth.getSession()
+    token = session?.access_token || null
+  }
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

@@ -2,16 +2,27 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { createBrowserClient } from "@supabase/ssr"
 
 import { api } from "@/lib/api"
 import type { AuthUser } from "@/lib/types/index"
+
+let _supabase: ReturnType<typeof createBrowserClient> | null = null
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  }
+  return _supabase
+}
 
 export function useAuth() {
   const router = useRouter()
   const [user, setUser] = React.useState<AuthUser | null>(null)
   const [loading, setLoading] = React.useState(true)
-  const supabase = createClientComponentClient()
+  const supabase = getSupabase()
 
   React.useEffect(() => {
     let mounted = true

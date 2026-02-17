@@ -2,12 +2,28 @@
 // SUPABASE SERVER CLIENT
 // ============================================================
 
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient as createSSRServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { Database } from '@/types/database';
 
-export const createServerClient = () => {
-  return createServerComponentClient<Database>({ cookies });
+export const createServerClient = async () => {
+  const cookieStore = await cookies();
+  return createSSRServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+          });
+        },
+      },
+    }
+  );
 };
 
 // Alias for convenience

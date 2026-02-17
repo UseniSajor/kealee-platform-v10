@@ -2,6 +2,7 @@
 
 import { useCallback, useState, useRef, DragEvent, ChangeEvent } from 'react'
 import { api } from '@/lib/api'
+import { getAuthToken } from '@/lib/supabase'
 
 type EvidenceFile = {
   id: string
@@ -141,13 +142,13 @@ export default function MilestoneSubmissionForm({
       formData.append('file', evidenceFile.file)
 
       try {
-        const token = localStorage.getItem('token')
+        const token = await getAuthToken()
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/milestones/${milestoneId}/upload`,
           {
             method: 'POST',
             headers: {
-              Authorization: `Bearer ${token}`,
+              ...(token && { Authorization: `Bearer ${token}` }),
             },
             body: formData,
           }

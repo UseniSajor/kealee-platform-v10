@@ -2,8 +2,30 @@
 // API route for creating projects - proxies to backend API
 
 import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+async function getSessionToken(): Promise<string | null> {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll(); },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+          });
+        },
+      },
+    }
+  );
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token ?? null;
+}
 
 /**
  * Map the wizard form data to the backend createProject schema.
@@ -49,26 +71,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Forward the auth token from the incoming request
-    const authHeader = request.headers.get('authorization');
-    const cookieHeader = request.headers.get('cookie');
-
-    // Try to extract token from Authorization header or from sb-access-token cookie
-    let token: string | null = null;
-    if (authHeader) {
-      token = authHeader;
-    } else if (cookieHeader) {
-      const match = cookieHeader.match(/sb-access-token=([^;]+)/);
-      if (match) {
-        token = `Bearer ${match[1]}`;
-      }
-    }
+    // Get auth token from Supabase session
+    const token = await getSessionToken();
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
     if (token) {
-      headers['Authorization'] = token;
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
     // Map form data to backend schema and proxy to backend API

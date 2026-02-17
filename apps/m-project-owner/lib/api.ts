@@ -109,13 +109,7 @@ export type CreatePropertyInput = {
   yearBuilt?: number | null
 }
 
-async function getAuthToken(): Promise<string | null> {
-  if (typeof document === 'undefined') return null
-
-  const cookies = document.cookie.split(';')
-  const tokenCookie = cookies.find((c) => c.trim().startsWith('sb-access-token='))
-  return tokenCookie ? tokenCookie.split('=')[1] : null
-}
+import { getAuthToken } from './supabase'
 
 export async function apiRequest<T>(endpoint: string, options: ApiOptions = {}): Promise<T> {
   const token = await getAuthToken()
@@ -305,15 +299,17 @@ export const api = {
       }
       message?: string
     }>(`/docusign/contracts/${contractId}/signature-status`),
-  downloadSignedContract: (contractId: string) =>
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/docusign/contracts/${contractId}/signed-document`, {
+  downloadSignedContract: async (contractId: string) => {
+    const token = await getAuthToken()
+    return fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/docusign/contracts/${contractId}/signed-document`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        ...(token && { Authorization: `Bearer ${token}` }),
       },
     }).then((res) => {
       if (!res.ok) throw new Error('Failed to download document')
       return res.blob()
-    }),
+    })
+  },
 
   // Contracts Dashboard (Prompt 2.5 & 2.6)
   getContractsDashboard: () => apiRequest<{ contracts: Contract[] }>(`/contracts/dashboard`),
