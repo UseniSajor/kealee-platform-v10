@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Blog',
-  description: 'Construction industry insights, platform updates, and best practices from the Kealee team.',
+  description: 'Industry insights, platform updates, and best practices from the Kealee team.',
 };
 
 interface BlogPost {
@@ -33,7 +33,7 @@ export default function BlogPage() {
     {
       slug: 'ai-permit-review-how-it-works',
       title: 'How AI Permit Review Works: A Deep Dive into Our Technology',
-      excerpt: 'Learn how our AI analyzes construction documents in minutes, catching common errors and improving first-try approval rates to 85%.',
+      excerpt: 'Learn how our AI analyzes permit documents in minutes, catching common errors and improving first-try approval rates to 85%.',
       author: 'Tim Chamberlain',
       date: 'January 20, 2025',
       readTime: '8 min read',
@@ -60,9 +60,9 @@ export default function BlogPage() {
       category: 'Best Practices',
     },
     {
-      slug: 'construction-tech-trends-2025',
-      title: 'Construction Tech Trends to Watch in 2025',
-      excerpt: 'From AI-powered project management to drone inspections, here are the technology trends reshaping the construction industry this year.',
+      slug: 'building-tech-trends-2025',
+      title: 'Building Tech Trends to Watch in 2025',
+      excerpt: 'From AI-powered project management to drone inspections, here are the technology trends reshaping the building industry this year.',
       author: 'Tim Chamberlain',
       date: 'January 5, 2025',
       readTime: '10 min read',
@@ -96,8 +96,8 @@ export default function BlogPage() {
       category: 'Permits & Compliance',
     },
     {
-      slug: 'construction-cost-estimation-tips',
-      title: '10 Tips for More Accurate Construction Cost Estimation',
+      slug: 'cost-estimation-tips',
+      title: '10 Tips for More Accurate Cost Estimation',
       excerpt: 'Accurate estimates win bids and protect margins. Our estimation experts share their top tips for getting it right.',
       author: 'James Wilson',
       date: 'December 10, 2024',
@@ -122,7 +122,7 @@ export default function BlogPage() {
               Kealee Blog
             </h1>
             <p className="text-xl text-gray-600">
-              Construction industry insights, platform updates, and best practices from our team.
+              Industry insights, platform updates, and best practices from our team.
             </p>
           </div>
 
@@ -235,7 +235,7 @@ export default function BlogPage() {
               Stay Updated
             </h2>
             <p className="text-blue-100 text-lg mb-8">
-              Get the latest construction insights and Kealee updates delivered to your inbox.
+              Get the latest industry insights and Kealee updates delivered to your inbox.
             </p>
             <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
               <input

@@ -5,7 +5,7 @@ const sectionImage = { src: 'https://images.unsplash.com/photo-1600880292089-90a
 
 export const metadata: Metadata = {
   title: 'Project Management Software | Kealee',
-  description: 'Construction project management tools for contractors and builders. Milestone tracking, payment requests, and client communication.',
+  description: 'Project management tools for contractors and builders. Milestone tracking, payment requests, and client communication.',
 }
 
 export default function PMSoftwareServicePage() {
@@ -20,7 +20,7 @@ export default function PMSoftwareServicePage() {
 
   const modules = [
     { title: 'Contractor Dashboard', description: 'Your command center for managing active projects, tracking payments, and coordinating with clients.', features: ['Active projects', 'Payment status', 'Upcoming milestones', 'Client messages'] },
-    { title: 'Project Execution', description: 'Tools to manage construction phases from groundbreaking to final walkthrough.', features: ['Task management', 'Payment requests', 'RFI submission', 'Change order tracking'] },
+    { title: 'Project Execution', description: 'Tools to manage project phases from groundbreaking to final walkthrough.', features: ['Task management', 'Payment requests', 'RFI submission', 'Change order tracking'] },
     { title: 'Weekly Reporting', description: 'Automated weekly reports sent to clients with customizable templates.', features: ['Progress summary', 'Issues & risks', 'Next week lookahead', 'Photo documentation'] },
     { title: 'Mobile App', description: 'Full functionality on iOS and Android for on-site updates and communication.', features: ['Offline mode', 'Photo capture', 'Push notifications', 'Quick updates'] },
   ]
@@ -53,7 +53,7 @@ export default function PMSoftwareServicePage() {
             <span className="inline-block rounded-full bg-sky-100 px-4 py-1.5 text-sm font-bold text-sky-700 mb-4">FOR CONTRACTORS & BUILDERS</span>
             <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">Project Management Software</h1>
             <p className="mt-4 text-xl text-white/85 max-w-3xl mx-auto">
-              Built for contractors. Manage your construction projects, coordinate with clients, and get paid faster with escrow-backed milestone payments.
+              Built for contractors. Manage your projects, coordinate with clients, and get paid faster with escrow-backed milestone payments.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link href="/contact" className="inline-flex items-center justify-center rounded-xl bg-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600">Start Free Trial</Link>

@@ -26,7 +26,7 @@ export default function ArchitectServicePage() {
   const packages = [
     { name: 'As-Built Only', price: 'From $499', description: 'Existing conditions documentation', features: ['Site visit & measurements', 'Floor plans', 'Elevations', 'CAD files'] },
     { name: 'Design + Permit', price: 'From $1,999', description: 'Complete permit-ready package', features: ['Concept design (2 options)', 'Design development', 'Permit drawings', 'Unlimited revisions', 'Permit submission support'], popular: true },
-    { name: 'Full Service', price: 'From $4,999', description: 'Design through construction', features: ['Everything in Design + Permit', '3D renderings', 'Construction documents', 'CA site visits', 'Contractor coordination'] },
+    { name: 'Full Service', price: 'From $4,999', description: 'Design through build', features: ['Everything in Design + Permit', '3D renderings', 'Construction Documents', 'CA site visits', 'Contractor coordination'] },
   ]
 
   const process = [
@@ -35,7 +35,7 @@ export default function ArchitectServicePage() {
     { step: 3, title: 'Concept Design', description: 'Receive initial design concepts based on your requirements.' },
     { step: 4, title: 'Design Development', description: 'Refine the chosen concept with detailed drawings and specifications.' },
     { step: 5, title: 'Permit Drawings', description: 'Prepare permit-ready drawings that meet code requirements.' },
-    { step: 6, title: 'Construction Support', description: 'Optional support during construction with RFIs and site visits.' },
+    { step: 6, title: 'Build Support', description: 'Optional support during the build with RFIs and site visits.' },
   ]
 
   return (

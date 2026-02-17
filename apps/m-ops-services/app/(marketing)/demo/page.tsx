@@ -112,7 +112,7 @@ export default function DemoPage() {
             Request a Demo
           </h1>
           <p className="mt-4 text-lg text-white/80 max-w-2xl mx-auto">
-            See how Kealee can transform your construction operations. Our team will walk you
+            See how Kealee can transform your operations. Our team will walk you
             through the platform and answer all your questions.
           </p>
         </div>

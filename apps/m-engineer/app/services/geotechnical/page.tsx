@@ -4,12 +4,12 @@ const services = [
   {
     title: "Soil Analysis & Testing",
     description:
-      "Laboratory testing of soil samples including grain size distribution, Atterberg limits, moisture content, compaction tests, and chemical analysis for construction suitability.",
+      "Laboratory testing of soil samples including grain size distribution, Atterberg limits, moisture content, compaction tests, and chemical analysis for site suitability.",
   },
   {
     title: "Foundation Recommendations",
     description:
-      "Engineering recommendations for foundation type and design based on subsurface conditions, including bearing capacity, settlement estimates, and construction considerations.",
+      "Engineering recommendations for foundation type and design based on subsurface conditions, including bearing capacity, settlement estimates, and design considerations.",
   },
   {
     title: "Slope Stability Analysis",
@@ -214,7 +214,7 @@ export default function GeotechnicalEngineeringPage() {
                 desc: "Proper soil characterization ensures the right foundation type and depth, preventing costly structural issues down the road.",
               },
               {
-                title: "Reduce Construction Costs",
+                title: "Reduce Project Costs",
                 desc: "Accurate geotechnical data prevents over-engineering and identifies the most cost-effective foundation solutions for site conditions.",
               },
               {
@@ -323,7 +323,7 @@ export default function GeotechnicalEngineeringPage() {
             <div>
               <div className="text-lg font-bold mb-4">Kealee Engineering</div>
               <p className="text-sm text-zinc-400">
-                Professional engineering services for the modern construction industry.
+                Professional engineering services for the modern building industry.
               </p>
             </div>
             <div>

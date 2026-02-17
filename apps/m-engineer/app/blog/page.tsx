@@ -32,7 +32,7 @@ const articles = [
     date: "January 20, 2026",
     category: "Industry News",
     excerpt:
-      "Artificial intelligence tools are beginning to reshape how engineering firms handle plan reviews, quantity takeoffs, and code compliance checks. We look at the current state of AI in construction engineering and what it means for project timelines.",
+      "Artificial intelligence tools are beginning to reshape how engineering firms handle plan reviews, quantity takeoffs, and code compliance checks. We look at the current state of AI in engineering and what it means for project timelines.",
     readTime: "5 min read",
   },
   {
@@ -104,7 +104,7 @@ export default function BlogPage() {
           </h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             Insights, best practices, and industry updates from our team of licensed
-            construction engineers.
+            professional engineers.
           </p>
         </div>
       </section>
@@ -203,7 +203,7 @@ export default function BlogPage() {
         <div className="max-w-7xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-black mb-4">Need Engineering Services?</h2>
           <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
-            Our licensed engineers are ready to help with your next construction project.
+            Our licensed engineers are ready to help with your next project.
             Get a free quote within 24 hours.
           </p>
           <Link
@@ -223,7 +223,7 @@ export default function BlogPage() {
             <div>
               <div className="text-lg font-bold mb-4">Kealee Engineering</div>
               <p className="text-sm text-zinc-400">
-                Professional engineering services for the modern construction industry.
+                Professional engineering services for the modern building industry.
               </p>
             </div>
             <div>

@@ -178,7 +178,7 @@ export default function CivilEngineeringPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-black" style={{ color: "#1A2B4A" }}>Our Civil Services</h2>
             <p className="text-zinc-500 mt-2">
-              Complete site development engineering from concept to construction
+              Complete site development engineering from concept to completion
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -314,7 +314,7 @@ export default function CivilEngineeringPage() {
             <div>
               <div className="text-lg font-bold mb-4">Kealee Engineering</div>
               <p className="text-sm text-zinc-400">
-                Professional engineering services for the modern construction industry.
+                Professional engineering services for the modern building industry.
               </p>
             </div>
             <div>

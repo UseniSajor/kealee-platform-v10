@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "PM Managed Service Packages | Kealee Operations Services",
-  description: "Choose the right level of operations support for your construction projects with our PM managed service packages.",
+  description: "Choose the right level of operations support for your projects with our PM managed service packages.",
 };
 
 export default function PackagesPage() {
@@ -20,7 +20,7 @@ export default function PackagesPage() {
               PM Managed Service Packages
             </h1>
             <p className="text-xl text-white/80">
-              Choose the right level of operations support for your construction projects.
+              Choose the right level of operations support for your projects.
               From basic permit tracking to full portfolio management, we scale with your needs.
             </p>
           </div>

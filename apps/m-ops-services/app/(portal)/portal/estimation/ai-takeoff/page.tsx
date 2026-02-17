@@ -175,7 +175,7 @@ export default function AiTakeoffPage() {
         <div>
           <h1 className="text-2xl font-black tracking-tight">AI Takeoff</h1>
           <p className="mt-2 text-sm text-zinc-700">
-            Upload construction plans and let AI extract quantities, measurements, and cost items
+            Upload project plans and let AI extract quantities, measurements, and cost items
             automatically.
           </p>
         </div>
@@ -270,7 +270,7 @@ export default function AiTakeoffPage() {
           <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
             <h2 className="text-lg font-black tracking-tight">Upload plan</h2>
             <p className="mt-1 text-sm text-zinc-700">
-              Upload PDF, PNG, JPG, TIFF, DXF, or DWG files of your construction plans.
+              Upload PDF, PNG, JPG, TIFF, DXF, or DWG files of your project plans.
             </p>
 
             <div

@@ -89,7 +89,7 @@ export default function NewContractTemplatePage() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Standard Construction Contract"
+            placeholder="Standard Contract"
             style={{
               width: '100%',
               padding: '8px 12px',
@@ -137,7 +137,7 @@ export default function NewContractTemplatePage() {
             id="body"
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder={`<h1>Construction Contract</h1>
+            placeholder={`<h1>Project Contract</h1>
 <p>This agreement is between <strong>${'{'}owner.name{'}'}</strong> and the contractor.</p>
 <p>Project: <strong>${'{'}project.name{'}'}</strong></p>
 <p>Property: ${'{'}property.address{'}'}, ${'{'}property.city{'}'}, ${'{'}property.state{'}'}</p>

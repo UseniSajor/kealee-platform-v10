@@ -55,10 +55,10 @@ export function Benefits() {
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-            Why Construction Teams Choose Kealee
+            Why Teams Choose Kealee
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Real results from real construction projects. Join 500+ teams saving time and money.
+            Real results from real projects. Join 500+ teams saving time and money.
           </p>
         </div>
 

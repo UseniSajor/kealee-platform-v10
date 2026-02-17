@@ -99,7 +99,7 @@ export default function TermsPage() {
                 <li>Provide accurate project information and requirements</li>
                 <li>Respond to requests for clarification in a timely manner</li>
                 <li>Review deliverables and provide feedback within specified timeframes</li>
-                <li>Obtain necessary permits and approvals for construction</li>
+                <li>Obtain necessary permits and approvals for your project</li>
                 <li>Comply with all applicable building codes and regulations</li>
               </ul>
             </div>
@@ -114,7 +114,7 @@ export default function TermsPage() {
               </p>
               <p>
                 <strong>5.2 Limitation.</strong> Our liability is limited to the fees paid for
-                the specific service giving rise to the claim. We are not liable for construction
+                the specific service giving rise to the claim. We are not liable for project
                 costs, delays, or consequential damages.
               </p>
             </div>

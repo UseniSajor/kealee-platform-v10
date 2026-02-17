@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Security',
-  description: 'Learn about Kealee\'s enterprise-grade security measures that protect your construction data.',
+  description: 'Learn about Kealee\'s enterprise-grade security measures that protect your project data.',
 };
 
 export default function SecurityPage() {
@@ -123,7 +123,7 @@ export default function SecurityPage() {
               Enterprise-Grade Security
             </h1>
             <p className="text-xl text-gray-600">
-              Your construction data is protected by industry-leading security practices.
+              Your project data is protected by industry-leading security practices.
               We take security seriously so you can focus on building.
             </p>
           </div>
@@ -149,7 +149,7 @@ export default function SecurityPage() {
                   Security Built Into Everything We Do
                 </h2>
                 <p className="text-blue-100 text-lg mb-6">
-                  Construction projects involve sensitive information—contracts, blueprints, financial data,
+                  Projects involve sensitive information—contracts, blueprints, financial data,
                   and proprietary processes. We've built Kealee from the ground up with security as a
                   foundational principle, not an afterthought.
                 </p>

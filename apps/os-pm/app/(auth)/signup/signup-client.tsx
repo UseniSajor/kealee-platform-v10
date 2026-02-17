@@ -185,7 +185,7 @@ export function SignupClient() {
 
                 <div className="space-y-2">
                   <Label htmlFor="companyName">Company Name</Label>
-                  <Input id="companyName" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Your construction company" required />
+                  <Input id="companyName" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Your company" required />
                 </div>
 
                 <div className="space-y-2">

@@ -18,7 +18,7 @@ export default function AboutPage() {
     {
       icon: Heart,
       title: 'Build with Care',
-      description: 'Quality construction requires attention to detail - we bring that same care to our platform',
+      description: 'Quality building requires attention to detail - we bring that same care to our platform',
     },
     {
       icon: TrendingUp,
@@ -36,7 +36,7 @@ export default function AboutPage() {
     {
       name: 'Tim Chamberlain',
       role: 'Founder & CEO',
-      bio: '20+ years in construction. Built Kealee to solve problems he faced every day.',
+      bio: '20+ years in the industry. Built Kealee to solve problems he faced every day.',
     },
   ];
 
@@ -58,10 +58,10 @@ export default function AboutPage() {
         <div className="relative container mx-auto px-6">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-5xl lg:text-6xl font-bold text-white mb-6">
-              Building the Future of Construction Management
+              Building the Future of Project Management
             </h1>
             <p className="text-xl text-white/85 leading-relaxed">
-              Kealee was founded by construction professionals who were frustrated with expensive, complicated project management tools. We built the platform we wished existed - simple, affordable, and actually useful.
+              Kealee was founded by industry professionals who were frustrated with expensive, complicated project management tools. We built the platform we wished existed - simple, affordable, and actually useful.
             </p>
           </div>
         </div>
@@ -79,7 +79,7 @@ export default function AboutPage() {
             
             <div className="bg-blue-50 rounded-2xl p-12 text-center">
               <p className="text-2xl text-gray-900 font-medium leading-relaxed">
-                "Make professional-grade project management accessible to every construction team, regardless of size or budget."
+                "Make professional-grade project management accessible to every team, regardless of size or budget."
               </p>
             </div>
           </div>
@@ -148,7 +148,7 @@ export default function AboutPage() {
               Meet the Team
             </h2>
             <p className="text-xl text-gray-600">
-              Construction veterans building better tools
+              Industry veterans building better tools
             </p>
           </div>
 
@@ -178,7 +178,7 @@ export default function AboutPage() {
         <div className="container mx-auto px-6">
           <div className="bg-blue-600 rounded-3xl p-12 text-center text-white">
             <h2 className="text-4xl font-bold mb-4">
-              Join 500+ Construction Teams
+              Join 500+ Teams
             </h2>
             <p className="text-xl text-blue-100 mb-8">
               Start managing your projects better today

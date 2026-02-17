@@ -4,9 +4,9 @@ import { AIEstimationFeatures } from "@/components/marketing/AIEstimationFeature
 import { CheckCircle2, Zap, Calculator, FileText, Target, TrendingUp, DollarSign, Package } from "lucide-react"
 
 export const metadata = {
-  title: "Kealee Estimation - Professional Construction Cost Estimation",
-  description: "Stop guessing on costs. AI-powered construction estimation with 95% accuracy. Quick budgets, detailed estimates, takeoff services, and value engineering for contractors, developers, and property owners.",
-  keywords: "construction estimation, cost estimating, takeoff services, value engineering, contractor estimates, bid preparation, AI estimation",
+  title: "Kealee Estimation - Professional Cost Estimation",
+  description: "Stop guessing on costs. AI-powered estimation with 95% accuracy. Quick budgets, detailed estimates, takeoff services, and value engineering for contractors, developers, and property owners.",
+  keywords: "cost estimation, cost estimating, takeoff services, value engineering, contractor estimates, bid preparation, AI estimation",
 }
 
 export default function EstimationHomePage() {
@@ -36,7 +36,7 @@ export default function EstimationHomePage() {
       <section className="relative py-20 lg:py-28 px-4 overflow-hidden">
         <Image
           src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1920&q=80&auto=format&fit=crop"
-          alt="Professional reviewing construction cost estimation documents"
+          alt="Professional reviewing cost estimation documents"
           fill
           className="object-cover"
           sizes="100vw"
@@ -54,7 +54,7 @@ export default function EstimationHomePage() {
                 Accurate Estimates. On Time. On Budget.
               </h1>
               <p className="text-xl text-white/90 mb-8 leading-relaxed">
-                Professional construction cost estimation for contractors, developers, and property owners. AI-powered scope analysis, automated takeoff, and expert review—we deliver estimates you can bid with confidence.
+                Professional cost estimation for contractors, developers, and property owners. AI-powered scope analysis, automated takeoff, and expert review—we deliver estimates you can bid with confidence.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
@@ -146,7 +146,7 @@ export default function EstimationHomePage() {
               { icon: Target, title: "Takeoff Services", description: "AI-assisted quantity extraction from plans. Upload PDFs or CAD files and get accurate quantities in minutes." },
               { icon: TrendingUp, title: "Value Engineering", description: "AI finds cost-saving alternatives without compromising quality. Reduce project costs by 10-25%." },
               { icon: DollarSign, title: "Bid Support", description: "Complete bid packages with competitive pricing, scope narratives, and professional formatting." },
-              { icon: Package, title: "Cost Database Access", description: "Access our construction cost database with current material prices, labor rates, and equipment costs by region." },
+              { icon: Package, title: "Cost Database Access", description: "Access our cost database with current material prices, labor rates, and equipment costs by region." },
             ].map((service) => {
               const Icon = service.icon
               return (
@@ -255,7 +255,7 @@ export default function EstimationHomePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <div className="font-bold text-xl text-white mb-4">Kealee <span className="text-blue-500">Estimation</span></div>
-              <p className="text-sm text-gray-400">Professional construction cost estimation with AI-powered analysis, automated takeoff, and industry-standard cost databases.</p>
+              <p className="text-sm text-gray-400">Professional cost estimation with AI-powered analysis, automated takeoff, and industry-standard cost databases.</p>
             </div>
             <div>
               <h3 className="font-semibold text-white mb-4">Services</h3>

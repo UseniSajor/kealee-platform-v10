@@ -60,7 +60,7 @@ export default function NewEstimatePage() {
         <div>
           <h1 className="text-2xl font-black tracking-tight">New estimate</h1>
           <p className="mt-2 text-sm text-zinc-700">
-            Create a new construction cost estimate. You can add line items, assemblies, and run AI
+            Create a new cost estimate. You can add line items, assemblies, and run AI
             analysis after creation.
           </p>
         </div>

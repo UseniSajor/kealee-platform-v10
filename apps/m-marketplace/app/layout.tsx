@@ -9,19 +9,19 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   metadataBase: new URL('https://kealee.com'),
   title: {
-    default: 'Kealee - Complete Construction Management Platform',
+    default: 'Kealee - Complete Project Management Platform',
     template: '%s | Kealee'
   },
-  description: 'Professional construction project management, AI-powered permit review, and licensed architects on-demand. Save 40% on PM costs and deliver projects 25% faster.',
+  description: 'Professional project management, AI-powered permit review, and licensed architects on-demand. Save 40% on PM costs and deliver projects 25% faster.',
   keywords: [
-    'construction management',
     'project management',
+    'building management',
     'permit review',
-    'construction software',
+    'project management software',
     'architect services',
     'building permits',
-    'DC construction',
-    'Baltimore construction'
+    'DC building projects',
+    'Baltimore building projects'
   ],
   authors: [{ name: 'Kealee LLC' }],
   creator: 'Kealee',
@@ -44,13 +44,13 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://kealee.com',
     siteName: 'Kealee',
-    title: 'Kealee - Complete Construction Management Platform',
+    title: 'Kealee - Complete Project Management Platform',
     description: 'Save 40% on PM costs. AI-powered permit review. Licensed architects on-demand.',
     images: [{ url: 'https://kealee.com/kealee-og-image.jpg', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Kealee - Construction Management Platform',
+    title: 'Kealee - Project Management Platform',
     description: 'Save 40% on PM costs. Deliver projects 25% faster.',
     images: ['/kealee-og-image.jpg'],
   },

@@ -787,7 +787,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-black tracking-tight text-gray-900">
-              Built for Everyone in Construction
+              Built for Everyone in the Industry
             </h2>
             <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
               Whether you are a contractor, builder, building department, or property owner

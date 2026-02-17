@@ -22,8 +22,8 @@ interface SeoHeadPagesProps {
 }
 
 export default function SeoHeadPages({
-  title = 'Kealee Marketplace - Find Trusted Construction Contractors',
-  description = 'Connect with verified construction contractors for residential and commercial projects. Get quotes, read reviews, and manage your construction projects all in one place.',
+  title = 'Kealee Marketplace - Find Trusted Contractors',
+  description = 'Connect with verified contractors for residential and commercial projects. Get quotes, read reviews, and manage your projects all in one place.',
   canonicalUrl = 'https://marketplace.kealee.com',
   ogImage = 'https://marketplace.kealee.com/og-image.jpg',
   ogType = 'website',
@@ -76,7 +76,7 @@ export default function SeoHeadPages({
       <meta name="twitter:creator" content="@kealee" />
 
       {/* Additional Meta Tags */}
-      <meta name="keywords" content="construction contractors, home renovation, commercial construction, find contractors, contractor directory, construction services" />
+      <meta name="keywords" content="contractors, home renovation, commercial building, find contractors, contractor directory, building services" />
       <meta name="author" content="Kealee" />
       <meta name="theme-color" content="#3b82f6" />
       <meta name="mobile-web-app-capable" content="yes" />

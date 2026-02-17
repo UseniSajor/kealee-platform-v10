@@ -380,7 +380,7 @@ function EscrowTab() {
 
   return (
     <div>
-      <p className="text-center text-zinc-600 mb-8">Secure, milestone-based payment processing for construction projects.</p>
+      <p className="text-center text-zinc-600 mb-8">Secure, milestone-based payment processing for projects.</p>
 
       <div className="grid md:grid-cols-2 gap-6 mb-8">
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">

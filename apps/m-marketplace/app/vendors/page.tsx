@@ -113,7 +113,7 @@ export default function VendorDirectoryPage() {
                     <div className="text-center mb-16">
                         <h1 className="text-5xl font-black text-neutral-900 tracking-tight mb-4">Find Your Master Pro</h1>
                         <p className="text-xl text-neutral-500 max-w-2xl mx-auto font-medium">
-                            Vetted professionals, verified ratings, and guaranteed delivery for every scale of construction.
+                            Vetted professionals, verified ratings, and guaranteed delivery for every scale of project.
                         </p>
                     </div>
 

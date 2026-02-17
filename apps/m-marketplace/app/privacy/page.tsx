@@ -21,7 +21,7 @@ export default function PrivacyPage() {
           subtitle: 'Information You Provide',
           items: [
             'Account information (name, email, phone number, company name)',
-            'Project details and construction documentation',
+            'Project details and project documentation',
             'Payment and billing information',
             'Communications with our team',
             'Feedback and survey responses',
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
         {
           subtitle: 'Primary Uses',
           items: [
-            'Providing and improving our construction management services',
+            'Providing and improving our project management services',
             'Processing permits and coordinating with jurisdictions',
             'Managing your projects and team collaboration',
             'Processing payments and maintaining billing records',
@@ -189,7 +189,7 @@ export default function PrivacyPage() {
               <p className="text-gray-700 leading-relaxed">
                 Kealee LLC ("Kealee," "we," "us," or "our") is committed to protecting your privacy.
                 This Privacy Policy explains how we collect, use, disclose, and safeguard your information when
-                you use our construction management platform and related services. By using Kealee, you agree
+                you use our project management platform and related services. By using Kealee, you agree
                 to the collection and use of information in accordance with this policy.
               </p>
             </div>

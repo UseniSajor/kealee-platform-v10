@@ -94,7 +94,7 @@ const fallbackServices = [
   { id: "structural", name: "Structural Engineering", description: "Complete structural engineering services including foundation design, framing analysis, load calculations, and PE-stamped drawings.", startingPrice: 1500, features: [] },
   { id: "mep", name: "MEP Engineering", description: "Mechanical, electrical, and plumbing system design with energy modeling and code compliance for residential and commercial projects.", startingPrice: 2000, features: [] },
   { id: "civil", name: "Civil Engineering", description: "Site development, grading, drainage, and infrastructure design for residential subdivisions and commercial developments.", startingPrice: 2500, features: [] },
-  { id: "geotechnical", name: "Geotechnical Services", description: "Soil investigation, foundation recommendations, and site characterization for construction projects of all sizes.", startingPrice: 1800, features: [] },
+  { id: "geotechnical", name: "Geotechnical Services", description: "Soil investigation, foundation recommendations, and site characterization for projects of all sizes.", startingPrice: 1800, features: [] },
 ];
 
 function formatCurrency(amount: number): string {
@@ -148,7 +148,7 @@ export default function ServicesPage() {
           <h1 className="text-4xl font-black">Engineering Services</h1>
           <p className="text-zinc-500 mt-2 max-w-2xl mx-auto">
             Licensed professional engineers across all major disciplines, delivering
-            permit-ready stamped drawings for your construction projects.
+            permit-ready stamped drawings for your projects.
           </p>
         </div>
 

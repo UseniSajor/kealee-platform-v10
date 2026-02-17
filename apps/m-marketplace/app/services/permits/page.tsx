@@ -5,7 +5,7 @@ const heroImage = { src: 'https://images.unsplash.com/photo-1486406146926-c627a9
 
 export const metadata: Metadata = {
   title: 'Permits & Inspections | Kealee',
-  description: 'Automated permit tracking, inspection scheduling, and AI-powered document review for construction compliance.',
+  description: 'Automated permit tracking, inspection scheduling, and AI-powered document review for compliance.',
 }
 
 export default function PermitsServicePage() {
@@ -58,7 +58,7 @@ export default function PermitsServicePage() {
               Permits & Inspections
             </h1>
             <p className="mt-4 text-xl text-white/85 max-w-3xl mx-auto">
-              Stop chasing permit statuses. Automated tracking, AI-powered reviews, and seamless inspection scheduling for construction compliance.
+              Stop chasing permit statuses. Automated tracking, AI-powered reviews, and seamless inspection scheduling for compliance.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link href="/contact" className="inline-flex items-center justify-center rounded-xl bg-amber-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600">

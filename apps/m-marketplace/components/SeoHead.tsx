@@ -15,8 +15,8 @@ interface SeoHeadProps {
 }
 
 export default function SeoHead({
-  title = 'Kealee Marketplace - Find Trusted Construction Contractors',
-  description = 'Connect with verified construction contractors for residential and commercial projects. Get quotes, read reviews, and manage your construction projects all in one place.',
+  title = 'Kealee Marketplace - Find Trusted Contractors',
+  description = 'Connect with verified contractors for residential and commercial projects. Get quotes, read reviews, and manage your projects all in one place.',
   canonicalUrl = 'https://marketplace.kealee.com',
   ogImage = 'https://marketplace.kealee.com/og-image.jpg',
   ogType = 'website',
@@ -33,7 +33,7 @@ export default function SeoHead({
     '@type': 'WebSite',
     name: 'Kealee Marketplace',
     url: 'https://marketplace.kealee.com',
-    description: 'Construction contractor marketplace connecting homeowners and businesses with trusted professionals.',
+    description: 'Contractor marketplace connecting homeowners and businesses with trusted professionals.',
     potentialAction: {
       '@type': 'SearchAction',
       target: 'https://marketplace.kealee.com/search?q={search_term_string}',
@@ -51,7 +51,7 @@ export default function SeoHead({
     telephone: '+1-555-123-4567',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: '123 Construction Way',
+      streetAddress: '123 Market Way',
       addressLocality: 'San Francisco',
       addressRegion: 'CA',
       postalCode: '94107',
@@ -91,7 +91,7 @@ export default function SeoHead({
         name: 'How does Kealee Marketplace work?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Kealee Marketplace connects you with verified construction contractors. Post your project, receive quotes from qualified contractors, compare profiles and reviews, then hire the best fit for your project.'
+          text: 'Kealee Marketplace connects you with verified contractors. Post your project, receive quotes from qualified contractors, compare profiles and reviews, then hire the best fit for your project.'
         }
       },
       {
@@ -167,7 +167,7 @@ export default function SeoHead({
 
     // Basic Meta Tags
     updateMetaTag('description', description);
-    updateMetaTag('keywords', 'construction contractors, home renovation, commercial construction, find contractors, contractor directory, construction services');
+    updateMetaTag('keywords', 'contractors, home renovation, commercial projects, find contractors, contractor directory, project services');
     updateMetaTag('author', 'Kealee');
     updateMetaTag('theme-color', '#3b82f6');
     updateMetaTag('mobile-web-app-capable', 'yes');

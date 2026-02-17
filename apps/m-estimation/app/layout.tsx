@@ -6,8 +6,8 @@ import { Providers } from './providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Kealee Estimation - Construction Cost Estimation Platform',
-  description: 'Professional construction cost estimation and takeoff management with AI-powered insights',
+  title: 'Kealee Estimation - Cost Estimation Platform',
+  description: 'Professional cost estimation and takeoff management with AI-powered insights',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',

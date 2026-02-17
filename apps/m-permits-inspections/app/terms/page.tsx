@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Terms of Service | Kealee Permits & Inspections',
   description:
-    'Terms and conditions governing your use of the Kealee Permits & Inspections construction permit management and inspection coordination platform.',
+    'Terms and conditions governing your use of the Kealee Permits & Inspections permit management and inspection coordination platform.',
 };
 
 export default function TermsPage() {
@@ -117,7 +117,7 @@ export default function TermsPage() {
             <div className="space-y-3 text-gray-600">
               <p>
                 <strong>2.1 Platform Overview.</strong> The Kealee Permits &amp; Inspections platform provides
-                construction permit management and inspection coordination services, including but not limited
+                permit management and inspection coordination services, including but not limited
                 to: permit application preparation, AI-powered document review, permit submission to
                 governmental jurisdictions, permit status tracking, inspection scheduling and coordination,
                 and compliance verification tools.
@@ -132,7 +132,7 @@ export default function TermsPage() {
                 <strong>2.3 No Professional Advice.</strong> The Platform does not provide legal, engineering,
                 or architectural advice. Information and tools provided through the Platform are for
                 informational purposes and to assist with permit-related workflows. You should consult
-                qualified professionals for advice specific to your construction project.
+                qualified professionals for advice specific to your project.
               </p>
             </div>
           </section>
@@ -171,7 +171,7 @@ export default function TermsPage() {
               <p>
                 <strong>4.1 User Responsibility for Accuracy.</strong> You are solely responsible for the
                 accuracy, completeness, and legality of all information, documents, and materials submitted
-                through the Platform for permit applications. This includes construction plans, engineering
+                through the Platform for permit applications. This includes project plans, engineering
                 calculations, property information, scope of work descriptions, and all supporting
                 documentation.
               </p>
@@ -216,12 +216,12 @@ export default function TermsPage() {
             <div className="space-y-3 text-gray-600">
               <p>
                 <strong>5.1 Coordination.</strong> Our inspection coordination services assist you in
-                scheduling and managing required construction inspections with local building departments and,
+                scheduling and managing required inspections with local building departments and,
                 where available, third-party inspection providers. We coordinate scheduling logistics but do
                 not perform inspections ourselves.
               </p>
               <p>
-                <strong>5.2 Site Readiness.</strong> You are responsible for ensuring your construction site is
+                <strong>5.2 Site Readiness.</strong> You are responsible for ensuring your project site is
                 ready and accessible for scheduled inspections. Failure to have the site prepared may result in
                 failed inspections, rescheduling fees, or project delays for which Kealee is not responsible.
               </p>
@@ -322,7 +322,7 @@ export default function TermsPage() {
               <p>
                 <strong>8.3 Exclusion of Consequential Damages.</strong> IN NO EVENT SHALL KEALEE BE LIABLE
                 FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT
-                LIMITED TO LOSS OF PROFITS, DATA, BUSINESS OPPORTUNITIES, PROJECT DELAYS, CONSTRUCTION
+                LIMITED TO LOSS OF PROFITS, DATA, BUSINESS OPPORTUNITIES, PROJECT DELAYS, SITE
                 DOWNTIME, OR REGULATORY PENALTIES, REGARDLESS OF THE CAUSE OF ACTION OR THEORY OF LIABILITY.
               </p>
               <p>
@@ -349,7 +349,7 @@ export default function TermsPage() {
                 <li>Your violation of these Terms or any applicable law or regulation</li>
                 <li>Your violation of any rights of a third party</li>
                 <li>Any claim that information you submitted was false, misleading, or fraudulent</li>
-                <li>Any construction-related claims, damages, or disputes arising from projects for which you obtained permits through the Platform</li>
+                <li>Any project-related claims, damages, or disputes arising from projects for which you obtained permits through the Platform</li>
               </ul>
             </div>
           </section>

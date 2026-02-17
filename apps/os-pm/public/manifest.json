@@ -1,7 +1,7 @@
 {
   "name": "Kealee - Project Manager",
   "short_name": "Kealee PM",
-  "description": "Construction project management dashboard with AI-powered tools",
+  "description": "Project management dashboard with AI-powered tools",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

@@ -102,7 +102,7 @@ export default function PermitsPage() {
         </h1>
         <p className="mt-4 text-xl text-zinc-600 max-w-3xl mx-auto">
           Stop chasing permit statuses. Automated tracking, AI-powered reviews,
-          and seamless inspection scheduling for construction compliance.
+          and seamless inspection scheduling for compliance.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           <Link

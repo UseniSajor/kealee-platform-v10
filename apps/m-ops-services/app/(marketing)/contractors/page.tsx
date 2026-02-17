@@ -66,7 +66,7 @@ const benefits = [
 
 const painPoints = [
   {
-    problem: "I'm spending more time on admin than actual construction",
+    problem: "I'm spending more time on admin than actual building",
     solution: "We handle permits, reports, and coordination so you can focus on building",
     package: "Package A or B"
   },

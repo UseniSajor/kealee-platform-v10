@@ -13,7 +13,7 @@ const features = [
     icon: TrendingUp,
     title: "Cost Prediction",
     description:
-      "Machine learning models trained on thousands of construction projects predict costs with 95% accuracy, accounting for regional variations and market conditions.",
+      "Machine learning models trained on thousands of projects predict costs with 95% accuracy, accounting for regional variations and market conditions.",
   },
   {
     icon: Lightbulb,
@@ -50,10 +50,10 @@ export function AIEstimationFeatures() {
           <span>Powered by AI</span>
         </div>
         <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-          AI That Understands Construction
+          AI That Understands Your Project
         </h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Our AI is trained on construction data, building codes, and thousands of real estimates. It does not just crunch numbers—it understands what your project needs.
+          Our AI is trained on building data, codes, and thousands of real estimates. It does not just crunch numbers—it understands what your project needs.
         </p>
       </div>
 

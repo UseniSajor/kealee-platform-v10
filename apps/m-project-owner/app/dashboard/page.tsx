@@ -109,7 +109,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-sm text-gray-500">Manage your construction projects</p>
+              <p className="text-sm text-gray-500">Manage your projects</p>
             </div>
 
             <div className="flex items-center gap-3">
@@ -166,7 +166,7 @@ export default function DashboardPage() {
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
             <p className="text-sm text-gray-500 mb-1">Active Projects</p>
             <p className="text-3xl font-bold text-gray-900">{projects.length}</p>
-            <p className="text-xs text-gray-400 mt-1">In construction</p>
+            <p className="text-xs text-gray-400 mt-1">In progress</p>
           </div>
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
             <p className="text-sm text-gray-500 mb-1">Awaiting Bids</p>
@@ -195,7 +195,7 @@ export default function DashboardPage() {
             {/* Active Projects */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">Active Construction Projects</h2>
+                <h2 className="text-lg font-semibold text-gray-900">Active Projects</h2>
                 <Link href="/projects" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
                   View All →
                 </Link>
@@ -228,7 +228,7 @@ export default function DashboardPage() {
                     <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                       <FolderOpen className="text-gray-400" size={32} />
                     </div>
-                    <p className="text-gray-500 mb-4">No active construction projects</p>
+                    <p className="text-gray-500 mb-4">No active projects</p>
                     <p className="text-sm text-gray-400">
                       Start with a pre-con project to get designs and contractor bids.
                     </p>
@@ -245,7 +245,7 @@ export default function DashboardPage() {
               <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-6 text-white">
                 <h3 className="font-semibold text-lg mb-3">Getting Started</h3>
                 <p className="text-indigo-100 text-sm mb-4">
-                  Create a pre-construction project to get professional designs and competitive contractor bids.
+                  Create a pre-con project to get professional designs and competitive contractor bids.
                 </p>
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">

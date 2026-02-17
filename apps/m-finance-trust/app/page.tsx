@@ -41,11 +41,11 @@ import {
 
 export const metadata: Metadata = {
   title: 'Kealee Finance & Trust | Your Money is Protected Until the Work is Done',
-  description: 'Secure escrow accounts for construction projects. Your funds are FDIC-insured and only released when you approve completed work. Plus budget tracking, project management, and vetted contractors.',
-  keywords: 'construction escrow, payment protection, contractor payment, milestone payments, secure construction payments, budget tracking, project management',
+  description: 'Secure escrow accounts for your projects. Your funds are FDIC-insured and only released when you approve completed work. Plus budget tracking, project management, and vetted contractors.',
+  keywords: 'project escrow, payment protection, contractor payment, milestone payments, secure project payments, budget tracking, project management',
   openGraph: {
     title: 'Kealee Finance & Trust - Your Money is Protected',
-    description: 'Secure escrow accounts for construction. Funds only released when work is verified.',
+    description: 'Secure escrow accounts for your projects. Funds only released when work is verified.',
     type: 'website',
   },
 }
@@ -365,7 +365,7 @@ export default function FinanceTrustLandingPage() {
                 <AlertTriangle className="h-8 w-8 text-red-500 flex-shrink-0" />
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    The Biggest Fears in Construction Projects
+                    The Biggest Fears in Building Projects
                   </h2>
                   <p className="text-gray-700 text-lg">
                     "What if the contractor disappears with my money? What if the project goes over budget? How do I know if the work is done right?"
@@ -419,7 +419,7 @@ export default function FinanceTrustLandingPage() {
               More Than Just Payment Protection
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Kealee is a full construction management platform. Your escrow account connects to everything —
+              Kealee is a full project management platform. Your escrow account connects to everything —
               budget tracking, contractor management, permit coordination, and more.
             </p>
           </div>
@@ -1051,7 +1051,7 @@ export default function FinanceTrustLandingPage() {
                 <span className="text-white font-bold text-lg">Kealee</span>
               </div>
               <p className="text-sm leading-relaxed">
-                The complete construction management platform. Protected payments, budget tracking, vetted contractors, and dedicated project managers.
+                The complete project management platform. Protected payments, budget tracking, vetted contractors, and dedicated project managers.
               </p>
             </div>
 

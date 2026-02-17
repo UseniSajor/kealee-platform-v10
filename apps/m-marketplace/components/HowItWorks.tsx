@@ -36,7 +36,7 @@ export function HowItWorks() {
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Get started in 4 simple steps and transform how you manage
-            construction projects
+            projects
           </p>
         </div>
 

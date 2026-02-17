@@ -146,7 +146,7 @@ export default function ProjectsPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">My Projects</h1>
-              <p className="text-gray-600">Track all your construction projects in one place</p>
+              <p className="text-gray-600">Track all your projects in one place</p>
             </div>
           </div>
           <div className="flex items-center justify-center py-20">
@@ -168,7 +168,7 @@ export default function ProjectsPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">My Projects</h1>
-              <p className="text-gray-600">Track all your construction projects in one place</p>
+              <p className="text-gray-600">Track all your projects in one place</p>
             </div>
             <Link
               href="/projects/new"
@@ -203,7 +203,7 @@ export default function ProjectsPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">My Projects</h1>
-            <p className="text-gray-600">Track all your construction projects in one place</p>
+            <p className="text-gray-600">Track all your projects in one place</p>
           </div>
           <Link
             href="/projects/new"

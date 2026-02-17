@@ -6,7 +6,7 @@ import { DraftingCompass, FileText, Users, Clock, Share2, BarChart3, Briefcase, 
 export const metadata: Metadata = {
   title: 'Design Professional Portal | Kealee',
   description: 'Portal for Kealee design professionals. Manage project owner design requests, marketplace walk-ins, and coordinate permit submissions.',
-  keywords: 'architect portal, design professional, construction design services, permit coordination',
+  keywords: 'architect portal, design professional, architectural design services, permit coordination',
   openGraph: {
     title: 'Kealee Design Professional Portal',
     description: 'Manage design projects for project owners and marketplace clients. Seamless permit coordination.',

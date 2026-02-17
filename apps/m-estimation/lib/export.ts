@@ -163,7 +163,7 @@ export function exportToPDF(estimate: Estimate): void {
 
   <div class="header">
     <h1>${estimate.name}</h1>
-    <p>Construction Cost Estimate</p>
+    <p>Cost Estimate</p>
   </div>
 
   <div class="meta-grid">
@@ -245,7 +245,7 @@ export function exportToExcel(estimate: Estimate): void {
   const rows: string[][] = [];
 
   // Header section
-  rows.push(['CONSTRUCTION COST ESTIMATE']);
+  rows.push(['COST ESTIMATE']);
   rows.push([]);
   rows.push(['Project Name', estimate.name]);
   rows.push(['Client', estimate.clientName || 'N/A']);

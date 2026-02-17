@@ -31,7 +31,7 @@ const USER_ROUTES = [
   {
     id: 'homeowner',
     title: "I'm a Homeowner",
-    description: 'Plan your project, find contractors, and manage construction with full visibility.',
+    description: 'Plan your project, find contractors, and manage your build with full visibility.',
     icon: Home,
     href: '/project-owner',
     color: 'bg-blue-600',
@@ -62,7 +62,7 @@ const USER_ROUTES = [
     hoverColor: 'hover:bg-indigo-700',
     lightColor: 'bg-indigo-50',
     textColor: 'text-indigo-600',
-    features: ['Licensed Architects', 'AI-Assisted Design', 'Construction Docs', 'Code Compliance'],
+    features: ['Licensed Architects', 'AI-Assisted Design', 'Permit-Ready Docs', 'Code Compliance'],
   },
   {
     id: 'permits',
@@ -98,13 +98,13 @@ export function UserTypeRouting() {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
             <Building2 size={16} />
-            Your Construction Hub
+            Your Project Hub
           </div>
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             Where Do You Want to Start?
           </h2>
           <p className="text-xl text-gray-600">
-            Kealee connects all parties in the construction ecosystem.
+            Kealee connects all parties in the building ecosystem.
             Select your role to access the right tools and services.
           </p>
         </div>
@@ -170,7 +170,7 @@ export function UserTypeRouting() {
                 </h3>
                 <p className="text-gray-300 mb-4">
                   Portfolio management, custom integrations, dedicated account managers, and white-glove service
-                  for builders, developers, and construction companies managing multiple projects.
+                  for builders, developers, and companies managing multiple projects.
                 </p>
                 <div className="flex flex-wrap justify-center md:justify-start gap-3">
                   <span className="text-xs bg-white/10 px-3 py-1 rounded-full">Package D Enterprise</span>

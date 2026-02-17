@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'For Contractors | Kealee Finance & Trust',
-  description: 'Get paid faster with Kealee Finance. Escrow-protected payments, milestone-based releases, and guaranteed funds for verified construction work.',
+  description: 'Get paid faster with Kealee Finance. Escrow-protected payments, milestone-based releases, and guaranteed funds for verified project work.',
 }
 
 function StepCard({

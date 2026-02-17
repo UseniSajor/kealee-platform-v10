@@ -13,7 +13,7 @@ export function HeroGC() {
           </h1>
           <p className="mt-3 max-w-2xl text-base leading-relaxed text-zinc-800">
             <span className="font-extrabold">
-              Professional construction operations for GCs who want to scale.
+              Professional operations for GCs who want to scale.
             </span>{" "}
             We become your operations department—permits, inspections, vendor
             coordination, documentation, and weekly reporting.

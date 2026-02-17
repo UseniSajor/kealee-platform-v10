@@ -193,7 +193,7 @@ export default function AITakeoffPage() {
         </div>
         <div>
           <h1 className="text-3xl font-bold text-gray-900">AI Takeoff</h1>
-          <p className="text-gray-500">Upload construction plans and photos for automatic quantity extraction</p>
+          <p className="text-gray-500">Upload project plans and photos for automatic quantity extraction</p>
         </div>
       </div>
 

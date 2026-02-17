@@ -34,8 +34,8 @@ export default function ProjectStartPage() {
     { id: 'new-construction', label: 'New Construction', icon: Building2, description: 'Ground-up new build projects' },
     { id: 'remodel', label: 'Remodel/Renovation', icon: Home, description: 'Home improvement and renovations' },
     { id: 'addition', label: 'Addition', icon: Plus, description: 'Room additions and expansions' },
-    { id: 'commercial', label: 'Commercial', icon: Building2, description: 'Commercial construction projects' },
-    { id: 'other', label: 'Other', icon: Hammer, description: 'Custom construction project' },
+    { id: 'commercial', label: 'Commercial', icon: Building2, description: 'Commercial building projects' },
+    { id: 'other', label: 'Other', icon: Hammer, description: 'Custom project' },
   ];
 
   const handleNext = () => {
@@ -178,7 +178,7 @@ export default function ProjectStartPage() {
                   type="text"
                   value={formData.projectName}
                   onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
-                  placeholder="e.g., Kitchen Remodel, New Home Construction"
+                  placeholder="e.g., Kitchen Remodel, New Home Build"
                   className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>

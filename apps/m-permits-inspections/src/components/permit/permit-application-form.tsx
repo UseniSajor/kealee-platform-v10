@@ -639,7 +639,7 @@ export default function PermitApplicationForm({
                 <CardHeader>
                   <CardTitle>Project Details</CardTitle>
                   <CardDescription>
-                    Provide detailed information about the construction project
+                    Provide detailed information about your project
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -651,7 +651,7 @@ export default function PermitApplicationForm({
                         <FormLabel>Project Description *</FormLabel>
                         <FormControl>
                           <Textarea 
-                            placeholder="Describe the construction project..." 
+                            placeholder="Describe the project..."
                             className="min-h-[100px]"
                             {...field} 
                           />

@@ -4,7 +4,7 @@ import { Calculator, FileText, Target, TrendingUp, DollarSign, Package, CheckCir
 
 export const metadata = {
   title: "Estimation Services - Kealee Estimation",
-  description: "Construction estimation services including quick budgets, detailed estimates, takeoff services, value engineering, and bid support.",
+  description: "Estimation services including quick budgets, detailed estimates, takeoff services, value engineering, and bid support.",
 }
 
 const services = [
@@ -51,7 +51,7 @@ const services = [
   {
     icon: Package,
     title: "Takeoff Services",
-    description: "AI-assisted quantity extraction from construction plans. Upload PDFs or CAD files and receive organized quantity reports by CSI division.",
+    description: "AI-assisted quantity extraction from project plans. Upload PDFs or CAD files and receive organized quantity reports by CSI division.",
     features: ["AI quantity extraction", "Multiple file formats", "CSI-organized output", "Measurement verification"],
     turnaround: "1-3 business days",
     best: "Quantity surveys",
@@ -61,7 +61,7 @@ const services = [
 const processSteps = [
   { step: 1, title: "Submit Project Info", description: "Upload plans, descriptions, or specifications. Tell us what you need.", icon: FileText },
   { step: 2, title: "AI Analysis", description: "Our AI reviews your project, identifies scope, and generates initial pricing.", icon: Brain },
-  { step: 3, title: "Expert Review", description: "A construction estimator reviews and refines the AI output for accuracy.", icon: CheckCircle2 },
+  { step: 3, title: "Expert Review", description: "An estimator reviews and refines the AI output for accuracy.", icon: CheckCircle2 },
   { step: 4, title: "Delivered Estimate", description: "Receive your completed estimate in your preferred format, ready to use.", icon: ArrowRight },
 ]
 
@@ -72,7 +72,7 @@ export default function ServicesPage() {
       <section className="relative py-16 lg:py-24 px-4 overflow-hidden">
         <Image
           src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1920&q=80&auto=format&fit=crop"
-          alt="Construction blueprints and architectural plans"
+          alt="Blueprints and architectural plans"
           fill
           className="object-cover"
           sizes="100vw"

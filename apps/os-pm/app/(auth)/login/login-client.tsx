@@ -60,7 +60,7 @@ export function LoginClient() {
             className="h-28 w-auto mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-neutral-900">Kealee PM</h1>
-          <p className="text-sm text-neutral-500 mt-1">Construction Project Management Software</p>
+          <p className="text-sm text-neutral-500 mt-1">Project Management Software</p>
         </div>
 
         <Card>

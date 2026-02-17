@@ -8,11 +8,11 @@ export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
   title: 'Kealee | DC-Baltimore\'s End-to-End Design/Build Platform',
-  description: 'The connected platform that takes your construction project from architecture through permits through construction through closeout. One platform. Zero gaps.',
-  keywords: ['construction', 'design build', 'permits', 'architecture', 'DC', 'Baltimore', 'contractors'],
+  description: 'The connected platform that takes your project from architecture through permits through build-out through closeout. One platform. Zero gaps.',
+  keywords: ['design build', 'permits', 'architecture', 'DC', 'Baltimore', 'contractors', 'project management'],
   openGraph: {
     title: 'Kealee | DC-Baltimore\'s End-to-End Design/Build Platform',
-    description: 'Design. Build. Done. The connected platform for construction projects.',
+    description: 'Design. Build. Done. The connected platform for every project phase.',
     url: 'https://kealee.com',
     siteName: 'Kealee',
     images: [
@@ -41,7 +41,7 @@ const platformFlowNodes = [
     phase: 'Design',
     app: 'm-architect',
     appBadge: 'm-architect',
-    features: ['Construction Drawings', '3D Renderings', 'Engineering'],
+    features: ['Architectural Drawings', '3D Renderings', 'Engineering'],
     href: '/services/architect',
     color: 'teal' as const,
   },

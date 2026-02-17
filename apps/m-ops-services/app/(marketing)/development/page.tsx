@@ -39,7 +39,7 @@ export default function DevelopmentHomePage() {
               Owner's Representation & Development Advisory for Real Estate Projects That Can't Afford Mistakes
             </h1>
             <p className="text-xl text-white/80 mb-8 leading-relaxed">
-              Kealee Development protects owner capital by managing entitlement, design, and construction risk—acting as your senior development partner from feasibility through Certificate of Occupancy. Backed by AI-powered project analytics and automated risk monitoring.
+              Kealee Development protects owner capital by managing entitlement, design, and project risk—acting as your senior development partner from feasibility through Certificate of Occupancy. Backed by AI-powered project analytics and automated risk monitoring.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button

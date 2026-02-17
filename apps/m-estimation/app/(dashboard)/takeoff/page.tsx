@@ -164,7 +164,7 @@ export default function TakeoffPage() {
       <div>
         <h1 className="text-3xl font-bold">Takeoff</h1>
         <p className="text-muted-foreground mt-1">
-          Upload construction plans and extract quantities automatically
+          Upload project plans and extract quantities automatically
         </p>
       </div>
 
@@ -194,12 +194,12 @@ export default function TakeoffPage() {
               <div>
                 <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">Uploading & Processing...</h3>
-                <p className="text-muted-foreground">Analyzing your construction plans with AI</p>
+                <p className="text-muted-foreground">Analyzing your project plans with AI</p>
               </div>
             ) : (
               <div>
                 <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Upload Construction Plans</h3>
+                <h3 className="text-lg font-medium mb-2">Upload Project Plans</h3>
                 <p className="text-muted-foreground mb-4">
                   Drag and drop PDF, images, or CAD files here, or click to browse
                 </p>
@@ -341,7 +341,7 @@ export default function TakeoffPage() {
               <Ruler className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">No takeoff sessions yet</h3>
               <p className="text-muted-foreground mb-4">
-                Upload construction plans to start extracting quantities
+                Upload project plans to start extracting quantities
               </p>
             </div>
           )}

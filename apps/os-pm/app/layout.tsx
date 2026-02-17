@@ -4,8 +4,8 @@ import { PWAProvider } from './pwa-provider'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Kealee PM | Construction Project Management Software',
-  description: 'Full-featured construction PM software for GCs, builders, and contractors. Schedule, budget, RFIs, submittals, daily logs, punch lists, and more. Powered by Kealee.',
+  title: 'Kealee PM | Project Management Software',
+  description: 'Full-featured PM software for GCs, builders, and contractors. Schedule, budget, RFIs, submittals, daily logs, punch lists, and more. Powered by Kealee.',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',

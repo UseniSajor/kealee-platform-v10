@@ -1,7 +1,7 @@
 {
   "name": "Kealee - My Projects",
   "short_name": "Kealee",
-  "description": "Track your construction project in real-time",
+  "description": "Track your project in real-time",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

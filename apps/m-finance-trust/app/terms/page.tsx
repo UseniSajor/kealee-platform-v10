@@ -63,7 +63,7 @@ export default function TermsOfServicePage() {
             <div className="mb-10">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Description of Services</h2>
               <p className="text-gray-600 leading-relaxed mb-4">
-                Kealee Finance &amp; Trust provides a technology platform for construction project financial management, including but not limited to:
+                Kealee Finance &amp; Trust provides a technology platform for project financial management, including but not limited to:
               </p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 mb-4 ml-4">
                 <li><strong>Escrow Services:</strong> Holding project funds in FDIC-insured accounts and releasing them based on milestone completion and user approval.</li>
@@ -74,7 +74,7 @@ export default function TermsOfServicePage() {
                 <li><strong>Reporting:</strong> Financial reporting, transaction history, and tax documentation generation.</li>
               </ul>
               <p className="text-gray-600 leading-relaxed">
-                Kealee acts as a technology platform and escrow agent. Kealee is not a bank, lending institution, general contractor, or construction company. We do not provide construction services, financial advice, legal advice, or guarantee the quality of any construction work.
+                Kealee acts as a technology platform and escrow agent. Kealee is not a bank, lending institution, general contractor, or building company. We do not provide building services, financial advice, legal advice, or guarantee the quality of any project work.
               </p>
             </div>
 
@@ -165,7 +165,7 @@ export default function TermsOfServicePage() {
               </p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
                 <li>Provide truthful, accurate, and complete information in all interactions with the platform.</li>
-                <li>Use the Services only for lawful purposes related to construction project management and finance.</li>
+                <li>Use the Services only for lawful purposes related to project management and finance.</li>
                 <li>Not use the platform for money laundering, fraud, or any other illegal activity.</li>
                 <li>Comply with all applicable local, state, and federal laws and regulations.</li>
                 <li>Not interfere with or disrupt the security, integrity, or performance of the platform.</li>
@@ -221,7 +221,7 @@ export default function TermsOfServicePage() {
                 KEALEE&apos;S TOTAL AGGREGATE LIABILITY TO YOU FOR ALL CLAIMS ARISING OUT OF OR RELATING TO THESE TERMS OR THE SERVICES SHALL NOT EXCEED THE TOTAL AMOUNT OF FEES PAID BY YOU TO KEALEE DURING THE TWELVE (12) MONTHS PRECEDING THE DATE OF THE CLAIM.
               </p>
               <p className="text-gray-600 leading-relaxed">
-                Kealee does not guarantee the quality, timeliness, or completion of any construction work performed by contractors on the platform. Kealee is not responsible for the actions or omissions of any contractor, homeowner, or other user of the platform. Users engage with each other at their own risk, and Kealee&apos;s role is limited to providing the technology platform and escrow services described herein.
+                Kealee does not guarantee the quality, timeliness, or completion of any project work performed by contractors on the platform. Kealee is not responsible for the actions or omissions of any contractor, homeowner, or other user of the platform. Users engage with each other at their own risk, and Kealee&apos;s role is limited to providing the technology platform and escrow services described herein.
               </p>
             </div>
 

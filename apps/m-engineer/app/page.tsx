@@ -30,7 +30,7 @@ const services = [
     id: "geotechnical",
     name: "Geotechnical Services",
     icon: "🔬",
-    description: "Soil testing, foundation recommendations, and site assessment for construction projects.",
+    description: "Soil testing, foundation recommendations, and site assessment for building projects.",
     features: ["Soil Analysis", "Bearing Capacity", "Foundation Recommendations", "Site Assessment"],
     startingPrice: "$1,800",
   },
@@ -76,7 +76,7 @@ const packages = [
       "Unlimited revisions",
       "3-5 day turnaround",
       "Permit management",
-      "Construction support",
+      "Build phase support",
       "Dedicated engineer",
     ],
   },
@@ -152,7 +152,7 @@ export default function EngineerHomePage() {
             </h1>
             <p className="text-xl text-gray-200 mb-8">
               Licensed structural, MEP, and civil engineers ready to deliver stamped
-              drawings for your construction projects. Fast turnaround, competitive pricing,
+              drawings for your projects. Fast turnaround, competitive pricing,
               guaranteed permit approval.
             </p>
             <div className="flex gap-4">
@@ -376,7 +376,7 @@ export default function EngineerHomePage() {
             <div>
               <div className="text-lg font-bold mb-4">Kealee Engineering</div>
               <p className="text-sm text-zinc-400">
-                Professional engineering services for the modern construction industry.
+                Professional engineering services for the modern building industry.
               </p>
             </div>
             <div>

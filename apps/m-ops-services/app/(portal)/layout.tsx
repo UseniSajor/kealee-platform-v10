@@ -30,7 +30,7 @@ export default function PortalLayout({
         {/* Desktop sidebar */}
         <aside className="hidden w-72 shrink-0 border-r border-black/10 bg-white px-4 py-5 md:block">
           <div className="text-sm font-black tracking-tight text-zinc-950">GC Portal</div>
-          <div className="mt-1 text-xs text-zinc-600">Mobile-first ops for construction teams</div>
+          <div className="mt-1 text-xs text-zinc-600">Mobile-first ops for project teams</div>
 
           <nav className="mt-5 grid gap-2">
             {links.map((l) => {

@@ -4,7 +4,7 @@ import { Upload, Brain, UserCheck, FileCheck, CheckCircle2, Clock, Shield, Zap }
 
 export const metadata = {
   title: "How It Works - Kealee Estimation",
-  description: "Learn how Kealee Estimation combines AI and expert review to deliver accurate construction cost estimates in days, not weeks.",
+  description: "Learn how Kealee Estimation combines AI and expert review to deliver accurate cost estimates in days, not weeks.",
 }
 
 const steps = [
@@ -12,7 +12,7 @@ const steps = [
     step: 1,
     icon: Upload,
     title: "Submit Your Project",
-    description: "Upload your construction plans, project description, or specifications. You can submit PDFs, images, CAD files, or simply describe your project in detail.",
+    description: "Upload your project plans, project description, or specifications. You can submit PDFs, images, CAD files, or simply describe your project in detail.",
     details: [
       "Drag and drop files or describe your project",
       "Specify project type, location, and timeline",
@@ -36,7 +36,7 @@ const steps = [
     step: 3,
     icon: UserCheck,
     title: "Expert Review",
-    description: "A construction estimator reviews the AI output for accuracy. They refine quantities, verify pricing, add professional judgment, and ensure completeness.",
+    description: "An estimator reviews the AI output for accuracy. They refine quantities, verify pricing, add professional judgment, and ensure completeness.",
     details: [
       "Experienced estimators review every project",
       "Quantities verified against plans",
@@ -62,7 +62,7 @@ const timelines = [
   { service: "Quick Budget", time: "4-8 hours", description: "AI-powered budget range based on project description" },
   { service: "Conceptual Estimate", time: "1-2 days", description: "Preliminary estimate from basic drawings" },
   { service: "Detailed Estimate", time: "3-5 days", description: "Full line-item estimate from complete drawings" },
-  { service: "Takeoff Services", time: "1-3 days", description: "Quantity extraction from construction plans" },
+  { service: "Takeoff Services", time: "1-3 days", description: "Quantity extraction from project plans" },
 ]
 
 export default function HowItWorksPage() {
@@ -72,7 +72,7 @@ export default function HowItWorksPage() {
       <section className="relative py-16 lg:py-24 px-4 overflow-hidden">
         <Image
           src="https://images.unsplash.com/photo-1460472178825-e5240623afd5?w=1920&q=80&auto=format&fit=crop"
-          alt="Construction measurement and planning tools"
+          alt="Measurement and planning tools"
           fill
           className="object-cover"
           sizes="100vw"
@@ -150,7 +150,7 @@ export default function HowItWorksPage() {
               <Shield className="h-10 w-10 text-blue-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-3">95% Accurate</h3>
               <p className="text-gray-600">
-                Expert review catches what AI misses. Every estimate is reviewed by a construction professional.
+                Expert review catches what AI misses. Every estimate is reviewed by an industry professional.
               </p>
             </div>
             <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center">

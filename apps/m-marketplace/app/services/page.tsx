@@ -46,7 +46,7 @@ const services = [
   },
   {
     title: 'Project Management',
-    description: 'Construction PM tools for contractors — milestone tracking, payment requests, and client communication.',
+    description: 'PM tools for contractors — milestone tracking, payment requests, and client communication.',
     href: '/services/pm-software',
     color: 'sky',
     badge: 'Software',
@@ -110,7 +110,7 @@ export default function ServicesIndexPage() {
             All Services
           </h1>
           <p className="text-xl text-white/85 max-w-3xl mx-auto">
-            One platform for every phase of construction — from design and pre-construction through permitting, project management, and closeout. Explore our complete suite of services.
+            One platform for every phase of your project — from design and pre-construction through permitting, project management, and closeout. Explore our complete suite of services.
           </p>
         </div>
       </section>

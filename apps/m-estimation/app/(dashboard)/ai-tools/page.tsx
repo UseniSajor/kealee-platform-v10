@@ -830,7 +830,7 @@ export default function AIToolsPage() {
               <div>
                 <h3 className="font-semibold text-lg">AI Takeoff</h3>
                 <p className="text-sm text-muted-foreground">
-                  Upload construction plans for automatic quantity extraction using AI
+                  Upload project plans for automatic quantity extraction using AI
                 </p>
               </div>
             </div>

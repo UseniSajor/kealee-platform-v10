@@ -88,7 +88,7 @@ export default function EstimatesPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Estimates</h1>
-          <p className="text-gray-500 mt-1">Construction cost estimation and AI-powered takeoffs</p>
+          <p className="text-gray-500 mt-1">Cost estimation and AI-powered takeoffs</p>
         </div>
         <div className="flex gap-2">
           <Link href="/estimates/ai-takeoff">
@@ -152,7 +152,7 @@ export default function EstimatesPage() {
             <Calculator size={48} className="mx-auto mb-4 text-gray-300" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No estimates yet</h3>
             <p className="text-gray-500 mb-6 max-w-md mx-auto">
-              Create your first estimate manually or use AI-powered takeoff to automatically extract quantities from your construction plans and photos.
+              Create your first estimate manually or use AI-powered takeoff to automatically extract quantities from your project plans and photos.
             </p>
             <div className="flex justify-center gap-3">
               <Link href="/estimates/ai-takeoff">

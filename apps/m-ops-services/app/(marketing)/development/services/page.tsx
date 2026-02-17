@@ -187,7 +187,7 @@ export default function ServicesPage() {
                   <p className="text-gray-600">
                     <strong>Monthly Retainer:</strong> $5,000–$15,000/month (scaled to project size and complexity)<br />
                     <strong>Plus Milestone Fees:</strong> Pre-construction planning, GC bid, substantial completion milestones<br />
-                    <strong>Typical Total:</strong> 1.5–3% of total construction budget over project lifecycle
+                    <strong>Typical Total:</strong> 1.5–3% of total project budget over project lifecycle
                   </p>
                 </div>
               </CardContent>

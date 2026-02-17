@@ -77,7 +77,7 @@ export default function PreConFeeInfoPage() {
     },
     {
       q: 'Are pre-construction fees applied to my project if I proceed?',
-      a: 'Yes, if you engage a contractor through Kealee for the construction phase, a portion of your pre-construction fees will be credited toward project costs.',
+      a: 'Yes, if you engage a contractor through Kealee for the build phase, a portion of your pre-construction fees will be credited toward project costs.',
     },
     {
       q: 'How accurate are the estimates?',
@@ -85,7 +85,7 @@ export default function PreConFeeInfoPage() {
     },
     {
       q: 'Can I get estimates for renovation projects?',
-      a: 'Yes, our pre-construction services cover new construction, renovations, tenant improvements, and additions.',
+      a: 'Yes, our pre-construction services cover new builds, renovations, tenant improvements, and additions.',
     },
   ];
 

@@ -36,7 +36,7 @@ const bundles = [
     name: "Residential Package",
     discount: "10% off",
     services: ["Structural + Geotechnical"],
-    description: "Foundation-focused bundle for residential construction with soil investigation and structural design.",
+    description: "Foundation-focused bundle for residential projects with soil investigation and structural design.",
     savings: "Save up to $850",
   },
   {
@@ -217,7 +217,7 @@ export default function PricingPage() {
                 <li className="flex items-start gap-2"><span style={{ color: "#22C55E" }}>&#10003;</span> Unlimited revisions</li>
                 <li className="flex items-start gap-2"><span style={{ color: "#22C55E" }}>&#10003;</span> 5 business day turnaround</li>
                 <li className="flex items-start gap-2"><span style={{ color: "#22C55E" }}>&#10003;</span> Dedicated engineer</li>
-                <li className="flex items-start gap-2"><span style={{ color: "#22C55E" }}>&#10003;</span> Construction phase support</li>
+                <li className="flex items-start gap-2"><span style={{ color: "#22C55E" }}>&#10003;</span> Build phase support</li>
                 <li className="flex items-start gap-2"><span style={{ color: "#22C55E" }}>&#10003;</span> Permit management</li>
               </ul>
             </div>
@@ -327,7 +327,7 @@ export default function PricingPage() {
             <div>
               <div className="text-lg font-bold mb-4">Kealee Engineering</div>
               <p className="text-sm text-zinc-400">
-                Professional engineering services for the modern construction industry.
+                Professional engineering services for the modern building industry.
               </p>
             </div>
             <div>

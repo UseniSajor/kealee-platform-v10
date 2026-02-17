@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'About Kealee Finance & Trust',
-  description: 'Learn about our mission to make construction payments safe and clear for everyone. Serving the DC-Baltimore corridor with secure escrow and project management.',
+  description: 'Learn about our mission to make project payments safe and clear for everyone. Serving the DC-Baltimore corridor with secure escrow and project management.',
 }
 
 function ValueCard({
@@ -71,11 +71,11 @@ export default function AboutPage() {
       <section className="bg-gradient-to-br from-[#1A2B4A] via-[#1A2B4A] to-emerald-900 py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Making Construction Payments
+            Making Project Payments
             <span className="block text-emerald-400 mt-2">Safe and Clear for Everyone</span>
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            Kealee Finance &amp; Trust was built to solve the biggest problem in construction:
+            Kealee Finance &amp; Trust was built to solve the biggest problem in project payments:
             trust between homeowners and contractors when money is on the line.
           </p>
         </div>
@@ -94,7 +94,7 @@ export default function AboutPage() {
                   Fair payments, verified work, and peace of mind for every project.
                 </h2>
                 <p className="text-gray-600 leading-relaxed mb-4">
-                  Too many construction projects end in frustration. Homeowners worry about paying for
+                  Too many building projects end in frustration. Homeowners worry about paying for
                   incomplete work. Contractors worry about not getting paid at all. The lack of trust
                   slows down projects, drives up costs, and leaves everyone unsatisfied.
                 </p>
@@ -285,7 +285,7 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             <ValueCard
               title="Clarity Over Complexity"
-              description="Construction finance should not require a law degree to understand. We use plain language, clear dashboards, and straightforward fee structures so everyone knows where they stand."
+              description="Project finance should not require a law degree to understand. We use plain language, clear dashboards, and straightforward fee structures so everyone knows where they stand."
             />
             <ValueCard
               title="Fairness for Both Sides"
@@ -301,7 +301,7 @@ export default function AboutPage() {
             />
             <ValueCard
               title="Technology That Serves People"
-              description="Our platform automates the tedious parts of construction finance so you can focus on what matters: getting your project done right, on time, and on budget."
+              description="Our platform automates the tedious parts of project finance so you can focus on what matters: getting your project done right, on time, and on budget."
             />
             <ValueCard
               title="Accountability at Every Level"
@@ -324,7 +324,7 @@ export default function AboutPage() {
                   <h2 className="text-3xl font-bold mb-4">DC-Baltimore Corridor</h2>
                   <p className="text-gray-200 leading-relaxed mb-4">
                     Kealee Finance &amp; Trust is headquartered in the DC-Baltimore corridor, one of
-                    the most active construction markets in the Mid-Atlantic region. Our deep knowledge
+                    the most active building markets in the Mid-Atlantic region. Our deep knowledge
                     of local regulations, permitting processes, and the contractor landscape gives our
                     clients an edge.
                   </p>

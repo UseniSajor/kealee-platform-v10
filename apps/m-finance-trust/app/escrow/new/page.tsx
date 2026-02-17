@@ -73,7 +73,7 @@ export default function NewEscrowPage() {
             <Building2 className="text-white" size={32} />
           </div>
           <h1 className="text-3xl font-black text-zinc-900 mb-2">Create Escrow Account</h1>
-          <p className="text-zinc-600">Set up a new escrow account for your construction project</p>
+          <p className="text-zinc-600">Set up a new escrow account for your project</p>
         </div>
 
         {/* Info Box */}

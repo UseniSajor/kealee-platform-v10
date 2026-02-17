@@ -320,7 +320,7 @@ export default function PreConListPage() {
             <div className="text-5xl mb-4">🏗️</div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No projects yet</h3>
             <p className="text-gray-500 mb-6">
-              Start your construction journey by creating a new pre-construction project.
+              Start your project journey by creating a new pre-construction project.
             </p>
             <Link
               href="/precon/new"
@@ -368,7 +368,7 @@ export default function PreConListPage() {
                   <div className="text-2xl mb-1 mt-2">📐</div>
                   <h5 className="font-medium text-gray-900">4. Full Architect Plans</h5>
                   <p className="text-sm text-gray-500 mt-1">
-                    Professional architect develops complete construction drawings. Concept fee credited here.
+                    Professional architect develops complete architectural drawings. Concept fee credited here.
                   </p>
                 </div>
 

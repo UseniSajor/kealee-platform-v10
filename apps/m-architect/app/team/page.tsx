@@ -181,7 +181,7 @@ export default function TeamPage() {
             Our Architecture Team
           </h1>
           <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-            Licensed architects and design professionals dedicated to delivering exceptional construction design services.
+            Licensed architects and design professionals dedicated to delivering exceptional design services.
           </p>
         </div>
       </section>

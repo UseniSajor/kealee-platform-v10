@@ -5,7 +5,7 @@ const heroImage = { src: 'https://images.unsplash.com/photo-1504307651254-35680f
 
 export const metadata: Metadata = {
   title: 'Operations Services | Kealee',
-  description: 'Outsource your construction operations — PM managed service packages, individual services, and dedicated teams for general contractors.',
+  description: 'Outsource your operations — PM managed service packages, individual services, and dedicated teams for general contractors.',
 }
 
 export default function OpsServicePage() {

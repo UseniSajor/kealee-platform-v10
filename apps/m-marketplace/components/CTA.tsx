@@ -7,7 +7,7 @@ export function CTA() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center text-white">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Ready to Transform Your Construction Projects?
+            Ready to Transform Your Projects?
           </h2>
           <p className="text-xl mb-8 text-blue-100">
             Join 500+ successful projects using Kealee. Get started today with

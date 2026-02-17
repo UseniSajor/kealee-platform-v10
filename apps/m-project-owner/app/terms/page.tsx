@@ -32,7 +32,7 @@ export default function TermsPage() {
           <section>
             <p className="text-gray-600 leading-relaxed">
               These Terms govern your use of the Kealee Project Owner Portal, which provides
-              project owners with visibility into their construction projects.
+              project owners with visibility into their projects.
             </p>
           </section>
 
@@ -87,7 +87,7 @@ export default function TermsPage() {
             <div className="space-y-3 text-gray-600">
               <p>
                 Kealee provides the portal as a communication and visibility tool. We are not
-                responsible for the construction work, contractor performance, or project outcomes.
+                responsible for the work, contractor performance, or project outcomes.
                 Your relationship with your contractor is governed by your separate agreement with them.
               </p>
             </div>

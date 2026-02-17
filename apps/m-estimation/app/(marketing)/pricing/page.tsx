@@ -5,7 +5,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 export const metadata = {
   title: "Pricing - Kealee Estimation",
-  description: "Clear pricing for construction estimation services. Platform access starting at $99/month. Individual estimation services available.",
+  description: "Clear pricing for estimation services. Platform access starting at $99/month. Individual estimation services available.",
 }
 
 const platformTiers = [

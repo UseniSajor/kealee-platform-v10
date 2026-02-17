@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Kealee - Project Owner Dashboard',
-  description: 'Manage your construction projects with ease',
+  description: 'Manage your projects with ease',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',

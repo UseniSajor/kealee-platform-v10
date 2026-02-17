@@ -165,7 +165,7 @@ export default function ProjectsPage() {
         <div>
           <h1 className="text-3xl font-bold">Projects</h1>
           <p className="text-neutral-600 mt-1">
-            {isInternal ? "All projects across your assigned clients." : "Your construction projects and portfolio."}
+            {isInternal ? "All projects across your assigned clients." : "Your projects and portfolio."}
           </p>
         </div>
         <Button>

@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Privacy Policy | Kealee Permits & Inspections',
   description:
-    'Learn how Kealee Permits & Inspections collects, uses, and protects your personal information when you use our construction permit and inspection management platform.',
+    'Learn how Kealee Permits & Inspections collects, uses, and protects your personal information when you use our permit and inspection management platform.',
 };
 
 export default function PrivacyPage() {
@@ -71,7 +71,7 @@ export default function PrivacyPage() {
               the Kealee Permits &amp; Inspections platform (the &quot;Platform&quot;). We are committed to
               protecting the privacy and security of the personal and professional information you share with
               us. This Privacy Policy describes the types of information we collect, how we use and protect
-              that information, and your rights regarding your data when you use our construction permit
+              that information, and your rights regarding your data when you use our permit
               management and inspection coordination services.
             </p>
             <p className="text-gray-600 leading-relaxed mt-4">
@@ -89,7 +89,7 @@ export default function PrivacyPage() {
                 <p className="mb-2">When you create an account, submit permit applications, or interact with our services, you may provide:</p>
                 <ul className="list-disc pl-6 space-y-1">
                   <li>Account registration details (full name, email address, phone number, company name, contractor license number)</li>
-                  <li>Permit application information (project address, property details, scope of work descriptions, construction plans, engineering documents, and site surveys)</li>
+                  <li>Permit application information (project address, property details, scope of work descriptions, project plans, engineering documents, and site surveys)</li>
                   <li>Supporting permit documents such as architectural drawings, structural calculations, energy compliance reports, and plot plans</li>
                   <li>Government-issued identification when required for permit submissions to local jurisdictions</li>
                   <li>Payment and billing information (processed securely through our third-party payment processor)</li>
@@ -127,7 +127,7 @@ export default function PrivacyPage() {
               <p>We use the information we collect to:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong>Process permit applications:</strong> Prepare, review, and submit permit applications to the appropriate local, county, or state jurisdictions on your behalf</li>
-                <li><strong>Coordinate inspections:</strong> Schedule, track, and manage construction inspections with local building departments and third-party inspection services</li>
+                <li><strong>Coordinate inspections:</strong> Schedule, track, and manage inspections with local building departments and third-party inspection services</li>
                 <li><strong>Perform AI-powered document review:</strong> Analyze uploaded plans and documents to identify potential compliance issues before submission</li>
                 <li><strong>Facilitate government data submission:</strong> Transmit required information to governmental agencies in the format and manner they require for permit processing</li>
                 <li><strong>Provide status updates:</strong> Notify you of changes to your permit application status, upcoming inspections, required corrections, and approval decisions</li>
@@ -146,8 +146,8 @@ export default function PrivacyPage() {
             <div className="space-y-4 text-gray-600">
               <p>We share your information only in the following circumstances:</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li><strong>Government jurisdictions:</strong> We submit your permit application data, construction documents, and supporting materials directly to local, county, and state permitting authorities as required to process your permits. This is a core function of our service.</li>
-                <li><strong>Inspection authorities:</strong> We share relevant project information with building departments, fire marshals, and other inspection authorities to facilitate required construction inspections.</li>
+                <li><strong>Government jurisdictions:</strong> We submit your permit application data, project documents, and supporting materials directly to local, county, and state permitting authorities as required to process your permits. This is a core function of our service.</li>
+                <li><strong>Inspection authorities:</strong> We share relevant project information with building departments, fire marshals, and other inspection authorities to facilitate required inspections.</li>
                 <li><strong>Service providers:</strong> We engage trusted third-party vendors for hosting, cloud storage, payment processing, email delivery, and analytics. These providers are contractually bound to protect your data and use it only for the services they provide to us.</li>
                 <li><strong>Professional partners:</strong> If you opt in to additional services (e.g., expediter services, plan review consultants), we may share relevant project information with those partners.</li>
                 <li><strong>Legal requirements:</strong> We may disclose information when required by law, court order, subpoena, or government investigation, or to protect the rights, safety, or property of Kealee, our users, or the public.</li>
@@ -165,7 +165,7 @@ export default function PrivacyPage() {
             <div className="space-y-4 text-gray-600">
               <p>
                 We take the security of your data seriously, particularly given the sensitive nature of
-                construction documents, permit applications, and government submissions. We implement
+                project documents, permit applications, and government submissions. We implement
                 industry-standard technical and organizational measures, including:
               </p>
               <ul className="list-disc pl-6 space-y-2">
@@ -179,7 +179,7 @@ export default function PrivacyPage() {
                 <li>Employee security training and strict data handling procedures</li>
               </ul>
               <p className="mt-4">
-                Permit documents and construction plans are stored in encrypted, access-controlled environments.
+                Permit documents and project plans are stored in encrypted, access-controlled environments.
                 Documents submitted to government portals are transmitted through secure channels. While no
                 method of transmission or storage is completely secure, we continually evaluate and improve our
                 security practices to protect your information.
@@ -202,9 +202,9 @@ export default function PrivacyPage() {
                 <li><strong>Restrict processing:</strong> Request that we limit how we use your data in certain circumstances</li>
               </ul>
               <p className="mt-4">
-                Please note that permit application records and related construction documents may be subject
+                Please note that permit application records and related project documents may be subject
                 to legal retention requirements. We retain permit application data for a minimum of seven (7)
-                years after project completion to comply with construction industry record-keeping obligations and
+                years after project completion to comply with industry record-keeping obligations and
                 applicable statutes of limitation. Account data is retained while your account remains active
                 and for a reasonable period afterward.
               </p>
@@ -247,7 +247,7 @@ export default function PrivacyPage() {
                 <li><strong>Cloud hosting and storage:</strong> Our Platform and your data are hosted on secure, SOC 2-compliant cloud infrastructure within the United States.</li>
                 <li><strong>Government permitting portals:</strong> We interact with various local, county, and state government permitting systems to submit applications and retrieve status updates on your behalf. These portals are governed by their respective government privacy policies.</li>
                 <li><strong>Email and communication services:</strong> We use third-party providers to deliver transactional emails (permit status updates, inspection reminders) and support communications.</li>
-                <li><strong>Document processing:</strong> We may use AI-powered tools to review construction documents for compliance. Document data processed by these tools is not retained beyond the review session.</li>
+                <li><strong>Document processing:</strong> We may use AI-powered tools to review project documents for compliance. Document data processed by these tools is not retained beyond the review session.</li>
               </ul>
               <p className="mt-4">
                 We carefully vet all third-party service providers and require them to maintain appropriate
@@ -262,7 +262,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-bold text-[#1A2B4A] mb-4">8. Children&apos;s Privacy</h2>
             <div className="space-y-3 text-gray-600">
               <p>
-                The Platform is designed for use by construction professionals, contractors, and business
+                The Platform is designed for use by building professionals, contractors, and business
                 entities. It is not intended for use by individuals under the age of 18. We do not knowingly
                 collect personal information from children under 13 years of age (or under 16 in certain
                 jurisdictions). If we become aware that we have collected personal information from a child

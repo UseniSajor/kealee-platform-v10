@@ -135,7 +135,7 @@ export default function SubscriptionPage() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-3">No Active Subscription</h2>
           <p className="text-gray-600 mb-8 max-w-md mx-auto">
-            Start your 14-day free trial today and unlock powerful construction management tools.
+            Start your 14-day free trial today and unlock powerful project management tools.
           </p>
           <Link
             href="/subscription/pricing"

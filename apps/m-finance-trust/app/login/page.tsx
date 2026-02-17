@@ -83,7 +83,7 @@ export default function LoginPage() {
               />
               <div>
                 <h1 className="text-2xl font-bold">Finance & Trust</h1>
-                <p className="text-emerald-100">Secure Construction Escrow</p>
+                <p className="text-emerald-100">Secure Project Escrow</p>
               </div>
             </div>
 

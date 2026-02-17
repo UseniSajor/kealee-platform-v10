@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Developer Services | Kealee Operations Services",
-  description: "End-to-end real estate development services from feasibility to construction closeout.",
+  description: "End-to-end real estate development services from feasibility to closeout.",
 };
 
 export default function DeveloperPage() {
@@ -23,7 +23,7 @@ export default function DeveloperPage() {
               Developer Services
             </h1>
             <p className="text-xl text-white/80 mb-8">
-              End-to-end real estate development services from feasibility through construction
+              End-to-end real estate development services from feasibility through
               closeout. We guide your project from concept to completion.
             </p>
             <Link
@@ -312,7 +312,7 @@ export default function DeveloperPage() {
                   <span className="text-4xl font-bold text-violet-600">Custom</span>
                 </div>
                 <p className="text-zinc-600 mb-6">
-                  End-to-end services from concept through construction closeout and delivery.
+                  End-to-end services from concept through closeout and delivery.
                 </p>
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-start">

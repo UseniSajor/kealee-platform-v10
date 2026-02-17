@@ -14,7 +14,7 @@ export function Footer() {
               <span className="text-xl font-bold text-white">Kealee</span>
             </div>
             <p className="text-sm text-gray-400">
-              Complete construction management platform trusted by contractors
+              Complete project management platform trusted by contractors
               and project owners.
             </p>
           </div>

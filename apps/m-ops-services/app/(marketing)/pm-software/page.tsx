@@ -3,8 +3,8 @@ import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Construction PM Software | Kealee Platform",
-  description: "Cloud-based project management software built specifically for construction contractors. Available as a standalone platform — no operations services package required.",
+  title: "PM Software | Kealee Platform",
+  description: "Cloud-based project management software built specifically for contractors. Available as a standalone platform — no operations services package required.",
 };
 
 export default function PMSoftwarePage() {
@@ -20,10 +20,10 @@ export default function PMSoftwarePage() {
               STANDALONE PLATFORM
             </div>
             <h1 className="text-5xl font-bold text-white mb-6">
-              Construction Project Management Software
+              Project Management Software
             </h1>
             <p className="text-xl text-white/80 mb-8">
-              Cloud-based PM platform built specifically for construction contractors.
+              Cloud-based PM platform built specifically for contractors.
               Manage schedules, budgets, subs, and documentation in one place.
             </p>
             <p className="text-base text-white/60 mb-8 max-w-2xl mx-auto">
@@ -45,7 +45,7 @@ export default function PMSoftwarePage() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-4xl font-bold text-zinc-900 text-center mb-12">
-              Everything You Need to Manage Construction Projects
+              Everything You Need to Manage Projects
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               <div className="border border-zinc-200 rounded-2xl p-8">

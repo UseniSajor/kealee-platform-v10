@@ -228,7 +228,7 @@ export function NetworkSearchClient() {
     <MarketingLayout
       breadcrumbs={[
         { label: 'Home', href: '/' },
-        { label: 'Construction Network' },
+        { label: 'Professional Network' },
       ]}
       showSidebar={true}
     >

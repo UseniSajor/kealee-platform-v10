@@ -10,7 +10,7 @@ const faqs = [
   {
     question: 'What architectural design services does Kealee offer?',
     answer:
-      'Kealee provides full-scope architectural design services including schematic design, design development, construction documents, 3D modeling, and permit-ready drawings. Our licensed architects handle residential additions, kitchen and bath remodels, commercial buildouts, and new construction projects.',
+      'Kealee provides full-scope architectural design services including schematic design, design development, construction documents, 3D modeling, and permit-ready drawings. Our licensed architects handle residential additions, kitchen and bath remodels, commercial buildouts, and new build projects.',
   },
   {
     question: 'What design packages are available and how do I choose one?',

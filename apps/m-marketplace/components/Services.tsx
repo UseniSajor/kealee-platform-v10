@@ -32,7 +32,7 @@ export function Services() {
       icon: <Users size={40} />,
       title: 'Project Owner Portal',
       description:
-        'Track milestones, approve payments, and manage your construction projects',
+        'Track milestones, approve payments, and manage your projects',
       pricing: 'Fees shown at checkout',
       features: [
         'Real-time project tracking',
@@ -87,10 +87,10 @@ export function Services() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Complete Construction Solutions
+            Complete Project Solutions
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Everything you need to manage your construction project from start
+            Everything you need to manage your project from start
             to finish, all in one platform
           </p>
         </div>

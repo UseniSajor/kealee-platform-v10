@@ -36,7 +36,7 @@ export default function CartPage() {
             <div className="text-center py-20 bg-white rounded-2xl border border-gray-200">
               <ShoppingCart className="h-16 w-16 text-gray-300 mx-auto mb-4" />
               <h2 className="text-xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
-              <p className="text-gray-500 mb-8 max-w-md mx-auto">Browse our services, packages, and tools to build your construction management solution.</p>
+              <p className="text-gray-500 mb-8 max-w-md mx-auto">Browse our services, packages, and tools to build your project management solution.</p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Link href="/pricing" className="inline-flex items-center gap-2 px-6 py-3 bg-sky-600 text-white rounded-xl font-bold text-sm hover:bg-sky-700 transition">
                   View All Pricing <ArrowRight className="h-4 w-4" />

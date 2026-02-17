@@ -29,7 +29,7 @@ export function FAQ() {
       answer: 'You retain full access to your data for 90 days after cancellation. You can export all documents, reports, and project data during this period. After 90 days, data is securely deleted from our servers.'
     },
     {
-      question: 'Do you integrate with other construction software?',
+      question: 'Do you integrate with other project management software?',
       answer: 'Yes! We integrate with popular tools like Procore, Buildertrend, and QuickBooks. We also offer a REST API for custom integrations. Enterprise plans include dedicated integration support.'
     },
     {

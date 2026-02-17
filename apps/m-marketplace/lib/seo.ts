@@ -16,14 +16,14 @@ interface SeoMetadataProps {
  * Use this in page.tsx or layout.tsx files
  */
 export function generateSeoMetadata({
-  title = 'Kealee Marketplace - Find Trusted Construction Contractors',
-  description = 'Connect with verified construction contractors for residential and commercial projects. Get quotes, read reviews, and manage your construction projects all in one place.',
+  title = 'Kealee Marketplace - Find Trusted Contractors',
+  description = 'Connect with verified contractors for residential and commercial projects. Get quotes, read reviews, and manage your projects all in one place.',
   canonicalUrl = 'https://marketplace.kealee.com',
   ogImage = 'https://marketplace.kealee.com/og-image.jpg',
   ogType = 'website',
   twitterCard = 'summary_large_image',
   noindex = false,
-  keywords = 'construction contractors, home renovation, commercial construction, find contractors, contractor directory, construction services'
+  keywords = 'contractors, home renovation, commercial projects, find contractors, contractor directory, project services'
 }: SeoMetadataProps): Metadata {
   const siteTitle = title.includes('Kealee') ? title : `${title} | Kealee Marketplace`;
   const fullCanonicalUrl = canonicalUrl.startsWith('http') ? canonicalUrl : `https://marketplace.kealee.com${canonicalUrl}`;
@@ -98,7 +98,7 @@ export function generateSchemaMarkup(schemaMarkup?: any) {
     '@type': 'WebSite',
     name: 'Kealee Marketplace',
     url: 'https://marketplace.kealee.com',
-    description: 'Construction contractor marketplace connecting homeowners and businesses with trusted professionals.',
+    description: 'Contractor marketplace connecting homeowners and businesses with trusted professionals.',
     potentialAction: {
       '@type': 'SearchAction',
       target: 'https://marketplace.kealee.com/search?q={search_term_string}',
@@ -116,7 +116,7 @@ export function generateSchemaMarkup(schemaMarkup?: any) {
     telephone: '+1-555-123-4567',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: '123 Construction Way',
+      streetAddress: '123 Market Way',
       addressLocality: 'San Francisco',
       addressRegion: 'CA',
       postalCode: '94107',
@@ -156,7 +156,7 @@ export function generateSchemaMarkup(schemaMarkup?: any) {
         name: 'How does Kealee Marketplace work?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Kealee Marketplace connects you with verified construction contractors. Post your project, receive quotes from qualified contractors, compare profiles and reviews, then hire the best fit for your project.'
+          text: 'Kealee Marketplace connects you with verified contractors. Post your project, receive quotes from qualified contractors, compare profiles and reviews, then hire the best fit for your project.'
         }
       },
       {

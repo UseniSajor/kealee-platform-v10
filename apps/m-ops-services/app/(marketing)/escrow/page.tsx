@@ -3,8 +3,8 @@ import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Construction Escrow & Finance | Kealee Operations Services",
-  description: "Secure construction payments with FDIC-insured escrow accounts and milestone-based payment management.",
+  title: "Project Escrow & Finance | Kealee Operations Services",
+  description: "Secure project payments with FDIC-insured escrow accounts and milestone-based payment management.",
 };
 
 export default function EscrowPage() {
@@ -17,10 +17,10 @@ export default function EscrowPage() {
         <div className="relative z-10 container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-5xl font-bold text-white mb-6">
-              Construction Escrow & Finance
+              Project Escrow & Finance
             </h1>
             <p className="text-xl text-white/80">
-              Protect your construction payments with secure, milestone-based escrow accounts.
+              Protect your project payments with secure, milestone-based escrow accounts.
               Built for contractors, project owners, and lenders.
             </p>
           </div>
@@ -76,7 +76,7 @@ export default function EscrowPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-4xl font-bold text-zinc-900 text-center mb-12">
-              Complete Construction Payment Management
+              Complete Payment Management
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               <div className="border border-zinc-200 rounded-2xl p-8">
@@ -149,7 +149,7 @@ export default function EscrowPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-4xl font-bold text-zinc-900 text-center mb-12">
-              How Construction Escrow Works
+              How Project Escrow Works
             </h2>
             <div className="relative">
               {/* Connecting Line */}
@@ -335,7 +335,7 @@ export default function EscrowPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-4xl font-bold text-white mb-6">
-              Protect Your Construction Payments
+              Protect Your Project Payments
             </h2>
             <p className="text-xl text-sky-100 mb-8">
               Set up a secure escrow account today and eliminate payment disputes on your next project.

@@ -113,7 +113,7 @@ export function HomePageClient({
         eyebrow="DC-Baltimore's End-to-End Design/Build Platform"
         eyebrowColor="teal"
         headline="Design. Build. Done."
-        subheadline="The connected platform that takes your construction project from architecture through permits through construction through closeout. One platform. Zero gaps."
+        subheadline="The connected platform that takes your project from architecture through permits through build-out through closeout. One platform. Zero gaps."
         ctas={[
           { label: 'Start Your Project', href: '/project-owner', variant: 'primary' },
           { label: 'Find a Professional', href: '/network', variant: 'outline' },
@@ -155,7 +155,7 @@ export function HomePageClient({
             style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}
           >
             Each phase automatically inherits data from the previous phase.
-            Your design specs flow into permits, permits flow into construction,
+            Your design specs flow into permits, permits flow into the build phase,
             and everything is tracked through closeout.
           </p>
         </div>
@@ -303,7 +303,7 @@ export function HomePageClient({
               icon={User}
               title="Project Owner Portal"
               subtitle="m-project-owner"
-              description="Your command center for managing your construction project from start to finish."
+              description="Your command center for managing your project from start to finish."
               features={[
                 'Readiness Checklists',
                 'Milestone Tracking',
@@ -320,7 +320,7 @@ export function HomePageClient({
               subtitle="m-architect"
               description="Professional design services from licensed architects in the DC-Baltimore area."
               features={[
-                'Construction Drawings',
+                'Architectural Drawings',
                 '3D Renderings',
                 'Design Consultation',
                 'Permit Handoff',
@@ -365,7 +365,7 @@ export function HomePageClient({
               className="text-3xl lg:text-4xl font-bold"
               style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}
             >
-              The Complete Construction Operations Platform
+              The Complete Operations Platform
             </h2>
           </div>
 
@@ -520,7 +520,7 @@ export function HomePageClient({
               Powerful Tools for Every Role
             </h2>
             <p className="text-lg max-w-2xl mx-auto" style={{ color: brand.gray[600] }}>
-              Each portal is purpose-built for your role in the construction process.
+              Each portal is purpose-built for your role in the project lifecycle.
             </p>
           </div>
 
@@ -528,7 +528,7 @@ export function HomePageClient({
             <PortalPreview
               portalName="Project Owner Portal"
               portalUrl="app.kealee.com/projects"
-              description="Your command center for tracking every milestone, payment, and document in your construction project."
+              description="Your command center for tracking every milestone, payment, and document in your project."
               heroImage={portalImages.projectOwner.src}
               heroImageAlt={portalImages.projectOwner.alt}
               accentColor="navy"
@@ -679,11 +679,11 @@ export function HomePageClient({
         </div>
       </motion.section>
 
-      {/* SECTION 6.75 - Built for Construction */}
+      {/* SECTION 6.75 - Built for Building */}
       <ImageSection
-        title="Built for the Way Construction Actually Works"
+        title="Built for the Way Projects Actually Work"
         subtitle="Real Projects. Real Results."
-        description="From custom homes to commercial build-outs, Kealee connects every phase of your project. Design flows into permits, permits flow into construction, and every stakeholder stays on the same page."
+        description="From custom homes to commercial build-outs, Kealee connects every phase of your project. Design flows into permits, permits flow into the build, and every stakeholder stays on the same page."
         imageSrc={sectionImages.homeRenovation.src}
         imageAlt={sectionImages.homeRenovation.alt}
         imagePosition="right"

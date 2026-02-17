@@ -122,7 +122,7 @@ export default function PrivacyPolicyPage() {
                 We do not sell your personal information. We may share your information in the following circumstances:
               </p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li><strong>With project counterparties:</strong> Limited project-related information is shared between homeowners and contractors on the same project (such as names, contact information, and milestone status) as necessary to facilitate the construction project.</li>
+                <li><strong>With project counterparties:</strong> Limited project-related information is shared between homeowners and contractors on the same project (such as names, contact information, and milestone status) as necessary to facilitate the project.</li>
                 <li><strong>With service providers:</strong> We share information with trusted third-party vendors who perform services on our behalf, including payment processing (Stripe), bank account verification (Plaid), identity verification, cloud hosting, and customer support tools. These providers are contractually obligated to protect your information.</li>
                 <li><strong>With banking partners:</strong> Financial information is shared with our FDIC-insured banking partner to create and manage escrow accounts and process transactions.</li>
                 <li><strong>For legal compliance:</strong> We may disclose information when required by law, regulation, legal process, or governmental request, including tax reporting to the IRS.</li>

@@ -5,7 +5,7 @@ const sectionImage = { src: 'https://images.unsplash.com/photo-1554224155-6726b3
 
 export const metadata: Metadata = {
   title: 'Finance & Trust | Kealee',
-  description: 'Secure escrow management, milestone payments, and clear financial tracking for construction projects.',
+  description: 'Secure escrow management, milestone payments, and clear financial tracking for projects.',
 }
 
 export default function FinanceServicePage() {
@@ -57,7 +57,7 @@ export default function FinanceServicePage() {
           <div className="relative">
             <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">Finance & Trust</h1>
             <p className="mt-4 text-xl text-white/85 max-w-3xl mx-auto">
-              Secure, clear financial management for construction projects. Escrow-backed milestone payments protect everyone.
+              Secure, clear financial management for projects. Escrow-backed milestone payments protect everyone.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link href="/contact" className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">Open Escrow Account</Link>
@@ -140,7 +140,7 @@ export default function FinanceServicePage() {
         </section>
 
         <section className="rounded-2xl bg-emerald-600 p-8 text-white text-center">
-          <h2 className="text-2xl font-bold">Protect Your Construction Payments</h2>
+          <h2 className="text-2xl font-bold">Protect Your Project Payments</h2>
           <p className="mt-2 opacity-95 max-w-xl mx-auto">Open an escrow account in minutes. No monthly fees, no hidden costs.</p>
           <Link href="/contact" className="mt-6 inline-flex items-center justify-center rounded-xl bg-white px-8 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-50">Get Started Free</Link>
         </section>

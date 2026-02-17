@@ -5,7 +5,7 @@ import { OnDemandOps } from "@/components/marketing/OnDemandOps";
 
 export const metadata: Metadata = {
   title: "Individual Operations Services | Kealee Operations Services",
-  description: "Order construction operations services one at a time, no subscription required.",
+  description: "Order operations services one at a time, no subscription required.",
 };
 
 export default function IndividualServicesPage() {

@@ -177,7 +177,7 @@ function WelcomeStep() {
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-6">
         <h2 className="text-xl font-semibold text-blue-900">What is Kealee?</h2>
         <p className="mt-2 text-blue-800">
-          Kealee is a comprehensive project management platform designed specifically for construction
+          Kealee is a comprehensive project management platform designed specifically for building
           and renovation projects. Manage your entire project lifecycle from planning to completion.
         </p>
       </div>
@@ -219,7 +219,7 @@ function CreateProjectStep() {
         <h2 className="text-xl font-semibold text-green-900">Create Your First Project</h2>
         <p className="mt-2 text-green-800">
           Start by creating a project. You'll need to provide basic information about your renovation
-          or construction project.
+          or building project.
         </p>
       </div>
 
@@ -257,8 +257,8 @@ function ReadinessStep() {
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-6">
         <h2 className="text-xl font-semibold text-amber-900">Readiness Checklist</h2>
         <p className="mt-2 text-amber-800">
-          Before starting construction, complete your readiness checklist. This ensures you have
-          everything in place for a successful project.
+          Before starting your project, complete your readiness checklist. This ensures you have
+          everything in place for a successful build.
         </p>
       </div>
 

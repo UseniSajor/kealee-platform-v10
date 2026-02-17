@@ -24,12 +24,12 @@ export function Hero() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500" />
               </span>
-              Trusted by 500+ construction projects
+              Trusted by 500+ projects
             </div>
             
             {/* Headline */}
             <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
-              Complete Construction Management{' '}
+              Complete Project Management{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-orange-600">
                 Made Simple
               </span>
@@ -37,7 +37,7 @@ export function Hero() {
             
             {/* Subheadline */}
             <p className="text-xl text-gray-600 mb-8 leading-relaxed animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-              From project planning to permit approval, manage every aspect of your construction project in one place. 
+              From project planning to permit approval, manage every aspect of your project in one place. 
               <strong> Save 40% on project management costs</strong> and deliver projects 25% faster.
             </p>
 

@@ -9,11 +9,11 @@ const sectionImage = { src: 'https://images.unsplash.com/photo-1521737711867-e3b
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Construction Network | Kealee',
-  description: 'Find trusted contractors, architects, engineers, and construction professionals in the DC-Baltimore corridor. Verified, licensed, and ready to work.',
+  title: 'Professional Network | Kealee',
+  description: 'Find trusted contractors, architects, engineers, and building professionals in the DC-Baltimore corridor. Verified, licensed, and ready to work.',
   openGraph: {
     title: 'Kealee Network',
-    description: 'Find the right construction professional for your project.',
+    description: 'Find the right building professional for your project.',
     url: 'https://kealee.com/network',
   },
 };
@@ -34,9 +34,9 @@ export default function NetworkPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/70" />
         <div className="relative flex items-center justify-center h-full">
           <div className="text-center px-6">
-            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-3">Construction Network</h1>
+            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-3">Professional Network</h1>
             <p className="text-lg text-white/85 max-w-2xl mx-auto">
-              Find trusted contractors, architects, engineers, and construction professionals in the DC-Baltimore corridor.
+              Find trusted contractors, architects, engineers, and building professionals in the DC-Baltimore corridor.
             </p>
           </div>
         </div>

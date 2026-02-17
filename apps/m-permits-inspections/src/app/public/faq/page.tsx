@@ -30,11 +30,11 @@ export default function FAQPage() {
       faqs: [
         {
           question: 'What is a building permit?',
-          answer: 'A building permit is official approval from your local government to proceed with a construction or renovation project. It ensures your project meets safety standards, building codes, and zoning regulations. Most structural work, electrical, plumbing, and HVAC installations require permits.',
+          answer: 'A building permit is official approval from your local government to proceed with a building or renovation project. It ensures your project meets safety standards, building codes, and zoning regulations. Most structural work, electrical, plumbing, and HVAC installations require permits.',
         },
         {
           question: 'When do I need a permit?',
-          answer: 'Generally, you need a permit for: new construction, additions, structural changes, electrical work (beyond simple fixture replacement), plumbing modifications, HVAC installation, roofing replacement, window/door changes that affect structure, decks over certain heights, and commercial tenant improvements. Minor cosmetic work like painting typically does not require a permit.',
+          answer: 'Generally, you need a permit for: new builds, additions, structural changes, electrical work (beyond simple fixture replacement), plumbing modifications, HVAC installation, roofing replacement, window/door changes that affect structure, decks over certain heights, and commercial tenant improvements. Minor cosmetic work like painting typically does not require a permit.',
         },
         {
           question: 'What happens if I build without a permit?',
@@ -56,7 +56,7 @@ export default function FAQPage() {
         },
         {
           question: 'How long does permit approval take?',
-          answer: 'Approval times vary by jurisdiction and project complexity. Simple permits (like water heater replacement) may be approved same-day. Residential renovations typically take 2-4 weeks. New construction or complex commercial projects can take 4-12 weeks or longer. Kealee\'s AI review can help reduce common delays.',
+          answer: 'Approval times vary by jurisdiction and project complexity. Simple permits (like water heater replacement) may be approved same-day. Residential renovations typically take 2-4 weeks. New builds or complex commercial projects can take 4-12 weeks or longer. Kealee\'s AI review can help reduce common delays.',
         },
         {
           question: 'What is plan review?',
@@ -74,7 +74,7 @@ export default function FAQPage() {
       faqs: [
         {
           question: 'How much does a permit cost?',
-          answer: 'Permit fees vary by jurisdiction, project type, and construction value. Common fee structures include: flat fees for simple permits ($50-$200), percentage of construction cost (1-3%), or tiered fees based on project scope. Kealee displays estimated fees before you submit your application.',
+          answer: 'Permit fees vary by jurisdiction, project type, and project value. Common fee structures include: flat fees for simple permits ($50-$200), percentage of project cost (1-3%), or tiered fees based on project scope. Kealee displays estimated fees before you submit your application.',
         },
         {
           question: 'What fees are included in Kealee\'s service?',

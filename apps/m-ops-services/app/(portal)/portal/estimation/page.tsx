@@ -102,7 +102,7 @@ export default function EstimationListPage() {
         <div>
           <h1 className="text-2xl font-black tracking-tight">Estimation</h1>
           <p className="mt-2 text-sm text-zinc-700">
-            Create and manage construction cost estimates with AI-powered tools.
+            Create and manage cost estimates with AI-powered tools.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -210,7 +210,7 @@ export default function EstimationListPage() {
         <div className="rounded-2xl border border-black/10 bg-white p-8 text-center shadow-sm">
           <div className="text-lg font-black text-zinc-950">No estimates yet</div>
           <p className="mt-2 text-sm text-zinc-700">
-            Create your first estimate to get started with construction cost estimation.
+            Create your first estimate to get started with cost estimation.
           </p>
           <Link
             href="/portal/estimation/new"

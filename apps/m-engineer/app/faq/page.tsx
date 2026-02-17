@@ -32,7 +32,7 @@ const faqs = [
   {
     question: "Can I bundle multiple engineering services together?",
     answer:
-      "Absolutely. We offer bundle discounts when you combine services: 10% off for two disciplines, 15% off for three disciplines, and 20% off when you need all four. Bundling also ensures better coordination between disciplines, reducing conflicts and construction issues.",
+      "Absolutely. We offer bundle discounts when you combine services: 10% off for two disciplines, 15% off for three disciplines, and 20% off when you need all four. Bundling also ensures better coordination between disciplines, reducing conflicts and project issues.",
   },
   {
     question: "What information do I need to provide to get started?",
@@ -188,7 +188,7 @@ export default function FAQPage() {
             <div>
               <div className="text-lg font-bold mb-4">Kealee Engineering</div>
               <p className="text-sm text-zinc-400">
-                Professional engineering services for the modern construction industry.
+                Professional engineering services for the modern building industry.
               </p>
             </div>
             <div>

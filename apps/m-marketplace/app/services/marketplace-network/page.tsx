@@ -5,7 +5,7 @@ const sectionImage = { src: 'https://images.unsplash.com/photo-1600880292203-757
 
 export const metadata: Metadata = {
   title: 'Contractor Network | Kealee',
-  description: 'Connect with verified contractors, vendors, and suppliers. Quality leads and clear bidding for construction projects.',
+  description: 'Connect with verified contractors, vendors, and suppliers. Quality leads and clear bidding for projects.',
 }
 
 export default function MarketplaceNetworkServicePage() {
@@ -54,7 +54,7 @@ export default function MarketplaceNetworkServicePage() {
           <div className="relative">
             <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">Contractor Network</h1>
             <p className="mt-4 text-xl text-white/85 max-w-3xl mx-auto">
-              Connect with verified contractors for your project, or find quality leads to grow your construction business.
+              Connect with verified contractors for your project, or find quality leads to grow your business.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link href="/network" className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700">Find Contractors</Link>

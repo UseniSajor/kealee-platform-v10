@@ -86,7 +86,7 @@ export default function CareersPage() {
       department: 'Engineering',
       location: 'Remote (US)',
       type: 'Full-time',
-      description: 'Create beautiful, intuitive interfaces for our construction management tools.',
+      description: 'Create beautiful, intuitive interfaces for our project management tools.',
     },
     {
       id: 'pm-product',
@@ -102,7 +102,7 @@ export default function CareersPage() {
       department: 'Design',
       location: 'Remote (US)',
       type: 'Full-time',
-      description: 'Design user experiences that simplify complex construction workflows.',
+      description: 'Design user experiences that simplify complex project workflows.',
     },
     {
       id: 'sales-ae',
@@ -156,7 +156,7 @@ export default function CareersPage() {
             Build Your Career at Kealee
           </h1>
           <p className="text-xl text-white/85 mb-8">
-            Join a team of builders transforming how construction gets done.
+            Join a team of builders transforming how projects get done.
             We're solving real problems for real contractors—and we need your help.
           </p>
           <a
@@ -178,7 +178,7 @@ export default function CareersPage() {
               <div>
                 <h2 className="text-3xl font-bold mb-4">Why Kealee?</h2>
                 <p className="text-blue-100 text-lg mb-6">
-                  Construction is a $1.4 trillion industry still running on spreadsheets and phone calls.
+                  Building is a $1.4 trillion industry still running on spreadsheets and phone calls.
                   We're building the software that will change that—and we're just getting started.
                 </p>
                 <div className="space-y-4">
@@ -188,7 +188,7 @@ export default function CareersPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold">Massive Market Opportunity</h3>
-                      <p className="text-blue-200 text-sm">Construction tech is still early. There's room to build category-defining products.</p>
+                      <p className="text-blue-200 text-sm">Building tech is still early. There's room to build category-defining products.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">

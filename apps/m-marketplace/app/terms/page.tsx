@@ -5,7 +5,7 @@ import { FileText, Scale, AlertTriangle, CreditCard, Shield, Ban, RefreshCw, Gav
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
-  description: 'Terms and conditions for using the Kealee construction management platform.',
+  description: 'Terms and conditions for using the Kealee project management platform.',
 };
 
 export default function TermsPage() {
@@ -75,7 +75,7 @@ export default function TermsPage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-                  We're not liable for permit denials or construction outcomes
+                  We're not liable for permit denials or project outcomes
                 </li>
               </ul>
             </div>
@@ -115,7 +115,7 @@ export default function TermsPage() {
                 </h2>
                 <div className="space-y-4 text-gray-600">
                   <p>
-                    <strong>2.1 Platform Services.</strong> Kealee provides construction project management tools, including
+                    <strong>2.1 Platform Services.</strong> Kealee provides project management tools, including
                     but not limited to: permit application processing, project tracking, document management, team collaboration,
                     and integration with third-party services.
                   </p>
@@ -195,7 +195,7 @@ export default function TermsPage() {
                 <div className="space-y-4 text-gray-600">
                   <p>
                     <strong>5.1 Permitted Use.</strong> You may use Kealee only for lawful business purposes related
-                    to construction management, project coordination, and related activities.
+                    to project management, project coordination, and related activities.
                   </p>
                   <p>
                     <strong>5.2 Prohibited Conduct.</strong> You agree not to:

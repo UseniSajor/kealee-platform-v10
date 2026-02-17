@@ -28,7 +28,7 @@ export default function PrivacyPage() {
         <section>
           <p className="text-zinc-600 leading-relaxed">
             Kealee is committed to protecting your privacy. This policy explains
-            how we collect, use, and protect your information when you use our construction
+            how we collect, use, and protect your information when you use our project
             management platform, including all integrated services (Project Management,
             Pre-Construction, Estimation, Finance & Trust, Marketplace, and Permits & Inspections).
           </p>

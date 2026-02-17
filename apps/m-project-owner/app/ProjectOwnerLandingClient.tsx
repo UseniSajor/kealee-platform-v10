@@ -261,7 +261,7 @@ const howItWorksSteps = [
   {
     number: 4,
     title: 'Architect Develops Your Plans',
-    description: 'A licensed architect is assigned within 48 hours. They develop your approved concept into permit-ready construction documents. Your concept fee is credited.',
+    description: 'A licensed architect is assigned within 48 hours. They develop your approved concept into permit-ready drawings. Your concept fee is credited.',
     icon: Ruler,
     phase: 'Architecture',
     color: brand.teal,
@@ -399,7 +399,7 @@ export function ProjectOwnerLandingClient() {
         eyebrow="For Homeowners & Project Owners"
         eyebrowColor="navy"
         headline="From Concept to Keys &mdash; We Handle Every Step"
-        subheadline="Kealee guides you from AI-powered design concepts through professional architecture, permitting, and construction. Start with a concept &mdash; your fee is credited when you move to the next phase."
+        subheadline="Kealee guides you from AI-powered design concepts through professional architecture, permitting, and build. Start with a concept &mdash; your fee is credited when you move to the next phase."
         ctas={[
           { label: 'Start Your Project', href: '/precon/new', variant: 'primary' },
           { label: 'See How It Works', href: '#how-it-works', variant: 'outline' },
@@ -429,7 +429,7 @@ export function ProjectOwnerLandingClient() {
               Six Steps From Idea to Move-In
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Every construction project flows through these phases. We guide you through each one
+              Every project flows through these phases. We guide you through each one
               so you never feel lost.
             </p>
           </div>
@@ -662,7 +662,7 @@ export function ProjectOwnerLandingClient() {
               Built to Protect Homeowners
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              We built Kealee because construction should not be stressful for homeowners.
+              We built Kealee because building should not be stressful for homeowners.
               Here is how we make it better.
             </p>
           </div>

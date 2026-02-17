@@ -99,7 +99,7 @@ export default function SubmittalsPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Submittals</h1>
           <p className="text-gray-500 mt-1">
-            Track and manage construction submittals and approvals
+            Track and manage submittals and approvals
           </p>
         </div>
         <Link href="/submittals/new">

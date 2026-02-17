@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 const portals = [
   {
     name: 'Project Owner Portal',
-    description: 'Manage your construction project from start to finish. Track milestones, approve payments, and communicate with your team.',
+    description: 'Manage your project from start to finish. Track milestones, approve payments, and communicate with your team.',
     url: 'https://app.kealee.com',
     color: 'blue',
     audience: 'For homeowners & project owners',

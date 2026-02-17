@@ -86,7 +86,7 @@ export function SignupClient() {
         />
         <CardTitle className="text-2xl text-center">Create Your Account</CardTitle>
         <p className="text-sm text-neutral-600 text-center">
-          Get started tracking your construction project
+          Get started tracking your project
         </p>
       </CardHeader>
       <CardContent>

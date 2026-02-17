@@ -48,7 +48,7 @@ function LoginForm() {
             className="h-28 w-auto mx-auto mb-4"
           />
           <h1 className="text-3xl font-bold text-white mb-2">Estimation Portal</h1>
-          <p className="text-amber-200">Sign in to manage construction estimates</p>
+          <p className="text-amber-200">Sign in to manage your estimates</p>
         </div>
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           {error && (<div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg"><p className="text-sm text-red-600">{error}</p></div>)}

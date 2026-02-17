@@ -37,7 +37,7 @@ export default function MyProjectsPage() {
         <div>
           <h1 className="text-2xl font-bold text-zinc-950">My Projects</h1>
           <p className="text-sm text-zinc-600 mt-1">
-            View and manage your construction projects
+            View and manage your projects
           </p>
         </div>
         <a

@@ -88,7 +88,7 @@ const serviceCategories: ServiceCategory[] = [
       },
       {
         name: 'Scope Review',
-        description: 'Identify gaps and clarify specifications before construction',
+        description: 'Identify gaps and clarify specifications before the build',
         price: '$300/hour',
       },
       {

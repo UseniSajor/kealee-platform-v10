@@ -18,7 +18,7 @@ import {
 export const metadata: Metadata = {
   title: "Kealee Operations Services - Professional Ops Support for General Contractors",
   description: "Outsource your operations department. Permit tracking, weekly reporting, vendor coordination, and project management for GCs and builders. From $1,750/month. Free 14-day trial.",
-  keywords: "general contractor operations, GC operations, construction project management, contractor services, permit tracking, vendor coordination, weekly reporting",
+  keywords: "general contractor operations, GC operations, project management, contractor services, permit tracking, vendor coordination, weekly reporting",
 }
 
 export default function GCServicesHomePage() {

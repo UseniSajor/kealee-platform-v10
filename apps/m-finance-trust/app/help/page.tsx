@@ -119,8 +119,8 @@ export default function HelpPage() {
 
           <div className="max-w-3xl mx-auto space-y-4">
             <FAQItem
-              question="What is construction escrow and how does it protect me?"
-              answer="Construction escrow is a secure holding account for your project funds. When you deposit money into escrow, it is held in an FDIC-insured account and only released when specific milestones are completed and approved. This protects homeowners from paying for unfinished work and guarantees contractors that funds are available when they complete verified work."
+              question="What is project escrow and how does it protect me?"
+              answer="Project escrow is a secure holding account for your project funds. When you deposit money into escrow, it is held in an FDIC-insured account and only released when specific milestones are completed and approved. This protects homeowners from paying for unfinished work and guarantees contractors that funds are available when they complete verified work."
             />
 
             <FAQItem

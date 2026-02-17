@@ -121,7 +121,7 @@ export default function OpsServicesHomePage() {
               Our Core Services
             </h2>
             <p className="mx-auto mt-3 max-w-2xl text-lg text-zinc-600">
-              Everything GCs, builders, and contractors need to run construction projects professionally
+              Everything GCs, builders, and contractors need to run projects professionally
             </p>
           </div>
 
