@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 
 import { PWAClient } from "@/components/portal/PWAClient";
+import { api } from "@/lib/api";
 
 type Tab = "photos" | "daily" | "deliveries" | "weather" | "inspection" | "notifications";
 
@@ -12,8 +13,11 @@ type PhotoEntry = {
   at: string;
   projectId: string;
   note: string;
-  dataUrl: string; // local preview (MVP)
+  dataUrl: string; // local preview (MVP) or empty when loaded from backend
+  url?: string; // backend URL
+  category?: string;
   gps?: { lat: number; lng: number; accuracy?: number } | null;
+  _fromServer?: boolean; // tracks whether this record exists on the backend
 };
 
 type DailyLogEntry = {
@@ -23,6 +27,10 @@ type DailyLogEntry = {
   weatherNote: string;
   laborCount: number | null;
   notes: string;
+  hoursWorked?: number | null;
+  issues?: string;
+  subsOnSite?: string;
+  _fromServer?: boolean; // tracks whether this record exists on the backend
 };
 
 type DeliveryEntry = {
@@ -161,7 +169,82 @@ export default function SiteToolsPage() {
   const [weather, setWeather] = useState<{ summary: string; tempF?: number; windMph?: number } | null>(null);
   const [weatherLoc, setWeatherLoc] = useState<{ lat: number; lng: number } | null>(null);
 
-  // Load persisted data
+  // Backend sync state
+  const [loadingLogs, setLoadingLogs] = useState(false);
+  const [loadingPhotos, setLoadingPhotos] = useState(false);
+  const [savingLog, setSavingLog] = useState(false);
+  const [savingPhoto, setSavingPhoto] = useState(false);
+  const [logSummary, setLogSummary] = useState<{ totalLogs?: number; totalHours?: number; avgCrew?: number } | null>(null);
+
+  // Fetch daily logs from backend when project changes
+  const fetchDailyLogs = useCallback(async (pid: string) => {
+    setLoadingLogs(true);
+    try {
+      const result = await api.listDailyLogs({ projectId: pid, limit: 50 });
+      if (result.dailyLogs && result.dailyLogs.length > 0) {
+        const mapped: DailyLogEntry[] = result.dailyLogs.map((log: any) => ({
+          id: log.id,
+          at: log.createdAt || log.date || new Date().toISOString(),
+          projectId: log.projectId || pid,
+          weatherNote: log.weather || "",
+          laborCount: log.crewCount ?? null,
+          notes: log.workPerformed || log.progressNotes || "",
+          hoursWorked: log.hoursWorked ?? null,
+          issues: log.issues || "",
+          subsOnSite: log.subsOnSite || "",
+          _fromServer: true,
+        }));
+        setDaily(mapped);
+      }
+    } catch {
+      // Fallback: keep localStorage data if API fails (offline mode)
+    } finally {
+      setLoadingLogs(false);
+    }
+    // Also fetch summary
+    try {
+      const summaryResult = await api.getDailyLogProjectSummary(pid);
+      if (summaryResult.summary) setLogSummary(summaryResult.summary);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Fetch photos from backend when project changes
+  const fetchPhotos = useCallback(async (pid: string) => {
+    setLoadingPhotos(true);
+    try {
+      const result = await api.listPhotos({ projectId: pid });
+      if (result.photos && result.photos.length > 0) {
+        const mapped: PhotoEntry[] = result.photos.map((photo: any) => ({
+          id: photo.id,
+          at: photo.createdAt || new Date().toISOString(),
+          projectId: photo.projectId || pid,
+          note: photo.caption || "",
+          dataUrl: "", // server photos don't have local dataUrl
+          url: photo.url || "",
+          category: photo.category || "",
+          gps: null,
+          _fromServer: true,
+        }));
+        setPhotos(mapped);
+      }
+    } catch {
+      // Fallback: keep localStorage data if API fails (offline mode)
+    } finally {
+      setLoadingPhotos(false);
+    }
+  }, []);
+
+  // Fetch backend data when project changes
+  useEffect(() => {
+    if (online && projectId) {
+      fetchDailyLogs(projectId);
+      fetchPhotos(projectId);
+    }
+  }, [projectId, online, fetchDailyLogs, fetchPhotos]);
+
+  // Load persisted data (offline fallback — loads first, backend overwrites if online)
   useEffect(() => {
     try {
       const p = localStorage.getItem(STORAGE.photos);
@@ -222,36 +305,115 @@ export default function SiteToolsPage() {
   async function addPhoto(file: File) {
     const dataUrl = await readFileAsDataUrl(file);
     const gps = gpsOptIn ? await getGPS() : null;
-    const entry: PhotoEntry = {
+    const caption = photoNote.trim();
+
+    // Optimistic local entry (shown immediately)
+    const localEntry: PhotoEntry = {
       id: `ph_${Date.now()}`,
       at: new Date().toISOString(),
       projectId,
-      note: photoNote.trim(),
+      note: caption,
       dataUrl,
       gps,
+      _fromServer: false,
     };
-    setPhotos((prev) => [entry, ...prev]);
+    setPhotos((prev) => [localEntry, ...prev]);
     setPhotoNote("");
-    // Background sync hint (no-op until backend exists)
-    if ("serviceWorker" in navigator && "SyncManager" in window) {
-      const reg = await navigator.serviceWorker.getRegistration();
-      await reg?.sync.register("kealee-sync").catch(() => undefined);
+
+    // Try saving to backend
+    if (online) {
+      setSavingPhoto(true);
+      try {
+        // In a production app you'd upload the file to cloud storage first
+        // and get a URL back. For now we pass the dataUrl as the URL.
+        const result = await api.createPhoto({
+          projectId,
+          url: dataUrl,
+          caption,
+          category: "site-photo",
+        });
+        // Replace local entry with server-confirmed entry
+        if (result.photo) {
+          setPhotos((prev) =>
+            prev.map((p) =>
+              p.id === localEntry.id
+                ? {
+                    ...p,
+                    id: result.photo.id || p.id,
+                    url: result.photo.url || p.dataUrl,
+                    _fromServer: true,
+                  }
+                : p
+            )
+          );
+        }
+      } catch {
+        // Keep local entry — will be synced later
+      } finally {
+        setSavingPhoto(false);
+      }
+    } else {
+      // Queue for background sync when offline
+      if ("serviceWorker" in navigator && "SyncManager" in window) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        await reg?.sync.register("kealee-sync").catch(() => undefined);
+      }
     }
   }
 
-  function addDailyLog() {
-    const entry: DailyLogEntry = {
+  async function addDailyLog() {
+    const workPerformed = dailyNotes.trim();
+    if (!workPerformed) return;
+
+    // Optimistic local entry
+    const localEntry: DailyLogEntry = {
       id: `dl_${Date.now()}`,
       at: new Date().toISOString(),
       projectId,
       weatherNote: dailyWeather.trim(),
       laborCount: dailyLabor,
-      notes: dailyNotes.trim(),
+      notes: workPerformed,
+      _fromServer: false,
     };
-    setDaily((prev) => [entry, ...prev]);
+    setDaily((prev) => [localEntry, ...prev]);
     setDailyWeather("");
     setDailyLabor(null);
     setDailyNotes("");
+
+    // Try saving to backend
+    if (online) {
+      setSavingLog(true);
+      try {
+        const result = await api.createDailyLog({
+          projectId,
+          workPerformed,
+          crewCount: dailyLabor ?? undefined,
+          weather: localEntry.weatherNote || undefined,
+        });
+        // Replace local entry with server-confirmed entry
+        if (result.dailyLog) {
+          setDaily((prev) =>
+            prev.map((d) =>
+              d.id === localEntry.id
+                ? {
+                    ...d,
+                    id: result.dailyLog.id || d.id,
+                    _fromServer: true,
+                  }
+                : d
+            )
+          );
+          // Refresh summary
+          api.getDailyLogProjectSummary(projectId)
+            .then((s) => { if (s.summary) setLogSummary(s.summary); })
+            .catch(() => {});
+        }
+      } catch {
+        // Keep local entry — will be synced later
+      } finally {
+        setSavingLog(false);
+      }
+    }
   }
 
   function addDelivery() {
@@ -442,8 +604,11 @@ export default function SiteToolsPage() {
           <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
             <div className="text-lg font-black tracking-tight">Photo upload (camera-first)</div>
             <p className="mt-1 text-sm text-zinc-700">
-              Works best on mobile. Photos are stored locally in this MVP.
+              Works best on mobile. Photos sync to the server when online.
             </p>
+            {savingPhoto && (
+              <div className="mt-2 text-xs font-black text-sky-600">Saving photo...</div>
+            )}
 
             <label className="mt-4 block text-xs font-black text-zinc-700">
               Note (optional)
@@ -494,19 +659,31 @@ export default function SiteToolsPage() {
               <div>
                 <div className="text-lg font-black tracking-tight">Recent photos</div>
                 <div className="mt-1 text-sm text-zinc-700">
-                  {photos.filter((p) => p.projectId === projectId).length} for this project
+                  {loadingPhotos ? "Loading..." : `${photos.filter((p) => p.projectId === projectId).length} for this project`}
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setPhotos((prev) => prev.filter((p) => p.projectId !== projectId))}
-                className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-black text-red-800 hover:bg-red-100"
-              >
-                Clear project photos
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => fetchPhotos(projectId)}
+                  className="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm font-black text-zinc-900 hover:bg-zinc-50"
+                >
+                  Refresh
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPhotos((prev) => prev.filter((p) => p.projectId !== projectId))}
+                  className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-black text-red-800 hover:bg-red-100"
+                >
+                  Clear local
+                </button>
+              </div>
             </div>
 
             <div className="mt-4 grid gap-3">
+              {loadingPhotos ? (
+                <div className="text-sm text-zinc-500">Loading photos from server...</div>
+              ) : null}
               {photos
                 .filter((p) => p.projectId === projectId)
                 .slice(0, 10)
@@ -514,23 +691,53 @@ export default function SiteToolsPage() {
                   <div key={p.id} className="rounded-2xl border border-black/10 bg-zinc-50 p-3">
                     <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-600">
                       <span className="font-black text-zinc-800">{formatDateTime(p.at)}</span>
-                      {p.gps ? (
-                        <span>
-                          GPS: {p.gps.lat.toFixed(4)}, {p.gps.lng.toFixed(4)}
-                        </span>
-                      ) : (
-                        <span>GPS: —</span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {p._fromServer ? (
+                          <span className="text-emerald-600">Synced</span>
+                        ) : (
+                          <span className="text-amber-600">Local only</span>
+                        )}
+                        {p.gps ? (
+                          <span>
+                            GPS: {p.gps.lat.toFixed(4)}, {p.gps.lng.toFixed(4)}
+                          </span>
+                        ) : (
+                          <span>GPS: —</span>
+                        )}
+                      </div>
                     </div>
-                    {p.note ? <div className="mt-1 text-sm font-black text-zinc-900">{p.note}</div> : null}
-                    <img
-                      src={p.dataUrl}
-                      alt="Site photo"
-                      className="mt-2 w-full rounded-xl border border-black/10"
-                    />
+                    {(p.note || p.category) ? (
+                      <div className="mt-1 flex items-center gap-2">
+                        {p.note ? <span className="text-sm font-black text-zinc-900">{p.note}</span> : null}
+                        {p.category ? <span className="rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-black text-sky-700">{p.category}</span> : null}
+                      </div>
+                    ) : null}
+                    {(p.url || p.dataUrl) ? (
+                      <img
+                        src={p.url || p.dataUrl}
+                        alt="Site photo"
+                        className="mt-2 w-full rounded-xl border border-black/10"
+                      />
+                    ) : (
+                      <div className="mt-2 flex h-32 items-center justify-center rounded-xl border border-dashed border-black/10 bg-zinc-100 text-sm text-zinc-500">
+                        Photo (server URL)
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (p._fromServer && online) {
+                          try { await api.deletePhoto(p.id); } catch { /* ignore */ }
+                        }
+                        setPhotos((prev) => prev.filter((x) => x.id !== p.id));
+                      }}
+                      className="mt-2 h-9 rounded-xl border border-red-200 bg-red-50 px-3 text-xs font-black text-red-800 hover:bg-red-100"
+                    >
+                      Delete
+                    </button>
                   </div>
                 ))}
-              {!photos.filter((p) => p.projectId === projectId).length ? (
+              {!loadingPhotos && !photos.filter((p) => p.projectId === projectId).length ? (
                 <div className="text-sm text-zinc-700">No photos yet.</div>
               ) : null}
             </div>
@@ -543,8 +750,30 @@ export default function SiteToolsPage() {
           <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
             <div className="text-lg font-black tracking-tight">Daily log</div>
             <p className="mt-1 text-sm text-zinc-700">
-              Quick field entry. Saved offline and can be synced later.
+              Quick field entry. Syncs to the server when online, saved locally when offline.
             </p>
+            {savingLog && (
+              <div className="mt-2 text-xs font-black text-sky-600">Saving to server...</div>
+            )}
+
+            {/* Project summary stats */}
+            {logSummary && (
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <div className="rounded-xl border border-black/10 bg-zinc-50 p-2.5 text-center">
+                  <div className="text-xs text-zinc-500">Total logs</div>
+                  <div className="text-sm font-black text-zinc-900">{logSummary.totalLogs ?? "—"}</div>
+                </div>
+                <div className="rounded-xl border border-black/10 bg-zinc-50 p-2.5 text-center">
+                  <div className="text-xs text-zinc-500">Total hours</div>
+                  <div className="text-sm font-black text-zinc-900">{logSummary.totalHours ?? "—"}</div>
+                </div>
+                <div className="rounded-xl border border-black/10 bg-zinc-50 p-2.5 text-center">
+                  <div className="text-xs text-zinc-500">Avg crew</div>
+                  <div className="text-sm font-black text-zinc-900">{logSummary.avgCrew ?? "—"}</div>
+                </div>
+              </div>
+            )}
+
             <div className="mt-4 grid gap-3">
               <label className="grid gap-2">
                 <span className="text-xs font-black text-zinc-700">Weather note (optional)</span>
@@ -556,7 +785,7 @@ export default function SiteToolsPage() {
                 />
               </label>
               <label className="grid gap-2">
-                <span className="text-xs font-black text-zinc-700">Labor count (optional)</span>
+                <span className="text-xs font-black text-zinc-700">Crew count (optional)</span>
                 <input
                   className="h-12 rounded-xl border border-black/10 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]/25"
                   type="number"
@@ -567,7 +796,7 @@ export default function SiteToolsPage() {
                 />
               </label>
               <label className="grid gap-2">
-                <span className="text-xs font-black text-zinc-700">Notes</span>
+                <span className="text-xs font-black text-zinc-700">Work performed / notes</span>
                 <textarea
                   className="min-h-[130px] rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]/25"
                   value={dailyNotes}
@@ -578,29 +807,73 @@ export default function SiteToolsPage() {
               <button
                 type="button"
                 onClick={addDailyLog}
-                className="h-12 rounded-xl bg-[var(--primary)] px-4 text-sm font-black text-[var(--primary-foreground)] hover:opacity-95"
+                disabled={savingLog}
+                className="h-12 rounded-xl bg-[var(--primary)] px-4 text-sm font-black text-[var(--primary-foreground)] hover:opacity-95 disabled:opacity-50"
               >
-                Save daily log
+                {savingLog ? "Saving..." : "Save daily log"}
               </button>
             </div>
           </div>
 
           <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-            <div className="text-lg font-black tracking-tight">Recent logs</div>
+            <div className="flex items-start justify-between gap-3">
+              <div className="text-lg font-black tracking-tight">Recent logs</div>
+              <button
+                type="button"
+                onClick={() => fetchDailyLogs(projectId)}
+                className="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm font-black text-zinc-900 hover:bg-zinc-50"
+              >
+                Refresh
+              </button>
+            </div>
+            {loadingLogs && (
+              <div className="mt-2 text-xs text-zinc-500">Loading logs from server...</div>
+            )}
             <div className="mt-4 space-y-3">
               {daily
                 .filter((d) => d.projectId === projectId)
                 .slice(0, 12)
                 .map((d) => (
                   <div key={d.id} className="rounded-2xl border border-black/10 bg-zinc-50 p-4">
-                    <div className="text-xs font-bold text-zinc-600">{formatDateTime(d.at)}</div>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-xs font-bold text-zinc-600">{formatDateTime(d.at)}</div>
+                      <div className="flex items-center gap-2">
+                        {d._fromServer ? (
+                          <span className="text-[10px] font-black text-emerald-600">Synced</span>
+                        ) : (
+                          <span className="text-[10px] font-black text-amber-600">Local</span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (d._fromServer && online) {
+                              try { await api.deleteDailyLog(d.id); } catch { /* ignore */ }
+                            }
+                            setDaily((prev) => prev.filter((x) => x.id !== d.id));
+                          }}
+                          className="rounded-lg border border-red-200 bg-red-50 px-2 py-1 text-[10px] font-black text-red-800 hover:bg-red-100"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
                     <div className="mt-2 grid gap-2 text-sm text-zinc-800">
                       <div>
-                        <span className="font-black">Labor:</span> {d.laborCount ?? "—"}
+                        <span className="font-black">Crew:</span> {d.laborCount ?? "—"}
                       </div>
                       <div>
                         <span className="font-black">Weather:</span> {d.weatherNote || "—"}
                       </div>
+                      {d.issues ? (
+                        <div>
+                          <span className="font-black">Issues:</span> {d.issues}
+                        </div>
+                      ) : null}
+                      {d.subsOnSite ? (
+                        <div>
+                          <span className="font-black">Subs on site:</span> {d.subsOnSite}
+                        </div>
+                      ) : null}
                       <div className="whitespace-pre-wrap">
                         <span className="font-black">Notes:</span>{" "}
                         {d.notes || "—"}
@@ -608,7 +881,7 @@ export default function SiteToolsPage() {
                     </div>
                   </div>
                 ))}
-              {!daily.filter((d) => d.projectId === projectId).length ? (
+              {!loadingLogs && !daily.filter((d) => d.projectId === projectId).length ? (
                 <div className="text-sm text-zinc-700">No daily logs yet.</div>
               ) : null}
             </div>

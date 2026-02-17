@@ -209,6 +209,64 @@ export async function submitContactForm(data: {
   })
 }
 
+// ============================================================================
+// MESSAGING
+// ============================================================================
+
+export interface Conversation {
+  id: string
+  projectId?: string
+  type: 'DIRECT' | 'GROUP'
+  participants: { id: string; userId: string; user?: { id: string; name: string; email: string } }[]
+  messages?: Message[]
+  lastMessageAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Message {
+  id: string
+  conversationId: string
+  senderId: string
+  content: string
+  type: 'TEXT' | 'FILE' | 'SYSTEM'
+  readBy?: string[]
+  createdAt: string
+}
+
+export async function getConversations() {
+  return apiRequest<{ conversations: Conversation[]; total: number }>('/messaging/conversations')
+}
+
+export async function createConversation(data: {
+  projectId?: string
+  type: 'DIRECT'
+  participantIds: string[]
+}) {
+  return apiRequest<Conversation>('/messaging/conversations', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function getConversation(conversationId: string) {
+  return apiRequest<Conversation>(`/messaging/conversations/${conversationId}`)
+}
+
+export async function sendMessage(conversationId: string, data: {
+  content: string
+  type?: 'TEXT'
+}) {
+  return apiRequest<Message>(`/messaging/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify({ content: data.content, type: data.type || 'TEXT' }),
+  })
+}
+
+export async function getUnreadCount() {
+  return apiRequest<{ count: number }>('/messaging/unread-count')
+}
+
 // Default export for convenience
 export const marketplaceApi = {
   getLeads,
@@ -226,4 +284,9 @@ export const marketplaceApi = {
   getQuickEstimate,
   getProjectTypes,
   submitContactForm,
+  getConversations,
+  createConversation,
+  getConversation,
+  sendMessage,
+  getUnreadCount,
 }

@@ -241,4 +241,76 @@ export const api = {
     method: 'POST',
     body: JSON.stringify(data),
   }),
+
+  // ── Site Tools: Daily Logs ──────────────────────────────────────────
+
+  listDailyLogs: (filters?: { projectId?: string; page?: number; limit?: number }) => {
+    const params = new URLSearchParams()
+    if (filters?.projectId) params.append('projectId', filters.projectId)
+    if (filters?.page) params.append('page', String(filters.page))
+    if (filters?.limit) params.append('limit', String(filters.limit))
+    const query = params.toString()
+    return apiRequest<{ dailyLogs: any[]; pagination?: any }>(`/site-tools/daily-logs${query ? `?${query}` : ''}`)
+  },
+
+  getDailyLog: (logId: string) =>
+    apiRequest<{ dailyLog: any }>(`/site-tools/daily-logs/${logId}`),
+
+  createDailyLog: (data: {
+    projectId: string
+    workPerformed: string
+    crewCount?: number
+    hoursWorked?: number
+    weather?: string
+    temperature?: number
+    progressNotes?: string
+    issues?: string
+    safetyIncidents?: string
+    materialsDelivered?: string
+    equipmentUsed?: string
+    subsOnSite?: string
+    photoIds?: string[]
+  }) => apiRequest<{ dailyLog: any }>(`/site-tools/daily-logs`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  updateDailyLog: (logId: string, data: Record<string, any>) =>
+    apiRequest<{ dailyLog: any }>(`/site-tools/daily-logs/${logId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  deleteDailyLog: (logId: string) =>
+    apiRequest<{ message: string }>(`/site-tools/daily-logs/${logId}`, {
+      method: 'DELETE',
+    }),
+
+  getDailyLogProjectSummary: (projectId: string) =>
+    apiRequest<{ summary: any }>(`/site-tools/daily-logs/project/${projectId}/summary`),
+
+  // ── Site Tools: Photos ──────────────────────────────────────────────
+
+  listPhotos: (filters?: { projectId?: string; category?: string }) => {
+    const params = new URLSearchParams()
+    if (filters?.projectId) params.append('projectId', filters.projectId)
+    if (filters?.category) params.append('category', filters.category)
+    const query = params.toString()
+    return apiRequest<{ photos: any[] }>(`/site-tools/photos${query ? `?${query}` : ''}`)
+  },
+
+  createPhoto: (data: {
+    projectId: string
+    url: string
+    caption?: string
+    category?: string
+  }) => apiRequest<{ photo: any }>(`/site-tools/photos`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  deletePhoto: (photoId: string) =>
+    apiRequest<{ message: string }>(`/site-tools/photos/${photoId}`, {
+      method: 'DELETE',
+    }),
 }

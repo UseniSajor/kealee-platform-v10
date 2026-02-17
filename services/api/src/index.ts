@@ -827,6 +827,32 @@ const start = async () => {
     })
 
     // ══════════════════════════════════════════════════════════════
+    // Phase 3: Real Integrations — messaging, daily logs, scoring
+    // ══════════════════════════════════════════════════════════════
+
+    await safeRegisterBlock('Phase 3 - Project Messaging routes', async () => {
+      const { messagingRoutes } = await import('./modules/messaging/messaging.routes')
+      await fastify.register(messagingRoutes, { prefix: '/messaging' })
+    })
+
+    await safeRegisterBlock('Phase 3 - Site Tools (daily logs, photos) routes', async () => {
+      const { dailyLogRoutes } = await import('./modules/site-tools/daily-log.routes')
+      const { photoRoutes } = await import('./modules/site-tools/daily-log.routes')
+      await fastify.register(dailyLogRoutes, { prefix: '/site-tools' })
+      await fastify.register(photoRoutes, { prefix: '/site-tools' })
+    })
+
+    await safeRegisterBlock('Phase 3 - Scoring Calculator routes', async () => {
+      const { scoringCalculatorRoutes } = await import('./modules/scoring/scoring-calculator.routes')
+      await fastify.register(scoringCalculatorRoutes, { prefix: '/scoring' })
+    })
+
+    await safeRegisterBlock('Phase 3 - SMS Notification routes', async () => {
+      const { smsRoutes } = await import('./modules/sms/sms.routes')
+      await fastify.register(smsRoutes, { prefix: '/sms' })
+    })
+
+    // ══════════════════════════════════════════════════════════════
 
     // GraphQL DISABLED FOR MVP - Uncomment when needed
     /*

@@ -335,6 +335,11 @@ export type {
 } from './hooks/use-chunked-upload';
 
 // ========================================
+// Push Notification Hook
+// ========================================
+export { usePushNotifications } from './hooks/use-push-notifications';
+
+// ========================================
 // Cart Components
 // ========================================
 export {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -20,9 +20,13 @@ import {
   MessageSquare,
   ChevronRight,
   ExternalLink,
+  X,
+  Send,
+  Loader2,
 } from 'lucide-react';
 
 import { MarketingLayout, Badge, brand, shadows } from '@kealee/ui';
+import { createConversation, sendMessage, getConversation, type Conversation, type Message } from '@/lib/api';
 
 const PROFESSIONAL_TYPE_LABELS: Record<string, string> = {
   gc: 'General Contractor',
@@ -46,6 +50,89 @@ interface ProfilePageClientProps {
 export function ProfilePageClient({ profile }: ProfilePageClientProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'portfolio' | 'reviews' | 'services' | 'credentials'>('overview');
   const availConfig = availabilityConfig[profile.availability];
+
+  // Messaging state
+  const [chatOpen, setChatOpen] = useState(false);
+  const [conversation, setConversation] = useState<Conversation | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [messageInput, setMessageInput] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to bottom of messages when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Open chat: create or fetch conversation with this contractor
+  const handleOpenChat = async () => {
+    setChatOpen(true);
+    setChatError(null);
+
+    // If we already have a conversation loaded, just reopen the panel
+    if (conversation) return;
+
+    setChatLoading(true);
+    try {
+      // Create a direct conversation with the contractor's user ID
+      // profile.id corresponds to the contractor profile; the backend resolves participants
+      const result = await createConversation({
+        type: 'DIRECT',
+        participantIds: [profile.id],
+      });
+
+      if (result.success && result.data) {
+        setConversation(result.data);
+        setMessages(result.data.messages || []);
+      } else {
+        setChatError(result.error || 'Could not start conversation');
+      }
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : 'Network error');
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  // Send a message in the active conversation
+  const handleSendMessage = async () => {
+    if (!messageInput.trim() || !conversation) return;
+
+    const content = messageInput.trim();
+    setMessageInput('');
+    setSendingMessage(true);
+    setChatError(null);
+
+    try {
+      const result = await sendMessage(conversation.id, { content, type: 'TEXT' });
+      if (result.success && result.data) {
+        setMessages((prev) => [...prev, result.data!]);
+      } else {
+        setChatError(result.error || 'Failed to send message');
+        setMessageInput(content); // Restore the message so the user can retry
+      }
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : 'Network error');
+      setMessageInput(content);
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  // Refresh conversation messages
+  const handleRefreshMessages = async () => {
+    if (!conversation) return;
+    try {
+      const result = await getConversation(conversation.id);
+      if (result.success && result.data) {
+        setMessages(result.data.messages || []);
+      }
+    } catch {
+      // Silently fail on refresh
+    }
+  };
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
@@ -227,7 +314,10 @@ export function ProfilePageClient({ profile }: ProfilePageClientProps) {
             >
               Invite to Bid
             </button>
-            <button className="px-6 py-2.5 rounded-lg font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50">
+            <button
+              onClick={handleOpenChat}
+              className="px-6 py-2.5 rounded-lg font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+            >
               <MessageSquare className="w-4 h-4 inline mr-2" />
               Message
             </button>
@@ -715,6 +805,134 @@ export function ProfilePageClient({ profile }: ProfilePageClientProps) {
           )}
         </div>
       </section>
+      {/* Chat Drawer */}
+      {chatOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/30"
+            onClick={() => setChatOpen(false)}
+          />
+
+          {/* Chat Panel */}
+          <div className="relative w-full max-w-md bg-white shadow-2xl flex flex-col h-full">
+            {/* Header */}
+            <div
+              className="flex items-center justify-between px-5 py-4 border-b border-gray-200"
+              style={{ backgroundColor: brand.navy }}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-9 h-9 rounded-lg flex items-center justify-center text-white text-sm font-bold"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
+                >
+                  {profile.businessName.substring(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold text-sm">{profile.businessName}</h3>
+                  <p className="text-white/60 text-xs">{profile.principalName}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setChatOpen(false)}
+                className="text-white/70 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 bg-gray-50">
+              {chatLoading && (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <Loader2 className="w-6 h-6 animate-spin text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-500">Starting conversation...</p>
+                </div>
+              )}
+
+              {chatError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
+                  {chatError}
+                </div>
+              )}
+
+              {!chatLoading && messages.length === 0 && !chatError && (
+                <div className="text-center py-16">
+                  <MessageSquare className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">
+                    Send your first message to {profile.businessName}
+                  </p>
+                </div>
+              )}
+
+              {messages.map((msg) => {
+                // Determine if the message was sent by the current user
+                // by checking if the sender matches any participant that is NOT the contractor
+                const isOwnMessage = msg.senderId !== profile.id;
+                return (
+                  <div
+                    key={msg.id}
+                    className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
+                        isOwnMessage
+                          ? 'bg-blue-600 text-white rounded-br-md'
+                          : 'bg-white border border-gray-200 text-gray-800 rounded-bl-md'
+                      }`}
+                    >
+                      <p>{msg.content}</p>
+                      <p
+                        className={`text-xs mt-1 ${
+                          isOwnMessage ? 'text-blue-200' : 'text-gray-400'
+                        }`}
+                      >
+                        {new Date(msg.createdAt).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input Area */}
+            <div className="border-t border-gray-200 px-4 py-3 bg-white">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendMessage();
+                }}
+                className="flex items-center gap-2"
+              >
+                <input
+                  type="text"
+                  value={messageInput}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  placeholder="Type a message..."
+                  disabled={!conversation || sendingMessage}
+                  className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400"
+                />
+                <button
+                  type="submit"
+                  disabled={!messageInput.trim() || !conversation || sendingMessage}
+                  className="p-2.5 rounded-xl text-white transition-colors disabled:opacity-40"
+                  style={{ backgroundColor: brand.orange }}
+                >
+                  {sendingMessage ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </MarketingLayout>
   );
 }

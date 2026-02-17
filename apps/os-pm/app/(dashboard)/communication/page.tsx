@@ -1,17 +1,18 @@
 "use client"
 
 import * as React from "react"
-import { CalendarClock, Mail, Phone, Plus, Send, Settings, User } from "lucide-react"
+import { CalendarClock, Loader2, Mail, Phone, Plus, Send, Settings, User } from "lucide-react"
 
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { cn } from "@/lib/utils"
+import { api } from "@/lib/api"
 
 type Channel = "messages" | "sms" | "email" | "calls" | "meetings"
 
-type Conversation = { id: string; name: string; last: string; unread: number }
-type ChatMessage = { id: string; at: string; from: "me" | "them"; text: string }
+type Conversation = { id: string; name: string; lastMessage?: { content: string }; unreadCount: number; type?: string; updatedAt?: string }
+type Message = { id: string; content: string; type: string; createdAt: string; senderId: string; senderName?: string; isOwn?: boolean }
 type CallLog = { id: string; at: string; contact: string; direction: "inbound" | "outbound"; durationMin: number; note?: string }
 type Meeting = { id: string; when: string; title: string; attendees: string; location: string; status: "scheduled" | "completed" | "cancelled" }
 
@@ -22,21 +23,92 @@ function uid(prefix: string) {
 export default function CommunicationPage() {
   const [tab, setTab] = React.useState<Channel>("messages")
 
-  const [conversations] = React.useState<Conversation[]>([
-    { id: "c1", name: "Client - Avery Johnson", last: "Can we confirm inspection date?", unread: 2 },
-    { id: "c2", name: "GC - Morgan Lee", last: "Invoice uploaded for review.", unread: 0 },
-    { id: "c3", name: "Permit office", last: "Submission received.", unread: 0 },
-  ])
-  const [activeConvId, setActiveConvId] = React.useState<string>("c1")
-  const [messages, setMessages] = React.useState<Record<string, ChatMessage[]>>({
-    c1: [
-      { id: "m1", at: "2026-01-13 10:12", from: "them", text: "Can we confirm inspection date?" },
-      { id: "m2", at: "2026-01-13 10:16", from: "me", text: "Tentatively 2/3 at 10:00 — I’ll confirm today." },
-    ],
-    c2: [{ id: "m1", at: "2026-01-12 14:44", from: "them", text: "Invoice uploaded for review." }],
-    c3: [{ id: "m1", at: "2026-01-10 09:05", from: "them", text: "Submission received. Review ETA 5-7 business days." }],
-  })
+  // ── Messaging state (wired to API) ──
+  const [conversations, setConversations] = React.useState<Conversation[]>([])
+  const [convsLoading, setConvsLoading] = React.useState(true)
+  const [activeConvId, setActiveConvId] = React.useState<string | null>(null)
+  const [thread, setThread] = React.useState<Message[]>([])
+  const [threadLoading, setThreadLoading] = React.useState(false)
   const [draft, setDraft] = React.useState("")
+  const [sending, setSending] = React.useState(false)
+
+  // Load conversations on mount
+  React.useEffect(() => {
+    let cancelled = false
+    async function loadConversations() {
+      try {
+        setConvsLoading(true)
+        const res = await api.messaging.listConversations()
+        if (cancelled) return
+        const list: Conversation[] = res.data ?? res.conversations ?? []
+        setConversations(list)
+        if (list.length > 0 && !activeConvId) {
+          setActiveConvId(list[0].id)
+        }
+      } catch (err) {
+        console.error("Failed to load conversations", err)
+      } finally {
+        if (!cancelled) setConvsLoading(false)
+      }
+    }
+    loadConversations()
+    return () => { cancelled = true }
+  }, [])
+
+  // Load messages when active conversation changes
+  React.useEffect(() => {
+    if (!activeConvId) return
+    let cancelled = false
+    async function loadThread() {
+      try {
+        setThreadLoading(true)
+        const res = await api.messaging.getConversation(activeConvId!)
+        if (cancelled) return
+        const conv = res.data ?? res.conversation ?? res
+        setThread(conv.messages ?? [])
+        // Mark as read
+        api.messaging.markAsRead(activeConvId!).catch(() => {})
+        // Update unread count in sidebar
+        setConversations((prev) =>
+          prev.map((c) => (c.id === activeConvId ? { ...c, unreadCount: 0 } : c))
+        )
+      } catch (err) {
+        console.error("Failed to load conversation", err)
+      } finally {
+        if (!cancelled) setThreadLoading(false)
+      }
+    }
+    loadThread()
+    return () => { cancelled = true }
+  }, [activeConvId])
+
+  const activeConv = conversations.find((c) => c.id === activeConvId)
+
+  async function sendMessage() {
+    const text = draft.trim()
+    if (!text || !activeConvId) return
+    try {
+      setSending(true)
+      const res = await api.messaging.sendMessage(activeConvId, { content: text, type: "TEXT" })
+      const newMsg: Message = res.data ?? res.message ?? { id: uid("msg"), content: text, type: "TEXT", createdAt: new Date().toISOString(), senderId: "me", isOwn: true }
+      setThread((prev) => [...prev, newMsg])
+      setDraft("")
+      // Update last message in sidebar
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === activeConvId
+            ? { ...c, lastMessage: { content: text }, updatedAt: new Date().toISOString() }
+            : c
+        )
+      )
+    } catch (err) {
+      console.error("Failed to send message", err)
+    } finally {
+      setSending(false)
+    }
+  }
+
+  // ── SMS, Email, Calls, Meetings state (unchanged) ──
 
   const [emailConnected, setEmailConnected] = React.useState(false)
   const [emailInbox] = React.useState([
@@ -53,17 +125,6 @@ export default function CommunicationPage() {
     { id: "mt1", when: "2026-01-15 09:00", title: "Weekly client check-in", attendees: "client@company.com, pm@company.com", location: "Zoom", status: "scheduled" },
   ])
   const [meetingForm, setMeetingForm] = React.useState({ when: "2026-01-16 10:00", title: "Site coordination", attendees: "gc@company.com", location: "On-site" })
-
-  const activeConv = conversations.find((c) => c.id === activeConvId) ?? conversations[0]!
-  const thread = messages[activeConvId] ?? []
-
-  function sendMessage() {
-    const text = draft.trim()
-    if (!text) return
-    const msg: ChatMessage = { id: uid("msg"), at: new Date().toLocaleString(), from: "me", text }
-    setMessages((prev) => ({ ...prev, [activeConvId]: [...(prev[activeConvId] ?? []), msg] }))
-    setDraft("")
-  }
 
   function scheduleMeeting() {
     const m: Meeting = {
@@ -126,56 +187,80 @@ export default function CommunicationPage() {
               <CardTitle className="text-base">Conversations</CardTitle>
             </CardHeader>
             <CardContent className="pb-4 space-y-2">
-              {conversations.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setActiveConvId(c.id)}
-                  className={cn(
-                    "w-full rounded-xl border bg-white p-3 text-left hover:bg-neutral-50 transition-colors",
-                    c.id === activeConvId ? "ring-2 ring-neutral-900/20" : ""
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="font-medium text-neutral-900 truncate">{c.name}</div>
-                      <div className="text-sm text-neutral-600 truncate mt-0.5">{c.last}</div>
+              {convsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
+                  <span className="ml-2 text-sm text-neutral-500">Loading conversations...</span>
+                </div>
+              ) : conversations.length === 0 ? (
+                <div className="text-sm text-neutral-600 py-4 text-center">No conversations yet.</div>
+              ) : (
+                conversations.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setActiveConvId(c.id)}
+                    className={cn(
+                      "w-full rounded-xl border bg-white p-3 text-left hover:bg-neutral-50 transition-colors",
+                      c.id === activeConvId ? "ring-2 ring-neutral-900/20" : ""
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="font-medium text-neutral-900 truncate">{c.name}</div>
+                        <div className="text-sm text-neutral-600 truncate mt-0.5">
+                          {c.lastMessage?.content ?? "No messages yet"}
+                        </div>
+                      </div>
+                      {c.unreadCount > 0 ? (
+                        <span className="inline-flex items-center rounded-full bg-neutral-900 px-2 py-0.5 text-xs font-medium text-white">
+                          {c.unreadCount}
+                        </span>
+                      ) : null}
                     </div>
-                    {c.unread ? (
-                      <span className="inline-flex items-center rounded-full bg-neutral-900 px-2 py-0.5 text-xs font-medium text-white">
-                        {c.unread}
-                      </span>
-                    ) : null}
-                  </div>
-                </button>
-              ))}
+                  </button>
+                ))
+              )}
             </CardContent>
           </Card>
 
           <Card className="py-0 xl:col-span-2">
             <CardHeader>
-              <CardTitle className="text-base">{activeConv.name}</CardTitle>
+              <CardTitle className="text-base">{activeConv?.name ?? "Select a conversation"}</CardTitle>
             </CardHeader>
             <CardContent className="pb-4 space-y-3">
               <div className="rounded-xl border bg-white p-4 max-h-[420px] overflow-y-auto">
                 <div className="space-y-3">
-                  {thread.map((m) => (
-                    <div
-                      key={m.id}
-                      className={cn("flex", m.from === "me" ? "justify-end" : "justify-start")}
-                    >
-                      <div
-                        className={cn(
-                          "max-w-[80%] rounded-xl px-3 py-2 text-sm",
-                          m.from === "me" ? "bg-neutral-900 text-white" : "bg-neutral-100 text-neutral-900"
-                        )}
-                      >
-                        <div className="text-[10px] opacity-70 mb-1">{m.at}</div>
-                        <div>{m.text}</div>
-                      </div>
+                  {threadLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
+                      <span className="ml-2 text-sm text-neutral-500">Loading messages...</span>
                     </div>
-                  ))}
-                  {!thread.length ? <div className="text-sm text-neutral-600">No messages.</div> : null}
+                  ) : thread.length > 0 ? (
+                    thread.map((m) => (
+                      <div
+                        key={m.id}
+                        className={cn("flex", m.isOwn ? "justify-end" : "justify-start")}
+                      >
+                        <div
+                          className={cn(
+                            "max-w-[80%] rounded-xl px-3 py-2 text-sm",
+                            m.isOwn ? "bg-neutral-900 text-white" : "bg-neutral-100 text-neutral-900"
+                          )}
+                        >
+                          {!m.isOwn && m.senderName ? (
+                            <div className="text-[10px] font-medium opacity-80 mb-0.5">{m.senderName}</div>
+                          ) : null}
+                          <div className="text-[10px] opacity-70 mb-1">
+                            {new Date(m.createdAt).toLocaleString()}
+                          </div>
+                          <div>{m.content}</div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-sm text-neutral-600">No messages.</div>
+                  )}
                 </div>
               </div>
 
@@ -184,6 +269,7 @@ export default function CommunicationPage() {
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder="Type a message…"
+                  disabled={!activeConvId || sending}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault()
@@ -191,13 +277,10 @@ export default function CommunicationPage() {
                     }
                   }}
                 />
-                <Button onClick={sendMessage} disabled={!draft.trim()}>
-                  <Send className="h-4 w-4" />
+                <Button onClick={sendMessage} disabled={!draft.trim() || !activeConvId || sending}>
+                  {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   Send
                 </Button>
-              </div>
-              <div className="text-xs text-neutral-600">
-                Placeholder: wire to realtime messaging + notifications (email/SMS optional).
               </div>
             </CardContent>
           </Card>

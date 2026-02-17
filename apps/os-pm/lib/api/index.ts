@@ -1173,6 +1173,42 @@ export const api = {
     },
   },
 
+  // ── Messaging ──
+  messaging: {
+    listConversations: async () => {
+      const { data } = await apiClient.get<any>("/messaging/conversations")
+      return data
+    },
+    createConversation: async (input: { projectId: string; type: string; name: string; participantIds: string[] }) => {
+      const { data } = await apiClient.post<any>("/messaging/conversations", input)
+      return data
+    },
+    getConversation: async (id: string) => {
+      const { data } = await apiClient.get<any>(`/messaging/conversations/${id}`)
+      return data
+    },
+    sendMessage: async (conversationId: string, input: { content: string; type: string }) => {
+      const { data } = await apiClient.post<any>(`/messaging/conversations/${conversationId}/messages`, input)
+      return data
+    },
+    markAsRead: async (conversationId: string) => {
+      const { data } = await apiClient.post<any>(`/messaging/conversations/${conversationId}/read`)
+      return data
+    },
+    editMessage: async (messageId: string, input: { content: string }) => {
+      const { data } = await apiClient.patch<any>(`/messaging/messages/${messageId}`, input)
+      return data
+    },
+    deleteMessage: async (messageId: string) => {
+      const { data } = await apiClient.delete<any>(`/messaging/messages/${messageId}`)
+      return data
+    },
+    getUnreadCount: async () => {
+      const { data } = await apiClient.get<any>("/messaging/unread-count")
+      return data
+    },
+  },
+
   // DocuSign e-Signatures
   docusign: {
     listEnvelopes: async (params?: { fromDate?: string; status?: string; limit?: number }) => {

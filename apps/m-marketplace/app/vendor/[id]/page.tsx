@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
     Star,
@@ -15,10 +15,14 @@ import {
     Zap,
     MessageSquare,
     ChevronRight,
+    X,
+    Send,
+    Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { createConversation, sendMessage, getConversation, type Conversation, type Message } from '@/lib/api';
 
 // Mock data for initial UI build
 const MOCK_VENDOR = {
@@ -53,6 +57,70 @@ export default function VendorProfilePage() {
     const item = {
         hidden: { opacity: 0, y: 20 },
         show: { opacity: 1, y: 0 }
+    };
+
+    // Messaging state
+    const [chatOpen, setChatOpen] = useState(false);
+    const [conversation, setConversation] = useState<Conversation | null>(null);
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [messageInput, setMessageInput] = useState('');
+    const [sendingMessage, setSendingMessage] = useState(false);
+    const [chatLoading, setChatLoading] = useState(false);
+    const [chatError, setChatError] = useState<string | null>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    const handleOpenChat = async () => {
+        setChatOpen(true);
+        setChatError(null);
+
+        if (conversation) return;
+
+        setChatLoading(true);
+        try {
+            const result = await createConversation({
+                type: 'DIRECT',
+                participantIds: [MOCK_VENDOR.id],
+            });
+
+            if (result.success && result.data) {
+                setConversation(result.data);
+                setMessages(result.data.messages || []);
+            } else {
+                setChatError(result.error || 'Could not start conversation');
+            }
+        } catch (err) {
+            setChatError(err instanceof Error ? err.message : 'Network error');
+        } finally {
+            setChatLoading(false);
+        }
+    };
+
+    const handleSendMessage = async () => {
+        if (!messageInput.trim() || !conversation) return;
+
+        const content = messageInput.trim();
+        setMessageInput('');
+        setSendingMessage(true);
+        setChatError(null);
+
+        try {
+            const result = await sendMessage(conversation.id, { content, type: 'TEXT' });
+            if (result.success && result.data) {
+                setMessages((prev) => [...prev, result.data!]);
+            } else {
+                setChatError(result.error || 'Failed to send message');
+                setMessageInput(content);
+            }
+        } catch (err) {
+            setChatError(err instanceof Error ? err.message : 'Network error');
+            setMessageInput(content);
+        } finally {
+            setSendingMessage(false);
+        }
     };
 
     return (
@@ -128,7 +196,10 @@ export default function VendorProfilePage() {
                                         Request Quote
                                         <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                     </button>
-                                    <button className="w-full bg-white text-neutral-600 font-bold py-4 rounded-2xl border border-neutral-200 hover:bg-neutral-50 transition-all flex items-center justify-center gap-2">
+                                    <button
+                                        onClick={handleOpenChat}
+                                        className="w-full bg-white text-neutral-600 font-bold py-4 rounded-2xl border border-neutral-200 hover:bg-neutral-50 transition-all flex items-center justify-center gap-2"
+                                    >
                                         <MessageSquare className="w-4 h-4" />
                                         Message
                                     </button>
@@ -231,6 +302,126 @@ export default function VendorProfilePage() {
             </main>
 
             <Footer />
+
+            {/* Chat Drawer */}
+            {chatOpen && (
+                <div className="fixed inset-0 z-50 flex justify-end">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/30"
+                        onClick={() => setChatOpen(false)}
+                    />
+
+                    {/* Chat Panel */}
+                    <div className="relative w-full max-w-md bg-white shadow-2xl flex flex-col h-full">
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-200 bg-indigo-900">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white text-sm font-bold bg-white/15">
+                                    {MOCK_VENDOR.businessName.substring(0, 2).toUpperCase()}
+                                </div>
+                                <div>
+                                    <h3 className="text-white font-semibold text-sm">{MOCK_VENDOR.businessName}</h3>
+                                    <p className="text-white/60 text-xs">Direct Message</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setChatOpen(false)}
+                                className="text-white/70 hover:text-white transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Messages Area */}
+                        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 bg-neutral-50">
+                            {chatLoading && (
+                                <div className="flex flex-col items-center justify-center py-16">
+                                    <Loader2 className="w-6 h-6 animate-spin text-neutral-400 mb-2" />
+                                    <p className="text-sm text-neutral-500">Starting conversation...</p>
+                                </div>
+                            )}
+
+                            {chatError && (
+                                <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
+                                    {chatError}
+                                </div>
+                            )}
+
+                            {!chatLoading && messages.length === 0 && !chatError && (
+                                <div className="text-center py-16">
+                                    <MessageSquare className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
+                                    <p className="text-sm text-neutral-500">
+                                        Send your first message to {MOCK_VENDOR.businessName}
+                                    </p>
+                                </div>
+                            )}
+
+                            {messages.map((msg) => {
+                                const isOwnMessage = msg.senderId !== MOCK_VENDOR.id;
+                                return (
+                                    <div
+                                        key={msg.id}
+                                        className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                                    >
+                                        <div
+                                            className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
+                                                isOwnMessage
+                                                    ? 'bg-indigo-600 text-white rounded-br-md'
+                                                    : 'bg-white border border-neutral-200 text-neutral-800 rounded-bl-md'
+                                            }`}
+                                        >
+                                            <p>{msg.content}</p>
+                                            <p
+                                                className={`text-xs mt-1 ${
+                                                    isOwnMessage ? 'text-indigo-200' : 'text-neutral-400'
+                                                }`}
+                                            >
+                                                {new Date(msg.createdAt).toLocaleTimeString([], {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            <div ref={messagesEndRef} />
+                        </div>
+
+                        {/* Input Area */}
+                        <div className="border-t border-neutral-200 px-4 py-3 bg-white">
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    handleSendMessage();
+                                }}
+                                className="flex items-center gap-2"
+                            >
+                                <input
+                                    type="text"
+                                    value={messageInput}
+                                    onChange={(e) => setMessageInput(e.target.value)}
+                                    placeholder="Type a message..."
+                                    disabled={!conversation || sendingMessage}
+                                    className="flex-1 px-4 py-2.5 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:bg-neutral-50 disabled:text-neutral-400"
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={!messageInput.trim() || !conversation || sendingMessage}
+                                    className="p-2.5 rounded-xl bg-indigo-600 text-white transition-colors disabled:opacity-40 hover:bg-indigo-700"
+                                >
+                                    {sendingMessage ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <Send className="w-4 h-4" />
+                                    )}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
