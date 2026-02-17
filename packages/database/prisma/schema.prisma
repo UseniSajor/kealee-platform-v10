@@ -1866,6 +1866,14 @@ model User {
   // Cost Code Import relations
   costCodeImportJobs CostCodeImportJob[] @relation("CostCodeImportJobs")
 
+  // Cost Database 3-Tier relations
+  submittedCostDatabases CostDatabase[]   @relation("CostDatabaseSubmitter")
+  reviewedCostDatabases  CostDatabase[]   @relation("CostDatabaseReviewer")
+  costDataReviews        CostDataReview[] @relation("CostDataReviewAdmin")
+
+  // Platform Knowledge Base relations
+  authoredKnowledgeEntries PlatformKnowledge[] @relation("PlatformKnowledgeAuthor")
+
   // User Responsibilities Tracking relations (from Kealee_User_Responsibilities_Guide.md)
   dailyLogs       DailyLog[]     @relation("DailyLogContractor")
   uploadedFiles   FileUpload[]   @relation("FileUploadUser")
@@ -6164,16 +6172,44 @@ model CostDatabase {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 
+  // ── 3-Tier Cost Book Architecture ─────────────────────────────────
+  tier           CostDatabaseTier       @default(ORGANIZATION)
+  visibility     CostDataVisibility     @default(ORG_ONLY)
+  reviewStatus   CostDataReviewStatus   @default(DRAFT)
+
+  // Submission & Review tracking
+  submittedById  String?                // User who uploaded / created
+  reviewedById   String?                // Kealee admin who approved/rejected
+  reviewedAt     DateTime?
+  reviewNotes    String?                @db.Text
+
+  // Classification for organization
+  tradeCategory  String?                // e.g. "concrete", "steel", "electrical"
+  projectType    String?                // e.g. "residential", "commercial", "industrial"
+  methodology    String?                // e.g. "tilt-up", "stick-frame", "CMU"
+
+  // Standard book flags (Tier 1)
+  isStandard     Boolean          @default(false)  // true = Kealee base/standard cost book
+
   materials      MaterialCost[]
   laborRates     LaborRate[]
   equipmentRates EquipmentRate[]
   assemblies     Assembly[]
   estimates      Estimate[]
   importJobs     CostCodeImportJob[]
+  reviews        CostDataReview[]
+
+  submittedBy    User?            @relation("CostDatabaseSubmitter", fields: [submittedById], references: [id])
+  reviewedBy     User?            @relation("CostDatabaseReviewer", fields: [reviewedById], references: [id])
 
   @@index([organizationId])
   @@index([region])
   @@index([isActive])
+  @@index([tier])
+  @@index([visibility])
+  @@index([reviewStatus])
+  @@index([tradeCategory])
+  @@index([submittedById])
   @@map("cost_databases")
 }
 
@@ -6183,6 +6219,29 @@ enum CostDatabaseType {
   LOCAL
   CUSTOM
   IMPORTED
+}
+
+// ── 3-Tier Cost Book Enums ────────────────────────────────────────
+
+enum CostDatabaseTier {
+  STANDARD       // Tier 1: Kealee base cost book — admin upload/remove only
+  COMMUNITY      // Tier 2: User-uploaded, curated — feeds AI & platform intelligence
+  ORGANIZATION   // Tier 3: Private org-scoped — customizable per user/org
+}
+
+enum CostDataVisibility {
+  PUBLIC         // Visible to all authenticated users (standard books)
+  AI_STAFF_ONLY  // Visible to platform AI and Kealee staff only (community data)
+  ORG_ONLY       // Visible only to the uploading organization (private)
+  ADMIN_ONLY     // Visible only to Kealee admin (internal reference)
+}
+
+enum CostDataReviewStatus {
+  DRAFT           // Just uploaded, not yet submitted for review
+  PENDING_REVIEW  // Submitted for Kealee admin review
+  APPROVED        // Approved by admin — available per visibility rules
+  REJECTED        // Rejected by admin — not available
+  ARCHIVED        // Previously approved, now archived
 }
 
 model MaterialCost {
@@ -6749,6 +6808,10 @@ model CostCodeImportJob {
   status           ImportJobStatus @default(PENDING)
   progress         Int             @default(0) // 0-100
 
+  // 3-Tier routing — determines where imported data lands
+  targetTier       CostDatabaseTier @default(ORGANIZATION)  // Which tier this import targets
+  isAdminUpload    Boolean          @default(false)          // true = Kealee admin uploading standard book
+
   // Results
   totalPages       Int?
   processedPages   Int?
@@ -6764,6 +6827,12 @@ model CostCodeImportJob {
   extractedText    String?         @db.Text
   structuredData   Json?           // Final structured output from AI
 
+  // AI classification (auto-tagged on import)
+  aiTradeCategory  String?         // AI-detected trade category
+  aiProjectType    String?         // AI-detected project type
+  aiMethodology    String?         // AI-detected construction methodology
+  aiConfidence     Decimal?        @db.Decimal(5, 4)  // AI classification confidence 0-1
+
   startedAt        DateTime?
   completedAt      DateTime?
   createdAt        DateTime        @default(now())
@@ -6775,6 +6844,7 @@ model CostCodeImportJob {
   @@index([userId])
   @@index([costDatabaseId])
   @@index([status])
+  @@index([targetTier])
   @@map("cost_code_import_jobs")
 }
 
@@ -10010,4 +10080,160 @@ enum AIEstSessionStatus {
   AI_EST_COMPLETED
   AI_EST_FAILED
   AI_EST_CANCELLED
+}
+
+// ============================================================================
+// COST DATA REVIEW — Admin approval workflow for community uploads
+// ============================================================================
+
+model CostDataReview {
+  id              String               @id @default(uuid())
+  costDatabaseId  String
+  reviewerId      String               // Kealee admin who performed the review
+  action          CostDataReviewAction
+  notes           String?              @db.Text
+  previousStatus  CostDataReviewStatus
+  newStatus       CostDataReviewStatus
+
+  // Quality metrics assessed during review
+  dataQualityScore  Int?               // 1-100 quality score
+  completeness      Int?               // 1-100 how complete the data is
+  accuracy          Int?               // 1-100 estimated accuracy
+  flaggedIssues     Json?              // Array of issues found
+
+  createdAt       DateTime             @default(now())
+
+  costDatabase    CostDatabase         @relation(fields: [costDatabaseId], references: [id], onDelete: Cascade)
+  reviewer        User                 @relation("CostDataReviewAdmin", fields: [reviewerId], references: [id])
+
+  @@index([costDatabaseId])
+  @@index([reviewerId])
+  @@index([action])
+  @@map("cost_data_reviews")
+}
+
+enum CostDataReviewAction {
+  SUBMITTED       // User submitted for review
+  APPROVED        // Admin approved
+  REJECTED        // Admin rejected
+  REQUESTED_CHANGES // Admin requested edits before approval
+  ARCHIVED        // Admin archived previously approved data
+  RESTORED        // Admin restored archived data
+}
+
+// ============================================================================
+// PLATFORM KNOWLEDGE BASE — Architecture decisions, prompts & recommendations
+// ============================================================================
+
+// Stores platform architecture decisions, prompt Q&A, and recommendations
+// that inform how the platform is built and should behave. This is the
+// living record of all decisions made during development.
+
+model PlatformKnowledge {
+  id          String                  @id @default(uuid())
+  category    PlatformKnowledgeCategory
+  topic       String                  // Short topic label e.g. "Cost Book Architecture"
+  question    String                  @db.Text   // The prompt/question asked
+  answer      String                  @db.Text   // The recommendation/answer given
+  decision    String?                 @db.Text   // Final decision made (if different from answer)
+
+  // Classification
+  domain      String?                 // e.g. "estimation", "auth", "billing", "permits"
+  appScope    String[]                @default([]) // Which apps this applies to: ["os-pm", "m-estimation"]
+  tags        String[]                @default([])
+
+  // Status & Priority
+  status      KnowledgeStatus         @default(ACTIVE)
+  priority    KnowledgePriority       @default(NORMAL)
+  isImplemented Boolean               @default(false)
+  implementedAt DateTime?
+
+  // Context
+  authorId    String?                 // Who authored/prompted this
+  sessionRef  String?                 // Reference to Claude session or commit hash
+  relatedFiles String[]               @default([]) // Files affected by this decision
+
+  // Schema impact tracking
+  schemaModels   String[]             @default([]) // Prisma models affected
+  apiEndpoints   String[]             @default([]) // API routes affected
+  frontendPages  String[]             @default([]) // Frontend pages affected
+
+  metadata    Json?
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+
+  author      User?                   @relation("PlatformKnowledgeAuthor", fields: [authorId], references: [id])
+
+  @@index([category])
+  @@index([domain])
+  @@index([status])
+  @@index([isImplemented])
+  @@index([authorId])
+  @@map("platform_knowledge")
+}
+
+enum PlatformKnowledgeCategory {
+  ARCHITECTURE_DECISION   // How the platform is structured
+  SCHEMA_DESIGN           // Database schema decisions
+  AUTH_STRATEGY            // Authentication and authorization
+  API_DESIGN              // API endpoint design
+  PRICING_STRUCTURE       // Pricing and billing decisions
+  FEATURE_SPEC            // Feature specifications
+  UI_UX_DECISION          // UI/UX design decisions
+  INTEGRATION             // Third-party integration decisions
+  SECURITY                // Security architecture
+  DEPLOYMENT              // Deployment and infrastructure
+  BUSINESS_RULE           // Business logic rules
+  DATA_FLOW               // How data moves between apps
+  COST_BOOK_ARCHITECTURE  // Cost database tier structure
+  PROMPT_RECOMMENDATION   // AI prompt Q&A recommendations
+}
+
+enum KnowledgeStatus {
+  ACTIVE      // Currently in effect
+  SUPERSEDED  // Replaced by a newer decision
+  DEPRECATED  // No longer relevant
+  PROPOSED    // Under consideration
+  REJECTED_KB // Was considered but not adopted
+}
+
+enum KnowledgePriority {
+  LOW
+  NORMAL
+  HIGH
+  CRITICAL
+}
+
+// ============================================================================
+// COST BOOK CUSTOMIZATION — Org-level overrides of standard cost data
+// ============================================================================
+
+// When a user in ops-services or m-estimation customizes the standard
+// cost book for their org, the customization is stored here without
+// modifying the original standard data.
+
+model CostBookCustomization {
+  id                String   @id @default(uuid())
+  organizationId    String
+  sourceDatabaseId  String   // The standard/community database being customized
+  targetDatabaseId  String   // The org-private database where customizations live
+
+  // What was customized
+  entityType        String   // "material", "labor", "equipment", "assembly"
+  sourceEntityId    String   // ID of the original entity in the source database
+  customizedFields  Json     // { "unitCost": 45.50, "wasteFactor": 1.08 } — only changed fields
+  originalValues    Json     // Original values before customization (for diff/rollback)
+
+  notes             String?  @db.Text
+  customizedById    String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([sourceDatabaseId])
+  @@index([targetDatabaseId])
+  @@index([entityType])
+  @@index([customizedById])
+  @@unique([organizationId, sourceDatabaseId, entityType, sourceEntityId])
+  @@map("cost_book_customizations")
 }
