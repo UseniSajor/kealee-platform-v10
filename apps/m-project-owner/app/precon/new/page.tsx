@@ -1,510 +1,447 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Sparkles, Zap, ChevronDown, ChevronUp, CheckCircle2, Bot, ArrowRight } from 'lucide-react'
+import { quickStartProject } from '../../../lib/claws'
+
+/**
+ * 1-CLICK PRE-CON PROJECT CREATION
+ *
+ * Philosophy: Owner clicks one button, CLAWs handle everything behind the scenes.
+ *
+ * Flow:
+ *   1. Owner picks category + gives brief description (single page)
+ *   2. Clicks "Start My Project" (1-click)
+ *   3. Behind the scenes:
+ *      - Claw A: Creates project + initial scope estimate
+ *      - Claw F: Sends welcome email + creates project channel
+ *      - Claw H: Logs activity + sets up automation rules
+ *      - Claw G: Runs initial risk assessment
+ *      - Auto Design session starts immediately
+ *
+ * Package defaults to Standard ($499) — can be changed in optional section.
+ * Location/sq ft/complexity are in collapsible "optional details" section.
+ */
 
 const CATEGORIES = [
-  { value: 'KITCHEN', label: 'Kitchen Remodel', icon: '🍳', description: 'Complete kitchen renovation' },
-  { value: 'BATHROOM', label: 'Bathroom Remodel', icon: '🚿', description: 'Full bathroom upgrade' },
-  { value: 'ADDITION', label: 'Room Addition', icon: '🏠', description: 'Add new living space' },
-  { value: 'NEW_CONSTRUCTION', label: 'New Construction', icon: '🏗️', description: 'Build from ground up' },
-  { value: 'RENOVATION', label: 'Whole Home Renovation', icon: '🔨', description: 'Major interior renovation' },
-  { value: 'EXTERIOR', label: 'Exterior Work', icon: '🏡', description: 'Roofing, siding, landscaping' },
-  { value: 'OTHER', label: 'Other', icon: '📋', description: 'Custom project type' },
+  { value: 'KITCHEN', label: 'Kitchen Remodel', icon: '🍳' },
+  { value: 'BATHROOM', label: 'Bathroom Remodel', icon: '🚿' },
+  { value: 'ADDITION', label: 'Room Addition', icon: '🏠' },
+  { value: 'NEW_CONSTRUCTION', label: 'New Construction', icon: '🏗️' },
+  { value: 'RENOVATION', label: 'Whole Home Renovation', icon: '🔨' },
+  { value: 'EXTERIOR', label: 'Exterior Work', icon: '🏡' },
+  { value: 'OTHER', label: 'Other', icon: '📋' },
 ]
 
-const DESIGN_PACKAGES = [
-  {
-    tier: 'BASIC',
-    price: 199,
-    name: 'Basic',
-    description: 'Essential design concepts',
-    features: ['2 concept options', 'Basic floor plan', 'Material suggestions', 'Email support'],
-    recommended: false,
-  },
-  {
-    tier: 'STANDARD',
-    price: 499,
-    name: 'Standard',
-    description: 'Detailed professional designs',
-    features: [
-      '3 concept options',
-      'Detailed floor plans',
-      '3D renderings',
-      'Material specifications',
-      'Cost estimate',
-      'Phone & email support',
-    ],
-    recommended: true,
-  },
-  {
-    tier: 'PREMIUM',
-    price: 999,
-    name: 'Premium',
-    description: 'Full architectural package',
-    features: [
-      '5 concept options',
-      'Full architectural drawings',
-      'Interactive 3D walkthrough',
-      'Complete material specs',
-      'Detailed cost breakdown',
-      'Permit-ready documents',
-      'Priority support',
-    ],
-    recommended: false,
-  },
-]
-
-const COMPLEXITY_OPTIONS = [
-  { value: 'BASIC', label: 'Basic', description: 'Simple, straightforward project' },
-  { value: 'STANDARD', label: 'Standard', description: 'Average complexity' },
-  { value: 'PREMIUM', label: 'Premium', description: 'High-end finishes and features' },
-  { value: 'LUXURY', label: 'Luxury', description: 'Top-tier custom work' },
+const PACKAGES = [
+  { tier: 'STARTER' as const, name: 'Starter', price: 199, desc: 'AI concepts + 5 revisions' },
+  { tier: 'STANDARD' as const, name: 'Standard', price: 499, desc: 'AI concepts + 5 revisions + 3D renders', popular: true },
+  { tier: 'PREMIUM' as const, name: 'Premium', price: 999, desc: 'Full AI package + permit-ready docs', },
 ]
 
 function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-  }).format(amount)
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(amount)
 }
 
 export default function NewPreConPage() {
   const router = useRouter()
-  const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showDetails, setShowDetails] = useState(false)
+  const [clawsActive, setClawsActive] = useState(false)
+  const [activationStep, setActivationStep] = useState(0)
 
-  const [formData, setFormData] = useState({
-    name: '',
-    category: '',
-    description: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    squareFootage: '',
-    rooms: '',
-    floors: '1',
-    features: [] as string[],
-    complexity: 'STANDARD',
-    designPackageTier: 'STANDARD',
-  })
+  // Minimal required fields — everything else is optional with smart defaults
+  const [category, setCategory] = useState('')
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [tier, setTier] = useState<'STARTER' | 'STANDARD' | 'PREMIUM'>('STANDARD')
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  // Optional details (collapsible)
+  const [city, setCity] = useState('')
+  const [state, setState] = useState('')
+  const [zipCode, setZipCode] = useState('')
+  const [address, setAddress] = useState('')
+  const [squareFootage, setSquareFootage] = useState('')
+  const [complexity, setComplexity] = useState('STANDARD')
 
-  const handleCategorySelect = (category: string) => {
-    setFormData((prev) => ({ ...prev, category }))
-  }
+  const canSubmit = category !== '' && name.length >= 3 && description.length >= 10
 
-  const handlePackageSelect = (tier: string) => {
-    setFormData((prev) => ({ ...prev, designPackageTier: tier }))
-  }
+  const selectedPackage = PACKAGES.find((p) => p.tier === tier) || PACKAGES[1]
 
-  const handleFeatureToggle = (feature: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      features: prev.features.includes(feature)
-        ? prev.features.filter((f) => f !== feature)
-        : [...prev.features, feature],
-    }))
-  }
+  // CLAW activation animation steps
+  const CLAW_STEPS = [
+    { label: 'Activating Claw A: Acquisition & Pre-Con', icon: '🔍' },
+    { label: 'Activating Claw F: Docs & Communication', icon: '📄' },
+    { label: 'Activating Claw H: Command Center', icon: '🎯' },
+    { label: 'Activating Claw G: Risk & Predictions', icon: '🧠' },
+    { label: 'Starting AI Auto Design...', icon: '✨' },
+  ]
 
-  const canProceed = () => {
-    switch (step) {
-      case 1:
-        return formData.category !== ''
-      case 2:
-        return formData.name.length >= 3 && formData.description.length >= 20
-      case 3:
-        return formData.city && formData.state
-      case 4:
-        return true // Design package selection
-      default:
-        return true
+  useEffect(() => {
+    if (clawsActive && activationStep < CLAW_STEPS.length) {
+      const timer = setTimeout(() => {
+        setActivationStep((s) => s + 1)
+      }, 600)
+      return () => clearTimeout(timer)
     }
-  }
+  }, [clawsActive, activationStep])
 
-  const handleSubmit = async () => {
+  const handleQuickStart = async () => {
+    if (!canSubmit) return
     setLoading(true)
+    setClawsActive(true)
+    setActivationStep(0)
     setError(null)
 
     try {
-      // In production, this would call the API
-      // const response = await fetch('/api/precon/projects', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     ...formData,
-      //     squareFootage: formData.squareFootage ? parseInt(formData.squareFootage) : undefined,
-      //     rooms: formData.rooms ? parseInt(formData.rooms) : undefined,
-      //     floors: formData.floors ? parseInt(formData.floors) : undefined,
-      //   }),
-      // })
+      const result = await quickStartProject({
+        name,
+        category,
+        description,
+        designPackageTier: tier,
+        city: city || undefined,
+        state: state || undefined,
+        zipCode: zipCode || undefined,
+        address: address || undefined,
+        squareFootage: squareFootage ? parseInt(squareFootage) : undefined,
+        complexity: complexity || undefined,
+      })
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      // Wait for all activation steps to show
+      await new Promise((resolve) => setTimeout(resolve, CLAW_STEPS.length * 600 + 500))
 
-      // Redirect to payment or project page
-      router.push('/precon?created=true')
-    } catch (err) {
-      setError('Failed to create project. Please try again.')
+      // Redirect to the new project
+      router.push(`/precon/${result.preconId || result.projectId}?created=true&claws=active`)
+    } catch (err: any) {
+      // If CLAW gateway is unavailable, fall back to regular API
+      console.warn('CLAW gateway unavailable, falling back to standard API:', err.message)
+
+      try {
+        // Fallback — direct API call
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+        const res = await fetch(`${API_URL}/precon/projects`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            category,
+            description,
+            designPackageTier: tier,
+            city, state, zipCode, address,
+            squareFootage: squareFootage ? parseInt(squareFootage) : undefined,
+            complexity,
+          }),
+        })
+
+        if (res.ok) {
+          const data = await res.json()
+          router.push(`/precon/${data.id || data.precon?.id}?created=true`)
+          return
+        }
+      } catch {
+        // Both paths failed
+      }
+
+      setError(err.message || 'Failed to create project. Please try again.')
+      setClawsActive(false)
+      setActivationStep(0)
     } finally {
       setLoading(false)
     }
   }
 
+  // ── CLAW Activation Overlay ──────────────────────────────────
+  if (clawsActive) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex items-center justify-center px-4">
+        <div className="max-w-md w-full text-center">
+          <div className="mb-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-indigo-500/20 mb-4">
+              <Bot className="w-10 h-10 text-indigo-400 animate-pulse" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">CLAWs Activating</h2>
+            <p className="text-indigo-300 text-sm">
+              Your project is being set up by our AI agent system
+            </p>
+          </div>
+
+          <div className="space-y-3 text-left">
+            {CLAW_STEPS.map((step, i) => (
+              <div
+                key={i}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-500 ${
+                  i < activationStep
+                    ? 'bg-green-500/20 border border-green-500/30'
+                    : i === activationStep
+                    ? 'bg-indigo-500/20 border border-indigo-500/30 animate-pulse'
+                    : 'bg-white/5 border border-white/10 opacity-40'
+                }`}
+              >
+                <span className="text-xl">{step.icon}</span>
+                <span className={`text-sm font-medium ${i < activationStep ? 'text-green-400' : i === activationStep ? 'text-indigo-300' : 'text-gray-500'}`}>
+                  {step.label}
+                </span>
+                {i < activationStep && <CheckCircle2 className="w-4 h-4 text-green-400 ml-auto" />}
+              </div>
+            ))}
+          </div>
+
+          <p className="text-xs text-indigo-400/60 mt-8">
+            All 8 CLAWs are monitoring your project from this moment forward.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Main Form (1-click model) ────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
               <Link href="/precon" className="text-gray-500 hover:text-gray-700">
                 ← Back
               </Link>
-              <h1 className="text-lg font-semibold text-gray-900">New Pre-Construction Project</h1>
+              <h1 className="text-lg font-semibold text-gray-900">New Pre-Con Project</h1>
             </div>
-            <div className="text-sm text-gray-500">Step {step} of 4</div>
+            <div className="flex items-center gap-2 text-xs text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full">
+              <Bot size={14} />
+              CLAWs Ready
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Progress Bar */}
-      <div className="bg-white border-b">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 py-4">
-            {[1, 2, 3, 4].map((s) => (
-              <div key={s} className="flex-1 flex items-center">
-                <div
-                  className={`h-2 flex-1 rounded-full ${
-                    s <= step ? 'bg-indigo-500' : 'bg-gray-200'
-                  }`}
-                />
-                {s < 4 && <div className="w-2" />}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
             {error}
           </div>
         )}
 
-        {/* Step 1: Category */}
-        {step === 1 && (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">What type of project?</h2>
-            <p className="text-gray-600 mb-6">Select the category that best describes your project.</p>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.value}
-                  onClick={() => handleCategorySelect(cat.value)}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    formData.category === cat.value
-                      ? 'border-indigo-500 bg-indigo-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="text-3xl mb-2">{cat.icon}</div>
-                  <h3 className="font-semibold text-gray-900">{cat.label}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{cat.description}</p>
-                </button>
-              ))}
-            </div>
+        {/* Category Selection */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-1">What type of project?</h2>
+          <p className="text-sm text-gray-500 mb-4">Select one to get started.</p>
+          <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.value}
+                onClick={() => setCategory(cat.value)}
+                className={`p-3 rounded-xl border-2 text-center transition-all ${
+                  category === cat.value
+                    ? 'border-indigo-500 bg-indigo-50 shadow-sm'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="text-2xl mb-1">{cat.icon}</div>
+                <p className="text-xs font-medium text-gray-700 leading-tight">{cat.label}</p>
+              </button>
+            ))}
           </div>
-        )}
+        </div>
 
-        {/* Step 2: Project Details */}
-        {step === 2 && (
+        {/* Project Name + Description (inline) */}
+        <div className="mb-6 space-y-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Tell us about your project</h2>
-            <p className="text-gray-600 mb-6">Help us understand the scope and vision for your project.</p>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Project Name *</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., Modern Kitchen Renovation"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Brief Description * <span className="text-gray-400 font-normal">(10+ chars)</span>
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              placeholder="Describe your vision — goals, style, must-haves..."
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+        </div>
 
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Project Name *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="e.g., Modern Kitchen Renovation"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
+        {/* Package Selection (inline compact) */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Concept Package</label>
+          <div className="grid grid-cols-3 gap-3">
+            {PACKAGES.map((pkg) => (
+              <button
+                key={pkg.tier}
+                onClick={() => setTier(pkg.tier)}
+                className={`relative p-4 rounded-xl border-2 text-center transition-all ${
+                  tier === pkg.tier
+                    ? 'border-indigo-500 bg-indigo-50 shadow-sm'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                {pkg.popular && (
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[10px] font-bold bg-indigo-500 text-white rounded-full">
+                    POPULAR
+                  </span>
+                )}
+                <p className="font-semibold text-gray-900">{pkg.name}</p>
+                <p className="text-xl font-bold text-gray-900 mt-1">{formatCurrency(pkg.price)}</p>
+                <p className="text-[11px] text-gray-500 mt-1 leading-tight">{pkg.desc}</p>
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+            <CheckCircle2 size={12} />
+            Concept fee credited when you upgrade to Architecture phase
+          </p>
+        </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Project Description * <span className="text-gray-400">(min 20 characters)</span>
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows={4}
-                  placeholder="Describe your project goals, must-haves, and any specific requirements..."
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-                <p className="text-xs text-gray-500 mt-1">{formData.description.length} / 20 characters</p>
-              </div>
+        {/* Optional Details (collapsed by default) */}
+        <div className="mb-8">
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 font-medium"
+          >
+            {showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            {showDetails ? 'Hide' : 'Add'} optional details (location, size, complexity)
+          </button>
 
-              <div className="grid grid-cols-3 gap-4">
+          {showDetails && (
+            <div className="mt-4 p-5 bg-white border border-gray-200 rounded-xl space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Address</label>
+                  <input
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="123 Main St"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Square Footage
-                  </label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">City</label>
+                  <input
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="Washington"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">State</label>
+                    <input
+                      type="text"
+                      value={state}
+                      onChange={(e) => setState(e.target.value)}
+                      placeholder="DC"
+                      maxLength={2}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm uppercase focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">ZIP</label>
+                    <input
+                      type="text"
+                      value={zipCode}
+                      onChange={(e) => setZipCode(e.target.value)}
+                      placeholder="20001"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Square Footage</label>
                   <input
                     type="number"
-                    name="squareFootage"
-                    value={formData.squareFootage}
-                    onChange={handleChange}
+                    value={squareFootage}
+                    onChange={(e) => setSquareFootage(e.target.value)}
                     placeholder="e.g., 200"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Rooms
-                  </label>
-                  <input
-                    type="number"
-                    name="rooms"
-                    value={formData.rooms}
-                    onChange={handleChange}
-                    placeholder="e.g., 1"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Floors
-                  </label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Complexity</label>
                   <select
-                    name="floors"
-                    value={formData.floors}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    value={complexity}
+                    onChange={(e) => setComplexity(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
                   >
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <option key={n} value={n}>{n}</option>
-                    ))}
+                    <option value="BASIC">Basic</option>
+                    <option value="STANDARD">Standard</option>
+                    <option value="PREMIUM">Premium</option>
+                    <option value="LUXURY">Luxury</option>
                   </select>
                 </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Complexity Level
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {COMPLEXITY_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setFormData((prev) => ({ ...prev, complexity: opt.value }))}
-                      className={`p-3 rounded-lg border text-left transition-all ${
-                        formData.complexity === opt.value
-                          ? 'border-indigo-500 bg-indigo-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <span className="font-medium text-sm text-gray-900">{opt.label}</span>
-                      <p className="text-xs text-gray-500 mt-0.5">{opt.description}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Step 3: Location */}
-        {step === 3 && (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Project Location</h2>
-            <p className="text-gray-600 mb-6">Where is the project located?</p>
+        {/* 1-CLICK CTA */}
+        <div className="sticky bottom-0 bg-gray-50 pb-6 pt-2">
+          <button
+            onClick={handleQuickStart}
+            disabled={!canSubmit || loading}
+            className={`w-full py-4 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-3 shadow-lg ${
+              canSubmit && !loading
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white hover:shadow-xl'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+            }`}
+          >
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Activating CLAWs...
+              </span>
+            ) : (
+              <>
+                <Zap size={20} />
+                Start My Project — {formatCurrency(selectedPackage.price)}
+                <ArrowRight size={18} />
+              </>
+            )}
+          </button>
 
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Street Address
-                </label>
-                <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  placeholder="123 Main Street"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div className="md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    City *
-                  </label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleChange}
-                    placeholder="Los Angeles"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    State *
-                  </label>
-                  <input
-                    type="text"
-                    name="state"
-                    value={formData.state}
-                    onChange={handleChange}
-                    placeholder="CA"
-                    maxLength={2}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 uppercase"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ZIP Code
-                  </label>
-                  <input
-                    type="text"
-                    name="zipCode"
-                    value={formData.zipCode}
-                    onChange={handleChange}
-                    placeholder="90210"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Step 4: Design Package Selection */}
-        {step === 4 && (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Design Package</h2>
-            <p className="text-gray-600 mb-6">
-              Select the design package that fits your needs. This one-time fee covers professional design concepts for your project.
+          {/* What happens next */}
+          <div className="mt-4 bg-white border border-gray-200 rounded-xl p-4">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+              What happens when you click
             </p>
-
-            <div className="space-y-4">
-              {DESIGN_PACKAGES.map((pkg) => (
-                <button
-                  key={pkg.tier}
-                  onClick={() => handlePackageSelect(pkg.tier)}
-                  className={`w-full p-6 rounded-xl border-2 text-left transition-all ${
-                    formData.designPackageTier === pkg.tier
-                      ? 'border-indigo-500 bg-indigo-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-semibold text-gray-900">{pkg.name}</h3>
-                        {pkg.recommended && (
-                          <span className="px-2 py-0.5 text-xs font-semibold bg-indigo-500 text-white rounded-full">
-                            Recommended
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1">{pkg.description}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-gray-900">{formatCurrency(pkg.price)}</p>
-                      <p className="text-xs text-gray-500">one-time</p>
-                    </div>
-                  </div>
-
-                  <ul className="mt-4 grid grid-cols-2 gap-2">
-                    {pkg.features.map((feature, i) => (
-                      <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
-                        <span className="text-green-500">✓</span>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600">
-                <strong>Note:</strong> All applicable fees will be displayed at checkout for complete transparency.
-              </p>
+            <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
+              <div className="flex items-start gap-2">
+                <Sparkles size={14} className="text-indigo-500 mt-0.5 shrink-0" />
+                <span>AI generates design concepts instantly</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Bot size={14} className="text-indigo-500 mt-0.5 shrink-0" />
+                <span>8 CLAW agents begin managing your project</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 size={14} className="text-green-500 mt-0.5 shrink-0" />
+                <span>5 revision rounds included, then pick from 3 finals</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 size={14} className="text-green-500 mt-0.5 shrink-0" />
+                <span>Concept fee credited to architecture phase</span>
+              </div>
             </div>
           </div>
-        )}
-
-        {/* Navigation */}
-        <div className="mt-8 flex items-center justify-between">
-          {step > 1 ? (
-            <button
-              onClick={() => setStep(step - 1)}
-              className="px-6 py-3 text-gray-700 font-medium hover:bg-gray-100 rounded-lg"
-            >
-              ← Back
-            </button>
-          ) : (
-            <div />
-          )}
-
-          {step < 4 ? (
-            <button
-              onClick={() => setStep(step + 1)}
-              disabled={!canProceed()}
-              className={`px-6 py-3 font-medium rounded-lg transition-colors ${
-                canProceed()
-                  ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              Continue →
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className={`px-8 py-3 font-medium rounded-lg transition-colors ${
-                loading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-700'
-              }`}
-            >
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  Creating...
-                </span>
-              ) : (
-                `Create Project & Pay ${formatCurrency(DESIGN_PACKAGES.find(p => p.tier === formData.designPackageTier)?.price || 499)}`
-              )}
-            </button>
-          )}
         </div>
       </main>
     </div>

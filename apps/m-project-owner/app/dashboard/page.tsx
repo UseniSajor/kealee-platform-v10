@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, FolderOpen, Calendar, DollarSign, Users, Sparkles, ArrowRight } from 'lucide-react';
+import { Plus, FolderOpen, Calendar, DollarSign, Users, Sparkles, ArrowRight, Bot, CheckCircle2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Card } from '@kealee/ui';
 import PreConPipeline from '../../components/PreConPipeline';
+import { getClawsHealth, type ClawSystemHealth } from '../../lib/claws';
 
 interface PreConDashboardData {
   totalProjects: number;
@@ -28,10 +29,34 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<any[]>([]);
   const [preconData, setPreconData] = useState<PreConDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [clawsHealth, setClawsHealth] = useState<ClawSystemHealth | null>(null);
 
   useEffect(() => {
     fetchData();
+    fetchClawsHealth();
   }, []);
+
+  // Poll CLAW health every 30s
+  useEffect(() => {
+    const interval = setInterval(fetchClawsHealth, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchClawsHealth = async () => {
+    try {
+      const health = await getClawsHealth();
+      setClawsHealth(health);
+    } catch {
+      // CLAWs gateway may not be running yet — show degraded
+      setClawsHealth({
+        status: 'degraded',
+        claws: [],
+        eventBus: 'disconnected',
+        totalClaws: 8,
+        onlineClaws: 0,
+      });
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -88,7 +113,27 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Pre-Con CTA - Primary action */}
+              {/* CLAW Status Indicator */}
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
+                clawsHealth?.status === 'ok'
+                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  : clawsHealth?.status === 'degraded'
+                  ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                  : 'bg-gray-50 text-gray-500 border border-gray-200'
+              }`}>
+                <Bot size={14} />
+                <span className={`w-1.5 h-1.5 rounded-full ${
+                  clawsHealth?.status === 'ok' ? 'bg-green-500 animate-pulse' :
+                  clawsHealth?.status === 'degraded' ? 'bg-amber-500' : 'bg-gray-400'
+                }`} />
+                {clawsHealth?.status === 'ok'
+                  ? `${clawsHealth.onlineClaws}/8 CLAWs`
+                  : clawsHealth?.status === 'degraded'
+                  ? 'CLAWs Starting'
+                  : 'CLAWs'}
+              </div>
+
+              {/* Pre-Con CTA - Primary action (1-click) */}
               <Link
                 href="/precon/new"
                 className="
@@ -207,21 +252,28 @@ export default function DashboardPage() {
                     <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">1</div>
                     <div>
                       <p className="font-medium">Submit Project Details</p>
-                      <p className="text-xs text-indigo-200">Tell us about your project vision</p>
+                      <p className="text-xs text-indigo-200">Tell us your vision and goals</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">2</div>
                     <div>
-                      <p className="font-medium">Review Design Concepts</p>
-                      <p className="text-xs text-indigo-200">Choose from professional designs</p>
+                      <p className="font-medium">AI Generates Concepts</p>
+                      <p className="text-xs text-indigo-200">5 revisions, then pick from 3 finals</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">3</div>
                     <div>
-                      <p className="font-medium">Get Contractor Bids</p>
-                      <p className="text-xs text-indigo-200">Qualified contractors compete for your project</p>
+                      <p className="font-medium">Meet Your Designer</p>
+                      <p className="text-xs text-indigo-200">Fine-tune with a real architect</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">4</div>
+                    <div>
+                      <p className="font-medium">Architecture & Permits</p>
+                      <p className="text-xs text-indigo-200">Full plans, then permit handoff</p>
                     </div>
                   </div>
                 </div>
@@ -256,16 +308,33 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Fee Information */}
+            {/* Phase Pricing Overview */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-              <h3 className="font-semibold text-gray-900 mb-3">Clear Pricing</h3>
+              <h3 className="font-semibold text-gray-900 mb-3">Project Phases & Pricing</h3>
               <div className="space-y-3 text-sm">
-                <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Design Package</span>
-                  <span className="font-medium text-gray-900">$199 - $999</span>
+                <div className="py-2 border-b border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Phase 1: Pre-Con</span>
+                    <span className="font-medium text-gray-900">$199 – $999</span>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-0.5">AI concepts, revisions & designer meeting</p>
                 </div>
-                <p className="text-xs text-gray-500 pt-2">
-                  All applicable fees are displayed at checkout for complete transparency.
+                <div className="py-2 border-b border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Phase 2: Architecture</span>
+                    <span className="font-medium text-gray-900">$2,995 – $9,995</span>
+                  </div>
+                  <p className="text-xs text-green-600 mt-0.5">Concept fee credited toward this phase</p>
+                </div>
+                <div className="py-2 border-b border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Phase 3: Permits</span>
+                    <span className="font-medium text-gray-900">$495 – $2,995</span>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-0.5">Offered after architecture completes</p>
+                </div>
+                <p className="text-xs text-gray-500 pt-1">
+                  Each phase connects seamlessly. All fees shown at checkout.
                 </p>
               </div>
               <Link

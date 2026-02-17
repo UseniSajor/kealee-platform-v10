@@ -13,27 +13,34 @@ import {
 /**
  * SOP v2 - PRECON WORKFLOW (m-project-owner)
  *
- * This is the 8-phase project lifecycle pipeline:
- * 1. INTAKE - Project submitted, design package selected
- * 2. DESIGN_IN_PROGRESS - Architects working on designs (m-architect)
- * 3. DESIGN_APPROVED - Client approved the design
- * 4. SRP_GENERATED - Suggested Retail Price calculated (APP-15 Estimation)
- * 5. MARKETPLACE_READY - Listed on m-marketplace for contractor bidding
- * 6. AWARDED - Contractor selected via Fair Bid Rotation
- * 7. CONTRACT_RATIFIED - Contract signed, escrow funded (m-finance-trust)
- * 8. COMPLETED - Project finished, final payment released
+ * THREE-PHASE PROJECT LIFECYCLE:
+ *
+ * PHASE 1: PRE-CON (Concept) — $199 / $499 / $999
+ *   1. INTAKE - Project submitted, concept package selected
+ *   2. AI_DESIGN - AI generates concepts (up to 5 revision rounds)
+ *   3. FINAL_SELECTION - Owner picks from 3 final candidates
+ *   4. DESIGNER_MEETING - Real architect fine-tunes the design
+ *   → Concept fee credited when Phase 2 purchased
+ *
+ * PHASE 2: ARCHITECTURE (Design) — $2,995 / $5,995 / $9,995
+ *   5. DESIGN_IN_PROGRESS - Architect develops full plans (m-architect)
+ *   6. DESIGN_APPROVED - Client approved the design
+ *   7. SRP_GENERATED - Suggested Retail Price calculated (Estimation)
+ *   → Permit services offered after architecture completes
+ *
+ * PHASE 3: PERMITS — $495 / $1,295 / $2,995
+ *   8. PERMIT_HANDOFF - Plans submitted for permitting
+ *   9. MARKETPLACE_READY - Listed for contractor bidding
+ *  10. AWARDED - Contractor selected via Fair Bid Rotation
+ *  11. CONTRACT_RATIFIED - Contract signed, escrow funded
+ *  12. COMPLETED - Project finished, final payment released
  *
  * Integration points:
- * - m-architect: Design work
+ * - m-architect: Architecture phase design work
  * - m-marketplace: Contractor matching via Fair Bid Rotation
  * - m-finance-trust: Escrow deposits and milestone releases
  * - m-ops-services: Client may subscribe to PM packages
  * - os-pm: PM executes the project management
- *
- * Design Package Fees (paid upfront to start):
- * - BASIC: $199
- * - STANDARD: $499 (most popular)
- * - PREMIUM: $999
  *
  * Platform Fee: 3.5% (paid by contractor, NOT homeowner)
  */
@@ -72,11 +79,29 @@ const PHASE_CONFIG: Record<string, { label: string; color: string; bgColor: stri
   COMPLETED: { label: 'Completed', color: 'text-emerald-700', bgColor: 'bg-emerald-200', step: 8 },
 }
 
-const DESIGN_PACKAGE_FEES = {
-  BASIC: 199,
+// Phase 1: Pre-Con (Concept) — paid upfront
+const PRECON_PACKAGE_FEES = {
+  STARTER: 199,
   STANDARD: 499,
   PREMIUM: 999,
 }
+
+// Phase 2: Architecture (Design) — concept fee credited
+const ARCHITECTURE_PACKAGE_FEES = {
+  SCHEMATIC: 2995,
+  FULL_DESIGN: 5995,
+  PREMIUM: 9995,
+}
+
+// Phase 3: Permit Services — offered after architecture
+const PERMIT_PACKAGE_FEES = {
+  SINGLE: 495,
+  PACKAGE: 1295,
+  FULL_INSPECTION: 2995,
+}
+
+// Legacy alias for backward compat in project cards
+const DESIGN_PACKAGE_FEES = PRECON_PACKAGE_FEES
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -201,20 +226,18 @@ export default function PreConListPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* SOP v2 Integration Notice */}
-        <div className="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-4">
+        {/* 3-Phase Workflow Banner */}
+        <div className="mb-6 bg-gradient-to-r from-indigo-50 via-teal-50 to-green-50 border border-indigo-200 rounded-xl p-4">
           <div className="flex items-start gap-4">
             <div className="text-2xl">🔗</div>
             <div className="flex-1">
-              <h4 className="font-semibold text-indigo-900">SOP v2 Integrated Workflow</h4>
+              <h4 className="font-semibold text-indigo-900">3-Phase Project Workflow</h4>
               <p className="text-sm text-indigo-700 mt-1">
-                Your project flows through multiple modules: <strong>m-architect</strong> for design →{' '}
-                <strong>m-marketplace</strong> for contractor matching → <strong>m-finance-trust</strong> for secure payments.
-                Need PM help? Subscribe to a service package via <strong>m-ops-services</strong>.
+                <strong>Pre-Con</strong> (AI concepts + designer meeting) → <strong>Architecture</strong> (full professional plans, concept fee credited) → <strong>Permits</strong> (submission + inspections) → <strong>Build</strong> (contractor bids via Fair Bid Rotation).
               </p>
             </div>
-            <div className="text-xs text-indigo-600 bg-white px-3 py-1 rounded-full border border-indigo-200">
-              All fees shown at checkout
+            <div className="text-xs text-green-700 bg-white px-3 py-1 rounded-full border border-green-200 whitespace-nowrap">
+              Concept fee credited
             </div>
           </div>
         </div>
@@ -307,60 +330,132 @@ export default function PreConListPage() {
               <span>Create Your First Project</span>
             </Link>
 
-            {/* Process Overview */}
+            {/* How It Works — 6-Step Process */}
             <div className="mt-12 text-left">
               <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">
                 How It Works
               </h4>
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-2xl mb-2">1️⃣</div>
-                  <h5 className="font-medium text-gray-900">Submit Project Request</h5>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Phase 1: Pre-Con */}
+                <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-100">
+                  <span className="text-xs font-semibold text-indigo-600 uppercase">Phase 1 · Pre-Con</span>
+                  <div className="text-2xl mb-1 mt-2">📋</div>
+                  <h5 className="font-medium text-gray-900">1. Tell Us Your Vision</h5>
                   <p className="text-sm text-gray-500 mt-1">
-                    Tell us about your project, and choose a design package tier.
+                    Describe your project goals, style preferences, and budget range.
                   </p>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-2xl mb-2">2️⃣</div>
-                  <h5 className="font-medium text-gray-900">Review Design Concepts</h5>
+                <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-100">
+                  <span className="text-xs font-semibold text-indigo-600 uppercase">Phase 1 · Pre-Con</span>
+                  <div className="text-2xl mb-1 mt-2">🧠</div>
+                  <h5 className="font-medium text-gray-900">2. AI Generates Concepts</h5>
                   <p className="text-sm text-gray-500 mt-1">
-                    Our team creates custom designs. Pick your favorite and approve it.
+                    Get AI-powered design concepts with up to 5 revision rounds, then pick from 3 finalists.
                   </p>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-2xl mb-2">3️⃣</div>
-                  <h5 className="font-medium text-gray-900">Get Contractor Bids</h5>
+                <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-100">
+                  <span className="text-xs font-semibold text-indigo-600 uppercase">Phase 1 · Pre-Con</span>
+                  <div className="text-2xl mb-1 mt-2">💬</div>
+                  <h5 className="font-medium text-gray-900">3. Meet Your Designer</h5>
                   <p className="text-sm text-gray-500 mt-1">
-                    Qualified contractors compete for your project. Choose the best fit.
+                    A real architect reviews your selection for minor additions and cleanup.
+                  </p>
+                </div>
+
+                {/* Phase 2: Architecture */}
+                <div className="bg-teal-50 rounded-lg p-4 border border-teal-100">
+                  <span className="text-xs font-semibold text-teal-600 uppercase">Phase 2 · Architecture</span>
+                  <div className="text-2xl mb-1 mt-2">📐</div>
+                  <h5 className="font-medium text-gray-900">4. Full Architect Plans</h5>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Professional architect develops complete construction drawings. Concept fee credited here.
+                  </p>
+                </div>
+
+                {/* Phase 3: Permits & Build */}
+                <div className="bg-green-50 rounded-lg p-4 border border-green-100">
+                  <span className="text-xs font-semibold text-green-600 uppercase">Phase 3 · Permits</span>
+                  <div className="text-2xl mb-1 mt-2">📄</div>
+                  <h5 className="font-medium text-gray-900">5. Permit Submission</h5>
+                  <p className="text-sm text-gray-500 mt-1">
+                    We handle permit applications, revisions, and approvals on your behalf.
+                  </p>
+                </div>
+                <div className="bg-orange-50 rounded-lg p-4 border border-orange-100">
+                  <span className="text-xs font-semibold text-orange-600 uppercase">Build Phase</span>
+                  <div className="text-2xl mb-1 mt-2">🔨</div>
+                  <h5 className="font-medium text-gray-900">6. Contractor Bids & Build</h5>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Qualified contractors compete for your project via Fair Bid Rotation.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Pricing */}
+            {/* Phase Pricing */}
             <div className="mt-12 text-left">
-              <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">
-                Design Package Pricing
+              <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-6">
+                Pricing by Phase
               </h4>
-              <div className="grid md:grid-cols-3 gap-4">
-                {Object.entries(DESIGN_PACKAGE_FEES).map(([tier, price]) => (
-                  <div
-                    key={tier}
-                    className={`border rounded-lg p-4 ${
-                      tier === 'STANDARD' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'
-                    }`}
-                  >
-                    {tier === 'STANDARD' && (
-                      <span className="text-xs font-semibold text-indigo-600 uppercase">Most Popular</span>
-                    )}
-                    <h5 className="font-semibold text-gray-900 mt-1">{tier}</h5>
-                    <p className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(price)}</p>
-                    <p className="text-xs text-gray-500 mt-1">One-time fee</p>
-                  </div>
-                ))}
+
+              {/* Phase 1 */}
+              <div className="mb-6">
+                <h5 className="text-sm font-semibold text-indigo-600 mb-3">Phase 1: Pre-Con (Concept)</h5>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {Object.entries(PRECON_PACKAGE_FEES).map(([tier, price]) => (
+                    <div
+                      key={tier}
+                      className={`border rounded-lg p-4 ${
+                        tier === 'STANDARD' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'
+                      }`}
+                    >
+                      {tier === 'STANDARD' && (
+                        <span className="text-xs font-semibold text-indigo-600 uppercase">Most Popular</span>
+                      )}
+                      <h5 className="font-semibold text-gray-900 mt-1">{tier.replace('_', ' ')}</h5>
+                      <p className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(price)}</p>
+                      <p className="text-xs text-gray-500 mt-1">AI concepts · 5 revisions · 3 finals · designer meeting</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <p className="text-sm text-gray-500 mt-4">
-                All applicable fees are displayed at checkout for complete transparency.
+
+              {/* Credit Bridge */}
+              <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700 flex items-center gap-2">
+                <span>✓</span>
+                <span>Your concept fee is <strong>credited in full</strong> when you purchase an architecture package.</span>
+              </div>
+
+              {/* Phase 2 */}
+              <div className="mb-6">
+                <h5 className="text-sm font-semibold text-teal-600 mb-3">Phase 2: Architecture (Design)</h5>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {Object.entries(ARCHITECTURE_PACKAGE_FEES).map(([tier, price]) => (
+                    <div key={tier} className="border border-gray-200 rounded-lg p-4">
+                      <h5 className="font-semibold text-gray-900">{tier.replace('_', ' ')}</h5>
+                      <p className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(price)}</p>
+                      <p className="text-xs text-green-600 mt-1">Concept fee credited</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Phase 3 */}
+              <div className="mb-6">
+                <h5 className="text-sm font-semibold text-green-600 mb-3">Phase 3: Permit Services</h5>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {Object.entries(PERMIT_PACKAGE_FEES).map(([tier, price]) => (
+                    <div key={tier} className="border border-gray-200 rounded-lg p-4">
+                      <h5 className="font-semibold text-gray-900">{tier.replace('_', ' ')}</h5>
+                      <p className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(price)}</p>
+                      <p className="text-xs text-gray-500 mt-1">Offered after architecture completes</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-sm text-gray-500">
+                All applicable fees are displayed at checkout. Platform fee (3.5%) is paid by the contractor, not you.
               </p>
             </div>
           </div>

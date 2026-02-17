@@ -351,6 +351,26 @@ export {
 export type { CartItem } from './components/Cart';
 
 // ========================================
+// CLAW Agent System
+// ========================================
+export {
+  ClawsClient,
+  createClawsClient,
+} from './claws-client';
+
+export type {
+  ClawStatus,
+  ClawSystemHealth,
+  ClawTaskStatus,
+  ClawActivityItem,
+} from './claws-client';
+
+export {
+  ClawStatusBar,
+  ClawActivityFeed,
+} from './components/ClawStatusBar';
+
+// ========================================
 // Utilities
 // ========================================
 export { cn } from './lib/utils';
