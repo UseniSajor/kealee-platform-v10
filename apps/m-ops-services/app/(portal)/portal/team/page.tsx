@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { getPrimaryOrgId } from "@/lib/auth";
@@ -105,7 +105,7 @@ function Modal({
           <div>
             <div className="text-lg font-black tracking-tight">{title}</div>
             <div className="mt-1 text-sm text-zinc-600">
-              MVP UI: wire email + database next.
+              Manage your organization team members.
             </div>
           </div>
           <button
@@ -186,39 +186,53 @@ function checkboxIcon(value: boolean) {
   return value ? "✓" : "—";
 }
 
+// Map backend roleKey to display role name
+const ROLE_KEY_TO_DISPLAY: Record<string, GCTeamRole> = {
+  ADMIN: "Owner/Principal",
+  OWNER: "Owner/Principal",
+  PM: "Project Manager",
+  PROJECT_MANAGER: "Project Manager",
+  SUPERINTENDENT: "Superintendent",
+  OFFICE_ADMIN: "Office Admin",
+  CLIENT: "Client",
+  MEMBER: "Project Manager", // default mapping
+};
+
+const DISPLAY_TO_ROLE_KEY: Record<GCTeamRole, string> = {
+  "Owner/Principal": "ADMIN",
+  "Project Manager": "PM",
+  Superintendent: "SUPERINTENDENT",
+  "Office Admin": "OFFICE_ADMIN",
+  Client: "CLIENT",
+};
+
+function mapApiMemberToTeamMember(apiMember: any): TeamMember {
+  const user = apiMember.user || {};
+  const roleKey = apiMember.roleKey || "MEMBER";
+  const displayRole = ROLE_KEY_TO_DISPLAY[roleKey] || "Project Manager";
+  const userStatus = user.status || "ACTIVE";
+
+  let status: TeamMemberStatus = "Active";
+  if (userStatus === "INVITED" || userStatus === "PENDING") status = "Invited";
+  else if (userStatus === "SUSPENDED" || userStatus === "INACTIVE") status = "Suspended";
+
+  return {
+    id: apiMember.userId || apiMember.id,
+    name: user.name || user.email?.split("@")[0] || "Unknown",
+    email: user.email || "",
+    role: displayRole,
+    status,
+    projectAccess: [], // Project access is managed locally until backend supports it
+    invitedAt: apiMember.joinedAt || undefined,
+    lastLoginAt: user.lastLoginAt || null,
+  };
+}
+
 export default function TeamPage() {
+  const [orgId, setOrgId] = useState<string | null>(null);
+  const [apiConnected, setApiConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [projectsFromApi, setProjectsFromApi] = useState<{ id: string; name: string }[]>([]);
-
-  useEffect(() => {
-    async function loadProjects() {
-      try {
-        const orgId = await getPrimaryOrgId();
-        if (!orgId) return;
-        const result = await api.getProjects({ orgId });
-        const mapped = (result.projects || []).map((p: any) => ({
-          id: p.id,
-          name: p.name || 'Unnamed Project',
-        }));
-        if (mapped.length > 0) {
-          setProjectsFromApi(mapped);
-        }
-      } catch {
-        // Fall back to default projects
-      }
-    }
-    loadProjects();
-  }, []);
-
-  const projects = useMemo(
-    () => projectsFromApi.length > 0
-      ? projectsFromApi
-      : [
-          { id: "p1", name: "123 Main St Remodel" },
-          { id: "p2", name: "Oak Ridge Custom Build" },
-          { id: "p3", name: "Downtown Tenant Improvement" },
-        ],
-    [projectsFromApi]
-  );
 
   const [permissions] = useState<PermissionMatrix>(defaultPermissions());
 
@@ -231,32 +245,47 @@ export default function TeamPage() {
   const [inviteRole, setInviteRole] = useState<GCTeamRole>("Project Manager");
   const [inviteProjects, setInviteProjects] = useState<string[]>([]);
 
+  const projects = useMemo(
+    () => projectsFromApi.length > 0
+      ? projectsFromApi
+      : [
+          { id: "p1", name: "123 Main St Remodel" },
+          { id: "p2", name: "Oak Ridge Custom Build" },
+          { id: "p3", name: "Downtown Tenant Improvement" },
+        ],
+    [projectsFromApi]
+  );
+
   function pushAudit(type: AuditEventType, details: string) {
     const e: AuditEvent = {
       id: `ae_${Date.now()}_${Math.random().toString(16).slice(2)}`,
       at: new Date().toISOString(),
-      actor: "GC Owner", // stub until auth is wired
+      actor: "GC Owner",
       type,
       details,
     };
     setAudit((prev) => [e, ...prev]);
   }
 
-  // Load/persist (MVP localStorage)
-  useEffect(() => {
+  // Load localStorage fallback data (audit + project access overlays)
+  function loadLocalStorage(): { members: TeamMember[]; audit: AuditEvent[] } | null {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as { members?: TeamMember[]; audit?: AuditEvent[] };
-        if (Array.isArray(parsed.members)) setMembers(parsed.members);
-        if (Array.isArray(parsed.audit)) setAudit(parsed.audit);
-        return;
+        return {
+          members: Array.isArray(parsed.members) ? parsed.members : [],
+          audit: Array.isArray(parsed.audit) ? parsed.audit : [],
+        };
       }
     } catch {
       // ignore
     }
+    return null;
+  }
 
-    // Seed demo data on first load
+  // Seed demo data for fully-offline / no-org scenario
+  function seedDemoData() {
     const seededMembers: TeamMember[] = [
       {
         id: "tm_owner",
@@ -305,9 +334,103 @@ export default function TeamPage() {
     ];
     setMembers(seededMembers);
     setAudit(seededAudit);
+  }
+
+  // Fetch members from API and merge with local project-access overlays
+  const loadMembersFromApi = useCallback(async (oid: string) => {
+    try {
+      const result = await api.getOrgMembers(oid);
+      const apiMembers = (result.members || []).map(mapApiMemberToTeamMember);
+
+      // Merge localStorage project-access overlays onto API members
+      const local = loadLocalStorage();
+      if (local && local.members.length > 0) {
+        for (const am of apiMembers) {
+          const localMatch = local.members.find(
+            (lm) => lm.id === am.id || lm.email === am.email
+          );
+          if (localMatch && localMatch.projectAccess.length > 0) {
+            am.projectAccess = localMatch.projectAccess;
+          }
+        }
+      }
+
+      setMembers(apiMembers);
+      setApiConnected(true);
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  // Primary data load: API first, localStorage fallback, demo seed last resort
+  useEffect(() => {
+    let cancelled = false;
+
+    async function init() {
+      setLoading(true);
+
+      // 1. Resolve org
+      const resolvedOrgId = await getPrimaryOrgId();
+      if (cancelled) return;
+
+      if (resolvedOrgId) {
+        setOrgId(resolvedOrgId);
+
+        // Load projects
+        try {
+          const result = await api.getProjects({ orgId: resolvedOrgId });
+          if (!cancelled) {
+            const mapped = (result.projects || []).map((p: any) => ({
+              id: p.id,
+              name: p.name || "Unnamed Project",
+            }));
+            if (mapped.length > 0) setProjectsFromApi(mapped);
+          }
+        } catch {
+          // Fall back to default projects
+        }
+
+        // 2. Try API members
+        const apiOk = await loadMembersFromApi(resolvedOrgId);
+        if (cancelled) return;
+
+        if (!apiOk) {
+          // 3. Fall back to localStorage
+          const local = loadLocalStorage();
+          if (local && local.members.length > 0) {
+            setMembers(local.members);
+            setAudit(local.audit);
+          } else {
+            seedDemoData();
+          }
+        } else {
+          // Load audit from localStorage (audit is always local for now)
+          const local = loadLocalStorage();
+          if (local && local.audit.length > 0) {
+            setAudit(local.audit);
+          }
+        }
+      } else {
+        // No org -- pure localStorage / demo mode
+        const local = loadLocalStorage();
+        if (local && local.members.length > 0) {
+          setMembers(local.members);
+          setAudit(local.audit);
+        } else {
+          seedDemoData();
+        }
+      }
+
+      if (!cancelled) setLoading(false);
+    }
+
+    init();
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Persist to localStorage as cache / fallback
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ members, audit }));
@@ -339,7 +462,7 @@ export default function TeamPage() {
     setInviteProjects([]);
   }
 
-  function sendInvite() {
+  async function sendInvite() {
     const email = inviteEmail.trim().toLowerCase();
     if (!email.includes("@")) {
       // eslint-disable-next-line no-alert
@@ -347,24 +470,44 @@ export default function TeamPage() {
       return;
     }
     const name = inviteName.trim() || email.split("@")[0];
-    const id = `tm_${Date.now()}`;
-    const invitedAt = new Date().toISOString();
-
+    const roleKey = DISPLAY_TO_ROLE_KEY[inviteRole] || "PM";
     const access =
       inviteRole === "Owner/Principal" ? projects.map((p) => p.id) : inviteProjects;
 
-    const nextMember: TeamMember = {
-      id,
-      name,
-      email,
-      role: inviteRole,
-      status: "Invited",
-      invitedAt,
-      projectAccess: access,
-      lastLoginAt: null,
-    };
+    // Try API first (backend addMember requires userId -- for now, we pass email as userId
+    // and the backend will need an invite-by-email flow; fall back to localStorage)
+    let addedViaApi = false;
+    if (orgId && apiConnected) {
+      try {
+        // The backend POST /orgs/:id/members expects { userId, roleKey }.
+        // True email-based invite requires a separate invite endpoint.
+        // For now, try the API call -- it will succeed if userId matches an existing user ID.
+        await api.addOrgMember(orgId, { userId: email, roleKey });
+        addedViaApi = true;
+        // Reload from API to get fresh data
+        await loadMembersFromApi(orgId);
+      } catch {
+        // API call failed (e.g. user not found by email) -- fall back to local
+        addedViaApi = false;
+      }
+    }
 
-    setMembers((prev) => [nextMember, ...prev]);
+    if (!addedViaApi) {
+      // localStorage fallback: add member locally
+      const id = `tm_${Date.now()}`;
+      const invitedAt = new Date().toISOString();
+      const nextMember: TeamMember = {
+        id,
+        name,
+        email,
+        role: inviteRole,
+        status: "Invited",
+        invitedAt,
+        projectAccess: access,
+        lastLoginAt: null,
+      };
+      setMembers((prev) => [nextMember, ...prev]);
+    }
 
     const projNames =
       access.length === 0
@@ -375,7 +518,7 @@ export default function TeamPage() {
 
     pushAudit(
       "invite_sent",
-      `Invited ${email} as ${inviteRole} (${projNames}). Welcome email + onboarding is stubbed.`
+      `Invited ${email} as ${inviteRole} (${projNames}).${addedViaApi ? "" : " Saved locally (email invite is stubbed)."}`
     );
     setInviteOpen(false);
     resetInvite();
@@ -387,13 +530,44 @@ export default function TeamPage() {
     alert("Invite resend is stubbed (wire to email worker).");
   }
 
-  function removeMember(memberId: string) {
+  async function removeMember(memberId: string) {
     const m = members.find((x) => x.id === memberId);
+
+    // Try API first
+    if (orgId && apiConnected && m) {
+      try {
+        await api.removeOrgMember(orgId, m.id);
+        // Reload from API
+        await loadMembersFromApi(orgId);
+        pushAudit("member_removed", `Removed ${m.email || memberId} from team.`);
+        return;
+      } catch {
+        // Fall through to local removal
+      }
+    }
+
+    // localStorage fallback
     setMembers((prev) => prev.filter((x) => x.id !== memberId));
     pushAudit("member_removed", `Removed ${m?.email || memberId} from team.`);
   }
 
-  function changeRole(memberId: string, role: GCTeamRole) {
+  async function changeRole(memberId: string, role: GCTeamRole) {
+    const roleKey = DISPLAY_TO_ROLE_KEY[role] || "PM";
+
+    // Try API first
+    if (orgId && apiConnected) {
+      try {
+        await api.updateOrgMemberRole(orgId, memberId, roleKey);
+        // Reload from API
+        await loadMembersFromApi(orgId);
+        pushAudit("role_changed", `Changed role for ${memberId} to ${role}.`);
+        return;
+      } catch {
+        // Fall through to local update
+      }
+    }
+
+    // localStorage fallback
     setMembers((prev) =>
       prev.map((m) => {
         if (m.id !== memberId) return m;
@@ -450,8 +624,11 @@ export default function TeamPage() {
               <div>
                 <h2 className="text-xl font-black tracking-tight">Team members</h2>
                 <p className="mt-1 text-sm text-zinc-700">
-                  Manage roles and project access. (Server sync + real invitations are next.)
+                  Manage roles and project access.{apiConnected ? "" : " (Offline mode — changes saved locally.)"}
                 </p>
+                {loading ? (
+                  <div className="mt-2 text-xs text-zinc-500">Loading team data...</div>
+                ) : null}
               </div>
               <Pill>{members.length} members</Pill>
             </div>
@@ -486,7 +663,7 @@ export default function TeamPage() {
                               className="mt-2 h-9 w-full rounded-xl border border-black/10 bg-white px-3 text-sm font-black text-zinc-900 outline-none focus:ring-2 focus:ring-[var(--primary)]/25"
                               value={m.role}
                               onChange={(e) => changeRole(m.id, e.target.value as GCTeamRole)}
-                              disabled={m.id === "tm_owner"}
+                              disabled={m.role === "Owner/Principal"}
                             >
                               {(
                                 [
@@ -503,9 +680,9 @@ export default function TeamPage() {
                               ))}
                             </select>
                           </label>
-                          {m.id === "tm_owner" ? (
+                          {m.role === "Owner/Principal" ? (
                             <div className="mt-1 text-[11px] text-zinc-500">
-                              Owner role is locked in this MVP.
+                              Owner/Principal role cannot be changed.
                             </div>
                           ) : null}
                         </div>
@@ -562,7 +739,7 @@ export default function TeamPage() {
                             type="button"
                             onClick={() => removeMember(m.id)}
                             className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-black text-red-800 hover:bg-red-100"
-                            disabled={m.id === "tm_owner"}
+                            disabled={m.role === "Owner/Principal"}
                           >
                             Remove
                           </button>

@@ -168,7 +168,24 @@ export const api = {
 
   getOrg: (orgId: string) => apiRequest<{ org: any }>(`/orgs/${orgId}`),
 
-  getOrgMembers: (orgId: string) => apiRequest<{ members: any[] }>(`/orgs/${orgId}/members`),
+  getOrgMembers: (orgId: string) => apiRequest<{ members: any[]; count: number }>(`/orgs/${orgId}/members`),
+
+  addOrgMember: (orgId: string, data: { userId: string; roleKey: string }) =>
+    apiRequest<{ member: any }>(`/orgs/${orgId}/members`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateOrgMemberRole: (orgId: string, userId: string, roleKey: string) =>
+    apiRequest<{ member: any }>(`/orgs/${orgId}/members/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ roleKey }),
+    }),
+
+  removeOrgMember: (orgId: string, userId: string) =>
+    apiRequest<{ message: string }>(`/orgs/${orgId}/members/${userId}`, {
+      method: 'DELETE',
+    }),
 
   // Projects
   getProjects: (filters?: { orgId?: string; status?: string }) => {

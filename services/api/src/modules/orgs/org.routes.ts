@@ -193,6 +193,27 @@ export async function orgRoutes(fastify: FastifyInstance) {
     }
   )
 
+  // GET /orgs/:id/members - List members with user + role details
+  fastify.get(
+    '/:id/members',
+    {
+      preHandler: [authenticateUser, validateParams(z.object({ id: z.string().uuid() }))],
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string }
+        const members = await orgService.getOrgMembers(id)
+        return reply.send({ members, count: members.length })
+      } catch (error: any) {
+        if (error.message === 'Organization not found') {
+          const { id } = request.params as { id: string }
+          throw new NotFoundError('Organization', id)
+        }
+        throw error
+      }
+    }
+  )
+
   // POST /orgs/:id/members - Add member
   fastify.post(
     '/:id/members',

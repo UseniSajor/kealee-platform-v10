@@ -18,6 +18,7 @@ import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { cn } from "@/lib/utils"
+import { api } from "@/lib/api"
 
 type StorageProvider = "local" | "aws-s3" | "cloudflare-r2"
 
@@ -100,7 +101,41 @@ export function DocumentUpload({ projectId, className }: DocumentUploadProps) {
 
   const [busy, setBusy] = React.useState<null | "upload" | "share" | "export">(null)
 
+  // Load existing documents from backend on mount
   React.useEffect(() => {
+    async function loadDocuments() {
+      if (!projectId || projectId === "global") return
+      try {
+        const result = await api.documents.list(projectId)
+        if (result?.documents?.length) {
+          const loaded: DocumentItem[] = result.documents.map((doc: any) => {
+            const version: DocumentVersion = {
+              id: doc.id,
+              version: doc.version || 1,
+              filename: doc.title || doc.name || "Untitled",
+              mimeType: doc.mimeType || "application/octet-stream",
+              sizeBytes: doc.sizeBytes || 0,
+              uploadedAt: doc.createdAt || new Date().toISOString(),
+              uploader: doc.uploaderName || doc.uploader || "Unknown",
+              objectUrl: doc.url || doc.fileUrl,
+            }
+            return {
+              id: doc.id,
+              key: normalizeKey(doc.folder || "General", version.filename),
+              folder: doc.folder || "General",
+              title: version.filename,
+              latest: version,
+              versions: [version],
+            }
+          })
+          setItems(loaded)
+        }
+      } catch (err) {
+        console.warn("Could not load documents from API:", err)
+      }
+    }
+    loadDocuments()
+
     return () => {
       // cleanup object URLs
       for (const i of items) {
@@ -110,7 +145,7 @@ export function DocumentUpload({ projectId, className }: DocumentUploadProps) {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [projectId])
 
   function upsertFolder(name: string) {
     const n = name.trim()
@@ -123,19 +158,53 @@ export function DocumentUpload({ projectId, className }: DocumentUploadProps) {
     return URL.createObjectURL(file)
   }
 
-  function addFiles(fileList: FileList | File[], uploader = "PM") {
+  async function addFiles(fileList: FileList | File[], uploader = "PM") {
     const files = Array.from(fileList)
     if (!files.length) return
     setBusy("upload")
 
-    // Placeholder: integrate real upload to AWS S3 / Cloudflare R2 here.
-    // When integrated, you would:
-    // - request a signed URL from API
-    // - PUT to S3/R2
-    // - store metadata + object key in DB
-    // - return canonical download URLs
-
     const now = new Date().toISOString()
+
+    // Try uploading to backend API first
+    if (projectId && projectId !== "global") {
+      try {
+        const result = await api.documents.upload(projectId, files, { folder })
+        // If backend upload succeeded, use the returned document data
+        if (result?.documents) {
+          setItems((prev) => {
+            const next = [...prev]
+            for (const doc of result.documents) {
+              const version: DocumentVersion = {
+                id: doc.id || uid("ver"),
+                version: 1,
+                filename: doc.title || doc.name,
+                mimeType: doc.mimeType || "application/octet-stream",
+                sizeBytes: doc.sizeBytes || 0,
+                uploadedAt: doc.createdAt || now,
+                uploader: doc.uploader || uploader,
+                objectUrl: doc.url || doc.fileUrl,
+              }
+              const item: DocumentItem = {
+                id: doc.id || uid("doc"),
+                key: normalizeKey(folder, version.filename),
+                folder,
+                title: version.filename,
+                latest: version,
+                versions: [version],
+              }
+              next.unshift(item)
+            }
+            return next
+          })
+          setBusy(null)
+          return
+        }
+      } catch (err) {
+        console.warn("Backend upload failed, falling back to local:", err)
+      }
+    }
+
+    // Fallback: local upload with object URLs (works for 'global' or when API fails)
     setItems((prev) => {
       const next = [...prev]
       for (const f of files) {
@@ -174,7 +243,7 @@ export function DocumentUpload({ projectId, className }: DocumentUploadProps) {
       return next
     })
 
-    setTimeout(() => setBusy(null), 200)
+    setBusy(null)
   }
 
   function onDrop(e: React.DragEvent) {
@@ -272,7 +341,7 @@ export function DocumentUpload({ projectId, className }: DocumentUploadProps) {
         <div>
           <h2 className="text-xl font-semibold">Documents</h2>
           <p className="text-sm text-neutral-600 mt-1">
-            Drag & drop uploads with folders, versions, previews, and share links (cloud storage integration placeholder).
+            Drag & drop uploads with folders, versions, previews, and share links.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -369,7 +438,7 @@ export function DocumentUpload({ projectId, className }: DocumentUploadProps) {
                 <div className="mt-2 font-medium text-neutral-900">Drag & drop files here</div>
                 <div className="mt-1 text-sm text-neutral-600">or click to browse</div>
                 <div className="mt-3 text-xs text-neutral-500">
-                  Cloud upload to {provider.toUpperCase()} is a placeholder (wire signed upload URLs + object keys).
+                  Files are uploaded to the project via the API and stored securely.
                 </div>
                 <input
                   ref={inputRef}

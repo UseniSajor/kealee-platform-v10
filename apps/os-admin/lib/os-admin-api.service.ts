@@ -169,10 +169,7 @@ export class OsAdminApiService {
   }
 
   static async getSubscriptionDetails(subscriptionId: string) {
-    // Get subscription by Stripe ID - need to find orgId first or use a different endpoint
-    // For now, we'll use the PATCH endpoint which requires orgId
-    // This might need a backend route like GET /billing/subscriptions/:subscriptionId
-    throw new Error('getSubscriptionDetails: Backend route not yet implemented. Use getSubscriptions() to list all.');
+    return this.fetchWithAuth(`/billing/subscriptions/${subscriptionId}`);
   }
 
   static async updateSubscription(subscriptionId: string, updates: {
@@ -305,13 +302,14 @@ export class OsAdminApiService {
   // ============================================================================
 
   static async getSettings() {
-    // Settings might be stored in org config or a separate settings table
-    // For now, return empty or use org settings
-    throw new Error('getSettings: Backend route not yet implemented');
+    return this.fetchWithAuth('/admin/settings');
   }
 
   static async updateSettings(settings: Record<string, any>) {
-    throw new Error('updateSettings: Backend route not yet implemented');
+    return this.fetchWithAuth('/admin/settings', {
+      method: 'PUT',
+      body: JSON.stringify(settings),
+    });
   }
 
   // ============================================================================
@@ -331,14 +329,10 @@ export class OsAdminApiService {
     description?: string;
     permissions?: string[];
   }) {
-    // Backend might need a PATCH endpoint for roles
-    // For now, we can only create new roles
-    if (updates.permissions) {
-      // This would require a separate endpoint to update role permissions
-      throw new Error('updateRole permissions: Backend route not yet implemented');
-    }
-    
-    throw new Error('updateRole: Backend route not yet implemented. Use createRole() to create new roles.');
+    return this.fetchWithAuth(`/admin/roles/${roleKey}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
   }
 
   static async createRole(data: {
@@ -357,8 +351,7 @@ export class OsAdminApiService {
   // ============================================================================
 
   static async getEmailTemplates() {
-    // Email templates might be in a separate service or config
-    throw new Error('getEmailTemplates: Backend route not yet implemented');
+    return this.fetchWithAuth('/admin/email-templates');
   }
 
   static async updateEmailTemplate(templateId: string, updates: {
@@ -366,7 +359,10 @@ export class OsAdminApiService {
     body?: string;
     isActive?: boolean;
   }) {
-    throw new Error('updateEmailTemplate: Backend route not yet implemented');
+    return this.fetchWithAuth(`/admin/email-templates/${templateId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
   }
 
   // ============================================================================

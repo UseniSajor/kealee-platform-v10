@@ -569,6 +569,9 @@ const start = async () => {
       await fastify.register(jurisdictionSubscriptionRoutes, { prefix: '/jurisdictions' })
       await fastify.register(permitApplicationRoutes, { prefix: '/permits' })
       await fastify.register(permitRoutingRoutes, { prefix: '/permits' })
+      // Permit CRUD routes (list, get, update, delete, submit, withdraw, comments, inspections, dashboard)
+      const { permitCrudRoutes } = await import('./modules/permits/permit-crud.routes')
+      await fastify.register(permitCrudRoutes, { prefix: '/permits' })
       await fastify.register(permitsApiRoutes) // Unified API routes (no prefix, uses /api/v1)
       await fastify.register(apiKeyRoutes) // API key management
       await fastify.register(webhookRoutes) // Webhook management
@@ -762,6 +765,12 @@ const start = async () => {
     await safeRegisterBlock('Phase 1 - App Health & Monitoring routes', async () => {
       const { appHealthRoutes } = await import('./modules/monitoring/app-health.routes')
       await fastify.register(appHealthRoutes, { prefix: '/monitoring' })
+    })
+
+    // Admin routes (settings, email templates, RBAC role updates, org members)
+    await safeRegisterBlock('Phase 1 - Admin routes', async () => {
+      const { adminRoutes } = await import('./modules/admin/admin.routes')
+      await fastify.register(adminRoutes, { prefix: '/admin' })
     })
 
     await safeRegisterBlock('Phase 1 - Permit Templates, Analytics, API Integrations routes', async () => {

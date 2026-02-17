@@ -259,6 +259,48 @@ export class OrgService {
     return member
   }
 
+  // List members of an organization with user + role details
+  async getOrgMembers(orgId: string) {
+    const org = await prismaAny.org.findUnique({ where: { id: orgId } })
+    if (!org) {
+      throw new Error('Organization not found')
+    }
+
+    const members = await prismaAny.orgMember.findMany({
+      where: { orgId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+            status: true,
+            lastLoginAt: true,
+          },
+        },
+        role: {
+          select: {
+            key: true,
+            name: true,
+            description: true,
+          },
+        },
+      },
+      orderBy: { joinedAt: 'asc' },
+    })
+
+    return members.map((m: any) => ({
+      id: m.id,
+      userId: m.userId,
+      orgId: m.orgId,
+      roleKey: m.roleKey,
+      joinedAt: m.joinedAt,
+      user: m.user,
+      role: m.role,
+    }))
+  }
+
   // Get user's organizations
   async getUserOrgs(userId: string) {
     const memberships = await prismaAny.orgMember.findMany({

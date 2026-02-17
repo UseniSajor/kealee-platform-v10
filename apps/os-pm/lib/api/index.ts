@@ -1172,5 +1172,52 @@ export const api = {
       return data
     },
   },
+
+  // DocuSign e-Signatures
+  docusign: {
+    listEnvelopes: async (params?: { fromDate?: string; status?: string; limit?: number }) => {
+      const { data } = await apiClient.get<any>("/docusign/envelopes", { params })
+      return data
+    },
+    createEnvelope: async (input: {
+      templateId: string
+      recipientEmail: string
+      recipientName: string
+      documentName?: string
+      customFields?: Record<string, any>
+      embeddedSigning?: boolean
+      returnUrl?: string
+    }) => {
+      const { data } = await apiClient.post<any>("/docusign/envelopes", input)
+      return data
+    },
+    getEnvelopeStatus: async (envelopeId: string) => {
+      const { data } = await apiClient.get<any>(`/docusign/envelopes/${envelopeId}/status`)
+      return data
+    },
+    updateEnvelope: async (envelopeId: string, input: {
+      action: 'void' | 'remind' | 'resend'
+      reason?: string
+    }) => {
+      const { data } = await apiClient.put<any>(`/docusign/envelopes/${envelopeId}`, input)
+      return data
+    },
+    listTemplates: async (params?: { status?: string; limit?: number; offset?: number }) => {
+      const { data } = await apiClient.get<any>("/docusign/templates", { params })
+      return data
+    },
+    getAuthUrl: async (redirectUri?: string) => {
+      const { data } = await apiClient.get<any>("/docusign/auth", { params: redirectUri ? { redirectUri } : undefined })
+      return data
+    },
+    sendForSignature: async (contractId: string) => {
+      const { data } = await apiClient.post<any>(`/docusign/contracts/${contractId}/send-for-signature`)
+      return data
+    },
+    getSignatureStatus: async (contractId: string) => {
+      const { data } = await apiClient.get<any>(`/docusign/contracts/${contractId}/signature-status`)
+      return data
+    },
+  },
 }
 
