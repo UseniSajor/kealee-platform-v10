@@ -22,7 +22,7 @@ export default function ContractorsHomePage() {
           sizes="100vw"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/85" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-300 rounded-full text-sm font-medium mb-6 backdrop-blur-sm border border-emerald-400/30">
@@ -32,7 +32,7 @@ export default function ContractorsHomePage() {
             <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
               Stop Chasing Permits. Start Building.
             </h1>
-            <p className="text-xl text-gray-200 mb-8 leading-relaxed">
+            <p className="text-xl text-white/90 mb-8 leading-relaxed">
               Professional permit and inspection services for contractors, developers, and property owners. AI-powered compliance review, automated tracking, and expert coordination—we handle the paperwork so you can focus on your project.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -50,7 +50,7 @@ export default function ContractorsHomePage() {
               </Link>
             </div>
 
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-200">
+            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-white/85">
               <div className="flex items-center space-x-2">
                 <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                 <span>First Permit Free</span>
