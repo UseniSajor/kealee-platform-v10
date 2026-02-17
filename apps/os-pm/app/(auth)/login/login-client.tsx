@@ -57,7 +57,7 @@ export function LoginClient() {
           <img
             src="/kealee-logo-600w.png"
             alt="Kealee Construction"
-            className="h-20 w-auto mx-auto mb-4"
+            className="h-28 w-auto mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-neutral-900">Kealee PM</h1>
           <p className="text-sm text-neutral-500 mt-1">Construction Project Management Software</p>

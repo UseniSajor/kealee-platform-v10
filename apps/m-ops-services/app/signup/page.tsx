@@ -75,7 +75,7 @@ export default function SignupPage() {
           <img
             src="/kealee-logo-600w.png"
             alt="Kealee Construction"
-            className="h-20 w-auto mx-auto mb-2"
+            className="h-28 w-auto mx-auto mb-2"
           />
           <h1 className="text-2xl font-bold text-gray-900 mb-1">
             Create Account

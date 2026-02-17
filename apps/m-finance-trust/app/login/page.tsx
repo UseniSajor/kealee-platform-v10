@@ -160,7 +160,7 @@ export default function LoginPage() {
               <img
                 src="/kealee-logo-600w.png"
                 alt="Kealee Construction"
-                className="h-20 w-auto"
+                className="h-28 w-auto"
               />
             </div>
 

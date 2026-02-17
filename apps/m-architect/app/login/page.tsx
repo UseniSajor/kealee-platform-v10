@@ -48,7 +48,7 @@ function LoginForm() {
           <img
             src="/kealee-logo-600w.png"
             alt="Kealee Construction"
-            className="h-20 w-auto mx-auto mb-4"
+            className="h-28 w-auto mx-auto mb-4"
           />
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Welcome Back
