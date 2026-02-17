@@ -10273,14 +10273,23 @@ model CostBookCustomization {
 // design process with AI assistance BEFORE any architect/designer touches it.
 // The AI generates floor plans, concept renders, room layouts, and material
 // suggestions based on owner preferences, budget, and lot constraints.
+//
+// BUSINESS RULES:
+//   1. Owner gets exactly 5 revision rounds with AI
+//   2. After 5 revisions → AI presents 3 final versions to choose from
+//   3. Owner must approve 1 of the 3 final versions (no more revisions)
+//   4. After approval → designer meets owner for minor additions/cleanup
+//   5. After meeting → project enters design queue for architect assignment
 
 enum AutoDesignStatus {
   INTAKE           // Owner providing preferences
   GENERATING       // AI actively generating options
   REVIEW           // Owner reviewing AI options
-  REVISION         // Owner requested changes, AI regenerating
-  APPROVED         // Owner approved a concept
-  READY_FOR_HANDOFF // Ready for architect queue
+  REVISION         // Owner requested changes, AI regenerating (max 5 rounds)
+  FINAL_SELECTION  // 5 revisions used — AI presents 3 final versions to choose from
+  APPROVED         // Owner approved one of the 3 final versions
+  DESIGNER_MEETING // Post-approval: designer meets owner for minor additions/cleanup
+  READY_FOR_HANDOFF // Meeting complete, ready for architect queue
   HANDED_OFF       // Assigned to architect
   CANCELLED
 }
@@ -10338,7 +10347,8 @@ model AutoDesignSession {
   // Status
   status          AutoDesignStatus @default(INTAKE)
   currentIteration Int             @default(0)
-  maxIterations    Int             @default(5) // Max AI revision rounds
+  maxIterations    Int             @default(5) // Owner gets exactly 5 revision rounds
+  maxFinalOptions  Int             @default(3) // After 5 revisions, AI presents 3 final versions
 
   // Owner Preferences (collected during intake)
   preferredStyles   AutoDesignStyle[] @default([])
@@ -10357,14 +10367,18 @@ model AutoDesignSession {
 
   // Results
   optionsGenerated  Int       @default(0) // How many concepts AI produced
-  selectedOptionId  String?   // Which AutoDesignOption the owner chose
+  selectedOptionId  String?   // Which AutoDesignOption the owner chose (from 3 final versions)
 
   // Timing
-  intakeCompletedAt   DateTime?
-  generationStartedAt DateTime?
-  generationEndedAt   DateTime?
-  ownerApprovedAt     DateTime?
-  handoffReadyAt      DateTime?
+  intakeCompletedAt       DateTime?
+  generationStartedAt     DateTime?
+  generationEndedAt       DateTime?
+  revisionsExhaustedAt    DateTime? // When all 5 revisions were used up
+  finalSelectionStartedAt DateTime? // When 3 final versions were presented
+  ownerApprovedAt         DateTime? // When owner picked 1 of 3 finals
+  designerMeetingAt       DateTime? // Scheduled post-approval meeting
+  designerMeetingCompletedAt DateTime? // Meeting done, minor cleanup done
+  handoffReadyAt          DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -10420,8 +10434,12 @@ model AutoDesignOption {
   aiConfidence     Int?     // 0-100 how confident AI is in this design
   aiNotes          String?  @db.Text // AI's reasoning for this option
 
+  // Final Selection (3 versions presented after 5 revisions)
+  isFinalCandidate Boolean  @default(false) // One of the 3 final versions for owner to pick from
+  finalRank        Int?     // 1-3 rank among final candidates (AI-recommended order)
+
   // Selection
-  isSelected       Boolean  @default(false)
+  isSelected       Boolean  @default(false) // Owner's chosen version (1 of 3 finals)
   selectedAt       DateTime?
   ownerRating      Int?     // 1-5 stars
   ownerFeedback    String?  @db.Text
@@ -10434,6 +10452,7 @@ model AutoDesignOption {
 
   @@index([sessionId])
   @@index([isSelected])
+  @@index([isFinalCandidate])
   @@index([iteration])
   @@map("auto_design_options")
 }
@@ -10615,7 +10634,9 @@ model DesignQueueAssignment {
 
 enum HandoffStatus {
   INITIATED       // Handoff record created
-  REVIEWING       // Architect reviewing auto-design materials
+  MEETING_SCHEDULED // Designer meeting scheduled with owner (post-approval cleanup)
+  MEETING_COMPLETED // Designer met owner, minor additions/cleanup agreed
+  REVIEWING       // Architect reviewing auto-design materials + meeting notes
   ACKNOWLEDGED    // Architect confirmed receipt of materials
   IN_PROGRESS_HO  // Architect actively developing from auto-design
   COMPLETED_HO    // Handoff complete, DesignProject fully active
@@ -10639,6 +10660,14 @@ model DesignHandoff {
   ownerApprovedFloorPlan String? // URL of approved AI floor plan
   ownerApprovedRenderings String[] @default([])
   additionalFiles     Json?    // Array of { url, name, type, description }
+
+  // Designer Meeting (post-approval, before full handoff)
+  meetingScheduledAt  DateTime? // When meeting is scheduled
+  meetingCompletedAt  DateTime? // When meeting actually happened
+  meetingNotes        String?  @db.Text // Notes from designer-owner meeting
+  minorAdditions      Json?    // Array of { description, type, priority } — cleanup items agreed in meeting
+  cleanupCompleted    Boolean  @default(false) // Designer finished minor cleanup
+  cleanupCompletedAt  DateTime?
 
   // Architect Notes
   architectNotes      String?  @db.Text
