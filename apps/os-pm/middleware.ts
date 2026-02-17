@@ -1,4 +1,4 @@
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
@@ -24,8 +24,32 @@ const INTERNAL_ONLY_ROUTES = [
 const INTERNAL_ROLES = ['pm', 'pm_supervisor', 'admin', 'super_admin'];
 
 export async function middleware(request: NextRequest) {
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req: request, res });
+  let response = NextResponse.next({
+    request: { headers: request.headers },
+  });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value);
+          });
+          response = NextResponse.next({
+            request: { headers: request.headers },
+          });
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    }
+  );
 
   const {
     data: { session },
@@ -45,7 +69,7 @@ export async function middleware(request: NextRequest) {
 
   if (!serviceKey || !supabaseUrl) {
     // If service key not configured, allow through (rely on page-level auth)
-    return res;
+    return response;
   }
 
   const adminClient = createClient(supabaseUrl, serviceKey);
@@ -93,9 +117,9 @@ export async function middleware(request: NextRequest) {
   }
 
   // Set role header for downstream pages
-  res.headers.set('x-user-role', effectiveRole);
+  response.headers.set('x-user-role', effectiveRole);
 
-  return res;
+  return response;
 }
 
 export const config = {

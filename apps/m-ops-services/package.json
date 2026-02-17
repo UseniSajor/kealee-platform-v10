@@ -18,6 +18,7 @@
     "@kealee/ui": "workspace:*",
     "@supabase/supabase-js": "^2.39.0",
     "@supabase/auth-helpers-nextjs": "^0.8.7",
+    "@supabase/ssr": "^0.5.2",
     "@hookform/resolvers": "^3.3.4",
     "clsx": "^2.1.0",
     "lucide-react": "^0.263.1",
