@@ -3,8 +3,8 @@ import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Construction PM Software | Kealee Operations Services",
-  description: "Cloud-based project management software built specifically for construction contractors.",
+  title: "Construction PM Software | Kealee Platform",
+  description: "Cloud-based project management software built specifically for construction contractors. Available as a standalone platform — no operations services package required.",
 };
 
 export default function PMSoftwarePage() {
@@ -17,7 +17,7 @@ export default function PMSoftwarePage() {
         <div className="relative z-10 container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-block bg-sky-100 text-sky-700 px-4 py-2 rounded-full text-sm font-bold mb-6">
-              FOR CONTRACTORS
+              STANDALONE PLATFORM
             </div>
             <h1 className="text-5xl font-bold text-white mb-6">
               Construction Project Management Software
@@ -25,6 +25,10 @@ export default function PMSoftwarePage() {
             <p className="text-xl text-white/80 mb-8">
               Cloud-based PM platform built specifically for construction contractors.
               Manage schedules, budgets, subs, and documentation in one place.
+            </p>
+            <p className="text-base text-white/60 mb-8 max-w-2xl mx-auto">
+              Available as a standalone subscription — no operations services package required.
+              Use it on its own, or pair it with our managed services for full-coverage support.
             </p>
             <Link
               href="#pricing"
@@ -113,9 +117,13 @@ export default function PMSoftwarePage() {
       <section className="py-20 bg-zinc-50" id="pricing">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-4xl font-bold text-zinc-900 text-center mb-12">
+            <h2 className="text-4xl font-bold text-zinc-900 text-center mb-4">
               Choose Your Platform Tier
             </h2>
+            <p className="text-lg text-zinc-600 text-center mb-12 max-w-2xl mx-auto">
+              Subscribe to the Kealee platform independently. All tiers include full access
+              to scheduling, budgeting, document control, and reporting — no services package needed.
+            </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               {/* Essentials */}
               <div className="bg-white border border-zinc-200 rounded-2xl p-8 hover:shadow-lg transition-shadow">
@@ -318,8 +326,11 @@ export default function PMSoftwarePage() {
             <h2 className="text-4xl font-bold text-white mb-6">
               Start Your Free Trial Today
             </h2>
-            <p className="text-xl text-sky-100 mb-8">
+            <p className="text-xl text-sky-100 mb-4">
               No credit card required. Full access to all features for 14 days.
+            </p>
+            <p className="text-base text-sky-200 mb-8">
+              Use the platform on its own, or add managed operations services anytime.
             </p>
             <Link
               href="/contact"

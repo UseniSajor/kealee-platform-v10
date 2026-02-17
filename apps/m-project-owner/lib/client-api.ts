@@ -102,6 +102,61 @@ export interface ProjectInfo {
   category: string
   status?: string
   percentComplete?: number
+  budgetTotal?: number | null
+  budgetSpent?: number | null
+  startDate?: string | null
+  endDate?: string | null
+  property?: {
+    id: string
+    address: string
+    city: string
+    state: string
+    zip: string
+  } | null
+  memberships?: Array<{
+    role: string
+    user: { id: string; name: string; email: string }
+  }>
+}
+
+export interface PreConProject {
+  id: string
+  name: string
+  phase: string
+  category: string
+  description: string
+  suggestedRetailPrice?: number | null
+  designPackageTier: string
+  designPackagePaid: boolean
+  city?: string | null
+  state?: string | null
+  squareFootage?: number | null
+  createdAt: string
+  updatedAt: string
+  designConcepts?: any[]
+  bids?: any[]
+  platformFees?: any[]
+  selectedConceptId?: string | null
+}
+
+export interface PreConDashboard {
+  totalProjects: number
+  activeProjects: number
+  phaseCounts: Record<string, number>
+  pipeline: {
+    intake: number
+    design: number
+    approved: number
+    marketplace: number
+    awarded: number
+    completed: number
+  }
+  pendingFees: {
+    count: number
+    total: number
+    items: any[]
+  }
+  recentProjects: PreConProject[]
 }
 
 // ---------------------------------------------------------------------------
@@ -144,8 +199,39 @@ export async function getProjects(): Promise<{ projects: ProjectInfo[] }> {
   return fetchApi('/projects')
 }
 
+export async function getProjectDetail(
+  projectId: string,
+): Promise<{ project: ProjectInfo }> {
+  return fetchApi(`/projects/${projectId}`)
+}
+
 export async function getMilestones(
   projectId: string,
 ): Promise<{ milestones: any[] }> {
   return fetchApi(`/projects/${projectId}`)
+}
+
+// ---------------------------------------------------------------------------
+// Pre-Construction API functions
+// ---------------------------------------------------------------------------
+
+export async function getPreConDashboard(): Promise<{ dashboard: PreConDashboard }> {
+  return fetchApi('/precon/dashboard')
+}
+
+export async function getPreConProjects(filters?: {
+  phase?: string
+  category?: string
+}): Promise<{ projects: PreConProject[] }> {
+  const params = new URLSearchParams()
+  if (filters?.phase) params.set('phase', filters.phase)
+  if (filters?.category) params.set('category', filters.category)
+  const suffix = params.toString() ? `?${params.toString()}` : ''
+  return fetchApi(`/precon/projects${suffix}`)
+}
+
+export async function getPreConProject(
+  id: string,
+): Promise<{ precon: PreConProject }> {
+  return fetchApi(`/precon/projects/${id}`)
 }

@@ -140,7 +140,7 @@ export function MarketingSidebar({ activeSection, className = '' }: MarketingSid
         <Link href="/" className="flex items-center gap-2">
           <img
             src="/kealee-logo-300w.png"
-            alt="Kealee Construction"
+            alt="Kealee"
             className="h-8 w-auto"
           />
         </Link>

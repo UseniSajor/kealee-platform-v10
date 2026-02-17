@@ -63,7 +63,7 @@ interface NetworkProfile {
 function mapApiProfile(p: any): NetworkProfile {
   return {
     id: p.id,
-    slug: p.businessName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || p.id,
+    slug: p.id, // Use the profile UUID as the URL segment for API lookups
     businessName: p.businessName || 'Unknown Business',
     principalName: p.user?.name || '',
     type: 'gc' as ProfessionalType, // Backend doesn't expose type yet; default
@@ -239,7 +239,7 @@ export function NetworkSearchClient() {
             className="text-3xl lg:text-4xl font-bold mb-4"
             style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}
           >
-            Kealee Construction Network
+            Kealee Network
           </h1>
           <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
             Find verified contractors, architects, engineers, and suppliers in the DC-Baltimore corridor.

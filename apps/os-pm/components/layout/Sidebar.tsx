@@ -48,7 +48,7 @@ export function Sidebar() {
         >
           <img
             src={collapsed ? "/kealee-icon-192x192.png" : "/kealee-logo-300w.png"}
-            alt="Kealee Construction"
+            alt="Kealee"
             className={collapsed ? "h-8 w-8" : "h-10 w-auto"}
           />
         </Link>

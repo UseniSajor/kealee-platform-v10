@@ -73,7 +73,7 @@ export default function TermsPage() {
             <p className="text-gray-600 leading-relaxed">
               Welcome to Kealee Permits &amp; Inspections. These Terms of Service (&quot;Terms&quot;) constitute
               a legally binding agreement between you (&quot;User,&quot; &quot;you,&quot; or &quot;your&quot;)
-              and Kealee Construction LLC (&quot;Kealee,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;)
+              and Kealee LLC (&quot;Kealee,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;)
               governing your access to and use of the Kealee Permits &amp; Inspections platform, including our
               websites, applications, tools, and related services (collectively, the &quot;Platform&quot; or
               &quot;Services&quot;).
@@ -290,7 +290,7 @@ export default function TermsPage() {
               <p>
                 <strong>7.3 Kealee Property.</strong> The Platform, including its design, software, algorithms,
                 AI models, user interface, trademarks, logos, and all related intellectual property, is owned
-                by Kealee Construction LLC and is protected by applicable intellectual property laws. You may
+                by Kealee LLC and is protected by applicable intellectual property laws. You may
                 not copy, modify, distribute, or reverse-engineer any part of the Platform.
               </p>
               <p>
@@ -338,7 +338,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-bold text-[#1A2B4A] mb-4">9. Indemnification</h2>
             <div className="space-y-3 text-gray-600">
               <p>
-                You agree to indemnify, defend, and hold harmless Kealee Construction LLC, its officers,
+                You agree to indemnify, defend, and hold harmless Kealee LLC, its officers,
                 directors, employees, agents, and affiliates from and against any and all claims, damages,
                 losses, liabilities, costs, and expenses (including reasonable attorneys&apos; fees) arising out
                 of or related to:
@@ -469,7 +469,7 @@ export default function TermsPage() {
                   </a>
                 </p>
                 <p>
-                  <strong className="text-gray-900">Company:</strong> Kealee Construction LLC
+                  <strong className="text-gray-900">Company:</strong> Kealee LLC
                 </p>
                 <p>
                   <strong className="text-gray-900">Address:</strong> Washington, DC Metropolitan Area

@@ -187,7 +187,7 @@ export default function PrivacyPage() {
             {/* Introduction */}
             <div className="bg-blue-50 rounded-2xl p-8 mb-12">
               <p className="text-gray-700 leading-relaxed">
-                Kealee Construction LLC ("Kealee," "we," "us," or "our") is committed to protecting your privacy.
+                Kealee LLC ("Kealee," "we," "us," or "our") is committed to protecting your privacy.
                 This Privacy Policy explains how we collect, use, disclose, and safeguard your information when
                 you use our construction management platform and related services. By using Kealee, you agree
                 to the collection and use of information in accordance with this policy.
@@ -296,7 +296,7 @@ export default function PrivacyPage() {
               </p>
               <div className="space-y-2 text-gray-600">
                 <p><strong>Email:</strong> privacy@kealee.com</p>
-                <p><strong>Address:</strong> Kealee Construction LLC, Washington, DC</p>
+                <p><strong>Address:</strong> Kealee LLC, Washington, DC</p>
               </div>
             </section>
 

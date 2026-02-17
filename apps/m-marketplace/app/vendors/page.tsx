@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
     Search,
@@ -14,58 +14,80 @@ import {
     Building2,
     Hammer,
     Palette,
-    Lightbulb
+    Lightbulb,
+    Loader2,
+    AlertCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { getContractors } from '@/lib/api';
 
-// Mock data for directory
-const MOCK_VENDORS = [
-    {
-        id: 'v1',
-        name: 'Elevation Design & Build',
-        rating: 4.9,
-        reviews: 128,
-        location: 'Bethesda, MD',
-        specialties: ['Kitchens', 'Additions'],
-        verified: true,
-        image: 'https://images.unsplash.com/photo-1556911220-e15224bbbe39?q=80&w=400&auto=format&fit=crop'
-    },
-    {
-        id: 'v2',
-        name: 'Coastal Interior Systems',
-        rating: 4.7,
-        reviews: 89,
-        location: 'Arlington, VA',
-        specialties: ['Interiors', 'Drywall'],
-        verified: true,
-        image: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=400&auto=format&fit=crop'
-    },
-    {
-        id: 'v3',
-        name: 'Apex Structural Group',
-        rating: 4.8,
-        reviews: 56,
-        location: 'Potomac, MD',
-        specialties: ['Foundations', 'Framing'],
-        verified: false,
-        image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=400&auto=format&fit=crop'
-    },
-    {
-        id: 'v4',
-        name: 'Lumina Light & Wire',
-        rating: 5.0,
-        reviews: 42,
-        location: 'Silver Spring, MD',
-        specialties: ['Electrical', 'Smart Home'],
-        verified: true,
-        image: 'https://images.unsplash.com/photo-1621905231291-783302bec701?q=80&w=400&auto=format&fit=crop'
-    }
-];
+interface Vendor {
+    id: string;
+    name: string;
+    rating: number;
+    reviews: number;
+    location: string;
+    specialties: string[];
+    verified: boolean;
+    image: string | null;
+}
+
+/** Map a raw API contractor profile to the Vendor card shape */
+function mapApiVendor(p: any): Vendor {
+    return {
+        id: p.id,
+        name: p.businessName || 'Unknown Business',
+        rating: typeof p.rating === 'number' ? p.rating : 0,
+        reviews: typeof p.reviewCount === 'number' ? p.reviewCount : 0,
+        location: '', // Backend doesn't expose location on list endpoint yet
+        specialties: Array.isArray(p.specialties) ? p.specialties : [],
+        verified: !!p.verified,
+        image: p.user?.avatar || null,
+    };
+}
 
 export default function VendorDirectoryPage() {
     const [search, setSearch] = useState('');
+    const [vendors, setVendors] = useState<Vendor[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [totalResults, setTotalResults] = useState(0);
+
+    const fetchVendors = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const result = await getContractors({
+                search: search || undefined,
+                limit: 20,
+                offset: 0,
+            });
+
+            if (result.success && result.data) {
+                const mapped = (result.data.profiles || []).map(mapApiVendor);
+                setVendors(mapped);
+                setTotalResults(result.data.total || mapped.length);
+            } else {
+                setError(result.error || 'Failed to load vendors');
+                setVendors([]);
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Network error');
+            setVendors([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [search]);
+
+    // Debounced fetch on search changes
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchVendors();
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [fetchVendors]);
 
     const container = {
         hidden: { opacity: 0 },
@@ -167,7 +189,13 @@ export default function VendorDirectoryPage() {
                         {/* Grid */}
                         <div className="lg:col-span-3 space-y-8">
                             <div className="flex items-center justify-between px-2">
-                                <p className="text-sm font-bold text-neutral-400">Showing <span className="text-neutral-900">24 results</span> near you</p>
+                                <p className="text-sm font-bold text-neutral-400">
+                                    {loading ? (
+                                        'Loading...'
+                                    ) : (
+                                        <>Showing <span className="text-neutral-900">{vendors.length}{totalResults > vendors.length ? ` of ${totalResults}` : ''} results</span></>
+                                    )}
+                                </p>
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm font-bold text-neutral-400">Sort by:</span>
                                     <select className="bg-transparent border-none text-sm font-bold text-neutral-900 outline-none cursor-pointer">
@@ -178,73 +206,129 @@ export default function VendorDirectoryPage() {
                                 </div>
                             </div>
 
-                            <motion.div
-                                variants={container}
-                                initial="hidden"
-                                animate="show"
-                                className="grid grid-cols-1 md:grid-cols-2 gap-8"
-                            >
-                                {MOCK_VENDORS.map((vendor) => (
-                                    <motion.div
-                                        key={vendor.id}
-                                        variants={item}
-                                        className="bg-white rounded-[2.5rem] overflow-hidden border border-neutral-100 shadow-sm hover:shadow-2xl hover:shadow-neutral-200/50 hover:border-indigo-100 transition-all group"
+                            {/* Error State */}
+                            {error && (
+                                <div className="rounded-3xl p-6 flex items-center gap-4 bg-red-50 border border-red-200">
+                                    <AlertCircle className="w-6 h-6 flex-shrink-0 text-red-500" />
+                                    <div className="flex-1">
+                                        <p className="text-sm text-red-700 font-bold">Unable to load vendors</p>
+                                        <p className="text-xs text-red-600 mt-0.5">{error}</p>
+                                    </div>
+                                    <button
+                                        onClick={fetchVendors}
+                                        className="text-sm font-bold text-red-600 hover:text-red-800 underline"
                                     >
-                                        <div className="relative h-56 overflow-hidden">
-                                            <img
-                                                src={vendor.image}
-                                                alt={vendor.name}
-                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                            />
-                                            {vendor.verified && (
-                                                <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl flex items-center gap-2 border border-white shadow-sm">
-                                                    <ShieldCheck className="w-4 h-4 text-green-500" />
-                                                    <span className="text-[10px] font-black text-neutral-900 uppercase tracking-wider">Verified Pro</span>
+                                        Retry
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Loading State */}
+                            {loading && (
+                                <div className="flex flex-col items-center justify-center py-20">
+                                    <Loader2 className="w-8 h-8 animate-spin text-neutral-400 mb-4" />
+                                    <p className="text-sm text-neutral-500">Loading vendors...</p>
+                                </div>
+                            )}
+
+                            {/* Vendor Grid */}
+                            {!loading && vendors.length > 0 && (
+                                <motion.div
+                                    variants={container}
+                                    initial="hidden"
+                                    animate="show"
+                                    className="grid grid-cols-1 md:grid-cols-2 gap-8"
+                                >
+                                    {vendors.map((vendor) => (
+                                        <motion.div
+                                            key={vendor.id}
+                                            variants={item}
+                                            className="bg-white rounded-[2.5rem] overflow-hidden border border-neutral-100 shadow-sm hover:shadow-2xl hover:shadow-neutral-200/50 hover:border-indigo-100 transition-all group"
+                                        >
+                                            <div className="relative h-56 overflow-hidden bg-gradient-to-br from-indigo-100 to-slate-200">
+                                                {vendor.image ? (
+                                                    <img
+                                                        src={vendor.image}
+                                                        alt={vendor.name}
+                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center">
+                                                        <span className="text-5xl font-black text-indigo-300">
+                                                            {vendor.name.substring(0, 2).toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {vendor.verified && (
+                                                    <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl flex items-center gap-2 border border-white shadow-sm">
+                                                        <ShieldCheck className="w-4 h-4 text-green-500" />
+                                                        <span className="text-[10px] font-black text-neutral-900 uppercase tracking-wider">Verified Pro</span>
+                                                    </div>
+                                                )}
+                                                {vendor.rating > 0 && (
+                                                    <div className="absolute bottom-6 right-6 flex items-center gap-1 bg-neutral-900/80 backdrop-blur-md px-3 py-1.5 rounded-xl">
+                                                        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                                                        <span className="text-xs font-bold text-white">{vendor.rating.toFixed(1)}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="p-8">
+                                                <div className="flex items-start justify-between mb-4">
+                                                    <div>
+                                                        <h3 className="text-xl font-bold text-neutral-900 group-hover:text-indigo-600 transition-colors mb-1">{vendor.name}</h3>
+                                                        {vendor.location && (
+                                                            <p className="flex items-center gap-1 text-sm font-medium text-neutral-400">
+                                                                <MapPin className="w-3.5 h-3.5" />
+                                                                {vendor.location}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            )}
-                                            <div className="absolute bottom-6 right-6 flex items-center gap-1 bg-neutral-900/80 backdrop-blur-md px-3 py-1.5 rounded-xl">
-                                                <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                                                <span className="text-xs font-bold text-white">{vendor.rating}</span>
-                                            </div>
-                                        </div>
 
-                                        <div className="p-8">
-                                            <div className="flex items-start justify-between mb-4">
-                                                <div>
-                                                    <h3 className="text-xl font-bold text-neutral-900 group-hover:text-indigo-600 transition-colors mb-1">{vendor.name}</h3>
-                                                    <p className="flex items-center gap-1 text-sm font-medium text-neutral-400">
-                                                        <MapPin className="w-3.5 h-3.5" />
-                                                        {vendor.location}
-                                                    </p>
+                                                <div className="flex flex-wrap gap-2 mb-8">
+                                                    {vendor.specialties.slice(0, 4).map(s => (
+                                                        <span key={s} className="bg-neutral-50 text-[10px] font-black text-neutral-500 uppercase tracking-widest px-3 py-1.5 rounded-lg border border-neutral-100">
+                                                            {s}
+                                                        </span>
+                                                    ))}
+                                                    {vendor.specialties.length > 4 && (
+                                                        <span className="text-xs text-neutral-400">+{vendor.specialties.length - 4}</span>
+                                                    )}
                                                 </div>
-                                            </div>
 
-                                            <div className="flex flex-wrap gap-2 mb-8">
-                                                {vendor.specialties.map(s => (
-                                                    <span key={s} className="bg-neutral-50 text-[10px] font-black text-neutral-500 uppercase tracking-widest px-3 py-1.5 rounded-lg border border-neutral-100">
-                                                        {s}
-                                                    </span>
-                                                ))}
+                                                <Link
+                                                    href={`/vendor/${vendor.id}`}
+                                                    className="flex items-center justify-between w-full bg-neutral-50 group-hover:bg-indigo-600 group-hover:text-white p-5 rounded-2xl transition-all"
+                                                >
+                                                    <span className="font-bold text-sm tracking-tight text-neutral-700 group-hover:text-white">View Full Profile</span>
+                                                    <ChevronRight className="w-5 h-5 text-neutral-400 group-hover:text-white transition-all transform group-hover:translate-x-1" />
+                                                </Link>
                                             </div>
+                                        </motion.div>
+                                    ))}
+                                </motion.div>
+                            )}
 
-                                            <Link
-                                                href={`/vendor/${vendor.id}`}
-                                                className="flex items-center justify-between w-full bg-neutral-50 group-hover:bg-indigo-600 group-hover:text-white p-5 rounded-2xl transition-all"
-                                            >
-                                                <span className="font-bold text-sm tracking-tight text-neutral-700 group-hover:text-white">View Full Profile</span>
-                                                <ChevronRight className="w-5 h-5 text-neutral-400 group-hover:text-white transition-all transform group-hover:translate-x-1" />
-                                            </Link>
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </motion.div>
+                            {/* Empty State */}
+                            {!loading && vendors.length === 0 && !error && (
+                                <div className="text-center py-20">
+                                    <Building2 className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
+                                    <h3 className="text-lg font-bold text-neutral-700 mb-2">No vendors found</h3>
+                                    <p className="text-neutral-500 text-sm">
+                                        {search ? 'Try adjusting your search query.' : 'There are no vendors to display at this time.'}
+                                    </p>
+                                </div>
+                            )}
 
                             {/* Load More */}
-                            <div className="pt-12 text-center">
-                                <button className="px-12 py-5 rounded-2xl bg-white border border-neutral-200 text-neutral-400 font-bold hover:text-indigo-600 hover:border-indigo-600 shadow-sm transition-all active:scale-95">
-                                    Discover More Pros
-                                </button>
-                            </div>
+                            {!loading && vendors.length > 0 && totalResults > vendors.length && (
+                                <div className="pt-12 text-center">
+                                    <button className="px-12 py-5 rounded-2xl bg-white border border-neutral-200 text-neutral-400 font-bold hover:text-indigo-600 hover:border-indigo-600 shadow-sm transition-all active:scale-95">
+                                        Discover More Pros
+                                    </button>
+                                </div>
+                            )}
 
                         </div>
                     </div>

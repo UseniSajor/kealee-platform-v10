@@ -67,7 +67,7 @@ export default function PrivacyPage() {
           {/* Intro */}
           <section>
             <p className="text-gray-600 leading-relaxed">
-              Kealee Construction LLC (&quot;Kealee,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) operates
+              Kealee LLC (&quot;Kealee,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) operates
               the Kealee Permits &amp; Inspections platform (the &quot;Platform&quot;). We are committed to
               protecting the privacy and security of the personal and professional information you share with
               us. This Privacy Policy describes the types of information we collect, how we use and protect
@@ -313,7 +313,7 @@ export default function PrivacyPage() {
                   </a>
                 </p>
                 <p>
-                  <strong className="text-gray-900">Company:</strong> Kealee Construction LLC
+                  <strong className="text-gray-900">Company:</strong> Kealee LLC
                 </p>
                 <p>
                   <strong className="text-gray-900">Address:</strong> Washington, DC Metropolitan Area

@@ -184,7 +184,7 @@ export function buildG702Structure(data: AiaG702Data): DocumentStructure {
       { role: 'Architect', name: data.architect.name, date: '' },
       { role: 'Owner', name: data.owner.name, date: '' },
     ],
-    footer: { pageCount: true, confidential: true, company: 'Kealee Construction' },
+    footer: { pageCount: true, confidential: true, company: 'Kealee' },
   };
 }
 

@@ -66,7 +66,7 @@ export function LoginClient() {
       <div className="lg:hidden flex items-center justify-center mb-4">
         <img
           src="/kealee-logo-600w.png"
-          alt="Kealee Construction"
+          alt="Kealee"
           className="h-28 w-auto"
         />
       </div>

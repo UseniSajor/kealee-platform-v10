@@ -53,7 +53,7 @@ export function MarketingFooter({ className = '' }: MarketingFooterProps) {
             <Link href="/" className="inline-flex items-center gap-2 mb-4">
               <img
                 src="/kealee-logo-300w.png"
-                alt="Kealee Construction"
+                alt="Kealee"
                 className="h-8 w-auto"
               />
             </Link>
@@ -170,7 +170,7 @@ export function MarketingFooter({ className = '' }: MarketingFooterProps) {
       <div className="border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-gray-500">
-            <p>&copy; {new Date().getFullYear()} Kealee Construction LLC. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Kealee LLC. All rights reserved.</p>
             <p>Serving the DC-Baltimore Corridor</p>
           </div>
         </div>

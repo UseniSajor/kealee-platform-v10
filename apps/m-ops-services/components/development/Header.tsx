@@ -43,7 +43,7 @@ export function Header({ onRequestReview }: HeaderProps) {
           <Link href="/development" className="flex items-center">
             <img
               src="/kealee-logo-600w.png"
-              alt="Kealee Construction"
+              alt="Kealee"
               className="h-14 w-auto"
             />
           </Link>

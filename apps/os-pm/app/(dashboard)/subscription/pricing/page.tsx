@@ -435,13 +435,11 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <a
-                href="mailto:sales@kealee.com?subject=Full-Service%20Package%20Inquiry"
+              <button
                 className="mt-6 w-full py-3 px-4 border-2 border-gray-800 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
               >
-                Contact Sales
-                <Phone size={14} />
-              </a>
+                Get Started
+              </button>
             </div>
           ))}
         </div>
@@ -493,17 +491,7 @@ export default function PricingPage() {
 
       {/* Bottom CTA */}
       <div className="text-center py-8">
-        <p className="text-gray-600 mb-4">
-          Need help choosing the right plan for your business?
-        </p>
-        <a
-          href="mailto:sales@kealee.com?subject=Plan%20Selection%20Help"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"
-        >
-          Talk to Sales
-          <Phone size={16} />
-        </a>
-        <p className="mt-4 text-sm text-gray-400">
+        <p className="text-sm text-gray-400">
           All plans include a 14-day free trial. No credit card required to start.
         </p>
       </div>

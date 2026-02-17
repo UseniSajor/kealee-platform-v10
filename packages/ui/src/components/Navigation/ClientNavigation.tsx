@@ -38,7 +38,7 @@ export function Navigation() {
             <Link href="/" className="flex items-center">
               <img
                 src="/kealee-logo-600w.png"
-                alt="Kealee Construction"
+                alt="Kealee"
                 className="h-10 w-auto"
               />
             </Link>

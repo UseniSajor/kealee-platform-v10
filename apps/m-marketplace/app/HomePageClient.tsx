@@ -161,11 +161,11 @@ export function HomePageClient({
         </div>
       </motion.section>
 
-      {/* SECTION 3 - KEALEE CONSTRUCTION NETWORK */}
+      {/* SECTION 3 - KEALEE NETWORK */}
       <motion.section {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <SectionLabel text="KEALEE CONSTRUCTION NETWORK" color="teal" className="mb-4" />
+            <SectionLabel text="KEALEE NETWORK" color="teal" className="mb-4" />
             <h2
               className="text-3xl lg:text-4xl font-bold mb-4"
               style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}

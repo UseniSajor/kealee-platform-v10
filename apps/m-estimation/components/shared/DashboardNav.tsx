@@ -11,6 +11,8 @@ import {
   BarChart3,
   Settings,
   Calculator,
+  Wand2,
+  Brain,
 } from 'lucide-react';
 
 const navigation = [
@@ -19,6 +21,8 @@ const navigation = [
   { name: 'Assemblies', href: '/dashboard/assemblies', icon: Package },
   { name: 'Cost Database', href: '/dashboard/cost-database', icon: Database },
   { name: 'Takeoff', href: '/dashboard/takeoff', icon: Ruler },
+  { name: 'AI Takeoff', href: '/dashboard/ai-takeoff', icon: Wand2 },
+  { name: 'AI Tools', href: '/dashboard/ai-tools', icon: Brain },
   { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
@@ -32,7 +36,7 @@ export function DashboardNav() {
       <div className="h-16 flex items-center px-4 border-b">
         <img
           src="/kealee-logo-300w.png"
-          alt="Kealee Construction"
+          alt="Kealee"
           className="h-10 w-auto"
         />
       </div>

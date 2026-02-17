@@ -1,5 +1,5 @@
 // apps/m-marketplace/app/network/page.tsx
-// Kealee Construction Network - Search & Browse
+// Kealee Network - Search & Browse
 
 import { Metadata } from 'next';
 import Image from 'next/image';
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: 'Construction Network | Kealee',
   description: 'Find trusted contractors, architects, engineers, and construction professionals in the DC-Baltimore corridor. Verified, licensed, and ready to work.',
   openGraph: {
-    title: 'Kealee Construction Network',
+    title: 'Kealee Network',
     description: 'Find the right construction professional for your project.',
     url: 'https://kealee.com/network',
   },

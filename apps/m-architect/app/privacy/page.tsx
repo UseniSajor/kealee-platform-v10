@@ -34,7 +34,7 @@ export default function PrivacyPage() {
 
           <section>
             <p className="text-gray-600 leading-relaxed">
-              Kealee Construction LLC is committed to protecting your privacy. This policy
+              Kealee LLC is committed to protecting your privacy. This policy
               explains how we handle your information when you use our architecture services.
             </p>
           </section>

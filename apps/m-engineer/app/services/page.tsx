@@ -1,13 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getServices, type EngineeringService } from "../../lib/api";
 
-const services = [
-  {
-    id: "structural",
-    name: "Structural Engineering",
-    icon: "🏗️",
-    description: "Complete structural engineering services including foundation design, framing analysis, load calculations, and PE-stamped drawings.",
+/** Static detail that the backend does not serve (features, tier pricing, turnaround) */
+const serviceDetails: Record<string, {
+  icon: string;
+  detailedFeatures: string[];
+  pricing: { tier: string; price: string; desc: string }[];
+  turnaround: string;
+}> = {
+  structural: {
+    icon: "\u{1F3D7}\uFE0F",
     detailedFeatures: [
       "Foundation Design & Analysis",
       "Load-Bearing Wall Calculations",
@@ -25,11 +30,8 @@ const services = [
     ],
     turnaround: "5-10 business days",
   },
-  {
-    id: "mep",
-    name: "MEP Engineering",
-    icon: "⚡",
-    description: "Mechanical, electrical, and plumbing system design with energy modeling and code compliance for residential and commercial projects.",
+  mep: {
+    icon: "\u26A1",
     detailedFeatures: [
       "HVAC Load Calculations",
       "Ductwork Design",
@@ -47,11 +49,8 @@ const services = [
     ],
     turnaround: "7-14 business days",
   },
-  {
-    id: "civil",
-    name: "Civil Engineering",
-    icon: "🛤️",
-    description: "Site development, grading, drainage, and infrastructure design for residential subdivisions and commercial developments.",
+  civil: {
+    icon: "\u{1F6E4}\uFE0F",
     detailedFeatures: [
       "Site Planning",
       "Grading & Earthwork",
@@ -69,11 +68,8 @@ const services = [
     ],
     turnaround: "10-14 business days",
   },
-  {
-    id: "geotechnical",
-    name: "Geotechnical Services",
-    icon: "🔬",
-    description: "Soil investigation, foundation recommendations, and site characterization for construction projects of all sizes.",
+  geotechnical: {
+    icon: "\u{1F52C}",
     detailedFeatures: [
       "Soil Boring & Sampling",
       "Laboratory Testing",
@@ -91,9 +87,41 @@ const services = [
     ],
     turnaround: "7-21 business days",
   },
+};
+
+/** Hardcoded fallback when API is unavailable */
+const fallbackServices = [
+  { id: "structural", name: "Structural Engineering", description: "Complete structural engineering services including foundation design, framing analysis, load calculations, and PE-stamped drawings.", startingPrice: 1500, features: [] },
+  { id: "mep", name: "MEP Engineering", description: "Mechanical, electrical, and plumbing system design with energy modeling and code compliance for residential and commercial projects.", startingPrice: 2000, features: [] },
+  { id: "civil", name: "Civil Engineering", description: "Site development, grading, drainage, and infrastructure design for residential subdivisions and commercial developments.", startingPrice: 2500, features: [] },
+  { id: "geotechnical", name: "Geotechnical Services", description: "Soil investigation, foundation recommendations, and site characterization for construction projects of all sizes.", startingPrice: 1800, features: [] },
 ];
 
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(amount);
+}
+
 export default function ServicesPage() {
+  const [services, setServices] = useState<EngineeringService[]>(fallbackServices);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      const res = await getServices();
+      if (cancelled) return;
+      if (res.success && res.data) {
+        const list = (res.data as any).services || res.data;
+        if (Array.isArray(list) && list.length > 0) {
+          setServices(list);
+        }
+      }
+      setLoading(false);
+    }
+    load();
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <div className="min-h-screen bg-zinc-50">
       {/* Header */}
@@ -125,74 +153,99 @@ export default function ServicesPage() {
         </div>
 
         <div className="space-y-8">
-          {services.map((service) => (
-            <div
-              key={service.id}
-              className="bg-white rounded-2xl border border-zinc-200 overflow-hidden"
-            >
-              <div className="p-8">
-                <div className="flex items-start gap-6">
-                  <div className="text-5xl">{service.icon}</div>
-                  <div className="flex-1">
-                    <h2 className="text-2xl font-bold mb-2">{service.name}</h2>
-                    <p className="text-zinc-600 mb-4">{service.description}</p>
-                    <div className="text-sm text-zinc-500">
-                      Typical turnaround: <span className="font-semibold text-blue-600">{service.turnaround}</span>
+          {services.map((service) => {
+            const detail = serviceDetails[service.id];
+            return (
+              <div
+                key={service.id}
+                className="bg-white rounded-2xl border border-zinc-200 overflow-hidden"
+              >
+                <div className="p-8">
+                  <div className="flex items-start gap-6">
+                    <div className="text-5xl">{detail?.icon || "\u{1F527}"}</div>
+                    <div className="flex-1">
+                      <h2 className="text-2xl font-bold mb-2">{service.name}</h2>
+                      <p className="text-zinc-600 mb-4">{service.description}</p>
+                      <div className="text-sm text-zinc-500">
+                        {detail && (
+                          <>Typical turnaround: <span className="font-semibold text-blue-600">{detail.turnaround}</span> | </>
+                        )}
+                        Starting at <span className="font-semibold text-blue-600">{formatCurrency(service.startingPrice)}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="mt-8 grid grid-cols-2 gap-8">
-                  {/* Features */}
-                  <div>
-                    <h3 className="text-sm font-bold text-zinc-500 uppercase mb-4">What's Included</h3>
-                    <ul className="grid grid-cols-2 gap-2">
-                      {service.detailedFeatures.map((feature) => (
-                        <li key={feature} className="flex items-center gap-2 text-sm">
-                          <span className="text-blue-500">✓</span>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  <div className="mt-8 grid grid-cols-2 gap-8">
+                    {/* Features */}
+                    {detail && (
+                      <div>
+                        <h3 className="text-sm font-bold text-zinc-500 uppercase mb-4">What's Included</h3>
+                        <ul className="grid grid-cols-2 gap-2">
+                          {detail.detailedFeatures.map((feature) => (
+                            <li key={feature} className="flex items-center gap-2 text-sm">
+                              <span className="text-blue-500">&#10003;</span>
+                              {feature}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
 
-                  {/* Pricing Tiers */}
-                  <div>
-                    <h3 className="text-sm font-bold text-zinc-500 uppercase mb-4">Pricing</h3>
-                    <div className="space-y-3">
-                      {service.pricing.map((tier) => (
-                        <div
-                          key={tier.tier}
-                          className="flex items-center justify-between p-3 bg-zinc-50 rounded-lg"
-                        >
-                          <div>
-                            <div className="font-semibold">{tier.tier}</div>
-                            <div className="text-sm text-zinc-500">{tier.desc}</div>
-                          </div>
-                          <div className="text-lg font-bold text-blue-600">{tier.price}</div>
+                    {/* API features fallback */}
+                    {!detail && service.features && service.features.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-bold text-zinc-500 uppercase mb-4">What's Included</h3>
+                        <ul className="grid grid-cols-2 gap-2">
+                          {service.features.map((feature) => (
+                            <li key={feature} className="flex items-center gap-2 text-sm">
+                              <span className="text-blue-500">&#10003;</span>
+                              {feature}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Pricing Tiers */}
+                    {detail && (
+                      <div>
+                        <h3 className="text-sm font-bold text-zinc-500 uppercase mb-4">Pricing</h3>
+                        <div className="space-y-3">
+                          {detail.pricing.map((tier) => (
+                            <div
+                              key={tier.tier}
+                              className="flex items-center justify-between p-3 bg-zinc-50 rounded-lg"
+                            >
+                              <div>
+                                <div className="font-semibold">{tier.tier}</div>
+                                <div className="text-sm text-zinc-500">{tier.desc}</div>
+                              </div>
+                              <div className="text-lg font-bold text-blue-600">{tier.price}</div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    )}
                   </div>
-                </div>
 
-                <div className="mt-6 flex gap-3">
-                  <Link
-                    href={`/quote?service=${service.id}`}
-                    className="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700"
-                  >
-                    Request Quote
-                  </Link>
-                  <Link
-                    href={`/services/${service.id}`}
-                    className="px-6 py-3 border border-zinc-200 font-semibold rounded-lg hover:bg-zinc-50"
-                  >
-                    Learn More
-                  </Link>
+                  <div className="mt-6 flex gap-3">
+                    <Link
+                      href={`/quote?service=${service.id}`}
+                      className="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700"
+                    >
+                      Request Quote
+                    </Link>
+                    <Link
+                      href={`/services/${service.id}`}
+                      className="px-6 py-3 border border-zinc-200 font-semibold rounded-lg hover:bg-zinc-50"
+                    >
+                      Learn More
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* CTA */}

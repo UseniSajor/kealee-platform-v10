@@ -84,7 +84,7 @@ export interface EmailParams {
 // Default sender
 const DEFAULT_FROM = {
   email: process.env.SENDGRID_FROM_EMAIL || 'noreply@kealee.com',
-  name: process.env.SENDGRID_FROM_NAME || 'Kealee Construction',
+  name: process.env.SENDGRID_FROM_NAME || 'Kealee',
 };
 
 /**

@@ -90,7 +90,7 @@ export function SignupClient() {
         <div className="text-center">
           <img
             src="/kealee-logo-600w.png"
-            alt="Kealee Construction"
+            alt="Kealee"
             className="h-28 w-auto mx-auto mb-3"
           />
           <h1 className="text-2xl font-bold text-neutral-900">Start Your Free Trial</h1>
@@ -156,7 +156,7 @@ export function SignupClient() {
             </Button>
             <p className="mt-3 text-xs text-neutral-400">
               Need Enterprise (unlimited projects)?{" "}
-              <a href="https://kealee.com/contact" className="text-primary hover:underline">Contact sales</a>
+              <a href="https://kealee.com/contact" className="text-primary hover:underline">Contact us</a>
             </p>
           </div>
         )}

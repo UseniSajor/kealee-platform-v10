@@ -278,7 +278,7 @@ async function handleSendReminders(data: BidEngineJob & { type: 'SEND_REMINDERS'
             is in <strong>${daysUntilDeadline} day${daysUntilDeadline > 1 ? 's' : ''}</strong>.</p>
             <p>Please submit your bid before ${invitation.bidRequest.deadline.toLocaleDateString()}.</p>
             <p><a href="${process.env.APP_URL}/bids/submit/${invitation.id}">Submit Your Bid</a></p>
-            <p>Thank you,<br/>Kealee Construction</p>
+            <p>Thank you,<br/>Kealee</p>
           `,
         });
         sentCount++;

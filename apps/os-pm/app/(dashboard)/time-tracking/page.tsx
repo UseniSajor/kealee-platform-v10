@@ -1,12 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { Download, Pause, Play, Plus, TimerReset } from "lucide-react"
+import { Download, Loader2, Pause, Play, Plus, TimerReset } from "lucide-react"
 
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { cn } from "@/lib/utils"
+import { api } from "@/lib/api/index"
 
 type TimeEntry = {
   id: string
@@ -53,15 +54,39 @@ export default function TimeTrackingPage() {
   const [running, setRunning] = React.useState(false)
   const [startedAt, setStartedAt] = React.useState<number | null>(null)
   const [elapsedSec, setElapsedSec] = React.useState(0)
-  const [timerProject, setTimerProject] = React.useState("Demo Project")
-  const [timerTask, setTimerTask] = React.useState("Site coordination")
+  const [timerProject, setTimerProject] = React.useState("")
+  const [timerTask, setTimerTask] = React.useState("")
   const [timerBillable, setTimerBillable] = React.useState(true)
 
-  const [entries, setEntries] = React.useState<TimeEntry[]>([
-    { id: "e1", date: "2026-01-13", project: "Demo Project", task: "Client update call", minutes: 45, billable: true },
-    { id: "e2", date: "2026-01-13", project: "Demo Project", task: "Permit follow-up", minutes: 30, billable: true },
-    { id: "e3", date: "2026-01-12", project: "Internal", task: "Weekly planning", minutes: 60, billable: false },
-  ])
+  const [entries, setEntries] = React.useState<TimeEntry[]>([])
+  const [loading, setLoading] = React.useState(true)
+
+  // Load existing time entries from the API
+  React.useEffect(() => {
+    loadEntries()
+  }, [])
+
+  async function loadEntries() {
+    setLoading(true)
+    try {
+      const res = await api.timeTracking.list()
+      const data = res as any
+      const items = data?.entries || data?.data?.entries || data?.timeEntries || data?.items || []
+      const mapped: TimeEntry[] = items.map((e: any) => ({
+        id: e.id,
+        date: e.date ? new Date(e.date).toISOString().slice(0, 10) : e.startDate ? new Date(e.startDate).toISOString().slice(0, 10) : "",
+        project: e.projectName || e.project || "",
+        task: e.taskName || e.task || e.description || "",
+        minutes: e.minutes || (e.hours ? Math.round(e.hours * 60) : e.duration || 0),
+        billable: e.billable ?? true,
+      }))
+      setEntries(mapped)
+    } catch (err) {
+      console.error("Failed to load time entries:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   React.useEffect(() => {
     if (!running || startedAt === null) return
@@ -94,38 +119,68 @@ export default function TimeTrackingPage() {
     setElapsedSec(0)
   }
 
-  function addManualEntry() {
-    setEntries((prev) => [
-      {
-        id: uid("te"),
-        date: new Date().toISOString().slice(0, 10),
-        project: timerProject.trim() || "Project",
-        task: timerTask.trim() || "Work",
-        minutes: 30,
-        billable: timerBillable,
-      },
-      ...prev,
-    ])
+  async function addManualEntry() {
+    const newEntry: TimeEntry = {
+      id: uid("te"),
+      date: new Date().toISOString().slice(0, 10),
+      project: timerProject.trim() || "Project",
+      task: timerTask.trim() || "Work",
+      minutes: 30,
+      billable: timerBillable,
+    }
+    setEntries((prev) => [newEntry, ...prev])
+
+    // Persist to backend
+    try {
+      await api.timeTracking.create({
+        date: newEntry.date,
+        projectName: newEntry.project,
+        description: newEntry.task,
+        minutes: newEntry.minutes,
+        hours: newEntry.minutes / 60,
+        billable: newEntry.billable,
+      })
+    } catch (err) {
+      console.error("Failed to save time entry:", err)
+    }
   }
 
-  function stopAndSave() {
-    if (elapsedSec < 60) {
-      alert("Timer under 1 minute (placeholder).")
-      return
-    }
+  async function stopAndSave() {
+    if (elapsedSec < 60) return
     const minutes = Math.round(elapsedSec / 60)
-    setEntries((prev) => [
-      {
-        id: uid("te"),
-        date: new Date().toISOString().slice(0, 10),
-        project: timerProject.trim() || "Project",
-        task: timerTask.trim() || "Work",
-        minutes,
-        billable: timerBillable,
-      },
-      ...prev,
-    ])
+    const newEntry: TimeEntry = {
+      id: uid("te"),
+      date: new Date().toISOString().slice(0, 10),
+      project: timerProject.trim() || "Project",
+      task: timerTask.trim() || "Work",
+      minutes,
+      billable: timerBillable,
+    }
+    setEntries((prev) => [newEntry, ...prev])
     reset()
+
+    // Persist to backend
+    try {
+      await api.timeTracking.create({
+        date: newEntry.date,
+        projectName: newEntry.project,
+        description: newEntry.task,
+        minutes: newEntry.minutes,
+        hours: newEntry.minutes / 60,
+        billable: newEntry.billable,
+      })
+    } catch (err) {
+      console.error("Failed to save time entry:", err)
+    }
+  }
+
+  async function deleteEntry(id: string) {
+    setEntries((prev) => prev.filter((x) => x.id !== id))
+    try {
+      await api.timeTracking.delete(id)
+    } catch {
+      // Entry may be local-only
+    }
   }
 
   function exportPayroll() {
@@ -145,7 +200,7 @@ export default function TimeTrackingPage() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Time Tracking</h1>
-          <p className="text-neutral-600 mt-1">Timer + timesheets with billable hours and payroll export (placeholder).</p>
+          <p className="text-neutral-600 mt-1">Timer + timesheets with billable hours and payroll export.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={exportPayroll} disabled={!entries.length}>
@@ -197,11 +252,11 @@ export default function TimeTrackingPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <div className="text-xs font-medium text-neutral-700 mb-1">Project</div>
-                  <Input value={timerProject} onChange={(e) => setTimerProject(e.target.value)} />
+                  <Input value={timerProject} onChange={(e) => setTimerProject(e.target.value)} placeholder="Project name" />
                 </div>
                 <div>
                   <div className="text-xs font-medium text-neutral-700 mb-1">Task</div>
-                  <Input value={timerTask} onChange={(e) => setTimerTask(e.target.value)} />
+                  <Input value={timerTask} onChange={(e) => setTimerTask(e.target.value)} placeholder="Task description" />
                 </div>
                 <div className="md:col-span-2 flex items-center gap-2">
                   <input
@@ -223,56 +278,63 @@ export default function TimeTrackingPage() {
               <CardTitle className="text-base">Timesheet entries</CardTitle>
             </CardHeader>
             <CardContent className="pb-4">
-              <div className="overflow-x-auto rounded-xl border bg-white">
-                <table className="min-w-[900px] w-full text-sm">
-                  <thead className="bg-neutral-50 text-neutral-600">
-                    <tr>
-                      <th className="text-left font-medium px-4 py-3">Date</th>
-                      <th className="text-left font-medium px-4 py-3">Project</th>
-                      <th className="text-left font-medium px-4 py-3">Task</th>
-                      <th className="text-right font-medium px-4 py-3">Time</th>
-                      <th className="text-left font-medium px-4 py-3">Billable</th>
-                      <th className="text-right font-medium px-4 py-3">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {entries.map((e) => (
-                      <tr key={e.id} className="border-t">
-                        <td className="px-4 py-3 text-neutral-700">{e.date}</td>
-                        <td className="px-4 py-3 text-neutral-900 font-medium">{e.project}</td>
-                        <td className="px-4 py-3 text-neutral-700">{e.task}</td>
-                        <td className="px-4 py-3 text-right tabular-nums text-neutral-900">{fmtMinutes(e.minutes)}</td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={cn(
-                              "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
-                              e.billable ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-neutral-50 text-neutral-700 border-neutral-200"
-                            )}
-                          >
-                            {e.billable ? "billable" : "non-billable"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setEntries((prev) => prev.filter((x) => x.id !== e.id))}
-                          >
-                            Delete
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                    {!entries.length ? (
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mr-2" />
+                  <span className="text-muted-foreground">Loading time entries...</span>
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-xl border bg-white">
+                  <table className="min-w-[900px] w-full text-sm">
+                    <thead className="bg-neutral-50 text-neutral-600">
                       <tr>
-                        <td colSpan={6} className="px-4 py-10 text-center text-neutral-600">
-                          No entries yet.
-                        </td>
+                        <th className="text-left font-medium px-4 py-3">Date</th>
+                        <th className="text-left font-medium px-4 py-3">Project</th>
+                        <th className="text-left font-medium px-4 py-3">Task</th>
+                        <th className="text-right font-medium px-4 py-3">Time</th>
+                        <th className="text-left font-medium px-4 py-3">Billable</th>
+                        <th className="text-right font-medium px-4 py-3">Actions</th>
                       </tr>
-                    ) : null}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {entries.map((e) => (
+                        <tr key={e.id} className="border-t">
+                          <td className="px-4 py-3 text-neutral-700">{e.date}</td>
+                          <td className="px-4 py-3 text-neutral-900 font-medium">{e.project}</td>
+                          <td className="px-4 py-3 text-neutral-700">{e.task}</td>
+                          <td className="px-4 py-3 text-right tabular-nums text-neutral-900">{fmtMinutes(e.minutes)}</td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={cn(
+                                "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
+                                e.billable ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-neutral-50 text-neutral-700 border-neutral-200"
+                              )}
+                            >
+                              {e.billable ? "billable" : "non-billable"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deleteEntry(e.id)}
+                            >
+                              Delete
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                      {!entries.length ? (
+                        <tr>
+                          <td colSpan={6} className="px-4 py-10 text-center text-neutral-600">
+                            No entries yet. Start the timer or add a manual entry.
+                          </td>
+                        </tr>
+                      ) : null}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -295,9 +357,6 @@ export default function TimeTrackingPage() {
                 <div className="text-sm text-neutral-600">Non-billable</div>
                 <div className="mt-1 text-2xl font-bold tabular-nums">{fmtMinutes(totals.nonBillableMin)}</div>
               </div>
-              <div className="text-xs text-neutral-600">
-                Payroll export is CSV (placeholder). Next: map to payroll system schema + approvals.
-              </div>
             </CardContent>
           </Card>
         </div>
@@ -305,4 +364,3 @@ export default function TimeTrackingPage() {
     </div>
   )
 }
-

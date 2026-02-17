@@ -352,7 +352,7 @@ export default function TermsPage() {
               </p>
               <div className="space-y-2 text-gray-600">
                 <p><strong>Email:</strong> legal@kealee.com</p>
-                <p><strong>Address:</strong> Kealee Construction LLC, Washington, DC</p>
+                <p><strong>Address:</strong> Kealee LLC, Washington, DC</p>
               </div>
             </section>
 

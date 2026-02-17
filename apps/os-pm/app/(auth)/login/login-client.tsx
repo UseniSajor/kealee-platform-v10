@@ -56,7 +56,7 @@ export function LoginClient() {
         <div className="text-center">
           <img
             src="/kealee-logo-600w.png"
-            alt="Kealee Construction"
+            alt="Kealee"
             className="h-28 w-auto mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-neutral-900">Kealee PM</h1>

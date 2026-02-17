@@ -18,7 +18,7 @@ export function Header() {
             <Link href="/" className="flex items-center">
               <Image
                 src="/kealee-logo-600w.png"
-                alt="Kealee Construction"
+                alt="Kealee"
                 width={300}
                 height={102}
                 priority

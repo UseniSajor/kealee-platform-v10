@@ -150,11 +150,15 @@ export default function OpsServicesHomePage() {
               href="/pm-software"
               className="group rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:border-sky-500 hover:shadow-md"
             >
+              <div className="mb-2 inline-block rounded-full bg-zinc-100 px-2.5 py-0.5 text-[10px] font-black text-zinc-500 uppercase tracking-wider">
+                Available Standalone
+              </div>
               <h3 className="text-xl font-black text-zinc-900">
                 PM Software Platform
               </h3>
               <p className="mt-2 text-sm text-zinc-600">
-                Self-service project management tools for contractors who prefer to manage operations in-house.
+                Cloud-based project management tools for contractors. Use it independently or
+                pair with our managed services for full-coverage support.
               </p>
               <div className="mt-4 text-sm font-black text-sky-500 group-hover:underline">
                 Learn more →

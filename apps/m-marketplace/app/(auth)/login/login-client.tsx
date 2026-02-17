@@ -59,7 +59,7 @@ export function LoginClient() {
       <CardHeader>
         <img
           src="/kealee-logo-600w.png"
-          alt="Kealee Construction"
+          alt="Kealee"
           className="h-28 w-auto mx-auto mb-2"
         />
         <CardTitle className="text-2xl text-center">Marketplace Login</CardTitle>

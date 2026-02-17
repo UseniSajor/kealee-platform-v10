@@ -1,14 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Building2, Plus, Search, Filter, Clock, CheckCircle, AlertCircle, ArrowRight, Calendar, DollarSign } from 'lucide-react';
+import { Building2, Plus, Search, Filter, Clock, CheckCircle, AlertCircle, ArrowRight, Calendar, DollarSign, RefreshCw } from 'lucide-react';
+import { getProjects, type ProjectInfo } from '../../lib/client-api';
 
 interface Project {
   id: string;
   name: string;
   address: string;
-  status: 'active' | 'completed' | 'on_hold' | 'planning';
+  status: 'active' | 'completed' | 'on_hold' | 'planning' | string;
   progress: number;
   budget: number;
   spent: number;
@@ -17,48 +18,71 @@ interface Project {
   contractor: string;
 }
 
+/**
+ * Maps a backend ProjectInfo record into the shape the UI expects.
+ * Derives address from the nested property, and maps known status strings
+ * (DRAFT, READINESS, CONTRACTING, ACTIVE, CLOSEOUT, COMPLETED, CANCELLED)
+ * into the display buckets the page already understands.
+ */
+function toUIProject(p: ProjectInfo): Project {
+  const address = p.property
+    ? `${p.property.address}, ${p.property.city}, ${p.property.state}`
+    : '';
+
+  // Map backend status to UI status
+  const statusMap: Record<string, string> = {
+    DRAFT: 'planning',
+    READINESS: 'planning',
+    CONTRACTING: 'planning',
+    ACTIVE: 'active',
+    CLOSEOUT: 'active',
+    COMPLETED: 'completed',
+    CANCELLED: 'on_hold',
+  };
+
+  const status = statusMap[p.status ?? ''] ?? 'planning';
+
+  // Find a contractor member if present
+  const contractor = p.memberships?.find(m => m.role === 'CONTRACTOR')?.user?.name ?? '';
+
+  return {
+    id: p.id,
+    name: p.name,
+    address,
+    status: status as Project['status'],
+    progress: p.percentComplete ?? 0,
+    budget: p.budgetTotal ?? 0,
+    spent: p.budgetSpent ?? 0,
+    startDate: p.startDate ?? '',
+    endDate: p.endDate ?? '',
+    contractor,
+  };
+}
+
 export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const projects: Project[] = [
-    {
-      id: '1',
-      name: 'Home Renovation - Kitchen & Bath',
-      address: '1234 Oak Street, Washington, DC',
-      status: 'active',
-      progress: 65,
-      budget: 150000,
-      spent: 97500,
-      startDate: '2024-10-15',
-      endDate: '2025-03-01',
-      contractor: 'ABC Construction',
-    },
-    {
-      id: '2',
-      name: 'Basement Finishing',
-      address: '1234 Oak Street, Washington, DC',
-      status: 'planning',
-      progress: 10,
-      budget: 75000,
-      spent: 7500,
-      startDate: '2025-04-01',
-      endDate: '2025-07-01',
-      contractor: 'ABC Construction',
-    },
-    {
-      id: '3',
-      name: 'Deck Addition',
-      address: '5678 Maple Ave, Arlington, VA',
-      status: 'completed',
-      progress: 100,
-      budget: 45000,
-      spent: 43200,
-      startDate: '2024-06-01',
-      endDate: '2024-09-15',
-      contractor: 'XYZ Builders',
-    },
-  ];
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  async function fetchProjects() {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getProjects();
+      setProjects((data.projects ?? []).map(toUIProject));
+    } catch (err: any) {
+      console.error('Failed to fetch projects:', err);
+      setError(err.message || 'Failed to load projects');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -99,6 +123,7 @@ export default function ProjectsPage() {
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -112,6 +137,63 @@ export default function ProjectsPage() {
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.address.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">My Projects</h1>
+              <p className="text-gray-600">Track all your construction projects in one place</p>
+            </div>
+          </div>
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4" />
+              <p className="text-gray-500">Loading your projects...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">My Projects</h1>
+              <p className="text-gray-600">Track all your construction projects in one place</p>
+            </div>
+            <Link
+              href="/projects/new"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition"
+            >
+              <Plus size={20} />
+              New Project
+            </Link>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+            <AlertCircle className="text-red-400 mx-auto mb-4" size={48} />
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Unable to load projects</h3>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <button
+              onClick={fetchProjects}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition"
+            >
+              <RefreshCw size={20} />
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-6">
@@ -186,18 +268,27 @@ export default function ProjectsPage() {
                           {getStatusLabel(project.status)}
                         </span>
                       </div>
-                      <p className="text-gray-600 mb-3">{project.address}</p>
+                      {project.address && (
+                        <p className="text-gray-600 mb-3">{project.address}</p>
+                      )}
 
                       <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-                        <span className="flex items-center gap-1">
-                          <Calendar size={14} />
-                          {formatDate(project.startDate)} - {formatDate(project.endDate)}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <DollarSign size={14} />
-                          {formatCurrency(project.budget)} budget
-                        </span>
-                        <span>Contractor: {project.contractor}</span>
+                        {(project.startDate || project.endDate) && (
+                          <span className="flex items-center gap-1">
+                            <Calendar size={14} />
+                            {formatDate(project.startDate)}
+                            {project.endDate ? ` - ${formatDate(project.endDate)}` : ''}
+                          </span>
+                        )}
+                        {project.budget > 0 && (
+                          <span className="flex items-center gap-1">
+                            <DollarSign size={14} />
+                            {formatCurrency(project.budget)} budget
+                          </span>
+                        )}
+                        {project.contractor && (
+                          <span>Contractor: {project.contractor}</span>
+                        )}
                       </div>
                     </div>
 
@@ -213,9 +304,11 @@ export default function ProjectsPage() {
                           style={{ width: `${project.progress}%` }}
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {formatCurrency(project.spent)} of {formatCurrency(project.budget)} spent
-                      </p>
+                      {project.budget > 0 && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formatCurrency(project.spent)} of {formatCurrency(project.budget)} spent
+                        </p>
+                      )}
                     </div>
 
                     <ArrowRight className="text-gray-400 group-hover:text-indigo-600 transition hidden lg:block" size={24} />

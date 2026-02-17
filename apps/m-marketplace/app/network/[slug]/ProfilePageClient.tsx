@@ -47,9 +47,47 @@ interface ProfilePageClientProps {
   profile: any;
 }
 
+function ProfileNotFound() {
+  return (
+    <MarketingLayout
+      breadcrumbs={[
+        { label: 'Home', href: '/' },
+        { label: 'Network', href: '/network' },
+        { label: 'Profile' },
+      ]}
+    >
+      <div className="flex flex-col items-center justify-center py-24 px-4">
+        <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+          <Briefcase className="w-8 h-8 text-gray-400" />
+        </div>
+        <h2 className="text-xl font-semibold text-gray-700 mb-2">Profile Not Found</h2>
+        <p className="text-gray-500 text-sm mb-6 text-center max-w-md">
+          This contractor profile could not be loaded. It may not exist or the service may be temporarily unavailable.
+        </p>
+        <Link
+          href="/network"
+          className="px-6 py-2.5 rounded-lg font-semibold text-white transition-colors"
+          style={{ backgroundColor: brand.teal }}
+        >
+          Browse Network
+        </Link>
+      </div>
+    </MarketingLayout>
+  );
+}
+
 export function ProfilePageClient({ profile }: ProfilePageClientProps) {
+  // Handle null/missing profile from API
+  if (!profile) {
+    return <ProfileNotFound />;
+  }
+
+  return <ProfilePageInner profile={profile} />;
+}
+
+function ProfilePageInner({ profile }: { profile: any }) {
   const [activeTab, setActiveTab] = useState<'overview' | 'portfolio' | 'reviews' | 'services' | 'credentials'>('overview');
-  const availConfig = availabilityConfig[profile.availability];
+  const availConfig = availabilityConfig[profile.availability] || availabilityConfig.available;
 
   // Messaging state
   const [chatOpen, setChatOpen] = useState(false);

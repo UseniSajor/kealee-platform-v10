@@ -53,7 +53,7 @@ export function Header({ leftSlot }: { leftSlot?: React.ReactNode }) {
         <div className="md:hidden">
           <img
             src="/kealee-logo-300w.png"
-            alt="Kealee Construction"
+            alt="Kealee"
             className="h-14 w-auto"
           />
         </div>

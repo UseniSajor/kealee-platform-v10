@@ -1,5 +1,5 @@
 // packages/shared/src/types/network.ts
-// Kealee Construction Network Types
+// Kealee Network Types
 
 export type ProfessionalType =
   | 'gc'

@@ -761,7 +761,7 @@ export class DocumentGeneratorService {
 <h2>Milestone Schedule</h2>
 ${variables.milestone_schedule ?? variables.milestone_list ?? '<p>See project schedule.</p>'}
 <h2>Terms and Conditions</h2>
-<p>Standard Kealee construction contract terms apply. See full terms at kealee.com/terms.</p>
+<p>Standard Kealee contract terms apply. See full terms at kealee.com/terms.</p>
 <div class="signature-block">
   <div><div class="signature-line">Client: ${clientName}</div></div>
   <div><div class="signature-line">Contractor: ${variables.contractor_name ?? ''}</div></div>

@@ -78,7 +78,7 @@ export default function LoginPage() {
             <div className="flex items-center gap-3 text-white mb-12">
               <img
                 src="/kealee-logo-600w.png"
-                alt="Kealee Construction"
+                alt="Kealee"
                 className="h-16 w-auto"
               />
               <div>
@@ -159,7 +159,7 @@ export default function LoginPage() {
             <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
               <img
                 src="/kealee-logo-600w.png"
-                alt="Kealee Construction"
+                alt="Kealee"
                 className="h-28 w-auto"
               />
             </div>

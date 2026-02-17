@@ -3,6 +3,12 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import {
+  getPreConDashboard,
+  getPreConProjects,
+  type PreConProject,
+  type PreConDashboard,
+} from '../../lib/client-api'
 
 /**
  * SOP v2 - PRECON WORKFLOW (m-project-owner)
@@ -31,25 +37,6 @@ import { useRouter } from 'next/navigation'
  *
  * Platform Fee: 3.5% (paid by contractor, NOT homeowner)
  */
-
-interface PreConProject {
-  id: string
-  name: string
-  phase: string
-  category: string
-  description: string
-  suggestedRetailPrice?: number
-  designPackageTier: string
-  designPackagePaid: boolean
-  city?: string
-  state?: string
-  squareFootage?: number
-  createdAt: string
-  updatedAt: string
-  designConcepts?: any[]
-  bids?: any[]
-  platformFees?: any[]
-}
 
 interface DashboardData {
   totalProjects: number
@@ -112,6 +99,7 @@ export default function PreConListPage() {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null)
   const [projects, setProjects] = useState<PreConProject[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<string>('all')
 
   useEffect(() => {
@@ -119,28 +107,20 @@ export default function PreConListPage() {
   }, [])
 
   async function fetchData() {
+    setLoading(true)
+    setError(null)
     try {
-      // In production, these would be real API calls
-      // For now, using mock data structure
-      const mockDashboard: DashboardData = {
-        totalProjects: 0,
-        activeProjects: 0,
-        phaseCounts: {},
-        pipeline: {
-          intake: 0,
-          design: 0,
-          approved: 0,
-          marketplace: 0,
-          awarded: 0,
-          completed: 0,
-        },
-        pendingFees: { count: 0, total: 0, items: [] },
-        recentProjects: [],
-      }
-      setDashboard(mockDashboard)
-      setProjects([])
-    } catch (error) {
-      console.error('Failed to fetch data:', error)
+      // Fetch dashboard summary and project list in parallel
+      const [dashboardRes, projectsRes] = await Promise.all([
+        getPreConDashboard(),
+        getPreConProjects(),
+      ])
+
+      setDashboard(dashboardRes.dashboard)
+      setProjects(projectsRes.projects ?? [])
+    } catch (err: any) {
+      console.error('Failed to fetch precon data:', err)
+      setError(err.message || 'Failed to load pre-construction data')
     } finally {
       setLoading(false)
     }
@@ -157,7 +137,42 @@ export default function PreConListPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4" />
+          <p className="text-gray-500">Loading pre-construction projects...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center gap-4">
+                <Link href="/dashboard" className="text-gray-500 hover:text-gray-700">
+                  ← Dashboard
+                </Link>
+                <h1 className="text-xl font-semibold text-gray-900">Pre-Construction Projects</h1>
+              </div>
+            </div>
+          </div>
+        </header>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+            <div className="text-5xl mb-4">!</div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to load data</h3>
+            <p className="text-gray-500 mb-6">{error}</p>
+            <button
+              onClick={fetchData}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </main>
       </div>
     )
   }

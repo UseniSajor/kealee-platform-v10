@@ -313,4 +313,132 @@ export const api = {
     apiRequest<{ message: string }>(`/site-tools/photos/${photoId}`, {
       method: 'DELETE',
     }),
+
+  // ── Estimation ────────────────────────────────────────────────────────
+
+  listEstimates: (filters?: { projectId?: string; status?: string; search?: string }) => {
+    const params = new URLSearchParams()
+    if (filters?.projectId) params.append('projectId', filters.projectId)
+    if (filters?.status) params.append('status', filters.status)
+    if (filters?.search) params.append('search', filters.search)
+    const query = params.toString()
+    return apiRequest<{ estimates: any[] }>(`/estimation/project${query ? `?${query}` : ''}`)
+  },
+
+  createEstimate: (data: {
+    name: string
+    projectId?: string
+    description?: string
+    type?: string
+    status?: string
+  }) => apiRequest<{ estimate: any }>(`/estimation/estimate`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  getEstimate: (estimateId: string) =>
+    apiRequest<{ estimate: any }>(`/estimation/estimate/${estimateId}`),
+
+  updateEstimate: (estimateId: string, data: Record<string, any>) =>
+    apiRequest<{ estimate: any }>(`/estimation/estimate/${estimateId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  deleteEstimate: (estimateId: string) =>
+    apiRequest<{ message: string }>(`/estimation/estimate/${estimateId}`, {
+      method: 'DELETE',
+    }),
+
+  listAssemblies: () =>
+    apiRequest<{ assemblies: any[] }>(`/estimation/assemblies`),
+
+  listCostDatabases: () =>
+    apiRequest<{ databases: any[] }>(`/estimation/databases`),
+
+  getMaterials: () =>
+    apiRequest<{ materials: any[] }>(`/estimation/data/materials`),
+
+  getLaborRates: () =>
+    apiRequest<{ laborRates: any[] }>(`/estimation/data/labor-rates`),
+
+  listTakeoffs: () =>
+    apiRequest<{ takeoffs: any[] }>(`/estimation/takeoffs`),
+
+  uploadTakeoffPlan: (formData: FormData) => {
+    // Special handling for file upload — no JSON Content-Type
+    return (async () => {
+      const token = await getAuthToken()
+      const headers: HeadersInit = {}
+      if (token) headers['Authorization'] = `Bearer ${token}`
+
+      const response = await fetch(`${API_BASE_URL}/estimation/takeoff/upload`, {
+        method: 'POST',
+        headers,
+        body: formData,
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(error.error || `HTTP ${response.status}`)
+      }
+
+      return response.json() as Promise<{ takeoff: any }>
+    })()
+  },
+
+  runAiTakeoff: (data: {
+    takeoffId?: string
+    fileUrl?: string
+    discipline?: string
+    options?: Record<string, any>
+  }) => apiRequest<{ result: any }>(`/estimation/ai/takeoff`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  runScopeAnalysis: (data: {
+    estimateId?: string
+    projectDescription?: string
+    projectType?: string
+  }) => apiRequest<{ analysis: any }>(`/estimation/ai/scope-analysis`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  runCostPrediction: (data: {
+    estimateId?: string
+    projectType?: string
+    squareFootage?: number
+    location?: string
+  }) => apiRequest<{ prediction: any }>(`/estimation/ai/cost-prediction`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  runValueEngineering: (data: {
+    estimateId?: string
+    targetReduction?: number
+  }) => apiRequest<{ suggestions: any }>(`/estimation/ai/value-engineering`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  compareEstimates: (data: {
+    estimateIds: string[]
+  }) => apiRequest<{ comparison: any }>(`/estimation/ai/compare-estimates`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  benchmarkEstimate: (data: {
+    estimateId: string
+  }) => apiRequest<{ benchmark: any }>(`/estimation/ai/benchmark`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  getEstimationMetrics: () =>
+    apiRequest<{ metrics: any }>(`/estimation/metrics`),
 }

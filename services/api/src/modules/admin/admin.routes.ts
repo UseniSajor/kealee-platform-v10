@@ -505,7 +505,7 @@ function getDefaultEmailTemplates() {
       id: 'default-welcome',
       key: 'email_template.welcome',
       name: 'Welcome Email',
-      subject: 'Welcome to Kealee Construction Platform',
+      subject: 'Welcome to Kealee Platform',
       body: `Hi {{name}},\n\nWelcome to Kealee! Your account has been created.\n\nYou can access your dashboard at {{dashboardUrl}}.\n\nBest regards,\nThe Kealee Team`,
       isActive: true,
     },
