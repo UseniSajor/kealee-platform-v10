@@ -289,7 +289,7 @@ export default function AITakeoffPage() {
     <div className="space-y-6">
       {/* Back link */}
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/takeoff">
+        <Link href="/takeoff">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="mr-1 h-4 w-4" /> Back to Takeoff
           </Button>
@@ -609,7 +609,7 @@ export default function AITakeoffPage() {
                 </Button>
                 <Button
                   className="gap-2"
-                  onClick={() => router.push('/dashboard/estimates/new')}
+                  onClick={() => router.push('/estimates/new')}
                 >
                   <CheckCircle2 className="h-4 w-4" /> Create Estimate from Takeoff
                 </Button>

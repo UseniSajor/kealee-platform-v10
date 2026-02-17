@@ -41,7 +41,7 @@ export default function ResetPasswordPage() {
       
       // Redirect to dashboard after 2 seconds
       setTimeout(() => {
-        router.push('/dashboard');
+        router.push('/');
       }, 2000);
     } catch (err: any) {
       setError(err.message || 'Failed to update password');

@@ -111,7 +111,7 @@ export default function EstimatesPage() {
           </p>
         </div>
         <Button asChild>
-          <Link href="/dashboard/estimates/new">
+          <Link href="/estimates/new">
             <Plus className="mr-2 h-4 w-4" />
             New Estimate
           </Link>
@@ -263,7 +263,7 @@ export default function EstimatesPage() {
                     </div>
                     <div className="col-span-1 flex justify-end gap-2">
                       <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/dashboard/estimates/${estimate.id}/edit`}>
+                        <Link href={`/estimates/${estimate.id}/edit`}>
                           {estimate.status === 'draft' ? 'Edit' : 'View'}
                         </Link>
                       </Button>
@@ -286,7 +286,7 @@ export default function EstimatesPage() {
                   </p>
                   {!searchQuery && statusFilter === 'all' && (
                     <Button asChild>
-                      <Link href="/dashboard/estimates/new">
+                      <Link href="/estimates/new">
                         <Plus className="mr-2 h-4 w-4" />
                         Create Estimate
                       </Link>

@@ -117,7 +117,7 @@ export default function NewAssemblyPage() {
       });
 
       if (response.success) {
-        router.push('/dashboard/assemblies');
+        router.push('/assemblies');
       }
     } catch {
       // Error handled by API client
@@ -132,7 +132,7 @@ export default function NewAssemblyPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
-            <Link href="/dashboard/assemblies">
+            <Link href="/assemblies">
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>

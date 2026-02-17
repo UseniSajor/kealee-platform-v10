@@ -135,7 +135,7 @@ export default function AssembliesPage() {
           </p>
         </div>
         <Button asChild>
-          <Link href="/dashboard/assemblies/new">
+          <Link href="/assemblies/new">
             <Plus className="mr-2 h-4 w-4" />
             Create Assembly
           </Link>
@@ -232,7 +232,7 @@ export default function AssembliesPage() {
                   </div>
                 </div>
                 <Button variant="outline" size="sm" className="w-full" asChild>
-                  <Link href={`/dashboard/assemblies/${assembly.id}`}>
+                  <Link href={`/assemblies/${assembly.id}`}>
                     View Details
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
@@ -253,7 +253,7 @@ export default function AssembliesPage() {
             </p>
             {!searchQuery && categoryFilter === 'all' && (
               <Button asChild>
-                <Link href="/dashboard/assemblies/new">
+                <Link href="/assemblies/new">
                   <Plus className="mr-2 h-4 w-4" />
                   Create Assembly
                 </Link>

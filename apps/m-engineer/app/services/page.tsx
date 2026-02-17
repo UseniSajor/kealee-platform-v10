@@ -135,7 +135,7 @@ export default function ServicesPage() {
               <Link href="/services" className="text-blue-600 font-semibold">Services</Link>
               <Link href="/pricing" className="text-zinc-600 hover:text-zinc-900">Pricing</Link>
               <Link href="/projects" className="text-zinc-600 hover:text-zinc-900">My Projects</Link>
-              <Link href="/quote" className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700">
+              <Link href="/contact" className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700">
                 Get Quote
               </Link>
             </nav>
@@ -255,7 +255,7 @@ export default function ServicesPage() {
             Get bundled pricing for multi-discipline engineering projects.
           </p>
           <Link
-            href="/quote"
+            href="/contact"
             className="inline-block px-8 py-3 bg-white text-blue-700 font-bold rounded-lg hover:bg-zinc-100"
           >
             Get Custom Quote

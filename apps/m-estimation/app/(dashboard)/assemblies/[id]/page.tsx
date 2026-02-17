@@ -107,7 +107,7 @@ export default function AssemblyDetailPage() {
     if (!assembly || !confirm('Are you sure you want to delete this assembly?')) return;
     const response = await apiClient.deleteAssembly(assembly.id);
     if (response.success) {
-      router.push('/dashboard/assemblies');
+      router.push('/assemblies');
     }
   };
 
@@ -126,7 +126,7 @@ export default function AssemblyDetailPage() {
         <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
         <p className="text-muted-foreground mb-4">{error || 'Assembly not found'}</p>
         <Button variant="outline" asChild>
-          <Link href="/dashboard/assemblies">
+          <Link href="/assemblies">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Assemblies
           </Link>
@@ -154,7 +154,7 @@ export default function AssemblyDetailPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
-            <Link href="/dashboard/assemblies">
+            <Link href="/assemblies">
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>

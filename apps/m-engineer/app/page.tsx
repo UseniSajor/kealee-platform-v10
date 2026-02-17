@@ -163,7 +163,7 @@ export default function EngineerHomePage() {
                 View Services
               </Link>
               <Link
-                href="/quote"
+                href="/contact"
                 className="px-8 py-4 border-2 border-white text-white font-bold rounded-xl hover:bg-white/10"
               >
                 Get a Quote
@@ -354,7 +354,7 @@ export default function EngineerHomePage() {
           </p>
           <div className="flex justify-center gap-4">
             <Link
-              href="/quote"
+              href="/contact"
               className="px-8 py-4 bg-white text-blue-700 font-bold rounded-xl hover:bg-zinc-100"
             >
               Get a Free Quote

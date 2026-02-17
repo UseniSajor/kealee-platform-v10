@@ -23,7 +23,7 @@ export default function LoginPage() {
       await signIn(email, password);
 
       // Redirect to dashboard on success
-      router.push('/dashboard');
+      router.push('/');
       router.refresh();
     } catch (err: unknown) {
       setError(

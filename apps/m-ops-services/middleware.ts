@@ -56,7 +56,7 @@ export async function middleware(request: NextRequest) {
 
   if (isAuthPath && session) {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = '/dashboard';
+    redirectUrl.pathname = '/portal';
     return NextResponse.redirect(redirectUrl);
   }
 

@@ -58,7 +58,7 @@ export default function SignupPage() {
         full_name: formData.fullName,
       });
       
-      router.push('/dashboard');
+      router.push('/portal');
     } catch (err: any) {
       setError(err.message || 'Failed to create account');
     } finally {

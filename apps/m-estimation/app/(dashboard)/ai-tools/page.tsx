@@ -835,7 +835,7 @@ export default function AIToolsPage() {
               </div>
             </div>
             <Button asChild className="gap-2">
-              <Link href="/dashboard/ai-takeoff">
+              <Link href="/ai-takeoff">
                 Open AI Takeoff <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>

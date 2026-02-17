@@ -76,7 +76,7 @@ export default function BlogPage() {
               <Link href="/faq" className="text-zinc-600 hover:text-zinc-900">FAQ</Link>
               <Link href="/blog" className="font-semibold" style={{ color: "#1A2B4A" }}>Blog</Link>
               <Link
-                href="/quote"
+                href="/contact"
                 className="px-4 py-2 text-white font-bold rounded-lg"
                 style={{ backgroundColor: "#2DD4BF" }}
               >
@@ -207,7 +207,7 @@ export default function BlogPage() {
             Get a free quote within 24 hours.
           </p>
           <Link
-            href="/quote"
+            href="/contact"
             className="inline-block px-8 py-4 font-bold rounded-xl hover:opacity-90"
             style={{ backgroundColor: "#2DD4BF", color: "#1A2B4A" }}
           >

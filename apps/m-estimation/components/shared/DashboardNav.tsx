@@ -17,14 +17,14 @@ import {
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
-  { name: 'Estimates', href: '/dashboard/estimates', icon: FileText },
-  { name: 'Assemblies', href: '/dashboard/assemblies', icon: Package },
-  { name: 'Cost Database', href: '/dashboard/cost-database', icon: Database },
-  { name: 'Takeoff', href: '/dashboard/takeoff', icon: Ruler },
-  { name: 'AI Takeoff', href: '/dashboard/ai-takeoff', icon: Wand2 },
-  { name: 'AI Tools', href: '/dashboard/ai-tools', icon: Brain },
-  { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { name: 'Estimates', href: '/estimates', icon: FileText },
+  { name: 'Assemblies', href: '/assemblies', icon: Package },
+  { name: 'Cost Database', href: '/cost-database', icon: Database },
+  { name: 'Takeoff', href: '/takeoff', icon: Ruler },
+  { name: 'AI Takeoff', href: '/ai-takeoff', icon: Wand2 },
+  { name: 'AI Tools', href: '/ai-tools', icon: Brain },
+  { name: 'Reports', href: '/reports', icon: BarChart3 },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export function DashboardNav() {

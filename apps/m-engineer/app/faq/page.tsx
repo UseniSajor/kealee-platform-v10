@@ -100,7 +100,7 @@ export default function FAQPage() {
               <Link href="/faq" className="font-semibold" style={{ color: "#1A2B4A" }}>FAQ</Link>
               <Link href="/blog" className="text-zinc-600 hover:text-zinc-900">Blog</Link>
               <Link
-                href="/quote"
+                href="/contact"
                 className="px-4 py-2 text-white font-bold rounded-lg"
                 style={{ backgroundColor: "#2DD4BF" }}
               >
@@ -172,7 +172,7 @@ export default function FAQPage() {
             </div>
           </div>
           <Link
-            href="/quote"
+            href="/contact"
             className="inline-block px-8 py-4 text-white font-bold rounded-xl hover:opacity-90"
             style={{ backgroundColor: "#2DD4BF" }}
           >

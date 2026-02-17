@@ -138,7 +138,7 @@ export default function ProjectsPage() {
               <Link href="/services" className="text-zinc-600 hover:text-zinc-900">Services</Link>
               <Link href="/pricing" className="text-zinc-600 hover:text-zinc-900">Pricing</Link>
               <Link href="/projects" className="text-blue-600 font-semibold">My Projects</Link>
-              <Link href="/quote" className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700">
+              <Link href="/contact" className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700">
                 New Project
               </Link>
             </nav>
@@ -153,7 +153,7 @@ export default function ProjectsPage() {
             <p className="text-zinc-500">Track your engineering projects and deliverables</p>
           </div>
           <Link
-            href="/quote"
+            href="/contact"
             className="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700"
           >
             + New Project
@@ -247,7 +247,7 @@ export default function ProjectsPage() {
             <h2 className="text-xl font-bold mb-2">No projects yet</h2>
             <p className="text-zinc-500 mb-6">Start your first engineering project to see it here.</p>
             <Link
-              href="/quote"
+              href="/contact"
               className="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700"
             >
               Request a Quote

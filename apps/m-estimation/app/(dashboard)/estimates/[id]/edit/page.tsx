@@ -1045,7 +1045,7 @@ export default function EstimateEditPage() {
             The estimate you are looking for could not be loaded.
           </p>
           <Button asChild>
-            <Link href="/dashboard/estimates">Back to Estimates</Link>
+            <Link href="/estimates">Back to Estimates</Link>
           </Button>
         </div>
       </div>
@@ -1060,7 +1060,7 @@ export default function EstimateEditPage() {
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-4">
           <Button variant="ghost" size="icon" asChild>
-            <Link href="/dashboard/estimates">
+            <Link href="/estimates">
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>

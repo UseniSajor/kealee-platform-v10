@@ -16,7 +16,7 @@ export default function ServicesPage() {
     <div className="w-full">
       {/* Hero */}
       <section className="relative py-16 lg:py-24">
-        <Image src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&q=80&auto=format&fit=crop" alt="Construction site" fill className="object-cover" sizes="100vw" priority />
+        <Image src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1920&q=80&auto=format&fit=crop" alt="Development services" fill className="object-cover" sizes="100vw" priority />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">

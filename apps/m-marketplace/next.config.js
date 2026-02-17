@@ -66,12 +66,12 @@ const nextConfig = {
     return [
       {
         source: '/contractors',
-        destination: '/directory',
+        destination: '/network',
         permanent: true
       },
       {
         source: '/find-contractors',
-        destination: '/directory',
+        destination: '/network',
         permanent: true
       },
       {

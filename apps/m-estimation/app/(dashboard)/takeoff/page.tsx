@@ -276,7 +276,7 @@ export default function TakeoffPage() {
                                 {isExpanded ? 'Close' : 'View'}
                               </Button>
                               <Button variant="outline" size="sm" asChild>
-                                <Link href={`/dashboard/estimates/new?takeoffId=${takeoff.id}`}>
+                                <Link href={`/estimates/new?takeoffId=${takeoff.id}`}>
                                   <Plus className="mr-1 h-4 w-4" />
                                   Create Estimate
                                 </Link>

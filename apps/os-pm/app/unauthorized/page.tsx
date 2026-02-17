@@ -49,7 +49,7 @@ export default function UnauthorizedPage() {
           </Link>
           
           <Link
-            href="/auth/login"
+            href="/login"
             className="block w-full px-6 py-3 border-2 border-slate-300 text-slate-700 rounded-lg font-semibold hover:border-slate-400 transition-colors"
           >
             <div className="flex items-center justify-center gap-2">

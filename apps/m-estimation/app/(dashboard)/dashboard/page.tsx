@@ -139,10 +139,10 @@ export default function DashboardPage() {
   };
 
   const quickActions = [
-    { label: 'New Estimate', href: '/dashboard/estimates/new', icon: Plus, color: 'bg-primary text-primary-foreground' },
-    { label: 'Assemblies', href: '/dashboard/assemblies', icon: Package, color: 'bg-violet-100 text-violet-700' },
-    { label: 'Cost Database', href: '/dashboard/cost-database', icon: Database, color: 'bg-cyan-100 text-cyan-700' },
-    { label: 'Upload Plans', href: '/dashboard/takeoff', icon: Upload, color: 'bg-amber-100 text-amber-700' },
+    { label: 'New Estimate', href: '/estimates/new', icon: Plus, color: 'bg-primary text-primary-foreground' },
+    { label: 'Assemblies', href: '/assemblies', icon: Package, color: 'bg-violet-100 text-violet-700' },
+    { label: 'Cost Database', href: '/cost-database', icon: Database, color: 'bg-cyan-100 text-cyan-700' },
+    { label: 'Upload Plans', href: '/takeoff', icon: Upload, color: 'bg-amber-100 text-amber-700' },
   ];
 
   if (isLoading) {
@@ -330,7 +330,7 @@ export default function DashboardPage() {
               <CardDescription>Your latest estimation activity</CardDescription>
             </div>
             <Button variant="outline" size="sm" asChild>
-              <Link href="/dashboard/estimates">View All</Link>
+              <Link href="/estimates">View All</Link>
             </Button>
           </div>
         </CardHeader>
@@ -369,7 +369,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="col-span-1 flex justify-end">
                       <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/dashboard/estimates/${estimate.id}/edit`}>
+                        <Link href={`/estimates/${estimate.id}/edit`}>
                           <TrendingUp className="h-4 w-4" />
                         </Link>
                       </Button>
@@ -384,7 +384,7 @@ export default function DashboardPage() {
               <h3 className="text-lg font-medium mb-2">No estimates yet</h3>
               <p className="text-muted-foreground mb-4">Create your first estimate to get started</p>
               <Button asChild>
-                <Link href="/dashboard/estimates/new">
+                <Link href="/estimates/new">
                   <Plus className="mr-2 h-4 w-4" />
                   Create Estimate
                 </Link>
