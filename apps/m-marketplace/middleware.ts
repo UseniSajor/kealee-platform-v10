@@ -60,6 +60,38 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  // Role check for protected routes — broad marketplace access
+  const ALLOWED_ROLES = ['admin', 'super_admin', 'pm', 'owner', 'client', 'contractor', 'gc', 'builder', 'vendor', 'supplier'];
+
+  if (isProtectedPath && session) {
+    const { data: user } = await supabase
+      .from('User')
+      .select('role, status')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!user || user.status !== 'ACTIVE') {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/unauthorized';
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    const { data: membership } = await supabase
+      .from('OrgMember')
+      .select('roleKey')
+      .eq('userId', session.user.id)
+      .limit(1)
+      .single();
+
+    const effectiveRole = (membership?.roleKey || user.role || 'user').toLowerCase();
+
+    if (!ALLOWED_ROLES.includes(effectiveRole)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/unauthorized';
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
   return response;
 }
 
