@@ -1874,6 +1874,26 @@ model User {
   // Platform Knowledge Base relations
   authoredKnowledgeEntries PlatformKnowledge[] @relation("PlatformKnowledgeAuthor")
 
+  // Auto Design & Design Queue relations
+  autoDesignSessions        AutoDesignSession[]         @relation("AutoDesignSessionOwner")
+  designProfessionalProfile DesignProfessionalProfile?  @relation("DesignProfessionalProfile")
+  designHandoffs            DesignHandoff[]             @relation("DesignHandoffArchitect")
+
+  // Core Architect / DesignProject relations
+  createdDesignProjects     DesignProject[]     @relation("DesignProjectCreator")
+  leadDesignProjects        DesignProject[]     @relation("DesignProjectLead")
+  designTeamMemberships     DesignTeamMember[]  @relation("DesignTeamMembership")
+  approvedDesignPhases      DesignPhase[]       @relation("DesignPhaseApprover")
+  issuedDrawingSets         DrawingSet[]        @relation("DrawingSetIssuer")
+  uploadedBIMModels         BIMModel[]          @relation("BIMModelUploader")
+  uploadedDesignFiles       DesignFile[]        @relation("DesignFileUploader")
+  createdReviewRequests     ReviewRequest[]     @relation("ReviewRequestCreator")
+  assignedReviewRequests    ReviewRequest[]     @relation("ReviewRequestAssignee")
+  createdDesignRevisions    DesignRevision[]    @relation("DesignRevisionCreator")
+  createdVersionBranches    VersionBranch[]     @relation("VersionBranchCreator")
+  createdPermitPackages     DesignPermitPackage[] @relation("DesignPermitPackageCreator")
+  createdQCChecklists       DesignQCChecklist[] @relation("DesignQCChecklistCreator")
+
   // User Responsibilities Tracking relations (from Kealee_User_Responsibilities_Guide.md)
   dailyLogs       DailyLog[]     @relation("DailyLogContractor")
   uploadedFiles   FileUpload[]   @relation("FileUploadUser")
@@ -5126,6 +5146,11 @@ model PreConProject {
   bids           ContractorBid[]
   platformFees   PlatformFee[]
   phaseHistory   PreConPhaseHistory[]
+
+  // Auto Design & Design Queue relations
+  autoDesignSession  AutoDesignSession?      @relation("PreConAutoDesign")
+  queueAssignments   DesignQueueAssignment[] @relation("PreConDesignQueue")
+  designHandoffs     DesignHandoff[]         @relation("PreConDesignHandoff")
 
   @@index([ownerId])
   @@index([phase])
@@ -8963,6 +8988,9 @@ enum DrawingDiscipline {
   CIVIL
   LANDSCAPE
   FIRE_PROTECTION
+  INTERIORS
+  TELECOMMUNICATIONS
+  OTHER_DISCIPLINE
 }
 
 enum DrawingStatus {
@@ -10236,4 +10264,920 @@ model CostBookCustomization {
   @@index([customizedById])
   @@unique([organizationId, sourceDatabaseId, entityType, sourceEntityId])
   @@map("cost_book_customizations")
+}
+
+// ============================================================================
+// AUTO DESIGN — AI-Generated Designs in m-project-owner Pre-Con Flow
+// ============================================================================
+// Part of the pre-con onboarding: homeowners/project owners start the
+// design process with AI assistance BEFORE any architect/designer touches it.
+// The AI generates floor plans, concept renders, room layouts, and material
+// suggestions based on owner preferences, budget, and lot constraints.
+
+enum AutoDesignStatus {
+  INTAKE           // Owner providing preferences
+  GENERATING       // AI actively generating options
+  REVIEW           // Owner reviewing AI options
+  REVISION         // Owner requested changes, AI regenerating
+  APPROVED         // Owner approved a concept
+  READY_FOR_HANDOFF // Ready for architect queue
+  HANDED_OFF       // Assigned to architect
+  CANCELLED
+}
+
+enum AutoDesignStyle {
+  MODERN
+  CONTEMPORARY
+  TRADITIONAL
+  CRAFTSMAN
+  FARMHOUSE
+  COLONIAL
+  MEDITERRANEAN
+  MID_CENTURY_MODERN
+  INDUSTRIAL
+  MINIMALIST
+  TRANSITIONAL
+  COASTAL
+  CUSTOM
+}
+
+enum RoomType {
+  LIVING_ROOM
+  FAMILY_ROOM
+  BEDROOM
+  MASTER_BEDROOM
+  BATHROOM
+  MASTER_BATHROOM
+  KITCHEN
+  DINING_ROOM
+  HOME_OFFICE
+  GARAGE
+  LAUNDRY
+  MUDROOM
+  PANTRY
+  CLOSET
+  WALK_IN_CLOSET
+  BONUS_ROOM
+  MEDIA_ROOM
+  GYM
+  GUEST_SUITE
+  NURSERY
+  STUDIO
+  OUTDOOR_LIVING
+  POOL_HOUSE
+  ADU
+  OTHER_ROOM
+}
+
+// Auto Design Session — one per PreConProject, tracks the AI design process
+model AutoDesignSession {
+  id              String @id @default(uuid())
+  preConProjectId String @unique
+  ownerId         String
+
+  // Status
+  status          AutoDesignStatus @default(INTAKE)
+  currentIteration Int             @default(0)
+  maxIterations    Int             @default(5) // Max AI revision rounds
+
+  // Owner Preferences (collected during intake)
+  preferredStyles   AutoDesignStyle[] @default([])
+  roomRequirements  Json?   // Array of { type: RoomType, count, minSqFt, notes }
+  budgetRange       Json?   // { min, max, currency }
+  lotConstraints    Json?   // { width, depth, setbacks, easements, slope, orientation }
+  specialRequests   String? @db.Text // Free-form owner desires
+  mustHaveFeatures  String[]  @default([])
+  niceToHaveFeatures String[] @default([])
+  inspirationUrls   String[]  @default([]) // URLs/images owner likes
+
+  // AI Generation Config
+  aiModelUsed       String?   // e.g. "claude-sonnet-4-5-20250929", "gpt-4o"
+  aiPromptTemplate  String?   // Which prompt template was used
+  generationParams  Json?     // Temperature, style weights, etc.
+
+  // Results
+  optionsGenerated  Int       @default(0) // How many concepts AI produced
+  selectedOptionId  String?   // Which AutoDesignOption the owner chose
+
+  // Timing
+  intakeCompletedAt   DateTime?
+  generationStartedAt DateTime?
+  generationEndedAt   DateTime?
+  ownerApprovedAt     DateTime?
+  handoffReadyAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  owner          User                @relation("AutoDesignSessionOwner", fields: [ownerId], references: [id])
+  preConProject  PreConProject       @relation("PreConAutoDesign", fields: [preConProjectId], references: [id], onDelete: Cascade)
+  options        AutoDesignOption[]
+  revisionRequests AutoDesignRevisionRequest[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([preConProjectId])
+  @@map("auto_design_sessions")
+}
+
+// Auto Design Option — each AI-generated concept
+model AutoDesignOption {
+  id        String @id @default(uuid())
+  sessionId String
+  iteration Int    @default(0) // Which generation round
+
+  // Design Content
+  name             String   // "Modern Open Concept A", "Traditional Colonial B"
+  description      String   @db.Text
+  style            AutoDesignStyle
+  floorPlanUrl     String?  // AI-generated floor plan image/SVG
+  floorPlanData    Json?    // Structured floor plan data (rooms, dimensions, walls)
+  renderingUrls    String[] @default([]) // AI-generated 3D renders
+  elevationUrls    String[] @default([]) // Front/side/rear elevations
+  siteLayoutUrl    String?  // Site plan showing building on lot
+
+  // Room Layout
+  rooms            Json?    // Array of { type, name, sqFt, floor, position, dimensions }
+  totalSqFt        Int?
+  floors           Int      @default(1)
+  bedrooms         Int?
+  bathrooms        Decimal? @db.Decimal(3, 1) // 2.5 bathrooms
+
+  // Cost Estimation (AI-estimated)
+  estimatedCost       Decimal? @db.Decimal(12, 2)
+  costPerSqFt         Decimal? @db.Decimal(8, 2)
+  estimatedTimeline    Int?     // days
+  costBreakdown       Json?    // { structure, envelope, interior, MEP, site, contingency }
+  materialSuggestions Json?    // Recommended materials with costs
+
+  // Features
+  features         String[] @default([])
+  sustainabilityScore Int?   // 0-100 green building score
+  energyEfficiency    String? // Estimated rating
+
+  // AI Confidence
+  aiConfidence     Int?     // 0-100 how confident AI is in this design
+  aiNotes          String?  @db.Text // AI's reasoning for this option
+
+  // Selection
+  isSelected       Boolean  @default(false)
+  selectedAt       DateTime?
+  ownerRating      Int?     // 1-5 stars
+  ownerFeedback    String?  @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  session AutoDesignSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([isSelected])
+  @@index([iteration])
+  @@map("auto_design_options")
+}
+
+// Auto Design Revision Request — owner feedback for AI to iterate
+model AutoDesignRevisionRequest {
+  id        String @id @default(uuid())
+  sessionId String
+  optionId  String? // If revising a specific option
+
+  // Revision Details
+  requestType    String   // LAYOUT_CHANGE, STYLE_CHANGE, ROOM_ADD, ROOM_REMOVE, RESIZE, BUDGET_ADJUST, FEATURE_ADD, OTHER
+  description    String   @db.Text
+  referenceUrls  String[] @default([]) // Reference images/links
+  priority       String   @default("NORMAL") // LOW, NORMAL, HIGH
+
+  // AI Response
+  aiProcessed    Boolean  @default(false)
+  aiResponse     String?  @db.Text
+  newOptionsCount Int     @default(0) // How many new options this revision produced
+
+  createdAt DateTime @default(now())
+
+  // Relationships
+  session AutoDesignSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([aiProcessed])
+  @@map("auto_design_revision_requests")
+}
+
+
+// ============================================================================
+// DESIGN QUEUE & ASSIGNMENT — Platform-managed architect matching with 48hr SLA
+// ============================================================================
+// When owner's auto-design is approved, Kealee queues the project and assigns
+// to the next available architect/designer. Architect has 48 hours to respond.
+// If no response, auto-rotates to next architect in queue.
+
+enum DesignQueueStatus {
+  QUEUED          // Waiting for architect assignment
+  ASSIGNED        // Assigned to an architect, awaiting response
+  ACCEPTED        // Architect accepted the assignment
+  DECLINED        // Architect declined
+  EXPIRED         // 48hr SLA expired, rotating to next
+  IN_PROGRESS     // Architect actively working
+  COMPLETED_DQ    // Design work completed
+  CANCELLED_DQ    // Owner cancelled or project withdrawn
+}
+
+enum ArchitectAvailability {
+  AVAILABLE       // Accepting new projects
+  BUSY            // At capacity but can be queued
+  UNAVAILABLE     // Not accepting work (vacation, etc.)
+  SUSPENDED       // Account issue
+}
+
+// Architect/Designer profile for the queue system
+model DesignProfessionalProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  // Professional Info
+  displayName      String
+  licenseNumber    String?
+  licenseState     String?
+  licenseExpiry    DateTime?
+  isLicensed       Boolean  @default(false)
+  firmName         String?
+
+  // Specialties
+  specialties      String[] @default([]) // RESIDENTIAL, COMMERCIAL, RENOVATION, etc.
+  preferredStyles  AutoDesignStyle[] @default([])
+  projectTypes     String[] @default([]) // KITCHEN, BATHROOM, ADDITION, WHOLE_HOME, etc.
+  serviceArea      Json?    // { states: [], zipCodes: [], radius: { center, miles } }
+
+  // Capacity & Availability
+  availability     ArchitectAvailability @default(AVAILABLE)
+  maxConcurrentProjects Int @default(5)
+  currentProjectCount   Int @default(0)
+  averageResponseTime   Int? // minutes — historical average
+  avgCompletionDays     Int? // historical average days to complete
+
+  // Performance Metrics
+  totalProjectsCompleted Int     @default(0)
+  totalProjectsDeclined  Int     @default(0)
+  totalSLABreaches       Int     @default(0)
+  rating                 Decimal? @db.Decimal(3, 2) // 0.00-5.00
+  reviewCount            Int     @default(0)
+  onTimeRate             Decimal? @db.Decimal(5, 2) // percentage
+
+  // Queue Priority (higher = assigned first)
+  queuePriority    Int     @default(50) // 0-100, admin-adjustable
+  lastAssignedAt   DateTime?
+  lastCompletedAt  DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  user         User                    @relation("DesignProfessionalProfile", fields: [userId], references: [id])
+  assignments  DesignQueueAssignment[]
+
+  @@index([userId])
+  @@index([availability])
+  @@index([queuePriority])
+  @@index([lastAssignedAt])
+  @@index([isLicensed])
+  @@map("design_professional_profiles")
+}
+
+// Design Queue Assignment — tracks each assignment attempt
+model DesignQueueAssignment {
+  id              String @id @default(uuid())
+  preConProjectId String
+  architectId     String? // Design professional assigned
+  autoDesignSessionId String? // Links to the completed auto-design
+
+  // Queue Position
+  queuedAt        DateTime  @default(now())
+  position        Int?      // Position in queue at time of queuing
+
+  // Assignment
+  status          DesignQueueStatus @default(QUEUED)
+  assignedAt      DateTime?
+  responseDeadline DateTime? // assignedAt + 48 hours
+  respondedAt     DateTime?
+
+  // SLA Tracking
+  slaHours        Int       @default(48) // Configurable SLA window
+  slaBreached     Boolean   @default(false)
+  rotationCount   Int       @default(0)  // How many architects this has been rotated through
+  maxRotations    Int       @default(5)  // Max before escalation to admin
+
+  // Rotation History
+  previousArchitectIds String[] @default([]) // IDs of architects who declined/expired
+
+  // Matching Criteria
+  matchScore      Int?      // 0-100 how well architect matches project
+  matchCriteria   Json?     // { styleMatch, locationMatch, capacityScore, ratingScore }
+
+  // Completion
+  acceptedAt      DateTime?
+  declinedAt      DateTime?
+  declineReason   String?   @db.Text
+  completedAt     DateTime?
+  handoffId       String?   // Links to DesignHandoff once handoff begins
+
+  // Admin Override
+  adminAssigned   Boolean   @default(false) // Manually assigned by admin
+  adminAssignedBy String?
+  adminNotes      String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  preConProject  PreConProject            @relation("PreConDesignQueue", fields: [preConProjectId], references: [id], onDelete: Cascade)
+  architect      DesignProfessionalProfile? @relation(fields: [architectId], references: [id])
+  handoff        DesignHandoff?           @relation("DesignQueueHandoff")
+
+  @@index([preConProjectId])
+  @@index([architectId])
+  @@index([status])
+  @@index([queuedAt])
+  @@index([responseDeadline])
+  @@index([slaBreached])
+  @@map("design_queue_assignments")
+}
+
+
+// ============================================================================
+// DESIGN HANDOFF — Owner Auto-Design → Professional Architect Transition
+// ============================================================================
+// When an architect accepts a queued project, a handoff record bridges the
+// owner's AI-generated design (from m-project-owner) to the professional
+// architect's workspace (in m-architect's DesignProject).
+
+enum HandoffStatus {
+  INITIATED       // Handoff record created
+  REVIEWING       // Architect reviewing auto-design materials
+  ACKNOWLEDGED    // Architect confirmed receipt of materials
+  IN_PROGRESS_HO  // Architect actively developing from auto-design
+  COMPLETED_HO    // Handoff complete, DesignProject fully active
+  REJECTED_HO     // Architect rejected after reviewing (rare)
+}
+
+model DesignHandoff {
+  id                  String @id @default(uuid())
+  queueAssignmentId   String @unique
+  preConProjectId     String
+  autoDesignSessionId String?
+  architectUserId     String
+  designProjectId     String? // Created DesignProject in m-architect
+
+  // Status
+  status              HandoffStatus @default(INITIATED)
+
+  // Materials Transferred
+  autoDesignOptionId  String?  // Which AI option the owner chose
+  ownerPreferences    Json?    // Snapshot of owner preferences at handoff time
+  ownerApprovedFloorPlan String? // URL of approved AI floor plan
+  ownerApprovedRenderings String[] @default([])
+  additionalFiles     Json?    // Array of { url, name, type, description }
+
+  // Architect Notes
+  architectNotes      String?  @db.Text
+  estimatedStartDate  DateTime?
+  estimatedCompletionDate DateTime?
+  scopeAdjustments    String?  @db.Text // Changes architect wants to make
+
+  // Owner Communication
+  ownerNotifiedAt     DateTime? // When owner was told architect accepted
+  introMessageSent    Boolean   @default(false)
+
+  // Timing
+  initiatedAt         DateTime  @default(now())
+  acknowledgedAt      DateTime?
+  completedAt         DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  queueAssignment DesignQueueAssignment @relation("DesignQueueHandoff", fields: [queueAssignmentId], references: [id])
+  preConProject   PreConProject         @relation("PreConDesignHandoff", fields: [preConProjectId], references: [id], onDelete: Cascade)
+  architect       User                  @relation("DesignHandoffArchitect", fields: [architectUserId], references: [id])
+
+  @@index([preConProjectId])
+  @@index([architectUserId])
+  @@index([status])
+  @@index([queueAssignmentId])
+  @@map("design_handoffs")
+}
+
+
+// ============================================================================
+// CORE ARCHITECT MODELS — DesignProject, DesignPhase, DrawingSheet, BIMModel
+// ============================================================================
+// These models are referenced by the backend services/api/modules/architect/*
+// services which currently use prismaAny. Defining them enables type-safe access.
+
+enum DesignProjectStatus {
+  DRAFT_DP
+  ACTIVE_DP
+  ON_HOLD_DP
+  COMPLETED_DP
+  ARCHIVED_DP
+  CANCELLED_DP
+}
+
+enum DesignProjectType {
+  RESIDENTIAL
+  COMMERCIAL
+  INSTITUTIONAL
+  MIXED_USE
+  INDUSTRIAL_DESIGN
+  HOSPITALITY
+  HEALTHCARE_DESIGN
+  EDUCATIONAL
+}
+
+enum DesignPhaseType {
+  PROGRAMMING     // Pre-design / programming
+  SCHEMATIC       // Schematic Design (SD)
+  DESIGN_DEV      // Design Development (DD)
+  CONSTRUCTION_DOC // Construction Documents (CD)
+  BIDDING         // Bidding & Negotiation
+  CONSTRUCTION_ADMIN // Construction Administration (CA)
+}
+
+enum DesignPhaseStatus {
+  NOT_STARTED_DP
+  IN_PROGRESS_DP
+  IN_REVIEW_DP
+  APPROVED_DP
+  COMPLETED_DP
+}
+
+enum SheetStatus {
+  NOT_STARTED_SH
+  STARTED_SH
+  IN_PROGRESS_SH
+  CHECKED_SH
+  APPROVED_SH
+  ISSUED_SH
+}
+
+enum BIMModelFormat {
+  RVT   // Revit
+  IFC   // Industry Foundation Classes
+  SKP   // SketchUp
+  DWG_3D
+  OBJ
+  GLTF
+  FBX
+  OTHER_FORMAT
+}
+
+// DesignProject — the main project entity in m-architect
+model DesignProject {
+  id               String @id @default(uuid())
+  linkedProjectId  String? // Links to main Project
+  preConProjectId  String? // Links to PreConProject (from handoff)
+  handoffId        String? // Links to DesignHandoff
+  organizationId   String?
+  createdById      String
+
+  // Project Info
+  name             String
+  description      String?  @db.Text
+  projectType      DesignProjectType @default(RESIDENTIAL)
+  status           DesignProjectStatus @default(DRAFT_DP)
+
+  // Location
+  address          String?
+  city             String?
+  state            String?
+  zipCode          String?
+
+  // Scope
+  squareFootage    Int?
+  floors           Int?
+  budget           Decimal? @db.Decimal(12, 2)
+
+  // Schedule
+  startDate        DateTime?
+  targetCompletionDate DateTime?
+  actualCompletionDate DateTime?
+
+  // Current Phase
+  currentPhase     DesignPhaseType @default(PROGRAMMING)
+
+  // Team
+  leadArchitectId  String?
+
+  // Metadata
+  clientName       String?
+  clientEmail      String?
+  clientPhone      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  createdBy       User           @relation("DesignProjectCreator", fields: [createdById], references: [id])
+  leadArchitect   User?          @relation("DesignProjectLead", fields: [leadArchitectId], references: [id])
+  phases          DesignPhase[]
+  drawingSheets   DrawingSheet[]
+  drawingSets     DrawingSet[]
+  bimModels       BIMModel[]
+  designFiles     DesignFile[]
+  reviewRequests  ReviewRequest[]
+  designRevisions DesignRevision[]
+  teamMembers     DesignTeamMember[]
+  permitPackages  DesignPermitPackage[]
+  qcChecklists    DesignQCChecklist[]
+  versionBranches VersionBranch[]
+
+  @@index([createdById])
+  @@index([leadArchitectId])
+  @@index([linkedProjectId])
+  @@index([preConProjectId])
+  @@index([status])
+  @@index([currentPhase])
+  @@index([organizationId])
+  @@map("design_projects")
+}
+
+// Design Team Member
+model DesignTeamMember {
+  id              String @id @default(uuid())
+  designProjectId String
+  userId          String
+  role            String  // LEAD_ARCHITECT, PROJECT_ARCHITECT, DESIGNER, DRAFTER, INTERN, CONSULTANT
+  discipline      DrawingDiscipline?
+  joinedAt        DateTime @default(now())
+
+  designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
+  user          User          @relation("DesignTeamMembership", fields: [userId], references: [id])
+
+  @@unique([designProjectId, userId])
+  @@index([designProjectId])
+  @@index([userId])
+  @@map("design_team_members")
+}
+
+// Design Phase — SD, DD, CD, etc.
+model DesignPhase {
+  id              String @id @default(uuid())
+  designProjectId String
+  phaseType       DesignPhaseType
+  status          DesignPhaseStatus @default(NOT_STARTED_DP)
+
+  // Schedule
+  plannedStartDate DateTime?
+  plannedEndDate   DateTime?
+  actualStartDate  DateTime?
+  actualEndDate    DateTime?
+
+  // Progress
+  completionPercent Decimal @default(0) @db.Decimal(5, 2)
+  delayDays         Int     @default(0)
+  delayReason       String?
+
+  // Deliverables
+  deliverables     Json?   // Array of { name, status, dueDate, completedAt }
+
+  // Approvals
+  approvedAt       DateTime?
+  approvedById     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
+  approvedBy    User?         @relation("DesignPhaseApprover", fields: [approvedById], references: [id])
+
+  @@unique([designProjectId, phaseType])
+  @@index([designProjectId])
+  @@index([status])
+  @@map("design_phases")
+}
+
+// Drawing Sheet — individual drawing within a set
+model DrawingSheet {
+  id              String @id @default(uuid())
+  designProjectId String
+  drawingSetId    String?
+
+  // Sheet Info
+  sheetNumber     String  // "A1.1", "S2.3"
+  sheetTitle      String
+  discipline      DrawingDiscipline
+  status          SheetStatus @default(NOT_STARTED_SH)
+
+  // Content
+  fileUrl         String?
+  thumbnailUrl    String?
+  titleBlock      Json?   // { project, date, drawnBy, checkedBy, scale }
+
+  // Revisions
+  currentRevision String  @default("0")
+  revisionHistory Json?   // Array of { rev, date, description, issuedBy }
+
+  // Scale & Size
+  scale           String? // "1/4\" = 1'-0\""
+  paperSize       String? // "ARCH D", "24x36"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
+  drawingSet    DrawingSet?   @relation(fields: [drawingSetId], references: [id])
+
+  @@index([designProjectId])
+  @@index([drawingSetId])
+  @@index([discipline])
+  @@index([status])
+  @@map("drawing_sheets")
+}
+
+// Drawing Set — grouped collection of sheets for a milestone
+model DrawingSet {
+  id              String @id @default(uuid())
+  designProjectId String
+
+  // Set Info
+  name            String  // "SD Set", "50% CD", "Permit Set", "IFC Set"
+  description     String?
+  setType         String  // SD, DD, CD_50, CD_90, CD_100, PERMIT, IFC, ADDENDUM
+  version         String  @default("1.0")
+
+  // Status
+  isIssued        Boolean  @default(false)
+  issuedAt        DateTime?
+  issuedById      String?
+
+  // Files
+  compiledPdfUrl  String?  // Combined PDF of all sheets in set
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
+  sheets        DrawingSheet[]
+  issuedBy      User?         @relation("DrawingSetIssuer", fields: [issuedById], references: [id])
+
+  @@index([designProjectId])
+  @@index([setType])
+  @@map("drawing_sets")
+}
+
+// BIM Model
+model BIMModel {
+  id              String @id @default(uuid())
+  designProjectId String
+  uploadedById    String
+
+  // Model Info
+  name            String
+  description     String?
+  format          BIMModelFormat
+  version         String @default("1.0")
+
+  // File
+  fileUrl         String?
+  fileSize        Int?      // bytes
+  thumbnailUrl    String?
+
+  // Model Stats
+  elementCount    Int       @default(0)
+  annotationCount Int       @default(0)
+  clashCount      Int       @default(0)
+  viewCount       Int       @default(0)
+
+  // Conversion
+  conversionStatus String  @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  convertedUrl     String? // Web-viewable format (glTF, etc.)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
+  uploadedBy    User          @relation("BIMModelUploader", fields: [uploadedById], references: [id])
+
+  @@index([designProjectId])
+  @@index([format])
+  @@index([uploadedById])
+  @@map("bim_models")
+}
+
+// Design File — general file storage for architect projects
+model DesignFile {
+  id              String @id @default(uuid())
+  designProjectId String
+  folderId        String?
+  uploadedById    String
+
+  // File Info
+  fileName        String
+  fileType        String   // DWG, PDF, RVT, SKP, JPG, etc.
+  fileUrl         String
+  fileSize        Int?     // bytes
+  mimeType        String?
+
+  // Version Control
+  version         Int      @default(1)
+  isLatest        Boolean  @default(true)
+  parentFileId    String?  // Previous version
+
+  // Check-out/Lock System
+  isCheckedOut    Boolean  @default(false)
+  checkedOutById  String?
+  checkedOutAt    DateTime?
+  isLocked        Boolean  @default(false)
+  lockedById      String?
+  lockedAt        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
+  uploadedBy    User          @relation("DesignFileUploader", fields: [uploadedById], references: [id])
+
+  @@index([designProjectId])
+  @@index([folderId])
+  @@index([uploadedById])
+  @@index([isCheckedOut])
+  @@index([isLocked])
+  @@map("design_files")
+}
+
+// Review Request — design review workflow
+model ReviewRequest {
+  id              String @id @default(uuid())
+  designProjectId String
+  requestedById   String
+  assignedToId    String?
+
+  // Review Info
+  title           String
+  description     String?  @db.Text
+  reviewType      String   // INTERNAL, CLIENT, CONSULTANT, CODE_REVIEW
+  status          String   @default("DRAFT") // DRAFT, PENDING, IN_REVIEW, COMPLETED, APPROVED, REJECTED
+  priority        String   @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+  discipline      DrawingDiscipline?
+
+  // Deadlines
+  dueDate         DateTime?
+  completedAt     DateTime?
+
+  // Results
+  comments        Json?    // Array of { author, text, location, status, createdAt }
+  findings        Int      @default(0)
+  resolvedFindings Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
+  requestedBy   User          @relation("ReviewRequestCreator", fields: [requestedById], references: [id])
+  assignedTo    User?         @relation("ReviewRequestAssignee", fields: [assignedToId], references: [id])
+
+  @@index([designProjectId])
+  @@index([requestedById])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("review_requests")
+}
+
+// Design Revision — tracked changes to the design
+model DesignRevision {
+  id              String @id @default(uuid())
+  designProjectId String
+  createdById     String
+
+  // Revision Info
+  revisionNumber  String  // "Rev A", "Rev 1", "ASI-001"
+  revisionType    String  // DESIGN_REVISION, ADDENDUM, ASI, BULLETIN
+  title           String
+  description     String? @db.Text
+  reason          String? @db.Text
+
+  // Status
+  status          String  @default("DRAFT") // DRAFT, PENDING_APPROVAL, APPROVED, ISSUED, SUPERSEDED
+  approvedById    String?
+  approvedAt      DateTime?
+  issuedAt        DateTime?
+
+  // Affected Sheets
+  affectedSheetIds String[] @default([])
+  impactAnalysis   Json?    // AI-generated impact analysis
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
+  createdBy     User          @relation("DesignRevisionCreator", fields: [createdById], references: [id])
+
+  @@index([designProjectId])
+  @@index([createdById])
+  @@index([status])
+  @@map("design_revisions")
+}
+
+// Version Branch — git-style branching for design versions
+model VersionBranch {
+  id              String @id @default(uuid())
+  designProjectId String
+  createdById     String
+
+  // Branch Info
+  name            String
+  description     String?
+  isDefault       Boolean @default(false)
+  parentBranchId  String?
+
+  // Status
+  isActive        Boolean @default(true)
+  isMerged        Boolean @default(false)
+  mergedAt        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
+  createdBy     User          @relation("VersionBranchCreator", fields: [createdById], references: [id])
+
+  @@index([designProjectId])
+  @@index([createdById])
+  @@index([isDefault])
+  @@map("version_branches")
+}
+
+// Design Permit Package — assembled for permit submission
+model DesignPermitPackage {
+  id              String @id @default(uuid())
+  designProjectId String
+  createdById     String
+
+  // Package Info
+  packageType     String  // BUILDING, MECHANICAL, ELECTRICAL, PLUMBING, FIRE, SITE
+  name            String
+  status          String  @default("DRAFT") // DRAFT, READY, SUBMITTED, IN_REVIEW, APPROVED, CORRECTIONS_REQUIRED
+
+  // Contents
+  documentIds     String[] @default([])
+  formData        Json?    // Filled permit application forms
+  reviewComments  Json?    // Array of { reviewer, comment, status, date }
+
+  // Fees
+  permitFee       Decimal? @db.Decimal(10, 2)
+
+  // Submission
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  expiresAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
+  createdBy     User          @relation("DesignPermitPackageCreator", fields: [createdById], references: [id])
+
+  @@index([designProjectId])
+  @@index([status])
+  @@map("design_permit_packages")
+}
+
+// Design QC Checklist
+model DesignQCChecklist {
+  id              String @id @default(uuid())
+  designProjectId String
+  createdById     String
+
+  // Checklist Info
+  name            String
+  phase           DesignPhaseType
+  status          String  @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+
+  // Items
+  items           Json?   // Array of { name, status, category, notes }
+  totalItems      Int     @default(0)
+  passedItems     Int     @default(0)
+  failedItems     Int     @default(0)
+  passRate        Decimal? @db.Decimal(5, 2)
+
+  // Errors
+  errorCount      Int     @default(0)
+  criticalErrors  Int     @default(0)
+
+  completedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
+  createdBy     User          @relation("DesignQCChecklistCreator", fields: [createdById], references: [id])
+
+  @@index([designProjectId])
+  @@index([phase])
+  @@index([status])
+  @@map("design_qc_checklists")
 }
