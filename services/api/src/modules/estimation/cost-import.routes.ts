@@ -399,7 +399,7 @@ export async function costImportRoutes(fastify: FastifyInstance) {
           try {
             switch (type) {
               case 'materials': {
-                const data = { ...item, costDatabaseId }
+                const data: any = { ...item, costDatabaseId }
                 if (!data.name || data.unitCost === undefined) {
                   skipped++
                   errors.push(`Item ${itemNum}: Missing required field (name or unitCost)`)
@@ -424,7 +424,7 @@ export async function costImportRoutes(fastify: FastifyInstance) {
               }
 
               case 'labor': {
-                const data = { ...item, costDatabaseId }
+                const data: any = { ...item, costDatabaseId }
                 if (!data.trade || data.totalRate === undefined) {
                   skipped++
                   errors.push(`Item ${itemNum}: Missing required field (trade or totalRate)`)
@@ -449,7 +449,7 @@ export async function costImportRoutes(fastify: FastifyInstance) {
               }
 
               case 'equipment': {
-                const data = { ...item, costDatabaseId }
+                const data: any = { ...item, costDatabaseId }
                 if (!data.name || data.dailyRate === undefined) {
                   skipped++
                   errors.push(`Item ${itemNum}: Missing required field (name or dailyRate)`)
@@ -474,7 +474,7 @@ export async function costImportRoutes(fastify: FastifyInstance) {
               }
 
               case 'assemblies': {
-                const data = { ...item, costDatabaseId }
+                const data: any = { ...item, costDatabaseId }
                 if (!data.name || !data.unit) {
                   skipped++
                   errors.push(`Item ${itemNum}: Missing required field (name or unit)`)

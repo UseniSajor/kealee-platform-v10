@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
 import { CartButton } from './CartButton';
 
@@ -15,9 +16,12 @@ export function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <img
+              <Image
                 src="/kealee-logo-600w.png"
                 alt="Kealee Construction"
+                width={300}
+                height={102}
+                priority
                 className="h-14 w-auto"
               />
             </Link>

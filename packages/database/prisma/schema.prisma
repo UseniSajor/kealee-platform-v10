@@ -1863,6 +1863,9 @@ model User {
   dashboardWidgets DashboardWidget[]
   aiConversations  AIConversation[]
 
+  // Cost Code Import relations
+  costCodeImportJobs CostCodeImportJob[] @relation("CostCodeImportJobs")
+
   // User Responsibilities Tracking relations (from Kealee_User_Responsibilities_Guide.md)
   dailyLogs       DailyLog[]     @relation("DailyLogContractor")
   uploadedFiles   FileUpload[]   @relation("FileUploadUser")
@@ -6166,6 +6169,7 @@ model CostDatabase {
   equipmentRates EquipmentRate[]
   assemblies     Assembly[]
   estimates      Estimate[]
+  importJobs     CostCodeImportJob[]
 
   @@index([organizationId])
   @@index([region])
@@ -6718,6 +6722,60 @@ enum TakeoffSource {
   AI_EXTRACTED
   IMPORTED
   ASSEMBLY_CALC
+}
+
+// ============================================================================
+// COST CODE IMPORT JOBS - Track PDF/CSV bulk import progress
+// ============================================================================
+
+enum ImportJobStatus {
+  PENDING
+  UPLOADING
+  EXTRACTING
+  STRUCTURING
+  IMPORTING
+  COMPLETED
+  FAILED
+}
+
+model CostCodeImportJob {
+  id               String          @id @default(uuid())
+  costDatabaseId   String?
+  userId           String
+  fileName         String
+  fileUrl          String?
+  fileSize         Int?
+  mimeType         String          @default("application/pdf")
+  status           ImportJobStatus @default(PENDING)
+  progress         Int             @default(0) // 0-100
+
+  // Results
+  totalPages       Int?
+  processedPages   Int?
+  materialsFound   Int             @default(0)
+  laborRatesFound  Int             @default(0)
+  equipmentFound   Int             @default(0)
+  assembliesFound  Int             @default(0)
+  totalImported    Int             @default(0)
+  totalSkipped     Int             @default(0)
+  errors           Json?           // Array of error messages
+
+  // AI extraction metadata
+  extractedText    String?         @db.Text
+  structuredData   Json?           // Final structured output from AI
+
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  costDatabase     CostDatabase?   @relation(fields: [costDatabaseId], references: [id])
+  user             User            @relation("CostCodeImportJobs", fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([costDatabaseId])
+  @@index([status])
+  @@map("cost_code_import_jobs")
 }
 
 // ============================================================================

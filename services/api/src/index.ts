@@ -800,6 +800,10 @@ const start = async () => {
       // Cost Book Import (CSV/JSON bulk upload for cost databases)
       const { costImportRoutes } = await import('./modules/estimation/cost-import.routes')
       await fastify.register(costImportRoutes, { prefix: '/estimation/cost-import' })
+
+      // Cost Code PDF Import (AI-powered PDF → structured data pipeline)
+      const { costCodePdfImportRoutes } = await import('./modules/estimation/cost-code-pdf-import.routes')
+      await fastify.register(costCodePdfImportRoutes, { prefix: '/estimation/cost-import' })
     })
 
     await safeRegisterBlock('Phase 1 - Communication, Subscriptions, Tracking routes', async () => {

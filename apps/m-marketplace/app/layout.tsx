@@ -27,11 +27,7 @@ export const metadata: Metadata = {
   creator: 'Kealee',
   publisher: 'Kealee',
   icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/kealee-icon-32x32.png', type: 'image/png', sizes: '32x32' },
-      { url: '/kealee-icon-192x192.png', type: 'image/png', sizes: '192x192' },
-    ],
+    icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
   manifest: '/site.webmanifest',
@@ -50,14 +46,7 @@ export const metadata: Metadata = {
     siteName: 'Kealee',
     title: 'Kealee - Complete Construction Management Platform',
     description: 'Save 40% on PM costs. AI-powered permit review. Licensed architects on-demand.',
-    images: [
-      {
-        url: '/kealee-og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Kealee Construction',
-      },
-    ],
+    images: [{ url: 'https://kealee.com/kealee-og-image.jpg', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',

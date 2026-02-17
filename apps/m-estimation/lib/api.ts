@@ -421,6 +421,94 @@ class ApiClient {
     const query = new URLSearchParams(filteredParams).toString();
     return this.request(`/estimation/cost-import/databases${query ? `?${query}` : ''}`);
   }
+
+  // ========================================================================
+  // PDF Cost Code Import
+  // ========================================================================
+
+  // Upload a PDF cost book for AI extraction
+  async importCostBookPDF(
+    file: File,
+    options?: {
+      costDatabaseId?: string;
+      name?: string;
+      region?: string;
+    }
+  ) {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (options?.costDatabaseId) formData.append('costDatabaseId', options.costDatabaseId);
+    if (options?.name) formData.append('name', options.name);
+    if (options?.region) formData.append('region', options.region);
+
+    const authHeaders = await this.getAuthHeader();
+    try {
+      const response = await fetch(`${this.baseUrl}/estimation/cost-import/pdf/upload`, {
+        method: 'POST',
+        headers: { ...authHeaders },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: response.statusText }));
+        return { success: false, error: error.error || error.message || 'Upload failed' };
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Network error',
+      };
+    }
+  }
+
+  // List PDF import jobs
+  async listImportJobs(params?: { page?: number; limit?: number; status?: string }) {
+    const filteredParams: Record<string, string> = {};
+    if (params?.page) filteredParams.page = String(params.page);
+    if (params?.limit) filteredParams.limit = String(params.limit);
+    if (params?.status) filteredParams.status = params.status;
+    const query = new URLSearchParams(filteredParams).toString();
+    return this.request(`/estimation/cost-import/pdf/jobs${query ? `?${query}` : ''}`);
+  }
+
+  // Get single import job status
+  async getImportJob(jobId: string) {
+    return this.request(`/estimation/cost-import/pdf/jobs/${jobId}`);
+  }
+
+  // Delete an import job
+  async deleteImportJob(jobId: string) {
+    return this.request(`/estimation/cost-import/pdf/jobs/${jobId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Get cost database detail
+  async getCostDatabase(id: string) {
+    return this.request(`/estimation/cost-import/databases/${id}`);
+  }
+
+  // Get paginated items from a cost database
+  async getCostDatabaseItems(
+    id: string,
+    params?: {
+      type?: 'materials' | 'labor' | 'equipment' | 'assemblies';
+      search?: string;
+      page?: number;
+      limit?: number;
+    }
+  ) {
+    const filteredParams: Record<string, string> = {};
+    if (params?.type) filteredParams.type = params.type;
+    if (params?.search) filteredParams.search = params.search;
+    if (params?.page) filteredParams.page = String(params.page);
+    if (params?.limit) filteredParams.limit = String(params.limit);
+    const query = new URLSearchParams(filteredParams).toString();
+    return this.request(`/estimation/cost-import/databases/${id}/items${query ? `?${query}` : ''}`);
+  }
 }
 
 export const apiClient = new ApiClient();
