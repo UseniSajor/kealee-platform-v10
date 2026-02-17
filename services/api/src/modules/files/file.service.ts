@@ -17,7 +17,9 @@ function getS3Client() {
   const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY || process.env.R2_SECRET_ACCESS_KEY
 
   if (!accessKeyId || !secretAccessKey) {
-    throw new Error('S3/R2 credentials not configured')
+    console.warn('[FileService] ⚠️  S3/R2 credentials not configured — file uploads will fail')
+    console.warn('[FileService]    Set S3_ACCESS_KEY_ID + S3_SECRET_ACCESS_KEY (or R2 equivalents)')
+    return null
   }
 
   return new S3Client({
@@ -34,12 +36,24 @@ function getS3Client() {
 const BUCKET_NAME = process.env.S3_BUCKET_NAME || process.env.R2_BUCKET_NAME || 'kealee-uploads'
 const PRESIGNED_URL_EXPIRY = 3600 // 1 hour
 
+/**
+ * Get the S3 client, throwing a user-friendly error if not configured.
+ * This is used by methods that require S3 to function.
+ */
+function requireS3Client() {
+  const client = getS3Client()
+  if (!client) {
+    throw new Error('File storage (S3/R2) is not configured. Set S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY environment variables.')
+  }
+  return client
+}
+
 class FileService {
   /**
    * Configure bucket policy
    */
   async configureBucketPolicy() {
-    const s3 = getS3Client()
+    const s3 = requireS3Client()
     
     // Bucket policy for secure file access
     const policy = {
@@ -105,7 +119,7 @@ class FileService {
     if (!validation.valid) {
       throw new Error(validation.error || 'Invalid file type')
     }
-    const s3 = getS3Client()
+    const s3 = requireS3Client()
     const key = `uploads/${userId}/${uuidv4()}-${fileName}`
 
     const command = new PutObjectCommand({
@@ -293,7 +307,7 @@ class FileService {
       throw new Error('File not found or access denied')
     }
 
-    const s3 = getS3Client()
+    const s3 = requireS3Client()
     const command = new GetObjectCommand({
       Bucket: BUCKET_NAME,
       Key: key,
@@ -327,7 +341,7 @@ class FileService {
     const key = `${folder}/${userId}/${uniqueId}_${sanitizedFileName}`
 
     // Upload to S3/R2
-    const s3 = getS3Client()
+    const s3 = requireS3Client()
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
       Key: key,
@@ -441,7 +455,7 @@ class FileService {
     }
 
     // Delete from S3/R2
-    const s3 = getS3Client()
+    const s3 = requireS3Client()
     const command = new DeleteObjectCommand({
       Bucket: BUCKET_NAME,
       Key: file.key,

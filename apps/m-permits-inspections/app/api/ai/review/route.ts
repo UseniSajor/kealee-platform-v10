@@ -2,15 +2,39 @@
 // AI document review API endpoint
 
 import { NextRequest, NextResponse } from 'next/server';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION || 'us-east-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-  },
-});
+// ── Lazy-load S3 — gracefully degrade if not installed or configured ──
+let s3Client: any = null;
+let PutObjectCommand: any = null;
+
+async function getS3Client() {
+  if (s3Client !== null) return s3Client;
+
+  try {
+    const awsS3 = await import('@aws-sdk/client-s3');
+    PutObjectCommand = awsS3.PutObjectCommand;
+
+    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+      console.warn('[AI Review] AWS credentials not configured — S3 uploads disabled');
+      s3Client = false; // Mark as "checked but unavailable"
+      return false;
+    }
+
+    s3Client = new awsS3.S3Client({
+      region: process.env.AWS_REGION || 'us-east-1',
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      },
+    });
+    return s3Client;
+  } catch {
+    console.warn('[AI Review] @aws-sdk/client-s3 not installed — S3 uploads disabled');
+    console.warn('[AI Review] Run: pnpm add @aws-sdk/client-s3');
+    s3Client = false;
+    return false;
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,28 +50,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Upload files to S3
-    const uploadedFiles = await Promise.all(
-      files.map(async (file) => {
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const key = `permits/${Date.now()}-${file.name}`;
+    // Upload files to S3 (or use local references if S3 not available)
+    const client = await getS3Client();
 
-        await s3Client.send(
-          new PutObjectCommand({
-            Bucket: process.env.S3_BUCKET_NAME || 'kealee-documents',
-            Key: key,
-            Body: buffer,
-            ContentType: file.type,
-          })
-        );
+    let uploadedFiles: Array<{ name: string; key: string; url: string }>;
 
-        return {
-          name: file.name,
-          key,
-          url: `https://${process.env.S3_BUCKET_NAME}.s3.amazonaws.com/${key}`,
-        };
-      })
-    );
+    if (client && PutObjectCommand) {
+      // S3 available — upload to cloud
+      uploadedFiles = await Promise.all(
+        files.map(async (file) => {
+          const buffer = Buffer.from(await file.arrayBuffer());
+          const key = `permits/${Date.now()}-${file.name}`;
+
+          await client.send(
+            new PutObjectCommand({
+              Bucket: process.env.S3_BUCKET_NAME || 'kealee-documents',
+              Key: key,
+              Body: buffer,
+              ContentType: file.type,
+            })
+          );
+
+          return {
+            name: file.name,
+            key,
+            url: `https://${process.env.S3_BUCKET_NAME || 'kealee-documents'}.s3.amazonaws.com/${key}`,
+          };
+        })
+      );
+    } else {
+      // S3 not available — use file metadata only (no cloud upload)
+      uploadedFiles = files.map((file) => ({
+        name: file.name,
+        key: `local/${Date.now()}-${file.name}`,
+        url: '', // No cloud URL available
+      }));
+    }
 
     // Call the AI scope analysis backend service
     const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';

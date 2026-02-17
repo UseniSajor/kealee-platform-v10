@@ -913,8 +913,24 @@ const start = async () => {
     console.log(`Host:         0.0.0.0`);
     console.log(`Health:       /health`);
     console.log(`Docs:         /docs`);
-    // console.log(`GraphQL:      /graphql`); // GraphQL disabled for MVP
     console.log('='.repeat(60));
+
+    // ── Integration Status ──
+    const integrations = [
+      { name: 'Stripe',       key: 'STRIPE_SECRET_KEY',       status: !!process.env.STRIPE_SECRET_KEY },
+      { name: 'Resend Email', key: 'RESEND_API_KEY',          status: !!process.env.RESEND_API_KEY },
+      { name: 'Twilio SMS',   key: 'TWILIO_ACCOUNT_SID',      status: !!process.env.TWILIO_ACCOUNT_SID },
+      { name: 'DocuSign',     key: 'DOCUSIGN_INTEGRATION_KEY', status: !!process.env.DOCUSIGN_INTEGRATION_KEY },
+      { name: 'Anthropic AI', key: 'ANTHROPIC_API_KEY',       status: !!process.env.ANTHROPIC_API_KEY },
+      { name: 'S3/R2 Storage',key: 'S3_ACCESS_KEY_ID',        status: !!(process.env.S3_ACCESS_KEY_ID || process.env.R2_ACCESS_KEY_ID) },
+      { name: 'Web Push',     key: 'VAPID_PUBLIC_KEY',        status: !!(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) },
+      { name: 'Google Places', key: 'GOOGLE_PLACES_API_KEY',  status: !!process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY },
+    ]
+    const configured = integrations.filter(i => i.status)
+    const missing = integrations.filter(i => !i.status)
+    console.log(`\n📦 Integrations: ${configured.length}/${integrations.length} configured`)
+    configured.forEach(i => console.log(`   ✅ ${i.name}`))
+    missing.forEach(i => console.log(`   ⬚  ${i.name} (set ${i.key})`))
     console.log('');
   } catch (err: any) {
     // This catch handles truly fatal errors: plugin registration failures,

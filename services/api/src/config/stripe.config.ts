@@ -7,15 +7,16 @@
  */
 
 export const stripeConfig = {
-  // API Keys
-  secretKey: process.env.STRIPE_SECRET_KEY!,
-  publishableKey: process.env.STRIPE_PUBLISHABLE_KEY!,
-  webhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
+  // API Keys — use empty string fallback so the module loads without crashing.
+  // Runtime guards in checkout/webhook handlers check for actual values.
+  secretKey: process.env.STRIPE_SECRET_KEY || '',
+  publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '',
+  webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
 
   // PM Services (Ops Services) Pricing
   packages: {
     A: {
-      priceId: process.env.STRIPE_PRICE_PACKAGE_A!,
+      priceId: process.env.STRIPE_PRICE_PACKAGE_A || '',
       name: 'Essential',
       price: 1750, // $1,750 per month
       amount: 175000, // in cents
@@ -27,7 +28,7 @@ export const stripeConfig = {
       ],
     },
     B: {
-      priceId: process.env.STRIPE_PRICE_PACKAGE_B!,
+      priceId: process.env.STRIPE_PRICE_PACKAGE_B || '',
       name: 'Professional',
       price: 3750, // $3,750 per month
       amount: 375000, // in cents
@@ -40,7 +41,7 @@ export const stripeConfig = {
       ],
     },
     C: {
-      priceId: process.env.STRIPE_PRICE_PACKAGE_C!,
+      priceId: process.env.STRIPE_PRICE_PACKAGE_C || '',
       name: 'Premium',
       price: 9500, // $9,500 per month
       amount: 950000, // in cents
@@ -54,7 +55,7 @@ export const stripeConfig = {
       ],
     },
     D: {
-      priceId: process.env.STRIPE_PRICE_PACKAGE_D!,
+      priceId: process.env.STRIPE_PRICE_PACKAGE_D || '',
       name: 'White Glove',
       price: 16500, // $16,500 per month
       amount: 1650000, // in cents
@@ -81,7 +82,7 @@ export const stripeConfig = {
       type: 'custom',
     },
     permit: {
-      priceId: process.env.STRIPE_PRICE_PERMIT!,
+      priceId: process.env.STRIPE_PRICE_PERMIT || '',
       name: 'Permit Acceleration',
       price: 299,
       amount: 29900, // in cents
@@ -92,7 +93,7 @@ export const stripeConfig = {
   // Marketplace Subscriptions
   marketplace: {
     basic: {
-      priceId: process.env.STRIPE_PRICE_MARKETPLACE_BASIC!,
+      priceId: process.env.STRIPE_PRICE_MARKETPLACE_BASIC || '',
       name: 'Marketplace - Basic Listing',
       amount: 4900, // $49 in cents
       interval: 'month',
@@ -107,7 +108,7 @@ export const stripeConfig = {
       ],
     },
     professional: {
-      priceId: process.env.STRIPE_PRICE_MARKETPLACE_PRO!,
+      priceId: process.env.STRIPE_PRICE_MARKETPLACE_PRO || '',
       name: 'Marketplace - Professional',
       amount: 14900, // $149 in cents
       interval: 'month',
@@ -124,7 +125,7 @@ export const stripeConfig = {
       ],
     },
     premium: {
-      priceId: process.env.STRIPE_PRICE_MARKETPLACE_PREMIUM!,
+      priceId: process.env.STRIPE_PRICE_MARKETPLACE_PREMIUM || '',
       name: 'Marketplace - Premium',
       amount: 29900, // $299 in cents
       interval: 'month',
@@ -146,7 +147,7 @@ export const stripeConfig = {
   // Architect Services
   architect: {
     pro: {
-      priceId: process.env.STRIPE_PRICE_ARCHITECT_PRO!,
+      priceId: process.env.STRIPE_PRICE_ARCHITECT_PRO || '',
       name: 'Architect Pro Subscription',
       amount: 9900, // $99 in cents
       interval: 'month',
@@ -165,7 +166,7 @@ export const stripeConfig = {
   // Permit Services
   permits: {
     pro: {
-      priceId: process.env.STRIPE_PRICE_PERMIT_PRO!,
+      priceId: process.env.STRIPE_PRICE_PERMIT_PRO || '',
       name: 'Permit Pro - Monthly Subscription',
       amount: 29900, // $299 in cents
       interval: 'month',
@@ -183,7 +184,7 @@ export const stripeConfig = {
   // Add-On Services
   addOns: {
     apiAccess: {
-      priceId: process.env.STRIPE_PRICE_API_ACCESS!,
+      priceId: process.env.STRIPE_PRICE_API_ACCESS || '',
       name: 'API Access - Professional',
       amount: 49900, // $499 in cents
       interval: 'month',
@@ -197,7 +198,7 @@ export const stripeConfig = {
       ],
     },
     whiteLabel: {
-      priceId: process.env.STRIPE_PRICE_WHITE_LABEL!,
+      priceId: process.env.STRIPE_PRICE_WHITE_LABEL || '',
       name: 'White-Label Reporting',
       amount: 19900, // $199 in cents
       interval: 'month',
@@ -292,9 +293,11 @@ export function calculatePlatformFee(
 }
 
 /**
- * Validate that all required Stripe environment variables are set
+ * Validate that all required Stripe environment variables are set.
+ * Logs warnings instead of throwing so the server can still start.
+ * Returns { valid, missing } for programmatic checks.
  */
-export function validateStripeConfig(): void {
+export function validateStripeConfig(): { valid: boolean; missing: string[] } {
   const required = [
     'STRIPE_SECRET_KEY',
     'STRIPE_PRICE_PACKAGE_A',
@@ -303,11 +306,31 @@ export function validateStripeConfig(): void {
     'STRIPE_PRICE_PACKAGE_D',
   ];
 
+  const optional = [
+    'STRIPE_PUBLISHABLE_KEY',
+    'STRIPE_WEBHOOK_SECRET',
+    'STRIPE_PRICE_MARKETPLACE_BASIC',
+    'STRIPE_PRICE_MARKETPLACE_PRO',
+    'STRIPE_PRICE_MARKETPLACE_PREMIUM',
+    'STRIPE_PRICE_ARCHITECT_PRO',
+    'STRIPE_PRICE_PERMIT',
+    'STRIPE_PRICE_PERMIT_PRO',
+    'STRIPE_PRICE_API_ACCESS',
+    'STRIPE_PRICE_WHITE_LABEL',
+  ];
+
   const missing = required.filter((key) => !process.env[key]);
+  const missingOptional = optional.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {
-    throw new Error(
-      `Missing required Stripe environment variables: ${missing.join(', ')}`
-    );
+    console.warn(`[Stripe] ⚠️  Missing REQUIRED env vars: ${missing.join(', ')}`);
+    console.warn('[Stripe]    Checkout and billing will fail until these are set.');
+    console.warn('[Stripe]    Set them in Railway dashboard → Service → Variables');
   }
+
+  if (missingOptional.length > 0) {
+    console.warn(`[Stripe] ℹ️  Missing optional env vars: ${missingOptional.join(', ')}`);
+  }
+
+  return { valid: missing.length === 0, missing };
 }

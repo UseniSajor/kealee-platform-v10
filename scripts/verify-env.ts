@@ -199,6 +199,45 @@ function verifyRailway(): VerificationResult {
     pattern: /^\d+$/,
   }))
 
+  // Phase 3 integrations (optional but recommended)
+  vars.push(validateVar('TWILIO_ACCOUNT_SID', process.env.TWILIO_ACCOUNT_SID, {
+    required: false,
+    mustStartWith: 'AC',
+  }))
+
+  vars.push(validateVar('TWILIO_AUTH_TOKEN', process.env.TWILIO_AUTH_TOKEN, {
+    required: false,
+    minLength: 32,
+  }))
+
+  vars.push(validateVar('TWILIO_PHONE_NUMBER', process.env.TWILIO_PHONE_NUMBER, {
+    required: false,
+    mustStartWith: '+',
+  }))
+
+  vars.push(validateVar('DOCUSIGN_INTEGRATION_KEY', process.env.DOCUSIGN_INTEGRATION_KEY, {
+    required: false,
+  }))
+
+  vars.push(validateVar('ANTHROPIC_API_KEY', process.env.ANTHROPIC_API_KEY, {
+    required: false,
+    mustStartWith: 'sk-ant-',
+  }))
+
+  vars.push(validateVar('VAPID_PUBLIC_KEY', process.env.VAPID_PUBLIC_KEY, {
+    required: false,
+    minLength: 40,
+  }))
+
+  vars.push(validateVar('VAPID_PRIVATE_KEY', process.env.VAPID_PRIVATE_KEY, {
+    required: false,
+    minLength: 20,
+  }))
+
+  vars.push(validateVar('S3_ACCESS_KEY_ID', process.env.S3_ACCESS_KEY_ID || process.env.R2_ACCESS_KEY_ID, {
+    required: false,
+  }))
+
   // Stripe Product/Price IDs
   for (const pkg of ['A', 'B', 'C', 'D']) {
     vars.push(validateVar(`STRIPE_PRODUCT_PACKAGE_${pkg}`, process.env[`STRIPE_PRODUCT_PACKAGE_${pkg}`], {
