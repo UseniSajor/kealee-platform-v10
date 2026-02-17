@@ -449,14 +449,20 @@ export async function pmRoutes(fastify: FastifyInstance) {
   )
 
   // POST /pm/reports/generate - Generate report with PDF
+  // Accepts both { weekStart, weekEnd } (legacy) and { type, startDate, endDate } (frontend)
   fastify.post(
     "/reports/generate",
     {
       preHandler: [
         authenticateUser,
         validateBody(z.object({
-          weekStart: z.string(),
-          weekEnd: z.string(),
+          // Legacy fields
+          weekStart: z.string().optional(),
+          weekEnd: z.string().optional(),
+          // Frontend fields
+          type: z.enum(['weekly', 'monthly', 'custom']).optional(),
+          startDate: z.string().optional(),
+          endDate: z.string().optional(),
           pmId: z.string().optional(),
         })),
       ],
@@ -464,22 +470,47 @@ export async function pmRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const user = (request as any).user
-        const { weekStart, weekEnd, pmId } = request.body as { weekStart: string; weekEnd: string; pmId?: string }
+        const body = request.body as {
+          weekStart?: string; weekEnd?: string
+          type?: string; startDate?: string; endDate?: string
+          pmId?: string
+        }
 
-        const report = await pmService.generateWeeklyReport(pmId || user.id, new Date(weekStart))
-        // Create a report record with metadata instead of actual PDF
+        // Normalize: frontend sends startDate/endDate, legacy sends weekStart/weekEnd
+        const startDate = body.startDate || body.weekStart
+        const endDate = body.endDate || body.weekEnd
+        const reportType = body.type || 'weekly'
+        const pmId = body.pmId || user.id
+
+        if (!startDate || !endDate) {
+          return reply.code(400).send({ error: 'startDate and endDate are required' })
+        }
+
+        const report = await pmService.generateWeeklyReport(pmId, new Date(startDate))
+        const period = `${startDate} - ${endDate}`
+
+        // Create a report record with metadata
         const reportRecord = await prismaAny.generatedDocument.create({
           data: {
             entityType: 'WeeklyReport',
-            entityId: pmId || user.id,
-            type: 'WEEKLY_REPORT',
-            title: 'Weekly Report ' + weekStart + ' - ' + weekEnd,
+            entityId: pmId,
+            type: reportType === 'monthly' ? 'MONTHLY_REPORT' : 'WEEKLY_REPORT',
+            category: 'report',
+            title: `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report ${period}`,
             content: JSON.stringify(report),
             mimeType: 'application/json',
-            metadata: { pmId: pmId || user.id, weekStart, weekEnd },
+            createdById: user.id,
+            metadata: { pmId, startDate, endDate, type: reportType },
           },
         }).catch(() => null)
-        return reply.send({ report, reportId: reportRecord?.id || null, pdfUrl: null })
+
+        return reply.send({
+          report,
+          id: reportRecord?.id || null,
+          period,
+          stats: report,
+          pdfUrl: null,
+        })
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({

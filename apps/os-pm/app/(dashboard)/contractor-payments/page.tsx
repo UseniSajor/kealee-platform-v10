@@ -13,6 +13,8 @@ import {
   ArrowUpRight,
 } from 'lucide-react'
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+
 interface Contractor {
   id: string
   name: string
@@ -46,6 +48,19 @@ interface PayoutRecord {
   createdAt: string
 }
 
+async function authFetch(path: string, options: RequestInit = {}) {
+  // Import supabase for auth token
+  const { supabase } = await import('@/lib/supabase')
+  const { data: { session } } = await supabase.auth.getSession()
+  const token = session?.access_token
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string> || {}),
+  }
+  if (token) headers['Authorization'] = `Bearer ${token}`
+  if (!(options.body instanceof FormData)) headers['Content-Type'] = 'application/json'
+  return fetch(`${API_URL}${path}`, { ...options, headers, credentials: 'include' })
+}
+
 export default function ContractorPaymentsPage() {
   const [contractors, setContractors] = useState<Contractor[]>([])
   const [pendingReleases, setPendingReleases] = useState<PendingRelease[]>([])
@@ -58,23 +73,46 @@ export default function ContractorPaymentsPage() {
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const [contractorsRes, releasesRes, historyRes] = await Promise.all([
-        fetch('/api/payments/contractors'),
-        fetch('/api/payments/pending-releases'),
-        fetch('/api/payments/payout-history'),
+      // Use the backend payments API instead of non-existent Next.js API routes
+      const [paymentsRes, historyRes] = await Promise.all([
+        authFetch('/payments'),
+        authFetch('/payments?status=completed'),
       ])
 
-      if (contractorsRes.ok) {
-        const data = await contractorsRes.json()
-        setContractors(data.contractors || [])
-      }
-      if (releasesRes.ok) {
-        const data = await releasesRes.json()
-        setPendingReleases(data.releases || [])
-      }
-      if (historyRes.ok) {
-        const data = await historyRes.json()
-        setPayoutHistory(data.payouts || [])
+      // The backend payments endpoint returns payment records
+      // Build contractor and release data from the payment records
+      if (paymentsRes.ok) {
+        const data = await paymentsRes.json()
+        const payments = data.payments || data.history || []
+        // Extract pending milestone releases
+        const pending = payments
+          .filter((p: any) => p.status === 'PENDING' || p.status === 'pending')
+          .map((p: any) => ({
+            id: p.id,
+            projectName: p.projectName || p.project?.name || 'Project',
+            milestoneName: p.milestoneName || p.description || 'Milestone',
+            contractorName: p.contractorName || p.recipientName || 'Contractor',
+            contractorAccountId: p.contractorAccountId || p.recipientId || '',
+            amount: (p.amount || 0) / 100, // Convert cents to dollars
+            escrowId: p.escrowId || p.id,
+            status: p.status,
+          }))
+        setPendingReleases(pending)
+
+        // Extract completed payouts for history
+        const completed = payments
+          .filter((p: any) => p.status === 'COMPLETED' || p.status === 'completed' || p.status === 'succeeded')
+          .map((p: any) => ({
+            id: p.id,
+            contractorName: p.contractorName || p.recipientName || 'Contractor',
+            projectName: p.projectName || p.project?.name || 'Project',
+            amount: (p.amount || 0) / 100,
+            platformFee: (p.platformFee || p.fee || 0) / 100,
+            netAmount: ((p.amount || 0) - (p.platformFee || p.fee || 0)) / 100,
+            status: p.status,
+            createdAt: p.createdAt || p.created_at || new Date().toISOString(),
+          }))
+        setPayoutHistory(completed)
       }
     } catch (err) {
       console.error('Failed to load contractor payment data:', err)
@@ -94,14 +132,11 @@ export default function ContractorPaymentsPage() {
 
     setReleasing(release.id)
     try {
-      const res = await fetch('/api/payments/release-milestone', {
+      const res = await authFetch(`/payments/milestones/${release.id}/release-payment`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          escrowId: release.escrowId,
-          milestoneId: release.id,
-          amount: Math.round(release.amount * 100),
-          contractorAccountId: release.contractorAccountId,
+          skipHoldback: false,
+          notes: `Released for ${release.milestoneName}`,
         }),
       })
 

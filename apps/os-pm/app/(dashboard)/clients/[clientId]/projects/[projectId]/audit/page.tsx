@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback, Fragment } from 'react'
 import { useParams } from 'next/navigation'
 import { ChevronDown, ChevronRight, Filter, Search } from 'lucide-react'
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -107,7 +109,19 @@ export default function ProjectAuditPage() {
       if (filters.startDate) params.set('startDate', filters.startDate)
       if (filters.endDate) params.set('endDate', filters.endDate)
 
-      const res = await fetch(`/api/audit/project/${projectId}?${params}`)
+      // Get auth token for backend API call
+      let authHeaders: Record<string, string> = {}
+      try {
+        const { supabase } = await import('@/lib/supabase')
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.access_token) {
+          authHeaders['Authorization'] = `Bearer ${session.access_token}`
+        }
+      } catch {}
+      const res = await fetch(`${API_URL}/audit/project/${projectId}?${params}`, {
+        headers: authHeaders,
+        credentials: 'include',
+      })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
       setEntries(json.data ?? [])

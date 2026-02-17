@@ -160,7 +160,7 @@ export default function CommandCenterPage() {
     try {
       setError(null)
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
-      const res = await fetch(`${apiUrl}/command-center/status`)
+      const res = await fetch(`${apiUrl}/api/v1/command-center/status`)
       if (!res.ok) throw new Error(`API error: ${res.status}`)
       const json = await res.json()
       setData(json)

@@ -194,7 +194,7 @@ export default function AppDetailPage() {
     try {
       setError(null)
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
-      const res = await fetch(`${apiUrl}/command-center/apps/${appId}`)
+      const res = await fetch(`${apiUrl}/api/v1/command-center/apps/${appId}`)
       if (!res.ok) throw new Error(`API error: ${res.status}`)
       const json = await res.json()
       setDetail(json)
@@ -211,7 +211,7 @@ export default function AppDetailPage() {
     setActionLoading(action)
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
-      const res = await fetch(`${apiUrl}/command-center/apps/${appId}/${action}`, { method: "POST" })
+      const res = await fetch(`${apiUrl}/api/v1/command-center/apps/${appId}/${action}`, { method: "POST" })
       if (!res.ok) throw new Error(`Action failed: ${res.status}`)
       await fetchDetail()
     } catch (err: any) {

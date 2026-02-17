@@ -35,8 +35,9 @@ export function LoginClient() {
         password,
       })
       if (authError) throw authError
-      router.refresh()
-      router.push(redirectTo)
+      // Force a full page navigation to ensure middleware picks up the new session cookies
+      window.location.href = redirectTo
+      return
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to sign in")
     } finally {
