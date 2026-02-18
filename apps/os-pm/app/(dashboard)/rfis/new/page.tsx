@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
+  File,
   FileText,
   Loader2,
   Paperclip,
@@ -19,6 +20,19 @@ import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { cn } from "@/lib/utils"
 import { useCreateRFI } from "@/hooks/useRFIs"
+
+// ---------------------------------------------------------------------------
+// File upload helpers
+// ---------------------------------------------------------------------------
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+const ACCEPTED_TYPES = ".pdf,.dwg,.dxf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50 MB
 
 // ---------------------------------------------------------------------------
 // Component
@@ -40,8 +54,60 @@ export default function NewRFIPage() {
     scheduleImpact: false,
   })
 
+  const [attachments, setAttachments] = React.useState<File[]>([])
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
+
   function update(field: string, value: string | boolean) {
     setForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  function handleFilesSelected(fileList: FileList | null) {
+    if (!fileList) return
+    const newFiles: File[] = []
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i]
+      if (file.size > MAX_FILE_SIZE) {
+        alert(`"${file.name}" exceeds the 50 MB limit.`)
+        continue
+      }
+      if (attachments.some((a) => a.name === file.name && a.size === file.size)) continue
+      newFiles.push(file)
+    }
+    setAttachments((prev) => [...prev, ...newFiles])
+  }
+
+  function removeAttachment(index: number) {
+    setAttachments((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    handleFilesSelected(e.dataTransfer.files)
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  function submitForm(status: "draft" | "open") {
+    createRFI.mutate(
+      { ...form, status, attachmentCount: attachments.length },
+      {
+        onSuccess: async (result: any) => {
+          if (attachments.length > 0 && result?.data?.id) {
+            try {
+              const { api } = await import("@/lib/api")
+              await api.rfis.uploadAttachments(result.data.id, attachments)
+            } catch {
+              console.error("Attachment upload failed")
+            }
+          }
+          router.push("/rfis")
+        },
+      }
+    )
   }
 
   return (
@@ -208,8 +274,24 @@ export default function NewRFIPage() {
             Attachments
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="border-2 border-dashed rounded-lg p-8 text-center text-gray-400 hover:border-blue-300 hover:text-blue-400 transition-colors cursor-pointer">
+        <CardContent className="space-y-4">
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept={ACCEPTED_TYPES}
+            className="hidden"
+            onChange={(e) => {
+              handleFilesSelected(e.target.files)
+              e.target.value = ""
+            }}
+          />
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            className="border-2 border-dashed rounded-lg p-8 text-center text-gray-400 hover:border-blue-300 hover:text-blue-400 transition-colors cursor-pointer"
+          >
             <Upload size={32} className="mx-auto mb-2" />
             <p className="text-sm font-medium">
               Drop files here or click to upload
@@ -218,6 +300,32 @@ export default function NewRFIPage() {
               PDF, DWG, DXF, JPG, PNG up to 50 MB each
             </p>
           </div>
+
+          {attachments.length > 0 && (
+            <ul className="space-y-2">
+              {attachments.map((file, idx) => (
+                <li
+                  key={`${file.name}-${idx}`}
+                  className="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <File size={16} className="shrink-0 text-blue-500" />
+                    <span className="truncate">{file.name}</span>
+                    <span className="shrink-0 text-xs text-gray-400">
+                      {formatFileSize(file.size)}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeAttachment(idx)}
+                    className="shrink-0 p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <X size={14} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
 
@@ -230,12 +338,7 @@ export default function NewRFIPage() {
           variant="outline"
           className="gap-2"
           disabled={createRFI.isPending}
-          onClick={() => {
-            createRFI.mutate(
-              { ...form, status: "draft" },
-              { onSuccess: () => router.push("/rfis") }
-            )
-          }}
+          onClick={() => submitForm("draft")}
         >
           {createRFI.isPending ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
           Save as Draft
@@ -243,12 +346,7 @@ export default function NewRFIPage() {
         <Button
           className="gap-2"
           disabled={createRFI.isPending}
-          onClick={() => {
-            createRFI.mutate(
-              { ...form, status: "open" },
-              { onSuccess: () => router.push("/rfis") }
-            )
-          }}
+          onClick={() => submitForm("open")}
         >
           {createRFI.isPending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
           {createRFI.isPending ? "Submitting..." : "Submit RFI"}

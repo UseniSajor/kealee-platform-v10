@@ -233,6 +233,14 @@ export const api = {
       const { data } = await apiClient.get<any>("/pm/change-orders/stats", { params: projectId ? { projectId } : undefined })
       return data
     },
+    uploadAttachments: async (id: string, files: File[]) => {
+      const form = new FormData()
+      for (const f of files) form.append("files", f)
+      const { data } = await apiClient.post<any>(`/pm/change-orders/${id}/attachments`, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      return data
+    },
   },
 
   dailyLogs: {
@@ -489,6 +497,14 @@ export const api = {
     },
     stats: async (projectId?: string) => {
       const { data } = await apiClient.get<any>("/pm/rfis/stats", { params: projectId ? { projectId } : undefined })
+      return data
+    },
+    uploadAttachments: async (id: string, files: File[]) => {
+      const form = new FormData()
+      for (const f of files) form.append("files", f)
+      const { data } = await apiClient.post<any>(`/pm/rfis/${id}/attachments`, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
       return data
     },
   },
@@ -859,6 +875,14 @@ export const api = {
     },
     award: async (id: string, input: { submissionId: string }) => {
       const { data } = await apiClient.post<any>(`/pm/bids/${id}/award`, input)
+      return data
+    },
+    uploadAttachments: async (id: string, files: File[]) => {
+      const form = new FormData()
+      for (const f of files) form.append("files", f)
+      const { data } = await apiClient.post<any>(`/pm/bids/${id}/attachments`, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
       return data
     },
   },

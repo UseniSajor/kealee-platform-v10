@@ -5,12 +5,14 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
+  File,
   FileUp,
   Loader2,
   Plus,
   Save,
   Send,
   Trash2,
+  X,
 } from "lucide-react"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
@@ -67,6 +69,15 @@ function formatCurrency(value: number): string {
   }).format(value)
 }
 
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+const ACCEPTED_TYPES = ".pdf,.dwg,.dxf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50 MB
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -82,6 +93,9 @@ export default function NewChangeOrderPage() {
     scheduleDays: "",
     costImpact: "",
   })
+
+  const [attachments, setAttachments] = React.useState<File[]>([])
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const [lineItems, setLineItems] = React.useState<LineItem[]>([
     { id: generateId(), description: "", qty: "", unit: "EA", unitPrice: "" },
@@ -120,6 +134,58 @@ export default function NewChangeOrderPage() {
       return sum + parseNum(li.qty) * parseNum(li.unitPrice)
     }, 0)
   }, [lineItems])
+
+  function handleFilesSelected(fileList: FileList | null) {
+    if (!fileList) return
+    const newFiles: File[] = []
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i]
+      if (file.size > MAX_FILE_SIZE) {
+        alert(`"${file.name}" exceeds the 50 MB limit.`)
+        continue
+      }
+      // avoid duplicates by name+size
+      if (attachments.some((a) => a.name === file.name && a.size === file.size)) continue
+      newFiles.push(file)
+    }
+    setAttachments((prev) => [...prev, ...newFiles])
+  }
+
+  function removeAttachment(index: number) {
+    setAttachments((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    handleFilesSelected(e.dataTransfer.files)
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  function submitForm(status: "draft" | "submitted") {
+    createChangeOrder.mutate(
+      { ...form, lineItems, status, attachmentCount: attachments.length },
+      {
+        onSuccess: async (result: any) => {
+          // Upload attachments if we have an ID back
+          if (attachments.length > 0 && result?.data?.id) {
+            try {
+              const { api } = await import("@/lib/api")
+              await api.changeOrders.uploadAttachments(result.data.id, attachments)
+            } catch {
+              // Change order created, attachments failed — non-blocking
+              console.error("Attachment upload failed")
+            }
+          }
+          router.push("/change-orders")
+        },
+      }
+    )
+  }
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -398,17 +464,58 @@ export default function NewChangeOrderPage() {
         <CardHeader>
           <CardTitle>Supporting Documents</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="border-2 border-dashed rounded-lg p-8 text-center text-gray-400 hover:border-blue-300 hover:text-blue-400 transition-colors cursor-pointer">
+        <CardContent className="space-y-4">
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept={ACCEPTED_TYPES}
+            className="hidden"
+            onChange={(e) => {
+              handleFilesSelected(e.target.files)
+              e.target.value = ""
+            }}
+          />
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            className="border-2 border-dashed rounded-lg p-8 text-center text-gray-400 hover:border-blue-300 hover:text-blue-400 transition-colors cursor-pointer"
+          >
             <FileUp size={32} className="mx-auto mb-2" />
             <p className="text-sm font-medium">
               Drop files here or click to upload
             </p>
             <p className="text-xs mt-1">
-              Proposals, sketches, photos, reports - PDF, images, DWG up to
-              50MB
+              Proposals, sketches, photos, reports — PDF, images, DWG up to 50 MB
             </p>
           </div>
+
+          {attachments.length > 0 && (
+            <ul className="space-y-2">
+              {attachments.map((file, idx) => (
+                <li
+                  key={`${file.name}-${idx}`}
+                  className="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <File size={16} className="shrink-0 text-blue-500" />
+                    <span className="truncate">{file.name}</span>
+                    <span className="shrink-0 text-xs text-gray-400">
+                      {formatFileSize(file.size)}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeAttachment(idx)}
+                    className="shrink-0 p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <X size={14} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
 
@@ -421,12 +528,7 @@ export default function NewChangeOrderPage() {
           variant="outline"
           className="gap-2"
           disabled={createChangeOrder.isPending}
-          onClick={() => {
-            createChangeOrder.mutate(
-              { ...form, lineItems, status: "draft" },
-              { onSuccess: () => router.push("/change-orders") }
-            )
-          }}
+          onClick={() => submitForm("draft")}
         >
           {createChangeOrder.isPending ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
           Save Draft
@@ -434,12 +536,7 @@ export default function NewChangeOrderPage() {
         <Button
           className="gap-2"
           disabled={createChangeOrder.isPending}
-          onClick={() => {
-            createChangeOrder.mutate(
-              { ...form, lineItems, status: "submitted" },
-              { onSuccess: () => router.push("/change-orders") }
-            )
-          }}
+          onClick={() => submitForm("submitted")}
         >
           {createChangeOrder.isPending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
           {createChangeOrder.isPending ? "Submitting..." : "Submit for Approval"}
