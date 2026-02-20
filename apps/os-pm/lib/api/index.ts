@@ -1287,6 +1287,103 @@ export const api = {
     },
   },
 
+  // ── Multifamily ──
+  multifamily: {
+    // Unit Tracker
+    units: {
+      list: async (projectId: string, filters?: Record<string, any>) => {
+        const { data } = await apiClient.get<any>("/pm/multifamily/units", { params: { projectId, ...filters } })
+        return data
+      },
+      get: async (id: string) => {
+        const { data } = await apiClient.get<any>(`/pm/multifamily/units/${id}`)
+        return data
+      },
+      create: async (input: any) => {
+        const { data } = await apiClient.post<any>("/pm/multifamily/units", input)
+        return data
+      },
+      bulkCreate: async (input: { projectId: string; units: any[] }) => {
+        const { data } = await apiClient.post<any>("/pm/multifamily/units/bulk", input)
+        return data
+      },
+      update: async (id: string, input: any) => {
+        const { data } = await apiClient.patch<any>(`/pm/multifamily/units/${id}`, input)
+        return data
+      },
+      delete: async (id: string) => {
+        const { data } = await apiClient.delete<any>(`/pm/multifamily/units/${id}`)
+        return data
+      },
+      stats: async (projectId: string) => {
+        const { data } = await apiClient.get<any>("/pm/multifamily/units/stats", { params: { projectId } })
+        return data
+      },
+    },
+    // Lender Draws
+    draws: {
+      list: async (projectId: string, filters?: Record<string, any>) => {
+        const { data } = await apiClient.get<any>("/pm/multifamily/draws", { params: { projectId, ...filters } })
+        return data
+      },
+      get: async (id: string) => {
+        const { data } = await apiClient.get<any>(`/pm/multifamily/draws/${id}`)
+        return data
+      },
+      create: async (input: any) => {
+        const { data } = await apiClient.post<any>("/pm/multifamily/draws", input)
+        return data
+      },
+      update: async (id: string, input: any) => {
+        const { data } = await apiClient.patch<any>(`/pm/multifamily/draws/${id}`, input)
+        return data
+      },
+      submit: async (id: string) => {
+        const { data } = await apiClient.post<any>(`/pm/multifamily/draws/${id}/submit`)
+        return data
+      },
+      approve: async (id: string) => {
+        const { data } = await apiClient.post<any>(`/pm/multifamily/draws/${id}/approve`)
+        return data
+      },
+      stats: async (projectId: string) => {
+        const { data } = await apiClient.get<any>("/pm/multifamily/draws/stats", { params: { projectId } })
+        return data
+      },
+    },
+    // Area Phasing
+    phases: {
+      list: async (projectId: string) => {
+        const { data } = await apiClient.get<any>("/pm/multifamily/phases", { params: { projectId } })
+        return data
+      },
+      get: async (id: string) => {
+        const { data } = await apiClient.get<any>(`/pm/multifamily/phases/${id}`)
+        return data
+      },
+      create: async (input: any) => {
+        const { data } = await apiClient.post<any>("/pm/multifamily/phases", input)
+        return data
+      },
+      update: async (id: string, input: any) => {
+        const { data } = await apiClient.patch<any>(`/pm/multifamily/phases/${id}`, input)
+        return data
+      },
+      delete: async (id: string) => {
+        const { data } = await apiClient.delete<any>(`/pm/multifamily/phases/${id}`)
+        return data
+      },
+      assignUnits: async (phaseId: string, unitIds: string[]) => {
+        const { data } = await apiClient.post<any>(`/pm/multifamily/phases/${phaseId}/assign-units`, { unitIds })
+        return data
+      },
+      timeline: async (projectId: string) => {
+        const { data } = await apiClient.get<any>("/pm/multifamily/phases/timeline", { params: { projectId } })
+        return data
+      },
+    },
+  },
+
   // DocuSign e-Signatures
   docusign: {
     listEnvelopes: async (params?: { fromDate?: string; status?: string; limit?: number }) => {

@@ -1,8 +1,10 @@
 import { FastifyInstance } from 'fastify'
 import { authenticateUser } from '../auth/auth.middleware'
+import { requireRole } from '../auth/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { z } from 'zod'
 import { rfiService } from './pm-rfis.service'
+import { triggerRfiReminderScan } from './rfi-reminder.worker'
 
 export async function pmRfisRoutes(fastify: FastifyInstance) {
   // GET / - List RFIs
@@ -207,6 +209,25 @@ export async function pmRfisRoutes(fastify: FastifyInstance) {
       const { id } = request.params as { id: string }
       const rfi = await rfiService.reopen(id)
       return reply.send({ rfi })
+    }
+  )
+
+  // POST /reminders/trigger - Manually trigger RFI reminder scan (admin only)
+  fastify.post(
+    '/reminders/trigger',
+    {
+      preHandler: [authenticateUser, requireRole(['admin', 'ADMIN', 'pm', 'PM'])],
+    },
+    async (request, reply) => {
+      try {
+        const result = await triggerRfiReminderScan()
+        return reply.send({ success: true, ...result })
+      } catch (error: any) {
+        return reply.code(500).send({
+          error: 'Failed to trigger reminder scan',
+          message: error.message,
+        })
+      }
     }
   )
 }

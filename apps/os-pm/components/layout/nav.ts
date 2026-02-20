@@ -1,16 +1,20 @@
 import type { LucideIcon } from "lucide-react"
 import {
+  AlertTriangle,
   BarChart3,
   Briefcase,
+  Building2,
   Calculator,
   CalendarClock,
   CalendarDays,
   CheckSquare,
+  ClipboardCheck,
   ClipboardList,
   FileCheck,
   FileText,
   FolderKanban,
   Gavel,
+  GitMerge,
   HardHat,
   Image,
   LayoutDashboard,
@@ -85,6 +89,17 @@ export const navSections: NavSection[] = [
       { href: "/safety", label: "Safety", icon: Shield, match: "startsWith" },
       { href: "/inspections", label: "Inspections", icon: HardHat, match: "startsWith" },
       { href: "/field-status", label: "Field Status", icon: MapPin, match: "startsWith" },
+      { href: "/field-conflicts", label: "Conflicts", icon: AlertTriangle, match: "startsWith" },
+      { href: "/mobilization", label: "Mobilization", icon: ClipboardCheck, match: "startsWith" },
+    ],
+  },
+  {
+    label: "Multifamily",
+    items: [
+      { href: "/multifamily", label: "Overview", icon: Building2, match: "exact" },
+      { href: "/multifamily/units", label: "Unit Tracker", icon: Building2, match: "startsWith" },
+      { href: "/multifamily/draws", label: "Lender Draws", icon: Receipt, match: "startsWith" },
+      { href: "/multifamily/phasing", label: "Area Phasing", icon: GitMerge, match: "startsWith" },
     ],
   },
   {

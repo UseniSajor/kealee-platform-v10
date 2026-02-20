@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateParams } from '../../middleware/validation.middleware'
+import { enforceTierProjectLimit, enforceTierValueLimit } from '../../middleware/tier-validation.middleware'
 import { z } from 'zod'
 import { addProjectMemberSchema, createProjectSchema, updateProjectSchema } from '../../schemas'
 import { projectService } from './project.service'
@@ -11,7 +12,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/',
     {
-      preHandler: [authenticateUser, validateBody(createProjectSchema)],
+      preHandler: [authenticateUser, validateBody(createProjectSchema), enforceTierProjectLimit],
     },
     async (request, reply) => {
       const user = (request as any).user as { id: string }
@@ -68,6 +69,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
         authenticateUser,
         validateParams(z.object({ id: z.string().uuid() })),
         validateBody(updateProjectSchema),
+        enforceTierValueLimit,
       ],
     },
     async (request, reply) => {
@@ -112,6 +114,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
             orgId: z.string().uuid().optional(),
           })
         ),
+        enforceTierProjectLimit,
       ],
     },
     async (request, reply) => {
