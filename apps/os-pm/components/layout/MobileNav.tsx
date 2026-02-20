@@ -13,9 +13,12 @@ import { getNavSections } from "./nav"
 export function MobileNav() {
   const pathname = usePathname()
   const [open, setOpen] = React.useState(false)
-  const { isInternal, userName, companyName, tier } = useRole()
+  const { isInternal, userName, companyName, tier, activeFeatures } = useRole()
 
-  const sections = React.useMemo(() => getNavSections(isInternal), [isInternal])
+  const sections = React.useMemo(
+    () => getNavSections(isInternal, isInternal ? undefined : activeFeatures),
+    [isInternal, activeFeatures],
+  )
 
   return (
     <>

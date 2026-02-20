@@ -16,6 +16,28 @@ const OWNER_ROLES = [
   { value: "business_owner", label: "Business Owner" },
 ]
 
+const PROJECT_TYPES = [
+  { value: "residential_single", label: "Single-Family Home" },
+  { value: "residential_remodel", label: "Home Remodel / Addition" },
+  { value: "multifamily", label: "Multifamily / Apartment" },
+  { value: "mixed_use", label: "Mixed-Use Development" },
+  { value: "commercial", label: "Commercial Build-Out" },
+  { value: "industrial", label: "Industrial / Warehouse" },
+  { value: "hospitality", label: "Hospitality / Hotel" },
+  { value: "other", label: "Other" },
+]
+
+/** Project types that enable multifamily features */
+const MULTIFAMILY_TYPES = ["multifamily", "mixed_use"]
+
+/** Which roles see which default tabs */
+const ROLE_DEFAULTS: Record<string, string[]> = {
+  homeowner: ["dashboard", "approvals", "reports", "help"],
+  developer: ["dashboard", "projects", "draws", "approvals", "reports", "analytics", "help"],
+  property_manager: ["dashboard", "projects", "units", "approvals", "reports", "help"],
+  business_owner: ["dashboard", "projects", "approvals", "reports", "help"],
+}
+
 export function SignupClient() {
   const router = useRouter()
   const [email, setEmail] = useState("")
@@ -24,6 +46,7 @@ export function SignupClient() {
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [selectedRole, setSelectedRole] = useState("")
+  const [projectType, setProjectType] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -50,11 +73,27 @@ export function SignupClient() {
       return
     }
 
+    if (!projectType) {
+      setError("Please select your project type")
+      setLoading(false)
+      return
+    }
+
     try {
+      const isMultifamily = MULTIFAMILY_TYPES.includes(projectType)
+      const portalTabs = ROLE_DEFAULTS[selectedRole] || ROLE_DEFAULTS.business_owner
+      // Developers/property managers with multifamily projects get extra tabs
+      const finalTabs = isMultifamily
+        ? [...new Set([...portalTabs, "units", "draws", "phasing"])]
+        : portalTabs
+
       await signUp(email, password, {
         firstName,
         lastName,
         role: selectedRole,
+        projectType,
+        isMultifamily,
+        portalTabs: finalTabs,
       })
 
       router.push("/dashboard")
@@ -144,6 +183,29 @@ export function SignupClient() {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="projectType">Project Type</Label>
+            <select
+              id="projectType"
+              value={projectType}
+              onChange={(e) => setProjectType(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              required
+            >
+              <option value="">Select your project type</option>
+              {PROJECT_TYPES.map((pt) => (
+                <option key={pt.value} value={pt.value}>
+                  {pt.label}
+                </option>
+              ))}
+            </select>
+            {MULTIFAMILY_TYPES.includes(projectType) && (
+              <p className="text-xs text-blue-600 flex items-center gap-1">
+                Multifamily tools (unit tracker, lender draws, phasing) will be enabled.
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">

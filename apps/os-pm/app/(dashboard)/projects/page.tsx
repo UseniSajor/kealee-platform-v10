@@ -19,6 +19,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
 import { cn } from "@/lib/utils"
 
+const MULTIFAMILY_CATEGORIES = ["Multifamily", "Mixed-Use", "MULTIFAMILY", "MIXED_USE", "NEW_CONSTRUCTION"]
+
 type Project = {
   id: string
   name: string
@@ -31,6 +33,11 @@ type Project = {
   spent?: number
   startDate?: string
   currentPhase?: string
+  /** Multifamily-specific fields */
+  totalUnits?: number
+  completedUnits?: number
+  drawnToDate?: number
+  loanAmount?: number
 }
 
 export default function ProjectsPage() {
@@ -108,6 +115,23 @@ export default function ProjectsPage() {
             spent: 216000,
             startDate: "2026-02-01",
             currentPhase: "Permitting",
+          },
+          {
+            id: "proj-4",
+            name: "Riverwalk Apartments",
+            clientId: "demo",
+            clientName: "Meridian Development",
+            category: "Multifamily",
+            status: "active",
+            progress: 42,
+            budget: 8500000,
+            spent: 3570000,
+            startDate: "2025-09-15",
+            currentPhase: "Rough-In",
+            totalUnits: 51,
+            completedUnits: 8,
+            loanAmount: 6800000,
+            drawnToDate: 2720000,
           },
         ])
       } else {
@@ -260,79 +284,122 @@ export default function ProjectsPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map((project) => (
-            <Link
-              key={project.id}
-              href={isInternal ? `/clients/${project.clientId}/projects/${project.id}/overview` : `/projects/${project.id}`}
-              className="block"
-            >
-              <Card className="hover:border-primary hover:shadow-md transition-all h-full">
-                <CardContent className="py-5 space-y-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="font-semibold text-neutral-900 truncate">{project.name}</div>
-                      <div className="flex items-center gap-1 text-sm text-neutral-600 mt-1">
-                        <Building2 className="h-3.5 w-3.5" />
-                        {project.clientName || "—"}
-                      </div>
-                    </div>
-                    <span
-                      className={cn(
-                        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap",
-                        statusBadge(project.status)
-                      )}
-                    >
-                      {project.status === "on_hold" ? "On Hold" : project.status.charAt(0).toUpperCase() + project.status.slice(1)}
-                    </span>
-                  </div>
-
-                  {/* Progress */}
-                  <div>
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-neutral-600">Progress</span>
-                      <span className="font-medium text-neutral-900">{project.progress}%</span>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-neutral-100">
-                      <div
-                        className="h-2 rounded-full bg-neutral-900"
-                        style={{ width: `${Math.max(0, Math.min(100, project.progress))}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Details */}
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    {project.budget ? (
-                      <div>
-                        <div className="text-neutral-600">Budget</div>
-                        <div className="font-medium text-neutral-900">{formatCurrency(project.budget)}</div>
-                      </div>
-                    ) : null}
-                    {project.currentPhase ? (
-                      <div>
-                        <div className="text-neutral-600">Phase</div>
-                        <div className="font-medium text-neutral-900">{project.currentPhase}</div>
-                      </div>
-                    ) : null}
-                    {project.category ? (
-                      <div>
-                        <div className="text-neutral-600">Category</div>
-                        <div className="font-medium text-neutral-900">{project.category}</div>
-                      </div>
-                    ) : null}
-                    {project.startDate ? (
-                      <div>
-                        <div className="text-neutral-600">Started</div>
-                        <div className="font-medium text-neutral-900">
-                          {new Date(project.startDate).toLocaleDateString()}
+          {filtered.map((project) => {
+            const isMF = MULTIFAMILY_CATEGORIES.includes(project.category || "")
+            return (
+              <Link
+                key={project.id}
+                href={isInternal ? `/clients/${project.clientId}/projects/${project.id}/overview` : `/projects/${project.id}`}
+                className="block"
+              >
+                <Card className="hover:border-primary hover:shadow-md transition-all h-full">
+                  <CardContent className="py-5 space-y-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <div className="font-semibold text-neutral-900 truncate">{project.name}</div>
+                          {isMF && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-200 px-2 py-0.5 text-[10px] font-medium text-blue-700 whitespace-nowrap">
+                              <Building2 className="h-3 w-3" />
+                              {project.totalUnits || 0} units
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 text-sm text-neutral-600 mt-1">
+                          <Building2 className="h-3.5 w-3.5" />
+                          {project.clientName || "—"}
                         </div>
                       </div>
-                    ) : null}
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                      <span
+                        className={cn(
+                          "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap",
+                          statusBadge(project.status)
+                        )}
+                      >
+                        {project.status === "on_hold" ? "On Hold" : project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+                      </span>
+                    </div>
+
+                    {/* Progress */}
+                    <div>
+                      <div className="flex items-center justify-between text-sm mb-1">
+                        <span className="text-neutral-600">Progress</span>
+                        <span className="font-medium text-neutral-900">{project.progress}%</span>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-neutral-100">
+                        <div
+                          className="h-2 rounded-full bg-neutral-900"
+                          style={{ width: `${Math.max(0, Math.min(100, project.progress))}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Multifamily unit progress — only for MF projects */}
+                    {isMF && project.totalUnits && project.totalUnits > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between text-sm mb-1">
+                          <span className="text-blue-600 text-xs font-medium">Unit Completion</span>
+                          <span className="text-xs text-neutral-600">
+                            {project.completedUnits || 0} / {project.totalUnits}
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-blue-50">
+                          <div
+                            className="h-1.5 rounded-full bg-blue-500"
+                            style={{
+                              width: `${Math.max(0, Math.min(100, Math.round(((project.completedUnits || 0) / project.totalUnits) * 100)))}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Details */}
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      {project.budget ? (
+                        <div>
+                          <div className="text-neutral-600">Budget</div>
+                          <div className="font-medium text-neutral-900">{formatCurrency(project.budget)}</div>
+                        </div>
+                      ) : null}
+                      {project.currentPhase ? (
+                        <div>
+                          <div className="text-neutral-600">Phase</div>
+                          <div className="font-medium text-neutral-900">{project.currentPhase}</div>
+                        </div>
+                      ) : null}
+                      {project.category ? (
+                        <div>
+                          <div className="text-neutral-600">Category</div>
+                          <div className="font-medium text-neutral-900">{project.category}</div>
+                        </div>
+                      ) : null}
+                      {project.startDate ? (
+                        <div>
+                          <div className="text-neutral-600">Started</div>
+                          <div className="font-medium text-neutral-900">
+                            {new Date(project.startDate).toLocaleDateString()}
+                          </div>
+                        </div>
+                      ) : null}
+                      {/* Draw progress for multifamily */}
+                      {isMF && project.loanAmount && project.loanAmount > 0 ? (
+                        <div>
+                          <div className="text-neutral-600">Drawn</div>
+                          <div className="font-medium text-green-700">
+                            {formatCurrency(project.drawnToDate || 0)}
+                            <span className="text-neutral-400 font-normal text-xs ml-1">
+                              / {formatCurrency(project.loanAmount)}
+                            </span>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            )
+          })}
         </div>
       )}
     </div>

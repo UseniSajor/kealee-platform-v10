@@ -5,16 +5,28 @@ import Link from "next/link"
 import { useParams } from "next/navigation"
 import {
   ArrowLeft, Building2, Calendar, Camera, CheckCircle2, ClipboardList,
-  DollarSign, FileText, HardHat, LayoutGrid, MessageSquare, TrendingUp,
-  Users, AlertTriangle, Clock, Hammer, GitMerge, ListChecks, Plus
+  DollarSign, FileText, HardHat, Home, LayoutGrid, Layers, MessageSquare,
+  Receipt, TrendingUp, Users, AlertTriangle, Clock, Hammer, GitMerge,
+  ListChecks, Plus
 } from "lucide-react"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { cn } from "@/lib/utils"
 
-type Tab = "overview" | "schedule" | "budget" | "documents" | "photos" | "rfis" | "submittals" | "coordination" | "punch-list" | "change-orders" | "daily-logs" | "safety" | "drawings" | "team"
+type Tab = "overview" | "schedule" | "budget" | "documents" | "photos" | "rfis" | "submittals" | "coordination" | "multifamily" | "punch-list" | "change-orders" | "daily-logs" | "safety" | "drawings" | "team"
 
-const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
+/**
+ * Tab visibility rules:
+ * - `requires` (optional): only show tab if ALL listed feature flags are present
+ *    "multifamily"  — Multifamily project type
+ *    "field"        — Field tools add-on (Package C+)
+ *    "safety"       — Safety docs add-on
+ *    "coordination" — Coordination add-on (Package B+)
+ *    "core"         — (default) always visible
+ *
+ * Tabs with no `requires` are always shown.
+ */
+const BASE_TABS: { id: Tab; label: string; icon: React.ElementType; requires?: string[] }[] = [
   { id: "overview", label: "Overview", icon: LayoutGrid },
   { id: "schedule", label: "Schedule", icon: Calendar },
   { id: "budget", label: "Budget", icon: DollarSign },
@@ -22,14 +34,18 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "photos", label: "Photos", icon: Camera },
   { id: "rfis", label: "RFIs", icon: MessageSquare },
   { id: "submittals", label: "Submittals", icon: ClipboardList },
-  { id: "coordination", label: "Coordination", icon: GitMerge },
-  { id: "punch-list", label: "Punch List", icon: CheckCircle2 },
+  { id: "coordination", label: "Coordination", icon: GitMerge, requires: ["coordination"] },
+  { id: "multifamily", label: "Multifamily", icon: Building2, requires: ["multifamily"] },
+  { id: "punch-list", label: "Punch List", icon: CheckCircle2, requires: ["field"] },
   { id: "change-orders", label: "Change Orders", icon: DollarSign },
-  { id: "daily-logs", label: "Daily Logs", icon: HardHat },
-  { id: "safety", label: "Safety", icon: AlertTriangle },
+  { id: "daily-logs", label: "Daily Logs", icon: HardHat, requires: ["field"] },
+  { id: "safety", label: "Safety", icon: AlertTriangle, requires: ["safety"] },
   { id: "drawings", label: "Drawings", icon: FileText },
   { id: "team", label: "Team", icon: Users },
 ]
+
+// Multifamily project categories that unlock the Multifamily tab
+const MULTIFAMILY_CATEGORIES = ["MULTIFAMILY", "MIXED_USE", "NEW_CONSTRUCTION"]
 
 const PROJECT = {
   name: "Riverdale Mixed-Use Development",
@@ -46,6 +62,12 @@ const PROJECT = {
   contractValue: 4250000,
   manager: "Alex Rivera",
   superintendent: "Mike Torres",
+  category: "MULTIFAMILY", // determines if Multifamily tab shows
+  unitCount: 51,
+  totalUnits: 51,
+  completedUnits: 0,
+  loanAmount: 3800000,
+  drawnToDate: 1200000,
 }
 
 const MILESTONES = [
@@ -85,6 +107,32 @@ export default function ProjectDetailPage() {
   const params = useParams()
   const [activeTab, setActiveTab] = React.useState<Tab>("overview")
 
+  // -----------------------------------------------------------------------
+  // Feature flags — derived from project category + client service tier.
+  // In production these come from the API / subscription context.
+  // -----------------------------------------------------------------------
+  const isMultifamily = MULTIFAMILY_CATEGORIES.includes(PROJECT.category)
+
+  // Build set of active features for this project.
+  // In production, populate from client subscription + add-on flags.
+  const activeFeatures = new Set<string>([
+    // Core tabs always available
+    "core",
+    // Coordination available for Package B+
+    "coordination",
+    // Field tools available for Package C+
+    "field",
+    // Safety docs available as add-on
+    "safety",
+  ])
+  if (isMultifamily) activeFeatures.add("multifamily")
+
+  // Filter tabs based on project features
+  const TABS = BASE_TABS.filter((t) => {
+    if (!t.requires || t.requires.length === 0) return true
+    return t.requires.every((req) => activeFeatures.has(req))
+  })
+
   return (
     <div className="space-y-6">
       {/* Project Header */}
@@ -96,6 +144,11 @@ export default function ProjectDetailPage() {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold">{PROJECT.name}</h1>
             <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">Active</span>
+            {isMultifamily && (
+              <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                {PROJECT.unitCount} Units
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
             <span className="flex items-center gap-1"><Building2 className="h-3.5 w-3.5" />{PROJECT.client}</span>
@@ -426,6 +479,86 @@ export default function ProjectDetailPage() {
                     </Button>
                   </Link>
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {/* Multifamily Tab — only shown for multifamily/mixed-use projects */}
+      {activeTab === "multifamily" && isMultifamily && (
+        <div className="space-y-6">
+          {/* Unit Completion Summary */}
+          <div className="grid gap-4 md:grid-cols-4">
+            <Card>
+              <CardContent className="pt-4 pb-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground"><Home size={16} />Total Units</div>
+                <div className="text-2xl font-bold mt-1">{PROJECT.totalUnits}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-4 pb-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground"><CheckCircle2 size={16} />Completed</div>
+                <div className="text-2xl font-bold mt-1 text-green-600">{PROJECT.completedUnits}</div>
+                <div className="text-xs text-muted-foreground">{PROJECT.totalUnits > 0 ? Math.round((PROJECT.completedUnits / PROJECT.totalUnits) * 100) : 0}% complete</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-4 pb-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground"><Receipt size={16} />Loan Amount</div>
+                <div className="text-2xl font-bold mt-1">{formatCurrency(PROJECT.loanAmount)}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-4 pb-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground"><DollarSign size={16} />Drawn to Date</div>
+                <div className="text-2xl font-bold mt-1 text-blue-600">{formatCurrency(PROJECT.drawnToDate)}</div>
+                <div className="text-xs text-muted-foreground">{Math.round((PROJECT.drawnToDate / PROJECT.loanAmount) * 100)}% of loan</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Draw Progress */}
+          <Card>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Receipt size={16} />Loan Draw Progress</CardTitle></CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between mb-2 text-sm">
+                <span>{formatCurrency(PROJECT.drawnToDate)} drawn</span>
+                <span>{formatCurrency(PROJECT.loanAmount)} total</span>
+              </div>
+              <div className="h-3 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-blue-500 rounded-full transition-all" style={{ width: `${(PROJECT.drawnToDate / PROJECT.loanAmount) * 100}%` }} />
+              </div>
+              <div className="text-xs text-muted-foreground mt-2">
+                {formatCurrency(PROJECT.loanAmount - PROJECT.drawnToDate)} remaining
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Links to Multifamily Tools */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="pt-6 pb-4 text-center">
+                <Home className="mx-auto h-10 w-10 text-blue-500 mb-3" />
+                <h3 className="font-semibold mb-1">Unit Tracker</h3>
+                <p className="text-xs text-muted-foreground mb-3">Track status of all {PROJECT.totalUnits} units</p>
+                <Link href="/multifamily/units"><Button variant="outline" size="sm" className="w-full">Open Unit Tracker</Button></Link>
+              </CardContent>
+            </Card>
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="pt-6 pb-4 text-center">
+                <Receipt className="mx-auto h-10 w-10 text-green-500 mb-3" />
+                <h3 className="font-semibold mb-1">Lender Draws</h3>
+                <p className="text-xs text-muted-foreground mb-3">AIA G702/G703 draw requests</p>
+                <Link href="/multifamily/draws"><Button variant="outline" size="sm" className="w-full">Open Lender Draws</Button></Link>
+              </CardContent>
+            </Card>
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="pt-6 pb-4 text-center">
+                <Layers className="mx-auto h-10 w-10 text-purple-500 mb-3" />
+                <h3 className="font-semibold mb-1">Area Phasing</h3>
+                <p className="text-xs text-muted-foreground mb-3">Phase timeline and unit assignments</p>
+                <Link href="/multifamily/phasing"><Button variant="outline" size="sm" className="w-full">Open Area Phasing</Button></Link>
               </CardContent>
             </Card>
           </div>

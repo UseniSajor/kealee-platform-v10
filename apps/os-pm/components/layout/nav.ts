@@ -44,6 +44,8 @@ export type PmNavItem = {
   match?: "exact" | "startsWith"
   /** If set, only internal staff see this item */
   internalOnly?: boolean
+  /** Feature flags required to show this item (e.g. "field", "multifamily") */
+  requires?: string[]
 }
 
 export type NavSection = {
@@ -51,6 +53,8 @@ export type NavSection = {
   items: PmNavItem[]
   /** If true, only internal staff see this entire section */
   internalOnly?: boolean
+  /** Feature flags required to show entire section (e.g. "multifamily") */
+  requires?: string[]
 }
 
 // ── Navigation Sections ───────────────────────────────────────────
@@ -76,6 +80,7 @@ export const navSections: NavSection[] = [
   },
   {
     label: "Estimation",
+    requires: ["estimation"],
     items: [
       { href: "/estimates", label: "Estimates", icon: Calculator, match: "startsWith" },
       { href: "/estimates/ai-takeoff", label: "AI Takeoff", icon: Wand2, match: "startsWith" },
@@ -83,10 +88,11 @@ export const navSections: NavSection[] = [
   },
   {
     label: "Field",
+    requires: ["field"],
     items: [
       { href: "/daily-logs", label: "Daily Logs", icon: ClipboardList, match: "startsWith" },
       { href: "/punch-list", label: "Punch List", icon: CheckSquare, match: "startsWith" },
-      { href: "/safety", label: "Safety", icon: Shield, match: "startsWith" },
+      { href: "/safety", label: "Safety", icon: Shield, match: "startsWith", requires: ["safety"] },
       { href: "/inspections", label: "Inspections", icon: HardHat, match: "startsWith" },
       { href: "/field-status", label: "Field Status", icon: MapPin, match: "startsWith" },
       { href: "/field-conflicts", label: "Conflicts", icon: AlertTriangle, match: "startsWith" },
@@ -95,6 +101,7 @@ export const navSections: NavSection[] = [
   },
   {
     label: "Multifamily",
+    requires: ["multifamily"],
     items: [
       { href: "/multifamily", label: "Overview", icon: Building2, match: "exact" },
       { href: "/multifamily/units", label: "Unit Tracker", icon: Building2, match: "startsWith" },
@@ -159,12 +166,41 @@ export const navSections: NavSection[] = [
 // Flat list of all items (for backward compatibility)
 export const pmNavItems: PmNavItem[] = navSections.flatMap((s) => s.items)
 
-// Get sections filtered by role
-export function getNavSections(isInternal: boolean): NavSection[] {
+/**
+ * Get sections filtered by role AND active features.
+ *
+ * `activeFeatures` is a set of feature strings like
+ * "multifamily", "field", "safety", "estimation", "coordination".
+ *
+ * When not provided, ALL feature-gated sections are shown
+ * (backward-compatible for internal staff who see everything).
+ */
+export function getNavSections(
+  isInternal: boolean,
+  activeFeatures?: Set<string>,
+): NavSection[] {
+  function meetsRequirements(requires?: string[]): boolean {
+    if (!requires || requires.length === 0) return true
+    // Internal staff always see everything
+    if (isInternal && !activeFeatures) return true
+    // If features provided, check them
+    if (activeFeatures) {
+      return requires.every((r) => activeFeatures.has(r))
+    }
+    return true
+  }
+
   return navSections
-    .filter((section) => !section.internalOnly || isInternal)
+    .filter(
+      (section) =>
+        (!section.internalOnly || isInternal) && meetsRequirements(section.requires),
+    )
     .map((section) => ({
       ...section,
-      items: section.items.filter((item) => !item.internalOnly || isInternal),
+      items: section.items.filter(
+        (item) =>
+          (!item.internalOnly || isInternal) && meetsRequirements(item.requires),
+      ),
     }))
+    .filter((section) => section.items.length > 0)
 }

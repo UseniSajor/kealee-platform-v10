@@ -166,6 +166,12 @@ interface RoleContextValue {
   userName: string
   companyName: string
   loading: boolean
+  /**
+   * Active feature flags for the current user/org.
+   * Drives sidebar nav and project tab visibility.
+   * e.g. "multifamily", "field", "safety", "estimation", "coordination"
+   */
+  activeFeatures: Set<string>
 }
 
 const RoleContext = createContext<RoleContextValue>({
@@ -177,6 +183,7 @@ const RoleContext = createContext<RoleContextValue>({
   userName: "",
   companyName: "",
   loading: true,
+  activeFeatures: new Set(),
 })
 
 export function useRole() {
@@ -187,12 +194,73 @@ export function useRole() {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
 
+/**
+ * Derive active feature flags from subscription tier and org metadata.
+ * In production, the API would return these flags.
+ * For now, derive them from the tier + any add-on metadata.
+ */
+function deriveActiveFeatures(
+  tier: SubscriptionTier,
+  isInternal: boolean,
+  addOns?: string[],
+  projectTypes?: string[],
+): Set<string> {
+  const features = new Set<string>()
+
+  // Internal staff see everything
+  if (isInternal) {
+    return new Set(["estimation", "field", "safety", "coordination", "multifamily", "lender_reporting"])
+  }
+
+  // All tiers get estimation
+  features.add("estimation")
+
+  // Performance+ gets coordination
+  if (tier === "performance" || tier === "scale" || tier === "enterprise") {
+    features.add("coordination")
+  }
+
+  // Scale+ gets field tools and safety
+  if (tier === "scale" || tier === "enterprise") {
+    features.add("field")
+    features.add("safety")
+  }
+
+  // Enterprise gets everything
+  if (tier === "enterprise") {
+    features.add("multifamily")
+    features.add("lender_reporting")
+  }
+
+  // Add-on overrides (e.g. purchased multifamily add-on)
+  if (addOns) {
+    for (const a of addOns) {
+      if (a === "FIELD_TOOLS") features.add("field")
+      if (a === "MULTIFAMILY_PREMIUM") features.add("multifamily")
+      if (a === "SAFETY_DOCS") features.add("safety")
+      if (a === "LENDER_REPORTING") features.add("lender_reporting")
+    }
+  }
+
+  // Project-type overrides: if org has multifamily projects, enable multifamily
+  if (projectTypes) {
+    const MF_TYPES = ["MULTIFAMILY", "MIXED_USE"]
+    if (projectTypes.some((pt) => MF_TYPES.includes(pt.toUpperCase()))) {
+      features.add("multifamily")
+    }
+  }
+
+  return features
+}
+
 export function RoleProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<UserRole>("user")
   const [tier, setTier] = useState<SubscriptionTier>("none")
   const [userName, setUserName] = useState("")
   const [companyName, setCompanyName] = useState("")
   const [loading, setLoading] = useState(true)
+  const [addOns, setAddOns] = useState<string[]>([])
+  const [projectTypes, setProjectTypes] = useState<string[]>([])
 
   useEffect(() => {
     let cancelled = false
@@ -235,6 +303,9 @@ export function RoleProvider({ children }: { children: ReactNode }) {
               // Map subscription status to tier
               const subTier = (org.subscriptionTier || org.tier || "none").toLowerCase()
               setTier(subTier as SubscriptionTier)
+              // Capture add-ons and project types for feature derivation
+              if (org.addOns && Array.isArray(org.addOns)) setAddOns(org.addOns)
+              if (org.projectTypes && Array.isArray(org.projectTypes)) setProjectTypes(org.projectTypes)
             }
           }
         }
@@ -261,10 +332,11 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   const isInternal = INTERNAL_ROLES.includes(role)
   const isExternal = EXTERNAL_ROLES.includes(role)
   const permissions = getPermissions(role, tier)
+  const activeFeatures = deriveActiveFeatures(tier, isInternal, addOns, projectTypes)
 
   return (
     <RoleContext.Provider
-      value={{ role, tier, isInternal, isExternal, permissions, userName, companyName, loading }}
+      value={{ role, tier, isInternal, isExternal, permissions, userName, companyName, loading, activeFeatures }}
     >
       {children}
     </RoleContext.Provider>

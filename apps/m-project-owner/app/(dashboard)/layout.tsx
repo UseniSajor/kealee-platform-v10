@@ -3,30 +3,44 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Home,
+  BarChart3,
+  Building2,
   CheckSquare,
+  DollarSign,
   FileText,
   FolderOpen,
   HelpCircle,
+  Home,
+  Layers,
   LogOut,
   User,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { OwnerProfileProvider, useOwnerProfile } from '../../lib/user-context'
 
-const navItems = [
-  { href: '/dashboard', label: 'Home', icon: Home },
-  { href: '/approvals', label: 'Approvals', icon: CheckSquare },
-  { href: '/reports', label: 'Reports', icon: FileText },
-  { href: '/projects', label: 'My Projects', icon: FolderOpen },
-  { href: '/help', label: 'Help', icon: HelpCircle },
+// ---------------------------------------------------------------------------
+// All possible nav items — filtered by portalTabs from user metadata
+// ---------------------------------------------------------------------------
+const ALL_NAV_ITEMS = [
+  { key: 'dashboard', href: '/dashboard', label: 'Home', icon: Home },
+  { key: 'projects', href: '/projects', label: 'My Projects', icon: FolderOpen },
+  { key: 'approvals', href: '/approvals', label: 'Approvals', icon: CheckSquare },
+  { key: 'reports', href: '/reports', label: 'Reports', icon: FileText },
+  { key: 'analytics', href: '/analytics', label: 'Analytics', icon: BarChart3 },
+  // Multifamily-specific tabs (only shown for multifamily projects)
+  { key: 'units', href: '/units', label: 'Unit Tracker', icon: Building2 },
+  { key: 'draws', href: '/draws', label: 'Lender Draws', icon: DollarSign },
+  { key: 'phasing', href: '/phasing', label: 'Area Phasing', icon: Layers },
+  // Always-available
+  { key: 'help', href: '/help', label: 'Help', icon: HelpCircle },
 ]
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+function LayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const { portalTabs, loading: profileLoading } = useOwnerProfile()
+
+  // Filter nav items based on user's portal tabs
+  const navItems = ALL_NAV_ITEMS.filter((item) => portalTabs.includes(item.key))
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -110,5 +124,20 @@ export default function DashboardLayout({
         {children}
       </main>
     </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Exported layout — wraps inner with OwnerProfileProvider
+// ---------------------------------------------------------------------------
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <OwnerProfileProvider>
+      <LayoutInner>{children}</LayoutInner>
+    </OwnerProfileProvider>
   )
 }

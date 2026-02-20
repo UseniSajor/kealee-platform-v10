@@ -11,11 +11,15 @@ import { getNavSections } from "./nav"
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { isInternal, userName, companyName, tier, loading } = useRole()
+  const { isInternal, userName, companyName, tier, loading, activeFeatures } = useRole()
   const [collapsed, setCollapsed] = React.useState(false)
   const [openSections, setOpenSections] = React.useState<Record<string, boolean>>({})
 
-  const sections = React.useMemo(() => getNavSections(isInternal), [isInternal])
+  // Pass active features so non-applicable sections are hidden for external users
+  const sections = React.useMemo(
+    () => getNavSections(isInternal, isInternal ? undefined : activeFeatures),
+    [isInternal, activeFeatures],
+  )
 
   // Initialize all sections as open
   React.useEffect(() => {
