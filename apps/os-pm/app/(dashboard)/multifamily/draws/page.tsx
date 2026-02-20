@@ -16,7 +16,7 @@ import {
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
-import { useCreateDraw } from "@/hooks/useMultifamily"
+import { useCreateDraw, useUpdateDraw, useSubmitDraw, useApproveDraw } from "@/hooks/useMultifamily"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -53,6 +53,9 @@ interface Draw {
 
 export default function LenderDrawsPage() {
   const createDraw = useCreateDraw()
+  const updateDraw = useUpdateDraw()
+  const submitDraw = useSubmitDraw()
+  const approveDraw = useApproveDraw()
   const [draws, setDraws] = React.useState<Draw[]>([])
   const [showNewDraw, setShowNewDraw] = React.useState(false)
   const [newDraw, setNewDraw] = React.useState({
@@ -96,9 +99,20 @@ export default function LenderDrawsPage() {
       currentBilling: 0,
       retainage: 10,
     })
+    // Persist to API
+    createDraw.mutate({
+      projectId: "current",
+      periodEnd: newDraw.periodEnd,
+      description: newDraw.description || `Draw #${draws.length + 1}`,
+      scheduledAmount: newDraw.scheduledAmount,
+      previouslyBilled: newDraw.previouslyBilled,
+      currentBilling: newDraw.currentBilling,
+      retainage: newDraw.retainage,
+    })
   }
 
   function updateDrawStatus(id: string, status: DrawStatus) {
+    // Optimistic local update
     setDraws((prev) =>
       prev.map((d) =>
         d.id === id
@@ -113,6 +127,10 @@ export default function LenderDrawsPage() {
           : d,
       ),
     )
+    // Persist to API
+    if (status === "SUBMITTED") submitDraw.mutate(id)
+    else if (status === "APPROVED") approveDraw.mutate(id)
+    else updateDraw.mutate({ id, status })
   }
 
   function formatCurrency(cents: number) {

@@ -235,3 +235,100 @@ export async function getPreConProject(
 ): Promise<{ precon: PreConProject }> {
   return fetchApi(`/precon/projects/${id}`)
 }
+
+// ---------------------------------------------------------------------------
+// Multifamily API functions
+// ---------------------------------------------------------------------------
+
+export interface MultifamilyUnit {
+  id: string
+  projectId: string
+  number: string
+  building: string
+  floor: number
+  unitType: string
+  sqft: number
+  status: string
+  punchItems: number
+  phaseId: string | null
+  notes: string | null
+  createdAt: string
+}
+
+export interface DrawRequest {
+  id: string
+  projectId: string
+  drawNumber: number
+  periodEnd: string | null
+  description: string
+  scheduledAmount: number
+  previouslyBilled: number
+  currentBilling: number
+  retainage: number
+  status: string
+  submittedAt: string | null
+  approvedAt: string | null
+  fundedAt: string | null
+  createdAt: string
+}
+
+export interface AreaPhase {
+  id: string
+  projectId: string
+  name: string
+  description: string
+  status: string
+  startDate: string | null
+  endDate: string | null
+  unitCount: number
+  completedUnits: number
+  areas: string[]
+  createdAt: string
+}
+
+export interface UnitStats {
+  total: number
+  complete: number
+  inProgress: number
+  punch: number
+  pctComplete: number
+}
+
+export interface DrawStats {
+  totalDraws: number
+  totalScheduled: number
+  totalBilled: number
+  totalFunded: number
+  pending: number
+  pctDrawn: number
+}
+
+// Units
+export async function getUnits(projectId: string): Promise<{ units: MultifamilyUnit[] }> {
+  return fetchApi(`/pm/multifamily/units?projectId=${projectId}`)
+}
+
+export async function getUnitStats(projectId: string): Promise<UnitStats> {
+  return fetchApi(`/pm/multifamily/units/stats?projectId=${projectId}`)
+}
+
+export async function updateUnit(id: string, data: Partial<MultifamilyUnit>): Promise<{ unit: MultifamilyUnit }> {
+  return fetchApi(`/pm/multifamily/units/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+}
+
+// Draws
+export async function getDraws(projectId: string): Promise<{ draws: DrawRequest[] }> {
+  return fetchApi(`/pm/multifamily/draws?projectId=${projectId}`)
+}
+
+export async function getDrawStats(projectId: string): Promise<DrawStats> {
+  return fetchApi(`/pm/multifamily/draws/stats?projectId=${projectId}`)
+}
+
+// Phases
+export async function getPhases(projectId: string): Promise<{ phases: AreaPhase[] }> {
+  return fetchApi(`/pm/multifamily/phases?projectId=${projectId}`)
+}

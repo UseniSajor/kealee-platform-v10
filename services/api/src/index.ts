@@ -694,6 +694,10 @@ const start = async () => {
       const { googlePlacesRoutes } = await import('./routes/google-places.routes')
       await fastify.register(googlePlacesRoutes, { prefix: '/api/google-places' })
 
+      // Multifamily Management (Units, Draws, Phases)
+      const { multifamilyRoutes } = await import('./modules/multifamily/multifamily.routes')
+      await fastify.register(multifamilyRoutes, { prefix: '/pm/multifamily' })
+
       // Note: File routes already registered above with prefix '/files'
     })
 

@@ -16,7 +16,7 @@ import {
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
-import { useCreateUnit, useBulkCreateUnits } from "@/hooks/useMultifamily"
+import { useCreateUnit, useBulkCreateUnits, useUpdateUnit } from "@/hooks/useMultifamily"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -56,6 +56,7 @@ interface BulkConfig {
 export default function UnitTrackerPage() {
   const createUnit = useCreateUnit()
   const bulkCreate = useBulkCreateUnits()
+  const updateUnit = useUpdateUnit()
   const [search, setSearch] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState<string>("all")
   const [showBulkModal, setShowBulkModal] = React.useState(false)
@@ -90,14 +91,22 @@ export default function UnitTrackerPage() {
     }
     setUnits((prev) => [...prev, ...generated])
     setShowBulkModal(false)
+    // Persist bulk units to API (fire & forget — local state already updated)
+    bulkCreate.mutate({ projectId: "current", units: generated })
   }
 
   function updateUnitStatus(index: number, status: UnitStatus) {
+    const unit = units[index]
+    // Optimistic update
     setUnits((prev) => {
       const updated = [...prev]
       updated[index] = { ...updated[index], status }
       return updated
     })
+    // Persist to API if unit has an ID
+    if (unit?.id) {
+      updateUnit.mutate({ id: unit.id, status })
+    }
   }
 
   // Filter units

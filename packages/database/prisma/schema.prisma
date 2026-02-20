@@ -11275,3 +11275,101 @@ model MobilizationChecklist {
 
   @@index([projectId])
 }
+
+// ============================================================================
+// MULTIFAMILY MANAGEMENT
+// ============================================================================
+
+enum UnitConstructionStatus {
+  NOT_STARTED
+  ROUGH_IN
+  DRYWALL
+  FINISH
+  PUNCH
+  COMPLETE
+  TURNED_OVER
+}
+
+enum DrawRequestStatus {
+  DRAFT
+  SUBMITTED
+  IN_REVIEW
+  APPROVED
+  FUNDED
+  REJECTED
+}
+
+enum AreaPhaseStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETE
+}
+
+model MultifamilyUnit {
+  id            String                  @id @default(cuid())
+  projectId     String
+  number        String
+  building      String                  @default("Building A")
+  floor         Int                     @default(1)
+  unitType      String                  @default("1BR")
+  sqft          Int                     @default(0)
+  status        UnitConstructionStatus  @default(NOT_STARTED)
+  punchItems    Int                     @default(0)
+  phaseId       String?
+  notes         String?
+  turnoverDate  DateTime?
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  phase         MultifamilyAreaPhase?   @relation(fields: [phaseId], references: [id])
+
+  @@unique([projectId, number])
+  @@index([projectId])
+  @@index([projectId, status])
+  @@index([phaseId])
+}
+
+model DrawRequest {
+  id                String             @id @default(cuid())
+  projectId         String
+  drawNumber        Int
+  periodEnd         DateTime?
+  description       String             @default("")
+  scheduledAmount   Float              @default(0)
+  previouslyBilled  Float              @default(0)
+  currentBilling    Float              @default(0)
+  retainage         Float              @default(10)
+  status            DrawRequestStatus  @default(DRAFT)
+  submittedAt       DateTime?
+  approvedAt        DateTime?
+  fundedAt          DateTime?
+  rejectedReason    String?
+  aiaDocumentUrl    String?
+  notes             String?
+  createdBy         String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@index([projectId])
+  @@index([projectId, status])
+}
+
+model MultifamilyAreaPhase {
+  id              String           @id @default(cuid())
+  projectId       String
+  name            String
+  description     String           @default("")
+  status          AreaPhaseStatus  @default(PLANNED)
+  startDate       DateTime?
+  endDate         DateTime?
+  unitCount       Int              @default(0)
+  completedUnits  Int              @default(0)
+  areas           Json             @default("[]")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  units           MultifamilyUnit[]
+
+  @@index([projectId])
+  @@index([projectId, status])
+}

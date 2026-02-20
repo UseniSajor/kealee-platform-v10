@@ -13,7 +13,7 @@ import {
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"
-import { useCreatePhase } from "@/hooks/useMultifamily"
+import { useCreatePhase, useUpdatePhase, useDeletePhase } from "@/hooks/useMultifamily"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -60,6 +60,8 @@ const AREA_PRESETS = [
 
 export default function AreaPhasingPage() {
   const createPhase = useCreatePhase()
+  const updatePhaseMutation = useUpdatePhase()
+  const deletePhaseMutation = useDeletePhase()
   const [phases, setPhases] = React.useState<Phase[]>([])
   const [showNewPhase, setShowNewPhase] = React.useState(false)
   const [selectedPhase, setSelectedPhase] = React.useState<string | null>(null)
@@ -87,17 +89,31 @@ export default function AreaPhasingPage() {
     setPhases((prev) => [...prev, phase])
     setShowNewPhase(false)
     setNewPhase({ name: "", description: "", startDate: "", endDate: "", areas: [], unitCount: 0 })
+    // Persist to API
+    createPhase.mutate({
+      projectId: "current",
+      name: phase.name,
+      description: phase.description,
+      startDate: phase.startDate,
+      endDate: phase.endDate,
+      unitCount: phase.unitCount,
+      areas: phase.areas,
+    })
   }
 
   function updatePhaseStatus(id: string, status: PhaseStatus) {
     setPhases((prev) =>
       prev.map((p) => (p.id === id ? { ...p, status } : p)),
     )
+    // Persist to API
+    updatePhaseMutation.mutate({ id, status })
   }
 
   function removePhase(id: string) {
     setPhases((prev) => prev.filter((p) => p.id !== id))
     if (selectedPhase === id) setSelectedPhase(null)
+    // Persist to API
+    deletePhaseMutation.mutate(id)
   }
 
   function toggleArea(area: string) {
