@@ -1492,7 +1492,7 @@ model Project {
 
   // Autonomy Configuration
   autonomyLevel     Int       @default(1) // 1=recommend, 2=routine-auto, 3=full-auto
-  autonomyRules     Json?     // Category overrides e.g. { changeOrders: { maxAutoApprove: 500 } }
+  autonomyRules     Json? // Category overrides e.g. { changeOrders: { maxAutoApprove: 500 } }
   autonomyEnabledAt DateTime?
   autonomyEnabledBy String?
 
@@ -1516,7 +1516,7 @@ model Project {
   // Command Center relationships
   bidRequests       BidRequest[]
   siteVisits        SiteVisit[]
-  siteCheckIns      SiteCheckIn[]  @relation("ProjectCheckIns")
+  siteCheckIns      SiteCheckIn[]      @relation("ProjectCheckIns")
   changeOrders      ChangeOrder[]
   reports           Report[]
   budgetLines       BudgetLine[]
@@ -1540,36 +1540,39 @@ model Project {
   sensorDevices SensorDevice[] @relation("ProjectSensors")
 
   // User Responsibilities Tracking relations (from Kealee_User_Responsibilities_Guide.md)
-  dailyLogs    DailyLog[]
-  fileUploads  FileUpload[]
-  receipts     Receipt[]
+  dailyLogs   DailyLog[]
+  fileUploads FileUpload[]
+  receipts    Receipt[]
 
   // PM Feature relations
-  rfis             RFI[]
-  submittals       Submittal[]
-  meetings         Meeting[]
-  selections       Selection[]
-  warranties       Warranty[]
-  warrantyClaims   WarrantyClaim[]
-  timeEntries      TimeEntry[]
-  safetyIncidents  SafetyIncident[]
-  toolboxTalks     ToolboxTalk[]
+  rfis            RFI[]
+  submittals      Submittal[]
+  meetings        Meeting[]
+  selections      Selection[]
+  warranties      Warranty[]
+  warrantyClaims  WarrantyClaim[]
+  timeEntries     TimeEntry[]
+  safetyIncidents SafetyIncident[]
+  toolboxTalks    ToolboxTalk[]
+
+  // PM Module v4 relations
+  fieldConflicts         FieldConflict[]
+  mobilizationChecklists MobilizationChecklist[]
 
   // Kealee Messenger & Claws relations
-  conversations    Conversation[]     @relation("ProjectConversations")
-  budgetItems      BudgetItem[]       @relation("ProjectBudgetItems")
+  conversations Conversation[] @relation("ProjectConversations")
+  budgetItems   BudgetItem[]   @relation("ProjectBudgetItems")
 
   @@index([clientId])
   @@index([orgId])
   @@index([propertyId])
   @@index([pmId])
   @@index([status])
-
   // ── Performance: Compound indexes for dashboard queries ──
-  @@index([clientId, status])        // Client dashboard: "my active projects"
-  @@index([pmId, status])            // PM dashboard: "my active projects"
-  @@index([orgId, status])           // Org-scoped project listing
-  @@index([status, createdAt])       // Admin: projects by status + time
+  @@index([clientId, status]) // Client dashboard: "my active projects"
+  @@index([pmId, status]) // PM dashboard: "my active projects"
+  @@index([orgId, status]) // Org-scoped project listing
+  @@index([status, createdAt]) // Admin: projects by status + time
 }
 
 // ============================================================================
@@ -1875,47 +1878,47 @@ model User {
   authoredKnowledgeEntries PlatformKnowledge[] @relation("PlatformKnowledgeAuthor")
 
   // Auto Design & Design Queue relations
-  autoDesignSessions        AutoDesignSession[]         @relation("AutoDesignSessionOwner")
-  designProfessionalProfile DesignProfessionalProfile?  @relation("DesignProfessionalProfile")
-  designHandoffs            DesignHandoff[]             @relation("DesignHandoffArchitect")
+  autoDesignSessions        AutoDesignSession[]        @relation("AutoDesignSessionOwner")
+  designProfessionalProfile DesignProfessionalProfile? @relation("DesignProfessionalProfile")
+  designHandoffs            DesignHandoff[]            @relation("DesignHandoffArchitect")
 
   // Core Architect / DesignProject relations
-  createdDesignProjects     DesignProject[]     @relation("DesignProjectCreator")
-  leadDesignProjects        DesignProject[]     @relation("DesignProjectLead")
-  designTeamMemberships     DesignTeamMember[]  @relation("DesignTeamMembership")
-  approvedDesignPhases      DesignPhase[]       @relation("DesignPhaseApprover")
-  issuedDrawingSets         DrawingSet[]        @relation("DrawingSetIssuer")
-  uploadedBIMModels         BIMModel[]          @relation("BIMModelUploader")
-  uploadedDesignFiles       DesignFile[]        @relation("DesignFileUploader")
-  createdReviewRequests     ReviewRequest[]     @relation("ReviewRequestCreator")
-  assignedReviewRequests    ReviewRequest[]     @relation("ReviewRequestAssignee")
-  createdDesignRevisions    DesignRevision[]    @relation("DesignRevisionCreator")
-  createdVersionBranches    VersionBranch[]     @relation("VersionBranchCreator")
-  createdPermitPackages     DesignPermitPackage[] @relation("DesignPermitPackageCreator")
-  createdQCChecklists       DesignQCChecklist[] @relation("DesignQCChecklistCreator")
+  createdDesignProjects  DesignProject[]       @relation("DesignProjectCreator")
+  leadDesignProjects     DesignProject[]       @relation("DesignProjectLead")
+  designTeamMemberships  DesignTeamMember[]    @relation("DesignTeamMembership")
+  approvedDesignPhases   DesignPhase[]         @relation("DesignPhaseApprover")
+  issuedDrawingSets      DrawingSet[]          @relation("DrawingSetIssuer")
+  uploadedBIMModels      BIMModel[]            @relation("BIMModelUploader")
+  uploadedDesignFiles    DesignFile[]          @relation("DesignFileUploader")
+  createdReviewRequests  ReviewRequest[]       @relation("ReviewRequestCreator")
+  assignedReviewRequests ReviewRequest[]       @relation("ReviewRequestAssignee")
+  createdDesignRevisions DesignRevision[]      @relation("DesignRevisionCreator")
+  createdVersionBranches VersionBranch[]       @relation("VersionBranchCreator")
+  createdPermitPackages  DesignPermitPackage[] @relation("DesignPermitPackageCreator")
+  createdQCChecklists    DesignQCChecklist[]   @relation("DesignQCChecklistCreator")
 
   // User Responsibilities Tracking relations (from Kealee_User_Responsibilities_Guide.md)
-  dailyLogs       DailyLog[]     @relation("DailyLogContractor")
-  uploadedFiles   FileUpload[]   @relation("FileUploadUser")
-  uploadedReceipts Receipt[]     @relation("ReceiptUploadedBy")
-  userActions     UserAction[]   @relation("UserActionHistory")
+  dailyLogs        DailyLog[]   @relation("DailyLogContractor")
+  uploadedFiles    FileUpload[] @relation("FileUploadUser")
+  uploadedReceipts Receipt[]    @relation("ReceiptUploadedBy")
+  userActions      UserAction[] @relation("UserActionHistory")
 
   // PM Feature relations
-  createdRFIs          RFI[]              @relation("RFICreator")
-  assignedRFIs         RFI[]              @relation("RFIAssignee")
-  closedRFIs           RFI[]              @relation("RFICloser")
-  rfiResponses         RFIResponse[]      @relation("RFIResponder")
-  createdSubmittals    Submittal[]        @relation("SubmittalCreator")
-  assignedSubmittals   Submittal[]        @relation("SubmittalAssignee")
-  submittalReviews     SubmittalReview[]  @relation("SubmittalReviewer")
-  createdMeetings      Meeting[]          @relation("MeetingCreator")
-  meetingActionItems   MeetingActionItem[] @relation("ActionItemAssignee")
-  createdSelections    Selection[]        @relation("SelectionCreator")
-  approvedSelections   Selection[]        @relation("SelectionApprover")
-  timeEntries          TimeEntry[]        @relation("TimeEntryUser")
-  approvedTimeEntries  TimeEntry[]        @relation("TimeEntryApprover")
-  reportedIncidents    SafetyIncident[]   @relation("IncidentReporter")
-  filedWarrantyClaims  WarrantyClaim[]    @relation("WarrantyClaimFiler")
+  createdRFIs         RFI[]               @relation("RFICreator")
+  assignedRFIs        RFI[]               @relation("RFIAssignee")
+  closedRFIs          RFI[]               @relation("RFICloser")
+  rfiResponses        RFIResponse[]       @relation("RFIResponder")
+  createdSubmittals   Submittal[]         @relation("SubmittalCreator")
+  assignedSubmittals  Submittal[]         @relation("SubmittalAssignee")
+  submittalReviews    SubmittalReview[]   @relation("SubmittalReviewer")
+  createdMeetings     Meeting[]           @relation("MeetingCreator")
+  meetingActionItems  MeetingActionItem[] @relation("ActionItemAssignee")
+  createdSelections   Selection[]         @relation("SelectionCreator")
+  approvedSelections  Selection[]         @relation("SelectionApprover")
+  timeEntries         TimeEntry[]         @relation("TimeEntryUser")
+  approvedTimeEntries TimeEntry[]         @relation("TimeEntryApprover")
+  reportedIncidents   SafetyIncident[]    @relation("IncidentReporter")
+  filedWarrantyClaims WarrantyClaim[]     @relation("WarrantyClaimFiler")
 
   // Kealee Messenger relations (Claw F)
   conversationParticipants ConversationParticipant[] @relation("UserConversationParticipants")
@@ -1923,7 +1926,7 @@ model User {
   chatMessageReads         ChatMessageRead[]         @relation("UserChatMessageReads")
 
   // Software subscription relations
-  softwareSubscriptions    SoftwareSubscription[]    @relation("UserSoftwareSubscriptions")
+  softwareSubscriptions SoftwareSubscription[] @relation("UserSoftwareSubscriptions")
 }
 
 // ============================================================================
@@ -2230,9 +2233,8 @@ model Milestone {
   @@index([contractId])
   @@index([status])
   @@index([dependsOnId])
-
   // ── Performance: Compound indexes for milestone dashboards ──
-  @@index([contractId, status])      // Contract detail: milestones by status
+  @@index([contractId, status]) // Contract detail: milestones by status
 }
 
 model Evidence {
@@ -4103,26 +4105,25 @@ model Lead {
   srp                Decimal?
 
   // Marketplace pricing (set by estimating engine)
-  suggestedPrice     Decimal?  @db.Decimal(12, 2)
-  priceRange         Json?     // { "low": number, "mid": number, "high": number }
-  projectType        String?   // "kitchen_renovation", "bathroom_remodel", etc.
-  sqft               Decimal?  @db.Decimal(10, 2)
-  qualityTier        String?   // "low", "mid", "high"
+  suggestedPrice Decimal? @db.Decimal(12, 2)
+  priceRange     Json? // { "low": number, "mid": number, "high": number }
+  projectType    String? // "kitchen_renovation", "bathroom_remodel", etc.
+  sqft           Decimal? @db.Decimal(10, 2)
+  qualityTier    String? // "low", "mid", "high"
 
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  project Project? @relation(fields: [projectId], references: [id])
-  quotes  Quote[]
+  project        Project?        @relation(fields: [projectId], references: [id])
+  quotes         Quote[]
   quickEstimates QuickEstimate[]
 
   @@index([projectId])
   @@index([stage])
   @@index([status])
-
   // ── Performance: Compound indexes for marketplace queries ──
-  @@index([stage, createdAt])        // Lead pipeline: filter by stage + sort by time
-  @@index([status, createdAt])       // Lead listing with time-based pagination
+  @@index([stage, createdAt]) // Lead pipeline: filter by stage + sort by time
+  @@index([status, createdAt]) // Lead listing with time-based pagination
 }
 
 model MarketplaceProfile {
@@ -4821,11 +4822,10 @@ model Task {
   @@index([clientId])
   @@index([status])
   @@index([assignedTo])
-
   // ── Performance: Compound indexes for task boards ──
-  @@index([projectId, status])       // Project detail: tasks by status
+  @@index([projectId, status]) // Project detail: tasks by status
   @@index([projectId, status, dueDate]) // Task board: filtered + sorted by due date
-  @@index([assignedTo, status])      // "My tasks" filtered by status
+  @@index([assignedTo, status]) // "My tasks" filtered by status
 }
 
 model TaskComment {
@@ -4916,7 +4916,6 @@ model Notification {
   @@index([type])
   @@index([status])
   @@index([createdAt])
-
   // ── Performance: Compound indexes for notification bell ──
   @@index([userId, status, createdAt]) // Notification bell: unread + recent
 }
@@ -5148,9 +5147,9 @@ model PreConProject {
   phaseHistory   PreConPhaseHistory[]
 
   // Auto Design & Design Queue relations
-  autoDesignSession  AutoDesignSession?      @relation("PreConAutoDesign")
-  queueAssignments   DesignQueueAssignment[] @relation("PreConDesignQueue")
-  designHandoffs     DesignHandoff[]         @relation("PreConDesignHandoff")
+  autoDesignSession AutoDesignSession?      @relation("PreConAutoDesign")
+  queueAssignments  DesignQueueAssignment[] @relation("PreConDesignQueue")
+  designHandoffs    DesignHandoff[]         @relation("PreConDesignHandoff")
 
   @@index([ownerId])
   @@index([phase])
@@ -5703,10 +5702,9 @@ model SiteVisit {
   @@index([pmId])
   @@index([scheduledAt])
   @@index([status])
-
   // ── Performance: Compound indexes for visit calendar ──
-  @@index([projectId, scheduledAt])  // Project detail: upcoming visits
-  @@index([pmId, scheduledAt])       // PM calendar: my schedule
+  @@index([projectId, scheduledAt]) // Project detail: upcoming visits
+  @@index([pmId, scheduledAt]) // PM calendar: my schedule
   @@map("site_visits")
 }
 
@@ -5883,10 +5881,9 @@ model Photo {
   @@index([projectId])
   @@index([visitId])
   @@index([category])
-
   // ── Performance: Compound indexes for photo gallery ──
-  @@index([projectId, category])     // Photo gallery filtered by type
-  @@index([projectId, createdAt])    // Photo gallery sorted by date
+  @@index([projectId, category]) // Photo gallery filtered by type
+  @@index([projectId, createdAt]) // Photo gallery sorted by date
   @@map("photos")
 }
 
@@ -6070,11 +6067,10 @@ model ScheduleItem {
   @@index([projectId])
   @@index([startDate])
   @@index([status])
-
   // ── Performance: Compound indexes for schedule views ──
-  @@index([projectId, status])       // Gantt chart: project tasks by status
-  @@index([projectId, startDate])    // Timeline: project tasks sorted by date
-  @@index([assignedTo, status])      // "My schedule" filtered by status
+  @@index([projectId, status]) // Gantt chart: project tasks by status
+  @@index([projectId, startDate]) // Timeline: project tasks sorted by date
+  @@index([assignedTo, status]) // "My schedule" filtered by status
   @@map("schedule_items")
 }
 
@@ -6102,14 +6098,14 @@ model CrewCheckIn {
   id          String   @id @default(uuid())
   projectId   String
   userId      String
-  type        String   // ARRIVE, DEPART
+  type        String // ARRIVE, DEPART
   latitude    Decimal  @db.Decimal(10, 8)
   longitude   Decimal  @db.Decimal(11, 8)
   verified    Boolean  @default(false) // Within geofence?
   distance    Decimal? @db.Decimal(10, 2) // Distance from site in meters
   hoursOnSite Decimal? @db.Decimal(5, 2) // Calculated on DEPART
   notes       String?
-  photo       String?  // Optional site photo URL
+  photo       String? // Optional site photo URL
 
   createdAt DateTime @default(now())
 
@@ -6198,23 +6194,23 @@ model CostDatabase {
   updatedAt      DateTime         @updatedAt
 
   // ── 3-Tier Cost Book Architecture ─────────────────────────────────
-  tier           CostDatabaseTier       @default(ORGANIZATION)
-  visibility     CostDataVisibility     @default(ORG_ONLY)
-  reviewStatus   CostDataReviewStatus   @default(DRAFT)
+  tier         CostDatabaseTier     @default(ORGANIZATION)
+  visibility   CostDataVisibility   @default(ORG_ONLY)
+  reviewStatus CostDataReviewStatus @default(DRAFT)
 
   // Submission & Review tracking
-  submittedById  String?                // User who uploaded / created
-  reviewedById   String?                // Kealee admin who approved/rejected
-  reviewedAt     DateTime?
-  reviewNotes    String?                @db.Text
+  submittedById String? // User who uploaded / created
+  reviewedById  String? // Kealee admin who approved/rejected
+  reviewedAt    DateTime?
+  reviewNotes   String?   @db.Text
 
   // Classification for organization
-  tradeCategory  String?                // e.g. "concrete", "steel", "electrical"
-  projectType    String?                // e.g. "residential", "commercial", "industrial"
-  methodology    String?                // e.g. "tilt-up", "stick-frame", "CMU"
+  tradeCategory String? // e.g. "concrete", "steel", "electrical"
+  projectType   String? // e.g. "residential", "commercial", "industrial"
+  methodology   String? // e.g. "tilt-up", "stick-frame", "CMU"
 
   // Standard book flags (Tier 1)
-  isStandard     Boolean          @default(false)  // true = Kealee base/standard cost book
+  isStandard Boolean @default(false) // true = Kealee base/standard cost book
 
   materials      MaterialCost[]
   laborRates     LaborRate[]
@@ -6224,8 +6220,8 @@ model CostDatabase {
   importJobs     CostCodeImportJob[]
   reviews        CostDataReview[]
 
-  submittedBy    User?            @relation("CostDatabaseSubmitter", fields: [submittedById], references: [id])
-  reviewedBy     User?            @relation("CostDatabaseReviewer", fields: [reviewedById], references: [id])
+  submittedBy User? @relation("CostDatabaseSubmitter", fields: [submittedById], references: [id])
+  reviewedBy  User? @relation("CostDatabaseReviewer", fields: [reviewedById], references: [id])
 
   @@index([organizationId])
   @@index([region])
@@ -6249,24 +6245,24 @@ enum CostDatabaseType {
 // ── 3-Tier Cost Book Enums ────────────────────────────────────────
 
 enum CostDatabaseTier {
-  STANDARD       // Tier 1: Kealee base cost book — admin upload/remove only
-  COMMUNITY      // Tier 2: User-uploaded, curated — feeds AI & platform intelligence
-  ORGANIZATION   // Tier 3: Private org-scoped — customizable per user/org
+  STANDARD // Tier 1: Kealee base cost book — admin upload/remove only
+  COMMUNITY // Tier 2: User-uploaded, curated — feeds AI & platform intelligence
+  ORGANIZATION // Tier 3: Private org-scoped — customizable per user/org
 }
 
 enum CostDataVisibility {
-  PUBLIC         // Visible to all authenticated users (standard books)
-  AI_STAFF_ONLY  // Visible to platform AI and Kealee staff only (community data)
-  ORG_ONLY       // Visible only to the uploading organization (private)
-  ADMIN_ONLY     // Visible only to Kealee admin (internal reference)
+  PUBLIC // Visible to all authenticated users (standard books)
+  AI_STAFF_ONLY // Visible to platform AI and Kealee staff only (community data)
+  ORG_ONLY // Visible only to the uploading organization (private)
+  ADMIN_ONLY // Visible only to Kealee admin (internal reference)
 }
 
 enum CostDataReviewStatus {
-  DRAFT           // Just uploaded, not yet submitted for review
-  PENDING_REVIEW  // Submitted for Kealee admin review
-  APPROVED        // Approved by admin — available per visibility rules
-  REJECTED        // Rejected by admin — not available
-  ARCHIVED        // Previously approved, now archived
+  DRAFT // Just uploaded, not yet submitted for review
+  PENDING_REVIEW // Submitted for Kealee admin review
+  APPROVED // Approved by admin — available per visibility rules
+  REJECTED // Rejected by admin — not available
+  ARCHIVED // Previously approved, now archived
 }
 
 model MaterialCost {
@@ -6459,22 +6455,22 @@ model Assembly {
   metadata       Json?
 
   // Marketplace pricing tiers (low / mid / high quality)
-  materialCostLow   Decimal?  @db.Decimal(10, 2)
-  materialCostMid   Decimal?  @db.Decimal(10, 2)
-  materialCostHigh  Decimal?  @db.Decimal(10, 2)
-  laborCostLow      Decimal?  @db.Decimal(10, 2)
-  laborCostMid      Decimal?  @db.Decimal(10, 2)
-  laborCostHigh     Decimal?  @db.Decimal(10, 2)
-  laborHoursPerUnit Decimal?  @db.Decimal(6, 2)
+  materialCostLow   Decimal? @db.Decimal(10, 2)
+  materialCostMid   Decimal? @db.Decimal(10, 2)
+  materialCostHigh  Decimal? @db.Decimal(10, 2)
+  laborCostLow      Decimal? @db.Decimal(10, 2)
+  laborCostMid      Decimal? @db.Decimal(10, 2)
+  laborCostHigh     Decimal? @db.Decimal(10, 2)
+  laborHoursPerUnit Decimal? @db.Decimal(6, 2)
 
   // Regional cost multipliers (JSON map: { "DC": 1.15, "Baltimore": 1.0, ... })
-  regionMultiplier  Json?
+  regionMultiplier Json?
 
   // Trades required for this assembly
-  tradesRequired    String[]  @default([])
+  tradesRequired String[] @default([])
 
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   costDatabase CostDatabase       @relation(fields: [costDatabaseId], references: [id])
   items        AssemblyItem[]
@@ -6648,9 +6644,9 @@ model Estimate {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  costDatabase   CostDatabase?      @relation(fields: [costDatabaseId], references: [id])
-  parentEstimate Estimate?          @relation("EstimateRevisions", fields: [parentEstimateId], references: [id])
-  revisions      Estimate[]         @relation("EstimateRevisions")
+  costDatabase   CostDatabase?        @relation(fields: [costDatabaseId], references: [id])
+  parentEstimate Estimate?            @relation("EstimateRevisions", fields: [parentEstimateId], references: [id])
+  revisions      Estimate[]           @relation("EstimateRevisions")
   sections       EstimateSection[]
   lineItems      EstimateLineItem[]
   comparisons    EstimateComparison[] @relation("EstimateComparisons")
@@ -6823,48 +6819,48 @@ enum ImportJobStatus {
 }
 
 model CostCodeImportJob {
-  id               String          @id @default(uuid())
-  costDatabaseId   String?
-  userId           String
-  fileName         String
-  fileUrl          String?
-  fileSize         Int?
-  mimeType         String          @default("application/pdf")
-  status           ImportJobStatus @default(PENDING)
-  progress         Int             @default(0) // 0-100
+  id             String          @id @default(uuid())
+  costDatabaseId String?
+  userId         String
+  fileName       String
+  fileUrl        String?
+  fileSize       Int?
+  mimeType       String          @default("application/pdf")
+  status         ImportJobStatus @default(PENDING)
+  progress       Int             @default(0) // 0-100
 
   // 3-Tier routing — determines where imported data lands
-  targetTier       CostDatabaseTier @default(ORGANIZATION)  // Which tier this import targets
-  isAdminUpload    Boolean          @default(false)          // true = Kealee admin uploading standard book
+  targetTier    CostDatabaseTier @default(ORGANIZATION) // Which tier this import targets
+  isAdminUpload Boolean          @default(false) // true = Kealee admin uploading standard book
 
   // Results
-  totalPages       Int?
-  processedPages   Int?
-  materialsFound   Int             @default(0)
-  laborRatesFound  Int             @default(0)
-  equipmentFound   Int             @default(0)
-  assembliesFound  Int             @default(0)
-  totalImported    Int             @default(0)
-  totalSkipped     Int             @default(0)
-  errors           Json?           // Array of error messages
+  totalPages      Int?
+  processedPages  Int?
+  materialsFound  Int   @default(0)
+  laborRatesFound Int   @default(0)
+  equipmentFound  Int   @default(0)
+  assembliesFound Int   @default(0)
+  totalImported   Int   @default(0)
+  totalSkipped    Int   @default(0)
+  errors          Json? // Array of error messages
 
   // AI extraction metadata
-  extractedText    String?         @db.Text
-  structuredData   Json?           // Final structured output from AI
+  extractedText  String? @db.Text
+  structuredData Json? // Final structured output from AI
 
   // AI classification (auto-tagged on import)
-  aiTradeCategory  String?         // AI-detected trade category
-  aiProjectType    String?         // AI-detected project type
-  aiMethodology    String?         // AI-detected construction methodology
-  aiConfidence     Decimal?        @db.Decimal(5, 4)  // AI classification confidence 0-1
+  aiTradeCategory String? // AI-detected trade category
+  aiProjectType   String? // AI-detected project type
+  aiMethodology   String? // AI-detected construction methodology
+  aiConfidence    Decimal? @db.Decimal(5, 4) // AI classification confidence 0-1
 
-  startedAt        DateTime?
-  completedAt      DateTime?
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  costDatabase     CostDatabase?   @relation(fields: [costDatabaseId], references: [id])
-  user             User            @relation("CostCodeImportJobs", fields: [userId], references: [id])
+  costDatabase CostDatabase? @relation(fields: [costDatabaseId], references: [id])
+  user         User          @relation("CostCodeImportJobs", fields: [userId], references: [id])
 
   @@index([userId])
   @@index([costDatabaseId])
@@ -6975,7 +6971,6 @@ model BudgetSnapshot {
 
   @@index([projectId])
   @@index([snapshotDate])
-
   // ── Performance: Compound index for budget chart queries ──
   @@index([projectId, snapshotDate]) // Budget chart: project snapshots over time
   @@map("budget_snapshots")
@@ -7124,18 +7119,18 @@ model NotificationPreference {
 // ============================================================================
 
 model PushSubscription {
-  id           String   @id @default(uuid())
-  userId       String
-  endpoint     String   @unique   // Web Push endpoint URL
-  p256dh       String             // Public key for encryption
-  auth         String             // Authentication secret
-  userAgent    String?            // Device/browser identifier
-  platform     String?            // "iOS", "Android", "Windows", "macOS"
-  active       Boolean  @default(true)
-  lastUsed     DateTime?
-  failCount    Int      @default(0)  // Consecutive delivery failures
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id        String    @id @default(uuid())
+  userId    String
+  endpoint  String    @unique // Web Push endpoint URL
+  p256dh    String // Public key for encryption
+  auth      String // Authentication secret
+  userAgent String? // Device/browser identifier
+  platform  String? // "iOS", "Android", "Windows", "macOS"
+  active    Boolean   @default(true)
+  lastUsed  DateTime?
+  failCount Int       @default(0) // Consecutive delivery failures
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   user User @relation("UserPushSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
 
@@ -7181,10 +7176,9 @@ model Document {
   @@index([type])
   @@index([status])
   @@index([createdAt])
-
   // ── Performance: Compound indexes for document galleries ──
   @@index([projectId, type, createdAt]) // Doc gallery: filtered by type + sorted
-  @@index([projectId, status])          // Doc listing: project docs by status
+  @@index([projectId, status]) // Doc listing: project docs by status
   @@map("documents")
 }
 
@@ -7537,6 +7531,13 @@ model PMServiceSubscription {
   marketplaceFeeWaiver Boolean @default(false) // Package C/D = 0% fees
   escrowFeeReduction   Boolean @default(false) // Package C/D = 0.5%
 
+  // PM Module v4 tier configuration
+  maxProjectValue   BigInt @default(50000000) // Max single project value in cents
+  maxPortfolioValue BigInt @default(100000000) // Max total portfolio value in cents
+  hoursPerWeekMin   Int    @default(5)
+  hoursPerWeekMax   Int    @default(10)
+  tierLevel         String @default("A") // A, B, C, D
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -7786,55 +7787,55 @@ model DevelopmentLead {
   id String @id @default(uuid())
 
   // Contact Information
-  fullName    String
-  company     String
-  email       String
-  phone       String?
-  role        String // Owner, Developer, Investor, Asset Manager, Non-profit, Other
-  
+  fullName String
+  company  String
+  email    String
+  phone    String?
+  role     String // Owner, Developer, Investor, Asset Manager, Non-profit, Other
+
   // Project Details
-  location        String
-  assetType       DevelopmentAssetType
-  units           String // Can be number or "N/A" for non-unit-based
-  notUnitBased    Boolean @default(false)
-  projectStage    DevelopmentProjectStage
-  budgetRange     String // "< $1M", "$1–5M", etc.
-  timeline        String // "0–3 mo", "3–6 mo", etc.
-  
+  location     String
+  assetType    DevelopmentAssetType
+  units        String // Can be number or "N/A" for non-unit-based
+  notUnitBased Boolean                 @default(false)
+  projectStage DevelopmentProjectStage
+  budgetRange  String // "< $1M", "$1–5M", etc.
+  timeline     String // "0–3 mo", "3–6 mo", etc.
+
   // Needs Assessment
   needsHelp String[] // Array of selected needs
   message   String   @db.Text // Project summary
 
   // Lead Management
-  status      DevelopmentLeadStatus   @default(NEW)
-  priority    DevelopmentLeadPriority @default(MEDIUM)
-  source      DevelopmentLeadSource   @default(WEBSITE)
-  assignedTo  String? // User ID of assigned team member
-  
+  status     DevelopmentLeadStatus   @default(NEW)
+  priority   DevelopmentLeadPriority @default(MEDIUM)
+  source     DevelopmentLeadSource   @default(WEBSITE)
+  assignedTo String? // User ID of assigned team member
+
   // Deal Information
-  estimatedValue    Decimal? @db.Decimal(12, 2)
-  proposalSentAt    DateTime?
-  proposalAmount    Decimal? @db.Decimal(12, 2)
-  closedAt          DateTime?
-  closedAmount      Decimal? @db.Decimal(12, 2)
-  lostReason        String?
-  
+  estimatedValue Decimal?  @db.Decimal(12, 2)
+  proposalSentAt DateTime?
+  proposalAmount Decimal?  @db.Decimal(12, 2)
+  closedAt       DateTime?
+  closedAmount   Decimal?  @db.Decimal(12, 2)
+  lostReason     String?
+
   // Communication
   lastContactedAt DateTime?
   nextFollowUpAt  DateTime?
-  
+
   // Metadata
-  consent        Boolean  @default(false)
-  ipAddress      String?
-  userAgent      String?
-  submittedAt    DateTime @default(now())
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  
+  consent     Boolean  @default(false)
+  ipAddress   String?
+  userAgent   String?
+  submittedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   // Relations
   notes      DevelopmentLeadNote[]
   activities DevelopmentLeadActivity[]
-  
+
   @@index([status])
   @@index([priority])
   @@index([assignedTo])
@@ -7848,16 +7849,16 @@ model DevelopmentLead {
 model DevelopmentLeadNote {
   id     String @id @default(uuid())
   leadId String
-  
-  content   String   @db.Text
+
+  content   String  @db.Text
   createdBy String // User ID
-  isPrivate Boolean  @default(false)
-  
+  isPrivate Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   lead DevelopmentLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  
+
   @@index([leadId])
   @@index([createdBy])
   @@index([createdAt])
@@ -7868,16 +7869,16 @@ model DevelopmentLeadNote {
 model DevelopmentLeadActivity {
   id     String @id @default(uuid())
   leadId String
-  
+
   activityType String // STATUS_CHANGED, EMAIL_SENT, CALL_MADE, MEETING_SCHEDULED, PROPOSAL_SENT, NOTE_ADDED, etc.
   description  String @db.Text
   metadata     Json? // Additional activity data
-  
+
   createdBy String // User ID
   createdAt DateTime @default(now())
-  
+
   lead DevelopmentLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  
+
   @@index([leadId])
   @@index([activityType])
   @@index([createdAt])
@@ -7908,25 +7909,25 @@ model GCOpsLead {
   email    String
   phone    String?
   role     String // Owner, PM, Ops Manager, etc.
-  
+
   // Business Details
   gcType              String // Residential GC, Commercial, Multi-Family, etc.
   teamSize            String // Solo, 2-5, 6-15, etc.
   projectsPerYear     String // 1-5, 6-15, etc.
   averageProjectValue String // < $250K, $250K-$1M, etc.
   serviceArea         String
-  
+
   // Needs Assessment
-  challenges       String[] // Array of selected challenges
-  packageInterest  String   // Package A/B/C/D or consultation
-  message          String   @db.Text
-  
+  challenges      String[] // Array of selected challenges
+  packageInterest String // Package A/B/C/D or consultation
+  message         String   @db.Text
+
   // Lead Management
-  status      GCOpsLeadStatus @default(NEW)
-  priority    String          @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
-  source      String          @default("WEBSITE") // WEBSITE, REFERRAL, etc.
-  assignedTo  String? // User ID
-  
+  status     GCOpsLeadStatus @default(NEW)
+  priority   String          @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  source     String          @default("WEBSITE") // WEBSITE, REFERRAL, etc.
+  assignedTo String? // User ID
+
   // Trial & Conversion
   trialStartDate  DateTime?
   trialEndDate    DateTime?
@@ -7934,22 +7935,22 @@ model GCOpsLead {
   churnedDate     DateTime?
   churnReason     String?
   selectedPackage String? // Final package chosen
-  monthlyValue    Decimal? @db.Decimal(10, 2)
-  
+  monthlyValue    Decimal?  @db.Decimal(10, 2)
+
   // Communication
   lastContactedAt DateTime?
   nextFollowUpAt  DateTime?
-  
+
   // Metadata
   consent     Boolean  @default(false)
   submittedAt DateTime @default(now())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   // Relations
   notes      GCOpsLeadNote[]
   activities GCOpsLeadActivity[]
-  
+
   @@index([status])
   @@index([email])
   @@index([assignedTo])
@@ -7961,16 +7962,16 @@ model GCOpsLead {
 model GCOpsLeadNote {
   id     String @id @default(uuid())
   leadId String
-  
-  content   String   @db.Text
+
+  content   String  @db.Text
   createdBy String
-  isPrivate Boolean  @default(false)
-  
+  isPrivate Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   lead GCOpsLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  
+
   @@index([leadId])
   @@index([createdAt])
   @@map("gc_ops_lead_notes")
@@ -7980,16 +7981,16 @@ model GCOpsLeadNote {
 model GCOpsLeadActivity {
   id     String @id @default(uuid())
   leadId String
-  
+
   activityType String // LEAD_CREATED, STATUS_CHANGED, TRIAL_STARTED, etc.
   description  String @db.Text
   metadata     Json?
-  
+
   createdBy String
   createdAt DateTime @default(now())
-  
+
   lead GCOpsLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  
+
   @@index([leadId])
   @@index([activityType])
   @@index([createdAt])
@@ -8019,47 +8020,47 @@ model PermitServiceLead {
   email    String
   phone    String?
   role     String
-  
+
   // Contractor Details
-  contractorType   String // General, Electrical, Plumbing, HVAC, etc.
-  licenseNumber    String?
-  yearsInBusiness  String
-  jurisdictions    String[] // Cities/counties they work in
-  permitsPerMonth  String
-  
+  contractorType  String // General, Electrical, Plumbing, HVAC, etc.
+  licenseNumber   String?
+  yearsInBusiness String
+  jurisdictions   String[] // Cities/counties they work in
+  permitsPerMonth String
+
   // Service Needs
   servicesNeeded String[] // Services they're interested in
-  urgency        String   // Timeline urgency
+  urgency        String // Timeline urgency
   message        String   @db.Text
-  
+
   // Lead Management
-  status      PermitServiceLeadStatus @default(NEW)
-  priority    String                  @default("MEDIUM")
-  source      String                  @default("WEBSITE")
-  assignedTo  String?
-  
+  status     PermitServiceLeadStatus @default(NEW)
+  priority   String                  @default("MEDIUM")
+  source     String                  @default("WEBSITE")
+  assignedTo String?
+
   // Client Status
-  firstPermitDate   DateTime?
-  becameClientDate  DateTime?
-  churnedDate       DateTime?
-  churnReason       String?
-  totalPermitsProcessed Int @default(0)
-  monthlyValue          Decimal? @db.Decimal(10, 2)
-  
+  firstPermitDate       DateTime?
+  becameClientDate      DateTime?
+  churnedDate           DateTime?
+  churnReason           String?
+  totalPermitsProcessed Int       @default(0)
+  monthlyValue          Decimal?  @db.Decimal(10, 2)
+
   // Communication
   lastContactedAt DateTime?
   nextFollowUpAt  DateTime?
-  
+
   // Metadata
   consent     Boolean  @default(false)
   submittedAt DateTime @default(now())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   // Relations
   notes      PermitServiceLeadNote[]
   activities PermitServiceLeadActivity[]
-  
+
   @@index([status])
   @@index([email])
   @@index([assignedTo])
@@ -8071,16 +8072,16 @@ model PermitServiceLead {
 model PermitServiceLeadNote {
   id     String @id @default(uuid())
   leadId String
-  
-  content   String   @db.Text
+
+  content   String  @db.Text
   createdBy String
-  isPrivate Boolean  @default(false)
-  
+  isPrivate Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   lead PermitServiceLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  
+
   @@index([leadId])
   @@index([createdAt])
   @@map("permit_service_lead_notes")
@@ -8090,16 +8091,16 @@ model PermitServiceLeadNote {
 model PermitServiceLeadActivity {
   id     String @id @default(uuid())
   leadId String
-  
+
   activityType String
   description  String @db.Text
   metadata     Json?
-  
+
   createdBy String
   createdAt DateTime @default(now())
-  
+
   lead PermitServiceLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  
+
   @@index([leadId])
   @@index([activityType])
   @@index([createdAt])
@@ -8112,44 +8113,44 @@ model PermitServiceLeadActivity {
 
 // Contractor daily log entries (Guide Section 5 - During Project)
 model DailyLog {
-  id        String   @id @default(uuid())
-  projectId String
-  contractorId String  // User who created the log
-  
+  id           String @id @default(uuid())
+  projectId    String
+  contractorId String // User who created the log
+
   // Daily work information
-  date         DateTime @default(now())
+  date          DateTime @default(now())
   workPerformed String   @db.Text // What was done today
-  crewCount    Int?     // Number of workers on site
-  hoursWorked  Float?   // Total hours worked
-  
+  crewCount     Int? // Number of workers on site
+  hoursWorked   Float? // Total hours worked
+
   // Conditions
-  weather      String?  // Weather conditions
-  temperature  String?  // Temperature
-  
+  weather     String? // Weather conditions
+  temperature String? // Temperature
+
   // Progress & Issues
-  progressNotes String?  @db.Text
-  issues        String?  @db.Text // Any problems encountered
+  progressNotes   String? @db.Text
+  issues          String? @db.Text // Any problems encountered
   safetyIncidents String? @db.Text
-  
+
   // Materials & Equipment
   materialsDelivered String? @db.Text
   equipmentUsed      String? @db.Text
-  
+
   // Subcontractors
-  subsOnSite   String[] // List of subcontractors present
-  
+  subsOnSite String[] // List of subcontractors present
+
   // Photos (references to Document records)
-  photoIds     String[] // Array of document IDs
-  
+  photoIds String[] // Array of document IDs
+
   // Metadata
-  metadata     Json?
-  
+  metadata Json?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  contractor User @relation("DailyLogContractor", fields: [contractorId], references: [id])
-  
+
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  contractor User    @relation("DailyLogContractor", fields: [contractorId], references: [id])
+
   @@index([projectId])
   @@index([contractorId])
   @@index([date])
@@ -8163,13 +8164,13 @@ enum FileCategory {
   PROGRESS_PHOTO
   INSPECTION_CORRECTION_PHOTO
   EXISTING_CONDITION_PHOTO
-  
+
   // Financial
   RECEIPT
   INVOICE
   SUBCONTRACTOR_INVOICE
   LIEN_WAIVER
-  
+
   // Legal & Compliance
   LICENSE
   INSURANCE_CERTIFICATE
@@ -8177,7 +8178,7 @@ enum FileCategory {
   PERMIT_DOCUMENT
   PERMIT_APPLICATION
   PERMIT_APPROVAL
-  
+
   // Design & Plans
   FLOOR_PLAN
   DESIGN_FILE
@@ -8185,18 +8186,18 @@ enum FileCategory {
   AS_BUILT
   SPECIFICATION
   RENDERING
-  
+
   // Portfolio & Marketing
   PORTFOLIO_PHOTO
   COMPANY_LOGO
   PROFILE_PHOTO
-  
+
   // Project Documents
   CONTRACT
   CHANGE_ORDER
   WARRANTY
   CLOSEOUT_PACKAGE
-  
+
   // Other
   OTHER
 }
@@ -8215,57 +8216,57 @@ enum UploadedByRole {
 
 // File upload record with validation metadata
 model FileUpload {
-  id        String   @id @default(uuid())
-  
+  id String @id @default(uuid())
+
   // File information
-  fileName     String
-  fileUrl      String   // S3 URL
-  fileSize     Int      // Bytes
-  mimeType     String
-  category     FileCategory
-  
+  fileName String
+  fileUrl  String // S3 URL
+  fileSize Int // Bytes
+  mimeType String
+  category FileCategory
+
   // Context
-  projectId    String?
-  propertyId   String?
-  milestoneId  String?
-  leadId       String?
+  projectId      String?
+  propertyId     String?
+  milestoneId    String?
+  leadId         String?
   organizationId String?
-  
+
   // Upload metadata
-  uploadedById String
+  uploadedById   String
   uploadedByRole UploadedByRole
-  
+
   // Validation
-  isValidated  Boolean @default(false)
-  validatedAt  DateTime?
-  validatedBy  String?
-  
+  isValidated Boolean   @default(false)
+  validatedAt DateTime?
+  validatedBy String?
+
   // AI Analysis (for photos)
-  aiAnalysis   Json?    // QA findings, defects, etc.
-  aiProcessed  Boolean  @default(false)
+  aiAnalysis    Json? // QA findings, defects, etc.
+  aiProcessed   Boolean   @default(false)
   aiProcessedAt DateTime?
-  
+
   // OCR Results (for receipts)
-  ocrData      Json?    // Vendor, amount, date, etc.
-  ocrProcessed Boolean  @default(false)
+  ocrData        Json? // Vendor, amount, date, etc.
+  ocrProcessed   Boolean   @default(false)
   ocrProcessedAt DateTime?
-  
+
   // Tags & Search
-  tags         String[]
-  description  String?  @db.Text
-  location     String?  // "Kitchen - North Wall"
-  
+  tags        String[]
+  description String?  @db.Text
+  location    String? // "Kitchen - North Wall"
+
   // Metadata
-  metadata     Json?
-  
+  metadata Json?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  uploadedBy User @relation("FileUploadUser", fields: [uploadedById], references: [id])
-  project    Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  uploadedBy User       @relation("FileUploadUser", fields: [uploadedById], references: [id])
+  project    Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   milestone  Milestone? @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
   receipt    Receipt? // Reverse relation for receipts
-  
+
   @@index([projectId])
   @@index([uploadedById])
   @@index([category])
@@ -8276,35 +8277,35 @@ model FileUpload {
 
 // Contractor portfolio items (Guide Section 5 - At Signup)
 model PortfolioItem {
-  id             String   @id @default(uuid())
-  contractorId   String   // Organization ID
-  
+  id           String @id @default(uuid())
+  contractorId String // Organization ID
+
   // Portfolio details
-  projectName    String?
-  projectType    String?  // "Kitchen Remodel", "New Construction", etc.
-  description    String?  @db.Text
-  
+  projectName String?
+  projectType String? // "Kitchen Remodel", "New Construction", etc.
+  description String? @db.Text
+
   // Images
-  imageUrls      String[] // Array of S3 URLs
-  thumbnailUrl   String?
-  
+  imageUrls    String[] // Array of S3 URLs
+  thumbnailUrl String?
+
   // Project info
-  completedDate  DateTime?
-  location       String?
-  projectValue   Decimal?  @db.Decimal(12, 2)
-  squareFootage  Int?
-  
+  completedDate DateTime?
+  location      String?
+  projectValue  Decimal?  @db.Decimal(12, 2)
+  squareFootage Int?
+
   // Display
-  displayOrder   Int       @default(0)
-  isFeatured     Boolean   @default(false)
-  isPublished    Boolean   @default(true)
-  
+  displayOrder Int     @default(0)
+  isFeatured   Boolean @default(false)
+  isPublished  Boolean @default(true)
+
   // Metadata
-  metadata       Json?
-  
+  metadata Json?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([contractorId])
   @@index([projectType])
   @@index([isFeatured])
@@ -8314,47 +8315,47 @@ model PortfolioItem {
 
 // Receipt tracking with OCR (Guide Section 5 - During Project)
 model Receipt {
-  id        String   @id @default(uuid())
-  projectId String
+  id           String @id @default(uuid())
+  projectId    String
   uploadedById String
-  
+
   // Receipt information
   vendor       String?
   amount       Decimal?  @db.Decimal(12, 2)
-  category     String?   // "Materials", "Equipment Rental", "Subcontractor", etc.
+  category     String? // "Materials", "Equipment Rental", "Subcontractor", etc.
   purchaseDate DateTime?
-  
+
   // File reference
-  fileUploadId String?   @unique
-  imageUrl     String    // Original receipt image
-  
+  fileUploadId String? @unique
+  imageUrl     String // Original receipt image
+
   // OCR extracted data
-  ocrRawData   Json?     // Raw OCR output
-  ocrConfidence Float?   // OCR confidence score (0-1)
-  
+  ocrRawData    Json? // Raw OCR output
+  ocrConfidence Float? // OCR confidence score (0-1)
+
   // Budget tracking
   budgetLineItemId String?
-  isApproved    Boolean   @default(false)
-  approvedBy    String?
-  approvedAt    DateTime?
-  
+  isApproved       Boolean   @default(false)
+  approvedBy       String?
+  approvedAt       DateTime?
+
   // Notes
-  notes         String?   @db.Text
-  internalNotes String?   @db.Text // PM-only notes
-  
+  notes         String? @db.Text
+  internalNotes String? @db.Text // PM-only notes
+
   // Status
-  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED, DISPUTED
-  
+  status String @default("PENDING") // PENDING, APPROVED, REJECTED, DISPUTED
+
   // Metadata
-  metadata      Json?
-  
+  metadata Json?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  uploadedBy User    @relation("ReceiptUploadedBy", fields: [uploadedById], references: [id])
+
+  project    Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadedBy User        @relation("ReceiptUploadedBy", fields: [uploadedById], references: [id])
   fileUpload FileUpload? @relation(fields: [fileUploadId], references: [id])
-  
+
   @@index([projectId])
   @@index([uploadedById])
   @@index([status])
@@ -8364,28 +8365,28 @@ model Receipt {
 
 // User action tracking (for audit and analytics)
 model UserAction {
-  id        String   @id @default(uuid())
-  userId    String
-  userRole  String   // HOMEOWNER, CONTRACTOR, ARCHITECT, PM, ADMIN
-  
+  id       String @id @default(uuid())
+  userId   String
+  userRole String // HOMEOWNER, CONTRACTOR, ARCHITECT, PM, ADMIN
+
   // Action details
-  action    String   // "CREATE_PROJECT", "UPLOAD_PHOTO", "APPROVE_MILESTONE", etc.
-  entity    String   // "Project", "Milestone", "Document", etc.
-  entityId  String?
-  
+  action   String // "CREATE_PROJECT", "UPLOAD_PHOTO", "APPROVE_MILESTONE", etc.
+  entity   String // "Project", "Milestone", "Document", etc.
+  entityId String?
+
   // Context
-  projectId String?
+  projectId      String?
   organizationId String?
-  
+
   // Details
   details   Json?
   ipAddress String?
   userAgent String?
-  
+
   createdAt DateTime @default(now())
-  
+
   user User @relation("UserActionHistory", fields: [userId], references: [id])
-  
+
   @@index([userId])
   @@index([action])
   @@index([entity])
@@ -8399,39 +8400,39 @@ model UserAction {
 // ============================================================================
 
 model QuickEstimate {
-  id            String   @id @default(uuid())
-  projectId     String?
-  leadId        String?
-  createdBy     String?  // userId or null for anonymous/marketing
+  id        String  @id @default(uuid())
+  projectId String?
+  leadId    String?
+  createdBy String? // userId or null for anonymous/marketing
 
   // Inputs
-  projectType   String              // "kitchen_renovation", "bathroom_remodel", etc.
-  sqft          Decimal? @db.Decimal(10, 2)
-  location      String              // city/region for multiplier
-  qualityTier   String   @default("mid")  // "low", "mid", "high"
-  description   String?  @db.Text
+  projectType String // "kitchen_renovation", "bathroom_remodel", etc.
+  sqft        Decimal? @db.Decimal(10, 2)
+  location    String // city/region for multiplier
+  qualityTier String   @default("mid") // "low", "mid", "high"
+  description String?  @db.Text
 
   // Results
-  materialTotal   Decimal  @db.Decimal(12, 2)
-  laborTotal      Decimal  @db.Decimal(12, 2)
-  subtotal        Decimal  @db.Decimal(12, 2)
-  overhead        Decimal  @db.Decimal(12, 2)
-  profit          Decimal  @db.Decimal(12, 2)
-  contingency     Decimal  @db.Decimal(12, 2)
-  grandTotal      Decimal  @db.Decimal(12, 2)
+  materialTotal Decimal @db.Decimal(12, 2)
+  laborTotal    Decimal @db.Decimal(12, 2)
+  subtotal      Decimal @db.Decimal(12, 2)
+  overhead      Decimal @db.Decimal(12, 2)
+  profit        Decimal @db.Decimal(12, 2)
+  contingency   Decimal @db.Decimal(12, 2)
+  grandTotal    Decimal @db.Decimal(12, 2)
 
   // Price range
-  priceLow        Decimal  @db.Decimal(12, 2)
-  priceMid        Decimal  @db.Decimal(12, 2)
-  priceHigh       Decimal  @db.Decimal(12, 2)
+  priceLow  Decimal @db.Decimal(12, 2)
+  priceMid  Decimal @db.Decimal(12, 2)
+  priceHigh Decimal @db.Decimal(12, 2)
 
-  breakdown       Json     // detailed line-by-line breakdown
-  assumptions     Json?    // what was assumed
+  breakdown   Json // detailed line-by-line breakdown
+  assumptions Json? // what was assumed
 
-  status          String   @default("draft")  // "draft", "sent", "accepted"
-  createdAt       DateTime @default(now())
+  status    String   @default("draft") // "draft", "sent", "accepted"
+  createdAt DateTime @default(now())
 
-  lead            Lead?    @relation(fields: [leadId], references: [id])
+  lead Lead? @relation(fields: [leadId], references: [id])
 
   @@index([projectId])
   @@index([leadId])
@@ -8486,7 +8487,7 @@ model BidEvaluation {
 
   dueDate          DateTime?
   selectedBidId    String?
-  aiRecommendation String? @db.Text
+  aiRecommendation String?   @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -8535,7 +8536,7 @@ model WeeklyReport {
   weekStart DateTime
   weekEnd   DateTime
 
-  summary String  @db.Text // AI-generated
+  summary String @db.Text // AI-generated
   metrics Json
   risks   Json?
 
@@ -8588,7 +8589,7 @@ model DecisionQueue {
   decision  String? // approved, rejected, deferred
   decidedAt DateTime?
   decidedBy String?
-  reasoning String?  @db.Text
+  reasoning String?   @db.Text
 
   createdAt DateTime @default(now())
 
@@ -8627,20 +8628,20 @@ model AppHealthMetric {
 // ============================================================================
 
 model DeadLetterLog {
-  id             String    @id @default(uuid())
-  originalQueue  String
-  jobId          String
-  jobName        String
-  appId          String
-  data           Json
-  error          String    @db.Text
-  attempts       Int
-  status         String    @default("pending") // pending, retried, discarded
-  retriedAt      DateTime?
-  discardedAt    DateTime?
-  discardReason  String?
-  pattern        String?   // error pattern hash for grouping
-  createdAt      DateTime  @default(now())
+  id            String    @id @default(uuid())
+  originalQueue String
+  jobId         String
+  jobName       String
+  appId         String
+  data          Json
+  error         String    @db.Text
+  attempts      Int
+  status        String    @default("pending") // pending, retried, discarded
+  retriedAt     DateTime?
+  discardedAt   DateTime?
+  discardReason String?
+  pattern       String? // error pattern hash for grouping
+  createdAt     DateTime  @default(now())
 
   @@index([appId, createdAt])
   @@index([status])
@@ -8651,8 +8652,8 @@ model DeadLetterLog {
 
 model Alert {
   id             String    @id @default(uuid())
-  level          String    // INFO, WARNING, ERROR, CRITICAL
-  source         String    // appId or 'system'
+  level          String // INFO, WARNING, ERROR, CRITICAL
+  source         String // appId or 'system'
   title          String
   message        String    @db.Text
   data           Json?
@@ -8718,23 +8719,23 @@ model ContractorScore {
   contractorId String @unique
 
   // Component scores (0-100 each)
-  responsivenessScore    Int @default(50) // How fast they bid, reply, upload
-  uploadComplianceScore  Int @default(50) // Do they upload photos/receipts consistently
-  bidAccuracyScore       Int @default(50) // How close are bids to actual costs
-  scheduleAdherenceScore Int @default(50) // Do they finish milestones on time
-  qualityScore           Int @default(50) // QA inspection results
+  responsivenessScore     Int @default(50) // How fast they bid, reply, upload
+  uploadComplianceScore   Int @default(50) // Do they upload photos/receipts consistently
+  bidAccuracyScore        Int @default(50) // How close are bids to actual costs
+  scheduleAdherenceScore  Int @default(50) // Do they finish milestones on time
+  qualityScore            Int @default(50) // QA inspection results
   clientSatisfactionScore Int @default(50) // Client reviews
-  safetyScore            Int @default(50) // Safety violations from QA
+  safetyScore             Int @default(50) // Safety violations from QA
 
   // Composite
   overallScore Int @default(50) // Weighted average
 
   // Metadata
-  projectsCompleted  Int      @default(0)
-  totalBidsSubmitted Int      @default(0)
+  projectsCompleted  Int    @default(0)
+  totalBidsSubmitted Int    @default(0)
   avgBidResponseTime Int? // hours
-  dataPoints         Int      @default(0) // how many data points feed the score
-  confidence         String   @default("low") // low, medium, high
+  dataPoints         Int    @default(0) // how many data points feed the score
+  confidence         String @default("low") // low, medium, high
 
   lastCalculated DateTime @default(now())
 
@@ -8752,18 +8753,18 @@ model BeforeAfterPair {
   id        String @id @default(uuid())
   projectId String
 
-  area              String  // descriptive area name (e.g., "Kitchen North Wall")
-  beforePhotoUrl    String
-  afterPhotoUrl     String
-  beforeVisitId     String  // SiteVisit ID
-  afterVisitId      String  // SiteVisit ID
-  beforeDate        DateTime
-  afterDate         DateTime
-  matchConfidence   Int     @default(0) // 0-100 confidence in area match
+  area                String // descriptive area name (e.g., "Kitchen North Wall")
+  beforePhotoUrl      String
+  afterPhotoUrl       String
+  beforeVisitId       String // SiteVisit ID
+  afterVisitId        String // SiteVisit ID
+  beforeDate          DateTime
+  afterDate           DateTime
+  matchConfidence     Int      @default(0) // 0-100 confidence in area match
   progressDescription String?
-  beforePhase       String? // construction phase in before photo
-  afterPhase        String? // construction phase in after photo
-  progressPercent   Int     @default(0) // estimated area completion
+  beforePhase         String? // construction phase in before photo
+  afterPhase          String? // construction phase in after photo
+  progressPercent     Int      @default(0) // estimated area completion
 
   createdAt DateTime @default(now())
 
@@ -8781,7 +8782,7 @@ model BeforeAfterPair {
 // ============================================================================
 
 model SiteCheckIn {
-  id        String  @id @default(uuid())
+  id        String @id @default(uuid())
   userId    String
   projectId String
 
@@ -8790,14 +8791,14 @@ model SiteCheckIn {
   checkOutAt DateTime?
 
   // GPS coordinates at check-in
-  latitude   Float?
-  longitude  Float?
+  latitude  Float?
+  longitude Float?
 
   // Verification
-  verified        Boolean @default(false) // true if GPS within 200m of project
-  distanceMeters  Float?  // distance from project site
-  manualOverride  Boolean @default(false) // user overrode GPS warning
-  overrideNote    String? @db.Text
+  verified       Boolean @default(false) // true if GPS within 200m of project
+  distanceMeters Float? // distance from project site
+  manualOverride Boolean @default(false) // user overrode GPS warning
+  overrideNote   String? @db.Text
 
   // Time on site (calculated at check-out)
   minutesOnSite Int?
@@ -8826,25 +8827,25 @@ model SiteCheckIn {
 // ============================================================================
 
 model SensorDevice {
-  id           String   @id @default(uuid())
-  projectId    String
-  type         String   // "temperature", "humidity", "vibration", "noise", "water_leak", "air_quality", "motion"
-  name         String   // "Kitchen Humidity Sensor", "Basement Temp #1"
-  location     String   // "Kitchen wall A", "Basement NE corner"
-  deviceId     String   @unique // hardware device identifier
-  status       String   @default("active") // active, offline, low_battery, error
-  batteryLevel Int?     // percentage, if applicable
-  lastReading  DateTime?
-  config       Json?    // threshold settings: { alertAbove: 80, alertBelow: 32, unit: "°F" }
-  metadata     Json?    // additional device metadata
-  installedAt  DateTime?
-  installedBy  String?
+  id              String    @id @default(uuid())
+  projectId       String
+  type            String // "temperature", "humidity", "vibration", "noise", "water_leak", "air_quality", "motion"
+  name            String // "Kitchen Humidity Sensor", "Basement Temp #1"
+  location        String // "Kitchen wall A", "Basement NE corner"
+  deviceId        String    @unique // hardware device identifier
+  status          String    @default("active") // active, offline, low_battery, error
+  batteryLevel    Int? // percentage, if applicable
+  lastReading     DateTime?
+  config          Json? // threshold settings: { alertAbove: 80, alertBelow: 32, unit: "°F" }
+  metadata        Json? // additional device metadata
+  installedAt     DateTime?
+  installedBy     String?
   firmwareVersion String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   // Relationships
-  project  Project        @relation("ProjectSensors", fields: [projectId], references: [id], onDelete: Cascade)
+  project  Project         @relation("ProjectSensors", fields: [projectId], references: [id], onDelete: Cascade)
   readings SensorReading[]
 
   @@index([projectId])
@@ -8857,11 +8858,11 @@ model SensorReading {
   id        String   @id @default(uuid())
   deviceId  String
   value     Float
-  unit      String   // "°F", "%RH", "dB", "g", "ppm", "boolean"
+  unit      String // "°F", "%RH", "dB", "g", "ppm", "boolean"
   timestamp DateTime @default(now())
   alert     Boolean  @default(false) // true if this reading triggered an alert
-  alertType String?  // "above_threshold", "below_threshold", "rate_of_change", "offline"
-  metadata  Json?    // additional reading context
+  alertType String? // "above_threshold", "below_threshold", "rate_of_change", "offline"
+  metadata  Json? // additional reading context
 
   // Relationships
   device SensorDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
@@ -8912,6 +8913,25 @@ enum SubmittalType {
   TEST_REPORT
   CERTIFICATE
   MAINTENANCE_DATA
+}
+
+enum BallInCourt {
+  PM
+  ARCHITECT
+  OWNER
+  CONTRACTOR
+}
+
+enum ConflictStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+}
+
+enum ChecklistStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETE
 }
 
 enum MeetingType {
@@ -9007,33 +9027,36 @@ model RFI {
   id        String @id @default(uuid())
   projectId String
 
-  rfiNumber       Int       @default(autoincrement())
-  subject         String
-  question        String    @db.Text
-  status          RFIStatus @default(DRAFT)
-  priority        RFIPriority @default(MEDIUM)
+  rfiNumber Int         @default(autoincrement())
+  subject   String
+  question  String      @db.Text
+  status    RFIStatus   @default(DRAFT)
+  priority  RFIPriority @default(MEDIUM)
 
-  createdById     String
-  assignedToId    String?
-  dueDate         DateTime?
+  createdById  String
+  assignedToId String?
+  dueDate      DateTime?
 
-  costImpact      Boolean   @default(false)
-  scheduleImpact  Boolean   @default(false)
-  drawingRef      String?
-  specSection     String?
+  costImpact       Boolean     @default(false)
+  scheduleImpact   Boolean     @default(false)
+  drawingRef       String?
+  specSection      String?
   distributionList String[]
+  ballInCourt      BallInCourt @default(PM)
+  attachments      String[]
 
-  closedAt        DateTime?
-  closedById      String?
+  closedAt   DateTime?
+  closedById String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  project   Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdBy User         @relation("RFICreator", fields: [createdById], references: [id])
-  assignedTo User?       @relation("RFIAssignee", fields: [assignedToId], references: [id])
-  closedBy  User?        @relation("RFICloser", fields: [closedById], references: [id])
-  responses RFIResponse[]
+  project    Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy  User            @relation("RFICreator", fields: [createdById], references: [id])
+  assignedTo User?           @relation("RFIAssignee", fields: [assignedToId], references: [id])
+  closedBy   User?           @relation("RFICloser", fields: [closedById], references: [id])
+  responses  RFIResponse[]
+  conflicts  FieldConflict[]
 
   @@index([projectId])
   @@index([status])
@@ -9045,11 +9068,11 @@ model RFI {
 }
 
 model RFIResponse {
-  id          String  @id @default(uuid())
-  rfiId       String
-  responderId String
-  response    String  @db.Text
-  isOfficial  Boolean @default(false)
+  id            String   @id @default(uuid())
+  rfiId         String
+  responderId   String
+  response      String   @db.Text
+  isOfficial    Boolean  @default(false)
   attachmentIds String[]
 
   createdAt DateTime @default(now())
@@ -9069,23 +9092,23 @@ model Submittal {
   id        String @id @default(uuid())
   projectId String
 
-  submittalNumber  Int            @default(autoincrement())
-  title            String
-  description      String?        @db.Text
-  type             SubmittalType  @default(PRODUCT_DATA)
-  status           SubmittalStatus @default(DRAFT)
-  specSection      String?
+  submittalNumber Int             @default(autoincrement())
+  title           String
+  description     String?         @db.Text
+  type            SubmittalType   @default(PRODUCT_DATA)
+  status          SubmittalStatus @default(DRAFT)
+  specSection     String?
 
-  createdById      String
-  assignedToId     String?
-  dueDate          DateTime?
-  receivedDate     DateTime?
-  approvedDate     DateTime?
+  createdById  String
+  assignedToId String?
+  dueDate      DateTime?
+  receivedDate DateTime?
+  approvedDate DateTime?
 
-  contractorId     String?
+  contractorId      String?
   subcontractorName String?
-  copies           Int            @default(1)
-  remarks          String?        @db.Text
+  copies            Int     @default(1)
+  remarks           String? @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -9128,17 +9151,17 @@ model Meeting {
   id        String @id @default(uuid())
   projectId String
 
-  meetingNumber    Int          @default(autoincrement())
-  title            String
-  type             MeetingType  @default(PROGRESS)
-  date             DateTime
-  startTime        String?      // "09:00"
-  endTime          String?      // "10:30"
-  location         String?
-  agenda           String?      @db.Text
-  minutes          String?      @db.Text
-  status           MeetingStatus @default(SCHEDULED)
-  createdById      String
+  meetingNumber     Int           @default(autoincrement())
+  title             String
+  type              MeetingType   @default(PROGRESS)
+  date              DateTime
+  startTime         String? // "09:00"
+  endTime           String? // "10:30"
+  location          String?
+  agenda            String?       @db.Text
+  minutes           String?       @db.Text
+  status            MeetingStatus @default(SCHEDULED)
+  createdById       String
   recurringSchedule Json?
 
   createdAt DateTime @default(now())
@@ -9158,14 +9181,14 @@ model Meeting {
 }
 
 model MeetingAttendee {
-  id        String  @id @default(uuid())
-  meetingId String
-  userId    String?
-  name      String
-  email     String?
-  company   String?
-  role      String?
-  attended  Boolean @default(false)
+  id           String  @id @default(uuid())
+  meetingId    String
+  userId       String?
+  name         String
+  email        String?
+  company      String?
+  role         String?
+  attended     Boolean @default(false)
   signatureUrl String?
 
   createdAt DateTime @default(now())
@@ -9207,8 +9230,8 @@ model Selection {
   projectId String
 
   title            String
-  description      String?        @db.Text
-  category         String         // FLOORING, COUNTERTOPS, FIXTURES, PAINT, TILE, APPLIANCES, HARDWARE, LIGHTING, CABINETRY, OTHER
+  description      String?         @db.Text
+  category         String // FLOORING, COUNTERTOPS, FIXTURES, PAINT, TILE, APPLIANCES, HARDWARE, LIGHTING, CABINETRY, OTHER
   specSection      String?
   location         String?
   status           SelectionStatus @default(PENDING)
@@ -9216,17 +9239,17 @@ model Selection {
   selectedOptionId String?
   approvedById     String?
   approvedAt       DateTime?
-  budgetAllowance  Decimal?       @db.Decimal(12, 2)
-  actualCost       Decimal?       @db.Decimal(12, 2)
+  budgetAllowance  Decimal?        @db.Decimal(12, 2)
+  actualCost       Decimal?        @db.Decimal(12, 2)
   createdById      String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdBy User              @relation("SelectionCreator", fields: [createdById], references: [id])
-  approvedBy User?            @relation("SelectionApprover", fields: [approvedById], references: [id])
-  options   SelectionOption[]
+  project    Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy  User              @relation("SelectionCreator", fields: [createdById], references: [id])
+  approvedBy User?             @relation("SelectionApprover", fields: [approvedById], references: [id])
+  options    SelectionOption[]
 
   @@index([projectId])
   @@index([status])
@@ -9236,22 +9259,22 @@ model Selection {
 }
 
 model SelectionOption {
-  id           String  @id @default(uuid())
-  selectionId  String
-  name         String
-  description  String? @db.Text
-  vendor       String?
-  manufacturer String?
-  modelNumber  String?
-  color        String?
-  finish       String?
-  leadTime     String?
-  unitCost     Decimal? @db.Decimal(12, 2)
-  totalCost    Decimal? @db.Decimal(12, 2)
-  imageUrls    String[]
-  specSheetUrl String?
-  isRecommended Boolean @default(false)
-  isSelected   Boolean @default(false)
+  id            String   @id @default(uuid())
+  selectionId   String
+  name          String
+  description   String?  @db.Text
+  vendor        String?
+  manufacturer  String?
+  modelNumber   String?
+  color         String?
+  finish        String?
+  leadTime      String?
+  unitCost      Decimal? @db.Decimal(12, 2)
+  totalCost     Decimal? @db.Decimal(12, 2)
+  imageUrls     String[]
+  specSheetUrl  String?
+  isRecommended Boolean  @default(false)
+  isSelected    Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -9268,25 +9291,25 @@ model Warranty {
   id        String @id @default(uuid())
   projectId String
 
-  title           String
-  description     String?        @db.Text
-  type            String         // MANUFACTURER, CONTRACTOR, EXTENDED
-  provider        String
-  contactName     String?
-  contactEmail    String?
-  contactPhone    String?
-  startDate       DateTime
-  endDate         DateTime
-  duration        Int            // months
-  coverageDetails String?        @db.Text
-  documentUrl     String?
-  status          WarrantyStatus @default(ACTIVE)
+  title              String
+  description        String?        @db.Text
+  type               String // MANUFACTURER, CONTRACTOR, EXTENDED
+  provider           String
+  contactName        String?
+  contactEmail       String?
+  contactPhone       String?
+  startDate          DateTime
+  endDate            DateTime
+  duration           Int // months
+  coverageDetails    String?        @db.Text
+  documentUrl        String?
+  status             WarrantyStatus @default(ACTIVE)
   notificationSentAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  project Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
   claims  WarrantyClaim[]
 
   @@index([projectId])
@@ -9297,9 +9320,9 @@ model Warranty {
 }
 
 model WarrantyClaim {
-  id          String @id @default(uuid())
-  warrantyId  String
-  projectId   String
+  id         String @id @default(uuid())
+  warrantyId String
+  projectId  String
 
   title         String
   description   String      @db.Text
@@ -9366,25 +9389,25 @@ model SafetyIncident {
   id        String @id @default(uuid())
   projectId String
 
-  incidentNumber        Int              @default(autoincrement())
-  title                 String
-  description           String           @db.Text
-  date                  DateTime
-  time                  String?          // "14:30"
-  location              String?
-  severity              IncidentSeverity @default(NEAR_MISS)
-  status                IncidentStatus   @default(REPORTED)
-  reportedById          String
-  witnesses             String[]
-  injuredParty          String?
-  injuryDescription     String?          @db.Text
-  immediateAction       String?          @db.Text
-  rootCause             String?          @db.Text
-  correctiveAction      String?          @db.Text
+  incidentNumber          Int              @default(autoincrement())
+  title                   String
+  description             String           @db.Text
+  date                    DateTime
+  time                    String? // "14:30"
+  location                String?
+  severity                IncidentSeverity @default(NEAR_MISS)
+  status                  IncidentStatus   @default(REPORTED)
+  reportedById            String
+  witnesses               String[]
+  injuredParty            String?
+  injuryDescription       String?          @db.Text
+  immediateAction         String?          @db.Text
+  rootCause               String?          @db.Text
+  correctiveAction        String?          @db.Text
   correctiveActionDueDate DateTime?
-  photos                String[]
-  oshaRecordable        Boolean          @default(false)
-  notifiedParties       String[]
+  photos                  String[]
+  oshaRecordable          Boolean          @default(false)
+  notifiedParties         String[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -9406,18 +9429,18 @@ model ToolboxTalk {
 
   title             String
   topic             String
-  content           String?   @db.Text
+  content           String?  @db.Text
   presenterId       String?
   presenterName     String?
   date              DateTime
-  duration          Int?      // minutes
+  duration          Int? // minutes
   weatherConditions String?
   signInSheetUrl    String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  project   Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project   Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
   attendees ToolboxTalkAttendee[]
 
   @@index([projectId])
@@ -9476,18 +9499,18 @@ enum ChatMessageType {
 }
 
 model Conversation {
-  id             String               @id @default(cuid())
+  id             String           @id @default(cuid())
   projectId      String
   organizationId String
   type           ConversationType
   name           String?
-  isArchived     Boolean              @default(false)
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
+  isArchived     Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
-  project        Project              @relation("ProjectConversations", fields: [projectId], references: [id], onDelete: Cascade)
-  participants   ConversationParticipant[]
-  messages       ChatMessage[]
+  project      Project                   @relation("ProjectConversations", fields: [projectId], references: [id], onDelete: Cascade)
+  participants ConversationParticipant[]
+  messages     ChatMessage[]
 
   @@index([projectId])
   @@index([organizationId])
@@ -9504,8 +9527,8 @@ model ConversationParticipant {
   isMuted        Boolean         @default(false)
   joinedAt       DateTime        @default(now())
 
-  conversation   Conversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  user           User            @relation("UserConversationParticipants", fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation("UserConversationParticipants", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId])
   @@index([conversationId])
@@ -9514,24 +9537,24 @@ model ConversationParticipant {
 }
 
 model ChatMessage {
-  id             String             @id @default(cuid())
+  id             String          @id @default(cuid())
   conversationId String
   senderId       String
-  content        String             @db.Text
-  type           ChatMessageType    @default(TEXT)
+  content        String          @db.Text
+  type           ChatMessageType @default(TEXT)
   replyToId      String?
-  isEdited       Boolean            @default(false)
-  isPinned       Boolean            @default(false)
+  isEdited       Boolean         @default(false)
+  isPinned       Boolean         @default(false)
   metadata       Json?
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
-  conversation   Conversation       @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender         User               @relation("UserChatMessages", fields: [senderId], references: [id], onDelete: Cascade)
-  replyTo        ChatMessage?       @relation("ChatMessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
-  replies        ChatMessage[]      @relation("ChatMessageReplies")
-  attachments    ChatMessageAttachment[]
-  readBy         ChatMessageRead[]
+  conversation Conversation            @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User                    @relation("UserChatMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  replyTo      ChatMessage?            @relation("ChatMessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies      ChatMessage[]           @relation("ChatMessageReplies")
+  attachments  ChatMessageAttachment[]
+  readBy       ChatMessageRead[]
 
   @@index([conversationId])
   @@index([senderId])
@@ -9547,7 +9570,7 @@ model ChatMessageAttachment {
   fileType  String
   fileSize  Int
 
-  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  message ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
   @@index([messageId])
   @@map("chat_message_attachments")
@@ -9559,8 +9582,8 @@ model ChatMessageRead {
   userId    String
   readAt    DateTime @default(now())
 
-  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  user      User        @relation("UserChatMessageReads", fields: [userId], references: [id], onDelete: Cascade)
+  message ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User        @relation("UserChatMessageReads", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([messageId, userId])
   @@index([messageId])
@@ -9581,22 +9604,22 @@ enum BudgetCategory {
 }
 
 model BudgetItem {
-  id             String         @id @default(cuid())
-  projectId      String
-  organizationId String
-  category       BudgetCategory
-  description    String
-  estimatedCost  Decimal        @db.Decimal(12, 2)
-  actualCost     Decimal        @default(0) @db.Decimal(12, 2)
-  committedCost  Decimal        @default(0) @db.Decimal(12, 2)
-  varianceAmount Decimal        @default(0) @db.Decimal(12, 2)
-  variancePercent Decimal       @default(0) @db.Decimal(5, 2)
-  estimateId     String?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id              String         @id @default(cuid())
+  projectId       String
+  organizationId  String
+  category        BudgetCategory
+  description     String
+  estimatedCost   Decimal        @db.Decimal(12, 2)
+  actualCost      Decimal        @default(0) @db.Decimal(12, 2)
+  committedCost   Decimal        @default(0) @db.Decimal(12, 2)
+  varianceAmount  Decimal        @default(0) @db.Decimal(12, 2)
+  variancePercent Decimal        @default(0) @db.Decimal(5, 2)
+  estimateId      String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
-  project        Project        @relation("ProjectBudgetItems", fields: [projectId], references: [id], onDelete: Cascade)
-  transactions   BudgetTransaction[]
+  project      Project             @relation("ProjectBudgetItems", fields: [projectId], references: [id], onDelete: Cascade)
+  transactions BudgetTransaction[]
 
   @@index([projectId])
   @@index([organizationId])
@@ -9605,18 +9628,18 @@ model BudgetItem {
 }
 
 model BudgetTransaction {
-  id             String    @id @default(cuid())
+  id             String   @id @default(cuid())
   budgetItemId   String
   projectId      String
   organizationId String
-  amount         Decimal   @db.Decimal(12, 2)
-  type           String    // ESTIMATED, COMMITTED, ACTUAL, ADJUSTMENT
+  amount         Decimal  @db.Decimal(12, 2)
+  type           String // ESTIMATED, COMMITTED, ACTUAL, ADJUSTMENT
   description    String?
-  referenceType  String?   // CHANGE_ORDER, PAYMENT, MANUAL
+  referenceType  String? // CHANGE_ORDER, PAYMENT, MANUAL
   referenceId    String?
-  createdAt      DateTime  @default(now())
+  createdAt      DateTime @default(now())
 
-  budgetItem     BudgetItem @relation(fields: [budgetItemId], references: [id], onDelete: Cascade)
+  budgetItem BudgetItem @relation(fields: [budgetItemId], references: [id], onDelete: Cascade)
 
   @@index([budgetItemId])
   @@index([projectId])
@@ -9627,17 +9650,17 @@ model BudgetTransaction {
 // ── Schedule & Field Ops (Claw C) — missing models ─────────────────────────
 
 model VisitChecklist {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   siteVisitId String
   item        String
-  isChecked   Boolean  @default(false)
+  isChecked   Boolean   @default(false)
   notes       String?
   photoUrl    String?
   checkedAt   DateTime?
   checkedById String?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
 
-  siteVisit   SiteVisit @relation("SiteVisitChecklists", fields: [siteVisitId], references: [id], onDelete: Cascade)
+  siteVisit SiteVisit @relation("SiteVisitChecklists", fields: [siteVisitId], references: [id], onDelete: Cascade)
 
   @@index([siteVisitId])
   @@map("visit_checklists")
@@ -9649,10 +9672,10 @@ model CommunicationTemplate {
   id             String   @id @default(cuid())
   organizationId String?
   name           String
-  channel        String   // EMAIL, SMS, IN_APP
+  channel        String // EMAIL, SMS, IN_APP
   subject        String?
   body           String   @db.Text
-  variables      Json?    // Template variables
+  variables      Json? // Template variables
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -9686,36 +9709,36 @@ model SoftwareSubscription {
   userId         String
   organizationId String?
   softwareTier   SoftwareTier
-  pricingTier    String                     // basic, standard, plus
+  pricingTier    String // basic, standard, plus
   status         SoftwareSubscriptionStatus @default(ACTIVE)
 
   // Limits (from Stripe metadata)
-  maxProjects    Int
-  maxUsers       Int
+  maxProjects Int
+  maxUsers    Int
 
   // Billing
-  monthlyPrice            Decimal  @db.Decimal(10, 2)
-  billingInterval         String   @default("month") // month or year
-  stripeSubscriptionId    String?  @unique
-  stripeCustomerId        String?
-  stripePriceId           String?
-  stripeCurrentPeriodEnd  DateTime?
+  monthlyPrice           Decimal   @db.Decimal(10, 2)
+  billingInterval        String    @default("month") // month or year
+  stripeSubscriptionId   String?   @unique
+  stripeCustomerId       String?
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
 
   // Trial
   trialEndsAt    DateTime?
   trialStartedAt DateTime?
 
   // Lifecycle
-  startDate      DateTime  @default(now())
-  cancelledAt    DateTime?
-  cancelReason   String?
-  pausedAt       DateTime?
-  resumesAt      DateTime?
+  startDate    DateTime  @default(now())
+  cancelledAt  DateTime?
+  cancelReason String?
+  pausedAt     DateTime?
+  resumesAt    DateTime?
 
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user           User      @relation("UserSoftwareSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation("UserSoftwareSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([organizationId])
@@ -9731,32 +9754,32 @@ model SoftwareSubscription {
 
 // Estimate Comparisons — compare estimates against each other or historical data
 model EstimateComparison {
-  id              String         @id @default(uuid())
-  estimateId      String
-  comparedToId    String?
-  type            ComparisonType
-  name            String?
+  id           String         @id @default(uuid())
+  estimateId   String
+  comparedToId String?
+  type         ComparisonType
+  name         String?
 
   // Comparison data
-  baseCost        Decimal        @db.Decimal(14, 2)
-  comparedCost    Decimal        @db.Decimal(14, 2)
-  variance        Decimal        @db.Decimal(14, 2)
-  variancePercent Decimal        @db.Decimal(8, 4)
+  baseCost        Decimal @db.Decimal(14, 2)
+  comparedCost    Decimal @db.Decimal(14, 2)
+  variance        Decimal @db.Decimal(14, 2)
+  variancePercent Decimal @db.Decimal(8, 4)
 
   // Breakdown
-  materialVariance  Decimal?     @db.Decimal(14, 2)
-  laborVariance     Decimal?     @db.Decimal(14, 2)
-  equipmentVariance Decimal?     @db.Decimal(14, 2)
+  materialVariance  Decimal? @db.Decimal(14, 2)
+  laborVariance     Decimal? @db.Decimal(14, 2)
+  equipmentVariance Decimal? @db.Decimal(14, 2)
 
   // Analysis
   factors         Json?
   recommendations Json?
   aiAnalysis      String?
 
-  createdAt       DateTime       @default(now())
+  createdAt DateTime @default(now())
 
-  estimate        Estimate       @relation("EstimateComparisons", fields: [estimateId], references: [id], onDelete: Cascade)
-  comparedTo      Estimate?      @relation("ComparedEstimates", fields: [comparedToId], references: [id])
+  estimate   Estimate  @relation("EstimateComparisons", fields: [estimateId], references: [id], onDelete: Cascade)
+  comparedTo Estimate? @relation("ComparedEstimates", fields: [comparedToId], references: [id])
 
   @@index([estimateId])
   @@map("estimate_comparisons")
@@ -9803,37 +9826,37 @@ enum EstimateAction {
 
 // Takeoffs — plan-based quantity extraction sessions
 model Takeoff {
-  id            String        @id @default(uuid())
-  estimateId    String?
-  projectId     String?
-  name          String
-  description   String?
-  type          TakeoffType
-  status        TakeoffStatus @default(NOT_STARTED)
+  id          String        @id @default(uuid())
+  estimateId  String?
+  projectId   String?
+  name        String
+  description String?
+  type        TakeoffType
+  status      TakeoffStatus @default(NOT_STARTED)
 
   // Source documents
-  documentUrls  Json?
-  pageCount     Int?
-  scale         String?
+  documentUrls Json?
+  pageCount    Int?
+  scale        String?
 
   // Totals
-  totalItems    Int           @default(0)
-  totalArea     Decimal?      @db.Decimal(14, 2)
-  totalLinear   Decimal?      @db.Decimal(14, 2)
-  totalCount    Int?
+  totalItems  Int      @default(0)
+  totalArea   Decimal? @db.Decimal(14, 2)
+  totalLinear Decimal? @db.Decimal(14, 2)
+  totalCount  Int?
 
   // AI processing
-  aiProcessed   Boolean       @default(false)
-  aiConfidence  Decimal?      @db.Decimal(5, 4)
-  aiNotes       String?
+  aiProcessed  Boolean  @default(false)
+  aiConfidence Decimal? @db.Decimal(5, 4)
+  aiNotes      String?
 
   completedAt   DateTime?
   completedById String?
   metadata      Json?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  measurements  TakeoffMeasurement[]
+  measurements TakeoffMeasurement[]
 
   @@index([estimateId])
   @@index([projectId])
@@ -9860,13 +9883,13 @@ enum TakeoffStatus {
 
 // Takeoff Measurements — individual measurements within a takeoff
 model TakeoffMeasurement {
-  id              String          @id @default(uuid())
-  takeoffId       String
-  category        String
-  subcategory     String?
-  description     String
-  location        String?
-  floor           String?
+  id          String  @id @default(uuid())
+  takeoffId   String
+  category    String
+  subcategory String?
+  description String
+  location    String?
+  floor       String?
 
   // Measurement data
   measurementType MeasurementType
@@ -9878,24 +9901,24 @@ model TakeoffMeasurement {
   volume          Decimal?        @db.Decimal(14, 2)
   count           Int?
 
-  unit            String
-  quantity        Decimal         @db.Decimal(12, 4)
+  unit     String
+  quantity Decimal @db.Decimal(12, 4)
 
   // Source
-  pageNumber      Int?
-  coordinates     Json?
-  sourceMethod    TakeoffSource   @default(MANUAL)
-  confidence      Decimal?        @db.Decimal(5, 4)
+  pageNumber   Int?
+  coordinates  Json?
+  sourceMethod TakeoffSource @default(MANUAL)
+  confidence   Decimal?      @db.Decimal(5, 4)
 
   // Linking
   linkedToLineItem String?
 
-  notes           String?
-  metadata        Json?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  notes     String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  takeoff         Takeoff         @relation(fields: [takeoffId], references: [id], onDelete: Cascade)
+  takeoff Takeoff @relation(fields: [takeoffId], references: [id], onDelete: Cascade)
 
   @@index([takeoffId])
   @@index([category])
@@ -9912,58 +9935,58 @@ enum MeasurementType {
 
 // Estimation Orders — service orders for estimation work
 model EstimationOrder {
-  id              String                @id @default(uuid())
-  organizationId  String?
-  clientId        String?
-  projectId       String?
+  id             String  @id @default(uuid())
+  organizationId String?
+  clientId       String?
+  projectId      String?
 
   // Order details
-  orderNumber     String                @unique
-  serviceType     EstimationServiceType
-  status          EstimationOrderStatus @default(ORDER_PENDING)
-  priority        OrderPriority         @default(ORDER_NORMAL)
+  orderNumber String                @unique
+  serviceType EstimationServiceType
+  status      EstimationOrderStatus @default(ORDER_PENDING)
+  priority    OrderPriority         @default(ORDER_NORMAL)
 
   // Pricing
-  price           Decimal               @db.Decimal(10, 2)
-  discount        Decimal               @default(0) @db.Decimal(10, 2)
-  total           Decimal               @db.Decimal(10, 2)
+  price           Decimal   @db.Decimal(10, 2)
+  discount        Decimal   @default(0) @db.Decimal(10, 2)
+  total           Decimal   @db.Decimal(10, 2)
   paidAt          DateTime?
   stripePaymentId String?
 
   // Project info
-  projectName     String
-  projectAddress  String?
-  projectType     String?
-  squareFootage   Decimal?              @db.Decimal(12, 2)
+  projectName      String
+  projectAddress   String?
+  projectType      String?
+  squareFootage    Decimal? @db.Decimal(12, 2)
   scopeDescription String?
 
   // Documents
-  uploadedDocs    Json?
+  uploadedDocs Json?
 
   // Timeline
   requestedTurnaround Int?
-  dueAt           DateTime?
-  startedAt       DateTime?
-  completedAt     DateTime?
-  deliveredAt     DateTime?
+  dueAt               DateTime?
+  startedAt           DateTime?
+  completedAt         DateTime?
+  deliveredAt         DateTime?
 
   // Assignment
-  assignedToId    String?
-  reviewedById    String?
+  assignedToId String?
+  reviewedById String?
 
   // Output
-  estimateId      String?
-  deliverables    Json?
+  estimateId   String?
+  deliverables Json?
 
   // Communication
-  notes           String?
-  internalNotes   String?
-  clientFeedback  String?
-  feedbackRating  Int?
+  notes          String?
+  internalNotes  String?
+  clientFeedback String?
+  feedbackRating Int?
 
-  metadata        Json?
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([organizationId])
   @@index([clientId])
@@ -9998,7 +10021,7 @@ model RegionalCostIndex {
   region         String
   city           String?
   state          String
-  indexValue      Decimal  @db.Decimal(6, 4)
+  indexValue     Decimal  @db.Decimal(6, 4)
   laborIndex     Decimal? @db.Decimal(6, 4)
   materialIndex  Decimal? @db.Decimal(6, 4)
   equipmentIndex Decimal? @db.Decimal(6, 4)
@@ -10014,35 +10037,35 @@ model RegionalCostIndex {
 
 // Historical Project Costs — benchmarking data from past projects
 model HistoricalProjectCost {
-  id              String              @id @default(uuid())
-  organizationId  String?
-  projectType     String
-  buildingType    String?
-  region          String
-  city            String?
-  state           String?
-  squareFootage   Decimal             @db.Decimal(12, 2)
-  totalCost       Decimal             @db.Decimal(14, 2)
-  costPerSqFt     Decimal             @db.Decimal(10, 2)
+  id             String  @id @default(uuid())
+  organizationId String?
+  projectType    String
+  buildingType   String?
+  region         String
+  city           String?
+  state          String?
+  squareFootage  Decimal @db.Decimal(12, 2)
+  totalCost      Decimal @db.Decimal(14, 2)
+  costPerSqFt    Decimal @db.Decimal(10, 2)
 
   // Breakdown
-  laborPercent    Decimal?            @db.Decimal(5, 2)
-  materialPercent Decimal?            @db.Decimal(5, 2)
-  equipmentPercent Decimal?           @db.Decimal(5, 2)
+  laborPercent     Decimal? @db.Decimal(5, 2)
+  materialPercent  Decimal? @db.Decimal(5, 2)
+  equipmentPercent Decimal? @db.Decimal(5, 2)
 
   // Context
-  complexity      AssemblyComplexity?
-  quality         QualityLevel?
-  year            Int
-  quarter         Int?
+  complexity AssemblyComplexity?
+  quality    QualityLevel?
+  year       Int
+  quarter    Int?
 
   // Flags
-  isVerified      Boolean             @default(false)
-  source          String?
+  isVerified Boolean @default(false)
+  source     String?
 
-  notes           String?
-  metadata        Json?
-  createdAt       DateTime            @default(now())
+  notes     String?
+  metadata  Json?
+  createdAt DateTime @default(now())
 
   @@index([projectType])
   @@index([region])
@@ -10060,32 +10083,32 @@ enum QualityLevel {
 
 // AI Estimation Sessions — AI-powered estimation features
 model AIEstimationSession {
-  id              String          @id @default(uuid())
-  estimateId      String?
-  userId          String
-  sessionType     AISessionType
-  status          AIEstSessionStatus @default(AI_EST_ACTIVE)
+  id          String             @id @default(uuid())
+  estimateId  String?
+  userId      String
+  sessionType AISessionType
+  status      AIEstSessionStatus @default(AI_EST_ACTIVE)
 
   // Input
-  inputType       String
-  inputData       Json
+  inputType String
+  inputData Json
 
   // Processing
   processingSteps Json?
   extractedData   Json?
 
   // Output
-  generatedItems  Json?
-  confidence      Decimal?        @db.Decimal(5, 4)
-  warnings        Json?
+  generatedItems Json?
+  confidence     Decimal? @db.Decimal(5, 4)
+  warnings       Json?
 
   // Feedback
-  accepted        Boolean?
-  feedbackNotes   String?
+  accepted      Boolean?
+  feedbackNotes String?
 
-  startedAt       DateTime        @default(now())
-  completedAt     DateTime?
-  metadata        Json?
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  metadata    Json?
 
   @@index([estimateId])
   @@index([userId])
@@ -10115,24 +10138,24 @@ enum AIEstSessionStatus {
 // ============================================================================
 
 model CostDataReview {
-  id              String               @id @default(uuid())
-  costDatabaseId  String
-  reviewerId      String               // Kealee admin who performed the review
-  action          CostDataReviewAction
-  notes           String?              @db.Text
-  previousStatus  CostDataReviewStatus
-  newStatus       CostDataReviewStatus
+  id             String               @id @default(uuid())
+  costDatabaseId String
+  reviewerId     String // Kealee admin who performed the review
+  action         CostDataReviewAction
+  notes          String?              @db.Text
+  previousStatus CostDataReviewStatus
+  newStatus      CostDataReviewStatus
 
   // Quality metrics assessed during review
-  dataQualityScore  Int?               // 1-100 quality score
-  completeness      Int?               // 1-100 how complete the data is
-  accuracy          Int?               // 1-100 estimated accuracy
-  flaggedIssues     Json?              // Array of issues found
+  dataQualityScore Int? // 1-100 quality score
+  completeness     Int? // 1-100 how complete the data is
+  accuracy         Int? // 1-100 estimated accuracy
+  flaggedIssues    Json? // Array of issues found
 
-  createdAt       DateTime             @default(now())
+  createdAt DateTime @default(now())
 
-  costDatabase    CostDatabase         @relation(fields: [costDatabaseId], references: [id], onDelete: Cascade)
-  reviewer        User                 @relation("CostDataReviewAdmin", fields: [reviewerId], references: [id])
+  costDatabase CostDatabase @relation(fields: [costDatabaseId], references: [id], onDelete: Cascade)
+  reviewer     User         @relation("CostDataReviewAdmin", fields: [reviewerId], references: [id])
 
   @@index([costDatabaseId])
   @@index([reviewerId])
@@ -10141,12 +10164,12 @@ model CostDataReview {
 }
 
 enum CostDataReviewAction {
-  SUBMITTED       // User submitted for review
-  APPROVED        // Admin approved
-  REJECTED        // Admin rejected
+  SUBMITTED // User submitted for review
+  APPROVED // Admin approved
+  REJECTED // Admin rejected
   REQUESTED_CHANGES // Admin requested edits before approval
-  ARCHIVED        // Admin archived previously approved data
-  RESTORED        // Admin restored archived data
+  ARCHIVED // Admin archived previously approved data
+  RESTORED // Admin restored archived data
 }
 
 // ============================================================================
@@ -10158,39 +10181,39 @@ enum CostDataReviewAction {
 // living record of all decisions made during development.
 
 model PlatformKnowledge {
-  id          String                  @id @default(uuid())
-  category    PlatformKnowledgeCategory
-  topic       String                  // Short topic label e.g. "Cost Book Architecture"
-  question    String                  @db.Text   // The prompt/question asked
-  answer      String                  @db.Text   // The recommendation/answer given
-  decision    String?                 @db.Text   // Final decision made (if different from answer)
+  id       String                    @id @default(uuid())
+  category PlatformKnowledgeCategory
+  topic    String // Short topic label e.g. "Cost Book Architecture"
+  question String                    @db.Text // The prompt/question asked
+  answer   String                    @db.Text // The recommendation/answer given
+  decision String?                   @db.Text // Final decision made (if different from answer)
 
   // Classification
-  domain      String?                 // e.g. "estimation", "auth", "billing", "permits"
-  appScope    String[]                @default([]) // Which apps this applies to: ["os-pm", "m-estimation"]
-  tags        String[]                @default([])
+  domain   String? // e.g. "estimation", "auth", "billing", "permits"
+  appScope String[] @default([]) // Which apps this applies to: ["os-pm", "m-estimation"]
+  tags     String[] @default([])
 
   // Status & Priority
-  status      KnowledgeStatus         @default(ACTIVE)
-  priority    KnowledgePriority       @default(NORMAL)
-  isImplemented Boolean               @default(false)
+  status        KnowledgeStatus   @default(ACTIVE)
+  priority      KnowledgePriority @default(NORMAL)
+  isImplemented Boolean           @default(false)
   implementedAt DateTime?
 
   // Context
-  authorId    String?                 // Who authored/prompted this
-  sessionRef  String?                 // Reference to Claude session or commit hash
-  relatedFiles String[]               @default([]) // Files affected by this decision
+  authorId     String? // Who authored/prompted this
+  sessionRef   String? // Reference to Claude session or commit hash
+  relatedFiles String[] @default([]) // Files affected by this decision
 
   // Schema impact tracking
-  schemaModels   String[]             @default([]) // Prisma models affected
-  apiEndpoints   String[]             @default([]) // API routes affected
-  frontendPages  String[]             @default([]) // Frontend pages affected
+  schemaModels  String[] @default([]) // Prisma models affected
+  apiEndpoints  String[] @default([]) // API routes affected
+  frontendPages String[] @default([]) // Frontend pages affected
 
-  metadata    Json?
-  createdAt   DateTime                @default(now())
-  updatedAt   DateTime                @updatedAt
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  author      User?                   @relation("PlatformKnowledgeAuthor", fields: [authorId], references: [id])
+  author User? @relation("PlatformKnowledgeAuthor", fields: [authorId], references: [id])
 
   @@index([category])
   @@index([domain])
@@ -10201,27 +10224,27 @@ model PlatformKnowledge {
 }
 
 enum PlatformKnowledgeCategory {
-  ARCHITECTURE_DECISION   // How the platform is structured
-  SCHEMA_DESIGN           // Database schema decisions
-  AUTH_STRATEGY            // Authentication and authorization
-  API_DESIGN              // API endpoint design
-  PRICING_STRUCTURE       // Pricing and billing decisions
-  FEATURE_SPEC            // Feature specifications
-  UI_UX_DECISION          // UI/UX design decisions
-  INTEGRATION             // Third-party integration decisions
-  SECURITY                // Security architecture
-  DEPLOYMENT              // Deployment and infrastructure
-  BUSINESS_RULE           // Business logic rules
-  DATA_FLOW               // How data moves between apps
-  COST_BOOK_ARCHITECTURE  // Cost database tier structure
-  PROMPT_RECOMMENDATION   // AI prompt Q&A recommendations
+  ARCHITECTURE_DECISION // How the platform is structured
+  SCHEMA_DESIGN // Database schema decisions
+  AUTH_STRATEGY // Authentication and authorization
+  API_DESIGN // API endpoint design
+  PRICING_STRUCTURE // Pricing and billing decisions
+  FEATURE_SPEC // Feature specifications
+  UI_UX_DECISION // UI/UX design decisions
+  INTEGRATION // Third-party integration decisions
+  SECURITY // Security architecture
+  DEPLOYMENT // Deployment and infrastructure
+  BUSINESS_RULE // Business logic rules
+  DATA_FLOW // How data moves between apps
+  COST_BOOK_ARCHITECTURE // Cost database tier structure
+  PROMPT_RECOMMENDATION // AI prompt Q&A recommendations
 }
 
 enum KnowledgeStatus {
-  ACTIVE      // Currently in effect
-  SUPERSEDED  // Replaced by a newer decision
-  DEPRECATED  // No longer relevant
-  PROPOSED    // Under consideration
+  ACTIVE // Currently in effect
+  SUPERSEDED // Replaced by a newer decision
+  DEPRECATED // No longer relevant
+  PROPOSED // Under consideration
   REJECTED_KB // Was considered but not adopted
 }
 
@@ -10241,28 +10264,28 @@ enum KnowledgePriority {
 // modifying the original standard data.
 
 model CostBookCustomization {
-  id                String   @id @default(uuid())
-  organizationId    String
-  sourceDatabaseId  String   // The standard/community database being customized
-  targetDatabaseId  String   // The org-private database where customizations live
+  id               String @id @default(uuid())
+  organizationId   String
+  sourceDatabaseId String // The standard/community database being customized
+  targetDatabaseId String // The org-private database where customizations live
 
   // What was customized
-  entityType        String   // "material", "labor", "equipment", "assembly"
-  sourceEntityId    String   // ID of the original entity in the source database
-  customizedFields  Json     // { "unitCost": 45.50, "wasteFactor": 1.08 } — only changed fields
-  originalValues    Json     // Original values before customization (for diff/rollback)
+  entityType       String // "material", "labor", "equipment", "assembly"
+  sourceEntityId   String // ID of the original entity in the source database
+  customizedFields Json // { "unitCost": 45.50, "wasteFactor": 1.08 } — only changed fields
+  originalValues   Json // Original values before customization (for diff/rollback)
 
-  notes             String?  @db.Text
-  customizedById    String
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  notes          String?  @db.Text
+  customizedById String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
+  @@unique([organizationId, sourceDatabaseId, entityType, sourceEntityId])
   @@index([organizationId])
   @@index([sourceDatabaseId])
   @@index([targetDatabaseId])
   @@index([entityType])
   @@index([customizedById])
-  @@unique([organizationId, sourceDatabaseId, entityType, sourceEntityId])
   @@map("cost_book_customizations")
 }
 
@@ -10282,15 +10305,15 @@ model CostBookCustomization {
 //   5. After meeting → project enters design queue for architect assignment
 
 enum AutoDesignStatus {
-  INTAKE           // Owner providing preferences
-  GENERATING       // AI actively generating options
-  REVIEW           // Owner reviewing AI options
-  REVISION         // Owner requested changes, AI regenerating (max 5 rounds)
-  FINAL_SELECTION  // 5 revisions used — AI presents 3 final versions to choose from
-  APPROVED         // Owner approved one of the 3 final versions
+  INTAKE // Owner providing preferences
+  GENERATING // AI actively generating options
+  REVIEW // Owner reviewing AI options
+  REVISION // Owner requested changes, AI regenerating (max 5 rounds)
+  FINAL_SELECTION // 5 revisions used — AI presents 3 final versions to choose from
+  APPROVED // Owner approved one of the 3 final versions
   DESIGNER_MEETING // Post-approval: designer meets owner for minor additions/cleanup
   READY_FOR_HANDOFF // Meeting complete, ready for architect queue
-  HANDED_OFF       // Assigned to architect
+  HANDED_OFF // Assigned to architect
   CANCELLED
 }
 
@@ -10345,48 +10368,48 @@ model AutoDesignSession {
   ownerId         String
 
   // Status
-  status          AutoDesignStatus @default(INTAKE)
-  currentIteration Int             @default(0)
-  maxIterations    Int             @default(5) // Owner gets exactly 5 revision rounds
-  maxFinalOptions  Int             @default(3) // After 5 revisions, AI presents 3 final versions
+  status           AutoDesignStatus @default(INTAKE)
+  currentIteration Int              @default(0)
+  maxIterations    Int              @default(5) // Owner gets exactly 5 revision rounds
+  maxFinalOptions  Int              @default(3) // After 5 revisions, AI presents 3 final versions
 
   // Owner Preferences (collected during intake)
-  preferredStyles   AutoDesignStyle[] @default([])
-  roomRequirements  Json?   // Array of { type: RoomType, count, minSqFt, notes }
-  budgetRange       Json?   // { min, max, currency }
-  lotConstraints    Json?   // { width, depth, setbacks, easements, slope, orientation }
-  specialRequests   String? @db.Text // Free-form owner desires
-  mustHaveFeatures  String[]  @default([])
-  niceToHaveFeatures String[] @default([])
-  inspirationUrls   String[]  @default([]) // URLs/images owner likes
+  preferredStyles    AutoDesignStyle[] @default([])
+  roomRequirements   Json? // Array of { type: RoomType, count, minSqFt, notes }
+  budgetRange        Json? // { min, max, currency }
+  lotConstraints     Json? // { width, depth, setbacks, easements, slope, orientation }
+  specialRequests    String?           @db.Text // Free-form owner desires
+  mustHaveFeatures   String[]          @default([])
+  niceToHaveFeatures String[]          @default([])
+  inspirationUrls    String[]          @default([]) // URLs/images owner likes
 
   // AI Generation Config
-  aiModelUsed       String?   // e.g. "claude-sonnet-4-5-20250929", "gpt-4o"
-  aiPromptTemplate  String?   // Which prompt template was used
-  generationParams  Json?     // Temperature, style weights, etc.
+  aiModelUsed      String? // e.g. "claude-sonnet-4-5-20250929", "gpt-4o"
+  aiPromptTemplate String? // Which prompt template was used
+  generationParams Json? // Temperature, style weights, etc.
 
   // Results
-  optionsGenerated  Int       @default(0) // How many concepts AI produced
-  selectedOptionId  String?   // Which AutoDesignOption the owner chose (from 3 final versions)
+  optionsGenerated Int     @default(0) // How many concepts AI produced
+  selectedOptionId String? // Which AutoDesignOption the owner chose (from 3 final versions)
 
   // Timing
-  intakeCompletedAt       DateTime?
-  generationStartedAt     DateTime?
-  generationEndedAt       DateTime?
-  revisionsExhaustedAt    DateTime? // When all 5 revisions were used up
-  finalSelectionStartedAt DateTime? // When 3 final versions were presented
-  ownerApprovedAt         DateTime? // When owner picked 1 of 3 finals
-  designerMeetingAt       DateTime? // Scheduled post-approval meeting
+  intakeCompletedAt          DateTime?
+  generationStartedAt        DateTime?
+  generationEndedAt          DateTime?
+  revisionsExhaustedAt       DateTime? // When all 5 revisions were used up
+  finalSelectionStartedAt    DateTime? // When 3 final versions were presented
+  ownerApprovedAt            DateTime? // When owner picked 1 of 3 finals
+  designerMeetingAt          DateTime? // Scheduled post-approval meeting
   designerMeetingCompletedAt DateTime? // Meeting done, minor cleanup done
-  handoffReadyAt          DateTime?
+  handoffReadyAt             DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relationships
-  owner          User                @relation("AutoDesignSessionOwner", fields: [ownerId], references: [id])
-  preConProject  PreConProject       @relation("PreConAutoDesign", fields: [preConProjectId], references: [id], onDelete: Cascade)
-  options        AutoDesignOption[]
+  owner            User                        @relation("AutoDesignSessionOwner", fields: [ownerId], references: [id])
+  preConProject    PreConProject               @relation("PreConAutoDesign", fields: [preConProjectId], references: [id], onDelete: Cascade)
+  options          AutoDesignOption[]
   revisionRequests AutoDesignRevisionRequest[]
 
   @@index([ownerId])
@@ -10402,47 +10425,47 @@ model AutoDesignOption {
   iteration Int    @default(0) // Which generation round
 
   // Design Content
-  name             String   // "Modern Open Concept A", "Traditional Colonial B"
-  description      String   @db.Text
-  style            AutoDesignStyle
-  floorPlanUrl     String?  // AI-generated floor plan image/SVG
-  floorPlanData    Json?    // Structured floor plan data (rooms, dimensions, walls)
-  renderingUrls    String[] @default([]) // AI-generated 3D renders
-  elevationUrls    String[] @default([]) // Front/side/rear elevations
-  siteLayoutUrl    String?  // Site plan showing building on lot
+  name          String // "Modern Open Concept A", "Traditional Colonial B"
+  description   String          @db.Text
+  style         AutoDesignStyle
+  floorPlanUrl  String? // AI-generated floor plan image/SVG
+  floorPlanData Json? // Structured floor plan data (rooms, dimensions, walls)
+  renderingUrls String[]        @default([]) // AI-generated 3D renders
+  elevationUrls String[]        @default([]) // Front/side/rear elevations
+  siteLayoutUrl String? // Site plan showing building on lot
 
   // Room Layout
-  rooms            Json?    // Array of { type, name, sqFt, floor, position, dimensions }
-  totalSqFt        Int?
-  floors           Int      @default(1)
-  bedrooms         Int?
-  bathrooms        Decimal? @db.Decimal(3, 1) // 2.5 bathrooms
+  rooms     Json? // Array of { type, name, sqFt, floor, position, dimensions }
+  totalSqFt Int?
+  floors    Int      @default(1)
+  bedrooms  Int?
+  bathrooms Decimal? @db.Decimal(3, 1) // 2.5 bathrooms
 
   // Cost Estimation (AI-estimated)
   estimatedCost       Decimal? @db.Decimal(12, 2)
   costPerSqFt         Decimal? @db.Decimal(8, 2)
-  estimatedTimeline    Int?     // days
-  costBreakdown       Json?    // { structure, envelope, interior, MEP, site, contingency }
-  materialSuggestions Json?    // Recommended materials with costs
+  estimatedTimeline   Int? // days
+  costBreakdown       Json? // { structure, envelope, interior, MEP, site, contingency }
+  materialSuggestions Json? // Recommended materials with costs
 
   // Features
-  features         String[] @default([])
-  sustainabilityScore Int?   // 0-100 green building score
+  features            String[] @default([])
+  sustainabilityScore Int? // 0-100 green building score
   energyEfficiency    String? // Estimated rating
 
   // AI Confidence
-  aiConfidence     Int?     // 0-100 how confident AI is in this design
-  aiNotes          String?  @db.Text // AI's reasoning for this option
+  aiConfidence Int? // 0-100 how confident AI is in this design
+  aiNotes      String? @db.Text // AI's reasoning for this option
 
   // Final Selection (3 versions presented after 5 revisions)
-  isFinalCandidate Boolean  @default(false) // One of the 3 final versions for owner to pick from
-  finalRank        Int?     // 1-3 rank among final candidates (AI-recommended order)
+  isFinalCandidate Boolean @default(false) // One of the 3 final versions for owner to pick from
+  finalRank        Int? // 1-3 rank among final candidates (AI-recommended order)
 
   // Selection
-  isSelected       Boolean  @default(false) // Owner's chosen version (1 of 3 finals)
-  selectedAt       DateTime?
-  ownerRating      Int?     // 1-5 stars
-  ownerFeedback    String?  @db.Text
+  isSelected    Boolean   @default(false) // Owner's chosen version (1 of 3 finals)
+  selectedAt    DateTime?
+  ownerRating   Int? // 1-5 stars
+  ownerFeedback String?   @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -10459,19 +10482,19 @@ model AutoDesignOption {
 
 // Auto Design Revision Request — owner feedback for AI to iterate
 model AutoDesignRevisionRequest {
-  id        String @id @default(uuid())
+  id        String  @id @default(uuid())
   sessionId String
   optionId  String? // If revising a specific option
 
   // Revision Details
-  requestType    String   // LAYOUT_CHANGE, STYLE_CHANGE, ROOM_ADD, ROOM_REMOVE, RESIZE, BUDGET_ADJUST, FEATURE_ADD, OTHER
-  description    String   @db.Text
-  referenceUrls  String[] @default([]) // Reference images/links
-  priority       String   @default("NORMAL") // LOW, NORMAL, HIGH
+  requestType   String // LAYOUT_CHANGE, STYLE_CHANGE, ROOM_ADD, ROOM_REMOVE, RESIZE, BUDGET_ADJUST, FEATURE_ADD, OTHER
+  description   String   @db.Text
+  referenceUrls String[] @default([]) // Reference images/links
+  priority      String   @default("NORMAL") // LOW, NORMAL, HIGH
 
   // AI Response
-  aiProcessed    Boolean  @default(false)
-  aiResponse     String?  @db.Text
+  aiProcessed     Boolean @default(false)
+  aiResponse      String? @db.Text
   newOptionsCount Int     @default(0) // How many new options this revision produced
 
   createdAt DateTime @default(now())
@@ -10484,7 +10507,6 @@ model AutoDesignRevisionRequest {
   @@map("auto_design_revision_requests")
 }
 
-
 // ============================================================================
 // DESIGN QUEUE & ASSIGNMENT — Platform-managed architect matching with 48hr SLA
 // ============================================================================
@@ -10493,21 +10515,21 @@ model AutoDesignRevisionRequest {
 // If no response, auto-rotates to next architect in queue.
 
 enum DesignQueueStatus {
-  QUEUED          // Waiting for architect assignment
-  ASSIGNED        // Assigned to an architect, awaiting response
-  ACCEPTED        // Architect accepted the assignment
-  DECLINED        // Architect declined
-  EXPIRED         // 48hr SLA expired, rotating to next
-  IN_PROGRESS     // Architect actively working
-  COMPLETED_DQ    // Design work completed
-  CANCELLED_DQ    // Owner cancelled or project withdrawn
+  QUEUED // Waiting for architect assignment
+  ASSIGNED // Assigned to an architect, awaiting response
+  ACCEPTED // Architect accepted the assignment
+  DECLINED // Architect declined
+  EXPIRED // 48hr SLA expired, rotating to next
+  IN_PROGRESS // Architect actively working
+  COMPLETED_DQ // Design work completed
+  CANCELLED_DQ // Owner cancelled or project withdrawn
 }
 
 enum ArchitectAvailability {
-  AVAILABLE       // Accepting new projects
-  BUSY            // At capacity but can be queued
-  UNAVAILABLE     // Not accepting work (vacation, etc.)
-  SUSPENDED       // Account issue
+  AVAILABLE // Accepting new projects
+  BUSY // At capacity but can be queued
+  UNAVAILABLE // Not accepting work (vacation, etc.)
+  SUSPENDED // Account issue
 }
 
 // Architect/Designer profile for the queue system
@@ -10516,46 +10538,46 @@ model DesignProfessionalProfile {
   userId String @unique
 
   // Professional Info
-  displayName      String
-  licenseNumber    String?
-  licenseState     String?
-  licenseExpiry    DateTime?
-  isLicensed       Boolean  @default(false)
-  firmName         String?
+  displayName   String
+  licenseNumber String?
+  licenseState  String?
+  licenseExpiry DateTime?
+  isLicensed    Boolean   @default(false)
+  firmName      String?
 
   // Specialties
-  specialties      String[] @default([]) // RESIDENTIAL, COMMERCIAL, RENOVATION, etc.
-  preferredStyles  AutoDesignStyle[] @default([])
-  projectTypes     String[] @default([]) // KITCHEN, BATHROOM, ADDITION, WHOLE_HOME, etc.
-  serviceArea      Json?    // { states: [], zipCodes: [], radius: { center, miles } }
+  specialties     String[]          @default([]) // RESIDENTIAL, COMMERCIAL, RENOVATION, etc.
+  preferredStyles AutoDesignStyle[] @default([])
+  projectTypes    String[]          @default([]) // KITCHEN, BATHROOM, ADDITION, WHOLE_HOME, etc.
+  serviceArea     Json? // { states: [], zipCodes: [], radius: { center, miles } }
 
   // Capacity & Availability
-  availability     ArchitectAvailability @default(AVAILABLE)
-  maxConcurrentProjects Int @default(5)
-  currentProjectCount   Int @default(0)
+  availability          ArchitectAvailability @default(AVAILABLE)
+  maxConcurrentProjects Int                   @default(5)
+  currentProjectCount   Int                   @default(0)
   averageResponseTime   Int? // minutes — historical average
   avgCompletionDays     Int? // historical average days to complete
 
   // Performance Metrics
-  totalProjectsCompleted Int     @default(0)
-  totalProjectsDeclined  Int     @default(0)
-  totalSLABreaches       Int     @default(0)
+  totalProjectsCompleted Int      @default(0)
+  totalProjectsDeclined  Int      @default(0)
+  totalSLABreaches       Int      @default(0)
   rating                 Decimal? @db.Decimal(3, 2) // 0.00-5.00
-  reviewCount            Int     @default(0)
+  reviewCount            Int      @default(0)
   onTimeRate             Decimal? @db.Decimal(5, 2) // percentage
 
   // Queue Priority (higher = assigned first)
-  queuePriority    Int     @default(50) // 0-100, admin-adjustable
-  lastAssignedAt   DateTime?
-  lastCompletedAt  DateTime?
+  queuePriority   Int       @default(50) // 0-100, admin-adjustable
+  lastAssignedAt  DateTime?
+  lastCompletedAt DateTime?
 
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relationships
-  user         User                    @relation("DesignProfessionalProfile", fields: [userId], references: [id])
-  assignments  DesignQueueAssignment[]
+  user        User                    @relation("DesignProfessionalProfile", fields: [userId], references: [id])
+  assignments DesignQueueAssignment[]
 
   @@index([userId])
   @@index([availability])
@@ -10567,53 +10589,53 @@ model DesignProfessionalProfile {
 
 // Design Queue Assignment — tracks each assignment attempt
 model DesignQueueAssignment {
-  id              String @id @default(uuid())
-  preConProjectId String
-  architectId     String? // Design professional assigned
+  id                  String  @id @default(uuid())
+  preConProjectId     String
+  architectId         String? // Design professional assigned
   autoDesignSessionId String? // Links to the completed auto-design
 
   // Queue Position
-  queuedAt        DateTime  @default(now())
-  position        Int?      // Position in queue at time of queuing
+  queuedAt DateTime @default(now())
+  position Int? // Position in queue at time of queuing
 
   // Assignment
-  status          DesignQueueStatus @default(QUEUED)
-  assignedAt      DateTime?
+  status           DesignQueueStatus @default(QUEUED)
+  assignedAt       DateTime?
   responseDeadline DateTime? // assignedAt + 48 hours
-  respondedAt     DateTime?
+  respondedAt      DateTime?
 
   // SLA Tracking
-  slaHours        Int       @default(48) // Configurable SLA window
-  slaBreached     Boolean   @default(false)
-  rotationCount   Int       @default(0)  // How many architects this has been rotated through
-  maxRotations    Int       @default(5)  // Max before escalation to admin
+  slaHours      Int     @default(48) // Configurable SLA window
+  slaBreached   Boolean @default(false)
+  rotationCount Int     @default(0) // How many architects this has been rotated through
+  maxRotations  Int     @default(5) // Max before escalation to admin
 
   // Rotation History
   previousArchitectIds String[] @default([]) // IDs of architects who declined/expired
 
   // Matching Criteria
-  matchScore      Int?      // 0-100 how well architect matches project
-  matchCriteria   Json?     // { styleMatch, locationMatch, capacityScore, ratingScore }
+  matchScore    Int? // 0-100 how well architect matches project
+  matchCriteria Json? // { styleMatch, locationMatch, capacityScore, ratingScore }
 
   // Completion
-  acceptedAt      DateTime?
-  declinedAt      DateTime?
-  declineReason   String?   @db.Text
-  completedAt     DateTime?
-  handoffId       String?   // Links to DesignHandoff once handoff begins
+  acceptedAt    DateTime?
+  declinedAt    DateTime?
+  declineReason String?   @db.Text
+  completedAt   DateTime?
+  handoffId     String? // Links to DesignHandoff once handoff begins
 
   // Admin Override
-  adminAssigned   Boolean   @default(false) // Manually assigned by admin
+  adminAssigned   Boolean @default(false) // Manually assigned by admin
   adminAssignedBy String?
-  adminNotes      String?   @db.Text
+  adminNotes      String? @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relationships
-  preConProject  PreConProject            @relation("PreConDesignQueue", fields: [preConProjectId], references: [id], onDelete: Cascade)
-  architect      DesignProfessionalProfile? @relation(fields: [architectId], references: [id])
-  handoff        DesignHandoff?           @relation("DesignQueueHandoff")
+  preConProject PreConProject              @relation("PreConDesignQueue", fields: [preConProjectId], references: [id], onDelete: Cascade)
+  architect     DesignProfessionalProfile? @relation(fields: [architectId], references: [id])
+  handoff       DesignHandoff?             @relation("DesignQueueHandoff")
 
   @@index([preConProjectId])
   @@index([architectId])
@@ -10624,7 +10646,6 @@ model DesignQueueAssignment {
   @@map("design_queue_assignments")
 }
 
-
 // ============================================================================
 // DESIGN HANDOFF — Owner Auto-Design → Professional Architect Transition
 // ============================================================================
@@ -10633,56 +10654,56 @@ model DesignQueueAssignment {
 // architect's workspace (in m-architect's DesignProject).
 
 enum HandoffStatus {
-  INITIATED       // Handoff record created
+  INITIATED // Handoff record created
   MEETING_SCHEDULED // Designer meeting scheduled with owner (post-approval cleanup)
   MEETING_COMPLETED // Designer met owner, minor additions/cleanup agreed
-  REVIEWING       // Architect reviewing auto-design materials + meeting notes
-  ACKNOWLEDGED    // Architect confirmed receipt of materials
-  IN_PROGRESS_HO  // Architect actively developing from auto-design
-  COMPLETED_HO    // Handoff complete, DesignProject fully active
-  REJECTED_HO     // Architect rejected after reviewing (rare)
+  REVIEWING // Architect reviewing auto-design materials + meeting notes
+  ACKNOWLEDGED // Architect confirmed receipt of materials
+  IN_PROGRESS_HO // Architect actively developing from auto-design
+  COMPLETED_HO // Handoff complete, DesignProject fully active
+  REJECTED_HO // Architect rejected after reviewing (rare)
 }
 
 model DesignHandoff {
-  id                  String @id @default(uuid())
-  queueAssignmentId   String @unique
+  id                  String  @id @default(uuid())
+  queueAssignmentId   String  @unique
   preConProjectId     String
   autoDesignSessionId String?
   architectUserId     String
   designProjectId     String? // Created DesignProject in m-architect
 
   // Status
-  status              HandoffStatus @default(INITIATED)
+  status HandoffStatus @default(INITIATED)
 
   // Materials Transferred
-  autoDesignOptionId  String?  // Which AI option the owner chose
-  ownerPreferences    Json?    // Snapshot of owner preferences at handoff time
-  ownerApprovedFloorPlan String? // URL of approved AI floor plan
+  autoDesignOptionId      String? // Which AI option the owner chose
+  ownerPreferences        Json? // Snapshot of owner preferences at handoff time
+  ownerApprovedFloorPlan  String? // URL of approved AI floor plan
   ownerApprovedRenderings String[] @default([])
-  additionalFiles     Json?    // Array of { url, name, type, description }
+  additionalFiles         Json? // Array of { url, name, type, description }
 
   // Designer Meeting (post-approval, before full handoff)
-  meetingScheduledAt  DateTime? // When meeting is scheduled
-  meetingCompletedAt  DateTime? // When meeting actually happened
-  meetingNotes        String?  @db.Text // Notes from designer-owner meeting
-  minorAdditions      Json?    // Array of { description, type, priority } — cleanup items agreed in meeting
-  cleanupCompleted    Boolean  @default(false) // Designer finished minor cleanup
-  cleanupCompletedAt  DateTime?
+  meetingScheduledAt DateTime? // When meeting is scheduled
+  meetingCompletedAt DateTime? // When meeting actually happened
+  meetingNotes       String?   @db.Text // Notes from designer-owner meeting
+  minorAdditions     Json? // Array of { description, type, priority } — cleanup items agreed in meeting
+  cleanupCompleted   Boolean   @default(false) // Designer finished minor cleanup
+  cleanupCompletedAt DateTime?
 
   // Architect Notes
-  architectNotes      String?  @db.Text
-  estimatedStartDate  DateTime?
+  architectNotes          String?   @db.Text
+  estimatedStartDate      DateTime?
   estimatedCompletionDate DateTime?
-  scopeAdjustments    String?  @db.Text // Changes architect wants to make
+  scopeAdjustments        String?   @db.Text // Changes architect wants to make
 
   // Owner Communication
-  ownerNotifiedAt     DateTime? // When owner was told architect accepted
-  introMessageSent    Boolean   @default(false)
+  ownerNotifiedAt  DateTime? // When owner was told architect accepted
+  introMessageSent Boolean   @default(false)
 
   // Timing
-  initiatedAt         DateTime  @default(now())
-  acknowledgedAt      DateTime?
-  completedAt         DateTime?
+  initiatedAt    DateTime  @default(now())
+  acknowledgedAt DateTime?
+  completedAt    DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -10698,7 +10719,6 @@ model DesignHandoff {
   @@index([queueAssignmentId])
   @@map("design_handoffs")
 }
-
 
 // ============================================================================
 // CORE ARCHITECT MODELS — DesignProject, DesignPhase, DrawingSheet, BIMModel
@@ -10727,11 +10747,11 @@ enum DesignProjectType {
 }
 
 enum DesignPhaseType {
-  PROGRAMMING     // Pre-design / programming
-  SCHEMATIC       // Schematic Design (SD)
-  DESIGN_DEV      // Design Development (DD)
+  PROGRAMMING // Pre-design / programming
+  SCHEMATIC // Schematic Design (SD)
+  DESIGN_DEV // Design Development (DD)
   CONSTRUCTION_DOC // Construction Documents (CD)
-  BIDDING         // Bidding & Negotiation
+  BIDDING // Bidding & Negotiation
   CONSTRUCTION_ADMIN // Construction Administration (CA)
 }
 
@@ -10753,9 +10773,9 @@ enum SheetStatus {
 }
 
 enum BIMModelFormat {
-  RVT   // Revit
-  IFC   // Industry Foundation Classes
-  SKP   // SketchUp
+  RVT // Revit
+  IFC // Industry Foundation Classes
+  SKP // SketchUp
   DWG_3D
   OBJ
   GLTF
@@ -10765,52 +10785,52 @@ enum BIMModelFormat {
 
 // DesignProject — the main project entity in m-architect
 model DesignProject {
-  id               String @id @default(uuid())
-  linkedProjectId  String? // Links to main Project
-  preConProjectId  String? // Links to PreConProject (from handoff)
-  handoffId        String? // Links to DesignHandoff
-  organizationId   String?
-  createdById      String
+  id              String  @id @default(uuid())
+  linkedProjectId String? // Links to main Project
+  preConProjectId String? // Links to PreConProject (from handoff)
+  handoffId       String? // Links to DesignHandoff
+  organizationId  String?
+  createdById     String
 
   // Project Info
-  name             String
-  description      String?  @db.Text
-  projectType      DesignProjectType @default(RESIDENTIAL)
-  status           DesignProjectStatus @default(DRAFT_DP)
+  name        String
+  description String?             @db.Text
+  projectType DesignProjectType   @default(RESIDENTIAL)
+  status      DesignProjectStatus @default(DRAFT_DP)
 
   // Location
-  address          String?
-  city             String?
-  state            String?
-  zipCode          String?
+  address String?
+  city    String?
+  state   String?
+  zipCode String?
 
   // Scope
-  squareFootage    Int?
-  floors           Int?
-  budget           Decimal? @db.Decimal(12, 2)
+  squareFootage Int?
+  floors        Int?
+  budget        Decimal? @db.Decimal(12, 2)
 
   // Schedule
-  startDate        DateTime?
+  startDate            DateTime?
   targetCompletionDate DateTime?
   actualCompletionDate DateTime?
 
   // Current Phase
-  currentPhase     DesignPhaseType @default(PROGRAMMING)
+  currentPhase DesignPhaseType @default(PROGRAMMING)
 
   // Team
-  leadArchitectId  String?
+  leadArchitectId String?
 
   // Metadata
-  clientName       String?
-  clientEmail      String?
-  clientPhone      String?
+  clientName  String?
+  clientEmail String?
+  clientPhone String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relationships
-  createdBy       User           @relation("DesignProjectCreator", fields: [createdById], references: [id])
-  leadArchitect   User?          @relation("DesignProjectLead", fields: [leadArchitectId], references: [id])
+  createdBy       User                  @relation("DesignProjectCreator", fields: [createdById], references: [id])
+  leadArchitect   User?                 @relation("DesignProjectLead", fields: [leadArchitectId], references: [id])
   phases          DesignPhase[]
   drawingSheets   DrawingSheet[]
   drawingSets     DrawingSet[]
@@ -10835,12 +10855,12 @@ model DesignProject {
 
 // Design Team Member
 model DesignTeamMember {
-  id              String @id @default(uuid())
+  id              String             @id @default(uuid())
   designProjectId String
   userId          String
-  role            String  // LEAD_ARCHITECT, PROJECT_ARCHITECT, DESIGNER, DRAFTER, INTERN, CONSULTANT
+  role            String // LEAD_ARCHITECT, PROJECT_ARCHITECT, DESIGNER, DRAFTER, INTERN, CONSULTANT
   discipline      DrawingDiscipline?
-  joinedAt        DateTime @default(now())
+  joinedAt        DateTime           @default(now())
 
   designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
   user          User          @relation("DesignTeamMembership", fields: [userId], references: [id])
@@ -10853,7 +10873,7 @@ model DesignTeamMember {
 
 // Design Phase — SD, DD, CD, etc.
 model DesignPhase {
-  id              String @id @default(uuid())
+  id              String            @id @default(uuid())
   designProjectId String
   phaseType       DesignPhaseType
   status          DesignPhaseStatus @default(NOT_STARTED_DP)
@@ -10870,11 +10890,11 @@ model DesignPhase {
   delayReason       String?
 
   // Deliverables
-  deliverables     Json?   // Array of { name, status, dueDate, completedAt }
+  deliverables Json? // Array of { name, status, dueDate, completedAt }
 
   // Approvals
-  approvedAt       DateTime?
-  approvedById     String?
+  approvedAt   DateTime?
+  approvedById String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -10890,28 +10910,28 @@ model DesignPhase {
 
 // Drawing Sheet — individual drawing within a set
 model DrawingSheet {
-  id              String @id @default(uuid())
+  id              String  @id @default(uuid())
   designProjectId String
   drawingSetId    String?
 
   // Sheet Info
-  sheetNumber     String  // "A1.1", "S2.3"
-  sheetTitle      String
-  discipline      DrawingDiscipline
-  status          SheetStatus @default(NOT_STARTED_SH)
+  sheetNumber String // "A1.1", "S2.3"
+  sheetTitle  String
+  discipline  DrawingDiscipline
+  status      SheetStatus       @default(NOT_STARTED_SH)
 
   // Content
-  fileUrl         String?
-  thumbnailUrl    String?
-  titleBlock      Json?   // { project, date, drawnBy, checkedBy, scale }
+  fileUrl      String?
+  thumbnailUrl String?
+  titleBlock   Json? // { project, date, drawnBy, checkedBy, scale }
 
   // Revisions
-  currentRevision String  @default("0")
-  revisionHistory Json?   // Array of { rev, date, description, issuedBy }
+  currentRevision String @default("0")
+  revisionHistory Json? // Array of { rev, date, description, issuedBy }
 
   // Scale & Size
-  scale           String? // "1/4\" = 1'-0\""
-  paperSize       String? // "ARCH D", "24x36"
+  scale     String? // "1/4\" = 1'-0\""
+  paperSize String? // "ARCH D", "24x36"
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -10932,25 +10952,25 @@ model DrawingSet {
   designProjectId String
 
   // Set Info
-  name            String  // "SD Set", "50% CD", "Permit Set", "IFC Set"
-  description     String?
-  setType         String  // SD, DD, CD_50, CD_90, CD_100, PERMIT, IFC, ADDENDUM
-  version         String  @default("1.0")
+  name        String // "SD Set", "50% CD", "Permit Set", "IFC Set"
+  description String?
+  setType     String // SD, DD, CD_50, CD_90, CD_100, PERMIT, IFC, ADDENDUM
+  version     String  @default("1.0")
 
   // Status
-  isIssued        Boolean  @default(false)
-  issuedAt        DateTime?
-  issuedById      String?
+  isIssued   Boolean   @default(false)
+  issuedAt   DateTime?
+  issuedById String?
 
   // Files
-  compiledPdfUrl  String?  // Combined PDF of all sheets in set
+  compiledPdfUrl String? // Combined PDF of all sheets in set
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
+  designProject DesignProject  @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
   sheets        DrawingSheet[]
-  issuedBy      User?         @relation("DrawingSetIssuer", fields: [issuedById], references: [id])
+  issuedBy      User?          @relation("DrawingSetIssuer", fields: [issuedById], references: [id])
 
   @@index([designProjectId])
   @@index([setType])
@@ -10964,21 +10984,21 @@ model BIMModel {
   uploadedById    String
 
   // Model Info
-  name            String
-  description     String?
-  format          BIMModelFormat
-  version         String @default("1.0")
+  name        String
+  description String?
+  format      BIMModelFormat
+  version     String         @default("1.0")
 
   // File
-  fileUrl         String?
-  fileSize        Int?      // bytes
-  thumbnailUrl    String?
+  fileUrl      String?
+  fileSize     Int? // bytes
+  thumbnailUrl String?
 
   // Model Stats
-  elementCount    Int       @default(0)
-  annotationCount Int       @default(0)
-  clashCount      Int       @default(0)
-  viewCount       Int       @default(0)
+  elementCount    Int @default(0)
+  annotationCount Int @default(0)
+  clashCount      Int @default(0)
+  viewCount       Int @default(0)
 
   // Conversion
   conversionStatus String  @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
@@ -10998,30 +11018,30 @@ model BIMModel {
 
 // Design File — general file storage for architect projects
 model DesignFile {
-  id              String @id @default(uuid())
+  id              String  @id @default(uuid())
   designProjectId String
   folderId        String?
   uploadedById    String
 
   // File Info
-  fileName        String
-  fileType        String   // DWG, PDF, RVT, SKP, JPG, etc.
-  fileUrl         String
-  fileSize        Int?     // bytes
-  mimeType        String?
+  fileName String
+  fileType String // DWG, PDF, RVT, SKP, JPG, etc.
+  fileUrl  String
+  fileSize Int? // bytes
+  mimeType String?
 
   // Version Control
-  version         Int      @default(1)
-  isLatest        Boolean  @default(true)
-  parentFileId    String?  // Previous version
+  version      Int     @default(1)
+  isLatest     Boolean @default(true)
+  parentFileId String? // Previous version
 
   // Check-out/Lock System
-  isCheckedOut    Boolean  @default(false)
-  checkedOutById  String?
-  checkedOutAt    DateTime?
-  isLocked        Boolean  @default(false)
-  lockedById      String?
-  lockedAt        DateTime?
+  isCheckedOut   Boolean   @default(false)
+  checkedOutById String?
+  checkedOutAt   DateTime?
+  isLocked       Boolean   @default(false)
+  lockedById     String?
+  lockedAt       DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11039,27 +11059,27 @@ model DesignFile {
 
 // Review Request — design review workflow
 model ReviewRequest {
-  id              String @id @default(uuid())
+  id              String  @id @default(uuid())
   designProjectId String
   requestedById   String
   assignedToId    String?
 
   // Review Info
-  title           String
-  description     String?  @db.Text
-  reviewType      String   // INTERNAL, CLIENT, CONSULTANT, CODE_REVIEW
-  status          String   @default("DRAFT") // DRAFT, PENDING, IN_REVIEW, COMPLETED, APPROVED, REJECTED
-  priority        String   @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
-  discipline      DrawingDiscipline?
+  title       String
+  description String?            @db.Text
+  reviewType  String // INTERNAL, CLIENT, CONSULTANT, CODE_REVIEW
+  status      String             @default("DRAFT") // DRAFT, PENDING, IN_REVIEW, COMPLETED, APPROVED, REJECTED
+  priority    String             @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+  discipline  DrawingDiscipline?
 
   // Deadlines
-  dueDate         DateTime?
-  completedAt     DateTime?
+  dueDate     DateTime?
+  completedAt DateTime?
 
   // Results
-  comments        Json?    // Array of { author, text, location, status, createdAt }
-  findings        Int      @default(0)
-  resolvedFindings Int     @default(0)
+  comments         Json? // Array of { author, text, location, status, createdAt }
+  findings         Int   @default(0)
+  resolvedFindings Int   @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11083,21 +11103,21 @@ model DesignRevision {
   createdById     String
 
   // Revision Info
-  revisionNumber  String  // "Rev A", "Rev 1", "ASI-001"
-  revisionType    String  // DESIGN_REVISION, ADDENDUM, ASI, BULLETIN
-  title           String
-  description     String? @db.Text
-  reason          String? @db.Text
+  revisionNumber String // "Rev A", "Rev 1", "ASI-001"
+  revisionType   String // DESIGN_REVISION, ADDENDUM, ASI, BULLETIN
+  title          String
+  description    String? @db.Text
+  reason         String? @db.Text
 
   // Status
-  status          String  @default("DRAFT") // DRAFT, PENDING_APPROVAL, APPROVED, ISSUED, SUPERSEDED
-  approvedById    String?
-  approvedAt      DateTime?
-  issuedAt        DateTime?
+  status       String    @default("DRAFT") // DRAFT, PENDING_APPROVAL, APPROVED, ISSUED, SUPERSEDED
+  approvedById String?
+  approvedAt   DateTime?
+  issuedAt     DateTime?
 
   // Affected Sheets
   affectedSheetIds String[] @default([])
-  impactAnalysis   Json?    // AI-generated impact analysis
+  impactAnalysis   Json? // AI-generated impact analysis
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11118,15 +11138,15 @@ model VersionBranch {
   createdById     String
 
   // Branch Info
-  name            String
-  description     String?
-  isDefault       Boolean @default(false)
-  parentBranchId  String?
+  name           String
+  description    String?
+  isDefault      Boolean @default(false)
+  parentBranchId String?
 
   // Status
-  isActive        Boolean @default(true)
-  isMerged        Boolean @default(false)
-  mergedAt        DateTime?
+  isActive Boolean   @default(true)
+  isMerged Boolean   @default(false)
+  mergedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11147,22 +11167,22 @@ model DesignPermitPackage {
   createdById     String
 
   // Package Info
-  packageType     String  // BUILDING, MECHANICAL, ELECTRICAL, PLUMBING, FIRE, SITE
-  name            String
-  status          String  @default("DRAFT") // DRAFT, READY, SUBMITTED, IN_REVIEW, APPROVED, CORRECTIONS_REQUIRED
+  packageType String // BUILDING, MECHANICAL, ELECTRICAL, PLUMBING, FIRE, SITE
+  name        String
+  status      String @default("DRAFT") // DRAFT, READY, SUBMITTED, IN_REVIEW, APPROVED, CORRECTIONS_REQUIRED
 
   // Contents
-  documentIds     String[] @default([])
-  formData        Json?    // Filled permit application forms
-  reviewComments  Json?    // Array of { reviewer, comment, status, date }
+  documentIds    String[] @default([])
+  formData       Json? // Filled permit application forms
+  reviewComments Json? // Array of { reviewer, comment, status, date }
 
   // Fees
-  permitFee       Decimal? @db.Decimal(10, 2)
+  permitFee Decimal? @db.Decimal(10, 2)
 
   // Submission
-  submittedAt     DateTime?
-  approvedAt      DateTime?
-  expiresAt       DateTime?
+  submittedAt DateTime?
+  approvedAt  DateTime?
+  expiresAt   DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11182,22 +11202,22 @@ model DesignQCChecklist {
   createdById     String
 
   // Checklist Info
-  name            String
-  phase           DesignPhaseType
-  status          String  @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  name   String
+  phase  DesignPhaseType
+  status String          @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
 
   // Items
-  items           Json?   // Array of { name, status, category, notes }
-  totalItems      Int     @default(0)
-  passedItems     Int     @default(0)
-  failedItems     Int     @default(0)
-  passRate        Decimal? @db.Decimal(5, 2)
+  items       Json? // Array of { name, status, category, notes }
+  totalItems  Int      @default(0)
+  passedItems Int      @default(0)
+  failedItems Int      @default(0)
+  passRate    Decimal? @db.Decimal(5, 2)
 
   // Errors
-  errorCount      Int     @default(0)
-  criticalErrors  Int     @default(0)
+  errorCount     Int @default(0)
+  criticalErrors Int @default(0)
 
-  completedAt     DateTime?
+  completedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11209,4 +11229,49 @@ model DesignQCChecklist {
   @@index([phase])
   @@index([status])
   @@map("design_qc_checklists")
+}
+
+// ============================================================================
+// PM MODULE V4 - FIELD CONFLICTS & MOBILIZATION
+// ============================================================================
+
+model FieldConflict {
+  id           String         @id @default(cuid())
+  projectId    String
+  project      Project        @relation(fields: [projectId], references: [id])
+  reportedBy   String
+  reportedDate DateTime       @default(now())
+  location     String
+  gpsLat       Float?
+  gpsLng       Float?
+  description  String         @db.Text
+  photos       String[]
+  severity     RFIPriority    @default(MEDIUM)
+  status       ConflictStatus @default(OPEN)
+  linkedRFIId  String?
+  linkedRFI    RFI?           @relation(fields: [linkedRFIId], references: [id])
+  resolvedDate DateTime?
+  resolution   String?        @db.Text
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([projectId])
+  @@index([linkedRFIId])
+}
+
+model MobilizationChecklist {
+  id          String          @id @default(cuid())
+  projectId   String
+  project     Project         @relation(fields: [projectId], references: [id])
+  templateId  String
+  name        String          @default("")
+  status      ChecklistStatus @default(NOT_STARTED)
+  items       Json
+  assignedTo  String?
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([projectId])
 }

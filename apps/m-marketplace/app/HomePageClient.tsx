@@ -454,7 +454,7 @@ export function HomePageClient({
                       <Badge text="Optional Add-On" color="orange" size="sm" />
                     </div>
                     <p className="text-sm font-semibold text-gray-800">
-                      PM Operations (os-pm) — Remote coordination only
+                      PM Operations — Remote coordination only
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
                       Dedicated PM team for remote project coordination. From $1,750/mo.

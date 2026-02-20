@@ -304,8 +304,13 @@ export default function ArchitectPortalPage() {
               <Link href="https://kealee.com" className="hover:text-white">Main Site</Link>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-6 pt-6 text-center text-sm">
-            <p>© {new Date().getFullYear()} Kealee. All rights reserved.</p>
+          <div className="border-t border-gray-800 mt-6 pt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-sm">
+            <p className="text-center md:text-left">© {new Date().getFullYear()} Kealee Platform. All rights reserved.</p>
+            <div className="flex gap-6 justify-center md:justify-end">
+              <Link href="/legal/terms" className="hover:text-white">Terms of Service</Link>
+              <Link href="/legal/privacy" className="hover:text-white">Privacy Policy</Link>
+              <Link href="/legal/acceptable-use" className="hover:text-white">Acceptable Use</Link>
+            </div>
           </div>
         </div>
       </footer>

@@ -404,8 +404,13 @@ export default function EngineerHomePage() {
               </div>
             </div>
           </div>
-          <div className="border-t border-zinc-800 pt-8 text-center text-sm text-zinc-500">
-            © 2026 Kealee. All rights reserved.
+          <div className="border-t border-zinc-800 pt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-sm text-zinc-500">
+            <p>© {new Date().getFullYear()} Kealee Platform. All rights reserved.</p>
+            <div className="flex gap-6 justify-center md:justify-end">
+              <Link href="/legal/terms" className="hover:text-white">Terms of Service</Link>
+              <Link href="/legal/privacy" className="hover:text-white">Privacy Policy</Link>
+              <Link href="/legal/acceptable-use" className="hover:text-white">Acceptable Use</Link>
+            </div>
           </div>
         </div>
       </footer>

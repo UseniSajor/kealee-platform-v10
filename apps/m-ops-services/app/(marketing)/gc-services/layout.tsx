@@ -126,8 +126,10 @@ export default function GCServicesLayout({
             <div>
               <h3 className="font-semibold text-white mb-4">Company</h3>
               <ul className="space-y-2">
-                <li><Link href="/terms" className="text-sm hover:text-blue-600 transition-colors">Terms</Link></li>
-                <li><Link href="/privacy" className="text-sm hover:text-blue-600 transition-colors">Privacy</Link></li>
+                <li><Link href="/legal/terms" className="text-sm hover:text-blue-600 transition-colors">Terms of Service</Link></li>
+                <li><Link href="/legal/privacy" className="text-sm hover:text-blue-600 transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/legal/acceptable-use" className="text-sm hover:text-blue-600 transition-colors">Acceptable Use</Link></li>
+                <li><a href="https://kealee.com" className="text-sm hover:text-blue-600 transition-colors">kealee.com</a></li>
               </ul>
             </div>
 
@@ -157,7 +159,7 @@ export default function GCServicesLayout({
           </div>
 
           <div className="border-t border-gray-800 mt-8 pt-8 text-sm text-gray-400 text-center">
-            <p>© {new Date().getFullYear()} Kealee Operations Services. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Kealee Platform. All rights reserved.</p>
           </div>
         </div>
       </footer>

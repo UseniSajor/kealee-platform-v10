@@ -358,7 +358,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ clientI
             <p className="text-sm text-amber-700 mt-1">
               You are executing the {packageInfo?.name.split(' - ')[1]} service that this client purchased via m-ops-services.
               Ensure you deliver all included features within the allocated hours.
-              All financial transactions must go through m-finance-trust.
+              All financial transactions are processed through Kealee Platform.
             </p>
           </div>
         </div>

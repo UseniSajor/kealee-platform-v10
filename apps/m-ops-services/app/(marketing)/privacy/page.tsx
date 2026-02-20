@@ -176,7 +176,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-black mb-4">Financial Data (m-finance-trust)</h2>
+          <h2 className="text-xl font-black mb-4">Financial Data</h2>
           <div className="text-zinc-600 space-y-3">
             <p>For escrow and payment processing, we additionally collect and process:</p>
             <ul className="list-disc pl-6 space-y-2">

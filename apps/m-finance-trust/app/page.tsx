@@ -1083,8 +1083,9 @@ export default function FinanceTrustLandingPage() {
               <ul className="space-y-3 text-sm">
                 <li><Link href="/about" className="hover:text-white transition-colors">About Kealee</Link></li>
                 <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
-                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+                <li><Link href="/legal/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/legal/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+                <li><Link href="/legal/acceptable-use" className="hover:text-white transition-colors">Acceptable Use</Link></li>
               </ul>
             </div>
           </div>

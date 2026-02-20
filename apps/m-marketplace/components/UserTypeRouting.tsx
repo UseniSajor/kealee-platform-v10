@@ -24,7 +24,7 @@ import {
  * - "I need Design Services" -> m-architect
  * - "I need Engineering" -> m-engineer (not built per user request)
  * - "I need Permits" -> m-permits-inspections
- * - "Manage Payments" -> m-finance-trust
+ * - "Manage Payments" -> Finance & Trust portal
  */
 
 const USER_ROUTES = [

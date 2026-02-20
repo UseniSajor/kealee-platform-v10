@@ -366,7 +366,7 @@ export function IntakeFormModal({ isOpen, onClose }: IntakeFormModalProps) {
                   className="mt-0.5"
                 />
                 <Label htmlFor="consent" className="cursor-pointer text-sm leading-relaxed">
-                  I understand Kealee Development provides advisory services and provides licensed design and or legal counsel when required. *
+                  I understand Kealee provides advisory and owner's representative services. *
                 </Label>
               </div>
               {errors.consent && (

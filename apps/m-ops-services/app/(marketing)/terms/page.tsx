@@ -39,7 +39,7 @@ export default function TermsPage() {
               Kealee provides integrated project management services including:
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>Project Management (os-pm) - Milestone tracking and team coordination</li>
+              <li>Project Management - Milestone tracking and team coordination</li>
               <li>Pre-Construction - Design to contractor selection workflow</li>
               <li>AI Estimation Engine - Cost projections and bid preparation</li>
               <li>Finance & Trust - Escrow management and milestone payments</li>

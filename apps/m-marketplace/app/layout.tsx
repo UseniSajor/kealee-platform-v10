@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     'DC building projects',
     'Baltimore building projects'
   ],
-  authors: [{ name: 'Kealee LLC' }],
+  authors: [{ name: 'Kealee Platform' }],
   creator: 'Kealee',
   publisher: 'Kealee',
   icons: {

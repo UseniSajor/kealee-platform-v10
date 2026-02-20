@@ -145,8 +145,13 @@ export default function ContractorsLayout({
             </div>
           </div>
 
-          <div className="border-t border-gray-800 mt-8 pt-8 text-sm text-gray-400 text-center">
-            <p>© {new Date().getFullYear()} Kealee Permits & Inspections. All rights reserved.</p>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-sm text-gray-400 flex flex-col items-center gap-4">
+            <div className="flex gap-6">
+              <a href="/legal/terms" className="hover:text-white transition-colors">Terms of Service</a>
+              <a href="/legal/privacy" className="hover:text-white transition-colors">Privacy Policy</a>
+              <a href="/legal/acceptable-use" className="hover:text-white transition-colors">Acceptable Use</a>
+            </div>
+            <p>© {new Date().getFullYear()} Kealee Platform. All rights reserved.</p>
           </div>
         </div>
       </footer>

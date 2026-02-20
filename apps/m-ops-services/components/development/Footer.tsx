@@ -98,14 +98,20 @@ export function Footer() {
         <Separator className="my-8 bg-gray-800" />
 
         <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-          <p>© {currentYear} Kealee Development. All rights reserved.</p>
+          <p>© {currentYear} Kealee Platform. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
-            <Link href="/privacy" className="hover:text-orange-600 transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="hover:text-orange-600 transition-colors">
+            <Link href="/legal/terms" className="hover:text-orange-600 transition-colors">
               Terms of Service
             </Link>
+            <Link href="/legal/privacy" className="hover:text-orange-600 transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/legal/acceptable-use" className="hover:text-orange-600 transition-colors">
+              Acceptable Use
+            </Link>
+            <a href="https://kealee.com" className="hover:text-orange-600 transition-colors">
+              kealee.com
+            </a>
           </div>
         </div>
       </div>
