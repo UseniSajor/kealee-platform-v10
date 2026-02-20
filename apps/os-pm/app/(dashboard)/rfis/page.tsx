@@ -72,6 +72,26 @@ const FILTER_TABS: { label: string; value: string }[] = [
 ]
 
 // ---------------------------------------------------------------------------
+// Aging helpers
+// ---------------------------------------------------------------------------
+
+function getDaysOpen(createdAt: string): number {
+  return Math.floor(
+    (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24)
+  )
+}
+
+function getAgingBorder(daysOpen: number): string {
+  if (daysOpen >= 15) return "border-l-4 border-red-500"
+  if (daysOpen >= 7) return "border-l-4 border-amber-500"
+  return "border-l-4 border-green-500"
+}
+
+function isAgingApplicable(status: string): boolean {
+  return status === "open" || status === "answered"
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -89,7 +109,12 @@ export default function RFIsPage() {
     const open = items.filter((r: any) => r.status === "open").length
     const answered = items.filter((r: any) => r.status === "answered").length
     const closed = items.filter((r: any) => r.status === "closed").length
-    return { open, answered, closed, avgResponse: 6.2 }
+    const overdue = items.filter(
+      (r: any) =>
+        isAgingApplicable(r.status) &&
+        getDaysOpen(r.createdDate ?? r.createdAt) >= 15
+    ).length
+    return { open, answered, closed, overdue, avgResponse: 6.2 }
   }, [items])
 
   if (isLoading) {
@@ -119,7 +144,7 @@ export default function RFIsPage() {
       </div>
 
       {/* ---- Stats cards ---- */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
           {
             label: "Open",
@@ -138,6 +163,12 @@ export default function RFIsPage() {
             value: stats.closed,
             icon: CheckCircle2,
             color: "text-green-600 bg-green-50",
+          },
+          {
+            label: "Overdue",
+            value: stats.overdue,
+            icon: AlertTriangle,
+            color: "text-red-600 bg-red-50",
           },
           {
             label: "Avg Response Time",
@@ -206,9 +237,15 @@ export default function RFIsPage() {
           </Card>
         )}
 
-        {items.map((rfi: any) => (
+        {items.map((rfi: any) => {
+          const daysOpen = getDaysOpen(rfi.createdDate ?? rfi.createdAt)
+          const agingClass = isAgingApplicable(rfi.status)
+            ? getAgingBorder(daysOpen)
+            : ""
+
+          return (
           <Link key={rfi.id} href={`/rfis/${rfi.id}`} className="block">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <Card className={cn("hover:shadow-md transition-shadow cursor-pointer", agingClass)}>
               <CardContent className="p-4">
                 <div className="flex flex-col md:flex-row md:items-start gap-4">
                   {/* Left: main info */}
@@ -233,6 +270,11 @@ export default function RFIsPage() {
                       >
                         {PRIORITY_LABELS[rfi.priority as RFIPriority]}
                       </span>
+                      {isAgingApplicable(rfi.status) && daysOpen >= 15 && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                          Overdue
+                        </span>
+                      )}
                     </div>
 
                     <h3 className="text-sm font-semibold text-gray-900 truncate">
@@ -305,7 +347,8 @@ export default function RFIsPage() {
               </CardContent>
             </Card>
           </Link>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

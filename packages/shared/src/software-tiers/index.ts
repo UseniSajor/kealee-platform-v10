@@ -354,62 +354,153 @@ export interface PMServiceConfig {
   hoursPerWeek: string;
   features: string[];
   support: string;
+  maxProjectValue: number;       // in cents
+  maxPortfolioValue: number;     // in cents
+  siteVisitsPerMonth: number;
+  tierLevel: string;
+  marketplaceTransactionFee?: number;
 }
 
 export const PM_SERVICE_TIERS: Record<PMServiceTier, PMServiceConfig> = {
   PACKAGE_A: {
     tier: 'PACKAGE_A',
-    name: 'Essentials',
+    name: 'Starter',
     monthlyPrice: 1750,
-    annualPrice: 1488,
-    maxProjects: 1,
+    annualPrice: Math.round(1750 * 0.85),
+    maxProjects: 2,
     hoursPerWeek: '5-10',
     features: [
-      '5-10 hours/week PM time', 'Single project focus',
-      'Email support (48hr response)', 'Weekly progress reports', 'Basic task tracking',
+      '5-10 hours/week PM time', 'Up to 2 concurrent projects',
+      'Email support (48hr response)', 'Monthly call', 'Weekly progress reports', 'Basic task tracking',
     ],
-    support: 'Email (48hr)',
+    support: 'Email 48hr, monthly call',
+    maxProjectValue: 50000000,
+    maxPortfolioValue: 100000000,
+    siteVisitsPerMonth: 0,
+    tierLevel: 'A',
   },
   PACKAGE_B: {
     tier: 'PACKAGE_B',
     name: 'Professional',
-    monthlyPrice: 3750,
-    annualPrice: 3188,
-    maxProjects: 5,
+    monthlyPrice: 7850,
+    annualPrice: Math.round(7850 * 0.85),
+    maxProjects: 7,
     hoursPerWeek: '15-20',
     features: [
-      '15-20 hours/week PM time', 'Up to 5 concurrent projects',
-      'Priority email & phone support', 'Bi-weekly progress reports',
+      '15-20 hours/week PM time', 'Up to 7 concurrent projects',
+      'Priority email/phone support (24hr)', 'Weekly calls',
       'Contractor coordination', 'Permit management',
     ],
-    support: 'Priority email & phone',
+    support: 'Priority email/phone 24hr, weekly calls',
+    maxProjectValue: 200000000,
+    maxPortfolioValue: 1400000000,
+    siteVisitsPerMonth: 0,
+    tierLevel: 'B',
   },
   PACKAGE_C: {
     tier: 'PACKAGE_C',
     name: 'Premium',
-    monthlyPrice: 9500,
-    annualPrice: 8075,
-    maxProjects: 20,
+    monthlyPrice: 17560,
+    annualPrice: Math.round(17560 * 0.85),
+    maxProjects: 15,
     hoursPerWeek: '30-40',
     features: [
-      '30-40 hours/week PM time', 'Up to 20 concurrent projects',
-      '24/7 priority support', 'Daily progress reports', 'Dedicated PM assigned',
-      'Full contractor management', 'Budget optimization', 'Risk management', 'Site visit coordination',
+      '30-40 hours/week PM time', 'Up to 15 concurrent projects',
+      '24/7 priority support', 'Dedicated PM assigned', 'Daily progress reports',
+      'Full contractor management', 'Budget optimization', 'Risk management',
+      'Permit management', 'QA/QC observation', 'CO management', 'OAC meeting support',
+      '4 site visits/month',
     ],
-    support: '24/7 priority',
+    support: '24/7 priority, dedicated PM',
+    maxProjectValue: 500000000,
+    maxPortfolioValue: 7500000000,
+    siteVisitsPerMonth: 4,
+    tierLevel: 'C',
+    marketplaceTransactionFee: 0,
   },
   PACKAGE_D: {
     tier: 'PACKAGE_D',
     name: 'Enterprise',
-    monthlyPrice: 16500,
-    annualPrice: 14025,
-    maxProjects: 'unlimited',
+    monthlyPrice: 112000,
+    annualPrice: Math.round(112000 * 0.85),
+    maxProjects: 15,
     hoursPerWeek: '40+',
     features: [
-      '40+ hours/week PM time', 'Unlimited projects', 'Dedicated account manager',
+      '40+ hours/week PM time', 'Up to 15 projects (D1 Base)', 'Dedicated account manager',
       'Custom reporting', 'Strategic planning support', 'Multi-project coordination',
       'Executive-level insights', 'White-glove service', 'Custom integrations',
+      '8 site visits/month',
     ],
-    support: 'Dedicated account manager',
+    support: 'Dedicated account manager, 24/7',
+    maxProjectValue: 1000000000,
+    maxPortfolioValue: 15000000000,
+    siteVisitsPerMonth: 8,
+    tierLevel: 'D1',
+  },
+};
+
+export const ENTERPRISE_SUB_TIERS = {
+  D1: { name: 'D1 Base', projects: 15, monthlyPrice: 112000, maxProjectValue: 1000000000 },
+  D2: { name: 'D2 Growth', projects: 17, monthlyPrice: 122000, maxProjectValue: 1000000000 },
+  D3: { name: 'D3 Scale', projects: 20, monthlyPrice: 142000, maxProjectValue: 1000000000 },
+  D4: { name: 'D4 Custom', projects: 999, monthlyPrice: 0, maxProjectValue: 9999999999 }, // custom pricing
+};
+
+// ---------------------------------------------------------------------------
+// Add-On Packages
+// ---------------------------------------------------------------------------
+
+export interface AddOnConfig {
+  id: string;
+  name: string;
+  tiers: { name: string; monthlyPrice: number; features: string[] }[];
+  requiredPackage: string[]; // which PM packages can use this ('A','B','C','D') or ['*'] for standalone
+  featureFlags: string[];
+}
+
+export const ADD_ON_PACKAGES: Record<string, AddOnConfig> = {
+  FIELD_TOOLS: {
+    id: 'field-tools',
+    name: 'Field Tools Add-On',
+    tiers: [
+      { name: 'Basic', monthlyPrice: 500, features: ['Mobilization checklists', 'Field conflict reporter'] },
+      { name: 'Pro', monthlyPrice: 1000, features: ['Mobilization checklists', 'Field conflict reporter', 'QA/QC observation tools', 'Photo documentation'] },
+      { name: 'Enterprise', monthlyPrice: 1500, features: ['Mobilization checklists', 'Field conflict reporter', 'QA/QC observation tools', 'Photo documentation', 'Custom templates', 'API access'] },
+    ],
+    requiredPackage: ['A', 'B'],
+    featureFlags: ['field.mobilization', 'field.conflicts', 'field.qaqc', 'field.photos'],
+  },
+  MULTIFAMILY_PREMIUM: {
+    id: 'multifamily-premium',
+    name: 'Multifamily Premium Add-On',
+    tiers: [
+      { name: 'Basic', monthlyPrice: 2000, features: ['Unit tracker', 'Lender draws'] },
+      { name: 'Pro', monthlyPrice: 3500, features: ['Unit tracker', 'Lender draws', 'TCO management', 'Area phasing'] },
+      { name: 'Enterprise', monthlyPrice: 5000, features: ['Unit tracker', 'Lender draws', 'TCO management', 'Area phasing', 'Custom unit types', 'Portfolio rollup'] },
+    ],
+    requiredPackage: ['C', 'D'],
+    featureFlags: ['multifamily.units', 'multifamily.draws', 'multifamily.tco', 'multifamily.phasing'],
+  },
+  SAFETY_DOCS: {
+    id: 'safety-docs',
+    name: 'Safety Documentation Package',
+    tiers: [
+      { name: 'Basic', monthlyPrice: 295, features: ['JHA templates', 'Toolbox talk library'] },
+      { name: 'Pro', monthlyPrice: 495, features: ['JHA templates', 'Toolbox talk library', 'OSHA logs', 'Incident reporting'] },
+      { name: 'Enterprise', monthlyPrice: 595, features: ['JHA templates', 'Toolbox talk library', 'OSHA logs', 'Incident reporting', 'Safety analytics', 'Custom forms'] },
+    ],
+    requiredPackage: ['*'], // standalone
+    featureFlags: ['safety.jha', 'safety.toolbox', 'safety.osha', 'safety.incidents'],
+  },
+  LENDER_REPORTING: {
+    id: 'lender-reporting',
+    name: 'Lender Reporting Service',
+    tiers: [
+      { name: 'Basic', monthlyPrice: 199, features: ['AIA G702/G703 generation'] },
+      { name: 'Pro', monthlyPrice: 349, features: ['AIA G702/G703 generation', 'Draw request workflow'] },
+      { name: 'Enterprise', monthlyPrice: 499, features: ['AIA G702/G703 generation', 'Draw request workflow', 'Lender portal view', 'Custom reports'] },
+    ],
+    requiredPackage: ['B', 'C', 'D'],
+    featureFlags: ['lender.aia', 'lender.draws', 'lender.portal'],
   },
 };

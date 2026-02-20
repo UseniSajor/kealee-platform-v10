@@ -6,13 +6,13 @@ import { useParams } from "next/navigation"
 import {
   ArrowLeft, Building2, Calendar, Camera, CheckCircle2, ClipboardList,
   DollarSign, FileText, HardHat, LayoutGrid, MessageSquare, TrendingUp,
-  Users, AlertTriangle, Clock, Hammer
+  Users, AlertTriangle, Clock, Hammer, GitMerge, ListChecks, Plus
 } from "lucide-react"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { cn } from "@/lib/utils"
 
-type Tab = "overview" | "schedule" | "budget" | "documents" | "photos" | "rfis" | "submittals" | "punch-list" | "change-orders" | "daily-logs" | "safety" | "drawings" | "team"
+type Tab = "overview" | "schedule" | "budget" | "documents" | "photos" | "rfis" | "submittals" | "coordination" | "punch-list" | "change-orders" | "daily-logs" | "safety" | "drawings" | "team"
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: LayoutGrid },
@@ -22,6 +22,7 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "photos", label: "Photos", icon: Camera },
   { id: "rfis", label: "RFIs", icon: MessageSquare },
   { id: "submittals", label: "Submittals", icon: ClipboardList },
+  { id: "coordination", label: "Coordination", icon: GitMerge },
   { id: "punch-list", label: "Punch List", icon: CheckCircle2 },
   { id: "change-orders", label: "Change Orders", icon: DollarSign },
   { id: "daily-logs", label: "Daily Logs", icon: HardHat },
@@ -309,6 +310,126 @@ export default function ProjectDetailPage() {
           <p className="text-sm text-muted-foreground mb-4">Review and approve material submittals and shop drawings</p>
           <Link href="/submittals"><Button>Open Submittals</Button></Link>
         </CardContent></Card>
+      )}
+
+      {activeTab === "coordination" && (
+        <div className="space-y-6">
+          {/* Open RFIs Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Open RFIs
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-6 mb-4">
+                <div className="text-3xl font-bold text-amber-600">4</div>
+                <div className="text-sm text-muted-foreground">open RFIs for this project</div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="border rounded-lg p-3 border-l-4 border-l-green-500">
+                  <div className="text-lg font-bold text-green-700">1</div>
+                  <div className="text-xs text-muted-foreground">0-6 days</div>
+                </div>
+                <div className="border rounded-lg p-3 border-l-4 border-l-amber-500">
+                  <div className="text-lg font-bold text-amber-700">2</div>
+                  <div className="text-xs text-muted-foreground">7-14 days</div>
+                </div>
+                <div className="border rounded-lg p-3 border-l-4 border-l-red-500">
+                  <div className="text-lg font-bold text-red-700">1</div>
+                  <div className="text-xs text-muted-foreground">15+ days (Overdue)</div>
+                </div>
+              </div>
+              <div className="mt-4">
+                <Link href="/rfis">
+                  <Button variant="outline" size="sm">View All RFIs</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Open Submittals Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <ClipboardList className="h-4 w-4" />
+                Open Submittals
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-6 mb-4">
+                <div className="text-3xl font-bold text-yellow-600">6</div>
+                <div className="text-sm text-muted-foreground">pending/under review submittals</div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="border rounded-lg p-3 border-l-4 border-l-green-500">
+                  <div className="text-lg font-bold text-green-700">3</div>
+                  <div className="text-xs text-muted-foreground">0-6 days</div>
+                </div>
+                <div className="border rounded-lg p-3 border-l-4 border-l-amber-500">
+                  <div className="text-lg font-bold text-amber-700">2</div>
+                  <div className="text-xs text-muted-foreground">7-14 days</div>
+                </div>
+                <div className="border rounded-lg p-3 border-l-4 border-l-red-500">
+                  <div className="text-lg font-bold text-red-700">1</div>
+                  <div className="text-xs text-muted-foreground">15+ days (Overdue)</div>
+                </div>
+              </div>
+              <div className="mt-4">
+                <Link href="/submittals">
+                  <Button variant="outline" size="sm">View All Submittals</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Field Conflicts */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  Field Conflicts
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="py-8 text-center">
+                  <AlertTriangle className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" />
+                  <p className="text-sm text-muted-foreground mb-4">No field conflicts reported</p>
+                  <Link href="/field-conflicts/new">
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Plus className="h-3.5 w-3.5" />
+                      Report Conflict
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Mobilization Checklist */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <ListChecks className="h-4 w-4" />
+                  Mobilization Checklist
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="py-8 text-center">
+                  <ListChecks className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" />
+                  <p className="text-sm text-muted-foreground mb-4">No mobilization checklists</p>
+                  <Link href="/mobilization/new">
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Plus className="h-3.5 w-3.5" />
+                      Create Checklist
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       )}
 
       {activeTab === "punch-list" && (

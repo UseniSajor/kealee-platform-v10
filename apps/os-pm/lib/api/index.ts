@@ -887,6 +887,60 @@ export const api = {
     },
   },
 
+  mobilization: {
+    list: async (filters?: Record<string, any>) => {
+      const { data } = await apiClient.get<any>("/pm/mobilization", { params: filters })
+      return data
+    },
+    get: async (id: string) => {
+      const { data } = await apiClient.get<any>(`/pm/mobilization/${id}`)
+      return data
+    },
+    create: async (input: any) => {
+      const { data } = await apiClient.post<any>("/pm/mobilization", input)
+      return data
+    },
+    update: async (id: string, input: any) => {
+      const { data } = await apiClient.patch<any>(`/pm/mobilization/${id}`, input)
+      return data
+    },
+    delete: async (id: string) => {
+      const { data } = await apiClient.delete<any>(`/pm/mobilization/${id}`)
+      return data
+    },
+    templates: async () => {
+      const { data } = await apiClient.get<any>("/pm/mobilization/templates")
+      return data
+    },
+    exportPdf: async (id: string) => {
+      const { data } = await apiClient.post<any>(`/pm/mobilization/${id}/export-pdf`)
+      return data
+    },
+  },
+
+  fieldConflicts: {
+    list: async (filters?: Record<string, any>) => {
+      const { data } = await apiClient.get<any>("/pm/field-conflicts", { params: filters })
+      return data
+    },
+    get: async (id: string) => {
+      const { data } = await apiClient.get<any>(`/pm/field-conflicts/${id}`)
+      return data
+    },
+    create: async (input: any) => {
+      const { data } = await apiClient.post<any>("/pm/field-conflicts", input)
+      return data
+    },
+    update: async (id: string, input: any) => {
+      const { data } = await apiClient.patch<any>(`/pm/field-conflicts/${id}`, input)
+      return data
+    },
+    createRfiFromConflict: async (id: string) => {
+      const { data } = await apiClient.post<any>(`/pm/field-conflicts/${id}/create-rfi`)
+      return data
+    },
+  },
+
   team: {
     list: async (filters?: Record<string, any>) => {
       const { data } = await apiClient.get<any>("/pm/team", { params: filters })

@@ -40,7 +40,8 @@ export default function PackagesPage() {
               </div>
               <div className="mb-6">
                 <p className="text-sm font-bold text-zinc-700 mb-1">5-10 hours/week</p>
-                <p className="text-sm text-zinc-600">Up to 1 project</p>
+                <p className="text-sm text-zinc-600">Up to 2 projects</p>
+                <p className="text-xs text-zinc-400">Max $500K/project &middot; $1M portfolio</p>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start">
@@ -59,6 +60,10 @@ export default function PackagesPage() {
                   <span className="text-sky-600 mr-2">✓</span>
                   <span className="text-zinc-600">Document management</span>
                 </li>
+                <li className="flex items-start">
+                  <span className="text-sky-600 mr-2">✓</span>
+                  <span className="text-zinc-600">Email 48hr + monthly call</span>
+                </li>
               </ul>
               <Link
                 href="/contact"
@@ -75,12 +80,13 @@ export default function PackagesPage() {
               </div>
               <h3 className="text-2xl font-bold text-zinc-900 mb-2">Package B Professional</h3>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-sky-600">$3,750</span>
+                <span className="text-4xl font-bold text-sky-600">$7,850</span>
                 <span className="text-zinc-600">/month</span>
               </div>
               <div className="mb-6">
                 <p className="text-sm font-bold text-zinc-700 mb-1">15-20 hours/week</p>
-                <p className="text-sm text-zinc-600">Up to 5 projects</p>
+                <p className="text-sm text-zinc-600">Up to 7 projects</p>
+                <p className="text-xs text-zinc-400">Max $2M/project &middot; $14M portfolio</p>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start">
@@ -103,6 +109,10 @@ export default function PackagesPage() {
                   <span className="text-sky-600 mr-2">✓</span>
                   <span className="text-zinc-600">Change order support</span>
                 </li>
+                <li className="flex items-start">
+                  <span className="text-sky-600 mr-2">✓</span>
+                  <span className="text-zinc-600">Priority email/phone 24hr + weekly calls</span>
+                </li>
               </ul>
               <Link
                 href="/contact"
@@ -116,12 +126,13 @@ export default function PackagesPage() {
             <div className="border border-zinc-200 rounded-2xl p-8 hover:shadow-lg transition-shadow">
               <h3 className="text-2xl font-bold text-zinc-900 mb-2">Package C Premium</h3>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-sky-600">$9,500</span>
+                <span className="text-4xl font-bold text-sky-600">$17,560</span>
                 <span className="text-zinc-600">/month</span>
               </div>
               <div className="mb-6">
                 <p className="text-sm font-bold text-zinc-700 mb-1">30-40 hours/week</p>
-                <p className="text-sm text-zinc-600">Up to 20 projects</p>
+                <p className="text-sm text-zinc-600">Up to 15 projects</p>
+                <p className="text-xs text-zinc-400">Max $5M/project &middot; $75M portfolio</p>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start">
@@ -134,15 +145,27 @@ export default function PackagesPage() {
                 </li>
                 <li className="flex items-start">
                   <span className="text-sky-600 mr-2">✓</span>
-                  <span className="text-zinc-600">Budget tracking</span>
+                  <span className="text-zinc-600">Permit management</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-sky-600 mr-2">✓</span>
-                  <span className="text-zinc-600">Quality control</span>
+                  <span className="text-zinc-600">QA/QC observation</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-sky-600 mr-2">✓</span>
-                  <span className="text-zinc-600">Custom reporting</span>
+                  <span className="text-zinc-600">CO management</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-sky-600 mr-2">✓</span>
+                  <span className="text-zinc-600">OAC meeting support</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-sky-600 mr-2">✓</span>
+                  <span className="text-zinc-600">4 site visits/month</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-sky-600 mr-2">✓</span>
+                  <span className="text-zinc-600">24/7 priority support</span>
                 </li>
               </ul>
               <Link
@@ -157,12 +180,13 @@ export default function PackagesPage() {
             <div className="border border-zinc-200 rounded-2xl p-8 hover:shadow-lg transition-shadow">
               <h3 className="text-2xl font-bold text-zinc-900 mb-2">Package D Enterprise</h3>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-sky-600">$16,500</span>
+                <span className="text-3xl font-bold text-sky-600">From $112,000</span>
                 <span className="text-zinc-600">/month</span>
               </div>
               <div className="mb-6">
                 <p className="text-sm font-bold text-zinc-700 mb-1">40+ hours/week</p>
-                <p className="text-sm text-zinc-600">Full portfolio</p>
+                <p className="text-sm text-zinc-600">15-20+ projects (D1-D4 sub-tiers)</p>
+                <p className="text-xs text-zinc-400">Max $10M/project &middot; $150M portfolio</p>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start">
@@ -171,7 +195,11 @@ export default function PackagesPage() {
                 </li>
                 <li className="flex items-start">
                   <span className="text-sky-600 mr-2">✓</span>
-                  <span className="text-zinc-600">Portfolio management</span>
+                  <span className="text-zinc-600">Dedicated account manager 24/7</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-sky-600 mr-2">✓</span>
+                  <span className="text-zinc-600">8 site visits/month</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-sky-600 mr-2">✓</span>
@@ -179,11 +207,11 @@ export default function PackagesPage() {
                 </li>
                 <li className="flex items-start">
                   <span className="text-sky-600 mr-2">✓</span>
-                  <span className="text-zinc-600">Custom SLAs</span>
+                  <span className="text-zinc-600">Custom SLAs &amp; integrations</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-sky-600 mr-2">✓</span>
-                  <span className="text-zinc-600">On-site support</span>
+                  <span className="text-zinc-600">White-glove service</span>
                 </li>
               </ul>
               <Link
@@ -226,10 +254,10 @@ export default function PackagesPage() {
                     </tr>
                     <tr>
                       <td className="py-4 px-6 text-zinc-700">Projects</td>
-                      <td className="text-center py-4 px-6 text-zinc-600">1</td>
-                      <td className="text-center py-4 px-6 text-zinc-600 bg-sky-50">Up to 5</td>
-                      <td className="text-center py-4 px-6 text-zinc-600">Up to 20</td>
-                      <td className="text-center py-4 px-6 text-zinc-600">Portfolio</td>
+                      <td className="text-center py-4 px-6 text-zinc-600">Up to 2</td>
+                      <td className="text-center py-4 px-6 text-zinc-600 bg-sky-50">Up to 7</td>
+                      <td className="text-center py-4 px-6 text-zinc-600">Up to 15</td>
+                      <td className="text-center py-4 px-6 text-zinc-600">15-20+</td>
                     </tr>
                     <tr>
                       <td className="py-4 px-6 text-zinc-700">Permit tracking</td>
@@ -274,11 +302,11 @@ export default function PackagesPage() {
                       <td className="text-center py-4 px-6 text-sky-600">✓</td>
                     </tr>
                     <tr>
-                      <td className="py-4 px-6 text-zinc-700">On-site support</td>
+                      <td className="py-4 px-6 text-zinc-700">Site visits/month</td>
                       <td className="text-center py-4 px-6 text-zinc-400">—</td>
                       <td className="text-center py-4 px-6 text-zinc-400 bg-sky-50">—</td>
-                      <td className="text-center py-4 px-6 text-zinc-400">—</td>
-                      <td className="text-center py-4 px-6 text-sky-600">✓</td>
+                      <td className="text-center py-4 px-6 text-sky-600">4</td>
+                      <td className="text-center py-4 px-6 text-sky-600">8</td>
                     </tr>
                   </tbody>
                 </table>

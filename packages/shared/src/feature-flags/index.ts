@@ -613,4 +613,83 @@ export function requireModule(moduleId: ModuleId) {
   };
 }
 
+// ============ Add-On Feature Flag Context ============
+
+/**
+ * Context for checking add-on package feature flags.
+ * Separate from the module-level FeatureFlagService above; this is used
+ * specifically for subscription-based add-on entitlements.
+ */
+export interface AddOnFeatureFlagContext {
+  pmTier: string; // 'A', 'B', 'C', 'D1', 'D2', 'D3', 'D4'
+  activeAddOns: string[]; // e.g., ['field-tools', 'safety-docs']
+  enabledFlags: string[]; // e.g., ['field.mobilization', 'field.conflicts', 'safety.jha']
+}
+
+/**
+ * Check if a specific add-on feature flag is enabled for a subscription context.
+ */
+export function hasAddOnFeature(ctx: AddOnFeatureFlagContext, flag: string): boolean {
+  return ctx.enabledFlags.includes(flag);
+}
+
+/**
+ * Check if a specific add-on package is active in the subscription context.
+ */
+export function hasAddOn(ctx: AddOnFeatureFlagContext, addOnId: string): boolean {
+  return ctx.activeAddOns.includes(addOnId);
+}
+
+/**
+ * Check if a PM tier is eligible to purchase a given add-on package.
+ */
+export function canPurchaseAddOn(pmTier: string, addOnId: string): boolean {
+  // Lazy import to avoid circular dependency
+  const { ADD_ON_PACKAGES } = require('../software-tiers');
+  const key = addOnId.toUpperCase().replace(/-/g, '_');
+  const addOn = ADD_ON_PACKAGES[key];
+  if (!addOn) return false;
+  if (addOn.requiredPackage.includes('*')) return true;
+  const tierLetter = pmTier.charAt(0);
+  return addOn.requiredPackage.includes(tierLetter);
+}
+
+/**
+ * Get add-on feature flags that are included by default for a PM tier.
+ * Package C includes all field tools. Package D includes field tools,
+ * multifamily, and lender reporting.
+ */
+export function getIncludedFlags(pmTier: string): string[] {
+  const tierLetter = pmTier.charAt(0);
+  if (tierLetter === 'C') {
+    return ['field.mobilization', 'field.conflicts', 'field.qaqc', 'field.photos'];
+  }
+  if (tierLetter === 'D') {
+    return [
+      'field.mobilization', 'field.conflicts', 'field.qaqc', 'field.photos',
+      'multifamily.units', 'multifamily.draws', 'multifamily.tco', 'multifamily.phasing',
+      'lender.aia', 'lender.draws', 'lender.portal',
+    ];
+  }
+  return [];
+}
+
+/**
+ * Build a complete AddOnFeatureFlagContext by merging subscription add-ons
+ * with the flags that are included by default for the tier.
+ */
+export function buildAddOnContext(
+  pmTier: string,
+  activeAddOns: string[],
+  purchasedFlags: string[],
+): AddOnFeatureFlagContext {
+  const includedFlags = getIncludedFlags(pmTier);
+  const allFlags = [...new Set([...includedFlags, ...purchasedFlags])];
+  return {
+    pmTier,
+    activeAddOns,
+    enabledFlags: allFlags,
+  };
+}
+
 export default featureFlags;

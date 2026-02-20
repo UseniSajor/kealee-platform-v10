@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import {
+  AlertTriangle,
   CheckCircle2,
   Clock,
   Inbox,
@@ -68,6 +69,30 @@ const FILTER_TABS = [
   { key: "revise-resubmit", label: "Revise & Resubmit" },
 ] as const
 
+// ---------------------------------------------------------------------------
+// Aging helpers
+// ---------------------------------------------------------------------------
+
+function getDaysOpen(dateStr: string): number {
+  return Math.floor(
+    (Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24)
+  )
+}
+
+function getAgingBorder(daysOpen: number): string {
+  if (daysOpen >= 15) return "border-l-4 border-red-500"
+  if (daysOpen >= 7) return "border-l-4 border-amber-500"
+  return "border-l-4 border-green-500"
+}
+
+function isSubmittalAgingApplicable(status: SubmittalStatus): boolean {
+  return status === "pending" || status === "under-review"
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
 export default function SubmittalsPage() {
   const [search, setSearch] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState<string>("all")
@@ -90,6 +115,11 @@ export default function SubmittalsPage() {
     rejected: submittals.filter((s) => s.status === "rejected").length,
     revise: submittals.filter((s) => s.status === "revise-resubmit")
       .length,
+    overdue: submittals.filter(
+      (s) =>
+        isSubmittalAgingApplicable(s.status) &&
+        getDaysOpen(s.submitDate ?? (s as any).createdAt) >= 15
+    ).length,
   }
 
   return (
@@ -111,7 +141,7 @@ export default function SubmittalsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         {[
           {
             label: "Total",
@@ -142,6 +172,12 @@ export default function SubmittalsPage() {
             value: stats.revise,
             icon: RotateCcw,
             color: "text-orange-600 bg-orange-50",
+          },
+          {
+            label: "Overdue",
+            value: stats.overdue,
+            icon: AlertTriangle,
+            color: "text-red-600 bg-red-50",
           },
         ].map((s) => (
           <Card key={s.label}>
@@ -231,10 +267,16 @@ export default function SubmittalsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((sub) => (
+                {filtered.map((sub) => {
+                  const daysOpen = getDaysOpen(sub.submitDate ?? (sub as any).createdAt)
+                  const agingClass = isSubmittalAgingApplicable(sub.status)
+                    ? getAgingBorder(daysOpen)
+                    : ""
+
+                  return (
                   <tr
                     key={sub.id}
-                    className="border-b hover:bg-gray-50 cursor-pointer"
+                    className={cn("border-b hover:bg-gray-50 cursor-pointer", agingClass)}
                     onClick={() =>
                       (window.location.href = `/submittals/${sub.id}`)
                     }
@@ -253,14 +295,21 @@ export default function SubmittalsPage() {
                     </td>
                     <td className="px-4 py-3 text-gray-600">{sub.reviewer}</td>
                     <td className="px-4 py-3">
-                      <span
-                        className={cn(
-                          "px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap",
-                          STATUS_STYLES[sub.status]
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={cn(
+                            "px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap",
+                            STATUS_STYLES[sub.status]
+                          )}
+                        >
+                          {STATUS_LABELS[sub.status]}
+                        </span>
+                        {isSubmittalAgingApplicable(sub.status) && daysOpen >= 15 && (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 whitespace-nowrap">
+                            Overdue
+                          </span>
                         )}
-                      >
-                        {STATUS_LABELS[sub.status]}
-                      </span>
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-gray-500">
                       {new Date(
@@ -282,7 +331,8 @@ export default function SubmittalsPage() {
                       {sub.ballInCourt}
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
                 {filtered.length === 0 && (
                   <tr>
                     <td
