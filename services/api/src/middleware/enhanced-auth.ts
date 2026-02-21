@@ -187,8 +187,8 @@ export async function enhancedAuthMiddleware(
     // Attach user to request
     (request as AuthenticatedRequest).user = {
       id: user.id,
-      email: user.email,
-      role: user.role,
+      email: user.email || '',
+      role: user.role || 'user',
       sessionId: payload.sessionId,
     };
 
@@ -240,9 +240,11 @@ export async function createSession(
   refreshToken: string;
 }> {
   // Create session record
+  const sessionToken = require('crypto').randomUUID();
   const session = await prisma.userSession.create({
     data: {
       userId,
+      sessionToken,
       userAgent: userAgent || 'Unknown',
       ipAddress: ipAddress || 'Unknown',
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
@@ -258,7 +260,7 @@ export async function createSession(
   });
 
   // Generate tokens
-  const accessToken = generateAccessToken(userId, user.email, user.role, session.id);
+  const accessToken = generateAccessToken(userId, user.email || '', user.role || 'user', session.id);
   const refreshToken = generateRefreshToken(userId, session.id);
 
   return {
@@ -303,7 +305,7 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
   }
 
   // Generate new tokens
-  const newAccessToken = generateAccessToken(payload.userId, user.email, user.role, payload.sessionId);
+  const newAccessToken = generateAccessToken(payload.userId, user.email || '', user.role || 'user', payload.sessionId);
   const newRefreshToken = generateRefreshToken(payload.userId, payload.sessionId);
 
   // Update session activity

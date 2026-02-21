@@ -11,8 +11,8 @@ const prisma = new PrismaClient();
 export interface APIKey {
   id: string;
   name: string;
-  keyPrefix: string; // First 8 chars of key (for identification)
-  userId: string;
+  keyPrefix: string | null; // First 8 chars of key (for identification)
+  userId: string | null;
   scopes: string[];
   lastUsedAt: Date | null;
   expiresAt: Date | null;

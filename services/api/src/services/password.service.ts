@@ -257,6 +257,9 @@ export async function changePassword(
   }
 
   // Verify current password
+  if (!user.password) {
+    return { success: false, error: 'No password set for this account' };
+  }
   const isValidCurrent = await verifyPassword(currentPassword, user.password);
   if (!isValidCurrent) {
     return { success: false, error: 'Current password is incorrect' };
@@ -264,9 +267,9 @@ export async function changePassword(
 
   // Validate new password
   const validation = validatePassword(newPassword, {
-    email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
+    email: user.email ?? undefined,
+    firstName: user.firstName ?? undefined,
+    lastName: user.lastName ?? undefined,
   });
 
   if (!validation.isValid) {
@@ -352,22 +355,27 @@ export async function resetPasswordWithToken(
       expiresAt: { gt: new Date() },
       usedAt: null,
     },
-    include: {
-      user: {
-        select: { id: true, email: true, firstName: true, lastName: true },
-      },
-    },
   });
 
   if (!resetToken) {
     return { success: false, error: 'Invalid or expired reset token' };
   }
 
+  // Fetch the user separately (PasswordResetToken has no user relation)
+  const user = await prisma.user.findUnique({
+    where: { id: resetToken.userId },
+    select: { id: true, email: true, firstName: true, lastName: true },
+  });
+
+  if (!user) {
+    return { success: false, error: 'User not found for this reset token' };
+  }
+
   // Validate new password
   const validation = validatePassword(newPassword, {
-    email: resetToken.user.email,
-    firstName: resetToken.user.firstName,
-    lastName: resetToken.user.lastName,
+    email: user.email ?? undefined,
+    firstName: user.firstName ?? undefined,
+    lastName: user.lastName ?? undefined,
   });
 
   if (!validation.isValid) {

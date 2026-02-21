@@ -83,9 +83,9 @@ export class AuditController {
   /**
    * POST /api/audit/log
    */
-  async logAudit(request: FastifyRequest<{ Body: any }>, reply: FastifyReply) {
+  async logAudit(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const data = logAuditSchema.parse(request.body);
+      const data = logAuditSchema.parse(request.body as any);
       const auditLog = await auditService.logAudit(data);
 
       return reply.status(201).send({
@@ -105,9 +105,9 @@ export class AuditController {
   /**
    * POST /api/audit/activity
    */
-  async logActivity(request: FastifyRequest<{ Body: any }>, reply: FastifyReply) {
+  async logActivity(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const data = logActivitySchema.parse(request.body);
+      const data = logActivitySchema.parse(request.body as any);
       const activityLog = await auditService.logActivity(data);
 
       return reply.status(201).send({
@@ -127,9 +127,9 @@ export class AuditController {
   /**
    * POST /api/audit/track-change
    */
-  async trackChange(request: FastifyRequest<{ Body: any }>, reply: FastifyReply) {
+  async trackChange(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const data = trackChangeSchema.parse(request.body);
+      const data = trackChangeSchema.parse(request.body as any);
       const changeLog = await auditService.trackChange({
         entityType: data.entityType,
         entityId: data.entityId,
@@ -157,9 +157,9 @@ export class AuditController {
   /**
    * GET /api/audit/search
    */
-  async searchAuditLogs(request: FastifyRequest<{ Querystring: any }>, reply: FastifyReply) {
+  async searchAuditLogs(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const filters = searchQuerySchema.parse(request.query);
+      const filters = searchQuerySchema.parse(request.query as any);
 
       const result = await auditService.searchAuditLogs({
         ...filters,
@@ -190,11 +190,11 @@ export class AuditController {
    * GET /api/audit/trail/:entityType/:entityId
    */
   async getAuditTrail(
-    request: FastifyRequest<{ Params: { entityType: string; entityId: string } }>,
+    request: FastifyRequest,
     reply: FastifyReply
   ) {
     try {
-      const { entityType, entityId } = request.params;
+      const { entityType, entityId } = request.params as { entityType: string; entityId: string };
       const trail = await auditService.getAuditTrail(entityType, entityId);
 
       return reply.status(200).send({
@@ -215,11 +215,11 @@ export class AuditController {
    * GET /api/audit/user/:userId
    */
   async getUserAuditLogs(
-    request: FastifyRequest<{ Params: { userId: string }; Querystring: any }>,
+    request: FastifyRequest,
     reply: FastifyReply
   ) {
     try {
-      const { userId } = request.params;
+      const { userId } = request.params as { userId: string };
       const query = request.query as any;
       const filters = {
         action: query.action,
@@ -255,11 +255,11 @@ export class AuditController {
    * GET /api/audit/project/:projectId
    */
   async getProjectAuditLogs(
-    request: FastifyRequest<{ Params: { projectId: string }; Querystring: any }>,
+    request: FastifyRequest,
     reply: FastifyReply
   ) {
     try {
-      const { projectId } = request.params;
+      const { projectId } = request.params as { projectId: string };
       const query = request.query as any;
       const filters = {
         action: query.action,
@@ -296,7 +296,7 @@ export class AuditController {
    * GET /api/audit/stats
    */
   async getStats(
-    request: FastifyRequest<{ Querystring: any }>,
+    request: FastifyRequest,
     reply: FastifyReply
   ) {
     try {
@@ -326,11 +326,11 @@ export class AuditController {
    * GET /api/audit/export/csv
    */
   async exportCsv(
-    request: FastifyRequest<{ Querystring: any }>,
+    request: FastifyRequest,
     reply: FastifyReply
   ) {
     try {
-      const filters = searchQuerySchema.parse(request.query);
+      const filters = searchQuerySchema.parse(request.query as any);
 
       const csv = await auditService.exportAuditLogsCsv({
         ...filters,
@@ -356,11 +356,11 @@ export class AuditController {
    * GET /api/audit/report
    */
   async generateAuditReport(
-    request: FastifyRequest<{ Querystring: { startDate: string; endDate: string } }>,
+    request: FastifyRequest,
     reply: FastifyReply
   ) {
     try {
-      const { startDate, endDate } = auditReportSchema.parse(request.query);
+      const { startDate, endDate } = auditReportSchema.parse(request.query as any);
       const report = await auditService.generateAuditReport(startDate, endDate);
 
       return reply.status(200).send({
@@ -381,11 +381,11 @@ export class AuditController {
    * GET /api/audit/verify/:logId
    */
   async verifyIntegrity(
-    request: FastifyRequest<{ Params: { logId: string } }>,
+    request: FastifyRequest,
     reply: FastifyReply
   ) {
     try {
-      const { logId } = request.params;
+      const { logId } = request.params as { logId: string };
       const verification = await auditService.verifyIntegrity(logId);
 
       return reply.status(200).send({
@@ -405,11 +405,11 @@ export class AuditController {
    * GET /api/audit/:id
    */
   async getAuditById(
-    request: FastifyRequest<{ Params: { id: string } }>,
+    request: FastifyRequest,
     reply: FastifyReply
   ) {
     try {
-      const { id } = request.params;
+      const { id } = request.params as { id: string };
       const log = await auditService.getAuditById(id);
 
       if (!log) {

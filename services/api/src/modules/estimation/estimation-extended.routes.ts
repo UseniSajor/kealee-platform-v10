@@ -1397,7 +1397,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
           { division: 33, code: '33', name: 'Utilities' },
         ]
 
-        const sections = []
+        const sections: any[] = []
         for (let i = 0; i < csiDivisions.length; i++) {
           const div = csiDivisions[i]
           const section = await prismaAny.estimateSection.create({
@@ -1533,7 +1533,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
           return reply.code(400).send({ error: 'At least one item is required' })
         }
 
-        const created = []
+        const created: any[] = []
         for (let i = 0; i < inputItems.length; i++) {
           const body = inputItems[i]
           const quantity = Number(body.quantity || 0)
@@ -1600,7 +1600,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         if (!assembly) return reply.code(404).send({ error: 'Assembly not found' })
 
         const qty = assemblyQty || 1
-        const created = []
+        const created: any[] = []
 
         // If the assembly has child items, create a line item for each
         if (assembly.items && assembly.items.length > 0) {

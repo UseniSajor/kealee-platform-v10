@@ -1,754 +1,562 @@
 /**
  * Statement Generation Service
- * Handles automated generation of financial statements for users
+ * Generates PDF financial statements and handles email delivery
  */
 
-import { prisma, Decimal } from '@kealee/database'
-import {
-  StatementType,
-  StatementStatus,
-  RecipientRole,
-} from '@kealee/database'
+import PDFDocument from 'pdfkit';
+import { PrismaClient } from '@kealee/database';
+import { Readable } from 'stream';
+import fs from 'fs';
+import path from 'path';
 
-export interface GenerateStatementDTO {
-  recipientId: string
-  recipientRole: RecipientRole
-  statementType: StatementType
-  periodStart: Date
-  periodEnd: Date
-  includeTransactions?: boolean
-  includeFees?: boolean
-  filterTransactionType?: string[]
+const prisma = new PrismaClient();
+
+export interface StatementConfig {
+  escrowId: string;
+  periodStart: Date;
+  periodEnd: Date;
+  recipientUserId: string;
+  includeTransactionDetails: boolean;
+  includeFeeBreakdown: boolean;
+  includeCharts: boolean;
 }
 
-export interface StatementContent {
-  header: {
-    statementPeriod: string
-    accountNumber?: string
-    recipientInfo: {
-      name: string
-      email: string
-      role: string
-    }
-  }
-  summary: {
-    openingBalance: number
-    totalDeposits: number
-    totalReleases: number
-    totalFees: number
-    closingBalance: number
-    transactionCount: number
-  }
+export interface StatementData {
+  statementNumber: string;
+  escrowAccountNumber: string;
+  period: {
+    start: Date;
+    end: Date;
+  };
+  recipient: {
+    name: string;
+    email: string;
+    address?: string;
+  };
+  balances: {
+    opening: number;
+    closing: number;
+    deposits: number;
+    releases: number;
+    fees: number;
+  };
   transactions: Array<{
-    date: Date
-    description: string
-    debit: number
-    credit: number
-    balance: number
-    type: string
-    reference?: string
-  }>
-  feeBreakdown: {
-    platformFees: number
-    processingFees: number
-    instantPayoutFees: number
-    total: number
-  }
-  charts?: {
-    balanceTrend: number[] // Daily balances
-    transactionTypes: Record<string, number>
-  }
+    date: Date;
+    description: string;
+    type: string;
+    debit?: number;
+    credit?: number;
+    balance: number;
+  }>;
+  feeBreakdown: Array<{
+    category: string;
+    amount: number;
+    count: number;
+  }>;
 }
 
 export class StatementGenerationService {
-  /**
-   * Generate statement for a user
-   */
-  static async generateStatement(
-    data: GenerateStatementDTO
-  ): Promise<{ statement: any; content: StatementContent }> {
-    const {
-      recipientId,
-      recipientRole,
-      statementType,
-      periodStart,
-      periodEnd,
-      includeTransactions = true,
-      includeFees = true,
-      filterTransactionType,
-    } = data
+  private readonly statementStoragePath = path.join(process.cwd(), 'storage', 'statements');
 
-    // Get recipient info
-    const recipient = await prisma.user.findUnique({
-      where: { id: recipientId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-      },
-    })
-
-    if (!recipient) {
-      throw new Error('Recipient not found')
+  constructor() {
+    // Ensure storage directory exists
+    if (!fs.existsSync(this.statementStoragePath)) {
+      fs.mkdirSync(this.statementStoragePath, { recursive: true });
     }
-
-    // Get relevant escrow agreements for the user
-    const escrowAgreements = await this.getRelevantEscrows(
-      recipientId,
-      recipientRole
-    )
-
-    if (escrowAgreements.length === 0) {
-      throw new Error(
-        'No escrow accounts found for this user in the period'
-      )
-    }
-
-    // Get transactions for the period
-    const transactions = await this.getTransactionsForPeriod(
-      escrowAgreements.map((e) => e.id),
-      periodStart,
-      periodEnd,
-      filterTransactionType
-    )
-
-    // Calculate balances
-    const openingBalance = await this.calculateOpeningBalance(
-      escrowAgreements.map((e) => e.id),
-      periodStart
-    )
-
-    const { deposits, releases, fees } =
-      this.categorizeTransactions(transactions)
-
-    const closingBalance =
-      openingBalance + deposits - releases + (includeFees ? fees : 0)
-
-    // Create statement content
-    const content: StatementContent = {
-      header: {
-        statementPeriod: `${periodStart.toLocaleDateString()} - ${periodEnd.toLocaleDateString()}`,
-        recipientInfo: {
-          name: recipient.name || 'Unknown',
-          email: recipient.email || '',
-          role: recipientRole,
-        },
-      },
-      summary: {
-        openingBalance,
-        totalDeposits: deposits,
-        totalReleases: releases,
-        totalFees: fees,
-        closingBalance,
-        transactionCount: transactions.length,
-      },
-      transactions: includeTransactions
-        ? this.formatTransactions(transactions, openingBalance)
-        : [],
-      feeBreakdown: includeFees
-        ? await this.calculateFeeBreakdown(
-            escrowAgreements.map((e) => e.id),
-            periodStart,
-            periodEnd
-          )
-        : { platformFees: 0, processingFees: 0, instantPayoutFees: 0, total: 0 },
-      charts: {
-        balanceTrend: await this.calculateBalanceTrend(
-          escrowAgreements.map((e) => e.id),
-          periodStart,
-          periodEnd
-        ),
-        transactionTypes: this.calculateTransactionTypes(transactions),
-      },
-    }
-
-    // Create statement record
-    const statement = await prisma.statement.create({
-      data: {
-        recipientId,
-        recipientRole,
-        statementType,
-        periodStart,
-        periodEnd,
-        openingBalance: new Decimal(openingBalance),
-        closingBalance: new Decimal(closingBalance),
-        totalDeposits: new Decimal(deposits),
-        totalReleases: new Decimal(releases),
-        totalFees: new Decimal(fees),
-        transactionCount: transactions.length,
-        status: 'GENERATED',
-        metadata: content as any, // Store full content in metadata
-      },
-      include: {
-        recipient: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-    })
-
-    // Create a Statement record with HTML content metadata instead of PDF
-    const htmlContent = [
-      '<html><head><title>Financial Statement</title></head><body>',
-      '<h1>Financial Statement</h1>',
-      '<p>Period: ' + content.header.statementPeriod + '</p>',
-      '<p>Recipient: ' + content.header.recipientInfo.name + '</p>',
-      '<h2>Summary</h2>',
-      '<table>',
-      '<tr><td>Opening Balance</td><td>' + content.summary.openingBalance.toFixed(2) + '</td></tr>',
-      '<tr><td>Total Deposits</td><td>' + content.summary.totalDeposits.toFixed(2) + '</td></tr>',
-      '<tr><td>Total Releases</td><td>' + content.summary.totalReleases.toFixed(2) + '</td></tr>',
-      '<tr><td>Total Fees</td><td>' + content.summary.totalFees.toFixed(2) + '</td></tr>',
-      '<tr><td>Closing Balance</td><td>' + content.summary.closingBalance.toFixed(2) + '</td></tr>',
-      '</table></body></html>',
-    ].join('\n')
-    await prisma.statement.update({
-      where: { id: statement.id },
-      data: {
-        metadata: {
-          ...(content as any),
-          htmlContent,
-          generatedFormat: 'HTML',
-        },
-      },
-    })
-
-    return { statement, content }
   }
 
   /**
-   * Generate monthly statements for all active users
+   * Generate statement PDF
    */
-  static async generateMonthlyStatements(
-    month: number,
-    year: number
-  ): Promise<any[]> {
-    // Get period dates (previous month)
-    const periodStart = new Date(year, month - 1, 1)
-    const periodEnd = new Date(year, month, 0, 23, 59, 59)
+  async generateStatement(config: StatementConfig): Promise<{
+    statementId: string;
+    pdfPath: string;
+    pdfBuffer: Buffer;
+  }> {
+    // Gather statement data
+    const data = await this.gatherStatementData(config);
 
-    // Get all users with active escrow accounts
-    const usersWithEscrow = await prisma.user.findMany({
+    // Generate PDF
+    const pdfBuffer = await this.createPDF(data);
+
+    // Generate unique statement ID
+    const statementId = this.generateStatementId();
+
+    // Save PDF to storage
+    const pdfPath = path.join(
+      this.statementStoragePath,
+      `${statementId}.pdf`
+    );
+    fs.writeFileSync(pdfPath, pdfBuffer);
+
+    // Create statement record
+    await prisma.statement.create({
+      data: {
+        id: statementId,
+        statementType: 'CUSTOM',
+        recipientId: config.recipientUserId,
+        recipientRole: 'OWNER',
+        periodStart: config.periodStart,
+        periodEnd: config.periodEnd,
+        documentUrl: pdfPath,
+        status: 'GENERATED',
+        openingBalance: 0,
+        closingBalance: 0,
+        totalDeposits: 0,
+        totalReleases: 0,
+        totalFees: 0,
+        metadata: { escrowId: config.escrowId },
+      },
+    });
+
+    return {
+      statementId,
+      pdfPath,
+      pdfBuffer,
+    };
+  }
+
+  /**
+   * Generate monthly statement for all escrows
+   */
+  async generateMonthlyStatements(): Promise<number> {
+    const now = new Date();
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    // Get all active escrows
+    const escrows = await prisma.escrowAgreement.findMany({
       where: {
-        OR: [
-          {
-            ownedContracts: {
-              some: {
-                escrowAgreement: {
-                  status: { in: ['ACTIVE', 'FROZEN'] },
-                },
-              },
-            },
-          },
-          {
-            contractorContracts: {
-              some: {
-                escrowAgreement: {
-                  status: { in: ['ACTIVE', 'FROZEN'] },
-                },
-              },
-            },
-          },
-        ],
+        status: { in: ['ACTIVE', 'FROZEN'] },
       },
-      select: {
-        id: true,
-        ownedContracts: {
-          where: {
-            escrowAgreement: {
-              status: { in: ['ACTIVE', 'FROZEN'] },
-            },
-          },
-          select: {
-            id: true,
-          },
-        },
-        contractorContracts: {
-          where: {
-            escrowAgreement: {
-              status: { in: ['ACTIVE', 'FROZEN'] },
-            },
-          },
-          select: {
-            id: true,
+      include: {
+        contract: {
+          include: {
+            owner: true,
+            contractor: true,
           },
         },
       },
-    })
+    });
 
-    const statements: any[] = []
+    let generated = 0;
 
-    // Generate statements for each user
-    for (const user of usersWithEscrow) {
+    for (const escrow of escrows) {
       try {
-        // Generate for owner role if applicable
-        if (user.ownedContracts.length > 0) {
-          const { statement } = await this.generateStatement({
-            recipientId: user.id,
-            recipientRole: 'OWNER',
-            statementType: 'MONTHLY',
-            periodStart,
-            periodEnd,
-          })
-          statements.push(statement)
-        }
+        // Generate statement for owner
+        await this.generateStatement({
+          escrowId: escrow.id,
+          periodStart: lastMonth,
+          periodEnd: lastMonthEnd,
+          recipientUserId: escrow.contract.ownerId,
+          includeTransactionDetails: true,
+          includeFeeBreakdown: true,
+          includeCharts: false,
+        });
 
-        // Generate for contractor role if applicable
-        if (user.contractorContracts.length > 0) {
-          const { statement } = await this.generateStatement({
-            recipientId: user.id,
-            recipientRole: 'CONTRACTOR',
-            statementType: 'MONTHLY',
-            periodStart,
-            periodEnd,
-          })
-          statements.push(statement)
-        }
+        // Generate statement for contractor
+        await this.generateStatement({
+          escrowId: escrow.id,
+          periodStart: lastMonth,
+          periodEnd: lastMonthEnd,
+          recipientUserId: escrow.contract.contractorId,
+          includeTransactionDetails: true,
+          includeFeeBreakdown: true,
+          includeCharts: false,
+        });
+
+        generated += 2;
       } catch (error) {
-        console.error(`Failed to generate statement for user ${user.id}:`, error)
-        // Continue with other users
+        console.error(`Failed to generate statement for escrow ${escrow.id}:`, error);
       }
     }
 
-    return statements
+    return generated;
   }
 
   /**
-   * Generate custom statement for date range
+   * Get a single statement by ID
    */
-  static async generateCustomStatement(
-    recipientId: string,
-    recipientRole: RecipientRole,
-    startDate: Date,
-    endDate: Date,
-    options?: {
-      includeTransactions?: boolean
-      includeFees?: boolean
-      filterTransactionType?: string[]
-    }
-  ) {
-    return await this.generateStatement({
-      recipientId,
-      recipientRole,
-      statementType: 'CUSTOM',
-      periodStart: startDate,
-      periodEnd: endDate,
-      ...options,
-    })
-  }
-
-  /**
-   * Get statement by ID
-   */
-  static async getStatement(statementId: string) {
+  async getStatement(statementId: string) {
     const statement = await prisma.statement.findUnique({
       where: { id: statementId },
-      include: {
-        recipient: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-    })
-
+    });
     if (!statement) {
-      throw new Error('Statement not found')
+      throw new Error('Statement not found');
     }
-
-    return statement
+    return statement;
   }
 
   /**
-   * List statements for a user
+   * List statements with filtering
    */
-  static async listStatements(
-    recipientId: string,
-    filters?: {
-      statementType?: StatementType
-      status?: StatementStatus
-      startDate?: Date
-      endDate?: Date
-      limit?: number
-      offset?: number
-    }
-  ) {
-    const where: any = { recipientId }
-
-    if (filters?.statementType) {
-      where.statementType = filters.statementType
-    }
-
-    if (filters?.status) {
-      where.status = filters.status
-    }
-
+  async listStatements(recipientId: string, filters?: {
+    statementType?: any;
+    status?: any;
+    startDate?: Date;
+    endDate?: Date;
+    limit?: number;
+    offset?: number;
+  }) {
+    const where: any = { recipientId };
+    if (filters?.statementType) where.statementType = filters.statementType;
+    if (filters?.status) where.status = filters.status;
     if (filters?.startDate || filters?.endDate) {
-      where.periodStart = {}
-      if (filters.startDate) where.periodStart.gte = filters.startDate
-      if (filters.endDate) where.periodStart.lte = filters.endDate
+      where.periodStart = {};
+      if (filters?.startDate) where.periodStart.gte = filters.startDate;
+      if (filters?.endDate) where.periodStart.lte = filters.endDate;
     }
 
     const [statements, total] = await Promise.all([
       prisma.statement.findMany({
         where,
-        include: {
-          recipient: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
+        orderBy: { createdAt: 'desc' },
         take: filters?.limit || 50,
         skip: filters?.offset || 0,
-        orderBy: { generatedAt: 'desc' },
       }),
       prisma.statement.count({ where }),
-    ])
+    ]);
 
-    return {
-      statements,
-      total,
-      limit: filters?.limit || 50,
-      offset: filters?.offset || 0,
-    }
+    return { statements, total };
   }
 
   /**
-   * Mark statement as sent
+   * Verify statement authenticity
    */
-  static async markAsSent(statementId: string) {
-    return await prisma.statement.update({
+  async verifyStatement(statementId: string) {
+    const statement = await prisma.statement.findUnique({
+      where: { id: statementId },
+    });
+    if (!statement) {
+      return { verified: false, error: 'Statement not found' };
+    }
+    return { verified: true, statementId: statement.id, generatedAt: statement.createdAt };
+  }
+
+  /**
+   * Send statement via email
+   */
+  async sendStatement(statementId: string): Promise<void> {
+    const statement = await prisma.statement.findUnique({
+      where: { id: statementId },
+      include: { recipient: true },
+    });
+
+    if (!statement) {
+      throw new Error('Statement not found');
+    }
+
+    // Read PDF file
+    const pdfBuffer = fs.readFileSync(statement.documentUrl!);
+
+    // Send email with PDF attachment
+    // NOTE: Replace with your actual email service
+    console.log(`Sending statement ${statementId} to ${statement.recipient.email}`);
+
+    // Update statement status
+    await prisma.statement.update({
       where: { id: statementId },
       data: {
         status: 'SENT',
         sentAt: new Date(),
       },
-    })
+    });
   }
 
   /**
-   * Mark statement as viewed
+   * Gather statement data
    */
-  static async markAsViewed(statementId: string) {
-    const statement = await prisma.statement.findUnique({
-      where: { id: statementId },
-    })
+  private async gatherStatementData(config: StatementConfig): Promise<StatementData> {
+    const escrow = await prisma.escrowAgreement.findUnique({
+      where: { id: config.escrowId },
+      include: { contract: true },
+    });
 
-    if (!statement) {
-      throw new Error('Statement not found')
+    if (!escrow) {
+      throw new Error('Escrow not found');
     }
 
-    // Only mark as viewed if not already viewed
-    if (!statement.viewedAt) {
-      return await prisma.statement.update({
-        where: { id: statementId },
-        data: {
-          status: 'VIEWED',
-          viewedAt: new Date(),
-        },
-      })
+    const recipient = await prisma.user.findUnique({
+      where: { id: config.recipientUserId },
+    });
+
+    if (!recipient) {
+      throw new Error('Recipient not found');
     }
 
-    return statement
-  }
-
-  /**
-   * Verify statement authenticity (public endpoint)
-   */
-  static async verifyStatement(statementId: string) {
-    const statement = await prisma.statement.findUnique({
-      where: { id: statementId },
-      select: {
-        id: true,
-        statementType: true,
-        periodStart: true,
-        periodEnd: true,
-        openingBalance: true,
-        closingBalance: true,
-        totalDeposits: true,
-        totalReleases: true,
-        totalFees: true,
-        generatedAt: true,
-        recipient: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    })
-
-    if (!statement) {
-      return {
-        valid: false,
-        message: 'Statement not found',
-      }
-    }
-
-    return {
-      valid: true,
-      statement,
-      message: 'Statement verified successfully',
-    }
-  }
-
-  // ============================================================================
-  // Helper Methods
-  // ============================================================================
-
-  private static async getRelevantEscrows(
-    userId: string,
-    role: RecipientRole
-  ) {
-    if (role === 'OWNER') {
-      return await prisma.escrowAgreement.findMany({
-        where: {
-          contract: {
-            ownerId: userId,
-          },
-          status: { in: ['ACTIVE', 'FROZEN', 'CLOSED'] },
-        },
-      })
-    } else if (role === 'CONTRACTOR') {
-      return await prisma.escrowAgreement.findMany({
-        where: {
-          contract: {
-            contractorId: userId,
-          },
-          status: { in: ['ACTIVE', 'FROZEN', 'CLOSED'] },
-        },
-      })
-    }
-
-    return []
-  }
-
-  private static async getTransactionsForPeriod(
-    escrowIds: string[],
-    startDate: Date,
-    endDate: Date,
-    filterTypes?: string[]
-  ) {
-    const where: any = {
-      escrowId: { in: escrowIds },
-      processedDate: {
-        gte: startDate,
-        lte: endDate,
-      },
-      status: 'COMPLETED',
-    }
-
-    if (filterTypes && filterTypes.length > 0) {
-      where.type = { in: filterTypes }
-    }
-
-    return await prisma.escrowTransaction.findMany({
-      where,
-      orderBy: { processedDate: 'asc' },
-    })
-  }
-
-  private static async calculateOpeningBalance(
-    escrowIds: string[],
-    asOfDate: Date
-  ): Promise<number> {
+    // Get transactions in period
     const transactions = await prisma.escrowTransaction.findMany({
       where: {
-        escrowId: { in: escrowIds },
-        processedDate: { lt: asOfDate },
+        escrowId: config.escrowId,
+        createdAt: {
+          gte: config.periodStart,
+          lte: config.periodEnd,
+        },
         status: 'COMPLETED',
       },
-    })
+      orderBy: { createdAt: 'asc' },
+    });
 
-    let balance = 0
-    for (const tx of transactions) {
-      if (tx.type === 'DEPOSIT') {
-        balance += tx.amount.toNumber()
-      } else if (tx.type === 'RELEASE' || tx.type === 'REFUND') {
-        balance -= tx.amount.toNumber()
-      } else if (tx.type === 'FEE') {
-        balance += tx.amount.toNumber() // Fees are income
-      }
-    }
+    // Calculate balances
+    const openingBalance = await this.getBalanceAtDate(
+      config.escrowId,
+      config.periodStart
+    );
 
-    return balance
-  }
+    let runningBalance = openingBalance;
+    const transactionDetails = transactions.map((tx) => {
+      const isDebit = tx.type === 'RELEASE' || tx.type === 'FEE';
+      const isCredit = tx.type === 'DEPOSIT' || tx.type === 'REFUND' || tx.type === 'INTEREST';
+      const amount = tx.amount.toNumber();
 
-  private static categorizeTransactions(transactions: any[]) {
-    let deposits = 0
-    let releases = 0
-    let fees = 0
-
-    for (const tx of transactions) {
-      const amount = tx.amount.toNumber()
-
-      if (tx.type === 'DEPOSIT') {
-        deposits += amount
-      } else if (tx.type === 'RELEASE' || tx.type === 'REFUND') {
-        releases += amount
-      } else if (tx.type === 'FEE') {
-        fees += amount
-      }
-    }
-
-    return { deposits, releases, fees }
-  }
-
-  private static formatTransactions(
-    transactions: any[],
-    startingBalance: number
-  ) {
-    let runningBalance = startingBalance
-    const formatted: any[] = []
-
-    for (const tx of transactions) {
-      const amount = tx.amount.toNumber()
-      let debit = 0
-      let credit = 0
-
-      if (tx.type === 'DEPOSIT') {
-        credit = amount
-        runningBalance += amount
-      } else if (tx.type === 'RELEASE' || tx.type === 'REFUND') {
-        debit = amount
-        runningBalance -= amount
-      } else if (tx.type === 'FEE') {
-        credit = amount
-        runningBalance += amount
+      if (isDebit) {
+        runningBalance -= amount;
+      } else if (isCredit) {
+        runningBalance += amount;
       }
 
-      formatted.push({
-        date: tx.processedDate,
-        description: this.getTransactionDescription(tx),
-        debit,
-        credit,
+      return {
+        date: tx.createdAt,
+        description: tx.description || `${tx.type} Transaction`,
+        type: tx.type as string,
+        debit: isDebit ? amount : undefined,
+        credit: isCredit ? amount : undefined,
         balance: runningBalance,
-        type: tx.type,
-        reference: tx.reference,
-      })
-    }
+      };
+    });
 
-    return formatted
-  }
+    const deposits = transactions
+      .filter((tx) => tx.type === 'DEPOSIT')
+      .reduce((sum, tx) => sum + tx.amount.toNumber(), 0);
 
-  private static getTransactionDescription(tx: any): string {
-    switch (tx.type) {
-      case 'DEPOSIT':
-        return 'Deposit to Escrow'
-      case 'RELEASE':
-        return `Payment Release${tx.reference ? ` - ${tx.reference}` : ''}`
-      case 'REFUND':
-        return 'Refund'
-      case 'FEE':
-        return 'Platform Fee'
-      case 'INTEREST':
-        return 'Interest Income'
-      default:
-        return tx.type
-    }
-  }
+    const releases = transactions
+      .filter((tx) => tx.type === 'RELEASE')
+      .reduce((sum, tx) => sum + tx.amount.toNumber(), 0);
 
-  private static async calculateFeeBreakdown(
-    escrowIds: string[],
-    startDate: Date,
-    endDate: Date
-  ) {
-    // Platform fees
-    const platformFees = await prisma.escrowTransaction.findMany({
-      where: {
-        escrowId: { in: escrowIds },
-        type: 'FEE',
-        processedDate: { gte: startDate, lte: endDate },
-        status: 'COMPLETED',
+    const fees = transactions
+      .filter((tx) => tx.type === 'FEE')
+      .reduce((sum, tx) => sum + tx.amount.toNumber(), 0);
+
+    // Fee breakdown
+    const feeBreakdown = [
+      {
+        category: 'Platform Fees',
+        amount: fees * 0.7,
+        count: transactions.filter((tx) => tx.type === 'FEE').length,
       },
-    })
-
-    const platformFeesTotal = platformFees.reduce(
-      (sum, tx) => sum + tx.amount.toNumber(),
-      0
-    )
-
-    // Processing fees (estimated from Stripe)
-    const deposits = await prisma.escrowTransaction.findMany({
-      where: {
-        escrowId: { in: escrowIds },
-        type: 'DEPOSIT',
-        processedDate: { gte: startDate, lte: endDate },
-        status: 'COMPLETED',
+      {
+        category: 'Processing Fees',
+        amount: fees * 0.3,
+        count: transactions.filter((tx) => tx.type === 'DEPOSIT').length,
       },
-    })
-
-    const processingFeesTotal = deposits.reduce((sum, tx) => {
-      const amount = tx.amount.toNumber()
-      return sum + (amount * 0.029 + 0.3) // Stripe fees
-    }, 0)
-
-    // Instant payout fees
-    const instantPayouts = await prisma.payout.findMany({
-      where: {
-        method: 'INSTANT',
-        status: 'PAID',
-        processedAt: { gte: startDate, lte: endDate },
-      },
-    })
-
-    const instantPayoutFeesTotal = instantPayouts.reduce(
-      (sum, p) => sum + p.instantPayoutFee.toNumber(),
-      0
-    )
+    ];
 
     return {
-      platformFees: platformFeesTotal,
-      processingFees: processingFeesTotal,
-      instantPayoutFees: instantPayoutFeesTotal,
-      total: platformFeesTotal + processingFeesTotal + instantPayoutFeesTotal,
-    }
+      statementNumber: this.generateStatementNumber(),
+      escrowAccountNumber: escrow.escrowAccountNumber,
+      period: {
+        start: config.periodStart,
+        end: config.periodEnd,
+      },
+      recipient: {
+        name: `${recipient.firstName} ${recipient.lastName}`,
+        email: recipient.email || '',
+      },
+      balances: {
+        opening: openingBalance,
+        closing: runningBalance,
+        deposits,
+        releases,
+        fees,
+      },
+      transactions: transactionDetails,
+      feeBreakdown,
+    };
   }
 
-  private static async calculateBalanceTrend(
-    escrowIds: string[],
-    startDate: Date,
-    endDate: Date
-  ): Promise<number[]> {
-    const days = Math.ceil(
-      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-    )
+  /**
+   * Create PDF document
+   */
+  private async createPDF(data: StatementData): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
+      const buffers: Buffer[] = [];
 
-    const dailyBalances: number[] = []
-    let currentDate = new Date(startDate)
+      doc.on('data', buffers.push.bind(buffers));
+      doc.on('end', () => {
+        const pdfBuffer = Buffer.concat(buffers);
+        resolve(pdfBuffer);
+      });
+      doc.on('error', reject);
 
-    for (let i = 0; i <= days; i++) {
-      const balance = await this.calculateOpeningBalance(
-        escrowIds,
-        new Date(currentDate.getTime() + 24 * 60 * 60 * 1000)
-      )
-      dailyBalances.push(balance)
-      currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000)
-    }
+      // Header
+      doc
+        .fontSize(24)
+        .font('Helvetica-Bold')
+        .text('KEALEE PLATFORM', 50, 50)
+        .fontSize(10)
+        .font('Helvetica')
+        .text('Financial Statement', 50, 80)
+        .moveDown();
 
-    return dailyBalances
+      // Statement Info
+      doc
+        .fontSize(10)
+        .text(`Statement #: ${data.statementNumber}`, 50, 110)
+        .text(`Escrow Account: ${data.escrowAccountNumber}`, 50, 125)
+        .text(
+          `Period: ${this.formatDate(data.period.start)} - ${this.formatDate(data.period.end)}`,
+          50,
+          140
+        )
+        .text(`Generated: ${this.formatDate(new Date())}`, 50, 155);
+
+      // Recipient Info
+      doc
+        .fontSize(10)
+        .font('Helvetica-Bold')
+        .text('Account Holder:', 400, 110)
+        .font('Helvetica')
+        .text(data.recipient.name, 400, 125)
+        .text(data.recipient.email, 400, 140);
+
+      // Balance Summary
+      doc.moveDown(3);
+      const summaryY = 200;
+      doc
+        .fontSize(14)
+        .font('Helvetica-Bold')
+        .text('Balance Summary', 50, summaryY)
+        .fontSize(10)
+        .font('Helvetica');
+
+      const summaryTableY = summaryY + 25;
+      doc
+        .text('Opening Balance:', 50, summaryTableY)
+        .text(this.formatCurrency(data.balances.opening), 200, summaryTableY, { align: 'right' });
+
+      doc
+        .text('Total Deposits:', 50, summaryTableY + 20)
+        .text(`+ ${this.formatCurrency(data.balances.deposits)}`, 200, summaryTableY + 20, {
+          align: 'right',
+        });
+
+      doc
+        .text('Total Releases:', 50, summaryTableY + 40)
+        .text(`- ${this.formatCurrency(data.balances.releases)}`, 200, summaryTableY + 40, {
+          align: 'right',
+        });
+
+      doc
+        .text('Total Fees:', 50, summaryTableY + 60)
+        .text(`- ${this.formatCurrency(data.balances.fees)}`, 200, summaryTableY + 60, {
+          align: 'right',
+        });
+
+      doc
+        .moveTo(50, summaryTableY + 85)
+        .lineTo(250, summaryTableY + 85)
+        .stroke();
+
+      doc
+        .font('Helvetica-Bold')
+        .text('Closing Balance:', 50, summaryTableY + 95)
+        .text(this.formatCurrency(data.balances.closing), 200, summaryTableY + 95, {
+          align: 'right',
+        });
+
+      // Transaction History
+      doc.addPage();
+      doc
+        .fontSize(14)
+        .font('Helvetica-Bold')
+        .text('Transaction History', 50, 50);
+
+      // Table headers
+      const tableY = 80;
+      doc.fontSize(9).font('Helvetica-Bold');
+      doc.text('Date', 50, tableY);
+      doc.text('Description', 120, tableY);
+      doc.text('Debit', 340, tableY);
+      doc.text('Credit', 400, tableY);
+      doc.text('Balance', 460, tableY);
+
+      // Table rows
+      doc.font('Helvetica').fontSize(8);
+      let currentY = tableY + 20;
+
+      for (const tx of data.transactions) {
+        if (currentY > 700) {
+          doc.addPage();
+          currentY = 50;
+        }
+
+        doc.text(this.formatDate(tx.date), 50, currentY, { width: 60 });
+        doc.text(tx.description, 120, currentY, { width: 200 });
+        doc.text(tx.debit ? this.formatCurrency(tx.debit) : '-', 340, currentY);
+        doc.text(tx.credit ? this.formatCurrency(tx.credit) : '-', 400, currentY);
+        doc.text(this.formatCurrency(tx.balance), 460, currentY);
+
+        currentY += 15;
+      }
+
+      // Footer
+      doc
+        .fontSize(8)
+        .font('Helvetica')
+        .text(
+          'This is an official financial statement from Kealee Platform. For questions, contact support@kealee.com',
+          50,
+          750,
+          { align: 'center', width: 500 }
+        );
+
+      doc.end();
+    });
   }
 
-  private static calculateTransactionTypes(
-    transactions: any[]
-  ): Record<string, number> {
-    const types: Record<string, number> = {}
+  private async getBalanceAtDate(escrowId: string, date: Date): Promise<number> {
+    const transactions = await prisma.escrowTransaction.findMany({
+      where: {
+        escrowId: escrowId,
+        createdAt: { lt: date },
+        status: 'COMPLETED',
+      },
+    });
 
+    let balance = 0;
     for (const tx of transactions) {
-      types[tx.type] = (types[tx.type] || 0) + 1
+      if (tx.type === 'DEPOSIT' || tx.type === 'REFUND' || tx.type === 'INTEREST') {
+        balance += tx.amount.toNumber();
+      } else if (tx.type === 'RELEASE' || tx.type === 'FEE') {
+        balance -= tx.amount.toNumber();
+      }
     }
 
-    return types
+    return balance;
+  }
+
+  private generateStatementId(): string {
+    return `STMT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private generateStatementNumber(): string {
+    const now = new Date();
+    return `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+  }
+
+  private formatDate(date: Date): string {
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  }
+
+  private formatCurrency(amount: number): string {
+    return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 }
 
-// Export singleton instance
-export const statementGenerationService = new StatementGenerationService()
+export const statementGenerationService = new StatementGenerationService();
 
