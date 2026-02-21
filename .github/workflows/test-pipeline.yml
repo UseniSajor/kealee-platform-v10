@@ -34,9 +34,18 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: pnpm-lock.yaml
       
+      - name: Cache Turbo build artifacts
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-unit-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            turbo-unit-${{ hashFiles('**/pnpm-lock.yaml') }}-
+            turbo-unit-
+
       - name: Install dependencies
         run: pnpm install
-      
+
       - name: Run unit tests
         working-directory: ./apps/${{ matrix.app }}
         run: npm run test:unit || npm run test || echo "No unit tests configured"

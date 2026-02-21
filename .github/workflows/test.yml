@@ -28,6 +28,15 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: pnpm-lock.yaml
 
+      - name: Cache Turbo build artifacts
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-test-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            turbo-test-${{ hashFiles('**/pnpm-lock.yaml') }}-
+            turbo-test-
+
       - name: Install dependencies
         run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --no-frozen-lockfile
 
