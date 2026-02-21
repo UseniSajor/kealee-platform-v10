@@ -1748,7 +1748,7 @@ importers:
         specifier: ^9.0.5
         version: 9.0.10
       '@types/node':
-        specifier: ^20.11.16
+        specifier: ^20.19.30
         version: 20.19.30
       '@types/pdf-parse':
         specifier: ^1.1.5
