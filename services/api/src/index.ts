@@ -698,6 +698,10 @@ const start = async () => {
       const { multifamilyRoutes } = await import('./modules/multifamily/multifamily.routes')
       await fastify.register(multifamilyRoutes, { prefix: '/pm/multifamily' })
 
+      // SOP Engine (Templates, Executions, Steps)
+      const { sopRoutes } = await import('./modules/sop/sop.routes')
+      await fastify.register(sopRoutes, { prefix: '/sop' })
+
       // Note: File routes already registered above with prefix '/files'
     })
 

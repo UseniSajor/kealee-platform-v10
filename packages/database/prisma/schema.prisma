@@ -1471,7 +1471,17 @@ model Project {
   orgId      String?
   propertyId String?
   pmId       String? // Project Manager ID
+  ownerId    String?
   status     String  @default("ACTIVE")
+
+  // SOP / Pipeline fields
+  category         String?
+  categoryMetadata Json?
+  description      String?
+  budgetTotal      Decimal?  @db.Decimal(14, 2)
+  executionTier    String?
+  startDate        DateTime?
+  endDate          DateTime?
 
   // Project details
   address   String?
@@ -1562,6 +1572,10 @@ model Project {
   // Kealee Messenger & Claws relations
   conversations Conversation[] @relation("ProjectConversations")
   budgetItems   BudgetItem[]   @relation("ProjectBudgetItems")
+
+  // SOP & Membership relations
+  memberships   ProjectMembership[]
+  sopExecutions SOPExecution[]
 
   @@index([clientId])
   @@index([orgId])
@@ -1927,6 +1941,9 @@ model User {
 
   // Software subscription relations
   softwareSubscriptions SoftwareSubscription[] @relation("UserSoftwareSubscriptions")
+
+  // Project Membership relations
+  projectMemberships ProjectMembership[] @relation("ProjectMemberships")
 }
 
 // ============================================================================
@@ -11306,22 +11323,22 @@ enum AreaPhaseStatus {
 }
 
 model MultifamilyUnit {
-  id            String                  @id @default(cuid())
-  projectId     String
-  number        String
-  building      String                  @default("Building A")
-  floor         Int                     @default(1)
-  unitType      String                  @default("1BR")
-  sqft          Int                     @default(0)
-  status        UnitConstructionStatus  @default(NOT_STARTED)
-  punchItems    Int                     @default(0)
-  phaseId       String?
-  notes         String?
-  turnoverDate  DateTime?
-  createdAt     DateTime                @default(now())
-  updatedAt     DateTime                @updatedAt
+  id           String                 @id @default(cuid())
+  projectId    String
+  number       String
+  building     String                 @default("Building A")
+  floor        Int                    @default(1)
+  unitType     String                 @default("1BR")
+  sqft         Int                    @default(0)
+  status       UnitConstructionStatus @default(NOT_STARTED)
+  punchItems   Int                    @default(0)
+  phaseId      String?
+  notes        String?
+  turnoverDate DateTime?
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
 
-  phase         MultifamilyAreaPhase?   @relation(fields: [phaseId], references: [id])
+  phase MultifamilyAreaPhase? @relation(fields: [phaseId], references: [id])
 
   @@unique([projectId, number])
   @@index([projectId])
@@ -11330,45 +11347,45 @@ model MultifamilyUnit {
 }
 
 model DrawRequest {
-  id                String             @id @default(cuid())
-  projectId         String
-  drawNumber        Int
-  periodEnd         DateTime?
-  description       String             @default("")
-  scheduledAmount   Float              @default(0)
-  previouslyBilled  Float              @default(0)
-  currentBilling    Float              @default(0)
-  retainage         Float              @default(10)
-  status            DrawRequestStatus  @default(DRAFT)
-  submittedAt       DateTime?
-  approvedAt        DateTime?
-  fundedAt          DateTime?
-  rejectedReason    String?
-  aiaDocumentUrl    String?
-  notes             String?
-  createdBy         String?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  id               String            @id @default(cuid())
+  projectId        String
+  drawNumber       Int
+  periodEnd        DateTime?
+  description      String            @default("")
+  scheduledAmount  Float             @default(0)
+  previouslyBilled Float             @default(0)
+  currentBilling   Float             @default(0)
+  retainage        Float             @default(10)
+  status           DrawRequestStatus @default(DRAFT)
+  submittedAt      DateTime?
+  approvedAt       DateTime?
+  fundedAt         DateTime?
+  rejectedReason   String?
+  aiaDocumentUrl   String?
+  notes            String?
+  createdBy        String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
   @@index([projectId])
   @@index([projectId, status])
 }
 
 model MultifamilyAreaPhase {
-  id              String           @id @default(cuid())
-  projectId       String
-  name            String
-  description     String           @default("")
-  status          AreaPhaseStatus  @default(PLANNED)
-  startDate       DateTime?
-  endDate         DateTime?
-  unitCount       Int              @default(0)
-  completedUnits  Int              @default(0)
-  areas           Json             @default("[]")
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  id             String          @id @default(cuid())
+  projectId      String
+  name           String
+  description    String          @default("")
+  status         AreaPhaseStatus @default(PLANNED)
+  startDate      DateTime?
+  endDate        DateTime?
+  unitCount      Int             @default(0)
+  completedUnits Int             @default(0)
+  areas          Json            @default("[]")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
-  units           MultifamilyUnit[]
+  units MultifamilyUnit[]
 
   @@index([projectId])
   @@index([projectId, status])
@@ -11407,79 +11424,79 @@ enum BidPriority {
 }
 
 model BidOpportunity {
-  id               String            @id @default(uuid())
-  organizationId   String?
+  id             String  @id @default(uuid())
+  organizationId String?
 
   // Source tracking
-  source           BidSource         @default(MANUAL)
-  sourceId         String?           // External ID from source platform
-  sourceUrl        String?           // Link back to original listing
+  source    BidSource @default(MANUAL)
+  sourceId  String? // External ID from source platform
+  sourceUrl String? // Link back to original listing
 
   // Project details
-  projectName      String
-  projectNumber    String?
-  description      String?           @db.Text
-  scope            String?           // e.g. "HVAC", "Electrical", "General"
-  location         String?
-  county           String?
-  state            String?           @default("MD")
+  projectName   String
+  projectNumber String?
+  description   String? @db.Text
+  scope         String? // e.g. "HVAC", "Electrical", "General"
+  location      String?
+  county        String?
+  state         String? @default("MD")
 
   // Owner / GC info
-  ownerName        String?           // Project owner (agency, developer, etc.)
-  gcName           String?           // General contractor (if we're subbing)
-  contactName      String?
-  contactEmail     String?
-  contactPhone     String?
+  ownerName    String? // Project owner (agency, developer, etc.)
+  gcName       String? // General contractor (if we're subbing)
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
 
   // Financials
-  estimatedValue   Decimal?          @db.Decimal(14, 2)
-  bidBond          Decimal?          @db.Decimal(14, 2)
-  bidBondPercent   Decimal?          @db.Decimal(5, 2)
+  estimatedValue Decimal? @db.Decimal(14, 2)
+  bidBond        Decimal? @db.Decimal(14, 2)
+  bidBondPercent Decimal? @db.Decimal(5, 2)
 
   // Key dates
-  dueDate          DateTime?
-  prebidDate       DateTime?
-  prebidLocation   String?
-  prebidMandatory  Boolean           @default(false)
-  awardDate        DateTime?
-  startDate        DateTime?
+  dueDate         DateTime?
+  prebidDate      DateTime?
+  prebidLocation  String?
+  prebidMandatory Boolean   @default(false)
+  awardDate       DateTime?
+  startDate       DateTime?
 
   // Status tracking
-  status           BidPipelineStatus @default(NEW)
-  priority         BidPriority       @default(MEDIUM)
-  assignedTo       String?           // User ID of estimator
-  confidence       Int?              // 0-100 win probability
+  status     BidPipelineStatus @default(NEW)
+  priority   BidPriority       @default(MEDIUM)
+  assignedTo String? // User ID of estimator
+  confidence Int? // 0-100 win probability
 
   // Classification flags
-  isGovernment     Boolean           @default(false)
-  isFederal        Boolean           @default(false)
-  isStateLocal     Boolean           @default(false)
-  requiresMBE      Boolean           @default(false)
-  requiresDBE      Boolean           @default(false)
-  mbeGoalPercent   Decimal?          @db.Decimal(5, 2)
-  dbeGoalPercent   Decimal?          @db.Decimal(5, 2)
-  prevailingWage   Boolean           @default(false)
-  bondRequired     Boolean           @default(false)
+  isGovernment   Boolean  @default(false)
+  isFederal      Boolean  @default(false)
+  isStateLocal   Boolean  @default(false)
+  requiresMBE    Boolean  @default(false)
+  requiresDBE    Boolean  @default(false)
+  mbeGoalPercent Decimal? @db.Decimal(5, 2)
+  dbeGoalPercent Decimal? @db.Decimal(5, 2)
+  prevailingWage Boolean  @default(false)
+  bondRequired   Boolean  @default(false)
 
   // Evaluation scores (0-100)
-  scopeScore       Int?
-  locationScore    Int?
-  valueScore       Int?
-  mbeScore         Int?
-  overallScore     Int?
+  scopeScore    Int?
+  locationScore Int?
+  valueScore    Int?
+  mbeScore      Int?
+  overallScore  Int?
 
   // Notes
-  notes            String?           @db.Text
-  internalNotes    String?           @db.Text
+  notes         String? @db.Text
+  internalNotes String? @db.Text
 
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  checklist        BidChecklistItem[]
-  documents        BidDocument[]
-  activities       BidActivity[]
-  subRequests      BidSubRequest[]
+  checklist   BidChecklistItem[]
+  documents   BidDocument[]
+  activities  BidActivity[]
+  subRequests BidSubRequest[]
 
   @@index([status])
   @@index([source])
@@ -11501,21 +11518,21 @@ enum BidChecklistStatus {
 }
 
 model BidChecklistItem {
-  id               String              @id @default(uuid())
-  bidId            String
-  step             Int
-  title            String
-  description      String?
-  status           BidChecklistStatus  @default(PENDING)
-  assignedTo       String?
-  dueDate          DateTime?
-  completedAt      DateTime?
-  completedBy      String?
-  notes            String?             @db.Text
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
+  id          String             @id @default(uuid())
+  bidId       String
+  step        Int
+  title       String
+  description String?
+  status      BidChecklistStatus @default(PENDING)
+  assignedTo  String?
+  dueDate     DateTime?
+  completedAt DateTime?
+  completedBy String?
+  notes       String?            @db.Text
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 
-  bid              BidOpportunity      @relation(fields: [bidId], references: [id], onDelete: Cascade)
+  bid BidOpportunity @relation(fields: [bidId], references: [id], onDelete: Cascade)
 
   @@unique([bidId, step])
   @@index([bidId])
@@ -11539,18 +11556,18 @@ enum BidDocumentType {
 }
 
 model BidDocument {
-  id               String          @id @default(uuid())
-  bidId            String
-  type             BidDocumentType @default(OTHER)
-  fileName         String
-  fileUrl          String
-  fileSize         Int?
-  mimeType         String?
-  uploadedBy       String?
-  notes            String?
-  createdAt        DateTime        @default(now())
+  id         String          @id @default(uuid())
+  bidId      String
+  type       BidDocumentType @default(OTHER)
+  fileName   String
+  fileUrl    String
+  fileSize   Int?
+  mimeType   String?
+  uploadedBy String?
+  notes      String?
+  createdAt  DateTime        @default(now())
 
-  bid              BidOpportunity  @relation(fields: [bidId], references: [id], onDelete: Cascade)
+  bid BidOpportunity @relation(fields: [bidId], references: [id], onDelete: Cascade)
 
   @@index([bidId])
   @@index([bidId, type])
@@ -11558,14 +11575,14 @@ model BidDocument {
 }
 
 model BidActivity {
-  id               String         @id @default(uuid())
-  bidId            String
-  action           String         // e.g. "CREATED", "STATUS_CHANGED", "DOCUMENT_UPLOADED"
-  actor            String?        // User ID or "system" or "n8n"
-  details          Json?          // Flexible payload for change details
-  createdAt        DateTime       @default(now())
+  id        String   @id @default(uuid())
+  bidId     String
+  action    String // e.g. "CREATED", "STATUS_CHANGED", "DOCUMENT_UPLOADED"
+  actor     String? // User ID or "system" or "n8n"
+  details   Json? // Flexible payload for change details
+  createdAt DateTime @default(now())
 
-  bid              BidOpportunity @relation(fields: [bidId], references: [id], onDelete: Cascade)
+  bid BidOpportunity @relation(fields: [bidId], references: [id], onDelete: Cascade)
 
   @@index([bidId])
   @@index([bidId, createdAt])
@@ -11582,24 +11599,24 @@ enum BidSubRequestStatus {
 }
 
 model BidSubRequest {
-  id               String              @id @default(uuid())
-  bidId            String
-  subName          String
-  trade            String              // e.g. "Electrical", "Plumbing"
-  contactName      String?
-  contactEmail     String?
-  contactPhone     String?
-  requestedAmount  Decimal?            @db.Decimal(14, 2)
-  quotedAmount     Decimal?            @db.Decimal(14, 2)
-  status           BidSubRequestStatus @default(PENDING)
-  sentAt           DateTime?
-  dueDate          DateTime?
-  receivedAt       DateTime?
-  notes            String?             @db.Text
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
+  id              String              @id @default(uuid())
+  bidId           String
+  subName         String
+  trade           String // e.g. "Electrical", "Plumbing"
+  contactName     String?
+  contactEmail    String?
+  contactPhone    String?
+  requestedAmount Decimal?            @db.Decimal(14, 2)
+  quotedAmount    Decimal?            @db.Decimal(14, 2)
+  status          BidSubRequestStatus @default(PENDING)
+  sentAt          DateTime?
+  dueDate         DateTime?
+  receivedAt      DateTime?
+  notes           String?             @db.Text
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
 
-  bid              BidOpportunity      @relation(fields: [bidId], references: [id], onDelete: Cascade)
+  bid BidOpportunity @relation(fields: [bidId], references: [id], onDelete: Cascade)
 
   @@index([bidId])
   @@index([bidId, status])
@@ -11608,33 +11625,169 @@ model BidSubRequest {
 
 // Phase 3: RAG vector storage for bid document search
 model BidEmbedding {
-  id               String         @id @default(uuid())
-  bidId            String
-  documentId       String?
-  content          String         @db.Text
-  embedding        Float[]        // pgvector will be added in Phase 3
-  metadata         Json?
-  chunkIndex       Int            @default(0)
-  createdAt        DateTime       @default(now())
+  id         String   @id @default(uuid())
+  bidId      String
+  documentId String?
+  content    String   @db.Text
+  embedding  Float[] // pgvector will be added in Phase 3
+  metadata   Json?
+  chunkIndex Int      @default(0)
+  createdAt  DateTime @default(now())
 
   @@index([bidId])
   @@map("bid_embeddings")
 }
 
 model BidScanLog {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   source      BidSource
-  runType     String   // "SCHEDULED", "MANUAL", "WEBHOOK"
-  status      String   // "RUNNING", "SUCCESS", "FAILED"
-  bidsFound   Int      @default(0)
-  bidsCreated Int      @default(0)
-  bidsSkipped Int      @default(0) // duplicates
+  runType     String // "SCHEDULED", "MANUAL", "WEBHOOK"
+  status      String // "RUNNING", "SUCCESS", "FAILED"
+  bidsFound   Int       @default(0)
+  bidsCreated Int       @default(0)
+  bidsSkipped Int       @default(0) // duplicates
   errors      Json?
-  startedAt   DateTime @default(now())
+  startedAt   DateTime  @default(now())
   completedAt DateTime?
-  details     Json?    // source-specific metadata
+  details     Json? // source-specific metadata
 
   @@index([source])
   @@index([startedAt])
   @@map("bid_scan_logs")
+}
+
+// ============================================================================
+// PROJECT MEMBERSHIP
+// ============================================================================
+
+model ProjectMembership {
+  id        String   @id @default(uuid())
+  projectId String
+  userId    String
+  role      String   @default("MEMBER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation("ProjectMemberships", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+// ============================================================================
+// SOP ENGINE — Templates, Phases, Steps, Executions
+// ============================================================================
+
+enum SOPStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum SOPStepStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+}
+
+enum SOPExecutionStatus {
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+model SOPTemplate {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  projectType String
+  status      SOPStatus @default(DRAFT)
+  active      Boolean   @default(true)
+  version     Int       @default(1)
+  createdBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  phases     SOPPhase[]
+  executions SOPExecution[]
+
+  @@index([projectType])
+  @@index([status])
+}
+
+model SOPPhase {
+  id             String  @id @default(uuid())
+  templateId     String
+  name           String
+  description    String?
+  order          Int
+  entryCondition String?
+  exitCondition  String?
+
+  template SOPTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  steps    SOPStep[]
+
+  @@index([templateId])
+  @@index([templateId, order])
+}
+
+model SOPStep {
+  id                  String  @id @default(uuid())
+  phaseId             String
+  name                String
+  description         String?
+  order               Int
+  mandatory           Boolean @default(true)
+  estimatedMinutes    Int?
+  requiredIntegration String?
+  validations         Json?
+  dependencies        Json?   @default("[]")
+  metadata            Json?
+
+  phase          SOPPhase           @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  stepExecutions SOPStepExecution[]
+
+  @@index([phaseId])
+  @@index([phaseId, order])
+}
+
+model SOPExecution {
+  id          String             @id @default(uuid())
+  templateId  String
+  projectId   String
+  status      SOPExecutionStatus @default(IN_PROGRESS)
+  progress    Float              @default(0)
+  startedAt   DateTime           @default(now())
+  completedAt DateTime?
+
+  template       SOPTemplate        @relation(fields: [templateId], references: [id])
+  project        Project            @relation(fields: [projectId], references: [id])
+  stepExecutions SOPStepExecution[]
+
+  @@index([templateId])
+  @@index([projectId])
+  @@index([status])
+}
+
+model SOPStepExecution {
+  id          String        @id @default(uuid())
+  executionId String
+  stepId      String
+  status      SOPStepStatus @default(PENDING)
+  completedBy String?
+  completedAt DateTime?
+  skipReason  String?
+  notes       String?
+  evidence    Json?
+
+  execution SOPExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  step      SOPStep      @relation(fields: [stepId], references: [id])
+
+  @@index([executionId])
+  @@index([stepId])
+  @@index([executionId, status])
 }

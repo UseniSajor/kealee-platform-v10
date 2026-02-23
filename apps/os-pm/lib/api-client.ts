@@ -4,7 +4,7 @@
  */
 
 import { supabase } from "./supabase"
-import type { PMClient, PMTask } from "./types"
+import type { PMClient, PMTask, SOPExecution, SOPTemplate } from "./types"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
 
@@ -366,5 +366,53 @@ export const api = {
     apiRequest<{ material: any }>("/pm/materials/scan", {
       method: "POST",
       body: JSON.stringify({ barcode }),
+    }),
+
+  // SOP Execution
+  getSOPExecutions: (projectId: string) =>
+    apiRequest<{ executions: SOPExecution[]; total: number }>(`/sop/executions?projectId=${projectId}`),
+
+  getSOPExecution: (id: string) =>
+    apiRequest<{ execution: SOPExecution }>(`/sop/executions/${id}`),
+
+  startSOPExecution: (templateId: string, projectId: string) =>
+    apiRequest<{ execution: SOPExecution }>("/sop/executions", {
+      method: "POST",
+      body: JSON.stringify({ templateId, projectId }),
+    }),
+
+  completeSOPStep: (executionId: string, stepId: string, data?: { notes?: string; evidence?: unknown }) =>
+    apiRequest<{ execution: SOPExecution }>(`/sop/executions/${executionId}/steps/${stepId}/complete`, {
+      method: "POST",
+      body: JSON.stringify(data || {}),
+    }),
+
+  skipSOPStep: (executionId: string, stepId: string, reason: string) =>
+    apiRequest<{ execution: SOPExecution }>(`/sop/executions/${executionId}/steps/${stepId}/skip`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    }),
+
+  pauseSOPExecution: (id: string) =>
+    apiRequest<{ execution: SOPExecution }>(`/sop/executions/${id}/pause`, {
+      method: "POST",
+    }),
+
+  resumeSOPExecution: (id: string) =>
+    apiRequest<{ execution: SOPExecution }>(`/sop/executions/${id}/resume`, {
+      method: "POST",
+    }),
+
+  getSOPTemplates: (projectType?: string) => {
+    const params = new URLSearchParams()
+    if (projectType) params.set("projectType", projectType)
+    params.set("active", "true")
+    const qs = params.toString()
+    return apiRequest<{ templates: SOPTemplate[]; total: number }>(`/sop/templates?${qs}`)
+  },
+
+  seedSOPTemplates: () =>
+    apiRequest<{ template: SOPTemplate; message: string }>("/sop/templates/seed", {
+      method: "POST",
     }),
 }

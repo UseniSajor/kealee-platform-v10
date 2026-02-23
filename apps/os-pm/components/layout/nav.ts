@@ -139,6 +139,7 @@ export const navSections: NavSection[] = [
     label: "Automation",
     items: [
       { href: "/command-center", label: "Command Center", icon: Command, match: "startsWith" },
+      { href: "/sop", label: "SOP Tracker", icon: ClipboardCheck, match: "startsWith" },
     ],
   },
   {
