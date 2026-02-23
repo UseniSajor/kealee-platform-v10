@@ -1,0 +1,1 @@
+var fs=require("fs"),p="services/api/src/modules/pm/"+process.argv[2],c=fs.readFileSync(0,"utf8");fs.appendFileSync(p,c);console.log("appended",c.length,"chars to",p)

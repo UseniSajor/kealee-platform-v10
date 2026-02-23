@@ -1,0 +1,1 @@
+const fs=require("fs");const files=JSON.parse(fs.readFileSync("_files.json","utf8"));Object.entries(files).forEach(([p,c])=>{fs.writeFileSync(p,c);console.log("wrote:",p)});

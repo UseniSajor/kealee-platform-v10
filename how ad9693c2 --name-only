@@ -1,0 +1,20 @@
+[33mcommit d4ea3f6d2f62177a2111ebd5f7edffa1236d531c[m
+Author: UseniSajor <contact@kealeeservices.com>
+Date:   Mon Feb 23 05:40:48 2026 -0500
+
+    feat: Add bid pipeline Phase 2 — n8n automation, email parsing, and scan logging
+    
+    Adds the automation layer for bid opportunity tracking: email parsing from 5 sources
+    (BuildingConnected, eMMA, OpenGov, SHA/MDOT, direct invites), webhook ingest for n8n
+    workflows, duplicate detection, batch import, daily alert notifications via Resend,
+    and scan run logging for automation observability.
+    
+    Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
+ packages/database/prisma/schema.prisma             |  18 [32m++[m
+ services/api/src/index.ts                          |   3 [32m+[m
+ .../api/src/modules/bids/bid-automation.routes.ts  | 194 [32m+++++++++++++[m
+ .../api/src/modules/bids/bid-ingest.service.ts     | 300 [32m+++++++++++++++++++++[m
+ .../api/src/modules/bids/bid-notify.service.ts     | 124 [32m+++++++++[m
+ services/api/src/modules/bids/bid.service.ts       | 105 [32m++++++++[m
+ 6 files changed, 744 insertions(+)

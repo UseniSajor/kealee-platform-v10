@@ -2,3 +2,5 @@ railway token: fbef42db-74d7-44b5-a5f4-c620c28b9af6
 personal: cd78d6fe-082e-4968-8058-d1cb7a5bca58
 
 e6459e2f-1627-428f-b757-084cfffb932e
+
+swl2 claude: ca3edd2e-7396-4bf1-a64d-59f385844399
