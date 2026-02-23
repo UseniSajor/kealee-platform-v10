@@ -193,7 +193,7 @@ class SOPService {
         },
         stepExecutions: {
           include: { step: true },
-          orderBy: { createdAt: 'asc' },
+          orderBy: { step: { order: 'asc' } },
         },
       },
     })
@@ -208,16 +208,16 @@ class SOPService {
         template: { select: { id: true, name: true, projectType: true } },
         stepExecutions: { select: { id: true, status: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { startedAt: 'desc' },
     })
   }
 
-  async completeStep(executionId: string, stepId: string, userId: string, data?: { notes?: string; evidence?: any }) {
+  async completeStep(executionId: string, stepExecutionId: string, userId: string, data?: { notes?: string; evidence?: any }) {
     const stepExecution = await prismaAny.sOPStepExecution.findFirst({
-      where: { executionId, stepId },
+      where: { id: stepExecutionId, executionId },
       include: { step: true },
     })
-    if (!stepExecution) throw new NotFoundError('SOPStepExecution', `${executionId}/${stepId}`)
+    if (!stepExecution) throw new NotFoundError('SOPStepExecution', `${executionId}/${stepExecutionId}`)
     if (stepExecution.status === 'COMPLETED') throw new ValidationError('Step already completed')
 
     // Check dependencies
@@ -251,12 +251,12 @@ class SOPService {
     return this.getExecution(executionId)
   }
 
-  async skipStep(executionId: string, stepId: string, userId: string, reason: string) {
+  async skipStep(executionId: string, stepExecutionId: string, userId: string, reason: string) {
     const stepExecution = await prismaAny.sOPStepExecution.findFirst({
-      where: { executionId, stepId },
+      where: { id: stepExecutionId, executionId },
       include: { step: true },
     })
-    if (!stepExecution) throw new NotFoundError('SOPStepExecution', `${executionId}/${stepId}`)
+    if (!stepExecution) throw new NotFoundError('SOPStepExecution', `${executionId}/${stepExecutionId}`)
 
     if (stepExecution.step.mandatory) {
       throw new ValidationError('Cannot skip a mandatory step')
