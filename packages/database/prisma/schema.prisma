@@ -1577,6 +1577,14 @@ model Project {
   memberships   ProjectMembership[]
   sopExecutions SOPExecution[]
 
+  // Consolidation: v3 high-value models
+  purchaseOrders PurchaseOrder[]
+  bills          Bill[]
+  rfqs           RFQ[]
+  deliveries     Delivery[]
+  closeoutItems  CloseoutItem[]
+  lookaheadItems LookaheadItem[]
+
   @@index([clientId])
   @@index([orgId])
   @@index([propertyId])
@@ -12013,4 +12021,234 @@ model SOPStepExecution {
   @@index([executionId])
   @@index([stepId])
   @@index([executionId, status])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONSOLIDATION: High-value models from kealee-platform v3
+// Added: 2026-02-23 — 7 models, 6 enums
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── Enums ──
+
+enum PurchaseOrderStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  EXECUTED
+  CANCELLED
+}
+
+enum BillStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  PAID
+  REJECTED
+}
+
+enum RFQStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  AWARDED
+  CANCELLED
+}
+
+enum DeliveryStatus {
+  SCHEDULED
+  IN_TRANSIT
+  DELIVERED
+  RECEIVED
+  CONFIRMED
+  LATE
+  CANCELLED
+}
+
+enum CloseoutItemStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  VERIFIED
+}
+
+enum CloseoutItemType {
+  DOCUMENT
+  INSPECTION
+  CERTIFICATE
+  WARRANTY
+  MANUAL
+  OTHER
+}
+
+// ── Models ──
+
+model CostCode {
+  id          String  @id @default(uuid())
+  code        String  @unique // CSI MasterFormat or custom
+  name        String
+  description String?
+  category    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchaseOrders PurchaseOrder[]
+
+  @@index([code])
+  @@index([category])
+  @@map("cost_codes")
+}
+
+model PurchaseOrder {
+  id          String              @id @default(uuid())
+  projectId   String
+  vendorId    String?
+  status      PurchaseOrderStatus @default(DRAFT)
+  amountCents Int
+  description String?
+  costCodeId  String?
+  poNumber    String?
+
+  createdBy  String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  approvedAt DateTime?
+  approvedBy String?
+  executedAt DateTime?
+
+  project  Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  costCode CostCode? @relation(fields: [costCodeId], references: [id])
+  bills    Bill[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([vendorId])
+  @@map("purchase_orders")
+}
+
+model Bill {
+  id              String     @id @default(uuid())
+  projectId       String
+  purchaseOrderId String?
+  vendorId        String?
+  amountCents     Int
+  status          BillStatus @default(DRAFT)
+  billNumber      String?
+  dueDate         DateTime?
+  description     String?
+  lineItems       Json?
+
+  createdBy  String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  approvedAt DateTime?
+  approvedBy String?
+  paidAt     DateTime?
+
+  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  purchaseOrder PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+
+  @@index([projectId])
+  @@index([purchaseOrderId])
+  @@index([status])
+  @@map("bills")
+}
+
+model RFQ {
+  id           String    @id @default(uuid())
+  projectId    String
+  name         String
+  description  String?
+  status       RFQStatus @default(DRAFT)
+  dueDate      DateTime?
+  requirements Json?
+
+  createdBy String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  closedAt  DateTime?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([status])
+  @@index([createdBy])
+  @@map("rfqs")
+}
+
+model Delivery {
+  id              String         @id @default(uuid())
+  projectId       String
+  supplierId      String
+  purchaseOrderId String?
+  status          DeliveryStatus @default(SCHEDULED)
+  trackingNumber  String?
+  scheduledDate   DateTime?
+  deliveredDate   DateTime?
+  receivedDate    DateTime?
+  confirmedDate   DateTime?
+  podDocumentId   String?
+  notes           String?
+  metadata        Json?
+
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([supplierId])
+  @@index([status])
+  @@index([scheduledDate])
+  @@map("deliveries")
+}
+
+model CloseoutItem {
+  id          String             @id @default(uuid())
+  projectId   String
+  type        CloseoutItemType
+  name        String
+  description String?
+  status      CloseoutItemStatus @default(PENDING)
+  dueDate     DateTime?
+  completedAt DateTime?
+  verifiedAt  DateTime?
+  verifiedBy  String?
+  documents   String[]
+
+  assignedTo String?
+  createdBy  String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([type])
+  @@index([status])
+  @@map("closeout_items")
+}
+
+model LookaheadItem {
+  id             String   @id @default(uuid())
+  projectId      String
+  scheduleItemId String?
+  name           String
+  description    String?
+  startDate      DateTime
+  endDate        DateTime
+  status         String   // NOT_STARTED, IN_PROGRESS, COMPLETED, AT_RISK
+  assignedTo     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([startDate])
+  @@index([status])
+  @@map("lookahead_items")
 }

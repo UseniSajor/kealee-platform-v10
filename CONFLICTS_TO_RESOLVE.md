@@ -1,124 +1,137 @@
-# Merge Conflict Resolution Report
+# Consolidation Conflicts — Decisions Required
 
-**Local (WSL):** `c7572a6` — 2026-02-23 13:24 — "Complete bid pipeline implementation (all 3 phases)"
-**Remote (Windows):** `415fcc04` — 2026-02-23 13:34 — "Add bid pipeline Phase 3 - AI tools, analysis, alerts, and document management"
-**Conflicted files:** 2 (`schema.prisma`, `index.ts`)
+**See also:** CONSOLIDATION_ANALYSIS.md for full inventory
 
 ---
 
-## AUTOMATIC — No approval needed (unique to one side)
+## SAFE ACTIONS (No conflicts — will execute automatically)
 
-| Source | Item | Action |
-|--------|------|--------|
-| Windows | 7 API files: bid.service.ts (734 lines), bid.routes.ts (252), bid-automation.routes.ts, bid-analysis.service.ts, bid-document.service.ts, bid-ingest.service.ts, bid-notify.service.ts | ADD |
-| Windows | 4 AI chat tools: analyze-bid.ts, get-bid-alerts.ts, get-bid-pipeline.ts, search-bids.ts | ADD |
-| Windows | 2 worker jobs: bid-daily-alerts.job.ts, bid-urgent-check.job.ts | ADD |
-| Windows | SOP engine: sop.routes.ts, sop.service.ts, seed-51-units.ts + frontend pages | ADD |
-| Windows | Schema models (no conflict): ProjectMembership, BidScanLog, BidChecklistItem, BidDocument, BidSubRequest, SOP models (6) | ADD |
-| Windows | Enums (no conflict): BidPipelineStatus, BidPriority, BidChecklistStatus, BidDocumentType, BidSubRequestStatus, SOP enums (3) | ADD |
-| WSL | bids-rag.service.ts (144 lines), bids.types.ts (45), n8n-bidscanner.ts | ADD |
-| WSL | Schema models (no conflict): OpportunityBid, OpportunityBidDocument, OpportunityBidChecklist, SubcontractorQuote, BidSimilarity | ADD |
-| WSL | Enum (no conflict): BidStatus | ADD |
-| WSL | Docs: BID_PIPELINE_COMPLETE.md, N8N_WORKFLOW_GUIDE.md, enable_pgvector.sql | ADD |
+| # | Action | Details |
+|---|--------|---------|
+| A1 | Archive docs to `_docs/external/` | 25 business docs from 5 repos |
+| A2 | Archive kealee-platform-v2 | 0 unique models, fully subsumed |
+| A3 | Archive kealee-FINAL | CRA prototype, no backend |
+| A4 | Archive kealee-EXACT | CRA prototype, nested duplicate |
+| A5 | Archive PM+Staffing SQL | 9 Supabase migrations as reference |
 
 ---
 
-## CONFLICTS — Approval required
+## CONFLICTS REQUIRING DECISION
 
-### Conflict #1: `BidSource` enum
+### Conflict #1: v3's 37 unique Prisma models
 
-Both sides define this enum with different values. Neither can be dropped.
+These models exist in v3 but NOT in MAIN. Should we add them?
 
-| Value | WSL | Windows | Used by |
-|-------|:---:|:-------:|---------|
-| BUILDINGCONNECTED | Y | - | WSL code |
-| BUILDING_CONNECTED | - | Y | Windows code |
-| EMARYLAND_MARKETPLACE | Y | - | WSL code |
-| EMMA | - | Y | Windows code |
-| OPENGOV | Y | Y | Both |
-| SHA_MDOT | Y | Y | Both |
-| DIRECT_EMAIL | Y | - | WSL code |
-| DIRECT_INVITE | - | Y | Windows code |
-| NETWORKING | Y | - | WSL code |
-| MANUAL | - | Y | Windows code |
-| OTHER | Y | - | WSL code |
+**High-value candidates** (common construction PM features):
+| Model | Purpose | Recommendation |
+|-------|---------|---------------|
+| `PurchaseOrder` | Track material/equipment purchases | ADD — standard PM feature |
+| `Bill` | Vendor billing | ADD — pairs with PurchaseOrder |
+| `CostCode` | Cost categorization (CSI codes) | ADD — essential for estimating |
+| `LookaheadItem` | Short-term schedule planning | ADD — common PM tool |
+| `Budget` | Project budgets | SKIP — MAIN has BudgetEntry/BudgetLine |
+| `CloseoutItem` | Project closeout tracking | ADD — MAIN has closeout routes but no model |
+| `RFQ` | Request for Quotation | ADD — complements BidOpportunity |
+| `Delivery` | Material delivery tracking | ADD — useful for ops |
+| `HandoffPackage` | Project handoff bundles | SKIP — MAIN has handoff module |
 
-**Recommendation:** MERGE all 11 values into one superset. Zero breakage for either side.
+**Lower-value candidates** (v3-specific or superseded):
+| Model | Purpose | Recommendation |
+|-------|---------|---------------|
+| `Organization` | Org model | SKIP — MAIN uses `Org` |
+| `Escrow` / `EscrowRelease` | Simplified escrow | SKIP — MAIN has richer escrow models |
+| `DesignAsset/Iteration/Message/Request/Version` | Design hub | SKIP — MAIN has full architect module |
+| `MLFeedbackLabel` / `MLRecommendation` | ML features | SKIP — experimental, not in v10 roadmap |
+| `AccountantExport` | Export records | SKIP — niche feature |
+| `AutomationRule` | Automation config | SKIP — MAIN has workflow engine |
+| `BidPackage` | Bid packaging | SKIP — MAIN has BidOpportunity pipeline |
+| `ContractorApproval/PerformanceScore` | Contractor mgmt | SKIP — MAIN has ContractorScore/Review |
+| `EventMonitor` | Event tracking | SKIP — MAIN has event bus |
+| `IntegrationConnection/SyncLog` | Integration tracking | SKIP — MAIN has IntegrationCredential |
+| `MediaAsset` | File storage | SKIP — MAIN has FileUpload |
+| `PermitQueue` | Permit queueing | SKIP — MAIN has full permit module |
+| `SubAssignment` | Sub assignments | SKIP — MAIN has BidSubRequest |
+| `SupplierProfile` | Supplier directory | SKIP — could revisit later |
+| `VerificationQueue` | Verification flow | SKIP — niche |
+| `WarrantyCase` | Warranty tracking | SKIP — MAIN has Warranty/WarrantyClaim |
+| `ClientUpdate` | Client notifications | SKIP — MAIN has notification system |
+| `DesignHubUsage` | Analytics | SKIP — v3-specific |
+| `ProjectEvent` | Project events | SKIP — MAIN has ActivityLog |
+| `Return` | Material returns | SKIP — niche |
 
----
-
-### Conflict #2: `BidActivity` model
-
-Both define a model named `BidActivity` that maps to the same table `bid_activities`, but they relate to different parent models.
-
-```
-WSL version (7 fields):                    Windows version (6 fields):
-─────────────────────────                  ─────────────────────────
-id       String @default(cuid())           id       String @default(uuid())
-bidId    String                            bidId    String
-type     String                            action   String
-description String                         actor    String?
-metadata Json?                             details  Json?
-createdBy String?                          createdAt DateTime
-createdAt DateTime
-
-Relates to: OpportunityBid                 Relates to: BidOpportunity
-Table map:  "bid_activities"               Table map:  "bid_activities"
-```
-
-**Problem:** Same name + same table = Prisma error. They relate to different parent models so they cannot be merged into one.
-
-**Recommendation:** RENAME WSL version → `OpportunityBidActivity` mapping to `opportunity_bid_activities`. Keep Windows version as `BidActivity`. Then update WSL's `bids.service.ts` to use `prisma.opportunityBidActivity`.
+**Recommendation:** ADD 7 high-value models (`PurchaseOrder`, `Bill`, `CostCode`, `LookaheadItem`, `CloseoutItem`, `RFQ`, `Delivery`). SKIP the rest.
 
 ---
 
-### Conflict #3: `BidEmbedding` model
+### Conflict #2: v3's 29 overlapping models — field comparison needed?
 
-Both define `BidEmbedding` mapping to `bid_embeddings`, but with fundamentally different architectures.
+These 29 models exist in BOTH v3 and MAIN. MAIN's versions are:
+- **Newer** (Feb 2026 vs Jan 2026)
+- **Part of a larger, actively developed schema** (289 models)
+- **Referenced by 2,906+ TypeScript files**
 
-```
-WSL version (5 fields):                    Windows version (8 fields):
-─────────────────────────                  ─────────────────────────
-id        String @default(cuid())          id         String @default(uuid())
-bidId     String @unique                   bidId      String
-embedding Unsupported("vector(1536)")      documentId String?
-metadata  Json                             content    String @db.Text
-createdAt DateTime                         embedding  Float[]
-                                           metadata   Json?
-                                           chunkIndex Int @default(0)
-                                           createdAt  DateTime
+v3's versions are:
+- **Older** (Jan 2026)
+- **Part of a smaller, inactive schema** (66 models)
+- **Not actively maintained**
 
-Purpose: 1 embedding per bid,             Purpose: Chunked document embeddings,
-pgvector cosine similarity search          multiple chunks per bid for RAG search
-```
-
-**Problem:** Same name + same table, completely different designs.
-
-**Recommendation:** KEEP BOTH as separate models. Rename WSL → `OpportunityBidEmbedding` mapping to `opportunity_bid_embeddings`. Then update WSL's `bids-rag.service.ts` to reference the renamed table. Both serve different use cases.
+**Recommendation:** KEEP MAIN versions for all 29. The v10 schema has been through multiple enhancement rounds and is the canonical source. If any v3 fields were lost in the v3→v10 migration, they can be reviewed later from the archived v3 code.
 
 ---
 
-### Conflict #4: `services/api/src/index.ts`
+### Conflict #3: dev/kealee-platform's 10 unique models
 
-Entire file is one conflict block. Both add route registrations to the same base file.
+| Model | Purpose | Recommendation |
+|-------|---------|---------------|
+| `Lender` | Lender/financing tracking | SKIP — not in v10 roadmap currently |
+| `RoomScan` | Room scanning/measurement | SKIP — IoT/scanning feature, not current |
+| `MilestonePhoto` | Photos attached to milestones | SKIP — MAIN has Photo + Evidence models |
+| `ProjectItem` | Line items in project | SKIP — MAIN has EstimateLineItem |
+| `ProjectPhoto` | Project-level photos | SKIP — MAIN has Photo model |
+| `Review` | Reviews | SKIP — MAIN has ContractorReview |
+| `SubscriptionTier` | Subscription levels | SKIP — MAIN has PMServiceSubscription |
+| `Transaction` | Financial transactions | SKIP — MAIN has EscrowTransaction + Payment |
+| `UserSubscription` | User-level subscriptions | SKIP — MAIN has subscription module |
+| `Escrow` | Simple escrow | SKIP — MAIN has EscrowAgreement + full module |
 
-| Aspect | WSL (HEAD) | Windows (origin) |
-|--------|-----------|------------------|
-| Lines | 975 | 982 |
-| New route blocks added | 1 block (opportunityBidsRoutes at `/api/bids`) | 2 blocks (bidRoutes at `/bids`, bidAutomationRoutes at `/bids/automation`, sopRoutes at `/sop`) |
-| Other changes | None beyond bid routes | SOP routes, multifamily service, pm.routes changes |
-
-**Recommendation:** Use Windows version as base (it has 3 new route blocks + other file changes), then ADD the WSL `opportunityBidsRoutes` block alongside.
+**Recommendation:** SKIP ALL — every concept is already covered by MAIN's richer models. This repo (Dec 2025, 20 models) is a prototype that was superseded.
 
 ---
 
-## Summary Table
+### Conflict #4: kealee-website's Lead model overlap
+
+**MAIN's Lead model:** Part of marketplace module, used for development/GC/permit service leads. Rich model with many lead types.
+
+**Website's Lead model:** Marketing intake form leads — has fields: `name`, `email`, `phone`, `company`, `projectType`, `budget`, `timeline`, `message`, `source`, `status`, `priority`, plus relations to `Note`, `Tag`.
+
+**Recommendation:** SKIP schema merge — different databases (website uses its own DB). But ADD the website's `IntakeForm.tsx` and `IntakeModal.tsx` components to v10's `apps/web/` if a marketing intake flow is needed later. Archive for reference.
+
+---
+
+### Conflict #5: v3's 42 unique enums
+
+Same logic as models — v3 enums serve v3 models. If we add the 7 high-value models from Conflict #1, we'll need their associated enums.
+
+**Recommendation:** ADD only enums needed by the 7 approved models. SKIP the rest.
+
+---
+
+## Decision Summary
 
 | # | Conflict | Recommendation | Impact |
 |---|----------|---------------|--------|
-| 1 | BidSource enum | Merge superset (11 values) | Zero breakage |
-| 2 | BidActivity model | Rename WSL → OpportunityBidActivity | Update 1 file (bids.service.ts) |
-| 3 | BidEmbedding model | Rename WSL → OpportunityBidEmbedding | Update 1 file (bids-rag.service.ts) |
-| 4 | index.ts | Windows base + add WSL route block | Zero breakage |
+| 1 | v3's 37 unique models | ADD 7 high-value, SKIP 30 | +7 models to schema |
+| 2 | v3's 29 overlapping models | KEEP MAIN versions | No change |
+| 3 | dev's 10 unique models | SKIP ALL (superseded) | No change |
+| 4 | website's Lead overlap | SKIP (different DB) | No change |
+| 5 | v3's 42 unique enums | ADD only what's needed for #1 | +~5 enums |
 
-**After resolving:** `prisma generate` + `tsc` build to verify.
+---
+
+## How to respond
+
+Reply with:
+- **`auto`** — Accept all recommendations above
+- **`manual`** — Walk through each conflict interactively
+- **Conflict numbers** (e.g., `1,4`) — Review specific conflicts
+- **Modifications** (e.g., "add Lender model from #3", "skip all from #1")
