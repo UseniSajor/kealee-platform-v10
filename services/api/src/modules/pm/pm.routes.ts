@@ -448,77 +448,7 @@ export async function pmRoutes(fastify: FastifyInstance) {
     }
   )
 
-  // POST /pm/reports/generate - Generate report with PDF
-  // Accepts both { weekStart, weekEnd } (legacy) and { type, startDate, endDate } (frontend)
-  fastify.post(
-    "/reports/generate",
-    {
-      preHandler: [
-        authenticateUser,
-        validateBody(z.object({
-          // Legacy fields
-          weekStart: z.string().optional(),
-          weekEnd: z.string().optional(),
-          // Frontend fields
-          type: z.enum(['weekly', 'monthly', 'custom']).optional(),
-          startDate: z.string().optional(),
-          endDate: z.string().optional(),
-          pmId: z.string().optional(),
-        })),
-      ],
-    },
-    async (request, reply) => {
-      try {
-        const user = (request as any).user
-        const body = request.body as {
-          weekStart?: string; weekEnd?: string
-          type?: string; startDate?: string; endDate?: string
-          pmId?: string
-        }
-
-        // Normalize: frontend sends startDate/endDate, legacy sends weekStart/weekEnd
-        const startDate = body.startDate || body.weekStart
-        const endDate = body.endDate || body.weekEnd
-        const reportType = body.type || 'weekly'
-        const pmId = body.pmId || user.id
-
-        if (!startDate || !endDate) {
-          return reply.code(400).send({ error: 'startDate and endDate are required' })
-        }
-
-        const report = await pmService.generateWeeklyReport(pmId, new Date(startDate))
-        const period = `${startDate} - ${endDate}`
-
-        // Create a report record with metadata
-        const reportRecord = await prismaAny.generatedDocument.create({
-          data: {
-            entityType: 'WeeklyReport',
-            entityId: pmId,
-            type: reportType === 'monthly' ? 'MONTHLY_REPORT' : 'WEEKLY_REPORT',
-            category: 'report',
-            title: `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report ${period}`,
-            content: JSON.stringify(report),
-            mimeType: 'application/json',
-            createdById: user.id,
-            metadata: { pmId, startDate, endDate, type: reportType },
-          },
-        }).catch(() => null)
-
-        return reply.send({
-          report,
-          id: reportRecord?.id || null,
-          period,
-          stats: report,
-          pdfUrl: null,
-        })
-      } catch (error: any) {
-        fastify.log.error(error)
-        return reply.code(500).send({
-          error: error.message || "Failed to generate report",
-        })
-      }
-    }
-  )
+  // NOTE: POST /pm/reports/generate is handled by pmReportRoutes (registered above with prefix '/reports')
 
   // POST /pm/clients/:id/assign - Assign client to PM
   fastify.post(

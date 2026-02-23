@@ -88,7 +88,7 @@ export class BidsService {
     await this.createDefaultChecklist(bid.id)
 
     // Log activity
-    await prisma.bidActivity.create({
+    await prisma.opportunityBidActivity.create({
       data: {
         bidId: bid.id,
         type: 'created',
@@ -112,7 +112,7 @@ export class BidsService {
 
     // Log status changes
     if (data.status && data.status !== existing.status) {
-      await prisma.bidActivity.create({
+      await prisma.opportunityBidActivity.create({
         data: {
           bidId: id,
           type: 'status_change',
@@ -152,7 +152,7 @@ export class BidsService {
     // TODO: Implement AI proposal generation in Phase 2
     const proposalText = `Proposal for ${bid.projectName}\n\nThis is a placeholder. Phase 2 will implement AI-powered proposal generation.`
 
-    await prisma.bidActivity.create({
+    await prisma.opportunityBidActivity.create({
       data: {
         bidId: id,
         type: 'proposal_generated',
@@ -204,7 +204,7 @@ export class BidsService {
       },
     })
 
-    await prisma.bidActivity.create({
+    await prisma.opportunityBidActivity.create({
       data: {
         bidId,
         type: 'document_added',
@@ -225,7 +225,7 @@ export class BidsService {
       },
     })
 
-    await prisma.bidActivity.create({
+    await prisma.opportunityBidActivity.create({
       data: {
         bidId,
         type: 'sub_quote_added',

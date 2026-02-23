@@ -698,6 +698,10 @@ const start = async () => {
       const { multifamilyRoutes } = await import('./modules/multifamily/multifamily.routes')
       await fastify.register(multifamilyRoutes, { prefix: '/pm/multifamily' })
 
+      // SOP Engine (Templates, Executions, Steps)
+      const { sopRoutes } = await import('./modules/sop/sop.routes')
+      await fastify.register(sopRoutes, { prefix: '/sop' })
+
       // Note: File routes already registered above with prefix '/files'
     })
 
@@ -816,7 +820,7 @@ const start = async () => {
 
       // Cost Code PDF Import (AI-powered PDF → structured data pipeline)
       const { costCodePdfImportRoutes } = await import('./modules/estimation/cost-code-pdf-import.routes')
-      await fastify.register(costCodePdfImportRoutes, { prefix: '/estimation/cost-import' })
+      await fastify.register(costCodePdfImportRoutes, { prefix: '/estimation/cost-code-pdf-import' })
     })
 
     await safeRegisterBlock('Phase 1 - Communication, Subscriptions, Tracking routes', async () => {
@@ -843,7 +847,7 @@ const start = async () => {
       const { dailyLogRoutes } = await import('./modules/site-tools/daily-log.routes')
       const { photoRoutes } = await import('./modules/site-tools/daily-log.routes')
       await fastify.register(dailyLogRoutes, { prefix: '/site-tools' })
-      await fastify.register(photoRoutes, { prefix: '/site-tools' })
+      await fastify.register(photoRoutes, { prefix: '/site-tools/photos' })
     })
 
     await safeRegisterBlock('Phase 3 - Scoring Calculator routes', async () => {
@@ -857,10 +861,18 @@ const start = async () => {
     })
 
     // ══════════════════════════════════════════════════════════════
-    // Bid Pipeline - External Opportunity Tracking & RAG Intelligence
+    // Bid Pipeline — Opportunity tracking & automation
     // ══════════════════════════════════════════════════════════════
 
-    await safeRegisterBlock('Bid Pipeline - Opportunity tracking, n8n stubs, RAG routes', async () => {
+    await safeRegisterBlock('Bid Pipeline routes', async () => {
+      const { bidRoutes } = await import('./modules/bids/bid.routes')
+      await fastify.register(bidRoutes, { prefix: '/bids' })
+
+      const { bidAutomationRoutes } = await import('./modules/bids/bid-automation.routes')
+      await fastify.register(bidAutomationRoutes, { prefix: '/bids/automation' })
+    })
+
+    await safeRegisterBlock('Bid Pipeline - Opportunity tracking, RAG routes', async () => {
       const { opportunityBidsRoutes } = await import('./modules/bids/bids.routes')
       await fastify.register(opportunityBidsRoutes, { prefix: '/api/bids' })
     })

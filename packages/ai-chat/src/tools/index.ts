@@ -12,6 +12,12 @@ import * as getContractorInfo from './get-contractor-info';
 import * as getWeeklyReport from './get-weekly-report';
 import * as searchProjects from './search-projects';
 
+// Bid pipeline tools
+import * as getBidPipeline from './get-bid-pipeline';
+import * as getBidAlerts from './get-bid-alerts';
+import * as searchBids from './search-bids';
+import * as analyzeBid from './analyze-bid';
+
 // Action tools
 import * as approveDecision from './approve-decision';
 import * as rescheduleTask from './reschedule-task';
@@ -29,6 +35,10 @@ const toolModules = [
   getContractorInfo,
   getWeeklyReport,
   searchProjects,
+  getBidPipeline,
+  getBidAlerts,
+  searchBids,
+  analyzeBid,
   approveDecision,
   rescheduleTask,
   sendMessage,

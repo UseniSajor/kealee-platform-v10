@@ -19,7 +19,21 @@ export default function AutomationDashboardPage() {
             <p className="text-gray-600 mt-2">ML governance, approvals, and rules (meta-level)</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>SOP Builder</CardTitle>
+                <CardDescription>Create and manage Standard Operating Procedure templates</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/automation/sop-builder">
+                  <Button variant="outline" className="w-full justify-between">
+                    Open SOP Builder <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Approvals</CardTitle>

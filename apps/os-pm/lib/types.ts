@@ -126,6 +126,68 @@ export interface PMDashboard {
   }>
 }
 
+// SOP Types
+export interface SOPStepExecution {
+  id: string
+  stepId: string
+  status: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "SKIPPED"
+  completedBy: string | null
+  completedAt: string | null
+  skipReason: string | null
+  notes: string | null
+  evidence: unknown | null
+  step: {
+    id: string
+    name: string
+    description: string | null
+    order: number
+    mandatory: boolean
+    estimatedMinutes: number | null
+    requiredIntegration: string | null
+    dependencies: string[]
+    metadata: unknown | null
+  }
+}
+
+export interface SOPPhaseExecution {
+  id: string
+  name: string
+  description: string | null
+  order: number
+  entryCondition: string | null
+  exitCondition: string | null
+  steps: SOPStepExecution[]
+}
+
+export interface SOPExecution {
+  id: string
+  templateId: string
+  projectId: string
+  status: "IN_PROGRESS" | "PAUSED" | "COMPLETED" | "CANCELLED"
+  progress: number
+  startedAt: string
+  completedAt: string | null
+  template: {
+    id: string
+    name: string
+    description: string | null
+    projectType: string
+    phases: SOPPhaseExecution[]
+  }
+  stepExecutions: SOPStepExecution[]
+}
+
+export interface SOPTemplate {
+  id: string
+  name: string
+  description: string | null
+  projectType: string
+  status: "DRAFT" | "ACTIVE" | "ARCHIVED"
+  active: boolean
+  version: number
+  createdAt: string
+}
+
 // Re-export shared types
 export type {
   LeadStage,

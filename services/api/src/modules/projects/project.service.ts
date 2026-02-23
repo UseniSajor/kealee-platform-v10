@@ -128,8 +128,6 @@ export const projectService = {
    * This is the primary method for project creation - enforces lead pipeline workflow
    */
   async createProjectFromLead(leadId: string, ownerId: string, orgId?: string, userId?: string) {
-    const MAX_LEAD_VALUE = 500000
-
     // Fetch lead with related data
     const lead = await prismaAny.lead.findUnique({
       where: { id: leadId },
@@ -156,17 +154,6 @@ export const projectService = {
       throw new ValidationError(
         `Lead must be in WON stage to create project. Current stage: ${lead.stage}`
       )
-    }
-
-    // Validation: Lead.estimatedValue must be <= 500000
-    if (lead.estimatedValue) {
-      const leadValue = lead.estimatedValue.toNumber()
-      if (leadValue > MAX_LEAD_VALUE) {
-        throw new ValidationError(
-          `Lead estimatedValue (${leadValue}) exceeds maximum threshold (${MAX_LEAD_VALUE}). ` +
-            'Projects cannot be created from leads exceeding $500k.'
-        )
-      }
     }
 
     // Validation: Lead.awardedProfileId must exist
@@ -222,7 +209,7 @@ export const projectService = {
         executionTier = 'LOW'
       } else if (value >= 150000 && value < 350000) {
         executionTier = 'STANDARD'
-      } else if (value >= 350000 && value <= 500000) {
+      } else {
         executionTier = 'HIGH'
       }
     }

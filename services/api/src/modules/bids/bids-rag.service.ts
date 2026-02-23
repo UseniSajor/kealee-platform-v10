@@ -42,7 +42,7 @@ export class BidsRAGService {
 
     // Store embedding (requires raw SQL for vector type)
     await prisma.$executeRawUnsafe(
-      `INSERT INTO bid_embeddings (id, "bidId", embedding, metadata, "createdAt")
+      `INSERT INTO opportunity_bid_embeddings (id, "bidId", embedding, metadata, "createdAt")
        VALUES ($1, $2, $3::vector, $4, NOW())
        ON CONFLICT ("bidId") DO UPDATE SET embedding = $3::vector, metadata = $4`,
       `emb_${bidId}`,
@@ -59,7 +59,7 @@ export class BidsRAGService {
    */
   async findSimilarBids(bidId: string, limit = 5) {
     const result: any[] = await prisma.$queryRawUnsafe(
-      `SELECT embedding FROM bid_embeddings WHERE "bidId" = $1`,
+      `SELECT embedding FROM opportunity_bid_embeddings WHERE "bidId" = $1`,
       bidId
     )
 
@@ -78,7 +78,7 @@ export class BidsRAGService {
         ob."bidAmount",
         ob.status,
         (1 - (be.embedding <=> $1::vector)) as similarity
-       FROM bid_embeddings be
+       FROM opportunity_bid_embeddings be
        JOIN opportunity_bids ob ON be."bidId" = ob.id
        WHERE be."bidId" != $2
        ORDER BY be.embedding <=> $1::vector

@@ -9,6 +9,8 @@ export type CronJobType =
   | 'readiness_overdue_reminders'
   | 'sales_sla_reminders'
   | 'file_cleanup'
+  | 'bid_daily_alerts'
+  | 'bid_urgent_check'
   | 'custom'
 
 export interface CronJobConfig {
@@ -94,6 +96,26 @@ export const CRON_JOBS: Record<string, CronJobConfig> = {
     timezone: 'UTC',
     metadata: {
       description: 'Cleans up incomplete uploads, orphaned files, and old deleted files from S3/R2',
+    },
+  },
+  bidDailyAlerts: {
+    name: 'Bid Daily Alerts',
+    type: 'bid_daily_alerts',
+    schedule: '0 12 * * *', // 12:00 UTC = 7:00 AM ET
+    enabled: true,
+    timezone: 'UTC',
+    metadata: {
+      description: 'Daily bid pipeline alert email',
+    },
+  },
+  bidUrgentCheck: {
+    name: 'Bid Urgent Check',
+    type: 'bid_urgent_check',
+    schedule: '0 */4 * * *', // Every 4 hours
+    enabled: true,
+    timezone: 'UTC',
+    metadata: {
+      description: 'Check for bids due within 48h, send urgent alerts',
     },
   },
 }

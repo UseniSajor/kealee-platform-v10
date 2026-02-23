@@ -6,6 +6,8 @@ import { executePerformanceCalculation } from '../jobs/performance-calculation.j
 import { executeReadinessOverdueReminders } from '../jobs/readiness-reminders.job'
 import { executeSalesSlaReminders } from '../jobs/sales-sla-reminders.job'
 import { executeFileCleanup } from '../jobs/file-cleanup.job'
+import { executeBidDailyAlerts } from '../jobs/bid-daily-alerts.job'
+import { executeBidUrgentCheck } from '../jobs/bid-urgent-check.job'
 
 /**
  * Cron job manager
@@ -63,6 +65,12 @@ export class CronManager {
             case 'file_cleanup':
               result = await executeFileCleanup()
               break
+            case 'bid_daily_alerts':
+              result = await executeBidDailyAlerts()
+              break
+            case 'bid_urgent_check':
+              result = await executeBidUrgentCheck()
+              break
             default:
               console.error(`❌ Unknown cron job type: ${config.type}`)
               return
@@ -112,6 +120,10 @@ export class CronManager {
 
     // Register file cleanup
     this.registerJob(CRON_JOBS.fileCleanup)
+
+    // Register bid pipeline jobs
+    this.registerJob(CRON_JOBS.bidDailyAlerts)
+    this.registerJob(CRON_JOBS.bidUrgentCheck)
 
     console.log(`✅ Registered ${this.jobs.size} cron jobs`)
   }

@@ -6,7 +6,6 @@ import { eventService } from '../events/event.service'
 type PrismaDecimal = any
 
 // Configuration
-const MAX_LEAD_VALUE = 500000 // $500k threshold
 const DEFAULT_DISTRIBUTION_COUNT = 5 // Top N contractors to distribute to
 
 export interface DistributeLeadInput {
@@ -102,51 +101,6 @@ export const leadsService = {
     // Check if lead already distributed
     if (lead.distributedTo.length > 0) {
       throw new Error(`Lead ${leadId} has already been distributed`)
-    }
-
-    // Check if lead value exceeds maximum threshold
-    if (lead.estimatedValue && lead.estimatedValue.gt(MAX_LEAD_VALUE)) {
-      // Mark lead as LOST with reason
-      const updatedLead = await prismaAny.lead.update({
-        where: { id: leadId },
-        data: {
-          stage: 'LOST',
-          lostAt: new Date(),
-          lostReason: `Lead value (${lead.estimatedValue}) exceeds maximum threshold (${MAX_LEAD_VALUE})`,
-          stageChangedAt: new Date(),
-        },
-      })
-
-      // Log audit and event
-      await Promise.all([
-        auditService.recordAudit({
-          action: 'LEAD_DISQUALIFIED',
-          entityType: 'Lead',
-          entityId: leadId,
-          userId: userId || 'system',
-          reason: `Lead value exceeds ${MAX_LEAD_VALUE}`,
-          before: { stage: lead.stage, estimatedValue: lead.estimatedValue?.toString() },
-          after: { stage: 'LOST', lostReason: updatedLead.lostReason },
-        }),
-        eventService.recordEvent({
-          type: 'LEAD_DISQUALIFIED',
-          entityType: 'Lead',
-          entityId: leadId,
-          userId: userId,
-          payload: {
-            estimatedValue: lead.estimatedValue?.toString(),
-            maxThreshold: MAX_LEAD_VALUE,
-            reason: updatedLead.lostReason,
-          },
-        }),
-      ])
-
-      return {
-        success: false,
-        reason: 'LEAD_VALUE_EXCEEDS_THRESHOLD',
-        message: `Lead value exceeds maximum threshold of $${MAX_LEAD_VALUE}`,
-        lead: updatedLead,
-      }
     }
 
     // Find eligible contractors
