@@ -11620,3 +11620,21 @@ model BidEmbedding {
   @@index([bidId])
   @@map("bid_embeddings")
 }
+
+model BidScanLog {
+  id          String   @id @default(uuid())
+  source      BidSource
+  runType     String   // "SCHEDULED", "MANUAL", "WEBHOOK"
+  status      String   // "RUNNING", "SUCCESS", "FAILED"
+  bidsFound   Int      @default(0)
+  bidsCreated Int      @default(0)
+  bidsSkipped Int      @default(0) // duplicates
+  errors      Json?
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  details     Json?    // source-specific metadata
+
+  @@index([source])
+  @@index([startedAt])
+  @@map("bid_scan_logs")
+}

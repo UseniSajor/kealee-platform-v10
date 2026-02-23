@@ -586,6 +586,111 @@ export class BidService {
     return subRequest
   }
 
+  // ── Duplicate Detection ────────────────────────────────────────────────────
+
+  async findDuplicate(opts: {
+    sourceId?: string
+    projectName?: string
+    source?: string
+    dueDate?: string
+  }): Promise<any | null> {
+    // Check 1: Exact sourceId match
+    if (opts.sourceId && opts.source) {
+      const existing = await prismaAny.bidOpportunity.findFirst({
+        where: { sourceId: opts.sourceId, source: opts.source },
+      })
+      if (existing) return existing
+    }
+
+    // Check 2: Fuzzy match on projectName + source + dueDate
+    if (opts.projectName && opts.source) {
+      const where: any = {
+        source: opts.source,
+        projectName: { contains: opts.projectName.substring(0, 30), mode: 'insensitive' },
+      }
+      if (opts.dueDate) {
+        const due = new Date(opts.dueDate)
+        const dayBefore = new Date(due.getTime() - 24 * 60 * 60 * 1000)
+        const dayAfter = new Date(due.getTime() + 24 * 60 * 60 * 1000)
+        where.dueDate = { gte: dayBefore, lte: dayAfter }
+      }
+      const existing = await prismaAny.bidOpportunity.findFirst({ where })
+      if (existing) return existing
+    }
+
+    return null
+  }
+
+  // ── Scan Log Management ───────────────────────────────────────────────────
+
+  async createScanLog(source: string, runType: string): Promise<any> {
+    return prismaAny.bidScanLog.create({
+      data: {
+        source,
+        runType,
+        status: 'RUNNING',
+      },
+    })
+  }
+
+  async completeScanLog(id: string, results: {
+    status: string
+    bidsFound?: number
+    bidsCreated?: number
+    bidsSkipped?: number
+    errors?: any
+    details?: any
+  }): Promise<any> {
+    return prismaAny.bidScanLog.update({
+      where: { id },
+      data: {
+        status: results.status,
+        bidsFound: results.bidsFound ?? 0,
+        bidsCreated: results.bidsCreated ?? 0,
+        bidsSkipped: results.bidsSkipped ?? 0,
+        errors: results.errors || undefined,
+        details: results.details || undefined,
+        completedAt: new Date(),
+      },
+    })
+  }
+
+  async listScanLogs(filters: {
+    source?: string
+    status?: string
+    page?: number
+    limit?: number
+  }) {
+    const where: any = {}
+    if (filters.source) where.source = filters.source
+    if (filters.status) where.status = filters.status
+
+    const page = Math.max(1, filters.page ?? 1)
+    const limit = Math.min(Math.max(1, filters.limit ?? 20), 100)
+    const skip = (page - 1) * limit
+
+    const [logs, total] = await Promise.all([
+      prismaAny.bidScanLog.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { startedAt: 'desc' },
+      }),
+      prismaAny.bidScanLog.count({ where }),
+    ])
+
+    return {
+      logs,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    }
+  }
+
+  async getScanLog(id: string) {
+    const log = await prismaAny.bidScanLog.findUnique({ where: { id } })
+    if (!log) throw new Error('Scan log not found')
+    return log
+  }
+
   // ── Scan Commands (for n8n / KeaBot) ───────────────────────────────────────
 
   getScanCommands() {

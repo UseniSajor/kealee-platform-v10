@@ -863,6 +863,9 @@ const start = async () => {
     await safeRegisterBlock('Bid Pipeline routes', async () => {
       const { bidRoutes } = await import('./modules/bids/bid.routes')
       await fastify.register(bidRoutes, { prefix: '/bids' })
+
+      const { bidAutomationRoutes } = await import('./modules/bids/bid-automation.routes')
+      await fastify.register(bidAutomationRoutes, { prefix: '/bids/automation' })
     })
 
     // ══════════════════════════════════════════════════════════════
