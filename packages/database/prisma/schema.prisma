@@ -11373,3 +11373,250 @@ model MultifamilyAreaPhase {
   @@index([projectId])
   @@index([projectId, status])
 }
+
+// ============================================================================
+// BID PIPELINE — Opportunity tracking from BuildingConnected, eMMA, OpenGov,
+// SHA/MDOT, and direct invitations
+// ============================================================================
+
+enum BidSource {
+  BUILDING_CONNECTED
+  EMMA
+  OPENGOV
+  SHA_MDOT
+  DIRECT_INVITE
+  MANUAL
+}
+
+enum BidPipelineStatus {
+  NEW
+  REVIEWING
+  PREPARING
+  SUBMITTED
+  AWARDED
+  LOST
+  NO_BID
+  CANCELLED
+}
+
+enum BidPriority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model BidOpportunity {
+  id               String            @id @default(uuid())
+  organizationId   String?
+
+  // Source tracking
+  source           BidSource         @default(MANUAL)
+  sourceId         String?           // External ID from source platform
+  sourceUrl        String?           // Link back to original listing
+
+  // Project details
+  projectName      String
+  projectNumber    String?
+  description      String?           @db.Text
+  scope            String?           // e.g. "HVAC", "Electrical", "General"
+  location         String?
+  county           String?
+  state            String?           @default("MD")
+
+  // Owner / GC info
+  ownerName        String?           // Project owner (agency, developer, etc.)
+  gcName           String?           // General contractor (if we're subbing)
+  contactName      String?
+  contactEmail     String?
+  contactPhone     String?
+
+  // Financials
+  estimatedValue   Decimal?          @db.Decimal(14, 2)
+  bidBond          Decimal?          @db.Decimal(14, 2)
+  bidBondPercent   Decimal?          @db.Decimal(5, 2)
+
+  // Key dates
+  dueDate          DateTime?
+  prebidDate       DateTime?
+  prebidLocation   String?
+  prebidMandatory  Boolean           @default(false)
+  awardDate        DateTime?
+  startDate        DateTime?
+
+  // Status tracking
+  status           BidPipelineStatus @default(NEW)
+  priority         BidPriority       @default(MEDIUM)
+  assignedTo       String?           // User ID of estimator
+  confidence       Int?              // 0-100 win probability
+
+  // Classification flags
+  isGovernment     Boolean           @default(false)
+  isFederal        Boolean           @default(false)
+  isStateLocal     Boolean           @default(false)
+  requiresMBE      Boolean           @default(false)
+  requiresDBE      Boolean           @default(false)
+  mbeGoalPercent   Decimal?          @db.Decimal(5, 2)
+  dbeGoalPercent   Decimal?          @db.Decimal(5, 2)
+  prevailingWage   Boolean           @default(false)
+  bondRequired     Boolean           @default(false)
+
+  // Evaluation scores (0-100)
+  scopeScore       Int?
+  locationScore    Int?
+  valueScore       Int?
+  mbeScore         Int?
+  overallScore     Int?
+
+  // Notes
+  notes            String?           @db.Text
+  internalNotes    String?           @db.Text
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  // Relations
+  checklist        BidChecklistItem[]
+  documents        BidDocument[]
+  activities       BidActivity[]
+  subRequests      BidSubRequest[]
+
+  @@index([status])
+  @@index([source])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([organizationId])
+  @@index([status, priority])
+  @@index([source, status])
+  @@index([assignedTo])
+  @@map("bid_opportunities")
+}
+
+enum BidChecklistStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETE
+  SKIPPED
+  BLOCKED
+}
+
+model BidChecklistItem {
+  id               String              @id @default(uuid())
+  bidId            String
+  step             Int
+  title            String
+  description      String?
+  status           BidChecklistStatus  @default(PENDING)
+  assignedTo       String?
+  dueDate          DateTime?
+  completedAt      DateTime?
+  completedBy      String?
+  notes            String?             @db.Text
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  bid              BidOpportunity      @relation(fields: [bidId], references: [id], onDelete: Cascade)
+
+  @@unique([bidId, step])
+  @@index([bidId])
+  @@index([bidId, status])
+  @@map("bid_checklist_items")
+}
+
+enum BidDocumentType {
+  SPECS
+  DRAWINGS
+  ADDENDUM
+  PROPOSAL
+  ESTIMATE
+  BID_FORM
+  BID_BOND
+  INSURANCE_CERT
+  MBE_CERT
+  SUBCONTRACTOR_LIST
+  COVER_LETTER
+  OTHER
+}
+
+model BidDocument {
+  id               String          @id @default(uuid())
+  bidId            String
+  type             BidDocumentType @default(OTHER)
+  fileName         String
+  fileUrl          String
+  fileSize         Int?
+  mimeType         String?
+  uploadedBy       String?
+  notes            String?
+  createdAt        DateTime        @default(now())
+
+  bid              BidOpportunity  @relation(fields: [bidId], references: [id], onDelete: Cascade)
+
+  @@index([bidId])
+  @@index([bidId, type])
+  @@map("bid_documents")
+}
+
+model BidActivity {
+  id               String         @id @default(uuid())
+  bidId            String
+  action           String         // e.g. "CREATED", "STATUS_CHANGED", "DOCUMENT_UPLOADED"
+  actor            String?        // User ID or "system" or "n8n"
+  details          Json?          // Flexible payload for change details
+  createdAt        DateTime       @default(now())
+
+  bid              BidOpportunity @relation(fields: [bidId], references: [id], onDelete: Cascade)
+
+  @@index([bidId])
+  @@index([bidId, createdAt])
+  @@map("bid_activities")
+}
+
+enum BidSubRequestStatus {
+  PENDING
+  SENT
+  RECEIVED
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+model BidSubRequest {
+  id               String              @id @default(uuid())
+  bidId            String
+  subName          String
+  trade            String              // e.g. "Electrical", "Plumbing"
+  contactName      String?
+  contactEmail     String?
+  contactPhone     String?
+  requestedAmount  Decimal?            @db.Decimal(14, 2)
+  quotedAmount     Decimal?            @db.Decimal(14, 2)
+  status           BidSubRequestStatus @default(PENDING)
+  sentAt           DateTime?
+  dueDate          DateTime?
+  receivedAt       DateTime?
+  notes            String?             @db.Text
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  bid              BidOpportunity      @relation(fields: [bidId], references: [id], onDelete: Cascade)
+
+  @@index([bidId])
+  @@index([bidId, status])
+  @@map("bid_sub_requests")
+}
+
+// Phase 3: RAG vector storage for bid document search
+model BidEmbedding {
+  id               String         @id @default(uuid())
+  bidId            String
+  documentId       String?
+  content          String         @db.Text
+  embedding        Float[]        // pgvector will be added in Phase 3
+  metadata         Json?
+  chunkIndex       Int            @default(0)
+  createdAt        DateTime       @default(now())
+
+  @@index([bidId])
+  @@map("bid_embeddings")
+}

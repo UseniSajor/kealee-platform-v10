@@ -816,7 +816,7 @@ const start = async () => {
 
       // Cost Code PDF Import (AI-powered PDF → structured data pipeline)
       const { costCodePdfImportRoutes } = await import('./modules/estimation/cost-code-pdf-import.routes')
-      await fastify.register(costCodePdfImportRoutes, { prefix: '/estimation/cost-import' })
+      await fastify.register(costCodePdfImportRoutes, { prefix: '/estimation/cost-code-pdf-import' })
     })
 
     await safeRegisterBlock('Phase 1 - Communication, Subscriptions, Tracking routes', async () => {
@@ -843,7 +843,7 @@ const start = async () => {
       const { dailyLogRoutes } = await import('./modules/site-tools/daily-log.routes')
       const { photoRoutes } = await import('./modules/site-tools/daily-log.routes')
       await fastify.register(dailyLogRoutes, { prefix: '/site-tools' })
-      await fastify.register(photoRoutes, { prefix: '/site-tools' })
+      await fastify.register(photoRoutes, { prefix: '/site-tools/photos' })
     })
 
     await safeRegisterBlock('Phase 3 - Scoring Calculator routes', async () => {
@@ -854,6 +854,15 @@ const start = async () => {
     await safeRegisterBlock('Phase 3 - SMS Notification routes', async () => {
       const { smsRoutes } = await import('./modules/sms/sms.routes')
       await fastify.register(smsRoutes, { prefix: '/sms' })
+    })
+
+    // ══════════════════════════════════════════════════════════════
+    // Bid Pipeline — Opportunity tracking & automation
+    // ══════════════════════════════════════════════════════════════
+
+    await safeRegisterBlock('Bid Pipeline routes', async () => {
+      const { bidRoutes } = await import('./modules/bids/bid.routes')
+      await fastify.register(bidRoutes, { prefix: '/bids' })
     })
 
     // ══════════════════════════════════════════════════════════════
