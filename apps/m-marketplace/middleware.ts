@@ -52,6 +52,18 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith(path)
   );
 
+  // Ops protected routes
+  const opsProtectedPaths = ['/ops/portal', '/ops/account'];
+  const isOpsProtectedPath = opsProtectedPaths.some(path =>
+    request.nextUrl.pathname.startsWith(path)
+  );
+
+  // Permits protected routes
+  const permitsProtectedPaths = ['/permits/dashboard', '/permits/account'];
+  const isPermitsProtectedPath = permitsProtectedPaths.some(path =>
+    request.nextUrl.pathname.startsWith(path)
+  );
+
   // Redirect to login if accessing protected route without session
   if (isProtectedPath && !session) {
     const redirectUrl = request.nextUrl.clone();
@@ -74,6 +86,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  if (isOpsProtectedPath && !session) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/ops/login';
+    redirectUrl.searchParams.set('redirect', request.nextUrl.pathname);
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  if (isPermitsProtectedPath && !session) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/permits/login';
+    redirectUrl.searchParams.set('redirect', request.nextUrl.pathname);
+    return NextResponse.redirect(redirectUrl);
+  }
+
   // Redirect to dashboard if accessing auth pages with active session
   const authPaths = ['/login', '/signup'];
   const isAuthPath = authPaths.some(path =>
@@ -87,6 +113,16 @@ export async function middleware(request: NextRequest) {
 
   const estimationAuthPaths = ['/estimation/login', '/estimation/signup'];
   const isEstimationAuthPath = estimationAuthPaths.some(path =>
+    request.nextUrl.pathname.startsWith(path)
+  );
+
+  const opsAuthPaths = ['/ops/login', '/ops/signup'];
+  const isOpsAuthPath = opsAuthPaths.some(path =>
+    request.nextUrl.pathname.startsWith(path)
+  );
+
+  const permitsAuthPaths = ['/permits/login', '/permits/signup'];
+  const isPermitsAuthPath = permitsAuthPaths.some(path =>
     request.nextUrl.pathname.startsWith(path)
   );
 
@@ -105,6 +141,18 @@ export async function middleware(request: NextRequest) {
   if (isEstimationAuthPath && session) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/estimation/dashboard';
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  if (isOpsAuthPath && session) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/ops/portal';
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  if (isPermitsAuthPath && session) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/permits/dashboard';
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -172,6 +220,70 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Role check for ops routes — pm/admin/contractor
+  const OPS_ALLOWED_ROLES = ['pm', 'admin', 'super_admin', 'contractor'];
+
+  if (isOpsProtectedPath && session) {
+    const { data: user } = await supabase
+      .from('User')
+      .select('role, status')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!user || user.status !== 'ACTIVE') {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/ops/unauthorized';
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    const { data: membership } = await supabase
+      .from('OrgMember')
+      .select('roleKey')
+      .eq('userId', session.user.id)
+      .limit(1)
+      .single();
+
+    const effectiveRole = (membership?.roleKey || user.role || 'user').toLowerCase();
+
+    if (!OPS_ALLOWED_ROLES.includes(effectiveRole)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/ops/unauthorized';
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
+  // Role check for permits routes — pm/admin/inspector
+  const PERMITS_ALLOWED_ROLES = ['pm', 'admin', 'super_admin', 'inspector'];
+
+  if (isPermitsProtectedPath && session) {
+    const { data: user } = await supabase
+      .from('User')
+      .select('role, status')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!user || user.status !== 'ACTIVE') {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/permits/unauthorized';
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    const { data: membership } = await supabase
+      .from('OrgMember')
+      .select('roleKey')
+      .eq('userId', session.user.id)
+      .limit(1)
+      .single();
+
+    const effectiveRole = (membership?.roleKey || user.role || 'user').toLowerCase();
+
+    if (!PERMITS_ALLOWED_ROLES.includes(effectiveRole)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/permits/unauthorized';
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
   // Role check for estimation routes — broad access for estimation tool
   const ESTIMATION_ALLOWED_ROLES = ['admin', 'super_admin', 'pm', 'contractor', 'gc', 'builder', 'estimator', 'architect', 'engineer'];
 
@@ -232,5 +344,13 @@ export const config = {
     '/estimation/settings/:path*',
     '/estimation/login',
     '/estimation/signup',
+    '/ops/portal/:path*',
+    '/ops/account/:path*',
+    '/ops/login',
+    '/ops/signup',
+    '/permits/dashboard/:path*',
+    '/permits/account/:path*',
+    '/permits/login',
+    '/permits/signup',
   ],
 };

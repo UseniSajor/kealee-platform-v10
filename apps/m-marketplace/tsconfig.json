@@ -37,6 +37,12 @@
       ],
       "@estimation/*": [
         "./estimation/*"
+      ],
+      "@ops/*": [
+        "./ops/*"
+      ],
+      "@permits/*": [
+        "./permits/*"
       ]
     }
   },
