@@ -4,24 +4,83 @@ import Link from 'next/link'
 const heroImage = { src: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1920&q=80&auto=format&fit=crop', alt: 'Modern building under construction with steel beams' };
 
 export const metadata: Metadata = {
-  title: 'All Services | Kealee',
-  description: 'Explore the complete Kealee platform — architecture, estimation, permits, pre-construction, project management, finance, contractor marketplace, and operations services.',
+  title: 'All Services | Kealee - Architecture, Engineering, Estimation, Permits, PM & More',
+  description: 'Explore the complete Kealee platform — architecture, structural engineering, AI cost estimation, permit automation, project management, operations services, finance & escrow, and contractor network. One platform for every phase of your construction project.',
+  openGraph: {
+    title: 'All Services | Kealee',
+    description: '11 integrated services for every phase of your construction project. From design through closeout.',
+    url: 'https://kealee.com/services',
+  },
+  keywords: [
+    'construction services', 'architecture services', 'engineering services', 'cost estimation',
+    'building permits', 'project management', 'operations services', 'construction finance',
+    'contractor network', 'DC Baltimore construction',
+  ],
 }
 
 const services = [
   {
     title: 'Architecture',
     description: 'Professional architectural design with CAD/BIM integration and permit-ready drawings.',
-    href: '/services/architect',
+    href: '/architect',
     color: 'indigo',
     badge: 'Design',
   },
   {
     title: 'Engineering',
     description: 'Licensed structural, MEP, civil, and fire protection engineering with PE-stamped drawings.',
-    href: '/services/engineer',
+    href: '/engineer',
     color: 'orange',
     badge: 'Design',
+  },
+  {
+    title: 'Cost Estimation',
+    description: 'AI-powered cost estimation with assembly-based takeoffs, cost databases, and professional reports.',
+    href: '/estimation',
+    color: 'blue',
+    badge: 'AI-Powered',
+  },
+  {
+    title: 'Permits & Inspections',
+    description: 'Automated permit tracking, inspection scheduling, and AI-powered document review.',
+    href: '/permits',
+    color: 'amber',
+    badge: 'Compliance',
+  },
+  {
+    title: 'Operations Services',
+    description: 'Outsource your operations department — PM packages, individual services, and dedicated teams.',
+    href: '/ops',
+    color: 'sky',
+    badge: 'Managed',
+  },
+  {
+    title: 'Project Management',
+    description: 'PM tools for contractors — milestone tracking, payment requests, and client communication.',
+    href: '/pm',
+    color: 'sky',
+    badge: 'Software',
+  },
+  {
+    title: 'Finance & Escrow',
+    description: 'Secure escrow management, milestone payments, and clear financial tracking for all parties.',
+    href: '/finance',
+    color: 'emerald',
+    badge: 'Payments',
+  },
+  {
+    title: 'Project Owner Portal',
+    description: 'Your command center for managing your project from start to finish.',
+    href: '/owner',
+    color: 'blue',
+    badge: 'Owners',
+  },
+  {
+    title: 'Contractor Network',
+    description: 'Connect with verified contractors, vendors, and suppliers. Quality leads and clear bidding.',
+    href: '/network',
+    color: 'sky',
+    badge: 'Network',
   },
   {
     title: 'Pre-Construction',
@@ -29,48 +88,6 @@ const services = [
     href: '/services/precon',
     color: 'emerald',
     badge: 'Pre-Con',
-  },
-  {
-    title: 'Estimation',
-    description: 'AI-powered cost estimation with labor, materials, and timeline projections for accurate bidding.',
-    href: '/services/estimation',
-    color: 'blue',
-    badge: 'AI-Powered',
-  },
-  {
-    title: 'Permits & Inspections',
-    description: 'Automated permit tracking, inspection scheduling, and AI-powered document review.',
-    href: '/services/permits',
-    color: 'amber',
-    badge: 'Compliance',
-  },
-  {
-    title: 'Project Management',
-    description: 'PM tools for contractors — milestone tracking, payment requests, and client communication.',
-    href: '/services/pm-software',
-    color: 'sky',
-    badge: 'Software',
-  },
-  {
-    title: 'Finance & Escrow',
-    description: 'Secure escrow management, milestone payments, and clear financial tracking for all parties.',
-    href: '/services/finance',
-    color: 'emerald',
-    badge: 'Payments',
-  },
-  {
-    title: 'Contractor Network',
-    description: 'Connect with verified contractors, vendors, and suppliers. Quality leads and clear bidding.',
-    href: '/services/marketplace-network',
-    color: 'sky',
-    badge: 'Network',
-  },
-  {
-    title: 'Operations Services',
-    description: 'Outsource your operations department — PM packages, individual services, and dedicated teams.',
-    href: '/services/ops',
-    color: 'sky',
-    badge: 'Managed',
   },
   {
     title: 'Developer Services',

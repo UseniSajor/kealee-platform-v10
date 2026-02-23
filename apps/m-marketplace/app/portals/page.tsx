@@ -7,75 +7,88 @@ const heroImage = { src: 'https://images.unsplash.com/photo-1487958449943-2429e8
 
 export const metadata: Metadata = {
   title: 'Portal Access | Kealee',
-  description: 'Access your Kealee portal — project management, architecture, permits, estimation, operations, and more.',
+  description: 'Access your Kealee portal — architecture, engineering, permits & inspections, cost estimation, project management, operations services, and finance & escrow. One platform for every construction project role.',
+  openGraph: {
+    title: 'Portal Access | Kealee',
+    description: '8 purpose-built portals for every role in the construction lifecycle. Architecture, engineering, estimation, permits, PM, ops, finance, and project owner portals.',
+    url: 'https://kealee.com/portals',
+  },
 }
 
 const portals = [
   {
     name: 'Project Owner Portal',
     description: 'Manage your project from start to finish. Track milestones, approve payments, and communicate with your team.',
-    url: 'https://app.kealee.com',
+    href: '/owner',
     color: 'blue',
     audience: 'For homeowners & project owners',
+    features: ['Milestone tracking', 'Payment management', 'Document sharing'],
   },
   {
     name: 'Architecture Portal',
-    description: 'Review design concepts, approve drawings, and track your architectural project through permitting.',
-    url: 'https://architect.kealee.com',
+    description: 'Manage design projects, upload plans, and seamlessly hand off to permitting.',
+    href: '/architect',
     color: 'indigo',
-    audience: 'For design clients',
+    audience: 'For architects & designers',
+    features: ['Project management', 'Plan uploads', 'Permit handoff'],
   },
   {
-    name: 'Permits Portal',
+    name: 'Engineering Portal',
+    description: 'Structural, MEP, civil, and geotechnical engineering services with PE-stamped drawings.',
+    href: '/engineer',
+    color: 'orange',
+    audience: 'For engineers',
+    features: ['Structural analysis', 'MEP design', 'PE-stamped drawings'],
+  },
+  {
+    name: 'Permits & Inspections',
     description: 'Track permit applications, schedule inspections, and manage compliance across jurisdictions.',
-    url: 'https://permits.kealee.com',
+    href: '/permits',
     color: 'amber',
     audience: 'For contractors & owners',
+    features: ['AI compliance review', 'Inspection scheduling', 'Status tracking'],
   },
   {
     name: 'Estimation Portal',
-    description: 'Access your estimates, assembly library, cost database, and takeoff tools.',
-    url: 'https://estimation.kealee.com',
+    description: 'Access your estimates, assembly library, cost database, and AI-powered takeoff tools.',
+    href: '/estimation',
     color: 'blue',
     audience: 'For estimators & contractors',
+    features: ['Assembly-based estimates', 'AI takeoff', 'Cost database'],
   },
   {
     name: 'Ops Services Portal',
     description: 'Manage your operations package, submit service requests, view weekly reports, and track projects.',
-    url: 'https://ops.kealee.com/portal',
+    href: '/ops',
     color: 'sky',
     audience: 'For GC clients',
+    features: ['Service requests', 'Weekly reports', 'Team coordination'],
   },
   {
     name: 'PM Dashboard',
     description: 'Full project management suite with scheduling, budgeting, RFIs, and team coordination.',
-    url: 'https://pm.kealee.com',
+    href: '/pm',
     color: 'sky',
     audience: 'For contractors & builders',
+    features: ['Scheduling', 'Budgeting', 'RFIs & submittals'],
   },
   {
-    name: 'Finance Portal',
+    name: 'Finance & Escrow',
     description: 'Manage escrow accounts, track milestone payments, and view financial reports.',
-    url: 'https://finance.kealee.com',
+    href: '/finance',
     color: 'emerald',
     audience: 'For all parties',
-  },
-  {
-    name: 'Admin Dashboard',
-    description: 'System administration, user management, and platform configuration.',
-    url: 'https://admin.kealee.com',
-    color: 'gray',
-    audience: 'For Kealee admins',
+    features: ['Escrow management', 'Milestone payments', 'Financial reports'],
   },
 ]
 
-const colorMap: Record<string, { bg: string; border: string; text: string; button: string; buttonHover: string }> = {
-  blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600', button: 'bg-blue-600', buttonHover: 'hover:bg-blue-700' },
-  indigo: { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-600', button: 'bg-indigo-600', buttonHover: 'hover:bg-indigo-700' },
-  amber: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-600', button: 'bg-amber-500', buttonHover: 'hover:bg-amber-600' },
-  sky: { bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-600', button: 'bg-sky-500', buttonHover: 'hover:bg-sky-600' },
-  emerald: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-600', button: 'bg-emerald-600', buttonHover: 'hover:bg-emerald-700' },
-  gray: { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-600', button: 'bg-gray-700', buttonHover: 'hover:bg-gray-800' },
+const colorMap: Record<string, { bg: string; border: string; text: string; button: string; buttonHover: string; featureBg: string }> = {
+  blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600', button: 'bg-blue-600', buttonHover: 'hover:bg-blue-700', featureBg: 'bg-blue-100/60' },
+  indigo: { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-600', button: 'bg-indigo-600', buttonHover: 'hover:bg-indigo-700', featureBg: 'bg-indigo-100/60' },
+  orange: { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-600', button: 'bg-orange-500', buttonHover: 'hover:bg-orange-600', featureBg: 'bg-orange-100/60' },
+  amber: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-600', button: 'bg-amber-500', buttonHover: 'hover:bg-amber-600', featureBg: 'bg-amber-100/60' },
+  sky: { bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-600', button: 'bg-sky-500', buttonHover: 'hover:bg-sky-600', featureBg: 'bg-sky-100/60' },
+  emerald: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-600', button: 'bg-emerald-600', buttonHover: 'hover:bg-emerald-700', featureBg: 'bg-emerald-100/60' },
 }
 
 export default function PortalsPage() {
@@ -96,9 +109,9 @@ export default function PortalsPage() {
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-              <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6">Portal Access</h1>
+              <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6">Your Portals</h1>
               <p className="text-xl text-white/85 max-w-3xl mx-auto">
-                Access your Kealee portal to manage projects, track permits, view estimates, and more. Choose your portal below to get started.
+                Everything you need in one place. Access your portal to manage projects, track permits, view estimates, and more.
               </p>
             </div>
           </section>
@@ -113,13 +126,20 @@ export default function PortalsPage() {
                     <div key={portal.name} className={`rounded-2xl border ${colors.border} ${colors.bg} p-6 flex flex-col`}>
                       <span className={`text-xs font-semibold ${colors.text} mb-2`}>{portal.audience}</span>
                       <h3 className="text-lg font-bold text-gray-900 mb-2">{portal.name}</h3>
-                      <p className="text-sm text-gray-600 mb-6 flex-grow">{portal.description}</p>
-                      <a
-                        href={portal.url}
+                      <p className="text-sm text-gray-600 mb-4 flex-grow">{portal.description}</p>
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {portal.features.map((feature) => (
+                          <span key={feature} className={`text-xs px-2 py-0.5 rounded-full ${colors.featureBg} ${colors.text} font-medium`}>
+                            {feature}
+                          </span>
+                        ))}
+                      </div>
+                      <Link
+                        href={portal.href}
                         className={`block text-center py-2.5 rounded-xl text-sm font-semibold text-white transition ${colors.button} ${colors.buttonHover}`}
                       >
-                        Launch Portal
-                      </a>
+                        Open Portal
+                      </Link>
                     </div>
                   )
                 })}

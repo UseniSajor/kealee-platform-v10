@@ -25,7 +25,7 @@ export function Services() {
         'Weekly progress reports',
         '24/7 priority support',
       ],
-      link: 'https://ops.kealee.com',
+      link: '/ops',
       color: 'blue',
     },
     {
@@ -40,7 +40,7 @@ export function Services() {
         'Contractor management',
         'Payment processing',
       ],
-      link: 'https://app.kealee.com',
+      link: '/owner',
       color: 'orange',
     },
     {
@@ -55,7 +55,7 @@ export function Services() {
         'Licensed architects',
         'Unlimited revisions',
       ],
-      link: 'https://architect.kealee.com',
+      link: '/architect',
       color: 'green',
     },
     {
@@ -69,7 +69,7 @@ export function Services() {
         'Inspection scheduling',
         '85% first-try pass rate',
       ],
-      link: 'https://permits.kealee.com',
+      link: '/permits',
       color: 'purple',
     },
   ];

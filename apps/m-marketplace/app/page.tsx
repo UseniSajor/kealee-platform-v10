@@ -8,11 +8,17 @@ export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
   title: 'Kealee | DC-Baltimore\'s End-to-End Design/Build Platform',
-  description: 'The connected platform that takes your project from architecture through permits through build-out through closeout. One platform. Zero gaps.',
-  keywords: ['design build', 'permits', 'architecture', 'DC', 'Baltimore', 'contractors', 'project management'],
+  description: 'The connected platform that takes your project from architecture and engineering through estimation, permits, project management, operations, and finance. Architecture, engineering, estimation, permits, PM software, ops services, and escrow — all in one platform.',
+  keywords: [
+    'design build platform', 'construction management', 'architecture services DC', 'engineering services Baltimore',
+    'building permits', 'cost estimation software', 'project management construction', 'operations services contractors',
+    'escrow construction', 'contractor network DC Baltimore', 'permit automation', 'AI construction',
+    'structural engineering', 'MEP design', 'construction estimation', 'general contractor tools',
+    'homeowner project management', 'construction finance', 'trust accounting construction',
+  ],
   openGraph: {
     title: 'Kealee | DC-Baltimore\'s End-to-End Design/Build Platform',
-    description: 'Design. Build. Done. The connected platform for every project phase.',
+    description: 'Architecture, engineering, estimation, permits, PM software, ops services, and escrow — all in one platform. Design. Build. Done.',
     url: 'https://kealee.com',
     siteName: 'Kealee',
     images: [
@@ -20,7 +26,7 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Kealee - End-to-End Design/Build Platform',
+        alt: 'Kealee - End-to-End Design/Build Platform for DC-Baltimore',
       },
     ],
     locale: 'en_US',
@@ -29,8 +35,22 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Kealee | End-to-End Design/Build Platform',
-    description: 'Design. Build. Done.',
+    description: 'Architecture, engineering, estimation, permits, PM, ops, and finance — one platform. Design. Build. Done.',
     images: ['/og-image.png'],
+  },
+  alternates: {
+    canonical: 'https://kealee.com',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 
@@ -39,46 +59,46 @@ const platformFlowNodes = [
   {
     id: 'design',
     phase: 'Design',
-    app: 'm-architect',
-    appBadge: 'm-architect',
-    features: ['Architectural Drawings', '3D Renderings', 'Engineering'],
-    href: '/services/architect',
+    app: 'Architecture & Engineering',
+    appBadge: 'Design',
+    features: ['Architectural Drawings', 'Structural Engineering', 'MEP Design'],
+    href: '/architect',
     color: 'teal' as const,
+  },
+  {
+    id: 'estimate',
+    phase: 'Estimate',
+    app: 'Cost Estimation',
+    appBadge: 'Estimation',
+    features: ['AI Takeoff', 'Assembly Pricing', 'Bid Reports'],
+    href: '/estimation',
+    color: 'orange' as const,
   },
   {
     id: 'permit',
     phase: 'Permit',
-    app: 'm-permits',
-    appBadge: 'm-permits',
+    app: 'Permits & Inspections',
+    appBadge: 'Permits',
     features: ['AI Review', 'Auto Form Filling', 'Status Tracking'],
-    href: '/services/permits',
+    href: '/permits',
     color: 'green' as const,
   },
   {
     id: 'build',
     phase: 'Build',
-    app: 'm-ops-services',
-    appBadge: 'm-ops',
-    features: ['PM Software', 'Operations', 'Estimation'],
-    href: '/services/ops',
+    app: 'Ops & PM Services',
+    appBadge: 'Build',
+    features: ['PM Software', 'Operations', 'Team Coordination'],
+    href: '/ops',
     color: 'orange' as const,
-  },
-  {
-    id: 'inspect',
-    phase: 'Inspect',
-    app: 'm-permits',
-    appBadge: 'm-permits',
-    features: ['Scheduling', 'Checklists', 'Results'],
-    href: '/services/permits',
-    color: 'green' as const,
   },
   {
     id: 'closeout',
     phase: 'Closeout',
-    app: 'm-project-owner',
-    appBadge: 'm-owner',
-    features: ['Final Walkthrough', 'Warranty', 'Documents'],
-    href: '/portals',
+    app: 'Finance & Trust',
+    appBadge: 'Finance',
+    features: ['Escrow Payments', 'Final Walkthrough', 'Documents'],
+    href: '/finance',
     color: 'navy' as const,
   },
 ];
@@ -192,14 +212,14 @@ const splitCTASections = [
   {
     title: 'For Homeowners',
     subtitle: 'Start your project with confidence. Get design, permits, and trusted contractors.',
-    cta: { label: 'Start Your Project', href: '/portals' },
+    cta: { label: 'Start Your Project', href: '/owner' },
     bgVariant: 'white' as const,
     ctaColor: 'orange' as const,
   },
   {
     title: 'For Contractors',
-    subtitle: 'Grow your business with PM tools, leads, and streamlined operations.',
-    cta: { label: 'Explore Tools', href: '/services/ops' },
+    subtitle: 'Grow your business with PM tools, estimation, and streamlined operations.',
+    cta: { label: 'Explore Tools', href: '/ops' },
     bgVariant: 'white' as const,
     ctaColor: 'navy' as const,
   },
@@ -212,16 +232,85 @@ const splitCTASections = [
   },
 ];
 
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Kealee',
+  url: 'https://kealee.com',
+  description: 'End-to-end design/build platform for the DC-Baltimore corridor. Architecture, engineering, estimation, permits, project management, operations, and finance.',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  offers: {
+    '@type': 'AggregateOffer',
+    priceCurrency: 'USD',
+    lowPrice: '49',
+    offerCount: '8',
+  },
+  featureList: [
+    'Architectural Design Services',
+    'Structural, MEP, Civil & Geotechnical Engineering',
+    'AI-Powered Cost Estimation',
+    'Permit Application & Tracking',
+    'Inspection Scheduling',
+    'Project Management Software',
+    'Operations Services',
+    'Escrow & Finance Management',
+    'Contractor Network & Fair Bid Rotation',
+  ],
+  areaServed: {
+    '@type': 'GeoCircle',
+    geoMidpoint: {
+      '@type': 'GeoCoordinates',
+      latitude: 39.0,
+      longitude: -76.8,
+    },
+    geoRadius: '100 miles',
+  },
+  provider: {
+    '@type': 'Organization',
+    name: 'Kealee',
+    url: 'https://kealee.com',
+    logo: 'https://kealee.com/kealee-logo-600w.png',
+    sameAs: [],
+  },
+};
+
+const servicesJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Kealee Platform Services',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Architecture', url: 'https://kealee.com/architect' },
+    { '@type': 'ListItem', position: 2, name: 'Engineering', url: 'https://kealee.com/engineer' },
+    { '@type': 'ListItem', position: 3, name: 'Cost Estimation', url: 'https://kealee.com/estimation' },
+    { '@type': 'ListItem', position: 4, name: 'Permits & Inspections', url: 'https://kealee.com/permits' },
+    { '@type': 'ListItem', position: 5, name: 'Project Management', url: 'https://kealee.com/pm' },
+    { '@type': 'ListItem', position: 6, name: 'Operations Services', url: 'https://kealee.com/ops' },
+    { '@type': 'ListItem', position: 7, name: 'Finance & Escrow', url: 'https://kealee.com/finance' },
+    { '@type': 'ListItem', position: 8, name: 'Contractor Network', url: 'https://kealee.com/network' },
+  ],
+};
+
 export default function HomePage() {
   return (
-    <HomePageClient
-      platformFlowNodes={platformFlowNodes}
-      mockNetworkProfiles={mockNetworkProfiles}
-      comparisonData={comparisonData}
-      stats={stats}
-      homeownerTestimonials={homeownerTestimonials}
-      contractorTestimonials={contractorTestimonials}
-      splitCTASections={splitCTASections}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesJsonLd) }}
+      />
+      <HomePageClient
+        platformFlowNodes={platformFlowNodes}
+        mockNetworkProfiles={mockNetworkProfiles}
+        comparisonData={comparisonData}
+        stats={stats}
+        homeownerTestimonials={homeownerTestimonials}
+        contractorTestimonials={contractorTestimonials}
+        splitCTASections={splitCTASections}
+      />
+    </>
   );
 }

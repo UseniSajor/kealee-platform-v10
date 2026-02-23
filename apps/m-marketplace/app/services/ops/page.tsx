@@ -51,7 +51,7 @@ export default function OpsServicePage() {
               Your operations department, on demand. Professional PM teams handle permits, coordination, reporting, and admin so you can focus on building.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <a href="https://ops.kealee.com" className="inline-flex items-center justify-center rounded-xl bg-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600">Learn More at ops.kealee.com</a>
+              <a href="/ops" className="inline-flex items-center justify-center rounded-xl bg-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-600">Learn More at ops.kealee.com</a>
               <Link href="/contact" className="inline-flex items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-white/20">Contact Sales</Link>
             </div>
           </div>
@@ -88,7 +88,7 @@ export default function OpsServicePage() {
                   ))}
                 </ul>
                 <p className="mt-3 text-xs text-gray-500">Best for: {pkg.bestFor}</p>
-                <a href="https://ops.kealee.com/pricing" className={`mt-4 block text-center py-2.5 rounded-lg font-semibold transition ${pkg.popular ? 'bg-sky-500 text-white hover:bg-sky-600' : 'border border-gray-200 hover:bg-gray-50'}`}>Get Started</a>
+                <a href="/ops" className={`mt-4 block text-center py-2.5 rounded-lg font-semibold transition ${pkg.popular ? 'bg-sky-500 text-white hover:bg-sky-600' : 'border border-gray-200 hover:bg-gray-50'}`}>Get Started</a>
               </div>
             ))}
           </div>
@@ -116,7 +116,7 @@ export default function OpsServicePage() {
         <section className="rounded-2xl bg-sky-500 p-8 text-white text-center">
           <h2 className="text-2xl font-bold">Ready to Outsource Your Ops?</h2>
           <p className="mt-2 opacity-95 max-w-xl mx-auto">Start your 14-day free trial. No contracts, cancel anytime.</p>
-          <a href="https://ops.kealee.com" className="mt-6 inline-flex items-center justify-center rounded-xl bg-white px-8 py-3 text-sm font-semibold text-sky-700 shadow-sm transition hover:bg-sky-50">Visit ops.kealee.com</a>
+          <a href="/ops" className="mt-6 inline-flex items-center justify-center rounded-xl bg-white px-8 py-3 text-sm font-semibold text-sky-700 shadow-sm transition hover:bg-sky-50">Visit ops.kealee.com</a>
         </section>
       </div>
     </div>

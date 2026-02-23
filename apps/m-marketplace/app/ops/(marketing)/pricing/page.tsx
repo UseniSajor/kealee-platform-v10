@@ -287,7 +287,7 @@ function SoftwareTab() {
               ))}
             </ul>
 
-            <Link href={pkg.key === 'S4' ? '/contact' : 'https://app.kealee.com/signup'} className={`mt-6 block text-center py-2.5 rounded-xl font-semibold transition ${pkg.popular ? 'bg-sky-500 text-white hover:bg-sky-600' : 'border border-zinc-200 hover:bg-zinc-50'}`}>
+            <Link href={pkg.key === 'S4' ? '/contact' : '/signup'} className={`mt-6 block text-center py-2.5 rounded-xl font-semibold transition ${pkg.popular ? 'bg-sky-500 text-white hover:bg-sky-600' : 'border border-zinc-200 hover:bg-zinc-50'}`}>
               {pkg.key === 'S4' ? 'Contact Sales' : 'Start Free Trial'}
             </Link>
           </div>

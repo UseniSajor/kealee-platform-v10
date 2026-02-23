@@ -66,7 +66,7 @@ export function Hero() {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
               <Link
-                href="https://app.kealee.com/signup"
+                href="/signup"
                 className="
                   group
                   inline-flex items-center justify-center gap-2

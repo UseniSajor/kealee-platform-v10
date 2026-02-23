@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Homeowner Project Services | Kealee',
     description: 'From plans to permits to build — we handle it all. Professional services for homeowners.',
-    url: 'https://app.kealee.com',
+    url: '/owner',
     siteName: 'Kealee',
     images: [
       {

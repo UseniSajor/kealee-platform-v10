@@ -64,6 +64,18 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith(path)
   );
 
+  // Engineer protected routes
+  const engineerProtectedPaths = ['/engineer/projects', '/engineer/account'];
+  const isEngineerProtectedPath = engineerProtectedPaths.some(path =>
+    request.nextUrl.pathname.startsWith(path)
+  );
+
+  // Finance protected routes
+  const financeProtectedPaths = ['/finance/escrow', '/finance/transactions', '/finance/reports', '/finance/statements', '/finance/settings', '/finance/releases', '/finance/deposit'];
+  const isFinanceProtectedPath = financeProtectedPaths.some(path =>
+    request.nextUrl.pathname.startsWith(path)
+  );
+
   // Redirect to login if accessing protected route without session
   if (isProtectedPath && !session) {
     const redirectUrl = request.nextUrl.clone();
@@ -100,6 +112,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  if (isEngineerProtectedPath && !session) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/engineer/login';
+    redirectUrl.searchParams.set('redirect', request.nextUrl.pathname);
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  if (isFinanceProtectedPath && !session) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/finance/login';
+    redirectUrl.searchParams.set('redirect', request.nextUrl.pathname);
+    return NextResponse.redirect(redirectUrl);
+  }
+
   // Redirect to dashboard if accessing auth pages with active session
   const authPaths = ['/login', '/signup'];
   const isAuthPath = authPaths.some(path =>
@@ -123,6 +149,16 @@ export async function middleware(request: NextRequest) {
 
   const permitsAuthPaths = ['/permits/login', '/permits/signup'];
   const isPermitsAuthPath = permitsAuthPaths.some(path =>
+    request.nextUrl.pathname.startsWith(path)
+  );
+
+  const engineerAuthPaths = ['/engineer/login', '/engineer/signup'];
+  const isEngineerAuthPath = engineerAuthPaths.some(path =>
+    request.nextUrl.pathname.startsWith(path)
+  );
+
+  const financeAuthPaths = ['/finance/login', '/finance/signup'];
+  const isFinanceAuthPath = financeAuthPaths.some(path =>
     request.nextUrl.pathname.startsWith(path)
   );
 
@@ -153,6 +189,18 @@ export async function middleware(request: NextRequest) {
   if (isPermitsAuthPath && session) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/permits/dashboard';
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  if (isEngineerAuthPath && session) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/engineer/projects';
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  if (isFinanceAuthPath && session) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/finance/escrow';
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -316,6 +364,70 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Role check for engineer routes — engineer/architect/admin
+  const ENGINEER_ALLOWED_ROLES = ['engineer', 'architect', 'admin', 'super_admin'];
+
+  if (isEngineerProtectedPath && session) {
+    const { data: user } = await supabase
+      .from('User')
+      .select('role, status')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!user || user.status !== 'ACTIVE') {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/engineer/unauthorized';
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    const { data: membership } = await supabase
+      .from('OrgMember')
+      .select('roleKey')
+      .eq('userId', session.user.id)
+      .limit(1)
+      .single();
+
+    const effectiveRole = (membership?.roleKey || user.role || 'user').toLowerCase();
+
+    if (!ENGINEER_ALLOWED_ROLES.includes(effectiveRole)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/engineer/unauthorized';
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
+  // Role check for finance routes — broad access for financial tools
+  const FINANCE_ALLOWED_ROLES = ['admin', 'super_admin', 'pm', 'owner', 'client', 'contractor', 'gc', 'builder'];
+
+  if (isFinanceProtectedPath && session) {
+    const { data: user } = await supabase
+      .from('User')
+      .select('role, status')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!user || user.status !== 'ACTIVE') {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/finance/unauthorized';
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    const { data: membership } = await supabase
+      .from('OrgMember')
+      .select('roleKey')
+      .eq('userId', session.user.id)
+      .limit(1)
+      .single();
+
+    const effectiveRole = (membership?.roleKey || user.role || 'user').toLowerCase();
+
+    if (!FINANCE_ALLOWED_ROLES.includes(effectiveRole)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/finance/unauthorized';
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
   return response;
 }
 
@@ -352,5 +464,18 @@ export const config = {
     '/permits/account/:path*',
     '/permits/login',
     '/permits/signup',
+    '/engineer/projects/:path*',
+    '/engineer/account/:path*',
+    '/engineer/login',
+    '/engineer/signup',
+    '/finance/escrow/:path*',
+    '/finance/transactions/:path*',
+    '/finance/reports/:path*',
+    '/finance/statements/:path*',
+    '/finance/settings/:path*',
+    '/finance/releases/:path*',
+    '/finance/deposit/:path*',
+    '/finance/login',
+    '/finance/signup',
   ],
 };

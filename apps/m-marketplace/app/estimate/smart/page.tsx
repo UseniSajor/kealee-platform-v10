@@ -756,7 +756,7 @@ export default function SmartEstimatePage() {
                   Sign up for a free Kealee account to refine your estimate with these answers.
                 </p>
                 <a
-                  href="https://app.kealee.com/signup"
+                  href="/signup"
                   className="inline-flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl px-6 py-3 font-medium transition text-sm"
                 >
                   Sign Up to Refine Your Estimate
@@ -776,7 +776,7 @@ export default function SmartEstimatePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
-              href="https://app.kealee.com/signup"
+              href="/signup"
               className="inline-flex items-center justify-center gap-2 bg-white text-blue-600 hover:bg-blue-50 rounded-xl px-8 py-3.5 font-semibold transition text-base"
             >
               Create Your Project on Kealee

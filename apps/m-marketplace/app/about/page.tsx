@@ -185,7 +185,7 @@ export default function AboutPage() {
             </p>
             
             <Link
-              href="https://app.kealee.com/signup"
+              href="/signup"
               className="
                 inline-block
                 px-8 py-4

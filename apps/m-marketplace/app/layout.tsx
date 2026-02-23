@@ -9,19 +9,16 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   metadataBase: new URL('https://kealee.com'),
   title: {
-    default: 'Kealee - Complete Project Management Platform',
+    default: 'Kealee - End-to-End Design/Build Platform | DC-Baltimore',
     template: '%s | Kealee'
   },
-  description: 'Professional project management, AI-powered permit review, and licensed architects on-demand. Save 40% on PM costs and deliver projects 25% faster.',
+  description: 'The connected platform for architecture, engineering, cost estimation, permits, project management, operations, and finance. One platform from design through closeout. DC-Baltimore corridor.',
   keywords: [
-    'project management',
-    'building management',
-    'permit review',
-    'project management software',
-    'architect services',
-    'building permits',
-    'DC building projects',
-    'Baltimore building projects'
+    'design build platform', 'construction management software', 'architecture services DC Baltimore',
+    'structural engineering', 'MEP engineering', 'AI cost estimation', 'building permits automation',
+    'project management construction', 'operations services contractors', 'construction escrow',
+    'contractor network', 'general contractor tools', 'permit tracking', 'inspection scheduling',
+    'construction finance', 'pre-construction services',
   ],
   authors: [{ name: 'Kealee Platform' }],
   creator: 'Kealee',
@@ -44,14 +41,14 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://kealee.com',
     siteName: 'Kealee',
-    title: 'Kealee - Complete Project Management Platform',
-    description: 'Save 40% on PM costs. AI-powered permit review. Licensed architects on-demand.',
+    title: 'Kealee - End-to-End Design/Build Platform',
+    description: 'Architecture, engineering, estimation, permits, PM, ops, and finance — all in one platform.',
     images: [{ url: 'https://kealee.com/kealee-og-image.jpg', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Kealee - Project Management Platform',
-    description: 'Save 40% on PM costs. Deliver projects 25% faster.',
+    title: 'Kealee - End-to-End Design/Build Platform',
+    description: 'Architecture, engineering, estimation, permits, PM, ops, and finance — one platform. Design. Build. Done.',
     images: ['/kealee-og-image.jpg'],
   },
   robots: {

@@ -24,6 +24,7 @@ import {
   ShieldCheck,
   DollarSign,
   Clock,
+  HardHat,
 } from 'lucide-react';
 
 import {
@@ -115,9 +116,9 @@ export function HomePageClient({
         headline="Design. Build. Done."
         subheadline="The connected platform that takes your project from architecture through permits through build-out through closeout. One platform. Zero gaps."
         ctas={[
-          { label: 'Start Your Project', href: '/project-owner', variant: 'primary' },
+          { label: 'Start Your Project', href: '/owner', variant: 'primary' },
           { label: 'Find a Professional', href: '/network', variant: 'outline' },
-          { label: 'List Your Business', href: '/network/list', variant: 'ghost' },
+          { label: 'Explore All Portals', href: '/portals', variant: 'ghost' },
         ]}
         trustItems={[
           'Licensed & Insured',
@@ -298,27 +299,27 @@ export function HomePageClient({
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <ModuleShowcaseCard
               icon={User}
               title="Project Owner Portal"
-              subtitle="m-project-owner"
-              description="Your command center for managing your project from start to finish."
+              subtitle="Your Command Center"
+              description="Manage your project from start to finish with milestone tracking and escrow payments."
               features={[
-                'Readiness Checklists',
                 'Milestone Tracking',
                 'Contract Management',
                 'Escrow Payments',
+                'Document Sharing',
               ]}
               priceAnchor={{ amount: 49, period: 'mo', showFrom: true }}
-              cta={{ label: 'Start Project', href: '/project-owner' }}
+              cta={{ label: 'Start Project', href: '/owner' }}
               accentColor="navy"
             />
             <ModuleShowcaseCard
               icon={Palette}
-              title="Architecture & Design"
-              subtitle="m-architect"
-              description="Professional design services from licensed architects in the DC-Baltimore area."
+              title="Architecture"
+              subtitle="Professional Design"
+              description="Licensed architects in the DC-Baltimore area for permit-ready drawings."
               features={[
                 'Architectural Drawings',
                 '3D Renderings',
@@ -330,9 +331,24 @@ export function HomePageClient({
               accentColor="teal"
             />
             <ModuleShowcaseCard
+              icon={Ruler}
+              title="Engineering"
+              subtitle="PE-Stamped Drawings"
+              description="Structural, MEP, civil, and geotechnical engineering services."
+              features={[
+                'Structural Engineering',
+                'MEP Design',
+                'Civil Engineering',
+                'Geotechnical',
+              ]}
+              priceAnchor={{ amount: 1500, showFrom: true }}
+              cta={{ label: 'Get Engineering', href: '/engineer' }}
+              accentColor="orange"
+            />
+            <ModuleShowcaseCard
               icon={FileCheck}
               title="Permits & Inspections"
-              subtitle="m-permits"
+              subtitle="AI-Powered Review"
               description="AI-powered permit review and submission for faster approvals."
               features={[
                 'AI Compliance Review',
@@ -369,120 +385,66 @@ export function HomePageClient({
             </h2>
           </div>
 
-          <div className="grid lg:grid-cols-5 gap-6">
-            {/* Ops Services - 3 columns */}
-            <div className="lg:col-span-3">
-              <div
-                className="bg-white rounded-xl overflow-hidden h-full"
-                style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)' }}
-              >
-                <div className="h-1" style={{ backgroundColor: brand.orange }} />
-                <div className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div
-                      className="w-12 h-12 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: `${brand.orange}15` }}
-                    >
-                      <Wrench className="w-6 h-6" style={{ color: brand.orange }} />
-                    </div>
-                    <div>
-                      <h3
-                        className="text-lg font-bold"
-                        style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}
-                      >
-                        Ops & PM Services
-                      </h3>
-                      <span className="text-sm text-gray-500">m-ops-services</span>
-                    </div>
-                  </div>
-
-                  {/* Tabs */}
-                  <div className="flex border-b border-gray-200 mb-4 overflow-x-auto">
-                    {['PM Software', 'Operations (11)', 'Estimation (7)'].map((tab, i) => (
-                      <button
-                        key={tab}
-                        className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${
-                          i === 0
-                            ? 'border-b-2 text-orange-600'
-                            : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                        style={{ borderColor: i === 0 ? brand.orange : 'transparent' }}
-                      >
-                        {tab}
-                      </button>
-                    ))}
-                  </div>
-
-                  <p className="text-sm text-gray-600 mb-4">
-                    Self-service project management software with scheduling, budgeting,
-                    document management, and team collaboration tools.
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Essentials</span>
-                      <span className="font-mono font-semibold" style={{ color: brand.orange }}>
-                        $99/mo
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Performance</span>
-                      <span className="font-mono font-semibold" style={{ color: brand.orange }}>
-                        $199/mo
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Scale</span>
-                      <span className="font-mono font-semibold" style={{ color: brand.orange }}>
-                        $349/mo
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Enterprise</span>
-                      <span className="font-mono font-semibold" style={{ color: brand.orange }}>
-                        Custom
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* PM Operations Add-on */}
-                  <div
-                    className="mt-6 p-4 rounded-lg"
-                    style={{ backgroundColor: `${brand.orange}08`, border: `1px dashed ${brand.orange}40` }}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge text="Optional Add-On" color="orange" size="sm" />
-                    </div>
-                    <p className="text-sm font-semibold text-gray-800">
-                      PM Operations — Remote coordination only
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Dedicated PM team for remote project coordination. From $1,750/mo.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Permits - 2 columns */}
-            <div className="lg:col-span-2">
-              <ModuleShowcaseCard
-                icon={FileCheck}
-                title="Permits for Contractors"
-                subtitle="m-permits"
-                description="Streamline permit applications across 3,000+ jurisdictions with AI pre-review."
-                features={[
-                  'Bulk Applications',
-                  'Jurisdiction Database',
-                  'Contractor Dashboard',
-                  'Corrections Tracking',
-                ]}
-                priceAnchor={{ amount: 495, showFrom: true }}
-                cta={{ label: 'Explore Permits', href: '/permits' }}
-                accentColor="green"
-                className="h-full"
-              />
-            </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <ModuleShowcaseCard
+              icon={Wrench}
+              title="Ops Services"
+              subtitle="Outsourced Operations"
+              description="Dedicated PM team for coordination, reporting, and vendor management."
+              features={[
+                'Dedicated PM Team',
+                'Weekly Reports',
+                'Vendor Coordination',
+                'Admin Support',
+              ]}
+              priceAnchor={{ amount: 1750, period: 'mo', showFrom: true }}
+              cta={{ label: 'Explore Ops', href: '/ops' }}
+              accentColor="orange"
+            />
+            <ModuleShowcaseCard
+              icon={LayoutDashboard}
+              title="PM Software"
+              subtitle="Self-Service Tools"
+              description="Full project management suite with scheduling, budgeting, and RFIs."
+              features={[
+                'Scheduling',
+                'Budgeting',
+                'Document Management',
+                'Team Collaboration',
+              ]}
+              priceAnchor={{ amount: 99, period: 'mo', showFrom: true }}
+              cta={{ label: 'Try PM Tools', href: '/pm' }}
+              accentColor="orange"
+            />
+            <ModuleShowcaseCard
+              icon={Calculator}
+              title="Estimation"
+              subtitle="AI-Powered Takeoff"
+              description="Assembly-based cost estimating with AI takeoff and cost databases."
+              features={[
+                'AI Takeoff',
+                'Assembly Pricing',
+                'Cost Databases',
+                'Bid Reports',
+              ]}
+              priceAnchor={{ amount: 149, period: 'mo', showFrom: true }}
+              cta={{ label: 'Try Estimation', href: '/estimation' }}
+              accentColor="orange"
+            />
+            <ModuleShowcaseCard
+              icon={DollarSign}
+              title="Finance & Escrow"
+              subtitle="Secure Payments"
+              description="Escrow management, milestone payments, and financial tracking for all parties."
+              features={[
+                'Escrow Accounts',
+                'Milestone Payments',
+                'Financial Reports',
+                'Trust Accounting',
+              ]}
+              cta={{ label: 'Explore Finance', href: '/finance' }}
+              accentColor="navy"
+            />
           </div>
         </div>
       </motion.section>
@@ -527,7 +489,7 @@ export function HomePageClient({
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <PortalPreview
               portalName="Project Owner Portal"
-              portalUrl="app.kealee.com/projects"
+              portalUrl="kealee.com/owner"
               description="Your command center for tracking every milestone, payment, and document in your project."
               heroImage={portalImages.projectOwner.src}
               heroImageAlt={portalImages.projectOwner.alt}
@@ -548,11 +510,11 @@ export function HomePageClient({
                 'Escrow payment management',
                 'Document sharing & approvals',
               ]}
-              ctaHref="/services/pm-software"
+              ctaHref="/owner"
             />
             <PortalPreview
               portalName="Architect Portal"
-              portalUrl="app.kealee.com/architect"
+              portalUrl="kealee.com/architect"
               description="Portfolio management, plan uploads, and seamless handoff to permitting — all in one place."
               heroImage={portalImages.architect.src}
               heroImageAlt={portalImages.architect.alt}
@@ -573,11 +535,36 @@ export function HomePageClient({
                 'Client review & approval workflow',
                 'Direct permit submission handoff',
               ]}
-              ctaHref="/services/architect"
+              ctaHref="/architect"
+            />
+            <PortalPreview
+              portalName="Engineering Portal"
+              portalUrl="kealee.com/engineer"
+              description="Structural, MEP, civil, and geotechnical engineering with PE-stamped drawings."
+              heroImage={portalImages.engineer.src}
+              heroImageAlt={portalImages.engineer.alt}
+              accentColor="orange"
+              sidebarItems={[
+                { icon: Ruler, label: 'Projects' },
+                { icon: Building2, label: 'Structural' },
+                { icon: HardHat, label: 'MEP' },
+                { icon: FileText, label: 'Drawings' },
+              ]}
+              stats={[
+                { label: 'Active Projects', value: '12' },
+                { label: 'PE Stamps', value: '34' },
+                { label: 'Disciplines', value: '4' },
+              ]}
+              features={[
+                'Structural analysis & design',
+                'MEP coordination drawings',
+                'PE-stamped deliverables',
+              ]}
+              ctaHref="/engineer"
             />
             <PortalPreview
               portalName="Permits Portal"
-              portalUrl="app.kealee.com/permits"
+              portalUrl="kealee.com/permits"
               description="AI-powered permit review, auto form-filling, and real-time status tracking across 3,000+ jurisdictions."
               heroImage={portalImages.permits.src}
               heroImageAlt={portalImages.permits.alt}
@@ -598,11 +585,11 @@ export function HomePageClient({
                 'Auto form filling from plans',
                 'Inspection scheduling & tracking',
               ]}
-              ctaHref="/services/permits"
+              ctaHref="/permits"
             />
             <PortalPreview
               portalName="Estimation Tool"
-              portalUrl="app.kealee.com/estimation"
+              portalUrl="kealee.com/estimation"
               description="Build accurate estimates with assembly-based takeoffs, cost databases, and professional reports."
               heroImage={portalImages.estimation.src}
               heroImageAlt={portalImages.estimation.alt}
@@ -623,11 +610,11 @@ export function HomePageClient({
                 'RSMeans cost database integration',
                 'Professional PDF report generation',
               ]}
-              ctaHref="/services/estimation"
+              ctaHref="/estimation"
             />
             <PortalPreview
               portalName="Ops Services"
-              portalUrl="app.kealee.com/ops"
+              portalUrl="kealee.com/ops"
               description="Your dedicated operations team handles permits, reporting, vendor coordination, and admin work."
               heroImage={portalImages.opsServices.src}
               heroImageAlt={portalImages.opsServices.alt}
@@ -648,11 +635,36 @@ export function HomePageClient({
                 'Weekly progress reporting',
                 'Vendor & sub management',
               ]}
-              ctaHref="/services/ops"
+              ctaHref="/ops"
             />
             <PortalPreview
-              portalName="Marketplace"
-              portalUrl="marketplace.kealee.com"
+              portalName="Finance & Escrow"
+              portalUrl="kealee.com/finance"
+              description="Secure escrow management, milestone payments, and financial tracking for all project parties."
+              heroImage={portalImages.financeTrust.src}
+              heroImageAlt={portalImages.financeTrust.alt}
+              accentColor="navy"
+              sidebarItems={[
+                { icon: DollarSign, label: 'Escrow' },
+                { icon: FileText, label: 'Statements' },
+                { icon: BarChart3, label: 'Reports' },
+                { icon: ShieldCheck, label: 'Trust' },
+              ]}
+              stats={[
+                { label: 'Escrow Accounts', value: '47' },
+                { label: 'Releases', value: '312' },
+                { label: 'Protected', value: '$8.2M' },
+              ]}
+              features={[
+                'Secure escrow management',
+                'Milestone-based payments',
+                'Full transaction history',
+              ]}
+              ctaHref="/finance"
+            />
+            <PortalPreview
+              portalName="Contractor Network"
+              portalUrl="kealee.com/network"
               description="Find verified contractors, compare bids, and connect with professionals in the DC-Baltimore corridor."
               heroImage={portalImages.marketplace.src}
               heroImageAlt={portalImages.marketplace.alt}

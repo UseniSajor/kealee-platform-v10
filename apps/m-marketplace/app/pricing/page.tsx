@@ -56,7 +56,7 @@ export default function PricingPage() {
         'Mobile Field Access', 'Change Order Tracking', 'Contract Manager', 'Safety Manager',
       ],
       support: 'Help center + community forum',
-      cta: { label: 'Start Free Trial', href: 'https://app.kealee.com/signup' },
+      cta: { label: 'Start Free Trial', href: '/signup' },
     },
     {
       name: 'S2: Builder',
@@ -77,7 +77,7 @@ export default function PricingPage() {
         'COI Tracker', 'QC Inspections', 'Document Control',
       ],
       support: 'Email support (48hr response)',
-      cta: { label: 'Start Free Trial', href: 'https://app.kealee.com/signup' },
+      cta: { label: 'Start Free Trial', href: '/signup' },
     },
     {
       name: 'S3: Pro',
@@ -97,7 +97,7 @@ export default function PricingPage() {
         'AI Takeoff Analysis', 'Labor Analytics', 'Selection Manager', 'Warranty Portal',
       ],
       support: 'Priority email + chat (24hr response)',
-      cta: { label: 'Start Free Trial', href: 'https://app.kealee.com/signup' },
+      cta: { label: 'Start Free Trial', href: '/signup' },
     },
     {
       name: 'S4: Enterprise',
@@ -899,7 +899,7 @@ export default function PricingPage() {
                   View Cart & Checkout
                 </Link>
                 <Link
-                  href="https://ops.kealee.com"
+                  href="/ops"
                   className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition"
                 >
                   Browse All Services
@@ -976,7 +976,7 @@ export default function PricingPage() {
                 Talk to Sales
               </Link>
               <Link
-                href="https://app.kealee.com/signup"
+                href="/signup"
                 className="px-8 py-4 bg-blue-500 hover:bg-blue-400 text-white font-semibold rounded-xl transition"
               >
                 Start Free Trial
