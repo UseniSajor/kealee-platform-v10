@@ -1,5 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { bidService } from './bid.service'
+import { analyzeBid, generateBidStrategy } from './bid-analysis.service'
+import { uploadBidDocument, processBidDocument, listBidDocuments } from './bid-document.service'
 
 export async function bidRoutes(fastify: FastifyInstance) {
 
@@ -174,5 +176,77 @@ export async function bidRoutes(fastify: FastifyInstance) {
 
     const subRequest = await bidService.createSubRequest(id, data)
     return reply.code(201).send(subRequest)
+  })
+
+  // ── AI Analysis & Strategy ────────────────────────────────────────────────
+
+  // POST /bids/:id/analyze — AI bid analysis
+  fastify.post('/:id/analyze', async (request, reply) => {
+    const { id } = request.params as { id: string }
+    const result = await analyzeBid(id)
+    return reply.send(result)
+  })
+
+  // POST /bids/:id/strategy — AI strategy generation
+  fastify.post('/:id/strategy', async (request, reply) => {
+    const { id } = request.params as { id: string }
+    const result = await generateBidStrategy(id)
+    return reply.send(result)
+  })
+
+  // ── Document Management ───────────────────────────────────────────────────
+
+  // GET /bids/:id/documents — List bid documents
+  fastify.get('/:id/documents', async (request, reply) => {
+    const { id } = request.params as { id: string }
+    const documents = await listBidDocuments(id)
+    return reply.send(documents)
+  })
+
+  // POST /bids/:id/documents/upload — Upload a document (multipart)
+  fastify.post('/:id/documents/upload', async (request, reply) => {
+    const { id } = request.params as { id: string }
+
+    let fileBuffer: Buffer | null = null
+    let filename = 'upload'
+    let mimeType = 'application/octet-stream'
+    let type = 'OTHER'
+    let notes = ''
+
+    const parts = request.parts()
+    for await (const part of parts) {
+      if (part.type === 'file') {
+        fileBuffer = await part.toBuffer()
+        filename = part.filename || 'upload'
+        mimeType = part.mimetype || 'application/octet-stream'
+      } else {
+        // field
+        const value = part.value as string
+        if (part.fieldname === 'type') type = value
+        if (part.fieldname === 'notes') notes = value
+      }
+    }
+
+    if (!fileBuffer) {
+      return reply.code(400).send({ error: 'No file uploaded' })
+    }
+
+    const doc = await uploadBidDocument({
+      bidId: id,
+      file: fileBuffer,
+      filename,
+      mimeType,
+      type,
+      notes,
+    })
+
+    return reply.code(201).send(doc)
+  })
+
+  // POST /bids/:id/documents/:docId/process — AI document processing
+  fastify.post('/:id/documents/:docId/process', async (request, reply) => {
+    const { id, docId } = request.params as { id: string; docId: string }
+    const result = await processBidDocument(id, docId)
+    return reply.send(result)
   })
 }

@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { bidService } from './bid.service'
 import { parseEmail, ingestEmail, checkDuplicate } from './bid-ingest.service'
-import { sendDailyAlerts } from './bid-notify.service'
+import { sendDailyAlerts, sendUrgentAlert } from './bid-notify.service'
 
 export async function bidAutomationRoutes(fastify: FastifyInstance) {
 
@@ -119,6 +119,20 @@ export async function bidAutomationRoutes(fastify: FastifyInstance) {
   fastify.post('/scan/notify', async (request, reply) => {
     const { recipientEmail } = (request.body as any) || {}
     const result = await sendDailyAlerts(recipientEmail)
+    return reply.send(result)
+  })
+
+  // ── POST /scan/urgent-notify — Send urgent alert for a specific bid ──────
+
+  fastify.post('/scan/urgent-notify', async (request, reply) => {
+    const { bidId } = request.body as { bidId: string }
+
+    if (!bidId) {
+      return reply.code(400).send({ error: 'bidId is required' })
+    }
+
+    const bid = await bidService.getBid(bidId)
+    const result = await sendUrgentAlert(bid)
     return reply.send(result)
   })
 

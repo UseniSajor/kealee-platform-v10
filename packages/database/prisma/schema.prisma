@@ -11485,6 +11485,11 @@ model BidOpportunity {
   mbeScore      Int?
   overallScore  Int?
 
+  // AI Analysis (Phase 3)
+  aiAnalysis   Json?
+  aiStrategy   Json?
+  aiAnalyzedAt DateTime?
+
   // Notes
   notes         String? @db.Text
   internalNotes String? @db.Text
@@ -11564,8 +11569,11 @@ model BidDocument {
   fileSize   Int?
   mimeType   String?
   uploadedBy String?
-  notes      String?
-  createdAt  DateTime        @default(now())
+  notes         String?
+  metadata      Json?
+  extractedText String?    @db.Text
+  processedAt   DateTime?
+  createdAt     DateTime        @default(now())
 
   bid BidOpportunity @relation(fields: [bidId], references: [id], onDelete: Cascade)
 
