@@ -857,6 +857,15 @@ const start = async () => {
     })
 
     // ══════════════════════════════════════════════════════════════
+    // Bid Pipeline - External Opportunity Tracking & RAG Intelligence
+    // ══════════════════════════════════════════════════════════════
+
+    await safeRegisterBlock('Bid Pipeline - Opportunity tracking, n8n stubs, RAG routes', async () => {
+      const { opportunityBidsRoutes } = await import('./modules/bids/bids.routes')
+      await fastify.register(opportunityBidsRoutes, { prefix: '/api/bids' })
+    })
+
+    // ══════════════════════════════════════════════════════════════
 
     // GraphQL DISABLED FOR MVP - Uncomment when needed
     /*

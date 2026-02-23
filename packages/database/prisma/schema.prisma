@@ -11373,3 +11373,212 @@ model MultifamilyAreaPhase {
   @@index([projectId])
   @@index([projectId, status])
 }
+
+// ═══════════════════════════════════════════════════════════════
+// BID PIPELINE - External Opportunities Kealee Construction Bids On
+// ═══════════════════════════════════════════════════════════════
+
+enum BidSource {
+  BUILDINGCONNECTED
+  EMARYLAND_MARKETPLACE
+  OPENGOV
+  SHA_MDOT
+  DIRECT_EMAIL
+  NETWORKING
+  OTHER
+}
+
+enum BidStatus {
+  DISCOVERED
+  REVIEWING
+  PREPARING
+  READY
+  SUBMITTED
+  AWARDED
+  LOST
+  NO_BID
+  EXPIRED
+}
+
+model OpportunityBid {
+  id              String        @id @default(cuid())
+
+  // Source & identification
+  source          BidSource
+  externalId      String?
+  sourceUrl       String?
+
+  // Project details
+  projectName     String
+  description     String?       @db.Text
+  scope           String?
+  location        String?
+  city            String?
+  state           String?       @default("MD")
+  county          String?
+
+  // Owner / GC info
+  ownerName       String?
+  gcName          String?
+  gcContactName   String?
+  gcContactEmail  String?
+  gcContactPhone  String?
+
+  // Financials
+  estimatedValue  Decimal?      @db.Decimal(12, 2)
+  bidAmount       Decimal?      @db.Decimal(12, 2)
+  bondRequired    Boolean?      @default(false)
+  bondAmount      Decimal?      @db.Decimal(12, 2)
+
+  // Deadlines & dates
+  prebidDate      DateTime?
+  prebidLocation  String?
+  questionsDeadline DateTime?
+  bidDeadline     DateTime
+  projectStart    DateTime?
+  projectEnd      DateTime?
+
+  // Status & tracking
+  status          BidStatus     @default(DISCOVERED)
+  priority        String?       @default("MEDIUM")
+  winProbability  Int?
+
+  // AI Analysis
+  aiScore         Int?
+  aiNotes         String?       @db.Text
+  matchReasons    String[]
+  keyRequirements String[]
+  risks           String[]
+
+  // Internal tracking
+  assignedTo      String?
+  internalNotes   String?       @db.Text
+  decisionNotes   String?       @db.Text
+
+  // Email tracking
+  emailThreadId   String?
+  lastEmailDate   DateTime?
+
+  // Timestamps
+  discoveredAt    DateTime      @default(now())
+  submittedAt     DateTime?
+  decisionDate    DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  documents       OpportunityBidDocument[]
+  checklist       OpportunityBidChecklist[]
+  subQuotes       SubcontractorQuote[]
+  activities      BidActivity[]
+
+  @@index([status])
+  @@index([bidDeadline])
+  @@index([source])
+  @@index([state])
+  @@index([assignedTo])
+  @@index([discoveredAt])
+  @@map("opportunity_bids")
+}
+
+model OpportunityBidDocument {
+  id          String   @id @default(cuid())
+  bidId       String
+  name        String
+  fileUrl     String
+  fileType    String?
+  fileSize    Int?
+  category    String?
+  version     Int      @default(1)
+  uploadedAt  DateTime @default(now())
+
+  bid OpportunityBid @relation(fields: [bidId], references: [id], onDelete: Cascade)
+
+  @@index([bidId])
+  @@index([category])
+  @@map("opportunity_bid_documents")
+}
+
+model OpportunityBidChecklist {
+  id          String   @id @default(cuid())
+  bidId       String
+  item        String
+  category    String?
+  completed   Boolean  @default(false)
+  completedAt DateTime?
+  completedBy String?
+  notes       String?  @db.Text
+  order       Int      @default(0)
+
+  bid OpportunityBid @relation(fields: [bidId], references: [id], onDelete: Cascade)
+
+  @@index([bidId])
+  @@index([completed])
+  @@map("opportunity_bid_checklists")
+}
+
+model SubcontractorQuote {
+  id             String   @id @default(cuid())
+  bidId          String
+  subName        String
+  subEmail       String?
+  subPhone       String?
+  trade          String
+  scope          String?  @db.Text
+  quoteAmount    Decimal  @db.Decimal(12, 2)
+  notes          String?  @db.Text
+  attachments    String[]
+  receivedAt     DateTime @default(now())
+  validUntil     DateTime?
+  status         String   @default("RECEIVED")
+
+  bid OpportunityBid @relation(fields: [bidId], references: [id], onDelete: Cascade)
+
+  @@index([bidId])
+  @@index([trade])
+  @@map("subcontractor_quotes")
+}
+
+model BidActivity {
+  id          String   @id @default(cuid())
+  bidId       String
+  type        String
+  description String
+  metadata    Json?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+
+  bid OpportunityBid @relation(fields: [bidId], references: [id], onDelete: Cascade)
+
+  @@index([bidId])
+  @@index([createdAt])
+  @@map("bid_activities")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RAG VECTOR DATABASE - Bid Intelligence
+// ═══════════════════════════════════════════════════════════════
+
+model BidEmbedding {
+  id          String   @id @default(cuid())
+  bidId       String   @unique
+  embedding   Unsupported("vector(1536)")
+  metadata    Json
+  createdAt   DateTime @default(now())
+
+  @@index([bidId])
+  @@map("bid_embeddings")
+}
+
+model BidSimilarity {
+  id              String   @id @default(cuid())
+  sourceBidId     String
+  similarBidId    String
+  similarity      Decimal  @db.Decimal(5, 4)
+  createdAt       DateTime @default(now())
+
+  @@unique([sourceBidId, similarBidId])
+  @@index([sourceBidId])
+  @@index([similarity])
+  @@map("bid_similarities")
+}
