@@ -81,7 +81,7 @@ async function seedDirect(projectId: string) {
           projectId,
           name: `Phase ${i + 1} - ${building}`,
           description: `Construction phase for ${building}`,
-          status: 'NOT_STARTED',
+          status: 'PLANNED',
           unitCount: building === 'Building C' ? 15 : 18,
         },
       })
@@ -100,12 +100,12 @@ async function seedDirect(projectId: string) {
     await prismaAny.multifamilyUnit.create({
       data: {
         projectId,
-        unitNumber: unit.unitNumber,
+        number: unit.unitNumber,
         building: unit.building,
         floor: unit.floor,
         unitType: unit.unitType,
         sqft: unit.sqft,
-        status: 'PLANNED',
+        status: 'NOT_STARTED',
         phaseId: phaseMap[unit.building] ?? null,
       },
     })
