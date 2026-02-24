@@ -12,6 +12,13 @@ export const EVENT_TYPES = {
     updated: 'estimate.updated',
     approved: 'estimate.approved',
   },
+  ctc: {
+    imported: 'ctc.imported',
+    takeoff: {
+      completed: 'ctc.takeoff.completed',
+      confirmed: 'ctc.takeoff.confirmed',
+    },
+  },
   bid: {
     request: { created: 'bid.request.created' },
     submissions: { scored: 'bid.submissions.scored' },

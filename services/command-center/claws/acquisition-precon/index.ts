@@ -9,7 +9,7 @@ import type { Job } from 'bullmq';
 // Config per architecture doc §6
 const CLAW_CONFIG = {
   name: 'acquisition-precon-claw',
-  eventPatterns: ['project.*', 'estimation.*'],
+  eventPatterns: ['project.*', 'estimation.*', 'ctc.*'],
   writableModels: [
     'Estimate', 'EstimateSection', 'EstimateLineItem',
     'BidRequest', 'BidInvitation', 'BidSubmission', 'ContractorBid',
@@ -36,6 +36,18 @@ export class AcquisitionPreConClaw extends BaseClaw {
       case 'project.precon.requested': {
         const queue = createQueue(KEALEE_QUEUES.BID_ENGINE);
         await queue.add('create-bid-request', { event });
+        break;
+      }
+      case 'ctc.imported': {
+        // CTC import completed — trigger project analysis refresh for affected projects
+        const queue = createQueue(KEALEE_QUEUES.ESTIMATION_TOOL);
+        await queue.add('ctc-import-completed', { event });
+        break;
+      }
+      case 'ctc.takeoff.confirmed': {
+        // AI takeoff confirmed — can trigger bid request creation if project is ready
+        const queue = createQueue(KEALEE_QUEUES.ESTIMATION_TOOL);
+        await queue.add('takeoff-confirmed', { event });
         break;
       }
     }
@@ -65,6 +77,12 @@ export class AcquisitionPreConClaw extends BaseClaw {
           break;
         case 'calculate-costs':
           await this.handleCalculateCosts(job);
+          break;
+        case 'ctc-import-completed':
+          await this.handleCTCImportCompleted(job);
+          break;
+        case 'takeoff-confirmed':
+          await this.handleTakeoffConfirmed(job);
           break;
       }
     });
@@ -288,6 +306,79 @@ export class AcquisitionPreConClaw extends BaseClaw {
       trigger: { eventId: event.id, eventType: event.type },
     });
     await this.eventBus.publish(newEvent);
+  }
+
+  // ---------------------------------------------------------------------------
+  // CTC Workers
+  // ---------------------------------------------------------------------------
+
+  private async handleCTCImportCompleted(job: Job): Promise<void> {
+    const { event } = job.data as { event: KealeeEventEnvelope };
+    const payload = event.payload as { costDatabaseId?: string; taskCount?: number };
+
+    // Log the CTC import completion for auditing
+    console.log(
+      `[AcquisitionPreCon] CTC import completed: ${payload.taskCount || 0} tasks ` +
+      `imported to database ${payload.costDatabaseId || 'unknown'}`
+    );
+
+    // If there are projects in PRE_CONSTRUCTION that use CTC, re-analyze them
+    const activeProjects = await this.prisma.project.findMany({
+      where: {
+        organizationId: event.organizationId,
+        status: 'PRE_CONSTRUCTION',
+      },
+      take: 10,
+    });
+
+    for (const project of activeProjects) {
+      const queue = createQueue(KEALEE_QUEUES.ESTIMATION_TOOL);
+      await queue.add('analyze-project', {
+        event: createEvent({
+          type: 'project.created',
+          source: this.config.name,
+          projectId: project.id,
+          organizationId: event.organizationId,
+          payload: { refreshReason: 'ctc-import-completed' },
+          trigger: { eventId: event.id, eventType: event.type },
+        }),
+      });
+    }
+  }
+
+  private async handleTakeoffConfirmed(job: Job): Promise<void> {
+    const { event } = job.data as { event: KealeeEventEnvelope };
+    const payload = event.payload as {
+      takeoffJobId?: string;
+      estimateId?: string;
+      lineItemsCreated?: number;
+    };
+
+    if (!payload.estimateId) return;
+
+    // Check if the estimate is linked to a project
+    const estimate = await this.prisma.estimate.findUnique({
+      where: { id: payload.estimateId },
+    });
+
+    if (!estimate || !estimate.projectId) return;
+
+    // Publish estimate.updated event so other CLAWs can react
+    const updatedEvent = createEvent({
+      type: EVENT_TYPES.estimate.updated,
+      source: this.config.name,
+      projectId: estimate.projectId,
+      organizationId: estimate.organizationId,
+      payload: {
+        estimateId: estimate.id,
+        status: 'AI_TAKEOFF_CONFIRMED',
+        lineItemsAdded: payload.lineItemsCreated || 0,
+        takeoffJobId: payload.takeoffJobId,
+      },
+      entity: { type: 'Estimate', id: estimate.id },
+      trigger: { eventId: event.id, eventType: event.type },
+    });
+    await this.eventBus.publish(updatedEvent);
   }
 
   private async handleCalculateCosts(job: Job): Promise<void> {

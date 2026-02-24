@@ -1827,4 +1827,605 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
       }
     }
   )
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CTC (Construction Task Catalog) ENDPOINTS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // POST /estimation/ctc/search — Search CTC tasks
+  fastify.post(
+    '/ctc/search',
+    {
+      preHandler: [
+        async (request: any, reply: any) => { await authenticateUser(request, reply) },
+        validateBody(z.object({
+          query: z.string().optional(),
+          division: z.string().optional(),
+          category: z.string().optional(),
+          modifiersOnly: z.boolean().optional(),
+          page: z.number().optional(),
+          limit: z.number().optional(),
+        })),
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const body = request.body as {
+          query?: string; division?: string; category?: string;
+          modifiersOnly?: boolean; page?: number; limit?: number
+        }
+        const page = Math.max(1, body.page || 1)
+        const limit = Math.min(100, Math.max(1, body.limit || 50))
+        const skip = (page - 1) * limit
+
+        const where: any = {
+          sourceDatabase: 'CTC-Gordian-MD-DGS-2023',
+          isActive: true,
+        }
+
+        if (body.query) {
+          where.OR = [
+            { name: { contains: body.query, mode: 'insensitive' } },
+            { ctcTaskNumber: { contains: body.query, mode: 'insensitive' } },
+            { csiCode: { contains: body.query, mode: 'insensitive' } },
+            { description: { contains: body.query, mode: 'insensitive' } },
+          ]
+        }
+
+        if (body.division) {
+          where.tags = { has: `div-${body.division}` }
+        }
+
+        if (body.modifiersOnly) {
+          where.tags = { ...(where.tags || {}), has: 'modifier' }
+        }
+
+        if (body.category) {
+          where.category = body.category
+        }
+
+        const [tasks, total] = await Promise.all([
+          prismaAny.assembly.findMany({
+            where,
+            skip,
+            take: limit,
+            orderBy: { ctcTaskNumber: 'asc' },
+            select: {
+              id: true,
+              ctcTaskNumber: true,
+              csiCode: true,
+              name: true,
+              description: true,
+              category: true,
+              subcategory: true,
+              unit: true,
+              unitCost: true,
+              laborCost: true,
+              materialCost: true,
+              equipmentCost: true,
+              laborHours: true,
+              tags: true,
+              ctcModifierOf: true,
+              metadata: true,
+            },
+          }),
+          prismaAny.assembly.count({ where }),
+        ])
+
+        return reply.send({
+          data: tasks,
+          pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(500).send({ error: error.message || 'CTC search failed' })
+      }
+    }
+  )
+
+  // GET /estimation/ctc/divisions — List CTC divisions with task counts
+  fastify.get(
+    '/ctc/divisions',
+    {
+      preHandler: [
+        async (request: any, reply: any) => { await authenticateUser(request, reply) },
+      ],
+    },
+    async (request, reply) => {
+      try {
+        // Get all CTC assemblies grouped by their division tag
+        const allCTC = await prismaAny.assembly.findMany({
+          where: {
+            sourceDatabase: 'CTC-Gordian-MD-DGS-2023',
+            isActive: true,
+          },
+          select: { tags: true },
+        })
+
+        const CSI_DIVISIONS: Record<string, string> = {
+          '01': 'General Requirements', '02': 'Existing Conditions',
+          '03': 'Concrete', '04': 'Masonry', '05': 'Metals',
+          '06': 'Wood, Plastics, and Composites',
+          '07': 'Thermal and Moisture Protection', '08': 'Openings',
+          '09': 'Finishes', '10': 'Specialties', '11': 'Equipment',
+          '12': 'Furnishings', '13': 'Special Construction',
+          '14': 'Conveying Equipment', '21': 'Fire Suppression',
+          '22': 'Plumbing', '23': 'HVAC', '26': 'Electrical',
+          '27': 'Communications', '28': 'Electronic Safety and Security',
+          '31': 'Earthwork', '32': 'Exterior Improvements',
+          '33': 'Utilities',
+        }
+
+        const divCounts = new Map<string, number>()
+        for (const asm of allCTC) {
+          const divTag = (asm.tags as string[])?.find((t: string) => t.startsWith('div-'))
+          if (divTag) {
+            const code = divTag.replace('div-', '')
+            divCounts.set(code, (divCounts.get(code) || 0) + 1)
+          }
+        }
+
+        const divisions = Array.from(divCounts.entries())
+          .map(([code, count]) => ({
+            code,
+            name: CSI_DIVISIONS[code] || `Division ${code}`,
+            taskCount: count,
+          }))
+          .sort((a, b) => a.code.localeCompare(b.code))
+
+        return reply.send({
+          data: divisions,
+          totalTasks: allCTC.length,
+        })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(500).send({ error: error.message || 'Failed to get CTC divisions' })
+      }
+    }
+  )
+
+  // GET /estimation/ctc/tasks/:taskNumber — Get a specific CTC task
+  fastify.get(
+    '/ctc/tasks/:taskNumber',
+    {
+      preHandler: [
+        async (request: any, reply: any) => { await authenticateUser(request, reply) },
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const { taskNumber } = request.params as { taskNumber: string }
+
+        const task = await prismaAny.assembly.findFirst({
+          where: {
+            ctcTaskNumber: taskNumber,
+            sourceDatabase: 'CTC-Gordian-MD-DGS-2023',
+          },
+        })
+
+        if (!task) {
+          return reply.code(404).send({ error: `CTC task ${taskNumber} not found` })
+        }
+
+        // Also fetch modifiers for this task
+        const modifiers = await prismaAny.assembly.findMany({
+          where: {
+            ctcModifierOf: taskNumber,
+            sourceDatabase: 'CTC-Gordian-MD-DGS-2023',
+          },
+          orderBy: { ctcTaskNumber: 'asc' },
+        })
+
+        return reply.send({ data: { ...task, modifiers } })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(500).send({ error: error.message || 'Failed to get CTC task' })
+      }
+    }
+  )
+
+  // POST /estimation/ctc/estimate — Create an estimate from CTC tasks
+  fastify.post(
+    '/ctc/estimate',
+    {
+      preHandler: [
+        async (request: any, reply: any) => { await authenticateUser(request, reply) },
+        validateBody(z.object({
+          name: z.string().min(1),
+          projectName: z.string().optional(),
+          projectAddress: z.string().optional(),
+          tasks: z.array(z.object({
+            ctcTaskNumber: z.string(),
+            quantity: z.number().min(0),
+            modifiers: z.array(z.string()).optional(),
+          })),
+          overheadPercent: z.number().optional(),
+          profitPercent: z.number().optional(),
+          contingencyPercent: z.number().optional(),
+        })),
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user
+        const body = request.body as {
+          name: string; projectName?: string; projectAddress?: string;
+          tasks: Array<{ ctcTaskNumber: string; quantity: number; modifiers?: string[] }>;
+          overheadPercent?: number; profitPercent?: number; contingencyPercent?: number;
+        }
+
+        // Resolve CTC tasks from database
+        const taskNumbers = body.tasks.map(t => t.ctcTaskNumber)
+        const allModifiers = body.tasks.flatMap(t => t.modifiers || [])
+        const allNumbers = [...new Set([...taskNumbers, ...allModifiers])]
+
+        const assemblies = await prismaAny.assembly.findMany({
+          where: {
+            ctcTaskNumber: { in: allNumbers },
+            sourceDatabase: 'CTC-Gordian-MD-DGS-2023',
+          },
+        })
+
+        const assemblyMap = new Map<string, any>()
+        for (const a of assemblies) {
+          assemblyMap.set(a.ctcTaskNumber, a)
+        }
+
+        // Calculate line items
+        let subtotalMaterial = 0
+        let subtotalLabor = 0
+        let subtotalEquipment = 0
+        const lineItems: any[] = []
+
+        for (const taskReq of body.tasks) {
+          const asm = assemblyMap.get(taskReq.ctcTaskNumber)
+          if (!asm) continue
+
+          let baseUnitCost = Number(asm.unitCost) || 0
+          let baseLaborCost = Number(asm.laborCost) || 0
+          let baseMaterialCost = Number(asm.materialCost) || 0
+          let baseEquipmentCost = Number(asm.equipmentCost) || 0
+
+          // Apply modifiers
+          for (const modNum of (taskReq.modifiers || [])) {
+            const mod = assemblyMap.get(modNum)
+            if (!mod) continue
+            baseUnitCost += Number(mod.unitCost) || 0
+            baseLaborCost += Number(mod.laborCost) || 0
+            baseMaterialCost += Number(mod.materialCost) || 0
+            baseEquipmentCost += Number(mod.equipmentCost) || 0
+          }
+
+          const qty = taskReq.quantity
+          const totalCost = baseUnitCost * qty
+
+          lineItems.push({
+            assemblyId: asm.id,
+            description: asm.name,
+            quantity: qty,
+            unit: asm.unit,
+            unitCost: baseUnitCost,
+            laborCost: baseLaborCost * qty,
+            materialCost: baseMaterialCost * qty,
+            equipmentCost: baseEquipmentCost * qty,
+            totalCost,
+            metadata: {
+              ctcTaskNumber: taskReq.ctcTaskNumber,
+              modifiers: taskReq.modifiers || [],
+            },
+          })
+
+          subtotalMaterial += baseMaterialCost * qty
+          subtotalLabor += baseLaborCost * qty
+          subtotalEquipment += baseEquipmentCost * qty
+        }
+
+        const subtotalDirect = subtotalMaterial + subtotalLabor + subtotalEquipment
+        const overheadPct = body.overheadPercent ?? 10
+        const profitPct = body.profitPercent ?? 10
+        const contingencyPct = body.contingencyPercent ?? 5
+        const overhead = subtotalDirect * (overheadPct / 100)
+        const profit = subtotalDirect * (profitPct / 100)
+        const contingency = subtotalDirect * (contingencyPct / 100)
+        const totalCost = subtotalDirect + overhead + profit + contingency
+
+        // Find CTC cost database
+        const ctcDb = await prismaAny.costDatabase.findFirst({
+          where: { source: 'CTC-Gordian-MD-DGS-2023' },
+        })
+
+        // Create the estimate
+        const estimate = await prismaAny.estimate.create({
+          data: {
+            organizationId: user.orgId || user.organizationId || 'default',
+            costDatabaseId: ctcDb?.id || undefined,
+            name: body.name,
+            description: `CTC-based estimate with ${lineItems.length} line items`,
+            type: 'PRELIMINARY',
+            status: 'DRAFT_ESTIMATE',
+            projectName: body.projectName,
+            projectAddress: body.projectAddress,
+            subtotalMaterial,
+            subtotalLabor,
+            subtotalEquipment,
+            subtotalDirect,
+            overhead,
+            overheadPercent: overheadPct,
+            profit,
+            profitPercent: profitPct,
+            contingency,
+            contingencyPercent: contingencyPct,
+            totalCost,
+            aiGenerated: false,
+            metadata: { source: 'ctc-estimate', taskCount: lineItems.length },
+          },
+        })
+
+        // Create line items
+        for (const item of lineItems) {
+          await prismaAny.estimateLineItem.create({
+            data: {
+              estimateId: estimate.id,
+              assemblyId: item.assemblyId,
+              description: item.description,
+              quantity: item.quantity,
+              unit: item.unit,
+              unitCost: item.unitCost,
+              laborCost: item.laborCost,
+              materialCost: item.materialCost,
+              equipmentCost: item.equipmentCost,
+              totalCost: item.totalCost,
+              metadata: item.metadata,
+            },
+          })
+        }
+
+        return reply.code(201).send({
+          success: true,
+          data: {
+            estimateId: estimate.id,
+            name: estimate.name,
+            lineItems: lineItems.length,
+            subtotalDirect,
+            overhead,
+            profit,
+            contingency,
+            totalCost,
+          },
+        })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(500).send({ error: error.message || 'Failed to create CTC estimate' })
+      }
+    }
+  )
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // AI TAKEOFF ENDPOINTS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // POST /estimation/ai-takeoff/upload — Upload plans for AI takeoff processing
+  fastify.post(
+    '/ai-takeoff/upload',
+    {
+      preHandler: [
+        async (request: any, reply: any) => { await authenticateUser(request, reply) },
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const data = await request.file()
+        if (!data) {
+          return reply.code(400).send({ error: 'No file uploaded' })
+        }
+
+        const fileName = data.filename || 'plans.pdf'
+        const user = (request as any).user
+        const userId = user?.id
+        if (!userId) {
+          return reply.code(401).send({ error: 'User not authenticated' })
+        }
+
+        // Collect optional fields
+        const fields: Record<string, string> = {}
+        if (data.fields) {
+          for (const [key, field] of Object.entries(data.fields)) {
+            if (field && typeof field === 'object' && 'value' in field) {
+              fields[key] = (field as any).value
+            }
+          }
+        }
+
+        // Read file buffer
+        const chunks: Buffer[] = []
+        for await (const chunk of data.file) {
+          chunks.push(chunk)
+        }
+        const fileBuffer = Buffer.concat(chunks)
+
+        if (fileBuffer.length > 100 * 1024 * 1024) {
+          return reply.code(400).send({ error: 'File size must be less than 100MB' })
+        }
+
+        // Create TakeoffJob record
+        const job = await prismaAny.takeoffJob.create({
+          data: {
+            userId,
+            organizationId: user.orgId || user.organizationId || null,
+            estimateId: fields.estimateId || null,
+            fileName,
+            fileSize: fileBuffer.length,
+            mimeType: data.mimetype || 'application/pdf',
+            status: 'TAKEOFF_PENDING',
+            progress: 0,
+          },
+        })
+
+        // Start background processing (non-blocking)
+        // Import dynamically to avoid circular deps
+        const { processAITakeoff } = await import('../../services/ai-takeoff.service')
+        processAITakeoff(job.id, fileBuffer).catch((err: any) => {
+          fastify.log.error(err, `AI takeoff job ${job.id} failed`)
+        })
+
+        return reply.code(201).send({
+          success: true,
+          data: {
+            jobId: job.id,
+            status: 'TAKEOFF_PENDING',
+            fileName,
+            fileSize: fileBuffer.length,
+          },
+        })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(500).send({ error: error.message || 'Failed to start AI takeoff' })
+      }
+    }
+  )
+
+  // GET /estimation/ai-takeoff/:jobId — Get takeoff job status and results
+  fastify.get(
+    '/ai-takeoff/:jobId',
+    {
+      preHandler: [
+        async (request: any, reply: any) => { await authenticateUser(request, reply) },
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const { jobId } = request.params as { jobId: string }
+        const user = (request as any).user
+
+        const job = await prismaAny.takeoffJob.findFirst({
+          where: { id: jobId, userId: user.id },
+        })
+
+        if (!job) {
+          return reply.code(404).send({ error: 'Takeoff job not found' })
+        }
+
+        return reply.send({ data: job })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(500).send({ error: error.message || 'Failed to get takeoff job' })
+      }
+    }
+  )
+
+  // POST /estimation/ai-takeoff/:jobId/confirm — Confirm and apply takeoff results
+  fastify.post(
+    '/ai-takeoff/:jobId/confirm',
+    {
+      preHandler: [
+        async (request: any, reply: any) => { await authenticateUser(request, reply) },
+        validateBody(z.object({
+          estimateId: z.string().uuid().optional(),
+          adjustments: z.array(z.object({
+            ctcTaskNumber: z.string(),
+            adjustedQuantity: z.number().optional(),
+            excluded: z.boolean().optional(),
+          })).optional(),
+        })),
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const { jobId } = request.params as { jobId: string }
+        const user = (request as any).user
+        const body = request.body as {
+          estimateId?: string;
+          adjustments?: Array<{ ctcTaskNumber: string; adjustedQuantity?: number; excluded?: boolean }>;
+        }
+
+        const job = await prismaAny.takeoffJob.findFirst({
+          where: { id: jobId, userId: user.id, status: 'TAKEOFF_REVIEW' },
+        })
+
+        if (!job) {
+          return reply.code(404).send({ error: 'Takeoff job not found or not in review status' })
+        }
+
+        // Apply adjustments
+        let extractedTasks = (job.extractedTasks as any[]) || []
+        if (body.adjustments) {
+          for (const adj of body.adjustments) {
+            const task = extractedTasks.find((t: any) => t.ctcTaskNumber === adj.ctcTaskNumber)
+            if (task) {
+              if (adj.excluded) task.excluded = true
+              if (adj.adjustedQuantity !== undefined) task.quantity = adj.adjustedQuantity
+            }
+          }
+        }
+
+        // Filter out excluded tasks
+        const confirmedTasks = extractedTasks.filter((t: any) => !t.excluded)
+
+        // Create or update estimate with confirmed tasks
+        const targetEstimateId = body.estimateId || job.estimateId
+        let lineItemsCreated = 0
+
+        if (targetEstimateId) {
+          // Look up assemblies for the confirmed CTC tasks
+          const taskNumbers = confirmedTasks.map((t: any) => t.ctcTaskNumber)
+          const assemblies = await prismaAny.assembly.findMany({
+            where: {
+              ctcTaskNumber: { in: taskNumbers },
+              sourceDatabase: 'CTC-Gordian-MD-DGS-2023',
+            },
+          })
+          const asmMap = new Map(assemblies.map((a: any) => [a.ctcTaskNumber, a]))
+
+          for (const task of confirmedTasks) {
+            const asm = asmMap.get(task.ctcTaskNumber)
+            if (!asm) continue
+
+            const qty = task.quantity || 1
+            await prismaAny.estimateLineItem.create({
+              data: {
+                estimateId: targetEstimateId,
+                assemblyId: asm.id,
+                description: asm.name,
+                quantity: qty,
+                unit: asm.unit,
+                unitCost: Number(asm.unitCost),
+                laborCost: Number(asm.laborCost) * qty,
+                materialCost: Number(asm.materialCost) * qty,
+                equipmentCost: Number(asm.equipmentCost) * qty,
+                totalCost: Number(asm.unitCost) * qty,
+                metadata: { ctcTaskNumber: task.ctcTaskNumber, aiTakeoffJobId: jobId },
+              },
+            })
+            lineItemsCreated++
+          }
+        }
+
+        // Update job status
+        await prismaAny.takeoffJob.update({
+          where: { id: jobId },
+          data: {
+            status: 'TAKEOFF_CONFIRMED',
+            adjustments: body.adjustments || null,
+            reviewedBy: user.id,
+            lineItemsGenerated: lineItemsCreated,
+            completedAt: new Date(),
+          },
+        })
+
+        return reply.send({
+          success: true,
+          data: {
+            jobId,
+            status: 'TAKEOFF_CONFIRMED',
+            confirmedTasks: confirmedTasks.length,
+            lineItemsCreated,
+            estimateId: targetEstimateId,
+          },
+        })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(500).send({ error: error.message || 'Failed to confirm takeoff' })
+      }
+    }
+  )
 }

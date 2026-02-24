@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Loader2, Sparkles, CheckCircle2, AlertTriangle, Upload, FileText } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { formatCurrency } from '@/lib/utils';
 
@@ -29,8 +29,14 @@ export function ScopeAnalysisStep({
     new Set(data.selectedItems || [])
   );
 
+  // AI Takeoff state
+  const [showTakeoff, setShowTakeoff] = useState(false);
+  const [takeoffFile, setTakeoffFile] = useState<File | null>(null);
+  const [takeoffStatus, setTakeoffStatus] = useState<'idle' | 'uploading' | 'processing' | 'complete'>('idle');
+  const [takeoffJobId, setTakeoffJobId] = useState<string | null>(null);
+
   useEffect(() => {
-    if (!analysis && data.basicInfo?.description) {
+    if (!analysis && data.basicInfo?.description && !showTakeoff) {
       analyzeScope();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -87,6 +93,64 @@ export function ScopeAnalysisStep({
     }
   };
 
+  const handleTakeoffUpload = useCallback(async () => {
+    if (!takeoffFile) return;
+    setTakeoffStatus('uploading');
+    setAnalysisError(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', takeoffFile);
+      formData.append('discipline', 'general');
+      if (data.basicInfo?.estimateId) {
+        formData.append('estimateId', data.basicInfo.estimateId);
+      }
+      const res = await apiClient.uploadAITakeoff(formData);
+      if (res.success && res.data) {
+        const jobId = (res.data as any).takeoffJobId || (res.data as any).id;
+        setTakeoffJobId(jobId);
+        setTakeoffStatus('processing');
+
+        // Poll for completion
+        const poll = setInterval(async () => {
+          try {
+            const status = await apiClient.getAITakeoffJob(jobId);
+            const job = (status.data as any);
+            if (job?.status === 'TAKEOFF_REVIEW' || job?.status === 'TAKEOFF_CONFIRMED') {
+              clearInterval(poll);
+              setTakeoffStatus('complete');
+              // Convert takeoff results into scope analysis work items
+              const items = (job.results || []).map((r: any, i: number) => ({
+                id: `takeoff-${i}`,
+                name: r.ctcTaskName || r.name || `Item ${i + 1}`,
+                description: `CTC ${r.ctcTaskNumber || ''} - ${r.unit || ''} @ $${r.unitCost || 0}/unit`,
+                confidence: r.confidence || 0.85,
+                ctcTaskNumber: r.ctcTaskNumber,
+                quantity: r.quantity,
+                unitCost: r.unitCost,
+              }));
+              setAnalysis({
+                workItems: items,
+                suggestedAssemblies: [],
+                estimatedRange: { min: 0, max: 0 },
+                takeoffJobId: jobId,
+              });
+              setSelectedItems(new Set(items.map((it: any) => it.id)));
+            } else if (job?.status === 'TAKEOFF_FAILED') {
+              clearInterval(poll);
+              setTakeoffStatus('idle');
+              setAnalysisError('AI takeoff processing failed. Please try again.');
+            }
+          } catch {
+            // Keep polling
+          }
+        }, 5000);
+      }
+    } catch {
+      setAnalysisError('Failed to upload plans for AI takeoff.');
+      setTakeoffStatus('idle');
+    }
+  }, [takeoffFile, data.basicInfo]);
+
   const toggleItem = (itemId: string) => {
     const newSelected = new Set(selectedItems);
     if (newSelected.has(itemId)) {
@@ -101,6 +165,7 @@ export function ScopeAnalysisStep({
     onNext({
       scopeAnalysis: analysis,
       selectedItems: Array.from(selectedItems),
+      takeoffJobId: analysis?.takeoffJobId || takeoffJobId || null,
     });
   };
 
@@ -199,6 +264,79 @@ export function ScopeAnalysisStep({
           Review the detected work items and select what to include
         </p>
       </div>
+
+      {/* AI Takeoff Upload Option */}
+      <Card className="border-dashed">
+        <CardContent className="p-4">
+          {!showTakeoff ? (
+            <button
+              type="button"
+              className="flex items-center gap-3 w-full text-left"
+              onClick={() => setShowTakeoff(true)}
+            >
+              <Upload className="h-5 w-5 text-primary" />
+              <div>
+                <p className="font-medium text-sm">Upload Plans for AI Takeoff</p>
+                <p className="text-xs text-muted-foreground">
+                  Upload architectural plans to automatically extract CTC tasks and quantities
+                </p>
+              </div>
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="font-medium text-sm flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  AI Takeoff from Plans
+                </p>
+                <Button variant="ghost" size="sm" onClick={() => setShowTakeoff(false)}>
+                  Cancel
+                </Button>
+              </div>
+              <div className="border rounded-lg p-4 text-center">
+                <input
+                  type="file"
+                  accept=".pdf,.png,.jpg,.jpeg,.tiff,.dxf,.dwg"
+                  className="hidden"
+                  id="takeoff-plan-upload"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) setTakeoffFile(f);
+                  }}
+                />
+                <label htmlFor="takeoff-plan-upload" className="cursor-pointer">
+                  {takeoffFile ? (
+                    <p className="text-sm font-medium">{takeoffFile.name}</p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Click to select PDF, PNG, TIFF, DXF, or DWG file
+                    </p>
+                  )}
+                </label>
+              </div>
+              {takeoffFile && (
+                <Button
+                  onClick={handleTakeoffUpload}
+                  disabled={takeoffStatus === 'uploading' || takeoffStatus === 'processing'}
+                  className="w-full"
+                >
+                  {takeoffStatus === 'uploading'
+                    ? 'Uploading...'
+                    : takeoffStatus === 'processing'
+                    ? 'AI is processing...'
+                    : 'Run AI Takeoff'}
+                </Button>
+              )}
+              {takeoffStatus === 'processing' && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Processing plans — this may take a few minutes
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Detected Work Items */}
       <Card>

@@ -19,6 +19,9 @@ import { prisma } from '@kealee/database'
 import {
   processImportJob,
 } from '../../services/cost-code-import.service'
+import {
+  processCTCImportJob,
+} from '../../services/ctc-parser.service'
 
 // ---------------------------------------------------------------------------
 // Routes
@@ -167,6 +170,88 @@ export async function costCodePdfImportRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error)
       return reply.code(500).send({ error: error.message || 'Failed to start PDF import' })
+    }
+  })
+
+  // ========================================================================
+  // POST /pdf/upload-ctc — Upload a CTC PDF and kick off CTC-specific pipeline
+  // ========================================================================
+
+  fastify.post('/pdf/upload-ctc', async (request, reply) => {
+    try {
+      const data = await request.file()
+      if (!data) {
+        return reply.code(400).send({ error: 'No file uploaded' })
+      }
+
+      const fileName = data.filename || 'ctc-upload.pdf'
+      if (!fileName.toLowerCase().endsWith('.pdf')) {
+        return reply.code(400).send({ error: 'Only PDF files are supported' })
+      }
+
+      // Read file buffer
+      const chunks: Buffer[] = []
+      for await (const chunk of data.file) {
+        chunks.push(chunk)
+      }
+      const pdfBuffer = Buffer.concat(chunks)
+
+      // CTC PDFs can be large (27MB+), allow up to 100MB
+      if (pdfBuffer.length > 100 * 1024 * 1024) {
+        return reply.code(400).send({ error: 'File size must be less than 100MB' })
+      }
+
+      const user = (request as any).user
+      const userId = user?.id
+      if (!userId) {
+        return reply.code(401).send({ error: 'User not authenticated' })
+      }
+
+      // CTC imports target STANDARD tier (admin-only)
+      const userRole = user?.role?.toLowerCase() || ''
+      const memberRole = user?.orgMember?.roleKey?.toLowerCase() || ''
+      const isAdmin = ['admin', 'super_admin'].includes(userRole) ||
+                      ['admin', 'super_admin'].includes(memberRole)
+      if (!isAdmin) {
+        return reply.code(403).send({
+          error: 'Only Kealee administrators can import CTC data',
+        })
+      }
+
+      // Create import job record
+      const job = await (prisma as any).costCodeImportJob.create({
+        data: {
+          userId,
+          fileName,
+          fileSize: pdfBuffer.length,
+          mimeType: 'application/pdf',
+          status: 'PENDING',
+          progress: 0,
+          targetTier: 'STANDARD',
+          isAdminUpload: true,
+        },
+      })
+
+      // Start CTC-specific processing in background (non-blocking)
+      processCTCImportJob(job.id, pdfBuffer).catch((err: any) => {
+        fastify.log.error(err, `CTC import job ${job.id} failed`)
+      })
+
+      return reply.code(201).send({
+        success: true,
+        data: {
+          jobId: job.id,
+          status: 'PENDING',
+          fileName,
+          fileSize: pdfBuffer.length,
+          importType: 'ctc',
+          tier: 'STANDARD',
+          estimatedDuration: '30-60 minutes for full CTC catalog',
+        },
+      })
+    } catch (error: any) {
+      fastify.log.error(error)
+      return reply.code(500).send({ error: error.message || 'Failed to start CTC import' })
     }
   })
 

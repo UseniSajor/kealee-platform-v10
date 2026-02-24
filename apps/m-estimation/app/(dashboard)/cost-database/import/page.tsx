@@ -34,7 +34,7 @@ import { apiClient } from '@/lib/api';
 import Link from 'next/link';
 
 type ImportType = 'materials' | 'labor' | 'equipment' | 'assemblies';
-type FileMode = 'csv' | 'pdf';
+type FileMode = 'csv' | 'pdf' | 'ctc';
 
 interface ImportResult {
   success: boolean;
@@ -394,6 +394,17 @@ export default function CostBookImportPage() {
         >
           <FileSpreadsheet className="h-4 w-4" />
           CSV (Structured)
+        </button>
+        <button
+          onClick={() => setFileMode('ctc')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 font-medium transition-all ${
+            fileMode === 'ctc'
+              ? 'border-amber-500 bg-amber-50 text-amber-800'
+              : 'border-gray-200 text-gray-600 hover:border-gray-300'
+          }`}
+        >
+          <Database className="h-4 w-4" />
+          CTC (Gordian)
         </button>
       </div>
 
@@ -960,6 +971,178 @@ export default function CostBookImportPage() {
               </p>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* ================================================================ */}
+      {/* CTC IMPORT MODE                                                  */}
+      {/* ================================================================ */}
+      {fileMode === 'ctc' && (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="h-5 w-5 text-amber-600" />
+                CTC (Construction Task Catalog) Import
+              </CardTitle>
+              <CardDescription>
+                Upload the Gordian Construction Task Catalog PDF. Our AI will extract all CTC task
+                numbers, descriptions, unit prices, and labor/material/equipment breakdowns organized
+                by CSI MasterFormat divisions. This is a large import (~3,500 pages) and may take 30-60 minutes.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {pdfError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                  <XCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-red-600">{pdfError}</p>
+                </div>
+              )}
+
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-amber-800">
+                    <p className="font-medium">Admin Only</p>
+                    <p>CTC import creates a standard-tier cost database visible to all users. Only Kealee administrators can perform this import.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* File Upload */}
+              <div
+                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                  pdfFile ? 'border-amber-400 bg-amber-50' : 'border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) {
+                      setPdfFile(e.target.files[0]);
+                      setPdfError('');
+                    }
+                  }}
+                  className="hidden"
+                  id="ctc-file-input"
+                />
+                <label htmlFor="ctc-file-input" className="cursor-pointer">
+                  {pdfFile ? (
+                    <div className="flex items-center justify-center gap-3">
+                      <FileText className="h-8 w-8 text-amber-600" />
+                      <div className="text-left">
+                        <p className="font-medium text-gray-800">{pdfFile.name}</p>
+                        <p className="text-sm text-gray-500">
+                          {(pdfFile.size / (1024 * 1024)).toFixed(1)} MB
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <Upload className="h-10 w-10 text-gray-400 mx-auto mb-3" />
+                      <p className="text-gray-600 font-medium">Click to upload CTC PDF</p>
+                      <p className="text-sm text-gray-400 mt-1">
+                        Supports the Gordian CTC format (up to 100MB)
+                      </p>
+                    </div>
+                  )}
+                </label>
+              </div>
+
+              {/* Upload Button */}
+              <Button
+                onClick={async () => {
+                  if (!pdfFile) return;
+                  setPdfUploading(true);
+                  setPdfError('');
+                  try {
+                    const res = await apiClient.importCTCPdf(pdfFile);
+                    if (res.success && res.data) {
+                      loadImportJobs();
+                      setPdfFile(null);
+                    } else {
+                      setPdfError(res.error || 'CTC import failed');
+                    }
+                  } catch (err: any) {
+                    setPdfError(err.message || 'CTC import failed');
+                  } finally {
+                    setPdfUploading(false);
+                  }
+                }}
+                disabled={!pdfFile || pdfUploading}
+                className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+              >
+                {pdfUploading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Starting CTC Import...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Start CTC Import
+                  </>
+                )}
+              </Button>
+
+              <div className="text-sm text-gray-500">
+                <p className="font-medium mb-1">What gets imported:</p>
+                <ul className="list-disc list-inside space-y-0.5">
+                  <li>All CTC task numbers with CSI MasterFormat codes</li>
+                  <li>Unit prices with labor/material/equipment breakdown</li>
+                  <li>Modifier tasks (add/deduct adjustments to base tasks)</li>
+                  <li>Organized by CSI divisions (01-49)</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Import Jobs List (shared with PDF mode) */}
+          {importJobs.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Clock className="h-5 w-5" />
+                  Import Jobs
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {importJobs.map((job) => {
+                    const statusInfo = STATUS_LABELS[job.status] || { label: job.status, color: 'bg-gray-100 text-gray-700' };
+                    const isActive = !['COMPLETED', 'FAILED'].includes(job.status);
+                    return (
+                      <div key={job.id} className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-gray-400" />
+                            <span className="font-medium text-sm">{job.fileName}</span>
+                          </div>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${statusInfo.color}`}>
+                            {statusInfo.label}
+                          </span>
+                        </div>
+                        {isActive && (
+                          <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                            <div
+                              className="bg-amber-500 h-2 rounded-full transition-all duration-500"
+                              style={{ width: `${job.progress}%` }}
+                            />
+                          </div>
+                        )}
+                        {job.status === 'COMPLETED' && (
+                          <p className="text-xs text-green-600">
+                            Imported {job.totalImported} items ({job.assembliesFound} tasks)
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
     </div>

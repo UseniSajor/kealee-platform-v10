@@ -1890,6 +1890,7 @@ model User {
 
   // Cost Code Import relations
   costCodeImportJobs CostCodeImportJob[] @relation("CostCodeImportJobs")
+  takeoffJobs        TakeoffJob[]        @relation("TakeoffJobs")
 
   // Cost Database 3-Tier relations
   submittedCostDatabases CostDatabase[]   @relation("CostDatabaseSubmitter")
@@ -6494,6 +6495,11 @@ model Assembly {
   // Trades required for this assembly
   tradesRequired String[] @default([])
 
+  // CTC (Construction Task Catalog) fields
+  ctcTaskNumber  String?  // e.g. "01-001", "03-210" — CTC/Gordian task number
+  ctcModifierOf  String?  // Parent task number if this is a modifier task
+  sourceDatabase String?  // Origin identifier: "CTC-Gordian-MD-DGS-2023", "Kealee-Marketplace", etc.
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -6506,6 +6512,7 @@ model Assembly {
   @@index([code])
   @@index([category])
   @@index([name])
+  @@index([ctcTaskNumber])
   @@map("assemblies")
 }
 
@@ -6676,6 +6683,7 @@ model Estimate {
   lineItems      EstimateLineItem[]
   comparisons    EstimateComparison[] @relation("EstimateComparisons")
   comparedTo     EstimateComparison[] @relation("ComparedEstimates")
+  takeoffJobs    TakeoffJob[]
 
   @@index([organizationId])
   @@index([projectId])
@@ -12251,4 +12259,68 @@ model LookaheadItem {
   @@index([startDate])
   @@index([status])
   @@map("lookahead_items")
+}
+
+// ── AI Takeoff Job ──────────────────────────────────────────────────
+// Tracks AI-powered plan takeoff jobs that process architectural drawings
+// into CTC task breakdowns and estimate line items.
+enum TakeoffJobStatus {
+  TAKEOFF_PENDING
+  TAKEOFF_UPLOADING
+  TAKEOFF_ANALYZING
+  TAKEOFF_EXTRACTING
+  TAKEOFF_MAPPING
+  TAKEOFF_REVIEW
+  TAKEOFF_CONFIRMED
+  TAKEOFF_FAILED
+}
+
+model TakeoffJob {
+  id             String          @id @default(uuid())
+  organizationId String?
+  userId         String
+  estimateId     String?
+
+  // Input files
+  fileName     String
+  fileUrl      String?
+  fileSize     Int?
+  mimeType     String   @default("application/pdf")
+  pageCount    Int?
+
+  // Processing state
+  status   TakeoffJobStatus @default(TAKEOFF_PENDING)
+  progress Int              @default(0) // 0-100
+
+  // AI extraction results
+  extractedScopes  Json?  // Array of detected scope items from plans
+  extractedTasks   Json?  // Mapped CTC tasks with quantities
+  confidence       Decimal? @db.Decimal(5, 4)
+
+  // Mapping results
+  ctcTasksMatched    Int @default(0)
+  ctcTasksUnmatched  Int @default(0)
+  lineItemsGenerated Int @default(0)
+
+  // Review
+  reviewedBy    String?
+  reviewNotes   String?
+  adjustments   Json?   // User modifications before confirmation
+
+  // Errors
+  errors Json?
+
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user     User      @relation("TakeoffJobs", fields: [userId], references: [id])
+  estimate Estimate? @relation(fields: [estimateId], references: [id])
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([estimateId])
+  @@index([status])
+  @@map("takeoff_jobs")
 }

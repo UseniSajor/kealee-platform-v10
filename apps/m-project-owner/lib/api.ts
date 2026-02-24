@@ -988,5 +988,21 @@ export const api = {
       method: 'POST',
       body: data,
     }),
+
+  // Project Wizard (CTC-powered project creation with estimate)
+  createProjectWizard: (data: {
+    name: string;
+    description?: string;
+    type?: string;
+    location?: string;
+    budget?: string;
+    includeCTCEstimate?: boolean;
+    createBidRequest?: boolean;
+  }) =>
+    apiRequest<{
+      project: ProjectSummary;
+      estimateId?: string;
+      bidRequestId?: string;
+    }>('/estimation/project-wizard', { method: 'POST', body: data }),
 }
 

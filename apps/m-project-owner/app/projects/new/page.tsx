@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button, Input, Textarea, ProgressBar, StepIndicator } from '@kealee/ui';
+import { api } from '@/lib/api';
 
 const STEPS = [
   { id: 'basics', title: 'Project Basics', subtitle: 'Name and location' },
@@ -21,6 +22,7 @@ interface ProjectFormData {
   endDate: string;
   description: string;
   contractorChoice: string;
+  includeCTCEstimate: boolean;
 }
 
 export default function NewProjectPage() {
@@ -35,6 +37,7 @@ export default function NewProjectPage() {
     endDate: '',
     description: '',
     contractorChoice: '',
+    includeCTCEstimate: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -53,20 +56,18 @@ export default function NewProjectPage() {
   const saveDraft = async () => {
     setIsSaving(true);
     try {
+      // Auto-save draft via Next.js local API route (preserves offline behavior)
       const response = await fetch('/api/projects/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to save draft');
+      if (response.ok) {
+        setLastSaved(new Date());
       }
-
-      setLastSaved(new Date());
-    } catch (error) {
-      console.error('Error saving draft:', error);
+    } catch {
+      // Silently fail draft save — user can still submit normally
     } finally {
       setIsSaving(false);
     }
@@ -102,20 +103,29 @@ export default function NewProjectPage() {
     if (!validateCurrentStep()) return;
 
     try {
-      const response = await fetch('/api/projects', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to create project');
+      if (formData.includeCTCEstimate) {
+        // Use project wizard endpoint for CTC-powered project creation
+        const result = await api.createProjectWizard({
+          name: formData.name,
+          description: formData.description,
+          type: formData.type,
+          location: formData.location,
+          budget: formData.budget,
+          includeCTCEstimate: true,
+          createBidRequest: formData.contractorChoice === 'help',
+        });
+        const projectId = result.project?.id;
+        router.push(projectId ? `/projects/${projectId}` : '/projects/success');
+      } else {
+        // Standard project creation
+        const result = await api.createProject({
+          name: formData.name,
+          description: formData.description,
+          category: (formData.type?.toUpperCase().replace(/\s+/g, '_') || 'OTHER') as any,
+        });
+        const projectId = result.project?.id;
+        router.push(projectId ? `/projects/${projectId}` : '/projects/success');
       }
-
-      const data = await response.json();
-      const projectId = data.project?.id;
-      router.push(projectId ? `/projects/${projectId}` : '/projects/success');
     } catch (error) {
       console.error('Error creating project:', error);
       setErrors({ submit: error instanceof Error ? error.message : 'Failed to create project. Please try again.' });
@@ -359,6 +369,29 @@ function StepScope({
         rows={3}
         helperText="Optional - You can add more details later"
       />
+
+      {/* CTC Estimate Toggle */}
+      <div className="mt-4 p-4 bg-amber-50 rounded-xl border border-amber-200">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={formData.includeCTCEstimate}
+            onChange={(e) =>
+              setFormData({ ...formData, includeCTCEstimate: e.target.checked })
+            }
+            className="mt-1 h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
+          />
+          <div>
+            <p className="font-semibold text-amber-900">
+              Include AI-powered CTC estimate
+            </p>
+            <p className="text-sm text-amber-700 mt-0.5">
+              Automatically generate a cost estimate using the Construction Task
+              Catalog based on your project description and scope.
+            </p>
+          </div>
+        </label>
+      </div>
     </div>
   );
 }
@@ -524,6 +557,21 @@ function StepReview({ formData }: { formData: ProjectFormData }) {
         )}
       </div>
 
+      {/* CTC Estimate Badge */}
+      {formData.includeCTCEstimate && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-700 font-bold">
+            AI
+          </div>
+          <div>
+            <p className="font-semibold text-amber-900">CTC Estimate Included</p>
+            <p className="text-sm text-amber-700">
+              An AI-powered cost estimate will be generated from the Construction Task Catalog
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Next Steps Preview */}
       <div className="bg-primary-50 rounded-xl p-6">
         <h3 className="font-semibold text-primary-900 mb-3">What happens next?</h3>
@@ -532,6 +580,12 @@ function StepReview({ formData }: { formData: ProjectFormData }) {
             <Check size={16} className="text-primary-600" />
             Your project will be created and saved to your dashboard
           </li>
+          {formData.includeCTCEstimate && (
+            <li className="flex items-center gap-2">
+              <Check size={16} className="text-primary-600" />
+              A CTC-based cost estimate will be generated automatically
+            </li>
+          )}
           <li className="flex items-center gap-2">
             <Check size={16} className="text-primary-600" />
             You'll be able to invite contractors immediately

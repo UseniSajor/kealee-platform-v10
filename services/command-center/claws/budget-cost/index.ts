@@ -105,6 +105,16 @@ export class BudgetCostClaw extends BaseClaw {
         await queue.add('record-actual-from-payment', { event });
         break;
       }
+
+      // --- Estimate updated (CTC takeoff confirmed) -> refresh budget if needed ---
+      case 'estimate.updated': {
+        const p = event.payload as Record<string, any>;
+        if (p.status === 'AI_TAKEOFF_CONFIRMED') {
+          const queue = createQueue(KEALEE_QUEUES.BUDGET_TRACKER);
+          await queue.add('ctc-estimate-ready', { event });
+        }
+        break;
+      }
     }
   }
 
@@ -131,6 +141,9 @@ export class BudgetCostClaw extends BaseClaw {
           return await this.handleGenerateForecast(job);
         case 'create-snapshot':
           await this.handleCreateSnapshot(job);
+          break;
+        case 'ctc-estimate-ready':
+          await this.handleCTCEstimateReady(job);
           break;
       }
     });
@@ -183,40 +196,82 @@ export class BudgetCostClaw extends BaseClaw {
       categoryTotals.set(cat, 0);
     }
 
-    // AI analysis to categorize estimate line items
     const sections = estimate.sections ?? [];
     const allLineItems = sections.flatMap((s: any) => s.lineItems ?? []);
 
-    const aiResult = await this.ai.reason({
-      task:
-        'Categorize these estimate line items into the 7 standard construction budget categories: ' +
-        'LABOR, MATERIAL, EQUIPMENT, SUBCONTRACTOR, PERMITS, OVERHEAD, CONTINGENCY. ' +
-        'Return a JSON object mapping each lineItemId to its budget category.',
-      context: {
-        lineItems: allLineItems.map((li: any) => ({
-          id: li.id,
-          description: li.description,
-          csiDivision: li.csiDivision ?? null,
-          totalCost: li.totalCost ?? li.amount ?? 0,
-          unitType: li.unitType ?? null,
-        })),
-      },
-      systemPrompt: BUDGET_PROMPT,
-    });
+    // Check if this estimate was built from CTC tasks (has assembly references
+    // with ctcTaskNumber). CTC tasks carry granular L/M/E breakdowns we can use
+    // directly instead of relying on AI categorization.
+    const ctcAssemblyIds = allLineItems
+      .map((li: any) => li.assemblyId)
+      .filter(Boolean);
 
-    // Build category mapping from AI result or use CSI-based fallback
-    const lineItemCategories = (aiResult as any)?.categories ?? {};
+    let ctcAssemblyMap = new Map<string, any>();
+    if (ctcAssemblyIds.length > 0) {
+      const ctcAssemblies = await this.prisma.assembly.findMany({
+        where: {
+          id: { in: ctcAssemblyIds },
+          ctcTaskNumber: { not: null },
+        },
+      });
+      ctcAssemblyMap = new Map(ctcAssemblies.map((a) => [a.id, a]));
+    }
 
-    for (const lineItem of allLineItems) {
-      const category = this.resolveCategory(
-        lineItemCategories[lineItem.id],
-        lineItem,
-      );
-      const amount = Number(lineItem.totalCost ?? lineItem.amount ?? 0);
-      categoryTotals.set(
-        category,
-        (categoryTotals.get(category) ?? 0) + amount,
-      );
+    const isCTCEstimate = ctcAssemblyMap.size > 0;
+
+    if (isCTCEstimate) {
+      // CTC-aware categorization: use built-in labor/material/equipment breakdown
+      for (const lineItem of allLineItems) {
+        const assembly = ctcAssemblyMap.get(lineItem.assemblyId);
+        if (assembly) {
+          // CTC tasks have explicit L/M/E breakdowns — split into budget categories
+          const qty = Number(lineItem.quantity ?? 1);
+          const laborCost = Number(assembly.laborCost ?? 0) * qty;
+          const materialCost = Number(assembly.materialCost ?? 0) * qty;
+          const equipmentCost = Number(assembly.equipmentCost ?? 0) * qty;
+
+          categoryTotals.set('LABOR', (categoryTotals.get('LABOR') ?? 0) + laborCost);
+          categoryTotals.set('MATERIAL', (categoryTotals.get('MATERIAL') ?? 0) + materialCost);
+          categoryTotals.set('EQUIPMENT', (categoryTotals.get('EQUIPMENT') ?? 0) + equipmentCost);
+        } else {
+          // Non-CTC line item in a mixed estimate — use CSI-based fallback
+          const category = this.resolveCategory(undefined, lineItem);
+          const amount = Number(lineItem.totalCost ?? lineItem.amount ?? 0);
+          categoryTotals.set(category, (categoryTotals.get(category) ?? 0) + amount);
+        }
+      }
+    } else {
+      // Standard AI categorization for non-CTC estimates
+      const aiResult = await this.ai.reason({
+        task:
+          'Categorize these estimate line items into the 7 standard construction budget categories: ' +
+          'LABOR, MATERIAL, EQUIPMENT, SUBCONTRACTOR, PERMITS, OVERHEAD, CONTINGENCY. ' +
+          'Return a JSON object mapping each lineItemId to its budget category.',
+        context: {
+          lineItems: allLineItems.map((li: any) => ({
+            id: li.id,
+            description: li.description,
+            csiDivision: li.csiDivision ?? null,
+            totalCost: li.totalCost ?? li.amount ?? 0,
+            unitType: li.unitType ?? null,
+          })),
+        },
+        systemPrompt: BUDGET_PROMPT,
+      });
+
+      const lineItemCategories = (aiResult as any)?.categories ?? {};
+
+      for (const lineItem of allLineItems) {
+        const category = this.resolveCategory(
+          lineItemCategories[lineItem.id],
+          lineItem,
+        );
+        const amount = Number(lineItem.totalCost ?? lineItem.amount ?? 0);
+        categoryTotals.set(
+          category,
+          (categoryTotals.get(category) ?? 0) + amount,
+        );
+      }
     }
 
     // Add contingency if not present (default 10% of subtotal)
@@ -1050,6 +1105,113 @@ export class BudgetCostClaw extends BaseClaw {
         notes: reason ? `Snapshot reason: ${reason}` : null,
       },
     });
+  }
+
+  // =========================================================================
+  // ctc-estimate-ready: Handle CTC takeoff confirmation
+  // =========================================================================
+
+  private async handleCTCEstimateReady(job: Job): Promise<void> {
+    const { event } = job.data as { event: KealeeEventEnvelope };
+    const payload = event.payload as Record<string, any>;
+    const estimateId = payload.estimateId;
+    const projectId = event.projectId;
+    const organizationId = event.organizationId;
+
+    if (!estimateId) return;
+
+    // Check if budget already exists for this project — if so, update rather
+    // than duplicate.  If no budget exists yet, this is a no-op: the budget
+    // will be seeded when the estimate is formally approved.
+    const existingItems = await this.prisma.budgetItem.findMany({
+      where: { projectId },
+    });
+
+    if (existingItems.length === 0) {
+      // No budget yet — nothing to refresh.  Budget will be seeded on
+      // estimate.approved.
+      return;
+    }
+
+    // Load the CTC-enriched estimate to get updated line item totals
+    const estimate = await this.prisma.estimate.findUnique({
+      where: { id: estimateId },
+      include: {
+        sections: { include: { lineItems: true } },
+      },
+    });
+
+    if (!estimate) return;
+
+    const allLineItems = (estimate.sections ?? []).flatMap(
+      (s: any) => s.lineItems ?? [],
+    );
+
+    // Fetch CTC assemblies for L/M/E breakdown
+    const assemblyIds = allLineItems
+      .map((li: any) => li.assemblyId)
+      .filter(Boolean);
+
+    const ctcAssemblies = assemblyIds.length > 0
+      ? await this.prisma.assembly.findMany({
+          where: { id: { in: assemblyIds }, ctcTaskNumber: { not: null } },
+        })
+      : [];
+
+    const ctcMap = new Map(ctcAssemblies.map((a) => [a.id, a]));
+    const newLaborTotal = allLineItems.reduce((sum: number, li: any) => {
+      const asm = ctcMap.get(li.assemblyId);
+      return sum + (asm ? Number(asm.laborCost ?? 0) * Number(li.quantity ?? 1) : 0);
+    }, 0);
+    const newMaterialTotal = allLineItems.reduce((sum: number, li: any) => {
+      const asm = ctcMap.get(li.assemblyId);
+      return sum + (asm ? Number(asm.materialCost ?? 0) * Number(li.quantity ?? 1) : 0);
+    }, 0);
+    const newEquipmentTotal = allLineItems.reduce((sum: number, li: any) => {
+      const asm = ctcMap.get(li.assemblyId);
+      return sum + (asm ? Number(asm.equipmentCost ?? 0) * Number(li.quantity ?? 1) : 0);
+    }, 0);
+
+    // Update existing budget items with revised CTC totals
+    const updateCategory = async (category: BudgetCategory, newEstimated: number) => {
+      const item = existingItems.find((i) => i.category === category);
+      if (!item) return;
+      const variance = Number(item.actualCost) - newEstimated;
+      const variancePercent = newEstimated > 0 ? (variance / newEstimated) * 100 : 0;
+      this.assertWritable('BudgetItem');
+      await this.prisma.budgetItem.update({
+        where: { id: item.id },
+        data: { estimatedCost: newEstimated, varianceAmount: variance, variancePercent },
+      });
+    };
+
+    await updateCategory('LABOR', newLaborTotal);
+    await updateCategory('MATERIAL', newMaterialTotal);
+    await updateCategory('EQUIPMENT', newEquipmentTotal);
+
+    // Snapshot after CTC refresh
+    const queue = createQueue(KEALEE_QUEUES.BUDGET_TRACKER);
+    await queue.add('create-snapshot', {
+      projectId,
+      organizationId,
+      reason: 'ctc-takeoff-confirmed',
+    });
+
+    // Publish budget.updated
+    const updatedEvent = createEvent({
+      type: EVENT_TYPES.budget.updated,
+      source: this.config.name,
+      projectId,
+      organizationId,
+      payload: {
+        reason: 'ctc-takeoff-confirmed',
+        estimateId,
+        lineItemsAdded: payload.lineItemsAdded ?? 0,
+        updatedCategories: { LABOR: newLaborTotal, MATERIAL: newMaterialTotal, EQUIPMENT: newEquipmentTotal },
+      },
+      trigger: { eventId: event.id, eventType: event.type },
+    });
+    await this.eventBus.publish(updatedEvent);
   }
 
   // =========================================================================

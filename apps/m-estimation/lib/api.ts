@@ -509,6 +509,154 @@ class ApiClient {
     const query = new URLSearchParams(filteredParams).toString();
     return this.request(`/estimation/cost-import/databases/${id}/items${query ? `?${query}` : ''}`);
   }
+  // ========================================================================
+  // CTC (Construction Task Catalog)
+  // ========================================================================
+
+  // Upload CTC PDF for specialized import
+  async importCTCPdf(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const authHeaders = await this.getAuthHeader();
+    try {
+      const response = await fetch(`${this.baseUrl}/estimation/cost-import/pdf/upload-ctc`, {
+        method: 'POST',
+        headers: { ...authHeaders },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: response.statusText }));
+        return { success: false, error: error.error || error.message || 'CTC upload failed' };
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Network error',
+      };
+    }
+  }
+
+  // Search CTC tasks
+  async searchCTCTasks(params: {
+    query?: string;
+    division?: string;
+    category?: string;
+    modifiersOnly?: boolean;
+    page?: number;
+    limit?: number;
+  }) {
+    return this.request('/estimation/ctc/search', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
+  // Get CTC divisions with task counts
+  async getCTCDivisions() {
+    return this.request('/estimation/ctc/divisions');
+  }
+
+  // Get a specific CTC task with modifiers
+  async getCTCTask(taskNumber: string) {
+    return this.request(`/estimation/ctc/tasks/${encodeURIComponent(taskNumber)}`);
+  }
+
+  // Create estimate from CTC tasks
+  async createCTCEstimate(data: {
+    name: string;
+    projectName?: string;
+    projectAddress?: string;
+    tasks: Array<{ ctcTaskNumber: string; quantity: number; modifiers?: string[] }>;
+    overheadPercent?: number;
+    profitPercent?: number;
+    contingencyPercent?: number;
+  }) {
+    return this.request('/estimation/ctc/estimate', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // ========================================================================
+  // AI Takeoff
+  // ========================================================================
+
+  // Upload plans for AI takeoff
+  async uploadAITakeoff(file: File, estimateId?: string) {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (estimateId) formData.append('estimateId', estimateId);
+
+    const authHeaders = await this.getAuthHeader();
+    try {
+      const response = await fetch(`${this.baseUrl}/estimation/ai-takeoff/upload`, {
+        method: 'POST',
+        headers: { ...authHeaders },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: response.statusText }));
+        return { success: false, error: error.error || error.message || 'Takeoff upload failed' };
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Network error',
+      };
+    }
+  }
+
+  // Get AI takeoff job status
+  async getAITakeoffJob(jobId: string) {
+    return this.request(`/estimation/ai-takeoff/${jobId}`);
+  }
+
+  // Confirm AI takeoff results
+  async confirmAITakeoff(jobId: string, data: {
+    estimateId?: string;
+    adjustments?: Array<{ ctcTaskNumber: string; adjustedQuantity?: number; excluded?: boolean }>;
+  }) {
+    return this.request(`/estimation/ai-takeoff/${jobId}/confirm`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // ========================================================================
+  // Project Wizard
+  // ========================================================================
+
+  async createProjectWizard(data: {
+    projectName: string;
+    projectType: string;
+    description?: string;
+    location: { address: string; city: string; state: string; zipCode: string };
+    squareFootage?: number;
+    clientName?: string;
+    clientEmail?: string;
+    estimateSource?: 'ctc' | 'marketplace' | 'manual' | 'ai-takeoff';
+    ctcTasks?: Array<{ ctcTaskNumber: string; quantity: number; modifiers?: string[] }>;
+    takeoffJobId?: string;
+    createBidRequest?: boolean;
+    bidDueDate?: string;
+    overheadPercent?: number;
+    profitPercent?: number;
+    contingencyPercent?: number;
+  }) {
+    return this.request('/estimation/project-wizard', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 export const apiClient = new ApiClient();

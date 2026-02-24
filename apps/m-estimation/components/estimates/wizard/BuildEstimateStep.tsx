@@ -1,14 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Package, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Package, Sparkles, Search, Database, Loader2 } from 'lucide-react';
 import { formatCurrency, formatCurrencyDetailed } from '@/lib/utils';
 import { calculateCostBreakdown } from '@/lib/calculations';
+import { apiClient } from '@/lib/api';
 
 interface BuildEstimateStepProps {
   data: any;
@@ -67,6 +68,50 @@ export function BuildEstimateStep({
     unitCost: 0,
     type: 'material' as 'material' | 'labor' | 'equipment',
   });
+
+  // CTC browser state
+  const [showCTC, setShowCTC] = useState(false);
+  const [ctcSearch, setCTCSearch] = useState('');
+  const [ctcResults, setCTCResults] = useState<any[]>([]);
+  const [ctcLoading, setCTCLoading] = useState(false);
+
+  const searchCTC = useCallback(async () => {
+    if (!ctcSearch.trim()) return;
+    setCTCLoading(true);
+    try {
+      const res = await apiClient.searchCTCTasks({ query: ctcSearch, limit: 20 });
+      if (res.success && res.data) {
+        setCTCResults((res.data as any).data || []);
+      }
+    } catch {
+      // Search failed silently
+    } finally {
+      setCTCLoading(false);
+    }
+  }, [ctcSearch]);
+
+  const addCTCTask = (task: any, sectionId: string) => {
+    setSections(
+      sections.map((section) =>
+        section.id === sectionId
+          ? {
+              ...section,
+              items: [
+                ...section.items,
+                {
+                  id: `ctc-${task.ctcTaskNumber}-${Date.now()}`,
+                  description: `${task.ctcTaskNumber} - ${task.name}`,
+                  quantity: 1,
+                  unit: task.unit || 'EA',
+                  unitCost: Number(task.unitCost) || 0,
+                  type: 'material' as const,
+                },
+              ],
+            }
+          : section
+      )
+    );
+  };
 
   const addLineItem = (sectionId: string) => {
     if (!newItem.description || newItem.quantity <= 0 || newItem.unitCost <= 0) {
@@ -238,6 +283,81 @@ export function BuildEstimateStep({
             <Plus className="mr-2 h-4 w-4" />
             Add Section
           </Button>
+
+          {/* CTC Task Browser */}
+          <Card className="border-dashed">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Database className="h-4 w-4 text-amber-600" />
+                  CTC Task Catalog
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowCTC(!showCTC)}
+                >
+                  {showCTC ? 'Hide' : 'Browse CTC Tasks'}
+                </Button>
+              </div>
+            </CardHeader>
+            {showCTC && (
+              <CardContent className="pt-0 space-y-3">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Search CTC tasks by number, description, or CSI code..."
+                    value={ctcSearch}
+                    onChange={(e) => setCTCSearch(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && searchCTC()}
+                    className="flex-1"
+                  />
+                  <Button size="icon" onClick={searchCTC} disabled={ctcLoading}>
+                    {ctcLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Search className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                {ctcResults.length > 0 && (
+                  <div className="max-h-60 overflow-y-auto space-y-1">
+                    {ctcResults.map((task: any) => (
+                      <div
+                        key={task.id}
+                        className="flex items-center justify-between p-2 rounded-md border hover:bg-accent/50 text-sm"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <span className="font-mono text-xs text-amber-700 mr-1.5">
+                            {task.ctcTaskNumber}
+                          </span>
+                          <span className="text-muted-foreground">{task.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                          <span className="text-xs font-medium">
+                            {formatCurrency(task.unitCost)}/{task.unit}
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs"
+                            onClick={() => addCTCTask(task, sections[0]?.id || '1')}
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            Add
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {ctcResults.length === 0 && ctcSearch && !ctcLoading && (
+                  <p className="text-xs text-muted-foreground text-center py-2">
+                    No CTC tasks found. Try a different search term.
+                  </p>
+                )}
+              </CardContent>
+            )}
+          </Card>
         </div>
 
         {/* Cost Summary (30%) */}

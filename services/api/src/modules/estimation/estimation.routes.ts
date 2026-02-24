@@ -335,4 +335,257 @@ export async function estimationRoutes(fastify: FastifyInstance) {
       return reply.send({ metrics })
     }
   )
+
+  // ============================================
+  // PROJECT WIZARD ENDPOINT
+  // ============================================
+
+  const projectWizardSchema = z.object({
+    // Step 1: Project basics
+    projectName: z.string().min(1),
+    projectType: z.string(),
+    description: z.string().optional(),
+    location: z.object({
+      address: z.string(),
+      city: z.string(),
+      state: z.string(),
+      zipCode: z.string(),
+    }),
+    squareFootage: z.number().optional(),
+
+    // Step 2: Client info
+    clientName: z.string().optional(),
+    clientEmail: z.string().email().optional(),
+    clientPhone: z.string().optional(),
+    organizationId: z.string().uuid().optional(),
+
+    // Step 3: Estimation
+    estimateSource: z.enum(['ctc', 'marketplace', 'manual', 'ai-takeoff']).optional(),
+    ctcTasks: z.array(z.object({
+      ctcTaskNumber: z.string(),
+      quantity: z.number(),
+      modifiers: z.array(z.string()).optional(),
+    })).optional(),
+    takeoffJobId: z.string().uuid().optional(),
+
+    // Step 4: Timeline
+    estimatedStartDate: z.string().optional(),
+    estimatedDuration: z.number().optional(),
+
+    // Step 5: Bid request
+    createBidRequest: z.boolean().optional(),
+    bidDueDate: z.string().optional(),
+    invitedContractorIds: z.array(z.string()).optional(),
+
+    // Markups
+    overheadPercent: z.number().optional(),
+    profitPercent: z.number().optional(),
+    contingencyPercent: z.number().optional(),
+  })
+
+  // POST /estimation/project-wizard — Orchestrates full project creation flow
+  fastify.post(
+    '/project-wizard',
+    {
+      preHandler: [authenticateUser, validateBody(projectWizardSchema)],
+    },
+    async (request, reply) => {
+      const user = (request as any).user as { id: string; orgId?: string; organizationId?: string }
+      const body = request.body as z.infer<typeof projectWizardSchema>
+      const { prismaAny } = await import('../../utils/prisma-helper')
+
+      try {
+        const orgId = body.organizationId || user.orgId || user.organizationId || 'default'
+        const results: Record<string, any> = {}
+
+        // Step 1: Create project
+        const project = await prismaAny.project.create({
+          data: {
+            organizationId: orgId,
+            name: body.projectName,
+            description: body.description,
+            projectType: body.projectType,
+            status: 'PRE_CONSTRUCTION',
+            address: body.location.address,
+            city: body.location.city,
+            state: body.location.state,
+            zipCode: body.location.zipCode,
+            squareFootage: body.squareFootage,
+            estimatedStartDate: body.estimatedStartDate ? new Date(body.estimatedStartDate) : null,
+            estimatedDuration: body.estimatedDuration,
+            createdById: user.id,
+          },
+        })
+        results.project = { id: project.id, name: project.name }
+
+        // Step 2: Create estimate (if CTC tasks provided)
+        if (body.estimateSource === 'ctc' && body.ctcTasks && body.ctcTasks.length > 0) {
+          const taskNumbers = body.ctcTasks.map(t => t.ctcTaskNumber)
+          const allModifiers = body.ctcTasks.flatMap(t => t.modifiers || [])
+          const allNumbers = [...new Set([...taskNumbers, ...allModifiers])]
+
+          const assemblies = await prismaAny.assembly.findMany({
+            where: {
+              ctcTaskNumber: { in: allNumbers },
+              sourceDatabase: 'CTC-Gordian-MD-DGS-2023',
+            },
+          })
+          const asmMap = new Map(assemblies.map((a: any) => [a.ctcTaskNumber, a]))
+
+          let subtotalMaterial = 0, subtotalLabor = 0, subtotalEquipment = 0
+          const lineItemsData: any[] = []
+
+          for (const taskReq of body.ctcTasks) {
+            const asm = asmMap.get(taskReq.ctcTaskNumber) as any
+            if (!asm) continue
+
+            let unitCost = Number(asm.unitCost) || 0
+            let laborCost = Number(asm.laborCost) || 0
+            let materialCost = Number(asm.materialCost) || 0
+            let equipmentCost = Number(asm.equipmentCost) || 0
+
+            for (const modNum of (taskReq.modifiers || [])) {
+              const mod = asmMap.get(modNum) as any
+              if (!mod) continue
+              unitCost += Number(mod.unitCost) || 0
+              laborCost += Number(mod.laborCost) || 0
+              materialCost += Number(mod.materialCost) || 0
+              equipmentCost += Number(mod.equipmentCost) || 0
+            }
+
+            const qty = taskReq.quantity
+            lineItemsData.push({
+              description: asm.name,
+              assemblyId: asm.id,
+              quantity: qty,
+              unit: asm.unit,
+              unitCost,
+              laborCost: laborCost * qty,
+              materialCost: materialCost * qty,
+              equipmentCost: equipmentCost * qty,
+              totalCost: unitCost * qty,
+              metadata: { ctcTaskNumber: taskReq.ctcTaskNumber },
+            })
+
+            subtotalMaterial += materialCost * qty
+            subtotalLabor += laborCost * qty
+            subtotalEquipment += equipmentCost * qty
+          }
+
+          const subtotalDirect = subtotalMaterial + subtotalLabor + subtotalEquipment
+          const overheadPct = body.overheadPercent ?? 10
+          const profitPct = body.profitPercent ?? 10
+          const contingencyPct = body.contingencyPercent ?? 5
+          const overhead = subtotalDirect * (overheadPct / 100)
+          const profit = subtotalDirect * (profitPct / 100)
+          const contingency = subtotalDirect * (contingencyPct / 100)
+          const totalCost = subtotalDirect + overhead + profit + contingency
+
+          const ctcDb = await prismaAny.costDatabase.findFirst({
+            where: { source: 'CTC-Gordian-MD-DGS-2023' },
+          })
+
+          const estimate = await prismaAny.estimate.create({
+            data: {
+              organizationId: orgId,
+              projectId: project.id,
+              costDatabaseId: ctcDb?.id || undefined,
+              name: `${body.projectName} - CTC Estimate`,
+              type: 'PRELIMINARY',
+              status: 'DRAFT_ESTIMATE',
+              projectName: body.projectName,
+              projectAddress: body.location.address,
+              projectCity: body.location.city,
+              projectState: body.location.state,
+              projectZip: body.location.zipCode,
+              squareFootage: body.squareFootage,
+              projectType: body.projectType,
+              subtotalMaterial,
+              subtotalLabor,
+              subtotalEquipment,
+              subtotalDirect,
+              overhead,
+              overheadPercent: overheadPct,
+              profit,
+              profitPercent: profitPct,
+              contingency,
+              contingencyPercent: contingencyPct,
+              totalCost,
+              preparedById: user.id,
+              metadata: { source: 'project-wizard', estimateSource: 'ctc' },
+            },
+          })
+
+          for (const item of lineItemsData) {
+            await prismaAny.estimateLineItem.create({
+              data: { estimateId: estimate.id, ...item },
+            })
+          }
+
+          results.estimate = {
+            id: estimate.id,
+            lineItems: lineItemsData.length,
+            totalCost,
+          }
+
+          // Update project budget
+          await prismaAny.project.update({
+            where: { id: project.id },
+            data: { budgetTotal: totalCost },
+          })
+        }
+
+        // Step 3: Optionally create bid request
+        if (body.createBidRequest && results.estimate) {
+          try {
+            const bidRequest = await prismaAny.bidRequest.create({
+              data: {
+                organizationId: orgId,
+                projectId: project.id,
+                estimateId: results.estimate.id,
+                title: `${body.projectName} - Bid Request`,
+                description: body.description || `Bid request for ${body.projectName}`,
+                status: 'DRAFT',
+                dueDate: body.bidDueDate ? new Date(body.bidDueDate) : null,
+                estimatedValue: results.estimate.totalCost,
+                createdById: user.id,
+              },
+            })
+            results.bidRequest = { id: bidRequest.id, status: 'DRAFT' }
+          } catch (err: any) {
+            // Bid request creation is optional; log but don't fail
+            fastify.log.warn(err, 'Failed to create bid request in wizard')
+          }
+        }
+
+        // Emit project.created event (for CLAWS)
+        try {
+          const { eventService } = await import('../events/event.service')
+          await eventService.recordEvent({
+            type: 'PROJECT_CREATED',
+            entityType: 'Project',
+            entityId: project.id,
+            userId: user.id,
+            payload: {
+              projectId: project.id,
+              projectName: body.projectName,
+              estimateId: results.estimate?.id,
+              bidRequestId: results.bidRequest?.id,
+              source: 'project-wizard',
+            },
+          })
+        } catch {
+          // Non-critical
+        }
+
+        return reply.code(201).send({
+          success: true,
+          data: results,
+        })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(500).send({ error: error.message || 'Project wizard failed' })
+      }
+    }
+  )
 }
