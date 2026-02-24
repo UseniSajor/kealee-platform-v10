@@ -1864,12 +1864,23 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         }
 
         if (body.query) {
-          where.OR = [
-            { name: { contains: body.query, mode: 'insensitive' } },
-            { ctcTaskNumber: { contains: body.query, mode: 'insensitive' } },
-            { csiCode: { contains: body.query, mode: 'insensitive' } },
-            { description: { contains: body.query, mode: 'insensitive' } },
-          ]
+          const words = body.query.trim().split(/\s+/).filter(w => w.length > 1)
+          if (words.length === 1) {
+            where.OR = [
+              { name: { contains: words[0], mode: 'insensitive' } },
+              { ctcTaskNumber: { contains: words[0], mode: 'insensitive' } },
+              { csiCode: { contains: words[0], mode: 'insensitive' } },
+              { description: { contains: words[0], mode: 'insensitive' } },
+            ]
+          } else {
+            // Multi-word: AND each word across name or description
+            where.AND = words.map(w => ({
+              OR: [
+                { name: { contains: w, mode: 'insensitive' } },
+                { description: { contains: w, mode: 'insensitive' } },
+              ],
+            }))
+          }
         }
 
         if (body.division) {
