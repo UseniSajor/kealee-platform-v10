@@ -1,4 +1,4 @@
-import { PhotoGallery } from "@pm/components/pm/projects/PhotoGallery"
+import { PhotoGallery } from "@pm/components/projects/PhotoGallery"
 
 export default async function ProjectPhotosPage({
   params,

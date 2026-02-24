@@ -8,7 +8,7 @@ import {
   getPreConProjects,
   type PreConProject,
   type PreConDashboard,
-} from '../../lib/client-api'
+} from '@owner/lib/client-api'
 
 /**
  * SOP v2 - PRECON WORKFLOW (m-project-owner)

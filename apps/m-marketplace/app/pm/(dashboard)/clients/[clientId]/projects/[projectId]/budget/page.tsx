@@ -1,4 +1,4 @@
-import { BudgetTracker } from "@pm/components/pm/projects/BudgetTracker"
+import { BudgetTracker } from "@pm/components/projects/BudgetTracker"
 
 export default async function ProjectBudgetPage({
   params,

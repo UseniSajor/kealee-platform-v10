@@ -4,7 +4,7 @@ import { Download, Printer, Share2 } from "lucide-react"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { cn } from "@pm/lib/utils"
-import { ProjectTabs } from "@pm/components/pm/projects/ProjectTabs"
+import { ProjectTabs } from "@pm/components/projects/ProjectTabs"
 
 export default async function ProjectPage({
   params,

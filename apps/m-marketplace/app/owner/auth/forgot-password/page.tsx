@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { resetPassword } from '@kealee/owner/auth/client';
+import { resetPassword } from '@kealee/auth/client';
 import { Loader2, Mail, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 

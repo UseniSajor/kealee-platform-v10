@@ -5,8 +5,8 @@ import { MapPin, FileText, Upload, CreditCard, CheckCircle, AlertCircle, ArrowLe
 import { useRouter } from 'next/navigation';
 import { Button, Input, ProgressBar, StepIndicator } from '@kealee/ui';
 import { Card } from '@kealee/ui';
-import { api } from '../../../lib/api/client';
-import { detectJurisdiction, loadJurisdictions, findJurisdictionByCode, type Jurisdiction } from '../../../lib/jurisdictions';
+import { api } from '@permits/lib/api/client';
+import { detectJurisdiction, loadJurisdictions, findJurisdictionByCode, type Jurisdiction } from '@permits/lib/jurisdictions';
 
 // Simple toast implementation (replace with sonner if available)
 const toast = {

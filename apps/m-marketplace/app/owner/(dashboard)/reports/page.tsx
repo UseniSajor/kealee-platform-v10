@@ -11,8 +11,8 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { Card, Badge, Button, Skeleton } from '@kealee/ui'
-import { getReports, type WeeklyReportSummary } from '../../../lib/client-api'
-import { supabase } from '../../../lib/supabase'
+import { getReports, type WeeklyReportSummary } from '@owner/lib/client-api'
+import { supabase } from '@owner/lib/supabase'
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<WeeklyReportSummary[]>([])

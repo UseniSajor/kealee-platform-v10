@@ -6,7 +6,7 @@ import { Button } from "@kealee/ui/button"
 import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
-import { signIn } from "@kealee/owner/auth/client"
+import { signIn } from "@kealee/auth/client"
 import { createBrowserClient } from "@supabase/ssr"
 import Link from "next/link"
 

@@ -15,7 +15,7 @@ import {
   AlertCircle,
 } from "lucide-react"
 
-import { DocumentUpload } from "@pm/components/pm/projects/DocumentUpload"
+import { DocumentUpload } from "@pm/components/projects/DocumentUpload"
 import { Button } from "@kealee/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Input } from "@kealee/ui/input"

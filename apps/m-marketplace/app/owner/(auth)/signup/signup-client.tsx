@@ -6,7 +6,7 @@ import { Button } from "@kealee/ui/button"
 import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
-import { signUp } from "@kealee/owner/auth/client"
+import { signUp } from "@kealee/auth/client"
 import Link from "next/link"
 
 const OWNER_ROLES = [

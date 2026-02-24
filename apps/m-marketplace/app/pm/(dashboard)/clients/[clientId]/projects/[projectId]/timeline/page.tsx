@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { TimelineView, type TimelineTask } from "@pm/components/pm/projects/TimelineView"
+import { TimelineView, type TimelineTask } from "@pm/components/projects/TimelineView"
 
 export default function ProjectTimelinePage({
   params,

@@ -15,8 +15,8 @@ import {
   LogOut,
   User,
 } from 'lucide-react'
-import { supabase } from '../../lib/supabase'
-import { OwnerProfileProvider, useOwnerProfile } from '../../lib/user-context'
+import { supabase } from '@owner/lib/supabase'
+import { OwnerProfileProvider, useOwnerProfile } from '@owner/lib/user-context'
 
 // ---------------------------------------------------------------------------
 // All possible nav items — filtered by portalTabs from user metadata

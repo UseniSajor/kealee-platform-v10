@@ -13,6 +13,12 @@ module.exports = {
     ...(sharedConfig.theme || {}),
     extend: {
       ...(sharedConfig.theme?.extend || {}),
+      colors: {
+        ...(sharedConfig.theme?.extend?.colors || {}),
+        border: 'hsl(var(--border))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+      },
       maxWidth: {
         '0': '0rem',
         'none': 'none',

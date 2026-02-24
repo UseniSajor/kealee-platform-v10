@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useProfile } from '@kealee/owner/auth/client';
+import { useProfile } from '@kealee/auth/client';
 import { useRouter } from 'next/navigation';
-import { signOut } from '@kealee/owner/auth/client';
+import { signOut } from '@kealee/auth/client';
 import { Loader2, User, Mail, LogOut, Save } from 'lucide-react';
 
 export default function AccountPage() {

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Building2, Plus, Search, Filter, Clock, CheckCircle, AlertCircle, ArrowRight, Calendar, DollarSign, RefreshCw } from 'lucide-react';
-import { getProjects, type ProjectInfo } from '../../lib/client-api';
+import { getProjects, type ProjectInfo } from '@owner/lib/client-api';
 
 interface Project {
   id: string;

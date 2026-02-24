@@ -20,9 +20,9 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { Card } from '@kealee/ui';
-import PreConPipeline from '../../components/PreConPipeline';
-import { getClawsHealth, type ClawSystemHealth } from '../../lib/claws';
-import { useOwnerProfile, type OwnerRole } from '../../lib/user-context';
+import PreConPipeline from '@owner/components/PreConPipeline';
+import { getClawsHealth, type ClawSystemHealth } from '@owner/lib/claws';
+import { useOwnerProfile, type OwnerRole } from '@owner/lib/user-context';
 
 // ---------------------------------------------------------------------------
 // Types

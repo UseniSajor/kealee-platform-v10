@@ -1,4 +1,4 @@
-import { DocumentUpload } from "@pm/components/pm/projects/DocumentUpload"
+import { DocumentUpload } from "@pm/components/projects/DocumentUpload"
 
 export default async function ProjectDocumentsPage({
   params,

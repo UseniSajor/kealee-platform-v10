@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Sparkles, Zap, ChevronDown, ChevronUp, CheckCircle2, Bot, ArrowRight } from 'lucide-react'
-import { quickStartProject } from '../../../lib/claws'
+import { quickStartProject } from '@owner/lib/claws'
 
 /**
  * 1-CLICK PRE-CON PROJECT CREATION

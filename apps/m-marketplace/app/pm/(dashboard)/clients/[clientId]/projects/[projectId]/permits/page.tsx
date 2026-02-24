@@ -1,4 +1,4 @@
-import { PermitSchedule } from "@pm/components/pm/projects/PermitSchedule"
+import { PermitSchedule } from "@pm/components/projects/PermitSchedule"
 
 export default async function ProjectPermitsPage({
   params,

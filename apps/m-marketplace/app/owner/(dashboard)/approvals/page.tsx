@@ -18,8 +18,8 @@ import {
   getClientDecisions,
   resolveDecision,
   type ClientDecision,
-} from '../../../lib/client-api'
-import { supabase } from '../../../lib/supabase'
+} from '@owner/lib/client-api'
+import { supabase } from '@owner/lib/supabase'
 
 // ---------------------------------------------------------------------------
 // Page

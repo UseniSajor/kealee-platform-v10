@@ -178,7 +178,7 @@ export function usePushNotifications(options: PushNotificationOptions = {}): Pus
       // Subscribe to push
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey,
+        applicationServerKey: applicationServerKey.buffer as ArrayBuffer,
       })
 
       // Send subscription to backend
