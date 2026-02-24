@@ -4,7 +4,7 @@
 import { Metadata } from 'next';
 import { HomePageClient } from './HomePageClient';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Kealee | DC-Baltimore\'s End-to-End Design/Build Platform',
