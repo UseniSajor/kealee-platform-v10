@@ -12,7 +12,7 @@ export interface ModuleShowcaseCardProps {
   subtitle?: string;
   description: string;
   features: string[];
-  priceAnchor: {
+  priceAnchor?: {
     amount: number | string;
     period?: string;
     showFrom?: boolean;
@@ -100,14 +100,16 @@ export function ModuleShowcaseCard({
         </ul>
 
         {/* Price */}
-        <div className="mb-4">
-          <PriceDisplay
-            amount={priceAnchor.amount}
-            period={priceAnchor.period}
-            showFrom={priceAnchor.showFrom}
-            size="md"
-          />
-        </div>
+        {priceAnchor && (
+          <div className="mb-4">
+            <PriceDisplay
+              amount={priceAnchor.amount}
+              period={priceAnchor.period}
+              showFrom={priceAnchor.showFrom}
+              size="md"
+            />
+          </div>
+        )}
 
         {/* CTA */}
         <Link

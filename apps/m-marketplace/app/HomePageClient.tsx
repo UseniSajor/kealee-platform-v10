@@ -442,6 +442,7 @@ export function HomePageClient({
                 'Financial Reports',
                 'Trust Accounting',
               ]}
+              priceAnchor={{ amount: 'Free', showFrom: false }}
               cta={{ label: 'Explore Finance', href: '/finance' }}
               accentColor="navy"
             />
