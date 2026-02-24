@@ -395,25 +395,30 @@ export async function estimationRoutes(fastify: FastifyInstance) {
       const { prismaAny } = await import('../../utils/prisma-helper')
 
       try {
-        const orgId = body.organizationId || user.orgId || user.organizationId || 'default'
+        // Look up user's org membership, or use provided orgId
+        let orgId = body.organizationId || user.orgId || user.organizationId || null
+        if (!orgId) {
+          const membership = await prismaAny.orgMember.findFirst({
+            where: { userId: user.id },
+            select: { orgId: true },
+          })
+          orgId = membership?.orgId || null
+        }
         const results: Record<string, any> = {}
 
         // Step 1: Create project
         const project = await prismaAny.project.create({
           data: {
-            organizationId: orgId,
+            orgId: orgId,
             name: body.projectName,
             description: body.description,
-            projectType: body.projectType,
+            category: body.projectType,
             status: 'PRE_CONSTRUCTION',
             address: body.location.address,
             city: body.location.city,
             state: body.location.state,
             zipCode: body.location.zipCode,
-            squareFootage: body.squareFootage,
-            estimatedStartDate: body.estimatedStartDate ? new Date(body.estimatedStartDate) : null,
-            estimatedDuration: body.estimatedDuration,
-            createdById: user.id,
+            scheduledStartDate: body.estimatedStartDate ? new Date(body.estimatedStartDate) : null,
           },
         })
         results.project = { id: project.id, name: project.name }
@@ -457,12 +462,13 @@ export async function estimationRoutes(fastify: FastifyInstance) {
             lineItemsData.push({
               description: asm.name,
               assemblyId: asm.id,
+              itemType: 'ASSEMBLY_LINE',
               quantity: qty,
               unit: asm.unit,
               unitCost,
               laborCost: laborCost * qty,
-              materialCost: materialCost * qty,
-              equipmentCost: equipmentCost * qty,
+              materialCostAmt: materialCost * qty,
+              equipmentCostAmt: equipmentCost * qty,
               totalCost: unitCost * qty,
               metadata: { ctcTaskNumber: taskReq.ctcTaskNumber },
             })
@@ -540,15 +546,12 @@ export async function estimationRoutes(fastify: FastifyInstance) {
           try {
             const bidRequest = await prismaAny.bidRequest.create({
               data: {
-                organizationId: orgId,
                 projectId: project.id,
-                estimateId: results.estimate.id,
                 title: `${body.projectName} - Bid Request`,
-                description: body.description || `Bid request for ${body.projectName}`,
                 status: 'DRAFT',
-                dueDate: body.bidDueDate ? new Date(body.bidDueDate) : null,
-                estimatedValue: results.estimate.totalCost,
-                createdById: user.id,
+                deadline: body.bidDueDate ? new Date(body.bidDueDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                estimatedBudget: results.estimate.totalCost,
+                scope: { description: body.description || `Bid request for ${body.projectName}` },
               },
             })
             results.bidRequest = { id: bidRequest.id, status: 'DRAFT' }

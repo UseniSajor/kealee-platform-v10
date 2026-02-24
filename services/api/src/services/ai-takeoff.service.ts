@@ -240,7 +240,6 @@ export async function processAITakeoff(
       ctcTasksMatched: matched,
       ctcTasksUnmatched: unmatched,
       lineItemsGenerated: mappedTasks.length,
-      metadata: projectSummary,
     })
 
     console.log(
