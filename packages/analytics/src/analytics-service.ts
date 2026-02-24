@@ -72,7 +72,7 @@ export class AnalyticsService {
       include: {
         milestones: true,
         budgetItems: true,
-      },
+      } as any,
     })
 
     // Budget

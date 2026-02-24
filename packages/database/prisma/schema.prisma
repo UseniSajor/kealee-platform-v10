@@ -11853,16 +11853,18 @@ model BidEmbedding {
 }
 
 // pgvector embeddings for OpportunityBid (WSL pipeline)
-model OpportunityBidEmbedding {
-  id          String   @id @default(cuid())
-  bidId       String   @unique
-  embedding   Unsupported("vector(1536)")
-  metadata    Json
-  createdAt   DateTime @default(now())
-
-  @@index([bidId])
-  @@map("opportunity_bid_embeddings")
-}
+// NOTE: Temporarily commented out — requires pgvector extension enabled
+// via Supabase Dashboard > Database > Extensions > vector
+// model OpportunityBidEmbedding {
+//   id          String   @id @default(cuid())
+//   bidId       String   @unique
+//   embedding   Unsupported("vector(1536)")
+//   metadata    Json
+//   createdAt   DateTime @default(now())
+//
+//   @@index([bidId])
+//   @@map("opportunity_bid_embeddings")
+// }
 
 model BidSimilarity {
   id              String   @id @default(cuid())

@@ -2167,13 +2167,14 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
             data: {
               estimateId: estimate.id,
               assemblyId: item.assemblyId,
+              itemType: 'ASSEMBLY_LINE',
               description: item.description,
               quantity: item.quantity,
               unit: item.unit,
               unitCost: item.unitCost,
               laborCost: item.laborCost,
-              materialCost: item.materialCost,
-              equipmentCost: item.equipmentCost,
+              materialCostAmt: item.materialCost,
+              equipmentCostAmt: item.equipmentCost,
               totalCost: item.totalCost,
               metadata: item.metadata,
             },
@@ -2377,7 +2378,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
           const asmMap = new Map(assemblies.map((a: any) => [a.ctcTaskNumber, a]))
 
           for (const task of confirmedTasks) {
-            const asm = asmMap.get(task.ctcTaskNumber)
+            const asm: any = asmMap.get(task.ctcTaskNumber)
             if (!asm) continue
 
             const qty = task.quantity || 1
