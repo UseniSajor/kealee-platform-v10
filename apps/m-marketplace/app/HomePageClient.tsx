@@ -28,7 +28,6 @@ import {
 } from 'lucide-react';
 
 import {
-  MarketingLayout,
   HeroSection,
   SectionLabel,
   PlatformFlowDiagram,
@@ -49,6 +48,9 @@ import {
   CTASection,
   Stat,
 } from '@kealee/ui';
+
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 
 interface HomePageClientProps {
   platformFlowNodes: FlowNode[];
@@ -108,7 +110,9 @@ export function HomePageClient({
   splitCTASections,
 }: HomePageClientProps) {
   return (
-    <MarketingLayout breadcrumbs={[{ label: 'Home' }]} activeSection="owner">
+    <>
+      <Header />
+      <main className="pt-16">
       {/* SECTION 1 - HERO */}
       <HeroSection
         eyebrow="DC-Baltimore's End-to-End Design/Build Platform"
@@ -639,6 +643,31 @@ export function HomePageClient({
               ctaHref="/ops"
             />
             <PortalPreview
+              portalName="PM Software"
+              portalUrl="kealee.com/pm"
+              description="Full-featured project management for GCs, builders, and contractors. Scheduling, budgeting, RFIs, daily logs, and more."
+              heroImage={portalImages.pmSoftware.src}
+              heroImageAlt={portalImages.pmSoftware.alt}
+              accentColor="orange"
+              sidebarItems={[
+                { icon: LayoutDashboard, label: 'Dashboard' },
+                { icon: CalendarCheck, label: 'Schedule' },
+                { icon: DollarSign, label: 'Budget' },
+                { icon: ClipboardList, label: 'Daily Logs' },
+              ]}
+              stats={[
+                { label: 'Active Projects', value: '18' },
+                { label: 'Tasks Complete', value: '847' },
+                { label: 'On Budget', value: '94%' },
+              ]}
+              features={[
+                'Scheduling & Gantt charts',
+                'Budget tracking & change orders',
+                'RFIs, submittals & punch lists',
+              ]}
+              ctaHref="/pm"
+            />
+            <PortalPreview
               portalName="Finance & Escrow"
               portalUrl="kealee.com/finance"
               description="Secure escrow management, milestone payments, and financial tracking for all project parties."
@@ -733,8 +762,10 @@ export function HomePageClient({
 
       {/* SECTION 9 - FINAL CTAs */}
       <SplitCTA sections={splitCTASections} />
+      </main>
 
-      {/* SECTION 10 - FOOTER (included in MarketingLayout) */}
-    </MarketingLayout>
+      {/* SECTION 10 - FOOTER */}
+      <Footer />
+    </>
   );
 }

@@ -92,4 +92,6 @@ export const portalImages = {
   financeTrust: unsplash('photo-1554224155-6726b3ff858f', 800, 450, 'Financial planning and trust management'),
   /** Engineer - engineering equipment */
   engineer: unsplash('photo-1581092160607-ee22621dd758', 800, 450, 'Engineering and structural analysis work'),
+  /** PM Software - project management dashboard and planning */
+  pmSoftware: unsplash('photo-1460472178825-e5240623afd5', 800, 450, 'Project management planning and scheduling tools'),
 };
