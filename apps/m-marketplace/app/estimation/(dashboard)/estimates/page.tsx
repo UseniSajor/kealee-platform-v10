@@ -263,7 +263,7 @@ export default function EstimatesPage() {
                     </div>
                     <div className="col-span-1 flex justify-end gap-2">
                       <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/estimates/${estimate.id}/edit`}>
+                        <Link href={`/estimation/estimates/${estimate.id}/edit`}>
                           {estimate.status === 'draft' ? 'Edit' : 'View'}
                         </Link>
                       </Button>

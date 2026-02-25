@@ -14,6 +14,36 @@ import { validateBody, validateParams, validateQuery } from '../../middleware/va
 import { prismaAny } from '../../utils/prisma-helper'
 
 // ============================================================================
+// STATUS MAPPING — Backend enum ↔ Frontend simple strings
+// ============================================================================
+
+const BACKEND_TO_FRONTEND_STATUS: Record<string, string> = {
+  DRAFT_ESTIMATE: 'draft',
+  IN_PROGRESS_ESTIMATE: 'draft',
+  UNDER_REVIEW_ESTIMATE: 'review',
+  PENDING_APPROVAL_ESTIMATE: 'review',
+  APPROVED_ESTIMATE: 'final',
+  SENT_ESTIMATE: 'sent',
+  REJECTED_ESTIMATE: 'draft',
+  ARCHIVED_ESTIMATE: 'final',
+}
+
+const FRONTEND_TO_BACKEND_STATUS: Record<string, string> = {
+  draft: 'DRAFT_ESTIMATE',
+  review: 'UNDER_REVIEW_ESTIMATE',
+  final: 'APPROVED_ESTIMATE',
+  sent: 'SENT_ESTIMATE',
+}
+
+function normalizeStatus(backendStatus: string): string {
+  return BACKEND_TO_FRONTEND_STATUS[backendStatus] || backendStatus.toLowerCase().replace('_estimate', '')
+}
+
+function toBackendStatus(frontendStatus: string): string {
+  return FRONTEND_TO_BACKEND_STATUS[frontendStatus] || frontendStatus.toUpperCase()
+}
+
+// ============================================================================
 // SCHEMAS
 // ============================================================================
 
@@ -95,7 +125,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
 
         const where: any = {}
         if (query.status && query.status !== 'all') {
-          where.status = query.status.toUpperCase()
+          where.status = toBackendStatus(query.status)
         }
         if (query.search) {
           where.OR = [
@@ -137,7 +167,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
           clientName: e.projectName || null,
           amount: Number(e.totalCost || 0),
           totalCost: Number(e.totalCost || 0),
-          status: (e.status || 'DRAFT_ESTIMATE').toLowerCase().replace('_estimate', '').replace('_', ''),
+          status: normalizeStatus(e.status || 'DRAFT_ESTIMATE'),
           updatedAt: e.updatedAt,
           createdAt: e.createdAt,
         }))
@@ -227,6 +257,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.send({
           estimate: {
             ...estimate,
+            status: normalizeStatus(estimate.status || 'DRAFT_ESTIMATE'),
             lineItems: allItems,
             totalCost: Number(estimate.totalCost || 0),
             materialCost: Number(estimate.subtotalMaterial || 0),
@@ -257,13 +288,18 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
 
         const updateData: any = {}
         if (body.name) updateData.name = body.name
-        if (body.description) updateData.description = body.description
-        if (body.status) updateData.status = body.status.toUpperCase()
+        if (body.description !== undefined) updateData.description = body.description
+        if (body.status) updateData.status = toBackendStatus(body.status)
         if (body.projectType) updateData.type = body.projectType
+        if (body.clientName) updateData.projectName = body.clientName
+        if (body.location?.city !== undefined) updateData.projectCity = body.location.city
+        if (body.location?.state !== undefined) updateData.projectState = body.location.state
         if (body.overheadPercent !== undefined) updateData.overheadPercent = body.overheadPercent
         if (body.profitPercent !== undefined) updateData.profitPercent = body.profitPercent
         if (body.contingencyPercent !== undefined) updateData.contingencyPercent = body.contingencyPercent
         if (body.squareFootage !== undefined) updateData.squareFootage = body.squareFootage
+        if (body.notes !== undefined) updateData.notes = body.notes
+        if (body.exclusions !== undefined) updateData.exclusions = body.exclusions
 
         const estimate = await prismaAny.estimate.update({
           where: { id },

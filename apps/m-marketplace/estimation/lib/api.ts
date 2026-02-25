@@ -89,13 +89,36 @@ class ApiClient {
   }
 
   async getEstimate(id: string) {
-    return this.request(`/estimation/project/${id}`);
+    return this.request(`/estimation/estimate/${id}`);
   }
 
   async createEstimate(data: any) {
-    return this.request('/estimation/estimate', {
+    // Flatten wizard data shape to match backend CRUD endpoint
+    const flat: any = {};
+    if (data.basicInfo) {
+      flat.name = data.basicInfo.projectName || data.name;
+      flat.clientName = data.basicInfo.clientName;
+      flat.projectType = data.basicInfo.projectType;
+      flat.description = data.basicInfo.description;
+      if (data.basicInfo.location) {
+        const parts = data.basicInfo.location.split(',').map((s: string) => s.trim());
+        flat.location = { city: parts[0] || '', state: parts[1] || '' };
+      }
+    } else {
+      // Already flat data
+      Object.assign(flat, data);
+    }
+    if (data.settings) {
+      flat.overheadPercent = data.settings.overheadPercent;
+      flat.profitPercent = data.settings.profitPercent;
+      flat.contingencyPercent = data.settings.contingencyPercent;
+    }
+    if (data.squareFootage || data.basicInfo?.squareFootage) {
+      flat.squareFootage = data.squareFootage || data.basicInfo?.squareFootage;
+    }
+    return this.request('/estimation/estimates', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify(flat),
     });
   }
 

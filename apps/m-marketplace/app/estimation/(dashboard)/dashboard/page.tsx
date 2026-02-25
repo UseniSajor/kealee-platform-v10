@@ -70,14 +70,14 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
 
 const COST_COLORS = ['#8b5cf6', '#06b6d4', '#f59e0b', '#10b981'];
 
-const costDistribution = [
+const DEFAULT_COST_DISTRIBUTION = [
   { name: 'Materials', value: 45, color: '#8b5cf6' },
   { name: 'Labor', value: 35, color: '#06b6d4' },
   { name: 'Equipment', value: 12, color: '#f59e0b' },
   { name: 'Other', value: 8, color: '#10b981' },
 ];
 
-const monthlyTrends = [
+const DEFAULT_MONTHLY_TRENDS = [
   { month: 'Sep', estimates: 8, value: 245000 },
   { month: 'Oct', estimates: 12, value: 389000 },
   { month: 'Nov', estimates: 15, value: 512000 },
@@ -96,6 +96,8 @@ export default function DashboardPage() {
     estimatesLastMonth: 0,
   });
   const [recentEstimates, setRecentEstimates] = useState<RecentEstimate[]>([]);
+  const [costDistribution, setCostDistribution] = useState(DEFAULT_COST_DISTRIBUTION);
+  const [monthlyTrends, setMonthlyTrends] = useState(DEFAULT_MONTHLY_TRENDS);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -108,15 +110,24 @@ export default function DashboardPage() {
         ]);
 
         if (statsRes.success && statsRes.data) {
-          const d = statsRes.data as any;
+          const raw = statsRes.data as any;
+          // Backend wraps in { metrics: {...} }
+          const d = raw.metrics || raw;
           setStats({
-            totalEstimates: d.totalEstimates || 0,
-            activeProjects: d.activeProjects || 0,
+            totalEstimates: d.totalEstimates || d.pendingEstimates || 0,
+            activeProjects: d.activeProjects || d.activeTickets || 0,
             totalValue: d.totalValue || 0,
-            avgAccuracy: d.avgAccuracy || 95,
-            estimatesThisMonth: d.estimatesThisMonth || 0,
+            avgAccuracy: d.avgAccuracy || d.averageEstimateAccuracy || 95,
+            estimatesThisMonth: d.estimatesThisMonth || d.completedThisMonth || 0,
             estimatesLastMonth: d.estimatesLastMonth || 0,
           });
+          // Use real chart data from API if available
+          if (d.costDistribution && Array.isArray(d.costDistribution)) {
+            setCostDistribution(d.costDistribution);
+          }
+          if (d.monthlyTrends && Array.isArray(d.monthlyTrends)) {
+            setMonthlyTrends(d.monthlyTrends);
+          }
         }
 
         if (estimatesRes.success && estimatesRes.data) {
@@ -139,10 +150,10 @@ export default function DashboardPage() {
   };
 
   const quickActions = [
-    { label: 'New Estimate', href: '/estimates/new', icon: Plus, color: 'bg-primary text-primary-foreground' },
-    { label: 'Assemblies', href: '/assemblies', icon: Package, color: 'bg-violet-100 text-violet-700' },
-    { label: 'Cost Database', href: '/cost-database', icon: Database, color: 'bg-cyan-100 text-cyan-700' },
-    { label: 'Upload Plans', href: '/takeoff', icon: Upload, color: 'bg-amber-100 text-amber-700' },
+    { label: 'New Estimate', href: '/estimation/estimates/new', icon: Plus, color: 'bg-primary text-primary-foreground' },
+    { label: 'Assemblies', href: '/estimation/assemblies', icon: Package, color: 'bg-violet-100 text-violet-700' },
+    { label: 'Cost Database', href: '/estimation/cost-database', icon: Database, color: 'bg-cyan-100 text-cyan-700' },
+    { label: 'Upload Plans', href: '/estimation/takeoff', icon: Upload, color: 'bg-amber-100 text-amber-700' },
   ];
 
   if (isLoading) {
@@ -369,7 +380,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="col-span-1 flex justify-end">
                       <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/estimates/${estimate.id}/edit`}>
+                        <Link href={`/estimation/estimates/${estimate.id}/edit`}>
                           <TrendingUp className="h-4 w-4" />
                         </Link>
                       </Button>

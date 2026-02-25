@@ -87,125 +87,32 @@ const STATUS_TRANSITIONS: Record<EstimateStatus, EstimateStatus[]> = {
 };
 
 // -------------------------------------------------------------------
-// Mock data for development (used when API is not available)
+// Helpers
 // -------------------------------------------------------------------
 
-const MOCK_ESTIMATE: EstimateData = {
-  id: '1',
-  name: 'Residential Addition',
-  projectType: 'Residential',
-  clientName: 'John Doe',
-  location: 'Austin, TX',
-  status: 'draft',
-  createdAt: '2026-01-15T00:00:00Z',
-  updatedAt: '2026-01-28T00:00:00Z',
-  sections: [
-    {
-      id: 'sec-1',
-      division: '03',
-      name: 'CONCRETE',
-      lineItems: [
-        {
-          id: 'item-1',
-          description: 'Foundation footings',
-          quantity: 120,
-          unit: 'LF',
-          unitCost: 45.0,
-          totalCost: 5400,
-          type: 'material',
-        },
-        {
-          id: 'item-2',
-          description: 'Slab on grade - 4" thick',
-          quantity: 2000,
-          unit: 'SF',
-          unitCost: 15.0,
-          totalCost: 30000,
-          type: 'material',
-        },
-        {
-          id: 'item-3',
-          description: 'Concrete labor',
-          quantity: 80,
-          unit: 'HR',
-          unitCost: 65.0,
-          totalCost: 5200,
-          type: 'labor',
-        },
-      ],
-      subtotal: 40600,
-    },
-    {
-      id: 'sec-2',
-      division: '06',
-      name: 'WOOD & PLASTICS',
-      lineItems: [
-        {
-          id: 'item-4',
-          description: 'Framing lumber - 2x6',
-          quantity: 5000,
-          unit: 'BF',
-          unitCost: 3.5,
-          totalCost: 17500,
-          type: 'material',
-        },
-        {
-          id: 'item-5',
-          description: 'Framing labor',
-          quantity: 160,
-          unit: 'HR',
-          unitCost: 55.0,
-          totalCost: 8800,
-          type: 'labor',
-        },
-      ],
-      subtotal: 26300,
-    },
-    {
-      id: 'sec-3',
-      division: '16',
-      name: 'ELECTRICAL',
-      lineItems: [
-        {
-          id: 'item-6',
-          description: 'Electrical rough-in',
-          quantity: 1,
-          unit: 'LS',
-          unitCost: 12000.0,
-          totalCost: 12000,
-          type: 'material',
-        },
-        {
-          id: 'item-7',
-          description: 'Electrician labor',
-          quantity: 120,
-          unit: 'HR',
-          unitCost: 75.0,
-          totalCost: 9000,
-          type: 'labor',
-        },
-        {
-          id: 'item-8',
-          description: 'Lift rental',
-          quantity: 5,
-          unit: 'DAY',
-          unitCost: 350.0,
-          totalCost: 1750,
-          type: 'equipment',
-        },
-      ],
-      subtotal: 22750,
-    },
-  ],
-  settings: {
-    overheadPercent: 15,
-    profitPercent: 10,
-    contingencyPercent: 5,
-    taxPercent: 7.5,
-  },
-  notes: 'Assumes standard soil conditions. Price valid for 30 days.',
-  exclusions: 'Permits and fees not included. Landscaping excluded.',
-};
+function normalizeStatus(s: string): EstimateStatus {
+  if (!s) return 'draft';
+  const lower = s.toLowerCase();
+  if (lower.includes('sent')) return 'sent';
+  if (lower.includes('approved') || lower.includes('final')) return 'final';
+  if (lower.includes('review') || lower.includes('pending')) return 'review';
+  return 'draft';
+}
+
+function normalizeLocation(loc: any, city?: string, state?: string): string {
+  if (typeof loc === 'string' && loc) return loc;
+  if (loc && typeof loc === 'object') {
+    return [loc.city, loc.state].filter(Boolean).join(', ');
+  }
+  return [city, state].filter(Boolean).join(', ');
+}
+
+function normalizeExclusions(exc: any): string {
+  if (!exc) return '';
+  if (typeof exc === 'string') return exc;
+  if (Array.isArray(exc)) return exc.join('\n');
+  return JSON.stringify(exc);
+}
 
 // -------------------------------------------------------------------
 // Sub-components
@@ -873,36 +780,34 @@ export default function EstimateEditPage() {
       try {
         const response = await apiClient.getEstimate(estimateId);
         if (response.success && response.data) {
-          // Normalize API response to our EstimateData shape
-          const data = response.data as any;
+          const raw = response.data as any;
+          // Backend wraps response in { estimate: {...} }
+          const data = raw.estimate || raw;
+
           setEstimate({
             id: data.id || estimateId,
             name: data.name || data.projectName || '',
-            projectType: data.projectType || '',
-            clientName: data.clientName || data.client || '',
-            location: data.location || '',
-            status: data.status || 'draft',
+            projectType: data.projectType || data.type || '',
+            clientName: data.clientName || data.projectName || '',
+            location: normalizeLocation(data.location, data.projectCity, data.projectState),
+            status: normalizeStatus(data.status),
             createdAt: data.createdAt || '',
             updatedAt: data.updatedAt || '',
             sections: data.sections || [],
-            settings: data.settings || {
-              overheadPercent: 15,
-              profitPercent: 10,
-              contingencyPercent: 5,
-              taxPercent: 7.5,
+            settings: {
+              overheadPercent: data.settings?.overheadPercent ?? data.overheadPercent ?? 15,
+              profitPercent: data.settings?.profitPercent ?? data.profitPercent ?? 10,
+              contingencyPercent: data.settings?.contingencyPercent ?? data.contingencyPercent ?? 5,
+              taxPercent: data.settings?.taxPercent ?? data.taxPercent ?? 7.5,
             },
             notes: data.notes || '',
-            exclusions: data.exclusions || '',
+            exclusions: normalizeExclusions(data.exclusions),
           });
         } else {
-          // Fall back to mock data during development
-          console.warn('API not available, using mock data');
-          setEstimate({ ...MOCK_ESTIMATE, id: estimateId });
+          setError(response.error || 'Failed to load estimate');
         }
       } catch {
-        // Use mock data if API is unavailable
-        console.warn('API error, using mock data');
-        setEstimate({ ...MOCK_ESTIMATE, id: estimateId });
+        setError('Failed to load estimate. Please check your connection and try again.');
       } finally {
         setLoading(false);
       }
@@ -964,14 +869,19 @@ export default function EstimateEditPage() {
     setError(null);
 
     try {
+      // Parse location string back to city/state for backend
+      const locParts = estimate.location.split(',').map((s) => s.trim());
       const response = await apiClient.updateEstimate(estimate.id, {
         name: estimate.name,
         projectType: estimate.projectType,
         clientName: estimate.clientName,
-        location: estimate.location,
+        location: { city: locParts[0] || '', state: locParts[1] || '' },
         status: estimate.status,
         sections: estimate.sections,
-        settings: estimate.settings,
+        overheadPercent: estimate.settings.overheadPercent,
+        profitPercent: estimate.settings.profitPercent,
+        contingencyPercent: estimate.settings.contingencyPercent,
+        taxPercent: estimate.settings.taxPercent,
         notes: estimate.notes,
         exclusions: estimate.exclusions,
       });
@@ -1042,7 +952,7 @@ export default function EstimateEditPage() {
           <FileText className="h-12 w-12 text-muted-foreground mx-auto" />
           <h2 className="text-lg font-medium">Estimate not found</h2>
           <p className="text-muted-foreground">
-            The estimate you are looking for could not be loaded.
+            {error || 'The estimate you are looking for could not be loaded.'}
           </p>
           <Button asChild>
             <Link href="/estimation/estimates">Back to Estimates</Link>

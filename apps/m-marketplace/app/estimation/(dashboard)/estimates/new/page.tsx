@@ -24,8 +24,9 @@ export default function NewEstimatePage() {
           description: 'Your estimate has been saved successfully.',
         });
         
-        // Redirect to estimate editor
-        const estimateId = (response.data as any).id || 'new';
+        // Redirect to estimate editor — backend wraps in { estimate: {...} }
+        const raw = response.data as any;
+        const estimateId = raw.estimate?.id || raw.id || 'new';
         router.push(`/estimation/estimates/${estimateId}/edit`);
       } else {
         throw new Error(response.error || 'Failed to create estimate');
