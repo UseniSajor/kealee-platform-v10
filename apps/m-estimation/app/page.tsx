@@ -1,5 +1,5 @@
 import Link from "next/link"
-import Image from "next/image"
+// Image import removed - using <img> for external URLs
 import { AIEstimationFeatures } from "@/components/marketing/AIEstimationFeatures"
 import { CheckCircle2, Zap, Calculator, FileText, Target, TrendingUp, DollarSign, Package } from "lucide-react"
 
@@ -34,13 +34,10 @@ export default function EstimationHomePage() {
 
       {/* Hero */}
       <section className="relative py-20 lg:py-28 px-4 overflow-hidden">
-        <Image
+        <img
           src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1920&q=80&auto=format&fit=crop"
           alt="Professional reviewing cost estimation documents"
-          fill
-          className="object-cover"
-          sizes="100vw"
-          priority
+          className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
         <div className="relative z-10">
