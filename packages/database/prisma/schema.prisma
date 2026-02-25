@@ -1585,6 +1585,11 @@ model Project {
   closeoutItems  CloseoutItem[]
   lookaheadItems LookaheadItem[]
 
+  // Spatial & Financing relations (Backend Consolidation v10)
+  spatialScans            SpatialScan[]
+  financingApplications   FinancingApplication[]
+  items                   ProjectItem[]
+
   @@index([clientId])
   @@index([orgId])
   @@index([propertyId])
@@ -1953,6 +1958,11 @@ model User {
 
   // Project Membership relations
   projectMemberships ProjectMembership[] @relation("ProjectMemberships")
+
+  // Spatial & Financing relations (Backend Consolidation v10)
+  spatialVerifications   SpatialVerification[] @relation("SpatialVerifier")
+  financingApplications  FinancingApplication[]
+  milestoneApprovals     MilestoneApproval[]   @relation("MilestoneApprover")
 }
 
 // ============================================================================
@@ -2255,6 +2265,10 @@ model Milestone {
   payouts             Payout[] // Payouts from this milestone
   lienWaivers         LienWaiver[] // Lien waivers for this milestone
   fileUploads         FileUpload[] // File uploads associated with this milestone
+
+  // Spatial & Financing relations (Backend Consolidation v10)
+  spatialVerifications SpatialVerification[]
+  approvals            MilestoneApproval[]
 
   @@index([contractId])
   @@index([status])
@@ -4620,7 +4634,10 @@ model Payment {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  financingApplicationId String?
+
+  project                Project?              @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  financingApplication   FinancingApplication? @relation("FinancingPayments", fields: [financingApplicationId], references: [id], onDelete: SetNull)
   // org          Org?              @relation(fields: [orgId], references: [id], onDelete: SetNull)
   // subscription ServiceSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
 
@@ -4628,6 +4645,7 @@ model Payment {
   @@index([projectId])
   @@index([subscriptionId])
   @@index([stripePaymentIntentId])
+  @@index([financingApplicationId])
   @@index([status])
   @@index([createdAt])
 }
@@ -12325,4 +12343,199 @@ model TakeoffJob {
   @@index([estimateId])
   @@index([status])
   @@map("takeoff_jobs")
+}
+
+// ============================================================================
+// BACKEND CONSOLIDATION v10 — Spatial, Financing, Approval, Product Models
+// ============================================================================
+
+enum ScanType {
+  LIDAR
+  PHOTOGRAMMETRY
+  DRONE
+  MOBILE_SCAN
+  BEFORE
+  DURING
+  AFTER
+}
+
+enum VerificationStatus {
+  PENDING
+  IN_PROGRESS
+  PASSED
+  FAILED
+  NEEDS_REVIEW
+}
+
+enum FinancingStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  FUNDED
+  CLOSED
+}
+
+enum ApproverType {
+  HOMEOWNER
+  CONTRACTOR
+  LENDER
+  INSPECTOR
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ProductCategory {
+  KITCHEN
+  BATH
+  WHOLE_HOME
+  ADDITION
+  FACADE
+  ELECTRICAL
+  PLUMBING
+  HVAC
+  FLOORING
+  ROOFING
+  WINDOWS_DOORS
+}
+
+model SpatialScan {
+  id              String    @id @default(uuid())
+  projectId       String
+  scanType        ScanType
+  scanDate        DateTime  @default(now())
+  fileUrl         String
+  fileSize        Int?
+  format          String?
+  deviceInfo      Json?
+  pointCount      Int?
+  coverage        Float?
+  accuracy        Float?
+  processed       Boolean   @default(false)
+  processedAt     DateTime?
+  processingNotes String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  project       Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  verifications SpatialVerification[]
+
+  @@index([projectId])
+  @@index([scanType])
+}
+
+model SpatialVerification {
+  id           String             @id @default(uuid())
+  milestoneId  String
+  scanId       String
+  verifiedById String?
+  aiScore      Float?
+  aiNotes      Json?
+  manualReview Boolean            @default(false)
+  reviewNotes  String?
+  status       VerificationStatus @default(PENDING)
+  createdAt    DateTime           @default(now())
+  verifiedAt   DateTime?
+
+  milestone  Milestone   @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  scan       SpatialScan @relation(fields: [scanId], references: [id])
+  verifiedBy User?       @relation("SpatialVerifier", fields: [verifiedById], references: [id])
+
+  @@index([milestoneId])
+  @@index([scanId])
+  @@index([status])
+}
+
+model FinancingApplication {
+  id              String          @id @default(uuid())
+  projectId       String
+  applicantId     String
+  requestedAmount Decimal         @db.Decimal(18, 2)
+  approvedAmount  Decimal?        @db.Decimal(18, 2)
+  interestRate    Float?
+  termMonths      Int?
+  lenderName      String?
+  loanOfficer     String?
+  loanNumber      String?
+  status          FinancingStatus @default(PENDING)
+  applicationUrl  String?
+  approvalUrl     String?
+  appliedAt       DateTime        @default(now())
+  reviewedAt      DateTime?
+  approvedAt      DateTime?
+  fundedAt        DateTime?
+
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  applicant     User      @relation(fields: [applicantId], references: [id])
+  disbursements Payment[] @relation("FinancingPayments")
+
+  @@index([projectId])
+  @@index([applicantId])
+  @@index([status])
+}
+
+model MilestoneApproval {
+  id           String         @id @default(uuid())
+  milestoneId  String
+  approverType ApproverType
+  approverId   String
+  status       ApprovalStatus @default(PENDING)
+  notes        String?
+  createdAt    DateTime       @default(now())
+  decidedAt    DateTime?
+
+  milestone Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  approver  User      @relation("MilestoneApprover", fields: [approverId], references: [id])
+
+  @@index([milestoneId])
+  @@index([approverId])
+  @@index([approverType, status])
+}
+
+model Product {
+  id             String          @id @default(uuid())
+  name           String
+  description    String?
+  sku            String          @unique
+  category       ProductCategory
+  brand          String?
+  manufacturer   String?
+  unitPrice      Decimal         @db.Decimal(18, 2)
+  unitOfMeasure  String?
+  leadTimeDays   Int?
+  supplier       String?
+  imageUrl       String?
+  arModelUrl     String?
+  dimensions     Json?
+  specifications Json?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  projectItems ProjectItem[]
+
+  @@index([category])
+  @@index([sku])
+}
+
+model ProjectItem {
+  id          String    @id @default(uuid())
+  projectId   String
+  productId   String
+  quantity    Int       @default(1)
+  unitPrice   Decimal   @db.Decimal(18, 2)
+  totalPrice  Decimal   @db.Decimal(18, 2)
+  installed   Boolean   @default(false)
+  installedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([projectId])
+  @@index([productId])
 }

@@ -11,6 +11,8 @@ import { createMLWorker } from './processors/ml.processor'
 import { createReportsWorker } from './processors/reports.processor'
 import { createSalesWorker } from './processors/sales.processor'
 import { createMLPredictionWorker } from './processors/ml-prediction.processor'
+import { spatialVerificationQueue } from './queues/spatial-verification.queue'
+import { createSpatialVerificationWorker } from './processors/spatial-verification.processor'
 import { cronManager } from './cron/cron.manager'
 import type { Worker } from 'bullmq'
 
@@ -23,6 +25,7 @@ let mlWorker: Worker | null = null
 let reportsWorker: Worker | null = null
 let salesWorker: Worker | null = null
 let mlPredictionWorker: Worker | null = null
+let spatialVerificationWorker: Worker | null = null
 
 // Test Redis connection
 async function testRedisConnection() {
@@ -199,6 +202,19 @@ async function initializeMLPredictionQueue() {
   }
 }
 
+// Initialize spatial verification queue and worker
+async function initializeSpatialVerificationQueue() {
+  try {
+    console.log('Initializing spatial verification queue...')
+    spatialVerificationWorker = createSpatialVerificationWorker()
+    console.log('Spatial verification worker started')
+    console.log('Spatial verification queue initialized')
+  } catch (error) {
+    console.error('Failed to initialize spatial verification queue:', error)
+    throw error
+  }
+}
+
 // Graceful shutdown
 async function shutdown() {
   console.log('\n⚠️ Shutting down worker service...')
@@ -238,7 +254,12 @@ async function shutdown() {
       await mlPredictionWorker.close()
       console.log('✅ ML prediction worker closed')
     }
-    
+
+    if (spatialVerificationWorker) {
+      await spatialVerificationWorker.close()
+      console.log('✅ Spatial verification worker closed')
+    }
+
     // Close queues
     await emailQueue.close()
     console.log('✅ Email queue closed')
@@ -257,7 +278,10 @@ async function shutdown() {
     
     await mlPredictionQueue.close()
     console.log('✅ ML prediction queue closed')
-    
+
+    await spatialVerificationQueue.close()
+    console.log('✅ Spatial verification queue closed')
+
     // Close Redis
     await redis.quit()
     console.log('✅ Redis connection closed')
@@ -303,6 +327,7 @@ async function start() {
   await initializeReportsQueue()
   await initializeSalesQueue()
   await initializeMLPredictionQueue()
+  await initializeSpatialVerificationQueue()
   await initializeCronJobs()
   
   console.log('✅ Worker service ready')
@@ -312,6 +337,7 @@ async function start() {
   console.log('📄 Reports queue operational')
   console.log('💼 Sales queue operational')
   console.log('🔮 ML prediction queue operational')
+  console.log('🛰️ Spatial verification queue operational')
   console.log('📅 Cron jobs operational')
   console.log('💡 Task 21: Scheduled jobs (cron) complete!')
   

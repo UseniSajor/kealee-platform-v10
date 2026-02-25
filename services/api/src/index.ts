@@ -237,6 +237,9 @@ import { apiKeyRoutes } from './modules/api-keys/api-key.routes'
 import { webhookRoutes } from './modules/webhooks/webhook.routes'
 import { webhookStatusRoutes } from './modules/webhooks/webhook-status.routes'
 import { milestoneRoutes } from './modules/milestones/milestone.routes'
+import { spatialRoutes } from './modules/spatial/spatial.routes'
+import { financingRoutes, lenderRoutes } from './modules/financing/financing.routes'
+import { productRoutes, projectItemRoutes } from './modules/products/product.routes'
 import { milestoneUploadRoutes } from './modules/milestones/milestone-upload.routes'
 import { milestoneReviewRoutes } from './modules/milestones/milestone-review.routes'
 import { contractDashboardRoutes } from './modules/contracts/contract-dashboard.routes'
@@ -356,6 +359,13 @@ const start = async () => {
       await api.register(designRoutes, { prefix: '/marketplace' })
 
       await api.register(paymentRoutes, { prefix: '/payments' })
+
+      // Backend Consolidation v10 — Spatial, Financing, Product modules
+      await api.register(spatialRoutes, { prefix: '/spatial' })
+      await api.register(financingRoutes, { prefix: '/financing' })
+      await api.register(lenderRoutes, { prefix: '/lenders' })
+      await api.register(productRoutes, { prefix: '/products' })
+      await api.register(projectItemRoutes, { prefix: '/projects' })
     }, { prefix: '/api' })
 
 

@@ -113,4 +113,64 @@ export async function milestoneRoutes(fastify: FastifyInstance) {
       return reply.send({ milestone })
     }
   )
+
+  // ========================================================================
+  // MULTI-PARTY APPROVAL (Backend Consolidation v10)
+  // ========================================================================
+
+  // Submit milestone for multi-party approval
+  fastify.post(
+    '/:milestoneId/submit-approval',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(z.object({ milestoneId: z.string().uuid() })),
+      ],
+    },
+    async (request, reply) => {
+      const user = (request as any).user as { id: string }
+      const { milestoneId } = request.params as { milestoneId: string }
+      const milestone = await milestoneService.submitForApproval(milestoneId, user.id)
+      return reply.code(201).send({ milestone })
+    }
+  )
+
+  // Process multi-party approval decision
+  fastify.post(
+    '/:milestoneId/approval',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(z.object({ milestoneId: z.string().uuid() })),
+        validateBody(z.object({
+          approved: z.boolean(),
+          notes: z.string().optional(),
+          approverType: z.enum(['HOMEOWNER', 'CONTRACTOR', 'LENDER', 'INSPECTOR']).optional(),
+        })),
+      ],
+    },
+    async (request, reply) => {
+      const user = (request as any).user as { id: string }
+      const { milestoneId } = request.params as { milestoneId: string }
+      const body = request.body as { approved: boolean; notes?: string; approverType?: string }
+      const milestone = await milestoneService.processApproval(milestoneId, user.id, body)
+      return reply.send({ milestone })
+    }
+  )
+
+  // Get approval status for a milestone
+  fastify.get(
+    '/:milestoneId/approvals',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(z.object({ milestoneId: z.string().uuid() })),
+      ],
+    },
+    async (request, reply) => {
+      const { milestoneId } = request.params as { milestoneId: string }
+      const approvals = await milestoneService.getApprovals(milestoneId)
+      return reply.send({ approvals })
+    }
+  )
 }

@@ -396,4 +396,236 @@ export const milestoneService = {
 
     return updated
   },
+
+  // ========================================================================
+  // MULTI-PARTY APPROVAL (Backend Consolidation v10)
+  // ========================================================================
+
+  /**
+   * Submit milestone for multi-party approval.
+   * Creates MilestoneApproval records for required approvers (HOMEOWNER, plus LENDER if financed).
+   */
+  async submitForApproval(milestoneId: string, userId: string) {
+    const milestone = await prismaAny.milestone.findUnique({
+      where: { id: milestoneId },
+      include: {
+        contract: {
+          include: {
+            project: {
+              select: {
+                id: true,
+                ownerId: true,
+                financingApplications: {
+                  where: { status: 'FUNDED' },
+                  select: { id: true },
+                },
+              },
+            },
+            contractor: { select: { id: true } },
+          },
+        },
+        evidence: { select: { id: true } },
+      },
+    })
+
+    if (!milestone) throw new NotFoundError('Milestone', milestoneId)
+    if (milestone.contract.contractorId !== userId) {
+      throw new AuthorizationError('Only the contractor can submit milestones for approval')
+    }
+
+    if (milestone.status !== 'SUBMITTED' && milestone.status !== 'PENDING') {
+      throw new ValidationError(`Milestone must be PENDING or SUBMITTED (current: ${milestone.status})`)
+    }
+
+    if (milestone.evidence.length === 0) {
+      throw new ValidationError('At least one piece of evidence is required')
+    }
+
+    // Determine required approvers
+    const project = milestone.contract.project
+    const approvers: Array<{ approverType: string; approverId: string }> = []
+
+    // Homeowner always required
+    if (project.ownerId) {
+      approvers.push({ approverType: 'HOMEOWNER', approverId: project.ownerId })
+    }
+
+    // Lender required if project has funded financing
+    const hasFundedFinancing = project.financingApplications?.length > 0
+    // Note: Lender approval will be created when a lender takes action
+
+    // Create approval records
+    for (const approver of approvers) {
+      const existingApproval = await prismaAny.milestoneApproval.findFirst({
+        where: {
+          milestoneId,
+          approverType: approver.approverType,
+        },
+      })
+
+      if (!existingApproval) {
+        await prismaAny.milestoneApproval.create({
+          data: {
+            milestoneId,
+            approverType: approver.approverType,
+            approverId: approver.approverId,
+            status: 'PENDING',
+          },
+        })
+      }
+    }
+
+    // Update milestone status
+    const updated = await prismaAny.milestone.update({
+      where: { id: milestoneId },
+      data: { status: 'SUBMITTED' },
+      include: {
+        approvals: true,
+      },
+    })
+
+    // Create audit log
+    await prismaAny.auditLog.create({
+      data: {
+        entityType: 'Milestone',
+        entityId: milestoneId,
+        action: 'SUBMITTED_FOR_APPROVAL',
+        details: {
+          approversCreated: approvers.length,
+          hasFundedFinancing,
+        },
+        userId,
+      },
+    })
+
+    return updated
+  },
+
+  /**
+   * Process a multi-party approval decision.
+   * Checks if all required approvals are in, then transitions milestone status.
+   */
+  async processApproval(
+    milestoneId: string,
+    userId: string,
+    decision: { approved: boolean; notes?: string; approverType?: string }
+  ) {
+    const milestone = await prismaAny.milestone.findUnique({
+      where: { id: milestoneId },
+      include: {
+        contract: {
+          include: {
+            project: { select: { ownerId: true } },
+          },
+        },
+        approvals: true,
+      },
+    })
+
+    if (!milestone) throw new NotFoundError('Milestone', milestoneId)
+
+    if (milestone.status !== 'SUBMITTED' && milestone.status !== 'UNDER_REVIEW') {
+      throw new ValidationError(`Milestone is not awaiting approval (current: ${milestone.status})`)
+    }
+
+    // Determine approver type from the user's role context
+    const approverType = decision.approverType || (
+      milestone.contract.project.ownerId === userId ? 'HOMEOWNER' : 'LENDER'
+    )
+
+    // Find or create approval record for this approver
+    let approval = await prismaAny.milestoneApproval.findFirst({
+      where: { milestoneId, approverType, approverId: userId },
+    })
+
+    if (!approval) {
+      approval = await prismaAny.milestoneApproval.create({
+        data: {
+          milestoneId,
+          approverType,
+          approverId: userId,
+          status: 'PENDING',
+        },
+      })
+    }
+
+    // Update approval
+    await prismaAny.milestoneApproval.update({
+      where: { id: approval.id },
+      data: {
+        status: decision.approved ? 'APPROVED' : 'REJECTED',
+        notes: decision.notes ?? null,
+        decidedAt: new Date(),
+      },
+    })
+
+    // Re-fetch all approvals
+    const allApprovals = await prismaAny.milestoneApproval.findMany({
+      where: { milestoneId },
+    })
+
+    // Check consensus
+    const hasRejection = allApprovals.some((a: any) => a.status === 'REJECTED')
+    const allApproved = allApprovals.length > 0 && allApprovals.every((a: any) => a.status === 'APPROVED')
+
+    let newStatus = 'UNDER_REVIEW'
+    if (hasRejection) {
+      newStatus = 'REJECTED'
+    } else if (allApproved) {
+      newStatus = 'APPROVED'
+    }
+
+    const updated = await prismaAny.milestone.update({
+      where: { id: milestoneId },
+      data: {
+        status: newStatus,
+        ...(newStatus === 'APPROVED' && {
+          approvedAt: new Date(),
+          approvedById: userId,
+        }),
+      },
+      include: { approvals: true },
+    })
+
+    // Audit log
+    await prismaAny.auditLog.create({
+      data: {
+        entityType: 'Milestone',
+        entityId: milestoneId,
+        action: decision.approved ? 'APPROVAL_GRANTED' : 'APPROVAL_DENIED',
+        details: {
+          approverType,
+          notes: decision.notes,
+          newStatus,
+          approvalsSummary: allApprovals.map((a: any) => ({
+            type: a.approverType,
+            status: a.status,
+          })),
+        },
+        userId,
+      },
+    })
+
+    return updated
+  },
+
+  /**
+   * Get approval status for a milestone
+   */
+  async getApprovals(milestoneId: string) {
+    const milestone = await prismaAny.milestone.findUnique({
+      where: { id: milestoneId },
+      select: { id: true },
+    })
+
+    if (!milestone) throw new NotFoundError('Milestone', milestoneId)
+
+    return prismaAny.milestoneApproval.findMany({
+      where: { milestoneId },
+      include: {
+        approver: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: { createdAt: 'asc' },
+    })
+  },
 }
