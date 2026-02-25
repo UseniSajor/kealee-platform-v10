@@ -337,7 +337,7 @@ export const api = {
     description?: string
     type?: string
     status?: string
-  }) => apiRequest<{ estimate: any }>(`/estimation/estimate`, {
+  }) => apiRequest<{ estimate: any }>(`/estimation/estimates`, {
     method: 'POST',
     body: JSON.stringify(data),
   }),

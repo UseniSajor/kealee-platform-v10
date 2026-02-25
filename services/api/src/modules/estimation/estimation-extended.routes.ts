@@ -150,9 +150,9 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
     }
   )
 
-  // POST /estimation/estimate — Create a new estimate
+  // POST /estimation/estimates — Create a new estimate (CRUD)
   fastify.post(
-    '/estimate',
+    '/estimates',
     {
       preHandler: [authenticateUser],
     },

@@ -93,7 +93,7 @@ class ApiClient {
   }
 
   async createEstimate(data: any) {
-    return this.request('/estimation/estimate', {
+    return this.request('/estimation/estimates', {
       method: 'POST',
       body: JSON.stringify(data),
     });
