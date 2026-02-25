@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
   },
   transpilePackages: ['@kealee/ui', '@kealee/auth'],
   images: {
+    domains: ['images.unsplash.com'],
     remotePatterns: [
       {
         protocol: 'https',
