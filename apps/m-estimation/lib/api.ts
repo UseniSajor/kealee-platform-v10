@@ -348,7 +348,7 @@ class ApiClient {
 
     const authHeaders = await this.getAuthHeader();
     try {
-      const response = await fetch(`${this.baseUrl}/estimation/cost-import/import/csv`, {
+      const response = await fetch(`${this.baseUrl}/estimation/cost-code-pdf-import/import/csv`, {
         method: 'POST',
         headers: { ...authHeaders },
         body: formData,
@@ -376,7 +376,7 @@ class ApiClient {
     items: any[],
     overwrite?: boolean
   ) {
-    return this.request('/estimation/cost-import/import/json', {
+    return this.request('/estimation/cost-code-pdf-import/import/json', {
       method: 'POST',
       body: JSON.stringify({ costDatabaseId, type, items, overwrite }),
     });
@@ -387,7 +387,7 @@ class ApiClient {
     const authHeaders = await this.getAuthHeader();
     try {
       const response = await fetch(
-        `${this.baseUrl}/estimation/cost-import/import/template/${type}`,
+        `${this.baseUrl}/estimation/cost-code-pdf-import/import/template/${type}`,
         { headers: { ...authHeaders } }
       );
       if (!response.ok) return { success: false, error: 'Failed to download template' };
@@ -407,7 +407,7 @@ class ApiClient {
     version: string;
     source?: string;
   }) {
-    return this.request('/estimation/cost-import/databases', {
+    return this.request('/estimation/cost-code-pdf-import/databases', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -419,7 +419,7 @@ class ApiClient {
     if (params?.region) filteredParams.region = params.region;
     if (params?.type) filteredParams.type = params.type;
     const query = new URLSearchParams(filteredParams).toString();
-    return this.request(`/estimation/cost-import/databases${query ? `?${query}` : ''}`);
+    return this.request(`/estimation/cost-code-pdf-import/databases${query ? `?${query}` : ''}`);
   }
 
   // ========================================================================
@@ -443,7 +443,7 @@ class ApiClient {
 
     const authHeaders = await this.getAuthHeader();
     try {
-      const response = await fetch(`${this.baseUrl}/estimation/cost-import/pdf/upload`, {
+      const response = await fetch(`${this.baseUrl}/estimation/cost-code-pdf-import/pdf/upload`, {
         method: 'POST',
         headers: { ...authHeaders },
         body: formData,
@@ -471,24 +471,24 @@ class ApiClient {
     if (params?.limit) filteredParams.limit = String(params.limit);
     if (params?.status) filteredParams.status = params.status;
     const query = new URLSearchParams(filteredParams).toString();
-    return this.request(`/estimation/cost-import/pdf/jobs${query ? `?${query}` : ''}`);
+    return this.request(`/estimation/cost-code-pdf-import/pdf/jobs${query ? `?${query}` : ''}`);
   }
 
   // Get single import job status
   async getImportJob(jobId: string) {
-    return this.request(`/estimation/cost-import/pdf/jobs/${jobId}`);
+    return this.request(`/estimation/cost-code-pdf-import/pdf/jobs/${jobId}`);
   }
 
   // Delete an import job
   async deleteImportJob(jobId: string) {
-    return this.request(`/estimation/cost-import/pdf/jobs/${jobId}`, {
+    return this.request(`/estimation/cost-code-pdf-import/pdf/jobs/${jobId}`, {
       method: 'DELETE',
     });
   }
 
   // Get cost database detail
   async getCostDatabase(id: string) {
-    return this.request(`/estimation/cost-import/databases/${id}`);
+    return this.request(`/estimation/cost-code-pdf-import/databases/${id}`);
   }
 
   // Get paginated items from a cost database
@@ -507,7 +507,7 @@ class ApiClient {
     if (params?.page) filteredParams.page = String(params.page);
     if (params?.limit) filteredParams.limit = String(params.limit);
     const query = new URLSearchParams(filteredParams).toString();
-    return this.request(`/estimation/cost-import/databases/${id}/items${query ? `?${query}` : ''}`);
+    return this.request(`/estimation/cost-code-pdf-import/databases/${id}/items${query ? `?${query}` : ''}`);
   }
   // ========================================================================
   // CTC (Construction Task Catalog)
@@ -520,7 +520,7 @@ class ApiClient {
 
     const authHeaders = await this.getAuthHeader();
     try {
-      const response = await fetch(`${this.baseUrl}/estimation/cost-import/pdf/upload-ctc`, {
+      const response = await fetch(`${this.baseUrl}/estimation/cost-code-pdf-import/pdf/upload-ctc`, {
         method: 'POST',
         headers: { ...authHeaders },
         body: formData,
