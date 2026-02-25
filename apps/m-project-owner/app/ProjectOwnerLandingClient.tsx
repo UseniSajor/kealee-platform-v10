@@ -393,6 +393,7 @@ export function ProjectOwnerLandingClient() {
         { label: 'Homeowner & Project Owner Services' },
       ]}
       activeSection="owner"
+      showSidebar={false}
     >
       {/* HERO SECTION */}
       <HeroSection
