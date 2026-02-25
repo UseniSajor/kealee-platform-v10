@@ -122,7 +122,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
               projectCity: true,
               projectState: true,
               squareFootage: true,
-              grandTotal: true,
+              totalCost: true,
               createdAt: true,
               updatedAt: true,
             },
@@ -135,8 +135,8 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
           id: e.id,
           name: e.name || e.projectName || 'Untitled',
           clientName: e.projectName || null,
-          amount: Number(e.grandTotal || 0),
-          totalCost: Number(e.grandTotal || 0),
+          amount: Number(e.totalCost || 0),
+          totalCost: Number(e.totalCost || 0),
           status: (e.status || 'DRAFT_ESTIMATE').toLowerCase().replace('_estimate', '').replace('_', ''),
           updatedAt: e.updatedAt,
           createdAt: e.createdAt,
@@ -146,6 +146,97 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.send({ estimates: [], total: 0 })
+      }
+    }
+  )
+
+  // POST /estimation/estimate — Create a new estimate
+  fastify.post(
+    '/estimate',
+    {
+      preHandler: [authenticateUser],
+    },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user as { id: string; organizationId?: string }
+        const body = request.body as any
+
+        const estimate = await prismaAny.estimate.create({
+          data: {
+            organizationId: user.organizationId || 'default',
+            name: body.name || 'Untitled Estimate',
+            description: body.description || null,
+            type: (body.type || 'DETAILED').toUpperCase(),
+            status: (body.status || 'DRAFT_ESTIMATE').toUpperCase(),
+            projectName: body.clientName || body.projectName || null,
+            projectType: body.projectType || null,
+            projectCity: body.location?.city || null,
+            projectState: body.location?.state || null,
+            projectZip: body.location?.zipCode || null,
+            squareFootage: body.squareFootage || null,
+            overheadPercent: body.overheadPercent ?? 10,
+            profitPercent: body.profitPercent ?? 10,
+            contingencyPercent: body.contingencyPercent ?? 5,
+            costDatabaseId: body.costDatabaseId || null,
+            projectId: body.projectId || null,
+          },
+        })
+
+        return reply.code(201).send({ estimate })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(400).send({ error: error.message || 'Failed to create estimate' })
+      }
+    }
+  )
+
+  // GET /estimation/estimate/:id — Get single estimate with line items
+  fastify.get(
+    '/estimate/:id',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(z.object({ id: z.string().uuid() })),
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string }
+
+        const estimate = await prismaAny.estimate.findUnique({
+          where: { id },
+          include: {
+            sections: {
+              orderBy: { sortOrder: 'asc' },
+              include: {
+                lineItems: { orderBy: { sortOrder: 'asc' } },
+              },
+            },
+            lineItems: { orderBy: { sortOrder: 'asc' } },
+          },
+        })
+
+        if (!estimate) {
+          return reply.code(404).send({ error: 'Estimate not found' })
+        }
+
+        // Build line items list — prefer section-grouped, fallback to flat
+        const sectionItems = (estimate.sections || []).flatMap((s: any) => s.lineItems || [])
+        const allItems = sectionItems.length > 0 ? sectionItems : (estimate.lineItems || [])
+
+        return reply.send({
+          estimate: {
+            ...estimate,
+            lineItems: allItems,
+            totalCost: Number(estimate.totalCost || 0),
+            materialCost: Number(estimate.subtotalMaterial || 0),
+            laborCost: Number(estimate.subtotalLabor || 0),
+            equipmentCost: Number(estimate.subtotalEquipment || 0),
+          },
+        })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(500).send({ error: error.message || 'Failed to load estimate' })
       }
     }
   )
@@ -204,6 +295,98 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({ error: error.message || 'Failed to delete estimate' })
+      }
+    }
+  )
+
+  // POST /estimation/estimate/:id/line-items — Add line item (alias for frontends)
+  fastify.post(
+    '/estimate/:id/line-items',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(z.object({ id: z.string().uuid() })),
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const { id: estimateId } = request.params as { id: string }
+        const body = request.body as any
+
+        const quantity = Number(body.quantity || 0)
+        const unitCost = Number(body.unitCost || 0)
+        const totalCost = quantity * unitCost
+
+        const item = await prismaAny.estimateLineItem.create({
+          data: {
+            estimateId,
+            sectionId: body.sectionId || null,
+            itemType: body.itemType || body.type?.toUpperCase() === 'LABOR' ? 'LABOR_LINE' : 'MATERIAL_LINE',
+            csiCode: body.csiCode || body.division || null,
+            description: body.description || 'New Item',
+            quantity,
+            unit: body.unit || 'EA',
+            unitCost,
+            totalCost,
+            laborCost: body.laborCost || null,
+            materialCostAmt: body.materialCostAmt || null,
+            equipmentCostAmt: body.equipmentCostAmt || null,
+            wasteFactor: body.wasteFactor || 1.0,
+            difficultyFactor: 1.0,
+            takeoffSource: 'MANUAL',
+            sortOrder: body.sortOrder || 0,
+          },
+        })
+
+        // Update estimate totalCost
+        const allItems = await prismaAny.estimateLineItem.findMany({
+          where: { estimateId },
+          select: { totalCost: true },
+        })
+        const newTotal = allItems.reduce((sum: number, i: any) => sum + Number(i.totalCost || 0), 0)
+        await prismaAny.estimate.update({
+          where: { id: estimateId },
+          data: { totalCost: newTotal },
+        })
+
+        return reply.code(201).send({ lineItem: item })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(400).send({ error: error.message || 'Failed to add line item' })
+      }
+    }
+  )
+
+  // DELETE /estimation/estimate/:id/line-items/:lineItemId — Delete line item
+  fastify.delete(
+    '/estimate/:id/line-items/:lineItemId',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(z.object({ id: z.string().uuid(), lineItemId: z.string().uuid() })),
+      ],
+    },
+    async (request, reply) => {
+      try {
+        const { id: estimateId, lineItemId } = request.params as { id: string; lineItemId: string }
+
+        await prismaAny.estimateLineItem.delete({ where: { id: lineItemId } })
+
+        // Update estimate totalCost
+        const allItems = await prismaAny.estimateLineItem.findMany({
+          where: { estimateId },
+          select: { totalCost: true },
+        })
+        const newTotal = allItems.reduce((sum: number, i: any) => sum + Number(i.totalCost || 0), 0)
+        await prismaAny.estimate.update({
+          where: { id: estimateId },
+          data: { totalCost: newTotal },
+        })
+
+        return reply.send({ success: true })
+      } catch (error: any) {
+        fastify.log.error(error)
+        return reply.code(400).send({ error: error.message || 'Failed to delete line item' })
       }
     }
   )
@@ -771,21 +954,21 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         // Fetch estimates from DB
         const estimates = await prismaAny.estimate.findMany({
           where: { id: { in: estimateIds } },
-          select: { id: true, name: true, grandTotal: true, type: true, squareFootage: true, createdAt: true },
+          select: { id: true, name: true, totalCost: true, type: true, squareFootage: true, createdAt: true },
         })
 
         const comparison = {
           estimates: estimates.map((e: any) => ({
             id: e.id,
             name: e.name,
-            total: Number(e.grandTotal || 0),
-            costPerSqft: e.squareFootage ? Number(e.grandTotal || 0) / e.squareFootage : 0,
+            total: Number(e.totalCost || 0),
+            costPerSqft: e.squareFootage ? Number(e.totalCost || 0) / e.squareFootage : 0,
             type: e.type,
           })),
           summary: {
-            lowestCost: Math.min(...estimates.map((e: any) => Number(e.grandTotal || 0))),
-            highestCost: Math.max(...estimates.map((e: any) => Number(e.grandTotal || 0))),
-            averageCost: estimates.reduce((sum: number, e: any) => sum + Number(e.grandTotal || 0), 0) / estimates.length,
+            lowestCost: Math.min(...estimates.map((e: any) => Number(e.totalCost || 0))),
+            highestCost: Math.max(...estimates.map((e: any) => Number(e.totalCost || 0))),
+            averageCost: estimates.reduce((sum: number, e: any) => sum + Number(e.totalCost || 0), 0) / estimates.length,
           },
         }
 
@@ -839,13 +1022,13 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
 
         const estimate = await prismaAny.estimate.findUnique({
           where: { id: estimateId },
-          select: { grandTotal: true, squareFootage: true, type: true, projectCity: true, projectState: true },
+          select: { totalCost: true, squareFootage: true, type: true, projectCity: true, projectState: true },
         })
 
         if (!estimate) return reply.code(404).send({ error: 'Estimate not found' })
 
         const costPerSqft = estimate.squareFootage
-          ? Number(estimate.grandTotal || 0) / estimate.squareFootage
+          ? Number(estimate.totalCost || 0) / estimate.squareFootage
           : 0
 
         const benchmark = {

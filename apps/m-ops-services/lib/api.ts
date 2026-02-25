@@ -447,4 +447,22 @@ export const api = {
 
   getEstimationMetrics: () =>
     apiRequest<{ metrics: any }>(`/estimation/metrics`),
+
+  addLineItem: (estimateId: string, data: {
+    description: string
+    quantity: number
+    unit: string
+    unitCost: number
+    type?: string
+    division?: string
+    csiCode?: string
+  }) => apiRequest<{ lineItem: any }>(`/estimation/estimate/${estimateId}/line-items`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  deleteLineItem: (estimateId: string, lineItemId: string) =>
+    apiRequest<{ message: string }>(`/estimation/estimate/${estimateId}/line-items/${lineItemId}`, {
+      method: 'DELETE',
+    }),
 }

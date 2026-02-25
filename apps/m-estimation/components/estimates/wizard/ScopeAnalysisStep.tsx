@@ -98,13 +98,7 @@ export function ScopeAnalysisStep({
     setTakeoffStatus('uploading');
     setAnalysisError(null);
     try {
-      const formData = new FormData();
-      formData.append('file', takeoffFile);
-      formData.append('discipline', 'general');
-      if (data.basicInfo?.estimateId) {
-        formData.append('estimateId', data.basicInfo.estimateId);
-      }
-      const res = await apiClient.uploadAITakeoff(formData);
+      const res = await apiClient.uploadAITakeoff(takeoffFile, data.basicInfo?.estimateId);
       if (res.success && res.data) {
         const jobId = (res.data as any).takeoffJobId || (res.data as any).id;
         setTakeoffJobId(jobId);

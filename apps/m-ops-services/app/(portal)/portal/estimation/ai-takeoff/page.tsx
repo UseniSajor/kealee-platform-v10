@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 
 function formatMoney(n: number) {
@@ -27,6 +28,7 @@ const DISCIPLINES = [
 type TakeoffStatus = "idle" | "uploading" | "processing" | "complete" | "error";
 
 export default function AiTakeoffPage() {
+  const router = useRouter();
   const [status, setStatus] = useState<TakeoffStatus>("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -484,6 +486,28 @@ export default function AiTakeoffPage() {
                   {JSON.stringify(takeoffResult, null, 2)}
                 </pre>
               )}
+
+              {/* Import to Estimate */}
+              <div className="mt-4 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    sessionStorage.setItem(
+                      "takeoffImport",
+                      JSON.stringify({
+                        items: takeoffResult.items || [],
+                        totalEstimatedCost: takeoffResult.totalEstimatedCost,
+                        summary: takeoffResult.summary,
+                        takeoffId: uploadResult?.id,
+                      })
+                    );
+                    router.push("/portal/estimation/new");
+                  }}
+                  className="inline-flex items-center justify-center rounded-xl bg-[var(--primary)] px-5 py-2.5 text-sm font-black text-[var(--primary-foreground)] shadow-sm hover:opacity-95"
+                >
+                  Import to New Estimate
+                </button>
+              </div>
             </div>
           )}
 

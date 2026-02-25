@@ -1059,7 +1059,7 @@ export default function CostBookImportPage() {
                   try {
                     const res = await apiClient.importCTCPdf(pdfFile);
                     if (res.success && res.data) {
-                      loadImportJobs();
+                      await fetchJobs();
                       setPdfFile(null);
                     } else {
                       setPdfError(res.error || 'CTC import failed');

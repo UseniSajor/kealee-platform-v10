@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
+import { getPreConProject } from '../../../lib/client-api'
 
 // Phase configuration
 const PHASES = [
@@ -40,31 +41,23 @@ export default function PreConDetailPage() {
   const projectId = params.id as string
   const [loading, setLoading] = useState(true)
   const [project, setProject] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
 
   useEffect(() => {
-    // In production, fetch project from API
-    setLoading(false)
-    // Placeholder project for demo
-    setProject({
-      id: projectId,
-      name: 'Modern Kitchen Renovation',
-      phase: 'DESIGN_REVIEW',
-      category: 'KITCHEN',
-      description: 'Complete kitchen renovation with modern finishes, new cabinets, countertops, and appliances.',
-      city: 'Los Angeles',
-      state: 'CA',
-      squareFootage: 250,
-      complexity: 'STANDARD',
-      designPackageTier: 'STANDARD',
-      designPackagePaid: true,
-      suggestedRetailPrice: null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      designConcepts: [],
-      bids: [],
-      platformFees: [],
-    })
+    async function fetchProject() {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await getPreConProject(projectId)
+        setProject(res.precon)
+      } catch (err: any) {
+        setError(err.message || 'Failed to load project')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProject()
   }, [projectId])
 
   if (loading) {
@@ -79,7 +72,10 @@ export default function PreConDetailPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900">Project not found</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {error ? 'Error loading project' : 'Project not found'}
+          </h2>
+          {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
           <Link href="/precon" className="text-indigo-600 hover:underline mt-2 inline-block">
             ← Back to projects
           </Link>

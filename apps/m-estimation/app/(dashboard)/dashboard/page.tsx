@@ -70,21 +70,62 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
 
 const COST_COLORS = ['#8b5cf6', '#06b6d4', '#f59e0b', '#10b981'];
 
-const costDistribution = [
-  { name: 'Materials', value: 45, color: '#8b5cf6' },
-  { name: 'Labor', value: 35, color: '#06b6d4' },
-  { name: 'Equipment', value: 12, color: '#f59e0b' },
-  { name: 'Other', value: 8, color: '#10b981' },
+const DEFAULT_COST_DISTRIBUTION = [
+  { name: 'Materials', value: 0, color: '#8b5cf6' },
+  { name: 'Labor', value: 0, color: '#06b6d4' },
+  { name: 'Equipment', value: 0, color: '#f59e0b' },
+  { name: 'Other', value: 0, color: '#10b981' },
 ];
 
-const monthlyTrends = [
-  { month: 'Sep', estimates: 8, value: 245000 },
-  { month: 'Oct', estimates: 12, value: 389000 },
-  { month: 'Nov', estimates: 15, value: 512000 },
-  { month: 'Dec', estimates: 10, value: 325000 },
-  { month: 'Jan', estimates: 18, value: 620000 },
-  { month: 'Feb', estimates: 6, value: 185000 },
-];
+function deriveCostDistribution(estimates: any[]) {
+  let material = 0, labor = 0, equipment = 0, other = 0;
+  for (const est of estimates) {
+    const sections = est.sections || [];
+    for (const sec of sections) {
+      for (const li of sec.lineItems || []) {
+        const cost = (li.quantity || 0) * (li.unitCost || 0);
+        const t = (li.type || '').toLowerCase();
+        if (t === 'material') material += cost;
+        else if (t === 'labor') labor += cost;
+        else if (t === 'equipment') equipment += cost;
+        else other += cost;
+      }
+    }
+    if (sections.length === 0) {
+      material += est.materialCost || 0;
+      labor += est.laborCost || 0;
+      equipment += est.equipmentCost || 0;
+    }
+  }
+  const total = material + labor + equipment + other;
+  if (total === 0) return DEFAULT_COST_DISTRIBUTION;
+  return [
+    { name: 'Materials', value: Math.round((material / total) * 100), color: '#8b5cf6' },
+    { name: 'Labor', value: Math.round((labor / total) * 100), color: '#06b6d4' },
+    { name: 'Equipment', value: Math.round((equipment / total) * 100), color: '#f59e0b' },
+    { name: 'Other', value: Math.round((other / total) * 100), color: '#10b981' },
+  ];
+}
+
+function deriveMonthlyTrends(estimates: any[]) {
+  const months: Record<string, { estimates: number; value: number }> = {};
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = d.toLocaleString('default', { month: 'short' });
+    months[key] = { estimates: 0, value: 0 };
+  }
+  for (const est of estimates) {
+    if (!est.createdAt) continue;
+    const d = new Date(est.createdAt);
+    const key = d.toLocaleString('default', { month: 'short' });
+    if (months[key]) {
+      months[key].estimates += 1;
+      months[key].value += est.totalCost || est.amount || 0;
+    }
+  }
+  return Object.entries(months).map(([month, data]) => ({ month, ...data }));
+}
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({
@@ -96,6 +137,8 @@ export default function DashboardPage() {
     estimatesLastMonth: 0,
   });
   const [recentEstimates, setRecentEstimates] = useState<RecentEstimate[]>([]);
+  const [costDistribution, setCostDistribution] = useState(DEFAULT_COST_DISTRIBUTION);
+  const [monthlyTrends, setMonthlyTrends] = useState<{ month: string; estimates: number; value: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -104,7 +147,7 @@ export default function DashboardPage() {
       try {
         const [statsRes, estimatesRes] = await Promise.all([
           apiClient.getStats(),
-          apiClient.getEstimates({ limit: 5 }),
+          apiClient.getEstimates({ limit: 100 }),
         ]);
 
         if (statsRes.success && statsRes.data) {
@@ -123,6 +166,8 @@ export default function DashboardPage() {
           const data = estimatesRes.data as any;
           const items = Array.isArray(data) ? data : (data.estimates || data.items || []);
           setRecentEstimates(items.slice(0, 5));
+          setCostDistribution(deriveCostDistribution(items));
+          setMonthlyTrends(deriveMonthlyTrends(items));
         }
       } catch {
         // Use fallback data

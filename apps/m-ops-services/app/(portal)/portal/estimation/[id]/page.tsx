@@ -76,6 +76,17 @@ export default function EstimateDetailPage() {
   const [editStatus, setEditStatus] = useState("");
   const [editType, setEditType] = useState("");
 
+  // Line item management
+  const [addingItem, setAddingItem] = useState(false);
+  const [newItem, setNewItem] = useState({
+    description: "",
+    quantity: 1,
+    unit: "EA",
+    unitCost: 0,
+    type: "material",
+  });
+  const [itemSaving, setItemSaving] = useState(false);
+
   // AI tools
   const [aiLoading, setAiLoading] = useState<string | null>(null);
   const [aiResult, setAiResult] = useState<any>(null);
@@ -168,6 +179,37 @@ export default function EstimateDetailPage() {
       setError(e instanceof Error ? e.message : `AI ${tool} analysis failed`);
     } finally {
       setAiLoading(null);
+    }
+  }
+
+  async function handleAddLineItem() {
+    if (!newItem.description.trim() || newItem.quantity <= 0 || newItem.unitCost <= 0) return;
+    setItemSaving(true);
+    try {
+      await api.addLineItem(estimateId, {
+        description: newItem.description.trim(),
+        quantity: newItem.quantity,
+        unit: newItem.unit,
+        unitCost: newItem.unitCost,
+        type: newItem.type,
+      });
+      setNewItem({ description: "", quantity: 1, unit: "EA", unitCost: 0, type: "material" });
+      setAddingItem(false);
+      await load();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed to add line item");
+    } finally {
+      setItemSaving(false);
+    }
+  }
+
+  async function handleDeleteLineItem(lineItemId: string) {
+    if (!confirm("Delete this line item?")) return;
+    try {
+      await api.deleteLineItem(estimateId, lineItemId);
+      await load();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed to delete line item");
     }
   }
 
@@ -379,17 +421,82 @@ export default function EstimateDetailPage() {
           <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
             <div className="flex items-end justify-between gap-3">
               <h2 className="text-lg font-black tracking-tight">Line items</h2>
-              <span className="text-sm font-extrabold text-zinc-600">
-                {lineItems.length} items
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-extrabold text-zinc-600">
+                  {lineItems.length} items
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setAddingItem(!addingItem)}
+                  className="rounded-lg border border-black/10 bg-white px-3 py-1.5 text-xs font-black text-zinc-900 hover:bg-zinc-50"
+                >
+                  {addingItem ? "Cancel" : "+ Add Item"}
+                </button>
+              </div>
             </div>
 
-            {lineItems.length === 0 ? (
-              <div className="mt-4 rounded-2xl border border-black/10 bg-zinc-50 p-4 text-center text-sm text-zinc-700">
-                No line items yet. Use AI Takeoff to auto-generate items from plans, or add items
-                manually via the API.
+            {/* Add Line Item Form */}
+            {addingItem && (
+              <div className="mt-4 rounded-xl border border-sky-200 bg-sky-50 p-4">
+                <div className="grid gap-3 sm:grid-cols-5">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-extrabold text-zinc-900">Description</label>
+                    <input
+                      type="text"
+                      value={newItem.description}
+                      onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+                      placeholder="Line item description"
+                      className="mt-1 h-9 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]/25"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-extrabold text-zinc-900">Qty</label>
+                    <input
+                      type="number"
+                      value={newItem.quantity || ""}
+                      onChange={(e) => setNewItem({ ...newItem, quantity: Number(e.target.value) })}
+                      className="mt-1 h-9 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]/25"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-extrabold text-zinc-900">Unit</label>
+                    <input
+                      type="text"
+                      value={newItem.unit}
+                      onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
+                      className="mt-1 h-9 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]/25"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-extrabold text-zinc-900">Unit Cost</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newItem.unitCost || ""}
+                      onChange={(e) => setNewItem({ ...newItem, unitCost: Number(e.target.value) })}
+                      className="mt-1 h-9 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]/25"
+                    />
+                  </div>
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAddLineItem}
+                    disabled={itemSaving || !newItem.description.trim()}
+                    className="rounded-lg bg-[var(--primary)] px-4 py-2 text-xs font-black text-[var(--primary-foreground)] hover:opacity-95 disabled:opacity-60"
+                  >
+                    {itemSaving ? "Adding..." : "Add Line Item"}
+                  </button>
+                </div>
               </div>
-            ) : (
+            )}
+
+            {lineItems.length === 0 && !addingItem ? (
+              <div className="mt-4 rounded-2xl border border-black/10 bg-zinc-50 p-4 text-center text-sm text-zinc-700">
+                No line items yet. Use AI Takeoff to auto-generate items from plans, or click
+                &quot;+ Add Item&quot; to add items manually.
+              </div>
+            ) : lineItems.length > 0 ? (
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -399,11 +506,12 @@ export default function EstimateDetailPage() {
                       <th className="pb-2 text-right text-xs font-extrabold text-zinc-600">Qty</th>
                       <th className="pb-2 text-right text-xs font-extrabold text-zinc-600">Unit Cost</th>
                       <th className="pb-2 text-right text-xs font-extrabold text-zinc-600">Total</th>
+                      <th className="pb-2 w-10"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {lineItems.map((li: any, idx: number) => (
-                      <tr key={li.id || idx} className="border-b border-black/5">
+                      <tr key={li.id || idx} className="border-b border-black/5 group">
                         <td className="py-2 pr-3 font-black text-zinc-900">
                           {li.name || li.description || `Item ${idx + 1}`}
                         </td>
@@ -416,8 +524,20 @@ export default function EstimateDetailPage() {
                         <td className="py-2 pr-3 text-right text-zinc-700">
                           {li.unitCost != null ? formatMoney(li.unitCost) : "-"}
                         </td>
-                        <td className="py-2 text-right font-black text-zinc-900">
+                        <td className="py-2 pr-2 text-right font-black text-zinc-900">
                           {li.totalCost != null ? formatMoney(li.totalCost) : "-"}
+                        </td>
+                        <td className="py-2 text-center">
+                          {li.id && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteLineItem(li.id)}
+                              className="text-xs text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-700"
+                              title="Delete line item"
+                            >
+                              &#10005;
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -430,11 +550,12 @@ export default function EstimateDetailPage() {
                       <td className="py-2 text-right font-black text-zinc-950">
                         {formatMoney(totalCost)}
                       </td>
+                      <td></td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* Assemblies reference */}

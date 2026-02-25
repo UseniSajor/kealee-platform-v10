@@ -89,7 +89,7 @@ class ApiClient {
   }
 
   async getEstimate(id: string) {
-    return this.request(`/estimation/project/${id}`);
+    return this.request(`/estimation/estimate/${id}`);
   }
 
   async createEstimate(data: any) {

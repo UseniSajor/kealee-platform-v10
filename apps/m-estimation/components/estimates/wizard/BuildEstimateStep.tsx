@@ -42,23 +42,7 @@ export function BuildEstimateStep({
   onBack,
 }: BuildEstimateStepProps) {
   const [sections, setSections] = useState<Section[]>(
-    data.sections || [
-      {
-        id: '1',
-        division: '03',
-        name: 'CONCRETE',
-        items: [
-          {
-            id: '1-1',
-            description: 'Slab on grade',
-            quantity: 2000,
-            unit: 'SF',
-            unitCost: 15.0,
-            type: 'material',
-          },
-        ],
-      },
-    ]
+    data.sections || []
   );
 
   const [newItem, setNewItem] = useState({
