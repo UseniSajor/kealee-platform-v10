@@ -21,8 +21,7 @@ function LoginForm() {
     setLoading(true);
     try {
       await signIn(email, password);
-      router.push(redirect);
-      router.refresh();
+      window.location.href = redirect;
     } catch (err: any) {
       setError(err.message || 'Failed to sign in.');
     } finally { setLoading(false); }

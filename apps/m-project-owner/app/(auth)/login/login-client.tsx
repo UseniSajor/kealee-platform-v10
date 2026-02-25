@@ -27,8 +27,7 @@ export function LoginClient() {
 
     try {
       await signIn(email, password)
-      router.refresh()
-      router.push("/dashboard")
+      window.location.href = "/dashboard"
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to sign in")
     } finally {
