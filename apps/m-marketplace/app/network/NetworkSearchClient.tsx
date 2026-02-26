@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 
 import {
-  MarketingLayout,
   Badge,
   brand,
   shadows,
@@ -225,13 +224,7 @@ export function NetworkSearchClient() {
   };
 
   return (
-    <MarketingLayout
-      breadcrumbs={[
-        { label: 'Home', href: '/' },
-        { label: 'Professional Network' },
-      ]}
-      showSidebar={true}
-    >
+    <>
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-[#F7FAFC] to-white py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto text-center">
@@ -589,7 +582,7 @@ export function NetworkSearchClient() {
           </>
         )}
       </AnimatePresence>
-    </MarketingLayout>
+    </>
   );
 }
 
