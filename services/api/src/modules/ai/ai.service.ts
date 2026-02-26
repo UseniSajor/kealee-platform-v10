@@ -88,7 +88,7 @@ Return your response as JSON with this structure:
     if (content.type === 'text') {
       try {
         // Extract JSON from response
-        const jsonMatch = content.text.match(/\{[\s\S]*\}/);
+        const jsonMatch = (content.text ?? '').match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const result = JSON.parse(jsonMatch[0]);
           return {
@@ -193,7 +193,7 @@ Make it professional, concise, and suitable for executive review.`;
 
     const content = message.content[0];
     if (content.type === 'text') {
-      return content.text;
+      return content.text ?? '';
     }
 
     return generateBasicSummary(data);

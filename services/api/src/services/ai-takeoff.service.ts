@@ -11,9 +11,9 @@
  * 4. Present results for user review
  */
 
-import * as pdfParseModule from 'pdf-parse'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const pdfParse: (buffer: Buffer) => Promise<{ text: string; numpages: number; info: any }> =
-  (pdfParseModule as any).default || (pdfParseModule as any)
+  require('pdf-parse')
 import Anthropic from '@anthropic-ai/sdk'
 import { prisma } from '@kealee/database'
 
@@ -114,7 +114,7 @@ async function analyzePlans(text: string): Promise<{
     return { scopeItems: [], projectSummary: {} }
   }
 
-  let jsonStr = textContent.text.trim()
+  let jsonStr = (textContent.text ?? '').trim()
   if (jsonStr.startsWith('```')) {
     jsonStr = jsonStr.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '')
   }

@@ -17,9 +17,9 @@
  * Extends patterns from cost-code-import.service.ts
  */
 
-import * as pdfParseModule from 'pdf-parse'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const pdfParse: (buffer: Buffer) => Promise<{ text: string; numpages: number; info: any }> =
-  (pdfParseModule as any).default || (pdfParseModule as any)
+  require('pdf-parse')
 import Anthropic from '@anthropic-ai/sdk'
 import { prisma } from '@kealee/database'
 
@@ -291,7 +291,7 @@ export async function extractCTCTasksFromBatch(
     const textContent = response.content.find(c => c.type === 'text')
     if (!textContent || textContent.type !== 'text') return []
 
-    let jsonStr = textContent.text.trim()
+    let jsonStr = (textContent.text ?? '').trim()
     // Handle markdown code blocks
     if (jsonStr.startsWith('```')) {
       jsonStr = jsonStr.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '')

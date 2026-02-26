@@ -10,5 +10,5 @@ declare module 'pdf-parse' {
 
   function pdfParse(dataBuffer: Buffer, options?: Record<string, any>): Promise<PdfData>
 
-  export = pdfParse
+  export default pdfParse
 }

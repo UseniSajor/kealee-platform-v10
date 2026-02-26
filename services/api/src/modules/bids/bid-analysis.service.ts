@@ -82,7 +82,7 @@ export async function analyzeBid(bidId: string): Promise<{ bid: any; analysis: B
 
     const content = message.content[0]
     if (content.type === 'text') {
-      const jsonMatch = content.text.match(/\{[\s\S]*\}/)
+      const jsonMatch = (content.text ?? '').match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0])
         const analysis: BidAnalysisResult = {
@@ -141,7 +141,7 @@ export async function generateBidStrategy(bidId: string): Promise<{ bid: any; st
 
     const content = message.content[0]
     if (content.type === 'text') {
-      const jsonMatch = content.text.match(/\{[\s\S]*\}/)
+      const jsonMatch = (content.text ?? '').match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0])
         const strategy: BidStrategyResult = {

@@ -129,8 +129,8 @@ export async function processBidDocument(bidId: string, docId: string): Promise<
 
       const content = message.content[0]
       if (content.type === 'text') {
-        extractedText = content.text
-        metadata = parseDocumentResponse(content.text)
+        extractedText = content.text ?? ''
+        metadata = parseDocumentResponse(content.text ?? '')
       } else {
         metadata = buildBasicMetadata(doc)
       }
@@ -150,7 +150,7 @@ export async function processBidDocument(bidId: string, docId: string): Promise<
 
       const content = message.content[0]
       if (content.type === 'text') {
-        metadata = parseDocumentResponse(content.text)
+        metadata = parseDocumentResponse(content.text ?? '')
       } else {
         metadata = buildBasicMetadata(doc)
       }
