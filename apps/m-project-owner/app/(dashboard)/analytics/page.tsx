@@ -48,7 +48,7 @@ interface ProjectSummary {
 // HELPERS
 // ============================================================================
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 function formatCurrency(amount: number): string {
   if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`

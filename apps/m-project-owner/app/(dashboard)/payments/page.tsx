@@ -2,10 +2,12 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { CreditCard, DollarSign, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle, AlertCircle } from 'lucide-react'
+import { api } from '@/lib/api'
+import { supabase } from '@/lib/supabase'
 
 interface EscrowAccount {
   id: string
-  escrowAccountNumber: string
+  escrowAccountNumber?: string
   projectName: string
   totalContractAmount: number
   currentBalance: number
@@ -19,8 +21,9 @@ interface PaymentRecord {
   type: string
   amount: number
   status: string
-  description: string
+  description?: string
   createdAt: string
+  milestone?: { id: string; name: string; amount: number }
 }
 
 export default function PaymentsPage() {
@@ -32,20 +35,56 @@ export default function PaymentsPage() {
   const loadPaymentData = useCallback(async () => {
     setLoading(true)
     try {
-      const [escrowRes, paymentsRes] = await Promise.all([
-        fetch('/api/payments/escrow'),
-        fetch('/api/payments/history'),
-      ])
+      // Get the user's projects first
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
 
-      if (escrowRes.ok) {
-        const escrowData = await escrowRes.json()
-        setEscrowAccounts(escrowData.accounts || [])
-      }
+      const projectsRes = await api.getProjects()
+      const projects = projectsRes.projects || []
 
-      if (paymentsRes.ok) {
-        const paymentData = await paymentsRes.json()
-        setRecentPayments(paymentData.payments || [])
-      }
+      // Load escrow + payment history for each project
+      const accounts: EscrowAccount[] = []
+      const payments: PaymentRecord[] = []
+
+      await Promise.all(
+        projects.slice(0, 10).map(async (project: any) => {
+          try {
+            const escrowRes = await api.getEscrowAgreement(project.id)
+            if (escrowRes.escrow) {
+              accounts.push({
+                id: escrowRes.escrow.id,
+                projectName: project.name || 'Unnamed Project',
+                totalContractAmount: 0,
+                currentBalance: escrowRes.escrow.currentBalance || 0,
+                availableBalance: escrowRes.escrow.currentBalance || 0,
+                heldBalance: 0,
+                status: escrowRes.escrow.status || 'ACTIVE',
+              })
+            }
+          } catch {
+            // Project may not have escrow
+          }
+
+          try {
+            const historyRes = await api.getPaymentHistory(project.id)
+            if (historyRes.transactions) {
+              payments.push(
+                ...historyRes.transactions.map((t) => ({
+                  ...t,
+                  description: t.milestone?.name || t.type.replace(/_/g, ' '),
+                }))
+              )
+            }
+          } catch {
+            // Project may not have payment history
+          }
+        })
+      )
+
+      setEscrowAccounts(accounts)
+      setRecentPayments(payments.sort((a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      ))
     } catch (err) {
       console.error('Failed to load payment data:', err)
     } finally {
@@ -189,7 +228,9 @@ export default function PaymentsPage() {
                   <div className="mb-3 flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold text-gray-900">{account.projectName}</h3>
-                      <p className="text-xs text-gray-500">{account.escrowAccountNumber}</p>
+                      {account.escrowAccountNumber && (
+                        <p className="text-xs text-gray-500">{account.escrowAccountNumber}</p>
+                      )}
                     </div>
                     <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusColor(account.status)}`}>
                       {account.status.replace(/_/g, ' ')}
@@ -215,13 +256,17 @@ export default function PaymentsPage() {
                     </div>
                   </div>
 
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
-                    <div
-                      className="h-full rounded-full bg-green-500 transition-all"
-                      style={{ width: `${Math.min(progress, 100)}%` }}
-                    />
-                  </div>
-                  <p className="mt-1 text-right text-xs text-gray-500">{progress.toFixed(0)}% funded</p>
+                  {account.totalContractAmount > 0 && (
+                    <>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                        <div
+                          className="h-full rounded-full bg-green-500 transition-all"
+                          style={{ width: `${Math.min(progress, 100)}%` }}
+                        />
+                      </div>
+                      <p className="mt-1 text-right text-xs text-gray-500">{progress.toFixed(0)}% funded</p>
+                    </>
+                  )}
                 </div>
               )
             })

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 // ============================================================================
 // TYPES
@@ -20,8 +21,9 @@ interface AIAction {
 // HELPERS
 // ============================================================================
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
 function formatFriendlyAction(action: AIAction): string {
-  // Convert technical action types to friendly descriptions
   const type = action.actionType;
   if (type.includes('change_order')) return 'Routine change order handled';
   if (type.includes('budget')) return 'Budget variance monitored';
@@ -56,11 +58,65 @@ export default function AIActivityPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Placeholder — replace with actual API call
-    // fetch('/api/autonomy/projects/{projectId}/actions?pageSize=50')
-    setActions([]);
-    setWeeklyCount(0);
-    setLoading(false);
+    async function loadActivity() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setLoading(false);
+          return;
+        }
+
+        const headers = { Authorization: `Bearer ${session.access_token}` };
+
+        // Get user's projects first
+        const projRes = await fetch(`${API_BASE}/projects?limit=10`, {
+          headers,
+          credentials: 'include',
+        });
+        if (!projRes.ok) {
+          setLoading(false);
+          return;
+        }
+
+        const projData = await projRes.json();
+        const projects = projData.projects || projData.data || [];
+
+        // Load AI actions for the first project (or aggregate)
+        const allActions: AIAction[] = [];
+        for (const project of projects.slice(0, 3)) {
+          try {
+            const res = await fetch(
+              `${API_BASE}/autonomy/projects/${project.id}/actions?pageSize=20`,
+              { headers, credentials: 'include' }
+            );
+            if (res.ok) {
+              const data = await res.json();
+              allActions.push(...(data.actions || []));
+            }
+          } catch {
+            // Project may not have AI actions
+          }
+        }
+
+        // Sort by date
+        allActions.sort((a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        setActions(allActions);
+
+        // Count actions from this week
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        setWeeklyCount(allActions.filter(a => new Date(a.createdAt) >= weekAgo).length);
+      } catch (err) {
+        console.warn('Failed to load AI activity:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadActivity();
   }, []);
 
   return (
@@ -115,7 +171,10 @@ export default function AIActivityPage() {
         </div>
 
         {loading ? (
-          <div className="py-12 text-center text-gray-500">Loading activity...</div>
+          <div className="py-12 text-center">
+            <div className="inline-block h-6 w-6 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+            <p className="text-gray-500 text-sm mt-2">Loading activity...</p>
+          </div>
         ) : actions.length === 0 ? (
           <div className="py-12 text-center">
             <div className="text-gray-300 text-4xl mb-3">&#9889;</div>
