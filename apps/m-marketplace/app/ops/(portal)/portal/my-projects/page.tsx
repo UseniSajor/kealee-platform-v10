@@ -1,36 +1,55 @@
-import Link from "next/link";
+"use client";
 
-const MOCK_PROJECTS = [
-  {
-    id: "proj-1",
-    name: "Downtown Office Renovation",
-    status: "Active",
-    phase: "Rough-In",
-    progress: 62,
-    budget: "$450,000",
-    nextMilestone: "Drywall Start — Feb 15",
-  },
-  {
-    id: "proj-2",
-    name: "Hillside Custom Home",
-    status: "Active",
-    phase: "Framing",
-    progress: 35,
-    budget: "$820,000",
-    nextMilestone: "Framing Inspection — Feb 10",
-  },
-  {
-    id: "proj-3",
-    name: "Warehouse Expansion Phase 2",
-    status: "On Hold",
-    phase: "Permitting",
-    progress: 18,
-    budget: "$1,200,000",
-    nextMilestone: "Permit Approval — TBD",
-  },
-];
+import { useEffect, useState } from "react";
+import { api } from "@ops/lib/api";
+import { getPrimaryOrgId } from "@ops/lib/auth";
+
+type Project = {
+  id: string;
+  name: string;
+  status: string;
+  phase: string;
+  progress: number;
+  budget: string;
+  nextMilestone: string;
+};
+
+function formatMoney(n: number) {
+  return n.toLocaleString(undefined, {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  });
+}
 
 export default function MyProjectsPage() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const orgId = await getPrimaryOrgId();
+        const result = await api.getProjects(orgId ? { orgId } : undefined);
+        const mapped: Project[] = (result.projects || []).map((p: any) => ({
+          id: p.id,
+          name: p.name || p.title || "Untitled Project",
+          status: p.status || "Active",
+          phase: p.currentPhase || p.phase || "—",
+          progress: p.progressPercent ?? p.progress ?? 0,
+          budget: typeof p.budget === "number" ? formatMoney(p.budget) : p.budget || "—",
+          nextMilestone: p.nextMilestone || "—",
+        }));
+        setProjects(mapped);
+      } catch {
+        // Keep empty
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
   return (
     <section>
       <div className="flex items-center justify-between mb-6">
@@ -48,59 +67,77 @@ export default function MyProjectsPage() {
         </a>
       </div>
 
-      <div className="grid gap-4">
-        {MOCK_PROJECTS.map((project) => (
-          <div
-            key={project.id}
-            className="rounded-2xl border border-black/10 bg-white p-5 hover:shadow-md transition"
+      {loading ? (
+        <div className="rounded-2xl border border-black/10 bg-white p-8 text-center text-sm text-zinc-500">
+          Loading projects...
+        </div>
+      ) : projects.length === 0 ? (
+        <div className="rounded-2xl border border-black/10 bg-white p-8 text-center">
+          <p className="text-sm text-zinc-600">No projects yet.</p>
+          <a
+            href={process.env.NEXT_PUBLIC_PM_URL || "/"}
+            className="mt-3 inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-sky-700 transition"
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-zinc-950 truncate">{project.name}</h3>
-                  <span
-                    className={[
-                      "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold",
-                      project.status === "Active"
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-amber-50 text-amber-700",
-                    ].join(" ")}
-                  >
-                    {project.status}
-                  </span>
+            Create your first project &rarr;
+          </a>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {projects.map((project) => (
+            <div
+              key={project.id}
+              className="rounded-2xl border border-black/10 bg-white p-5 hover:shadow-md transition"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-zinc-950 truncate">{project.name}</h3>
+                    <span
+                      className={[
+                        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold",
+                        project.status === "Active" || project.status === "ACTIVE"
+                          ? "bg-emerald-50 text-emerald-700"
+                          : project.status === "On Hold" || project.status === "ON_HOLD"
+                            ? "bg-amber-50 text-amber-700"
+                            : "bg-zinc-50 text-zinc-600",
+                      ].join(" ")}
+                    >
+                      {project.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 mt-2 text-sm text-zinc-600">
+                    <span>Phase: <span className="font-medium text-zinc-800">{project.phase}</span></span>
+                    <span>Budget: <span className="font-medium text-zinc-800">{project.budget}</span></span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4 mt-2 text-sm text-zinc-600">
-                  <span>Phase: <span className="font-medium text-zinc-800">{project.phase}</span></span>
-                  <span>Budget: <span className="font-medium text-zinc-800">{project.budget}</span></span>
+                <a
+                  href={`${process.env.NEXT_PUBLIC_PM_URL || ""}/projects/${project.id}`}
+                  className="shrink-0 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-bold text-sky-700 hover:bg-sky-100 transition"
+                >
+                  View in PM
+                </a>
+              </div>
+
+              <div className="mt-3">
+                <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
+                  <span>Progress</span>
+                  <span className="font-bold text-zinc-800">{project.progress}%</span>
+                </div>
+                <div className="h-2 w-full rounded-full bg-zinc-100">
+                  <div
+                    className="h-2 rounded-full bg-sky-500 transition-all"
+                    style={{ width: `${project.progress}%` }}
+                  />
                 </div>
               </div>
-              <a
-                href={`${process.env.NEXT_PUBLIC_PM_URL || ""}/projects/${project.id}`}
-                className="shrink-0 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-bold text-sky-700 hover:bg-sky-100 transition"
-              >
-                View in PM
-              </a>
-            </div>
 
-            <div className="mt-3">
-              <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
-                <span>Progress</span>
-                <span className="font-bold text-zinc-800">{project.progress}%</span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-zinc-100">
-                <div
-                  className="h-2 rounded-full bg-sky-500 transition-all"
-                  style={{ width: `${project.progress}%` }}
-                />
+              <div className="mt-2 text-xs text-zinc-500">
+                Next milestone: <span className="font-medium text-zinc-700">{project.nextMilestone}</span>
               </div>
             </div>
-
-            <div className="mt-2 text-xs text-zinc-500">
-              Next milestone: <span className="font-medium text-zinc-700">{project.nextMilestone}</span>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       <div className="mt-6 rounded-2xl border border-sky-200 bg-sky-50 p-5 text-center">
         <h3 className="font-bold text-sky-900">Full Project Management</h3>
@@ -117,4 +154,3 @@ export default function MyProjectsPage() {
     </section>
   );
 }
-

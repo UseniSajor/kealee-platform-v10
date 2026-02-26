@@ -231,9 +231,38 @@ class DashboardService {
       }
     }
 
+    // Compute summary stats
+    let totalJobsToday = 0
+    let totalSuccess = 0
+    let totalDurations: number[] = []
+    let activeWorkers = 0
+
+    for (const [, data] of todayByApp) {
+      totalJobsToday += data.total
+      totalSuccess += data.success
+      totalDurations.push(...data.durations)
+    }
+
+    const successRate = totalJobsToday > 0 ? totalSuccess / totalJobsToday : 1
+    const avgProcessingTime =
+      totalDurations.length > 0
+        ? Math.round(totalDurations.reduce((a, b) => a + b, 0) / totalDurations.length)
+        : 0
+
+    // Count queue depths as proxy for active workers
+    for (const app of apps) {
+      if (app.metrics && app.metrics.queueDepth > 0) activeWorkers++
+    }
+
     return {
       apps,
       alerts,
+      summary: {
+        totalJobsToday,
+        successRate,
+        avgProcessingTime,
+        activeWorkers,
+      },
       lastUpdated: new Date().toISOString(),
     }
   }

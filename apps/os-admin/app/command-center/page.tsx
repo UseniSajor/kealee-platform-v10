@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { apiRequest } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -150,12 +151,7 @@ export default function CommandCenterPage() {
   async function fetchData() {
     try {
       setError(null)
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-      const res = await fetch(`${apiUrl}/command-center/status`)
-
-      if (!res.ok) throw new Error(`API error: ${res.status}`)
-
-      const json = await res.json()
+      const json = await apiRequest<SystemStatus>('/api/v1/command-center/status')
       setData(json)
     } catch (err: any) {
       console.error('[CommandCenter] Fetch error:', err)

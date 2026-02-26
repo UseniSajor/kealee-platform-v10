@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
+import { supabase } from "@pm/lib/supabase"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { Button } from "@kealee/ui/button"
 import {
@@ -194,7 +195,10 @@ export default function AppDetailPage() {
     try {
       setError(null)
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
-      const res = await fetch(`${apiUrl}/api/v1/pm/command-center/apps/${appId}`)
+      const { data: { session } } = await supabase.auth.getSession()
+      const headers: Record<string, string> = { "Content-Type": "application/json" }
+      if (session?.access_token) headers["Authorization"] = `Bearer ${session.access_token}`
+      const res = await fetch(`${apiUrl}/api/v1/command-center/${appId}/detail`, { headers, credentials: "include" })
       if (!res.ok) throw new Error(`API error: ${res.status}`)
       const json = await res.json()
       setDetail(json)
@@ -211,7 +215,11 @@ export default function AppDetailPage() {
     setActionLoading(action)
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
-      const res = await fetch(`${apiUrl}/api/v1/pm/command-center/apps/${appId}/${action}`, { method: "POST" })
+      const { data: { session } } = await supabase.auth.getSession()
+      const headers: Record<string, string> = { "Content-Type": "application/json" }
+      if (session?.access_token) headers["Authorization"] = `Bearer ${session.access_token}`
+      const actionPath = action === "retry" ? "retry-failed" : action
+      const res = await fetch(`${apiUrl}/api/v1/command-center/${appId}/${actionPath}`, { method: "POST", headers, credentials: "include" })
       if (!res.ok) throw new Error(`Action failed: ${res.status}`)
       await fetchDetail()
     } catch (err: any) {

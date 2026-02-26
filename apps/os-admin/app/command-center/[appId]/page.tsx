@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { apiRequest } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -194,12 +195,7 @@ export default function AppDetailPage() {
   async function fetchDetail() {
     try {
       setError(null)
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-      const res = await fetch(`${apiUrl}/command-center/apps/${appId}`)
-
-      if (!res.ok) throw new Error(`API error: ${res.status}`)
-
-      const json = await res.json()
+      const json = await apiRequest<any>(`/api/v1/command-center/${appId}/detail`)
       setDetail(json)
     } catch (err: any) {
       console.error(`[CommandCenter] Fetch error for ${appId}:`, err)
@@ -216,11 +212,8 @@ export default function AppDetailPage() {
   async function performAction(action: 'pause' | 'resume' | 'retry') {
     setActionLoading(action)
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-      const res = await fetch(`${apiUrl}/command-center/apps/${appId}/${action}`, {
-        method: 'POST',
-      })
-      if (!res.ok) throw new Error(`Action failed: ${res.status}`)
+      const actionPath = action === 'retry' ? 'retry-failed' : action
+      await apiRequest(`/api/v1/command-center/${appId}/${actionPath}`, { method: 'POST' })
       await fetchDetail()
     } catch (err: any) {
       console.error(`[CommandCenter] Action ${action} failed:`, err)

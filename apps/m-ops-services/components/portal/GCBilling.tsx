@@ -86,9 +86,6 @@ function Modal({
         <div className="flex items-start justify-between gap-3 border-b border-black/10 p-5">
           <div>
             <div className="text-lg font-black tracking-tight">{title}</div>
-            <div className="mt-1 text-sm text-zinc-600">
-              This is an MVP UI; wire to Stripe/DB next.
-            </div>
           </div>
           <button
             type="button"
@@ -238,7 +235,35 @@ export function GCBilling() {
     brand: string;
     last4: string;
     exp: string;
-  }>({ brand: "Visa", last4: "4242", exp: "08/27" });
+  } | null>(null);
+
+  // Fetch real payment method from subscription details
+  useEffect(() => {
+    async function loadPaymentMethod() {
+      try {
+        const orgId = await getPrimaryOrgId();
+        if (!orgId) return;
+        const result = await api.getSubscriptionDetails(orgId);
+        const pm = result.details?.paymentMethod;
+        if (pm?.card) {
+          setPaymentMethod({
+            brand: pm.card.brand || "Card",
+            last4: pm.card.last4 || "****",
+            exp: `${String(pm.card.exp_month).padStart(2, "0")}/${String(pm.card.exp_year).slice(-2)}`,
+          });
+        } else if (pm?.brand || pm?.last4) {
+          setPaymentMethod({
+            brand: pm.brand || "Card",
+            last4: pm.last4 || "****",
+            exp: pm.exp || "—",
+          });
+        }
+      } catch {
+        // Keep null — will show "No payment method on file"
+      }
+    }
+    if (!loading) loadPaymentMethod();
+  }, [loading]);
 
   const [planModalOpen, setPlanModalOpen] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<PackageId>("B");
@@ -276,10 +301,13 @@ export function GCBilling() {
     alert(msg);
   }
 
-  function downloadStub(kind: "invoice" | "tax", invoiceId: string) {
-    toast(
-      `${kind === "invoice" ? "Invoice PDF" : "Tax receipt"} download is stubbed for ${invoiceId}. Wire to storage/Stripe invoice URLs.`
-    );
+  function downloadInvoice(inv: Invoice, kind: "invoice" | "tax") {
+    const url = kind === "invoice" ? inv.pdfUrl : inv.taxReceiptUrl;
+    if (url) {
+      window.open(url, "_blank", "noopener");
+    } else {
+      toast("PDF not available for this invoice yet.");
+    }
   }
 
   async function openWhatChanges(planId: PackageId) {
@@ -343,10 +371,25 @@ export function GCBilling() {
     URL.revokeObjectURL(url);
   }
 
-  function submitCancellation() {
-    toast(
-      `Cancellation is stubbed. Reason: ${cancelReason || "n/a"}${cancelDetails ? ` — ${cancelDetails}` : ""}. Final invoice handling will be added with billing provider.`
-    );
+  async function submitCancellation() {
+    try {
+      const orgId = await getPrimaryOrgId();
+      if (!orgId) {
+        toast("No organization found.");
+        return;
+      }
+      const portalSession = await api.createBillingPortalSession({
+        orgId,
+        returnUrl: window.location.href,
+      });
+      if (portalSession.url) {
+        window.location.href = portalSession.url;
+      } else {
+        toast("Failed to open billing portal. Please contact support.");
+      }
+    } catch (e: unknown) {
+      toast(e instanceof Error ? e.message : "Failed to process cancellation");
+    }
     setCancelOpen(false);
   }
 
@@ -455,7 +498,24 @@ export function GCBilling() {
             </div>
             <button
               type="button"
-              onClick={() => toast("Invoice emailing is stubbed. Wire to billing provider webhooks.")}
+              onClick={async () => {
+                try {
+                  const orgId = await getPrimaryOrgId();
+                  if (!orgId) {
+                    toast("No organization found.");
+                    return;
+                  }
+                  const portalSession = await api.createBillingPortalSession({
+                    orgId,
+                    returnUrl: window.location.href,
+                  });
+                  if (portalSession.url) {
+                    window.location.href = portalSession.url;
+                  }
+                } catch (e: unknown) {
+                  toast(e instanceof Error ? e.message : "Failed to open billing portal");
+                }
+              }}
               className="rounded-xl border border-black/10 bg-white px-4 py-2 text-sm font-black text-zinc-900 hover:bg-zinc-50"
             >
               Email receipts
@@ -496,14 +556,14 @@ export function GCBilling() {
                       <div className="flex flex-wrap gap-2">
                         <button
                           type="button"
-                          onClick={() => downloadStub("invoice", inv.id)}
+                          onClick={() => downloadInvoice(inv, "invoice")}
                           className="rounded-xl border border-black/10 bg-white px-3 py-1.5 text-xs font-black text-zinc-900 hover:bg-zinc-50"
                         >
                           Invoice PDF
                         </button>
                         <button
                           type="button"
-                          onClick={() => downloadStub("tax", inv.id)}
+                          onClick={() => downloadInvoice(inv, "tax")}
                           className="rounded-xl border border-black/10 bg-white px-3 py-1.5 text-xs font-black text-zinc-900 hover:bg-zinc-50"
                         >
                           Tax receipt
@@ -575,11 +635,17 @@ export function GCBilling() {
           <p className="mt-1 text-sm text-zinc-700">Update how you pay and manage receipts.</p>
 
           <div className="mt-4 rounded-2xl border border-black/10 bg-zinc-50 p-4">
-            <div className="text-sm font-black text-zinc-950">
-              {paymentMethod.brand} •••• {paymentMethod.last4}
-            </div>
-            <div className="mt-1 text-sm text-zinc-700">Expires {paymentMethod.exp}</div>
-            <div className="mt-3 flex flex-wrap gap-2">
+            {paymentMethod ? (
+              <>
+                <div className="text-sm font-black text-zinc-950">
+                  {paymentMethod.brand} •••• {paymentMethod.last4}
+                </div>
+                <div className="mt-1 text-sm text-zinc-700">Expires {paymentMethod.exp}</div>
+              </>
+            ) : (
+              <div className="text-sm text-zinc-600">No payment method on file</div>
+            )}
+            <div className="mt-3">
               <button
                 type="button"
                 onClick={async () => {
@@ -603,13 +669,6 @@ export function GCBilling() {
                 className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-black text-[var(--primary-foreground)] hover:opacity-95"
               >
                 Manage payment method
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod({ brand: "Mastercard", last4: "5100", exp: "11/28" })}
-                className="rounded-xl border border-black/10 bg-white px-4 py-2 text-sm font-black text-zinc-900 hover:bg-zinc-50"
-              >
-                Use backup card (demo)
               </button>
             </div>
           </div>
@@ -690,7 +749,7 @@ export function GCBilling() {
             </button>
             {exportRequested ? (
               <div className="rounded-2xl border border-black/10 bg-zinc-50 p-4 text-sm text-zinc-700">
-                Export generated (CSV). Wire a full export pipeline next (projects, permits, reports, comments).
+                Export generated (CSV). Download complete.
               </div>
             ) : null}
           </div>
@@ -758,7 +817,7 @@ export function GCBilling() {
             <div className="rounded-2xl border border-black/10 bg-zinc-50 p-4">
               <div className="text-sm font-black text-zinc-950">Confirm</div>
               <div className="mt-2 text-sm text-zinc-700">
-                Clicking confirm will open your billing provider portal in the real implementation.
+                Clicking confirm will open your billing portal to complete the change.
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
@@ -766,7 +825,7 @@ export function GCBilling() {
                   onClick={confirmPlanChange}
                   className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-black text-[var(--primary-foreground)] hover:opacity-95"
                 >
-                  Confirm change (stub)
+                  Confirm change
                 </button>
                 <button
                   type="button"
@@ -857,7 +916,7 @@ export function GCBilling() {
                 onClick={submitCancellation}
                 className="mt-3 w-full rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-black text-red-800 hover:bg-red-100"
               >
-                Confirm cancel (stub)
+                Confirm cancel
               </button>
             </div>
           </div>
