@@ -35,6 +35,7 @@ import {
   Zap,
   Command,
   CreditCard,
+  Plug,
 } from "lucide-react"
 
 export type PmNavItem = {
@@ -139,6 +140,7 @@ export const navSections: NavSection[] = [
     label: "Automation",
     items: [
       { href: "/pm/command-center", label: "Command Center", icon: Command, match: "startsWith" },
+      { href: "/pm/integrations", label: "Integrations", icon: Plug, match: "startsWith" },
       { href: "/pm/sop", label: "SOP Tracker", icon: ClipboardCheck, match: "startsWith" },
     ],
   },

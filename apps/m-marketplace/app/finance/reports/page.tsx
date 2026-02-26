@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 const reportTypes = [
   {
@@ -42,21 +44,89 @@ const reportTypes = [
   },
 ];
 
-const recentReports = [
-  { id: "1", name: "Transaction Summary - January 2024", type: "transaction-summary", date: "Jan 27, 2024", status: "Ready" },
-  { id: "2", name: "Escrow Status Report - Q4 2023", type: "escrow-status", date: "Jan 15, 2024", status: "Ready" },
-  { id: "3", name: "Annual Fee Report - 2023", type: "fee-report", date: "Jan 10, 2024", status: "Ready" },
-  { id: "4", name: "Project Financial - Modern Kitchen Remodel", type: "project-financial", date: "Jan 5, 2024", status: "Ready" },
-];
+interface RecentReport {
+  id: string;
+  name: string;
+  type: string;
+  date: string;
+  status: string;
+}
 
-const scheduledReports = [
-  { id: "1", name: "Weekly Transaction Summary", frequency: "Weekly", nextRun: "Feb 3, 2024", recipients: "john@example.com" },
-  { id: "2", name: "Monthly Escrow Status", frequency: "Monthly", nextRun: "Feb 1, 2024", recipients: "john@example.com, accountant@example.com" },
-];
+interface ScheduledReport {
+  id: string;
+  name: string;
+  frequency: string;
+  nextRun: string;
+  recipients: string;
+}
+
+interface ReportStats {
+  reportsGenerated: number;
+  scheduledCount: number;
+  lastGenerated: string;
+  storageUsed: string;
+}
 
 export default function ReportsPage() {
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const [recentReports, setRecentReports] = useState<RecentReport[]>([]);
+  const [scheduledReports, setScheduledReports] = useState<ScheduledReport[]>([]);
+  const [stats, setStats] = useState<ReportStats>({
+    reportsGenerated: 0,
+    scheduledCount: 0,
+    lastGenerated: "—",
+    storageUsed: "—",
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+
+  useEffect(() => {
+    async function fetchReports() {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`${API_BASE}/finance/reports`, { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.reports) setRecentReports(data.reports);
+          if (data.scheduled) setScheduledReports(data.scheduled);
+          if (data.stats) setStats(data.stats);
+        }
+      } catch {
+        // API not available — show empty state
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchReports();
+  }, []);
+
+  const handleGenerate = async () => {
+    if (!selectedReport) return;
+    setGenerating(true);
+    try {
+      const res = await fetch(`${API_BASE}/finance/reports/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          type: selectedReport,
+          startDate: dateRange.start,
+          endDate: dateRange.end,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.report) {
+          setRecentReports((prev) => [data.report, ...prev]);
+        }
+      }
+    } catch {
+      // Handle error
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-zinc-50">
@@ -82,23 +152,21 @@ export default function ReportsPage() {
         <div className="grid grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-xl border border-zinc-200 p-5">
             <div className="text-sm text-zinc-500">Reports Generated</div>
-            <div className="mt-1 text-2xl font-black">47</div>
+            <div className="mt-1 text-2xl font-black">{stats.reportsGenerated}</div>
             <div className="mt-1 text-sm text-zinc-500">This month</div>
           </div>
           <div className="bg-white rounded-xl border border-zinc-200 p-5">
             <div className="text-sm text-zinc-500">Scheduled Reports</div>
-            <div className="mt-1 text-2xl font-black">2</div>
-            <div className="mt-1 text-sm text-emerald-600">Active</div>
+            <div className="mt-1 text-2xl font-black">{stats.scheduledCount}</div>
+            <div className="mt-1 text-sm text-emerald-600">{stats.scheduledCount > 0 ? "Active" : "None"}</div>
           </div>
           <div className="bg-white rounded-xl border border-zinc-200 p-5">
             <div className="text-sm text-zinc-500">Last Generated</div>
-            <div className="mt-1 text-2xl font-black">2h ago</div>
-            <div className="mt-1 text-sm text-zinc-500">Transaction Summary</div>
+            <div className="mt-1 text-2xl font-black">{stats.lastGenerated}</div>
           </div>
           <div className="bg-white rounded-xl border border-zinc-200 p-5">
             <div className="text-sm text-zinc-500">Storage Used</div>
-            <div className="mt-1 text-2xl font-black">124 MB</div>
-            <div className="mt-1 text-sm text-zinc-500">of 1 GB</div>
+            <div className="mt-1 text-2xl font-black">{stats.storageUsed}</div>
           </div>
         </div>
 
@@ -164,8 +232,12 @@ export default function ReportsPage() {
                     </select>
                   </div>
                   <div className="flex gap-3">
-                    <button className="px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700">
-                      Generate Report
+                    <button
+                      onClick={handleGenerate}
+                      disabled={generating}
+                      className="px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                      {generating ? "Generating..." : "Generate Report"}
                     </button>
                     <button className="px-4 py-2 border border-zinc-200 font-semibold rounded-lg hover:bg-zinc-50">
                       Schedule Report
@@ -178,35 +250,41 @@ export default function ReportsPage() {
             {/* Recent Reports */}
             <section className="bg-white rounded-xl border border-zinc-200 p-6">
               <h2 className="text-lg font-bold mb-4">Recent Reports</h2>
-              <div className="space-y-3">
-                {recentReports.map((report) => (
-                  <div
-                    key={report.id}
-                    className="flex items-center justify-between p-4 border border-zinc-100 rounded-lg hover:bg-zinc-50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-zinc-100 rounded-lg flex items-center justify-center">
-                        {reportTypes.find((r) => r.id === report.type)?.icon || "📄"}
+              {isLoading ? (
+                <div className="py-8 text-center text-sm text-zinc-400">Loading reports...</div>
+              ) : recentReports.length > 0 ? (
+                <div className="space-y-3">
+                  {recentReports.map((report) => (
+                    <div
+                      key={report.id}
+                      className="flex items-center justify-between p-4 border border-zinc-100 rounded-lg hover:bg-zinc-50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-zinc-100 rounded-lg flex items-center justify-center">
+                          {reportTypes.find((r) => r.id === report.type)?.icon || "📄"}
+                        </div>
+                        <div>
+                          <div className="font-semibold">{report.name}</div>
+                          <div className="text-sm text-zinc-500">{report.date}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="font-semibold">{report.name}</div>
-                        <div className="text-sm text-zinc-500">{report.date}</div>
+                      <div className="flex items-center gap-3">
+                        <span className="px-2 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700 rounded-full">
+                          {report.status}
+                        </span>
+                        <button className="px-3 py-1.5 text-sm font-semibold border border-zinc-200 rounded-lg hover:bg-zinc-50">
+                          Download
+                        </button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="px-2 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700 rounded-full">
-                        {report.status}
-                      </span>
-                      <button className="px-3 py-1.5 text-sm font-semibold border border-zinc-200 rounded-lg hover:bg-zinc-50">
-                        Download
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <button className="mt-4 w-full py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 rounded-lg">
-                View All Reports
-              </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8 text-center">
+                  <p className="text-zinc-400 text-sm">No reports generated yet</p>
+                  <p className="text-zinc-400 text-xs mt-1">Select a report type above to get started</p>
+                </div>
+              )}
             </section>
           </div>
 
@@ -220,19 +298,23 @@ export default function ReportsPage() {
                   + New
                 </button>
               </div>
-              <div className="space-y-4">
-                {scheduledReports.map((report) => (
-                  <div key={report.id} className="p-3 border border-zinc-100 rounded-lg">
-                    <div className="font-semibold text-sm">{report.name}</div>
-                    <div className="text-xs text-zinc-500 mt-1">
-                      {report.frequency} • Next: {report.nextRun}
+              {scheduledReports.length > 0 ? (
+                <div className="space-y-4">
+                  {scheduledReports.map((report) => (
+                    <div key={report.id} className="p-3 border border-zinc-100 rounded-lg">
+                      <div className="font-semibold text-sm">{report.name}</div>
+                      <div className="text-xs text-zinc-500 mt-1">
+                        {report.frequency} • Next: {report.nextRun}
+                      </div>
+                      <div className="text-xs text-zinc-400 mt-1 truncate">
+                        To: {report.recipients}
+                      </div>
                     </div>
-                    <div className="text-xs text-zinc-400 mt-1 truncate">
-                      To: {report.recipients}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-zinc-400">No scheduled reports</p>
+              )}
             </section>
 
             {/* Quick Links */}

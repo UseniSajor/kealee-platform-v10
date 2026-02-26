@@ -195,4 +195,21 @@ export const api = {
   deleteContractTemplate: (id: string) => apiRequest<{ template: any }>(`/contracts/templates/${id}`, { method: 'DELETE' }),
   previewContractTemplate: (id: string, data?: { projectId?: string; variables?: Record<string, string> }) =>
     apiRequest<{ preview: any }>(`/contracts/templates/${id}/preview`, { method: 'POST', body: data }),
+
+  // Billing & Subscriptions
+  getSubscriptions: (params?: { page?: number; limit?: number; status?: string }) => {
+    const query = new URLSearchParams()
+    if (params?.page) query.append('page', params.page.toString())
+    if (params?.limit) query.append('limit', params.limit.toString())
+    if (params?.status) query.append('status', params.status)
+    return apiRequest<{ subscriptions: any[]; pagination?: any }>(`/billing/subscriptions?${query.toString()}`)
+  },
+  getSubscriptionMetrics: () =>
+    apiRequest<{ metrics: any }>('/billing/reports/subscription-metrics'),
+  getRevenueReport: (params?: { startDate?: string; endDate?: string }) => {
+    const query = new URLSearchParams()
+    if (params?.startDate) query.append('startDate', params.startDate)
+    if (params?.endDate) query.append('endDate', params.endDate)
+    return apiRequest<{ report: any }>(`/billing/reports/revenue?${query.toString()}`)
+  },
 }

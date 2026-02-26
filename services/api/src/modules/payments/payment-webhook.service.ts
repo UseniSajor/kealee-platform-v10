@@ -293,6 +293,75 @@ class PaymentWebhookService {
       }
     }
 
+    // Subscription events
+    if (eventType.startsWith('customer.subscription.')) {
+      switch (eventType) {
+        case 'customer.subscription.created':
+          await this.handleSubscriptionCreated(event)
+          return { handled: true, eventType }
+        case 'customer.subscription.updated':
+          await this.handleSubscriptionUpdated(event)
+          return { handled: true, eventType }
+        case 'customer.subscription.deleted':
+          await this.handleSubscriptionDeleted(event)
+          return { handled: true, eventType }
+        default:
+          console.log(`Unhandled subscription event: ${eventType}`)
+          return { handled: false, eventType }
+      }
+    }
+
+    // Invoice events
+    if (eventType.startsWith('invoice.')) {
+      switch (eventType) {
+        case 'invoice.created':
+          await this.handleInvoiceCreated(event)
+          return { handled: true, eventType }
+        case 'invoice.paid':
+          await this.handleInvoicePaid(event)
+          return { handled: true, eventType }
+        case 'invoice.payment_failed':
+          await this.handleInvoicePaymentFailed(event)
+          return { handled: true, eventType }
+        case 'invoice.finalized':
+          await this.handleInvoiceFinalized(event)
+          return { handled: true, eventType }
+        default:
+          console.log(`Unhandled invoice event: ${eventType}`)
+          return { handled: false, eventType }
+      }
+    }
+
+    // Customer events
+    if (eventType.startsWith('customer.') && !eventType.startsWith('customer.subscription.')) {
+      switch (eventType) {
+        case 'customer.updated':
+          await this.handleCustomerUpdated(event)
+          return { handled: true, eventType }
+        case 'customer.deleted':
+          await this.handleCustomerDeleted(event)
+          return { handled: true, eventType }
+        default:
+          console.log(`Unhandled customer event: ${eventType}`)
+          return { handled: false, eventType }
+      }
+    }
+
+    // Payment method events
+    if (eventType.startsWith('payment_method.')) {
+      switch (eventType) {
+        case 'payment_method.attached':
+          await this.handlePaymentMethodAttached(event)
+          return { handled: true, eventType }
+        case 'payment_method.detached':
+          await this.handlePaymentMethodDetached(event)
+          return { handled: true, eventType }
+        default:
+          console.log(`Unhandled payment_method event: ${eventType}`)
+          return { handled: false, eventType }
+      }
+    }
+
     return { handled: false, eventType }
   }
 
@@ -435,6 +504,400 @@ class PaymentWebhookService {
         disputeId: charge.dispute?.id,
       },
       userId: paymentIntent.metadata?.ownerId || undefined,
+    })
+  }
+
+  // ════════════════════════════════════════════════════════════════════
+  // SUBSCRIPTION LIFECYCLE HANDLERS
+  // ════════════════════════════════════════════════════════════════════
+
+  /**
+   * Handle customer.subscription.created
+   */
+  async handleSubscriptionCreated(event: any) {
+    const subscription = event.data.object
+    const customerId = subscription.customer as string
+    const priceId = subscription.items?.data?.[0]?.price?.id
+
+    // Find org by Stripe customer ID
+    const org = await prismaAny.org.findFirst({
+      where: { stripeCustomerId: customerId },
+    }).catch(() => null)
+
+    const orgId = org?.id
+
+    // Upsert subscription record
+    await prismaAny.pMServiceSubscription.upsert({
+      where: { stripeSubscriptionId: subscription.id },
+      create: {
+        orgId: orgId || 'unknown',
+        stripeSubscriptionId: subscription.id,
+        stripeCustomerId: customerId,
+        stripePriceId: priceId || null,
+        status: subscription.status.toUpperCase(),
+        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
+      },
+      update: {
+        status: subscription.status.toUpperCase(),
+        stripePriceId: priceId || null,
+        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
+      },
+    }).catch((err: any) => {
+      console.warn('Failed to upsert subscription:', err.message)
+    })
+
+    await eventService.recordEvent({
+      entityType: 'Subscription',
+      entityId: subscription.id,
+      type: 'SUBSCRIPTION_CREATED',
+      payload: {
+        subscriptionId: subscription.id,
+        customerId,
+        status: subscription.status,
+        priceId,
+      },
+      userId: undefined,
+    })
+  }
+
+  /**
+   * Handle customer.subscription.updated
+   */
+  async handleSubscriptionUpdated(event: any) {
+    const subscription = event.data.object
+    const priceId = subscription.items?.data?.[0]?.price?.id
+
+    await prismaAny.pMServiceSubscription.updateMany({
+      where: { stripeSubscriptionId: subscription.id },
+      data: {
+        status: subscription.status.toUpperCase(),
+        stripePriceId: priceId || undefined,
+        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
+        canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
+      },
+    }).catch((err: any) => {
+      console.warn('Failed to update subscription:', err.message)
+    })
+
+    await eventService.recordEvent({
+      entityType: 'Subscription',
+      entityId: subscription.id,
+      type: 'SUBSCRIPTION_UPDATED',
+      payload: {
+        subscriptionId: subscription.id,
+        status: subscription.status,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      },
+      userId: undefined,
+    })
+  }
+
+  /**
+   * Handle customer.subscription.deleted
+   */
+  async handleSubscriptionDeleted(event: any) {
+    const subscription = event.data.object
+
+    await prismaAny.pMServiceSubscription.updateMany({
+      where: { stripeSubscriptionId: subscription.id },
+      data: {
+        status: 'CANCELED',
+        canceledAt: new Date(),
+      },
+    }).catch((err: any) => {
+      console.warn('Failed to mark subscription as canceled:', err.message)
+    })
+
+    await eventService.recordEvent({
+      entityType: 'Subscription',
+      entityId: subscription.id,
+      type: 'SUBSCRIPTION_CANCELED',
+      payload: {
+        subscriptionId: subscription.id,
+        canceledAt: new Date().toISOString(),
+      },
+      userId: undefined,
+    })
+  }
+
+  // ════════════════════════════════════════════════════════════════════
+  // INVOICE HANDLERS
+  // ════════════════════════════════════════════════════════════════════
+
+  /**
+   * Handle invoice.created
+   */
+  async handleInvoiceCreated(event: any) {
+    const invoice = event.data.object
+    const customerId = invoice.customer as string
+
+    const org = await prismaAny.org.findFirst({
+      where: { stripeCustomerId: customerId },
+    }).catch(() => null)
+
+    await prismaAny.invoice.upsert({
+      where: { stripeInvoiceId: invoice.id },
+      create: {
+        orgId: org?.id || 'unknown',
+        stripeInvoiceId: invoice.id,
+        invoiceNumber: invoice.number || null,
+        amount: (invoice.amount_due || 0) / 100,
+        currency: invoice.currency || 'usd',
+        status: 'draft',
+        periodStart: invoice.period_start ? new Date(invoice.period_start * 1000) : null,
+        periodEnd: invoice.period_end ? new Date(invoice.period_end * 1000) : null,
+        hostedInvoiceUrl: invoice.hosted_invoice_url || null,
+        invoicePdf: invoice.invoice_pdf || null,
+      },
+      update: {
+        amount: (invoice.amount_due || 0) / 100,
+        status: 'draft',
+        hostedInvoiceUrl: invoice.hosted_invoice_url || null,
+        invoicePdf: invoice.invoice_pdf || null,
+      },
+    }).catch((err: any) => {
+      console.warn('Failed to upsert invoice:', err.message)
+    })
+  }
+
+  /**
+   * Handle invoice.finalized
+   */
+  async handleInvoiceFinalized(event: any) {
+    const invoice = event.data.object
+
+    await prismaAny.invoice.updateMany({
+      where: { stripeInvoiceId: invoice.id },
+      data: {
+        status: 'open',
+        invoiceNumber: invoice.number || undefined,
+        hostedInvoiceUrl: invoice.hosted_invoice_url || undefined,
+        invoicePdf: invoice.invoice_pdf || undefined,
+      },
+    }).catch((err: any) => {
+      console.warn('Failed to update invoice to open:', err.message)
+    })
+  }
+
+  /**
+   * Handle invoice.paid
+   */
+  async handleInvoicePaid(event: any) {
+    const invoice = event.data.object
+
+    await prismaAny.invoice.updateMany({
+      where: { stripeInvoiceId: invoice.id },
+      data: {
+        status: 'paid',
+        paidAt: new Date(),
+        hostedInvoiceUrl: invoice.hosted_invoice_url || undefined,
+        invoicePdf: invoice.invoice_pdf || undefined,
+      },
+    }).catch((err: any) => {
+      console.warn('Failed to mark invoice as paid:', err.message)
+    })
+
+    // Also create a Payment record for the invoice
+    const customerId = invoice.customer as string
+    const org = await prismaAny.org.findFirst({
+      where: { stripeCustomerId: customerId },
+    }).catch(() => null)
+
+    if (org && invoice.payment_intent) {
+      await prismaAny.payment.create({
+        data: {
+          orgId: org.id,
+          stripeInvoiceId: invoice.id,
+          stripePaymentIntentId: invoice.payment_intent as string,
+          amount: (invoice.amount_paid || 0) / 100,
+          currency: invoice.currency || 'usd',
+          status: 'COMPLETED',
+          paidAt: new Date(),
+        },
+      }).catch((err: any) => {
+        console.warn('Failed to create payment from invoice:', err.message)
+      })
+    }
+
+    await eventService.recordEvent({
+      entityType: 'Invoice',
+      entityId: invoice.id,
+      type: 'INVOICE_PAID',
+      payload: {
+        invoiceId: invoice.id,
+        amount: (invoice.amount_paid || 0) / 100,
+        subscriptionId: invoice.subscription,
+      },
+      userId: undefined,
+    })
+  }
+
+  /**
+   * Handle invoice.payment_failed
+   */
+  async handleInvoicePaymentFailed(event: any) {
+    const invoice = event.data.object
+    const customerId = invoice.customer as string
+
+    await prismaAny.invoice.updateMany({
+      where: { stripeInvoiceId: invoice.id },
+      data: {
+        status: 'uncollectible',
+      },
+    }).catch((err: any) => {
+      console.warn('Failed to update invoice payment failure:', err.message)
+    })
+
+    // Notify the org admin
+    const org = await prismaAny.org.findFirst({
+      where: { stripeCustomerId: customerId },
+      include: { members: { where: { roleKey: 'admin' }, take: 1, include: { user: true } } },
+    }).catch(() => null)
+
+    const adminUser = org?.members?.[0]?.user
+    if (adminUser) {
+      await prismaAny.notification.create({
+        data: {
+          userId: adminUser.id,
+          type: 'INVOICE_PAYMENT_FAILED',
+          title: 'Invoice Payment Failed',
+          message: `Payment for invoice ${invoice.number || invoice.id} has failed. Please update your payment method.`,
+          data: { invoiceId: invoice.id, amount: (invoice.amount_due || 0) / 100 },
+          channels: ['email', 'push'],
+          status: 'PENDING',
+        },
+      }).catch((err: any) => {
+        console.warn('Failed to create invoice failure notification:', err)
+      })
+    }
+
+    await eventService.recordEvent({
+      entityType: 'Invoice',
+      entityId: invoice.id,
+      type: 'INVOICE_PAYMENT_FAILED',
+      payload: {
+        invoiceId: invoice.id,
+        amount: (invoice.amount_due || 0) / 100,
+        attemptCount: invoice.attempt_count,
+      },
+      userId: adminUser?.id || undefined,
+    })
+  }
+
+  // ════════════════════════════════════════════════════════════════════
+  // CUSTOMER & PAYMENT METHOD HANDLERS
+  // ════════════════════════════════════════════════════════════════════
+
+  /**
+   * Handle customer.updated — sync customer metadata to org
+   */
+  async handleCustomerUpdated(event: any) {
+    const customer = event.data.object
+
+    await prismaAny.org.updateMany({
+      where: { stripeCustomerId: customer.id },
+      data: {
+        billingEmail: customer.email || undefined,
+      },
+    }).catch((err: any) => {
+      console.warn('Failed to sync customer update:', err.message)
+    })
+
+    await eventService.recordEvent({
+      entityType: 'Customer',
+      entityId: customer.id,
+      type: 'STRIPE_CUSTOMER_UPDATED',
+      payload: { customerId: customer.id, email: customer.email },
+      userId: undefined,
+    })
+  }
+
+  /**
+   * Handle customer.deleted — mark org as having no Stripe customer
+   */
+  async handleCustomerDeleted(event: any) {
+    const customer = event.data.object
+
+    await prismaAny.org.updateMany({
+      where: { stripeCustomerId: customer.id },
+      data: {
+        stripeCustomerId: null,
+      },
+    }).catch((err: any) => {
+      console.warn('Failed to clear customer on org:', err.message)
+    })
+
+    await eventService.recordEvent({
+      entityType: 'Customer',
+      entityId: customer.id,
+      type: 'STRIPE_CUSTOMER_DELETED',
+      payload: { customerId: customer.id },
+      userId: undefined,
+    })
+  }
+
+  /**
+   * Handle payment_method.attached — sync to PaymentMethod table
+   */
+  async handlePaymentMethodAttached(event: any) {
+    const pm = event.data.object
+    const customerId = pm.customer as string
+
+    // Find user by Stripe customer (through org membership)
+    const org = await prismaAny.org.findFirst({
+      where: { stripeCustomerId: customerId },
+      include: { members: { where: { roleKey: 'admin' }, take: 1 } },
+    }).catch(() => null)
+
+    const userId = org?.members?.[0]?.userId
+    if (!userId) return
+
+    await prismaAny.paymentMethod.upsert({
+      where: { stripePaymentMethodId: pm.id },
+      create: {
+        userId,
+        stripePaymentMethodId: pm.id,
+        type: pm.type === 'card' ? 'CARD' : pm.type === 'us_bank_account' ? 'ACH' : 'CARD',
+        last4: pm.card?.last4 || pm.us_bank_account?.last4 || null,
+        brand: pm.card?.brand || null,
+        bankName: pm.us_bank_account?.bank_name || null,
+        expiryMonth: pm.card?.exp_month || null,
+        expiryYear: pm.card?.exp_year || null,
+        status: 'ACTIVE',
+        isVerified: true,
+      },
+      update: {
+        status: 'ACTIVE',
+        last4: pm.card?.last4 || pm.us_bank_account?.last4 || undefined,
+        brand: pm.card?.brand || undefined,
+        expiryMonth: pm.card?.exp_month || undefined,
+        expiryYear: pm.card?.exp_year || undefined,
+      },
+    }).catch((err: any) => {
+      console.warn('Failed to upsert payment method:', err.message)
+    })
+  }
+
+  /**
+   * Handle payment_method.detached — mark as inactive
+   */
+  async handlePaymentMethodDetached(event: any) {
+    const pm = event.data.object
+
+    await prismaAny.paymentMethod.updateMany({
+      where: { stripePaymentMethodId: pm.id },
+      data: {
+        status: 'INACTIVE',
+        isDefault: false,
+      },
+    }).catch((err: any) => {
+      console.warn('Failed to deactivate payment method:', err.message)
     })
   }
 

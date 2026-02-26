@@ -40,22 +40,16 @@ export async function paymentWebhookRoutes(fastify: FastifyInstance) {
           return reply.code(400).send({ error: `Webhook Error: ${err.message}` })
         }
 
-        // Handle payment events (routed automatically)
-        if (
-          event.type.startsWith('payment_intent.') ||
-          event.type.startsWith('transfer.') ||
-          event.type.startsWith('payout.') ||
-          event.type.startsWith('charge.')
-        ) {
-          const { handled } = await paymentWebhookService.routeWebhook(event)
-          if (!handled) {
-            fastify.log.warn(`Unhandled payment webhook event: ${event.type}`)
-          }
-        }
+        // Route all events through the unified webhook service
+        const { handled } = await paymentWebhookService.routeWebhook(event)
 
-        // Handle Connect events
+        // Handle Connect events separately
         if (event.type.startsWith('account.')) {
           await stripeConnectService.handleConnectWebhook(event)
+        }
+
+        if (!handled && !event.type.startsWith('account.')) {
+          fastify.log.warn(`Unhandled webhook event: ${event.type}`)
         }
 
         return reply.send({ received: true })

@@ -19,6 +19,7 @@ export function LoginClient() {
   const [error, setError] = useState("")
 
   const unauthorized = searchParams.get("error") === "unauthorized"
+  const redirectTo = searchParams.get("redirect") || "/"
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -28,7 +29,7 @@ export function LoginClient() {
     try {
       await signIn(email, password)
       router.refresh()
-      router.push("/")
+      router.push(redirectTo)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to sign in")
     } finally {
@@ -62,9 +63,9 @@ export function LoginClient() {
           alt="Kealee"
           className="h-28 w-auto mx-auto mb-2"
         />
-        <CardTitle className="text-2xl text-center">Marketplace Login</CardTitle>
+        <CardTitle className="text-2xl text-center">Sign in to Kealee</CardTitle>
         <p className="text-sm text-neutral-600 text-center">
-          Connect with homeowners and contractors
+          Access all portals — Marketplace, Estimation, Finance, and more
         </p>
       </CardHeader>
       <CardContent>

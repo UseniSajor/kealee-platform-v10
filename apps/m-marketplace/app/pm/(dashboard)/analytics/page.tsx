@@ -549,9 +549,8 @@ export default function PMAnalyticsPage() {
 
       setData(mapped)
     } catch (err) {
-      // Fall back to demo data so the page is always usable during development
-      console.warn("Analytics API unavailable, using demo data:", err)
-      setData(getDemoData())
+      console.warn("Analytics API unavailable:", err)
+      setError("Analytics data is not yet available. Connect a project to see real metrics.")
     } finally {
       setLoading(false)
     }
