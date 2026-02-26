@@ -173,7 +173,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // ──────────────────────────────────────────────────────────────────
-  // 5. Role-based access check
+  // 5. Role-based access check (admins bypass all restrictions)
   // ──────────────────────────────────────────────────────────────────
   const { data: user } = await supabase
     .from('User')
@@ -195,6 +195,11 @@ export async function middleware(request: NextRequest) {
     .single();
 
   const effectiveRole = (membership?.roleKey || user.role || 'user').toLowerCase();
+
+  // Admins and super_admins can access any portal
+  if (effectiveRole === 'admin' || effectiveRole === 'super_admin') {
+    return response;
+  }
 
   if (!matchedPortal.allowedRoles.includes(effectiveRole)) {
     const redirectUrl = request.nextUrl.clone();
