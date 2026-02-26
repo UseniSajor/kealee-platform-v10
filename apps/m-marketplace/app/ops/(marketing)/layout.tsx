@@ -8,12 +8,12 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navLinks = [
-    { label: 'Home', href: '/' },
-    { label: 'Services', href: '/packages' },
-    { label: 'Pricing', href: '/pricing' },
-    { label: 'How It Works', href: '/how-it-works' },
-    { label: 'Case Studies', href: '/case-studies' },
-    { label: 'For Contractors', href: '/contractors' },
+    { label: 'Home', href: '/ops' },
+    { label: 'Services', href: '/ops/packages' },
+    { label: 'Pricing', href: '/ops/pricing' },
+    { label: 'How It Works', href: '/ops/how-it-works' },
+    { label: 'Case Studies', href: '/ops/case-studies' },
+    { label: 'For Contractors', href: '/ops/contractors' },
   ]
 
   return (
