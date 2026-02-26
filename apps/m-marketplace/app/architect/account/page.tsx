@@ -41,7 +41,7 @@ export default function AccountPage() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      router.push('/architect/login');
+      router.push('/login');
     } catch (error: any) {
       alert('Failed to sign out');
     }

@@ -44,7 +44,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
-    window.location.href = '/owner/login'
+    window.location.href = '/login'
   }
 
   return (
