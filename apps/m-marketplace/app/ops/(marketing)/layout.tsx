@@ -44,7 +44,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
               <Link href="https://marketplace.kealee.com/cart" className="relative text-zinc-700 hover:text-sky-600 transition" aria-label="Cart">
                 <ShoppingCart className="h-5 w-5" />
               </Link>
-              <Link href="/ops/login" className="text-sm font-medium text-zinc-700 hover:text-sky-600 transition">
+              <Link href="/login?redirect=/ops/portal" className="text-sm font-medium text-zinc-700 hover:text-sky-600 transition">
                 Portal Login
               </Link>
               <Link href="/ops/contact" className="inline-flex items-center px-5 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-xl text-sm font-semibold transition">
@@ -64,7 +64,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
                   {link.label}
                 </Link>
               ))}
-              <Link href="/ops/login" className="block text-sm font-medium text-zinc-700 hover:text-sky-600" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/login?redirect=/ops/portal" className="block text-sm font-medium text-zinc-700 hover:text-sky-600" onClick={() => setMobileMenuOpen(false)}>
                 Portal Login
               </Link>
               <Link href="/ops/contact" className="block bg-sky-500 text-white px-5 py-2 rounded-xl text-center text-sm font-semibold hover:bg-sky-600" onClick={() => setMobileMenuOpen(false)}>
