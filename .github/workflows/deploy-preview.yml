@@ -41,6 +41,8 @@ jobs:
             project-id: ${{ secrets.VERCEL_PROJECT_ID_OS_PM }}
           - name: os-admin
             project-id: ${{ secrets.VERCEL_PROJECT_ID_OS_ADMIN }}
+          - name: m-estimation
+            project-id: ${{ secrets.VERCEL_PROJECT_ID_ESTIMATION }}
 
     steps:
       - name: Checkout code
@@ -497,6 +499,7 @@ jobs:
           echo "5. ✅ m-architect" >> $GITHUB_STEP_SUMMARY
           echo "6. ✅ os-pm" >> $GITHUB_STEP_SUMMARY
           echo "7. ✅ os-admin" >> $GITHUB_STEP_SUMMARY
+          echo "8. ✅ m-estimation" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           if [ "$FAILED_JOBS" -gt "0" ]; then
