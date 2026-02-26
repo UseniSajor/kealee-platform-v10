@@ -133,7 +133,7 @@ const architectPackages = [
     popular: false,
     description: 'Professional architect develops your approved concept into schematic-level drawings.',
     includes: [
-      'Licensed architect assigned within 48 hours',
+      'Architect assigned within 48 hours',
       'Schematic floor plans & elevations',
       'Structural concept layout',
       'Initial code compliance review',
@@ -253,7 +253,7 @@ const howItWorksSteps = [
   {
     number: 3,
     title: 'Meet Your Designer',
-    description: 'After you approve a concept, you meet with a designer for any minor additions or cleanup before the handoff to a licensed architect.',
+    description: 'After you approve a concept, you meet with a designer for any minor additions or cleanup before the handoff to an architect.',
     icon: MessageSquare,
     phase: 'Pre-Con',
     color: brand.navy,
@@ -261,7 +261,7 @@ const howItWorksSteps = [
   {
     number: 4,
     title: 'Architect Develops Your Plans',
-    description: 'A licensed architect is assigned within 48 hours. They develop your approved concept into permit-ready drawings. Your concept fee is credited.',
+    description: 'An architect is assigned within 48 hours. They develop your approved concept into permit-ready drawings. Your concept fee is credited.',
     icon: Ruler,
     phase: 'Architecture',
     color: brand.teal,
@@ -309,7 +309,7 @@ const benefits = [
   {
     icon: Clock,
     title: '48-Hour Architect Assignment',
-    description: 'After your concept is approved, a licensed architect is assigned within 48 hours. No waiting, no delays.',
+    description: 'After your concept is approved, an architect is assigned within 48 hours. No waiting, no delays.',
   },
   {
     icon: Zap,
@@ -407,7 +407,7 @@ export function ProjectOwnerLandingClient() {
         ]}
         trustItems={[
           'Concept fee credited to architecture phase',
-          'Licensed architect assigned in 48 hours',
+          'Architect assigned in 48 hours',
           'Escrow protected payments',
         ]}
         bgPattern
@@ -530,7 +530,7 @@ export function ProjectOwnerLandingClient() {
               className="text-3xl lg:text-4xl font-bold mb-4"
               style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}
             >
-              Start With AI-Powered Concepts
+              Start With Concepts
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-2">
               See your project come to life before hiring an architect. AI generates floor plans,
@@ -591,7 +591,7 @@ export function ProjectOwnerLandingClient() {
               Professional Architect, Permit-Ready Plans
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              A licensed architect is assigned within 48 hours of your concept approval.
+              An architect is assigned within 48 hours of your concept approval.
               They develop your design into full construction documents.
             </p>
           </div>

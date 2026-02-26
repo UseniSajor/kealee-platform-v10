@@ -165,6 +165,10 @@ export function Header() {
               Pricing
             </Link>
 
+            <Link href="/faq" className="text-gray-700 hover:text-blue-600 transition font-medium">
+              FAQ
+            </Link>
+
             {/* Portals Dropdown */}
             <div ref={portalsRef} className="relative">
               <button
@@ -267,6 +271,9 @@ export function Header() {
               </Link>
               <Link href="/pricing" className="block px-2 py-2 text-gray-700 hover:text-blue-600 font-medium" onClick={() => setMobileMenuOpen(false)}>
                 Pricing
+              </Link>
+              <Link href="/faq" className="block px-2 py-2 text-gray-700 hover:text-blue-600 font-medium" onClick={() => setMobileMenuOpen(false)}>
+                FAQ
               </Link>
               <Link href="/services" className="block px-2 py-2 text-gray-700 hover:text-blue-600 font-medium" onClick={() => setMobileMenuOpen(false)}>
                 All Services

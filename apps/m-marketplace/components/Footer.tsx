@@ -14,7 +14,7 @@ export function Footer() {
               <span className="text-xl font-bold text-white">Kealee</span>
             </div>
             <p className="text-sm text-gray-400">
-              The end-to-end design/build platform for the DC-Baltimore corridor.
+              The end-to-end design/build platform serving the DC-Baltimore corridor and nationwide.
             </p>
           </div>
 
@@ -119,6 +119,11 @@ export function Footer() {
               <li>
                 <Link href="/blog" className="hover:text-white transition">
                   Blog
+                </Link>
+              </li>
+              <li>
+                <Link href="/faq" className="hover:text-white transition">
+                  FAQ
                 </Link>
               </li>
             </ul>

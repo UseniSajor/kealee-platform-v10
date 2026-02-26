@@ -4,19 +4,12 @@ import { useState, useEffect } from 'react';
 import {
   Plus,
   FolderOpen,
-  Calendar,
   DollarSign,
-  Users,
   Sparkles,
   ArrowRight,
   Bot,
-  CheckCircle2,
-  AlertCircle,
   Building2,
-  Home,
   Layers,
-  TrendingUp,
-  FileText,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Card } from '@kealee/ui';
@@ -363,9 +356,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Column */}
-          <div className="lg:col-span-2 space-y-8">
+        <div className="space-y-8">
             {/* ============================================================= */}
             {/* Multifamily Unit Completion Widget — only for multifamily       */}
             {/* ============================================================= */}
@@ -530,199 +521,6 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Getting Started Guide — homeowners only, when no projects */}
-            {isHomeowner && !hasPreconProjects && !hasProjects && (
-              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-6 text-white">
-                <h3 className="font-semibold text-lg mb-3">Getting Started</h3>
-                <p className="text-indigo-100 text-sm mb-4">
-                  Create a pre-con project to get professional designs and competitive contractor
-                  bids.
-                </p>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-                      1
-                    </div>
-                    <div>
-                      <p className="font-medium">Submit Project Details</p>
-                      <p className="text-xs text-indigo-200">Tell us your vision and goals</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-                      2
-                    </div>
-                    <div>
-                      <p className="font-medium">AI Generates Concepts</p>
-                      <p className="text-xs text-indigo-200">
-                        5 revisions, then pick from 3 finals
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-                      3
-                    </div>
-                    <div>
-                      <p className="font-medium">Meet Your Designer</p>
-                      <p className="text-xs text-indigo-200">Fine-tune with a real architect</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-                      4
-                    </div>
-                    <div>
-                      <p className="font-medium">Architecture & Permits</p>
-                      <p className="text-xs text-indigo-200">Full plans, then permit handoff</p>
-                    </div>
-                  </div>
-                </div>
-                <Link
-                  href="/owner/precon/new"
-                  className="mt-6 w-full py-3 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Sparkles size={18} />
-                  Start Your Project
-                </Link>
-              </div>
-            )}
-
-            {/* Developer Quick Actions — developers & property managers */}
-            {(isDeveloper || isPropertyManager) && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-                <h3 className="font-semibold text-gray-900 mb-3">Quick Actions</h3>
-                <div className="space-y-2">
-                  <Link
-                    href="/owner/projects/new"
-                    className="w-full flex items-center gap-3 py-2.5 px-4 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 text-sm font-medium"
-                  >
-                    <Plus size={16} />
-                    Create New Project
-                  </Link>
-                  {isMultifamily && (
-                    <>
-                      <Link
-                        href="/owner/draws"
-                        className="w-full flex items-center gap-3 py-2.5 px-4 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 text-sm font-medium"
-                      >
-                        <DollarSign size={16} />
-                        Lender Draws
-                      </Link>
-                      <Link
-                        href="/owner/units"
-                        className="w-full flex items-center gap-3 py-2.5 px-4 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm font-medium"
-                      >
-                        <Building2 size={16} />
-                        Unit Tracker
-                      </Link>
-                      <Link
-                        href="/owner/phasing"
-                        className="w-full flex items-center gap-3 py-2.5 px-4 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 text-sm font-medium"
-                      >
-                        <Layers size={16} />
-                        Area Phasing
-                      </Link>
-                    </>
-                  )}
-                  <Link
-                    href="/owner/reports"
-                    className="w-full flex items-center gap-3 py-2.5 px-4 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 text-sm font-medium"
-                  >
-                    <FileText size={16} />
-                    View Reports
-                  </Link>
-                </div>
-              </div>
-            )}
-
-            {/* Pending Fees Alert */}
-            {preconData && preconData.pendingFees.count > 0 && (
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
-                <div className="flex items-start gap-3">
-                  <AlertCircle size={20} className="text-amber-600 mt-0.5" />
-                  <div>
-                    <h3 className="font-semibold text-amber-800">Pending Payments</h3>
-                    <p className="text-sm text-amber-700 mt-1">
-                      You have {preconData.pendingFees.count} pending design package fee
-                      {preconData.pendingFees.count !== 1 ? 's' : ''}.
-                    </p>
-                    <Link
-                      href="/owner/precon?filter=pending_payment"
-                      className="mt-3 inline-flex items-center text-sm font-medium text-amber-800 hover:text-amber-900"
-                    >
-                      Pay Now →
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Phase Pricing Overview — homeowners & business owners */}
-            {(isHomeowner || role === 'business_owner') && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-                <h3 className="font-semibold text-gray-900 mb-3">Project Phases & Pricing</h3>
-                <div className="space-y-3 text-sm">
-                  <div className="py-2 border-b border-gray-100">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Phase 1: Pre-Con</span>
-                      <span className="font-medium text-gray-900">$199 – $999</span>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      AI concepts, revisions & designer meeting
-                    </p>
-                  </div>
-                  <div className="py-2 border-b border-gray-100">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Phase 2: Architecture</span>
-                      <span className="font-medium text-gray-900">$2,995 – $9,995</span>
-                    </div>
-                    <p className="text-xs text-green-600 mt-0.5">
-                      Concept fee credited toward this phase
-                    </p>
-                  </div>
-                  <div className="py-2 border-b border-gray-100">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Phase 3: Permits</span>
-                      <span className="font-medium text-gray-900">$495 – $2,995</span>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      Offered after architecture completes
-                    </p>
-                  </div>
-                  <p className="text-xs text-gray-500 pt-1">
-                    Each phase connects seamlessly. All fees shown at checkout.
-                  </p>
-                </div>
-                <Link
-                  href="/owner/precon/fee-info"
-                  className="mt-4 text-indigo-600 hover:text-indigo-700 text-sm font-medium inline-flex items-center"
-                >
-                  Learn more about pricing →
-                </Link>
-              </div>
-            )}
-
-            {/* Support Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-              <h3 className="font-semibold text-gray-900 mb-2">Need Help?</h3>
-              <p className="text-sm text-gray-500 mb-4">
-                Our team is available to guide you through the process.
-              </p>
-              <div className="space-y-2">
-                <button className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium">
-                  Chat with Support
-                </button>
-                <button className="w-full py-2 px-4 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium">
-                  Schedule a Call
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
       </main>
     </div>
   );
