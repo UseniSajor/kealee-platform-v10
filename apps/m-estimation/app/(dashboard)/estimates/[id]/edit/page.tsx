@@ -31,6 +31,8 @@ import {
   Plus,
   Trash2,
   Loader2,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import {
@@ -47,6 +49,58 @@ import {
   type CostBreakdown,
 } from '@/lib/calculations';
 import { exportToPDF, exportToExcel, exportToCSV, type Estimate } from '@/lib/export';
+
+// -------------------------------------------------------------------
+// CSI MasterFormat Divisions
+// -------------------------------------------------------------------
+
+const CSI_DIVISIONS = [
+  { code: '00', name: 'Procurement and Contracting Requirements' },
+  { code: '01', name: 'General Requirements' },
+  { code: '02', name: 'Existing Conditions' },
+  { code: '03', name: 'Concrete' },
+  { code: '04', name: 'Masonry' },
+  { code: '05', name: 'Metals' },
+  { code: '06', name: 'Wood, Plastics, and Composites' },
+  { code: '07', name: 'Thermal and Moisture Protection' },
+  { code: '08', name: 'Openings' },
+  { code: '09', name: 'Finishes' },
+  { code: '10', name: 'Specialties' },
+  { code: '11', name: 'Equipment' },
+  { code: '12', name: 'Furnishings' },
+  { code: '13', name: 'Special Construction' },
+  { code: '14', name: 'Conveying Equipment' },
+  { code: '21', name: 'Fire Suppression' },
+  { code: '22', name: 'Plumbing' },
+  { code: '23', name: 'HVAC' },
+  { code: '25', name: 'Integrated Automation' },
+  { code: '26', name: 'Electrical' },
+  { code: '27', name: 'Communications' },
+  { code: '28', name: 'Electronic Safety and Security' },
+  { code: '31', name: 'Earthwork' },
+  { code: '32', name: 'Exterior Improvements' },
+  { code: '33', name: 'Utilities' },
+  { code: '34', name: 'Transportation' },
+  { code: '35', name: 'Waterway and Marine Construction' },
+  { code: '40', name: 'Process Interconnections' },
+  { code: '41', name: 'Material Processing and Handling Equipment' },
+  { code: '42', name: 'Process Heating, Cooling, and Drying Equipment' },
+  { code: '43', name: 'Process Gas and Liquid Handling' },
+  { code: '44', name: 'Pollution and Waste Control Equipment' },
+  { code: '45', name: 'Industry-Specific Manufacturing Equipment' },
+  { code: '46', name: 'Water and Wastewater Equipment' },
+  { code: '48', name: 'Electrical Power Generation' },
+] as const;
+
+function createDefaultSections(): Section[] {
+  return CSI_DIVISIONS.map((div) => ({
+    id: `csi-${div.code}`,
+    division: div.code,
+    name: div.name,
+    lineItems: [],
+    subtotal: 0,
+  }));
+}
 
 // -------------------------------------------------------------------
 // Types
@@ -210,6 +264,10 @@ function LineItemsTab({
   } | null>(null);
   const [editValue, setEditValue] = useState('');
   const [addingSectionId, setAddingSectionId] = useState<string | null>(null);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => {
+    // Auto-expand sections that already have items
+    return new Set(sections.filter((s) => s.lineItems.length > 0).map((s) => s.id));
+  });
   const [newItem, setNewItem] = useState({
     description: '',
     quantity: 0,
@@ -217,6 +275,18 @@ function LineItemsTab({
     unitCost: 0,
     type: 'material' as LineItem['type'],
   });
+
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(sectionId)) {
+        next.delete(sectionId);
+      } else {
+        next.add(sectionId);
+      }
+      return next;
+    });
+  };
 
   const startEditing = (
     sectionId: string,
@@ -297,207 +367,259 @@ function LineItemsTab({
     onSectionsChange(updated);
   };
 
+  const totalItems = sections.reduce((sum, s) => sum + s.lineItems.length, 0);
+  const activeSections = sections.filter((s) => s.lineItems.length > 0).length;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
+      {/* Summary */}
+      <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
+        <span>
+          {activeSections} of {sections.length} divisions have line items
+        </span>
+        <span className="font-medium">{totalItems} total items</span>
+      </div>
+
       {sections.map((section) => {
+        const hasItems = section.lineItems.length > 0;
+        const isExpanded = expandedSections.has(section.id) || addingSectionId === section.id;
         const sectionTotal = section.lineItems.reduce(
           (sum, item) => sum + item.quantity * item.unitCost,
           0
         );
 
         return (
-          <Card key={section.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">
-                  {section.division} - {section.name}
-                </CardTitle>
-                <Badge variant="secondary">{formatCurrency(sectionTotal)}</Badge>
+          <Card key={section.id} className={hasItems ? '' : 'opacity-75'}>
+            {/* Collapsible Header */}
+            <button
+              type="button"
+              onClick={() => toggleSection(section.id)}
+              className="w-full flex items-center justify-between px-6 py-3 hover:bg-accent/30 transition-colors rounded-t-lg"
+            >
+              <div className="flex items-center gap-3">
+                {isExpanded ? (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                )}
+                <span className="font-mono text-xs font-bold text-primary/70">
+                  {section.division}
+                </span>
+                <span className="font-semibold text-sm">{section.name}</span>
+                {hasItems && (
+                  <Badge variant="secondary" className="ml-2 text-xs">
+                    {section.lineItems.length} item{section.lineItems.length !== 1 ? 's' : ''}
+                  </Badge>
+                )}
               </div>
-              <CardDescription>
-                {section.lineItems.length} line item
-                {section.lineItems.length !== 1 ? 's' : ''}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {/* Table header */}
-              <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-muted/50 rounded-md text-xs font-medium text-muted-foreground mb-2">
-                <div className="col-span-4">Description</div>
-                <div className="col-span-1 text-right">Qty</div>
-                <div className="col-span-1">Unit</div>
-                <div className="col-span-2 text-right">Unit Cost</div>
-                <div className="col-span-2 text-right">Total</div>
-                <div className="col-span-1">Type</div>
-                <div className="col-span-1"></div>
+              <div className="flex items-center gap-2">
+                {sectionTotal > 0 && (
+                  <Badge variant="outline">{formatCurrency(sectionTotal)}</Badge>
+                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setAddingSectionId(section.id);
+                    if (!expandedSections.has(section.id)) {
+                      toggleSection(section.id);
+                    }
+                  }}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </Button>
               </div>
+            </button>
 
-              {/* Line items */}
-              <div className="space-y-1">
-                {section.lineItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="grid grid-cols-12 gap-2 px-3 py-2 items-center hover:bg-accent/30 rounded-md transition-colors text-sm"
-                  >
-                    <div className="col-span-4 truncate font-medium">
-                      {item.description}
+            {/* Expanded Content */}
+            {isExpanded && (
+              <CardContent className="pt-0">
+                {hasItems && (
+                  <>
+                    {/* Table header */}
+                    <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-muted/50 rounded-md text-xs font-medium text-muted-foreground mb-2">
+                      <div className="col-span-4">Description</div>
+                      <div className="col-span-1 text-right">Qty</div>
+                      <div className="col-span-1">Unit</div>
+                      <div className="col-span-2 text-right">Unit Cost</div>
+                      <div className="col-span-2 text-right">Total</div>
+                      <div className="col-span-1">Type</div>
+                      <div className="col-span-1"></div>
                     </div>
-                    <div className="col-span-1 text-right">
-                      {editingCell?.itemId === item.id &&
-                      editingCell?.field === 'quantity' ? (
-                        <Input
-                          type="number"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          onBlur={commitEdit}
-                          onKeyDown={handleEditKeyDown}
-                          className="h-7 text-xs text-right w-full"
-                          autoFocus
-                        />
-                      ) : (
-                        <span
-                          className="cursor-pointer hover:text-primary hover:underline"
-                          onClick={() =>
-                            startEditing(section.id, item.id, 'quantity', item.quantity)
-                          }
+
+                    {/* Line items */}
+                    <div className="space-y-1">
+                      {section.lineItems.map((item) => (
+                        <div
+                          key={item.id}
+                          className="grid grid-cols-12 gap-2 px-3 py-2 items-center hover:bg-accent/30 rounded-md transition-colors text-sm"
                         >
-                          {item.quantity}
-                        </span>
-                      )}
+                          <div className="col-span-4 truncate font-medium">
+                            {item.description}
+                          </div>
+                          <div className="col-span-1 text-right">
+                            {editingCell?.itemId === item.id &&
+                            editingCell?.field === 'quantity' ? (
+                              <Input
+                                type="number"
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                onBlur={commitEdit}
+                                onKeyDown={handleEditKeyDown}
+                                className="h-7 text-xs text-right w-full"
+                                autoFocus
+                              />
+                            ) : (
+                              <span
+                                className="cursor-pointer hover:text-primary hover:underline"
+                                onClick={() =>
+                                  startEditing(section.id, item.id, 'quantity', item.quantity)
+                                }
+                              >
+                                {item.quantity}
+                              </span>
+                            )}
+                          </div>
+                          <div className="col-span-1 text-muted-foreground text-xs">
+                            {item.unit}
+                          </div>
+                          <div className="col-span-2 text-right">
+                            {editingCell?.itemId === item.id &&
+                            editingCell?.field === 'unitCost' ? (
+                              <Input
+                                type="number"
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                onBlur={commitEdit}
+                                onKeyDown={handleEditKeyDown}
+                                className="h-7 text-xs text-right w-full"
+                                autoFocus
+                                step="0.01"
+                              />
+                            ) : (
+                              <span
+                                className="cursor-pointer hover:text-primary hover:underline"
+                                onClick={() =>
+                                  startEditing(section.id, item.id, 'unitCost', item.unitCost)
+                                }
+                              >
+                                {formatCurrencyDetailed(item.unitCost)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="col-span-2 text-right font-medium">
+                            {formatCurrencyDetailed(item.quantity * item.unitCost)}
+                          </div>
+                          <div className="col-span-1">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] px-1.5 py-0"
+                            >
+                              {item.type}
+                            </Badge>
+                          </div>
+                          <div className="col-span-1 flex justify-end">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => removeLineItem(section.id, item.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="col-span-1 text-muted-foreground text-xs">
-                      {item.unit}
-                    </div>
-                    <div className="col-span-2 text-right">
-                      {editingCell?.itemId === item.id &&
-                      editingCell?.field === 'unitCost' ? (
-                        <Input
-                          type="number"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          onBlur={commitEdit}
-                          onKeyDown={handleEditKeyDown}
-                          className="h-7 text-xs text-right w-full"
-                          autoFocus
-                          step="0.01"
-                        />
-                      ) : (
-                        <span
-                          className="cursor-pointer hover:text-primary hover:underline"
-                          onClick={() =>
-                            startEditing(section.id, item.id, 'unitCost', item.unitCost)
-                          }
-                        >
-                          {formatCurrencyDetailed(item.unitCost)}
-                        </span>
-                      )}
-                    </div>
-                    <div className="col-span-2 text-right font-medium">
-                      {formatCurrencyDetailed(item.quantity * item.unitCost)}
-                    </div>
-                    <div className="col-span-1">
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] px-1.5 py-0"
+                  </>
+                )}
+
+                {/* Add line item form */}
+                {addingSectionId === section.id ? (
+                  <div className="mt-3 pt-3 border-t space-y-3">
+                    <div className="grid grid-cols-12 gap-2">
+                      <Input
+                        placeholder="Description"
+                        value={newItem.description}
+                        onChange={(e) =>
+                          setNewItem({ ...newItem, description: e.target.value })
+                        }
+                        className="col-span-4 h-8 text-sm"
+                        autoFocus
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Qty"
+                        value={newItem.quantity || ''}
+                        onChange={(e) =>
+                          setNewItem({ ...newItem, quantity: Number(e.target.value) })
+                        }
+                        className="col-span-2 h-8 text-sm"
+                      />
+                      <Input
+                        placeholder="Unit"
+                        value={newItem.unit}
+                        onChange={(e) =>
+                          setNewItem({ ...newItem, unit: e.target.value })
+                        }
+                        className="col-span-1 h-8 text-sm"
+                      />
+                      <Input
+                        type="number"
+                        placeholder="$/Unit"
+                        value={newItem.unitCost || ''}
+                        onChange={(e) =>
+                          setNewItem({ ...newItem, unitCost: Number(e.target.value) })
+                        }
+                        className="col-span-2 h-8 text-sm"
+                        step="0.01"
+                      />
+                      <select
+                        value={newItem.type}
+                        onChange={(e) =>
+                          setNewItem({
+                            ...newItem,
+                            type: e.target.value as LineItem['type'],
+                          })
+                        }
+                        className="col-span-2 h-8 rounded-md border border-input bg-background px-2 text-xs"
                       >
-                        {item.type}
-                      </Badge>
-                    </div>
-                    <div className="col-span-1 flex justify-end">
+                        <option value="material">Material</option>
+                        <option value="labor">Labor</option>
+                        <option value="equipment">Equipment</option>
+                        <option value="other">Other</option>
+                      </select>
                       <Button
-                        variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
-                        onClick={() => removeLineItem(section.id, item.id)}
+                        className="col-span-1 h-8 w-8"
+                        onClick={() => addLineItem(section.id)}
                       >
-                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                        <Plus className="h-3.5 w-3.5" />
                       </Button>
                     </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Add line item form */}
-              {addingSectionId === section.id ? (
-                <div className="mt-3 pt-3 border-t space-y-3">
-                  <div className="grid grid-cols-12 gap-2">
-                    <Input
-                      placeholder="Description"
-                      value={newItem.description}
-                      onChange={(e) =>
-                        setNewItem({ ...newItem, description: e.target.value })
-                      }
-                      className="col-span-4 h-8 text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Qty"
-                      value={newItem.quantity || ''}
-                      onChange={(e) =>
-                        setNewItem({ ...newItem, quantity: Number(e.target.value) })
-                      }
-                      className="col-span-2 h-8 text-sm"
-                    />
-                    <Input
-                      placeholder="Unit"
-                      value={newItem.unit}
-                      onChange={(e) =>
-                        setNewItem({ ...newItem, unit: e.target.value })
-                      }
-                      className="col-span-1 h-8 text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="$/Unit"
-                      value={newItem.unitCost || ''}
-                      onChange={(e) =>
-                        setNewItem({ ...newItem, unitCost: Number(e.target.value) })
-                      }
-                      className="col-span-2 h-8 text-sm"
-                      step="0.01"
-                    />
-                    <select
-                      value={newItem.type}
-                      onChange={(e) =>
-                        setNewItem({
-                          ...newItem,
-                          type: e.target.value as LineItem['type'],
-                        })
-                      }
-                      className="col-span-2 h-8 rounded-md border border-input bg-background px-2 text-xs"
-                    >
-                      <option value="material">Material</option>
-                      <option value="labor">Labor</option>
-                      <option value="equipment">Equipment</option>
-                      <option value="other">Other</option>
-                    </select>
                     <Button
-                      size="icon"
-                      className="col-span-1 h-8 w-8"
-                      onClick={() => addLineItem(section.id)}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setAddingSectionId(null)}
                     >
-                      <Plus className="h-3.5 w-3.5" />
+                      Done adding
                     </Button>
                   </div>
+                ) : (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setAddingSectionId(null)}
+                    className="mt-3 text-xs text-muted-foreground"
+                    onClick={() => setAddingSectionId(section.id)}
                   >
-                    Cancel
+                    <Plus className="mr-1 h-3.5 w-3.5" />
+                    Add Line Item
                   </Button>
-                </div>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mt-3 text-muted-foreground"
-                  onClick={() => setAddingSectionId(section.id)}
-                >
-                  <Plus className="mr-1 h-3.5 w-3.5" />
-                  Add Line Item
-                </Button>
-              )}
-            </CardContent>
+                )}
+              </CardContent>
+            )}
           </Card>
         );
       })}
@@ -764,7 +886,7 @@ export default function EstimateEditPage() {
             status: data.status || 'draft',
             createdAt: data.createdAt || '',
             updatedAt: data.updatedAt || '',
-            sections: data.sections || [],
+            sections: data.sections?.length > 0 ? data.sections : createDefaultSections(),
             settings: data.settings || {
               overheadPercent: 15,
               profitPercent: 10,
@@ -840,13 +962,15 @@ export default function EstimateEditPage() {
     setError(null);
 
     try {
+      // Only save sections that have line items
+      const activeSections = estimate.sections.filter((s) => s.lineItems.length > 0);
       const response = await apiClient.updateEstimate(estimate.id, {
         name: estimate.name,
         projectType: estimate.projectType,
         clientName: estimate.clientName,
         location: estimate.location,
         status: estimate.status,
-        sections: estimate.sections,
+        sections: activeSections,
         settings: estimate.settings,
         notes: estimate.notes,
         exclusions: estimate.exclusions,

@@ -6,10 +6,61 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Package, Sparkles, Search, Database, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Package, Sparkles, Search, Database, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
 import { formatCurrency, formatCurrencyDetailed } from '@/lib/utils';
 import { calculateCostBreakdown } from '@/lib/calculations';
 import { apiClient } from '@/lib/api';
+
+// ============================================================================
+// CSI MasterFormat Divisions
+// ============================================================================
+
+const CSI_DIVISIONS = [
+  { code: '00', name: 'Procurement and Contracting Requirements' },
+  { code: '01', name: 'General Requirements' },
+  { code: '02', name: 'Existing Conditions' },
+  { code: '03', name: 'Concrete' },
+  { code: '04', name: 'Masonry' },
+  { code: '05', name: 'Metals' },
+  { code: '06', name: 'Wood, Plastics, and Composites' },
+  { code: '07', name: 'Thermal and Moisture Protection' },
+  { code: '08', name: 'Openings' },
+  { code: '09', name: 'Finishes' },
+  { code: '10', name: 'Specialties' },
+  { code: '11', name: 'Equipment' },
+  { code: '12', name: 'Furnishings' },
+  { code: '13', name: 'Special Construction' },
+  { code: '14', name: 'Conveying Equipment' },
+  { code: '21', name: 'Fire Suppression' },
+  { code: '22', name: 'Plumbing' },
+  { code: '23', name: 'HVAC' },
+  { code: '25', name: 'Integrated Automation' },
+  { code: '26', name: 'Electrical' },
+  { code: '27', name: 'Communications' },
+  { code: '28', name: 'Electronic Safety and Security' },
+  { code: '31', name: 'Earthwork' },
+  { code: '32', name: 'Exterior Improvements' },
+  { code: '33', name: 'Utilities' },
+  { code: '34', name: 'Transportation' },
+  { code: '35', name: 'Waterway and Marine Construction' },
+  { code: '40', name: 'Process Interconnections' },
+  { code: '41', name: 'Material Processing and Handling Equipment' },
+  { code: '42', name: 'Process Heating, Cooling, and Drying Equipment' },
+  { code: '43', name: 'Process Gas and Liquid Handling' },
+  { code: '44', name: 'Pollution and Waste Control Equipment' },
+  { code: '45', name: 'Industry-Specific Manufacturing Equipment' },
+  { code: '46', name: 'Water and Wastewater Equipment' },
+  { code: '48', name: 'Electrical Power Generation' },
+] as const;
+
+function createDefaultSections(): Section[] {
+  return CSI_DIVISIONS.map((div) => ({
+    id: `csi-${div.code}`,
+    division: div.code,
+    name: div.name,
+    items: [],
+  }));
+}
 
 interface BuildEstimateStepProps {
   data: any;
@@ -42,8 +93,22 @@ export function BuildEstimateStep({
   onBack,
 }: BuildEstimateStepProps) {
   const [sections, setSections] = useState<Section[]>(
-    data.sections || []
+    data.sections?.length > 0 ? data.sections : createDefaultSections()
   );
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [addingToSection, setAddingToSection] = useState<string | null>(null);
+
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(sectionId)) {
+        next.delete(sectionId);
+      } else {
+        next.add(sectionId);
+      }
+      return next;
+    });
+  };
 
   const [newItem, setNewItem] = useState({
     description: '',
@@ -58,6 +123,7 @@ export function BuildEstimateStep({
   const [ctcSearch, setCTCSearch] = useState('');
   const [ctcResults, setCTCResults] = useState<any[]>([]);
   const [ctcLoading, setCTCLoading] = useState(false);
+  const [ctcTargetSection, setCTCTargetSection] = useState<string>('csi-01');
 
   const searchCTC = useCallback(async () => {
     if (!ctcSearch.trim()) return;
@@ -165,7 +231,9 @@ export function BuildEstimateStep({
       alert('Please add at least one line item');
       return;
     }
-    onNext({ sections });
+    // Only pass sections that have items to the next step
+    const activeSections = sections.filter((s) => s.items.length > 0);
+    onNext({ sections: activeSections });
   };
 
   return (
@@ -179,94 +247,164 @@ export function BuildEstimateStep({
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Line Items (70%) */}
-        <div className="lg:col-span-2 space-y-4">
-          {sections.map((section) => (
-            <Card key={section.id}>
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">
-                    {section.division} - {section.name}
-                  </CardTitle>
-                  <Badge variant="secondary">
-                    {formatCurrency(calculateSectionTotal(section))}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {section.items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-md"
-                  >
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{item.description}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {item.quantity} {item.unit} × {formatCurrencyDetailed(item.unitCost)} ={' '}
-                        {formatCurrency(item.quantity * item.unitCost)}
-                      </p>
-                    </div>
+        <div className="lg:col-span-2 space-y-2">
+          {/* Section count summary */}
+          <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
+            <span>
+              {sections.filter((s) => s.items.length > 0).length} of {sections.length} divisions have line items
+            </span>
+            <span className="font-medium">{allItems.length} total items</span>
+          </div>
+
+          {sections.map((section) => {
+            const hasItems = section.items.length > 0;
+            const isExpanded = expandedSections.has(section.id) || addingToSection === section.id;
+            const sectionTotal = calculateSectionTotal(section);
+
+            return (
+              <Card key={section.id} className={hasItems ? '' : 'opacity-75'}>
+                {/* Collapsible Header */}
+                <button
+                  type="button"
+                  onClick={() => toggleSection(section.id)}
+                  className="w-full flex items-center justify-between px-6 py-3 hover:bg-accent/30 transition-colors rounded-t-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    {isExpanded ? (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <span className="font-mono text-xs font-bold text-primary/70">
+                      {section.division}
+                    </span>
+                    <span className="font-semibold text-sm">{section.name}</span>
+                    {hasItems && (
+                      <Badge variant="secondary" className="ml-2 text-xs">
+                        {section.items.length} item{section.items.length !== 1 ? 's' : ''}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {sectionTotal > 0 && (
+                      <Badge variant="outline">{formatCurrency(sectionTotal)}</Badge>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => removeLineItem(section.id, item.id)}
+                      className="h-7 w-7"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAddingToSection(section.id);
+                        if (!expandedSections.has(section.id)) {
+                          toggleSection(section.id);
+                        }
+                      }}
                     >
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                      <Plus className="h-3.5 w-3.5" />
                     </Button>
                   </div>
-                ))}
+                </button>
 
-                {/* Add Item Form */}
-                <div className="grid grid-cols-12 gap-2 pt-3 border-t">
-                  <Input
-                    placeholder="Description"
-                    value={newItem.description}
-                    onChange={(e) =>
-                      setNewItem({ ...newItem, description: e.target.value })
-                    }
-                    className="col-span-4"
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Qty"
-                    value={newItem.quantity || ''}
-                    onChange={(e) =>
-                      setNewItem({ ...newItem, quantity: Number(e.target.value) })
-                    }
-                    className="col-span-2"
-                  />
-                  <Input
-                    placeholder="Unit"
-                    value={newItem.unit}
-                    onChange={(e) =>
-                      setNewItem({ ...newItem, unit: e.target.value })
-                    }
-                    className="col-span-2"
-                  />
-                  <Input
-                    type="number"
-                    placeholder="$/Unit"
-                    value={newItem.unitCost || ''}
-                    onChange={(e) =>
-                      setNewItem({ ...newItem, unitCost: Number(e.target.value) })
-                    }
-                    className="col-span-3"
-                  />
-                  <Button
-                    size="icon"
-                    onClick={() => addLineItem(section.id)}
-                    className="col-span-1"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                {/* Expanded Content */}
+                {isExpanded && (
+                  <CardContent className="pt-0 space-y-3">
+                    {section.items.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between p-3 bg-muted/50 rounded-md"
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{item.description}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {item.quantity} {item.unit} × {formatCurrencyDetailed(item.unitCost)} ={' '}
+                            {formatCurrency(item.quantity * item.unitCost)}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeLineItem(section.id, item.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    ))}
 
-          <Button variant="outline" className="w-full">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Section
-          </Button>
+                    {/* Add Item Form */}
+                    {addingToSection === section.id ? (
+                      <div className="space-y-2 pt-3 border-t">
+                        <div className="grid grid-cols-12 gap-2">
+                          <Input
+                            placeholder="Description"
+                            value={newItem.description}
+                            onChange={(e) =>
+                              setNewItem({ ...newItem, description: e.target.value })
+                            }
+                            className="col-span-4"
+                            autoFocus
+                          />
+                          <Input
+                            type="number"
+                            placeholder="Qty"
+                            value={newItem.quantity || ''}
+                            onChange={(e) =>
+                              setNewItem({ ...newItem, quantity: Number(e.target.value) })
+                            }
+                            className="col-span-2"
+                          />
+                          <Input
+                            placeholder="Unit"
+                            value={newItem.unit}
+                            onChange={(e) =>
+                              setNewItem({ ...newItem, unit: e.target.value })
+                            }
+                            className="col-span-2"
+                          />
+                          <Input
+                            type="number"
+                            placeholder="$/Unit"
+                            value={newItem.unitCost || ''}
+                            onChange={(e) =>
+                              setNewItem({ ...newItem, unitCost: Number(e.target.value) })
+                            }
+                            className="col-span-3"
+                          />
+                          <Button
+                            size="icon"
+                            onClick={() => {
+                              addLineItem(section.id);
+                            }}
+                            className="col-span-1"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => setAddingToSection(null)}
+                        >
+                          Done adding
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-muted-foreground"
+                        onClick={() => setAddingToSection(section.id)}
+                      >
+                        <Plus className="mr-1 h-3 w-3" />
+                        Add Line Item
+                      </Button>
+                    )}
+                  </CardContent>
+                )}
+              </Card>
+            );
+          })}
 
           {/* CTC Task Browser */}
           <Card className="border-dashed">
@@ -303,6 +441,21 @@ export function BuildEstimateStep({
                     )}
                   </Button>
                 </div>
+                {/* Target Section Selector */}
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground whitespace-nowrap">Add to:</span>
+                  <select
+                    value={ctcTargetSection}
+                    onChange={(e) => setCTCTargetSection(e.target.value)}
+                    className="flex-1 h-8 rounded-md border border-input bg-background px-2 text-xs"
+                  >
+                    {sections.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.division} - {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 {ctcResults.length > 0 && (
                   <div className="max-h-60 overflow-y-auto space-y-1">
                     {ctcResults.map((task: any) => (
@@ -324,7 +477,7 @@ export function BuildEstimateStep({
                             size="sm"
                             variant="outline"
                             className="h-7 text-xs"
-                            onClick={() => addCTCTask(task, sections[0]?.id || '1')}
+                            onClick={() => addCTCTask(task, ctcTargetSection)}
                           >
                             <Plus className="h-3 w-3 mr-1" />
                             Add

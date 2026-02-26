@@ -110,6 +110,8 @@ export function NetworkSearchClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalResults, setTotalResults] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 12;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -128,8 +130,8 @@ export function NetworkSearchClient() {
         search: searchQuery || undefined,
         verifiedOnly: undefined,
         minRating: minRating ?? undefined,
-        limit: 50,
-        offset: 0,
+        limit: PAGE_SIZE,
+        offset: (currentPage - 1) * PAGE_SIZE,
       });
 
       if (result.success && result.data) {
@@ -146,7 +148,7 @@ export function NetworkSearchClient() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, minRating]);
+  }, [searchQuery, minRating, currentPage]);
 
   // Fetch on mount and when search/filter params change
   useEffect(() => {
@@ -223,36 +225,31 @@ export function NetworkSearchClient() {
     setSearchQuery('');
   };
 
+  const totalPages = Math.max(1, Math.ceil(totalResults / PAGE_SIZE));
+
   return (
     <>
-      {/* Hero Section */}
-      <section className="bg-gradient-to-b from-[#F7FAFC] to-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto text-center">
-          <h1
-            className="text-3xl lg:text-4xl font-bold mb-4"
-            style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}
-          >
-            Kealee Network
-          </h1>
-          <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-            Find verified contractors, architects, engineers, and suppliers in the DC-Baltimore corridor.
-          </p>
-
-          {/* Search Bar */}
-          <div className="flex flex-col sm:flex-row gap-3 max-w-3xl mx-auto">
+      {/* Search Bar */}
+      <section className="bg-white py-6 px-4 sm:px-6 lg:px-8 border-b border-gray-100">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1 relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
                 placeholder="Search by trade, name, or specialty..."
-                className="w-full pl-12 pr-4 py-4 text-base border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                className="w-full pl-12 pr-4 py-3.5 text-base border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                 style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}
               />
             </div>
             <button
-              className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-white transition-colors"
+              onClick={fetchContractors}
+              className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-white transition-colors hover:opacity-90"
               style={{ backgroundColor: brand.teal }}
             >
               <Search className="w-5 h-5" />
@@ -471,24 +468,46 @@ export function NetworkSearchClient() {
           )}
 
           {/* Pagination */}
-          {!loading && filteredProfiles.length > 0 && (
+          {!loading && totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 mt-12">
-              <button className="px-4 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50">
+              <button
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className="px-4 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
                 Previous
               </button>
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                let page: number;
+                if (totalPages <= 5) {
+                  page = i + 1;
+                } else if (currentPage <= 3) {
+                  page = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  page = totalPages - 4 + i;
+                } else {
+                  page = currentPage - 2 + i;
+                }
+                return (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-4 py-2 rounded-lg text-sm ${
+                      page === currentPage
+                        ? 'text-white'
+                        : 'border border-gray-200 hover:bg-gray-50'
+                    }`}
+                    style={page === currentPage ? { backgroundColor: brand.teal } : undefined}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
               <button
-                className="px-4 py-2 rounded-lg text-sm text-white"
-                style={{ backgroundColor: brand.teal }}
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                className="px-4 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                1
-              </button>
-              <button className="px-4 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50">
-                2
-              </button>
-              <button className="px-4 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50">
-                3
-              </button>
-              <button className="px-4 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50">
                 Next
               </button>
             </div>
@@ -660,12 +679,20 @@ function ProfileCard({ profile }: { profile: NetworkProfile }) {
           )}
         </div>
 
-        {/* Location */}
+        {/* Location & Stats */}
         <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
-          <span className="flex items-center gap-1">
-            <MapPin className="w-3.5 h-3.5" />
-            {profile.location.city}, {profile.location.state}
-          </span>
+          {(profile.location.city || profile.location.state) && (
+            <span className="flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5" />
+              {[profile.location.city, profile.location.state].filter(Boolean).join(', ')}
+            </span>
+          )}
+          {profile.stats.projectsCompleted && (
+            <span className="flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              {profile.stats.projectsCompleted} projects
+            </span>
+          )}
           {profile.stats.responseTime && (
             <span className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />

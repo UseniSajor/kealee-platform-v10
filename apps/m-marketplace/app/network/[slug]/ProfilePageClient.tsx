@@ -25,7 +25,7 @@ import {
   Loader2,
 } from 'lucide-react';
 
-import { MarketingLayout, Badge, brand, shadows } from '@kealee/ui';
+import { Badge, brand, shadows } from '@kealee/ui';
 import { createConversation, sendMessage, getConversation, type Conversation, type Message } from '@/lib/api';
 
 const PROFESSIONAL_TYPE_LABELS: Record<string, string> = {
@@ -49,30 +49,22 @@ interface ProfilePageClientProps {
 
 function ProfileNotFound() {
   return (
-    <MarketingLayout
-      breadcrumbs={[
-        { label: 'Home', href: '/' },
-        { label: 'Network', href: '/network' },
-        { label: 'Profile' },
-      ]}
-    >
-      <div className="flex flex-col items-center justify-center py-24 px-4">
-        <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-          <Briefcase className="w-8 h-8 text-gray-400" />
-        </div>
-        <h2 className="text-xl font-semibold text-gray-700 mb-2">Profile Not Found</h2>
-        <p className="text-gray-500 text-sm mb-6 text-center max-w-md">
-          This contractor profile could not be loaded. It may not exist or the service may be temporarily unavailable.
-        </p>
-        <Link
-          href="/network"
-          className="px-6 py-2.5 rounded-lg font-semibold text-white transition-colors"
-          style={{ backgroundColor: brand.teal }}
-        >
-          Browse Network
-        </Link>
+    <div className="flex flex-col items-center justify-center py-24 px-4">
+      <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+        <Briefcase className="w-8 h-8 text-gray-400" />
       </div>
-    </MarketingLayout>
+      <h2 className="text-xl font-semibold text-gray-700 mb-2">Profile Not Found</h2>
+      <p className="text-gray-500 text-sm mb-6 text-center max-w-md">
+        This contractor profile could not be loaded. It may not exist or the service may be temporarily unavailable.
+      </p>
+      <Link
+        href="/network"
+        className="px-6 py-2.5 rounded-lg font-semibold text-white transition-colors"
+        style={{ backgroundColor: brand.teal }}
+      >
+        Browse Network
+      </Link>
+    </div>
   );
 }
 
@@ -190,13 +182,18 @@ function ProfilePageInner({ profile }: { profile: any }) {
   ];
 
   return (
-    <MarketingLayout
-      breadcrumbs={[
-        { label: 'Home', href: '/' },
-        { label: 'Network', href: '/network' },
-        { label: profile.businessName },
-      ]}
-    >
+    <>
+      {/* Breadcrumbs */}
+      <nav className="bg-gray-50 border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-3">
+        <div className="max-w-5xl mx-auto flex items-center gap-2 text-sm text-gray-500">
+          <Link href="/" className="hover:text-gray-700">Home</Link>
+          <ChevronRight className="w-3.5 h-3.5" />
+          <Link href="/network" className="hover:text-gray-700">Network</Link>
+          <ChevronRight className="w-3.5 h-3.5" />
+          <span className="text-gray-900 font-medium truncate">{profile.businessName}</span>
+        </div>
+      </nav>
+
       {/* Cover Photo & Profile Header */}
       <section className="relative">
         {/* Cover Photo */}
@@ -247,10 +244,12 @@ function ProfilePageInner({ profile }: { profile: any }) {
                     color="gray"
                     variant="subtle"
                   />
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4" />
-                    {profile.location.city}, {profile.location.state}
-                  </span>
+                  {(profile.location.city || profile.location.state) && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4" />
+                      {[profile.location.city, profile.location.state].filter(Boolean).join(', ')}
+                    </span>
+                  )}
                   <span className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
                     Member since {new Date(profile.memberSince).getFullYear()}
@@ -971,6 +970,6 @@ function ProfilePageInner({ profile }: { profile: any }) {
           </div>
         </div>
       )}
-    </MarketingLayout>
+    </>
   );
 }
