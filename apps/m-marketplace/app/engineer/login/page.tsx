@@ -56,7 +56,7 @@ function LoginForm() {
             </div>
             <button type="submit" disabled={loading} className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow-md disabled:opacity-50 transition-all">{loading ? 'Signing in...' : 'Sign In'}</button>
           </form>
-          <p className="mt-6 text-center text-sm text-gray-500">Don&apos;t have an account? <a href="/engineer/signup" className="text-teal-600 hover:text-teal-700 font-semibold">Sign up</a></p>
+          <p className="mt-6 text-center text-sm text-gray-500">Don&apos;t have an account? <a href="/signup" className="text-teal-600 hover:text-teal-700 font-semibold">Sign up</a></p>
         </div>
       </div>
     </div>

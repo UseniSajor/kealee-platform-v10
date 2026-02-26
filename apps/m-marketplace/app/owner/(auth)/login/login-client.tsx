@@ -152,7 +152,7 @@ export function LoginClient() {
 
           <p className="text-sm text-neutral-600 text-center">
             New to Kealee?{" "}
-            <Link className="text-primary hover:underline" href="/owner/signup">
+            <Link className="text-primary hover:underline" href="/signup">
               Create an account
             </Link>
           </p>

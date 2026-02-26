@@ -78,7 +78,7 @@ export default function VerifyEmailPage() {
 
         {/* CTA */}
         <Link
-          href="/ops/login"
+          href="/login"
           className="
             inline-flex items-center gap-2
             px-6 py-3

@@ -80,7 +80,7 @@ export default function ArchitectPortalPage() {
               <ShoppingCart className="h-5 w-5" />
             </button>
             <Link
-              href="/architect/login"
+              href="/login?redirect=/architect"
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
             >
               Sign In

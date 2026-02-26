@@ -15,7 +15,7 @@ export default function UnauthorizedPage() {
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link
-            href="/estimation/login"
+            href="/login"
             className="rounded-md bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
           >
             Sign in with a different account

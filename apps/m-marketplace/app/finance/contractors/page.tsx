@@ -64,7 +64,7 @@ export default function ContractorsPage() {
               <Link href="/finance" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
                 Home
               </Link>
-              <Link href="/finance/login" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
+              <Link href="/login?redirect=/finance/escrow" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
                 Sign In
               </Link>
               <Link

@@ -66,7 +66,7 @@ export default function ForgotPasswordPage() {
           </div>
 
           <Link
-            href="/architect/login"
+            href="/login"
             className="
               inline-flex items-center gap-2
               text-blue-600 hover:text-blue-700 font-medium
@@ -153,7 +153,7 @@ export default function ForgotPasswordPage() {
           {/* Back to Login */}
           <div className="mt-6 text-center">
             <Link
-              href="/architect/login"
+              href="/login"
               className="
                 inline-flex items-center gap-2
                 text-sm text-gray-600 hover:text-gray-900

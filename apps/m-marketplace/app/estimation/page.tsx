@@ -23,7 +23,7 @@ export default function EstimationHomePage() {
               <Link href="/estimation/services" className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">Services</Link>
               <Link href="/estimation/pricing" className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">Pricing</Link>
               <Link href="/estimation/how-it-works" className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">How It Works</Link>
-              <Link href="/estimation/login" className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">Sign In</Link>
+              <Link href="/login?redirect=/estimation/dashboard" className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">Sign In</Link>
               <Link href="/estimation/contact" className="inline-flex items-center px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-sm font-semibold transition-colors">
                 Get Started
               </Link>

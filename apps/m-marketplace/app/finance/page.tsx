@@ -273,7 +273,7 @@ export default function FinanceTrustLandingPage() {
             {/* Navigation Actions */}
             <div className="flex items-center gap-3">
               <Link
-                href="/finance/login"
+                href="/login?redirect=/finance/escrow"
                 className="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium transition-colors"
               >
                 Sign In
@@ -1061,7 +1061,7 @@ export default function FinanceTrustLandingPage() {
               <ul className="space-y-3 text-sm">
                 <li><Link href="/finance/project/start" className="hover:text-white transition-colors">Start Your Project</Link></li>
                 <li><Link href="/finance/contractors" className="hover:text-white transition-colors">For Contractors</Link></li>
-                <li><Link href="/finance/login" className="hover:text-white transition-colors">Sign In</Link></li>
+                <li><Link href="/login?redirect=/finance/escrow" className="hover:text-white transition-colors">Sign In</Link></li>
                 <li><Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link></li>
               </ul>
             </div>

@@ -160,7 +160,7 @@ function LoginForm() {
           {/* Sign Up Link */}
           <p className="mt-6 text-center text-sm text-gray-600">
             Don't have an account?{' '}
-            <a href="/architect/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
+            <a href="/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
               Sign up
             </a>
           </p>

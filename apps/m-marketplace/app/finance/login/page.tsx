@@ -313,7 +313,7 @@ export default function LoginPage() {
               <p className="text-slate-600">
                 Don&apos;t have an account?{' '}
                 <Link
-                  href="/finance/signup"
+                  href="/signup"
                   className="text-emerald-600 hover:text-emerald-700 font-semibold"
                 >
                   Create free account

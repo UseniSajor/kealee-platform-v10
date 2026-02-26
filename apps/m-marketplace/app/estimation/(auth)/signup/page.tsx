@@ -302,7 +302,7 @@ export default function SignupPage() {
           {/* Login Link */}
           <p className="mt-6 text-center text-sm text-gray-600">
             Already have an account?{' '}
-            <a href="/estimation/login" className="text-amber-600 hover:text-amber-700 font-semibold">
+            <a href="/login" className="text-amber-600 hover:text-amber-700 font-semibold">
               Sign in
             </a>
           </p>

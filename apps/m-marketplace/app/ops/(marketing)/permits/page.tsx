@@ -207,7 +207,7 @@ export default function PermitsPage() {
                 ))}
               </ul>
               <Link
-                href="/ops/signup"
+                href="/signup"
                 className={`mt-6 block text-center py-2.5 rounded-lg font-bold transition ${
                   service.popular
                     ? 'bg-amber-500 text-white hover:bg-amber-600'

@@ -358,7 +358,7 @@ export default function OpsServicesHomePage() {
 
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Link
-              href="/ops/signup"
+              href="/signup"
               className="inline-flex items-center justify-center rounded-2xl bg-white px-8 py-4 text-base font-black text-zinc-900 shadow-lg transition hover:bg-zinc-50"
             >
               Start Free Trial

@@ -125,8 +125,8 @@ export default function EngineerHomePage() {
               <Link href="/engineer/services" className="text-zinc-600 hover:text-zinc-900">Services</Link>
               <Link href="/engineer/pricing" className="text-zinc-600 hover:text-zinc-900">Pricing</Link>
               <Link href="/engineer/projects" className="text-zinc-600 hover:text-zinc-900">My Projects</Link>
-              <Link href="/engineer/login" className="text-zinc-600 hover:text-zinc-900">Login</Link>
-              <Link href="/engineer/signup" className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700">
+              <Link href="/login?redirect=/engineer/projects" className="text-zinc-600 hover:text-zinc-900">Login</Link>
+              <Link href="/signup?redirect=/engineer/projects" className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700">
                 Get Started
               </Link>
             </nav>
