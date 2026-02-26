@@ -31,7 +31,7 @@ function getQueue(): Queue {
     enableReadyCheck: false,
   })
   return new Queue('report-generator', {
-    connection,
+    connection: connection as any,
     defaultJobOptions: {
       attempts: 3,
       backoff: { type: 'exponential', delay: 1000 },

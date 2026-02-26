@@ -120,7 +120,7 @@ export const productService = {
       where: { id: { in: productIds } },
     })
 
-    const productMap = new Map(products.map((p: any) => [p.id, p]))
+    const productMap = new Map<string, any>(products.map((p: any) => [p.id, p]))
 
     const projectItems = items.map((item) => {
       const product = productMap.get(item.productId)

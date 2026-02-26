@@ -55,7 +55,7 @@ const APP_NAMES: Record<string, string> = {
   'APP-15': 'Dashboard Monitor',
 }
 
-function getRedisConnection(): Redis {
+function getRedisConnection() {
   return new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
@@ -64,7 +64,7 @@ function getRedisConnection(): Redis {
 
 function getQueue(queueName: string): Queue {
   return new Queue(queueName, {
-    connection: getRedisConnection(),
+    connection: getRedisConnection() as any,
     defaultJobOptions: {
       attempts: 3,
       backoff: { type: 'exponential', delay: 1000 },
@@ -234,7 +234,7 @@ class DashboardService {
     // Compute summary stats
     let totalJobsToday = 0
     let totalSuccess = 0
-    let totalDurations: number[] = []
+    const totalDurations: number[] = []
     let activeWorkers = 0
 
     for (const [, data] of todayByApp) {
