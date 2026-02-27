@@ -218,7 +218,7 @@ export function Header() {
               Login
             </Link>
             <Link
-              href="/signup"
+              href="/get-started"
               className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition font-semibold text-sm"
             >
               Get Started
@@ -307,7 +307,7 @@ export function Header() {
                 Login
               </Link>
               <Link
-                href="/signup"
+                href="/get-started"
                 className="block bg-blue-600 text-white px-6 py-2.5 rounded-lg text-center hover:bg-blue-700 font-semibold"
                 onClick={() => setMobileMenuOpen(false)}
               >

@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  transpilePackages: ['@kealee/ui', '@kealee/auth'],
+  transpilePackages: ['@kealee/ui', '@kealee/auth', '@kealee/funnel-session'],
   typescript: {
     ignoreBuildErrors: true,
   },

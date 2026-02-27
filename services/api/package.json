@@ -34,6 +34,7 @@
     "@kealee/analytics": "workspace:*",
     "@kealee/audit": "workspace:*",
     "@kealee/database": "workspace:*",
+    "@kealee/page-builder": "workspace:*",
     "@kealee/estimating": "workspace:*",
     "@kealee/observability": "workspace:*",
     "@kealee/realtime": "workspace:*",

@@ -12560,3 +12560,105 @@ model ReportTemplate {
 
   @@map("report_templates")
 }
+
+// =============================================================================
+// DYNAMIC PAGE GENERATION — Marketing Funnel & AI-Generated Pages
+// =============================================================================
+
+enum FunnelUserType {
+  HOMEOWNER
+  CONTRACTOR
+  ARCHITECT
+  INVESTOR
+  PROPERTY_MANAGER
+}
+
+enum FunnelProjectType {
+  KITCHEN_REMODEL
+  BATHROOM_REMODEL
+  WHOLE_HOME
+  ADDITION
+  NEW_CONSTRUCTION
+  EXTERIOR
+  LANDSCAPING
+  COMMERCIAL
+}
+
+enum BudgetRange {
+  UNDER_25K
+  RANGE_25K_50K
+  RANGE_50K_100K
+  RANGE_100K_250K
+  OVER_250K
+}
+
+enum FunnelTimeline {
+  ASAP
+  ONE_TO_THREE_MONTHS
+  THREE_TO_SIX_MONTHS
+  SIX_TO_TWELVE_MONTHS
+  JUST_EXPLORING
+}
+
+enum FunnelSessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  GENERATING
+  GENERATED
+  FAILED
+}
+
+model FunnelSession {
+  id            String              @id @default(uuid())
+  userType      FunnelUserType?
+  projectType   FunnelProjectType?
+  city          String?
+  state         String?
+  budget        BudgetRange?
+  timeline      FunnelTimeline?
+  currentStep   Int                 @default(0)
+  status        FunnelSessionStatus @default(IN_PROGRESS)
+
+  // UTM tracking
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+
+  // Visitor info
+  ipAddress String?
+  userAgent String?
+
+  // AI-generated page data (durable fallback for Redis cache)
+  generatedPageData Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("funnel_sessions")
+}
+
+model CaseStudy {
+  id             String            @id @default(uuid())
+  title          String
+  description    String
+  projectType    FunnelProjectType
+  city           String
+  state          String
+  budget         Decimal           @db.Decimal(12, 2)
+  durationWeeks  Int
+  beforeImageUrl String?
+  afterImageUrl  String?
+  highlights     String[]
+  isPublished    Boolean           @default(true)
+  isFeatured     Boolean           @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectType])
+  @@index([city, state])
+  @@index([isPublished])
+  @@map("case_studies")
+}

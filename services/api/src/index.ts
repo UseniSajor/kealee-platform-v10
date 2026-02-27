@@ -890,6 +890,15 @@ const start = async () => {
     })
 
     // ══════════════════════════════════════════════════════════════
+    // Dynamic Page Generation — Marketing Funnel
+    // ══════════════════════════════════════════════════════════════
+
+    await safeRegisterBlock('Dynamic Page Generation - Funnel routes', async () => {
+      const { funnelRoutes } = await import('./modules/funnel/funnel.routes')
+      await fastify.register(funnelRoutes, { prefix: '/funnel' })
+    })
+
+    // ══════════════════════════════════════════════════════════════
 
     // GraphQL DISABLED FOR MVP - Uncomment when needed
     /*
