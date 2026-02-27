@@ -1,28 +1,32 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Mock Prisma
-const mockPrisma = {
-  funnelSession: {
-    create: vi.fn(),
-    update: vi.fn(),
-    findUnique: vi.fn(),
+// Use vi.hoisted so mocks are available when vi.mock factory runs
+const { mockPrisma, mockBuildPage, mockGetProgress, mockGetCachedPage } = vi.hoisted(() => ({
+  mockPrisma: {
+    funnelSession: {
+      create: vi.fn(),
+      update: vi.fn(),
+      findUnique: vi.fn(),
+    },
   },
-}
-
-vi.mock('../../utils/prisma-helper', () => ({
-  prisma: mockPrisma,
-}))
-
-// Mock page-builder
-vi.mock('@kealee/page-builder', () => ({
-  buildPage: vi.fn().mockResolvedValue({
+  mockBuildPage: vi.fn().mockResolvedValue({
     sessionId: 'test-session-id',
     sections: [],
     layout: ['hero'],
     generatedAt: new Date().toISOString(),
   }),
-  getProgress: vi.fn().mockResolvedValue(50),
-  getCachedPage: vi.fn().mockResolvedValue(null),
+  mockGetProgress: vi.fn().mockResolvedValue(50),
+  mockGetCachedPage: vi.fn().mockResolvedValue(null),
+}))
+
+vi.mock('../../utils/prisma-helper', () => ({
+  prisma: mockPrisma,
+}))
+
+vi.mock('@kealee/page-builder', () => ({
+  buildPage: mockBuildPage,
+  getProgress: mockGetProgress,
+  getCachedPage: mockGetCachedPage,
 }))
 
 import { FunnelService } from '../../modules/funnel/funnel.service'

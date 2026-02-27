@@ -10,8 +10,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    setupFiles: ['./src/__tests__/setup.ts'],
-    include: ['**/__tests__/**/*.test.ts'],
+    include: ['**/__tests__/**/*.test.ts', 'src/tests/**/*.test.ts'],
     exclude: ['node_modules', 'dist', 'disabled-features'],
     coverage: {
       provider: 'v8',
@@ -38,6 +37,7 @@ export default defineConfig({
     alias: {
       '@kealee/database': path.resolve(__dirname, '../../packages/database/src'),
       '@kealee/workflow-engine': path.resolve(__dirname, '../../packages/workflow-engine/src'),
+      '@kealee/page-builder': path.resolve(__dirname, '../../packages/page-builder/src'),
     },
   },
 });
