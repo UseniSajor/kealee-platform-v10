@@ -336,37 +336,7 @@ const start = async () => {
     // AFTER: const fastify = Fastify({ ... })
     // BEFORE: registering routes
 
-    fastify.register(async function apiScope(api) {
-      // All these become /api/<prefix>/<route>
-      await api.register(stripeConnectRoutes, { prefix: '/connect' })
-      await api.register(projectRoutes, { prefix: '/projects' })
-      await api.register(propertyRoutes, { prefix: '/properties' })
-      await api.register(readinessRoutes, { prefix: '/readiness' })
-
-      await api.register(contractTemplateRoutes, { prefix: '/contracts' })
-      await api.register(contractRoutes, { prefix: '/contracts' })
-      await api.register(contractDashboardRoutes, { prefix: '/contracts' })
-      await api.register(contractComplianceRoutes, { prefix: '/contracts' })
-      await api.register(contractSecurityRoutes, { prefix: '/contracts' })
-
-      await api.register(milestoneRoutes, { prefix: '/milestones' })
-      await api.register(milestoneUploadRoutes, { prefix: '/milestones' })
-      await api.register(milestoneReviewRoutes, { prefix: '/milestones' })
-
-      await api.register(marketplaceRoutes, { prefix: '/marketplace' })
-      await api.register(leadsRoutes, { prefix: '/marketplace' })
-      await api.register(quotesRoutes, { prefix: '/marketplace' })
-      await api.register(designRoutes, { prefix: '/marketplace' })
-
-      await api.register(paymentRoutes, { prefix: '/payments' })
-
-      // Backend Consolidation v10 — Spatial, Financing, Product modules
-      await api.register(spatialRoutes, { prefix: '/spatial' })
-      await api.register(financingRoutes, { prefix: '/financing' })
-      await api.register(lenderRoutes, { prefix: '/lenders' })
-      await api.register(productRoutes, { prefix: '/products' })
-      await api.register(projectItemRoutes, { prefix: '/projects' })
-    }, { prefix: '/api' })
+    // Legacy /api prefix block removed — all routes consolidated into safeRegisterBlocks below
 
 
     // Register plugins
@@ -541,7 +511,14 @@ const start = async () => {
       await fastify.register(milestoneReviewRoutes, { prefix: '/milestones' })
       await fastify.register(marketplaceRoutes, { prefix: '/marketplace' })
       await fastify.register(leadsRoutes, { prefix: '/marketplace' })
+      await fastify.register(quotesRoutes, { prefix: '/marketplace' })
+      await fastify.register(designRoutes, { prefix: '/marketplace' })
       await fastify.register(paymentRoutes, { prefix: '/payments' })
+      await fastify.register(spatialRoutes, { prefix: '/spatial' })
+      await fastify.register(financingRoutes, { prefix: '/financing' })
+      await fastify.register(lenderRoutes, { prefix: '/lenders' })
+      await fastify.register(productRoutes, { prefix: '/products' })
+      await fastify.register(projectItemRoutes, { prefix: '/projects' })
       // Temporarily disabled - needs service method fixes
       // await fastify.register(disputeRoutes, { prefix: '/disputes' })
       await fastify.register(permitComplianceRoutes, { prefix: '/permits' })

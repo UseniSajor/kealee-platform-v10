@@ -1,14 +1,16 @@
 name: Deploy to Production
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types: [completed]
+    branches: [main]
 
 jobs:
   deploy-api:
     name: Deploy API to Railway
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -50,6 +52,7 @@ jobs:
   deploy-vercel:
     name: Deploy Apps to Vercel
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     strategy:
       matrix:
         app:
@@ -107,7 +110,3 @@ jobs:
           working-directory: apps/${{ matrix.app.name }}
           vercel-args: '--prod --yes'
           scope: ${{ secrets.VERCEL_ORG_ID }}
-
-
-
-

@@ -50,6 +50,11 @@ export async function funnelRoutes(fastify: FastifyInstance) {
   // ─── PATCH /sessions/:sessionId ────────────────────────────────
   fastify.patch(
     '/sessions/:sessionId',
+    {
+      config: {
+        rateLimit: { max: 30, timeWindow: '1 minute' },
+      },
+    },
     async (request, reply) => {
       try {
         const { sessionId } = sessionIdParam.parse(request.params)
@@ -70,6 +75,11 @@ export async function funnelRoutes(fastify: FastifyInstance) {
   // ─── GET /sessions/:sessionId ──────────────────────────────────
   fastify.get(
     '/sessions/:sessionId',
+    {
+      config: {
+        rateLimit: { max: 30, timeWindow: '1 minute' },
+      },
+    },
     async (request, reply) => {
       try {
         const { sessionId } = sessionIdParam.parse(request.params)
@@ -118,6 +128,11 @@ export async function funnelRoutes(fastify: FastifyInstance) {
   // ─── GET /sessions/:sessionId/progress ─────────────────────────
   fastify.get(
     '/sessions/:sessionId/progress',
+    {
+      config: {
+        rateLimit: { max: 60, timeWindow: '1 minute' },
+      },
+    },
     async (request, reply) => {
       try {
         const { sessionId } = sessionIdParam.parse(request.params)
@@ -132,6 +147,11 @@ export async function funnelRoutes(fastify: FastifyInstance) {
   // ─── GET /sessions/:sessionId/page ─────────────────────────────
   fastify.get(
     '/sessions/:sessionId/page',
+    {
+      config: {
+        rateLimit: { max: 30, timeWindow: '1 minute' },
+      },
+    },
     async (request, reply) => {
       try {
         const { sessionId } = sessionIdParam.parse(request.params)

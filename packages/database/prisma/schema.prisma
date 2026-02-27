@@ -12662,3 +12662,22 @@ model CaseStudy {
   @@index([isPublished])
   @@map("case_studies")
 }
+
+// ── S3/R2 File Upload Tracking ─────────────────────────────────
+model File {
+  id         String   @id @default(uuid())
+  key        String   @unique
+  fileName   String
+  mimeType   String
+  size       Int      @default(0)
+  status     String   @default("UPLOADING") // UPLOADING, COMPLETED
+  uploadedBy String
+  metadata   Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([uploadedBy])
+  @@index([status])
+  @@map("files")
+}
