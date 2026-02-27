@@ -1049,106 +1049,6 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  apps/os-pm:
-    dependencies:
-      '@kealee/api-client':
-        specifier: workspace:*
-        version: link:../../packages/api-client
-      '@kealee/auth':
-        specifier: workspace:*
-        version: link:../../packages/auth
-      '@kealee/database':
-        specifier: workspace:*
-        version: link:../../packages/database
-      '@kealee/types':
-        specifier: workspace:*
-        version: link:../../packages/types
-      '@kealee/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
-      '@radix-ui/react-label':
-        specifier: ^2.1.8
-        version: 2.1.8(@types/react-dom@18.3.7)(@types/react@18.3.27)(react-dom@18.2.0)(react@18.2.0)
-      '@radix-ui/react-slot':
-        specifier: ^1.2.4
-        version: 1.2.4(@types/react@18.3.27)(react@18.2.0)
-      '@supabase/auth-helpers-nextjs':
-        specifier: ^0.8.7
-        version: 0.8.7(@supabase/supabase-js@2.93.2)
-      '@supabase/ssr':
-        specifier: ^0.5.2
-        version: 0.5.2(@supabase/supabase-js@2.93.2)
-      '@supabase/supabase-js':
-        specifier: ^2.39.0
-        version: 2.93.2
-      '@tanstack/react-query':
-        specifier: ^5.90.17
-        version: 5.90.20(react@18.2.0)
-      axios:
-        specifier: ^1.13.2
-        version: 1.13.4
-      class-variance-authority:
-        specifier: ^0.7.1
-        version: 0.7.1
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
-      date-fns:
-        specifier: ^4.1.0
-        version: 4.1.0
-      lucide-react:
-        specifier: ^0.562.0
-        version: 0.562.0(react@18.2.0)
-      next:
-        specifier: 14.2.35
-        version: 14.2.35(@babel/core@7.28.6)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.0)(react-dom@18.2.0)(react@18.2.0)
-      react:
-        specifier: 18.2.0
-        version: 18.2.0
-      react-dom:
-        specifier: 18.2.0
-        version: 18.2.0(react@18.2.0)
-      sonner:
-        specifier: ^1.4.0
-        version: 1.7.4(react-dom@18.2.0)(react@18.2.0)
-      tailwind-merge:
-        specifier: ^3.4.0
-        version: 3.4.0
-      tw-animate-css:
-        specifier: ^1.4.0
-        version: 1.4.0
-      zod:
-        specifier: ^4.3.5
-        version: 4.3.6
-    devDependencies:
-      '@types/node':
-        specifier: ^20
-        version: 20.19.30
-      '@types/react':
-        specifier: ^18
-        version: 18.3.27
-      '@types/react-dom':
-        specifier: ^18
-        version: 18.3.7(@types/react@18.3.27)
-      autoprefixer:
-        specifier: ^10.4.16
-        version: 10.4.23(postcss@8.5.6)
-      eslint:
-        specifier: ^8
-        version: 8.57.1
-      eslint-config-next:
-        specifier: 14.2.35
-        version: 14.2.35(eslint@8.57.1)(typescript@5.9.3)
-      postcss:
-        specifier: ^8.4.32
-        version: 8.5.6
-      tailwindcss:
-        specifier: ^3.4.0
-        version: 3.4.19
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
   packages/ai:
     dependencies:
       '@anthropic-ai/sdk':
@@ -24002,6 +23902,7 @@ packages:
 
   /tw-animate-css@1.4.0:
     resolution: {integrity: sha512-7bziOlRqH0hJx80h/3mbicLW7o8qLsH5+RaLR2t+OHM3D0JlWGODQKQ4cxbK7WlvmUxpcj6Kgu6EKqjrGFe3QQ==}
+    dev: true
 
   /twilio@5.12.0:
     resolution: {integrity: sha512-ZAKnDKcWvJSb90xQS13QB5KQOeMJPzsRPHxZqju8i5ALg3D4hNwAF9bpytVTxTJV99BL4Rn6Un+ZtXjGeMpjvQ==}
