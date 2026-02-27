@@ -4900,10 +4900,12 @@ model Report {
   generatedAt DateTime?
   content     Json?
   narrative   String?   @db.Text
+  templateId  String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  project  Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  template ReportTemplate? @relation(fields: [templateId], references: [id])
 
   @@index([projectId])
   @@index([type])
@@ -12538,4 +12540,23 @@ model ProjectItem {
 
   @@index([projectId])
   @@index([productId])
+}
+
+// =============================================================================
+// REPORT TEMPLATES — Used by Claw F (Docs & Communication)
+// =============================================================================
+
+model ReportTemplate {
+  id        String   @id @default(uuid())
+  name      String
+  type      String   // DAILY, WEEKLY, MONTHLY, MILESTONE, CUSTOM, etc.
+  sections  Json     // Array of section definitions
+  styling   Json?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reports Report[]
+
+  @@map("report_templates")
 }
