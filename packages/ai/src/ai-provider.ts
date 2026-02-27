@@ -1,5 +1,4 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { Message } from '@anthropic-ai/sdk/resources/messages';
 import OpenAI from 'openai';
 
 /**
@@ -111,9 +110,9 @@ export class AIProvider {
   /**
    * Extract text content from Claude API response.
    */
-  private parseClaudeResponse(response: Message): string {
+  private parseClaudeResponse(response: { content: Array<{ type: string; text?: string }> }): string {
     for (const block of response.content) {
-      if (block.type === 'text') return block.text;
+      if (block.type === 'text') return block.text ?? '';
     }
     return '';
   }
