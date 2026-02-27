@@ -50,36 +50,20 @@ jobs:
           service: api
 
   deploy-vercel:
-    name: Deploy Apps to Vercel
+    name: Deploy Apps to Vercel - ${{ matrix.app }}
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     strategy:
       matrix:
         app:
-          - name: m-marketplace
-            filter: '@kealee/m-marketplace'
-            project_id: ${{ secrets.VERCEL_PROJECT_ID_MARKETPLACE }}
-          - name: m-project-owner
-            filter: m-project-owner
-            project_id: ${{ secrets.VERCEL_PROJECT_ID_PROJECT_OWNER }}
-          - name: m-permits-inspections
-            filter: m-permits-inspections
-            project_id: ${{ secrets.VERCEL_PROJECT_ID_PERMITS }}
-          - name: m-ops-services
-            filter: m-ops-services
-            project_id: ${{ secrets.VERCEL_PROJECT_ID_OPS_SERVICES }}
-          - name: m-architect
-            filter: m-architect
-            project_id: ${{ secrets.VERCEL_PROJECT_ID_ARCHITECT }}
-          - name: os-pm
-            filter: os-pm
-            project_id: ${{ secrets.VERCEL_PROJECT_ID_OS_PM }}
-          - name: os-admin
-            filter: os-admin
-            project_id: ${{ secrets.VERCEL_PROJECT_ID_OS_ADMIN }}
-          - name: m-estimation
-            filter: m-estimation
-            project_id: ${{ secrets.VERCEL_PROJECT_ID_ESTIMATION }}
+          - m-marketplace
+          - m-project-owner
+          - m-permits-inspections
+          - m-ops-services
+          - m-architect
+          - os-pm
+          - os-admin
+          - m-estimation
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -95,18 +79,30 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
+      - name: Resolve Vercel project ID
+        id: project
+        run: |
+          case "${{ matrix.app }}" in
+            m-marketplace)          PROJECT_ID="${{ secrets.VERCEL_PROJECT_ID_MARKETPLACE }}" ;;
+            m-project-owner)        PROJECT_ID="${{ secrets.VERCEL_PROJECT_ID_PROJECT_OWNER }}" ;;
+            m-permits-inspections)  PROJECT_ID="${{ secrets.VERCEL_PROJECT_ID_PERMITS }}" ;;
+            m-ops-services)         PROJECT_ID="${{ secrets.VERCEL_PROJECT_ID_OPS_SERVICES }}" ;;
+            m-architect)            PROJECT_ID="${{ secrets.VERCEL_PROJECT_ID_ARCHITECT }}" ;;
+            os-pm)                  PROJECT_ID="${{ secrets.VERCEL_PROJECT_ID_OS_PM }}" ;;
+            os-admin)               PROJECT_ID="${{ secrets.VERCEL_PROJECT_ID_OS_ADMIN }}" ;;
+            m-estimation)           PROJECT_ID="${{ secrets.VERCEL_PROJECT_ID_ESTIMATION }}" ;;
+          esac
+          echo "id=$PROJECT_ID" >> $GITHUB_OUTPUT
+
       - name: Install dependencies
         run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --no-frozen-lockfile
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ matrix.app.project_id }}
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ matrix.app.project_id }}
-          working-directory: apps/${{ matrix.app.name }}
+          vercel-project-id: ${{ steps.project.outputs.id }}
+          working-directory: apps/${{ matrix.app }}
           vercel-args: '--prod --yes'
           scope: ${{ secrets.VERCEL_ORG_ID }}
