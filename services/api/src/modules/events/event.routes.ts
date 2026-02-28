@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { eventService } from './event.service'
 import { authenticateUser } from '../auth/auth.middleware'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function eventRoutes(fastify: FastifyInstance) {
   // POST /events - Record an event
@@ -37,7 +38,7 @@ export async function eventRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to record event',
+          error: sanitizeErrorMessage(error, 'Failed to record event'),
         })
       }
     }
@@ -84,7 +85,7 @@ export async function eventRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error)
       return reply.code(500).send({
-        error: error.message || 'Failed to get events',
+        error: sanitizeErrorMessage(error, 'Failed to get events'),
       })
     }
   })
@@ -99,7 +100,7 @@ export async function eventRoutes(fastify: FastifyInstance) {
       fastify.log.error(error)
       const statusCode = error.message === 'Event not found' ? 404 : 500
       return reply.code(statusCode).send({
-        error: error.message || 'Failed to get event',
+        error: sanitizeErrorMessage(error, 'Failed to get event'),
       })
     }
   })
@@ -123,7 +124,7 @@ export async function eventRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error)
       return reply.code(500).send({
-        error: error.message || 'Failed to get entity events',
+        error: sanitizeErrorMessage(error, 'Failed to get entity events'),
       })
     }
   })
@@ -143,7 +144,7 @@ export async function eventRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error)
       return reply.code(500).send({
-        error: error.message || 'Failed to get user events',
+        error: sanitizeErrorMessage(error, 'Failed to get user events'),
       })
     }
   })
@@ -163,7 +164,7 @@ export async function eventRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error)
       return reply.code(500).send({
-        error: error.message || 'Failed to get org events',
+        error: sanitizeErrorMessage(error, 'Failed to get org events'),
       })
     }
   })
@@ -183,7 +184,7 @@ export async function eventRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error)
       return reply.code(500).send({
-        error: error.message || 'Failed to get events by type',
+        error: sanitizeErrorMessage(error, 'Failed to get events by type'),
       })
     }
   })
@@ -201,7 +202,7 @@ export async function eventRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error)
       return reply.code(500).send({
-        error: error.message || 'Failed to get recent events',
+        error: sanitizeErrorMessage(error, 'Failed to get recent events'),
       })
     }
   })
@@ -228,7 +229,7 @@ export async function eventRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get event stats',
+          error: sanitizeErrorMessage(error, 'Failed to get event stats'),
         })
       }
     }

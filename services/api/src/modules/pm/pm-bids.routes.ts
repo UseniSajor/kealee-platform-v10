@@ -30,7 +30,7 @@ export async function pmBidRoutes(fastify: FastifyInstance) {
         return reply.send(result)
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -49,7 +49,7 @@ export async function pmBidRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.message?.includes('not found') ? 404 : 400
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -78,7 +78,7 @@ export async function pmBidRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ bid })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -109,7 +109,7 @@ export async function pmBidRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.message?.includes('not found') ? 404 : 400
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -128,7 +128,7 @@ export async function pmBidRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.message?.includes('not found') ? 404 : 400
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -147,7 +147,7 @@ export async function pmBidRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.message?.includes('not found') ? 404 : 400
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -173,7 +173,7 @@ export async function pmBidRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.message?.includes('not found') ? 404 : 400
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )

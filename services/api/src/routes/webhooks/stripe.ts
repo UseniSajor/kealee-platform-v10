@@ -8,6 +8,7 @@
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import Stripe from 'stripe';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error';
 import { PrismaClient } from '@kealee/database';
 import { getStripe } from '../../modules/billing/stripe.client';
 
@@ -45,7 +46,7 @@ export default async function stripeWebhookRoutes(fastify: FastifyInstance) {
       );
     } catch (err: any) {
       fastify.log.error(`Webhook signature verification failed: ${err.message}`);
-      return reply.status(400).send({ error: `Webhook Error: ${err.message}` });
+      return reply.status(400).send({ error: 'Webhook signature verification failed' });
     }
 
     fastify.log.info(`Stripe webhook received: ${event.type} (${event.id})`);

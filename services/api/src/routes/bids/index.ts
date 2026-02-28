@@ -15,6 +15,7 @@ import {
   type AuthenticatedRequest,
 } from '../../middleware/auth.middleware'
 import { validateParams } from '../../middleware/validation.middleware'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod schemas
@@ -129,7 +130,7 @@ export async function bidRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get evaluations' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get evaluations') })
       }
     },
   )
@@ -202,7 +203,7 @@ export async function bidRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to accept bid' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to accept bid') })
       }
     },
   )

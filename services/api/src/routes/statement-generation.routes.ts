@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser, requireRole, type AuthenticatedRequest } from '../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../middleware/validation.middleware'
 import { StatementGenerationService } from '../modules/reporting/statement-generation.service'
+import { sanitizeErrorMessage } from '../utils/sanitize-error'
 
 const statementService = new StatementGenerationService()
 
@@ -103,7 +104,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to generate statement',
+          error: sanitizeErrorMessage(error, 'Failed to generate statement'),
         })
       }
     }
@@ -153,7 +154,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to list statements',
+          error: sanitizeErrorMessage(error, 'Failed to list statements'),
         })
       }
     }
@@ -189,7 +190,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get statement',
+          error: sanitizeErrorMessage(error, 'Failed to get statement'),
         })
       }
     }
@@ -235,7 +236,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to download statement',
+          error: sanitizeErrorMessage(error, 'Failed to download statement'),
         })
       }
     }
@@ -275,7 +276,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to send statement',
+          error: sanitizeErrorMessage(error, 'Failed to send statement'),
         })
       }
     }
@@ -309,7 +310,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
   //       request.log.error(error)
   //       return reply.code(error.statusCode || 500).send({
   //         success: false,
-  //         error: error.message || 'Failed to create statement schedule',
+  //         error: sanitizeErrorMessage(error, 'Failed to create statement schedule'),
   //       })
   //     }
   //   }
@@ -352,7 +353,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
   //       request.log.error(error)
   //       return reply.code(error.statusCode || 500).send({
   //         success: false,
-  //         error: error.message || 'Failed to get statement schedules',
+  //         error: sanitizeErrorMessage(error, 'Failed to get statement schedules'),
   //       })
   //     }
   //   }
@@ -388,7 +389,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to verify statement',
+          error: sanitizeErrorMessage(error, 'Failed to verify statement'),
         })
       }
     }

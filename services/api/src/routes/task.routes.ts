@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { authenticateUser, requirePM } from '../middleware/auth.middleware';
 import { validateBody, validateQuery, validateParams } from '../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
+import { sanitizeErrorMessage } from '../utils/sanitize-error'
 
 const createTaskSchema = z.object({
   title: z.string().min(1).max(200),
@@ -133,7 +134,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to fetch tasks',
+          error: sanitizeErrorMessage(error, 'Failed to fetch tasks'),
         });
       }
     }
@@ -174,7 +175,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to fetch task',
+          error: sanitizeErrorMessage(error, 'Failed to fetch task'),
         });
       }
     }
@@ -206,7 +207,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to create task',
+          error: sanitizeErrorMessage(error, 'Failed to create task'),
         });
       }
     }
@@ -261,7 +262,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to update task',
+          error: sanitizeErrorMessage(error, 'Failed to update task'),
         });
       }
     }
@@ -297,7 +298,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to delete task',
+          error: sanitizeErrorMessage(error, 'Failed to delete task'),
         });
       }
     }
@@ -347,7 +348,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to add comment',
+          error: sanitizeErrorMessage(error, 'Failed to add comment'),
         });
       }
     }

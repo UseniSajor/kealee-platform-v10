@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { reviewService } from './review.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createReviewRequestSchema = z.object({
   title: z.string().min(1),
@@ -70,7 +71,7 @@ export async function reviewRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create review request',
+          error: sanitizeErrorMessage(error, 'Failed to create review request'),
         })
       }
     }
@@ -97,7 +98,7 @@ export async function reviewRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list review requests',
+          error: sanitizeErrorMessage(error, 'Failed to list review requests'),
         })
       }
     }
@@ -120,7 +121,7 @@ export async function reviewRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Review request not found',
+          error: sanitizeErrorMessage(error, 'Review request not found'),
         })
       }
     }
@@ -144,7 +145,7 @@ export async function reviewRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to submit review request',
+          error: sanitizeErrorMessage(error, 'Failed to submit review request'),
         })
       }
     }
@@ -168,7 +169,7 @@ export async function reviewRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to start review',
+          error: sanitizeErrorMessage(error, 'Failed to start review'),
         })
       }
     }
@@ -197,7 +198,7 @@ export async function reviewRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to complete review',
+          error: sanitizeErrorMessage(error, 'Failed to complete review'),
         })
       }
     }
@@ -226,7 +227,7 @@ export async function reviewRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to approve review',
+          error: sanitizeErrorMessage(error, 'Failed to approve review'),
         })
       }
     }
@@ -256,7 +257,7 @@ export async function reviewRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create comment',
+          error: sanitizeErrorMessage(error, 'Failed to create comment'),
         })
       }
     }
@@ -285,7 +286,7 @@ export async function reviewRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update comment status',
+          error: sanitizeErrorMessage(error, 'Failed to update comment status'),
         })
       }
     }
@@ -308,7 +309,7 @@ export async function reviewRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get overdue reviews',
+          error: sanitizeErrorMessage(error, 'Failed to get overdue reviews'),
         })
       }
     }
@@ -333,7 +334,7 @@ export async function reviewRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get reviews due soon',
+          error: sanitizeErrorMessage(error, 'Failed to get reviews due soon'),
         })
       }
     }
@@ -356,7 +357,7 @@ export async function reviewRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get review summary',
+          error: sanitizeErrorMessage(error, 'Failed to get review summary'),
         })
       }
     }
@@ -385,7 +386,7 @@ export async function reviewRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to send reminder',
+          error: sanitizeErrorMessage(error, 'Failed to send reminder'),
         })
       }
     }

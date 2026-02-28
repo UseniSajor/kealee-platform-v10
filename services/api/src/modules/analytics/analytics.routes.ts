@@ -7,6 +7,7 @@ import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { validateBody, validateQuery } from '../../middleware/validation.middleware'
 import { prismaAny } from '../../utils/prisma-helper'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ============================================================================
 // ZOD SCHEMAS (used ONLY by validateBody/validateQuery)
@@ -83,7 +84,7 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to record performance metrics',
+          error: sanitizeErrorMessage(error, 'Failed to record performance metrics'),
         })
       }
     }
@@ -128,7 +129,7 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to record event',
+          error: sanitizeErrorMessage(error, 'Failed to record event'),
         })
       }
     }
@@ -204,7 +205,7 @@ export async function analyticsRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to get metrics',
+          error: sanitizeErrorMessage(error, 'Failed to get metrics'),
         })
       }
     }

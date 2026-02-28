@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { authenticateUser, AuthenticatedRequest } from '../../middleware/auth.middleware';
 import { validateBody, validateQuery, validateParams } from '../../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const p = prisma as any;
 
@@ -148,7 +149,7 @@ export async function analyticsSnapshotRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list analytics snapshots',
+          error: sanitizeErrorMessage(error, 'Failed to list analytics snapshots'),
         });
       }
     }
@@ -181,7 +182,7 @@ export async function analyticsSnapshotRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to get snapshot',
+          error: sanitizeErrorMessage(error, 'Failed to get snapshot'),
         });
       }
     }
@@ -215,7 +216,7 @@ export async function analyticsSnapshotRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to create snapshot',
+          error: sanitizeErrorMessage(error, 'Failed to create snapshot'),
         });
       }
     }
@@ -252,7 +253,7 @@ export async function analyticsSnapshotRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list KPIs',
+          error: sanitizeErrorMessage(error, 'Failed to list KPIs'),
         });
       }
     }
@@ -302,7 +303,7 @@ export async function analyticsSnapshotRoutes(fastify: FastifyInstance) {
         }
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to create KPI',
+          error: sanitizeErrorMessage(error, 'Failed to create KPI'),
         });
       }
     }
@@ -360,7 +361,7 @@ export async function analyticsSnapshotRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to update KPI',
+          error: sanitizeErrorMessage(error, 'Failed to update KPI'),
         });
       }
     }
@@ -415,7 +416,7 @@ export async function analyticsSnapshotRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list custom reports',
+          error: sanitizeErrorMessage(error, 'Failed to list custom reports'),
         });
       }
     }
@@ -457,7 +458,7 @@ export async function analyticsSnapshotRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to create custom report',
+          error: sanitizeErrorMessage(error, 'Failed to create custom report'),
         });
       }
     }
@@ -503,7 +504,7 @@ export async function analyticsSnapshotRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to get custom report',
+          error: sanitizeErrorMessage(error, 'Failed to get custom report'),
         });
       }
     }
@@ -547,7 +548,7 @@ export async function analyticsSnapshotRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to delete custom report',
+          error: sanitizeErrorMessage(error, 'Failed to delete custom report'),
         });
       }
     }

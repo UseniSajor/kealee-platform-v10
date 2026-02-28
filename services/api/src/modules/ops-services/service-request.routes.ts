@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { serviceRequestService } from './service-request.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createServiceRequestSchema = z.object({
   orgId: z.string().uuid(),
@@ -56,7 +57,7 @@ export async function serviceRequestRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create service request',
+          error: sanitizeErrorMessage(error, 'Failed to create service request'),
         })
       }
     }
@@ -80,7 +81,7 @@ export async function serviceRequestRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Service request not found',
+          error: sanitizeErrorMessage(error, 'Service request not found'),
         })
       }
     }
@@ -109,7 +110,7 @@ export async function serviceRequestRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list service requests',
+          error: sanitizeErrorMessage(error, 'Failed to list service requests'),
         })
       }
     }
@@ -138,7 +139,7 @@ export async function serviceRequestRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update service request status',
+          error: sanitizeErrorMessage(error, 'Failed to update service request status'),
         })
       }
     }
@@ -167,7 +168,7 @@ export async function serviceRequestRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to assign service request',
+          error: sanitizeErrorMessage(error, 'Failed to assign service request'),
         })
       }
     }
@@ -197,7 +198,7 @@ export async function serviceRequestRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create task',
+          error: sanitizeErrorMessage(error, 'Failed to create task'),
         })
       }
     }
@@ -221,7 +222,7 @@ export async function serviceRequestRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list tasks',
+          error: sanitizeErrorMessage(error, 'Failed to list tasks'),
         })
       }
     }
@@ -250,7 +251,7 @@ export async function serviceRequestRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update task status',
+          error: sanitizeErrorMessage(error, 'Failed to update task status'),
         })
       }
     }
@@ -279,7 +280,7 @@ export async function serviceRequestRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to add message',
+          error: sanitizeErrorMessage(error, 'Failed to add message'),
         })
       }
     }
@@ -308,7 +309,7 @@ export async function serviceRequestRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to set satisfaction',
+          error: sanitizeErrorMessage(error, 'Failed to set satisfaction'),
         })
       }
     }

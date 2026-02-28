@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { entitlementService } from './entitlement.service'
 import { authenticateUser } from '../auth/auth.middleware'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function entitlementRoutes(fastify: FastifyInstance) {
   // POST /entitlements/orgs/:orgId/modules/:moduleKey/enable - Enable module
@@ -27,7 +28,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to enable module',
+          error: sanitizeErrorMessage(error, 'Failed to enable module'),
         })
       }
     }
@@ -50,7 +51,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to disable module',
+          error: sanitizeErrorMessage(error, 'Failed to disable module'),
         })
       }
     }
@@ -79,7 +80,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get entitlement',
+          error: sanitizeErrorMessage(error, 'Failed to get entitlement'),
         })
       }
     }
@@ -102,7 +103,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get entitlement status',
+          error: sanitizeErrorMessage(error, 'Failed to get entitlement status'),
         })
       }
     }
@@ -122,7 +123,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get entitlements',
+          error: sanitizeErrorMessage(error, 'Failed to get entitlements'),
         })
       }
     }
@@ -142,7 +143,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get enabled modules',
+          error: sanitizeErrorMessage(error, 'Failed to get enabled modules'),
         })
       }
     }
@@ -162,7 +163,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get organizations',
+          error: sanitizeErrorMessage(error, 'Failed to get organizations'),
         })
       }
     }
@@ -192,7 +193,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update expiration',
+          error: sanitizeErrorMessage(error, 'Failed to update expiration'),
         })
       }
     }
@@ -225,7 +226,7 @@ export async function entitlementRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to check module access',
+          error: sanitizeErrorMessage(error, 'Failed to check module access'),
         })
       }
     }

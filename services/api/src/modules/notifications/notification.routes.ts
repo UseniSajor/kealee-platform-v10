@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { authenticateUser, AuthenticatedRequest } from '../../middleware/auth.middleware';
 import { validateBody, validateQuery, validateParams } from '../../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const p = prisma as any;
 
@@ -95,7 +96,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list notifications',
+          error: sanitizeErrorMessage(error, 'Failed to list notifications'),
         });
       }
     }
@@ -136,7 +137,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to get notification',
+          error: sanitizeErrorMessage(error, 'Failed to get notification'),
         });
       }
     }
@@ -186,7 +187,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to mark notification as read',
+          error: sanitizeErrorMessage(error, 'Failed to mark notification as read'),
         });
       }
     }
@@ -219,7 +220,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to mark all notifications as read',
+          error: sanitizeErrorMessage(error, 'Failed to mark all notifications as read'),
         });
       }
     }
@@ -263,7 +264,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to delete notification',
+          error: sanitizeErrorMessage(error, 'Failed to delete notification'),
         });
       }
     }
@@ -293,7 +294,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to get notification preferences',
+          error: sanitizeErrorMessage(error, 'Failed to get notification preferences'),
         });
       }
     }
@@ -350,7 +351,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to update notification preferences',
+          error: sanitizeErrorMessage(error, 'Failed to update notification preferences'),
         });
       }
     }

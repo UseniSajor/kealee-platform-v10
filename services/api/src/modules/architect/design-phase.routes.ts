@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { designPhaseService } from './design-phase.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const approvePhaseSchema = z.object({
   notes: z.string().optional(),
@@ -48,7 +49,7 @@ export async function designPhaseRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Phase not found',
+          error: sanitizeErrorMessage(error, 'Phase not found'),
         })
       }
     }
@@ -72,7 +73,7 @@ export async function designPhaseRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to start phase',
+          error: sanitizeErrorMessage(error, 'Failed to start phase'),
         })
       }
     }
@@ -98,7 +99,7 @@ export async function designPhaseRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to approve phase',
+          error: sanitizeErrorMessage(error, 'Failed to approve phase'),
         })
       }
     }
@@ -124,7 +125,7 @@ export async function designPhaseRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to complete phase',
+          error: sanitizeErrorMessage(error, 'Failed to complete phase'),
         })
       }
     }
@@ -150,7 +151,7 @@ export async function designPhaseRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update deliverables',
+          error: sanitizeErrorMessage(error, 'Failed to update deliverables'),
         })
       }
     }
@@ -176,7 +177,7 @@ export async function designPhaseRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update timeline',
+          error: sanitizeErrorMessage(error, 'Failed to update timeline'),
         })
       }
     }
@@ -199,7 +200,7 @@ export async function designPhaseRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get timeline',
+          error: sanitizeErrorMessage(error, 'Failed to get timeline'),
         })
       }
     }
@@ -222,7 +223,7 @@ export async function designPhaseRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to check delays',
+          error: sanitizeErrorMessage(error, 'Failed to check delays'),
         })
       }
     }

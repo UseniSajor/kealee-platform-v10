@@ -3,6 +3,7 @@ import { authenticateUser } from '../auth/auth.middleware'
 import { workflowService } from './workflow.service'
 import { z } from 'zod'
 import { validateParams, validateQuery } from '../../middleware/validation.middleware'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const workflowPhaseSchema = z.enum(['INITIATION', 'PLANNING', 'EXECUTION', 'MONITORING', 'CLOSEOUT'])
 
@@ -29,7 +30,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get workflow status',
+          error: sanitizeErrorMessage(error, 'Failed to get workflow status'),
         })
       }
     }
@@ -57,7 +58,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to check gate',
+          error: sanitizeErrorMessage(error, 'Failed to check gate'),
         })
       }
     }
@@ -82,7 +83,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to check phase advancement',
+          error: sanitizeErrorMessage(error, 'Failed to check phase advancement'),
         })
       }
     }
@@ -99,7 +100,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get phase configurations',
+          error: sanitizeErrorMessage(error, 'Failed to get phase configurations'),
         })
       }
     }

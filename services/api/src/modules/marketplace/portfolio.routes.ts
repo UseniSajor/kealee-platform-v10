@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -118,7 +119,7 @@ export async function portfolioRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list portfolios' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list portfolios') })
       }
     }
   )
@@ -147,7 +148,7 @@ export async function portfolioRoutes(fastify: FastifyInstance) {
         return reply.send({ data: portfolio })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to fetch portfolio' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to fetch portfolio') })
       }
     }
   )
@@ -173,7 +174,7 @@ export async function portfolioRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: portfolio })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create portfolio' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create portfolio') })
       }
     }
   )
@@ -203,7 +204,7 @@ export async function portfolioRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update portfolio' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update portfolio') })
       }
     }
   )
@@ -234,7 +235,7 @@ export async function portfolioRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: item })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to add portfolio item' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to add portfolio item') })
       }
     }
   )
@@ -263,7 +264,7 @@ export async function portfolioRoutes(fastify: FastifyInstance) {
         return reply.code(204).send()
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to remove portfolio item' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to remove portfolio item') })
       }
     }
   )
@@ -316,7 +317,7 @@ export async function portfolioRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list contractor projects' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list contractor projects') })
       }
     }
   )
@@ -342,7 +343,7 @@ export async function portfolioRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: project })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create contractor project' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create contractor project') })
       }
     }
   )

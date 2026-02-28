@@ -7,6 +7,7 @@ import { milestonePaymentRoutes } from './milestone-payment.routes'
 import { paymentWebhookRoutes } from './payment-webhook.routes'
 import { unifiedPaymentService } from './unified-payment.service'
 import { prismaAny } from '../../utils/prisma-helper'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const releasePaymentSchema = z.object({
   skipHoldback: z.boolean().optional(),
@@ -234,11 +235,11 @@ export async function paymentRoutes(fastify: FastifyInstance) {
         // Handle Stripe errors
         if (error.type === 'StripeCardError') {
           return reply.code(400).send({
-            error: error.message || 'Card error',
+            error: sanitizeErrorMessage(error, 'Card error'),
           })
         }
         return reply.code(500).send({
-          error: error.message || 'Payment processing failed',
+          error: sanitizeErrorMessage(error, 'Payment processing failed'),
         })
       }
     }
@@ -275,7 +276,7 @@ export async function paymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to fetch payments',
+          error: sanitizeErrorMessage(error, 'Failed to fetch payments'),
         })
       }
     }
@@ -388,7 +389,7 @@ export async function paymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to attach payment method',
+          error: sanitizeErrorMessage(error, 'Failed to attach payment method'),
         })
       }
     }
@@ -420,7 +421,7 @@ export async function paymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list payment methods',
+          error: sanitizeErrorMessage(error, 'Failed to list payment methods'),
         })
       }
     }
@@ -446,7 +447,7 @@ export async function paymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to delete payment method',
+          error: sanitizeErrorMessage(error, 'Failed to delete payment method'),
         })
       }
     }
@@ -480,7 +481,7 @@ export async function paymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to set default payment method',
+          error: sanitizeErrorMessage(error, 'Failed to set default payment method'),
         })
       }
     }

@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser, requireAdmin, requirePM } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma, Decimal } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -149,7 +150,7 @@ export async function statementRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to list statements',
+          error: sanitizeErrorMessage(error, 'Failed to list statements'),
         })
       }
     }
@@ -212,7 +213,7 @@ export async function statementRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get statement',
+          error: sanitizeErrorMessage(error, 'Failed to get statement'),
         })
       }
     }
@@ -295,7 +296,7 @@ export async function statementRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to create statement',
+          error: sanitizeErrorMessage(error, 'Failed to create statement'),
         })
       }
     }
@@ -374,7 +375,7 @@ export async function statementRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to create statement schedule',
+          error: sanitizeErrorMessage(error, 'Failed to create statement schedule'),
         })
       }
     }
@@ -438,7 +439,7 @@ export async function statementRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to list statement schedules',
+          error: sanitizeErrorMessage(error, 'Failed to list statement schedules'),
         })
       }
     }
@@ -504,7 +505,7 @@ export async function statementRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to update statement schedule',
+          error: sanitizeErrorMessage(error, 'Failed to update statement schedule'),
         })
       }
     }

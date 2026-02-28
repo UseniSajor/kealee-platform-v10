@@ -8,6 +8,7 @@ import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { z } from 'zod'
 import { estimationService } from './estimation.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // Validation schemas
 const estimateRequestSchema = z.object({
@@ -587,7 +588,7 @@ export async function estimationRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Project wizard failed' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Project wizard failed') })
       }
     }
   )

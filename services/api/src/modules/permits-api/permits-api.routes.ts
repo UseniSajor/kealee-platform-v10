@@ -91,7 +91,7 @@ export async function permitsApiRoutes(fastify: FastifyInstance) {
           },
         });
       } catch (error: any) {
-        return reply.status(500).send({error: error.message});
+        return reply.status(500).send({error: sanitizeErrorMessage(error)});
       }
     }
   );
@@ -129,7 +129,7 @@ export async function permitsApiRoutes(fastify: FastifyInstance) {
 
         return reply.send({data});
       } catch (error: any) {
-        return reply.status(500).send({error: error.message});
+        return reply.status(500).send({error: sanitizeErrorMessage(error)});
       }
     }
   );
@@ -169,7 +169,7 @@ export async function permitsApiRoutes(fastify: FastifyInstance) {
 
         return reply.status(201).send({data});
       } catch (error: any) {
-        return reply.status(500).send({error: error.message});
+        return reply.status(500).send({error: sanitizeErrorMessage(error)});
       }
     }
   );
@@ -209,7 +209,7 @@ export async function permitsApiRoutes(fastify: FastifyInstance) {
 
         return reply.send({data});
       } catch (error: any) {
-        return reply.status(500).send({error: error.message});
+        return reply.status(500).send({error: sanitizeErrorMessage(error)});
       }
     }
   );
@@ -240,7 +240,7 @@ export async function permitsApiRoutes(fastify: FastifyInstance) {
 
         return reply.status(204).send();
       } catch (error: any) {
-        return reply.status(500).send({error: error.message});
+        return reply.status(500).send({error: sanitizeErrorMessage(error)});
       }
     }
   );
@@ -266,7 +266,7 @@ export async function permitsApiRoutes(fastify: FastifyInstance) {
 
         return reply.send({data: data || []});
       } catch (error: any) {
-        return reply.status(500).send({error: error.message});
+        return reply.status(500).send({error: sanitizeErrorMessage(error)});
       }
     }
   );
@@ -297,7 +297,7 @@ export async function permitsApiRoutes(fastify: FastifyInstance) {
 
         return reply.send({data});
       } catch (error: any) {
-        return reply.status(500).send({error: error.message});
+        return reply.status(500).send({error: sanitizeErrorMessage(error)});
       }
     }
   );
@@ -325,7 +325,7 @@ export async function permitsApiRoutes(fastify: FastifyInstance) {
 
         return reply.status(201).send({data});
       } catch (error: any) {
-        return reply.status(500).send({error: error.message});
+        return reply.status(500).send({error: sanitizeErrorMessage(error)});
       }
     }
   );

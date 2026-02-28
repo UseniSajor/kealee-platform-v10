@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { authenticateUser, AuthenticatedRequest } from '../../middleware/auth.middleware';
 import { validateBody, validateQuery, validateParams } from '../../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const p = prisma as any;
 
@@ -109,7 +110,7 @@ export async function aiConversationRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list conversations',
+          error: sanitizeErrorMessage(error, 'Failed to list conversations'),
         });
       }
     }
@@ -163,7 +164,7 @@ export async function aiConversationRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to get conversation',
+          error: sanitizeErrorMessage(error, 'Failed to get conversation'),
         });
       }
     }
@@ -204,7 +205,7 @@ export async function aiConversationRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to create conversation',
+          error: sanitizeErrorMessage(error, 'Failed to create conversation'),
         });
       }
     }
@@ -287,7 +288,7 @@ export async function aiConversationRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to add message',
+          error: sanitizeErrorMessage(error, 'Failed to add message'),
         });
       }
     }
@@ -334,7 +335,7 @@ export async function aiConversationRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to delete conversation',
+          error: sanitizeErrorMessage(error, 'Failed to delete conversation'),
         });
       }
     }

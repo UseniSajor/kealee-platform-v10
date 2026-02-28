@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -139,7 +140,7 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list PM subscriptions' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list PM subscriptions') })
       }
     }
   )
@@ -161,7 +162,7 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: subscription })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create PM subscription' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create PM subscription') })
       }
     }
   )
@@ -193,7 +194,7 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update PM subscription' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update PM subscription') })
       }
     }
   )
@@ -242,7 +243,7 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list permit subscriptions' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list permit subscriptions') })
       }
     }
   )
@@ -264,7 +265,7 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: subscription })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create permit subscription' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create permit subscription') })
       }
     }
   )
@@ -317,7 +318,7 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list a la carte services' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list a la carte services') })
       }
     }
   )
@@ -339,7 +340,7 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: service })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create a la carte service' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create a la carte service') })
       }
     }
   )
@@ -376,7 +377,7 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list marketplace fees' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list marketplace fees') })
       }
     }
   )
@@ -402,7 +403,7 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: config })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create fee config' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create fee config') })
       }
     }
   )
@@ -433,7 +434,7 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update fee config' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update fee config') })
       }
     }
   )
@@ -471,7 +472,7 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list service plans' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list service plans') })
       }
     }
   )

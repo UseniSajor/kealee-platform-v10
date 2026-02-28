@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { designFileService } from './design-file.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const uploadFileSchema = z.object({
   folderId: z.string().uuid().optional(),
@@ -64,7 +65,7 @@ export async function designFileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to initialize folders',
+          error: sanitizeErrorMessage(error, 'Failed to initialize folders'),
         })
       }
     }
@@ -94,7 +95,7 @@ export async function designFileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create folder',
+          error: sanitizeErrorMessage(error, 'Failed to create folder'),
         })
       }
     }
@@ -118,7 +119,7 @@ export async function designFileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list folders',
+          error: sanitizeErrorMessage(error, 'Failed to list folders'),
         })
       }
     }
@@ -148,7 +149,7 @@ export async function designFileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to upload file',
+          error: sanitizeErrorMessage(error, 'Failed to upload file'),
         })
       }
     }
@@ -178,7 +179,7 @@ export async function designFileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to bulk upload files',
+          error: sanitizeErrorMessage(error, 'Failed to bulk upload files'),
         })
       }
     }
@@ -202,7 +203,7 @@ export async function designFileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list files',
+          error: sanitizeErrorMessage(error, 'Failed to list files'),
         })
       }
     }
@@ -230,7 +231,7 @@ export async function designFileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'File not found',
+          error: sanitizeErrorMessage(error, 'File not found'),
         })
       }
     }
@@ -256,7 +257,7 @@ export async function designFileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to check out file',
+          error: sanitizeErrorMessage(error, 'Failed to check out file'),
         })
       }
     }
@@ -282,7 +283,7 @@ export async function designFileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to check in file',
+          error: sanitizeErrorMessage(error, 'Failed to check in file'),
         })
       }
     }
@@ -308,7 +309,7 @@ export async function designFileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to lock file',
+          error: sanitizeErrorMessage(error, 'Failed to lock file'),
         })
       }
     }
@@ -332,7 +333,7 @@ export async function designFileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to unlock file',
+          error: sanitizeErrorMessage(error, 'Failed to unlock file'),
         })
       }
     }

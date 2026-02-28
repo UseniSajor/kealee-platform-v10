@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser, requireRole, type AuthenticatedRequest } from '../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../middleware/validation.middleware'
 import { DisputeService } from '../modules/disputes/dispute.service'
+import { sanitizeErrorMessage } from '../utils/sanitize-error'
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -114,7 +115,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to initiate dispute',
+          error: sanitizeErrorMessage(error, 'Failed to initiate dispute'),
         })
       }
     }
@@ -148,7 +149,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to list disputes',
+          error: sanitizeErrorMessage(error, 'Failed to list disputes'),
         })
       }
     }
@@ -189,7 +190,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get dispute',
+          error: sanitizeErrorMessage(error, 'Failed to get dispute'),
         })
       }
     }
@@ -231,7 +232,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to submit evidence',
+          error: sanitizeErrorMessage(error, 'Failed to submit evidence'),
         })
       }
     }
@@ -272,7 +273,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to send message',
+          error: sanitizeErrorMessage(error, 'Failed to send message'),
         })
       }
     }
@@ -315,7 +316,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get messages',
+          error: sanitizeErrorMessage(error, 'Failed to get messages'),
         })
       }
     }
@@ -352,7 +353,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to assign mediator',
+          error: sanitizeErrorMessage(error, 'Failed to assign mediator'),
         })
       }
     }
@@ -394,7 +395,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to resolve dispute',
+          error: sanitizeErrorMessage(error, 'Failed to resolve dispute'),
         })
       }
     }
@@ -432,7 +433,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to file appeal',
+          error: sanitizeErrorMessage(error, 'Failed to file appeal'),
         })
       }
     }
@@ -465,7 +466,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get mediator queue',
+          error: sanitizeErrorMessage(error, 'Failed to get mediator queue'),
         })
       }
     }
@@ -503,7 +504,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get dispute statistics',
+          error: sanitizeErrorMessage(error, 'Failed to get dispute statistics'),
         })
       }
     }

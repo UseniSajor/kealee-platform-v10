@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { revisionService } from './revision.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createRevisionSchema = z.object({
   revisionLetter: z.string().min(1),
@@ -76,7 +77,7 @@ export async function revisionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create revision',
+          error: sanitizeErrorMessage(error, 'Failed to create revision'),
         })
       }
     }
@@ -99,7 +100,7 @@ export async function revisionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Revision not found',
+          error: sanitizeErrorMessage(error, 'Revision not found'),
         })
       }
     }
@@ -133,7 +134,7 @@ export async function revisionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list revisions',
+          error: sanitizeErrorMessage(error, 'Failed to list revisions'),
         })
       }
     }
@@ -161,7 +162,7 @@ export async function revisionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to add sheet to revision',
+          error: sanitizeErrorMessage(error, 'Failed to add sheet to revision'),
         })
       }
     }
@@ -190,7 +191,7 @@ export async function revisionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to approve revision',
+          error: sanitizeErrorMessage(error, 'Failed to approve revision'),
         })
       }
     }
@@ -219,7 +220,7 @@ export async function revisionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to issue revision',
+          error: sanitizeErrorMessage(error, 'Failed to issue revision'),
         })
       }
     }
@@ -249,7 +250,7 @@ export async function revisionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to generate revision schedule',
+          error: sanitizeErrorMessage(error, 'Failed to generate revision schedule'),
         })
       }
     }
@@ -272,7 +273,7 @@ export async function revisionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Revision schedule not found',
+          error: sanitizeErrorMessage(error, 'Revision schedule not found'),
         })
       }
     }
@@ -295,7 +296,7 @@ export async function revisionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to analyze revision impact',
+          error: sanitizeErrorMessage(error, 'Failed to analyze revision impact'),
         })
       }
     }
@@ -324,7 +325,7 @@ export async function revisionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to mark impact as coordinated',
+          error: sanitizeErrorMessage(error, 'Failed to mark impact as coordinated'),
         })
       }
     }
@@ -353,7 +354,7 @@ export async function revisionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to archive revision',
+          error: sanitizeErrorMessage(error, 'Failed to archive revision'),
         })
       }
     }
@@ -387,7 +388,7 @@ export async function revisionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to search revision archive',
+          error: sanitizeErrorMessage(error, 'Failed to search revision archive'),
         })
       }
     }

@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { architectVersionControlService } from './architect-version-control.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createVersionSchema = z.object({
   fileKey: z.string().min(1),
@@ -53,7 +54,7 @@ export async function architectVersionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create version',
+          error: sanitizeErrorMessage(error, 'Failed to create version'),
         })
       }
     }
@@ -78,7 +79,7 @@ export async function architectVersionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get version history',
+          error: sanitizeErrorMessage(error, 'Failed to get version history'),
         })
       }
     }
@@ -114,7 +115,7 @@ export async function architectVersionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to rollback version',
+          error: sanitizeErrorMessage(error, 'Failed to rollback version'),
         })
       }
     }
@@ -155,7 +156,7 @@ export async function architectVersionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to compare versions',
+          error: sanitizeErrorMessage(error, 'Failed to compare versions'),
         })
       }
     }

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { bimModelService } from './bim-model.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createModelSchema = z.object({
   deliverableId: z.string().uuid().optional(),
@@ -69,7 +70,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create model',
+          error: sanitizeErrorMessage(error, 'Failed to create model'),
         })
       }
     }
@@ -101,7 +102,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list models',
+          error: sanitizeErrorMessage(error, 'Failed to list models'),
         })
       }
     }
@@ -124,7 +125,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Model not found',
+          error: sanitizeErrorMessage(error, 'Model not found'),
         })
       }
     }
@@ -155,7 +156,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create view',
+          error: sanitizeErrorMessage(error, 'Failed to create view'),
         })
       }
     }
@@ -186,7 +187,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create annotation',
+          error: sanitizeErrorMessage(error, 'Failed to create annotation'),
         })
       }
     }
@@ -214,7 +215,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list annotations',
+          error: sanitizeErrorMessage(error, 'Failed to list annotations'),
         })
       }
     }
@@ -238,7 +239,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to resolve annotation',
+          error: sanitizeErrorMessage(error, 'Failed to resolve annotation'),
         })
       }
     }
@@ -262,7 +263,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to run clash detection',
+          error: sanitizeErrorMessage(error, 'Failed to run clash detection'),
         })
       }
     }
@@ -289,7 +290,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get clash detections',
+          error: sanitizeErrorMessage(error, 'Failed to get clash detections'),
         })
       }
     }
@@ -318,7 +319,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update clash status',
+          error: sanitizeErrorMessage(error, 'Failed to update clash status'),
         })
       }
     }
@@ -342,7 +343,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get component properties',
+          error: sanitizeErrorMessage(error, 'Failed to get component properties'),
         })
       }
     }
@@ -371,7 +372,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update component properties',
+          error: sanitizeErrorMessage(error, 'Failed to update component properties'),
         })
       }
     }
@@ -394,7 +395,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to compare models',
+          error: sanitizeErrorMessage(error, 'Failed to compare models'),
         })
       }
     }
@@ -419,7 +420,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to start viewing session',
+          error: sanitizeErrorMessage(error, 'Failed to start viewing session'),
         })
       }
     }
@@ -448,7 +449,7 @@ export async function bimModelRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to end viewing session',
+          error: sanitizeErrorMessage(error, 'Failed to end viewing session'),
         })
       }
     }

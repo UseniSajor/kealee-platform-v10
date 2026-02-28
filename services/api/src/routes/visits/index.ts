@@ -18,7 +18,8 @@ import {
   validateBody,
   validateParams,
   validateQuery,
-} from '../../middleware/validation.middleware'
+}
+import { sanitizeErrorMessage } from '../../utils/sanitize-error' from '../../middleware/validation.middleware'
 
 // ---------------------------------------------------------------------------
 // Zod schemas
@@ -140,7 +141,7 @@ export async function visitRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get visit schedule' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get visit schedule') })
       }
     },
   )
@@ -196,7 +197,7 @@ export async function visitRoutes(fastify: FastifyInstance) {
         return reply.send({ completed: true })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to complete visit' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to complete visit') })
       }
     },
   )

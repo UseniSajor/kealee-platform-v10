@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser, requireAdmin, requirePM } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma, Decimal } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -147,7 +148,7 @@ export async function paymentMethodRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to list payment methods',
+          error: sanitizeErrorMessage(error, 'Failed to list payment methods'),
         })
       }
     }
@@ -231,7 +232,7 @@ export async function paymentMethodRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to add payment method',
+          error: sanitizeErrorMessage(error, 'Failed to add payment method'),
         })
       }
     }
@@ -304,7 +305,7 @@ export async function paymentMethodRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to remove payment method',
+          error: sanitizeErrorMessage(error, 'Failed to remove payment method'),
         })
       }
     }
@@ -378,7 +379,7 @@ export async function paymentMethodRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to list deposit requests',
+          error: sanitizeErrorMessage(error, 'Failed to list deposit requests'),
         })
       }
     }
@@ -465,7 +466,7 @@ export async function paymentMethodRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to create deposit request',
+          error: sanitizeErrorMessage(error, 'Failed to create deposit request'),
         })
       }
     }
@@ -534,7 +535,7 @@ export async function paymentMethodRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to list tax forms',
+          error: sanitizeErrorMessage(error, 'Failed to list tax forms'),
         })
       }
     }
@@ -615,7 +616,7 @@ export async function paymentMethodRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to create tax form',
+          error: sanitizeErrorMessage(error, 'Failed to create tax form'),
         })
       }
     }

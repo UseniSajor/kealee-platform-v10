@@ -15,6 +15,7 @@ import { authenticateUser, requireAdmin } from '../../middleware/auth.middleware
 import { validateBody, validateQuery, validateParams } from '../../middleware/validation.middleware'
 import { Queue, Job } from 'bullmq'
 import Redis from 'ioredis'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Queue infrastructure
@@ -392,7 +393,7 @@ export async function commandCenterRoutes(fastify: FastifyInstance) {
       return reply.send(result)
     } catch (error: any) {
       fastify.log.error(error)
-      return reply.code(500).send({ error: error.message || 'Failed to get system status' })
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get system status') })
     }
   })
 
@@ -438,7 +439,7 @@ export async function commandCenterRoutes(fastify: FastifyInstance) {
       })
     } catch (error: any) {
       fastify.log.error(error)
-      return reply.code(500).send({ error: error.message || 'Failed to get metrics' })
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get metrics') })
     }
   })
 
@@ -470,7 +471,7 @@ export async function commandCenterRoutes(fastify: FastifyInstance) {
       return reply.send({ alerts })
     } catch (error: any) {
       fastify.log.error(error)
-      return reply.code(500).send({ error: error.message || 'Failed to get alerts' })
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get alerts') })
     }
   })
 
@@ -487,7 +488,7 @@ export async function commandCenterRoutes(fastify: FastifyInstance) {
         return reply.send(result)
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get app detail' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get app detail') })
       }
     },
   )
@@ -556,7 +557,7 @@ export async function commandCenterRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get jobs' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get jobs') })
       }
     },
   )
@@ -589,7 +590,7 @@ export async function commandCenterRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ jobId: job.id })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to trigger job' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to trigger job') })
       }
     },
   )
@@ -610,7 +611,7 @@ export async function commandCenterRoutes(fastify: FastifyInstance) {
         return reply.send({ paused: true })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to pause app' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to pause app') })
       }
     },
   )
@@ -631,7 +632,7 @@ export async function commandCenterRoutes(fastify: FastifyInstance) {
         return reply.send({ paused: false })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to resume app' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to resume app') })
       }
     },
   )
@@ -649,7 +650,7 @@ export async function commandCenterRoutes(fastify: FastifyInstance) {
         return reply.send({ retriedCount })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to retry failed jobs' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to retry failed jobs') })
       }
     },
   )

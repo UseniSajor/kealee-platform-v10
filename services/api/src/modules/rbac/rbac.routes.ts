@@ -5,6 +5,7 @@ import { validateBody, validateParams } from '../../middleware/validation.middle
 import { createRoleSchema, createPermissionSchema, checkPermissionSchema } from '../../schemas'
 import { NotFoundError } from '../../errors/app.error'
 import { z } from 'zod'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function rbacRoutes(fastify: FastifyInstance) {
   // ============================================================================
@@ -30,7 +31,7 @@ export async function rbacRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create role',
+          error: sanitizeErrorMessage(error, 'Failed to create role'),
         })
       }
     }
@@ -44,7 +45,7 @@ export async function rbacRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error)
       return reply.code(500).send({
-        error: error.message || 'Failed to list roles',
+        error: sanitizeErrorMessage(error, 'Failed to list roles'),
       })
     }
   })
@@ -62,7 +63,7 @@ export async function rbacRoutes(fastify: FastifyInstance) {
       fastify.log.error(error)
       const statusCode = error.message === 'Role not found' ? 404 : 500
       return reply.code(statusCode).send({
-        error: error.message || 'Failed to get role',
+        error: sanitizeErrorMessage(error, 'Failed to get role'),
       })
     }
   })
@@ -76,7 +77,7 @@ export async function rbacRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error)
       return reply.code(500).send({
-        error: error.message || 'Failed to get role permissions',
+        error: sanitizeErrorMessage(error, 'Failed to get role permissions'),
       })
     }
   })
@@ -108,7 +109,7 @@ export async function rbacRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create permission',
+          error: sanitizeErrorMessage(error, 'Failed to create permission'),
         })
       }
     }
@@ -122,7 +123,7 @@ export async function rbacRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error)
       return reply.code(500).send({
-        error: error.message || 'Failed to list permissions',
+        error: sanitizeErrorMessage(error, 'Failed to list permissions'),
       })
     }
   })
@@ -137,7 +138,7 @@ export async function rbacRoutes(fastify: FastifyInstance) {
       fastify.log.error(error)
       const statusCode = error.message === 'Permission not found' ? 404 : 500
       return reply.code(statusCode).send({
-        error: error.message || 'Failed to get permission',
+        error: sanitizeErrorMessage(error, 'Failed to get permission'),
       })
     }
   })
@@ -165,7 +166,7 @@ export async function rbacRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to assign permission to role',
+          error: sanitizeErrorMessage(error, 'Failed to assign permission to role'),
         })
       }
     }
@@ -187,7 +188,7 @@ export async function rbacRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to remove permission from role',
+          error: sanitizeErrorMessage(error, 'Failed to remove permission from role'),
         })
       }
     }
@@ -213,7 +214,7 @@ export async function rbacRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get user permissions',
+          error: sanitizeErrorMessage(error, 'Failed to get user permissions'),
         })
       }
     }
@@ -241,7 +242,7 @@ export async function rbacRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get user role',
+          error: sanitizeErrorMessage(error, 'Failed to get user role'),
         })
       }
     }
@@ -276,7 +277,7 @@ export async function rbacRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to check permission',
+          error: sanitizeErrorMessage(error, 'Failed to check permission'),
         })
       }
     }

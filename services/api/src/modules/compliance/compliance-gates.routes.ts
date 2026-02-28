@@ -3,6 +3,7 @@ import { authenticateUser } from '../auth/auth.middleware'
 import { COMPLIANCE_GATES, checkGate, getAvailableGates, ComplianceError } from '@kealee/compliance'
 import { z } from 'zod'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function complianceGatesRoutes(fastify: FastifyInstance) {
   // GET /compliance/gates - Get all available gates
@@ -18,7 +19,7 @@ export async function complianceGatesRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get gates',
+          error: sanitizeErrorMessage(error, 'Failed to get gates'),
         })
       }
     }
@@ -61,7 +62,7 @@ export async function complianceGatesRoutes(fastify: FastifyInstance) {
 
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to check gate',
+          error: sanitizeErrorMessage(error, 'Failed to check gate'),
         })
       }
     }
@@ -111,7 +112,7 @@ export async function complianceGatesRoutes(fastify: FastifyInstance) {
 
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to enforce gate',
+          error: sanitizeErrorMessage(error, 'Failed to enforce gate'),
         })
       }
     }

@@ -29,6 +29,7 @@ import { z } from 'zod'
 import { authenticateUser, AuthenticatedRequest } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const p = prisma as any
 
@@ -184,7 +185,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ success: false, error: error.message || 'Failed to list conversations' })
+        return reply.code(500).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to list conversations') })
       }
     }
   )
@@ -278,7 +279,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ success: true, data: conversation })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ success: false, error: error.message || 'Failed to create conversation' })
+        return reply.code(400).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to create conversation') })
       }
     }
   )
@@ -330,7 +331,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true, data: conversation })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ success: false, error: error.message || 'Failed to get conversation' })
+        return reply.code(500).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to get conversation') })
       }
     }
   )
@@ -371,7 +372,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true, data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ success: false, error: error.message || 'Failed to update conversation' })
+        return reply.code(400).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to update conversation') })
       }
     }
   )
@@ -401,7 +402,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true, message: 'Conversation archived' })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ success: false, error: error.message || 'Failed to archive conversation' })
+        return reply.code(500).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to archive conversation') })
       }
     }
   )
@@ -476,7 +477,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ success: false, error: error.message || 'Failed to list messages' })
+        return reply.code(500).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to list messages') })
       }
     }
   )
@@ -552,7 +553,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ success: true, data: message })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ success: false, error: error.message || 'Failed to send message' })
+        return reply.code(400).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to send message') })
       }
     }
   )
@@ -599,7 +600,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true, data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ success: false, error: error.message || 'Failed to edit message' })
+        return reply.code(400).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to edit message') })
       }
     }
   )
@@ -651,7 +652,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true, message: 'Message deleted' })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ success: false, error: error.message || 'Failed to delete message' })
+        return reply.code(500).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to delete message') })
       }
     }
   )
@@ -698,7 +699,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ success: false, error: error.message || 'Failed to mark as read' })
+        return reply.code(500).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to mark as read') })
       }
     }
   )
@@ -736,7 +737,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true, data: participants })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ success: false, error: error.message || 'Failed to list participants' })
+        return reply.code(500).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to list participants') })
       }
     }
   )
@@ -803,7 +804,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ success: true, data: participant })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ success: false, error: error.message || 'Failed to add participant' })
+        return reply.code(400).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to add participant') })
       }
     }
   )
@@ -851,7 +852,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true, message: 'Participant removed' })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ success: false, error: error.message || 'Failed to remove participant' })
+        return reply.code(500).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to remove participant') })
       }
     }
   )
@@ -889,7 +890,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true, unreadCount: totalUnread })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ success: false, error: error.message || 'Failed to get unread count' })
+        return reply.code(500).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to get unread count') })
       }
     }
   )

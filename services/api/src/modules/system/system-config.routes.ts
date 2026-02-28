@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { authenticateUser, AuthenticatedRequest } from '../../middleware/auth.middleware';
 import { validateBody, validateQuery, validateParams } from '../../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const p = prisma as any;
 
@@ -150,7 +151,7 @@ export async function systemConfigRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list system configs',
+          error: sanitizeErrorMessage(error, 'Failed to list system configs'),
         });
       }
     }
@@ -186,7 +187,7 @@ export async function systemConfigRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to get config',
+          error: sanitizeErrorMessage(error, 'Failed to get config'),
         });
       }
     }
@@ -240,7 +241,7 @@ export async function systemConfigRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to upsert config',
+          error: sanitizeErrorMessage(error, 'Failed to upsert config'),
         });
       }
     }
@@ -272,7 +273,7 @@ export async function systemConfigRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to delete config',
+          error: sanitizeErrorMessage(error, 'Failed to delete config'),
         });
       }
     }
@@ -323,7 +324,7 @@ export async function systemConfigRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list integrations',
+          error: sanitizeErrorMessage(error, 'Failed to list integrations'),
         });
       }
     }
@@ -371,7 +372,7 @@ export async function systemConfigRoutes(fastify: FastifyInstance) {
         }
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to create integration',
+          error: sanitizeErrorMessage(error, 'Failed to create integration'),
         });
       }
     }
@@ -435,7 +436,7 @@ export async function systemConfigRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to update integration',
+          error: sanitizeErrorMessage(error, 'Failed to update integration'),
         });
       }
     }
@@ -467,7 +468,7 @@ export async function systemConfigRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to delete integration',
+          error: sanitizeErrorMessage(error, 'Failed to delete integration'),
         });
       }
     }
@@ -498,7 +499,7 @@ export async function systemConfigRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list widgets',
+          error: sanitizeErrorMessage(error, 'Failed to list widgets'),
         });
       }
     }
@@ -534,7 +535,7 @@ export async function systemConfigRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to create widget',
+          error: sanitizeErrorMessage(error, 'Failed to create widget'),
         });
       }
     }
@@ -591,7 +592,7 @@ export async function systemConfigRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to update widget',
+          error: sanitizeErrorMessage(error, 'Failed to update widget'),
         });
       }
     }
@@ -631,7 +632,7 @@ export async function systemConfigRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to delete widget',
+          error: sanitizeErrorMessage(error, 'Failed to delete widget'),
         });
       }
     }

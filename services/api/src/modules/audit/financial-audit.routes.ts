@@ -12,7 +12,8 @@ import {
   validateQuery,
   validateParams,
   validateBody,
-} from '../../middleware/validation.middleware'
+}
+import { sanitizeErrorMessage } from '../../utils/sanitize-error' from '../../middleware/validation.middleware'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -169,7 +170,7 @@ export async function financialAuditRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch financial audit entries',
+          error: sanitizeErrorMessage(error, 'Failed to fetch financial audit entries'),
         })
       }
     },
@@ -210,7 +211,7 @@ export async function financialAuditRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch financial audit entry',
+          error: sanitizeErrorMessage(error, 'Failed to fetch financial audit entry'),
         })
       }
     },
@@ -273,7 +274,7 @@ export async function financialAuditRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch audit reports',
+          error: sanitizeErrorMessage(error, 'Failed to fetch audit reports'),
         })
       }
     },
@@ -315,7 +316,7 @@ export async function financialAuditRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to create audit report',
+          error: sanitizeErrorMessage(error, 'Failed to create audit report'),
         })
       }
     },
@@ -367,7 +368,7 @@ export async function financialAuditRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch retention policies',
+          error: sanitizeErrorMessage(error, 'Failed to fetch retention policies'),
         })
       }
     },
@@ -416,7 +417,7 @@ export async function financialAuditRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to create retention policy',
+          error: sanitizeErrorMessage(error, 'Failed to create retention policy'),
         })
       }
     },
@@ -470,7 +471,7 @@ export async function financialAuditRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to update retention policy',
+          error: sanitizeErrorMessage(error, 'Failed to update retention policy'),
         })
       }
     },

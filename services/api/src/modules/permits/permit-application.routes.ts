@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { permitApplicationService } from './permit-application.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createApplicationSchema = z.object({
   jurisdictionId: z.string(),
@@ -85,7 +86,7 @@ export async function permitApplicationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create and submit application',
+          error: sanitizeErrorMessage(error, 'Failed to create and submit application'),
         })
       }
     }
@@ -112,7 +113,7 @@ export async function permitApplicationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list applications',
+          error: sanitizeErrorMessage(error, 'Failed to list applications'),
         })
       }
     }
@@ -135,7 +136,7 @@ export async function permitApplicationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Application not found',
+          error: sanitizeErrorMessage(error, 'Application not found'),
         })
       }
     }
@@ -166,7 +167,7 @@ export async function permitApplicationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update step',
+          error: sanitizeErrorMessage(error, 'Failed to update step'),
         })
       }
     }
@@ -191,7 +192,7 @@ export async function permitApplicationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to set project type',
+          error: sanitizeErrorMessage(error, 'Failed to set project type'),
         })
       }
     }
@@ -216,7 +217,7 @@ export async function permitApplicationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to lookup property',
+          error: sanitizeErrorMessage(error, 'Failed to lookup property'),
         })
       }
     }
@@ -241,7 +242,7 @@ export async function permitApplicationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to set project details',
+          error: sanitizeErrorMessage(error, 'Failed to set project details'),
         })
       }
     }
@@ -264,7 +265,7 @@ export async function permitApplicationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get required documents',
+          error: sanitizeErrorMessage(error, 'Failed to get required documents'),
         })
       }
     }
@@ -293,7 +294,7 @@ export async function permitApplicationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to upload document',
+          error: sanitizeErrorMessage(error, 'Failed to upload document'),
         })
       }
     }
@@ -316,7 +317,7 @@ export async function permitApplicationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to save application',
+          error: sanitizeErrorMessage(error, 'Failed to save application'),
         })
       }
     }
@@ -342,7 +343,7 @@ export async function permitApplicationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to submit application',
+          error: sanitizeErrorMessage(error, 'Failed to submit application'),
         })
       }
     }

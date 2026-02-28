@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { jurisdictionConfigService } from './jurisdiction-config.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createFeeScheduleSchema = z.object({
   feeName: z.string().min(1),
@@ -126,7 +127,7 @@ export async function jurisdictionConfigRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create fee schedule',
+          error: sanitizeErrorMessage(error, 'Failed to create fee schedule'),
         })
       }
     }
@@ -151,7 +152,7 @@ export async function jurisdictionConfigRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to calculate fee',
+          error: sanitizeErrorMessage(error, 'Failed to calculate fee'),
         })
       }
     }
@@ -181,7 +182,7 @@ export async function jurisdictionConfigRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create permit type config',
+          error: sanitizeErrorMessage(error, 'Failed to create permit type config'),
         })
       }
     }
@@ -211,7 +212,7 @@ export async function jurisdictionConfigRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create review discipline',
+          error: sanitizeErrorMessage(error, 'Failed to create review discipline'),
         })
       }
     }
@@ -241,7 +242,7 @@ export async function jurisdictionConfigRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create inspector assignment',
+          error: sanitizeErrorMessage(error, 'Failed to create inspector assignment'),
         })
       }
     }
@@ -271,7 +272,7 @@ export async function jurisdictionConfigRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create business rule',
+          error: sanitizeErrorMessage(error, 'Failed to create business rule'),
         })
       }
     }
@@ -296,7 +297,7 @@ export async function jurisdictionConfigRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to evaluate business rules',
+          error: sanitizeErrorMessage(error, 'Failed to evaluate business rules'),
         })
       }
     }
@@ -329,7 +330,7 @@ export async function jurisdictionConfigRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create holiday',
+          error: sanitizeErrorMessage(error, 'Failed to create holiday'),
         })
       }
     }
@@ -359,7 +360,7 @@ export async function jurisdictionConfigRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to check holiday',
+          error: sanitizeErrorMessage(error, 'Failed to check holiday'),
         })
       }
     }
@@ -382,7 +383,7 @@ export async function jurisdictionConfigRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get configuration',
+          error: sanitizeErrorMessage(error, 'Failed to get configuration'),
         })
       }
     }

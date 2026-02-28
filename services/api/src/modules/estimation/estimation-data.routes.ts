@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -153,7 +154,7 @@ export async function estimationDataRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list material costs' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list material costs') })
       }
     }
   )
@@ -175,7 +176,7 @@ export async function estimationDataRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: material })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create material cost' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create material cost') })
       }
     }
   )
@@ -202,7 +203,7 @@ export async function estimationDataRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update material cost' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update material cost') })
       }
     }
   )
@@ -257,7 +258,7 @@ export async function estimationDataRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list labor rates' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list labor rates') })
       }
     }
   )
@@ -283,7 +284,7 @@ export async function estimationDataRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: rate })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create labor rate' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create labor rate') })
       }
     }
   )
@@ -314,7 +315,7 @@ export async function estimationDataRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update labor rate' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update labor rate') })
       }
     }
   )
@@ -367,7 +368,7 @@ export async function estimationDataRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list equipment rates' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list equipment rates') })
       }
     }
   )
@@ -389,7 +390,7 @@ export async function estimationDataRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: rate })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create equipment rate' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create equipment rate') })
       }
     }
   )
@@ -416,7 +417,7 @@ export async function estimationDataRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update equipment rate' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update equipment rate') })
       }
     }
   )
@@ -465,7 +466,7 @@ export async function estimationDataRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list preparation items' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list preparation items') })
       }
     }
   )
@@ -487,7 +488,7 @@ export async function estimationDataRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: item })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create preparation item' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create preparation item') })
       }
     }
   )
@@ -540,7 +541,7 @@ export async function estimationDataRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list findings' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list findings') })
       }
     }
   )
@@ -566,7 +567,7 @@ export async function estimationDataRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: finding })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create finding' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create finding') })
       }
     }
   )

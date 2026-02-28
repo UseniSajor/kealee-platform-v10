@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { authenticateUser, AuthenticatedRequest } from '../../middleware/auth.middleware';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const p = prisma as any;
 
@@ -155,7 +156,7 @@ export async function dailyLogRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list daily logs',
+          error: sanitizeErrorMessage(error, 'Failed to list daily logs'),
         });
       }
     }
@@ -192,7 +193,7 @@ export async function dailyLogRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to get daily log',
+          error: sanitizeErrorMessage(error, 'Failed to get daily log'),
         });
       }
     }
@@ -240,7 +241,7 @@ export async function dailyLogRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to create daily log',
+          error: sanitizeErrorMessage(error, 'Failed to create daily log'),
         });
       }
     }
@@ -302,7 +303,7 @@ export async function dailyLogRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to update daily log',
+          error: sanitizeErrorMessage(error, 'Failed to update daily log'),
         });
       }
     }
@@ -348,7 +349,7 @@ export async function dailyLogRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to delete daily log',
+          error: sanitizeErrorMessage(error, 'Failed to delete daily log'),
         });
       }
     }
@@ -384,7 +385,7 @@ export async function dailyLogRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to get project summary',
+          error: sanitizeErrorMessage(error, 'Failed to get project summary'),
         });
       }
     }
@@ -442,7 +443,7 @@ export async function photoRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list photos',
+          error: sanitizeErrorMessage(error, 'Failed to list photos'),
         });
       }
     }
@@ -475,7 +476,7 @@ export async function photoRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to get photo',
+          error: sanitizeErrorMessage(error, 'Failed to get photo'),
         });
       }
     }
@@ -512,7 +513,7 @@ export async function photoRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to create photo',
+          error: sanitizeErrorMessage(error, 'Failed to create photo'),
         });
       }
     }
@@ -550,7 +551,7 @@ export async function photoRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to delete photo',
+          error: sanitizeErrorMessage(error, 'Failed to delete photo'),
         });
       }
     }

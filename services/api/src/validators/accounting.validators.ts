@@ -83,7 +83,7 @@ export const CreateJournalEntrySchema = z.object({
   lines: z.array(CreateJournalLineSchema)
     .min(2, 'Journal entry must have at least 2 lines')
     .max(100, 'Journal entry cannot have more than 100 lines'),
-  createdBy: z.string().uuid(),
+  createdBy: z.string().uuid().optional(), // Populated from auth context, not request body
 }).refine(
   (data) => {
     // Validate debits equal credits

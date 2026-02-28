@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser, requireAdmin, requirePM } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma, Decimal } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -158,7 +159,7 @@ export async function journalEntryRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to list journal entries',
+          error: sanitizeErrorMessage(error, 'Failed to list journal entries'),
         })
       }
     }
@@ -214,7 +215,7 @@ export async function journalEntryRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get journal entry',
+          error: sanitizeErrorMessage(error, 'Failed to get journal entry'),
         })
       }
     }
@@ -356,7 +357,7 @@ export async function journalEntryRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to create journal entry',
+          error: sanitizeErrorMessage(error, 'Failed to create journal entry'),
         })
       }
     }
@@ -474,7 +475,7 @@ export async function journalEntryRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to post journal entry',
+          error: sanitizeErrorMessage(error, 'Failed to post journal entry'),
         })
       }
     }
@@ -567,7 +568,7 @@ export async function journalEntryRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to approve journal entry',
+          error: sanitizeErrorMessage(error, 'Failed to approve journal entry'),
         })
       }
     }

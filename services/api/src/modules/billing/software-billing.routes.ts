@@ -10,6 +10,7 @@ import { z } from 'zod'
 import { validateBody } from '../../middleware/validation.middleware'
 import { authenticateUser } from '../auth/auth.middleware'
 import { softwareBillingService } from './software-billing.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const tierEnum = z.enum(['S1', 'S2', 'S3', 'S4'])
 const pricingTierEnum = z.enum(['basic', 'standard', 'plus'])
@@ -60,7 +61,7 @@ export async function softwareBillingRoutes(fastify: FastifyInstance) {
         return reply.send(result)
       } catch (error: any) {
         request.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create checkout session' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create checkout session') })
       }
     }
   )
@@ -82,7 +83,7 @@ export async function softwareBillingRoutes(fastify: FastifyInstance) {
         return reply.send({ usage })
       } catch (error: any) {
         request.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to get usage' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to get usage') })
       }
     }
   )
@@ -104,7 +105,7 @@ export async function softwareBillingRoutes(fastify: FastifyInstance) {
         return reply.send({ subscription })
       } catch (error: any) {
         request.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to get subscription' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to get subscription') })
       }
     }
   )
@@ -147,7 +148,7 @@ export async function softwareBillingRoutes(fastify: FastifyInstance) {
         return reply.send(result)
       } catch (error: any) {
         request.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to change plan' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to change plan') })
       }
     }
   )
@@ -182,7 +183,7 @@ export async function softwareBillingRoutes(fastify: FastifyInstance) {
         return reply.send(result)
       } catch (error: any) {
         request.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to cancel subscription' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to cancel subscription') })
       }
     }
   )
@@ -213,7 +214,7 @@ export async function softwareBillingRoutes(fastify: FastifyInstance) {
         return reply.send(result)
       } catch (error: any) {
         request.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create portal session' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create portal session') })
       }
     }
   )

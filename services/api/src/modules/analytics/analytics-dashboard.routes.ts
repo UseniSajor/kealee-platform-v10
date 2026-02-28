@@ -7,6 +7,7 @@ import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { validateQuery } from '../../middleware/validation.middleware'
 import { PrismaClient } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const prisma = new PrismaClient()
 const p = prisma as any
@@ -166,7 +167,7 @@ export async function analyticsDashboardRoutes(fastify: FastifyInstance) {
       })
     } catch (error: any) {
       fastify.log.error(error)
-      return reply.code(500).send({ error: error.message || 'Failed to get project benchmark' })
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get project benchmark') })
     }
   })
 
@@ -257,7 +258,7 @@ export async function analyticsDashboardRoutes(fastify: FastifyInstance) {
       })
     } catch (error: any) {
       fastify.log.error(error)
-      return reply.code(500).send({ error: error.message || 'Failed to get contractor scorecard' })
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get contractor scorecard') })
     }
   })
 
@@ -332,7 +333,7 @@ export async function analyticsDashboardRoutes(fastify: FastifyInstance) {
       })
     } catch (error: any) {
       fastify.log.error(error)
-      return reply.code(500).send({ error: error.message || 'Failed to get PM analytics' })
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get PM analytics') })
     }
   })
 
@@ -479,7 +480,7 @@ export async function analyticsDashboardRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get platform analytics' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get platform analytics') })
       }
     }
   )

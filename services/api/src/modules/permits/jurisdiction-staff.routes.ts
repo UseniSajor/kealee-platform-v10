@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { jurisdictionStaffService } from './jurisdiction-staff.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createStaffSchema = z.object({
   userId: z.string().uuid(),
@@ -106,7 +107,7 @@ export async function jurisdictionStaffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create staff member',
+          error: sanitizeErrorMessage(error, 'Failed to create staff member'),
         })
       }
     }
@@ -137,7 +138,7 @@ export async function jurisdictionStaffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list staff members',
+          error: sanitizeErrorMessage(error, 'Failed to list staff members'),
         })
       }
     }
@@ -160,7 +161,7 @@ export async function jurisdictionStaffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Staff member not found',
+          error: sanitizeErrorMessage(error, 'Staff member not found'),
         })
       }
     }
@@ -188,7 +189,7 @@ export async function jurisdictionStaffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to balance workload',
+          error: sanitizeErrorMessage(error, 'Failed to balance workload'),
         })
       }
     }
@@ -218,7 +219,7 @@ export async function jurisdictionStaffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to assign workload',
+          error: sanitizeErrorMessage(error, 'Failed to assign workload'),
         })
       }
     }
@@ -251,7 +252,7 @@ export async function jurisdictionStaffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to record performance metric',
+          error: sanitizeErrorMessage(error, 'Failed to record performance metric'),
         })
       }
     }
@@ -285,7 +286,7 @@ export async function jurisdictionStaffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to add certification',
+          error: sanitizeErrorMessage(error, 'Failed to add certification'),
         })
       }
     }
@@ -318,7 +319,7 @@ export async function jurisdictionStaffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to assign training',
+          error: sanitizeErrorMessage(error, 'Failed to assign training'),
         })
       }
     }
@@ -343,7 +344,7 @@ export async function jurisdictionStaffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to complete training',
+          error: sanitizeErrorMessage(error, 'Failed to complete training'),
         })
       }
     }
@@ -375,7 +376,7 @@ export async function jurisdictionStaffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to provision mobile app',
+          error: sanitizeErrorMessage(error, 'Failed to provision mobile app'),
         })
       }
     }
@@ -405,7 +406,7 @@ export async function jurisdictionStaffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get performance summary',
+          error: sanitizeErrorMessage(error, 'Failed to get performance summary'),
         })
       }
     }

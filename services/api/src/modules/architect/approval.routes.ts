@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { approvalService } from './approval.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createWorkflowSchema = z.object({
   name: z.string().min(1),
@@ -85,7 +86,7 @@ export async function approvalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create approval workflow',
+          error: sanitizeErrorMessage(error, 'Failed to create approval workflow'),
         })
       }
     }
@@ -115,7 +116,7 @@ export async function approvalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list approval workflows',
+          error: sanitizeErrorMessage(error, 'Failed to list approval workflows'),
         })
       }
     }
@@ -138,7 +139,7 @@ export async function approvalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Approval workflow not found',
+          error: sanitizeErrorMessage(error, 'Approval workflow not found'),
         })
       }
     }
@@ -169,7 +170,7 @@ export async function approvalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create approval request',
+          error: sanitizeErrorMessage(error, 'Failed to create approval request'),
         })
       }
     }
@@ -192,7 +193,7 @@ export async function approvalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Approval request not found',
+          error: sanitizeErrorMessage(error, 'Approval request not found'),
         })
       }
     }
@@ -221,7 +222,7 @@ export async function approvalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list approval requests',
+          error: sanitizeErrorMessage(error, 'Failed to list approval requests'),
         })
       }
     }
@@ -253,7 +254,7 @@ export async function approvalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to approve step',
+          error: sanitizeErrorMessage(error, 'Failed to approve step'),
         })
       }
     }
@@ -285,7 +286,7 @@ export async function approvalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to reject step',
+          error: sanitizeErrorMessage(error, 'Failed to reject step'),
         })
       }
     }
@@ -318,7 +319,7 @@ export async function approvalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to delegate approval',
+          error: sanitizeErrorMessage(error, 'Failed to delegate approval'),
         })
       }
     }
@@ -347,7 +348,7 @@ export async function approvalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to revoke delegation',
+          error: sanitizeErrorMessage(error, 'Failed to revoke delegation'),
         })
       }
     }
@@ -376,7 +377,7 @@ export async function approvalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to generate approval certificate',
+          error: sanitizeErrorMessage(error, 'Failed to generate approval certificate'),
         })
       }
     }
@@ -399,7 +400,7 @@ export async function approvalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get approval history',
+          error: sanitizeErrorMessage(error, 'Failed to get approval history'),
         })
       }
     }

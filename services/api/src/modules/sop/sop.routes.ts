@@ -56,7 +56,7 @@ export async function sopRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ template })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -87,7 +87,7 @@ export async function sopRoutes(fastify: FastifyInstance) {
         return reply.send({ templates, total: templates.length })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -104,7 +104,7 @@ export async function sopRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.statusCode || 500
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -134,7 +134,7 @@ export async function sopRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.statusCode || 500
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -151,7 +151,7 @@ export async function sopRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.statusCode || 500
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -166,7 +166,7 @@ export async function sopRoutes(fastify: FastifyInstance) {
         return reply.send({ template, message: 'NEW_CONSTRUCTION multifamily SOP template seeded' })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -197,7 +197,7 @@ export async function sopRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.statusCode || 500
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -218,7 +218,7 @@ export async function sopRoutes(fastify: FastifyInstance) {
         return reply.send({ executions, total: executions.length })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -235,7 +235,7 @@ export async function sopRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.statusCode || 500
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -264,7 +264,7 @@ export async function sopRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.statusCode || 500
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -289,7 +289,7 @@ export async function sopRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.statusCode || 500
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -306,7 +306,7 @@ export async function sopRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.statusCode || 500
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -323,7 +323,7 @@ export async function sopRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.statusCode || 500
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )

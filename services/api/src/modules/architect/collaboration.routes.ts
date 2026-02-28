@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { collaborationService } from './collaboration.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const updatePresenceSchema = z.object({
   targetType: z.string(),
@@ -121,7 +122,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update presence',
+          error: sanitizeErrorMessage(error, 'Failed to update presence'),
         })
       }
     }
@@ -150,7 +151,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get presence',
+          error: sanitizeErrorMessage(error, 'Failed to get presence'),
         })
       }
     }
@@ -178,7 +179,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to remove presence',
+          error: sanitizeErrorMessage(error, 'Failed to remove presence'),
         })
       }
     }
@@ -208,7 +209,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to record change',
+          error: sanitizeErrorMessage(error, 'Failed to record change'),
         })
       }
     }
@@ -247,7 +248,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get changes',
+          error: sanitizeErrorMessage(error, 'Failed to get changes'),
         })
       }
     }
@@ -275,7 +276,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create signature request',
+          error: sanitizeErrorMessage(error, 'Failed to create signature request'),
         })
       }
     }
@@ -304,7 +305,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to sign document',
+          error: sanitizeErrorMessage(error, 'Failed to sign document'),
         })
       }
     }
@@ -333,7 +334,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get signatures',
+          error: sanitizeErrorMessage(error, 'Failed to get signatures'),
         })
       }
     }
@@ -363,7 +364,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create meeting minute',
+          error: sanitizeErrorMessage(error, 'Failed to create meeting minute'),
         })
       }
     }
@@ -386,7 +387,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Meeting minute not found',
+          error: sanitizeErrorMessage(error, 'Meeting minute not found'),
         })
       }
     }
@@ -418,7 +419,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list meeting minutes',
+          error: sanitizeErrorMessage(error, 'Failed to list meeting minutes'),
         })
       }
     }
@@ -448,7 +449,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create action item',
+          error: sanitizeErrorMessage(error, 'Failed to create action item'),
         })
       }
     }
@@ -477,7 +478,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update action item status',
+          error: sanitizeErrorMessage(error, 'Failed to update action item status'),
         })
       }
     }
@@ -506,7 +507,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list action items',
+          error: sanitizeErrorMessage(error, 'Failed to list action items'),
         })
       }
     }
@@ -536,7 +537,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create design decision',
+          error: sanitizeErrorMessage(error, 'Failed to create design decision'),
         })
       }
     }
@@ -565,7 +566,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update decision status',
+          error: sanitizeErrorMessage(error, 'Failed to update decision status'),
         })
       }
     }
@@ -588,7 +589,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Design decision not found',
+          error: sanitizeErrorMessage(error, 'Design decision not found'),
         })
       }
     }
@@ -616,7 +617,7 @@ export async function collaborationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list design decisions',
+          error: sanitizeErrorMessage(error, 'Failed to list design decisions'),
         })
       }
     }

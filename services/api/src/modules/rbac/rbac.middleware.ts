@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { rbacService } from './rbac.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 /**
  * Middleware to check if user has a specific permission in an organization
@@ -46,7 +47,7 @@ export function requirePermission(
       ;(request as any).orgId = orgId
     } catch (error: any) {
       return reply.code(500).send({
-        error: error.message || 'Permission check failed',
+        error: sanitizeErrorMessage(error, 'Permission check failed'),
       })
     }
   }
@@ -95,7 +96,7 @@ export function requireAnyPermission(
       ;(request as any).orgId = orgId
     } catch (error: any) {
       return reply.code(500).send({
-        error: error.message || 'Permission check failed',
+        error: sanitizeErrorMessage(error, 'Permission check failed'),
       })
     }
   }
@@ -139,7 +140,7 @@ export function requireOrgMember(orgIdParam: string = 'orgId') {
       ;(request as any).orgMembership = membership
     } catch (error: any) {
       return reply.code(500).send({
-        error: error.message || 'Organization membership check failed',
+        error: sanitizeErrorMessage(error, 'Organization membership check failed'),
       })
     }
   }

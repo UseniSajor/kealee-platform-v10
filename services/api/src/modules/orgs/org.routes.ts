@@ -7,6 +7,7 @@ import { createOrgSchema, updateOrgSchema, addMemberSchema, updateMemberRoleSche
 import { NotFoundError, AuthorizationError } from '../../errors/app.error'
 import { RATE_LIMIT_CONFIG } from '../../middleware/rate-limit.middleware'
 import { z } from 'zod'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function orgRoutes(fastify: FastifyInstance) {
   // Register per-org rate limiting for org routes
@@ -77,7 +78,7 @@ export async function orgRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create organization',
+          error: sanitizeErrorMessage(error, 'Failed to create organization'),
         })
       }
     }
@@ -161,7 +162,7 @@ export async function orgRoutes(fastify: FastifyInstance) {
       fastify.log.error(error)
       const statusCode = error.message === 'Organization not found' ? 404 : 500
       return reply.code(statusCode).send({
-        error: error.message || 'Failed to get organization',
+        error: sanitizeErrorMessage(error, 'Failed to get organization'),
       })
     }
   })
@@ -237,7 +238,7 @@ export async function orgRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to add member',
+          error: sanitizeErrorMessage(error, 'Failed to add member'),
         })
       }
     }
@@ -283,7 +284,7 @@ export async function orgRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update member role',
+          error: sanitizeErrorMessage(error, 'Failed to update member role'),
         })
       }
     }

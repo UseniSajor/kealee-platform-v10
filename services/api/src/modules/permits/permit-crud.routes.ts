@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prismaAny } from '../../utils/prisma-helper'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ── Validation Schemas ──────────────────────────────────────────────────────
 
@@ -140,7 +141,7 @@ export async function permitCrudRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to load dashboard data',
+          error: sanitizeErrorMessage(error, 'Failed to load dashboard data'),
         })
       }
     }
@@ -226,7 +227,7 @@ export async function permitCrudRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to list permits',
+          error: sanitizeErrorMessage(error, 'Failed to list permits'),
         })
       }
     }
@@ -274,7 +275,7 @@ export async function permitCrudRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get permit',
+          error: sanitizeErrorMessage(error, 'Failed to get permit'),
         })
       }
     }
@@ -346,7 +347,7 @@ export async function permitCrudRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update permit',
+          error: sanitizeErrorMessage(error, 'Failed to update permit'),
         })
       }
     }
@@ -405,7 +406,7 @@ export async function permitCrudRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to delete permit',
+          error: sanitizeErrorMessage(error, 'Failed to delete permit'),
         })
       }
     }
@@ -470,7 +471,7 @@ export async function permitCrudRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to submit permit',
+          error: sanitizeErrorMessage(error, 'Failed to submit permit'),
         })
       }
     }
@@ -537,7 +538,7 @@ export async function permitCrudRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to withdraw permit',
+          error: sanitizeErrorMessage(error, 'Failed to withdraw permit'),
         })
       }
     }
@@ -620,7 +621,7 @@ export async function permitCrudRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get comments',
+          error: sanitizeErrorMessage(error, 'Failed to get comments'),
         })
       }
     }
@@ -687,7 +688,7 @@ export async function permitCrudRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to add comment',
+          error: sanitizeErrorMessage(error, 'Failed to add comment'),
         })
       }
     }
@@ -736,7 +737,7 @@ export async function permitCrudRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to list inspections',
+          error: sanitizeErrorMessage(error, 'Failed to list inspections'),
         })
       }
     }
@@ -812,7 +813,7 @@ export async function permitCrudRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to schedule inspection',
+          error: sanitizeErrorMessage(error, 'Failed to schedule inspection'),
         })
       }
     }

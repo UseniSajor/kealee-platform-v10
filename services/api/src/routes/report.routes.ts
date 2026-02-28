@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { authenticateUser, requirePM } from '../middleware/auth.middleware';
 import { validateBody, validateQuery, validateParams } from '../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
+import { sanitizeErrorMessage } from '../utils/sanitize-error'
 
 const generateReportSchema = z.object({
   type: z.enum(['weekly', 'monthly', 'custom']),
@@ -75,7 +76,7 @@ export async function reportRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to fetch reports',
+          error: sanitizeErrorMessage(error, 'Failed to fetch reports'),
         });
       }
     }
@@ -172,7 +173,7 @@ export async function reportRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to generate report',
+          error: sanitizeErrorMessage(error, 'Failed to generate report'),
         });
       }
     }
@@ -206,7 +207,7 @@ export async function reportRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to fetch report',
+          error: sanitizeErrorMessage(error, 'Failed to fetch report'),
         });
       }
     }
@@ -256,7 +257,7 @@ export async function reportRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to get download URL',
+          error: sanitizeErrorMessage(error, 'Failed to get download URL'),
         });
       }
     }

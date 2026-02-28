@@ -116,7 +116,7 @@ export async function docusignRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error('DocuSign webhook error:', error)
         // Always return 200 to DocuSign even on error
-        return reply.send({ status: 'ok', error: error.message })
+        return reply.send({ status: 'ok', error: sanitizeErrorMessage(error)})
       }
     }
   )

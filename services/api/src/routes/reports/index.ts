@@ -19,7 +19,8 @@ import {
   validateBody,
   validateParams,
   validateQuery,
-} from '../../middleware/validation.middleware'
+}
+import { sanitizeErrorMessage } from '../../utils/sanitize-error' from '../../middleware/validation.middleware'
 
 // ---------------------------------------------------------------------------
 // Queue infrastructure (matches automation package queue names)
@@ -130,7 +131,7 @@ export async function ccReportRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to queue report' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to queue report') })
       }
     },
   )
@@ -191,7 +192,7 @@ export async function ccReportRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get reports' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get reports') })
       }
     },
   )

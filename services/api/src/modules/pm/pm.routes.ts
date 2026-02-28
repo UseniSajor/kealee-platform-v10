@@ -32,6 +32,7 @@ import { pmBidRoutes } from "./pm-bids.routes"
 import { pmTeamRoutes } from "./pm-team.routes"
 import { pmProjectRoutes } from "./pm-projects.routes"
 import { pmReportRoutes } from "./pm-reports.routes"
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function pmRoutes(fastify: FastifyInstance) {
   // Register productivity dashboard routes
@@ -231,7 +232,7 @@ export async function pmRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || "Failed to complete task",
+          error: sanitizeErrorMessage(error, "Failed to complete task"),
         })
       }
     }
@@ -261,7 +262,7 @@ export async function pmRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || "Failed to check compliance",
+          error: sanitizeErrorMessage(error, "Failed to check compliance"),
         })
       }
     }
@@ -287,7 +288,7 @@ export async function pmRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || "Failed to generate report",
+          error: sanitizeErrorMessage(error, "Failed to generate report"),
         })
       }
     }
@@ -315,7 +316,7 @@ export async function pmRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || "Failed to bulk assign tasks",
+          error: sanitizeErrorMessage(error, "Failed to bulk assign tasks"),
         })
       }
     }
@@ -342,7 +343,7 @@ export async function pmRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || "Failed to bulk complete tasks",
+          error: sanitizeErrorMessage(error, "Failed to bulk complete tasks"),
         })
       }
     }
@@ -376,7 +377,7 @@ export async function pmRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || "Failed to update task",
+          error: sanitizeErrorMessage(error, "Failed to update task"),
         })
       }
     }
@@ -398,7 +399,7 @@ export async function pmRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || "Failed to get comments",
+          error: sanitizeErrorMessage(error, "Failed to get comments"),
         })
       }
     }
@@ -425,7 +426,7 @@ export async function pmRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || "Failed to add comment",
+          error: sanitizeErrorMessage(error, "Failed to add comment"),
         })
       }
     }
@@ -442,7 +443,7 @@ export async function pmRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || "Failed to get workload stats",
+          error: sanitizeErrorMessage(error, "Failed to get workload stats"),
         })
       }
     }
@@ -474,7 +475,7 @@ export async function pmRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || "Failed to assign client",
+          error: sanitizeErrorMessage(error, "Failed to assign client"),
         })
       }
     }

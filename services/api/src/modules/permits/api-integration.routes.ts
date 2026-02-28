@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -100,7 +101,7 @@ export async function apiIntegrationRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list integrations' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list integrations') })
       }
     }
   )
@@ -122,7 +123,7 @@ export async function apiIntegrationRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: integration })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create integration' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create integration') })
       }
     }
   )
@@ -149,7 +150,7 @@ export async function apiIntegrationRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update integration' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update integration') })
       }
     }
   )
@@ -202,7 +203,7 @@ export async function apiIntegrationRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list API calls' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list API calls') })
       }
     }
   )
@@ -255,7 +256,7 @@ export async function apiIntegrationRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list webhook events' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list webhook events') })
       }
     }
   )

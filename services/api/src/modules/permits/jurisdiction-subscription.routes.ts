@@ -9,6 +9,7 @@ import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateParams } from '../../middleware/validation.middleware'
 import { prismaAny } from '../../utils/prisma-helper'
 import { getStripe } from '../billing/stripe.client'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createSubscriptionSchema = z.object({
   jurisdictionId: z.string(),
@@ -88,7 +89,7 @@ export async function jurisdictionSubscriptionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to create subscription',
+          error: sanitizeErrorMessage(error, 'Failed to create subscription'),
         })
       }
     }
@@ -131,7 +132,7 @@ export async function jurisdictionSubscriptionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get subscription',
+          error: sanitizeErrorMessage(error, 'Failed to get subscription'),
         })
       }
     }
@@ -179,7 +180,7 @@ export async function jurisdictionSubscriptionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to upgrade subscription',
+          error: sanitizeErrorMessage(error, 'Failed to upgrade subscription'),
         })
       }
     }

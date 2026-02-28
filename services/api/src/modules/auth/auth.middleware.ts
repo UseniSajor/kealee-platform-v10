@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { authService } from './auth.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export interface AuthenticatedRequest extends FastifyRequest {
   user: {
@@ -35,7 +36,7 @@ export async function authenticateUser(
     return
   } catch (error: any) {
     return reply.code(401).send({
-      error: error.message || 'Invalid or expired token',
+      error: sanitizeErrorMessage(error, 'Invalid or expired token'),
     })
   }
 }

@@ -14,6 +14,7 @@ import {
   type AuthenticatedRequest,
 } from '../../middleware/auth.middleware'
 import { validateParams, validateQuery } from '../../middleware/validation.middleware'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod schemas
@@ -154,7 +155,7 @@ export async function qaRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get QA results' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get QA results') })
       }
     },
   )
@@ -207,7 +208,7 @@ export async function qaRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get QA results for visit' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get QA results for visit') })
       }
     },
   )

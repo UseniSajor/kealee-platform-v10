@@ -15,6 +15,7 @@ import {
   type AuthenticatedRequest,
 } from '../../middleware/auth.middleware'
 import { validateParams } from '../../middleware/validation.middleware'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod schemas
@@ -136,7 +137,7 @@ export async function predictionRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get predictions' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get predictions') })
       }
     },
   )
@@ -180,7 +181,7 @@ export async function predictionRoutes(fastify: FastifyInstance) {
         return reply.send({ acknowledged: true })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to acknowledge prediction' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to acknowledge prediction') })
       }
     },
   )

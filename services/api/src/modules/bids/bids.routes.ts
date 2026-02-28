@@ -24,7 +24,7 @@ export async function opportunityBidsRoutes(fastify: FastifyInstance) {
         return reply.send(result)
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -42,7 +42,7 @@ export async function opportunityBidsRoutes(fastify: FastifyInstance) {
         return reply.send({ pipeline })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -61,7 +61,7 @@ export async function opportunityBidsRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.message.includes('not found') ? 404 : 400
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -80,7 +80,7 @@ export async function opportunityBidsRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ bid })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -105,7 +105,7 @@ export async function opportunityBidsRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.message.includes('not found') ? 404 : 400
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -124,7 +124,7 @@ export async function opportunityBidsRoutes(fastify: FastifyInstance) {
         return reply.send(result)
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -142,7 +142,7 @@ export async function opportunityBidsRoutes(fastify: FastifyInstance) {
         return reply.send(result)
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -170,7 +170,7 @@ export async function opportunityBidsRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ document })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -199,7 +199,7 @@ export async function opportunityBidsRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ quote })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -223,7 +223,7 @@ export async function opportunityBidsRoutes(fastify: FastifyInstance) {
         return reply.send({ item })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -245,7 +245,7 @@ export async function opportunityBidsRoutes(fastify: FastifyInstance) {
         return reply.send(result)
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -263,7 +263,7 @@ export async function opportunityBidsRoutes(fastify: FastifyInstance) {
         return reply.send({ similar })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -281,7 +281,7 @@ export async function opportunityBidsRoutes(fastify: FastifyInstance) {
         return reply.send(insights)
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )

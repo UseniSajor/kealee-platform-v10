@@ -7,6 +7,7 @@ import { signupSchema, loginSchema, verifyTokenSchema } from '../../schemas'
 import { NotFoundError, AuthenticationError } from '../../errors/app.error'
 import { RATE_LIMIT_CONFIG } from '../../middleware/rate-limit.middleware'
 import { prismaAny } from '../../utils/prisma-helper'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function authRoutes(fastify: FastifyInstance) {
   // Register stricter rate limiting for auth routes (prevent brute force)
@@ -157,7 +158,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         session: result.session,
       })
     } catch (error: any) {
-      throw new AuthenticationError(error.message || 'Login failed')
+      throw new AuthenticationError(sanitizeErrorMessage(error, 'Login failed'))
     }
   })
 
@@ -178,7 +179,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Logout failed',
+          error: sanitizeErrorMessage(error, 'Logout failed'),
         })
       }
     }
@@ -207,7 +208,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       fastify.log.error(error)
       return reply.code(401).send({
         valid: false,
-        error: error.message || 'Invalid or expired token',
+        error: sanitizeErrorMessage(error, 'Invalid or expired token'),
       })
     }
   })

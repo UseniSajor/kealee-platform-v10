@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { validationService } from './validation.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createValidationRuleSchema = z.object({
   name: z.string().min(1),
@@ -108,7 +109,7 @@ export async function validationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create validation rule',
+          error: sanitizeErrorMessage(error, 'Failed to create validation rule'),
         })
       }
     }
@@ -138,7 +139,7 @@ export async function validationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list validation rules',
+          error: sanitizeErrorMessage(error, 'Failed to list validation rules'),
         })
       }
     }
@@ -168,7 +169,7 @@ export async function validationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to run validation',
+          error: sanitizeErrorMessage(error, 'Failed to run validation'),
         })
       }
     }
@@ -191,7 +192,7 @@ export async function validationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Validation not found',
+          error: sanitizeErrorMessage(error, 'Validation not found'),
         })
       }
     }
@@ -221,7 +222,7 @@ export async function validationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list validations',
+          error: sanitizeErrorMessage(error, 'Failed to list validations'),
         })
       }
     }
@@ -250,7 +251,7 @@ export async function validationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update validation',
+          error: sanitizeErrorMessage(error, 'Failed to update validation'),
         })
       }
     }
@@ -279,7 +280,7 @@ export async function validationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to approve validation',
+          error: sanitizeErrorMessage(error, 'Failed to approve validation'),
         })
       }
     }
@@ -309,7 +310,7 @@ export async function validationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to generate validation report',
+          error: sanitizeErrorMessage(error, 'Failed to generate validation report'),
         })
       }
     }
@@ -332,7 +333,7 @@ export async function validationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Validation report not found',
+          error: sanitizeErrorMessage(error, 'Validation report not found'),
         })
       }
     }
@@ -362,7 +363,7 @@ export async function validationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create drawing checklist',
+          error: sanitizeErrorMessage(error, 'Failed to create drawing checklist'),
         })
       }
     }
@@ -386,7 +387,7 @@ export async function validationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get drawing checklist',
+          error: sanitizeErrorMessage(error, 'Failed to get drawing checklist'),
         })
       }
     }
@@ -415,7 +416,7 @@ export async function validationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to validate checklist item',
+          error: sanitizeErrorMessage(error, 'Failed to validate checklist item'),
         })
       }
     }
@@ -445,7 +446,7 @@ export async function validationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create code compliance record',
+          error: sanitizeErrorMessage(error, 'Failed to create code compliance record'),
         })
       }
     }
@@ -474,7 +475,7 @@ export async function validationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to validate code compliance',
+          error: sanitizeErrorMessage(error, 'Failed to validate code compliance'),
         })
       }
     }
@@ -501,7 +502,7 @@ export async function validationRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list code compliance records',
+          error: sanitizeErrorMessage(error, 'Failed to list code compliance records'),
         })
       }
     }

@@ -3,6 +3,7 @@ import { authenticateUser } from '../auth/auth.middleware'
 import { pmFocusModeService } from './pm-focus-mode.service'
 import { z } from 'zod'
 import { validateBody, validateParams } from '../../middleware/validation.middleware'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function pmFocusModeRoutes(fastify: FastifyInstance) {
   // POST /pm/focus-mode/enable - Enable focus mode
@@ -35,7 +36,7 @@ export async function pmFocusModeRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to enable focus mode',
+          error: sanitizeErrorMessage(error, 'Failed to enable focus mode'),
         })
       }
     }
@@ -57,7 +58,7 @@ export async function pmFocusModeRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to disable focus mode',
+          error: sanitizeErrorMessage(error, 'Failed to disable focus mode'),
         })
       }
     }
@@ -79,7 +80,7 @@ export async function pmFocusModeRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get focus mode status',
+          error: sanitizeErrorMessage(error, 'Failed to get focus mode status'),
         })
       }
     }

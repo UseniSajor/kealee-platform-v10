@@ -258,8 +258,7 @@ import { serviceRequestRoutes } from './modules/ops-services/service-request.rou
 import { servicePlanRoutes } from './modules/ops-services/service-plan.routes'
 import { workflowRoutes } from './modules/workflow/workflow.routes'
 import { fileRoutes } from './modules/files/file.routes'
-// Temporarily disabled - DTO type mismatches
-// import { accountingRoutes } from './routes/accounting.routes'
+import { accountingRoutes } from './routes/accounting.routes'
 import { stripeConnectRoutes } from './routes/stripe-connect.routes'
 
 // File Upload Pipeline (connects user uploads → Supabase Storage → Command Center)
@@ -294,7 +293,8 @@ import testRoutes from './routes/test.routes'
 // import { createGraphQLServer } from './graphql/server' // DISABLED: GraphQL not critical for MVP
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware'
 import { registerGlobalRateLimit } from './middleware/rate-limit.middleware'
-// Temporarily disabled - @fastify/csrf-protection v5.x incompatible with Fastify v4.x
+// CSRF protection intentionally disabled: API uses JWT Bearer token auth (not cookies),
+// which is inherently CSRF-safe. The middleware at csrf.middleware.ts is ready if needed.
 // import { registerCSRFProtection } from './middleware/csrf.middleware'
 import { requestLogger, responseLogger } from './middleware/logging.middleware'
 import { swaggerConfig, swaggerUIConfig } from './config/swagger.config'
@@ -405,8 +405,9 @@ const start = async () => {
     // Register rate limiting (global)
     await registerGlobalRateLimit(fastify)
 
-    // Register CSRF protection (enabled in all environments for security)
-    // Temporarily disabled - @fastify/csrf-protection v5.x incompatible with Fastify v4.x
+    // CSRF protection not needed: all endpoints use JWT Bearer auth (not cookie-based sessions).
+    // Bearer tokens require explicit Authorization headers, preventing CSRF attacks.
+    // Middleware available at csrf.middleware.ts if cookie-based auth is added later.
     // await registerCSRFProtection(fastify)
 
     // Initialize Sentry
@@ -495,8 +496,7 @@ const start = async () => {
 
     // ── Connect, projects, contracts, marketplace, payments, permits ──
     await safeRegisterBlock('Core routes (connect, projects, contracts, marketplace, etc.)', async () => {
-      // Temporarily disabled - DTO type mismatches
-      // await fastify.register(accountingRoutes, { prefix: '/accounting' })
+      await fastify.register(accountingRoutes, { prefix: '/accounting' })
       await fastify.register(stripeConnectRoutes, { prefix: '/connect' })
       await fastify.register(projectRoutes, { prefix: '/projects' })
       await fastify.register(propertyRoutes, { prefix: '/properties' })

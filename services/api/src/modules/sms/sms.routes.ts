@@ -25,6 +25,7 @@ import { z } from 'zod'
 import { authenticateUser, AuthenticatedRequest } from '../../middleware/auth.middleware'
 import { validateBody, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const p = prisma as any
 
@@ -319,7 +320,7 @@ export async function smsRoutes(fastify: FastifyInstance) {
         return reply.send(result)
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ success: false, error: error.message || 'Failed to send SMS' })
+        return reply.code(500).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to send SMS') })
       }
     }
   )
@@ -336,7 +337,7 @@ export async function smsRoutes(fastify: FastifyInstance) {
         return reply.send(result)
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ success: false, error: error.message || 'Failed to send SMS' })
+        return reply.code(500).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to send SMS') })
       }
     }
   )
@@ -357,7 +358,7 @@ export async function smsRoutes(fastify: FastifyInstance) {
         return reply.send(result)
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ success: false, error: error.message || 'Failed to send project SMS' })
+        return reply.code(500).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to send project SMS') })
       }
     }
   )
@@ -380,7 +381,7 @@ export async function smsRoutes(fastify: FastifyInstance) {
         return reply.send(result)
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ success: false, error: error.message || 'Failed to send templated SMS' })
+        return reply.code(500).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to send templated SMS') })
       }
     }
   )
@@ -428,7 +429,7 @@ export async function smsRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ success: false, error: error.message || 'Failed to get SMS logs' })
+        return reply.code(500).send({ success: false, error: sanitizeErrorMessage(error, 'Failed to get SMS logs') })
       }
     }
   )

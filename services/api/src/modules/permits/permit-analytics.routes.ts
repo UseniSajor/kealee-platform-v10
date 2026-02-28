@@ -10,6 +10,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -125,7 +126,7 @@ export async function permitAnalyticsRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list usage metrics' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list usage metrics') })
       }
     }
   )
@@ -178,7 +179,7 @@ export async function permitAnalyticsRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list integration logs' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list integration logs') })
       }
     }
   )
@@ -227,7 +228,7 @@ export async function permitAnalyticsRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list analytics' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list analytics') })
       }
     }
   )
@@ -280,7 +281,7 @@ export async function permitAnalyticsRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list corrections' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list corrections') })
       }
     }
   )
@@ -306,7 +307,7 @@ export async function permitAnalyticsRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: correction })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create correction' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create correction') })
       }
     }
   )
@@ -355,7 +356,7 @@ export async function permitAnalyticsRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list permit events' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list permit events') })
       }
     }
   )
@@ -408,7 +409,7 @@ export async function permitAnalyticsRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list review assignments' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list review assignments') })
       }
     }
   )
@@ -433,7 +434,7 @@ export async function permitAnalyticsRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: assignment })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create review assignment' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create review assignment') })
       }
     }
   )
@@ -486,7 +487,7 @@ export async function permitAnalyticsRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list inspection assignments' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list inspection assignments') })
       }
     }
   )
@@ -511,7 +512,7 @@ export async function permitAnalyticsRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: assignment })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create inspection assignment' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create inspection assignment') })
       }
     }
   )
@@ -560,7 +561,7 @@ export async function permitAnalyticsRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list routing rules' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list routing rules') })
       }
     }
   )
@@ -587,7 +588,7 @@ export async function permitAnalyticsRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: rule })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create routing rule' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create routing rule') })
       }
     }
   )
@@ -614,7 +615,7 @@ export async function permitAnalyticsRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update routing rule' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update routing rule') })
       }
     }
   )
@@ -663,7 +664,7 @@ export async function permitAnalyticsRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list AI reviews' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list AI reviews') })
       }
     }
   )

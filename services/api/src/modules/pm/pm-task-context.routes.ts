@@ -29,7 +29,7 @@ export async function pmTaskContextRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get task context',
+          error: sanitizeErrorMessage(error, 'Failed to get task context'),
         })
       }
     }
@@ -63,7 +63,7 @@ export async function pmTaskContextRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to complete requirement',
+          error: sanitizeErrorMessage(error, 'Failed to complete requirement'),
         })
       }
     }
@@ -91,7 +91,7 @@ export async function pmTaskContextRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to add note',
+          error: sanitizeErrorMessage(error, 'Failed to add note'),
         })
       }
     }
@@ -119,7 +119,7 @@ export async function pmTaskContextRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to request help',
+          error: sanitizeErrorMessage(error, 'Failed to request help'),
         })
       }
     }
@@ -147,7 +147,7 @@ export async function pmTaskContextRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to skip task',
+          error: sanitizeErrorMessage(error, 'Failed to skip task'),
         })
       }
     }
@@ -193,7 +193,7 @@ export async function pmTaskContextRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to log focus session',
+          error: sanitizeErrorMessage(error, 'Failed to log focus session'),
         })
       }
     }
@@ -201,6 +201,7 @@ export async function pmTaskContextRoutes(fastify: FastifyInstance) {
 }
 
 import { prismaAny } from '../../utils/prisma-helper'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 
 

@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { authenticateUser } from '../auth/auth.middleware'
 import { pmProductivityService } from './pm-productivity.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function pmProductivityRoutes(fastify: FastifyInstance) {
   // GET /pm/productivity - Get PM productivity dashboard
@@ -15,7 +16,7 @@ export async function pmProductivityRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(error.statusCode || 500).send({
-          error: error.message || 'Failed to get productivity dashboard',
+          error: sanitizeErrorMessage(error, 'Failed to get productivity dashboard'),
         })
       }
     }

@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { architectReviewWorkflowService } from './architect-review-workflow.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const submitDeliverableSchema = z.object({
   notes: z.string().optional(),
@@ -52,7 +53,7 @@ export async function architectReviewWorkflowRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to submit deliverable',
+          error: sanitizeErrorMessage(error, 'Failed to submit deliverable'),
         })
       }
     }
@@ -92,7 +93,7 @@ export async function architectReviewWorkflowRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to add comment',
+          error: sanitizeErrorMessage(error, 'Failed to add comment'),
         })
       }
     }
@@ -128,7 +129,7 @@ export async function architectReviewWorkflowRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to review deliverable',
+          error: sanitizeErrorMessage(error, 'Failed to review deliverable'),
         })
       }
     }
@@ -153,7 +154,7 @@ export async function architectReviewWorkflowRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get review status',
+          error: sanitizeErrorMessage(error, 'Failed to get review status'),
         })
       }
     }

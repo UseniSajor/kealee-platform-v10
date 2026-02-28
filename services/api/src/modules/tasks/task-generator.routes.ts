@@ -8,6 +8,7 @@ const getTaskTemplate = null as any;
 const listTaskTemplates = null as any;
 import { z } from 'zod'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const projectTypeSchema = z.enum(['KITCHEN', 'BATHROOM', 'ADDITION', 'NEW_CONSTRUCTION', 'RENOVATION', 'CUSTOM'])
 const phaseSchema = z.enum(['INITIATION', 'PLANNING', 'EXECUTION', 'MONITORING', 'CLOSEOUT'])
@@ -44,7 +45,7 @@ export async function taskGeneratorRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to generate tasks',
+          error: sanitizeErrorMessage(error, 'Failed to generate tasks'),
         })
       }
     }
@@ -62,7 +63,7 @@ export async function taskGeneratorRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to save template',
+          error: sanitizeErrorMessage(error, 'Failed to save template'),
         })
       }
     }
@@ -87,7 +88,7 @@ export async function taskGeneratorRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get template',
+          error: sanitizeErrorMessage(error, 'Failed to get template'),
         })
       }
     }
@@ -110,7 +111,7 @@ export async function taskGeneratorRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to list templates',
+          error: sanitizeErrorMessage(error, 'Failed to list templates'),
         })
       }
     }

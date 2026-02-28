@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../../middleware/auth.middleware'
 import { validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Routes
@@ -67,7 +68,7 @@ export async function webhookLogRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list webhook logs' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list webhook logs') })
       }
     }
   )
@@ -98,7 +99,7 @@ export async function webhookLogRoutes(fastify: FastifyInstance) {
         return reply.send({ data: log })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to fetch webhook log' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to fetch webhook log') })
       }
     }
   )
@@ -151,7 +152,7 @@ export async function webhookLogRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list webhook retries' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list webhook retries') })
       }
     }
   )
@@ -196,7 +197,7 @@ export async function webhookLogRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: retry, message: 'Retry scheduled' })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to schedule retry' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to schedule retry') })
       }
     }
   )

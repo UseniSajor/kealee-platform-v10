@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { authenticateUser } from '../auth/auth.middleware';
 import { validateBody, validateParams } from '../../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const p = prisma as any;
 
@@ -680,7 +681,7 @@ export async function scoringCalculatorRoutes(fastify: FastifyInstance) {
           errors.push({
             contractorId: contractor.id,
             companyName: contractor.companyName,
-            error: error.message || 'Unknown error',
+            error: sanitizeErrorMessage(error, 'Unknown error'),
           });
         }
       }

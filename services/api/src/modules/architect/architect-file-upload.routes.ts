@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { architectFileUploadService } from './architect-file-upload.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const getPresignedUrlSchema = z.object({
   designProjectId: z.string().uuid(),
@@ -50,7 +51,7 @@ export async function architectFileUploadRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get presigned URL',
+          error: sanitizeErrorMessage(error, 'Failed to get presigned URL'),
         })
       }
     }
@@ -80,7 +81,7 @@ export async function architectFileUploadRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to complete upload',
+          error: sanitizeErrorMessage(error, 'Failed to complete upload'),
         })
       }
     }
@@ -105,7 +106,7 @@ export async function architectFileUploadRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get download URL',
+          error: sanitizeErrorMessage(error, 'Failed to get download URL'),
         })
       }
     }

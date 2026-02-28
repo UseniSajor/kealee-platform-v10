@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -112,7 +113,7 @@ export async function communicationRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list communication logs' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list communication logs') })
       }
     }
   )
@@ -167,7 +168,7 @@ export async function communicationRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list activity logs' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list activity logs') })
       }
     }
   )
@@ -222,7 +223,7 @@ export async function communicationRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list issues' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list issues') })
       }
     }
   )
@@ -247,7 +248,7 @@ export async function communicationRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: issue })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create issue' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create issue') })
       }
     }
   )
@@ -278,7 +279,7 @@ export async function communicationRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update issue' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update issue') })
       }
     }
   )
@@ -331,7 +332,7 @@ export async function communicationRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list distributions' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list distributions') })
       }
     }
   )
@@ -356,7 +357,7 @@ export async function communicationRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: distribution })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create distribution' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create distribution') })
       }
     }
   )
@@ -409,7 +410,7 @@ export async function communicationRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list project managers' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list project managers') })
       }
     }
   )
@@ -431,7 +432,7 @@ export async function communicationRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: manager })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to assign project manager' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to assign project manager') })
       }
     }
   )

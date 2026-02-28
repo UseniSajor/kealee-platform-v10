@@ -11,6 +11,7 @@ import { eventService } from '../events/event.service'
 import { getStripe } from '../billing/stripe.client'
 import { mapStripeSubscriptionStatus, getPlanSlugFromPriceId, OPS_SERVICES_MODULE_KEY } from '../billing/billing.constants'
 import { entitlementService } from '../entitlements/entitlement.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // Rate limiting: track webhook attempts
 const webhookAttempts = new Map<string, { count: number; resetAt: number }>()
@@ -171,7 +172,7 @@ async function processWebhookEvent(event: Stripe.Event): Promise<void> {
 
       if (retryCount >= maxRetries) {
         console.error(`❌ Failed to process webhook event ${event.id} after ${maxRetries} retries:`, error)
-        await logWebhookError(event.id, event.type, error.message || 'Unknown error', retryCount)
+        await logWebhookError(event.id, event.type, sanitizeErrorMessage(error, 'Unknown error'), retryCount)
         throw error
       }
 

@@ -8,6 +8,7 @@ import { NotFoundError, AuthorizationError } from '../../errors/app.error'
 import { prisma } from '@kealee/database'
 import { RATE_LIMIT_CONFIG } from '../../middleware/rate-limit.middleware'
 import { z } from 'zod'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function userRoutes(fastify: FastifyInstance) {
   // Register per-user rate limiting for user routes
@@ -94,7 +95,7 @@ export async function userRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         const statusCode = error.message === 'User not found' ? 404 : 500
         return reply.code(statusCode).send({
-          error: error.message || 'Failed to get user',
+          error: sanitizeErrorMessage(error, 'Failed to get user'),
         })
       }
     }
@@ -135,7 +136,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update user',
+          error: sanitizeErrorMessage(error, 'Failed to update user'),
         })
       }
     }

@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser, requireAdmin, requirePM } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma, Decimal } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -179,7 +180,7 @@ export async function platformFeeRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to list platform fees',
+          error: sanitizeErrorMessage(error, 'Failed to list platform fees'),
         })
       }
     }
@@ -231,7 +232,7 @@ export async function platformFeeRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get platform fee',
+          error: sanitizeErrorMessage(error, 'Failed to get platform fee'),
         })
       }
     }
@@ -293,7 +294,7 @@ export async function platformFeeRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to list fee configurations',
+          error: sanitizeErrorMessage(error, 'Failed to list fee configurations'),
         })
       }
     }
@@ -373,7 +374,7 @@ export async function platformFeeRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to create fee configuration',
+          error: sanitizeErrorMessage(error, 'Failed to create fee configuration'),
         })
       }
     }
@@ -467,7 +468,7 @@ export async function platformFeeRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to update fee configuration',
+          error: sanitizeErrorMessage(error, 'Failed to update fee configuration'),
         })
       }
     }

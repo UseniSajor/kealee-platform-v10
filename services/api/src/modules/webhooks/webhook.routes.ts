@@ -42,7 +42,7 @@ export async function webhookRoutes(fastify: FastifyInstance) {
 
         return reply.status(201).send({data: webhook});
       } catch (error: any) {
-        return reply.status(500).send({error: error.message});
+        return reply.status(500).send({error: sanitizeErrorMessage(error)});
       }
     }
   );
@@ -71,7 +71,7 @@ export async function webhookRoutes(fastify: FastifyInstance) {
 
         return reply.send({ data: webhooks });
       } catch (error: any) {
-        return reply.status(500).send({error: error.message});
+        return reply.status(500).send({error: sanitizeErrorMessage(error)});
       }
     }
   );
@@ -96,7 +96,7 @@ export async function webhookRoutes(fastify: FastifyInstance) {
 
         return reply.status(204).send();
       } catch (error: any) {
-        return reply.status(500).send({error: error.message});
+        return reply.status(500).send({error: sanitizeErrorMessage(error)});
       }
     }
   );

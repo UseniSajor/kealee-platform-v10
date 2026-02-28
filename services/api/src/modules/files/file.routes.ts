@@ -9,6 +9,7 @@ import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateQuery, validateParams } from '../../middleware/validation.middleware'
 import { fileService } from './file.service'
 import { fileValidationService } from './file-validation.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function fileRoutes(fastify: FastifyInstance) {
   // POST /files/presigned-url - Get presigned URL for upload
@@ -52,7 +53,7 @@ export async function fileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get presigned URL',
+          error: sanitizeErrorMessage(error, 'Failed to get presigned URL'),
         })
       }
     }
@@ -91,7 +92,7 @@ export async function fileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to complete upload',
+          error: sanitizeErrorMessage(error, 'Failed to complete upload'),
         })
       }
     }
@@ -143,7 +144,7 @@ export async function fileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'File upload failed',
+          error: sanitizeErrorMessage(error, 'File upload failed'),
         })
       }
     }
@@ -183,7 +184,7 @@ export async function fileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to list files',
+          error: sanitizeErrorMessage(error, 'Failed to list files'),
         })
       }
     }
@@ -205,7 +206,7 @@ export async function fileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get file',
+          error: sanitizeErrorMessage(error, 'Failed to get file'),
         })
       }
     }
@@ -227,7 +228,7 @@ export async function fileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get download URL',
+          error: sanitizeErrorMessage(error, 'Failed to get download URL'),
         })
       }
     }
@@ -249,7 +250,7 @@ export async function fileRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to delete file',
+          error: sanitizeErrorMessage(error, 'Failed to delete file'),
         })
       }
     }

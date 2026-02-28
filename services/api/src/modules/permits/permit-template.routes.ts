@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -149,7 +150,7 @@ export async function permitTemplateRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list permit templates' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list permit templates') })
       }
     }
   )
@@ -175,7 +176,7 @@ export async function permitTemplateRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: template })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create permit template' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create permit template') })
       }
     }
   )
@@ -202,7 +203,7 @@ export async function permitTemplateRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update permit template' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update permit template') })
       }
     }
   )
@@ -240,7 +241,7 @@ export async function permitTemplateRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list form templates' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list form templates') })
       }
     }
   )
@@ -262,7 +263,7 @@ export async function permitTemplateRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: template })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create form template' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create form template') })
       }
     }
   )
@@ -299,7 +300,7 @@ export async function permitTemplateRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list expedited services' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list expedited services') })
       }
     }
   )
@@ -321,7 +322,7 @@ export async function permitTemplateRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: service })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create expedited service' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create expedited service') })
       }
     }
   )
@@ -370,7 +371,7 @@ export async function permitTemplateRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list notifications' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list notifications') })
       }
     }
   )
@@ -398,7 +399,7 @@ export async function permitTemplateRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: notification })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to send notification' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to send notification') })
       }
     }
   )
@@ -435,7 +436,7 @@ export async function permitTemplateRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list remote inspections' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list remote inspections') })
       }
     }
   )
@@ -460,7 +461,7 @@ export async function permitTemplateRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: inspection })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create remote inspection' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create remote inspection') })
       }
     }
   )
@@ -490,7 +491,7 @@ export async function permitTemplateRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update remote inspection' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update remote inspection') })
       }
     }
   )

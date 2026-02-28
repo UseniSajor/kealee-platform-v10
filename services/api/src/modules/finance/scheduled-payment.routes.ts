@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser, requireAdmin, requirePM } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma, Decimal } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -153,7 +154,7 @@ export async function scheduledPaymentRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to list scheduled payments',
+          error: sanitizeErrorMessage(error, 'Failed to list scheduled payments'),
         })
       }
     }
@@ -205,7 +206,7 @@ export async function scheduledPaymentRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get scheduled payment',
+          error: sanitizeErrorMessage(error, 'Failed to get scheduled payment'),
         })
       }
     }
@@ -287,7 +288,7 @@ export async function scheduledPaymentRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to create scheduled payment',
+          error: sanitizeErrorMessage(error, 'Failed to create scheduled payment'),
         })
       }
     }
@@ -374,7 +375,7 @@ export async function scheduledPaymentRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to update scheduled payment',
+          error: sanitizeErrorMessage(error, 'Failed to update scheduled payment'),
         })
       }
     }
@@ -443,7 +444,7 @@ export async function scheduledPaymentRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to cancel scheduled payment',
+          error: sanitizeErrorMessage(error, 'Failed to cancel scheduled payment'),
         })
       }
     }

@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { authenticateUser } from '../middleware/auth.middleware';
 import { validateBody, validateParams } from '../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
+import { sanitizeErrorMessage } from '../utils/sanitize-error'
 // AI review function - uses @kealee/automation AI service if available
 async function reviewPermitWithAI(permit: any): Promise<{ score: number; issues: any[]; suggestions: any[] }> {
   try {
@@ -65,7 +66,7 @@ export async function permitRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to fetch permits',
+          error: sanitizeErrorMessage(error, 'Failed to fetch permits'),
         });
       }
     }
@@ -116,7 +117,7 @@ export async function permitRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to create permit',
+          error: sanitizeErrorMessage(error, 'Failed to create permit'),
         });
       }
     }
@@ -156,7 +157,7 @@ export async function permitRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to fetch permit',
+          error: sanitizeErrorMessage(error, 'Failed to fetch permit'),
         });
       }
     }
@@ -213,7 +214,7 @@ export async function permitRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to review permit',
+          error: sanitizeErrorMessage(error, 'Failed to review permit'),
         });
       }
     }
@@ -302,7 +303,7 @@ export async function permitRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to submit permit',
+          error: sanitizeErrorMessage(error, 'Failed to submit permit'),
         });
       }
     }

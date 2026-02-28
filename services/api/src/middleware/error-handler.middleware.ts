@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify'
 import { ZodError } from 'zod'
 import { AppError } from '../errors/app.error'
 import { logError } from './logging.middleware'
+import { sanitizeErrorMessage } from '../utils/sanitize-error'
 
 /**
  * Structured error response format
@@ -85,7 +86,7 @@ export async function errorHandler(
   if ((error as any).statusCode) {
     return reply.code((error as any).statusCode).send({
       error: {
-        message: error.message || 'An error occurred',
+        message: sanitizeErrorMessage(error, 'An error occurred'),
         statusCode: (error as any).statusCode,
         timestamp: new Date().toISOString(),
         path: request.url,

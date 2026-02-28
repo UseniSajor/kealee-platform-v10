@@ -6,6 +6,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { prismaAny } from '../../utils/prisma-helper'
 import { authenticateUser } from '../auth/auth.middleware'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function webhookStatusRoutes(fastify: FastifyInstance) {
   // GET /webhooks/status - Get webhook processing status
@@ -92,7 +93,7 @@ export async function webhookStatusRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get webhook status',
+          error: sanitizeErrorMessage(error, 'Failed to get webhook status'),
         })
       }
     }
@@ -147,7 +148,7 @@ export async function webhookStatusRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get webhook event status',
+          error: sanitizeErrorMessage(error, 'Failed to get webhook event status'),
         })
       }
     }
@@ -222,7 +223,7 @@ export async function webhookStatusRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to process test webhook request',
+          error: sanitizeErrorMessage(error, 'Failed to process test webhook request'),
         })
       }
     }

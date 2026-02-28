@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { getSupabaseClient } from '../utils/supabase-client';
+import { sanitizeErrorMessage } from '../utils/sanitize-error'
 
 // Get the centralized Supabase client (handles missing credentials gracefully)
 const supabase = getSupabaseClient();
@@ -93,7 +94,7 @@ export async function authenticateUser(
   } catch (error: any) {
     return reply.code(401).send({
       error: 'Authentication failed',
-      message: error.message || 'Unable to authenticate user'
+      message: sanitizeErrorMessage(error, 'Unable to authenticate user')
     });
   }
 }

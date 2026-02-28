@@ -4,6 +4,7 @@
 
 import {FastifyInstance, FastifyRequest, FastifyReply} from 'fastify';
 import {apiKeyService} from './api-key.service';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error';
 
 export async function apiKeyRoutes(fastify: FastifyInstance) {
   // POST /api/v1/api-keys - Generate API key
@@ -45,7 +46,7 @@ export async function apiKeyRoutes(fastify: FastifyInstance) {
 
         return reply.status(201).send({data: apiKey});
       } catch (error: any) {
-        return reply.status(500).send({error: error.message});
+        return reply.status(500).send({error: sanitizeErrorMessage(error)});
       }
     }
   );
@@ -71,7 +72,7 @@ export async function apiKeyRoutes(fastify: FastifyInstance) {
 
         return reply.send({data: apiKeys});
       } catch (error: any) {
-        return reply.status(500).send({error: error.message});
+        return reply.status(500).send({error: sanitizeErrorMessage(error)});
       }
     }
   );
@@ -93,7 +94,7 @@ export async function apiKeyRoutes(fastify: FastifyInstance) {
 
         return reply.status(204).send();
       } catch (error: any) {
-        return reply.status(500).send({error: error.message});
+        return reply.status(500).send({error: sanitizeErrorMessage(error)});
       }
     }
   );

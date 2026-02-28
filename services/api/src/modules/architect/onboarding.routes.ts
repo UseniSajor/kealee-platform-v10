@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -115,7 +116,7 @@ export async function onboardingRoutes(fastify: FastifyInstance) {
         return reply.send({ data: onboarding })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to fetch onboarding status' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to fetch onboarding status') })
       }
     }
   )
@@ -140,7 +141,7 @@ export async function onboardingRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: onboarding })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create onboarding' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create onboarding') })
       }
     }
   )
@@ -170,7 +171,7 @@ export async function onboardingRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update onboarding' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update onboarding') })
       }
     }
   )
@@ -213,7 +214,7 @@ export async function onboardingRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list templates' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list templates') })
       }
     }
   )
@@ -240,7 +241,7 @@ export async function onboardingRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: template })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create template' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create template') })
       }
     }
   )
@@ -285,7 +286,7 @@ export async function onboardingRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: instance })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to instantiate template' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to instantiate template') })
       }
     }
   )
@@ -328,7 +329,7 @@ export async function onboardingRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list standard details' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list standard details') })
       }
     }
   )
@@ -354,7 +355,7 @@ export async function onboardingRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: detail })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create standard detail' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create standard detail') })
       }
     }
   )
@@ -405,7 +406,7 @@ export async function onboardingRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list benchmarks' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list benchmarks') })
       }
     }
   )
@@ -427,7 +428,7 @@ export async function onboardingRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: benchmark })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create benchmark' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create benchmark') })
       }
     }
   )

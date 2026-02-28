@@ -6,6 +6,7 @@
 
 import { FastifyPluginAsync } from 'fastify'
 import { prismaAny } from '../../utils/prisma-helper'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 import { userResponsibilityUploadService } from '../files/user-responsibility-upload.service'
 import {
   CreateProjectInput,
@@ -90,7 +91,7 @@ const clientActionsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to create project')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -145,7 +146,7 @@ const clientActionsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to upload photos')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -204,7 +205,7 @@ const clientActionsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to fetch bids')
       return reply.code(500).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -309,7 +310,7 @@ const clientActionsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to accept bid')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -360,7 +361,7 @@ const clientActionsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to fetch milestones')
       return reply.code(500).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -513,7 +514,7 @@ const clientActionsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to approve milestone')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -556,7 +557,7 @@ const clientActionsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to fetch change orders')
       return reply.code(500).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -640,7 +641,7 @@ const clientActionsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to approve change order')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -736,7 +737,7 @@ const clientActionsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to create review')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -832,7 +833,7 @@ const clientActionsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to fund escrow')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })

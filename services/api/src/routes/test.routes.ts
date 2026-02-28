@@ -2,6 +2,22 @@ import { FastifyPluginAsync } from 'fastify';
 import * as Sentry from '@sentry/node';
 
 const testRoutes: FastifyPluginAsync = async (fastify) => {
+  // Block test routes in production
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production'
+  if (isProduction) {
+    fastify.get('/test-sentry', async (_request, reply) => {
+      return reply.code(404).send({ error: 'Not found' })
+    })
+    fastify.get('/test-sentry/database-error', async (_request, reply) => {
+      return reply.code(404).send({ error: 'Not found' })
+    })
+    fastify.get('/test-sentry/payment-error', async (_request, reply) => {
+      return reply.code(404).send({ error: 'Not found' })
+    })
+    fastify.log.info('🔒 Test routes disabled in production')
+    return
+  }
+
   // Test Sentry error capture
   fastify.get('/test-sentry', async (request, reply) => {
     try {
@@ -31,16 +47,14 @@ const testRoutes: FastifyPluginAsync = async (fastify) => {
         success: true,
         message: 'Test error sent to Sentry successfully!',
         instructions: 'Check your Sentry dashboard at https://sentry.io',
-        error_message: error.message,
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
       fastify.log.error({ error }, '❌ Failed to send test error to Sentry');
       Sentry.captureException(error);
-      return reply.code(500).send({ 
+      return reply.code(500).send({
         success: false,
         error: 'Test failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });

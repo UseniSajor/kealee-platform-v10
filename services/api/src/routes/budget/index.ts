@@ -14,6 +14,7 @@ import {
   type AuthenticatedRequest,
 } from '../../middleware/auth.middleware'
 import { validateParams, validateQuery } from '../../middleware/validation.middleware'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod schemas
@@ -177,7 +178,7 @@ export async function budgetRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get budget data' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get budget data') })
       }
     },
   )
@@ -238,7 +239,7 @@ export async function budgetRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get budget history' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get budget history') })
       }
     },
   )

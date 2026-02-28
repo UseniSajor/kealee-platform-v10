@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody, validateQuery } from '../../middleware/validation.middleware'
 import { designProjectService } from './design-project.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createDesignProjectSchema = z.object({
   projectId: z.string().uuid().optional(), // Optional - can create standalone
@@ -56,7 +57,7 @@ export async function designProjectRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create design project',
+          error: sanitizeErrorMessage(error, 'Failed to create design project'),
         })
       }
     }
@@ -81,7 +82,7 @@ export async function designProjectRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list design projects',
+          error: sanitizeErrorMessage(error, 'Failed to list design projects'),
         })
       }
     }
@@ -101,7 +102,7 @@ export async function designProjectRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get available projects',
+          error: sanitizeErrorMessage(error, 'Failed to get available projects'),
         })
       }
     }
@@ -124,7 +125,7 @@ export async function designProjectRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Design project not found',
+          error: sanitizeErrorMessage(error, 'Design project not found'),
         })
       }
     }
@@ -155,7 +156,7 @@ export async function designProjectRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update design project',
+          error: sanitizeErrorMessage(error, 'Failed to update design project'),
         })
       }
     }
@@ -187,7 +188,7 @@ export async function designProjectRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to add team member',
+          error: sanitizeErrorMessage(error, 'Failed to add team member'),
         })
       }
     }

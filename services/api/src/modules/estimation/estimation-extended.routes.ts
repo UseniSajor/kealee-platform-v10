@@ -12,6 +12,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prismaAny } from '../../utils/prisma-helper'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ============================================================================
 // STATUS MAPPING — Backend enum ↔ Frontend simple strings
@@ -215,7 +216,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ estimate })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create estimate' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create estimate') })
       }
     }
   )
@@ -267,7 +268,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to load estimate' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to load estimate') })
       }
     }
   )
@@ -309,7 +310,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.send({ estimate })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update estimate' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update estimate') })
       }
     }
   )
@@ -330,7 +331,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to delete estimate' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to delete estimate') })
       }
     }
   )
@@ -388,7 +389,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ lineItem: item })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to add line item' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to add line item') })
       }
     }
   )
@@ -422,7 +423,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to delete line item' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to delete line item') })
       }
     }
   )
@@ -730,7 +731,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ assembly })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create assembly' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create assembly') })
       }
     }
   )
@@ -750,7 +751,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.send({ assembly })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update assembly' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update assembly') })
       }
     }
   )
@@ -766,7 +767,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to delete assembly' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to delete assembly') })
       }
     }
   )
@@ -839,7 +840,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ assembly })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create from template' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create from template') })
       }
     }
   )
@@ -1335,7 +1336,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ estimate: duplicate })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to duplicate estimate' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to duplicate estimate') })
       }
     }
   )
@@ -1456,7 +1457,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to calculate estimate' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to calculate estimate') })
       }
     }
   )
@@ -1502,7 +1503,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to export estimate' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to export estimate') })
       }
     }
   )
@@ -1577,7 +1578,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ section })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create section' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create section') })
       }
     }
   )
@@ -1634,7 +1635,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ sections, count: sections.length })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to create CSI sections' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to create CSI sections') })
       }
     }
   )
@@ -1729,7 +1730,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ item })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create line item' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create line item') })
       }
     }
   )
@@ -1785,7 +1786,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ items: created, count: created.length })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to bulk create line items' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to bulk create line items') })
       }
     }
   )
@@ -1877,7 +1878,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ items: created, count: created.length, assembly: { id: assembly.id, name: assembly.name } })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to add items from assembly' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to add items from assembly') })
       }
     }
   )
@@ -2001,7 +2002,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ revision })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to create revision' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to create revision') })
       }
     }
   )
@@ -2148,7 +2149,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'CTC search failed' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'CTC search failed') })
       }
     }
   )
@@ -2209,7 +2210,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get CTC divisions' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get CTC divisions') })
       }
     }
   )
@@ -2249,7 +2250,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.send({ data: { ...task, modifiers } })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get CTC task' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get CTC task') })
       }
     }
   )
@@ -2426,7 +2427,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to create CTC estimate' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to create CTC estimate') })
       }
     }
   )
@@ -2510,7 +2511,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to start AI takeoff' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to start AI takeoff') })
       }
     }
   )
@@ -2539,7 +2540,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         return reply.send({ data: job })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get takeoff job' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get takeoff job') })
       }
     }
   )
@@ -2656,7 +2657,7 @@ export async function estimationExtendedRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to confirm takeoff' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to confirm takeoff') })
       }
     }
   )

@@ -107,7 +107,7 @@ export async function bidAutomationRoutes(fastify: FastifyInstance) {
         results.details.push({ projectName: bidData.projectName, action: 'created', bidId: bid.id })
       } catch (error: any) {
         results.errors++
-        results.details.push({ projectName: bidData.projectName, action: 'error', error: error.message })
+        results.details.push({ projectName: bidData.projectName, action: 'error', error: sanitizeErrorMessage(error)})
       }
     }
 

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { servicePlanService, PACKAGE_TIERS } from './service-plan.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createServicePlanSchema = z.object({
   packageTier: z.enum(['A', 'B', 'C', 'D']),
@@ -28,7 +29,7 @@ export async function servicePlanRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get package tiers',
+          error: sanitizeErrorMessage(error, 'Failed to get package tiers'),
         })
       }
     }
@@ -55,7 +56,7 @@ export async function servicePlanRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create service plan',
+          error: sanitizeErrorMessage(error, 'Failed to create service plan'),
         })
       }
     }
@@ -80,7 +81,7 @@ export async function servicePlanRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get service plan',
+          error: sanitizeErrorMessage(error, 'Failed to get service plan'),
         })
       }
     }
@@ -104,7 +105,7 @@ export async function servicePlanRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Service plan not found',
+          error: sanitizeErrorMessage(error, 'Service plan not found'),
         })
       }
     }
@@ -131,7 +132,7 @@ export async function servicePlanRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list service plans',
+          error: sanitizeErrorMessage(error, 'Failed to list service plans'),
         })
       }
     }
@@ -160,7 +161,7 @@ export async function servicePlanRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update service plan',
+          error: sanitizeErrorMessage(error, 'Failed to update service plan'),
         })
       }
     }
@@ -186,7 +187,7 @@ export async function servicePlanRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to cancel service plan',
+          error: sanitizeErrorMessage(error, 'Failed to cancel service plan'),
         })
       }
     }

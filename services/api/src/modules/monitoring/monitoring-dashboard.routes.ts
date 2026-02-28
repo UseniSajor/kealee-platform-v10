@@ -6,6 +6,7 @@
 import { FastifyInstance } from 'fastify'
 import { authenticateUser } from '../auth/auth.middleware'
 import { monitoringDashboardService } from './monitoring-dashboard.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function monitoringDashboardRoutes(fastify: FastifyInstance) {
   // GET /monitoring/dashboard - Get dashboard metrics
@@ -34,7 +35,7 @@ export async function monitoringDashboardRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get dashboard metrics',
+          error: sanitizeErrorMessage(error, 'Failed to get dashboard metrics'),
         })
       }
     }

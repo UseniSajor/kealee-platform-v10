@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { authenticateUser } from '../auth/auth.middleware'
 import { prismaAny } from '../../utils/prisma-helper'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 /**
  * Server-Sent Events (SSE) route for real-time task updates
@@ -88,7 +89,7 @@ export async function pmRealtimeRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         if (!reply.sent) {
           return reply.code(500).send({
-            error: error.message || 'Failed to establish real-time connection',
+            error: sanitizeErrorMessage(error, 'Failed to establish real-time connection'),
           })
         }
       }
@@ -197,7 +198,7 @@ export async function pmRealtimeRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         if (!reply.sent) {
           return reply.code(500).send({
-            error: error.message || 'Failed to establish real-time connection',
+            error: sanitizeErrorMessage(error, 'Failed to establish real-time connection'),
           })
         }
       }

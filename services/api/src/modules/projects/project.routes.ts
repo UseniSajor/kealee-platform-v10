@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { addProjectMemberSchema, createProjectSchema, updateProjectSchema } from '../../schemas'
 import { projectService } from './project.service'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function projectRoutes(fastify: FastifyInstance) {
   // POST /projects - create draft project (wizard step 1)
@@ -130,7 +131,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         if (error instanceof NotFoundError || error instanceof ValidationError) {
           return reply.code(400).send({
-            error: error.message || 'Failed to create project from lead',
+            error: sanitizeErrorMessage(error, 'Failed to create project from lead'),
           })
         }
         return reply.code(500).send({

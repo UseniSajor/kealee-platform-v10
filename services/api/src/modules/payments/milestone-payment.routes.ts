@@ -10,6 +10,7 @@ import { validateParams, validateBody } from '../../middleware/validation.middle
 import { milestonePaymentService } from './milestone-payment.service'
 import { stripeConnectService } from './stripe-connect.service'
 import { paymentReportingService } from './payment-reporting.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const releasePaymentSchema = z.object({
   skipHoldback: z.boolean().optional(),
@@ -51,7 +52,7 @@ export async function milestonePaymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to release payment',
+          error: sanitizeErrorMessage(error, 'Failed to release payment'),
         })
       }
     }
@@ -77,7 +78,7 @@ export async function milestonePaymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to confirm payment',
+          error: sanitizeErrorMessage(error, 'Failed to confirm payment'),
         })
       }
     }
@@ -108,7 +109,7 @@ export async function milestonePaymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to process refund',
+          error: sanitizeErrorMessage(error, 'Failed to process refund'),
         })
       }
     }
@@ -130,7 +131,7 @@ export async function milestonePaymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get payment details',
+          error: sanitizeErrorMessage(error, 'Failed to get payment details'),
         })
       }
     }
@@ -162,7 +163,7 @@ export async function milestonePaymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create Connect account',
+          error: sanitizeErrorMessage(error, 'Failed to create Connect account'),
         })
       }
     }
@@ -180,7 +181,7 @@ export async function milestonePaymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get account status',
+          error: sanitizeErrorMessage(error, 'Failed to get account status'),
         })
       }
     }
@@ -209,7 +210,7 @@ export async function milestonePaymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create account link',
+          error: sanitizeErrorMessage(error, 'Failed to create account link'),
         })
       }
     }
@@ -242,7 +243,7 @@ export async function milestonePaymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get revenue report',
+          error: sanitizeErrorMessage(error, 'Failed to get revenue report'),
         })
       }
     }
@@ -275,7 +276,7 @@ export async function milestonePaymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to export revenue report',
+          error: sanitizeErrorMessage(error, 'Failed to export revenue report'),
         })
       }
     }
@@ -305,7 +306,7 @@ export async function milestonePaymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get contractor payments',
+          error: sanitizeErrorMessage(error, 'Failed to get contractor payments'),
         })
       }
     }

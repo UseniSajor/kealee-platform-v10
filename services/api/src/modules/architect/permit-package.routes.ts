@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { permitPackageService } from './permit-package.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createPermitPackageSchema = z.object({
   jurisdictionId: z.string().uuid().optional(),
@@ -94,7 +95,7 @@ export async function permitPackageRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create permit package',
+          error: sanitizeErrorMessage(error, 'Failed to create permit package'),
         })
       }
     }
@@ -124,7 +125,7 @@ export async function permitPackageRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to auto-generate permit package',
+          error: sanitizeErrorMessage(error, 'Failed to auto-generate permit package'),
         })
       }
     }
@@ -147,7 +148,7 @@ export async function permitPackageRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Permit package not found',
+          error: sanitizeErrorMessage(error, 'Permit package not found'),
         })
       }
     }
@@ -174,7 +175,7 @@ export async function permitPackageRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list permit packages',
+          error: sanitizeErrorMessage(error, 'Failed to list permit packages'),
         })
       }
     }
@@ -199,7 +200,7 @@ export async function permitPackageRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to add document to package',
+          error: sanitizeErrorMessage(error, 'Failed to add document to package'),
         })
       }
     }
@@ -224,7 +225,7 @@ export async function permitPackageRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update application form',
+          error: sanitizeErrorMessage(error, 'Failed to update application form'),
         })
       }
     }
@@ -251,7 +252,7 @@ export async function permitPackageRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to verify application form',
+          error: sanitizeErrorMessage(error, 'Failed to verify application form'),
         })
       }
     }
@@ -280,7 +281,7 @@ export async function permitPackageRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to submit permit package',
+          error: sanitizeErrorMessage(error, 'Failed to submit permit package'),
         })
       }
     }
@@ -303,7 +304,7 @@ export async function permitPackageRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to sync permit package status',
+          error: sanitizeErrorMessage(error, 'Failed to sync permit package status'),
         })
       }
     }
@@ -328,7 +329,7 @@ export async function permitPackageRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to add review comment',
+          error: sanitizeErrorMessage(error, 'Failed to add review comment'),
         })
       }
     }
@@ -357,7 +358,7 @@ export async function permitPackageRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to resolve review comment',
+          error: sanitizeErrorMessage(error, 'Failed to resolve review comment'),
         })
       }
     }

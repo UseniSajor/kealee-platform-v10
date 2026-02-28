@@ -8,6 +8,7 @@ import { billingService } from './billing.service'
 import { prismaAny } from '../../utils/prisma-helper'
 import { getStripe } from './stripe.client'
 import type { BillingInterval, GCPlanSlug } from './billing.constants'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const listPlansQuerySchema = z.object({}).optional()
 
@@ -142,7 +143,7 @@ export async function billingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create checkout session',
+          error: sanitizeErrorMessage(error, 'Failed to create checkout session'),
         })
       }
     }
@@ -203,7 +204,7 @@ export async function billingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'No subscription found',
+          error: sanitizeErrorMessage(error, 'No subscription found'),
         })
       }
     }
@@ -227,7 +228,7 @@ export async function billingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to fetch subscriptions',
+          error: sanitizeErrorMessage(error, 'Failed to fetch subscriptions'),
         })
       }
     }
@@ -264,7 +265,7 @@ export async function billingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create subscription',
+          error: sanitizeErrorMessage(error, 'Failed to create subscription'),
         })
       }
     }
@@ -297,7 +298,7 @@ export async function billingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to cancel subscription',
+          error: sanitizeErrorMessage(error, 'Failed to cancel subscription'),
         })
       }
     }
@@ -335,7 +336,7 @@ export async function billingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to change subscription plan',
+          error: sanitizeErrorMessage(error, 'Failed to change subscription plan'),
         })
       }
     }
@@ -426,7 +427,7 @@ export async function billingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update subscription',
+          error: sanitizeErrorMessage(error, 'Failed to update subscription'),
         })
       }
     }
@@ -458,7 +459,7 @@ export async function billingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get revenue report',
+          error: sanitizeErrorMessage(error, 'Failed to get revenue report'),
         })
       }
     }
@@ -490,7 +491,7 @@ export async function billingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get subscription metrics',
+          error: sanitizeErrorMessage(error, 'Failed to get subscription metrics'),
         })
       }
     }
@@ -531,7 +532,7 @@ export async function billingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to send revenue report email',
+          error: sanitizeErrorMessage(error, 'Failed to send revenue report email'),
         })
       }
     }
@@ -572,7 +573,7 @@ export async function billingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to send subscription metrics email',
+          error: sanitizeErrorMessage(error, 'Failed to send subscription metrics email'),
         })
       }
     }
@@ -599,7 +600,7 @@ export async function billingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         request.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Failed to get subscription details',
+          error: sanitizeErrorMessage(error, 'Failed to get subscription details'),
         })
       }
     }

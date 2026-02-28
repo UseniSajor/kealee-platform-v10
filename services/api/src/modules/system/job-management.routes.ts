@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { authenticateUser } from '../../middleware/auth.middleware';
 import { validateBody, validateQuery, validateParams } from '../../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const p = prisma as any;
 
@@ -103,7 +104,7 @@ export async function jobManagementRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list jobs',
+          error: sanitizeErrorMessage(error, 'Failed to list jobs'),
         });
       }
     }
@@ -136,7 +137,7 @@ export async function jobManagementRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to get job',
+          error: sanitizeErrorMessage(error, 'Failed to get job'),
         });
       }
     }
@@ -191,7 +192,7 @@ export async function jobManagementRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to retry job',
+          error: sanitizeErrorMessage(error, 'Failed to retry job'),
         });
       }
     }
@@ -237,7 +238,7 @@ export async function jobManagementRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to cancel job',
+          error: sanitizeErrorMessage(error, 'Failed to cancel job'),
         });
       }
     }
@@ -273,7 +274,7 @@ export async function jobManagementRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list schedules',
+          error: sanitizeErrorMessage(error, 'Failed to list schedules'),
         });
       }
     }
@@ -313,7 +314,7 @@ export async function jobManagementRoutes(fastify: FastifyInstance) {
         }
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to create schedule',
+          error: sanitizeErrorMessage(error, 'Failed to create schedule'),
         });
       }
     }
@@ -362,7 +363,7 @@ export async function jobManagementRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to update schedule',
+          error: sanitizeErrorMessage(error, 'Failed to update schedule'),
         });
       }
     }
@@ -394,7 +395,7 @@ export async function jobManagementRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to delete schedule',
+          error: sanitizeErrorMessage(error, 'Failed to delete schedule'),
         });
       }
     }
@@ -437,7 +438,7 @@ export async function jobManagementRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to pause schedule',
+          error: sanitizeErrorMessage(error, 'Failed to pause schedule'),
         });
       }
     }
@@ -480,7 +481,7 @@ export async function jobManagementRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to resume schedule',
+          error: sanitizeErrorMessage(error, 'Failed to resume schedule'),
         });
       }
     }

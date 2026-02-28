@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody, validateQuery } from '../../middleware/validation.middleware'
 import { leadsService } from './leads.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const distributeLeadBodySchema = z.object({
   distributionCount: z.number().int().min(1).max(20).optional(),
@@ -76,7 +77,7 @@ export async function leadsRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create lead',
+          error: sanitizeErrorMessage(error, 'Failed to create lead'),
         })
       }
     }
@@ -109,7 +110,7 @@ export async function leadsRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list leads',
+          error: sanitizeErrorMessage(error, 'Failed to list leads'),
         })
       }
     }
@@ -149,7 +150,7 @@ export async function leadsRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to distribute lead',
+          error: sanitizeErrorMessage(error, 'Failed to distribute lead'),
         })
       }
     }
@@ -172,7 +173,7 @@ export async function leadsRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Lead not found',
+          error: sanitizeErrorMessage(error, 'Lead not found'),
         })
       }
     }
@@ -199,7 +200,7 @@ export async function leadsRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update lead stage',
+          error: sanitizeErrorMessage(error, 'Failed to update lead stage'),
         })
       }
     }
@@ -226,7 +227,7 @@ export async function leadsRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to assign sales rep',
+          error: sanitizeErrorMessage(error, 'Failed to assign sales rep'),
         })
       }
     }
@@ -253,7 +254,7 @@ export async function leadsRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to award contractor',
+          error: sanitizeErrorMessage(error, 'Failed to award contractor'),
         })
       }
     }
@@ -280,7 +281,7 @@ export async function leadsRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to close lead',
+          error: sanitizeErrorMessage(error, 'Failed to close lead'),
         })
       }
     }

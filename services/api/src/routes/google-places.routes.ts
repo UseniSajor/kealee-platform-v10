@@ -13,7 +13,8 @@ import {
   geocodeAddress,
   detectJurisdiction,
   reverseGeocode,
-} from '../services/google-places.service';
+}
+import { sanitizeErrorMessage } from '../utils/sanitize-error' from '../services/google-places.service';
 
 const autocompleteSchema = z.object({
   input: z.string().min(1).max(200),
@@ -82,7 +83,7 @@ export async function googlePlacesRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to autocomplete addresses',
+          error: sanitizeErrorMessage(error, 'Failed to autocomplete addresses'),
         });
       }
     }
@@ -108,7 +109,7 @@ export async function googlePlacesRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to get place details',
+          error: sanitizeErrorMessage(error, 'Failed to get place details'),
         });
       }
     }
@@ -134,7 +135,7 @@ export async function googlePlacesRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to geocode address',
+          error: sanitizeErrorMessage(error, 'Failed to geocode address'),
         });
       }
     }
@@ -160,7 +161,7 @@ export async function googlePlacesRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to reverse geocode',
+          error: sanitizeErrorMessage(error, 'Failed to reverse geocode'),
         });
       }
     }
@@ -186,7 +187,7 @@ export async function googlePlacesRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to detect jurisdiction',
+          error: sanitizeErrorMessage(error, 'Failed to detect jurisdiction'),
         });
       }
     }

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { drawingSetService } from './drawing-set.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createSheetSchema = z.object({
   deliverableId: z.string().uuid().optional(),
@@ -66,7 +67,7 @@ export async function drawingSetRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create sheet',
+          error: sanitizeErrorMessage(error, 'Failed to create sheet'),
         })
       }
     }
@@ -94,7 +95,7 @@ export async function drawingSetRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list sheets',
+          error: sanitizeErrorMessage(error, 'Failed to list sheets'),
         })
       }
     }
@@ -117,7 +118,7 @@ export async function drawingSetRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Sheet not found',
+          error: sanitizeErrorMessage(error, 'Sheet not found'),
         })
       }
     }
@@ -146,7 +147,7 @@ export async function drawingSetRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update sheet',
+          error: sanitizeErrorMessage(error, 'Failed to update sheet'),
         })
       }
     }
@@ -175,7 +176,7 @@ export async function drawingSetRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to add revision',
+          error: sanitizeErrorMessage(error, 'Failed to add revision'),
         })
       }
     }
@@ -204,7 +205,7 @@ export async function drawingSetRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update title block',
+          error: sanitizeErrorMessage(error, 'Failed to update title block'),
         })
       }
     }
@@ -234,7 +235,7 @@ export async function drawingSetRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create drawing set',
+          error: sanitizeErrorMessage(error, 'Failed to create drawing set'),
         })
       }
     }
@@ -257,7 +258,7 @@ export async function drawingSetRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list drawing sets',
+          error: sanitizeErrorMessage(error, 'Failed to list drawing sets'),
         })
       }
     }
@@ -280,7 +281,7 @@ export async function drawingSetRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Drawing set not found',
+          error: sanitizeErrorMessage(error, 'Drawing set not found'),
         })
       }
     }
@@ -304,7 +305,7 @@ export async function drawingSetRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to generate PDF',
+          error: sanitizeErrorMessage(error, 'Failed to generate PDF'),
         })
       }
     }

@@ -12,7 +12,8 @@ import {
   validateQuery,
   validateParams,
   validateBody,
-} from '../../middleware/validation.middleware'
+}
+import { sanitizeErrorMessage } from '../../utils/sanitize-error' from '../../middleware/validation.middleware'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -177,7 +178,7 @@ export async function licenseTrackingRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch licenses',
+          error: sanitizeErrorMessage(error, 'Failed to fetch licenses'),
         })
       }
     },
@@ -215,7 +216,7 @@ export async function licenseTrackingRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch license',
+          error: sanitizeErrorMessage(error, 'Failed to fetch license'),
         })
       }
     },
@@ -255,7 +256,7 @@ export async function licenseTrackingRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to create license',
+          error: sanitizeErrorMessage(error, 'Failed to create license'),
         })
       }
     },
@@ -296,7 +297,7 @@ export async function licenseTrackingRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to update license',
+          error: sanitizeErrorMessage(error, 'Failed to update license'),
         })
       }
     },
@@ -357,7 +358,7 @@ export async function licenseTrackingRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch insurance certificates',
+          error: sanitizeErrorMessage(error, 'Failed to fetch insurance certificates'),
         })
       }
     },
@@ -398,7 +399,7 @@ export async function licenseTrackingRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to create insurance certificate',
+          error: sanitizeErrorMessage(error, 'Failed to create insurance certificate'),
         })
       }
     },
@@ -439,7 +440,7 @@ export async function licenseTrackingRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to update insurance certificate',
+          error: sanitizeErrorMessage(error, 'Failed to update insurance certificate'),
         })
       }
     },
@@ -504,7 +505,7 @@ export async function licenseTrackingRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch bonds',
+          error: sanitizeErrorMessage(error, 'Failed to fetch bonds'),
         })
       }
     },
@@ -543,7 +544,7 @@ export async function licenseTrackingRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to create bond',
+          error: sanitizeErrorMessage(error, 'Failed to create bond'),
         })
       }
     },
@@ -584,7 +585,7 @@ export async function licenseTrackingRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to update bond',
+          error: sanitizeErrorMessage(error, 'Failed to update bond'),
         })
       }
     },

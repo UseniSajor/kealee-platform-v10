@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { qualityControlService } from './quality-control.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createChecklistTemplateSchema = z.object({
   name: z.string().min(1),
@@ -104,7 +105,7 @@ export async function qualityControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create QC checklist template',
+          error: sanitizeErrorMessage(error, 'Failed to create QC checklist template'),
         })
       }
     }
@@ -134,7 +135,7 @@ export async function qualityControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create QC checklist',
+          error: sanitizeErrorMessage(error, 'Failed to create QC checklist'),
         })
       }
     }
@@ -157,7 +158,7 @@ export async function qualityControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'QC checklist not found',
+          error: sanitizeErrorMessage(error, 'QC checklist not found'),
         })
       }
     }
@@ -185,7 +186,7 @@ export async function qualityControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list QC checklists',
+          error: sanitizeErrorMessage(error, 'Failed to list QC checklists'),
         })
       }
     }
@@ -214,7 +215,7 @@ export async function qualityControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update checklist item status',
+          error: sanitizeErrorMessage(error, 'Failed to update checklist item status'),
         })
       }
     }
@@ -244,7 +245,7 @@ export async function qualityControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create random sample check',
+          error: sanitizeErrorMessage(error, 'Failed to create random sample check'),
         })
       }
     }
@@ -274,7 +275,7 @@ export async function qualityControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to report QC error',
+          error: sanitizeErrorMessage(error, 'Failed to report QC error'),
         })
       }
     }
@@ -303,7 +304,7 @@ export async function qualityControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to resolve QC error',
+          error: sanitizeErrorMessage(error, 'Failed to resolve QC error'),
         })
       }
     }
@@ -334,7 +335,7 @@ export async function qualityControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create corrective action',
+          error: sanitizeErrorMessage(error, 'Failed to create corrective action'),
         })
       }
     }
@@ -363,7 +364,7 @@ export async function qualityControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update corrective action status',
+          error: sanitizeErrorMessage(error, 'Failed to update corrective action status'),
         })
       }
     }
@@ -392,7 +393,7 @@ export async function qualityControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to verify corrective action',
+          error: sanitizeErrorMessage(error, 'Failed to verify corrective action'),
         })
       }
     }
@@ -415,7 +416,7 @@ export async function qualityControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get QC metrics',
+          error: sanitizeErrorMessage(error, 'Failed to get QC metrics'),
         })
       }
     }
@@ -445,7 +446,7 @@ export async function qualityControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create improvement feedback',
+          error: sanitizeErrorMessage(error, 'Failed to create improvement feedback'),
         })
       }
     }
@@ -476,7 +477,7 @@ export async function qualityControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list improvement feedback',
+          error: sanitizeErrorMessage(error, 'Failed to list improvement feedback'),
         })
       }
     }
@@ -502,7 +503,7 @@ export async function qualityControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to implement improvement feedback',
+          error: sanitizeErrorMessage(error, 'Failed to implement improvement feedback'),
         })
       }
     }

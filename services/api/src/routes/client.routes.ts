@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { authenticateUser, requirePM } from '../middleware/auth.middleware';
 import { validateBody, validateQuery, validateParams } from '../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
+import { sanitizeErrorMessage } from '../utils/sanitize-error'
 
 const createClientSchema = z.object({
   name: z.string().min(1).max(200),
@@ -136,7 +137,7 @@ export async function clientRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to fetch clients',
+          error: sanitizeErrorMessage(error, 'Failed to fetch clients'),
         });
       }
     }
@@ -188,7 +189,7 @@ export async function clientRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to fetch unassigned clients',
+          error: sanitizeErrorMessage(error, 'Failed to fetch unassigned clients'),
         });
       }
     }
@@ -302,7 +303,7 @@ export async function clientRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to request assignment',
+          error: sanitizeErrorMessage(error, 'Failed to request assignment'),
         });
       }
     }
@@ -345,7 +346,7 @@ export async function clientRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to fetch client',
+          error: sanitizeErrorMessage(error, 'Failed to fetch client'),
         });
       }
     }
@@ -374,7 +375,7 @@ export async function clientRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to create client',
+          error: sanitizeErrorMessage(error, 'Failed to create client'),
         });
       }
     }
@@ -415,7 +416,7 @@ export async function clientRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to update client',
+          error: sanitizeErrorMessage(error, 'Failed to update client'),
         });
       }
     }

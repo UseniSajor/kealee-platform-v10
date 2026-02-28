@@ -6,6 +6,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { ComplianceMonitoringService } from './compliance-monitoring.service';
 import { authenticateUser, requireRole } from '../auth/auth.middleware';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function complianceRoutes(fastify: FastifyInstance) {
   // All routes require authentication
@@ -28,7 +29,7 @@ export async function complianceRoutes(fastify: FastifyInstance) {
       fastify.log.error(error);
       return reply.code(500).send({
         success: false,
-        error: error.message || 'Failed to get compliance status',
+        error: sanitizeErrorMessage(error, 'Failed to get compliance status'),
       });
     }
   });
@@ -59,7 +60,7 @@ export async function complianceRoutes(fastify: FastifyInstance) {
       fastify.log.error(error);
       return reply.code(500).send({
         success: false,
-        error: error.message || 'Pre-contract check failed',
+        error: sanitizeErrorMessage(error, 'Pre-contract check failed'),
       });
     }
   });
@@ -88,7 +89,7 @@ export async function complianceRoutes(fastify: FastifyInstance) {
       fastify.log.error(error);
       return reply.code(500).send({
         success: false,
-        error: error.message || 'Pre-payment check failed',
+        error: sanitizeErrorMessage(error, 'Pre-payment check failed'),
       });
     }
   });
@@ -120,7 +121,7 @@ export async function complianceRoutes(fastify: FastifyInstance) {
       fastify.log.error(error);
       return reply.code(500).send({
         success: false,
-        error: error.message || 'Failed to get alerts',
+        error: sanitizeErrorMessage(error, 'Failed to get alerts'),
       });
     }
   });
@@ -145,7 +146,7 @@ export async function complianceRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Daily monitoring failed',
+          error: sanitizeErrorMessage(error, 'Daily monitoring failed'),
         });
       }
     }
@@ -169,7 +170,7 @@ export async function complianceRoutes(fastify: FastifyInstance) {
       fastify.log.error(error);
       return reply.code(500).send({
         success: false,
-        error: error.message || 'Failed to get state requirements',
+        error: sanitizeErrorMessage(error, 'Failed to get state requirements'),
       });
     }
   });

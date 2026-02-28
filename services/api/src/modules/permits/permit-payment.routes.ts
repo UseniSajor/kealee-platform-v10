@@ -10,6 +10,7 @@ import { validateBody, validateParams } from '../../middleware/validation.middle
 import { prismaAny } from '../../utils/prisma-helper'
 import { getStripe } from '../billing/stripe.client'
 import { paymentService } from '../payments/payment.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createCheckoutSessionSchema = z.object({
   permitId: z.string(),
@@ -100,7 +101,7 @@ export async function permitPaymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to create checkout session',
+          error: sanitizeErrorMessage(error, 'Failed to create checkout session'),
         })
       }
     }
@@ -175,7 +176,7 @@ export async function permitPaymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to create expedited checkout',
+          error: sanitizeErrorMessage(error, 'Failed to create expedited checkout'),
         })
       }
     }
@@ -254,7 +255,7 @@ export async function permitPaymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to create document prep checkout',
+          error: sanitizeErrorMessage(error, 'Failed to create document prep checkout'),
         })
       }
     }
@@ -312,7 +313,7 @@ export async function permitPaymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to calculate fees',
+          error: sanitizeErrorMessage(error, 'Failed to calculate fees'),
         })
       }
     }
@@ -382,7 +383,7 @@ export async function permitPaymentRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to confirm payment',
+          error: sanitizeErrorMessage(error, 'Failed to confirm payment'),
         })
       }
     }

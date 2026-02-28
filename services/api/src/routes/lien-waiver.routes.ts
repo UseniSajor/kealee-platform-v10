@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser, requireRole, type AuthenticatedRequest } from '../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../middleware/validation.middleware'
 import { LienWaiverService } from '../modules/compliance/lien-waiver.service'
+import { sanitizeErrorMessage } from '../utils/sanitize-error'
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -131,7 +132,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to generate lien waiver',
+          error: sanitizeErrorMessage(error, 'Failed to generate lien waiver'),
         })
       }
     }
@@ -175,7 +176,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to list lien waivers',
+          error: sanitizeErrorMessage(error, 'Failed to list lien waivers'),
         })
       }
     }
@@ -209,7 +210,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get lien waiver',
+          error: sanitizeErrorMessage(error, 'Failed to get lien waiver'),
         })
       }
     }
@@ -247,7 +248,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to send lien waiver',
+          error: sanitizeErrorMessage(error, 'Failed to send lien waiver'),
         })
       }
     }
@@ -297,7 +298,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to record signature',
+          error: sanitizeErrorMessage(error, 'Failed to record signature'),
         })
       }
     }
@@ -342,7 +343,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to notarize lien waiver',
+          error: sanitizeErrorMessage(error, 'Failed to notarize lien waiver'),
         })
       }
     }
@@ -376,7 +377,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get contract waivers',
+          error: sanitizeErrorMessage(error, 'Failed to get contract waivers'),
         })
       }
     }
@@ -410,7 +411,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get payment waivers',
+          error: sanitizeErrorMessage(error, 'Failed to get payment waivers'),
         })
       }
     }
@@ -444,7 +445,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to verify lien waiver',
+          error: sanitizeErrorMessage(error, 'Failed to verify lien waiver'),
         })
       }
     }
@@ -478,7 +479,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to check compliance',
+          error: sanitizeErrorMessage(error, 'Failed to check compliance'),
         })
       }
     }
@@ -516,7 +517,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get lien waiver statistics',
+          error: sanitizeErrorMessage(error, 'Failed to get lien waiver statistics'),
         })
       }
     }

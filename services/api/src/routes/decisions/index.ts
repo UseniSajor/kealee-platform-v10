@@ -21,7 +21,8 @@ import {
   validateBody,
   validateParams,
   validateQuery,
-} from '../../middleware/validation.middleware'
+}
+import { sanitizeErrorMessage } from '../../utils/sanitize-error' from '../../middleware/validation.middleware'
 
 // ---------------------------------------------------------------------------
 // Zod schemas
@@ -125,7 +126,7 @@ export async function decisionRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get pending decisions' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get pending decisions') })
       }
     },
   )
@@ -185,7 +186,7 @@ export async function decisionRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get client decisions' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get client decisions') })
       }
     },
   )
@@ -255,7 +256,7 @@ export async function decisionRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to resolve decision' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to resolve decision') })
       }
     },
   )
@@ -320,7 +321,7 @@ export async function decisionRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get decision history' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get decision history') })
       }
     },
   )

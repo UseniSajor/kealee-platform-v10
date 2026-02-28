@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -112,7 +113,7 @@ export async function approvalManagementRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list approval rules' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list approval rules') })
       }
     }
   )
@@ -134,7 +135,7 @@ export async function approvalManagementRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: rule })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create approval rule' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create approval rule') })
       }
     }
   )
@@ -161,7 +162,7 @@ export async function approvalManagementRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update approval rule' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update approval rule') })
       }
     }
   )
@@ -190,7 +191,7 @@ export async function approvalManagementRoutes(fastify: FastifyInstance) {
         return reply.send({ data: attachments })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list attachments' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list attachments') })
       }
     }
   )
@@ -212,7 +213,7 @@ export async function approvalManagementRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: attachment })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create attachment' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create attachment') })
       }
     }
   )
@@ -244,7 +245,7 @@ export async function approvalManagementRoutes(fastify: FastifyInstance) {
         return reply.send({ data: comments })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list comments' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list comments') })
       }
     }
   )
@@ -270,7 +271,7 @@ export async function approvalManagementRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: comment })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to add comment' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to add comment') })
       }
     }
   )
@@ -322,7 +323,7 @@ export async function approvalManagementRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list assignment requests' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list assignment requests') })
       }
     }
   )
@@ -344,7 +345,7 @@ export async function approvalManagementRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: assignmentReq })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create assignment request' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create assignment request') })
       }
     }
   )
@@ -371,7 +372,7 @@ export async function approvalManagementRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update assignment request' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update assignment request') })
       }
     }
   )

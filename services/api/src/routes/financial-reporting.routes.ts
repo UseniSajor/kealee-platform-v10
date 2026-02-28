@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser, requireRole, type AuthenticatedRequest } from '../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../middleware/validation.middleware'
 import { FinancialReportingService } from '../modules/reporting/financial-reporting.service'
+import { sanitizeErrorMessage } from '../utils/sanitize-error'
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -70,7 +71,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to generate cash flow statement',
+          error: sanitizeErrorMessage(error, 'Failed to generate cash flow statement'),
         })
       }
     }
@@ -104,7 +105,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to generate profit & loss report',
+          error: sanitizeErrorMessage(error, 'Failed to generate profit & loss report'),
         })
       }
     }
@@ -139,7 +140,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to generate escrow summary',
+          error: sanitizeErrorMessage(error, 'Failed to generate escrow summary'),
         })
       }
     }
@@ -173,7 +174,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to generate transaction volume report',
+          error: sanitizeErrorMessage(error, 'Failed to generate transaction volume report'),
         })
       }
     }
@@ -207,7 +208,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to generate fee revenue report',
+          error: sanitizeErrorMessage(error, 'Failed to generate fee revenue report'),
         })
       }
     }
@@ -243,7 +244,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to generate contractor payout report',
+          error: sanitizeErrorMessage(error, 'Failed to generate contractor payout report'),
         })
       }
     }
@@ -278,7 +279,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get dashboard metrics',
+          error: sanitizeErrorMessage(error, 'Failed to get dashboard metrics'),
         })
       }
     }
@@ -362,7 +363,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to export report',
+          error: sanitizeErrorMessage(error, 'Failed to export report'),
         })
       }
     }
@@ -418,7 +419,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to generate financial summary',
+          error: sanitizeErrorMessage(error, 'Failed to generate financial summary'),
         })
       }
     }

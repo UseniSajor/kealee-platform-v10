@@ -10,6 +10,7 @@ import { prismaAny } from '../utils/prisma-helper';
 import { emailService } from '../modules/email/email.service';
 import { z } from 'zod';
 import { validateBody } from '../middleware/validation.middleware';
+import { sanitizeErrorMessage } from '../utils/sanitize-error'
 
 const stripe = new Stripe(config.stripeSecretKey || process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2023-10-16',
@@ -91,7 +92,7 @@ export async function stripeRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to create checkout session',
+          error: sanitizeErrorMessage(error, 'Failed to create checkout session'),
         });
       }
     }
@@ -196,7 +197,7 @@ export async function stripeRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(500).send({
-          error: error.message || 'Failed to create portal session',
+          error: sanitizeErrorMessage(error, 'Failed to create portal session'),
         });
       }
     }

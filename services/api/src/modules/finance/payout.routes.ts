@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser, requireAdmin, requirePM } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma, Decimal } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ============================================================================
 // VALIDATION SCHEMAS
@@ -153,7 +154,7 @@ export async function payoutRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to list payouts',
+          error: sanitizeErrorMessage(error, 'Failed to list payouts'),
         })
       }
     }
@@ -225,7 +226,7 @@ export async function payoutRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get payout',
+          error: sanitizeErrorMessage(error, 'Failed to get payout'),
         })
       }
     }
@@ -344,7 +345,7 @@ export async function payoutRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to create payout',
+          error: sanitizeErrorMessage(error, 'Failed to create payout'),
         })
       }
     }
@@ -438,7 +439,7 @@ export async function payoutRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to update payout',
+          error: sanitizeErrorMessage(error, 'Failed to update payout'),
         })
       }
     }

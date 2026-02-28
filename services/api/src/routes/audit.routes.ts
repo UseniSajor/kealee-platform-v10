@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest } from 'fastify'
 import { auditService } from '../modules/audit/audit.service'
 import { authenticateUser } from '../middleware/auth.middleware'
+import { sanitizeErrorMessage } from '../utils/sanitize-error'
 
 // Helper to extract IP and user agent from request
 function getRequestMetadata(request: FastifyRequest) {
@@ -56,7 +57,7 @@ export async function auditRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to record audit log',
+          error: sanitizeErrorMessage(error, 'Failed to record audit log'),
         })
       }
     }
@@ -100,7 +101,7 @@ export async function auditRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error)
       return reply.code(500).send({
-        error: error.message || 'Failed to get audit logs',
+        error: sanitizeErrorMessage(error, 'Failed to get audit logs'),
       })
     }
   })
@@ -115,7 +116,7 @@ export async function auditRoutes(fastify: FastifyInstance) {
       fastify.log.error(error)
       const statusCode = error.message === 'Audit log not found' ? 404 : 500
       return reply.code(statusCode).send({
-        error: error.message || 'Failed to get audit log',
+        error: sanitizeErrorMessage(error, 'Failed to get audit log'),
       })
     }
   })
@@ -137,7 +138,7 @@ export async function auditRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error)
       return reply.code(500).send({
-        error: error.message || 'Failed to get entity audit trail',
+        error: sanitizeErrorMessage(error, 'Failed to get entity audit trail'),
       })
     }
   })
@@ -157,7 +158,7 @@ export async function auditRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error)
       return reply.code(500).send({
-        error: error.message || 'Failed to get user audit logs',
+        error: sanitizeErrorMessage(error, 'Failed to get user audit logs'),
       })
     }
   })
@@ -178,7 +179,7 @@ export async function auditRoutes(fastify: FastifyInstance) {
   //   } catch (error: any) {
   //     fastify.log.error(error)
   //     return reply.code(500).send({
-  //       error: error.message || 'Failed to get audit logs by action',
+  //       error: sanitizeErrorMessage(error, 'Failed to get audit logs by action'),
   //     })
   //   }
   // })
@@ -206,7 +207,7 @@ export async function auditRoutes(fastify: FastifyInstance) {
   //     } catch (error: any) {
   //       fastify.log.error(error)
   //       return reply.code(500).send({
-  //         error: error.message || 'Failed to get privileged actions',
+  //         error: sanitizeErrorMessage(error, 'Failed to get privileged actions'),
   //       })
   //     }
   //   }
@@ -233,7 +234,7 @@ export async function auditRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to get audit stats',
+          error: sanitizeErrorMessage(error, 'Failed to get audit stats'),
         })
       }
     }
@@ -254,7 +255,7 @@ export async function auditRoutes(fastify: FastifyInstance) {
   //   } catch (error: any) {
   //     fastify.log.error(error)
   //     return reply.code(500).send({
-  //       error: error.message || 'Failed to check action',
+  //       error: sanitizeErrorMessage(error, 'Failed to check action'),
   //     })
   //   }
   // })

@@ -12,7 +12,8 @@ import {
   validateQuery,
   validateParams,
   validateBody,
-} from '../../middleware/validation.middleware'
+}
+import { sanitizeErrorMessage } from '../../utils/sanitize-error' from '../../middleware/validation.middleware'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -187,7 +188,7 @@ export async function complianceRulesRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch compliance rules',
+          error: sanitizeErrorMessage(error, 'Failed to fetch compliance rules'),
         })
       }
     },
@@ -226,7 +227,7 @@ export async function complianceRulesRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch compliance rule',
+          error: sanitizeErrorMessage(error, 'Failed to fetch compliance rule'),
         })
       }
     },
@@ -269,7 +270,7 @@ export async function complianceRulesRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to create compliance rule',
+          error: sanitizeErrorMessage(error, 'Failed to create compliance rule'),
         })
       }
     },
@@ -310,7 +311,7 @@ export async function complianceRulesRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to update compliance rule',
+          error: sanitizeErrorMessage(error, 'Failed to update compliance rule'),
         })
       }
     },
@@ -367,7 +368,7 @@ export async function complianceRulesRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch compliance checks',
+          error: sanitizeErrorMessage(error, 'Failed to fetch compliance checks'),
         })
       }
     },
@@ -420,7 +421,7 @@ export async function complianceRulesRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to run compliance check',
+          error: sanitizeErrorMessage(error, 'Failed to run compliance check'),
         })
       }
     },
@@ -477,7 +478,7 @@ export async function complianceRulesRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch compliance reports',
+          error: sanitizeErrorMessage(error, 'Failed to fetch compliance reports'),
         })
       }
     },
@@ -514,7 +515,7 @@ export async function complianceRulesRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to generate compliance report',
+          error: sanitizeErrorMessage(error, 'Failed to generate compliance report'),
         })
       }
     },
@@ -577,7 +578,7 @@ export async function complianceRulesRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch compliance alerts',
+          error: sanitizeErrorMessage(error, 'Failed to fetch compliance alerts'),
         })
       }
     },
@@ -636,7 +637,7 @@ export async function complianceRulesRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to update compliance alert',
+          error: sanitizeErrorMessage(error, 'Failed to update compliance alert'),
         })
       }
     },

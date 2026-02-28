@@ -9,6 +9,7 @@ import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { z } from 'zod'
 import { fileService } from '../files/file.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function pmApprovalRoutes(fastify: FastifyInstance) {
   // Multipart already registered globally in index.ts
@@ -53,7 +54,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to fetch approval requests',
+          error: sanitizeErrorMessage(error, 'Failed to fetch approval requests'),
         })
       }
     }
@@ -76,7 +77,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         const statusCode = error.message?.includes('not found') ? 404 : error.message?.includes('authorized') ? 403 : 400
         return reply.code(statusCode).send({
-          error: error.message || 'Failed to fetch approval request',
+          error: sanitizeErrorMessage(error, 'Failed to fetch approval request'),
         })
       }
     }
@@ -173,7 +174,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create approval request',
+          error: sanitizeErrorMessage(error, 'Failed to create approval request'),
         })
       }
     }
@@ -195,7 +196,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to submit approval request',
+          error: sanitizeErrorMessage(error, 'Failed to submit approval request'),
         })
       }
     }
@@ -223,7 +224,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         const statusCode = error.message?.includes('authorized') ? 403 : 400
         return reply.code(statusCode).send({
-          error: error.message || 'Failed to approve request',
+          error: sanitizeErrorMessage(error, 'Failed to approve request'),
         })
       }
     }
@@ -251,7 +252,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         const statusCode = error.message?.includes('authorized') ? 403 : 400
         return reply.code(statusCode).send({
-          error: error.message || 'Failed to reject request',
+          error: sanitizeErrorMessage(error, 'Failed to reject request'),
         })
       }
     }
@@ -279,7 +280,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         const statusCode = error.message?.includes('authorized') ? 403 : 400
         return reply.code(statusCode).send({
-          error: error.message || 'Failed to cancel request',
+          error: sanitizeErrorMessage(error, 'Failed to cancel request'),
         })
       }
     }
@@ -305,7 +306,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to fetch pending approvals',
+          error: sanitizeErrorMessage(error, 'Failed to fetch pending approvals'),
         })
       }
     }
@@ -345,7 +346,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to fetch approval rules',
+          error: sanitizeErrorMessage(error, 'Failed to fetch approval rules'),
         })
       }
     }
@@ -371,7 +372,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to fetch approval rule',
+          error: sanitizeErrorMessage(error, 'Failed to fetch approval rule'),
         })
       }
     }
@@ -413,7 +414,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create approval rule',
+          error: sanitizeErrorMessage(error, 'Failed to create approval rule'),
         })
       }
     }
@@ -458,7 +459,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         const statusCode = error.message?.includes('not found') ? 404 : 400
         return reply.code(statusCode).send({
-          error: error.message || 'Failed to update approval rule',
+          error: sanitizeErrorMessage(error, 'Failed to update approval rule'),
         })
       }
     }
@@ -479,7 +480,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         const statusCode = error.message?.includes('not found') ? 404 : 400
         return reply.code(statusCode).send({
-          error: error.message || 'Failed to delete approval rule',
+          error: sanitizeErrorMessage(error, 'Failed to delete approval rule'),
         })
       }
     }
@@ -528,7 +529,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to add attachment',
+          error: sanitizeErrorMessage(error, 'Failed to add attachment'),
         })
       }
     }
@@ -554,7 +555,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         const statusCode = error.message?.includes('authorized') ? 403 : 400
         return reply.code(statusCode).send({
-          error: error.message || 'Failed to delete attachment',
+          error: sanitizeErrorMessage(error, 'Failed to delete attachment'),
         })
       }
     }
@@ -585,7 +586,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to add comment',
+          error: sanitizeErrorMessage(error, 'Failed to add comment'),
         })
       }
     }
@@ -607,7 +608,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to fetch comments',
+          error: sanitizeErrorMessage(error, 'Failed to fetch comments'),
         })
       }
     }
@@ -641,7 +642,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to generate approval report',
+          error: sanitizeErrorMessage(error, 'Failed to generate approval report'),
         })
       }
     }

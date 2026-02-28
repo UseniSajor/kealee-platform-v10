@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -89,7 +90,7 @@ export async function backupDRRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list backups' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list backups') })
       }
     }
   )
@@ -116,7 +117,7 @@ export async function backupDRRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: backup })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create backup' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create backup') })
       }
     }
   )
@@ -140,7 +141,7 @@ export async function backupDRRoutes(fastify: FastifyInstance) {
         return reply.send({ data: backup })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to fetch backup' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to fetch backup') })
       }
     }
   )
@@ -177,7 +178,7 @@ export async function backupDRRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated, message: 'Restore initiated' })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to restore backup' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to restore backup') })
       }
     }
   )
@@ -222,7 +223,7 @@ export async function backupDRRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list DR plans' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list DR plans') })
       }
     }
   )
@@ -249,7 +250,7 @@ export async function backupDRRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: plan })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create DR plan' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create DR plan') })
       }
     }
   )
@@ -279,7 +280,7 @@ export async function backupDRRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update DR plan' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update DR plan') })
       }
     }
   )
@@ -315,7 +316,7 @@ export async function backupDRRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated, message: 'DR plan test initiated' })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to test DR plan' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to test DR plan') })
       }
     }
   )

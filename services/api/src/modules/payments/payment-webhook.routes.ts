@@ -56,7 +56,7 @@ export async function paymentWebhookRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error('Payment webhook error:', error)
         // Always return 200 to Stripe even on error
-        return reply.send({ received: true, error: error.message })
+        return reply.send({ received: true, error: sanitizeErrorMessage(error)})
       }
     }
   )

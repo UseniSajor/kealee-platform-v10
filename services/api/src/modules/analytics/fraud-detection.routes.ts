@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { authenticateUser, AuthenticatedRequest } from '../../middleware/auth.middleware';
 import { validateBody, validateQuery, validateParams } from '../../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const p = prisma as any;
 
@@ -123,7 +124,7 @@ export async function fraudDetectionRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list fraud scores',
+          error: sanitizeErrorMessage(error, 'Failed to list fraud scores'),
         });
       }
     }
@@ -160,7 +161,7 @@ export async function fraudDetectionRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to get fraud score',
+          error: sanitizeErrorMessage(error, 'Failed to get fraud score'),
         });
       }
     }
@@ -198,7 +199,7 @@ export async function fraudDetectionRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to create fraud score',
+          error: sanitizeErrorMessage(error, 'Failed to create fraud score'),
         });
       }
     }
@@ -254,7 +255,7 @@ export async function fraudDetectionRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list churn predictions',
+          error: sanitizeErrorMessage(error, 'Failed to list churn predictions'),
         });
       }
     }
@@ -307,7 +308,7 @@ export async function fraudDetectionRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to create churn prediction',
+          error: sanitizeErrorMessage(error, 'Failed to create churn prediction'),
         });
       }
     }

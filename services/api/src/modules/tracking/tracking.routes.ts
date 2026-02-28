@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../../middleware/auth.middleware'
 import { validateBody, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -105,7 +106,7 @@ export async function trackingRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list user actions' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list user actions') })
       }
     }
   )
@@ -158,7 +159,7 @@ export async function trackingRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list quick estimates' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list quick estimates') })
       }
     }
   )
@@ -184,7 +185,7 @@ export async function trackingRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: estimate })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create quick estimate' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create quick estimate') })
       }
     }
   )
@@ -239,7 +240,7 @@ export async function trackingRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list automation events' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list automation events') })
       }
     }
   )
@@ -299,7 +300,7 @@ export async function trackingRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list crew check-ins' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list crew check-ins') })
       }
     }
   )
@@ -325,7 +326,7 @@ export async function trackingRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: checkIn })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create crew check-in' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create crew check-in') })
       }
     }
   )

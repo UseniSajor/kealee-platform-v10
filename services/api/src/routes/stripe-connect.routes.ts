@@ -5,6 +5,7 @@
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
+import { sanitizeErrorMessage } from '../utils/sanitize-error'
 import { authenticateUser, requireRole, type AuthenticatedRequest } from '../middleware/auth.middleware'
 import { prisma } from '@kealee/database'
 import { ConnectOnboardingService } from '../modules/stripe-connect/connect-onboarding.service'
@@ -539,7 +540,7 @@ export async function stripeConnectRoutes(fastify: FastifyInstance) {
         return reply.send({ received: true })
       } catch (error: any) {
         console.error('Webhook error:', error)
-        return reply.code(400).send({ error: error.message })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Webhook verification failed') })
       }
     },
   })

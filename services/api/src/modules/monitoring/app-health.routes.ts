@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { authenticateUser } from '../../middleware/auth.middleware';
 import { validateBody, validateQuery, validateParams } from '../../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const p = prisma as any;
 
@@ -107,7 +108,7 @@ export async function appHealthRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list health metrics',
+          error: sanitizeErrorMessage(error, 'Failed to list health metrics'),
         });
       }
     }
@@ -157,7 +158,7 @@ export async function appHealthRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list alerts',
+          error: sanitizeErrorMessage(error, 'Failed to list alerts'),
         });
       }
     }
@@ -210,7 +211,7 @@ export async function appHealthRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(400).send({
           success: false,
-          error: error.message || 'Failed to update alert',
+          error: sanitizeErrorMessage(error, 'Failed to update alert'),
         });
       }
     }
@@ -260,7 +261,7 @@ export async function appHealthRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to list dead letter entries',
+          error: sanitizeErrorMessage(error, 'Failed to list dead letter entries'),
         });
       }
     }
@@ -306,7 +307,7 @@ export async function appHealthRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to retry dead letter entry',
+          error: sanitizeErrorMessage(error, 'Failed to retry dead letter entry'),
         });
       }
     }
@@ -353,7 +354,7 @@ export async function appHealthRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to dismiss dead letter entry',
+          error: sanitizeErrorMessage(error, 'Failed to dismiss dead letter entry'),
         });
       }
     }

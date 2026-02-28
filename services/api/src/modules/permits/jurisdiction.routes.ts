@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { jurisdictionService } from './jurisdiction.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createJurisdictionSchema = z.object({
   name: z.string().min(1),
@@ -57,7 +58,7 @@ export async function jurisdictionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create jurisdiction',
+          error: sanitizeErrorMessage(error, 'Failed to create jurisdiction'),
         })
       }
     }
@@ -82,7 +83,7 @@ export async function jurisdictionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list jurisdictions',
+          error: sanitizeErrorMessage(error, 'Failed to list jurisdictions'),
         })
       }
     }
@@ -105,7 +106,7 @@ export async function jurisdictionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Jurisdiction not found',
+          error: sanitizeErrorMessage(error, 'Jurisdiction not found'),
         })
       }
     }
@@ -134,7 +135,7 @@ export async function jurisdictionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update subscription',
+          error: sanitizeErrorMessage(error, 'Failed to update subscription'),
         })
       }
     }
@@ -160,7 +161,7 @@ export async function jurisdictionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to regenerate license key',
+          error: sanitizeErrorMessage(error, 'Failed to regenerate license key'),
         })
       }
     }
@@ -183,7 +184,7 @@ export async function jurisdictionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to validate license key',
+          error: sanitizeErrorMessage(error, 'Failed to validate license key'),
         })
       }
     }
@@ -213,7 +214,7 @@ export async function jurisdictionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get usage metrics',
+          error: sanitizeErrorMessage(error, 'Failed to get usage metrics'),
         })
       }
     }
@@ -242,7 +243,7 @@ export async function jurisdictionRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to update status',
+          error: sanitizeErrorMessage(error, 'Failed to update status'),
         })
       }
     }

@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { validateBody, validateQuery } from '../../middleware/validation.middleware';
 import { checkInService } from './check-in.service';
 import { broadcastToProject } from '@kealee/realtime';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ============================================================================
 // ZOD SCHEMAS
@@ -71,7 +72,7 @@ export async function checkInRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true, data: checkIn });
       } catch (error: any) {
         fastify.log.error(error);
-        return reply.code(400).send({ error: error.message || 'Check-in failed' });
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Check-in failed') });
       }
     }
   );
@@ -106,7 +107,7 @@ export async function checkInRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true, data: checkIn });
       } catch (error: any) {
         fastify.log.error(error);
-        return reply.code(400).send({ error: error.message || 'Check-out failed' });
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Check-out failed') });
       }
     }
   );
@@ -122,7 +123,7 @@ export async function checkInRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true, data: checkIn });
       } catch (error: any) {
         fastify.log.error(error);
-        return reply.code(400).send({ error: error.message });
+        return reply.code(400).send({ error: sanitizeErrorMessage(error)});
       }
     }
   );
@@ -135,7 +136,7 @@ export async function checkInRoutes(fastify: FastifyInstance) {
       return reply.send({ success: true, data: { onSite, count: onSite.length } });
     } catch (error: any) {
       fastify.log.error(error);
-      return reply.code(400).send({ error: error.message });
+      return reply.code(400).send({ error: sanitizeErrorMessage(error)});
     }
   });
 
@@ -147,7 +148,7 @@ export async function checkInRoutes(fastify: FastifyInstance) {
       return reply.send({ success: true, data: activity });
     } catch (error: any) {
       fastify.log.error(error);
-      return reply.code(400).send({ error: error.message });
+      return reply.code(400).send({ error: sanitizeErrorMessage(error)});
     }
   });
 
@@ -159,7 +160,7 @@ export async function checkInRoutes(fastify: FastifyInstance) {
       return reply.send({ success: true, data: attendance });
     } catch (error: any) {
       fastify.log.error(error);
-      return reply.code(400).send({ error: error.message });
+      return reply.code(400).send({ error: sanitizeErrorMessage(error)});
     }
   });
 
@@ -170,7 +171,7 @@ export async function checkInRoutes(fastify: FastifyInstance) {
       return reply.send({ success: true, data: fleet });
     } catch (error: any) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: error.message || 'Failed to get fleet view' });
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get fleet view') });
     }
   });
 }

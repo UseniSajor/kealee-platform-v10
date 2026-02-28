@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../../middleware/auth.middleware'
 import { validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Routes
@@ -79,7 +80,7 @@ export async function projectHistoryRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list phase history' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list phase history') })
       }
     }
   )
@@ -117,7 +118,7 @@ export async function projectHistoryRoutes(fastify: FastifyInstance) {
         return reply.send({ data: entry })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to fetch history entry' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to fetch history entry') })
       }
     }
   )

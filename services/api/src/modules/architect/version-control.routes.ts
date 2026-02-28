@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { versionControlService } from './version-control.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createBranchSchema = z.object({
   name: z.string().min(1),
@@ -74,7 +75,7 @@ export async function versionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create branch',
+          error: sanitizeErrorMessage(error, 'Failed to create branch'),
         })
       }
     }
@@ -104,7 +105,7 @@ export async function versionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list branches',
+          error: sanitizeErrorMessage(error, 'Failed to list branches'),
         })
       }
     }
@@ -127,7 +128,7 @@ export async function versionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Branch not found',
+          error: sanitizeErrorMessage(error, 'Branch not found'),
         })
       }
     }
@@ -151,7 +152,7 @@ export async function versionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get default branch',
+          error: sanitizeErrorMessage(error, 'Failed to get default branch'),
         })
       }
     }
@@ -181,7 +182,7 @@ export async function versionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create version',
+          error: sanitizeErrorMessage(error, 'Failed to create version'),
         })
       }
     }
@@ -204,7 +205,7 @@ export async function versionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Version not found',
+          error: sanitizeErrorMessage(error, 'Version not found'),
         })
       }
     }
@@ -236,7 +237,7 @@ export async function versionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list versions',
+          error: sanitizeErrorMessage(error, 'Failed to list versions'),
         })
       }
     }
@@ -266,7 +267,7 @@ export async function versionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to compare versions',
+          error: sanitizeErrorMessage(error, 'Failed to compare versions'),
         })
       }
     }
@@ -289,7 +290,7 @@ export async function versionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Comparison not found',
+          error: sanitizeErrorMessage(error, 'Comparison not found'),
         })
       }
     }
@@ -319,7 +320,7 @@ export async function versionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to merge branch',
+          error: sanitizeErrorMessage(error, 'Failed to merge branch'),
         })
       }
     }
@@ -349,7 +350,7 @@ export async function versionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to resolve merge conflicts',
+          error: sanitizeErrorMessage(error, 'Failed to resolve merge conflicts'),
         })
       }
     }
@@ -379,7 +380,7 @@ export async function versionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to rollback version',
+          error: sanitizeErrorMessage(error, 'Failed to rollback version'),
         })
       }
     }
@@ -402,7 +403,7 @@ export async function versionControlRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get rollback history',
+          error: sanitizeErrorMessage(error, 'Failed to get rollback history'),
         })
       }
     }

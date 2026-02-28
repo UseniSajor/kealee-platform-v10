@@ -10,6 +10,7 @@ import { randomBytes, createHash } from 'crypto'
 import { prisma } from '@kealee/database'
 import { authenticateUser, requireAdmin } from '../../middleware/auth.middleware'
 import { validateBody } from '../../middleware/validation.middleware'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -118,7 +119,7 @@ export async function authSecurityRoutes(fastify: FastifyInstance) {
       fastify.log.error(error)
       return reply.code(500).send({
         success: false,
-        error: error.message || 'Failed to set up 2FA',
+        error: sanitizeErrorMessage(error, 'Failed to set up 2FA'),
       })
     }
   })
@@ -187,7 +188,7 @@ export async function authSecurityRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to verify 2FA',
+          error: sanitizeErrorMessage(error, 'Failed to verify 2FA'),
         })
       }
     },
@@ -235,7 +236,7 @@ export async function authSecurityRoutes(fastify: FastifyInstance) {
       fastify.log.error(error)
       return reply.code(500).send({
         success: false,
-        error: error.message || 'Failed to disable 2FA',
+        error: sanitizeErrorMessage(error, 'Failed to disable 2FA'),
       })
     }
   })
@@ -280,7 +281,7 @@ export async function authSecurityRoutes(fastify: FastifyInstance) {
       fastify.log.error(error)
       return reply.code(500).send({
         success: false,
-        error: error.message || 'Failed to fetch backup codes',
+        error: sanitizeErrorMessage(error, 'Failed to fetch backup codes'),
       })
     }
   })
@@ -332,7 +333,7 @@ export async function authSecurityRoutes(fastify: FastifyInstance) {
       fastify.log.error(error)
       return reply.code(500).send({
         success: false,
-        error: error.message || 'Failed to regenerate backup codes',
+        error: sanitizeErrorMessage(error, 'Failed to regenerate backup codes'),
       })
     }
   })
@@ -395,7 +396,7 @@ export async function authSecurityRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to create password reset token',
+          error: sanitizeErrorMessage(error, 'Failed to create password reset token'),
         })
       }
     },
@@ -450,7 +451,7 @@ export async function authSecurityRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to verify reset token',
+          error: sanitizeErrorMessage(error, 'Failed to verify reset token'),
         })
       }
     },

@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../../middleware/auth.middleware'
 import { validateBody, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // CSV Parser
@@ -362,7 +363,7 @@ export async function costImportRoutes(fastify: FastifyInstance) {
       })
     } catch (error: any) {
       fastify.log.error(error)
-      return reply.code(500).send({ error: error.message || 'Failed to import CSV' })
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to import CSV') })
     }
   })
 
@@ -518,7 +519,7 @@ export async function costImportRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to import JSON' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to import JSON') })
       }
     }
   )
@@ -560,7 +561,7 @@ export async function costImportRoutes(fastify: FastifyInstance) {
       return reply.send(csv)
     } catch (error: any) {
       fastify.log.error(error)
-      return reply.code(500).send({ error: error.message || 'Failed to generate template' })
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to generate template') })
     }
   })
 
@@ -591,7 +592,7 @@ export async function costImportRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: db })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create cost database' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create cost database') })
       }
     }
   )
@@ -653,7 +654,7 @@ export async function costImportRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list cost databases' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list cost databases') })
       }
     }
   )

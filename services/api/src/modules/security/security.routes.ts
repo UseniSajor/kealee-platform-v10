@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { prisma } from '@kealee/database'
 import { authenticateUser, requireAdmin } from '../../middleware/auth.middleware'
 import { validateQuery, validateParams, validateBody } from '../../middleware/validation.middleware'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -126,7 +127,7 @@ export async function securityRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch security audit logs',
+          error: sanitizeErrorMessage(error, 'Failed to fetch security audit logs'),
         })
       }
     },
@@ -179,7 +180,7 @@ export async function securityRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch security events',
+          error: sanitizeErrorMessage(error, 'Failed to fetch security events'),
         })
       }
     },
@@ -232,7 +233,7 @@ export async function securityRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch security alerts',
+          error: sanitizeErrorMessage(error, 'Failed to fetch security alerts'),
         })
       }
     },
@@ -280,7 +281,7 @@ export async function securityRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to update security alert',
+          error: sanitizeErrorMessage(error, 'Failed to update security alert'),
         })
       }
     },
@@ -345,7 +346,7 @@ export async function securityRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch sessions',
+          error: sanitizeErrorMessage(error, 'Failed to fetch sessions'),
         })
       }
     },
@@ -386,7 +387,7 @@ export async function securityRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to terminate session',
+          error: sanitizeErrorMessage(error, 'Failed to terminate session'),
         })
       }
     },
@@ -445,7 +446,7 @@ export async function securityRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch access logs',
+          error: sanitizeErrorMessage(error, 'Failed to fetch access logs'),
         })
       }
     },

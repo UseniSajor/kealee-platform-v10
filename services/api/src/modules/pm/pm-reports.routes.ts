@@ -98,7 +98,7 @@ export async function pmReportRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.message?.includes('not found') ? 404 : 400
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -117,7 +117,7 @@ export async function pmReportRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.message?.includes('not found') ? 404 : 400
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -136,7 +136,7 @@ export async function pmReportRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.message?.includes('not found') ? 404 : 400
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -155,7 +155,7 @@ export async function pmReportRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.message?.includes('not found') ? 404 : 400
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )
@@ -180,7 +180,7 @@ export async function pmReportRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         const code = error.message?.includes('not found') ? 404 : error.message?.includes('Unknown report') ? 400 : 400
-        return reply.code(code).send({ error: error.message })
+        return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
   )

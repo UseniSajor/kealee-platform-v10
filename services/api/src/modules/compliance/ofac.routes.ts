@@ -12,7 +12,8 @@ import {
   validateQuery,
   validateParams,
   validateBody,
-} from '../../middleware/validation.middleware'
+}
+import { sanitizeErrorMessage } from '../../utils/sanitize-error' from '../../middleware/validation.middleware'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -158,7 +159,7 @@ export async function ofacRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to perform OFAC screening',
+          error: sanitizeErrorMessage(error, 'Failed to perform OFAC screening'),
         })
       }
     },
@@ -215,7 +216,7 @@ export async function ofacRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch OFAC screenings',
+          error: sanitizeErrorMessage(error, 'Failed to fetch OFAC screenings'),
         })
       }
     },
@@ -248,7 +249,7 @@ export async function ofacRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch OFAC screening',
+          error: sanitizeErrorMessage(error, 'Failed to fetch OFAC screening'),
         })
       }
     },
@@ -304,7 +305,7 @@ export async function ofacRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to fetch OFAC cache entries',
+          error: sanitizeErrorMessage(error, 'Failed to fetch OFAC cache entries'),
         })
       }
     },
@@ -339,7 +340,7 @@ export async function ofacRoutes(fastify: FastifyInstance) {
         fastify.log.error(error)
         return reply.code(500).send({
           success: false,
-          error: error.message || 'Failed to delete OFAC cache entry',
+          error: sanitizeErrorMessage(error, 'Failed to delete OFAC cache entry'),
         })
       }
     },

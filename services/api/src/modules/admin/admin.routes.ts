@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { authenticateUser, AuthenticatedRequest } from '../../middleware/auth.middleware';
 import { validateBody, validateParams } from '../../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const p = prisma as any;
 
@@ -138,7 +139,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error);
       return reply.code(500).send({
-        error: error.message || 'Failed to load settings',
+        error: sanitizeErrorMessage(error, 'Failed to load settings'),
       });
     }
   });
@@ -268,7 +269,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(400).send({
-          error: error.message || 'Failed to save settings',
+          error: sanitizeErrorMessage(error, 'Failed to save settings'),
         });
       }
     }
@@ -315,7 +316,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error);
       return reply.code(500).send({
-        error: error.message || 'Failed to load email templates',
+        error: sanitizeErrorMessage(error, 'Failed to load email templates'),
       });
     }
   });
@@ -372,7 +373,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(400).send({
-          error: error.message || 'Failed to update email template',
+          error: sanitizeErrorMessage(error, 'Failed to update email template'),
         });
       }
     }
@@ -454,7 +455,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error);
         return reply.code(400).send({
-          error: error.message || 'Failed to update role',
+          error: sanitizeErrorMessage(error, 'Failed to update role'),
         });
       }
     }
@@ -488,7 +489,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error);
       return reply.code(500).send({
-        error: error.message || 'Failed to get billing stats',
+        error: sanitizeErrorMessage(error, 'Failed to get billing stats'),
       });
     }
   });

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { stampService } from './stamp.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const createStampTemplateSchema = z.object({
   stampType: z.enum(['ARCHITECT', 'LANDSCAPE_ARCHITECT', 'INTERIOR_DESIGNER', 'STRUCTURAL_ENGINEER', 'MEP_ENGINEER', 'OTHER']),
@@ -70,7 +71,7 @@ export async function stampRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create stamp template',
+          error: sanitizeErrorMessage(error, 'Failed to create stamp template'),
         })
       }
     }
@@ -94,7 +95,7 @@ export async function stampRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Stamp template not found',
+          error: sanitizeErrorMessage(error, 'Stamp template not found'),
         })
       }
     }
@@ -124,7 +125,7 @@ export async function stampRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list stamp templates',
+          error: sanitizeErrorMessage(error, 'Failed to list stamp templates'),
         })
       }
     }
@@ -153,7 +154,7 @@ export async function stampRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to verify stamp template',
+          error: sanitizeErrorMessage(error, 'Failed to verify stamp template'),
         })
       }
     }
@@ -183,7 +184,7 @@ export async function stampRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to apply stamp',
+          error: sanitizeErrorMessage(error, 'Failed to apply stamp'),
         })
       }
     }
@@ -206,7 +207,7 @@ export async function stampRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Stamp application not found',
+          error: sanitizeErrorMessage(error, 'Stamp application not found'),
         })
       }
     }
@@ -235,7 +236,7 @@ export async function stampRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list stamp applications',
+          error: sanitizeErrorMessage(error, 'Failed to list stamp applications'),
         })
       }
     }
@@ -264,7 +265,7 @@ export async function stampRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to verify stamp application',
+          error: sanitizeErrorMessage(error, 'Failed to verify stamp application'),
         })
       }
     }
@@ -289,7 +290,7 @@ export async function stampRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to check tampering',
+          error: sanitizeErrorMessage(error, 'Failed to check tampering'),
         })
       }
     }
@@ -312,7 +313,7 @@ export async function stampRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get stamp log',
+          error: sanitizeErrorMessage(error, 'Failed to get stamp log'),
         })
       }
     }
@@ -339,7 +340,7 @@ export async function stampRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to validate license',
+          error: sanitizeErrorMessage(error, 'Failed to validate license'),
         })
       }
     }
@@ -362,7 +363,7 @@ export async function stampRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'License validation not found',
+          error: sanitizeErrorMessage(error, 'License validation not found'),
         })
       }
     }
@@ -392,7 +393,7 @@ export async function stampRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to list license validations',
+          error: sanitizeErrorMessage(error, 'Failed to list license validations'),
         })
       }
     }

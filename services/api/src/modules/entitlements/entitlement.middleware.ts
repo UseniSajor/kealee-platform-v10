@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { entitlementService } from './entitlement.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 /**
  * Middleware to check if organization has access to a module
@@ -43,7 +44,7 @@ export function requireModuleAccess(
       ;(request as any).moduleKey = moduleKey
     } catch (error: any) {
       return reply.code(500).send({
-        error: error.message || 'Module access check failed',
+        error: sanitizeErrorMessage(error, 'Module access check failed'),
       })
     }
   }
@@ -91,7 +92,7 @@ export function requireAnyModuleAccess(
       ;(request as any).orgId = orgId
     } catch (error: any) {
       return reply.code(500).send({
-        error: error.message || 'Module access check failed',
+        error: sanitizeErrorMessage(error, 'Module access check failed'),
       })
     }
   }

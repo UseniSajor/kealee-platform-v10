@@ -21,7 +21,8 @@ import {
 } from '../../services/cost-code-import.service'
 import {
   processCTCImportJob,
-} from '../../services/ctc-parser.service'
+}
+import { sanitizeErrorMessage } from '../../utils/sanitize-error' from '../../services/ctc-parser.service'
 
 // ---------------------------------------------------------------------------
 // Routes
@@ -169,7 +170,7 @@ export async function costCodePdfImportRoutes(fastify: FastifyInstance) {
       })
     } catch (error: any) {
       fastify.log.error(error)
-      return reply.code(500).send({ error: error.message || 'Failed to start PDF import' })
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to start PDF import') })
     }
   })
 
@@ -251,7 +252,7 @@ export async function costCodePdfImportRoutes(fastify: FastifyInstance) {
       })
     } catch (error: any) {
       fastify.log.error(error)
-      return reply.code(500).send({ error: error.message || 'Failed to start CTC import' })
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to start CTC import') })
     }
   })
 
@@ -318,7 +319,7 @@ export async function costCodePdfImportRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list import jobs' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list import jobs') })
       }
     }
   )
@@ -343,7 +344,7 @@ export async function costCodePdfImportRoutes(fastify: FastifyInstance) {
       return reply.send({ data: job })
     } catch (error: any) {
       fastify.log.error(error)
-      return reply.code(500).send({ error: error.message || 'Failed to get import job' })
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get import job') })
     }
   })
 
@@ -369,7 +370,7 @@ export async function costCodePdfImportRoutes(fastify: FastifyInstance) {
       return reply.send({ success: true })
     } catch (error: any) {
       fastify.log.error(error)
-      return reply.code(500).send({ error: error.message || 'Failed to delete import job' })
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to delete import job') })
     }
   })
 
@@ -402,7 +403,7 @@ export async function costCodePdfImportRoutes(fastify: FastifyInstance) {
       return reply.send({ data: db })
     } catch (error: any) {
       fastify.log.error(error)
-      return reply.code(500).send({ error: error.message || 'Failed to get cost database' })
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get cost database') })
     }
   })
 
@@ -523,7 +524,7 @@ export async function costCodePdfImportRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to get database items' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to get database items') })
       }
     }
   )
@@ -636,7 +637,7 @@ export async function costCodePdfImportRoutes(fastify: FastifyInstance) {
         return reply.send({ data: databases })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list cost databases' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list cost databases') })
       }
     }
   )
@@ -686,7 +687,7 @@ export async function costCodePdfImportRoutes(fastify: FastifyInstance) {
       return reply.send({ data: updated })
     } catch (error: any) {
       fastify.log.error(error)
-      return reply.code(500).send({ error: error.message || 'Failed to submit for review' })
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to submit for review') })
     }
   })
 
@@ -759,7 +760,7 @@ export async function costCodePdfImportRoutes(fastify: FastifyInstance) {
       return reply.send({ data: updated })
     } catch (error: any) {
       fastify.log.error(error)
-      return reply.code(500).send({ error: error.message || 'Failed to review cost data' })
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to review cost data') })
     }
   })
 }

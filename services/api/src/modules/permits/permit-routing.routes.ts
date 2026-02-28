@@ -4,6 +4,7 @@ import { prismaAny } from '../../utils/prisma-helper'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { permitRoutingService } from './permit-routing.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const reRoutePermitSchema = z.object({
   reason: z.string().min(1),
@@ -36,7 +37,7 @@ export async function permitRoutingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to route permit',
+          error: sanitizeErrorMessage(error, 'Failed to route permit'),
         })
       }
     }
@@ -79,7 +80,7 @@ export async function permitRoutingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to assign reviewer',
+          error: sanitizeErrorMessage(error, 'Failed to assign reviewer'),
         })
       }
     }
@@ -108,7 +109,7 @@ export async function permitRoutingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to re-route permit',
+          error: sanitizeErrorMessage(error, 'Failed to re-route permit'),
         })
       }
     }
@@ -137,7 +138,7 @@ export async function permitRoutingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to escalate routing',
+          error: sanitizeErrorMessage(error, 'Failed to escalate routing'),
         })
       }
     }
@@ -160,7 +161,7 @@ export async function permitRoutingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to check delayed reviews',
+          error: sanitizeErrorMessage(error, 'Failed to check delayed reviews'),
         })
       }
     }
@@ -183,7 +184,7 @@ export async function permitRoutingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(404).send({
-          error: error.message || 'Permit not found',
+          error: sanitizeErrorMessage(error, 'Permit not found'),
         })
       }
     }
@@ -209,7 +210,7 @@ export async function permitRoutingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to complete routing',
+          error: sanitizeErrorMessage(error, 'Failed to complete routing'),
         })
       }
     }
@@ -264,7 +265,7 @@ export async function permitRoutingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to get notifications',
+          error: sanitizeErrorMessage(error, 'Failed to get notifications'),
         })
       }
     }
@@ -299,7 +300,7 @@ export async function permitRoutingRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to mark notification as read',
+          error: sanitizeErrorMessage(error, 'Failed to mark notification as read'),
         })
       }
     }

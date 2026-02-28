@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../../middleware/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { prisma } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod Schemas
@@ -144,7 +145,7 @@ export async function preconExtrasRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list precon projects' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list precon projects') })
       }
     }
   )
@@ -180,7 +181,7 @@ export async function preconExtrasRoutes(fastify: FastifyInstance) {
         return reply.send({ data: project })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to fetch precon project' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to fetch precon project') })
       }
     }
   )
@@ -207,7 +208,7 @@ export async function preconExtrasRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: project })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create precon project' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create precon project') })
       }
     }
   )
@@ -234,7 +235,7 @@ export async function preconExtrasRoutes(fastify: FastifyInstance) {
         return reply.send({ data: updated })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to update precon project' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to update precon project') })
       }
     }
   )
@@ -283,7 +284,7 @@ export async function preconExtrasRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list design concepts' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list design concepts') })
       }
     }
   )
@@ -309,7 +310,7 @@ export async function preconExtrasRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: concept })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create design concept' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create design concept') })
       }
     }
   )
@@ -346,7 +347,7 @@ export async function preconExtrasRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list contractor profiles' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list contractor profiles') })
       }
     }
   )
@@ -371,7 +372,7 @@ export async function preconExtrasRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: profile })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create contractor profile' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create contractor profile') })
       }
     }
   )
@@ -429,7 +430,7 @@ export async function preconExtrasRoutes(fastify: FastifyInstance) {
         })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(500).send({ error: error.message || 'Failed to list contractor bids' })
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to list contractor bids') })
       }
     }
   )
@@ -457,7 +458,7 @@ export async function preconExtrasRoutes(fastify: FastifyInstance) {
         return reply.code(201).send({ data: bid })
       } catch (error: any) {
         fastify.log.error(error)
-        return reply.code(400).send({ error: error.message || 'Failed to create contractor bid' })
+        return reply.code(400).send({ error: sanitizeErrorMessage(error, 'Failed to create contractor bid') })
       }
     }
   )

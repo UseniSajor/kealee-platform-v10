@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { constructionHandoffService } from './construction-handoff.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 const generateIFCPackageSchema = z.object({
   packageName: z.string().min(1),
@@ -111,7 +112,7 @@ export async function constructionHandoffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to generate IFC package',
+          error: sanitizeErrorMessage(error, 'Failed to generate IFC package'),
         })
       }
     }
@@ -140,7 +141,7 @@ export async function constructionHandoffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to issue IFC package',
+          error: sanitizeErrorMessage(error, 'Failed to issue IFC package'),
         })
       }
     }
@@ -171,7 +172,7 @@ export async function constructionHandoffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to generate bid package',
+          error: sanitizeErrorMessage(error, 'Failed to generate bid package'),
         })
       }
     }
@@ -198,7 +199,7 @@ export async function constructionHandoffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create contractor question',
+          error: sanitizeErrorMessage(error, 'Failed to create contractor question'),
         })
       }
     }
@@ -227,7 +228,7 @@ export async function constructionHandoffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to answer contractor question',
+          error: sanitizeErrorMessage(error, 'Failed to answer contractor question'),
         })
       }
     }
@@ -258,7 +259,7 @@ export async function constructionHandoffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create RFI',
+          error: sanitizeErrorMessage(error, 'Failed to create RFI'),
         })
       }
     }
@@ -287,7 +288,7 @@ export async function constructionHandoffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to answer RFI',
+          error: sanitizeErrorMessage(error, 'Failed to answer RFI'),
         })
       }
     }
@@ -317,7 +318,7 @@ export async function constructionHandoffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create submittal',
+          error: sanitizeErrorMessage(error, 'Failed to create submittal'),
         })
       }
     }
@@ -346,7 +347,7 @@ export async function constructionHandoffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to review submittal',
+          error: sanitizeErrorMessage(error, 'Failed to review submittal'),
         })
       }
     }
@@ -376,7 +377,7 @@ export async function constructionHandoffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to create as-built documentation',
+          error: sanitizeErrorMessage(error, 'Failed to create as-built documentation'),
         })
       }
     }
@@ -405,7 +406,7 @@ export async function constructionHandoffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to review as-built documentation',
+          error: sanitizeErrorMessage(error, 'Failed to review as-built documentation'),
         })
       }
     }
@@ -432,7 +433,7 @@ export async function constructionHandoffRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(400).send({
-          error: error.message || 'Failed to approve as-built documentation',
+          error: sanitizeErrorMessage(error, 'Failed to approve as-built documentation'),
         })
       }
     }

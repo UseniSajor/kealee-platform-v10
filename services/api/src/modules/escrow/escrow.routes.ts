@@ -9,6 +9,7 @@ import { authenticateUser, requireRole } from '../auth/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { escrowService } from './escrow.service'
 import { prisma, Decimal } from '@kealee/database'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ============================================================================
 // VALIDATION SCHEMAS (Zod)
@@ -149,7 +150,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to create escrow agreement',
+          error: sanitizeErrorMessage(error, 'Failed to create escrow agreement'),
         })
       }
     }
@@ -221,7 +222,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to list escrow agreements',
+          error: sanitizeErrorMessage(error, 'Failed to list escrow agreements'),
         })
       }
     }
@@ -262,7 +263,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get escrow agreement',
+          error: sanitizeErrorMessage(error, 'Failed to get escrow agreement'),
         })
       }
     }
@@ -321,7 +322,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get escrow agreement',
+          error: sanitizeErrorMessage(error, 'Failed to get escrow agreement'),
         })
       }
     }
@@ -368,7 +369,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to record deposit',
+          error: sanitizeErrorMessage(error, 'Failed to record deposit'),
         })
       }
     }
@@ -415,7 +416,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to release payment',
+          error: sanitizeErrorMessage(error, 'Failed to release payment'),
         })
       }
     }
@@ -462,7 +463,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to place hold',
+          error: sanitizeErrorMessage(error, 'Failed to place hold'),
         })
       }
     }
@@ -508,7 +509,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to release hold',
+          error: sanitizeErrorMessage(error, 'Failed to release hold'),
         })
       }
     }
@@ -555,7 +556,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to process refund',
+          error: sanitizeErrorMessage(error, 'Failed to process refund'),
         })
       }
     }
@@ -603,7 +604,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to record fee',
+          error: sanitizeErrorMessage(error, 'Failed to record fee'),
         })
       }
     }
@@ -643,7 +644,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to close escrow agreement',
+          error: sanitizeErrorMessage(error, 'Failed to close escrow agreement'),
         })
       }
     }
@@ -691,7 +692,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to get escrow transactions',
+          error: sanitizeErrorMessage(error, 'Failed to get escrow transactions'),
         })
       }
     }
@@ -733,7 +734,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to complete transaction',
+          error: sanitizeErrorMessage(error, 'Failed to complete transaction'),
         })
       }
     }
@@ -775,7 +776,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
         request.log.error(error)
         return reply.code(error.statusCode || 500).send({
           success: false,
-          error: error.message || 'Failed to process transaction failure',
+          error: sanitizeErrorMessage(error, 'Failed to process transaction failure'),
         })
       }
     }

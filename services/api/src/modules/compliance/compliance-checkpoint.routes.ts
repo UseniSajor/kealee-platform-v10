@@ -4,6 +4,7 @@ import { complianceCheckpointService } from './compliance-checkpoint.service'
 import { prismaAny } from '../../utils/prisma-helper'
 import { z } from 'zod'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function complianceCheckpointRoutes(fastify: FastifyInstance) {
   // POST /compliance/checkpoint/:checkpointId/run - Run compliance checks for a checkpoint
@@ -42,7 +43,7 @@ export async function complianceCheckpointRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to run compliance checks',
+          error: sanitizeErrorMessage(error, 'Failed to run compliance checks'),
         })
       }
     }
@@ -85,7 +86,7 @@ export async function complianceCheckpointRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error(error)
         return reply.code(500).send({
-          error: error.message || 'Failed to check compliance',
+          error: sanitizeErrorMessage(error, 'Failed to check compliance'),
         })
       }
     }
