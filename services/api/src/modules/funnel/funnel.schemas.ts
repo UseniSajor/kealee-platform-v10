@@ -34,3 +34,12 @@ export const updateSessionSchema = z.object({
 export const sessionIdParam = z.object({
   sessionId: z.string().uuid(),
 })
+
+export const captureLeadSchema = z.object({
+  name: z.string().min(1).max(200),
+  email: z.string().email(),
+  phone: z.string().max(20).optional(),
+  projectType: z.string().max(100).optional(),
+  source: z.string().max(100).optional(),
+  campaignSlug: z.string().max(100).optional(),
+})

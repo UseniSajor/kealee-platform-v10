@@ -34,10 +34,10 @@ export function getFallbackHero(
 ): HeroData {
   const label = PROJECT_TYPE_LABELS[projectType] || 'Home Project'
   return {
-    headline: `Your ${label} Plan for ${city}, ${state}`,
-    subheadline: `We've matched you with top-rated professionals and built a personalized project plan based on your goals and budget.`,
-    ctaText: 'Get Started Today',
-    ctaHref: '/signup',
+    headline: `See Your Dream ${label} in 3D — From $99`,
+    subheadline: `Get an AI-powered concept for your ${label.toLowerCase()} in ${city}, ${state}. Choose from 3 packages and see your vision come to life before committing to major costs.`,
+    ctaText: 'Get Your AI Concept',
+    ctaHref: '#concept-packages',
     projectTypeLabel: label,
     locationLabel: `${city}, ${state}`,
   }
@@ -62,50 +62,48 @@ export function getFallbackBudgetBreakdown(
     totalMid: range.mid,
     totalHigh: range.high,
     lineItems,
-    notes: 'Estimates based on industry averages for your area. Actual costs may vary based on materials, scope, and contractor selection.',
+    notes: 'Estimates based on industry averages for your area. Actual costs may vary based on materials, scope, and design selections.',
   }
 }
 
 export function getFallbackTimeline(projectType: FunnelProjectType): TimelineData {
   const phases: TimelinePhase[] = [
-    { name: 'Planning & Design', durationWeeks: 2, description: 'Finalize plans, select materials, obtain permits', order: 1 },
-    { name: 'Demolition & Prep', durationWeeks: 1, description: 'Remove existing structures, prepare site', order: 2 },
-    { name: 'Rough Construction', durationWeeks: 3, description: 'Framing, electrical, plumbing rough-ins', order: 3 },
-    { name: 'Finishes & Install', durationWeeks: 2, description: 'Drywall, paint, fixtures, flooring', order: 4 },
+    { name: 'AI Concept & Design', durationWeeks: 1, description: 'AI generates your concept, you review and approve', order: 1 },
+    { name: 'Architecture Phase', durationWeeks: 4, description: 'Full architectural plans based on approved concept', order: 2 },
+    { name: 'Permits (Kealee Handles)', durationWeeks: 4, description: 'Permit applications and approvals — we manage it all', order: 3 },
+    { name: 'Construction Phase', durationWeeks: 8, description: 'Build phase with real-time tracking on Kealee platform', order: 4 },
     { name: 'Final Inspection', durationWeeks: 1, description: 'Quality check, punch list, final walkthrough', order: 5 },
   ]
   const totalWeeks = phases.reduce((sum, p) => sum + p.durationWeeks, 0)
 
   return {
-    title: 'Estimated Project Timeline',
+    title: 'Your Project Journey',
     totalWeeks,
     phases,
   }
 }
 
 export function getFallbackPricing(budget: BudgetRange): PricingGridData {
-  const range = BUDGET_RANGES[budget] || BUDGET_RANGES.RANGE_50K_100K
-
   return {
-    title: 'Project Cost Tiers',
+    title: 'AI Concept Packages',
     tiers: [
       {
-        label: 'Budget-Friendly',
-        price: range.low,
-        description: 'Quality results with cost-conscious choices',
-        features: ['Standard materials', 'Essential scope', 'Basic finishes'],
+        label: 'Basic',
+        price: 9900,
+        description: 'Perfect for exploring your vision',
+        features: ['AI-generated floor plan', '3D concept visualization', 'Budget estimate report', '48-hour delivery'],
       },
       {
-        label: 'Mid-Range',
-        price: range.mid,
-        description: 'Best balance of quality and value',
-        features: ['Quality materials', 'Full scope', 'Upgraded finishes', 'Design consultation'],
+        label: 'Enhanced',
+        price: 49900,
+        description: 'Best value — compare multiple designs',
+        features: ['Everything in Basic', '3 design options', 'Materials recommendation', 'Detailed cost breakdown', '1 revision round'],
       },
       {
         label: 'Premium',
-        price: range.high,
-        description: 'Top-tier materials and craftsmanship',
-        features: ['Premium materials', 'Expanded scope', 'Custom finishes', 'Full design team', 'Extended warranty'],
+        price: 89900,
+        description: 'The full experience before you build',
+        features: ['Everything in Enhanced', 'Photo-realistic renders', 'Virtual walkthrough tour', 'ROI analysis', 'Priority 24-hour delivery', '2 revision rounds'],
       },
     ],
   }

@@ -1,11 +1,14 @@
 import { FastifyInstance } from 'fastify'
 import { FunnelService } from './funnel.service'
-import { createSessionSchema, updateSessionSchema, sessionIdParam } from './funnel.schemas'
+import { createSessionSchema, updateSessionSchema, sessionIdParam, captureLeadSchema } from './funnel.schemas'
 
 /**
  * Funnel routes — Dynamic Page Generation marketing funnel
  * All endpoints are PUBLIC (no auth required)
  *
+ * POST   /leads                      — Capture a marketing lead (name, email, phone)
+ * POST   /leads/:leadId/link/:sessionId — Link lead to funnel session
+ * GET    /campaigns/:slug            — Get marketing campaign data
  * POST   /sessions                   — Create a new funnel session
  * PATCH  /sessions/:sessionId        — Update session step data
  * GET    /sessions/:sessionId        — Get session state
@@ -15,6 +18,62 @@ import { createSessionSchema, updateSessionSchema, sessionIdParam } from './funn
  */
 export async function funnelRoutes(fastify: FastifyInstance) {
   const service = new FunnelService()
+
+  // ─── POST /leads ───────────────────────────────────────────────
+  fastify.post(
+    '/leads',
+    {
+      config: {
+        rateLimit: { max: 10, timeWindow: '1 minute' },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const body = captureLeadSchema.parse(request.body || {})
+        const lead = await service.captureLead(body)
+        return reply.code(201).send({ success: true, leadId: lead.id })
+      } catch (err: any) {
+        if (err.name === 'ZodError') {
+          return reply.code(400).send({ error: 'Invalid request', details: err.errors })
+        }
+        request.log.error(err)
+        return reply.code(500).send({ error: 'Failed to capture lead' })
+      }
+    }
+  )
+
+  // ─── POST /leads/:leadId/link/:sessionId ──────────────────────
+  fastify.post(
+    '/leads/:leadId/link/:sessionId',
+    async (request, reply) => {
+      try {
+        const params = request.params as { leadId: string; sessionId: string }
+        await service.linkLeadToSession(params.leadId, params.sessionId)
+        return reply.send({ success: true })
+      } catch (err: any) {
+        request.log.error(err)
+        return reply.code(500).send({ error: 'Failed to link lead' })
+      }
+    }
+  )
+
+  // ─── GET /campaigns/:slug ────────────────────────────────────
+  fastify.get(
+    '/campaigns/:slug',
+    async (request, reply) => {
+      try {
+        const { slug } = request.params as { slug: string }
+        const campaign = await service.getCampaign(slug)
+        if (!campaign) {
+          return reply.code(404).send({ error: 'Campaign not found' })
+        }
+        return reply.send(campaign)
+      } catch (err: any) {
+        request.log.error(err)
+        return reply.code(500).send({ error: 'Failed to get campaign' })
+      }
+    }
+  )
 
   // ─── POST /sessions ────────────────────────────────────────────
   fastify.post(

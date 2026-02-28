@@ -15,7 +15,9 @@ interface PricingGridData {
 }
 
 function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value)
+  // Handle both cents (from Stripe, e.g. 9900) and dollars (e.g. 99)
+  const dollars = value >= 1000 ? value / 100 : value
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(dollars)
 }
 
 export function PricingGrid({ data }: { data: PricingGridData }) {

@@ -126,4 +126,60 @@ export class FunnelService {
   async getProgress(sessionId: string): Promise<number> {
     return getPageProgress(sessionId)
   }
+
+  async captureLead(params: {
+    name: string
+    email: string
+    phone?: string
+    projectType?: string
+    source?: string
+    campaignSlug?: string
+  }) {
+    const lead = await prismaTyped.marketingLead.create({
+      data: {
+        name: params.name,
+        email: params.email,
+        phone: params.phone,
+        projectType: params.projectType,
+        source: params.source,
+        campaignSlug: params.campaignSlug,
+        status: 'new',
+      },
+    })
+
+    // Send to n8n webhook (non-blocking)
+    const webhookUrl = process.env.N8N_WEBHOOK_URL
+    if (webhookUrl) {
+      fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: params.name,
+          email: params.email,
+          phone: params.phone,
+          projectType: params.projectType,
+          source: params.source,
+          leadId: lead.id,
+          timestamp: new Date().toISOString(),
+        }),
+      }).catch((err) => {
+        console.warn('[FunnelService] n8n webhook failed:', err.message)
+      })
+    }
+
+    return lead
+  }
+
+  async linkLeadToSession(leadId: string, sessionId: string) {
+    return prismaTyped.marketingLead.update({
+      where: { id: leadId },
+      data: { funnelSessionId: sessionId },
+    })
+  }
+
+  async getCampaign(slug: string) {
+    return prismaTyped.marketingCampaign.findUnique({
+      where: { slug },
+    })
+  }
 }

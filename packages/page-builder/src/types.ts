@@ -24,7 +24,7 @@ export interface PageBuildResult {
 
 export type SectionType =
   | 'hero'
-  | 'contractor_grid'
+  | 'concept_packages'
   | 'budget_breakdown'
   | 'timeline'
   | 'pricing_grid'
@@ -32,7 +32,7 @@ export type SectionType =
 
 export interface SectionData {
   type: SectionType
-  data: HeroData | ContractorGridData | BudgetBreakdownData | TimelineData | PricingGridData | CaseStudyGridData
+  data: HeroData | ConceptPackagesData | BudgetBreakdownData | TimelineData | PricingGridData | CaseStudyGridData
 }
 
 export interface HeroData {
@@ -44,22 +44,19 @@ export interface HeroData {
   locationLabel: string
 }
 
-export interface ContractorCardData {
+export interface ConceptPackage {
   id: string
-  companyName: string
-  contactName: string
-  city: string | null
-  state: string | null
-  trades: string[]
-  rating: number
-  reviewCount: number
-  isVerified: boolean
-  yearsInBusiness: number | null
+  name: string
+  description: string | null
+  price: number
+  tierLevel: string | null
+  features: string[]
 }
 
-export interface ContractorGridData {
+export interface ConceptPackagesData {
   title: string
-  contractors: ContractorCardData[]
+  subtitle: string
+  packages: ConceptPackage[]
 }
 
 export interface BudgetLineItem {

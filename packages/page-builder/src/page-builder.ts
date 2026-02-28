@@ -1,5 +1,5 @@
 import type { PageBuildRequest, PageBuildResult, SectionData } from './types'
-import { aggregateContractors, aggregateCaseStudies } from './agents/data-aggregator'
+import { aggregateConceptPackages, aggregateCaseStudies } from './agents/data-aggregator'
 import { generateHeroContent } from './agents/content-generator'
 import { generateBudgetAndTimeline } from './agents/asset-generator'
 import { getLayout } from './agents/layout-designer'
@@ -17,8 +17,8 @@ export async function buildPage(request: PageBuildRequest): Promise<PageBuildRes
 
   // Step 1: Data aggregation (pure DB queries, fast)
   await setProgress(sessionId, 10)
-  const [contractorData, caseStudyData] = await Promise.all([
-    aggregateContractors(city, state),
+  const [conceptData, caseStudyData] = await Promise.all([
+    aggregateConceptPackages(),
     aggregateCaseStudies(projectType, state),
   ])
   await setProgress(sessionId, 30)
@@ -36,7 +36,7 @@ export async function buildPage(request: PageBuildRequest): Promise<PageBuildRes
   // Build section data map
   const sectionDataMap: Record<string, SectionData['data']> = {
     hero: heroData,
-    contractor_grid: contractorData,
+    concept_packages: conceptData,
     budget_breakdown: budgetBreakdown,
     timeline: timelineData,
     pricing_grid: pricing,

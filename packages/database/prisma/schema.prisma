@@ -12631,6 +12631,9 @@ model FunnelSession {
   // AI-generated page data (durable fallback for Redis cache)
   generatedPageData Json?
 
+  // Marketing lead linkage
+  marketingLeads MarketingLead[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -12680,4 +12683,56 @@ model File {
   @@index([uploadedBy])
   @@index([status])
   @@map("files")
+}
+
+// ── Marketing & Lead Capture ──────────────────────────────────
+model MarketingCampaign {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  headline    String?
+  subheadline String?
+  benefits    Json?    @default("[]")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  leads MarketingLead[]
+
+  @@map("marketing_campaigns")
+}
+
+model MarketingLead {
+  id              String             @id @default(uuid())
+  name            String
+  email           String
+  phone           String?
+  projectType     String?
+  source          String?
+  campaignSlug    String?
+  campaign        MarketingCampaign? @relation(fields: [campaignSlug], references: [slug])
+  status          String             @default("new")
+  funnelSessionId String?
+  funnelSession   FunnelSession?     @relation(fields: [funnelSessionId], references: [id])
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([campaignSlug])
+  @@map("marketing_leads")
+}
+
+// ── Stripe Product Catalog ────────────────────────────────────
+model StripeProduct {
+  id          String   @id
+  name        String
+  description String?
+  price       Int      // price in cents
+  interval    String?  // "month", "year", null for one-time
+  productType String   // "concept", "pm_package", "architecture", "permit"
+  tierLevel   String?  // "basic", "enhanced", "premium"
+  active      Boolean  @default(true)
+
+  @@map("stripe_products")
 }

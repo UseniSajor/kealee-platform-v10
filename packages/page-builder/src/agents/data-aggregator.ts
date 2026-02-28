@@ -1,38 +1,65 @@
 import { PrismaClient } from '@prisma/client'
 import type { FunnelProjectType } from '@prisma/client'
-import type { ContractorGridData, CaseStudyGridData } from '../types'
+import type { ConceptPackagesData, CaseStudyGridData } from '../types'
 
 const prisma = new PrismaClient()
 
-export async function aggregateContractors(
-  city: string,
-  state: string
-): Promise<ContractorGridData> {
-  const contractors = await prisma.contractor.findMany({
+const CONCEPT_FEATURES: Record<string, string[]> = {
+  basic: [
+    'AI-generated floor plan',
+    '3D concept visualization',
+    'Budget estimate report',
+    '48-hour delivery',
+  ],
+  enhanced: [
+    'Everything in Basic',
+    '3 design options to choose from',
+    'Materials recommendation',
+    'Detailed cost breakdown',
+    'Revision round included',
+  ],
+  premium: [
+    'Everything in Enhanced',
+    'Photo-realistic renders',
+    'Virtual walkthrough tour',
+    'ROI analysis report',
+    'Priority 24-hour delivery',
+    '2 revision rounds included',
+  ],
+}
+
+export async function aggregateConceptPackages(): Promise<ConceptPackagesData> {
+  const packages = await prisma.stripeProduct.findMany({
     where: {
-      state,
-      status: 'ACTIVE',
+      productType: 'concept',
+      active: true,
     },
-    orderBy: [
-      { isVerified: 'desc' },
-      { rating: 'desc' },
-    ],
-    take: 9,
+    orderBy: { price: 'asc' },
   })
 
+  if (packages.length === 0) {
+    // Fallback concept packages if none in DB
+    return {
+      title: 'Choose Your AI Concept Package',
+      subtitle: 'See your project in 3D before committing to major costs',
+      packages: [
+        { id: 'concept-basic', name: 'Basic AI Concept', description: 'AI floor plan + 3D visualization + budget estimate', price: 9900, tierLevel: 'basic', features: CONCEPT_FEATURES.basic },
+        { id: 'concept-enhanced', name: 'Enhanced AI Concept', description: '3 design options + materials + detailed costs', price: 49900, tierLevel: 'enhanced', features: CONCEPT_FEATURES.enhanced },
+        { id: 'concept-premium', name: 'Premium AI Concept', description: 'Photo renders + virtual tour + ROI analysis', price: 89900, tierLevel: 'premium', features: CONCEPT_FEATURES.premium },
+      ],
+    }
+  }
+
   return {
-    title: `Top-Rated Contractors in ${city}, ${state}`,
-    contractors: contractors.map((c) => ({
-      id: c.id,
-      companyName: c.companyName,
-      contactName: c.contactName,
-      city: c.city,
-      state: c.state,
-      trades: c.trades,
-      rating: Number(c.rating),
-      reviewCount: c.reviewCount,
-      isVerified: c.isVerified,
-      yearsInBusiness: c.yearsInBusiness,
+    title: 'Choose Your AI Concept Package',
+    subtitle: 'See your project in 3D before committing to major costs',
+    packages: packages.map((p) => ({
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      tierLevel: p.tierLevel,
+      features: CONCEPT_FEATURES[p.tierLevel || 'basic'] || CONCEPT_FEATURES.basic,
     })),
   }
 }
