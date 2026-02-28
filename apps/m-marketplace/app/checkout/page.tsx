@@ -11,6 +11,7 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { items, subtotal, clearCart } = useCart()
   const [processing, setProcessing] = useState(false)
+  const [error, setError] = useState('')
   const [form, setForm] = useState({ email: '', name: '', company: '', phone: '' })
 
   function update(field: string, value: string) {
@@ -21,8 +22,21 @@ export default function CheckoutPage() {
     e.preventDefault()
     if (items.length === 0) return
     setProcessing(true)
+    setError('')
 
     try {
+      // Get funnel session ID from localStorage if available
+      const funnelSessionId = typeof window !== 'undefined'
+        ? localStorage.getItem('kealee-funnel-session-id') || ''
+        : ''
+
+      // Determine package tier from first item
+      const firstItem = items[0]
+      const packageTier = firstItem?.name?.toLowerCase().includes('basic') ? 'basic'
+        : firstItem?.name?.toLowerCase().includes('enhanced') ? 'enhanced'
+        : firstItem?.name?.toLowerCase().includes('premium') ? 'premium'
+        : ''
+
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -30,19 +44,23 @@ export default function CheckoutPage() {
           items: items.map(i => ({ productId: i.productId, name: i.name, price: i.price, quantity: i.quantity, appSource: i.appSource })),
           customer: form,
           subtotal,
+          funnelSessionId,
+          packageTier,
         }),
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        if (data.url) { window.location.href = data.url; return }
+      const data = await response.json()
+
+      if (response.ok && data.url) {
+        // Redirect to Stripe checkout — cart will be cleared on success page
+        window.location.href = data.url
+        return
       }
 
-      clearCart()
-      router.push('/checkout/success')
+      // Show error — do NOT silently succeed
+      setError(data.error || 'Unable to process payment. Please try again.')
     } catch {
-      clearCart()
-      router.push('/checkout/success')
+      setError('Connection error. Please check your internet and try again.')
     } finally {
       setProcessing(false)
     }
@@ -97,6 +115,16 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </div>
+
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-2xl p-6 flex items-start gap-4">
+                    <div className="w-6 h-6 flex-shrink-0 mt-0.5 text-red-600 font-bold text-lg">!</div>
+                    <div>
+                      <h3 className="font-semibold text-red-900 mb-1">Payment Error</h3>
+                      <p className="text-sm text-red-700">{error}</p>
+                    </div>
+                  </div>
+                )}
 
                 <div className="bg-sky-50 border border-sky-200 rounded-2xl p-6 flex items-start gap-4">
                   <CreditCard className="h-6 w-6 text-sky-600 flex-shrink-0 mt-0.5" />

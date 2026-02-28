@@ -268,6 +268,12 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session):
       return
     }
 
+    // Handle concept package purchases (one-time payments from marketplace)
+    if (session.mode === 'payment' && session.metadata?.source === 'concept-package') {
+      await handleConceptPackagePurchase(session)
+      return
+    }
+
     // Only handle subscription checkouts
     if (session.mode !== 'subscription') {
       console.log(`ℹ️  Checkout session ${session.id} is not a subscription (mode: ${session.mode}), skipping`)
@@ -1052,6 +1058,140 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent): P
     console.log(`✅ Payment failure logged: ${paymentIntent.id}`)
   } catch (error: any) {
     console.error(`❌ Error handling payment_intent.payment_failed for ${paymentIntent.id}:`, error)
+    throw error
+  }
+}
+
+/**
+ * Handle concept package purchase (one-time payment from marketplace funnel)
+ * Creates user account, links to funnel session, creates marketing lead, sends confirmation
+ */
+async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): Promise<void> {
+  try {
+    const customerEmail = session.customer_details?.email || session.metadata?.customerEmail
+    const customerName = session.customer_details?.name || session.metadata?.customerName || ''
+    const customerPhone = session.customer_details?.phone || session.metadata?.customerPhone || ''
+    const funnelSessionId = session.metadata?.funnelSessionId
+    const packageTier = session.metadata?.packageTier || 'unknown'
+    const packageName = session.metadata?.packageName || 'AI Concept Package'
+
+    if (!customerEmail) {
+      console.warn(`⚠️  Concept package purchase ${session.id} has no customer email`)
+      return
+    }
+
+    console.log(`✅ Processing concept package purchase: ${packageName} (${packageTier}) for ${customerEmail}`)
+
+    // 1. Create or find user account
+    const user = await prismaAny.user.upsert({
+      where: { email: customerEmail },
+      update: {
+        name: customerName || undefined,
+        phone: customerPhone || undefined,
+      },
+      create: {
+        email: customerEmail,
+        name: customerName || customerEmail.split('@')[0],
+        phone: customerPhone || null,
+        status: 'ACTIVE',
+      },
+    })
+
+    // 2. Create marketing lead linked to funnel session
+    const lead = await prismaAny.marketingLead.create({
+      data: {
+        name: customerName || customerEmail.split('@')[0],
+        email: customerEmail,
+        phone: customerPhone || null,
+        source: 'concept-package-purchase',
+        status: 'qualified',
+        funnelSessionId: funnelSessionId || null,
+        metadata: {
+          stripeSessionId: session.id,
+          packageTier,
+          packageName,
+          amountPaid: (session.amount_total ?? 0) / 100,
+          currency: session.currency || 'usd',
+          userId: user.id,
+          purchasedAt: new Date().toISOString(),
+        },
+      },
+    })
+
+    // 3. Update funnel session status if linked
+    if (funnelSessionId) {
+      try {
+        await prismaAny.funnelSession.update({
+          where: { id: funnelSessionId },
+          data: {
+            metadata: {
+              conceptPackagePurchased: true,
+              purchasedTier: packageTier,
+              stripeSessionId: session.id,
+              leadId: lead.id,
+              userId: user.id,
+              purchasedAt: new Date().toISOString(),
+            },
+          },
+        })
+      } catch {
+        console.warn(`⚠️  Could not update funnel session ${funnelSessionId}`)
+      }
+    }
+
+    // 4. Record audit event
+    await auditService.recordAudit({
+      action: 'CONCEPT_PACKAGE_PURCHASED',
+      entityType: 'MarketingLead',
+      entityId: lead.id,
+      userId: user.id,
+      reason: `Concept package purchased: ${packageName} ($${(session.amount_total ?? 0) / 100})`,
+      after: {
+        leadId: lead.id,
+        userId: user.id,
+        email: customerEmail,
+        packageTier,
+        packageName,
+        amount: (session.amount_total ?? 0) / 100,
+        stripeSessionId: session.id,
+        funnelSessionId,
+      },
+    })
+
+    // 5. Record typed event
+    await eventService.recordEvent({
+      type: 'CONCEPT_PACKAGE_PURCHASED',
+      entityType: 'MarketingLead',
+      entityId: lead.id,
+      payload: {
+        userId: user.id,
+        email: customerEmail,
+        packageTier,
+        packageName,
+        amount: (session.amount_total ?? 0) / 100,
+        stripeSessionId: session.id,
+        funnelSessionId,
+      },
+    })
+
+    // 6. Queue confirmation email
+    await queueNotificationEmail({
+      to: customerEmail,
+      subject: `Your ${packageName} is confirmed!`,
+      template: 'concept_package_confirmation',
+      metadata: {
+        customerName: customerName || customerEmail.split('@')[0],
+        packageTier,
+        packageName,
+        amount: (session.amount_total ?? 0) / 100,
+        funnelSessionId,
+        leadId: lead.id,
+      },
+    })
+
+    console.log(`✅ Concept package purchase processed: ${lead.id} for ${customerEmail} (${packageTier})`)
+  } catch (error: any) {
+    console.error(`❌ Error processing concept package purchase for session ${session.id}:`, error)
     throw error
   }
 }

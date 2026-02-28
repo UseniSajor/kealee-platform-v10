@@ -75,6 +75,79 @@ export async function billingRoutes(fastify: FastifyInstance) {
     }
   )
 
+  // POST /billing/stripe/concept-checkout - create one-time payment session for concept packages
+  fastify.post(
+    '/stripe/concept-checkout',
+    {
+      schema: {
+        description: 'Create a Stripe Checkout session for concept package purchase (one-time payment)',
+        tags: ['billing'],
+      },
+      preHandler: validateBody(z.object({
+        items: z.array(z.object({
+          name: z.string(),
+          amount: z.number().positive(),
+          quantity: z.number().int().positive().default(1),
+        })).min(1),
+        customerEmail: z.string().email(),
+        customerName: z.string().optional(),
+        customerPhone: z.string().optional(),
+        funnelSessionId: z.string().optional(),
+        packageTier: z.string().optional(),
+        successUrl: z.string().url(),
+        cancelUrl: z.string().url(),
+      })),
+    },
+    async (request, reply) => {
+      try {
+        const body = request.body as {
+          items: Array<{ name: string; amount: number; quantity: number }>
+          customerEmail: string
+          customerName?: string
+          customerPhone?: string
+          funnelSessionId?: string
+          packageTier?: string
+          successUrl: string
+          cancelUrl: string
+        }
+
+        const stripe = getStripe()
+
+        const session = await stripe.checkout.sessions.create({
+          mode: 'payment',
+          payment_method_types: ['card'],
+          customer_email: body.customerEmail,
+          line_items: body.items.map(item => ({
+            price_data: {
+              currency: 'usd',
+              product_data: { name: item.name },
+              unit_amount: item.amount, // already in cents
+            },
+            quantity: item.quantity,
+          })),
+          metadata: {
+            source: 'concept-package',
+            customerEmail: body.customerEmail,
+            customerName: body.customerName || '',
+            customerPhone: body.customerPhone || '',
+            funnelSessionId: body.funnelSessionId || '',
+            packageTier: body.packageTier || '',
+            packageName: body.items[0]?.name || 'AI Concept Package',
+          },
+          success_url: body.successUrl,
+          cancel_url: body.cancelUrl,
+        })
+
+        return reply.send({ url: session.url, id: session.id })
+      } catch (error: any) {
+        request.log.error(error)
+        return reply.code(400).send({
+          error: error.message || 'Failed to create checkout session',
+        })
+      }
+    }
+  )
+
   // POST /billing/stripe/portal-session - open Stripe Billing Portal
   fastify.post(
     '/stripe/portal-session',

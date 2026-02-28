@@ -10,40 +10,50 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Cart is empty' }, { status: 400 })
     }
 
-    // Try Stripe checkout via backend
-    try {
-      const backendResponse = await fetch(`${API_BASE_URL}/billing/stripe/checkout-session`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(request.headers.get('authorization') ? { Authorization: request.headers.get('authorization')! } : {}),
-        },
-        body: JSON.stringify({
-          lineItems: body.items.map((item: any) => ({
-            name: item.name,
-            amount: item.price * 100,
-            quantity: item.quantity,
-          })),
-          customerEmail: body.customer?.email,
-          customerName: body.customer?.name,
-          metadata: { source: 'marketplace-checkout', company: body.customer?.company || '' },
-          successUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://kealee.com'}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancelUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://kealee.com'}/cart`,
-        }),
-      })
+    if (!body.customer?.email) {
+      return NextResponse.json({ success: false, error: 'Email is required' }, { status: 400 })
+    }
 
-      if (backendResponse.ok) {
-        const data = await backendResponse.json()
-        return NextResponse.json({ success: true, url: data.url, sessionId: data.id })
-      }
-    } catch {}
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kealee.com'
 
-    return NextResponse.json({
-      success: true,
-      message: 'Order placed successfully',
-      orderId: `ORD-${Date.now()}`,
-    }, { status: 201 })
-  } catch {
-    return NextResponse.json({ success: false, error: 'Checkout failed' }, { status: 500 })
+    // Use the concept-checkout endpoint for one-time payments
+    const backendResponse = await fetch(`${API_BASE_URL}/billing/stripe/concept-checkout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(request.headers.get('authorization') ? { Authorization: request.headers.get('authorization')! } : {}),
+      },
+      body: JSON.stringify({
+        items: body.items.map((item: any) => ({
+          name: item.name,
+          amount: Math.round(item.price * 100), // convert to cents
+          quantity: item.quantity || 1,
+        })),
+        customerEmail: body.customer.email,
+        customerName: body.customer.name || '',
+        customerPhone: body.customer.phone || '',
+        funnelSessionId: body.funnelSessionId || '',
+        packageTier: body.packageTier || '',
+        successUrl: `${appUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${appUrl}/checkout`,
+      }),
+    })
+
+    if (backendResponse.ok) {
+      const data = await backendResponse.json()
+      return NextResponse.json({ success: true, url: data.url, sessionId: data.id })
+    }
+
+    // If Stripe fails, return the actual error — do NOT silently succeed
+    const errorData = await backendResponse.json().catch(() => ({ error: 'Payment service unavailable' }))
+    return NextResponse.json(
+      { success: false, error: errorData.error || 'Failed to create checkout session' },
+      { status: 502 }
+    )
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: error.message || 'Checkout failed' },
+      { status: 500 }
+    )
   }
 }

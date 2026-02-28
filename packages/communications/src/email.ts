@@ -50,7 +50,7 @@ export async function sendEmail(opts: SendEmailOptions): Promise<SendEmailResult
     to: Array.isArray(opts.to) ? opts.to : [opts.to],
     subject: opts.subject,
     html: opts.html,
-    replyTo: opts.replyTo || DEFAULT_REPLY_TO,
+    reply_to: opts.replyTo || DEFAULT_REPLY_TO,
     tags: opts.tags,
   });
 

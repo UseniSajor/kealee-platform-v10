@@ -1,19 +1,28 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { CheckCircle, ArrowRight, Phone, Calendar, FileText } from 'lucide-react'
+import { CheckCircle, ArrowRight, Phone, Calendar, FileText, User, Sparkles } from 'lucide-react'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
+import { useCart } from '@/lib/cart-context'
 
 export default function CheckoutSuccessPage() {
+  const searchParams = useSearchParams()
+  const sessionId = searchParams.get('session_id')
+  const { clearCart } = useCart()
+
   useEffect(() => {
+    // Clear the cart on successful payment
+    clearCart()
+
     if (typeof window !== 'undefined') {
       import('canvas-confetti').then(confetti => {
         confetti.default({ particleCount: 100, spread: 70, origin: { y: 0.6 } })
       }).catch(() => {})
     }
-  }, [])
+  }, [clearCart])
 
   return (
     <>
@@ -26,7 +35,7 @@ export default function CheckoutSuccessPage() {
 
           <h1 className="text-4xl font-black text-gray-900 mb-4">Order Confirmed!</h1>
           <p className="text-xl text-gray-600 mb-12 max-w-lg mx-auto">
-            Thank you for choosing Kealee. Our team will get started on your order right away.
+            Thank you for choosing Kealee. Your concept package is being prepared and our team will reach out shortly.
           </p>
 
           <div className="grid md:grid-cols-3 gap-4 mb-12">
@@ -34,33 +43,42 @@ export default function CheckoutSuccessPage() {
               <div className="w-12 h-12 bg-sky-100 rounded-xl flex items-center justify-center mb-4">
                 <FileText className="h-6 w-6 text-sky-600" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">Confirmation</h3>
-              <p className="text-sm text-gray-600">Check your email for order details and receipt.</p>
+              <h3 className="font-bold text-gray-900 mb-2">Confirmation Email</h3>
+              <p className="text-sm text-gray-600">Check your email for order details, receipt, and next steps.</p>
             </div>
             <div className="bg-white rounded-2xl border border-gray-200 p-6 text-left">
               <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
-                <Phone className="h-6 w-6 text-green-600" />
+                <Sparkles className="h-6 w-6 text-green-600" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">Team Contact</h3>
-              <p className="text-sm text-gray-600">A specialist will contact you within 24 hours.</p>
+              <h3 className="font-bold text-gray-900 mb-2">Concept Delivery</h3>
+              <p className="text-sm text-gray-600">Your AI-generated concept package will be delivered within 24 hours.</p>
             </div>
             <div className="bg-white rounded-2xl border border-gray-200 p-6 text-left">
               <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-                <Calendar className="h-6 w-6 text-purple-600" />
+                <User className="h-6 w-6 text-purple-600" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">Get Started</h3>
-              <p className="text-sm text-gray-600">Log into your portal to track progress.</p>
+              <h3 className="font-bold text-gray-900 mb-2">Your Account</h3>
+              <p className="text-sm text-gray-600">We&apos;ve created your account. Check your email for login credentials.</p>
             </div>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/" className="inline-flex items-center gap-2 px-8 py-3.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-bold text-sm transition">
-              Back to Home <ArrowRight className="h-4 w-4" />
-            </Link>
+          <div className="bg-white rounded-2xl border-2 border-sky-200 p-8 mb-8">
+            <h3 className="text-lg font-bold text-gray-900 mb-3">Ready for the full project experience?</h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Create a full project to get contractor bids, manage timelines, and track your renovation from start to finish.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link href="/signup" className="inline-flex items-center gap-2 px-8 py-3.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-bold text-sm transition">
+                Create Your Project <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link href="/" className="inline-flex items-center gap-2 px-8 py-3.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-bold text-sm transition">
+                Back to Home
+              </Link>
+            </div>
           </div>
 
           <p className="mt-8 text-sm text-gray-500">
-            Questions? <a href="tel:+13015758777" className="text-sky-600 font-semibold hover:underline">(301) 575-8777</a>
+            Questions? Call us at <a href="tel:+13015758777" className="text-sky-600 font-semibold hover:underline">(301) 575-8777</a>
           </p>
         </div>
       </div>
