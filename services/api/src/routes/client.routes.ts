@@ -109,6 +109,8 @@ export async function clientRoutes(fastify: FastifyInstance) {
               include: {
                 payments: true,
               },
+              take: 100,
+              orderBy: { createdAt: 'desc' },
             });
 
             const activeProjects = projects.filter(p => p.status === 'ACTIVE').length;
@@ -165,6 +167,8 @@ export async function clientRoutes(fastify: FastifyInstance) {
               },
             },
           },
+          take: 100,
+          orderBy: { createdAt: 'desc' },
         });
 
         // Calculate estimated workload

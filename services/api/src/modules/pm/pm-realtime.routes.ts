@@ -130,6 +130,8 @@ export async function pmRealtimeRoutes(fastify: FastifyInstance) {
                   gte: today,
                 },
               },
+              take: 200,
+              orderBy: { completedAt: 'desc' },
             })
 
             const activeHoursToday = Math.round(

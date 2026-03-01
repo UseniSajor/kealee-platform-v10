@@ -129,6 +129,7 @@ export async function webhookStatusRoutes(fastify: FastifyInstance) {
             },
           },
           orderBy: { createdAt: 'desc' },
+          take: 100,
         })
 
         if (logs.length === 0) {

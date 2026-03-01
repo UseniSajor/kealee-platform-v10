@@ -43,6 +43,8 @@ async function getAutonomyEngine() {
       const actions = await prismaAny.autonomousActionLog.findMany({
         where: { projectId, createdAt: { gte: since } },
         select: { decision: true, actionType: true, reviewedByPM: true, revertedAt: true },
+        take: 1000,
+        orderBy: { createdAt: 'desc' },
       });
 
       const totalActions = actions.length;

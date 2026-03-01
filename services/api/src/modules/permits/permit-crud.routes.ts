@@ -94,6 +94,7 @@ export async function permitCrudRoutes(fastify: FastifyInstance) {
             expiresAt: true,
           },
           orderBy: { updatedAt: 'desc' },
+          take: 200,
         })
 
         // Aggregate counts by status
@@ -583,6 +584,7 @@ export async function permitCrudRoutes(fastify: FastifyInstance) {
               action: { in: ['COMMENT', 'COMMENTS_RECEIVED'] },
             },
             orderBy: { createdAt: 'desc' },
+            take: 100,
           }),
           prismaAny.permitEvent.findMany({
             where: {
@@ -590,6 +592,7 @@ export async function permitCrudRoutes(fastify: FastifyInstance) {
               eventType: { in: ['COMMENT', 'NOTE_ADDED'] },
             },
             orderBy: { occurredAt: 'desc' },
+            take: 100,
           }),
         ])
 
@@ -731,6 +734,7 @@ export async function permitCrudRoutes(fastify: FastifyInstance) {
             findings: true,
           },
           orderBy: { requestedDate: 'desc' },
+          take: 100,
         })
 
         return reply.send({ inspections })

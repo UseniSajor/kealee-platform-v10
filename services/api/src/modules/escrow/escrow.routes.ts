@@ -682,6 +682,7 @@ export async function escrowRoutes(fastify: FastifyInstance) {
             },
           },
           orderBy: { createdAt: 'desc' },
+          take: 100,
         })
 
         return reply.send({

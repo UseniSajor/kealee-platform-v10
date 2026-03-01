@@ -121,10 +121,10 @@ export async function analyticsDashboardRoutes(fastify: FastifyInstance) {
       const percentComplete = pct(completedMs.length, milestones.length || 1)
 
       // Quality
-      const inspections = await p.qAInspection?.findMany?.({ where: { projectId } }) || []
+      const inspections = await p.qAInspection?.findMany?.({ where: { projectId }, take: 500 }) || []
       const passedInspections = inspections.filter((i: any) => i.status === 'passed' || i.status === 'PASSED')
       const inspectionPassRate = pct(passedInspections.length, inspections.length || 1)
-      const qaIssues = await p.qAIssue?.findMany?.({ where: { projectId } }) || []
+      const qaIssues = await p.qAIssue?.findMany?.({ where: { projectId }, take: 500 }) || []
       const openIssues = qaIssues.filter((i: any) => i.status !== 'RESOLVED' && i.status !== 'CLOSED').length
       const criticalIssues = qaIssues.filter((i: any) => i.severity === 'CRITICAL' || i.severity === 'critical').length
 
@@ -132,9 +132,11 @@ export async function analyticsDashboardRoutes(fastify: FastifyInstance) {
       const contractorProjects = await p.contractorProject?.findMany?.({
         where: { projectId },
         include: { contractor: { select: { id: true, companyName: true } } },
+        take: 100,
       }) || []
       const contractorScores = await p.contractorScore?.findMany?.({
         where: { contractorId: { in: contractorProjects.map((cp: any) => cp.contractorId) } },
+        take: 100,
       }) || []
       const avgReliability = contractorScores.length > 0
         ? Math.round(contractorScores.reduce((s: number, cs: any) => s + cs.overallScore, 0) / contractorScores.length)
@@ -189,6 +191,7 @@ export async function analyticsDashboardRoutes(fastify: FastifyInstance) {
       const escrowTxns = await p.escrowTransaction?.findMany?.({
         where: { recipientId: contractorId, type: 'RELEASE', status: 'COMPLETED' },
         orderBy: { createdAt: 'desc' },
+        take: 500,
       }) || []
       const totalEarnings = escrowTxns.reduce((s: number, t: any) => s + toNum(t.amount), 0)
       const last30 = escrowTxns.filter((t: any) => new Date(t.createdAt) >= daysAgo(30))
@@ -207,7 +210,7 @@ export async function analyticsDashboardRoutes(fastify: FastifyInstance) {
       }
 
       // Bids
-      const bids = await prisma.bidSubmission.findMany({ where: { contractorId }, orderBy: { createdAt: 'desc' } })
+      const bids = await prisma.bidSubmission.findMany({ where: { contractorId }, orderBy: { createdAt: 'desc' }, take: 500 })
       const wonBids = bids.filter((b: any) => b.status === 'AWARDED' || b.status === 'ACCEPTED')
       const winRate = pct(wonBids.length, bids.length || 1)
       const bidsByMonth: Array<{ month: string; submitted: number; won: number }> = []
@@ -223,7 +226,7 @@ export async function analyticsDashboardRoutes(fastify: FastifyInstance) {
       }
 
       // Reviews
-      const reviews = await prisma.contractorReview.findMany({ where: { contractorId }, orderBy: { createdAt: 'desc' } })
+      const reviews = await prisma.contractorReview.findMany({ where: { contractorId }, orderBy: { createdAt: 'desc' }, take: 500 })
       const avgRating = reviews.length > 0
         ? Math.round(reviews.reduce((s, r) => s + toNum(r.rating), 0) / reviews.length * 10) / 10
         : 0
@@ -231,7 +234,7 @@ export async function analyticsDashboardRoutes(fastify: FastifyInstance) {
       reviews.forEach(r => { const rt = Math.round(toNum(r.rating)); if (rt >= 1 && rt <= 5) ratingDistribution[rt - 1]++ })
 
       // Projects
-      const contractorProjects = await p.contractorProject?.findMany?.({ where: { contractorId } }) || []
+      const contractorProjects = await p.contractorProject?.findMany?.({ where: { contractorId }, take: 100 }) || []
       const completed = contractorProjects.filter((cp: any) => cp.status === 'COMPLETED')
       const active = contractorProjects.filter((cp: any) => cp.status === 'ACTIVE' || cp.status === 'IN_PROGRESS')
 
@@ -279,19 +282,21 @@ export async function analyticsDashboardRoutes(fastify: FastifyInstance) {
           ],
         },
         include: { milestones: true } as any,
+        take: 100,
+        orderBy: { createdAt: 'desc' },
       })
       const activeProjects = projects.filter((p: any) => p.status === 'ACTIVE' || p.status === 'IN_PROGRESS')
       const totalBudgetManaged = activeProjects.reduce((s, p: any) => s + toNum(p.budget || 0), 0)
 
       // Tasks
-      const tasks = await p.task?.findMany?.({ where: { assigneeId: pmId }, orderBy: { dueDate: 'asc' } }) || []
+      const tasks = await p.task?.findMany?.({ where: { assigneeId: pmId }, orderBy: { dueDate: 'asc' }, take: 200 }) || []
       const openTasks = tasks.filter((t: any) => t.status !== 'COMPLETED' && t.status !== 'DONE').length
       const overdueTasks = tasks.filter((t: any) =>
         t.status !== 'COMPLETED' && t.status !== 'DONE' && t.dueDate && new Date(t.dueDate) < new Date()
       ).length
 
       // AI Actions
-      const aiActions = await p.autonomousAction?.findMany?.({ where: { createdAt: { gte: daysAgo(30) } } }) || []
+      const aiActions = await p.autonomousAction?.findMany?.({ where: { createdAt: { gte: daysAgo(30) } }, take: 500 }) || []
       const approvedActions = aiActions.filter((a: any) => a.decision === 'APPROVED' || a.decision === 'AUTO_APPROVED')
 
       // Budget by project
@@ -351,10 +356,12 @@ export async function analyticsDashboardRoutes(fastify: FastifyInstance) {
         // Revenue
         const feeTxns = await p.escrowTransaction?.findMany?.({
           where: { type: 'FEE', status: 'COMPLETED', createdAt: dateFilter },
+          take: 1000,
+          orderBy: { createdAt: 'desc' },
         }) || []
         const totalRevenue = feeTxns.reduce((s: number, t: any) => s + toNum(t.amount), 0)
 
-        const subscriptions = await p.subscription?.findMany?.({ where: { status: 'ACTIVE' } }) || []
+        const subscriptions = await p.subscription?.findMany?.({ where: { status: 'ACTIVE' }, take: 1000 }) || []
         const mrr = subscriptions.reduce((s: number, sub: any) => s + toNum(sub.monthlyAmount || sub.price || 0), 0)
 
         // Revenue by month
@@ -388,7 +395,7 @@ export async function analyticsDashboardRoutes(fastify: FastifyInstance) {
         const totalBidsSubmitted = await prisma.bidSubmission.count({ where: { createdAt: dateFilter } })
 
         // Contractors by trade
-        const allContractors = await prisma.contractor.findMany({ select: { trades: true } as any })
+        const allContractors = await prisma.contractor.findMany({ select: { trades: true } as any, take: 5000 })
         const tradeMap = new Map<string, number>()
         allContractors.forEach((c: any) => {
           (c.trades || []).forEach((t: string) => tradeMap.set(t, (tradeMap.get(t) || 0) + 1))
@@ -399,7 +406,7 @@ export async function analyticsDashboardRoutes(fastify: FastifyInstance) {
           .slice(0, 10)
 
         // Financial
-        const escrowAgreements = await p.escrowAgreement?.findMany?.({ where: { createdAt: dateFilter } }) || []
+        const escrowAgreements = await p.escrowAgreement?.findMany?.({ where: { createdAt: dateFilter }, take: 1000 }) || []
         const totalEscrowVolume = escrowAgreements.reduce((s: number, e: any) => s + toNum(e.totalAmount || e.amount), 0)
         const pendingReleases = await p.escrowTransaction?.count?.({ where: { type: 'RELEASE', status: 'PENDING' } }) || 0
 
@@ -411,16 +418,18 @@ export async function analyticsDashboardRoutes(fastify: FastifyInstance) {
           const me = new Date(ms); me.setMonth(me.getMonth() + 1)
           const deposits = (await p.escrowTransaction?.findMany?.({
             where: { type: 'DEPOSIT', status: 'COMPLETED', createdAt: { gte: ms, lt: me } },
+            take: 1000,
           }) || []).reduce((s: number, t: any) => s + toNum(t.amount), 0)
           const releases = (await p.escrowTransaction?.findMany?.({
             where: { type: 'RELEASE', status: 'COMPLETED', createdAt: { gte: ms, lt: me } },
+            take: 1000,
           }) || []).reduce((s: number, t: any) => s + toNum(t.amount), 0)
           runningBalance += deposits - releases
           cashFlowProjection.push({ date: monthKey(ms), inflow: deposits, outflow: releases, balance: runningBalance })
         }
 
         // AI / Automation
-        const aiActions = await p.autonomousAction?.findMany?.({ where: { createdAt: dateFilter } }) || []
+        const aiActions = await p.autonomousAction?.findMany?.({ where: { createdAt: dateFilter }, take: 1000 }) || []
         const totalAutonomousActions = await p.autonomousAction?.count?.() || 0
         const approvedAi = aiActions.filter((a: any) => a.decision === 'APPROVED' || a.decision === 'AUTO_APPROVED')
 

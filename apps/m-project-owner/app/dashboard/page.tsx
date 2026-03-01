@@ -16,6 +16,7 @@ import { Card } from '@kealee/ui';
 import PreConPipeline from '../../components/PreConPipeline';
 import { getClawsHealth, type ClawSystemHealth } from '../../lib/claws';
 import { useOwnerProfile, type OwnerRole } from '../../lib/user-context';
+import { api } from '../../lib/api';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -119,15 +120,49 @@ export default function DashboardPage() {
 
   const fetchData = async () => {
     try {
-      setProjects([]);
+      const { projects: projectList } = await api.listMyProjects();
+
+      // The API returns full Project records; cast to access all fields
+      const fullProjects = projectList as Array<Record<string, any>>;
+
+      setProjects(
+        fullProjects.map((p) => ({
+          id: p.id,
+          name: p.name || 'Untitled Project',
+          location: [p.address, p.city, p.state].filter(Boolean).join(', ') || p.description || '—',
+          budget: p.budgetTotal
+            ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(Number(p.budgetTotal))
+            : '—',
+          timeline: p.currentPhase || p.status || '—',
+        }))
+      );
+
+      // Derive pipeline stats from project statuses
+      const statusCounts = fullProjects.reduce<Record<string, number>>((acc, p) => {
+        const s = (p.status || 'DRAFT').toUpperCase();
+        acc[s] = (acc[s] || 0) + 1;
+        return acc;
+      }, {});
+
+      const activeStatuses = ['ACTIVE', 'READINESS', 'CONTRACTING', 'DRAFT'];
+      const activeCount = fullProjects.filter((p) => activeStatuses.includes((p.status || '').toUpperCase())).length;
+
       setPreconData({
-        totalProjects: 0,
-        activeProjects: 0,
-        pipeline: { intake: 0, design: 0, approved: 0, marketplace: 0, awarded: 0, completed: 0 },
+        totalProjects: fullProjects.length,
+        activeProjects: activeCount,
+        pipeline: {
+          intake: statusCounts['DRAFT'] || 0,
+          design: statusCounts['READINESS'] || 0,
+          approved: statusCounts['CONTRACTING'] || 0,
+          marketplace: statusCounts['MARKETPLACE'] || 0,
+          awarded: statusCounts['ACTIVE'] || 0,
+          completed: statusCounts['COMPLETED'] || 0,
+        },
         pendingFees: { count: 0, total: 0 },
-        recentProjects: [],
+        recentProjects: fullProjects.slice(0, 5),
       });
-      // Multifamily stats (would be fetched from API in production)
+
+      // Multifamily stats placeholder — no dedicated API endpoint yet
       setMfStats({
         totalUnits: 0,
         completedUnits: 0,
@@ -137,9 +172,10 @@ export default function DashboardPage() {
         activePhases: 0,
         nextDraw: null,
       });
+
       setIsLoading(false);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error fetching dashboard data:', error);
       setIsLoading(false);
     }
   };

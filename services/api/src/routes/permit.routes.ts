@@ -60,6 +60,7 @@ export async function permitRoutes(fastify: FastifyInstance) {
             },
           },
           orderBy: { createdAt: 'desc' },
+          take: 100,
         });
 
         return { permits };

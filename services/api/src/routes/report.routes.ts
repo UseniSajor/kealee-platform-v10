@@ -109,11 +109,14 @@ export async function reportRoutes(fastify: FastifyInstance) {
             include: {
               client: true,
             },
+            take: 500,
+            orderBy: { createdAt: 'desc' },
           }),
           prisma.client.findMany({
             where: {
               assignedPM: user.id,
             },
+            take: 200,
           }),
         ]);
 

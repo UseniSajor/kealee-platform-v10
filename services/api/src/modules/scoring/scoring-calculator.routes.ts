@@ -666,6 +666,7 @@ export async function scoringCalculatorRoutes(fastify: FastifyInstance) {
       const contractors = await prisma.contractor.findMany({
         where: { status: 'ACTIVE' },
         select: { id: true, companyName: true },
+        take: 5000,
       });
 
       let successCount = 0;

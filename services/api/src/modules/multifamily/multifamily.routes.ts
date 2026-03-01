@@ -25,6 +25,7 @@ export async function multifamilyRoutes(fastify: FastifyInstance) {
     const units = await prisma.multifamilyUnit.findMany({
       where,
       orderBy: [{ building: 'asc' }, { floor: 'asc' }, { number: 'asc' }],
+      take: 1000,
     })
     return { units }
   })
@@ -34,7 +35,7 @@ export async function multifamilyRoutes(fastify: FastifyInstance) {
     const { projectId } = req.query as Record<string, string>
     if (!projectId) return reply.status(400).send({ error: 'projectId is required' })
 
-    const units = await prisma.multifamilyUnit.findMany({ where: { projectId } })
+    const units = await prisma.multifamilyUnit.findMany({ where: { projectId }, take: 1000 })
     const total = units.length
     const complete = units.filter(u => u.status === 'COMPLETE' || u.status === 'TURNED_OVER').length
     const inProgress = units.filter(u => !['NOT_STARTED', 'COMPLETE', 'TURNED_OVER'].includes(u.status)).length
@@ -145,6 +146,7 @@ export async function multifamilyRoutes(fastify: FastifyInstance) {
     const draws = await prisma.drawRequest.findMany({
       where,
       orderBy: { drawNumber: 'asc' },
+      take: 200,
     })
     return { draws }
   })
@@ -154,7 +156,7 @@ export async function multifamilyRoutes(fastify: FastifyInstance) {
     const { projectId } = req.query as Record<string, string>
     if (!projectId) return reply.status(400).send({ error: 'projectId is required' })
 
-    const draws = await prisma.drawRequest.findMany({ where: { projectId } })
+    const draws = await prisma.drawRequest.findMany({ where: { projectId }, take: 200 })
     const totalScheduled = draws.reduce((s, d) => s + d.scheduledAmount, 0)
     const totalBilled = draws.reduce((s, d) => s + d.previouslyBilled + d.currentBilling, 0)
     const totalFunded = draws.filter(d => d.status === 'FUNDED').reduce((s, d) => s + d.currentBilling, 0)
@@ -279,6 +281,7 @@ export async function multifamilyRoutes(fastify: FastifyInstance) {
       where: { projectId },
       include: { units: { select: { id: true, number: true, status: true } } },
       orderBy: { createdAt: 'asc' },
+      take: 100,
     })
     return { phases }
   })
@@ -291,6 +294,7 @@ export async function multifamilyRoutes(fastify: FastifyInstance) {
     const phases = await prisma.multifamilyAreaPhase.findMany({
       where: { projectId },
       orderBy: { startDate: 'asc' },
+      take: 100,
     })
     return { phases }
   })

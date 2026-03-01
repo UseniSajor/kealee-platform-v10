@@ -195,6 +195,7 @@ const clientActionsRoutes: FastifyPluginAsync = async (fastify) => {
           bidRequest: true,
         },
         orderBy: { createdAt: 'desc' },
+        take: 100,
       })
 
       return reply.send({
@@ -351,6 +352,7 @@ const clientActionsRoutes: FastifyPluginAsync = async (fastify) => {
           },
         },
         orderBy: { createdAt: 'asc' },
+        take: 100,
       })
 
       return reply.send({
@@ -547,6 +549,7 @@ const clientActionsRoutes: FastifyPluginAsync = async (fastify) => {
           lineItems: true,
         },
         orderBy: { createdAt: 'desc' },
+        take: 100,
       })
 
       return reply.send({

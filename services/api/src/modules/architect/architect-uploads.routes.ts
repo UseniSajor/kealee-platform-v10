@@ -441,6 +441,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
           },
         },
         orderBy: { createdAt: 'desc' },
+        take: 100,
       })
 
       return reply.send({

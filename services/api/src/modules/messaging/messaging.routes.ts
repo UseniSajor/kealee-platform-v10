@@ -112,6 +112,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
         const participantRecords = await p.conversationParticipant.findMany({
           where: participantWhere,
           select: { conversationId: true },
+          take: 500,
         })
 
         const conversationIds = participantRecords.map((pr: any) => pr.conversationId)
@@ -680,6 +681,8 @@ export async function messagingRoutes(fastify: FastifyInstance) {
             readBy: { none: { userId: user.id } },
           },
           select: { id: true },
+          take: 500,
+          orderBy: { createdAt: 'desc' },
         })
 
         if (unreadMessages.length > 0) {
@@ -732,6 +735,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
             user: { select: { id: true, name: true, email: true } },
           },
           orderBy: { joinedAt: 'asc' },
+          take: 100,
         })
 
         return reply.send({ success: true, data: participants })
@@ -871,6 +875,7 @@ export async function messagingRoutes(fastify: FastifyInstance) {
         const participants = await p.conversationParticipant.findMany({
           where: { userId: user.id },
           select: { conversationId: true, lastReadAt: true },
+          take: 500,
         })
 
         let totalUnread = 0

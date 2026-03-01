@@ -562,8 +562,6 @@ model ExpeditedPermitService {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // permitApplication PermitApplication @relation("ExpeditedPermitServiceApplication", fields: [permitApplicationId], references: [id], onDelete: Cascade) // PermitApplication replaced by Permit in Stage 7.5
-
   @@index([permitApplicationId])
   @@index([serviceType])
   @@index([status])
@@ -586,7 +584,6 @@ model JurisdictionIntegrationLog {
   executedAt DateTime @default(now())
 
   jurisdiction                   Jurisdiction         @relation("JurisdictionIntegrationLogJurisdiction", fields: [jurisdictionId], references: [id], onDelete: Cascade)
-  // permitApplication PermitApplication? @relation("JurisdictionIntegrationLogApplication", fields: [permitApplicationId], references: [id], onDelete: SetNull) // PermitApplication replaced by Permit in Stage 7.5
   permitApplicationNotifications PermitNotification[] @relation("PermitNotificationApplication")
 
   @@index([jurisdictionId])
@@ -818,6 +815,7 @@ model Permit {
   @@index([jurisdictionStatus])
   @@index([submittedAt])
   @@index([permitNumber])
+  @@index([status, createdAt])
 }
 
 model AIReviewResult {
@@ -1148,7 +1146,6 @@ model PermitNotification {
   createdAt DateTime @default(now())
 
   permit         Permit                      @relation("PermitNotificationPermit", fields: [permitId], references: [id], onDelete: Cascade)
-  // permitApplication PermitApplication? @relation("PermitNotificationApplication", fields: [permitApplicationId], references: [id], onDelete: SetNull) // PermitApplication replaced by Permit in Stage 7.5
   recipient      User                        @relation("PermitNotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
   integrationLog JurisdictionIntegrationLog? @relation("PermitNotificationApplication", fields: [jurisdictionIntegrationLogId], references: [id], onDelete: SetNull)
 
@@ -1963,6 +1960,9 @@ model User {
   spatialVerifications   SpatialVerification[] @relation("SpatialVerifier")
   financingApplications  FinancingApplication[]
   milestoneApprovals     MilestoneApproval[]   @relation("MilestoneApprover")
+
+  // Evidence relations
+  uploadedEvidence Evidence[] @relation("EvidenceUploader")
 }
 
 // ============================================================================
@@ -2243,6 +2243,7 @@ model ContractAgreement {
   @@index([ownerId])
   @@index([contractorId])
   @@index([status])
+  @@index([status, createdAt])
 }
 
 model Milestone {
@@ -2278,17 +2279,19 @@ model Milestone {
 }
 
 model Evidence {
-  id          String   @id @default(uuid())
-  milestoneId String
-  type        String
-  fileUrl     String
-  caption     String?
-  uploadedBy  String
-  uploadedAt  DateTime @default(now())
+  id           String   @id @default(uuid())
+  milestoneId  String
+  type         String
+  fileUrl      String
+  caption      String?
+  uploadedById String
+  uploadedAt   DateTime @default(now())
 
-  milestone Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  milestone  Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  uploadedBy User      @relation("EvidenceUploader", fields: [uploadedById], references: [id])
 
   @@index([milestoneId])
+  @@index([uploadedById])
 }
 
 // ============================================================================
@@ -2333,6 +2336,7 @@ model EscrowAgreement {
   @@index([projectId])
   @@index([status])
   @@index([escrowAccountNumber])
+  @@index([status, createdAt])
 }
 
 model EscrowTransaction {
@@ -2384,6 +2388,7 @@ model EscrowTransaction {
   @@index([processedDate])
   @@index([initiatedBy])
   @@index([reference])
+  @@index([status, createdAt])
 }
 
 model EscrowHold {
@@ -2713,6 +2718,7 @@ model Payout {
   @@index([milestoneId])
   @@index([initiatedBy])
   @@index([arrivalDate])
+  @@index([status, createdAt])
 }
 
 // ============================================================================
@@ -4648,6 +4654,7 @@ model Payment {
   @@index([financingApplicationId])
   @@index([status])
   @@index([createdAt])
+  @@index([status, createdAt])
 }
 
 model Invoice {
@@ -4676,6 +4683,7 @@ model Invoice {
   @@index([stripeInvoiceId])
   @@index([status])
   @@index([createdAt])
+  @@index([status, createdAt])
 }
 
 // ============================================================================
@@ -4870,6 +4878,7 @@ model Task {
   @@index([projectId, status]) // Project detail: tasks by status
   @@index([projectId, status, dueDate]) // Task board: filtered + sorted by due date
   @@index([assignedTo, status]) // "My tasks" filtered by status
+  @@index([status, createdAt])
 }
 
 model TaskComment {
@@ -4928,10 +4937,6 @@ model AssignmentRequest {
   @@index([pmUserId])
   @@index([status])
 }
-
-// Alias PermitApplication to Permit for backward compatibility
-// The code uses permitApplication but the model is Permit
-// We'll update the code to use Permit instead
 
 // ============================================================================
 // NOTIFICATION SYSTEM MODELS
@@ -5688,6 +5693,7 @@ model BidSubmission {
   @@index([contractorId])
   @@index([status])
   @@index([score])
+  @@index([status, createdAt])
   @@map("bid_submissions")
 }
 
@@ -5805,6 +5811,7 @@ model ChangeOrder {
   @@index([projectId])
   @@index([status])
   @@index([changeOrderNumber])
+  @@index([status, createdAt])
   @@map("change_order_records")
 }
 
@@ -11871,20 +11878,6 @@ model BidEmbedding {
   @@index([bidId])
   @@map("bid_embeddings")
 }
-
-// pgvector embeddings for OpportunityBid (WSL pipeline)
-// NOTE: Temporarily commented out — requires pgvector extension enabled
-// via Supabase Dashboard > Database > Extensions > vector
-// model OpportunityBidEmbedding {
-//   id          String   @id @default(cuid())
-//   bidId       String   @unique
-//   embedding   Unsupported("vector(1536)")
-//   metadata    Json
-//   createdAt   DateTime @default(now())
-//
-//   @@index([bidId])
-//   @@map("opportunity_bid_embeddings")
-// }
 
 model BidSimilarity {
   id              String   @id @default(cuid())
