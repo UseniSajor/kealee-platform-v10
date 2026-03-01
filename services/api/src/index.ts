@@ -917,6 +917,15 @@ const start = async () => {
     })
 
     // ══════════════════════════════════════════════════════════════
+    // License Verification — Builder Network contractor verification
+    // ══════════════════════════════════════════════════════════════
+
+    await safeRegisterBlock('License Verification routes', async () => {
+      const { licenseRoutes } = await import('./modules/license/license.routes')
+      await fastify.register(licenseRoutes, { prefix: '/api/license' })
+    })
+
+    // ══════════════════════════════════════════════════════════════
 
     // GraphQL DISABLED FOR MVP - Uncomment when needed
     /*

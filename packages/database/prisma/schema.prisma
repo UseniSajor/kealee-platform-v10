@@ -1976,6 +1976,9 @@ model User {
   // Opportunities Phase 06 relations
   postedOpportunityListings  OpportunityListing[]      @relation("OpportunityListingPostedBy")
   opportunityApplications    OpportunityApplication[]  @relation("OpportunityApplicationApplicant")
+
+  // Contractor License Verification
+  contractorVerification ContractorVerification? @relation("ContractorVerificationUser")
 }
 
 // ============================================================================
@@ -12922,4 +12925,51 @@ model InterestListSignup {
 
   @@index([role])
   @@map("interest_list_signups")
+}
+
+// ── CONTRACTOR LICENSE VERIFICATION ──────────────────────────────────────────
+// Reference table — populated from state bulk exports (VA, MD, DC).
+// Used to verify GC license numbers during Builder Network signup.
+
+model ContractorLicenseRegistry {
+  id           String    @id @default(cuid())
+  state        String
+  licenseNum   String    @unique
+  companyName  String
+  licenseType  String
+  licenseClass String?
+  status       String
+  expiresAt    DateTime?
+  issuedAt     DateTime?
+  city         String?
+  county       String?
+  zip          String?
+  phone        String?
+  lastSynced   DateTime  @default(now())
+  createdAt    DateTime  @default(now())
+
+  @@index([licenseNum])
+  @@index([state, status])
+  @@index([companyName])
+  @@map("contractor_license_registry")
+}
+
+// Tracks which licenses have been claimed by a Kealee user account
+model ContractorVerification {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  user           User      @relation("ContractorVerificationUser", fields: [userId], references: [id])
+  state          String
+  licenseNum     String
+  licenseType    String
+  licenseClass   String?
+  companyName    String
+  status         String
+  expiresAt      DateTime?
+  verifiedAt     DateTime  @default(now())
+  lastChecked    DateTime  @default(now())
+  rawApiResponse Json?
+
+  @@index([licenseNum])
+  @@map("contractor_verifications")
 }
