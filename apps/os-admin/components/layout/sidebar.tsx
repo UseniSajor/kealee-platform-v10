@@ -19,6 +19,7 @@ import {
   Radar,
   Webhook,
   CreditCard,
+  ShoppingCart,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -28,6 +29,7 @@ const navigation = [
   { name: 'Organizations', href: '/orgs', icon: Building2 },
   { name: 'Users', href: '/users', icon: Users },
   { name: 'Financials', href: '/financials', icon: DollarSign },
+  { name: 'Orders', href: '/orders', icon: ShoppingCart },
   { name: 'Disputes', href: '/disputes', icon: Gavel },
   { name: 'Automation', href: '/automation', icon: Bot },
   { name: 'Command Center', href: '/command-center', icon: Radar },

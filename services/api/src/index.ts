@@ -774,6 +774,11 @@ const start = async () => {
       await fastify.register(adminRoutes, { prefix: '/admin' })
     })
 
+    await safeRegisterBlock('Admin Order Management routes', async () => {
+      const { adminOrdersRoutes } = await import('./modules/admin/admin-orders.routes')
+      await fastify.register(adminOrdersRoutes, { prefix: '/api' })
+    })
+
     await safeRegisterBlock('Phase 1 - Permit Templates, Analytics, API Integrations routes', async () => {
       const { permitTemplateRoutes } = await import('./modules/permits/permit-template.routes')
       const { permitAnalyticsRoutes } = await import('./modules/permits/permit-analytics.routes')
