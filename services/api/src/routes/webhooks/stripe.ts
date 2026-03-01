@@ -11,6 +11,7 @@ import Stripe from 'stripe';
 import { sanitizeErrorMessage } from '../../utils/sanitize-error';
 import { PrismaClient } from '@kealee/database';
 import { getStripe } from '../../modules/billing/stripe.client';
+import { syncCheckout } from '../../modules/integrations/ghl/ghl-sync';
 
 const prisma = new PrismaClient();
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -184,6 +185,16 @@ async function onCheckoutCompleted(session: Stripe.Checkout.Session, fastify: Fa
         mode: session.mode,
       },
     }, `Checkout completed for org ${orgId}`);
+  }
+
+  // Sync checkout event to GHL (fire-and-forget)
+  if (session.customer_email) {
+    syncCheckout({
+      userId: orgId || 'unknown',
+      email: session.customer_email,
+      packageKey: planSlug || undefined,
+      amount: session.amount_total ? session.amount_total / 100 : undefined,
+    }).catch((err) => fastify.log.warn({ err }, 'GHL checkout sync failed (non-blocking)'));
   }
 }
 

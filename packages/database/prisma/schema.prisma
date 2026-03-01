@@ -1587,6 +1587,11 @@ model Project {
   financingApplications   FinancingApplication[]
   items                   ProjectItem[]
 
+  // GHL (GoHighLevel) CRM integration
+  ghlOpportunityId String? @unique
+  ghlPipelineId    String?
+  ghlStageId       String?
+
   @@index([clientId])
   @@index([orgId])
   @@index([propertyId])
@@ -1963,6 +1968,10 @@ model User {
 
   // Evidence relations
   uploadedEvidence Evidence[] @relation("EvidenceUploader")
+
+  // GHL (GoHighLevel) CRM integration
+  ghlContactId String?   @unique
+  ghlSyncedAt  DateTime?
 }
 
 // ============================================================================
@@ -12728,6 +12737,39 @@ model StripeProduct {
   active      Boolean  @default(true)
 
   @@map("stripe_products")
+}
+
+// ── GHL (GoHighLevel) CRM Integration ────────────────────────
+model GhlWebhookLog {
+  id        String   @id @default(cuid())
+  eventType String
+  payload   Json
+  processed Boolean  @default(false)
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@index([eventType])
+  @@index([processed])
+  @@index([createdAt])
+  @@map("ghl_webhook_logs")
+}
+
+model GhlSyncStatus {
+  id            String   @id @default(cuid())
+  entityType    String   // "user", "project", "quote", "checkout"
+  entityId      String
+  ghlId         String
+  lastSynced    DateTime
+  syncDirection String   // "kealee_to_ghl" or "ghl_to_kealee"
+  status        String   // "success", "failed", "pending"
+  error         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([ghlId])
+  @@index([status])
+  @@map("ghl_sync_status")
 }
 
 model Faq {

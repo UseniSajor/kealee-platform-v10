@@ -889,6 +889,25 @@ const start = async () => {
     })
 
     // ══════════════════════════════════════════════════════════════
+    // GoHighLevel CRM Integration & KeaBot AI Chat
+    // ══════════════════════════════════════════════════════════════
+
+    await safeRegisterBlock('GHL CRM routes', async () => {
+      const { ghlRoutes } = await import('./modules/integrations/ghl/ghl.routes')
+      await fastify.register(ghlRoutes, { prefix: '/ghl' })
+    })
+
+    await safeRegisterBlock('GHL Webhook routes', async () => {
+      const { ghlWebhookRoutes } = await import('./modules/integrations/ghl/ghl-webhook.routes')
+      await fastify.register(ghlWebhookRoutes, { prefix: '/webhooks' })
+    })
+
+    await safeRegisterBlock('KeaBot AI Chat routes', async () => {
+      const { keabotRoutes } = await import('./modules/keabot/keabot.routes')
+      await fastify.register(keabotRoutes, { prefix: '/keabot' })
+    })
+
+    // ══════════════════════════════════════════════════════════════
 
     // GraphQL DISABLED FOR MVP - Uncomment when needed
     /*
@@ -961,6 +980,7 @@ const start = async () => {
       { name: 'S3/R2 Storage',key: 'S3_ACCESS_KEY_ID',        status: !!(process.env.S3_ACCESS_KEY_ID || process.env.R2_ACCESS_KEY_ID) },
       { name: 'Web Push',     key: 'VAPID_PUBLIC_KEY',        status: !!(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) },
       { name: 'Google Places', key: 'GOOGLE_PLACES_API_KEY',  status: !!process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY },
+      { name: 'GoHighLevel',  key: 'GHL_API_KEY',             status: !!(process.env.GHL_API_KEY && process.env.GHL_LOCATION_ID) },
     ]
     const configured = integrations.filter(i => i.status)
     const missing = integrations.filter(i => !i.status)

@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { PWAProvider } from './pwa-provider';
 import { CartProviderWrapper } from './cart-wrapper';
+import KeaBotChatWidget from '../components/KeaBotChatWidget';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -91,6 +92,7 @@ export default function RootLayout({
         <CartProviderWrapper>
           {children}
         </CartProviderWrapper>
+        <KeaBotChatWidget />
       </body>
     </html>
   );
