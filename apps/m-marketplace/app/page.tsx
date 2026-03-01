@@ -1,5 +1,36 @@
-// apps/m-marketplace/app/page.tsx
-// Kealee Platform Main Homepage - kealee.com
+/**
+ * Kealee Marketplace Homepage — Message Layering Strategy
+ *
+ * The homepage uses four headline versions, each at a different scroll depth
+ * to match the visitor's psychological state.
+ *
+ * SCROLL JOURNEY:
+ *
+ * [HERO]          → Version B: "The Construction Platform for the Entire Project."
+ *                   Purpose: Authority. Name the category. Stripe-style infrastructure claim.
+ *
+ * [PHASE SHOWCASE]→ Version C: "Construction Has Always Had Too Many Handoffs."
+ *                   Purpose: Name the pain. Then show the 5-phase solution.
+ *
+ * [AUDIENCES]     → Version A: "Build Without Blindspots."
+ *                   Purpose: Universal truth for all 3 roles. Homeowners fear
+ *                   being taken advantage of. GCs fear non-payment. Pros fear
+ *                   unclear scope. "Blindspots" captures all three.
+ *
+ * [HOW IT WORKS]  → Functional: "One Platform. Five Connected Phases."
+ *                   Purpose: Logical, step-by-step. Visitor is now convinced
+ *                   of the why — now they want to understand the how.
+ *
+ * [BUILDER NETWORK]→ Version D: "Every Project Needs a Room Where Everyone Belongs."
+ *                   Purpose: Community and belonging. Airbnb-style emotional close.
+ *                   Warmest section of the page. Converts hesitant visitors.
+ *
+ * [FINAL CTA]     → B+A Combined: "The Construction Platform Built for Everyone."
+ *                   Purpose: Restate authority (B) then close with urgency (A).
+ *                   "Start anywhere. Build without blindspots."
+ *
+ * All messages are sourced from @/lib/messages.ts — edit there, not here.
+ */
 
 import { Metadata } from 'next';
 import { HomePageClient } from './HomePageClient';
@@ -7,26 +38,28 @@ import { HomePageClient } from './HomePageClient';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Kealee | DC-Baltimore\'s End-to-End Design/Build Platform',
-  description: 'The connected platform that takes your project from architecture and engineering through estimation, permits, project management, operations, and finance. Architecture, engineering, estimation, permits, PM software, ops services, and escrow — all in one platform.',
+  title: 'Kealee — The Construction Platform for the Entire Project',
+  description:
+    'From the first concept drawing to the final lien waiver — Kealee connects owners, builders, and professionals on one platform. Design, estimate, permit, build, and closeout. No handoffs. No gaps.',
   keywords: [
-    'design build platform', 'construction management', 'architecture services DC', 'engineering services Baltimore',
-    'building permits', 'cost estimation software', 'project management construction', 'operations services contractors',
-    'escrow construction', 'contractor network DC Baltimore', 'permit automation', 'AI construction',
+    'construction platform', 'design build platform', 'construction management', 'architecture services',
+    'engineering services', 'building permits', 'cost estimation software', 'project management construction',
+    'operations services contractors', 'escrow construction', 'contractor network', 'permit automation',
     'structural engineering', 'MEP design', 'construction estimation', 'general contractor tools',
     'homeowner project management', 'construction finance', 'trust accounting construction',
   ],
   openGraph: {
-    title: 'Kealee | DC-Baltimore\'s End-to-End Design/Build Platform',
-    description: 'Architecture, engineering, estimation, permits, PM software, ops services, and escrow — all in one platform. Design. Build. Done.',
+    title: 'Kealee — Build Without Blindspots',
+    description:
+      'The construction platform for the entire project. Design through closeout — one connected system for everyone in the room.',
     url: 'https://kealee.com',
-    siteName: 'Kealee',
+    siteName: 'Kealee Marketplace',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Kealee - End-to-End Design/Build Platform for DC-Baltimore',
+        alt: 'Kealee — The Construction Platform for the Entire Project',
       },
     ],
     locale: 'en_US',
@@ -34,8 +67,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Kealee | End-to-End Design/Build Platform',
-    description: 'Architecture, engineering, estimation, permits, PM, ops, and finance — one platform. Design. Build. Done.',
+    title: 'Kealee — The Construction Platform for the Entire Project',
+    description:
+      'Design → Estimate → Permit → Build → Closeout. One platform. No gaps. Every professional verified. Every payment protected.',
     images: ['/og-image.png'],
   },
   alternates: {

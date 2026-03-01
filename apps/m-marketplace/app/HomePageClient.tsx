@@ -51,6 +51,9 @@ import {
 
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { PhaseShowcaseHeader } from '@/components/PhaseShowcaseHeader';
+import { KnowledgeHub, FAQSection } from '@/components/KnowledgeHub';
+import { MESSAGES } from '@/lib/messages';
 
 interface HomePageClientProps {
   platformFlowNodes: FlowNode[];
@@ -113,45 +116,31 @@ export function HomePageClient({
     <>
       <Header />
       <main className="pt-16">
-      {/* SECTION 1 - HERO */}
+      {/* SECTION 1 - HERO (Version B: Authority — establish category) */}
       <HeroSection
-        eyebrow="DC-Baltimore's End-to-End Design/Build Platform"
+        eyebrow={MESSAGES.hero.eyebrow}
         eyebrowColor="teal"
-        headline="Design. Build. Done."
-        subheadline="The connected platform that takes your project from architecture through permits through build-out through closeout. One platform. Zero gaps."
+        headline={`${MESSAGES.hero.headline} ${MESSAGES.hero.headlineEm}`}
+        subheadline={`${MESSAGES.hero.sub} ${MESSAGES.hero.supportingLine}`}
         ctas={[
-          { label: 'Start Your Project', href: '/owner', variant: 'primary' },
-          { label: 'Find a Professional', href: '/network', variant: 'outline' },
+          { label: MESSAGES.hero.primaryCta, href: '/services', variant: 'primary' },
+          { label: MESSAGES.hero.secondaryCta, href: '#howitworks', variant: 'outline' },
           { label: 'Explore All Portals', href: '/portals', variant: 'ghost' },
         ]}
         trustItems={[
           'Licensed & Insured',
           '20+ Years Experience',
-          'DC-Baltimore Corridor',
+          'Nationwide Coverage',
           'Escrow Protected',
         ]}
         backgroundImage={heroImages.constructionSite.src}
         backgroundImageAlt={heroImages.constructionSite.alt}
       />
 
-      {/* SECTION 2 - END-TO-END PLATFORM FLOW */}
+      {/* SECTION 2 - PHASE SHOWCASE (Version C: Pain → Solution) */}
       <motion.section {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-[#F7FAFC]">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2
-              className="text-3xl lg:text-4xl font-bold mb-4"
-              style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}
-            >
-              One Connected Platform, Every Phase
-            </h2>
-            <p
-              className="text-lg text-gray-600 max-w-2xl mx-auto"
-              style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}
-            >
-              Your project data flows seamlessly from design through closeout.
-              No re-entering information. No data silos. No gaps.
-            </p>
-          </div>
+          <PhaseShowcaseHeader />
 
           <PlatformFlowDiagram nodes={platformFlowNodes} />
 
@@ -166,17 +155,22 @@ export function HomePageClient({
         </div>
       </motion.section>
 
-      {/* SECTION 3 - KEALEE NETWORK */}
+      {/* SECTION 3 - BUILDER NETWORK (Version D: Community — emotional close) */}
       <motion.section {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <SectionLabel text="KEALEE NETWORK" color="teal" className="mb-4" />
+            <SectionLabel text={MESSAGES.network.eyebrow.toUpperCase()} color="teal" className="mb-4" />
             <h2
               className="text-3xl lg:text-4xl font-bold mb-4"
               style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}
             >
-              Find the Right Partner for Every Project
+              {MESSAGES.network.headline}
+              <br />
+              <em className="italic">{MESSAGES.network.headlineEm}</em>
             </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              {MESSAGES.network.sub}
+            </p>
           </div>
 
           {/* Three Column Features */}
@@ -290,17 +284,21 @@ export function HomePageClient({
         </div>
       </motion.section>
 
-      {/* SECTION 4 - FOR HOMEOWNERS & PROJECT OWNERS */}
+      {/* SECTION 4 - AUDIENCES (Version A: "Build Without Blindspots.") */}
       <motion.section {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <SectionLabel text="FOR HOMEOWNERS & PROJECT OWNERS" color="navy" className="mb-4" />
+            <SectionLabel text={MESSAGES.audiences.eyebrow.toUpperCase()} color="navy" className="mb-4" />
             <h2
-              className="text-3xl lg:text-4xl font-bold"
+              className="text-3xl lg:text-4xl font-bold mb-4"
               style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}
             >
-              Build with Confidence from Day One
+              {MESSAGES.audiences.headline}{' '}
+              <em className="italic">{MESSAGES.audiences.headlineEm}</em>
             </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              {MESSAGES.audiences.sub}
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -454,16 +452,21 @@ export function HomePageClient({
         </div>
       </motion.section>
 
-      {/* SECTION 6 - WHY KEALEE vs POINT SOLUTIONS */}
-      <motion.section {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
+      {/* SECTION 6 - HOW IT WORKS (Functional: "One Platform. Five Connected Phases.") */}
+      <motion.section id="howitworks" {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
+            <SectionLabel text={MESSAGES.howItWorks.eyebrow.toUpperCase()} color="navy" className="mb-4" />
             <h2
-              className="text-3xl lg:text-4xl font-bold"
+              className="text-3xl lg:text-4xl font-bold mb-4"
               style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}
             >
-              Why One Platform Beats Point Solutions
+              {MESSAGES.howItWorks.headline}{' '}
+              <em className="italic">{MESSAGES.howItWorks.headlineEm}</em>
             </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              {MESSAGES.howItWorks.sub}
+            </p>
           </div>
 
           <ComparisonSection
@@ -760,11 +763,57 @@ export function HomePageClient({
         </div>
       </motion.section>
 
-      {/* SECTION 9 - FINAL CTAs */}
+      {/* SECTION 9 - KNOWLEDGE HUB */}
+      <KnowledgeHub />
+
+      {/* SECTION 10 - FAQ */}
+      <FAQSection />
+
+      {/* SECTION 11 - FINAL CTA (Combined B+A: Authority + Urgency) */}
+      <motion.section
+        {...fadeInUp}
+        className="py-20 lg:py-24 px-4 sm:px-6 lg:px-8 text-center relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #0F2240 0%, #1B3A6B 60%, #1F4A8A 100%)' }}
+      >
+        <div className="max-w-3xl mx-auto relative z-10">
+          <span className="inline-block text-xs font-bold tracking-widest uppercase mb-6 text-white/40">
+            {MESSAGES.finalCta.eyebrow}
+          </span>
+          <h2
+            className="text-3xl lg:text-5xl font-bold text-white mb-6"
+            style={{ fontFamily: '"Clash Display", "Playfair Display", sans-serif' }}
+          >
+            {MESSAGES.finalCta.headline}
+            <br />
+            <em className="italic" style={{ color: '#E8A84A' }}>
+              {MESSAGES.finalCta.headlineEm}
+            </em>
+          </h2>
+          <p className="text-lg text-white/60 mb-10 max-w-xl mx-auto font-light">
+            {MESSAGES.finalCta.sub}
+          </p>
+          <div className="flex gap-4 justify-center flex-wrap">
+            <a
+              href="/services"
+              className="inline-flex items-center px-8 py-4 rounded-xl text-base font-semibold transition-all"
+              style={{ background: '#C8882A', color: 'white' }}
+            >
+              Explore the Marketplace
+            </a>
+            <a
+              href="/owner"
+              className="inline-flex items-center px-8 py-4 rounded-xl text-base font-semibold transition-all border border-white/30 text-white hover:bg-white/10"
+            >
+              Start Your Project
+            </a>
+          </div>
+        </div>
+      </motion.section>
+
+      {/* SECTION 12 - SPLIT CTAs */}
       <SplitCTA sections={splitCTASections} />
       </main>
 
-      {/* SECTION 10 - FOOTER */}
       <Footer />
     </>
   );
