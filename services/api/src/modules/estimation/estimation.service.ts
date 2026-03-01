@@ -11,6 +11,7 @@ import { prismaAny } from '../../utils/prisma-helper'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
+import { syncQuoteRequest } from '../integrations/ghl/ghl-sync'
 
 // Command Center API client
 const commandCenter: AxiosInstance = axios.create({
@@ -227,6 +228,19 @@ export const estimationService = {
         projectId: ticket.projectId,
       },
     })
+
+    // Sync quote request to GHL CRM (fire-and-forget)
+    const user = await prismaAny.user.findUnique({ where: { id: userId }, select: { email: true, name: true } })
+    if (user?.email) {
+      syncQuoteRequest({
+        email: user.email,
+        name: ticketData.clientName || user.name || '',
+        serviceType: ticketData.type,
+        source: 'Kealee Estimation',
+        pipelineId: process.env.GHL_PIPELINE_ID || '',
+        quoteRequestedStageId: process.env.GHL_QUOTE_REQUESTED_STAGE_ID || '',
+      }).catch(() => {})
+    }
 
     return ticket
   },

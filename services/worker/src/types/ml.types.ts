@@ -14,7 +14,7 @@ export interface MLJobData {
   type: MLJobType
   prompt: string
   systemPrompt?: string
-  model?: string // Claude model version (default: claude-3-5-sonnet-20241022)
+  model?: string // Claude model version (default: claude-sonnet-4-20250514)
   maxTokens?: number
   temperature?: number
   metadata?: {

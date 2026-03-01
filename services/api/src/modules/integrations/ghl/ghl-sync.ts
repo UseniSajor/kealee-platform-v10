@@ -166,6 +166,39 @@ export async function syncQuoteRequest(params: {
   }
 }
 
+/**
+ * Sync a milestone approval to GHL — updates opportunity stage.
+ * Called after a milestone is approved.
+ */
+export async function syncMilestoneApproved(params: {
+  projectId: string;
+  milestoneId: string;
+  milestoneName?: string;
+}): Promise<void> {
+  if (!isGhlConfigured()) return;
+
+  try {
+    // Lookup project's GHL opportunity
+    const project = await p.project.findUnique({
+      where: { id: params.projectId },
+      select: { ghlOpportunityId: true, ghlPipelineId: true, name: true },
+    });
+
+    if (!project?.ghlOpportunityId) return;
+
+    // Update opportunity with milestone info (keep stage as "Project Active")
+    const { updateOpportunity } = await import('./ghl-opportunities');
+    await updateOpportunity(project.ghlOpportunityId, {
+      name: `${project.name} - Milestone: ${params.milestoneName || params.milestoneId}`,
+    });
+
+    await logSync('milestone', params.milestoneId, project.ghlOpportunityId, 'kealee_to_ghl', 'success');
+  } catch (err: any) {
+    console.error(`[GHL Sync] Failed to sync milestone ${params.milestoneId}:`, err?.message);
+    await logSync('milestone', params.milestoneId, '', 'kealee_to_ghl', 'failed', err?.message);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Internal logger
 // ---------------------------------------------------------------------------

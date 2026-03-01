@@ -1,6 +1,7 @@
 import { prismaAny } from '../../utils/prisma-helper'
 import { getSupabaseClient } from '../../utils/supabase-client'
 import { auditService } from '../audit/audit.service'
+import { syncNewUser } from '../integrations/ghl/ghl-sync'
 
 export class AuthService {
   async signup(email: string, password: string, name: string) {
@@ -24,6 +25,15 @@ export class AuthService {
     })
 
     auditService.log({ userId: user.id, action: 'CREATE', entityType: 'USER', entityId: user.id, description: `User registered: ${email}`, category: 'SECURITY', severity: 'INFO' })
+
+    // Sync new user to GHL CRM (fire-and-forget)
+    const nameParts = name.split(' ')
+    syncNewUser({
+      id: user.id,
+      email: user.email,
+      firstName: nameParts[0],
+      lastName: nameParts.slice(1).join(' ') || undefined,
+    }, 'Direct Sign-up').catch(() => {})
 
     return { user, session: authData.session }
   }

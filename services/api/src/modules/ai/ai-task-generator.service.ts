@@ -24,7 +24,7 @@ if (anthropicApiKey) {
   console.warn('⚠️ ANTHROPIC_API_KEY not set. AI task generation will use mock responses.')
 }
 
-const DEFAULT_MODEL = 'claude-3-5-sonnet-20241022'
+const DEFAULT_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514'
 
 /**
  * Generate tasks from SOW using Claude API

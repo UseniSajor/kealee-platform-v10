@@ -22,7 +22,7 @@ export class AIProvider {
 
   /**
    * Reason about a task with context.
-   * Claude is primary (claude-sonnet-4-5-20250929). Auto-failover to OpenAI gpt-4o-mini.
+   * Claude is primary (claude-sonnet-4-20250514). Auto-failover to OpenAI gpt-4o-mini.
    */
   async reason(params: {
     task: string;
@@ -44,7 +44,7 @@ export class AIProvider {
     if (params.provider !== 'openai') {
       try {
         const response = await this.claude.messages.create({
-          model: params.model ?? 'claude-sonnet-4-5-20250929',
+          model: params.model ?? 'claude-sonnet-4-20250514',
           max_tokens: 4096,
           system: systemPrompt,
           messages: [{ role: 'user', content: userMessage }],
@@ -81,7 +81,7 @@ export class AIProvider {
   async analyzeImage(imageUrl: string, task: string): Promise<string> {
     try {
       const response = await this.claude.messages.create({
-        model: 'claude-sonnet-4-5-20250929',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 4096,
         messages: [
           {

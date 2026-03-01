@@ -12,7 +12,7 @@ export const claude = new Anthropic({
 
 // Model configurations
 export const MODELS = {
-  FAST: 'claude-3-5-haiku-20241022',
+  FAST: 'claude-haiku-4-5-20251001',
   BALANCED: 'claude-sonnet-4-20250514',
   POWERFUL: 'claude-sonnet-4-20250514',
 } as const;

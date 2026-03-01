@@ -1,6 +1,7 @@
 import { prismaAny } from '../../utils/prisma-helper'
 // Prisma types available through prismaAny
 import { NotFoundError, AuthorizationError, ValidationError } from '../../errors/app.error'
+import { syncMilestoneApproved } from '../integrations/ghl/ghl-sync'
 
 export const milestoneService = {
   async getContractMilestones(contractId: string, userId: string) {
@@ -313,6 +314,15 @@ export const milestoneService = {
 
     // Payment processing will be triggered separately via /payments/milestones/:id/release-payment
     // This allows the project owner to review before releasing payment
+
+    // Sync milestone approval to GHL (fire-and-forget)
+    if (milestone.contract?.projectId) {
+      syncMilestoneApproved({
+        projectId: milestone.contract.projectId,
+        milestoneId,
+        milestoneName: milestone.name,
+      }).catch(() => {})
+    }
 
     return updated
   },
