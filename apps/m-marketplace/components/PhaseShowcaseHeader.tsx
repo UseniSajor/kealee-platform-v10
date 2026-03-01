@@ -3,11 +3,12 @@
 import { MESSAGES } from '@/lib/messages'
 
 const phaseColors: Record<string, { text: string; bg: string; border: string }> = {
-  teal:  { text: '#196B5E', bg: 'rgba(25,107,94,.08)',  border: 'rgba(25,107,94,.2)'  },
-  amber: { text: '#A84E10', bg: 'rgba(168,78,16,.08)', border: 'rgba(168,78,16,.2)' },
-  green: { text: '#1A5C32', bg: 'rgba(26,92,50,.08)',  border: 'rgba(26,92,50,.2)'  },
-  navy:  { text: '#0D1F3C', bg: 'rgba(13,31,60,.08)',  border: 'rgba(13,31,60,.2)'  },
-  gold:  { text: '#C07B20', bg: 'rgba(192,123,32,.08)', border: 'rgba(192,123,32,.2)' },
+  teal:   { text: '#196B5E', bg: 'rgba(25,107,94,.08)',  border: 'rgba(25,107,94,.2)'  },
+  amber:  { text: '#A84E10', bg: 'rgba(168,78,16,.08)', border: 'rgba(168,78,16,.2)' },
+  green:  { text: '#1A5C32', bg: 'rgba(26,92,50,.08)',  border: 'rgba(26,92,50,.2)'  },
+  navy:   { text: '#0D1F3C', bg: 'rgba(13,31,60,.08)',  border: 'rgba(13,31,60,.2)'  },
+  gold:   { text: '#C07B20', bg: 'rgba(192,123,32,.08)', border: 'rgba(192,123,32,.2)' },
+  purple: { text: '#5B2D8E', bg: 'rgba(91,45,142,.08)', border: 'rgba(91,45,142,.2)' },
 }
 
 // VERSION C: Pain-first, then solution via 5 phases

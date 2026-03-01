@@ -17,7 +17,7 @@
  *                   being taken advantage of. GCs fear non-payment. Pros fear
  *                   unclear scope. "Blindspots" captures all three.
  *
- * [HOW IT WORKS]  → Functional: "One Platform. Five Connected Phases."
+ * [HOW IT WORKS]  → Functional: "One Platform. Six Connected Phases."
  *                   Purpose: Logical, step-by-step. Visitor is now convinced
  *                   of the why — now they want to understand the how.
  *
@@ -134,6 +134,15 @@ const platformFlowNodes = [
     features: ['Escrow Payments', 'Final Walkthrough', 'Documents'],
     href: '/finance',
     color: 'navy' as const,
+  },
+  {
+    id: 'opportunities',
+    phase: 'Opportunities',
+    app: 'Workforce & Procurement',
+    appBadge: 'Opportunities',
+    features: ['PM Marketplace', 'Trade Apprenticeship', 'Gov\'t Contracts'],
+    href: '/opportunities',
+    color: 'orange' as const,
   },
 ];
 
@@ -278,7 +287,7 @@ const jsonLd = {
     '@type': 'AggregateOffer',
     priceCurrency: 'USD',
     lowPrice: '49',
-    offerCount: '8',
+    offerCount: '9',
   },
   featureList: [
     'Architectural Design Services',
@@ -290,6 +299,8 @@ const jsonLd = {
     'Operations Services',
     'Escrow & Finance Management',
     'Contractor Network & Fair Bid Rotation',
+    'PM Marketplace & Trade Apprenticeship',
+    'Government Procurement Tracking',
   ],
   areaServed: {
     '@type': 'GeoCircle',
@@ -322,6 +333,7 @@ const servicesJsonLd = {
     { '@type': 'ListItem', position: 6, name: 'Operations Services', url: 'https://kealee.com/ops' },
     { '@type': 'ListItem', position: 7, name: 'Finance & Escrow', url: 'https://kealee.com/finance' },
     { '@type': 'ListItem', position: 8, name: 'Contractor Network', url: 'https://kealee.com/network' },
+    { '@type': 'ListItem', position: 9, name: 'Opportunities', url: 'https://kealee.com/opportunities' },
   ],
 };
 

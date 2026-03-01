@@ -24,15 +24,16 @@ export const MESSAGES = {
     eyebrow: 'The Platform',
     headline: 'Construction Has Always Had',
     headlineEm: 'Too Many Handoffs.',
-    sub: 'Design firm → estimator → permit runner → contractor → closing attorney. Every gap costs time and money.',
+    sub: 'Design firm → estimator → permit runner → contractor → closing attorney → next project. Every gap costs time and money.',
     subStrong: 'We eliminated them.',
-    phaseConnector: 'One platform. No gaps.',
+    phaseConnector: 'One platform. Six phases. No gaps.',
     phases: [
       { num: '01', label: 'Design', color: 'teal' },
       { num: '02', label: 'Estimate', color: 'amber' },
       { num: '03', label: 'Permit', color: 'green' },
       { num: '04', label: 'Build', color: 'navy' },
       { num: '05', label: 'Closeout', color: 'gold' },
+      { num: '06', label: 'Opportunities', color: 'purple' },
     ],
   },
 
@@ -56,8 +57,8 @@ export const MESSAGES = {
   howItWorks: {
     eyebrow: 'How It Works',
     headline: 'One Platform.',
-    headlineEm: 'Five Connected Phases.',
-    sub: 'Your approved drawings flow from Design directly into Permit — no re-entry. Your permit approval triggers Build setup automatically. Your closeout escrow ties to verified Build milestones. Every phase feeds the next. That\'s the gap the industry never closed. Until now.',
+    headlineEm: 'Six Connected Phases.',
+    sub: 'Your approved drawings flow from Design directly into Permit — no re-entry. Your permit approval triggers Build setup automatically. Your closeout escrow ties to verified Build milestones. And after closeout, Opportunities connects your next project with the talent and contracts to build it. Every phase feeds the next. That\'s the gap the industry never closed. Until now.',
   },
 
   // VERSION D — Builder Network

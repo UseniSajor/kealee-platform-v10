@@ -908,6 +908,15 @@ const start = async () => {
     })
 
     // ══════════════════════════════════════════════════════════════
+    // Opportunities Phase 06 — Interest list, contracts, apprenticeships
+    // ══════════════════════════════════════════════════════════════
+
+    await safeRegisterBlock('Opportunities Phase 06 routes', async () => {
+      const { opportunitiesRoutes } = await import('./modules/opportunities/opportunities.routes')
+      await fastify.register(opportunitiesRoutes, { prefix: '/api/opportunities' })
+    })
+
+    // ══════════════════════════════════════════════════════════════
 
     // GraphQL DISABLED FOR MVP - Uncomment when needed
     /*

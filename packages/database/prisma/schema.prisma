@@ -1972,6 +1972,10 @@ model User {
   // GHL (GoHighLevel) CRM integration
   ghlContactId String?   @unique
   ghlSyncedAt  DateTime?
+
+  // Opportunities Phase 06 relations
+  postedOpportunityListings  OpportunityListing[]      @relation("OpportunityListingPostedBy")
+  opportunityApplications    OpportunityApplication[]  @relation("OpportunityApplicationApplicant")
 }
 
 // ============================================================================
@@ -12789,4 +12793,133 @@ model Faq {
   @@index([section])
   @@index([serviceArea])
   @@index([sectionSlug])
+}
+
+// ── OPPORTUNITIES PHASE 06 ───────────────────────────────────
+
+model OpportunityCategory {
+  id          String               @id @default(cuid())
+  slug        String               @unique // pm | apprenticeship | trades | procurement
+  label       String
+  description String
+  listings    OpportunityListing[]
+  createdAt   DateTime             @default(now())
+
+  @@map("opportunity_categories")
+}
+
+model OpportunityListing {
+  id              String                   @id @default(cuid())
+  categoryId      String
+  category        OpportunityCategory      @relation(fields: [categoryId], references: [id])
+  title           String
+  organization    String
+  location        String
+  isRemote        Boolean                  @default(false)
+  isNationwide    Boolean                  @default(false)
+  description     String                   @db.Text
+  requirements    String                   @db.Text
+  compensation    String?
+  tradeType       String?
+  contractType    String?
+  govtAgency      String?
+  naicsCode       String?
+  setAsideType    String?
+  solicitationNum String?
+  awardDeadline   DateTime?
+  isActive        Boolean                  @default(true)
+  isFeatured      Boolean                  @default(false)
+  postedById      String
+  postedBy        User                     @relation("OpportunityListingPostedBy", fields: [postedById], references: [id])
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  applications    OpportunityApplication[]
+
+  @@index([categoryId])
+  @@index([postedById])
+  @@index([isActive])
+  @@index([tradeType])
+  @@map("opportunity_listings")
+}
+
+model OpportunityApplication {
+  id          String             @id @default(cuid())
+  listingId   String
+  listing     OpportunityListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  applicantId String
+  applicant   User               @relation("OpportunityApplicationApplicant", fields: [applicantId], references: [id])
+  status      String             @default("pending")
+  resumeUrl   String?
+  coverNote   String?            @db.Text
+  appliedAt   DateTime           @default(now())
+
+  @@index([listingId])
+  @@index([applicantId])
+  @@index([status])
+  @@map("opportunity_applications")
+}
+
+model ApprenticeshipProgram {
+  id            String   @id @default(cuid())
+  title         String
+  sponsor       String
+  tradeType     String
+  duration      String
+  hoursRequired Int
+  wageStart     Float?
+  wageEnd       Float?
+  locations     String[]
+  isRapids      Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  description   String   @db.Text
+  applyUrl      String?
+  contactEmail  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tradeType])
+  @@index([isActive])
+  @@map("apprenticeship_programs")
+}
+
+model GovernmentContract {
+  id              String   @id @default(cuid())
+  solicitationNum String   @unique
+  title           String
+  agency          String
+  agencyLevel     String
+  jurisdiction    String
+  naicsCode       String
+  setAsideType    String?
+  estimatedValue  Float?
+  issueDate       DateTime
+  dueDate         DateTime
+  awardDate       DateTime?
+  status          String
+  description     String   @db.Text
+  requirementsUrl String?
+  sourceUrl       String
+  isTracked       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([agencyLevel])
+  @@index([naicsCode])
+  @@index([dueDate])
+  @@map("government_contracts")
+}
+
+model InterestListSignup {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String
+  tradeType String?
+  location  String?
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([role])
+  @@map("interest_list_signups")
 }
