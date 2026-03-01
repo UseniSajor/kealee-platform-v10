@@ -55,6 +55,7 @@ interface OnboardingWizardProps {
 export function JurisdictionOnboardingWizard({onComplete}: OnboardingWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm<OnboardingFormData>({
     resolver: zodResolver(onboardingSchema),
@@ -83,27 +84,43 @@ export function JurisdictionOnboardingWizard({onComplete}: OnboardingWizardProps
 
   const handleSubmit = async (data: OnboardingFormData) => {
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
+      // Parse service area GeoJSON if provided; otherwise send null for server default
+      let serviceArea = null;
+      if (data.serviceAreaJson) {
+        try {
+          serviceArea = JSON.parse(data.serviceAreaJson);
+        } catch {
+          setSubmitError('The service area GeoJSON is not valid JSON. Please fix it or leave the field empty.');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const response = await fetch('/api/jurisdictions/onboard', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           ...data,
-          serviceArea: data.serviceAreaJson
-            ? JSON.parse(data.serviceAreaJson)
-            : this.getDefaultServiceArea(data.state),
+          serviceArea,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Onboarding failed');
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.message || 'Onboarding failed');
       }
 
       const result = await response.json();
       onComplete?.(result);
     } catch (error) {
       console.error('Onboarding error:', error);
-      alert('Failed to complete onboarding. Please try again.');
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to complete onboarding. Please try again.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -162,6 +179,13 @@ export function JurisdictionOnboardingWizard({onComplete}: OnboardingWizardProps
               {currentStep === 3 && <Step3Subscription form={form} />}
               {currentStep === 4 && <Step4Admin form={form} />}
             </div>
+
+            {/* Submit Error */}
+            {submitError && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg" role="alert">
+                <p className="text-sm text-red-700">{submitError}</p>
+              </div>
+            )}
 
             {/* Navigation Buttons */}
             <div className="flex justify-between mt-8 pt-6 border-t">

@@ -49,7 +49,7 @@ const PORTAL_CONFIG: Record<string, PortalConfig> = {
     defaultRedirect: '/finance/escrow',
   },
   owner: {
-    protectedPaths: ['/owner/dashboard', '/owner/projects', '/owner/account', '/owner/analytics', '/owner/reports', '/owner/draws', '/owner/payments'],
+    protectedPaths: ['/owner/dashboard', '/owner/projects', '/owner/account', '/owner/analytics', '/owner/reports', '/owner/draws', '/owner/payments', '/owner/onboarding'],
     allowedRoles: ['homeowner', 'developer', 'property_manager', 'business_owner', 'client', 'owner', 'admin', 'super_admin'],
     defaultRedirect: '/owner/dashboard',
   },
@@ -273,6 +273,7 @@ export const config = {
     '/owner/reports/:path*',
     '/owner/draws/:path*',
     '/owner/payments/:path*',
+    '/owner/onboarding/:path*',
     '/owner/login',
     '/owner/signup',
     // PM

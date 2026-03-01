@@ -13,6 +13,8 @@ export default function VerifyEmailPage() {
     setResending(true);
     setResendMessage('');
     try {
+      // Supabase resend requires the email; try to get it from the last sign-up attempt
+      // stored in sessionStorage, or prompt user to re-enter on the login page.
       const storedEmail =
         typeof window !== 'undefined'
           ? sessionStorage.getItem('kealee:signup-email')
@@ -51,12 +53,10 @@ export default function VerifyEmailPage() {
         </div>
 
         {/* Message */}
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Verify Your Email
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">Verify Your Email</h1>
         <p className="text-lg text-gray-600 mb-8">
-          We have sent a verification link to your email address.
-          Click the link to activate your account.
+          We have sent a verification link to your email address. Click the link to
+          activate your account.
         </p>
 
         {/* Instructions */}
@@ -87,8 +87,8 @@ export default function VerifyEmailPage() {
         {/* Tips + Resend */}
         <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4 mb-8">
           <p className="text-sm text-yellow-800 mb-3">
-            <strong>Didn't receive the email?</strong> Check your spam folder.
-            The email may take a few minutes to arrive.
+            <strong>Didn't receive the email?</strong> Check your spam folder. The email
+            may take a few minutes to arrive.
           </p>
           <button
             type="button"

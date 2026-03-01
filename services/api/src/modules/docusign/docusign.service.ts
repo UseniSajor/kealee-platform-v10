@@ -2,6 +2,7 @@
 import { ApiClient, EnvelopesApi, EnvelopeDefinition, Document, Signer, SignHere, Tabs, Recipients } from 'docusign-esign'
 import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError } from '../../errors/app.error'
+import { withRetry } from '../../utils/retry'
 
 // DocuSign configuration
 const DOCUSIGN_INTEGRATION_KEY = process.env.DOCUSIGN_INTEGRATION_KEY || ''
@@ -19,12 +20,15 @@ async function getDocuSignApiClient(): Promise<ApiClient> {
   // JWT authentication (recommended for server-to-server)
   if (DOCUSIGN_INTEGRATION_KEY && DOCUSIGN_USER_ID && DOCUSIGN_RSA_PRIVATE_KEY) {
     const jwtLifeSec = 3600 // Token lifetime: 1 hour
-    const results = await apiClient.requestJWTUserToken(
-      DOCUSIGN_INTEGRATION_KEY,
-      DOCUSIGN_USER_ID,
-      'signature impersonation',
-      Buffer.from(DOCUSIGN_RSA_PRIVATE_KEY.replace(/\\n/g, '\n')),
-      jwtLifeSec
+    const results = await withRetry(
+      () => apiClient.requestJWTUserToken(
+        DOCUSIGN_INTEGRATION_KEY,
+        DOCUSIGN_USER_ID,
+        'signature impersonation',
+        Buffer.from(DOCUSIGN_RSA_PRIVATE_KEY.replace(/\\n/g, '\n')),
+        jwtLifeSec
+      ),
+      { label: 'DocuSign.requestJWTUserToken' }
     )
 
     const accessToken = results.body.access_token
@@ -125,7 +129,10 @@ export const docusignService = {
     // Create envelope via DocuSign API
     const apiClient = await getDocuSignApiClient()
     const envelopesApi = new EnvelopesApi(apiClient)
-    const results = await envelopesApi.createEnvelope(DOCUSIGN_ACCOUNT_ID, { envelopeDefinition: envelope })
+    const results = await withRetry(
+      () => envelopesApi.createEnvelope(DOCUSIGN_ACCOUNT_ID, { envelopeDefinition: envelope }),
+      { label: 'DocuSign.createEnvelope' }
+    )
 
     const envelopeId = results.envelopeId || ''
 
@@ -150,7 +157,10 @@ export const docusignService = {
         returnUrl: `${process.env.APP_BASE_URL || 'http://localhost:3000'}/contracts/${contractId}/signed`,
       }
 
-      const viewResults = await envelopesApi.createRecipientView(DOCUSIGN_ACCOUNT_ID, envelopeId, { recipientViewRequest: viewRequest })
+      const viewResults = await withRetry(
+        () => envelopesApi.createRecipientView(DOCUSIGN_ACCOUNT_ID, envelopeId, { recipientViewRequest: viewRequest }),
+        { label: 'DocuSign.createRecipientView' }
+      )
       recipientViewUrl = viewResults.url
     } catch (error) {
       // If embedded signing fails, continue without it
@@ -163,7 +173,10 @@ export const docusignService = {
   async getEnvelopeStatus(envelopeId: string) {
     const apiClient = await getDocuSignApiClient()
     const envelopesApi = new EnvelopesApi(apiClient)
-    const envelope = await envelopesApi.getEnvelope(DOCUSIGN_ACCOUNT_ID, envelopeId)
+    const envelope = await withRetry(
+      () => envelopesApi.getEnvelope(DOCUSIGN_ACCOUNT_ID, envelopeId),
+      { label: 'DocuSign.getEnvelope' }
+    )
 
     return {
       status: envelope.status,
@@ -176,7 +189,10 @@ export const docusignService = {
   async getSignedDocument(envelopeId: string, documentId: string = 'combined') {
     const apiClient = await getDocuSignApiClient()
     const envelopesApi = new EnvelopesApi(apiClient)
-    const pdfBytes = await envelopesApi.getDocument(DOCUSIGN_ACCOUNT_ID, envelopeId, documentId)
+    const pdfBytes = await withRetry(
+      () => envelopesApi.getDocument(DOCUSIGN_ACCOUNT_ID, envelopeId, documentId),
+      { label: 'DocuSign.getDocument' }
+    )
 
     return Buffer.from(pdfBytes as any)
   },
@@ -371,15 +387,22 @@ Signature
   async getDetailedEnvelopeStatus(envelopeId: string) {
     const apiClient = await getDocuSignApiClient()
     const envelopesApi = new EnvelopesApi(apiClient)
-    
-    // Get envelope
-    const envelope = await envelopesApi.getEnvelope(DOCUSIGN_ACCOUNT_ID, envelopeId)
-    
-    // Get recipients
-    const recipients = await envelopesApi.listRecipients(DOCUSIGN_ACCOUNT_ID, envelopeId)
-    
-    // Get documents
-    const documents = await envelopesApi.listDocuments(DOCUSIGN_ACCOUNT_ID, envelopeId)
+
+    // Get envelope, recipients, and documents (all retried independently)
+    const [envelope, recipients, documents] = await Promise.all([
+      withRetry(
+        () => envelopesApi.getEnvelope(DOCUSIGN_ACCOUNT_ID, envelopeId),
+        { label: 'DocuSign.getEnvelope' }
+      ),
+      withRetry(
+        () => envelopesApi.listRecipients(DOCUSIGN_ACCOUNT_ID, envelopeId),
+        { label: 'DocuSign.listRecipients' }
+      ),
+      withRetry(
+        () => envelopesApi.listDocuments(DOCUSIGN_ACCOUNT_ID, envelopeId),
+        { label: 'DocuSign.listDocuments' }
+      ),
+    ])
 
     return {
       envelopeId: envelope.envelopeId,
@@ -541,7 +564,10 @@ Signature
     envelopeDefinition.status = 'sent'
 
     // Create the envelope
-    const envelope = await envelopesApi.createEnvelope(DOCUSIGN_ACCOUNT_ID, { envelopeDefinition })
+    const envelope = await withRetry(
+      () => envelopesApi.createEnvelope(DOCUSIGN_ACCOUNT_ID, { envelopeDefinition }),
+      { label: 'DocuSign.createEnvelopeFromTemplate' }
+    )
 
     let signingUrl: string | undefined
     let expiresAt: string | undefined
@@ -556,7 +582,10 @@ Signature
         clientUserId: data.userId,
       }
 
-      const viewUrl = await envelopesApi.createRecipientView(DOCUSIGN_ACCOUNT_ID, envelope.envelopeId || '', { recipientViewRequest })
+      const viewUrl = await withRetry(
+        () => envelopesApi.createRecipientView(DOCUSIGN_ACCOUNT_ID, envelope.envelopeId || '', { recipientViewRequest }),
+        { label: 'DocuSign.createRecipientView' }
+      )
       signingUrl = viewUrl.url
       expiresAt = viewUrl.expiredDateTime
     }
@@ -609,11 +638,14 @@ Signature
     const fromDate = filters?.fromDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Default: last 30 days
     const status = filters?.status || 'completed,sent,delivered,signed'
 
-    const envelopes = await envelopesApi.listStatusChanges(DOCUSIGN_ACCOUNT_ID, {
-      fromDate: fromDate.toISOString(),
-      status,
-      count: filters?.limit || 100,
-    })
+    const envelopes = await withRetry(
+      () => envelopesApi.listStatusChanges(DOCUSIGN_ACCOUNT_ID, {
+        fromDate: fromDate.toISOString(),
+        status,
+        count: filters?.limit || 100,
+      }),
+      { label: 'DocuSign.listStatusChanges' }
+    )
 
     const formattedEnvelopes = (envelopes.envelopes || []).map((envelope: any) => ({
       envelopeId: envelope.envelopeId,
@@ -635,7 +667,10 @@ Signature
     const apiClient = await getDocuSignApiClient()
     const envelopesApi = new EnvelopesApi(apiClient)
 
-    const document = await envelopesApi.getDocument(DOCUSIGN_ACCOUNT_ID, envelopeId, documentId)
+    const document = await withRetry(
+      () => envelopesApi.getDocument(DOCUSIGN_ACCOUNT_ID, envelopeId, documentId),
+      { label: 'DocuSign.getDocument' }
+    )
 
     return {
       documentId,
@@ -656,7 +691,10 @@ Signature
     voidRequest.status = 'voided'
     ;(voidRequest as any).voidedReason = reason
 
-    const result = await envelopesApi.update(DOCUSIGN_ACCOUNT_ID, envelopeId, { envelope: voidRequest as any })
+    const result = await withRetry(
+      () => envelopesApi.update(DOCUSIGN_ACCOUNT_ID, envelopeId, { envelope: voidRequest as any }),
+      { label: 'DocuSign.voidEnvelope' }
+    )
 
     // Update database
     try {
@@ -693,7 +731,10 @@ Signature
       reminderFrequency,
     }
 
-    const result = await envelopesApi.updateReminders(DOCUSIGN_ACCOUNT_ID, envelopeId, { reminders: reminderRequest as any })
+    const result = await withRetry(
+      () => envelopesApi.updateReminders(DOCUSIGN_ACCOUNT_ID, envelopeId, { reminders: reminderRequest as any }),
+      { label: 'DocuSign.updateReminders' }
+    )
 
     return result
   },
@@ -705,7 +746,10 @@ Signature
     const apiClient = await getDocuSignApiClient()
     const envelopesApi = new EnvelopesApi(apiClient)
 
-    const result = await envelopesApi.updateRecipients(DOCUSIGN_ACCOUNT_ID, envelopeId, { resendEnvelope: 'true' })
+    const result = await withRetry(
+      () => envelopesApi.updateRecipients(DOCUSIGN_ACCOUNT_ID, envelopeId, { resendEnvelope: 'true' }),
+      { label: 'DocuSign.resendEnvelope' }
+    )
 
     // Update database
     try {

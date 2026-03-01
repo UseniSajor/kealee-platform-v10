@@ -15,6 +15,36 @@ import { getStripe } from '../../modules/billing/stripe.client';
 const prisma = new PrismaClient();
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 
+// ============================================================================
+// IDEMPOTENCY — prevent duplicate webhook event processing
+// ============================================================================
+
+/** Map of event.id -> timestamp (ms) when we first processed it. */
+const processedEvents = new Map<string, number>();
+
+/** How long to remember processed events (24 hours). */
+const PROCESSED_EVENT_TTL_MS = 24 * 60 * 60 * 1000;
+
+/** Interval between TTL sweeps (every hour). */
+const CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
+
+/**
+ * Remove entries older than PROCESSED_EVENT_TTL_MS.
+ * Runs on a fixed interval so memory doesn't grow unboundedly.
+ */
+function cleanupProcessedEvents(): void {
+  const cutoff = Date.now() - PROCESSED_EVENT_TTL_MS;
+  for (const [id, ts] of processedEvents) {
+    if (ts < cutoff) {
+      processedEvents.delete(id);
+    }
+  }
+}
+
+// Start periodic cleanup (unref so it doesn't prevent process exit)
+const cleanupTimer = setInterval(cleanupProcessedEvents, CLEANUP_INTERVAL_MS);
+cleanupTimer.unref();
+
 export default async function stripeWebhookRoutes(fastify: FastifyInstance) {
   // Disable body parsing for webhook route — Stripe needs raw body
   fastify.addContentTypeParser(
@@ -51,11 +81,20 @@ export default async function stripeWebhookRoutes(fastify: FastifyInstance) {
 
     fastify.log.info(`Stripe webhook received: ${event.type} (${event.id})`);
 
+    // ----- Idempotency check -----
+    if (processedEvents.has(event.id)) {
+      fastify.log.info(`Duplicate webhook skipped: ${event.id}`);
+      return reply.status(200).send({ received: true, type: event.type, duplicate: true });
+    }
+
     try {
       await handleEvent(event, fastify);
+      // Mark as processed only after successful handling
+      processedEvents.set(event.id, Date.now());
     } catch (err: any) {
       fastify.log.error(`Error processing webhook ${event.type}: ${err.message}`);
-      // Still return 200 to prevent Stripe retries for app-level errors
+      // Still mark as processed to prevent Stripe retries for app-level errors
+      processedEvents.set(event.id, Date.now());
     }
 
     return reply.status(200).send({ received: true, type: event.type });

@@ -41,7 +41,7 @@ export { Loading } from './components/Loading';
 export type { LoadingProps } from './components/Loading';
 
 export { EmptyState } from './components/EmptyState';
-export type { EmptyStateProps } from './components/EmptyState';
+export type { EmptyStateProps, EmptyStateActionProps } from './components/EmptyState';
 
 export { ErrorBoundary } from './components/ErrorBoundary';
 

@@ -20,6 +20,8 @@ interface ProjectFormData {
   specialRequirements?: string
 }
 
+type FieldErrors = Partial<Record<keyof ProjectFormData, string>>
+
 export function ProjectCreationForm() {
   const [formData, setFormData] = useState<ProjectFormData>({
     propertyAddress: '',
@@ -35,6 +37,7 @@ export function ProjectCreationForm() {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [success, setSuccess] = useState(false)
 
   const projectTypes = [
@@ -59,8 +62,35 @@ export function ProjectCreationForm() {
     { value: '6_plus_months', label: '6+ months' },
   ]
 
+  /** Validate all fields and return a map of errors (empty = valid) */
+  function validate(): FieldErrors {
+    const errs: FieldErrors = {}
+    if (!formData.propertyAddress.trim() || formData.propertyAddress.trim().length < 10) {
+      errs.propertyAddress = 'Please enter a full street address (at least 10 characters)'
+    }
+    if (!formData.projectType) {
+      errs.projectType = 'Please select a project type'
+    }
+    if (formData.projectDescription.trim().length < 50) {
+      errs.projectDescription = 'Description must be at least 50 characters'
+    }
+    if (formData.budgetMin < 1000) {
+      errs.budgetMin = 'Minimum budget must be at least $1,000'
+    }
+    if (formData.budgetMax <= formData.budgetMin) {
+      errs.budgetMax = 'Maximum budget must be greater than minimum budget'
+    }
+    return errs
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const errs = validate()
+    setFieldErrors(errs)
+    if (Object.keys(errs).length > 0) {
+      setError('Please fix the highlighted fields before submitting.')
+      return
+    }
     setLoading(true)
     setError(null)
 
@@ -122,11 +152,22 @@ export function ProjectCreationForm() {
               id="propertyAddress"
               type="text"
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              minLength={10}
+              aria-invalid={!!fieldErrors.propertyAddress}
+              aria-describedby={fieldErrors.propertyAddress ? 'propertyAddress-error' : undefined}
+              className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 ${fieldErrors.propertyAddress ? 'border-red-500' : 'border-gray-300'}`}
               placeholder="123 Main St, San Francisco, CA 94102"
               value={formData.propertyAddress}
-              onChange={(e) => setFormData({ ...formData, propertyAddress: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, propertyAddress: e.target.value })
+                if (fieldErrors.propertyAddress) setFieldErrors((prev) => ({ ...prev, propertyAddress: undefined }))
+              }}
             />
+            {fieldErrors.propertyAddress && (
+              <p id="propertyAddress-error" className="text-sm text-red-600 mt-1" role="alert">
+                {fieldErrors.propertyAddress}
+              </p>
+            )}
           </div>
 
           {/* Property Type */}
@@ -156,9 +197,14 @@ export function ProjectCreationForm() {
             <select
               id="projectType"
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              aria-invalid={!!fieldErrors.projectType}
+              aria-describedby={fieldErrors.projectType ? 'projectType-error' : undefined}
+              className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 ${fieldErrors.projectType ? 'border-red-500' : 'border-gray-300'}`}
               value={formData.projectType}
-              onChange={(e) => setFormData({ ...formData, projectType: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, projectType: e.target.value })
+                if (fieldErrors.projectType) setFieldErrors((prev) => ({ ...prev, projectType: undefined }))
+              }}
             >
               <option value="">Select project type</option>
               {projectTypes.map((type) => (
@@ -167,6 +213,11 @@ export function ProjectCreationForm() {
                 </option>
               ))}
             </select>
+            {fieldErrors.projectType && (
+              <p id="projectType-error" className="text-sm text-red-600 mt-1" role="alert">
+                {fieldErrors.projectType}
+              </p>
+            )}
           </div>
 
           {/* Project Description */}
@@ -180,14 +231,24 @@ export function ProjectCreationForm() {
               minLength={50}
               maxLength={5000}
               rows={6}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              aria-invalid={!!fieldErrors.projectDescription}
+              aria-describedby={[fieldErrors.projectDescription ? 'projectDescription-error' : '', 'projectDescription-hint'].filter(Boolean).join(' ')}
+              className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 ${fieldErrors.projectDescription ? 'border-red-500' : 'border-gray-300'}`}
               placeholder="Describe your project in detail... What work needs to be done? Any specific requirements?"
               value={formData.projectDescription}
-              onChange={(e) => setFormData({ ...formData, projectDescription: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, projectDescription: e.target.value })
+                if (fieldErrors.projectDescription) setFieldErrors((prev) => ({ ...prev, projectDescription: undefined }))
+              }}
             />
-            <p className="text-sm text-gray-500 mt-1">
+            <p id="projectDescription-hint" className="text-sm text-gray-500 mt-1">
               {formData.projectDescription.length} / 5000 characters (minimum 50)
             </p>
+            {fieldErrors.projectDescription && (
+              <p id="projectDescription-error" className="text-sm text-red-600 mt-1" role="alert">
+                {fieldErrors.projectDescription}
+              </p>
+            )}
           </div>
 
           {/* Budget Range */}
@@ -197,20 +258,28 @@ export function ProjectCreationForm() {
                 Minimum Budget *
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-2 text-gray-500">$</span>
+                <span className="absolute left-3 top-2 text-gray-500" aria-hidden="true">$</span>
                 <input
                   id="budgetMin"
                   type="number"
                   required
                   min={1000}
                   step={1000}
-                  className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  aria-invalid={!!fieldErrors.budgetMin}
+                  aria-describedby={fieldErrors.budgetMin ? 'budgetMin-error' : undefined}
+                  className={`w-full pl-8 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 ${fieldErrors.budgetMin ? 'border-red-500' : 'border-gray-300'}`}
                   value={formData.budgetMin}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     setFormData({ ...formData, budgetMin: parseInt(e.target.value) })
-                  }
+                    if (fieldErrors.budgetMin) setFieldErrors((prev) => ({ ...prev, budgetMin: undefined }))
+                  }}
                 />
               </div>
+              {fieldErrors.budgetMin && (
+                <p id="budgetMin-error" className="text-sm text-red-600 mt-1" role="alert">
+                  {fieldErrors.budgetMin}
+                </p>
+              )}
             </div>
 
             <div>
@@ -218,20 +287,28 @@ export function ProjectCreationForm() {
                 Maximum Budget *
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-2 text-gray-500">$</span>
+                <span className="absolute left-3 top-2 text-gray-500" aria-hidden="true">$</span>
                 <input
                   id="budgetMax"
                   type="number"
                   required
                   min={formData.budgetMin}
                   step={1000}
-                  className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  aria-invalid={!!fieldErrors.budgetMax}
+                  aria-describedby={fieldErrors.budgetMax ? 'budgetMax-error' : undefined}
+                  className={`w-full pl-8 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 ${fieldErrors.budgetMax ? 'border-red-500' : 'border-gray-300'}`}
                   value={formData.budgetMax}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     setFormData({ ...formData, budgetMax: parseInt(e.target.value) })
-                  }
+                    if (fieldErrors.budgetMax) setFieldErrors((prev) => ({ ...prev, budgetMax: undefined }))
+                  }}
                 />
               </div>
+              {fieldErrors.budgetMax && (
+                <p id="budgetMax-error" className="text-sm text-red-600 mt-1" role="alert">
+                  {fieldErrors.budgetMax}
+                </p>
+              )}
             </div>
           </div>
 
@@ -295,7 +372,7 @@ export function ProjectCreationForm() {
 
           {/* Error Message */}
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-800">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-800" role="alert">
               {error}
             </div>
           )}

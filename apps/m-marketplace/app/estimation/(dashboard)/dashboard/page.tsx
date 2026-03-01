@@ -71,20 +71,13 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
 const COST_COLORS = ['#8b5cf6', '#06b6d4', '#f59e0b', '#10b981'];
 
 const DEFAULT_COST_DISTRIBUTION = [
-  { name: 'Materials', value: 45, color: '#8b5cf6' },
-  { name: 'Labor', value: 35, color: '#06b6d4' },
-  { name: 'Equipment', value: 12, color: '#f59e0b' },
-  { name: 'Other', value: 8, color: '#10b981' },
+  { name: 'Materials', value: 0, color: '#8b5cf6' },
+  { name: 'Labor', value: 0, color: '#06b6d4' },
+  { name: 'Equipment', value: 0, color: '#f59e0b' },
+  { name: 'Other', value: 0, color: '#10b981' },
 ];
 
-const DEFAULT_MONTHLY_TRENDS = [
-  { month: 'Sep', estimates: 8, value: 245000 },
-  { month: 'Oct', estimates: 12, value: 389000 },
-  { month: 'Nov', estimates: 15, value: 512000 },
-  { month: 'Dec', estimates: 10, value: 325000 },
-  { month: 'Jan', estimates: 18, value: 620000 },
-  { month: 'Feb', estimates: 6, value: 185000 },
-];
+const DEFAULT_MONTHLY_TRENDS: { month: string; estimates: number; value: number }[] = [];
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({
@@ -117,7 +110,7 @@ export default function DashboardPage() {
             totalEstimates: d.totalEstimates || d.pendingEstimates || 0,
             activeProjects: d.activeProjects || d.activeTickets || 0,
             totalValue: d.totalValue || 0,
-            avgAccuracy: d.avgAccuracy || d.averageEstimateAccuracy || 95,
+            avgAccuracy: d.avgAccuracy || d.averageEstimateAccuracy || 0,
             estimatesThisMonth: d.estimatesThisMonth || d.completedThisMonth || 0,
             estimatesLastMonth: d.estimatesLastMonth || 0,
           });

@@ -14,6 +14,8 @@ const MARKETPLACE_ROLES = [
   { value: "vendor", label: "Vendor" },
 ]
 
+type FieldErrors = Partial<Record<string, string>>
+
 export function SignupClient() {
   const router = useRouter()
   const [email, setEmail] = useState("")
@@ -25,40 +27,52 @@ export function SignupClient() {
   const [companyName, setCompanyName] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+
+  function validate(): FieldErrors {
+    const errs: FieldErrors = {}
+    if (!firstName.trim()) errs.firstName = "First name is required"
+    if (!lastName.trim()) errs.lastName = "Last name is required"
+    if (!email.trim()) errs.email = "Email is required"
+    if (!selectedRole) errs.role = "Please select your role"
+    if (!companyName.trim()) errs.companyName = "Company name is required"
+    if (password.length < 8) errs.password = "Password must be at least 8 characters"
+    if (password !== confirmPassword) errs.confirmPassword = "Passwords do not match"
+    return errs
+  }
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
+    const errs = validate()
+    setFieldErrors(errs)
+    if (Object.keys(errs).length > 0) {
+      setError(Object.values(errs)[0] || "Please fix the errors below")
+      return
+    }
     setLoading(true)
     setError("")
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters")
-      setLoading(false)
-      return
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      setLoading(false)
-      return
-    }
-
-    if (!selectedRole) {
-      setError("Please select your role")
-      setLoading(false)
-      return
-    }
-
     try {
-      await signUp(email, password, {
+      // Store email for the verify-email resend button
+      sessionStorage.setItem('kealee:signup-email', email)
+
+      const data = await signUp(email, password, {
         firstName,
         lastName,
         role: selectedRole,
         companyName,
       })
 
-      router.push("/")
-      router.refresh()
+      // If Supabase email confirmation is enabled, the user object will exist
+      // but the session will be null until they verify. Redirect to verify-email page.
+      if (data.session) {
+        // Auto-confirmed (e.g. email confirmation disabled) — go to home
+        router.push("/")
+        router.refresh()
+      } else {
+        // Email confirmation required — show verification instructions
+        router.push("/auth/verify-email")
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to sign up")
     } finally {
@@ -90,7 +104,7 @@ export function SignupClient() {
         </p>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSignup} className="space-y-4">
+        <form onSubmit={handleSignup} className="space-y-4" noValidate>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>
@@ -98,10 +112,19 @@ export function SignupClient() {
                 id="firstName"
                 type="text"
                 value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                onChange={(e) => {
+                  setFirstName(e.target.value)
+                  if (fieldErrors.firstName) setFieldErrors((p) => ({ ...p, firstName: undefined }))
+                }}
                 placeholder="First name"
                 required
+                minLength={1}
+                aria-invalid={!!fieldErrors.firstName}
+                aria-describedby={fieldErrors.firstName ? "firstName-error" : undefined}
               />
+              {fieldErrors.firstName && (
+                <p id="firstName-error" className="text-xs text-red-600" role="alert">{fieldErrors.firstName}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="lastName">Last Name</Label>
@@ -109,10 +132,19 @@ export function SignupClient() {
                 id="lastName"
                 type="text"
                 value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
+                onChange={(e) => {
+                  setLastName(e.target.value)
+                  if (fieldErrors.lastName) setFieldErrors((p) => ({ ...p, lastName: undefined }))
+                }}
                 placeholder="Last name"
                 required
+                minLength={1}
+                aria-invalid={!!fieldErrors.lastName}
+                aria-describedby={fieldErrors.lastName ? "lastName-error" : undefined}
               />
+              {fieldErrors.lastName && (
+                <p id="lastName-error" className="text-xs text-red-600" role="alert">{fieldErrors.lastName}</p>
+              )}
             </div>
           </div>
 
@@ -122,10 +154,19 @@ export function SignupClient() {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                if (fieldErrors.email) setFieldErrors((p) => ({ ...p, email: undefined }))
+              }}
               placeholder="you@company.com"
               required
+              autoComplete="email"
+              aria-invalid={!!fieldErrors.email}
+              aria-describedby={fieldErrors.email ? "email-error" : undefined}
             />
+            {fieldErrors.email && (
+              <p id="email-error" className="text-xs text-red-600" role="alert">{fieldErrors.email}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -133,9 +174,14 @@ export function SignupClient() {
             <select
               id="role"
               value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              onChange={(e) => {
+                setSelectedRole(e.target.value)
+                if (fieldErrors.role) setFieldErrors((p) => ({ ...p, role: undefined }))
+              }}
+              className={`flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${fieldErrors.role ? "border-red-500" : "border-input"}`}
               required
+              aria-invalid={!!fieldErrors.role}
+              aria-describedby={fieldErrors.role ? "role-error" : undefined}
             >
               <option value="">Select your role</option>
               {MARKETPLACE_ROLES.map((role) => (
@@ -144,6 +190,9 @@ export function SignupClient() {
                 </option>
               ))}
             </select>
+            {fieldErrors.role && (
+              <p id="role-error" className="text-xs text-red-600" role="alert">{fieldErrors.role}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -152,10 +201,19 @@ export function SignupClient() {
               id="companyName"
               type="text"
               value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
+              onChange={(e) => {
+                setCompanyName(e.target.value)
+                if (fieldErrors.companyName) setFieldErrors((p) => ({ ...p, companyName: undefined }))
+              }}
               placeholder="Your company name"
               required
+              minLength={2}
+              aria-invalid={!!fieldErrors.companyName}
+              aria-describedby={fieldErrors.companyName ? "companyName-error" : undefined}
             />
+            {fieldErrors.companyName && (
+              <p id="companyName-error" className="text-xs text-red-600" role="alert">{fieldErrors.companyName}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -164,10 +222,21 @@ export function SignupClient() {
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                if (fieldErrors.password) setFieldErrors((p) => ({ ...p, password: undefined }))
+              }}
               placeholder="Minimum 8 characters"
               required
+              minLength={8}
+              autoComplete="new-password"
+              aria-invalid={!!fieldErrors.password}
+              aria-describedby={fieldErrors.password ? "password-error" : "password-hint"}
             />
+            <p id="password-hint" className="text-xs text-neutral-500">Must be at least 8 characters</p>
+            {fieldErrors.password && (
+              <p id="password-error" className="text-xs text-red-600" role="alert">{fieldErrors.password}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -176,14 +245,24 @@ export function SignupClient() {
               id="confirmPassword"
               type="password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value)
+                if (fieldErrors.confirmPassword) setFieldErrors((p) => ({ ...p, confirmPassword: undefined }))
+              }}
               placeholder="Confirm your password"
               required
+              minLength={8}
+              autoComplete="new-password"
+              aria-invalid={!!fieldErrors.confirmPassword}
+              aria-describedby={fieldErrors.confirmPassword ? "confirmPassword-error" : undefined}
             />
+            {fieldErrors.confirmPassword && (
+              <p id="confirmPassword-error" className="text-xs text-red-600" role="alert">{fieldErrors.confirmPassword}</p>
+            )}
           </div>
 
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded text-sm">{error}</div>
+            <div className="bg-red-50 text-red-600 p-3 rounded text-sm" role="alert">{error}</div>
           )}
 
           <Button type="submit" className="w-full" disabled={loading}>

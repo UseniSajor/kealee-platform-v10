@@ -1,6 +1,6 @@
 /**
  * OAuth callback handler for Supabase auth (Google OAuth, etc.)
- * Exchanges the authorization code for a session, then redirects to dashboard.
+ * Exchanges the authorization code for a session, then redirects.
  *
  * Security: the `redirect` param is validated to ensure it is a relative path
  * (starts with "/") to prevent open-redirect attacks.
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get('code')
   const error = requestUrl.searchParams.get('error')
   const errorDescription = requestUrl.searchParams.get('error_description')
-  const redirectTo = safeRedirectPath(requestUrl.searchParams.get('redirect'), '/dashboard')
+  const redirectTo = safeRedirectPath(requestUrl.searchParams.get('redirect'), '/')
 
   // Handle OAuth provider errors (e.g. user denied consent)
   if (error) {

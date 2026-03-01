@@ -18,7 +18,10 @@ export function LoginClient() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const unauthorized = searchParams.get("error") === "unauthorized"
+  const errorParam = searchParams.get("error")
+  const errorDescription = searchParams.get("error_description")
+  const unauthorized = errorParam === "unauthorized"
+  const callbackFailed = errorParam === "auth_callback_failed"
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -67,10 +70,16 @@ export function LoginClient() {
         </p>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4" noValidate>
           {unauthorized && !error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded text-sm">
+            <div className="bg-red-50 text-red-600 p-3 rounded text-sm" role="alert">
               Please sign in to access your project
+            </div>
+          )}
+
+          {callbackFailed && !error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded text-sm" role="alert">
+              {errorDescription || "Sign-in failed. Please try again."}
             </div>
           )}
 
@@ -83,6 +92,8 @@ export function LoginClient() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
               required
+              autoComplete="email"
+              aria-invalid={!!error}
             />
           </div>
 
@@ -102,11 +113,15 @@ export function LoginClient() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={8}
+              autoComplete="current-password"
+              aria-invalid={!!error}
+              aria-describedby={error ? "login-error" : undefined}
             />
           </div>
 
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded text-sm">{error}</div>
+            <div id="login-error" className="bg-red-50 text-red-600 p-3 rounded text-sm" role="alert">{error}</div>
           )}
 
           <Button type="submit" className="w-full" disabled={loading}>

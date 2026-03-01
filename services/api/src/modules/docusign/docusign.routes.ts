@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { prismaAny } from '../../utils/prisma-helper'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { docusignService } from './docusign.service'

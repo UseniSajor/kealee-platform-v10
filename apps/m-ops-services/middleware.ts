@@ -34,8 +34,8 @@ export async function middleware(request: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // Protected routes
-  const protectedPaths = ['/dashboard', '/projects', '/account', '/settings'];
+  // Protected routes — includes portal and onboarding since they require an authenticated user
+  const protectedPaths = ['/dashboard', '/projects', '/account', '/settings', '/portal', '/onboarding'];
   const isProtectedPath = protectedPaths.some(path =>
     request.nextUrl.pathname.startsWith(path)
   );
@@ -101,6 +101,8 @@ export const config = {
     '/projects/:path*',
     '/account/:path*',
     '/settings/:path*',
+    '/portal/:path*',
+    '/onboarding/:path*',
     '/login',
     '/signup',
   ],

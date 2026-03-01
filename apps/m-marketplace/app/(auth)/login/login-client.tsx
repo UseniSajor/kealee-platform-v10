@@ -18,8 +18,13 @@ export function LoginClient() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const unauthorized = searchParams.get("error") === "unauthorized"
-  const redirectTo = searchParams.get("redirect") || "/"
+  const errorParam = searchParams.get("error")
+  const errorDescription = searchParams.get("error_description")
+  const unauthorized = errorParam === "unauthorized"
+  const callbackFailed = errorParam === "auth_callback_failed"
+  // Only allow relative redirects to prevent open-redirect
+  const rawRedirect = searchParams.get("redirect") || "/"
+  const redirectTo = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/"
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -69,10 +74,16 @@ export function LoginClient() {
         </p>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4" noValidate>
           {unauthorized && !error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded text-sm">
+            <div className="bg-red-50 text-red-600 p-3 rounded text-sm" role="alert">
               Please sign in to access the marketplace
+            </div>
+          )}
+
+          {callbackFailed && !error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded text-sm" role="alert">
+              {errorDescription || "Sign-in failed. Please try again."}
             </div>
           )}
 
@@ -85,22 +96,36 @@ export function LoginClient() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@company.com"
               required
+              autoComplete="email"
+              aria-invalid={!!error}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <Link
+                href="/auth/forgot-password"
+                className="text-xs text-primary hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={8}
+              autoComplete="current-password"
+              aria-invalid={!!error}
+              aria-describedby={error ? "login-error" : undefined}
             />
           </div>
 
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded text-sm">{error}</div>
+            <div id="login-error" className="bg-red-50 text-red-600 p-3 rounded text-sm" role="alert">{error}</div>
           )}
 
           <Button type="submit" className="w-full" disabled={loading}>

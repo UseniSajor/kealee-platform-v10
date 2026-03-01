@@ -156,7 +156,7 @@ export default function DashboardPage() {
             totalEstimates: d.totalEstimates || 0,
             activeProjects: d.activeProjects || 0,
             totalValue: d.totalValue || 0,
-            avgAccuracy: d.avgAccuracy || 95,
+            avgAccuracy: d.avgAccuracy || 0,
             estimatesThisMonth: d.estimatesThisMonth || 0,
             estimatesLastMonth: d.estimatesLastMonth || 0,
           });

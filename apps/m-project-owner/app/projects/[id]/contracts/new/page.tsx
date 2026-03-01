@@ -11,6 +11,7 @@ export default function NewContractPage({ params }: { params: { id: string } }) 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const [templates, setTemplates] = useState<Array<{ id: string; name: string; version: number }>>([])
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
@@ -78,9 +79,10 @@ export default function NewContractPage({ params }: { params: { id: string } }) 
   }
 
   const handleSave = async () => {
+    const errs: Record<string, string> = {}
+
     if (!terms.trim()) {
-      setError('Terms and conditions are required')
-      return
+      errs.terms = 'Terms and conditions are required'
     }
 
     // Validate milestones
@@ -93,7 +95,12 @@ export default function NewContractPage({ params }: { params: { id: string } }) 
       .filter((m) => m.name && m.amount > 0)
 
     if (validMilestones.length === 0) {
-      setError('At least one milestone with a name and amount is required')
+      errs.milestones = 'At least one milestone with a name and amount is required'
+    }
+
+    setFieldErrors(errs)
+    if (Object.keys(errs).length > 0) {
+      setError(Object.values(errs)[0])
       return
     }
 
@@ -204,15 +211,26 @@ export default function NewContractPage({ params }: { params: { id: string } }) 
           </p>
           <div className="mt-4">
             <textarea
+              id="contract-terms"
               value={terms}
-              onChange={(e) => setTerms(e.target.value)}
+              onChange={(e) => {
+                setTerms(e.target.value)
+                if (fieldErrors.terms) setFieldErrors((prev) => { const next = { ...prev }; delete next.terms; return next })
+              }}
               rows={20}
-              className="w-full rounded-lg border border-neutral-300 px-3 py-3 text-base font-mono sm:py-2 sm:text-sm"
+              required
+              minLength={10}
+              aria-invalid={!!fieldErrors.terms}
+              aria-describedby={fieldErrors.terms ? 'terms-error' : 'terms-hint'}
+              className={`w-full rounded-lg border px-3 py-3 text-base font-mono sm:py-2 sm:text-sm ${fieldErrors.terms ? 'border-red-500' : 'border-neutral-300'}`}
               placeholder="Enter contract terms and conditions (HTML supported)..."
             />
-            <p className="mt-2 text-xs text-neutral-600">
+            <p id="terms-hint" className="mt-2 text-xs text-neutral-600">
               <strong>Tip:</strong> You can use HTML tags for formatting. Variables will be replaced when the contract is finalized.
             </p>
+            {fieldErrors.terms && (
+              <p id="terms-error" className="mt-1 text-xs text-red-600" role="alert">{fieldErrors.terms}</p>
+            )}
           </div>
         </section>
 
@@ -232,29 +250,42 @@ export default function NewContractPage({ params }: { params: { id: string } }) 
             </button>
           </div>
 
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 space-y-4" role="list" aria-label="Milestones">
             {milestones.map((milestone, index) => (
-              <div key={index} className="rounded-lg border border-neutral-200 p-4">
+              <div key={index} className={`rounded-lg border p-4 ${fieldErrors.milestones ? 'border-red-300' : 'border-neutral-200'}`} role="listitem">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-12">
                   <div className="sm:col-span-5">
-                    <label className="block text-sm font-medium text-neutral-700">Milestone Name *</label>
+                    <label htmlFor={`milestone-name-${index}`} className="block text-sm font-medium text-neutral-700">Milestone Name *</label>
                     <input
+                      id={`milestone-name-${index}`}
                       type="text"
+                      required
+                      minLength={2}
                       value={milestone.name}
-                      onChange={(e) => handleMilestoneChange(index, 'name', e.target.value)}
+                      onChange={(e) => {
+                        handleMilestoneChange(index, 'name', e.target.value)
+                        if (fieldErrors.milestones) setFieldErrors((prev) => { const next = { ...prev }; delete next.milestones; return next })
+                      }}
                       placeholder="e.g., Demolition Complete"
+                      aria-label={`Milestone ${index + 1} name`}
                       className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
                     />
                   </div>
                   <div className="sm:col-span-4">
-                    <label className="block text-sm font-medium text-neutral-700">Amount (USD) *</label>
+                    <label htmlFor={`milestone-amount-${index}`} className="block text-sm font-medium text-neutral-700">Amount (USD) *</label>
                     <input
+                      id={`milestone-amount-${index}`}
                       type="number"
+                      required
                       step="0.01"
-                      min="0"
+                      min="0.01"
                       value={milestone.amount}
-                      onChange={(e) => handleMilestoneChange(index, 'amount', e.target.value)}
+                      onChange={(e) => {
+                        handleMilestoneChange(index, 'amount', e.target.value)
+                        if (fieldErrors.milestones) setFieldErrors((prev) => { const next = { ...prev }; delete next.milestones; return next })
+                      }}
                       placeholder="0.00"
+                      aria-label={`Milestone ${index + 1} amount`}
                       className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
                     />
                   </div>
@@ -263,6 +294,7 @@ export default function NewContractPage({ params }: { params: { id: string } }) 
                       <button
                         type="button"
                         onClick={() => handleRemoveMilestone(index)}
+                        aria-label={`Remove milestone ${index + 1}`}
                         className="w-full rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
                       >
                         Remove
@@ -270,8 +302,9 @@ export default function NewContractPage({ params }: { params: { id: string } }) 
                     ) : null}
                   </div>
                   <div className="sm:col-span-12">
-                    <label className="block text-sm font-medium text-neutral-700">Description (optional)</label>
+                    <label htmlFor={`milestone-desc-${index}`} className="block text-sm font-medium text-neutral-700">Description (optional)</label>
                     <textarea
+                      id={`milestone-desc-${index}`}
                       value={milestone.description}
                       onChange={(e) => handleMilestoneChange(index, 'description', e.target.value)}
                       placeholder="Describe what needs to be completed for this milestone..."
@@ -282,6 +315,9 @@ export default function NewContractPage({ params }: { params: { id: string } }) 
                 </div>
               </div>
             ))}
+            {fieldErrors.milestones && (
+              <p className="text-xs text-red-600" role="alert">{fieldErrors.milestones}</p>
+            )}
           </div>
 
           {/* Prompt 2.2: Automatic total calculation */}
