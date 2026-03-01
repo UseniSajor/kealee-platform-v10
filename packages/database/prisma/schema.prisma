@@ -1979,6 +1979,9 @@ model User {
 
   // Contractor License Verification
   contractorVerification ContractorVerification? @relation("ContractorVerificationUser")
+
+  // Customer Orders (concept packages, one-time purchases)
+  conceptPackageOrders ConceptPackageOrder[] @relation("ConceptPackageOrderUser")
 }
 
 // ============================================================================
@@ -12972,4 +12975,33 @@ model ContractorVerification {
 
   @@index([licenseNum])
   @@map("contractor_verifications")
+}
+
+// ── CONCEPT PACKAGE ORDERS ──────────────────────────────────────────────────
+// Tracks concept package purchases from the marketplace funnel.
+// Created by the Stripe webhook on checkout.session.completed.
+
+model ConceptPackageOrder {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation("ConceptPackageOrderUser", fields: [userId], references: [id])
+  stripeSessionId       String    @unique
+  stripePaymentIntentId String?
+  packageTier           String    // essential, professional, premium, white-glove
+  packageName           String
+  amount                Int       // cents
+  currency              String    @default("usd")
+  status                String    @default("completed") // completed, refunded, disputed
+  deliveryStatus        String    @default("pending")   // pending, generating, ready, delivered
+  deliveryUrl           String?
+  deliveredAt           DateTime?
+  metadata              Json?
+  funnelSessionId       String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([deliveryStatus])
+  @@map("concept_package_orders")
 }

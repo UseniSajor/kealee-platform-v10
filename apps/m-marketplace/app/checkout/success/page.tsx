@@ -68,8 +68,8 @@ export default function CheckoutSuccessPage() {
               Create a full project to get contractor bids, manage timelines, and track your renovation from start to finish.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/signup" className="inline-flex items-center gap-2 px-8 py-3.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-bold text-sm transition">
-                Create Your Project <ArrowRight className="h-4 w-4" />
+              <Link href="/dashboard" className="inline-flex items-center gap-2 px-8 py-3.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-bold text-sm transition">
+                Go to Dashboard <ArrowRight className="h-4 w-4" />
               </Link>
               <Link href="/" className="inline-flex items-center gap-2 px-8 py-3.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-bold text-sm transition">
                 Back to Home

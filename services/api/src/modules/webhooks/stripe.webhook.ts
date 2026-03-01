@@ -1098,7 +1098,36 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
       },
     })
 
-    // 2. Create marketing lead linked to funnel session
+    // 2. Create ConceptPackageOrder to track the purchase
+    try {
+      await prismaAny.conceptPackageOrder.create({
+        data: {
+          userId: user.id,
+          stripeSessionId: session.id,
+          stripePaymentIntentId: typeof session.payment_intent === 'string'
+            ? session.payment_intent
+            : session.payment_intent?.id || null,
+          packageTier: packageTier.toLowerCase(),
+          packageName,
+          amount: session.amount_total ?? 0,
+          currency: session.currency || 'usd',
+          status: 'completed',
+          deliveryStatus: 'pending',
+          funnelSessionId: funnelSessionId || null,
+          metadata: {
+            customerEmail,
+            customerName,
+            customerPhone,
+          },
+        },
+      })
+      console.log(`  ✅ ConceptPackageOrder created for session ${session.id}`)
+    } catch (orderErr: any) {
+      // Don't fail the whole handler if order creation fails (e.g. duplicate stripeSessionId)
+      console.warn(`  ⚠️  ConceptPackageOrder creation skipped: ${orderErr.message}`)
+    }
+
+    // 3. Create marketing lead linked to funnel session
     const lead = await prismaAny.marketingLead.create({
       data: {
         name: customerName || customerEmail.split('@')[0],
@@ -1119,7 +1148,7 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
       },
     })
 
-    // 3. Update funnel session status if linked
+    // 4. Update funnel session status if linked
     if (funnelSessionId) {
       try {
         await prismaAny.funnelSession.update({
@@ -1140,7 +1169,7 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
       }
     }
 
-    // 4. Record audit event
+    // 5. Record audit event
     await auditService.recordAudit({
       action: 'CONCEPT_PACKAGE_PURCHASED',
       entityType: 'MarketingLead',
@@ -1159,7 +1188,7 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
       },
     })
 
-    // 5. Record typed event
+    // 6. Record typed event
     await eventService.recordEvent({
       type: 'CONCEPT_PACKAGE_PURCHASED',
       entityType: 'MarketingLead',
@@ -1175,7 +1204,7 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
       },
     })
 
-    // 6. Queue confirmation email
+    // 7. Queue confirmation email
     await queueNotificationEmail({
       to: customerEmail,
       subject: `Your ${packageName} is confirmed!`,

@@ -926,6 +926,15 @@ const start = async () => {
     })
 
     // ══════════════════════════════════════════════════════════════
+    // Orders — Customer order history & delivery tracking
+    // ══════════════════════════════════════════════════════════════
+
+    await safeRegisterBlock('Customer Orders routes', async () => {
+      const { ordersRoutes } = await import('./modules/orders/orders.routes')
+      await fastify.register(ordersRoutes, { prefix: '/api' })
+    })
+
+    // ══════════════════════════════════════════════════════════════
 
     // GraphQL DISABLED FOR MVP - Uncomment when needed
     /*
