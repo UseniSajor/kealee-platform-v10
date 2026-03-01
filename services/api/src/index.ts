@@ -178,6 +178,10 @@ function validateStartupGuards() {
 // Run startup guards immediately after environment loading
 validateStartupGuards()
 
+// Validate all required / optional env vars and log warnings for missing ones
+import { validateEnv } from './utils/env-validation'
+validateEnv()
+
 // Initialize OpenTelemetry tracing BEFORE importing Fastify
 // so auto-instrumentations can monkey-patch HTTP, Fastify, and IORedis
 import { initTracing } from '@kealee/observability';
@@ -290,6 +294,7 @@ import { complianceCheckpointRoutes } from './modules/compliance/compliance-chec
 // Oversight temporarily disabled
 // import { oversightRoutes } from './routes/oversight.routes'
 import testRoutes from './routes/test.routes'
+import { healthRoutes } from './routes/health.routes'
 // import { createGraphQLServer } from './graphql/server' // DISABLED: GraphQL not critical for MVP
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware'
 import { registerGlobalRateLimit } from './middleware/rate-limit.middleware'
@@ -305,11 +310,10 @@ const fastify = Fastify({
   logger: true,
 })
 
-// Register minimal health check IMMEDIATELY so Railway/Docker health probes
-// get a response even while the full app is still initializing
-fastify.get('/health', async () => {
-  return { status: 'ok', timestamp: new Date().toISOString() }
-})
+// Register health check routes IMMEDIATELY so Railway/Docker health probes
+// get a response even while the full app is still initializing.
+// These endpoints require no authentication.
+fastify.register(healthRoutes)
 
 // Start server
 const start = async () => {
@@ -873,6 +877,15 @@ const start = async () => {
     await safeRegisterBlock('Dynamic Page Generation - Funnel routes', async () => {
       const { funnelRoutes } = await import('./modules/funnel/funnel.routes')
       await fastify.register(funnelRoutes, { prefix: '/funnel' })
+    })
+
+    // ══════════════════════════════════════════════════════════════
+    // FAQ — Public FAQ endpoints
+    // ══════════════════════════════════════════════════════════════
+
+    await safeRegisterBlock('FAQ routes', async () => {
+      const faqRoutes = (await import('./modules/faq/faq.routes')).default
+      await fastify.register(faqRoutes, { prefix: '/api/faq' })
     })
 
     // ══════════════════════════════════════════════════════════════

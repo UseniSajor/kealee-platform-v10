@@ -12729,3 +12729,22 @@ model StripeProduct {
 
   @@map("stripe_products")
 }
+
+model Faq {
+  id          String   @id @default(cuid())
+  number      Int      @unique
+  question    String
+  answer      String   @db.Text
+  section     String
+  sectionSlug String
+  tags        String[]
+  serviceArea String   @default("ai-concept-generation")
+  featured    Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([section])
+  @@index([serviceArea])
+  @@index([sectionSlug])
+}
