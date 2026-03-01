@@ -12,6 +12,7 @@ import {
   ReviewDesignInput,
 } from '../../types/user-responsibilities.types'
 import { FileCategory, UploadedByRole } from '@prisma/client'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
   // multipart plugin is registered globally in index.ts
 
@@ -118,7 +119,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to upload design files')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -200,7 +201,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to upload stamped drawings')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -259,7 +260,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to upload renderings')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -318,7 +319,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to upload specifications')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -405,7 +406,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to upload portfolio photos')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -452,7 +453,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to fetch design versions')
       return reply.code(500).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -509,7 +510,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to fetch design version')
       return reply.code(500).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -598,7 +599,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to upload license')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -657,7 +658,7 @@ const architectUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to upload as-built documents')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })

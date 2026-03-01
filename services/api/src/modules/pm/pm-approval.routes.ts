@@ -75,7 +75,8 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         return reply.send({ request: request_data })
       } catch (error: any) {
         fastify.log.error(error)
-        const statusCode = error.message?.includes('not found') ? 404 : error.message?.includes('authorized') ? 403 : 400
+        const errMsg = error instanceof Error ? error.message : ''
+        const statusCode = errMsg.includes('not found') ? 404 : errMsg.includes('authorized') ? 403 : 400
         return reply.code(statusCode).send({
           error: sanitizeErrorMessage(error, 'Failed to fetch approval request'),
         })
@@ -222,7 +223,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         return reply.send({ request: result })
       } catch (error: any) {
         fastify.log.error(error)
-        const statusCode = error.message?.includes('authorized') ? 403 : 400
+        const statusCode = (error instanceof Error && error.message?.includes('authorized')) ? 403 : 400
         return reply.code(statusCode).send({
           error: sanitizeErrorMessage(error, 'Failed to approve request'),
         })
@@ -250,7 +251,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         return reply.send({ request: result })
       } catch (error: any) {
         fastify.log.error(error)
-        const statusCode = error.message?.includes('authorized') ? 403 : 400
+        const statusCode = (error instanceof Error && error.message?.includes('authorized')) ? 403 : 400
         return reply.code(statusCode).send({
           error: sanitizeErrorMessage(error, 'Failed to reject request'),
         })
@@ -278,7 +279,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         return reply.send({ request: result })
       } catch (error: any) {
         fastify.log.error(error)
-        const statusCode = error.message?.includes('authorized') ? 403 : 400
+        const statusCode = (error instanceof Error && error.message?.includes('authorized')) ? 403 : 400
         return reply.code(statusCode).send({
           error: sanitizeErrorMessage(error, 'Failed to cancel request'),
         })
@@ -457,7 +458,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         return reply.send({ rule })
       } catch (error: any) {
         fastify.log.error(error)
-        const statusCode = error.message?.includes('not found') ? 404 : 400
+        const statusCode = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
         return reply.code(statusCode).send({
           error: sanitizeErrorMessage(error, 'Failed to update approval rule'),
         })
@@ -478,7 +479,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true })
       } catch (error: any) {
         fastify.log.error(error)
-        const statusCode = error.message?.includes('not found') ? 404 : 400
+        const statusCode = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
         return reply.code(statusCode).send({
           error: sanitizeErrorMessage(error, 'Failed to delete approval rule'),
         })
@@ -553,7 +554,7 @@ export async function pmApprovalRoutes(fastify: FastifyInstance) {
         return reply.send({ success: true })
       } catch (error: any) {
         fastify.log.error(error)
-        const statusCode = error.message?.includes('authorized') ? 403 : 400
+        const statusCode = (error instanceof Error && error.message?.includes('authorized')) ? 403 : 400
         return reply.code(statusCode).send({
           error: sanitizeErrorMessage(error, 'Failed to delete attachment'),
         })

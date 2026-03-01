@@ -537,7 +537,7 @@ export async function scoringCalculatorRoutes(fastify: FastifyInstance) {
           recalculatedAt: new Date().toISOString(),
         };
       } catch (error: any) {
-        if (error.message === 'Contractor not found') {
+        if (error instanceof Error && error.message === 'Contractor not found') {
           return reply.status(404).send({ error: 'Contractor not found' });
         }
         request.log.error(error, 'Failed to recalculate contractor score');

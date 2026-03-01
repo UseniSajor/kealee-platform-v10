@@ -118,7 +118,7 @@ class PmBudgetService {
   }
 
   async getSnapshots(projectId: string) {
-    return { snapshots: await prismaAny.budgetSnapshot.findMany({ where: { projectId }, orderBy: { createdAt: 'desc' } }) }
+    return { snapshots: await prismaAny.budgetSnapshot.findMany({ where: { projectId }, orderBy: { createdAt: 'desc' }, take: 100 }) }
   }
 
   async takeSnapshot(projectId: string, userId: string, label?: string) {
@@ -135,7 +135,7 @@ class PmBudgetService {
   }
 
   async getAlerts(projectId: string) {
-    return { alerts: await prismaAny.budgetAlert.findMany({ where: { projectId }, orderBy: { createdAt: 'desc' } }) }
+    return { alerts: await prismaAny.budgetAlert.findMany({ where: { projectId }, orderBy: { createdAt: 'desc' }, take: 100 }) }
   }
 
   async acknowledgeAlert(alertId: string, userId: string) {

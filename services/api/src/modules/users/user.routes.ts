@@ -93,7 +93,7 @@ export async function userRoutes(fastify: FastifyInstance) {
         return reply.send({ user })
       } catch (error: any) {
         fastify.log.error(error)
-        const statusCode = error.message === 'User not found' ? 404 : 500
+        const statusCode = (error instanceof Error && error.message === 'User not found') ? 404 : 500
         return reply.code(statusCode).send({
           error: sanitizeErrorMessage(error, 'Failed to get user'),
         })

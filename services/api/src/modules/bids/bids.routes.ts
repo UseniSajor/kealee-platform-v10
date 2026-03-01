@@ -9,6 +9,7 @@ import {
   updateOpportunityBidSchema,
   listBidsQuerySchema,
 } from './bids.types'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function opportunityBidsRoutes(fastify: FastifyInstance) {
   // GET /api/bids/opportunities - List opportunity bids
@@ -60,7 +61,7 @@ export async function opportunityBidsRoutes(fastify: FastifyInstance) {
         return reply.send({ bid })
       } catch (error: any) {
         fastify.log.error(error)
-        const code = error.message.includes('not found') ? 404 : 400
+        const code = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
         return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
@@ -104,7 +105,7 @@ export async function opportunityBidsRoutes(fastify: FastifyInstance) {
         return reply.send({ bid })
       } catch (error: any) {
         fastify.log.error(error)
-        const code = error.message.includes('not found') ? 404 : 400
+        const code = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
         return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }

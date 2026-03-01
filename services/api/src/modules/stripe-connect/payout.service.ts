@@ -6,6 +6,7 @@
 import Stripe from 'stripe'
 import { prisma, Decimal } from '@kealee/database'
 import { PayoutMethod, PayoutStatus } from '@kealee/database'
+import { withRetry } from '../../utils/retry'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
@@ -151,30 +152,36 @@ export class PayoutService {
 
     try {
       // Create Stripe Transfer to connected account
-      const transfer = await stripe.transfers.create({
-        amount: amountInCents - platformFeeInCents, // Amount minus platform fee
-        currency: payout.currency.toLowerCase(),
-        destination: payout.connectedAccount.stripeAccountId,
-        description: `Payout for milestone/escrow transaction`,
-        metadata: {
-          payoutId: payout.id,
-          milestoneId: payout.milestoneId || '',
-          escrowTransactionId: payout.escrowTransactionId || '',
-        },
-      })
+      const transfer = await withRetry(
+        () => stripe.transfers.create({
+          amount: amountInCents - platformFeeInCents, // Amount minus platform fee
+          currency: payout.currency.toLowerCase(),
+          destination: payout.connectedAccount.stripeAccountId,
+          description: `Payout for milestone/escrow transaction`,
+          metadata: {
+            payoutId: payout.id,
+            milestoneId: payout.milestoneId || '',
+            escrowTransactionId: payout.escrowTransactionId || '',
+          },
+        }),
+        { label: 'Stripe.transfers.create' }
+      )
 
       // For instant payouts, create a payout on the connected account
       let stripePayout: Stripe.Payout | null = null
       if (payout.method === 'INSTANT') {
-        stripePayout = await stripe.payouts.create(
-          {
-            amount: amountInCents - platformFeeInCents,
-            currency: payout.currency.toLowerCase(),
-            method: 'instant',
-          },
-          {
-            stripeAccount: payout.connectedAccount.stripeAccountId,
-          }
+        stripePayout = await withRetry(
+          () => stripe.payouts.create(
+            {
+              amount: amountInCents - platformFeeInCents,
+              currency: payout.currency.toLowerCase(),
+              method: 'instant',
+            },
+            {
+              stripeAccount: payout.connectedAccount.stripeAccountId,
+            }
+          ),
+          { label: 'Stripe.payouts.create' }
         )
       }
 
@@ -452,9 +459,12 @@ export class PayoutService {
     }
 
     // Fetch payout from Stripe
-    const stripePayout = await stripe.payouts.retrieve(stripePayoutId, {
-      stripeAccount: payout.connectedAccount.stripeAccountId,
-    })
+    const stripePayout = await withRetry(
+      () => stripe.payouts.retrieve(stripePayoutId, {
+        stripeAccount: payout.connectedAccount.stripeAccountId,
+      }),
+      { label: 'Stripe.payouts.retrieve' }
+    )
 
     // Update payout with arrival information
     const updated = await prisma.payout.update({

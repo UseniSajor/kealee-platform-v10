@@ -6,6 +6,7 @@
 import { getStripe } from '../billing/stripe.client'
 import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
+import { withRetry } from '../../utils/retry'
 
 const PLATFORM_FEE_PERCENTAGE = 0.03 // 3%
 
@@ -28,7 +29,10 @@ class StripeConnectService {
 
     if (user.stripeAccountId) {
       // Return existing account
-      const account = await stripe.accounts.retrieve(user.stripeAccountId)
+      const account = await withRetry(
+        () => stripe.accounts.retrieve(user.stripeAccountId),
+        { label: 'Stripe.accounts.retrieve' }
+      )
       return {
         accountId: account.id,
         onboardingUrl: null, // Already onboarded
@@ -37,19 +41,22 @@ class StripeConnectService {
     }
 
     // Create Express account (recommended for contractors)
-    const account = await stripe.accounts.create({
-      type: 'express',
-      country,
-      email,
-      capabilities: {
-        transfers: { requested: true },
-        card_payments: { requested: true },
-      },
-      metadata: {
-        userId,
-        type: 'contractor',
-      },
-    })
+    const account = await withRetry(
+      () => stripe.accounts.create({
+        type: 'express',
+        country,
+        email,
+        capabilities: {
+          transfers: { requested: true },
+          card_payments: { requested: true },
+        },
+        metadata: {
+          userId,
+          type: 'contractor',
+        },
+      }),
+      { label: 'Stripe.accounts.create' }
+    )
 
     // Store account ID in database
     await prismaAny.user.update({
@@ -58,12 +65,15 @@ class StripeConnectService {
     })
 
     // Create account link for onboarding
-    const accountLink = await stripe.accountLinks.create({
-      account: account.id,
-      refresh_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/contractor/onboarding/refresh`,
-      return_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/contractor/onboarding/complete`,
-      type: 'account_onboarding',
-    })
+    const accountLink = await withRetry(
+      () => stripe.accountLinks.create({
+        account: account.id,
+        refresh_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/contractor/onboarding/refresh`,
+        return_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/contractor/onboarding/complete`,
+        type: 'account_onboarding',
+      }),
+      { label: 'Stripe.accountLinks.create' }
+    )
 
     return {
       accountId: account.id,
@@ -94,7 +104,10 @@ class StripeConnectService {
     }
 
     const stripe = getStripe()
-    const account = await stripe.accounts.retrieve(user.stripeAccountId)
+    const account = await withRetry(
+      () => stripe.accounts.retrieve(user.stripeAccountId),
+      { label: 'Stripe.accounts.retrieve' }
+    )
 
     return {
       hasAccount: true,
@@ -123,12 +136,15 @@ class StripeConnectService {
     }
 
     const stripe = getStripe()
-    const accountLink = await stripe.accountLinks.create({
-      account: user.stripeAccountId,
-      refresh_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/contractor/onboarding/refresh`,
-      return_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/contractor/onboarding/complete`,
-      type: type === 'onboarding' ? 'account_onboarding' : 'account_update',
-    })
+    const accountLink = await withRetry(
+      () => stripe.accountLinks.create({
+        account: user.stripeAccountId,
+        refresh_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/contractor/onboarding/refresh`,
+        return_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/contractor/onboarding/complete`,
+        type: type === 'onboarding' ? 'account_onboarding' : 'account_update',
+      }),
+      { label: 'Stripe.accountLinks.create' }
+    )
 
     return {
       url: accountLink.url,

@@ -144,7 +144,7 @@ export async function orgRoutes(fastify: FastifyInstance) {
         const org = await orgService.getOrgById(id)
         return reply.send({ org })
       } catch (error: any) {
-        if (error.message === 'Organization not found') {
+        if (error instanceof Error && error.message === 'Organization not found') {
           const { id } = request.params as { id: string }
           throw new NotFoundError('Organization', id)
       }
@@ -160,7 +160,7 @@ export async function orgRoutes(fastify: FastifyInstance) {
       return reply.send({ org })
     } catch (error: any) {
       fastify.log.error(error)
-      const statusCode = error.message === 'Organization not found' ? 404 : 500
+      const statusCode = (error instanceof Error && error.message === 'Organization not found') ? 404 : 500
       return reply.code(statusCode).send({
         error: sanitizeErrorMessage(error, 'Failed to get organization'),
       })
@@ -206,7 +206,7 @@ export async function orgRoutes(fastify: FastifyInstance) {
         const members = await orgService.getOrgMembers(id)
         return reply.send({ members, count: members.length })
       } catch (error: any) {
-        if (error.message === 'Organization not found') {
+        if (error instanceof Error && error.message === 'Organization not found') {
           const { id } = request.params as { id: string }
           throw new NotFoundError('Organization', id)
         }

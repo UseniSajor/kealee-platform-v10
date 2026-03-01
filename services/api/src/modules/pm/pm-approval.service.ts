@@ -700,6 +700,7 @@ class ApprovalWorkflowService {
         },
       },
       orderBy: { createdAt: 'desc' },
+      take: 100,
     })
 
     return { comments }
@@ -745,6 +746,8 @@ class ApprovalWorkflowService {
           },
         },
       },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
     })
 
     // Calculate metrics
@@ -789,6 +792,7 @@ class ApprovalWorkflowService {
         subtype: subtype || null,
         active: true,
       },
+      take: 50,
     })
 
     // Find rule that matches conditions

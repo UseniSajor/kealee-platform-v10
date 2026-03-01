@@ -7,6 +7,7 @@ import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { z } from 'zod'
 import { prismaAny } from '../../utils/prisma-helper'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function pmReportRoutes(fastify: FastifyInstance) {
   // GET / - List generated reports for the current PM
@@ -97,7 +98,7 @@ export async function pmReportRoutes(fastify: FastifyInstance) {
         return reply.send(report)
       } catch (error: any) {
         fastify.log.error(error)
-        const code = error.message?.includes('not found') ? 404 : 400
+        const code = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
         return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
@@ -116,7 +117,7 @@ export async function pmReportRoutes(fastify: FastifyInstance) {
         return reply.send(report)
       } catch (error: any) {
         fastify.log.error(error)
-        const code = error.message?.includes('not found') ? 404 : 400
+        const code = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
         return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
@@ -135,7 +136,7 @@ export async function pmReportRoutes(fastify: FastifyInstance) {
         return reply.send(report)
       } catch (error: any) {
         fastify.log.error(error)
-        const code = error.message?.includes('not found') ? 404 : 400
+        const code = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
         return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
@@ -154,7 +155,7 @@ export async function pmReportRoutes(fastify: FastifyInstance) {
         return reply.send(report)
       } catch (error: any) {
         fastify.log.error(error)
-        const code = error.message?.includes('not found') ? 404 : 400
+        const code = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
         return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
@@ -179,7 +180,8 @@ export async function pmReportRoutes(fastify: FastifyInstance) {
         return reply.send(report)
       } catch (error: any) {
         fastify.log.error(error)
-        const code = error.message?.includes('not found') ? 404 : error.message?.includes('Unknown report') ? 400 : 400
+        const errMsg = error instanceof Error ? error.message : ''
+        const code = errMsg.includes('not found') ? 404 : errMsg.includes('Unknown report') ? 400 : 400
         return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }

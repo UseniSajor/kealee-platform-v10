@@ -6,6 +6,7 @@ import { bidService } from './pm-bids.service'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { z } from 'zod'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function pmBidRoutes(fastify: FastifyInstance) {
   // GET / - List bids
@@ -48,7 +49,7 @@ export async function pmBidRoutes(fastify: FastifyInstance) {
         return reply.send({ bid })
       } catch (error: any) {
         fastify.log.error(error)
-        const code = error.message?.includes('not found') ? 404 : 400
+        const code = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
         return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
@@ -108,7 +109,7 @@ export async function pmBidRoutes(fastify: FastifyInstance) {
         return reply.send({ bid })
       } catch (error: any) {
         fastify.log.error(error)
-        const code = error.message?.includes('not found') ? 404 : 400
+        const code = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
         return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
@@ -127,7 +128,7 @@ export async function pmBidRoutes(fastify: FastifyInstance) {
         return reply.send({ bid })
       } catch (error: any) {
         fastify.log.error(error)
-        const code = error.message?.includes('not found') ? 404 : 400
+        const code = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
         return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
@@ -146,7 +147,7 @@ export async function pmBidRoutes(fastify: FastifyInstance) {
         return reply.send(comparison)
       } catch (error: any) {
         fastify.log.error(error)
-        const code = error.message?.includes('not found') ? 404 : 400
+        const code = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
         return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }
@@ -172,7 +173,7 @@ export async function pmBidRoutes(fastify: FastifyInstance) {
         return reply.send({ bid })
       } catch (error: any) {
         fastify.log.error(error)
-        const code = error.message?.includes('not found') ? 404 : 400
+        const code = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
         return reply.code(code).send({ error: sanitizeErrorMessage(error)})
       }
     }

@@ -96,6 +96,7 @@ class PmScheduleService {
     const items = await prismaAny.scheduleItem.findMany({
       where: { projectId },
       orderBy: { startDate: 'asc' },
+      take: 200,
     })
     return {
       tasks: items.map((item: any) => ({
@@ -112,6 +113,7 @@ class PmScheduleService {
     const items = await prismaAny.scheduleItem.findMany({
       where: { projectId, criticalPath: true },
       orderBy: { startDate: 'asc' },
+      take: 200,
     })
     return { items }
   }
@@ -120,6 +122,7 @@ class PmScheduleService {
     const items = await prismaAny.scheduleItem.findMany({
       where: { projectId, milestone: true },
       orderBy: { startDate: 'asc' },
+      take: 100,
     })
     return { milestones: items }
   }

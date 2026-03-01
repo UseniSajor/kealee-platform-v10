@@ -5,6 +5,7 @@ import { validateBody, validateParams, validateQuery } from '../../middleware/va
 import { z } from 'zod'
 import { rfiService } from './pm-rfis.service'
 import { triggerRfiReminderScan } from './rfi-reminder.worker'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function pmRfisRoutes(fastify: FastifyInstance) {
   // GET / - List RFIs
@@ -225,7 +226,7 @@ export async function pmRfisRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         return reply.code(500).send({
           error: 'Failed to trigger reminder scan',
-          message: error.message,
+          message: sanitizeErrorMessage(error, 'Failed to trigger reminder scan'),
         })
       }
     }

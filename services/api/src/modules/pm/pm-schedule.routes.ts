@@ -6,6 +6,7 @@ import { pmScheduleService } from './pm-schedule.service'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { z } from 'zod'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function pmScheduleRoutes(fastify: FastifyInstance) {
   fastify.get('/', { preHandler: [authenticateUser, validateQuery(z.object({
@@ -69,7 +70,7 @@ export async function pmScheduleRoutes(fastify: FastifyInstance) {
       return reply.send({ item: result })
     } catch (error: any) {
       fastify.log.error(error)
-      const code = error.message?.includes('not found') ? 404 : 400
+      const code = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
       return reply.code(code).send({ error: sanitizeErrorMessage(error)})
     }
   })
@@ -110,7 +111,7 @@ export async function pmScheduleRoutes(fastify: FastifyInstance) {
       return reply.send({ item: result })
     } catch (error: any) {
       fastify.log.error(error)
-      const code = error.message?.includes('not found') ? 404 : 400
+      const code = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
       return reply.code(code).send({ error: sanitizeErrorMessage(error)})
     }
   })
@@ -122,7 +123,7 @@ export async function pmScheduleRoutes(fastify: FastifyInstance) {
       return reply.send({ success: true })
     } catch (error: any) {
       fastify.log.error(error)
-      const code = error.message?.includes('not found') ? 404 : 400
+      const code = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
       return reply.code(code).send({ error: sanitizeErrorMessage(error)})
     }
   })
@@ -137,7 +138,7 @@ export async function pmScheduleRoutes(fastify: FastifyInstance) {
       return reply.send({ item: result })
     } catch (error: any) {
       fastify.log.error(error)
-      const code = error.message?.includes('not found') ? 404 : 400
+      const code = (error instanceof Error && error.message?.includes('not found')) ? 404 : 400
       return reply.code(code).send({ error: sanitizeErrorMessage(error)})
     }
   })

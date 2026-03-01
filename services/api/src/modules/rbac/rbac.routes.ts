@@ -61,7 +61,7 @@ export async function rbacRoutes(fastify: FastifyInstance) {
       return reply.send({ role })
     } catch (error: any) {
       fastify.log.error(error)
-      const statusCode = error.message === 'Role not found' ? 404 : 500
+      const statusCode = (error instanceof Error && error.message === 'Role not found') ? 404 : 500
       return reply.code(statusCode).send({
         error: sanitizeErrorMessage(error, 'Failed to get role'),
       })
@@ -136,7 +136,7 @@ export async function rbacRoutes(fastify: FastifyInstance) {
       return reply.send({ permission })
     } catch (error: any) {
       fastify.log.error(error)
-      const statusCode = error.message === 'Permission not found' ? 404 : 500
+      const statusCode = (error instanceof Error && error.message === 'Permission not found') ? 404 : 500
       return reply.code(statusCode).send({
         error: sanitizeErrorMessage(error, 'Failed to get permission'),
       })

@@ -98,7 +98,7 @@ export async function eventRoutes(fastify: FastifyInstance) {
       return reply.send({ event })
     } catch (error: any) {
       fastify.log.error(error)
-      const statusCode = error.message === 'Event not found' ? 404 : 500
+      const statusCode = (error instanceof Error && error.message === 'Event not found') ? 404 : 500
       return reply.code(statusCode).send({
         error: sanitizeErrorMessage(error, 'Failed to get event'),
       })

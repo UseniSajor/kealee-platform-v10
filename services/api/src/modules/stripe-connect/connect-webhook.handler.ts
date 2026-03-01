@@ -7,6 +7,7 @@ import Stripe from 'stripe'
 import { prisma, ConnectedAccountStatus } from '@kealee/database'
 import { ConnectOnboardingService } from './connect-onboarding.service'
 import { PayoutService } from './payout.service'
+import { withRetry } from '../../utils/retry'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
@@ -306,7 +307,10 @@ export class ConnectWebhookHandler {
     }
 
     // Fetch full account to get all capabilities
-    const account = await stripe.accounts.retrieve(accountId)
+    const account = await withRetry(
+      () => stripe.accounts.retrieve(accountId),
+      { label: 'Stripe.accounts.retrieve' }
+    )
 
     // Update capabilities
     await prisma.connectedAccount.update({
@@ -342,7 +346,10 @@ export class ConnectWebhookHandler {
     }
 
     // Fetch full account to check requirements
-    const account = await stripe.accounts.retrieve(accountId)
+    const account = await withRetry(
+      () => stripe.accounts.retrieve(accountId),
+      { label: 'Stripe.accounts.retrieve' }
+    )
 
     // Update requirements
     await prisma.connectedAccount.update({

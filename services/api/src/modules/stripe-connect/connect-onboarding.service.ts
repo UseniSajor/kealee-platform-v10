@@ -6,6 +6,7 @@
 import Stripe from 'stripe'
 import { prisma } from '@kealee/database'
 import { ConnectedAccountType, ConnectedAccountStatus } from '@kealee/database'
+import { withRetry } from '../../utils/retry'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
@@ -58,34 +59,37 @@ export class ConnectOnboardingService {
     const stripeAccountType = accountType === 'EXPRESS' ? 'express' : 'standard'
 
     // Create Stripe Account
-    const stripeAccount = await stripe.accounts.create({
-      type: stripeAccountType,
-      country,
-      email,
-      business_type: businessType,
-      capabilities: {
-        transfers: {
-          requested: true,
-        },
-        ...(accountType === 'EXPRESS' && {
-          card_payments: {
+    const stripeAccount = await withRetry(
+      () => stripe.accounts.create({
+        type: stripeAccountType,
+        country,
+        email,
+        business_type: businessType,
+        capabilities: {
+          transfers: {
             requested: true,
           },
-        }),
-      },
-      settings: {
-        payouts: {
-          schedule: {
-            interval: 'daily', // Daily payouts
+          ...(accountType === 'EXPRESS' && {
+            card_payments: {
+              requested: true,
+            },
+          }),
+        },
+        settings: {
+          payouts: {
+            schedule: {
+              interval: 'daily', // Daily payouts
+            },
           },
         },
-      },
-      metadata: {
-        userId,
-        platform: 'kealee',
-        accountType,
-      },
-    })
+        metadata: {
+          userId,
+          platform: 'kealee',
+          accountType,
+        },
+      }),
+      { label: 'Stripe.accounts.create' }
+    )
 
     // Create database record
     const connectedAccount = await prisma.connectedAccount.create({
@@ -129,12 +133,15 @@ export class ConnectOnboardingService {
     }
 
     // Create Stripe Account Link
-    const accountLink = await stripe.accountLinks.create({
-      account: connectedAccount.stripeAccountId,
-      refresh_url: refreshUrl,
-      return_url: returnUrl,
-      type: 'account_onboarding',
-    })
+    const accountLink = await withRetry(
+      () => stripe.accountLinks.create({
+        account: connectedAccount.stripeAccountId,
+        refresh_url: refreshUrl,
+        return_url: returnUrl,
+        type: 'account_onboarding',
+      }),
+      { label: 'Stripe.accountLinks.create' }
+    )
 
     // Update database with link info
     await prisma.connectedAccount.update({
@@ -164,8 +171,11 @@ export class ConnectOnboardingService {
     }
 
     // Fetch latest from Stripe
-    const stripeAccount = await stripe.accounts.retrieve(
-      connectedAccount.stripeAccountId
+    const stripeAccount = await withRetry(
+      () => stripe.accounts.retrieve(
+        connectedAccount.stripeAccountId
+      ),
+      { label: 'Stripe.accounts.retrieve' }
     )
 
     // Check capabilities
@@ -228,8 +238,11 @@ export class ConnectOnboardingService {
       throw new Error('Connected account not found')
     }
 
-    const stripeAccount = await stripe.accounts.retrieve(
-      connectedAccount.stripeAccountId
+    const stripeAccount = await withRetry(
+      () => stripe.accounts.retrieve(
+        connectedAccount.stripeAccountId
+      ),
+      { label: 'Stripe.accounts.retrieve' }
     )
 
     return {
@@ -286,9 +299,12 @@ export class ConnectOnboardingService {
       throw new Error('Connected account not found')
     }
 
-    const balance = await stripe.balance.retrieve({
-      stripeAccount: connectedAccount.stripeAccountId,
-    })
+    const balance = await withRetry(
+      () => stripe.balance.retrieve({
+        stripeAccount: connectedAccount.stripeAccountId,
+      }),
+      { label: 'Stripe.balance.retrieve' }
+    )
 
     return {
       available: balance.available.map((b) => ({

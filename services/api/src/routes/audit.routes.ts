@@ -114,7 +114,7 @@ export async function auditRoutes(fastify: FastifyInstance) {
       return reply.send({ auditLog })
     } catch (error: any) {
       fastify.log.error(error)
-      const statusCode = error.message === 'Audit log not found' ? 404 : 500
+      const statusCode = (error instanceof Error && error.message === 'Audit log not found') ? 404 : 500
       return reply.code(statusCode).send({
         error: sanitizeErrorMessage(error, 'Failed to get audit log'),
       })

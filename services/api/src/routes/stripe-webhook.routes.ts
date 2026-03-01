@@ -7,6 +7,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { stripeWebhookSecurityService } from '../modules/webhooks/stripe-webhook-security.service';
 import { depositService } from '../modules/deposits/deposit.service';
 import { escrowService } from '../modules/escrow/escrow.service';
+import { sanitizeErrorMessage } from '../utils/sanitize-error';
 
 export async function stripeWebhookRoutes(fastify: FastifyInstance) {
   /**
@@ -115,7 +116,7 @@ export async function stripeWebhookRoutes(fastify: FastifyInstance) {
           await stripeWebhookSecurityService.logWebhookEvent(
             (request as any).stripeEvent,
             'FAILED',
-            error.message
+            sanitizeErrorMessage(error)
           );
         }
 

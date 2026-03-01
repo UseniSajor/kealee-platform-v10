@@ -67,7 +67,7 @@ export async function pmRealtimeRoutes(fastify: FastifyInstance) {
             reply.raw.write(
               `data: ${JSON.stringify({
                 type: 'error',
-                message: error.message,
+                message: sanitizeErrorMessage(error, 'Real-time update failed'),
                 timestamp: new Date().toISOString(),
               })}\n\n`
             )

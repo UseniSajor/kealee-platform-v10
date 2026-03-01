@@ -56,7 +56,7 @@ export async function complianceGatesRoutes(fastify: FastifyInstance) {
           return reply.code(403).send({
             error: 'Compliance gate failed',
             failedChecks: (error as any).failedChecks,
-            message: error.message,
+            message: sanitizeErrorMessage(error, 'Compliance gate failed'),
           })
         }
 
@@ -106,7 +106,7 @@ export async function complianceGatesRoutes(fastify: FastifyInstance) {
           return reply.code(403).send({
             error: 'Compliance gate enforcement failed',
             failedChecks: (error as any).failedChecks,
-            message: error.message,
+            message: sanitizeErrorMessage(error, 'Compliance gate enforcement failed'),
           })
         }
 

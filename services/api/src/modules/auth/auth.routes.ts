@@ -93,18 +93,9 @@ export async function authRoutes(fastify: FastifyInstance) {
       } catch (error: any) {
         fastify.log.error({ err: error }, 'Signup failed')
 
-        const message =
-          typeof error?.message === 'string'
-            ? error.message
-            : error instanceof Error
-              ? error.message
-              : typeof error === 'string'
-                ? error
-                : 'Signup failed'
-
         return reply.code(400).send({
           error: {
-            message,
+            message: sanitizeErrorMessage(error, 'Signup failed'),
             statusCode: 400,
             timestamp: new Date().toISOString(),
             path: request.url,

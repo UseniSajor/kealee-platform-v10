@@ -14,6 +14,7 @@ import {
   BatchFileUploadRequest,
 } from '../../types/user-responsibilities.types'
 import { FileCategory, UploadedByRole } from '@prisma/client'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 const contractorUploadsRoutes: FastifyPluginAsync = async (fastify) => {
   // multipart plugin is registered globally in index.ts
 
@@ -82,7 +83,7 @@ const contractorUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to upload site photos')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -159,7 +160,7 @@ const contractorUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to upload receipts')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -229,7 +230,7 @@ const contractorUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to create daily log')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -284,7 +285,7 @@ const contractorUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to fetch daily logs')
       return reply.code(500).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -336,7 +337,7 @@ const contractorUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to update daily log')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -395,7 +396,7 @@ const contractorUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to upload permit documents')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -454,7 +455,7 @@ const contractorUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to upload warranties')
       return reply.code(400).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
@@ -502,7 +503,7 @@ const contractorUploadsRoutes: FastifyPluginAsync = async (fastify) => {
       request.log.error(error, 'Failed to list project files')
       return reply.code(500).send({
         success: false,
-        error: error.message,
+        error: sanitizeErrorMessage(error),
       })
     }
   })
