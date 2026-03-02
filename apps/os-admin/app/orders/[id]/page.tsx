@@ -19,6 +19,8 @@ import {
   ExternalLink,
   Mail,
   Phone,
+  RefreshCw,
+  Send,
 } from 'lucide-react'
 
 interface OrderDetail {
@@ -63,6 +65,8 @@ export default function AdminOrderDetailPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [regenerating, setRegenerating] = useState(false)
+  const [resending, setResending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Editable fields
@@ -114,6 +118,32 @@ export default function AdminOrderDetailPage() {
       setError(err.message || 'Failed to update order')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleRegenerate = async () => {
+    if (!confirm('Re-queue concept generation? This will reset the delivery status.')) return
+    try {
+      setRegenerating(true)
+      setError(null)
+      await apiRequest(`/admin/orders/${orderId}/regenerate`, { method: 'POST' })
+      await fetchOrder()
+    } catch (err: any) {
+      setError(err.message || 'Failed to regenerate')
+    } finally {
+      setRegenerating(false)
+    }
+  }
+
+  const handleResendEmail = async () => {
+    try {
+      setResending(true)
+      setError(null)
+      await apiRequest(`/admin/orders/${orderId}/resend-email`, { method: 'POST' })
+      setTimeout(() => setResending(false), 2000)
+    } catch (err: any) {
+      setError(err.message || 'Failed to resend email')
+      setResending(false)
     }
   }
 
@@ -351,6 +381,26 @@ export default function AdminOrderDetailPage() {
                           </>
                         )}
                       </button>
+
+                      {/* Action buttons */}
+                      <div className="flex gap-2 pt-2 border-t">
+                        <button
+                          onClick={handleRegenerate}
+                          disabled={regenerating}
+                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-medium transition disabled:opacity-50"
+                        >
+                          <RefreshCw size={13} className={regenerating ? 'animate-spin' : ''} />
+                          {regenerating ? 'Queued' : 'Regenerate'}
+                        </button>
+                        <button
+                          onClick={handleResendEmail}
+                          disabled={resending}
+                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-medium transition disabled:opacity-50"
+                        >
+                          <Send size={13} />
+                          {resending ? 'Sent!' : 'Resend Email'}
+                        </button>
+                      </div>
                     </div>
                   </div>
 

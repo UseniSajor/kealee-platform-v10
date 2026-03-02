@@ -1219,6 +1219,51 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
       },
     })
 
+    // 8. Queue automated concept generation
+    try {
+      // Find the order we just created
+      const order = await prismaAny.conceptPackageOrder.findFirst({
+        where: { stripeSessionId: session.id },
+        select: { id: true },
+      })
+
+      if (order) {
+        const { getConceptDeliveryQueue } = await import('../../utils/concept-delivery-queue')
+        const conceptQueue = getConceptDeliveryQueue()
+        await conceptQueue.add('generate-concept', {
+          orderId: order.id,
+          userId: user.id,
+          packageTier,
+          packageName,
+          funnelSessionId: funnelSessionId || null,
+          customerEmail,
+          customerName: customerName || customerEmail.split('@')[0],
+        })
+        console.log(`  ✅ Concept generation queued for order ${order.id}`)
+      }
+    } catch (queueErr: any) {
+      // Non-critical — admin can manually trigger generation
+      console.warn(`  ⚠️  Concept generation queue failed: ${queueErr.message}`)
+    }
+
+    // 9. Queue account setup email for new users (no password set)
+    try {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.kealee.com'
+      const setupToken = Buffer.from(`${user.id}:${Date.now()}`).toString('base64url')
+      await queueNotificationEmail({
+        to: customerEmail,
+        subject: 'Set up your Kealee dashboard account',
+        template: 'account_setup',
+        metadata: {
+          customerName: customerName || customerEmail.split('@')[0],
+          setupUrl: `${appUrl}/auth/setup?token=${setupToken}&email=${encodeURIComponent(customerEmail)}`,
+          packageName,
+        },
+      })
+    } catch {
+      console.warn(`  ⚠️  Account setup email queue failed`)
+    }
+
     console.log(`✅ Concept package purchase processed: ${lead.id} for ${customerEmail} (${packageTier})`)
   } catch (error: any) {
     console.error(`❌ Error processing concept package purchase for session ${session.id}:`, error)

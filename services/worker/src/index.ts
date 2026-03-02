@@ -13,6 +13,8 @@ import { createSalesWorker } from './processors/sales.processor'
 import { createMLPredictionWorker } from './processors/ml-prediction.processor'
 import { spatialVerificationQueue } from './queues/spatial-verification.queue'
 import { createSpatialVerificationWorker } from './processors/spatial-verification.processor'
+import { conceptDeliveryQueue } from './queues/concept-delivery.queue'
+import { createConceptDeliveryWorker } from './processors/concept-delivery.processor'
 import { cronManager } from './cron/cron.manager'
 import type { Worker } from 'bullmq'
 
@@ -26,6 +28,7 @@ let reportsWorker: Worker | null = null
 let salesWorker: Worker | null = null
 let mlPredictionWorker: Worker | null = null
 let spatialVerificationWorker: Worker | null = null
+let conceptDeliveryWorker: Worker | null = null
 
 // Test Redis connection
 async function testRedisConnection() {
@@ -215,6 +218,19 @@ async function initializeSpatialVerificationQueue() {
   }
 }
 
+// Initialize concept delivery queue and worker
+async function initializeConceptDeliveryQueue() {
+  try {
+    console.log('Initializing concept delivery queue...')
+    conceptDeliveryWorker = createConceptDeliveryWorker()
+    console.log('Concept delivery worker started')
+    console.log('Concept delivery queue initialized')
+  } catch (error) {
+    console.error('Failed to initialize concept delivery queue:', error)
+    throw error
+  }
+}
+
 // Graceful shutdown
 async function shutdown() {
   console.log('\n⚠️ Shutting down worker service...')
@@ -260,6 +276,11 @@ async function shutdown() {
       console.log('✅ Spatial verification worker closed')
     }
 
+    if (conceptDeliveryWorker) {
+      await conceptDeliveryWorker.close()
+      console.log('✅ Concept delivery worker closed')
+    }
+
     // Close queues
     await emailQueue.close()
     console.log('✅ Email queue closed')
@@ -281,6 +302,9 @@ async function shutdown() {
 
     await spatialVerificationQueue.close()
     console.log('✅ Spatial verification queue closed')
+
+    await conceptDeliveryQueue.close()
+    console.log('✅ Concept delivery queue closed')
 
     // Close Redis
     await redis.quit()
@@ -328,8 +352,9 @@ async function start() {
   await initializeSalesQueue()
   await initializeMLPredictionQueue()
   await initializeSpatialVerificationQueue()
+  await initializeConceptDeliveryQueue()
   await initializeCronJobs()
-  
+
   console.log('✅ Worker service ready')
   console.log('📧 Email queue operational')
   console.log('🔗 Webhook queue operational')
@@ -338,8 +363,8 @@ async function start() {
   console.log('💼 Sales queue operational')
   console.log('🔮 ML prediction queue operational')
   console.log('🛰️ Spatial verification queue operational')
+  console.log('📦 Concept delivery queue operational')
   console.log('📅 Cron jobs operational')
-  console.log('💡 Task 21: Scheduled jobs (cron) complete!')
   
   // Keep process alive
   setInterval(() => {

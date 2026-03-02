@@ -228,4 +228,126 @@ export async function adminOrdersRoutes(fastify: FastifyInstance) {
       return reply.status(500).send({ error: 'Failed to update order' })
     }
   })
+
+  /**
+   * POST /admin/orders/:id/regenerate — Re-queue concept generation (admin only)
+   * Resets deliveryStatus to 'generating' and queues a new generation job
+   */
+  fastify.post('/admin/orders/:id/regenerate', async (request, reply) => {
+    try {
+      const user = (request as any).user
+      if (!user?.role || !['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin'].includes(user.role)) {
+        return reply.status(403).send({ error: 'Admin access required' })
+      }
+
+      const { id } = request.params as { id: string }
+
+      const order = await prismaAny.conceptPackageOrder.findUnique({
+        where: { id },
+        include: {
+          user: { select: { id: true, email: true, name: true } },
+        },
+      })
+
+      if (!order) {
+        return reply.status(404).send({ error: 'Order not found' })
+      }
+
+      // Reset delivery status
+      await prismaAny.conceptPackageOrder.update({
+        where: { id },
+        data: {
+          deliveryStatus: 'generating',
+          deliveryUrl: null,
+          deliveredAt: null,
+        },
+      })
+
+      // Queue regeneration job
+      try {
+        const { getConceptDeliveryQueue } = await import('../../utils/concept-delivery-queue')
+        const conceptQueue = getConceptDeliveryQueue()
+        await conceptQueue.add('regenerate-concept', {
+          orderId: id,
+          userId: order.userId,
+          packageTier: order.packageTier,
+          packageName: order.packageName,
+          funnelSessionId: order.funnelSessionId || null,
+          customerEmail: order.user?.email || '',
+          customerName: order.user?.name || '',
+        })
+      } catch (queueErr: any) {
+        console.warn(`  Concept regeneration queue failed: ${queueErr.message}`)
+        return reply.status(500).send({ error: 'Failed to queue regeneration' })
+      }
+
+      console.log(`  Admin triggered concept regeneration for order ${id}`)
+      return reply.send({ message: 'Concept regeneration queued', orderId: id })
+    } catch (error: any) {
+      console.error('Error regenerating concept:', error)
+      return reply.status(500).send({ error: 'Failed to regenerate concept' })
+    }
+  })
+
+  /**
+   * POST /admin/orders/:id/resend-email — Resend delivery email (admin only)
+   */
+  fastify.post('/admin/orders/:id/resend-email', async (request, reply) => {
+    try {
+      const user = (request as any).user
+      if (!user?.role || !['ADMIN', 'SUPER_ADMIN', 'admin', 'super_admin'].includes(user.role)) {
+        return reply.status(403).send({ error: 'Admin access required' })
+      }
+
+      const { id } = request.params as { id: string }
+
+      const order = await prismaAny.conceptPackageOrder.findUnique({
+        where: { id },
+        include: {
+          user: { select: { id: true, email: true, name: true } },
+        },
+      })
+
+      if (!order) {
+        return reply.status(404).send({ error: 'Order not found' })
+      }
+
+      if (!order.user?.email) {
+        return reply.status(400).send({ error: 'No email address on file for this order' })
+      }
+
+      const statusLabels: Record<string, string> = {
+        pending: 'Your concept package is being prepared',
+        generating: 'Your concept package is being generated',
+        ready: 'Your concept package is ready for download!',
+        delivered: 'Your concept package has been delivered',
+      }
+
+      try {
+        const { getEmailQueue } = await import('../../utils/email-queue')
+        const emailQueue = getEmailQueue()
+        await emailQueue.add('send-email', {
+          to: order.user.email,
+          subject: statusLabels[order.deliveryStatus] || 'Order update',
+          template: 'order_status_update',
+          metadata: {
+            customerName: order.user.name || order.user.email.split('@')[0],
+            packageName: order.packageName,
+            orderId: id,
+            newStatus: order.deliveryStatus,
+            deliveryUrl: order.deliveryUrl || undefined,
+          },
+        })
+      } catch (emailErr: any) {
+        console.warn(`  Email resend failed: ${emailErr.message}`)
+        return reply.status(500).send({ error: 'Failed to queue email' })
+      }
+
+      console.log(`  Admin resent delivery email for order ${id} to ${order.user.email}`)
+      return reply.send({ message: 'Delivery email re-queued', orderId: id, to: order.user.email })
+    } catch (error: any) {
+      console.error('Error resending email:', error)
+      return reply.status(500).send({ error: 'Failed to resend email' })
+    }
+  })
 }

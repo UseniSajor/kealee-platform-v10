@@ -61,3 +61,4 @@ export { EscrowFundedEmail } from './templates/escrow-funded';
 export { ChangeOrderEmail } from './templates/change-order';
 export { ConceptPackageConfirmationEmail } from './templates/concept-package-confirmation';
 export { OrderStatusUpdateEmail } from './templates/order-status-update';
+export { AccountSetupEmail } from './templates/account-setup';
