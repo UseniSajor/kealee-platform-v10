@@ -1,116 +1,358 @@
-import { Metadata } from 'next'
-import Image from 'next/image'
-import Link from 'next/link'
-const sectionImage = { src: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80&auto=format&fit=crop', alt: 'Engineering surveying equipment on site' };
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Engineering Services | Kealee',
-  description: 'Structural, MEP, and civil engineering services with PE-stamped drawings and compliance verification.',
+import Link from 'next/link'
+import './engineer.css'
+
+const phases = [
+  { id: 'design', label: 'Design' },
+  { id: 'estimate', label: 'Estimate' },
+  { id: 'permit', label: 'Permit' },
+  { id: 'build', label: 'Build' },
+  { id: 'closeout', label: 'Closeout' },
+]
+
+const phaseLinks: Record<string, string> = {
+  design: '/services/design',
+  estimate: '/services/estimation',
+  permit: '/services/permits',
+  build: '/services/ops',
+  closeout: '/services/finance',
 }
 
+const disciplines = [
+  {
+    icon: '\ud83c\udfd7',
+    title: 'Structural Engineering',
+    desc: 'Load calculations, beam sizing, foundation design, and structural modifications. PE-stamped for permit approval.',
+    services: ['Load-Bearing Wall Removal', 'Beam Design', 'Foundation Analysis', 'Seismic Evaluation'],
+  },
+  {
+    icon: '\u26a1',
+    title: 'Electrical Engineering',
+    desc: 'Electrical system design, panel sizing, load calculations, and code-compliant layouts for residential and commercial.',
+    services: ['Panel Upgrades', 'Load Calculations', 'Lighting Design', 'EV Charging'],
+  },
+  {
+    icon: '\u2744\ufe0f',
+    title: 'Mechanical (HVAC)',
+    desc: 'HVAC system design, ductwork layout, Manual J calculations, and energy modeling for optimal comfort and efficiency.',
+    services: ['HVAC Sizing', 'Duct Design', 'Ventilation', 'Energy Modeling'],
+  },
+  {
+    icon: '\ud83d\udeb0',
+    title: 'Plumbing Engineering',
+    desc: 'Water supply, drainage design, fixture sizing calculations, and gas piping for residential and commercial projects.',
+    services: ['Pipe Sizing', 'Drainage Design', 'Water Heater Sizing', 'Gas Piping'],
+  },
+  {
+    icon: '\ud83c\udf0d',
+    title: 'Civil Engineering',
+    desc: 'Site grading, stormwater management, utility connections, and erosion control plans for permit compliance.',
+    services: ['Grading Plans', 'Stormwater Design', 'Utility Design', 'Erosion Control'],
+  },
+  {
+    icon: '\ud83d\udd25',
+    title: 'Fire Protection',
+    desc: 'Fire sprinkler design, egress analysis, fire alarm systems, and life safety plans for code compliance.',
+    services: ['Sprinkler Design', 'Egress Analysis', 'Fire Alarm Layout', 'Code Review'],
+  },
+]
+
+const pricing = [
+  {
+    service: 'Structural Letter',
+    price: 'From $450',
+    desc: 'Load-bearing analysis and beam letter for simple residential modifications.',
+    turnaround: '3\u20135 business days',
+  },
+  {
+    service: 'Structural Plans',
+    price: 'From $1,500',
+    desc: 'Full structural engineering drawings with PE stamp for permit submission.',
+    turnaround: '1\u20132 weeks',
+  },
+  {
+    service: 'MEP Design',
+    price: 'From $2,000',
+    desc: 'Mechanical, electrical, and plumbing engineering for residential or light commercial.',
+    turnaround: '1\u20132 weeks',
+  },
+  {
+    service: 'Civil / Site Plans',
+    price: 'From $3,000',
+    desc: 'Site grading, stormwater management, utility connections, and erosion control.',
+    turnaround: '2\u20133 weeks',
+  },
+  {
+    service: 'Full Engineering Package',
+    price: 'From $5,000',
+    desc: 'All engineering disciplines coordinated \u2014 structural, MEP, civil, fire protection as needed.',
+    turnaround: '2\u20134 weeks',
+    featured: true,
+  },
+  {
+    service: 'Rush Service',
+    price: '+50% Fee',
+    desc: 'Expedited turnaround for any engineering service when your project can\u2019t wait.',
+    turnaround: '50% faster',
+  },
+]
+
+const ownerCards = [
+  {
+    icon: '\ud83c\udfe0',
+    title: 'PE-Stamped Drawings',
+    desc: 'Every engineering deliverable comes with a Professional Engineer stamp, ready for permit submission. No exceptions.',
+  },
+  {
+    icon: '\u26a1',
+    title: 'Fast Turnaround',
+    desc: 'Structural letters in 3\u20135 days. Full packages in 2\u20134 weeks. Rush service available for time-sensitive projects.',
+  },
+  {
+    icon: '\ud83d\udd17',
+    title: 'Coordinated with Architecture',
+    desc: 'If you used Kealee Design, engineering coordinates directly with your architectural drawings. No miscommunication.',
+  },
+  {
+    icon: '\ud83d\udcb2',
+    title: 'Clear, Fixed Pricing',
+    desc: 'All quotes include PE stamp. No surprise fees, no hourly billing that spirals. You know the cost before you start.',
+  },
+  {
+    icon: '\ud83d\udee1',
+    title: 'Licensed & Insured',
+    desc: 'All engineers on our network are licensed PEs with E&O insurance and verified credentials.',
+  },
+  {
+    icon: '\ud83d\udce6',
+    title: 'Seamless Handoff to Permits',
+    desc: 'Engineering drawings auto-populate your permit applications in Kealee Permits. No re-uploading files.',
+  },
+]
+
 export default function EngineerServicePage() {
-  const disciplines = [
-    { title: 'Structural Engineering', description: 'Load calculations, beam sizing, foundation design, and structural modifications.', services: ['Load-bearing wall removal', 'Beam design', 'Foundation analysis', 'Seismic evaluation'] },
-    { title: 'Electrical Engineering', description: 'Electrical system design, panel sizing, and code-compliant layouts.', services: ['Panel upgrades', 'Load calculations', 'Lighting design', 'EV charging'] },
-    { title: 'Mechanical Engineering', description: 'HVAC design, ductwork layout, and Manual J calculations.', services: ['HVAC sizing', 'Duct design', 'Ventilation', 'Energy modeling'] },
-    { title: 'Plumbing Engineering', description: 'Water supply, drainage design, and fixture sizing calculations.', services: ['Pipe sizing', 'Drainage design', 'Water heater sizing', 'Gas piping'] },
-    { title: 'Civil Engineering', description: 'Site grading, stormwater management, and utility connections.', services: ['Grading plans', 'Stormwater design', 'Utility design', 'Erosion control'] },
-    { title: 'Fire Protection', description: 'Fire sprinkler design, egress analysis, and fire alarm systems.', services: ['Sprinkler design', 'Egress analysis', 'Fire alarm layout', 'Code review'] },
-  ]
-
-  const pricing = [
-    { service: 'Structural Letter (Simple)', price: 'From $450', description: 'Load-bearing analysis, beam letter' },
-    { service: 'Structural Plans', price: 'From $1,500', description: 'Full structural drawings package' },
-    { service: 'MEP Design', price: 'From $2,000', description: 'Mechanical, electrical, plumbing' },
-    { service: 'Civil/Site Plans', price: 'From $3,000', description: 'Grading, utilities, stormwater' },
-    { service: 'Full Engineering Package', price: 'From $5,000', description: 'All disciplines as needed' },
-  ]
-
-  const turnaround = [
-    { type: 'Structural Letter', time: '3-5 business days' },
-    { type: 'Engineering Drawings', time: '1-2 weeks' },
-    { type: 'Full Package', time: '2-4 weeks' },
-    { type: 'Rush Service', time: '+50% fee' },
-  ]
-
   return (
-    <div className="w-full">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <Link href="/services" className="inline-flex items-center gap-2 text-blue-600 hover:underline mb-8 text-sm">&larr; All Services</Link>
+    <div>
+      {/* ── PHASE TABS ── */}
+      <nav className="eng-phase-bar">
+        {phases.map((p) => (
+          <Link
+            key={p.id}
+            href={phaseLinks[p.id]}
+            className={`eng-phase-tab ${p.id === 'design' ? 'active' : ''}`}
+          >
+            <span className="eng-phase-dot" />
+            {p.label}
+          </Link>
+        ))}
+      </nav>
 
-        <div className="relative text-center mb-16 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-16 overflow-hidden">
-          <Image
-            src={sectionImage.src}
-            alt={sectionImage.alt}
-            fill
-            className="object-cover"
-            sizes="100vw"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
-          <div className="relative">
-            <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">Engineering Services</h1>
-            <p className="mt-4 text-xl text-white/85 max-w-3xl mx-auto">
-              Licensed professional engineers for structural, MEP, civil, and fire protection. PE-stamped drawings for permit approval.
+      {/* ── HERO ── */}
+      <section className="eng-hero">
+        <div className="eng-hero-badge">
+          <span className="eng-badge-dot" />
+          PE-STAMPED &middot; 6 ENGINEERING DISCIPLINES
+        </div>
+        <div className="eng-hero-layout">
+          <div>
+            <h1>
+              Engineering That<br />
+              Gets <em>Approved</em>
+            </h1>
+            <p className="eng-hero-sub">
+              Licensed professional engineers for structural, MEP, civil, and fire protection.
+              PE-stamped drawings delivered fast, coordinated with your architecture, and ready
+              for permit approval.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Link href="/contact" className="inline-flex items-center justify-center rounded-xl bg-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600">Request Quote</Link>
-              <Link href="/portals" className="inline-flex items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-white/20">Go to Portal</Link>
+            <div className="eng-hero-actions">
+              <Link href="/contact" className="eng-btn-orange">
+                Request a Quote
+              </Link>
+              <Link href="/contact" className="eng-btn-outline-white">
+                Talk to an Engineer
+              </Link>
+            </div>
+          </div>
+          <div className="eng-hero-stats">
+            <div className="eng-hero-stat-grid">
+              <div className="eng-hero-stat">
+                <div className="eng-hero-stat-num">6</div>
+                <div className="eng-hero-stat-label">Engineering disciplines covered</div>
+              </div>
+              <div className="eng-hero-stat">
+                <div className="eng-hero-stat-num">3 Days</div>
+                <div className="eng-hero-stat-label">Structural letter turnaround</div>
+              </div>
+              <div className="eng-hero-stat">
+                <div className="eng-hero-stat-num">PE</div>
+                <div className="eng-hero-stat-label">Stamped on every deliverable</div>
+              </div>
+              <div className="eng-hero-stat">
+                <div className="eng-hero-stat-num">24h</div>
+                <div className="eng-hero-stat-label">Quote turnaround time</div>
+              </div>
             </div>
           </div>
         </div>
+      </section>
 
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-center mb-10 text-gray-900">Engineering Disciplines</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {disciplines.map((d) => (
-              <div key={d.title} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h3 className="font-bold text-gray-900">{d.title}</h3>
-                <p className="mt-2 text-sm text-gray-600">{d.description}</p>
-                <div className="mt-4 flex flex-wrap gap-1">
-                  {d.services.map((s) => (
-                    <span key={s} className="px-2 py-1 bg-orange-50 text-orange-700 text-xs rounded">{s}</span>
-                  ))}
-                </div>
+      {/* ── DISCIPLINES ── */}
+      <section className="eng-section" style={{ background: 'var(--eng-cream)' }}>
+        <div className="eng-section-label">Engineering Disciplines</div>
+        <h2 className="eng-section-title">
+          Every Discipline,<br />One Platform
+        </h2>
+        <p className="eng-section-sub">
+          From structural letters to full MEP packages &mdash; our network of licensed
+          professional engineers covers every discipline your project needs.
+        </p>
+
+        <div className="eng-disciplines-grid">
+          {disciplines.map((d) => (
+            <div className="eng-discipline-card" key={d.title}>
+              <div style={{ fontSize: 32, marginBottom: 16 }}>{d.icon}</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--eng-navy)', marginBottom: 8 }}>
+                {d.title}
               </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-center mb-4 text-gray-900">Pricing</h2>
-          <p className="text-center text-gray-600 mb-10 max-w-2xl mx-auto">Clear pricing based on project scope. All quotes include PE stamp.</p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {pricing.map((item) => (
-              <div key={item.service} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                <div className="text-lg font-bold text-gray-900">{item.service}</div>
-                <div className="text-2xl font-bold text-orange-500 mt-1">{item.price}</div>
-                <p className="text-sm text-gray-500 mt-1">{item.description}</p>
+              <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--eng-gray-500)', marginBottom: 16 }}>
+                {d.desc}
               </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="mb-16">
-          <h2 className="text-xl font-bold text-center mb-6 text-gray-900">Turnaround Times</h2>
-          <div className="flex flex-wrap justify-center gap-4">
-            {turnaround.map((item) => (
-              <div key={item.type} className="text-center px-6 py-4 bg-white border border-gray-200 rounded-xl">
-                <div className="font-bold text-gray-900">{item.type}</div>
-                <div className="text-sm text-orange-600 mt-1">{item.time}</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {d.services.map((s) => (
+                  <span className="eng-service-chip" key={s}>{s}</span>
+                ))}
               </div>
-            ))}
-          </div>
-        </section>
+            </div>
+          ))}
+        </div>
+      </section>
 
-        <section className="rounded-2xl bg-orange-500 p-8 text-white text-center">
-          <h2 className="text-2xl font-bold">Need Engineering Support?</h2>
-          <p className="mt-2 opacity-95 max-w-xl mx-auto">Get a quote for your project. Most quotes provided within 24 hours.</p>
-          <div className="mt-6 flex flex-wrap justify-center gap-4">
-            <Link href="/contact" className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-orange-700 shadow-sm transition hover:bg-orange-50">Request Quote</Link>
+      {/* ── TRUST BANNER ── */}
+      <div className="eng-trust-banner">
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div className="eng-trust-icon">{'\ud83c\udfe0'}</div>
+          <div className="eng-trust-title">PE Stamp Included</div>
+          <div className="eng-trust-desc">
+            Every engineering deliverable comes with a Professional Engineer stamp.
+            Ready for permit submission. No additional fees for the stamp.
           </div>
-        </section>
+        </div>
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div className="eng-trust-icon">{'\ud83d\udd17'}</div>
+          <div className="eng-trust-title">Coordinated Delivery</div>
+          <div className="eng-trust-desc">
+            Engineering coordinates directly with your architectural drawings.
+            If you used Kealee Design, everything syncs automatically. Zero miscommunication.
+          </div>
+        </div>
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div className="eng-trust-icon">{'\u26a1'}</div>
+          <div className="eng-trust-title">Rush Available</div>
+          <div className="eng-trust-desc">
+            Need it fast? Rush service gets any engineering deliverable to you 50% faster.
+            Because sometimes permits can&apos;t wait.
+          </div>
+        </div>
       </div>
+
+      {/* ── PRICING ── */}
+      <section className="eng-section">
+        <div className="eng-section-label">Pricing</div>
+        <h2 className="eng-section-title">Clear, Fixed Pricing</h2>
+        <p className="eng-section-sub">
+          All quotes include PE stamp. No surprise fees. Most quotes provided within 24 hours.
+        </p>
+
+        <div className="eng-pricing-grid">
+          {pricing.map((item) => (
+            <div
+              className={`eng-pricing-card ${item.featured ? 'featured' : ''}`}
+              key={item.service}
+              style={{ position: 'relative' }}
+            >
+              {item.featured && <div className="eng-pricing-badge">BEST VALUE</div>}
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: item.featured ? 'var(--eng-orange-light)' : 'var(--eng-orange)', marginBottom: 10 }}>
+                {item.turnaround}
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: item.featured ? 'white' : 'var(--eng-navy)', marginBottom: 4 }}>
+                {item.service}
+              </div>
+              <div style={{ fontSize: 30, fontWeight: 700, color: item.featured ? 'var(--eng-orange-light)' : 'var(--eng-navy)', fontFamily: 'monospace', margin: '12px 0 8px' }}>
+                {item.price}
+              </div>
+              <div style={{ fontSize: 13, lineHeight: 1.6, color: item.featured ? 'rgba(255,255,255,0.7)' : 'var(--eng-gray-500)' }}>
+                {item.desc}
+              </div>
+              <Link
+                href="/contact"
+                style={{
+                  display: 'block', width: '100%', padding: 12, borderRadius: 10,
+                  fontSize: 14, fontWeight: 600, textAlign: 'center', cursor: 'pointer',
+                  textDecoration: 'none', marginTop: 20, transition: 'all 0.2s', border: 'none',
+                  background: item.featured ? 'var(--eng-orange)' : 'transparent',
+                  color: item.featured ? 'white' : 'var(--eng-navy)',
+                  ...(item.featured ? {} : { border: '1.5px solid var(--eng-navy)' }),
+                }}
+              >
+                Request Quote
+              </Link>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── WHY KEALEE ENGINEERING ── */}
+      <section className="eng-section" style={{ background: 'var(--eng-cream)' }}>
+        <div className="eng-section-label">Why Kealee Engineering</div>
+        <h2 className="eng-section-title">
+          Built for Projects That<br />Need to Move Fast
+        </h2>
+        <p className="eng-section-sub">
+          Kealee Engineering isn&apos;t a marketplace of random freelancers &mdash; it&apos;s
+          a coordinated network of licensed PEs who deliver fast, stamp everything, and
+          integrate with your whole project.
+        </p>
+        <div className="eng-owner-grid">
+          {ownerCards.map((card) => (
+            <div className="eng-owner-card" key={card.title}>
+              <div style={{ fontSize: 32, marginBottom: 16 }}>{card.icon}</div>
+              <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--eng-navy)', marginBottom: 8 }}>
+                {card.title}
+              </div>
+              <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--eng-gray-500)' }}>
+                {card.desc}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── CTA ── */}
+      <section className="eng-cta-section">
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <h2 style={{ fontSize: 40, fontWeight: 700, color: 'white', lineHeight: 1.15, marginBottom: 16 }}>
+            Need Engineering<br />
+            <span style={{ color: 'var(--eng-orange-light)', fontStyle: 'italic' }}>
+              That Gets Approved?
+            </span>
+          </h2>
+          <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.7)', marginBottom: 36, fontWeight: 300 }}>
+            Get a quote within 24 hours. PE stamp included on every deliverable.
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/contact" className="eng-btn-orange">
+              Request a Quote
+            </Link>
+            <Link href="/contact" className="eng-btn-outline-white">
+              Talk to an Engineer
+            </Link>
+          </div>
+          <p style={{ marginTop: 24, fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>
+            Licensed PEs. E&O insured. Structural letters in as fast as 3 business days.
+          </p>
+        </div>
+      </section>
     </div>
   )
 }

@@ -1098,36 +1098,41 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
       },
     })
 
-    // 2. Create ConceptPackageOrder to track the purchase
-    try {
-      await prismaAny.conceptPackageOrder.create({
-        data: {
-          userId: user.id,
-          stripeSessionId: session.id,
-          stripePaymentIntentId: typeof session.payment_intent === 'string'
-            ? session.payment_intent
-            : session.payment_intent?.id || null,
-          packageTier: packageTier.toLowerCase(),
-          packageName,
-          amount: session.amount_total ?? 0,
-          currency: session.currency || 'usd',
-          status: 'completed',
-          deliveryStatus: 'pending',
-          funnelSessionId: funnelSessionId || null,
-          metadata: {
-            customerEmail,
-            customerName,
-            customerPhone,
-          },
-        },
-      })
-      console.log(`  ✅ ConceptPackageOrder created for session ${session.id}`)
-    } catch (orderErr: any) {
-      // Don't fail the whole handler if order creation fails (e.g. duplicate stripeSessionId)
-      console.warn(`  ⚠️  ConceptPackageOrder creation skipped: ${orderErr.message}`)
+    // 2. Idempotency check — if order already exists for this Stripe session, skip all remaining steps
+    const existingOrder = await prismaAny.conceptPackageOrder.findFirst({
+      where: { stripeSessionId: session.id },
+      select: { id: true },
+    })
+    if (existingOrder) {
+      console.log(`  ⏭️  ConceptPackageOrder already exists for session ${session.id} — skipping duplicate`)
+      return
     }
 
-    // 3. Create marketing lead linked to funnel session
+    // 3. Create ConceptPackageOrder to track the purchase
+    await prismaAny.conceptPackageOrder.create({
+      data: {
+        userId: user.id,
+        stripeSessionId: session.id,
+        stripePaymentIntentId: typeof session.payment_intent === 'string'
+          ? session.payment_intent
+          : session.payment_intent?.id || null,
+        packageTier: packageTier.toLowerCase(),
+        packageName,
+        amount: session.amount_total ?? 0,
+        currency: session.currency || 'usd',
+        status: 'completed',
+        deliveryStatus: 'pending',
+        funnelSessionId: funnelSessionId || null,
+        metadata: {
+          customerEmail,
+          customerName,
+          customerPhone,
+        },
+      },
+    })
+    console.log(`  ✅ ConceptPackageOrder created for session ${session.id}`)
+
+    // 4. Create marketing lead linked to funnel session
     const lead = await prismaAny.marketingLead.create({
       data: {
         name: customerName || customerEmail.split('@')[0],
@@ -1148,7 +1153,7 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
       },
     })
 
-    // 4. Update funnel session status if linked
+    // 5. Update funnel session status if linked
     if (funnelSessionId) {
       try {
         await prismaAny.funnelSession.update({
@@ -1169,7 +1174,7 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
       }
     }
 
-    // 5. Record audit event
+    // 6. Record audit event
     await auditService.recordAudit({
       action: 'CONCEPT_PACKAGE_PURCHASED',
       entityType: 'MarketingLead',
@@ -1188,7 +1193,7 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
       },
     })
 
-    // 6. Record typed event
+    // 7. Record typed event
     await eventService.recordEvent({
       type: 'CONCEPT_PACKAGE_PURCHASED',
       entityType: 'MarketingLead',
@@ -1204,7 +1209,7 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
       },
     })
 
-    // 7. Queue confirmation email
+    // 8. Queue confirmation email
     await queueNotificationEmail({
       to: customerEmail,
       subject: `Your ${packageName} is confirmed!`,
@@ -1219,7 +1224,7 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
       },
     })
 
-    // 8. Queue automated concept generation
+    // 9. Queue automated concept generation
     try {
       // Find the order we just created
       const order = await prismaAny.conceptPackageOrder.findFirst({
@@ -1246,7 +1251,7 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
       console.warn(`  ⚠️  Concept generation queue failed: ${queueErr.message}`)
     }
 
-    // 9. Queue account setup email for new users (no password set)
+    // 10. Queue account setup email for new users (no password set)
     try {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.kealee.com'
       const setupToken = Buffer.from(`${user.id}:${Date.now()}`).toString('base64url')
