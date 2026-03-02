@@ -134,7 +134,25 @@ async function processConceptDeliveryJob(job: Job<ConceptDeliveryJobData>) {
       console.warn(`[concept-delivery] In-app notification failed: ${notifErr.message}`)
     }
 
-    // 6. Queue delivery email to customer
+    // 6. Broadcast realtime update to user dashboard
+    try {
+      const { broadcastToUser } = await import('@kealee/realtime')
+      await broadcastToUser(userId, {
+        type: 'order.completed',
+        payload: {
+          orderId,
+          deliveryStatus: 'ready',
+          deliveryUrl,
+          packageName,
+        },
+        source: 'concept-delivery-worker',
+        timestamp: new Date().toISOString(),
+      })
+    } catch (rtErr: any) {
+      console.warn(`[concept-delivery] Realtime broadcast failed: ${rtErr.message}`)
+    }
+
+    // 7. Queue delivery email to customer
     try {
       await emailQueue.sendEmail({
         to: customerEmail,

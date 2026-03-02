@@ -8,6 +8,7 @@ import { NotFoundError, AuthenticationError } from '../../errors/app.error'
 import { RATE_LIMIT_CONFIG } from '../../middleware/rate-limit.middleware'
 import { prismaAny } from '../../utils/prisma-helper'
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
+import { getSupabaseClient } from '../../utils/supabase-client'
 
 export async function authRoutes(fastify: FastifyInstance) {
   // Register stricter rate limiting for auth routes (prevent brute force)
@@ -274,4 +275,118 @@ export async function authRoutes(fastify: FastifyInstance) {
       }
     }
   )
+
+  /**
+   * POST /auth/setup-account — Set password for users created during checkout
+   * Body: { token, email, password }
+   * Token format: base64url(userId:timestamp), expires after 24 hours
+   */
+  fastify.post('/setup-account', async (request, reply) => {
+    try {
+      const { token, email, password } = request.body as {
+        token: string
+        email: string
+        password: string
+      }
+
+      if (!token || !email || !password) {
+        return reply.status(400).send({ error: 'Token, email, and password are required' })
+      }
+
+      if (password.length < 8) {
+        return reply.status(400).send({ error: 'Password must be at least 8 characters' })
+      }
+
+      // Decode and validate token
+      let userId: string
+      let tokenTimestamp: number
+      try {
+        const decoded = Buffer.from(token, 'base64url').toString('utf-8')
+        const parts = decoded.split(':')
+        if (parts.length !== 2) throw new Error('Invalid token format')
+        userId = parts[0]
+        tokenTimestamp = parseInt(parts[1], 10)
+        if (isNaN(tokenTimestamp)) throw new Error('Invalid timestamp')
+      } catch {
+        return reply.status(400).send({ error: 'Invalid setup token' })
+      }
+
+      // Check token expiry (24 hours)
+      const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000
+      if (Date.now() - tokenTimestamp > TOKEN_EXPIRY_MS) {
+        return reply.status(400).send({ error: 'Setup token has expired. Please contact support.' })
+      }
+
+      // Find the Prisma user
+      const user = await prismaAny.user.findUnique({ where: { id: userId } })
+      if (!user) {
+        return reply.status(404).send({ error: 'User not found' })
+      }
+
+      // Verify email matches
+      if (user.email.toLowerCase() !== email.toLowerCase()) {
+        return reply.status(400).send({ error: 'Email does not match the setup token' })
+      }
+
+      // Create Supabase auth user with same ID as Prisma user
+      const supabase = getSupabaseClient()
+
+      // Check if a Supabase auth user already exists for this email
+      const { data: existingUsers } = await supabase.auth.admin.listUsers()
+      const existingAuth = existingUsers?.users?.find(
+        (u: any) => u.email?.toLowerCase() === email.toLowerCase()
+      )
+
+      let session = null
+
+      if (existingAuth) {
+        // Auth user already exists — update password
+        await supabase.auth.admin.updateUserById(existingAuth.id, { password })
+
+        // Sign them in
+        const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+        if (signInErr) throw signInErr
+        session = signInData.session
+      } else {
+        // Create new Supabase auth user with the Prisma user's ID
+        const { data: newAuth, error: createErr } = await supabase.auth.admin.createUser({
+          id: userId,
+          email,
+          password,
+          email_confirm: true,
+        })
+        if (createErr) throw createErr
+
+        // If Supabase assigned a different ID, update the Prisma user to match
+        if (newAuth.user && newAuth.user.id !== userId) {
+          // This shouldn't happen since we pass the ID, but handle gracefully
+          console.warn(`Supabase assigned different ID: ${newAuth.user.id} vs ${userId}`)
+        }
+
+        // Sign them in
+        const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+        if (signInErr) throw signInErr
+        session = signInData.session
+      }
+
+      console.log(`✅ Account setup completed for ${email} (userId: ${userId})`)
+
+      return reply.send({
+        success: true,
+        session,
+        user: { id: user.id, email: user.email, name: user.name },
+      })
+    } catch (error: any) {
+      console.error('Account setup error:', error)
+      return reply.status(500).send({
+        error: sanitizeErrorMessage(error, 'Account setup failed'),
+      })
+    }
+  })
 }

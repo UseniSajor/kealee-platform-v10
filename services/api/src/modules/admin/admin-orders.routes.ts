@@ -199,6 +199,24 @@ export async function adminOrdersRoutes(fastify: FastifyInstance) {
           console.warn(`  ⚠️  In-app notification failed: ${notifErr.message}`)
         }
 
+        // Broadcast realtime update (fire-and-forget)
+        try {
+          const { broadcastToUser } = await import('@kealee/realtime')
+          await broadcastToUser(updated.userId, {
+            type: 'order.completed',
+            payload: {
+              orderId: id,
+              deliveryStatus: data.deliveryStatus,
+              deliveryUrl: updated.deliveryUrl,
+              packageName: updated.packageName,
+            },
+            source: 'admin-orders',
+            timestamp: new Date().toISOString(),
+          })
+        } catch (rtErr: any) {
+          console.warn(`  Realtime broadcast failed: ${rtErr.message}`)
+        }
+
         // Queue email notification (fire-and-forget)
         if (updated.user?.email) {
           try {

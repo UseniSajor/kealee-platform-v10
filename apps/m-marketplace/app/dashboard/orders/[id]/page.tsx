@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useProfile } from '@kealee/auth/client'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
@@ -17,6 +17,7 @@ import {
   FileText,
   FolderKanban,
   ArrowRight,
+  Bell,
 } from 'lucide-react'
 
 interface OrderDetail {
@@ -59,23 +60,30 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<OrderDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [statusUpdated, setStatusUpdated] = useState(false)
+  const prevDeliveryStatus = useRef<string | null>(null)
 
-  useEffect(() => {
-    if (!authLoading && !profile) {
-      router.push(`/auth/login?redirect=/dashboard/orders/${orderId}`)
-      return
-    }
-    if (profile && orderId) fetchOrder()
-  }, [profile, authLoading, orderId, router])
-
-  const fetchOrder = async () => {
+  const fetchOrder = useCallback(async () => {
+    if (!profile) return
     try {
       const res = await fetch(`${API_URL}/api/orders/${orderId}`, {
         headers: { Authorization: `Bearer ${profile?.access_token || ''}` },
       })
       if (res.ok) {
         const data = await res.json()
-        setOrder(data.order)
+        const newOrder = data.order as OrderDetail
+
+        // Detect status change for toast notification
+        if (
+          prevDeliveryStatus.current &&
+          prevDeliveryStatus.current !== newOrder.deliveryStatus &&
+          (newOrder.deliveryStatus === 'ready' || newOrder.deliveryStatus === 'delivered')
+        ) {
+          setStatusUpdated(true)
+          setTimeout(() => setStatusUpdated(false), 6000)
+        }
+        prevDeliveryStatus.current = newOrder.deliveryStatus
+        setOrder(newOrder)
       } else if (res.status === 404) {
         setNotFound(true)
       }
@@ -84,7 +92,25 @@ export default function OrderDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [profile, orderId])
+
+  useEffect(() => {
+    if (!authLoading && !profile) {
+      router.push(`/auth/login?redirect=/dashboard/orders/${orderId}`)
+      return
+    }
+    if (profile && orderId) fetchOrder()
+  }, [profile, authLoading, orderId, router, fetchOrder])
+
+  // Poll for updates every 15s when status is pending or generating
+  useEffect(() => {
+    if (!order || !profile) return
+    const shouldPoll = order.deliveryStatus === 'pending' || order.deliveryStatus === 'generating'
+    if (!shouldPoll) return
+
+    const interval = setInterval(fetchOrder, 15000)
+    return () => clearInterval(interval)
+  }, [order?.deliveryStatus, profile, fetchOrder])
 
   if (authLoading || loading) {
     return (
@@ -116,6 +142,14 @@ export default function OrderDetailPage() {
 
   return (
     <div className="space-y-6">
+      {/* Status update toast */}
+      {statusUpdated && (
+        <div className="fixed top-20 right-6 z-50 animate-in slide-in-from-top-4 bg-green-600 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-3">
+          <Bell size={18} />
+          <span className="font-semibold text-sm">Your concept package is ready!</span>
+        </div>
+      )}
+
       {/* Back */}
       <Link
         href="/dashboard/orders"
@@ -200,9 +234,12 @@ export default function OrderDetailPage() {
             </p>
           )}
           {order.deliveryStatus === 'generating' && (
-            <p className="text-sm text-sky-800">
-              Our AI is generating your design concept now. You&apos;ll receive an email notification when it&apos;s ready.
-            </p>
+            <div className="flex items-center gap-3">
+              <Loader2 className="animate-spin text-sky-600 shrink-0" size={18} />
+              <p className="text-sm text-sky-800">
+                Our AI is generating your design concept now. This page will automatically update when it&apos;s ready.
+              </p>
+            </div>
           )}
           {(order.deliveryStatus === 'ready' || order.deliveryStatus === 'delivered') && (
             <p className="text-sm text-sky-800">
