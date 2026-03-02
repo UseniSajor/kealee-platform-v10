@@ -466,4 +466,104 @@ export async function preconRoutes(fastify: FastifyInstance) {
       })
     }
   )
+
+  // ============================================
+  // PRE-CON COMPLETION → ACTIVE PROJECT
+  // ============================================
+
+  /**
+   * POST /precon/projects/:id/complete - Complete pre-con and create active project
+   * Creates a Project record, links PreCon → Project, adds ProjectMembership
+   */
+  fastify.post(
+    '/projects/:id/complete',
+    {
+      preHandler: [
+        authenticateUser,
+        validateParams(z.object({ id: z.string().uuid() })),
+      ],
+    },
+    async (request, reply) => {
+      const user = (request as any).user as { id: string }
+      const { id } = request.params as { id: string }
+      const { prismaAny } = await import('../../utils/prisma-helper')
+
+      // Verify the precon project is in CONTRACT_RATIFIED phase
+      const precon = await preconService.getPreConProject(id, user.id)
+
+      if (precon.phase !== 'CONTRACT_RATIFIED') {
+        return reply.status(400).send({
+          error: 'Contract must be ratified before completing pre-construction',
+        })
+      }
+
+      // Check if already linked to a project
+      if (precon.projectId) {
+        return reply.send({
+          project: await prismaAny.project.findUnique({ where: { id: precon.projectId } }),
+          message: 'Project already created from this pre-con',
+        })
+      }
+
+      // Create the active Project from PreCon data
+      const selectedConcept = precon.designConcepts?.find((c: any) => c.isSelected)
+
+      const project = await prismaAny.project.create({
+        data: {
+          name: precon.name,
+          ownerId: user.id,
+          orgId: precon.orgId || null,
+          category: precon.category,
+          description: precon.description,
+          address: precon.address,
+          city: precon.city,
+          state: precon.state,
+          zipCode: precon.zipCode,
+          budgetTotal: precon.contractAmount || precon.suggestedRetailPrice || null,
+          status: 'ACTIVE',
+          currentPhase: 'PRE_CONSTRUCTION',
+        },
+      })
+
+      // Add owner as project member
+      await prismaAny.projectMembership.create({
+        data: {
+          projectId: project.id,
+          userId: user.id,
+          role: 'OWNER',
+        },
+      })
+
+      // Add awarded contractor as project member if exists
+      if (precon.awardedContractorId) {
+        try {
+          // Get contractor user ID from contractor profile
+          const contractorProfile = await prismaAny.contractorProfile.findUnique({
+            where: { id: precon.awardedContractorId },
+            select: { userId: true },
+          })
+          if (contractorProfile?.userId) {
+            await prismaAny.projectMembership.create({
+              data: {
+                projectId: project.id,
+                userId: contractorProfile.userId,
+                role: 'CONTRACTOR',
+              },
+            })
+          }
+        } catch {
+          // Non-critical — contractor membership can be added later
+        }
+      }
+
+      // Complete the precon and link to project
+      await preconService.completePreCon(id, user.id, project.id)
+
+      return reply.code(201).send({
+        project,
+        preconId: id,
+        message: 'Project created from pre-construction. Ready for construction phase!',
+      })
+    }
+  )
 }

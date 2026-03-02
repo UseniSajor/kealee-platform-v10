@@ -15,7 +15,8 @@ import {
   CreditCard,
   Calendar,
   FileText,
-  Phone,
+  FolderKanban,
+  ArrowRight,
 } from 'lucide-react'
 
 interface OrderDetail {
@@ -276,6 +277,29 @@ export default function OrderDetailPage() {
           )}
         </dl>
       </div>
+
+      {/* Start project CTA — shown when concept package is delivered */}
+      {(order.deliveryStatus === 'ready' || order.deliveryStatus === 'delivered') && (
+        <div className="bg-gradient-to-r from-sky-50 to-indigo-50 rounded-2xl border border-sky-200 p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-sky-100 rounded-xl flex items-center justify-center shrink-0">
+              <FolderKanban className="text-sky-600" size={24} />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-bold text-gray-900 mb-1">Ready to build?</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Turn your concept package into a real project. Get contractor bids, manage construction, and track progress.
+              </p>
+              <Link
+                href="/dashboard/projects/new"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-bold text-sm transition"
+              >
+                Start a Project <ArrowRight size={16} />
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Support */}
       <div className="bg-gray-50 rounded-2xl border border-gray-200 p-6 text-center">

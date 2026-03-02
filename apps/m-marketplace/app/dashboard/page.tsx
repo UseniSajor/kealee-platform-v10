@@ -11,7 +11,7 @@ import {
   Sparkles,
   ArrowRight,
   Loader2,
-  ShieldCheck,
+  FolderKanban,
   Phone,
 } from 'lucide-react'
 
@@ -207,18 +207,18 @@ export default function DashboardPage() {
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-              <ShieldCheck className="text-purple-600" size={20} />
+              <FolderKanban className="text-purple-600" size={20} />
             </div>
-            <h3 className="font-bold text-gray-900">Join Builder Network</h3>
+            <h3 className="font-bold text-gray-900">Start a Project</h3>
           </div>
           <p className="text-sm text-gray-500 mb-4">
-            License-verified contractors get access to project leads and fair bid rotation.
+            Get AI-generated design concepts, contractor bids, and full project management.
           </p>
           <Link
-            href="/network/join"
+            href="/dashboard/projects/new"
             className="text-sm font-semibold text-sky-600 hover:text-sky-700 flex items-center gap-1"
           >
-            Apply now <ArrowRight size={14} />
+            Create project <ArrowRight size={14} />
           </Link>
         </div>
 

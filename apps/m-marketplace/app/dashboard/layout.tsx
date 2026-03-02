@@ -7,6 +7,7 @@ import { Footer } from '@/components/Footer'
 import {
   LayoutDashboard,
   Package,
+  FolderKanban,
   User,
   HelpCircle,
   LogOut,
@@ -18,6 +19,7 @@ import { DashboardNotifications } from '@/components/DashboardNotifications'
 const navItems = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { href: '/dashboard/orders', label: 'My Orders', icon: Package },
+  { href: '/dashboard/projects', label: 'My Projects', icon: FolderKanban },
   { href: '/dashboard/account', label: 'Account', icon: User },
   { href: '/dashboard/support', label: 'Support', icon: HelpCircle },
 ]
