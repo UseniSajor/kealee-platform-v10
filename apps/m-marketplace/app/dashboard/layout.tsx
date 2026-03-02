@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { signOut } from '@kealee/auth/client'
 import { useRouter } from 'next/navigation'
+import { DashboardNotifications } from '@/components/DashboardNotifications'
 
 const navItems = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
@@ -43,6 +44,12 @@ export default function DashboardLayout({
       <Header />
       <div className="min-h-screen bg-gray-50 pt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Dashboard header with notifications */}
+          <div className="flex items-center justify-between mb-6">
+            <div />
+            <DashboardNotifications />
+          </div>
+
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Sidebar */}
             <aside className="lg:w-64 shrink-0">

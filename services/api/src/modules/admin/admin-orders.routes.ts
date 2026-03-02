@@ -167,6 +167,61 @@ export async function adminOrdersRoutes(fastify: FastifyInstance) {
 
       console.log(`  Admin updated order ${id}: ${JSON.stringify(data)}`)
 
+      // Send notification if delivery status changed
+      if (data.deliveryStatus && data.deliveryStatus !== existing.deliveryStatus) {
+        const statusLabels: Record<string, string> = {
+          generating: 'Your concept package is being generated',
+          ready: 'Your concept package is ready for download!',
+          delivered: 'Your concept package has been delivered',
+        }
+
+        const notifTitle = statusLabels[data.deliveryStatus as string] || 'Order update'
+
+        // Create in-app notification (fire-and-forget)
+        try {
+          await prismaAny.notification.create({
+            data: {
+              userId: updated.userId,
+              type: 'ORDER_STATUS_UPDATE',
+              title: notifTitle,
+              message: `${updated.packageName} — ${data.deliveryStatus}`,
+              channels: ['email', 'push'],
+              status: 'PENDING',
+              data: {
+                orderId: id,
+                deliveryStatus: data.deliveryStatus,
+                actionUrl: `/dashboard/orders/${id}`,
+                source: 'Orders',
+              },
+            },
+          })
+        } catch (notifErr: any) {
+          console.warn(`  ⚠️  In-app notification failed: ${notifErr.message}`)
+        }
+
+        // Queue email notification (fire-and-forget)
+        if (updated.user?.email) {
+          try {
+            const { getEmailQueue } = await import('../../utils/email-queue')
+            const emailQueue = getEmailQueue()
+            await emailQueue.add('send-email', {
+              to: updated.user.email,
+              subject: notifTitle,
+              template: 'order_status_update',
+              metadata: {
+                customerName: updated.user.name || updated.user.email.split('@')[0],
+                packageName: updated.packageName,
+                orderId: id,
+                newStatus: data.deliveryStatus,
+                deliveryUrl: updated.deliveryUrl || undefined,
+              },
+            })
+          } catch {
+            console.log(`📧 Email queued: ${notifTitle} to ${updated.user.email}`)
+          }
+        }
+      }
+
       return reply.send({ order: updated })
     } catch (error: any) {
       console.error('Error updating admin order:', error)
