@@ -7,6 +7,7 @@ import { Input } from "@kealee/ui/input"
 import { Label } from "@kealee/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@kealee/ui/card"
 import { signUp } from "@kealee/auth/client"
+import { createBrowserClient } from "@supabase/ssr"
 import Link from "next/link"
 
 const MARKETPLACE_ROLES = [
@@ -83,8 +84,16 @@ export function SignupClient() {
   async function handleGoogleSignup() {
     setError("")
     try {
-      // Google OAuth is not yet supported via @kealee/auth — placeholder for future implementation
-      setError("Google sign-up is not yet available. Please use email and password.")
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin + "/auth/callback",
+        },
+      })
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to sign up with Google")
     }

@@ -20,6 +20,8 @@ import {
   Building2,
 } from 'lucide-react';
 import { CartButton } from './CartButton';
+import { DashboardNotifications } from './DashboardNotifications';
+import { useProfile } from '@kealee/auth/client';
 
 const solutions = [
   {
@@ -68,6 +70,8 @@ export function Header() {
   const [portalsOpen, setPortalsOpen] = useState(false);
   const solutionsRef = useRef<HTMLDivElement>(null);
   const portalsRef = useRef<HTMLDivElement>(null);
+  const { profile, loading: authLoading } = useProfile();
+  const isLoggedIn = !authLoading && !!profile;
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -211,18 +215,38 @@ export function Header() {
 
             <CartButton />
 
-            <Link
-              href="/login"
-              className="text-gray-700 hover:text-blue-600 transition font-medium"
-            >
-              Login
-            </Link>
-            <Link
-              href="/get-started"
-              className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition font-semibold text-sm"
-            >
-              Get Started
-            </Link>
+            {isLoggedIn ? (
+              <>
+                <DashboardNotifications />
+                <Link
+                  href="/dashboard"
+                  className="text-gray-700 hover:text-blue-600 transition font-medium"
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  href="/dashboard/account"
+                  className="w-8 h-8 bg-sky-100 text-sky-600 rounded-full flex items-center justify-center text-sm font-bold hover:bg-sky-200 transition"
+                >
+                  {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-gray-700 hover:text-blue-600 transition font-medium"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/get-started"
+                  className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition font-semibold text-sm"
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -299,20 +323,41 @@ export function Header() {
             </div>
 
             <div className="border-t border-gray-100 pt-3 space-y-2">
-              <Link
-                href="/login"
-                className="block px-2 py-2 text-gray-700 hover:text-blue-600 font-medium"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Login
-              </Link>
-              <Link
-                href="/get-started"
-                className="block bg-blue-600 text-white px-6 py-2.5 rounded-lg text-center hover:bg-blue-700 font-semibold"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Get Started
-              </Link>
+              {isLoggedIn ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="block px-2 py-2 text-gray-700 hover:text-blue-600 font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/dashboard/account"
+                    className="block bg-sky-600 text-white px-6 py-2.5 rounded-lg text-center hover:bg-sky-700 font-semibold"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    My Account
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="block px-2 py-2 text-gray-700 hover:text-blue-600 font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/get-started"
+                    className="block bg-blue-600 text-white px-6 py-2.5 rounded-lg text-center hover:bg-blue-700 font-semibold"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
