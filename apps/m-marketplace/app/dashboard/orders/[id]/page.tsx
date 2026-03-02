@@ -18,6 +18,9 @@ import {
   FolderKanban,
   ArrowRight,
   Bell,
+  Calculator,
+  FileCheck,
+  Palette,
 } from 'lucide-react'
 
 interface OrderDetail {
@@ -334,6 +337,63 @@ export default function OrderDetailPage() {
                 Start a Project <ArrowRight size={16} />
               </Link>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cross-sell — shown when concept package is delivered */}
+      {(order.deliveryStatus === 'ready' || order.deliveryStatus === 'delivered') && (
+        <div className="bg-white rounded-2xl border border-gray-200 p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-2">What&apos;s Next?</h2>
+          <p className="text-sm text-gray-500 mb-5">
+            Your concept package unlocks the next steps. Keep your project moving forward.
+          </p>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <Link
+              href="/services/estimation"
+              className="group border border-gray-200 rounded-xl p-5 hover:border-amber-400 hover:bg-amber-50/50 transition"
+            >
+              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-amber-200 transition">
+                <Calculator className="text-amber-600" size={20} />
+              </div>
+              <h3 className="text-sm font-bold text-gray-900 mb-1">Get a Cost Estimate</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                AI-powered cost breakdown with labor, materials, and timeline. From $299.
+              </p>
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 mt-3">
+                Learn more <ArrowRight size={12} />
+              </span>
+            </Link>
+            <Link
+              href="/services/permits"
+              className="group border border-gray-200 rounded-xl p-5 hover:border-green-400 hover:bg-green-50/50 transition"
+            >
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-green-200 transition">
+                <FileCheck className="text-green-600" size={20} />
+              </div>
+              <h3 className="text-sm font-bold text-gray-900 mb-1">Start Your Permit</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                AI-powered document review and full-service permit filing. From $325/permit.
+              </p>
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-600 mt-3">
+                Learn more <ArrowRight size={12} />
+              </span>
+            </Link>
+            <Link
+              href="/services/design"
+              className="group border border-gray-200 rounded-xl p-5 hover:border-sky-400 hover:bg-sky-50/50 transition"
+            >
+              <div className="w-10 h-10 bg-sky-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-sky-200 transition">
+                <Palette className="text-sky-600" size={20} />
+              </div>
+              <h3 className="text-sm font-bold text-gray-900 mb-1">Upgrade to Full Architecture</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Permit-ready drawings from licensed architects. 30% faster than traditional firms.
+              </p>
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 mt-3">
+                Learn more <ArrowRight size={12} />
+              </span>
+            </Link>
           </div>
         </div>
       )}

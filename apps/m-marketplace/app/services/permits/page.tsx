@@ -1,157 +1,491 @@
-import { Metadata } from 'next'
-import Image from 'next/image'
-import Link from 'next/link'
-const heroImage = { src: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80&auto=format&fit=crop', alt: 'City skyline with modern high-rise buildings' };
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Permits & Inspections | Kealee',
-  description: 'Automated permit tracking, inspection scheduling, and AI-powered document review for compliance.',
+import Link from 'next/link'
+import './permits.css'
+
+const phases = [
+  { id: 'design', label: 'Design' },
+  { id: 'estimate', label: 'Estimate' },
+  { id: 'permit', label: 'Permit' },
+  { id: 'build', label: 'Build' },
+  { id: 'closeout', label: 'Closeout' },
+]
+
+const phaseLinks: Record<string, string> = {
+  design: '/services/design',
+  estimate: '/services/estimation',
+  permit: '/services/permits',
+  build: '/services/ops',
+  closeout: '/services/finance',
 }
 
+const workflowSteps = [
+  {
+    num: 1,
+    circle: '',
+    tag: 'Project Owner',
+    tagClass: 'pm-tag-owner',
+    title: 'Upload Your Drawings & Project Info',
+    desc: 'Submit your architectural drawings, site plans, and project details through our secure portal. If you used Kealee Design, your drawings auto-populate \u2014 no re-uploading.',
+    chips: ['Architectural Drawings', 'Site Plans', 'Project Scope', 'Auto-Import from Design'],
+  },
+  {
+    num: 2,
+    circle: 'ai',
+    tag: 'AI Review',
+    tagClass: 'pm-tag-ai',
+    title: 'AI Scans Documents for Compliance Issues',
+    desc: 'Our AI reviews your drawings against local building codes, zoning ordinances, and jurisdiction-specific requirements. It catches common rejection reasons before you submit.',
+    chips: ['Code Compliance Check', 'Zoning Review', 'Common Error Detection', 'Jurisdiction Rules'],
+  },
+  {
+    num: 3,
+    circle: 'review',
+    tag: 'Permit Specialist',
+    tagClass: 'pm-tag-review',
+    title: 'A Permit Specialist Prepares Your Application',
+    desc: 'Our permit specialists prepare your complete application package \u2014 forms, fees, required documents, and supporting materials \u2014 tailored to your specific jurisdiction.',
+    chips: ['Application Forms', 'Fee Calculation', 'Required Documents', 'Jurisdiction-Specific'],
+  },
+  {
+    num: 4,
+    circle: 'submit',
+    tag: 'Submission',
+    tagClass: 'pm-tag-submit',
+    title: 'We Submit & Track Your Permit',
+    desc: 'Your application is submitted to the jurisdiction and tracked in real time. You get automatic status updates, revision notifications, and estimated approval timelines.',
+    chips: ['Direct Submission', 'Real-Time Tracking', 'Status Alerts', 'Timeline Estimates'],
+  },
+  {
+    num: 5,
+    circle: 'review',
+    tag: 'Revision Management',
+    tagClass: 'pm-tag-review',
+    title: 'Revisions Handled Quickly',
+    desc: 'When the jurisdiction requests changes, our team manages the revision process. We coordinate with your architect, update documents, and resubmit \u2014 keeping your project on track.',
+    chips: ['Architect Coordination', 'Document Updates', 'Resubmission', 'Timeline Management'],
+  },
+  {
+    num: 6,
+    circle: 'review',
+    tag: 'Seamless Handoff',
+    tagClass: 'pm-tag-review',
+    title: 'Approved Permits Flow Into Construction',
+    desc: 'Once approved, your permits and inspection schedules automatically populate your Kealee Build dashboard. No manual tracking \u2014 your project moves forward seamlessly.',
+    chips: ['Auto-Populated Inspections', 'Build Dashboard Integration', 'Compliance Tracking'],
+  },
+]
+
+const jurisdictions = [
+  'Washington, DC', 'Montgomery County, MD', "Prince George's County, MD", 'Fairfax County, VA',
+  'Arlington County, VA', 'Alexandria, VA', 'Anne Arundel County, MD', 'Howard County, MD',
+  'Baltimore City, MD', 'Baltimore County, MD', 'Loudoun County, VA', 'Prince William County, VA',
+]
+
+const permitTypes = [
+  'Building Permits', 'Electrical Permits', 'Plumbing Permits', 'HVAC Permits',
+  'Demolition Permits', 'Fire Permits', 'Zoning Permits', 'Environmental Permits',
+  'Historic Preservation', 'Grading Permits', 'Use & Occupancy',
+]
+
+const packages = [
+  {
+    tier: 'TRACKING',
+    name: 'Permit Tracking',
+    price: '$99',
+    priceNote: 'per month',
+    featured: false,
+    features: [
+      'Up to 10 active permits',
+      'Real-time status tracking',
+      'Email & SMS alerts',
+      'Document storage',
+      'Inspection scheduling',
+      'Compliance dashboard',
+    ],
+  },
+  {
+    tier: 'FULL SERVICE',
+    name: 'Full Service',
+    price: '$325',
+    priceNote: 'per permit',
+    featured: true,
+    badge: 'MOST POPULAR',
+    features: [
+      'AI document review',
+      'Application preparation',
+      'Direct submission handling',
+      'Revision management',
+      'Status tracking & alerts',
+      'Inspection coordination',
+      'Dedicated permit specialist',
+    ],
+  },
+  {
+    tier: 'ENTERPRISE',
+    name: 'Enterprise',
+    price: 'Custom',
+    priceNote: 'volume pricing',
+    featured: false,
+    features: [
+      'Everything in Full Service',
+      'Unlimited permits',
+      'Dedicated coordinator',
+      'Priority processing',
+      'API access',
+      'Custom reporting',
+      'Multi-project dashboard',
+    ],
+  },
+]
+
+const ownerCards = [
+  {
+    icon: '\ud83d\udcf1',
+    title: 'Real-Time Status Dashboard',
+    desc: 'Track every permit application, revision, and inspection from your phone or desktop. No more calling the permit office.',
+  },
+  {
+    icon: '\ud83e\udd16',
+    title: 'AI-Powered Pre-Review',
+    desc: 'Our AI catches common rejection reasons before you submit. Fewer revisions, faster approvals, less wasted time.',
+  },
+  {
+    icon: '\ud83d\udcc5',
+    title: 'Inspection Scheduling',
+    desc: 'Book, reschedule, and track inspections directly through the platform. Automatic reminders so you never miss one.',
+  },
+  {
+    icon: '\ud83d\udd14',
+    title: 'Instant Notifications',
+    desc: 'Get alerted the moment a permit is approved, needs revision, or an inspection is scheduled. Email, SMS, or push.',
+  },
+  {
+    icon: '\ud83d\udcc2',
+    title: 'Document Management',
+    desc: 'All permits, inspection reports, and compliance certificates stored securely in one place. Easy export and sharing.',
+  },
+  {
+    icon: '\ud83d\udd17',
+    title: 'Connected to Your Project',
+    desc: 'Permits connect to your Design, Estimation, and Build phases. No duplicate data entry across the platform.',
+  },
+]
+
 export default function PermitsServicePage() {
-  const features = [
-    { title: 'Permit Tracking', description: 'Real-time status updates for all your permit applications across multiple jurisdictions.' },
-    { title: 'Inspection Scheduling', description: 'Book and manage inspections directly through our platform with automatic reminders.' },
-    { title: 'AI Document Review', description: 'AI-powered review catches common errors before submission to reduce rejections.' },
-    { title: 'Status Alerts', description: 'Get notified instantly when permits are approved, need revision, or inspections are scheduled.' },
-    { title: 'Compliance Dashboard', description: 'Track all compliance requirements and expiration dates in one central view.' },
-    { title: 'Document Storage', description: 'Secure storage for permits, inspection reports, and compliance certificates.' },
-  ]
-
-  const permitTypes = [
-    'Building Permits', 'Electrical Permits', 'Plumbing Permits', 'HVAC Permits',
-    'Demolition Permits', 'Fire Permits', 'Zoning Permits', 'Environmental Permits', 'Historic Preservation',
-  ]
-
-  const jurisdictions = [
-    'Washington, DC', 'Montgomery County, MD', "Prince George's County, MD", 'Fairfax County, VA',
-    'Arlington County, VA', 'Alexandria, VA', 'Anne Arundel County, MD', 'Howard County, MD',
-    'Baltimore City, MD', 'Baltimore County, MD', 'Loudoun County, VA', 'Prince William County, VA',
-  ]
-
-  const services = [
-    { name: 'Permit Tracking Only', price: '$99/mo', features: ['Up to 10 active permits', 'Status tracking', 'Email alerts', 'Document storage'] },
-    { name: 'Full Service', price: '$325/permit', features: ['Application assistance', 'Document preparation', 'Submission handling', 'Status tracking', 'Revision management'], popular: true },
-    { name: 'Enterprise', price: 'Custom', features: ['Unlimited permits', 'Dedicated coordinator', 'Priority processing', 'API access', 'Custom reporting'] },
-  ]
-
   return (
-    <div className="w-full">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <Link href="/services" className="inline-flex items-center gap-2 text-blue-600 hover:underline mb-8 text-sm">
-          &larr; All Services
-        </Link>
+    <div>
+      {/* ── PHASE TABS ── */}
+      <nav className="pm-phase-bar">
+        {phases.map((p) => (
+          <Link
+            key={p.id}
+            href={phaseLinks[p.id]}
+            className={`pm-phase-tab ${p.id === 'permit' ? 'active' : ''}`}
+          >
+            <span className="pm-phase-dot" />
+            {p.label}
+          </Link>
+        ))}
+      </nav>
 
-        {/* Hero */}
-        <div className="relative text-center mb-16 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-16 overflow-hidden">
-          <Image
-            src={heroImage.src}
-            alt={heroImage.alt}
-            fill
-            className="object-cover"
-            sizes="100vw"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
-          <div className="relative">
-            <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
-              Permits & Inspections
+      {/* ── HERO ── */}
+      <section className="pm-hero">
+        <div className="pm-hero-badge">
+          <span className="pm-badge-dot" />
+          AI-POWERED &middot; 12 JURISDICTIONS SUPPORTED
+        </div>
+        <div className="pm-hero-layout">
+          <div>
+            <h1>
+              Permits Made<br />
+              <em>Simple</em>
             </h1>
-            <p className="mt-4 text-xl text-white/85 max-w-3xl mx-auto">
-              Stop chasing permit statuses. Automated tracking, AI-powered reviews, and seamless inspection scheduling for compliance.
+            <p className="pm-hero-sub">
+              Stop chasing permit statuses. AI-powered document review catches errors before you
+              submit, and our permit specialists handle the entire process &mdash; from application
+              to approval.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Link href="/contact" className="inline-flex items-center justify-center rounded-xl bg-amber-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600">
-                Start New Permit
+            <div className="pm-hero-actions">
+              <Link href="/get-started" className="pm-btn-green">
+                Start a Permit &mdash; $325
               </Link>
-              <Link href="/portals" className="inline-flex items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-white/20">
-                Go to Portal
+              <Link href="/contact" className="pm-btn-outline-white">
+                Talk to a Specialist
               </Link>
+            </div>
+          </div>
+          <div className="pm-hero-stats">
+            <div className="pm-hero-stat-grid">
+              <div className="pm-hero-stat">
+                <div className="pm-hero-stat-num">12</div>
+                <div className="pm-hero-stat-label">DC/MD/VA jurisdictions supported</div>
+              </div>
+              <div className="pm-hero-stat">
+                <div className="pm-hero-stat-num">85%</div>
+                <div className="pm-hero-stat-label">First-submission approval rate</div>
+              </div>
+              <div className="pm-hero-stat">
+                <div className="pm-hero-stat-num">3x</div>
+                <div className="pm-hero-stat-label">Faster than DIY permit filing</div>
+              </div>
+              <div className="pm-hero-stat">
+                <div className="pm-hero-stat-num">24h</div>
+                <div className="pm-hero-stat-label">AI review turnaround time</div>
+              </div>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Features */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-center mb-10 text-gray-900">Platform Features</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature) => (
-              <div key={feature.title} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h3 className="font-bold text-gray-900">{feature.title}</h3>
-                <p className="mt-2 text-sm text-gray-600">{feature.description}</p>
+      {/* ── HOW IT WORKS ── */}
+      <section className="pm-section" style={{ background: 'var(--pm-cream)' }}>
+        <div className="pm-section-label">How It Works</div>
+        <h2 className="pm-section-title">
+          From Drawings to<br />Approved Permit
+        </h2>
+        <p className="pm-section-sub">
+          Upload your plans, and we handle the rest &mdash; AI review, application prep,
+          submission, tracking, and revisions. Here&apos;s how it works.
+        </p>
+
+        <div className="pm-workflow">
+          {workflowSteps.map((step) => (
+            <div className="pm-workflow-step" key={step.num}>
+              <div className="pm-workflow-num">
+                <div className={`pm-step-circle ${step.circle}`}>{step.num}</div>
               </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Permit Types */}
-        <section className="mb-16">
-          <h2 className="text-xl font-bold text-center mb-6 text-gray-900">Permit Types We Track</h2>
-          <div className="flex flex-wrap justify-center gap-3">
-            {permitTypes.map((type) => (
-              <span key={type} className="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm">
-                {type}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        {/* Jurisdictions */}
-        <section className="mb-16">
-          <div className="rounded-2xl bg-amber-50 p-8">
-            <h2 className="text-xl font-bold text-center mb-6 text-gray-900">Supported Jurisdictions</h2>
-            <div className="flex flex-wrap justify-center gap-3">
-              {jurisdictions.map((j) => (
-                <span key={j} className="px-3 py-1.5 bg-white border border-amber-200 rounded-full text-sm font-medium">
-                  {j}
-                </span>
-              ))}
-            </div>
-            <p className="text-center text-sm text-gray-600 mt-6">
-              Don&apos;t see your jurisdiction? <Link href="/contact" className="text-amber-600 hover:underline">Contact us</Link> to add it.
-            </p>
-          </div>
-        </section>
-
-        {/* Pricing */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-center mb-4 text-gray-900">Pricing Options</h2>
-          <p className="text-center text-gray-600 mb-10 max-w-2xl mx-auto">
-            Choose tracking only or let us handle the entire permit process for you.
-          </p>
-          <div className="grid md:grid-cols-3 gap-6">
-            {services.map((service) => (
-              <div key={service.name} className={`rounded-2xl border bg-white p-6 shadow-sm ${service.popular ? 'border-amber-500 ring-1 ring-amber-500/20' : 'border-gray-200'}`}>
-                {service.popular && (
-                  <span className="inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700 mb-3">MOST POPULAR</span>
-                )}
-                <h3 className="text-xl font-bold text-gray-900">{service.name}</h3>
-                <div className="mt-2 text-3xl font-bold text-amber-600">{service.price}</div>
-                <ul className="mt-4 space-y-2">
-                  {service.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-gray-700">
-                      <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                      {f}
-                    </li>
+              <div className="pm-workflow-content">
+                <div className={`pm-workflow-phase-tag ${step.tagClass}`}>{step.tag}</div>
+                <div className="pm-workflow-title">{step.title}</div>
+                <div className="pm-workflow-desc">{step.desc}</div>
+                <div className="pm-workflow-chips">
+                  {step.chips.map((c) => (
+                    <span className="pm-chip" key={c}>{c}</span>
                   ))}
-                </ul>
-                <Link href="/contact" className={`mt-6 block text-center py-2.5 rounded-lg font-semibold transition ${service.popular ? 'bg-amber-500 text-white hover:bg-amber-600' : 'border border-gray-200 hover:bg-gray-50'}`}>
-                  Get Started
-                </Link>
+                </div>
               </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── TRUST BANNER ── */}
+      <div className="pm-trust-banner">
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div className="pm-trust-icon">{'\ud83e\udd16'}</div>
+          <div className="pm-trust-title">AI Catches Errors First</div>
+          <div className="pm-trust-desc">
+            Our AI reviews your documents against jurisdiction-specific building codes and zoning
+            requirements, flagging common rejection reasons before you submit.
+          </div>
+        </div>
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div className="pm-trust-icon">{'\ud83d\udcdd'}</div>
+          <div className="pm-trust-title">Permit Specialists Handle It</div>
+          <div className="pm-trust-desc">
+            Dedicated permit specialists prepare your complete application package, submit to the
+            jurisdiction, and manage revisions. You approve &mdash; we handle the paperwork.
+          </div>
+        </div>
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div className="pm-trust-icon">{'\ud83d\udcca'}</div>
+          <div className="pm-trust-title">Real-Time Tracking</div>
+          <div className="pm-trust-desc">
+            Your dashboard shows the live status of every permit &mdash; submitted, under review,
+            approved, or needs revision. No more calling the permit office for updates.
+          </div>
+        </div>
+      </div>
+
+      {/* ── JURISDICTIONS & PERMIT TYPES ── */}
+      <section className="pm-jurisdictions-bg">
+        <div className="pm-section-label">Coverage</div>
+        <h2 className="pm-section-title">Supported Jurisdictions</h2>
+        <p className="pm-section-sub">
+          We support permitting across the DC, Maryland, and Virginia metro area. Each
+          jurisdiction has unique requirements &mdash; our specialists know them all.
+        </p>
+
+        <div className="pm-jurisdictions-grid">
+          {jurisdictions.map((j) => (
+            <div className="pm-jurisdiction-chip" key={j}>{j}</div>
+          ))}
+        </div>
+        <p style={{ fontSize: 14, color: 'var(--pm-gray-500)' }}>
+          Don&apos;t see your jurisdiction?{' '}
+          <Link href="/contact" style={{ color: 'var(--pm-green)', fontWeight: 600, textDecoration: 'none' }}>
+            Contact us
+          </Link>{' '}
+          to request coverage.
+        </p>
+
+        <div style={{ marginTop: 56 }}>
+          <div className="pm-section-label">Permit Types</div>
+          <h3 style={{ fontSize: 24, fontWeight: 700, color: 'var(--pm-navy)', marginBottom: 24 }}>
+            We Handle Every Permit Type
+          </h3>
+          <div className="pm-permit-types-grid">
+            {permitTypes.map((type) => (
+              <div className="pm-permit-type-chip" key={type}>{type}</div>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* CTA */}
-        <section className="rounded-2xl bg-amber-500 p-8 text-white text-center">
-          <h2 className="text-2xl font-bold">Never Miss a Permit Status Again</h2>
-          <p className="mt-2 opacity-95 max-w-xl mx-auto">Start tracking your permits today. Setup takes less than 5 minutes.</p>
-          <Link href="/contact" className="mt-6 inline-flex items-center justify-center rounded-xl bg-white px-8 py-3 text-sm font-semibold text-amber-700 shadow-sm transition hover:bg-amber-50">
-            Start Tracking
-          </Link>
-        </section>
-      </div>
+      {/* ── PACKAGES ── */}
+      <section className="pm-packages-bg">
+        <div className="pm-section-label">Pricing</div>
+        <h2 className="pm-section-title">Permit Service Packages</h2>
+        <p className="pm-section-sub">
+          Track permits yourself or let us handle the entire process. Choose the level of
+          service that fits your project.
+        </p>
+
+        <div className="pm-pkg-grid">
+          {packages.map((pkg) => (
+            <div className={`pm-pkg-card ${pkg.featured ? 'featured' : ''}`} key={pkg.tier}>
+              {pkg.badge && <div className="pm-pkg-badge">{pkg.badge}</div>}
+              <div className="pm-pkg-tier">{pkg.tier}</div>
+              <div className="pm-pkg-name">{pkg.name}</div>
+              <div className="pm-pkg-price">{pkg.price}</div>
+              <div className="pm-pkg-price-note">{pkg.priceNote}</div>
+              <div className="pm-pkg-divider" />
+              <ul className="pm-pkg-features">
+                {pkg.features.map((f) => (
+                  <li key={f}>
+                    <span className="pm-pkg-check">{'\u2713'}</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/get-started"
+                className={`pm-btn-pkg ${pkg.featured ? 'pm-btn-pkg-green' : 'pm-btn-pkg-outline'}`}
+              >
+                Get Started
+              </Link>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── AI COMPLIANCE REVIEW ── */}
+      <section className="pm-review-section">
+        <div className="pm-review-grid">
+          <div>
+            <div className="pm-section-label">Quality Assurance</div>
+            <h2 className="pm-section-title">
+              AI Reviews Before<br />You Submit
+            </h2>
+            <p className="pm-section-sub" style={{ marginBottom: 32 }}>
+              Our AI scans your documents against jurisdiction-specific codes and flags issues
+              before submission. Combined with specialist review, this drives our 85%
+              first-submission approval rate.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div className="pm-cred-chip">
+                <span className="pm-cred-dot" /> 12 DC/MD/VA Jurisdictions
+              </div>
+              <div className="pm-cred-chip">
+                <span className="pm-cred-dot" /> 85% First-Submission Approval
+              </div>
+              <div className="pm-cred-chip">
+                <span className="pm-cred-dot" /> Dedicated Permit Specialists
+              </div>
+            </div>
+          </div>
+          <div className="pm-review-visual">
+            <div className="pm-review-flow-step">
+              <div className="pm-review-flow-icon pm-icon-ai">{'\ud83e\udd16'}</div>
+              <div>
+                <div style={{ fontWeight: 600, color: 'var(--pm-navy)', marginBottom: 4, fontSize: 15 }}>
+                  AI Scans for Compliance
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--pm-gray-500)', lineHeight: 1.5 }}>
+                  Reviews drawings against local building codes, zoning ordinances, and
+                  jurisdiction-specific requirements. Flags common rejection reasons in minutes.
+                </div>
+              </div>
+            </div>
+            <div className="pm-review-flow-step">
+              <div className="pm-review-flow-icon pm-icon-review">{'\u2705'}</div>
+              <div>
+                <div style={{ fontWeight: 600, color: 'var(--pm-navy)', marginBottom: 4, fontSize: 15 }}>
+                  Specialist Validates & Prepares
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--pm-gray-500)', lineHeight: 1.5 }}>
+                  A permit specialist reviews the AI findings, prepares the complete application
+                  package, and ensures everything meets jurisdiction requirements.
+                </div>
+              </div>
+            </div>
+            <div className="pm-review-flow-step">
+              <div className="pm-review-flow-icon pm-icon-submit">{'\ud83d\udce8'}</div>
+              <div>
+                <div style={{ fontWeight: 600, color: 'var(--pm-navy)', marginBottom: 4, fontSize: 15 }}>
+                  Submit & Track to Approval
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--pm-gray-500)', lineHeight: 1.5 }}>
+                  Application is submitted directly to the jurisdiction. You get real-time tracking,
+                  instant alerts, and revision management until approval.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── OWNER EXPERIENCE ── */}
+      <section className="pm-section">
+        <div className="pm-section-label">Platform Features</div>
+        <h2 className="pm-section-title">
+          Everything You Need to<br />Manage Permits Effortlessly
+        </h2>
+        <p className="pm-section-sub">
+          Kealee Permits isn&apos;t just a tracking tool &mdash; it&apos;s a complete permit
+          management platform that saves you hours every week.
+        </p>
+        <div className="pm-owner-grid">
+          {ownerCards.map((card) => (
+            <div className="pm-owner-card" key={card.title}>
+              <div style={{ fontSize: 32, marginBottom: 16 }}>{card.icon}</div>
+              <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--pm-navy)', marginBottom: 8 }}>
+                {card.title}
+              </div>
+              <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--pm-gray-500)' }}>
+                {card.desc}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── CTA ── */}
+      <section className="pm-cta-section">
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <h2 style={{ fontSize: 40, fontWeight: 700, color: 'white', lineHeight: 1.15, marginBottom: 16 }}>
+            Ready to Stop Chasing<br />
+            <span style={{ color: 'var(--pm-green-light)', fontStyle: 'italic' }}>
+              Permit Statuses?
+            </span>
+          </h2>
+          <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.7)', marginBottom: 36, fontWeight: 300 }}>
+            Let our AI and permit specialists handle the paperwork. Start with a single permit for $325.
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/get-started" className="pm-btn-green">
+              Start My Permit &mdash; $325
+            </Link>
+            <Link href="/contact" className="pm-btn-outline-white">
+              Talk to a Specialist
+            </Link>
+          </div>
+          <p style={{ marginTop: 24, fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>
+            AI-powered document review + dedicated permit specialist on every application.
+          </p>
+        </div>
+      </section>
     </div>
   )
 }
