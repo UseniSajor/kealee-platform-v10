@@ -14,6 +14,7 @@ export default function ContactPage() {
     email: '',
     company: '',
     phone: '',
+    service: '',
     message: '',
   });
   const [sending, setSending] = useState(false);
@@ -38,6 +39,7 @@ export default function ContactPage() {
           email: '',
           company: '',
           phone: '',
+          service: '',
           message: '',
         });
       } else {
@@ -249,6 +251,33 @@ export default function ContactPage() {
                             "
                           />
                         </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Service Interest
+                        </label>
+                        <select
+                          value={formData.service}
+                          onChange={(e) => setFormData({...formData, service: e.target.value})}
+                          className="
+                            w-full px-4 py-3
+                            border-2 border-gray-300 rounded-lg
+                            focus:border-blue-500 focus:ring-2 focus:ring-blue-100
+                            transition-all duration-200 bg-white
+                          "
+                        >
+                          <option value="">Select a service (optional)</option>
+                          <option value="Design Concepts">Design Concepts</option>
+                          <option value="Architecture">Architecture</option>
+                          <option value="Engineering">Engineering</option>
+                          <option value="Cost Estimation">Cost Estimation</option>
+                          <option value="Permits">Permits</option>
+                          <option value="Operations / PM">Operations / PM</option>
+                          <option value="Finance / Escrow">Finance / Escrow</option>
+                          <option value="Contractor Network">Contractor Network</option>
+                          <option value="Other">Other</option>
+                        </select>
                       </div>
 
                       <div>
