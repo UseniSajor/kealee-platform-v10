@@ -1083,53 +1083,62 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
 
     console.log(`✅ Processing concept package purchase: ${packageName} (${packageTier}) for ${customerEmail}`)
 
-    // 1. Create or find user account
-    const user = await prismaAny.user.upsert({
-      where: { email: customerEmail },
-      update: {
-        name: customerName || undefined,
-        phone: customerPhone || undefined,
-      },
-      create: {
-        email: customerEmail,
-        name: customerName || customerEmail.split('@')[0],
-        phone: customerPhone || null,
-        status: 'ACTIVE',
-      },
+    // 1-3. Atomic: upsert user + idempotency check + create order in a single transaction
+    const { user, skipped } = await prismaAny.$transaction(async (tx: any) => {
+      // 1. Create or find user account
+      const u = await tx.user.upsert({
+        where: { email: customerEmail },
+        update: {
+          name: customerName || undefined,
+          phone: customerPhone || undefined,
+        },
+        create: {
+          email: customerEmail,
+          name: customerName || customerEmail.split('@')[0],
+          phone: customerPhone || null,
+          status: 'ACTIVE',
+        },
+      })
+
+      // 2. Idempotency check — if order already exists for this Stripe session, skip
+      const existingOrder = await tx.conceptPackageOrder.findFirst({
+        where: { stripeSessionId: session.id },
+        select: { id: true },
+      })
+      if (existingOrder) {
+        return { user: u, skipped: true }
+      }
+
+      // 3. Create ConceptPackageOrder to track the purchase
+      await tx.conceptPackageOrder.create({
+        data: {
+          userId: u.id,
+          stripeSessionId: session.id,
+          stripePaymentIntentId: typeof session.payment_intent === 'string'
+            ? session.payment_intent
+            : session.payment_intent?.id || null,
+          packageTier: packageTier.toLowerCase(),
+          packageName,
+          amount: session.amount_total ?? 0,
+          currency: session.currency || 'usd',
+          status: 'completed',
+          deliveryStatus: 'pending',
+          funnelSessionId: funnelSessionId || null,
+          metadata: {
+            customerEmail,
+            customerName,
+            customerPhone,
+          },
+        },
+      })
+
+      return { user: u, skipped: false }
     })
 
-    // 2. Idempotency check — if order already exists for this Stripe session, skip all remaining steps
-    const existingOrder = await prismaAny.conceptPackageOrder.findFirst({
-      where: { stripeSessionId: session.id },
-      select: { id: true },
-    })
-    if (existingOrder) {
+    if (skipped) {
       console.log(`  ⏭️  ConceptPackageOrder already exists for session ${session.id} — skipping duplicate`)
       return
     }
-
-    // 3. Create ConceptPackageOrder to track the purchase
-    await prismaAny.conceptPackageOrder.create({
-      data: {
-        userId: user.id,
-        stripeSessionId: session.id,
-        stripePaymentIntentId: typeof session.payment_intent === 'string'
-          ? session.payment_intent
-          : session.payment_intent?.id || null,
-        packageTier: packageTier.toLowerCase(),
-        packageName,
-        amount: session.amount_total ?? 0,
-        currency: session.currency || 'usd',
-        status: 'completed',
-        deliveryStatus: 'pending',
-        funnelSessionId: funnelSessionId || null,
-        metadata: {
-          customerEmail,
-          customerName,
-          customerPhone,
-        },
-      },
-    })
     console.log(`  ✅ ConceptPackageOrder created for session ${session.id}`)
 
     // 4. Create marketing lead linked to funnel session
@@ -1254,7 +1263,8 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
     // 10. Queue account setup email for new users (no password set)
     try {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.kealee.com'
-      const setupToken = Buffer.from(`${user.id}:${Date.now()}`).toString('base64url')
+      const { randomBytes } = await import('crypto')
+      const setupToken = randomBytes(32).toString('base64url')
       await queueNotificationEmail({
         to: customerEmail,
         subject: 'Set up your Kealee dashboard account',
@@ -1267,6 +1277,21 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
       })
     } catch {
       console.warn(`  ⚠️  Account setup email queue failed`)
+    }
+
+    // 11. Sync purchase to GHL CRM (fire-and-forget)
+    try {
+      const { syncCheckout } = await import('../integrations/ghl/ghl-sync')
+      await syncCheckout({
+        userId: user.id,
+        email: customerEmail,
+        packageName,
+        packageKey: packageTier,
+        amount: (session.amount_total ?? 0) / 100,
+      })
+      console.log(`  ✅ GHL sync triggered for ${customerEmail}`)
+    } catch {
+      console.warn(`  ⚠️  GHL sync failed (non-critical)`)
     }
 
     console.log(`✅ Concept package purchase processed: ${lead.id} for ${customerEmail} (${packageTier})`)

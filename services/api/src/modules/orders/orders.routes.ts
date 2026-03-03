@@ -5,6 +5,52 @@ export async function ordersRoutes(fastify: FastifyInstance) {
   const prismaAny = getPrisma() as any
 
   /**
+   * GET /orders/verify — Public endpoint to check if an order exists for a Stripe session.
+   * Used by the checkout success page to poll until the webhook has created the order.
+   * No auth required — the Stripe session ID is unguessable.
+   */
+  fastify.get('/orders/verify', async (request, reply) => {
+    try {
+      const query = request.query as Record<string, string>
+      const sessionId = query.session_id
+
+      if (!sessionId || !sessionId.startsWith('cs_')) {
+        return reply.status(400).send({ found: false, error: 'Valid session_id is required' })
+      }
+
+      const order = await prismaAny.conceptPackageOrder.findFirst({
+        where: { stripeSessionId: sessionId },
+        select: {
+          id: true,
+          packageName: true,
+          packageTier: true,
+          status: true,
+          deliveryStatus: true,
+          createdAt: true,
+        },
+      })
+
+      if (!order) {
+        return reply.send({ found: false })
+      }
+
+      return reply.send({
+        found: true,
+        order: {
+          id: order.id,
+          packageName: order.packageName,
+          packageTier: order.packageTier,
+          status: order.status,
+          deliveryStatus: order.deliveryStatus,
+        },
+      })
+    } catch (error: any) {
+      console.error('Error verifying order:', error)
+      return reply.send({ found: false })
+    }
+  })
+
+  /**
    * GET /orders — List orders for the authenticated user
    * Query: ?limit=20&offset=0&status=completed&deliveryStatus=pending
    */
