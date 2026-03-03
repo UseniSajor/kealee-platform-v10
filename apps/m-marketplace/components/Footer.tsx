@@ -164,13 +164,13 @@ export function Footer() {
             reserved.
           </p>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <a href="#" className="hover:text-white transition">
-              Twitter
-            </a>
-            <a href="#" className="hover:text-white transition">
+            <a href="https://linkedin.com/company/kealee" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">
               LinkedIn
             </a>
-            <a href="#" className="hover:text-white transition">
+            <a href="https://x.com/kealeeplatform" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">
+              X / Twitter
+            </a>
+            <a href="https://facebook.com/kealee" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">
               Facebook
             </a>
           </div>

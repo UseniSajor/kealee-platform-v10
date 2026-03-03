@@ -108,7 +108,7 @@ export default function AccountSetupPage() {
           </p>
           <div className="space-y-3">
             <Link
-              href="/login"
+              href="/auth/login"
               className="block w-full py-3 bg-blue-600 text-white font-semibold rounded-lg text-center hover:bg-blue-700 transition"
             >
               Go to Login
@@ -255,7 +255,7 @@ export default function AccountSetupPage() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
               Already have an account?{' '}
-              <Link href="/login" className="text-blue-600 hover:underline font-medium">
+              <Link href="/auth/login" className="text-blue-600 hover:underline font-medium">
                 Sign in
               </Link>
             </p>

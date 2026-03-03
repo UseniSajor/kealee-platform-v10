@@ -106,7 +106,7 @@ export default function VerifyEmailPage() {
 
         {/* CTA */}
         <Link
-          href="/login"
+          href="/auth/login"
           className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
         >
           Go to Login
