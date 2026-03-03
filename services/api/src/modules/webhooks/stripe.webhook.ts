@@ -1263,8 +1263,13 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
     // 10. Queue account setup email for new users (no password set)
     try {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.kealee.com'
-      const { randomBytes } = await import('crypto')
-      const setupToken = randomBytes(32).toString('base64url')
+      const { createHmac } = await import('crypto')
+      const timestamp = Date.now().toString()
+      const secret = process.env.STRIPE_WEBHOOK_SECRET || 'kealee-setup-secret'
+      const signature = createHmac('sha256', secret)
+        .update(`${user.id}:${timestamp}`)
+        .digest('base64url')
+      const setupToken = Buffer.from(`${user.id}:${timestamp}:${signature}`).toString('base64url')
       await queueNotificationEmail({
         to: customerEmail,
         subject: 'Set up your Kealee dashboard account',

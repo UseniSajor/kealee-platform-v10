@@ -264,4 +264,103 @@ export const EMAIL_TEMPLATES: Record<string, EmailTemplate> = {
     `,
     text: `Subscription upgraded\n\nHi {{gcName}},\n\nYour subscription is now {{newPackageName}}.\nEffective date: {{effectiveDate}}\nBilling portal: {{billingPortalUrl}}\n`,
   },
+
+  // ---------------------------------------------------------------------------
+  // Concept package purchase flow
+  // ---------------------------------------------------------------------------
+  concept_package_confirmation: {
+    subject: 'Your {{packageName}} is confirmed!',
+    html: `
+      <div style="max-width:600px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+        <div style="background:#0F2240;padding:32px;text-align:center;border-radius:12px 12px 0 0;">
+          <h1 style="color:white;margin:0;font-size:24px;">Order Confirmed</h1>
+        </div>
+        <div style="background:white;padding:32px;border:1px solid #e5e7eb;border-top:none;">
+          <p>Hi {{customerName}},</p>
+          <p>Thank you for your purchase! Your <strong>{{packageName}}</strong> has been confirmed.</p>
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:24px 0;">
+            <p style="margin:0 0 8px;font-weight:600;">Order Summary</p>
+            <p style="margin:0;color:#6b7280;">Package: {{packageName}} ({{packageTier}})</p>
+            <p style="margin:0;color:#6b7280;">Amount: ${{amount}}</p>
+          </div>
+          <h3>What happens next?</h3>
+          <ol style="color:#374151;line-height:1.8;">
+            <li>Our AI system generates your concept package (up to 24 hours)</li>
+            <li>You'll receive an email when your concept is ready</li>
+            <li>View and download from your dashboard</li>
+          </ol>
+          <p>We've also sent you an email to set up your Kealee dashboard account.</p>
+          <p style="margin-top:24px;">
+            <a href="https://kealee.com/dashboard" style="display:inline-block;background:#0284c7;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Go to Dashboard</a>
+          </p>
+        </div>
+        <div style="text-align:center;padding:16px;color:#9ca3af;font-size:12px;">
+          <p>Questions? Call <a href="tel:+13015758777" style="color:#0284c7;">(301) 575-8777</a> or email <a href="mailto:support@kealee.com" style="color:#0284c7;">support@kealee.com</a></p>
+        </div>
+      </div>
+    `,
+    text: `Order Confirmed\n\nHi {{customerName}},\n\nYour {{packageName}} ({{packageTier}}) has been confirmed.\nAmount: ${{amount}}\n\nWhat happens next:\n1. Our AI system generates your concept package (up to 24 hours)\n2. You'll receive an email when your concept is ready\n3. View and download from your dashboard\n\nDashboard: https://kealee.com/dashboard\nQuestions? Call (301) 575-8777\n`,
+  },
+  account_setup: {
+    subject: 'Set up your Kealee dashboard account',
+    html: `
+      <div style="max-width:600px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+        <div style="background:#0F2240;padding:32px;text-align:center;border-radius:12px 12px 0 0;">
+          <h1 style="color:white;margin:0;font-size:24px;">Set Up Your Account</h1>
+        </div>
+        <div style="background:white;padding:32px;border:1px solid #e5e7eb;border-top:none;">
+          <p>Hi {{customerName}},</p>
+          <p>Your Kealee account has been created. Set up your password to access your dashboard, track your order, and manage your projects.</p>
+          <p style="text-align:center;margin:32px 0;">
+            <a href="{{setupUrl}}" style="display:inline-block;background:#0284c7;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;">Create Your Password</a>
+          </p>
+          <p style="color:#6b7280;font-size:13px;">This link expires in 48 hours. If it has expired, contact support for a new link.</p>
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin-top:24px;">
+            <p style="margin:0 0 8px;font-weight:600;font-size:14px;">Your dashboard includes:</p>
+            <ul style="margin:0;padding-left:20px;color:#6b7280;font-size:13px;line-height:1.8;">
+              <li>Order tracking with real-time status updates</li>
+              <li>Concept package download when ready</li>
+              <li>Project management tools</li>
+              <li>Direct messaging with our team</li>
+            </ul>
+          </div>
+        </div>
+        <div style="text-align:center;padding:16px;color:#9ca3af;font-size:12px;">
+          <p>Questions? Call <a href="tel:+13015758777" style="color:#0284c7;">(301) 575-8777</a> or email <a href="mailto:support@kealee.com" style="color:#0284c7;">support@kealee.com</a></p>
+        </div>
+      </div>
+    `,
+    text: `Set Up Your Account\n\nHi {{customerName}},\n\nYour Kealee account has been created. Set up your password to access your dashboard.\n\nCreate your password: {{setupUrl}}\n\nThis link expires in 48 hours.\n\nQuestions? Call (301) 575-8777\n`,
+  },
+  order_status_update: {
+    subject: 'Your {{packageName}} is ready!',
+    html: `
+      <div style="max-width:600px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+        <div style="background:#059669;padding:32px;text-align:center;border-radius:12px 12px 0 0;">
+          <h1 style="color:white;margin:0;font-size:24px;">Your Concept Is Ready!</h1>
+        </div>
+        <div style="background:white;padding:32px;border:1px solid #e5e7eb;border-top:none;">
+          <p>Hi {{customerName}},</p>
+          <p>Great news — your <strong>{{packageName}}</strong> concept package has been generated and is ready for you to view.</p>
+          <p style="text-align:center;margin:32px 0;">
+            <a href="{{deliveryUrl}}" style="display:inline-block;background:#059669;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;">View Your Concept</a>
+          </p>
+          <p>You can also access it anytime from your <a href="https://kealee.com/dashboard/orders" style="color:#0284c7;">dashboard</a>.</p>
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin-top:24px;">
+            <p style="margin:0 0 8px;font-weight:600;font-size:14px;">What's next?</p>
+            <ul style="margin:0;padding-left:20px;color:#6b7280;font-size:13px;line-height:1.8;">
+              <li>Review your AI-generated concept designs</li>
+              <li>Get a detailed cost estimate</li>
+              <li>Start your permit application</li>
+              <li>Connect with verified contractors</li>
+            </ul>
+          </div>
+        </div>
+        <div style="text-align:center;padding:16px;color:#9ca3af;font-size:12px;">
+          <p>Questions? Call <a href="tel:+13015758777" style="color:#0284c7;">(301) 575-8777</a> or email <a href="mailto:support@kealee.com" style="color:#0284c7;">support@kealee.com</a></p>
+        </div>
+      </div>
+    `,
+    text: `Your Concept Is Ready!\n\nHi {{customerName}},\n\nYour {{packageName}} concept package has been generated.\n\nView it here: {{deliveryUrl}}\n\nYou can also access it from your dashboard: https://kealee.com/dashboard/orders\n\nQuestions? Call (301) 575-8777\n`,
+  },
 }

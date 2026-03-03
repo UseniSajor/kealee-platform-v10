@@ -279,7 +279,7 @@ export async function authRoutes(fastify: FastifyInstance) {
   /**
    * POST /auth/setup-account — Set password for users created during checkout
    * Body: { token, email, password }
-   * Token format: base64url(userId:timestamp), expires after 24 hours
+   * Token format: base64url(userId:timestamp:hmacSignature)
    */
   fastify.post('/setup-account', async (request, reply) => {
     try {
@@ -297,22 +297,36 @@ export async function authRoutes(fastify: FastifyInstance) {
         return reply.status(400).send({ error: 'Password must be at least 8 characters' })
       }
 
-      // Decode and validate token
+      // Decode and validate HMAC-signed token
       let userId: string
       let tokenTimestamp: number
       try {
+        const { createHmac } = await import('crypto')
         const decoded = Buffer.from(token, 'base64url').toString('utf-8')
         const parts = decoded.split(':')
-        if (parts.length !== 2) throw new Error('Invalid token format')
+        if (parts.length < 2) throw new Error('Invalid token format')
+
         userId = parts[0]
         tokenTimestamp = parseInt(parts[1], 10)
         if (isNaN(tokenTimestamp)) throw new Error('Invalid timestamp')
+
+        // Verify HMAC signature if present (tokens generated after P23 include signature)
+        if (parts.length >= 3) {
+          const signature = parts.slice(2).join(':')
+          const secret = process.env.STRIPE_WEBHOOK_SECRET || 'kealee-setup-secret'
+          const expectedSig = createHmac('sha256', secret)
+            .update(`${userId}:${parts[1]}`)
+            .digest('base64url')
+          if (signature !== expectedSig) {
+            throw new Error('Invalid signature')
+          }
+        }
       } catch {
         return reply.status(400).send({ error: 'Invalid setup token' })
       }
 
-      // Check token expiry (24 hours)
-      const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000
+      // Check token expiry (48 hours)
+      const TOKEN_EXPIRY_MS = 48 * 60 * 60 * 1000
       if (Date.now() - tokenTimestamp > TOKEN_EXPIRY_MS) {
         return reply.status(400).send({ error: 'Setup token has expired. Please contact support.' })
       }
