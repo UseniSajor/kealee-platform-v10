@@ -13,8 +13,8 @@ import {
   geocodeAddress,
   detectJurisdiction,
   reverseGeocode,
-}
-import { sanitizeErrorMessage } from '../utils/sanitize-error' from '../services/google-places.service';
+} from '../services/google-places.service'
+import { sanitizeErrorMessage } from '../utils/sanitize-error'
 
 const autocompleteSchema = z.object({
   input: z.string().min(1).max(200),

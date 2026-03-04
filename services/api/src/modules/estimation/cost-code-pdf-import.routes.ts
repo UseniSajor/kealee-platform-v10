@@ -21,8 +21,8 @@ import {
 } from '../../services/cost-code-import.service'
 import {
   processCTCImportJob,
-}
-import { sanitizeErrorMessage } from '../../utils/sanitize-error' from '../../services/ctc-parser.service'
+} from '../../services/ctc-parser.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Routes

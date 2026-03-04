@@ -18,8 +18,8 @@ import {
   validateBody,
   validateParams,
   validateQuery,
-}
-import { sanitizeErrorMessage } from '../../utils/sanitize-error' from '../../middleware/validation.middleware'
+} from '../../middleware/validation.middleware'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 // ---------------------------------------------------------------------------
 // Zod schemas
