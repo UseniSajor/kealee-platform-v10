@@ -86,7 +86,7 @@ export default function SopTemplatesPage() {
                 {filtered.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center py-10 text-gray-500">
-                      No templates yet (data hookup next).
+                      No SOP templates yet. Templates will be available once the SOP module is configured.
                     </TableCell>
                   </TableRow>
                 ) : (

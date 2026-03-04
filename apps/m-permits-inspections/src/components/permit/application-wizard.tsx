@@ -19,6 +19,7 @@ import { Step3Jurisdiction } from './wizard-steps/step3-jurisdiction';
 import { Step4Documents } from './wizard-steps/step4-documents';
 import { Step5Review } from './wizard-steps/step5-review';
 import { applicationStorageService } from '@/services/permit-application/application-storage';
+import { createClient } from '@/lib/supabase/client';
 
 const wizardSchema = z.object({
   // Step 1: Project Info
@@ -71,6 +72,15 @@ export function PermitApplicationWizard({draftId, onSave}: PermitApplicationWiza
   const [savedDraftId, setSavedDraftId] = useState<string | null>(draftId || null);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Get authenticated user
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id);
+    });
+  }, []);
 
   const form = useForm<WizardFormData>({
     resolver: zodResolver(wizardSchema),
@@ -93,15 +103,16 @@ export function PermitApplicationWizard({draftId, onSave}: PermitApplicationWiza
   useEffect(() => {
     if (!autoSaveEnabled) return;
 
+    if (!userId) return;
     const cleanup = applicationStorageService.startAutoSave(
-      'current-user-id', // Get from auth
+      userId,
       () => form.getValues(),
       () => currentStep,
       30000 // 30 seconds
     );
 
     return cleanup;
-  }, [autoSaveEnabled, currentStep, form]);
+  }, [autoSaveEnabled, currentStep, form, userId]);
 
   const loadDraft = async (id: string) => {
     try {
@@ -123,7 +134,7 @@ export function PermitApplicationWizard({draftId, onSave}: PermitApplicationWiza
     try {
       const data = form.getValues();
       const saved = await applicationStorageService.saveApplication(
-        'current-user-id', // Get from auth
+        userId || '',
         data,
         currentStep
       );
@@ -178,10 +189,16 @@ export function PermitApplicationWizard({draftId, onSave}: PermitApplicationWiza
         expedited: false,
       };
 
+      // Get auth token for API call
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
       const response = await fetch(`${API_URL}/permits/applications`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
         credentials: 'include',
         body: JSON.stringify(payload),

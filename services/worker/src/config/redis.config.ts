@@ -12,8 +12,12 @@ export function createRedisConnection(): Redis {
       return delay
     },
     reconnectOnError: (err) => {
-      const targetError = 'READONLY'
-      if (err.message.includes(targetError)) {
+      // Reconnect on transient errors (matches automation package redis.ts)
+      if (
+        err.message.includes('READONLY') ||
+        err.message.includes('ECONNRESET') ||
+        err.message.includes('ETIMEDOUT')
+      ) {
         return true
       }
       return false

@@ -1,20 +1,54 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ListTodo, UsersRound, Clock, ArrowRight } from 'lucide-react'
+import { ListTodo, UsersRound, Clock, ArrowRight, Loader2 } from 'lucide-react'
+import { apiRequest } from '@/lib/api'
 
-// Task 46: PM dashboard (UI-first). Backend wiring TBD.
+interface PmStats {
+  assignedClients: number
+  tasksToday: number
+  overdueTasks: number
+  totalTasks?: number
+  completedTasks?: number
+}
+
+interface PmTask {
+  id: string
+  title: string
+  clientName?: string
+  dueAt?: string
+  status: string
+  priority: string
+}
+
 export default function PmDashboardPage() {
-  const summary = {
-    assignedClients: 0,
-    tasksToday: 0,
-    overdueTasks: 0,
-  }
+  const [stats, setStats] = useState<PmStats>({ assignedClients: 0, tasksToday: 0, overdueTasks: 0 })
+  const [recentTasks, setRecentTasks] = useState<PmTask[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [statsRes, tasksRes] = await Promise.all([
+          apiRequest<{ stats: PmStats }>('/pm/stats').catch(() => ({ stats: { assignedClients: 0, tasksToday: 0, overdueTasks: 0 } })),
+          apiRequest<{ tasks: PmTask[] }>('/pm/tasks?limit=5&sortBy=dueAt&sortOrder=asc').catch(() => ({ tasks: [] })),
+        ])
+        setStats(statsRes.stats)
+        setRecentTasks(tasksRes.tasks || [])
+      } catch (err) {
+        console.error('Failed to fetch PM stats:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
 
   return (
     <ProtectedRoute>
@@ -30,7 +64,9 @@ export default function PmDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Assigned Clients</p>
-                  <p className="text-3xl font-bold mt-2">{summary.assignedClients}</p>
+                  <p className="text-3xl font-bold mt-2">
+                    {loading ? <Loader2 className="h-8 w-8 animate-spin text-gray-300" /> : stats.assignedClients}
+                  </p>
                   <p className="text-sm text-gray-500 mt-1">PM workload</p>
                 </div>
                 <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
@@ -43,7 +79,9 @@ export default function PmDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Tasks Due Today</p>
-                  <p className="text-3xl font-bold mt-2">{summary.tasksToday}</p>
+                  <p className="text-3xl font-bold mt-2">
+                    {loading ? <Loader2 className="h-8 w-8 animate-spin text-gray-300" /> : stats.tasksToday}
+                  </p>
                   <p className="text-sm text-gray-500 mt-1">Priority queue</p>
                 </div>
                 <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
@@ -56,7 +94,9 @@ export default function PmDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Overdue Tasks</p>
-                  <p className="text-3xl font-bold mt-2">{summary.overdueTasks}</p>
+                  <p className="text-3xl font-bold mt-2">
+                    {loading ? <Loader2 className="h-8 w-8 animate-spin text-gray-300" /> : stats.overdueTasks}
+                  </p>
                   <p className="text-sm text-gray-500 mt-1">Requires attention</p>
                 </div>
                 <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center">
@@ -69,17 +109,44 @@ export default function PmDashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Today’s Task Queue</CardTitle>
-                <CardDescription>Tasks due today (placeholder until Task 47 API wiring)</CardDescription>
+                <CardTitle>Recent Tasks</CardTitle>
+                <CardDescription>Your latest assigned tasks</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="space-y-1">
-                    <p className="font-medium">No tasks yet</p>
-                    <p className="text-sm text-gray-500">Once tasks exist, they’ll appear here.</p>
+                {loading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
                   </div>
-                  <Badge variant="outline">0</Badge>
-                </div>
+                ) : recentTasks.length === 0 ? (
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="space-y-1">
+                      <p className="font-medium">No tasks yet</p>
+                      <p className="text-sm text-gray-500">Tasks will appear here once assigned.</p>
+                    </div>
+                    <Badge variant="outline">0</Badge>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {recentTasks.map(task => (
+                      <Link key={task.id} href={`/pm/tasks/${task.id}`} className="block">
+                        <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition">
+                          <div className="space-y-1 min-w-0 flex-1">
+                            <p className="font-medium truncate">{task.title}</p>
+                            {task.dueAt && (
+                              <p className="text-sm text-gray-500">
+                                Due: {new Date(task.dueAt).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex gap-2 ml-3">
+                            <Badge variant="outline">{task.priority}</Badge>
+                            <Badge variant="outline">{task.status}</Badge>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
 
                 <div className="mt-4 flex justify-end">
                   <Link href="/pm/tasks">
@@ -120,4 +187,3 @@ export default function PmDashboardPage() {
     </ProtectedRoute>
   )
 }
-

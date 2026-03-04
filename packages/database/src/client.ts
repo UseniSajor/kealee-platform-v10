@@ -58,13 +58,24 @@ function getPrismaDatabaseUrl(): string | undefined {
         if (!u.port || u.port === '5432') u.port = '5433'
       }
 
-      return u.toString()
+      return appendPoolParams(u.toString())
     } catch {
       // If parsing fails, fall back to the raw value.
     }
   }
 
-  return raw
+  return appendPoolParams(raw)
+}
+
+/**
+ * Append connection pool parameters to DATABASE_URL if not already present.
+ * - connection_limit: 20 (default ~5 is undersized for 85+ route modules)
+ * - pool_timeout: 30s (wait for a connection before erroring)
+ */
+function appendPoolParams(url: string): string {
+  if (url.includes('connection_limit')) return url
+  const separator = url.includes('?') ? '&' : '?'
+  return `${url}${separator}connection_limit=20&pool_timeout=30`
 }
 
 const globalForPrisma = globalThis as unknown as {

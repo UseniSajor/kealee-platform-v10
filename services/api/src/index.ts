@@ -297,7 +297,7 @@ import testRoutes from './routes/test.routes'
 import { healthRoutes } from './routes/health.routes'
 // import { createGraphQLServer } from './graphql/server' // DISABLED: GraphQL not critical for MVP
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware'
-import { registerGlobalRateLimit } from './middleware/rate-limit.middleware'
+import { registerRateLimits } from './middleware/rate-limit.middleware'
 // CSRF protection intentionally disabled: API uses JWT Bearer token auth (not cookies),
 // which is inherently CSRF-safe. The middleware at csrf.middleware.ts is ready if needed.
 // import { registerCSRFProtection } from './middleware/csrf.middleware'
@@ -406,8 +406,8 @@ const start = async () => {
     await fastify.register(swagger, swaggerConfig as any)
     await fastify.register(swaggerUI, swaggerUIConfig)
 
-    // Register rate limiting (global)
-    await registerGlobalRateLimit(fastify)
+    // Register rate limiting (50 req/min for anonymous IP, 100 req/min for authenticated users)
+    await registerRateLimits(fastify)
 
     // CSRF protection not needed: all endpoints use JWT Bearer auth (not cookie-based sessions).
     // Bearer tokens require explicit Authorization headers, preventing CSRF attacks.
