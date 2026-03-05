@@ -703,15 +703,13 @@ const start = async () => {
     // ══════════════════════════════════════════════════════════════
 
     await safeRegisterBlock('Phase 1 - Finance & Accounting routes', async () => {
-      // accountRoutes removed — already registered via accountingRoutes at /accounting
-      const { journalEntryRoutes } = await import('./modules/finance/journal-entry.routes')
+      // accountRoutes + journalEntryRoutes removed — already registered via accountingRoutes at /accounting
       const { accountBalanceRoutes } = await import('./modules/finance/account-balance.routes')
       const { payoutRoutes } = await import('./modules/finance/payout.routes')
       const { statementRoutes } = await import('./modules/finance/statement.routes')
       const { paymentMethodRoutes } = await import('./modules/finance/payment-method.routes')
       const { scheduledPaymentRoutes } = await import('./modules/finance/scheduled-payment.routes')
       const { platformFeeRoutes } = await import('./modules/finance/platform-fee.routes')
-      await fastify.register(journalEntryRoutes, { prefix: '/accounting/journal-entries' })
       await fastify.register(accountBalanceRoutes, { prefix: '/accounting/balances' })
       await fastify.register(payoutRoutes, { prefix: '/accounting/payouts' })
       await fastify.register(statementRoutes, { prefix: '/accounting/statements' })
