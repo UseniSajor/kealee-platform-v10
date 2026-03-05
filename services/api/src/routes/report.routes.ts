@@ -64,8 +64,27 @@ export async function reportRoutes(fastify: FastifyInstance) {
           prisma.report.count({ where }),
         ]);
 
+        // Enrich with user details for frontend
+        const userIds = [...new Set(reports.map((r: any) => r.generatedBy).filter(Boolean))]
+        const users = userIds.length > 0
+          ? await prisma.user.findMany({
+              where: { id: { in: userIds } },
+              select: { id: true, name: true, email: true },
+            })
+          : []
+        const userMap = new Map(users.map((u: any) => [u.id, u]))
+
+        const enrichedReports = reports.map((r: any) => {
+          const u = r.generatedBy ? userMap.get(r.generatedBy) : null
+          return {
+            ...r,
+            generatedByName: u?.name || null,
+            generatedByEmail: u?.email || null,
+          }
+        })
+
         return {
-          reports,
+          reports: enrichedReports,
           pagination: {
             page: pageNum,
             limit: limitNum,
