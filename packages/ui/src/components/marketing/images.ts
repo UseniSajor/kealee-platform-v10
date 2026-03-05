@@ -37,6 +37,8 @@ export const heroImages = {
   blueprintReview: unsplash('photo-1503387762-592deb58ef4e', 1920, 1080, 'Architectural blueprints being reviewed on a desk'),
   /** Modern residential home exterior */
   modernHome: unsplash('photo-1600585154340-be6161a56a0c', 1920, 1080, 'Modern residential home with clean architectural lines'),
+  /** New construction homes – residential development with mixed commercial appeal */
+  newConstructionHomes: unsplash('photo-1628744448840-55bdb2497bd4', 1920, 1080, 'New residential construction development with modern homes'),
 };
 
 // ─── Section / Feature Images ────────────────────────────────────────────────

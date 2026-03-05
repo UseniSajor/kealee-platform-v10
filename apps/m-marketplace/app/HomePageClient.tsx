@@ -133,8 +133,8 @@ export function HomePageClient({
           'Nationwide Coverage',
           'Escrow Protected',
         ]}
-        backgroundImage={heroImages.constructionSite.src}
-        backgroundImageAlt={heroImages.constructionSite.alt}
+        backgroundImage={heroImages.newConstructionHomes.src}
+        backgroundImageAlt={heroImages.newConstructionHomes.alt}
       />
 
       {/* SECTION 2 - PHASE SHOWCASE (Version C: Pain → Solution) */}
