@@ -201,7 +201,8 @@ export async function adminOrdersRoutes(fastify: FastifyInstance) {
 
         // Broadcast realtime update (fire-and-forget)
         try {
-          const { broadcastToUser } = await import('@kealee/realtime')
+          const realtime: any = await import('@kealee/realtime')
+          const broadcastToUser = realtime.broadcastToUser
           await broadcastToUser(updated.userId, {
             event: 'order.completed',
             payload: {
