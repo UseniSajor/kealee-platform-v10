@@ -1,308 +1,160 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { Shield, Eye, Lock, Database, UserCheck, Bell } from 'lucide-react';
+import { Shield, Mail } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy',
-  description: 'Learn how Kealee collects, uses, and protects your personal information.',
+  title: 'Privacy Policy — Kealee Platform',
+  description: 'Privacy Policy for the Kealee Platform. Learn how we collect, use, and protect your data.',
 };
 
 export default function PrivacyPage() {
-  const lastUpdated = 'January 15, 2025';
-
-  const sections = [
-    {
-      id: 'information-collected',
-      title: 'Information We Collect',
-      icon: Database,
-      content: [
-        {
-          subtitle: 'Information You Provide',
-          items: [
-            'Account information (name, email, phone number, company name)',
-            'Project details and project documentation',
-            'Payment and billing information',
-            'Communications with our team',
-            'Feedback and survey responses',
-          ],
-        },
-        {
-          subtitle: 'Information Collected Automatically',
-          items: [
-            'Device information (browser type, operating system)',
-            'Usage data (pages visited, features used, time spent)',
-            'IP address and general location',
-            'Cookies and similar tracking technologies',
-          ],
-        },
-      ],
-    },
-    {
-      id: 'how-we-use',
-      title: 'How We Use Your Information',
-      icon: Eye,
-      content: [
-        {
-          subtitle: 'Primary Uses',
-          items: [
-            'Providing and improving our project management services',
-            'Processing permits and coordinating with jurisdictions',
-            'Managing your projects and team collaboration',
-            'Processing payments and maintaining billing records',
-            'Sending service-related communications',
-            'Providing customer support',
-          ],
-        },
-        {
-          subtitle: 'Secondary Uses',
-          items: [
-            'Analyzing usage patterns to improve our platform',
-            'Sending marketing communications (with your consent)',
-            'Conducting research to develop new features',
-            'Ensuring platform security and preventing fraud',
-          ],
-        },
-      ],
-    },
-    {
-      id: 'data-sharing',
-      title: 'How We Share Your Information',
-      icon: UserCheck,
-      content: [
-        {
-          subtitle: 'We may share your information with:',
-          items: [
-            'Service providers who help operate our platform (hosting, payment processing)',
-            'Government agencies when processing permits on your behalf',
-            'Professional partners (architects, engineers) you engage through our platform',
-            'Legal authorities when required by law or to protect rights',
-          ],
-        },
-        {
-          subtitle: 'We never:',
-          items: [
-            'Sell your personal information to third parties',
-            'Share your project data with competitors',
-            'Use your information for purposes you haven\'t consented to',
-          ],
-        },
-      ],
-    },
-    {
-      id: 'data-security',
-      title: 'How We Protect Your Information',
-      icon: Lock,
-      content: [
-        {
-          subtitle: 'Security Measures',
-          items: [
-            '256-bit SSL/TLS encryption for all data in transit',
-            'AES-256 encryption for data at rest',
-            'SOC 2 Type II certified data centers',
-            'Regular security audits and penetration testing',
-            'Role-based access controls',
-            'Multi-factor authentication options',
-            '24/7 security monitoring',
-          ],
-        },
-      ],
-    },
-    {
-      id: 'your-rights',
-      title: 'Your Rights and Choices',
-      icon: Shield,
-      content: [
-        {
-          subtitle: 'You have the right to:',
-          items: [
-            'Access your personal information',
-            'Correct inaccurate data',
-            'Delete your account and associated data',
-            'Export your data in a portable format',
-            'Opt out of marketing communications',
-            'Restrict certain processing activities',
-          ],
-        },
-        {
-          subtitle: 'To exercise these rights:',
-          items: [
-            'Contact us at privacy@kealee.com',
-            'Use the settings in your account dashboard',
-            'We will respond within 30 days',
-          ],
-        },
-      ],
-    },
-    {
-      id: 'cookies',
-      title: 'Cookies and Tracking',
-      icon: Bell,
-      content: [
-        {
-          subtitle: 'Types of cookies we use:',
-          items: [
-            'Essential cookies (required for platform functionality)',
-            'Performance cookies (help us understand usage)',
-            'Functional cookies (remember your preferences)',
-            'Marketing cookies (only with your consent)',
-          ],
-        },
-        {
-          subtitle: 'Managing cookies:',
-          items: [
-            'Use our cookie preference center',
-            'Adjust your browser settings',
-            'Note: disabling essential cookies may affect functionality',
-          ],
-        },
-      ],
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-white">
       <Header />
 
-      <main className="pt-32 pb-20">
+      {/* Hero */}
+      <section className="pt-32 pb-16 bg-[#0F0F19]">
         <div className="container mx-auto px-6">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#CC5500]/10 mb-6">
+              <Shield className="w-8 h-8 text-[#CC5500]" />
+            </div>
+            <h1 className="text-4xl font-bold text-white mb-4">Privacy Policy</h1>
+            <p className="text-gray-400">Effective Date: March 5, 2026</p>
+          </div>
+        </div>
+      </section>
 
-            {/* Header */}
-            <div className="text-center mb-12">
-              <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Shield className="text-blue-600" size={32} />
-              </div>
-              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-                Privacy Policy
-              </h1>
-              <p className="text-xl text-gray-600">
-                Your privacy matters. Here's how we protect it.
+      {/* Content */}
+      <section className="py-20">
+        <div className="container mx-auto px-6">
+          <div className="max-w-3xl mx-auto">
+
+            <p className="text-gray-600 leading-relaxed text-lg mb-12">
+              Kealee Platform (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) is operated by <strong>Kealee Construction LLC</strong>. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website at <strong>kealee.com</strong> and associated services (collectively, the &quot;Platform&quot;).
+            </p>
+
+            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">1. Information We Collect</h2>
+
+            <h3 className="text-lg font-semibold text-gray-900 mt-8 mb-3">Personal Information</h3>
+            <p className="text-gray-600 leading-relaxed">When you create an account, purchase a product, or interact with our Platform, we may collect:</p>
+            <ul className="text-gray-600 space-y-2 list-disc pl-6 mt-3">
+              <li>Full name and email address</li>
+              <li>Phone number</li>
+              <li>Company or organization name</li>
+              <li>Billing and payment information (processed securely via Stripe)</li>
+              <li>Project details and uploaded documents</li>
+            </ul>
+
+            <h3 className="text-lg font-semibold text-gray-900 mt-8 mb-3">Usage Data</h3>
+            <p className="text-gray-600 leading-relaxed">We automatically collect certain information when you access the Platform, including:</p>
+            <ul className="text-gray-600 space-y-2 list-disc pl-6 mt-3">
+              <li>IP address and browser type</li>
+              <li>Pages visited and time spent on pages</li>
+              <li>Device type and operating system</li>
+              <li>Referring URLs and search terms</li>
+              <li>Interaction data (clicks, scrolls, feature usage)</li>
+            </ul>
+
+            <h3 className="text-lg font-semibold text-gray-900 mt-8 mb-3">Cookies and Tracking Technologies</h3>
+            <p className="text-gray-600 leading-relaxed">
+              We use cookies, pixels, and similar technologies to enhance your experience, analyze usage patterns, and deliver relevant content. You can manage cookie preferences through your browser settings.
+            </p>
+
+            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">2. How We Use Your Information</h2>
+            <p className="text-gray-600 leading-relaxed">We use the information we collect to:</p>
+            <ul className="text-gray-600 space-y-2 list-disc pl-6 mt-3">
+              <li>Operate, maintain, and improve the Platform</li>
+              <li>Process transactions and send related information (confirmations, invoices)</li>
+              <li>Send you communications about your account, projects, and platform updates</li>
+              <li>Provide customer support and respond to inquiries</li>
+              <li>Personalize your experience and deliver tailored content</li>
+              <li>Analyze usage trends to improve our services</li>
+              <li>Detect, prevent, and address technical issues and fraud</li>
+              <li>Comply with legal obligations</li>
+            </ul>
+
+            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">3. Third-Party Services</h2>
+            <p className="text-gray-600 leading-relaxed">
+              We work with trusted third-party service providers to operate the Platform. These providers have access to your information only as needed to perform services on our behalf and are obligated to protect it:
+            </p>
+            <ul className="text-gray-600 space-y-2 list-disc pl-6 mt-3">
+              <li><strong>Supabase</strong> — Authentication and user account management</li>
+              <li><strong>Stripe</strong> — Payment processing and billing</li>
+              <li><strong>Meta (Facebook) Platform</strong> — Advertising, analytics, and social login integration</li>
+              <li><strong>Anthropic (Claude AI)</strong> — AI-powered features including estimation, document analysis, and chat assistance</li>
+              <li><strong>Resend</strong> — Transactional and marketing email delivery</li>
+              <li><strong>Twilio</strong> — SMS notifications</li>
+              <li><strong>Vercel</strong> — Website hosting and performance analytics</li>
+            </ul>
+
+            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">4. Data Sharing and Disclosure</h2>
+            <p className="text-gray-600 leading-relaxed">We do not sell your personal information. We may share your information in the following circumstances:</p>
+            <ul className="text-gray-600 space-y-2 list-disc pl-6 mt-3">
+              <li>With service providers who assist in platform operations (as listed above)</li>
+              <li>When required by law, regulation, or legal process</li>
+              <li>To protect the rights, property, or safety of Kealee, our users, or others</li>
+              <li>In connection with a merger, acquisition, or sale of assets (with notice to you)</li>
+            </ul>
+
+            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">5. Data Retention</h2>
+            <p className="text-gray-600 leading-relaxed">
+              We retain your personal information for as long as your account is active or as needed to provide you services. If you request deletion of your account, we will delete or anonymize your personal data within <strong>30 days</strong>, except where we are required to retain it for legal, accounting, or regulatory purposes.
+            </p>
+            <p className="text-gray-600 leading-relaxed mt-4">
+              Usage data and aggregated analytics may be retained in anonymized form indefinitely to improve our services.
+            </p>
+
+            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">6. Data Security</h2>
+            <p className="text-gray-600 leading-relaxed">
+              We implement industry-standard security measures to protect your information, including encryption in transit (TLS/SSL), encrypted storage, secure authentication, and regular security audits. However, no method of transmission over the internet is 100% secure, and we cannot guarantee absolute security.
+            </p>
+
+            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">7. Your Rights</h2>
+            <p className="text-gray-600 leading-relaxed">Depending on your location, you may have the following rights regarding your personal data:</p>
+            <ul className="text-gray-600 space-y-2 list-disc pl-6 mt-3">
+              <li><strong>Access</strong> — Request a copy of the personal data we hold about you</li>
+              <li><strong>Correction</strong> — Request correction of inaccurate or incomplete data</li>
+              <li><strong>Deletion</strong> — Request deletion of your personal data (see our <Link href="/data-deletion" className="text-[#57A7DB] hover:underline">Data Deletion page</Link>)</li>
+              <li><strong>Portability</strong> — Request a machine-readable copy of your data</li>
+              <li><strong>Objection</strong> — Object to processing of your data for certain purposes</li>
+            </ul>
+            <p className="text-gray-600 leading-relaxed mt-4">
+              To exercise any of these rights, please contact us at{' '}
+              <a href="mailto:info@kealee.com" className="text-[#57A7DB] hover:underline">info@kealee.com</a>.
+            </p>
+
+            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">8. Children&apos;s Privacy</h2>
+            <p className="text-gray-600 leading-relaxed">
+              The Platform is not intended for individuals under the age of 18. We do not knowingly collect personal information from children. If you believe we have collected data from a child, please contact us immediately.
+            </p>
+
+            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">9. Changes to This Policy</h2>
+            <p className="text-gray-600 leading-relaxed">
+              We may update this Privacy Policy from time to time. We will notify you of material changes by posting the updated policy on this page and updating the effective date. Your continued use of the Platform after changes are posted constitutes your acceptance of the updated policy.
+            </p>
+
+            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-4">10. Contact Us</h2>
+            <p className="text-gray-600 leading-relaxed">
+              If you have questions or concerns about this Privacy Policy or our data practices, please contact us:
+            </p>
+            <div className="bg-gray-50 rounded-xl p-6 mt-4">
+              <p className="text-gray-900 font-semibold">Kealee Construction LLC</p>
+              <p className="text-gray-600 mt-2">
+                <Mail className="w-4 h-4 inline mr-2 text-[#57A7DB]" />
+                <a href="mailto:info@kealee.com" className="text-[#57A7DB] hover:underline">info@kealee.com</a>
               </p>
-              <p className="text-sm text-gray-500 mt-4">
-                Last updated: {lastUpdated}
+              <p className="text-gray-600 mt-1">
+                Website:{' '}
+                <a href="https://kealee.com" className="text-[#57A7DB] hover:underline">kealee.com</a>
               </p>
             </div>
-
-            {/* Introduction */}
-            <div className="bg-blue-50 rounded-2xl p-8 mb-12">
-              <p className="text-gray-700 leading-relaxed">
-                Kealee LLC ("Kealee," "we," "us," or "our") is committed to protecting your privacy.
-                This Privacy Policy explains how we collect, use, disclose, and safeguard your information when
-                you use our project management platform and related services. By using Kealee, you agree
-                to the collection and use of information in accordance with this policy.
-              </p>
-            </div>
-
-            {/* Table of Contents */}
-            <div className="bg-gray-50 rounded-2xl p-8 mb-12">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Contents</h2>
-              <nav className="grid md:grid-cols-2 gap-2">
-                {sections.map((section) => (
-                  <a
-                    key={section.id}
-                    href={`#${section.id}`}
-                    className="text-blue-600 hover:text-blue-700 flex items-center gap-2"
-                  >
-                    <section.icon size={16} />
-                    {section.title}
-                  </a>
-                ))}
-              </nav>
-            </div>
-
-            {/* Sections */}
-            <div className="space-y-12">
-              {sections.map((section) => (
-                <section key={section.id} id={section.id} className="scroll-mt-24">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                      <section.icon className="text-blue-600" size={24} />
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-900">{section.title}</h2>
-                  </div>
-
-                  <div className="space-y-6 pl-16">
-                    {section.content.map((block, idx) => (
-                      <div key={idx}>
-                        <h3 className="font-semibold text-gray-900 mb-3">{block.subtitle}</h3>
-                        <ul className="space-y-2">
-                          {block.items.map((item, itemIdx) => (
-                            <li key={itemIdx} className="flex items-start gap-3 text-gray-600">
-                              <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-                              {item}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              ))}
-            </div>
-
-            {/* Data Retention */}
-            <section className="mt-12 pt-12 border-t border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Data Retention</h2>
-              <p className="text-gray-600 mb-4">
-                We retain your personal information for as long as necessary to provide our services and fulfill
-                the purposes outlined in this policy. Specifically:
-              </p>
-              <ul className="space-y-2 text-gray-600">
-                <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-                  Account data is retained while your account is active
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-                  Project data is retained for 7 years after project completion (for regulatory compliance)
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-                  Payment records are retained as required by tax laws
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-                  You can request deletion of your data at any time (subject to legal requirements)
-                </li>
-              </ul>
-            </section>
-
-            {/* Children's Privacy */}
-            <section className="mt-12 pt-12 border-t border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Children's Privacy</h2>
-              <p className="text-gray-600">
-                Kealee is designed for business use and is not intended for children under 18. We do not
-                knowingly collect personal information from children. If you believe we have collected
-                information from a child, please contact us immediately at privacy@kealee.com.
-              </p>
-            </section>
-
-            {/* Changes to Policy */}
-            <section className="mt-12 pt-12 border-t border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Changes to This Policy</h2>
-              <p className="text-gray-600">
-                We may update this Privacy Policy from time to time. We will notify you of any material changes
-                by posting the new policy on this page and updating the "Last updated" date. For significant
-                changes, we will provide additional notice via email or through the platform.
-              </p>
-            </section>
-
-            {/* Contact */}
-            <section className="mt-12 bg-gray-50 rounded-2xl p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Contact Us</h2>
-              <p className="text-gray-600 mb-4">
-                If you have questions about this Privacy Policy or our data practices, please contact us:
-              </p>
-              <div className="space-y-2 text-gray-600">
-                <p><strong>Email:</strong> privacy@kealee.com</p>
-                <p><strong>Address:</strong> Kealee LLC, Washington, DC</p>
-              </div>
-            </section>
 
           </div>
         </div>
-      </main>
+      </section>
 
       <Footer />
     </div>

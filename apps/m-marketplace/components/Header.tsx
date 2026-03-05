@@ -18,6 +18,7 @@ import {
   ShoppingBag,
   User,
   Building2,
+  Home,
 } from 'lucide-react';
 import { CartButton } from './CartButton';
 import { DashboardNotifications } from './DashboardNotifications';
@@ -53,6 +54,11 @@ const solutions = [
   },
 ];
 
+const products = [
+  { name: 'Stock Plans', description: 'Browse 100+ house plans', href: '/plans', icon: ShoppingBag },
+  { name: 'Design Catalog', description: 'Custom concept designs', href: '/services/design', icon: Palette },
+];
+
 const portals = [
   { name: 'Project Owner', href: '/owner', icon: User, color: 'text-blue-600' },
   { name: 'Architecture', href: '/architect', icon: Palette, color: 'text-teal-600' },
@@ -66,17 +72,17 @@ const portals = [
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [solutionsOpen, setSolutionsOpen] = useState(false);
+  const [marketplaceOpen, setMarketplaceOpen] = useState(false);
   const [portalsOpen, setPortalsOpen] = useState(false);
-  const solutionsRef = useRef<HTMLDivElement>(null);
+  const marketplaceRef = useRef<HTMLDivElement>(null);
   const portalsRef = useRef<HTMLDivElement>(null);
   const { profile, loading: authLoading } = useProfile();
   const isLoggedIn = !authLoading && !!profile;
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (solutionsRef.current && !solutionsRef.current.contains(event.target as Node)) {
-        setSolutionsOpen(false);
+      if (marketplaceRef.current && !marketplaceRef.current.contains(event.target as Node)) {
+        setMarketplaceOpen(false);
       }
       if (portalsRef.current && !portalsRef.current.contains(event.target as Node)) {
         setPortalsOpen(false);
@@ -106,35 +112,67 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-6">
-            {/* Solutions Mega Menu */}
-            <div ref={solutionsRef} className="relative">
+            {/* Marketplace Mega Menu */}
+            <div ref={marketplaceRef} className="relative">
               <button
                 className="flex items-center gap-1 text-gray-700 hover:text-blue-600 transition font-medium"
-                onClick={() => { setSolutionsOpen(!solutionsOpen); setPortalsOpen(false); }}
+                onClick={() => { setMarketplaceOpen(!marketplaceOpen); setPortalsOpen(false); }}
               >
-                Solutions
-                <ChevronDown className={`w-4 h-4 transition-transform ${solutionsOpen ? 'rotate-180' : ''}`} />
+                Marketplace
+                <ChevronDown className={`w-4 h-4 transition-transform ${marketplaceOpen ? 'rotate-180' : ''}`} />
               </button>
-              {solutionsOpen && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[640px] bg-white rounded-xl shadow-xl border border-gray-200 p-6 grid grid-cols-2 gap-6">
-                  {solutions.map((group) => (
-                    <div key={group.category}>
+              {marketplaceOpen && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[820px] bg-white rounded-xl shadow-xl border border-gray-200 p-6">
+                  <div className="grid grid-cols-3 gap-6">
+                    {/* Solutions columns (left 2 cols) */}
+                    <div className="col-span-2 grid grid-cols-2 gap-6">
+                      {solutions.map((group) => (
+                        <div key={group.category}>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
+                            {group.category}
+                          </p>
+                          <div className="space-y-1">
+                            {group.items.map((item) => (
+                              <Link
+                                key={item.name}
+                                href={item.href}
+                                className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition group"
+                                onClick={() => setMarketplaceOpen(false)}
+                              >
+                                <div className="w-9 h-9 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition">
+                                  <item.icon className="w-5 h-5 text-blue-600" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition">
+                                    {item.name}
+                                  </p>
+                                  <p className="text-xs text-gray-500">{item.description}</p>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Products column (right col) */}
+                    <div className="border-l border-gray-100 pl-6">
                       <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-                        {group.category}
+                        Products
                       </p>
                       <div className="space-y-1">
-                        {group.items.map((item) => (
+                        {products.map((item) => (
                           <Link
                             key={item.name}
                             href={item.href}
                             className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition group"
-                            onClick={() => setSolutionsOpen(false)}
+                            onClick={() => setMarketplaceOpen(false)}
                           >
-                            <div className="w-9 h-9 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition">
-                              <item.icon className="w-5 h-5 text-blue-600" />
+                            <div className="w-9 h-9 rounded-lg bg-emerald-50 group-hover:bg-emerald-100 flex items-center justify-center transition">
+                              <item.icon className="w-5 h-5 text-emerald-600" />
                             </div>
                             <div>
-                              <p className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition">
+                              <p className="text-sm font-semibold text-gray-900 group-hover:text-emerald-600 transition">
                                 {item.name}
                               </p>
                               <p className="text-xs text-gray-500">{item.description}</p>
@@ -143,12 +181,13 @@ export function Header() {
                         ))}
                       </div>
                     </div>
-                  ))}
-                  <div className="col-span-2 border-t border-gray-100 pt-4 mt-2">
+                  </div>
+
+                  <div className="col-span-3 border-t border-gray-100 pt-4 mt-4">
                     <Link
                       href="/services"
                       className="text-sm font-medium text-blue-600 hover:text-blue-700 transition"
-                      onClick={() => setSolutionsOpen(false)}
+                      onClick={() => setMarketplaceOpen(false)}
                     >
                       View all services →
                     </Link>
@@ -161,8 +200,9 @@ export function Header() {
               Network
             </Link>
 
-            <Link href="/plans" className="text-gray-700 hover:text-blue-600 transition font-medium">
-              Stock Plans
+            <Link href="/services/design" className="flex items-center gap-1.5 text-gray-700 hover:text-blue-600 transition font-medium">
+              <Home className="w-4 h-4" />
+              Homeowner
             </Link>
 
             <Link href="/pricing" className="text-gray-700 hover:text-blue-600 transition font-medium">
@@ -177,7 +217,7 @@ export function Header() {
             <div ref={portalsRef} className="relative">
               <button
                 className="flex items-center gap-1 text-gray-700 hover:text-blue-600 transition font-medium"
-                onClick={() => { setPortalsOpen(!portalsOpen); setSolutionsOpen(false); }}
+                onClick={() => { setPortalsOpen(!portalsOpen); setMarketplaceOpen(false); }}
               >
                 Portals
                 <ChevronDown className={`w-4 h-4 transition-transform ${portalsOpen ? 'rotate-180' : ''}`} />
@@ -262,9 +302,12 @@ export function Header() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden py-4 border-t border-gray-100 max-h-[80vh] overflow-y-auto">
-            {/* Solutions Section */}
+            {/* Marketplace Section */}
             <div className="mb-4">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider px-2 mb-2">Solutions</p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider px-2 mb-2">Marketplace</p>
+
+              {/* Solutions subsections */}
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider px-2 mb-2 mt-3">Solutions</p>
               {solutions.map((group) => (
                 <div key={group.category} className="mb-3">
                   <p className="text-xs font-semibold text-gray-500 px-2 mb-1">{group.category}</p>
@@ -284,14 +327,32 @@ export function Header() {
                   ))}
                 </div>
               ))}
+
+              {/* Products subsection */}
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider px-2 mb-2 mt-3">Products</p>
+              {products.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-50"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <item.icon className="w-5 h-5 text-emerald-600" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{item.name}</p>
+                    <p className="text-xs text-gray-500">{item.description}</p>
+                  </div>
+                </Link>
+              ))}
             </div>
 
             <div className="border-t border-gray-100 pt-3 space-y-1">
               <Link href="/network" className="block px-2 py-2 text-gray-700 hover:text-blue-600 font-medium" onClick={() => setMobileMenuOpen(false)}>
                 Network
               </Link>
-              <Link href="/plans" className="block px-2 py-2 text-gray-700 hover:text-blue-600 font-medium" onClick={() => setMobileMenuOpen(false)}>
-                Stock Plans
+              <Link href="/services/design" className="flex items-center gap-1.5 px-2 py-2 text-gray-700 hover:text-blue-600 font-medium" onClick={() => setMobileMenuOpen(false)}>
+                <Home className="w-4 h-4" />
+                Homeowner
               </Link>
               <Link href="/pricing" className="block px-2 py-2 text-gray-700 hover:text-blue-600 font-medium" onClick={() => setMobileMenuOpen(false)}>
                 Pricing
