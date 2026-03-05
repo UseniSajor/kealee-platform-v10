@@ -86,7 +86,6 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Statements'],
         summary: 'Generate a new financial statement',
-        body: GenerateStatementSchema,
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -121,7 +120,6 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Statements'],
         summary: 'List statements with filtering',
-        querystring: ListStatementsSchema,
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -171,7 +169,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Statements'],
         summary: 'Get statement details',
-        params: StatementIdParamSchema,
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -207,7 +205,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Statements'],
         summary: 'Download statement PDF',
-        params: StatementIdParamSchema,
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -253,8 +251,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Statements'],
         summary: 'Send statement via email',
-        params: StatementIdParamSchema,
-        body: SendStatementSchema,
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -369,8 +366,7 @@ export async function statementGenerationRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Statements'],
         summary: 'Verify statement authenticity',
-        params: StatementIdParamSchema,
-        body: VerifyStatementSchema,
+
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {

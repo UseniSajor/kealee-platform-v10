@@ -101,7 +101,6 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Lien Waivers'],
         summary: 'Generate a new lien waiver',
-        body: GenerateWaiverSchema,
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -149,7 +148,6 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Lien Waivers'],
         summary: 'List lien waivers with filtering',
-        querystring: ListWaiversSchema,
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -193,7 +191,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Lien Waivers'],
         summary: 'Get lien waiver details',
-        params: WaiverIdParamSchema,
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -227,8 +225,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Lien Waivers'],
         summary: 'Send waiver for digital signature',
-        params: WaiverIdParamSchema,
-        body: SendForSignatureSchema,
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -265,8 +262,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Lien Waivers'],
         summary: 'Record a signature for a waiver',
-        params: WaiverIdParamSchema,
-        body: RecordSignatureSchema,
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -315,8 +311,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Lien Waivers'],
         summary: 'Notarize a lien waiver',
-        params: WaiverIdParamSchema,
-        body: NotarizeWaiverSchema,
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -360,7 +355,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Lien Waivers'],
         summary: 'Get all waivers for a contract',
-        params: z.object({ contractId: z.string().uuid() }),
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -394,7 +389,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Lien Waivers'],
         summary: 'Get all waivers for a payment release',
-        params: z.object({ paymentReleaseId: z.string().uuid() }),
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -427,7 +422,6 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Lien Waivers'],
         summary: 'Verify a lien waiver authenticity',
-        body: VerifyWaiverSchema,
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
@@ -462,7 +456,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Lien Waivers'],
         summary: 'Check lien waiver compliance for a contract',
-        params: z.object({ contractId: z.string().uuid() }),
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -496,11 +490,7 @@ export async function lienWaiverRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Lien Waivers'],
         summary: 'Get lien waiver statistics',
-        querystring: z.object({
-          startDate: z.coerce.date().optional(),
-          endDate: z.coerce.date().optional(),
-          state: z.string().length(2).toUpperCase().optional(),
-        }),
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {

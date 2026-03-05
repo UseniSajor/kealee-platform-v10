@@ -54,7 +54,6 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Financial Reports'],
         summary: 'Get cash flow statement',
-        querystring: ReportFiltersSchema,
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -88,7 +87,6 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Financial Reports'],
         summary: 'Get profit & loss report',
-        querystring: ReportFiltersSchema,
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -122,7 +120,6 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Financial Reports'],
         summary: 'Get escrow balance summary',
-        querystring: ReportFiltersSchema,
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -157,7 +154,6 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Financial Reports'],
         summary: 'Get transaction volume metrics',
-        querystring: ReportFiltersSchema,
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -191,7 +187,6 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Financial Reports'],
         summary: 'Get fee revenue tracking report',
-        querystring: ReportFiltersSchema,
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -225,9 +220,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Financial Reports'],
         summary: 'Get contractor payout report',
-        querystring: ReportFiltersSchema.extend({
-          contractorId: z.string().uuid().optional(),
-        }),
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -261,7 +254,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Financial Reports'],
         summary: 'Get real-time dashboard metrics',
-        querystring: DashboardMetricsSchema,
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -296,19 +289,7 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Financial Reports'],
         summary: 'Export a report in specified format',
-        body: z.object({
-          reportType: z.enum([
-            'CASH_FLOW',
-            'PROFIT_LOSS',
-            'ESCROW_SUMMARY',
-            'TRANSACTION_VOLUME',
-            'FEE_REVENUE',
-            'CONTRACTOR_PAYOUTS',
-          ]),
-          format: ExportFormatSchema,
-          filters: ReportFiltersSchema.optional(),
-          includeCharts: z.boolean().default(true),
-        }),
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -380,7 +361,6 @@ export async function financialReportingRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Financial Reports'],
         summary: 'Get a summary of all key financial metrics',
-        querystring: ReportFiltersSchema,
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {

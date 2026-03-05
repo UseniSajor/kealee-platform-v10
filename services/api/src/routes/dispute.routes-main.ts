@@ -93,7 +93,6 @@ export async function disputeRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Disputes'],
         summary: 'Initiate a new dispute',
-        body: InitiateDisputeSchema,
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -132,7 +131,6 @@ export async function disputeRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Disputes'],
         summary: 'List disputes with filtering',
-        querystring: ListDisputesSchema,
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -166,7 +164,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Disputes'],
         summary: 'Get dispute details',
-        params: DisputeIdParamSchema,
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -207,8 +205,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Disputes'],
         summary: 'Submit evidence for a dispute',
-        params: DisputeIdParamSchema,
-        body: SubmitEvidenceSchema,
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -249,8 +246,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Disputes'],
         summary: 'Send a message in a dispute thread',
-        params: DisputeIdParamSchema,
-        body: SendMessageSchema,
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -290,7 +286,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Disputes'],
         summary: 'Get messages for a dispute',
-        params: DisputeIdParamSchema,
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -333,8 +329,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Disputes'],
         summary: 'Assign a mediator to a dispute',
-        params: DisputeIdParamSchema,
-        body: AssignMediatorSchema,
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -370,8 +365,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Disputes'],
         summary: 'Resolve a dispute',
-        params: DisputeIdParamSchema,
-        body: ResolveDisputeSchema,
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -412,8 +406,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Disputes'],
         summary: 'File an appeal for a dispute resolution',
-        params: DisputeIdParamSchema,
-        body: FileAppealSchema,
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {
@@ -483,11 +476,7 @@ export async function disputeRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Disputes'],
         summary: 'Get dispute statistics',
-        querystring: z.object({
-          startDate: z.coerce.date().optional(),
-          endDate: z.coerce.date().optional(),
-          projectId: z.string().uuid().optional(),
-        }),
+
       },
     },
     async (request: AuthenticatedRequest, reply: FastifyReply) => {

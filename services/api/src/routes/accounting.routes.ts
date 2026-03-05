@@ -62,7 +62,6 @@ export async function accountingRoutes(fastify: FastifyInstance) {
       schema: {
         description: 'Create a new journal entry',
         tags: ['accounting'],
-        body: CreateJournalEntrySchema,
         response: {
           201: {
             type: 'object',
@@ -104,7 +103,6 @@ export async function accountingRoutes(fastify: FastifyInstance) {
       schema: {
         description: 'Get journal entry by ID',
         tags: ['accounting'],
-        params: EntryIdParamSchema,
         response: {
           200: {
             type: 'object',
@@ -139,7 +137,6 @@ export async function accountingRoutes(fastify: FastifyInstance) {
       schema: {
         description: 'List journal entries with filters',
         tags: ['accounting'],
-        querystring: GetJournalEntriesSchema,
         response: {
           200: {
             type: 'object',
@@ -178,7 +175,6 @@ export async function accountingRoutes(fastify: FastifyInstance) {
       schema: {
         description: 'Post journal entry to make it permanent',
         tags: ['accounting'],
-        params: EntryIdParamSchema,
         response: {
           200: {
             type: 'object',
@@ -220,8 +216,6 @@ export async function accountingRoutes(fastify: FastifyInstance) {
       schema: {
         description: 'Approve journal entry requiring approval',
         tags: ['accounting'],
-        params: EntryIdParamSchema,
-        body: ApproveJournalEntryBodySchema,
         response: {
           200: {
             type: 'object',
@@ -264,8 +258,6 @@ export async function accountingRoutes(fastify: FastifyInstance) {
       schema: {
         description: 'Void journal entry with reversing entry',
         tags: ['accounting'],
-        params: EntryIdParamSchema,
-        body: VoidJournalEntrySchema.omit({ entryId: true, voidedBy: true }),
         response: {
           200: {
             type: 'object',
@@ -312,7 +304,6 @@ export async function accountingRoutes(fastify: FastifyInstance) {
       schema: {
         description: 'Delete a draft journal entry',
         tags: ['accounting'],
-        params: EntryIdParamSchema,
         response: {
           200: {
             type: 'object',
@@ -384,7 +375,6 @@ export async function accountingRoutes(fastify: FastifyInstance) {
       schema: {
         description: 'Get account by ID',
         tags: ['accounting'],
-        params: AccountIdParamSchema,
         response: {
           200: {
             type: 'object',
@@ -419,8 +409,6 @@ export async function accountingRoutes(fastify: FastifyInstance) {
       schema: {
         description: 'Get account balance',
         tags: ['accounting'],
-        params: AccountIdParamSchema,
-        querystring: GetAccountBalanceSchema.omit({ accountId: true }),
         response: {
           200: {
             type: 'object',
@@ -460,7 +448,6 @@ export async function accountingRoutes(fastify: FastifyInstance) {
       schema: {
         description: 'Create a new account',
         tags: ['accounting'],
-        body: CreateAccountSchema,
         response: {
           201: {
             type: 'object',
@@ -502,8 +489,6 @@ export async function accountingRoutes(fastify: FastifyInstance) {
       schema: {
         description: 'Reconcile account for a period',
         tags: ['accounting'],
-        params: AccountIdParamSchema,
-        body: ReconcileAccountSchema.omit({ accountId: true, reconciledBy: true }),
         response: {
           200: {
             type: 'object',
@@ -552,7 +537,6 @@ export async function accountingRoutes(fastify: FastifyInstance) {
       schema: {
         description: 'Deactivate an account',
         tags: ['accounting'],
-        params: AccountIdParamSchema,
         response: {
           200: {
             type: 'object',
@@ -591,7 +575,6 @@ export async function accountingRoutes(fastify: FastifyInstance) {
       schema: {
         description: 'Reactivate an account',
         tags: ['accounting'],
-        params: AccountIdParamSchema,
         response: {
           200: {
             type: 'object',
