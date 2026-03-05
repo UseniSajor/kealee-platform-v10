@@ -12,8 +12,8 @@ import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 export async function orgRoutes(fastify: FastifyInstance) {
   // Register per-org rate limiting for org routes
   await fastify.register(rateLimit, {
-    max: RATE_LIMIT_CONFIG.perOrg.max,
-    timeWindow: RATE_LIMIT_CONFIG.perOrg.timeWindow,
+    max: RATE_LIMIT_CONFIG.perUser.max,
+    timeWindow: RATE_LIMIT_CONFIG.perUser.timeWindow,
     keyGenerator: (request) => {
       const orgId =
         (request.params as any)?.id ||

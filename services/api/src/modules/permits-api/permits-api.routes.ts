@@ -5,6 +5,7 @@
 
 import {FastifyInstance, FastifyRequest, FastifyReply} from 'fastify';
 import {getSupabaseClient} from '../../utils/supabase-client';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error';
 
 interface PermitQuery {
   jurisdictionId?: string;

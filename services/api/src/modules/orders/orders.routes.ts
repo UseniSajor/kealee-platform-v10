@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify'
-import { getPrisma } from '../../utils/prisma-helper'
+import { prisma } from '../../utils/prisma-helper'
 
 export async function ordersRoutes(fastify: FastifyInstance) {
-  const prismaAny = getPrisma() as any
+  const prismaAny = prisma as any
 
   /**
    * GET /orders/verify — Public endpoint to check if an order exists for a Stripe session.

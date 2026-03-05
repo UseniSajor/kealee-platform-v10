@@ -235,9 +235,9 @@ export async function chat(sessionId: string, userMessage: string): Promise<KeaB
   });
 
   const assistantMessage =
-    response.content[0].type === 'text' ? response.content[0].text : 'I apologize, I had trouble processing that.';
+    (response.content[0].type === 'text' ? response.content[0].text : '') || 'I apologize, I had trouble processing that.';
 
-  ctx.messages.push({ role: 'assistant', content: assistantMessage });
+  ctx.messages.push({ role: 'assistant', content: assistantMessage ?? '' });
 
   // Calculate lead score
   const leadScore = calculateLeadScore(ctx);
@@ -252,7 +252,7 @@ export async function chat(sessionId: string, userMessage: string): Promise<KeaB
   }
 
   return {
-    message: assistantMessage,
+    message: assistantMessage ?? '',
     leadScore,
     suggestedActions,
     sessionId,

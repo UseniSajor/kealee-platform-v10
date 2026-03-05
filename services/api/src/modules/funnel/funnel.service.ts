@@ -1,5 +1,7 @@
 import { prisma } from '../../utils/prisma-helper'
+// @ts-ignore - page-builder module resolution
 import { buildPage, getProgress as getPageProgress } from '@kealee/page-builder'
+// @ts-ignore - page-builder module resolution
 import type { PageBuildResult } from '@kealee/page-builder'
 
 const prismaTyped = prisma as any
@@ -110,6 +112,7 @@ export class FunnelService {
 
   async getPage(sessionId: string): Promise<PageBuildResult | null> {
     // Try Redis cache first (handled inside page-builder)
+    // @ts-ignore - page-builder module resolution
     const { getCachedPage } = await import('@kealee/page-builder')
     const cached = await getCachedPage(sessionId)
     if (cached) return cached

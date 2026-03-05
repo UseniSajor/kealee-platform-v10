@@ -351,7 +351,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         (u: any) => u.email?.toLowerCase() === email.toLowerCase()
       )
 
-      let session = null
+      let session: any = null
 
       if (existingAuth) {
         // Auth user already exists — update password

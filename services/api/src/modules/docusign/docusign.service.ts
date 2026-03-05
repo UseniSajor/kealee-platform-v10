@@ -29,7 +29,7 @@ async function getDocuSignApiClient(): Promise<ApiClient> {
         jwtLifeSec
       ),
       { label: 'DocuSign.requestJWTUserToken' }
-    )
+    ) as any
 
     const accessToken = results.body.access_token
     apiClient.addDefaultHeader('Authorization', `Bearer ${accessToken}`)
@@ -132,7 +132,7 @@ export const docusignService = {
     const results = await withRetry(
       () => envelopesApi.createEnvelope(DOCUSIGN_ACCOUNT_ID, { envelopeDefinition: envelope }),
       { label: 'DocuSign.createEnvelope' }
-    )
+    ) as any
 
     const envelopeId = results.envelopeId || ''
 
@@ -160,7 +160,7 @@ export const docusignService = {
       const viewResults = await withRetry(
         () => envelopesApi.createRecipientView(DOCUSIGN_ACCOUNT_ID, envelopeId, { recipientViewRequest: viewRequest }),
         { label: 'DocuSign.createRecipientView' }
-      )
+      ) as any
       recipientViewUrl = viewResults.url
     } catch (error) {
       // If embedded signing fails, continue without it
@@ -176,7 +176,7 @@ export const docusignService = {
     const envelope = await withRetry(
       () => envelopesApi.getEnvelope(DOCUSIGN_ACCOUNT_ID, envelopeId),
       { label: 'DocuSign.getEnvelope' }
-    )
+    ) as any
 
     return {
       status: envelope.status,
@@ -402,7 +402,7 @@ Signature
         () => envelopesApi.listDocuments(DOCUSIGN_ACCOUNT_ID, envelopeId),
         { label: 'DocuSign.listDocuments' }
       ),
-    ])
+    ]) as any[]
 
     return {
       envelopeId: envelope.envelopeId,
@@ -567,7 +567,7 @@ Signature
     const envelope = await withRetry(
       () => envelopesApi.createEnvelope(DOCUSIGN_ACCOUNT_ID, { envelopeDefinition }),
       { label: 'DocuSign.createEnvelopeFromTemplate' }
-    )
+    ) as any
 
     let signingUrl: string | undefined
     let expiresAt: string | undefined
@@ -585,7 +585,7 @@ Signature
       const viewUrl = await withRetry(
         () => envelopesApi.createRecipientView(DOCUSIGN_ACCOUNT_ID, envelope.envelopeId || '', { recipientViewRequest }),
         { label: 'DocuSign.createRecipientView' }
-      )
+      ) as any
       signingUrl = viewUrl.url
       expiresAt = viewUrl.expiredDateTime
     }
@@ -645,7 +645,7 @@ Signature
         count: filters?.limit || 100,
       }),
       { label: 'DocuSign.listStatusChanges' }
-    )
+    ) as any
 
     const formattedEnvelopes = (envelopes.envelopes || []).map((envelope: any) => ({
       envelopeId: envelope.envelopeId,

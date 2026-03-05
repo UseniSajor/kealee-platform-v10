@@ -6,6 +6,7 @@ import { pmInspectionsService } from './pm-inspections.service'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { z } from 'zod'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function pmInspectionsRoutes(fastify: FastifyInstance) {
   fastify.get('/', { preHandler: [authenticateUser, validateQuery(z.object({

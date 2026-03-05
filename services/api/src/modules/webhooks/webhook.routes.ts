@@ -5,6 +5,7 @@
 import {FastifyInstance, FastifyRequest, FastifyReply} from 'fastify';
 import {webhookService} from './webhook.service';
 import {prisma} from '@kealee/database';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error';
 
 export async function webhookRoutes(fastify: FastifyInstance) {
   // POST /api/v1/webhooks - Create webhook

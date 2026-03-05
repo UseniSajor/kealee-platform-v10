@@ -6,6 +6,7 @@ import { projectService } from './pm-projects.service'
 import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { z } from 'zod'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function pmProjectRoutes(fastify: FastifyInstance) {
   // GET / - List projects

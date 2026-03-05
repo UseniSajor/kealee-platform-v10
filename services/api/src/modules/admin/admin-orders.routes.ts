@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify'
-import { getPrisma } from '../../utils/prisma-helper'
+import { prisma } from '../../utils/prisma-helper'
 
 export async function adminOrdersRoutes(fastify: FastifyInstance) {
-  const prismaAny = getPrisma() as any
+  const prismaAny = prisma as any
 
   /**
    * GET /admin/orders — List all orders (admin only)
@@ -203,7 +203,7 @@ export async function adminOrdersRoutes(fastify: FastifyInstance) {
         try {
           const { broadcastToUser } = await import('@kealee/realtime')
           await broadcastToUser(updated.userId, {
-            type: 'order.completed',
+            event: 'order.completed',
             payload: {
               orderId: id,
               deliveryStatus: data.deliveryStatus,

@@ -87,7 +87,7 @@ export async function updateOpportunity(
   opportunityId: string,
   input: UpdateOpportunityInput,
 ): Promise<GhlOpportunity> {
-  const result = await ghlPut<{ opportunity: GhlOpportunity }>(`/opportunities/${opportunityId}`, input);
+  const result = await ghlPut<{ opportunity: GhlOpportunity }>(`/opportunities/${opportunityId}`, { ...input } as Record<string, unknown>);
   return result.opportunity;
 }
 

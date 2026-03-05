@@ -3,6 +3,7 @@ import { authenticateUser } from '../auth/auth.middleware'
 import { sopService } from './sop.service'
 import { z } from 'zod'
 import { validateParams, validateQuery, validateBody } from '../../middleware/validation.middleware'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function sopRoutes(fastify: FastifyInstance) {
   // ════════════════════════════════════════════════════════════════

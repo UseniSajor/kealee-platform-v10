@@ -40,5 +40,5 @@ export function getConceptDeliveryQueue(): Queue<ConceptDeliveryJobData> {
   conceptDeliveryQueueSingleton = new Queue<ConceptDeliveryJobData>('concept-delivery', {
     connection: connection as any,
   }) as any
-  return conceptDeliveryQueueSingleton
+  return conceptDeliveryQueueSingleton!
 }

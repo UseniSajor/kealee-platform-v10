@@ -7,6 +7,7 @@ import { FastifyInstance } from 'fastify'
 import { paymentWebhookService } from './payment-webhook.service'
 import { stripeConnectService } from './stripe-connect.service'
 import { getStripe } from '../billing/stripe.client'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function paymentWebhookRoutes(fastify: FastifyInstance) {
   // POST /payments/webhooks/stripe - Stripe payment webhooks

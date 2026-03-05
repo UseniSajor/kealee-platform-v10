@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify'
 import { bidService } from './bid.service'
 import { parseEmail, ingestEmail, checkDuplicate } from './bid-ingest.service'
 import { sendDailyAlerts, sendUrgentAlert } from './bid-notify.service'
+import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function bidAutomationRoutes(fastify: FastifyInstance) {
 
