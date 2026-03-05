@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useParams, useRouter } from "next/navigation"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import Link from "next/link"
 import {
   ArrowLeft,
@@ -21,7 +21,21 @@ import { api } from "@/lib/api"
 export default function CollaborationPage() {
   const params = useParams()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const projectId = params.id as string
+
+  // Inline form toggles
+  const [showActionItemForm, setShowActionItemForm] = React.useState(false)
+  const [showDecisionForm, setShowDecisionForm] = React.useState(false)
+  const [showMeetingForm, setShowMeetingForm] = React.useState(false)
+
+  // Inline form field state
+  const [actionItemTitle, setActionItemTitle] = React.useState("")
+  const [actionItemDesc, setActionItemDesc] = React.useState("")
+  const [decisionTitle, setDecisionTitle] = React.useState("")
+  const [decisionText, setDecisionText] = React.useState("")
+  const [meetingTitle, setMeetingTitle] = React.useState("")
+  const [meetingDate, setMeetingDate] = React.useState("")
 
   // Fetch action items
   const { data: actionItemsData } = useQuery({
@@ -44,6 +58,54 @@ export default function CollaborationPage() {
   const actionItems = actionItemsData?.actionItems || []
   const decisions = decisionsData?.decisions || []
   const meetings = meetingsData?.meetings || []
+
+  // Mutations
+  const createActionItemMutation = useMutation({
+    mutationFn: (data: { title: string; description?: string }) =>
+      api.createActionItem(projectId, {
+        sourceType: "COLLABORATION",
+        title: data.title,
+        description: data.description,
+        assignedById: "", // server will use current user
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["action-items", projectId] })
+      setShowActionItemForm(false)
+      setActionItemTitle("")
+      setActionItemDesc("")
+    },
+  })
+
+  const createDecisionMutation = useMutation({
+    mutationFn: (data: { title: string; decisionText: string }) =>
+      api.createDesignDecision(projectId, {
+        title: data.title,
+        decisionText: data.decisionText,
+        proposedById: "", // server will use current user
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["design-decisions", projectId] })
+      setShowDecisionForm(false)
+      setDecisionTitle("")
+      setDecisionText("")
+    },
+  })
+
+  const createMeetingMutation = useMutation({
+    mutationFn: (data: { title: string; meetingDate: string }) =>
+      api.createMeetingMinute(projectId, {
+        title: data.title,
+        meetingDate: data.meetingDate,
+        attendeeIds: [], // can be populated later
+        organizerId: "", // server will use current user
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["meeting-minutes", projectId] })
+      setShowMeetingForm(false)
+      setMeetingTitle("")
+      setMeetingDate("")
+    },
+  })
 
   const formatDate = (date: string | null | undefined) => {
     if (!date) return "—"
@@ -130,13 +192,65 @@ export default function CollaborationPage() {
                   Action Items
                 </h2>
                 <button
-                  onClick={() => alert("Create action item form would be implemented here")}
+                  onClick={() => setShowActionItemForm(!showActionItemForm)}
                   className="flex items-center gap-2 px-3 py-1 text-sm border border-neutral-300 rounded-lg hover:bg-neutral-50"
                 >
                   <Plus className="h-4 w-4" />
-                  Add
+                  {showActionItemForm ? "Cancel" : "Add"}
                 </button>
               </div>
+              {showActionItemForm && (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    if (actionItemTitle.trim()) {
+                      createActionItemMutation.mutate({
+                        title: actionItemTitle.trim(),
+                        description: actionItemDesc.trim() || undefined,
+                      })
+                    }
+                  }}
+                  className="mb-4 p-4 border border-blue-200 rounded-lg bg-blue-50 space-y-3"
+                >
+                  <input
+                    type="text"
+                    placeholder="Action item title *"
+                    value={actionItemTitle}
+                    onChange={(e) => setActionItemTitle(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    autoFocus
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Description (optional)"
+                    value={actionItemDesc}
+                    onChange={(e) => setActionItemDesc(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setShowActionItemForm(false)}
+                      className="px-3 py-1.5 text-sm border border-neutral-300 rounded-lg hover:bg-neutral-100"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={createActionItemMutation.isPending || !actionItemTitle.trim()}
+                      className="px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {createActionItemMutation.isPending ? "Creating..." : "Create"}
+                    </button>
+                  </div>
+                  {createActionItemMutation.isError && (
+                    <p className="text-xs text-red-600">
+                      {createActionItemMutation.error?.message || "Failed to create action item"}
+                    </p>
+                  )}
+                </form>
+              )}
               {actionItems.length === 0 ? (
                 <div className="text-center py-8 text-neutral-500">
                   <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-neutral-400" />
@@ -188,13 +302,66 @@ export default function CollaborationPage() {
                   Design Decisions
                 </h2>
                 <button
-                  onClick={() => alert("Create design decision form would be implemented here")}
+                  onClick={() => setShowDecisionForm(!showDecisionForm)}
                   className="flex items-center gap-2 px-3 py-1 text-sm border border-neutral-300 rounded-lg hover:bg-neutral-50"
                 >
                   <Plus className="h-4 w-4" />
-                  Add
+                  {showDecisionForm ? "Cancel" : "Add"}
                 </button>
               </div>
+              {showDecisionForm && (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    if (decisionTitle.trim() && decisionText.trim()) {
+                      createDecisionMutation.mutate({
+                        title: decisionTitle.trim(),
+                        decisionText: decisionText.trim(),
+                      })
+                    }
+                  }}
+                  className="mb-4 p-4 border border-blue-200 rounded-lg bg-blue-50 space-y-3"
+                >
+                  <input
+                    type="text"
+                    placeholder="Decision title *"
+                    value={decisionTitle}
+                    onChange={(e) => setDecisionTitle(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    autoFocus
+                    required
+                  />
+                  <textarea
+                    placeholder="Decision text *"
+                    value={decisionText}
+                    onChange={(e) => setDecisionText(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                    required
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setShowDecisionForm(false)}
+                      className="px-3 py-1.5 text-sm border border-neutral-300 rounded-lg hover:bg-neutral-100"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={createDecisionMutation.isPending || !decisionTitle.trim() || !decisionText.trim()}
+                      className="px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {createDecisionMutation.isPending ? "Creating..." : "Create"}
+                    </button>
+                  </div>
+                  {createDecisionMutation.isError && (
+                    <p className="text-xs text-red-600">
+                      {createDecisionMutation.error?.message || "Failed to create design decision"}
+                    </p>
+                  )}
+                </form>
+              )}
               {decisions.length === 0 ? (
                 <div className="text-center py-8 text-neutral-500">
                   <Lightbulb className="h-12 w-12 mx-auto mb-4 text-neutral-400" />
@@ -239,13 +406,65 @@ export default function CollaborationPage() {
                   Recent Meetings
                 </h2>
                 <button
-                  onClick={() => alert("Create meeting minute form would be implemented here")}
+                  onClick={() => setShowMeetingForm(!showMeetingForm)}
                   className="flex items-center gap-2 px-3 py-1 text-sm border border-neutral-300 rounded-lg hover:bg-neutral-50"
                 >
                   <Plus className="h-4 w-4" />
-                  Add Meeting
+                  {showMeetingForm ? "Cancel" : "Add Meeting"}
                 </button>
               </div>
+              {showMeetingForm && (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    if (meetingTitle.trim() && meetingDate) {
+                      createMeetingMutation.mutate({
+                        title: meetingTitle.trim(),
+                        meetingDate: meetingDate,
+                      })
+                    }
+                  }}
+                  className="mb-4 p-4 border border-blue-200 rounded-lg bg-blue-50 space-y-3"
+                >
+                  <input
+                    type="text"
+                    placeholder="Meeting title *"
+                    value={meetingTitle}
+                    onChange={(e) => setMeetingTitle(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    autoFocus
+                    required
+                  />
+                  <input
+                    type="datetime-local"
+                    value={meetingDate}
+                    onChange={(e) => setMeetingDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    required
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setShowMeetingForm(false)}
+                      className="px-3 py-1.5 text-sm border border-neutral-300 rounded-lg hover:bg-neutral-100"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={createMeetingMutation.isPending || !meetingTitle.trim() || !meetingDate}
+                      className="px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {createMeetingMutation.isPending ? "Creating..." : "Create"}
+                    </button>
+                  </div>
+                  {createMeetingMutation.isError && (
+                    <p className="text-xs text-red-600">
+                      {createMeetingMutation.error?.message || "Failed to create meeting"}
+                    </p>
+                  )}
+                </form>
+              )}
               {meetings.length === 0 ? (
                 <div className="text-center py-8 text-neutral-500">
                   <Calendar className="h-12 w-12 mx-auto mb-4 text-neutral-400" />

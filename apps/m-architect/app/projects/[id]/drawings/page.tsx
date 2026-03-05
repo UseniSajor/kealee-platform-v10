@@ -32,6 +32,22 @@ export default function DrawingsPage() {
   }>({})
   const [selectedSheet, setSelectedSheet] = React.useState<string | null>(null)
 
+  // Create Sheet form state
+  const [sheetForm, setSheetForm] = React.useState({
+    sheetTitle: "",
+    discipline: "A_ARCHITECTURAL",
+    sequenceNumber: "",
+  })
+  const [sheetFormError, setSheetFormError] = React.useState<string | null>(null)
+
+  // Create Set form state
+  const [setForm, setSetForm] = React.useState({
+    name: "",
+    description: "",
+    sheetIds: [] as string[],
+  })
+  const [setFormError, setSetFormError] = React.useState<string | null>(null)
+
   // Fetch sheets
   const { data: sheetsData } = useQuery({
     queryKey: ["sheets", projectId, filters],
@@ -52,6 +68,34 @@ export default function DrawingsPage() {
       api.updateSheet(sheetId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sheets", projectId] })
+    },
+  })
+
+  const createSheetMutation = useMutation({
+    mutationFn: (data: { sheetTitle: string; discipline: string; sequenceNumber?: number }) =>
+      api.createSheet(projectId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sheets", projectId] })
+      setShowCreateSheet(false)
+      setSheetForm({ sheetTitle: "", discipline: "A_ARCHITECTURAL", sequenceNumber: "" })
+      setSheetFormError(null)
+    },
+    onError: (error: Error) => {
+      setSheetFormError(error.message || "Failed to create sheet")
+    },
+  })
+
+  const createSetMutation = useMutation({
+    mutationFn: (data: { name: string; description?: string; sheetIds: string[] }) =>
+      api.createDrawingSet(projectId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["drawing-sets", projectId] })
+      setShowCreateSet(false)
+      setSetForm({ name: "", description: "", sheetIds: [] })
+      setSetFormError(null)
+    },
+    onError: (error: Error) => {
+      setSetFormError(error.message || "Failed to create drawing set")
     },
   })
 
@@ -334,26 +378,105 @@ export default function DrawingsPage() {
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
                 <h2 className="text-xl font-semibold mb-4">Create Drawing Sheet</h2>
-                <p className="text-sm text-neutral-600 mb-4">
-                  Sheet creation form would be implemented here with discipline selection, title, and file upload.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowCreateSheet(false)}
-                    className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      alert("Create sheet form would be implemented here")
-                      setShowCreateSheet(false)
-                    }}
-                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-                  >
-                    Create
-                  </button>
-                </div>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    setSheetFormError(null)
+                    if (!sheetForm.sheetTitle.trim()) {
+                      setSheetFormError("Sheet title is required")
+                      return
+                    }
+                    createSheetMutation.mutate({
+                      sheetTitle: sheetForm.sheetTitle.trim(),
+                      discipline: sheetForm.discipline,
+                      ...(sheetForm.sequenceNumber
+                        ? { sequenceNumber: parseInt(sheetForm.sequenceNumber, 10) }
+                        : {}),
+                    })
+                  }}
+                >
+                  <div className="space-y-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Sheet Title <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={sheetForm.sheetTitle}
+                        onChange={(e) => setSheetForm({ ...sheetForm, sheetTitle: e.target.value })}
+                        placeholder="e.g. Floor Plan - Level 1"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                        disabled={createSheetMutation.isPending}
+                        autoFocus
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Discipline <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={sheetForm.discipline}
+                        onChange={(e) => setSheetForm({ ...sheetForm, discipline: e.target.value })}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                        disabled={createSheetMutation.isPending}
+                      >
+                        <option value="A_ARCHITECTURAL">Architectural</option>
+                        <option value="S_STRUCTURAL">Structural</option>
+                        <option value="M_MECHANICAL">Mechanical</option>
+                        <option value="E_ELECTRICAL">Electrical</option>
+                        <option value="P_PLUMBING">Plumbing</option>
+                        <option value="C_CIVIL">Civil</option>
+                        <option value="L_LANDSCAPE">Landscape</option>
+                        <option value="I_INTERIORS">Interiors</option>
+                        <option value="FP_FIRE_PROTECTION">Fire Protection</option>
+                        <option value="T_TELECOMMUNICATIONS">Telecommunications</option>
+                        <option value="OTHER">Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Sequence Number
+                      </label>
+                      <input
+                        type="number"
+                        value={sheetForm.sequenceNumber}
+                        onChange={(e) => setSheetForm({ ...sheetForm, sequenceNumber: e.target.value })}
+                        placeholder="e.g. 101"
+                        min="1"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                        disabled={createSheetMutation.isPending}
+                      />
+                      <p className="text-xs text-neutral-500 mt-1">Optional. Sets the sheet number within the discipline.</p>
+                    </div>
+                  </div>
+                  {sheetFormError && (
+                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                      {sheetFormError}
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCreateSheet(false)
+                        setSheetFormError(null)
+                        setSheetForm({ sheetTitle: "", discipline: "A_ARCHITECTURAL", sequenceNumber: "" })
+                      }}
+                      disabled={createSheetMutation.isPending}
+                      className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50 disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={createSheetMutation.isPending}
+                      className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {createSheetMutation.isPending ? "Creating..." : "Create Sheet"}
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           )}
@@ -361,28 +484,126 @@ export default function DrawingsPage() {
           {/* Create Set Modal */}
           {showCreateSet && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
                 <h2 className="text-xl font-semibold mb-4">Create Drawing Set</h2>
-                <p className="text-sm text-neutral-600 mb-4">
-                  Drawing set creation form would be implemented here with name, description, and sheet selection.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowCreateSet(false)}
-                    className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      alert("Create set form would be implemented here")
-                      setShowCreateSet(false)
-                    }}
-                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-                  >
-                    Create
-                  </button>
-                </div>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    setSetFormError(null)
+                    if (!setForm.name.trim()) {
+                      setSetFormError("Set name is required")
+                      return
+                    }
+                    if (setForm.sheetIds.length === 0) {
+                      setSetFormError("Select at least one sheet to include in the set")
+                      return
+                    }
+                    createSetMutation.mutate({
+                      name: setForm.name.trim(),
+                      ...(setForm.description.trim() ? { description: setForm.description.trim() } : {}),
+                      sheetIds: setForm.sheetIds,
+                    })
+                  }}
+                >
+                  <div className="space-y-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Set Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={setForm.name}
+                        onChange={(e) => setSetForm({ ...setForm, name: e.target.value })}
+                        placeholder="e.g. Permit Set - Phase 1"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                        disabled={createSetMutation.isPending}
+                        autoFocus
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Description
+                      </label>
+                      <textarea
+                        value={setForm.description}
+                        onChange={(e) => setSetForm({ ...setForm, description: e.target.value })}
+                        placeholder="Optional description of this drawing set"
+                        rows={2}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
+                        disabled={createSetMutation.isPending}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Sheets <span className="text-red-500">*</span>
+                      </label>
+                      {sheets.length === 0 ? (
+                        <p className="text-sm text-neutral-500 py-2">
+                          No sheets available. Create sheets first before creating a set.
+                        </p>
+                      ) : (
+                        <div className="max-h-48 overflow-y-auto border border-neutral-200 rounded-lg divide-y divide-neutral-100">
+                          {sheets.map((sheet: any) => (
+                            <label
+                              key={sheet.id}
+                              className="flex items-center gap-3 px-3 py-2 hover:bg-neutral-50 cursor-pointer"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={setForm.sheetIds.includes(sheet.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSetForm({ ...setForm, sheetIds: [...setForm.sheetIds, sheet.id] })
+                                  } else {
+                                    setSetForm({ ...setForm, sheetIds: setForm.sheetIds.filter((id) => id !== sheet.id) })
+                                  }
+                                }}
+                                disabled={createSetMutation.isPending}
+                                className="rounded border-neutral-300"
+                              />
+                              <span className={`text-xs border rounded-full px-2 py-0.5 ${getDisciplineColor(sheet.discipline)}`}>
+                                {sheet.fullSheetNumber}
+                              </span>
+                              <span className="text-sm text-neutral-900 truncate">{sheet.sheetTitle}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                      {setForm.sheetIds.length > 0 && (
+                        <p className="text-xs text-neutral-500 mt-1">
+                          {setForm.sheetIds.length} sheet{setForm.sheetIds.length !== 1 ? "s" : ""} selected
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  {setFormError && (
+                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                      {setFormError}
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCreateSet(false)
+                        setSetFormError(null)
+                        setSetForm({ name: "", description: "", sheetIds: [] })
+                      }}
+                      disabled={createSetMutation.isPending}
+                      className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50 disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={createSetMutation.isPending || sheets.length === 0}
+                      className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {createSetMutation.isPending ? "Creating..." : "Create Set"}
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           )}

@@ -24,11 +24,26 @@ export default function ModelsPage() {
   const projectId = params.id as string
 
   const [showUpload, setShowUpload] = React.useState(false)
+  const [modelName, setModelName] = React.useState("")
+  const [modelFormat, setModelFormat] = React.useState<"RVT" | "IFC" | "SKP" | "DWG" | "STEP" | "3DM">("RVT")
+  const [modelDescription, setModelDescription] = React.useState("")
   const [filters, setFilters] = React.useState<{
     modelFormat?: string
     isLatestVersion?: boolean
   }>({ isLatestVersion: true })
   const [selectedModel, setSelectedModel] = React.useState<string | null>(null)
+
+  const createModelMutation = useMutation({
+    mutationFn: (data: { name: string; modelFormat: string; description: string }) =>
+      api.createBIMModel(projectId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bim-models", projectId] })
+      setShowUpload(false)
+      setModelName("")
+      setModelFormat("RVT")
+      setModelDescription("")
+    },
+  })
 
   // Fetch models
   const { data: modelsData } = useQuery({
@@ -247,26 +262,96 @@ export default function ModelsPage() {
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
                 <h2 className="text-xl font-semibold mb-4">Upload BIM Model</h2>
-                <p className="text-sm text-neutral-600 mb-4">
-                  Model upload form would be implemented here with file selection, format detection, and metadata entry.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowUpload(false)}
-                    className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      alert("Upload model form would be implemented here")
-                      setShowUpload(false)
-                    }}
-                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-                  >
-                    Upload
-                  </button>
-                </div>
+
+                {createModelMutation.isError && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                    {createModelMutation.error instanceof Error
+                      ? createModelMutation.error.message
+                      : "Failed to upload model. Please try again."}
+                  </div>
+                )}
+
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    if (!modelName.trim()) return
+                    createModelMutation.mutate({
+                      name: modelName.trim(),
+                      modelFormat,
+                      description: modelDescription.trim(),
+                    })
+                  }}
+                  className="space-y-4"
+                >
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Model Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={modelName}
+                      onChange={(e) => setModelName(e.target.value)}
+                      placeholder="e.g. Main Building - Structural"
+                      required
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Format
+                    </label>
+                    <select
+                      value={modelFormat}
+                      onChange={(e) => setModelFormat(e.target.value as "RVT" | "IFC" | "SKP" | "DWG" | "STEP" | "3DM")}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    >
+                      <option value="RVT">Revit (RVT)</option>
+                      <option value="IFC">IFC</option>
+                      <option value="SKP">SketchUp (SKP)</option>
+                      <option value="DWG">AutoCAD 3D (DWG)</option>
+                      <option value="STEP">STEP</option>
+                      <option value="3DM">Rhino (3DM)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      value={modelDescription}
+                      onChange={(e) => setModelDescription(e.target.value)}
+                      placeholder="Describe the model contents and purpose..."
+                      rows={3}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
+                    />
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowUpload(false)
+                        setModelName("")
+                        setModelFormat("RVT")
+                        setModelDescription("")
+                        createModelMutation.reset()
+                      }}
+                      disabled={createModelMutation.isPending}
+                      className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50 disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={createModelMutation.isPending || !modelName.trim()}
+                      className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {createModelMutation.isPending ? "Uploading..." : "Upload"}
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           )}

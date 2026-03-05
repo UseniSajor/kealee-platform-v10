@@ -25,6 +25,11 @@ export default function VersionControlPage() {
   const [showCreateBranch, setShowCreateBranch] = React.useState(false)
   const [showCreateVersion, setShowCreateVersion] = React.useState(false)
   const [selectedBranch, setSelectedBranch] = React.useState<string | null>(null)
+  const [branchName, setBranchName] = React.useState("")
+  const [branchDesc, setBranchDesc] = React.useState("")
+  const [versionName, setVersionName] = React.useState("")
+  const [versionDesc, setVersionDesc] = React.useState("")
+  const [versionTag, setVersionTag] = React.useState("")
 
   // Fetch branches
   const { data: branchesData } = useQuery({
@@ -49,6 +54,38 @@ export default function VersionControlPage() {
   const { data: rollbacksData } = useQuery({
     queryKey: ["rollbacks", projectId],
     queryFn: () => api.getRollbackHistory(projectId),
+  })
+
+  const createBranchMutation = useMutation({
+    mutationFn: (data: { name: string; description?: string; baseBranchId?: string }) =>
+      api.createBranch(projectId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["branches", projectId] })
+      setShowCreateBranch(false)
+      setBranchName("")
+      setBranchDesc("")
+    },
+  })
+
+  const createVersionMutation = useMutation({
+    mutationFn: (data: { branchId: string; versionName?: string; description?: string; versionTag?: string }) =>
+      api.createVersion(projectId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["versions", projectId] })
+      setShowCreateVersion(false)
+      setVersionName("")
+      setVersionDesc("")
+      setVersionTag("")
+    },
+  })
+
+  const rollbackMutation = useMutation({
+    mutationFn: (data: { versionId: string; reason: string }) =>
+      api.rollbackToVersion(projectId, data.versionId, data.reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["versions", projectId] })
+      queryClient.invalidateQueries({ queryKey: ["rollbacks", projectId] })
+    },
   })
 
   const branches = branchesData?.branches || []
@@ -222,12 +259,23 @@ export default function VersionControlPage() {
                         </div>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => {
+                            onClick={async () => {
                               if (versions.length > 1) {
                                 const currentIndex = versions.findIndex((v: any) => v.id === version.id)
                                 const prevVersion = versions[currentIndex + 1]
                                 if (prevVersion) {
-                                  alert(`Compare versions form would open here: ${prevVersion.versionNumber} vs ${version.versionNumber}`)
+                                  try {
+                                    const result = await api.compareVersions(projectId, prevVersion.id, version.id)
+                                    const changes = result.comparison
+                                    alert(
+                                      `Comparing ${prevVersion.versionNumber} → ${version.versionNumber}:\n` +
+                                      `Added: ${changes?.added?.length || 0} files\n` +
+                                      `Modified: ${changes?.modified?.length || 0} files\n` +
+                                      `Removed: ${changes?.removed?.length || 0} files`
+                                    )
+                                  } catch {
+                                    alert("Failed to compare versions")
+                                  }
                                 }
                               }
                             }}
@@ -240,13 +288,14 @@ export default function VersionControlPage() {
                             onClick={() => {
                               const reason = prompt("Rollback reason:")
                               if (reason) {
-                                alert(`Rollback form would open here for version ${version.versionNumber}`)
+                                rollbackMutation.mutate({ versionId: version.id, reason })
                               }
                             }}
-                            className="px-3 py-1 text-sm border border-red-300 text-red-700 rounded-lg hover:bg-red-50 flex items-center gap-1"
+                            disabled={rollbackMutation.isPending}
+                            className="px-3 py-1 text-sm border border-red-300 text-red-700 rounded-lg hover:bg-red-50 flex items-center gap-1 disabled:opacity-50"
                           >
                             <RotateCcw className="h-3 w-3" />
-                            Rollback
+                            {rollbackMutation.isPending ? "..." : "Rollback"}
                           </button>
                         </div>
                       </div>
@@ -292,24 +341,59 @@ export default function VersionControlPage() {
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
                 <h2 className="text-xl font-semibold mb-4">Create Branch</h2>
-                <p className="text-sm text-neutral-600 mb-4">
-                  Branch creation form would be implemented here with name, description, and base branch selection.
-                </p>
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Branch Name *</label>
+                    <input
+                      type="text"
+                      value={branchName}
+                      onChange={(e) => setBranchName(e.target.value)}
+                      placeholder="e.g. design-development-v2"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Description</label>
+                    <textarea
+                      value={branchDesc}
+                      onChange={(e) => setBranchDesc(e.target.value)}
+                      placeholder="Optional description"
+                      rows={2}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Base Branch</label>
+                    <select
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      defaultValue={defaultBranch?.id || ""}
+                    >
+                      {branches.map((b: any) => (
+                        <option key={b.id} value={b.id}>{b.name}{b.isDefault ? " (default)" : ""}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                {createBranchMutation.error && (
+                  <p className="text-sm text-red-600 mb-4">{(createBranchMutation.error as Error).message}</p>
+                )}
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setShowCreateBranch(false)}
+                    onClick={() => { setShowCreateBranch(false); setBranchName(""); setBranchDesc("") }}
                     className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50"
                   >
                     Cancel
                   </button>
                   <button
-                    onClick={() => {
-                      alert("Create branch form would be implemented here")
-                      setShowCreateBranch(false)
-                    }}
-                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+                    onClick={() => createBranchMutation.mutate({
+                      name: branchName,
+                      description: branchDesc || undefined,
+                      baseBranchId: defaultBranch?.id,
+                    })}
+                    disabled={!branchName.trim() || createBranchMutation.isPending}
+                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
                   >
-                    Create
+                    {createBranchMutation.isPending ? "Creating..." : "Create"}
                   </button>
                 </div>
               </div>
@@ -321,24 +405,76 @@ export default function VersionControlPage() {
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
                 <h2 className="text-xl font-semibold mb-4">Create Version</h2>
-                <p className="text-sm text-neutral-600 mb-4">
-                  Version creation form would be implemented here with version number, name, description, and tag selection.
-                </p>
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Branch *</label>
+                    <select
+                      value={selectedBranch || defaultBranch?.id || ""}
+                      onChange={(e) => setSelectedBranch(e.target.value)}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    >
+                      {branches.map((b: any) => (
+                        <option key={b.id} value={b.id}>{b.name}{b.isDefault ? " (default)" : ""}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Version Name</label>
+                    <input
+                      type="text"
+                      value={versionName}
+                      onChange={(e) => setVersionName(e.target.value)}
+                      placeholder="e.g. Schematic Design Complete"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Description</label>
+                    <textarea
+                      value={versionDesc}
+                      onChange={(e) => setVersionDesc(e.target.value)}
+                      placeholder="What changed in this version?"
+                      rows={2}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Phase Tag</label>
+                    <select
+                      value={versionTag}
+                      onChange={(e) => setVersionTag(e.target.value)}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    >
+                      <option value="">None</option>
+                      <option value="SCHEMATIC_DESIGN">Schematic Design</option>
+                      <option value="DESIGN_DEVELOPMENT">Design Development</option>
+                      <option value="CONSTRUCTION_DOCUMENTS">Construction Documents</option>
+                      <option value="BID">Bid</option>
+                      <option value="CONSTRUCTION">Construction</option>
+                    </select>
+                  </div>
+                </div>
+                {createVersionMutation.error && (
+                  <p className="text-sm text-red-600 mb-4">{(createVersionMutation.error as Error).message}</p>
+                )}
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setShowCreateVersion(false)}
+                    onClick={() => { setShowCreateVersion(false); setVersionName(""); setVersionDesc(""); setVersionTag("") }}
                     className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50"
                   >
                     Cancel
                   </button>
                   <button
-                    onClick={() => {
-                      alert("Create version form would be implemented here")
-                      setShowCreateVersion(false)
-                    }}
-                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+                    onClick={() => createVersionMutation.mutate({
+                      branchId: selectedBranch || defaultBranch?.id || "",
+                      versionName: versionName || undefined,
+                      description: versionDesc || undefined,
+                      versionTag: versionTag || undefined,
+                    })}
+                    disabled={createVersionMutation.isPending || (!selectedBranch && !defaultBranch?.id)}
+                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
                   >
-                    Create
+                    {createVersionMutation.isPending ? "Creating..." : "Create"}
                   </button>
                 </div>
               </div>

@@ -26,6 +26,25 @@ export default function ModelViewerPage() {
   const [activeTab, setActiveTab] = React.useState<"viewer" | "annotations" | "clashes" | "properties">("viewer")
   const [selectedElement, setSelectedElement] = React.useState<string | null>(null)
 
+  // Inline form toggles
+  const [showViewForm, setShowViewForm] = React.useState(false)
+  const [showAnnotationForm, setShowAnnotationForm] = React.useState(false)
+  const [showAnnotationFormInTab, setShowAnnotationFormInTab] = React.useState(false)
+  const [updatingClashId, setUpdatingClashId] = React.useState<string | null>(null)
+
+  // View form fields
+  const [viewName, setViewName] = React.useState("")
+  const [viewType, setViewType] = React.useState("PERSPECTIVE")
+
+  // Annotation form fields
+  const [annotationTitle, setAnnotationTitle] = React.useState("")
+  const [annotationDesc, setAnnotationDesc] = React.useState("")
+  const [annotationType, setAnnotationType] = React.useState("COMMENT")
+
+  // Clash status field
+  const [clashStatus, setClashStatus] = React.useState("")
+  const [clashResolutionNotes, setClashResolutionNotes] = React.useState("")
+
   // Fetch model
   const { data: modelData, isLoading } = useQuery({
     queryKey: ["bim-model", modelId],
@@ -61,6 +80,52 @@ export default function ModelViewerPage() {
     mutationFn: () => api.runClashDetection(modelId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["model-clashes", modelId] })
+    },
+  })
+
+  const createViewMutation = useMutation({
+    mutationFn: (data: { name: string; viewType: string }) =>
+      api.createModelView(modelId, {
+        name: data.name,
+        viewType: data.viewType,
+        cameraPosition: { x: 0, y: 0, z: 0 }, // placeholder: real position from viewer
+      }),
+    onSuccess: () => {
+      setShowViewForm(false)
+      setViewName("")
+      setViewType("PERSPECTIVE")
+    },
+  })
+
+  const createAnnotationMutation = useMutation({
+    mutationFn: (data: { title: string; description?: string; annotationType: string }) =>
+      api.createAnnotation(modelId, {
+        annotationType: data.annotationType,
+        title: data.title,
+        description: data.description,
+        position: { x: 0, y: 0, z: 0 }, // placeholder: real position from viewer
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["model-annotations", modelId] })
+      setShowAnnotationForm(false)
+      setShowAnnotationFormInTab(false)
+      setAnnotationTitle("")
+      setAnnotationDesc("")
+      setAnnotationType("COMMENT")
+    },
+  })
+
+  const updateClashStatusMutation = useMutation({
+    mutationFn: (data: { clashId: string; status: string; resolutionNotes?: string }) =>
+      api.updateClashStatus(data.clashId, {
+        status: data.status,
+        resolutionNotes: data.resolutionNotes,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["model-clashes", modelId] })
+      setUpdatingClashId(null)
+      setClashStatus("")
+      setClashResolutionNotes("")
     },
   })
 
@@ -202,28 +267,138 @@ export default function ModelViewerPage() {
                   )}
                   <div className="flex gap-2 justify-center">
                     <button
-                      onClick={() => {
-                        const name = prompt("View name:")
-                        if (name) {
-                          alert("Create view form would be implemented here")
-                        }
-                      }}
+                      onClick={() => { setShowViewForm(!showViewForm); setShowAnnotationForm(false) }}
                       className="px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50"
                     >
-                      Save View
+                      {showViewForm ? "Cancel" : "Save View"}
                     </button>
                     <button
-                      onClick={() => {
-                        const title = prompt("Annotation title:")
-                        if (title) {
-                          alert("Create annotation form would be implemented here")
-                        }
-                      }}
+                      onClick={() => { setShowAnnotationForm(!showAnnotationForm); setShowViewForm(false) }}
                       className="px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50"
                     >
-                      Add Annotation
+                      {showAnnotationForm ? "Cancel" : "Add Annotation"}
                     </button>
                   </div>
+
+                  {/* Inline Save View Form */}
+                  {showViewForm && (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        if (viewName.trim()) {
+                          createViewMutation.mutate({ name: viewName.trim(), viewType })
+                        }
+                      }}
+                      className="mt-4 p-4 border border-blue-200 rounded-lg bg-blue-50 space-y-3 text-left max-w-md mx-auto"
+                    >
+                      <input
+                        type="text"
+                        placeholder="View name *"
+                        value={viewName}
+                        onChange={(e) => setViewName(e.target.value)}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                        autoFocus
+                        required
+                      />
+                      <select
+                        value={viewType}
+                        onChange={(e) => setViewType(e.target.value)}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <option value="PERSPECTIVE">Perspective</option>
+                        <option value="ORTHOGRAPHIC">Orthographic</option>
+                        <option value="PLAN">Plan</option>
+                        <option value="SECTION">Section</option>
+                        <option value="ELEVATION">Elevation</option>
+                      </select>
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setShowViewForm(false)}
+                          className="px-3 py-1.5 text-sm border border-neutral-300 rounded-lg hover:bg-neutral-100"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={createViewMutation.isPending || !viewName.trim()}
+                          className="px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                        >
+                          {createViewMutation.isPending ? "Saving..." : "Save View"}
+                        </button>
+                      </div>
+                      {createViewMutation.isError && (
+                        <p className="text-xs text-red-600">
+                          {createViewMutation.error?.message || "Failed to save view"}
+                        </p>
+                      )}
+                    </form>
+                  )}
+
+                  {/* Inline Add Annotation Form (Viewer Tab) */}
+                  {showAnnotationForm && (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        if (annotationTitle.trim()) {
+                          createAnnotationMutation.mutate({
+                            title: annotationTitle.trim(),
+                            description: annotationDesc.trim() || undefined,
+                            annotationType,
+                          })
+                        }
+                      }}
+                      className="mt-4 p-4 border border-blue-200 rounded-lg bg-blue-50 space-y-3 text-left max-w-md mx-auto"
+                    >
+                      <input
+                        type="text"
+                        placeholder="Annotation title *"
+                        value={annotationTitle}
+                        onChange={(e) => setAnnotationTitle(e.target.value)}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                        autoFocus
+                        required
+                      />
+                      <input
+                        type="text"
+                        placeholder="Description (optional)"
+                        value={annotationDesc}
+                        onChange={(e) => setAnnotationDesc(e.target.value)}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                      <select
+                        value={annotationType}
+                        onChange={(e) => setAnnotationType(e.target.value)}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <option value="COMMENT">Comment</option>
+                        <option value="ISSUE">Issue</option>
+                        <option value="QUESTION">Question</option>
+                        <option value="MARKUP">Markup</option>
+                      </select>
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setShowAnnotationForm(false)}
+                          className="px-3 py-1.5 text-sm border border-neutral-300 rounded-lg hover:bg-neutral-100"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={createAnnotationMutation.isPending || !annotationTitle.trim()}
+                          className="px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                        >
+                          {createAnnotationMutation.isPending ? "Creating..." : "Create"}
+                        </button>
+                      </div>
+                      {createAnnotationMutation.isError && (
+                        <p className="text-xs text-red-600">
+                          {createAnnotationMutation.error?.message || "Failed to create annotation"}
+                        </p>
+                      )}
+                    </form>
+                  )}
                 </div>
               </div>
             )}
@@ -233,17 +408,75 @@ export default function ModelViewerPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold">Annotations</h2>
                   <button
-                    onClick={() => {
-                      const title = prompt("Annotation title:")
-                      if (title) {
-                        alert("Create annotation form would be implemented here")
-                      }
-                    }}
+                    onClick={() => setShowAnnotationFormInTab(!showAnnotationFormInTab)}
                     className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
                   >
-                    Add Annotation
+                    {showAnnotationFormInTab ? "Cancel" : "Add Annotation"}
                   </button>
                 </div>
+                {showAnnotationFormInTab && (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      if (annotationTitle.trim()) {
+                        createAnnotationMutation.mutate({
+                          title: annotationTitle.trim(),
+                          description: annotationDesc.trim() || undefined,
+                          annotationType,
+                        })
+                      }
+                    }}
+                    className="mb-4 p-4 border border-blue-200 rounded-lg bg-blue-50 space-y-3"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Annotation title *"
+                      value={annotationTitle}
+                      onChange={(e) => setAnnotationTitle(e.target.value)}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                      autoFocus
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Description (optional)"
+                      value={annotationDesc}
+                      onChange={(e) => setAnnotationDesc(e.target.value)}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    <select
+                      value={annotationType}
+                      onChange={(e) => setAnnotationType(e.target.value)}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="COMMENT">Comment</option>
+                      <option value="ISSUE">Issue</option>
+                      <option value="QUESTION">Question</option>
+                      <option value="MARKUP">Markup</option>
+                    </select>
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setShowAnnotationFormInTab(false)}
+                        className="px-3 py-1.5 text-sm border border-neutral-300 rounded-lg hover:bg-neutral-100"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={createAnnotationMutation.isPending || !annotationTitle.trim()}
+                        className="px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                      >
+                        {createAnnotationMutation.isPending ? "Creating..." : "Create"}
+                      </button>
+                    </div>
+                    {createAnnotationMutation.isError && (
+                      <p className="text-xs text-red-600">
+                        {createAnnotationMutation.error?.message || "Failed to create annotation"}
+                      </p>
+                    )}
+                  </form>
+                )}
                 {annotations.length === 0 ? (
                   <div className="text-center py-12 text-neutral-500">
                     <MessageSquare className="h-12 w-12 mx-auto mb-4 text-neutral-400" />
@@ -356,17 +589,71 @@ export default function ModelViewerPage() {
                             )}
                           </div>
                           {clash.status !== "RESOLVED" && (
-                            <button
-                              onClick={() => {
-                                const status = prompt("Update status (REVIEWED, RESOLVED, FALSE_POSITIVE):")
-                                if (status) {
-                                  alert("Update clash status would be implemented here")
-                                }
-                              }}
-                              className="px-3 py-1 text-sm border border-neutral-300 rounded-lg hover:bg-neutral-50"
-                            >
-                              Update
-                            </button>
+                            <div className="flex flex-col items-end gap-2">
+                              {updatingClashId === clash.id ? (
+                                <form
+                                  onSubmit={(e) => {
+                                    e.preventDefault()
+                                    if (clashStatus) {
+                                      updateClashStatusMutation.mutate({
+                                        clashId: clash.id,
+                                        status: clashStatus,
+                                        resolutionNotes: clashResolutionNotes.trim() || undefined,
+                                      })
+                                    }
+                                  }}
+                                  className="p-3 border border-blue-200 rounded-lg bg-blue-50 space-y-2 w-56"
+                                >
+                                  <select
+                                    value={clashStatus}
+                                    onChange={(e) => setClashStatus(e.target.value)}
+                                    className="w-full px-2 py-1.5 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                    autoFocus
+                                    required
+                                  >
+                                    <option value="">Select status...</option>
+                                    <option value="REVIEWED">Reviewed</option>
+                                    <option value="RESOLVED">Resolved</option>
+                                    <option value="FALSE_POSITIVE">False Positive</option>
+                                  </select>
+                                  <input
+                                    type="text"
+                                    placeholder="Notes (optional)"
+                                    value={clashResolutionNotes}
+                                    onChange={(e) => setClashResolutionNotes(e.target.value)}
+                                    className="w-full px-2 py-1.5 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                  />
+                                  <div className="flex gap-2 justify-end">
+                                    <button
+                                      type="button"
+                                      onClick={() => { setUpdatingClashId(null); setClashStatus(""); setClashResolutionNotes("") }}
+                                      className="px-2 py-1 text-xs border border-neutral-300 rounded-lg hover:bg-neutral-100"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      type="submit"
+                                      disabled={updateClashStatusMutation.isPending || !clashStatus}
+                                      className="px-2 py-1 text-xs bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                                    >
+                                      {updateClashStatusMutation.isPending ? "Saving..." : "Save"}
+                                    </button>
+                                  </div>
+                                  {updateClashStatusMutation.isError && (
+                                    <p className="text-xs text-red-600">
+                                      {updateClashStatusMutation.error?.message || "Failed to update"}
+                                    </p>
+                                  )}
+                                </form>
+                              ) : (
+                                <button
+                                  onClick={() => { setUpdatingClashId(clash.id); setClashStatus(""); setClashResolutionNotes("") }}
+                                  className="px-3 py-1 text-sm border border-neutral-300 rounded-lg hover:bg-neutral-50"
+                                >
+                                  Update
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>

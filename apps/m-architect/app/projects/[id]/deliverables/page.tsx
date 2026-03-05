@@ -31,6 +31,12 @@ export default function DeliverablesPage() {
   }>({})
   const [selectedDeliverable, setSelectedDeliverable] = React.useState<string | null>(null)
 
+  // Create deliverable form state
+  const [createName, setCreateName] = React.useState("")
+  const [createDescription, setCreateDescription] = React.useState("")
+  const [createType, setCreateType] = React.useState("")
+  const [createDueDate, setCreateDueDate] = React.useState("")
+
   // Fetch deliverables
   const { data: deliverablesData } = useQuery({
     queryKey: ["deliverables", projectId, filters],
@@ -73,6 +79,31 @@ export default function DeliverablesPage() {
       queryClient.invalidateQueries({ queryKey: ["deliverables", projectId] })
     },
   })
+
+  const createMutation = useMutation({
+    mutationFn: (data: { name: string; description?: string; deliverableType?: string; dueDate?: string }) =>
+      api.createDeliverable(projectId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["deliverables", projectId] })
+      queryClient.invalidateQueries({ queryKey: ["deliverables-due-soon", projectId] })
+      setShowCreate(false)
+      setCreateName("")
+      setCreateDescription("")
+      setCreateType("")
+      setCreateDueDate("")
+    },
+  })
+
+  const handleCreateDeliverable = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!createName.trim()) return
+    createMutation.mutate({
+      name: createName.trim(),
+      description: createDescription.trim() || undefined,
+      deliverableType: createType || undefined,
+      dueDate: createDueDate || undefined,
+    })
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -342,31 +373,91 @@ export default function DeliverablesPage() {
             )}
           </div>
 
-          {/* Create Deliverable Modal (simplified - would be a proper modal in production) */}
+          {/* Create Deliverable Modal */}
           {showCreate && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
                 <h2 className="text-xl font-semibold mb-4">Create Deliverable</h2>
-                <p className="text-sm text-neutral-600 mb-4">
-                  Deliverable creation form would be implemented here with all fields.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowCreate(false)}
-                    className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      alert("Create deliverable form would be implemented here")
-                      setShowCreate(false)
-                    }}
-                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-                  >
-                    Create
-                  </button>
-                </div>
+
+                {createMutation.isError && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                    Failed to create deliverable. Please try again.
+                  </div>
+                )}
+
+                <form onSubmit={handleCreateDeliverable} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={createName}
+                      onChange={(e) => setCreateName(e.target.value)}
+                      placeholder="e.g. Floor Plan Drawing Set"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Description</label>
+                    <textarea
+                      value={createDescription}
+                      onChange={(e) => setCreateDescription(e.target.value)}
+                      placeholder="Optional description of the deliverable"
+                      rows={3}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Deliverable Type</label>
+                    <select
+                      value={createType}
+                      onChange={(e) => setCreateType(e.target.value)}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    >
+                      <option value="">Select type...</option>
+                      <option value="DRAWING_SET">Drawing Set</option>
+                      <option value="SPECIFICATION">Specification</option>
+                      <option value="REPORT">Report</option>
+                      <option value="MODEL">Model</option>
+                      <option value="SCHEDULE">Schedule</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Due Date</label>
+                    <input
+                      type="date"
+                      value={createDueDate}
+                      onChange={(e) => setCreateDueDate(e.target.value)}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    />
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCreate(false)
+                        createMutation.reset()
+                      }}
+                      disabled={createMutation.isPending}
+                      className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50 disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={createMutation.isPending || !createName.trim()}
+                      className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {createMutation.isPending ? "Creating..." : "Create"}
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           )}

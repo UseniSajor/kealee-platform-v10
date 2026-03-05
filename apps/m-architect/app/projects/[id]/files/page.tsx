@@ -106,6 +106,8 @@ export default function FilesPage() {
     return `${(num / (1024 * 1024 * 1024)).toFixed(1)} GB`
   }
 
+  const [uploading, setUploading] = React.useState(false)
+
   const handleFileUpload = async () => {
     if (uploadFiles.length === 0) {
       setError("Please select files to upload")
@@ -113,15 +115,75 @@ export default function FilesPage() {
     }
 
     setError(null)
-
-    const uploadedFiles = uploadFiles.map((file) => ({
-      fileName: file.name,
-      fileSize: file.size,
-      mimeType: file.type,
-      fileUrl: `https://storage.example.com/files/${file.name}`,
-    }))
+    setUploading(true)
 
     try {
+      // Get presigned URLs and upload each file to storage
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+      const { createClient } = await import("@supabase/supabase-js")
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+      )
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const uploadedFiles = await Promise.all(
+        uploadFiles.map(async (file) => {
+          // Get presigned URL from API
+          const presignRes = await fetch(`${apiUrl}/files/presigned-url`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({
+              fileName: file.name,
+              fileSize: file.size,
+              mimeType: file.type,
+              folder: `architect/${projectId}`,
+            }),
+          })
+
+          if (!presignRes.ok) {
+            throw new Error(`Failed to get upload URL for ${file.name}`)
+          }
+
+          const { uploadUrl, fileUrl } = await presignRes.json()
+
+          // Upload file to storage
+          await fetch(uploadUrl, {
+            method: "PUT",
+            headers: { "Content-Type": file.type },
+            body: file,
+          })
+
+          // Register file in system
+          await fetch(`${apiUrl}/files/complete`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({
+              fileName: file.name,
+              fileSize: file.size,
+              mimeType: file.type,
+              fileUrl,
+              folder: `architect/${projectId}`,
+            }),
+          })
+
+          return {
+            fileName: file.name,
+            fileSize: file.size,
+            mimeType: file.type,
+            fileUrl,
+          }
+        })
+      )
+
+      // Register files in architect module
       if (uploadedFiles.length === 1) {
         await api.uploadFile(projectId, {
           folderId: selectedFolderId,
@@ -139,6 +201,8 @@ export default function FilesPage() {
       queryClient.invalidateQueries({ queryKey: ["files", projectId] })
     } catch (err: any) {
       setError(err.message || "Failed to upload files")
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -212,10 +276,10 @@ export default function FilesPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={handleFileUpload}
-                    disabled={uploadFiles.length === 0}
+                    disabled={uploadFiles.length === 0 || uploading}
                     className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
                   >
-                    Upload
+                    {uploading ? "Uploading..." : "Upload"}
                   </button>
                   <button
                     onClick={() => {

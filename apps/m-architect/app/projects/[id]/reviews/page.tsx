@@ -29,6 +29,12 @@ export default function ReviewsPage() {
     status?: string
   }>({})
 
+  // Create review form state
+  const [createTitle, setCreateTitle] = React.useState("")
+  const [createDescription, setCreateDescription] = React.useState("")
+  const [createReviewType, setCreateReviewType] = React.useState("")
+  const [createPriority, setCreatePriority] = React.useState("")
+
   // Fetch review requests
   const { data: reviewsData } = useQuery({
     queryKey: ["review-requests", projectId, filters],
@@ -86,6 +92,31 @@ export default function ReviewsPage() {
       queryClient.invalidateQueries({ queryKey: ["review-requests", projectId] })
     },
   })
+
+  const createMutation = useMutation({
+    mutationFn: (data: { title: string; description?: string; reviewType?: string; priority?: string }) =>
+      api.createReviewRequest(projectId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["review-requests", projectId] })
+      queryClient.invalidateQueries({ queryKey: ["review-summary", projectId] })
+      setShowCreate(false)
+      setCreateTitle("")
+      setCreateDescription("")
+      setCreateReviewType("")
+      setCreatePriority("")
+    },
+  })
+
+  const handleCreateReview = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!createTitle.trim()) return
+    createMutation.mutate({
+      title: createTitle.trim(),
+      description: createDescription.trim() || undefined,
+      reviewType: createReviewType || undefined,
+      priority: createPriority || undefined,
+    })
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -378,26 +409,90 @@ export default function ReviewsPage() {
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
                 <h2 className="text-xl font-semibold mb-4">Create Review Request</h2>
-                <p className="text-sm text-neutral-600 mb-4">
-                  Review request creation form would be implemented here with title, description, reviewer selection, deliverable/file selection, and deadline setting.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowCreate(false)}
-                    className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      alert("Create review request form would be implemented here")
-                      setShowCreate(false)
-                    }}
-                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-                  >
-                    Create
-                  </button>
-                </div>
+
+                {createMutation.isError && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                    Failed to create review request. Please try again.
+                  </div>
+                )}
+
+                <form onSubmit={handleCreateReview} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Title <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={createTitle}
+                      onChange={(e) => setCreateTitle(e.target.value)}
+                      placeholder="e.g. Structural Drawing Review"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Description</label>
+                    <textarea
+                      value={createDescription}
+                      onChange={(e) => setCreateDescription(e.target.value)}
+                      placeholder="Optional description of what needs to be reviewed"
+                      rows={3}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Review Type</label>
+                    <select
+                      value={createReviewType}
+                      onChange={(e) => setCreateReviewType(e.target.value)}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    >
+                      <option value="">Select type...</option>
+                      <option value="INTERNAL">Internal</option>
+                      <option value="CLIENT">Client</option>
+                      <option value="REGULATORY">Regulatory</option>
+                      <option value="PEER">Peer</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">Priority</label>
+                    <select
+                      value={createPriority}
+                      onChange={(e) => setCreatePriority(e.target.value)}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    >
+                      <option value="">Select priority...</option>
+                      <option value="LOW">Low</option>
+                      <option value="NORMAL">Normal</option>
+                      <option value="HIGH">High</option>
+                      <option value="URGENT">Urgent</option>
+                    </select>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCreate(false)
+                        createMutation.reset()
+                      }}
+                      disabled={createMutation.isPending}
+                      className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50 disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={createMutation.isPending || !createTitle.trim()}
+                      className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {createMutation.isPending ? "Creating..." : "Create"}
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           )}

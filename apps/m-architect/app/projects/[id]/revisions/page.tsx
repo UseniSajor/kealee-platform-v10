@@ -25,6 +25,9 @@ export default function RevisionsPage() {
   const projectId = params.id as string
 
   const [showCreate, setShowCreate] = React.useState(false)
+  const [revisionNumber, setRevisionNumber] = React.useState("")
+  const [description, setDescription] = React.useState("")
+  const [impactLevel, setImpactLevel] = React.useState<"MINOR" | "MODERATE" | "MAJOR">("MINOR")
   const [filters, setFilters] = React.useState<{
     status?: string
     issuanceType?: string
@@ -51,6 +54,18 @@ export default function RevisionsPage() {
       api.issueRevision(revisionId, issuedTo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["revisions", projectId] })
+    },
+  })
+
+  const createRevisionMutation = useMutation({
+    mutationFn: (data: { revisionNumber: string; description: string; impactLevel: string }) =>
+      api.createRevision(projectId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["revisions", projectId] })
+      setShowCreate(false)
+      setRevisionNumber("")
+      setDescription("")
+      setImpactLevel("MINOR")
     },
   })
 
@@ -305,26 +320,93 @@ export default function RevisionsPage() {
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
                 <h2 className="text-xl font-semibold mb-4">Create Revision</h2>
-                <p className="text-sm text-neutral-600 mb-4">
-                  Revision creation form would be implemented here with revision letter, date, description, type, issuance type, and affected disciplines.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowCreate(false)}
-                    className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      alert("Create revision form would be implemented here")
-                      setShowCreate(false)
-                    }}
-                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-                  >
-                    Create
-                  </button>
-                </div>
+
+                {createRevisionMutation.isError && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                    {createRevisionMutation.error instanceof Error
+                      ? createRevisionMutation.error.message
+                      : "Failed to create revision. Please try again."}
+                  </div>
+                )}
+
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    if (!revisionNumber.trim()) return
+                    createRevisionMutation.mutate({
+                      revisionNumber: revisionNumber.trim(),
+                      description: description.trim(),
+                      impactLevel,
+                    })
+                  }}
+                  className="space-y-4"
+                >
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Revision Number <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={revisionNumber}
+                      onChange={(e) => setRevisionNumber(e.target.value)}
+                      placeholder="e.g. A, B, 01"
+                      required
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Describe the changes in this revision..."
+                      rows={3}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Impact Level
+                    </label>
+                    <select
+                      value={impactLevel}
+                      onChange={(e) => setImpactLevel(e.target.value as "MINOR" | "MODERATE" | "MAJOR")}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    >
+                      <option value="MINOR">Minor</option>
+                      <option value="MODERATE">Moderate</option>
+                      <option value="MAJOR">Major</option>
+                    </select>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCreate(false)
+                        setRevisionNumber("")
+                        setDescription("")
+                        setImpactLevel("MINOR")
+                        createRevisionMutation.reset()
+                      }}
+                      disabled={createRevisionMutation.isPending}
+                      className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50 disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={createRevisionMutation.isPending || !revisionNumber.trim()}
+                      className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      {createRevisionMutation.isPending ? "Creating..." : "Create"}
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           )}
