@@ -282,6 +282,9 @@ import { engineerRoutes } from './modules/engineer/engineer.routes'
 import { zoningRoutes } from './modules/zoning/zoning.routes'
 import { patternBookRoutes } from './modules/pattern-book/pattern-book.routes'
 import { developmentPackageRoutes } from './modules/development-package/development-package.routes'
+import { housingDashboardRoutes } from './modules/housing-dashboard/housing-dashboard.routes'
+import { hudFinancingRoutes } from './modules/financing/hud-financing.routes'
+import { workforceHousingRoutes } from './modules/marketplace/workforce-housing.routes'
 // Analytics temporarily disabled
 // import { analyticsRoutes } from './modules/analytics/analytics.routes'
 import { monitoringDashboardRoutes } from './modules/monitoring/monitoring-dashboard.routes'
@@ -610,6 +613,9 @@ const start = async () => {
       await fastify.register(zoningRoutes, { prefix: '/zoning' })
       await fastify.register(patternBookRoutes, { prefix: '/pattern-book' })
       await fastify.register(developmentPackageRoutes, { prefix: '/development-package' })
+      await fastify.register(housingDashboardRoutes, { prefix: '/housing-dashboard' })
+      await fastify.register(hudFinancingRoutes, { prefix: '/financing/hud' })
+      await fastify.register(workforceHousingRoutes, { prefix: '/marketplace' })
 
       // Site Check-In / Crew Tracking
       const { checkInRoutes } = await import('./modules/check-in/check-in.routes')
