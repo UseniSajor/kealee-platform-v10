@@ -278,6 +278,10 @@ import architectUploadsRoutes from './modules/architect/architect-uploads.routes
 import { estimationRoutes } from './modules/estimation/estimation.routes'
 import { preconRoutes } from './modules/precon/precon.routes'
 import { engineerRoutes } from './modules/engineer/engineer.routes'
+// Housing Act modules (21st Century ROAD to Housing Act)
+import { zoningRoutes } from './modules/zoning/zoning.routes'
+import { patternBookRoutes } from './modules/pattern-book/pattern-book.routes'
+import { developmentPackageRoutes } from './modules/development-package/development-package.routes'
 // Analytics temporarily disabled
 // import { analyticsRoutes } from './modules/analytics/analytics.routes'
 import { monitoringDashboardRoutes } from './modules/monitoring/monitoring-dashboard.routes'
@@ -601,6 +605,11 @@ const start = async () => {
 
       // Engineering Services
       await fastify.register(engineerRoutes, { prefix: '/engineer' })
+
+      // 21st Century ROAD to Housing Act
+      await fastify.register(zoningRoutes, { prefix: '/zoning' })
+      await fastify.register(patternBookRoutes, { prefix: '/pattern-book' })
+      await fastify.register(developmentPackageRoutes, { prefix: '/development-package' })
 
       // Site Check-In / Crew Tracking
       const { checkInRoutes } = await import('./modules/check-in/check-in.routes')

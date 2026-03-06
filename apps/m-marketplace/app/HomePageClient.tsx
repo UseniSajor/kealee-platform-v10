@@ -25,6 +25,25 @@ import {
   DollarSign,
   Clock,
   HardHat,
+  Home,
+  PaintBucket,
+  Hammer,
+  TreePine,
+  Droplets,
+  Zap,
+  Flame,
+  Store,
+  Hotel,
+  Warehouse,
+  Stethoscope,
+  UtensilsCrossed,
+  Landmark,
+  MapPin,
+  Layers,
+  Settings,
+  FileSearch,
+  TrendingUp,
+  CheckCircle,
 } from 'lucide-react';
 
 import {
@@ -131,15 +150,15 @@ export function HomePageClient({
           'Licensed & Insured',
           '20+ Years Experience',
           'Nationwide Coverage',
-          'Escrow Protected',
+          'Payment Protected',
         ]}
         backgroundImage={heroImages.newConstructionHomes.src}
         backgroundImageAlt={heroImages.newConstructionHomes.alt}
       />
 
       {/* SECTION 2 - PHASE SHOWCASE (Version C: Pain → Solution) */}
-      <motion.section {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-[#F7FAFC]">
-        <div className="max-w-7xl mx-auto">
+      <motion.section {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-[#F7FAFC]" style={{ borderTop: `4px solid ${brand.navy}` }}>
+        <div className="max-w-7xl mx-auto pl-6" style={{ borderLeft: `6px solid ${brand.navy}` }}>
           <PhaseShowcaseHeader />
 
           <PlatformFlowDiagram nodes={platformFlowNodes} />
@@ -156,8 +175,8 @@ export function HomePageClient({
       </motion.section>
 
       {/* SECTION 3 - BUILDER NETWORK (Version D: Community — emotional close) */}
-      <motion.section {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <motion.section {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8" style={{ borderTop: `4px solid ${brand.teal}` }}>
+        <div className="max-w-7xl mx-auto pl-6" style={{ borderLeft: `6px solid ${brand.teal}` }}>
           <div className="text-center mb-12">
             <SectionLabel text={MESSAGES.network.eyebrow.toUpperCase()} color="teal" className="mb-4" />
             <h2
@@ -285,8 +304,8 @@ export function HomePageClient({
       </motion.section>
 
       {/* SECTION 4 - AUDIENCES (Version A: "Build Without Blindspots.") */}
-      <motion.section {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <motion.section {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8" style={{ borderTop: `4px solid ${brand.orange}` }}>
+        <div className="max-w-7xl mx-auto pl-6" style={{ borderLeft: `6px solid ${brand.orange}` }}>
           <div className="text-center mb-12">
             <SectionLabel text={MESSAGES.audiences.eyebrow.toUpperCase()} color="navy" className="mb-4" />
             <h2
@@ -366,13 +385,137 @@ export function HomePageClient({
         </div>
       </motion.section>
 
+      {/* SECTION 4.5 - PROJECTS & SERVICES */}
+      <motion.section {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-[#F7FAFC]" style={{ borderTop: `4px solid #059669` }}>
+        <div className="max-w-7xl mx-auto pl-6" style={{ borderLeft: '6px solid #059669' }}>
+          <div className="text-center mb-12">
+            <SectionLabel text="PROJECTS & SERVICES" color="green" className="mb-4" />
+            <h2
+              className="text-3xl lg:text-4xl font-bold mb-4"
+              style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}
+            >
+              Everything You Need to Build
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              From kitchen remodels to mixed-use developments — Kealee covers the full spectrum of construction projects and professional services.
+            </p>
+          </div>
+
+          {/* Residential Projects */}
+          <div className="mb-12">
+            <h3 className="text-lg font-bold mb-6 flex items-center gap-2" style={{ color: brand.navy, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
+              <Home className="w-5 h-5" style={{ color: brand.teal }} />
+              Residential Projects
+            </h3>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { icon: PaintBucket, title: 'Kitchen Remodels', desc: 'Full kitchen renovations with cabinets, countertops, and appliances' },
+                { icon: Droplets, title: 'Bathroom Renovations', desc: 'Complete bath remodels, tile work, fixtures, and plumbing' },
+                { icon: Layers, title: 'Basement Finishing', desc: 'Transform unfinished basements into living spaces' },
+                { icon: Home, title: 'Whole-Home Remodels', desc: 'Complete home transformations, structural and cosmetic' },
+                { icon: Building2, title: 'Room Additions', desc: 'Expand your home with new rooms, sunrooms, or bump-outs' },
+                { icon: TrendingUp, title: 'Second Stories', desc: 'Add a full second level to increase living space' },
+                { icon: Landmark, title: 'ADU / In-Law Suites', desc: 'Accessory dwelling units, granny flats, and guest houses' },
+                { icon: Warehouse, title: 'Garage Conversions', desc: 'Convert garages to living space, studios, or offices' },
+                { icon: Hammer, title: 'Custom Home Builds', desc: 'New construction single-family homes from the ground up' },
+                { icon: Building2, title: 'Townhomes & Duplexes', desc: 'Multi-unit residential new construction' },
+                { icon: TreePine, title: 'Deck & Patio', desc: 'Outdoor living spaces, pergolas, and hardscaping' },
+                { icon: Flame, title: 'Roofing & Exterior', desc: 'Roof replacement, siding, windows, and exterior finishes' },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.title} className="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-md transition flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${brand.teal}15` }}>
+                      <Icon className="w-5 h-5" style={{ color: brand.teal }} />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 text-sm">{item.title}</h4>
+                      <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Commercial Projects */}
+          <div className="mb-12">
+            <h3 className="text-lg font-bold mb-6 flex items-center gap-2" style={{ color: brand.navy, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
+              <Store className="w-5 h-5" style={{ color: brand.orange }} />
+              Commercial Projects
+            </h3>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { icon: Store, title: 'Tenant Improvements', desc: 'Commercial TI buildouts for office, retail, and industrial' },
+                { icon: Store, title: 'Retail Buildouts', desc: 'Storefront construction, merchandising, and fit-outs' },
+                { icon: Briefcase, title: 'Office Renovations', desc: 'Corporate office remodels, open-plan conversions' },
+                { icon: UtensilsCrossed, title: 'Restaurant Build-Outs', desc: 'Full restaurant construction including kitchen and dining' },
+                { icon: Warehouse, title: 'Warehouse / Industrial', desc: 'Industrial spaces, loading docks, and distribution centers' },
+                { icon: Stethoscope, title: 'Medical & Dental', desc: 'Healthcare facility construction and exam room buildouts' },
+                { icon: Hotel, title: 'Mixed-Use Development', desc: 'Residential over commercial, live-work spaces' },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.title} className="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-md transition flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${brand.orange}15` }}>
+                      <Icon className="w-5 h-5" style={{ color: brand.orange }} />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 text-sm">{item.title}</h4>
+                      <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Professional Services */}
+          <div>
+            <h3 className="text-lg font-bold mb-6 flex items-center gap-2" style={{ color: brand.navy, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
+              <Settings className="w-5 h-5" style={{ color: brand.navy }} />
+              Professional Services
+            </h3>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { icon: Palette, title: 'Architectural Design', desc: 'Schematic design through construction documents (SD/DD/CD)' },
+                { icon: Ruler, title: 'Structural Engineering', desc: 'PE-stamped structural analysis, design, and drawings' },
+                { icon: Zap, title: 'MEP Engineering', desc: 'Mechanical, electrical, and plumbing system design' },
+                { icon: FileCheck, title: 'Permit Applications', desc: 'Full permit prep, submission, and approval tracking' },
+                { icon: CalendarCheck, title: 'Inspection Coordination', desc: 'Schedule, attend, and manage all building inspections' },
+                { icon: MapPin, title: 'Zoning Analysis', desc: 'AI-powered zoning compliance and density analysis' },
+                { icon: Calculator, title: 'Cost Estimating', desc: 'Assembly-based estimating with RSMeans cost data' },
+                { icon: Gavel, title: 'Bid Management', desc: 'Fair bid rotation, contractor vetting, and bid comparison' },
+                { icon: LayoutDashboard, title: 'Project Management', desc: 'Full PM with scheduling, budgeting, RFIs, and daily logs' },
+                { icon: ClipboardList, title: 'Construction Admin', desc: 'Submittals, RFIs, change orders, and field management' },
+                { icon: FileSearch, title: 'Document Intelligence', desc: 'AI-powered plan review, compliance checking, and analysis' },
+                { icon: CheckCircle, title: 'Closeout & Warranty', desc: 'Punch lists, O&M manuals, warranty tracking, and final docs' },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.title} className="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-md transition flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${brand.navy}15` }}>
+                      <Icon className="w-5 h-5" style={{ color: brand.navy }} />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 text-sm">{item.title}</h4>
+                      <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
       {/* SECTION 5 - FOR CONTRACTORS & PROFESSIONALS */}
       <motion.section
         {...fadeInUp}
         className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8"
-        style={{ backgroundColor: '#F7FAFC' }}
+        style={{ backgroundColor: '#F7FAFC', borderTop: `4px solid #E8A84A` }}
       >
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto pl-6" style={{ borderLeft: '6px solid #E8A84A' }}>
           <div className="text-center mb-12">
             <SectionLabel
               text="FOR GCs • BUILDERS • CONTRACTORS • OWNERS/RE DEVELOPERS • SPECIALTY CONTRACTORS"
@@ -435,17 +578,17 @@ export function HomePageClient({
             />
             <ModuleShowcaseCard
               icon={DollarSign}
-              title="Finance & Escrow"
-              subtitle="Secure Payments"
-              description="Escrow management, milestone payments, and financial tracking for all parties."
+              title="Milestone Payments"
+              subtitle="Secure Project Payments"
+              description="Milestone-based payment tracking, release management, and financial reporting for all project parties."
               features={[
-                'Escrow Accounts',
-                'Milestone Payments',
+                'Milestone Tracking',
+                'Payment Releases',
                 'Financial Reports',
                 'Trust Accounting',
               ]}
               priceAnchor={{ amount: 'Free', showFrom: false }}
-              cta={{ label: 'Explore Finance', href: '/finance' }}
+              cta={{ label: 'Explore Payments', href: '/finance' }}
               accentColor="navy"
             />
           </div>
@@ -453,8 +596,8 @@ export function HomePageClient({
       </motion.section>
 
       {/* SECTION 6 - HOW IT WORKS (Functional: "One Platform. Five Connected Phases.") */}
-      <motion.section id="howitworks" {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
+      <motion.section id="howitworks" {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8" style={{ borderTop: `4px solid ${brand.navy}` }}>
+        <div className="max-w-4xl mx-auto pl-6" style={{ borderLeft: `6px solid ${brand.navy}` }}>
           <div className="text-center mb-12">
             <SectionLabel text={MESSAGES.howItWorks.eyebrow.toUpperCase()} color="navy" className="mb-4" />
             <h2
@@ -479,8 +622,8 @@ export function HomePageClient({
       </motion.section>
 
       {/* SECTION 6.5 - SEE WHAT YOU GET - Portal Previews */}
-      <motion.section {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-[#F7FAFC]">
-        <div className="max-w-7xl mx-auto">
+      <motion.section {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-[#F7FAFC]" style={{ borderTop: `4px solid ${brand.teal}` }}>
+        <div className="max-w-7xl mx-auto pl-6" style={{ borderLeft: `6px solid ${brand.teal}` }}>
           <div className="text-center mb-12">
             <SectionLabel text="SEE WHAT YOU GET" color="teal" className="mb-4" />
             <h2
@@ -671,14 +814,14 @@ export function HomePageClient({
               ctaHref="/pm"
             />
             <PortalPreview
-              portalName="Finance & Escrow"
+              portalName="Milestone Payments"
               portalUrl="kealee.com/finance"
-              description="Secure escrow management, milestone payments, and financial tracking for all project parties."
+              description="Milestone-based payment tracking, release management, and financial reporting for all project parties."
               heroImage={portalImages.financeTrust.src}
               heroImageAlt={portalImages.financeTrust.alt}
               accentColor="navy"
               sidebarItems={[
-                { icon: DollarSign, label: 'Escrow' },
+                { icon: DollarSign, label: 'Payments' },
                 { icon: FileText, label: 'Statements' },
                 { icon: BarChart3, label: 'Reports' },
                 { icon: ShieldCheck, label: 'Trust' },

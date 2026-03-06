@@ -7,7 +7,7 @@ const heroImage = { src: 'https://images.unsplash.com/photo-1487958449943-2429e8
 
 export const metadata: Metadata = {
   title: 'Portal Access | Kealee',
-  description: 'Access your Kealee portal — architecture, engineering, permits & inspections, cost estimation, project management, operations services, and finance & escrow. One platform for every construction project role.',
+  description: 'Access your Kealee portal — architecture, engineering, permits & inspections, cost estimation, project management, operations services, and milestone payments. One platform for every construction project role.',
   openGraph: {
     title: 'Portal Access | Kealee',
     description: '8 purpose-built portals for every role in the construction lifecycle. Architecture, engineering, estimation, permits, PM, ops, finance, and project owner portals.',
@@ -73,12 +73,12 @@ const portals = [
     features: ['Scheduling', 'Budgeting', 'RFIs & submittals'],
   },
   {
-    name: 'Finance & Escrow',
-    description: 'Manage escrow accounts, track milestone payments, and view financial reports.',
+    name: 'Milestone Payments',
+    description: 'Track milestone-based payments, manage releases, and view financial reports.',
     href: '/finance',
     color: 'emerald',
     audience: 'For all parties',
-    features: ['Escrow management', 'Milestone payments', 'Financial reports'],
+    features: ['Milestone tracking', 'Payment releases', 'Financial reports'],
   },
 ]
 

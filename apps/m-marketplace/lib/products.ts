@@ -104,6 +104,6 @@ export const productCategories = [
   { key: 'permit-package', label: 'Permit Packages' },
   { key: 'individual', label: 'Individual Services' },
   { key: 'estimation', label: 'Estimation' },
-  { key: 'finance', label: 'Finance & Escrow' },
+  { key: 'finance', label: 'Milestone Payments' },
   { key: 'operations', label: 'Operations Services' },
 ]

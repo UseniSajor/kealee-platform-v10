@@ -54,7 +54,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/finance" className="hover:text-white transition">
-                  Finance & Escrow
+                  Milestone Payments
                 </Link>
               </li>
             </ul>
@@ -139,8 +139,13 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/legal/privacy" className="hover:text-white transition">
+                <Link href="/privacy" className="hover:text-white transition">
                   Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/data-deletion" className="hover:text-white transition">
+                  Data Deletion
                 </Link>
               </li>
               <li>

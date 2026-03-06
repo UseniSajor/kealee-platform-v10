@@ -375,6 +375,12 @@ model Jurisdiction {
   reviewAssignments     ReviewAssignment[]
   inspectionAssignments InspectionAssignment[]
 
+  // Housing Act – Zoning, Pattern Book, Municipal Dashboard
+  zoningProfiles         ZoningProfile[]            @relation("JurisdictionZoning")
+  patternBookDesigns     PatternBookDesign[]         @relation("JurisdictionPatternBooks")
+  housingPipeline        HousingPipelineEntry[]      @relation("JurisdictionHousingPipeline")
+  dashboardSnapshots     HousingDashboardSnapshot[]  @relation("JurisdictionDashboardSnapshots")
+
   @@index([code])
   @@index([state, county])
   @@index([subscriptionStatus])
@@ -1982,6 +1988,13 @@ model User {
 
   // Customer Orders (concept packages, one-time purchases)
   conceptPackageOrders ConceptPackageOrder[] @relation("ConceptPackageOrderUser")
+
+  // Housing Act – Zoning, Pattern Book, Development Package, HUD
+  zoningComplianceReports ZoningComplianceReport[] @relation("ZoningComplianceRequester")
+  patternBooksCreated     PatternBookDesign[]      @relation("PatternBookCreator")
+  patternBookSelections   PatternBookSelection[]   @relation("PatternBookSelector")
+  developmentPackages     DevelopmentPackage[]      @relation("DevelopmentPackageUser")
+  hudEligibilityChecks    HUDEligibilityCheck[]    @relation("HUDEligibilityUser")
 }
 
 // ============================================================================
@@ -13004,4 +13017,537 @@ model ConceptPackageOrder {
   @@index([status])
   @@index([deliveryStatus])
   @@map("concept_package_orders")
+}
+
+// ============================================================================
+// 21st CENTURY ROAD TO HOUSING ACT — ENUMS
+// ============================================================================
+
+enum HousingType {
+  SINGLE_FAMILY
+  ADU
+  DUPLEX
+  TRIPLEX
+  FOURPLEX
+  TOWNHOUSE
+  SMALL_APARTMENT
+  MID_RISE
+  MIXED_USE
+  MANUFACTURED
+  MODULAR
+}
+
+enum ZoningDistrictType {
+  R1_SINGLE_FAMILY
+  R2_TWO_FAMILY
+  R3_MULTI_FAMILY
+  R4_HIGH_DENSITY
+  MX_MIXED_USE
+  C1_COMMERCIAL
+  PD_PLANNED_DEVELOPMENT
+  TO_TRANSIT_ORIENTED
+  OVERLAY
+  UNKNOWN
+}
+
+enum NEPAExemptionType {
+  INFILL_DEVELOPMENT
+  SMALL_SCALE_HOUSING
+  PREVIOUSLY_DEVELOPED
+  CATEGORICAL_EXCLUSION
+  NONE
+}
+
+enum DevelopmentPackageStatus {
+  INTAKE
+  ZONING_ANALYSIS
+  DESIGN_GENERATION
+  COST_ESTIMATION
+  PRO_FORMA
+  PERMIT_CHECKLIST
+  COMPILING
+  READY
+  DELIVERED
+  EXPIRED
+}
+
+enum PatternBookStatus {
+  DRAFT
+  IN_REVIEW
+  PRE_APPROVED
+  PUBLISHED
+  ARCHIVED
+}
+
+// ============================================================================
+// 21st CENTURY ROAD TO HOUSING ACT — ZONING & COMPLIANCE
+// Sec 203 (Housing Supply Frameworks), Sec 209 ($200M Innovation Fund),
+// NEPA Streamlining
+// ============================================================================
+
+model ZoningProfile {
+  id               String            @id @default(uuid())
+  jurisdictionId   String
+  parcelNumber     String?
+  address          String
+  city             String
+  state            String
+  zipCode          String
+  latitude         Float?
+  longitude        Float?
+
+  // Zoning Classification
+  zoningDistrict    ZoningDistrictType @default(UNKNOWN)
+  zoningCode        String             @default("")
+  overlayDistricts  String[]           @default([])
+
+  // Permitted Uses
+  allowedHousingTypes HousingType[] @default([])
+  conditionalUses     HousingType[] @default([])
+  prohibitedUses      HousingType[] @default([])
+
+  // Dimensional Standards
+  maxDensity        Float?
+  maxHeight         Float?
+  maxStories        Int?
+  minLotSize        Float?
+  minLotWidth       Float?
+  frontSetback      Float?
+  sideSetback       Float?
+  rearSetback       Float?
+  maxLotCoverage    Float?
+  maxFAR            Float?
+  minOpenSpace      Float?
+
+  // Parking
+  parkingMinPerUnit Float?
+  parkingReductions Json?
+  bikeParking       Float?
+
+  // Special Provisions
+  densityBonuses    Json?
+  inclusionaryReq   Json?
+
+  // NEPA
+  nepaExemption       NEPAExemptionType @default(NONE)
+  nepaExemptionReason String?
+
+  // Transit-Oriented Development (Build More Housing Near Transit Act)
+  transitProximity    Float?
+  transitType         String?
+
+  // AI Analysis
+  aiAnalyzedAt      DateTime?
+  aiConfidence      Float?
+  aiRawResponse     Json?
+  sourceDocumentUrls String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jurisdiction        Jurisdiction             @relation("JurisdictionZoning", fields: [jurisdictionId], references: [id])
+  complianceReports   ZoningComplianceReport[]
+  developmentPackages DevelopmentPackage[]
+
+  @@unique([parcelNumber, jurisdictionId])
+  @@index([jurisdictionId])
+  @@index([zoningDistrict])
+  @@index([city, state])
+  @@index([address])
+  @@map("zoning_profiles")
+}
+
+model ZoningComplianceReport {
+  id              String @id @default(uuid())
+  zoningProfileId String
+  requestedById   String
+
+  // Proposed Development
+  proposedHousingType HousingType
+  proposedUnits       Int
+  proposedStories     Int         @default(1)
+  proposedSqFt        Int?
+  proposedHeight      Float?
+  proposedLotCoverage Float?
+  proposedFAR         Float?
+  proposedParking     Int?
+
+  // Compliance Results
+  isCompliant     Boolean @default(false)
+  complianceScore Int?
+  violations      Json?
+  variances       Json?
+  conditionalApproval Json?
+
+  // NEPA Assessment
+  nepaExemptionEligible Boolean           @default(false)
+  nepaCategory          NEPAExemptionType @default(NONE)
+  nepaJustification     String?
+
+  // Required Permits
+  requiredPermits   Json?
+  estimatedTimeline Int?
+  estimatedFees     Decimal? @db.Decimal(10, 2)
+
+  // Density Bonus Analysis (Sec 209)
+  densityBonusEligible Boolean @default(false)
+  densityBonusDetails  Json?
+
+  // AI Analysis
+  aiModelUsed      String?
+  aiConfidence     Float?
+  aiAnalysisDetail Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  zoningProfile ZoningProfile @relation(fields: [zoningProfileId], references: [id], onDelete: Cascade)
+  requestedBy   User          @relation("ZoningComplianceRequester", fields: [requestedById], references: [id])
+
+  @@index([zoningProfileId])
+  @@index([requestedById])
+  @@index([proposedHousingType])
+  @@map("zoning_compliance_reports")
+}
+
+// ============================================================================
+// 21st CENTURY ROAD TO HOUSING ACT — PATTERN BOOK HOUSING
+// Sec 210 (Accelerating Home Building Act)
+// ============================================================================
+
+model PatternBookDesign {
+  id               String  @id @default(uuid())
+  jurisdictionId   String?
+
+  // Design Identity
+  name              String
+  slug              String  @unique
+  housingType       HousingType
+  architecturalStyle AutoDesignStyle @default(MODERN)
+  description        String          @db.Text
+  tags               String[]        @default([])
+
+  // Design Specifications
+  totalSqFt     Int
+  units         Int     @default(1)
+  stories       Int     @default(1)
+  bedrooms      Int
+  bathrooms     Decimal @db.Decimal(3, 1)
+  garageSpaces  Int     @default(0)
+  parkingSpaces Int     @default(0)
+
+  // Dimensional Data
+  buildingWidth  Float?
+  buildingDepth  Float?
+  buildingHeight Float?
+  footprintSqFt  Int?
+  lotWidthMin    Float?
+  lotDepthMin    Float?
+
+  // Floor Plan Data
+  floorPlanUrls   String[] @default([])
+  elevationUrls   String[] @default([])
+  siteLayoutUrl   String?
+  renderingUrls   String[] @default([])
+  floorPlanData   Json?
+  roomSchedule    Json?
+
+  // Cost Data
+  estimatedCostLow  Decimal? @db.Decimal(12, 2)
+  estimatedCostMid  Decimal? @db.Decimal(12, 2)
+  estimatedCostHigh Decimal? @db.Decimal(12, 2)
+  costPerSqFt       Decimal? @db.Decimal(8, 2)
+  costBreakdown     Json?
+
+  // Construction Data
+  estimatedDuration   Int?
+  constructionType    String?
+  foundationType      String?
+  energyEfficiency    String?
+  sustainabilityScore Int?
+
+  // Compliance Data
+  applicableCodes             String[]         @default([])
+  preApprovedJurisdictions    String[]         @default([])
+  complianceNotes             Json?
+
+  // Status & Publication
+  status              PatternBookStatus @default(DRAFT)
+  publishedAt         DateTime?
+  featuredOrder       Int?
+  isPubliclyAvailable Boolean           @default(true)
+
+  // Usage Stats
+  viewCount         Int @default(0)
+  downloadCount     Int @default(0)
+  permitSubmissions Int @default(0)
+
+  // Creator
+  createdById String
+  designFirm  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jurisdiction Jurisdiction?        @relation("JurisdictionPatternBooks", fields: [jurisdictionId], references: [id])
+  createdBy    User                 @relation("PatternBookCreator", fields: [createdById], references: [id])
+  selections   PatternBookSelection[]
+
+  @@index([housingType])
+  @@index([status])
+  @@index([jurisdictionId])
+  @@index([architecturalStyle])
+  @@index([totalSqFt])
+  @@map("pattern_book_designs")
+}
+
+model PatternBookSelection {
+  id                  String  @id @default(uuid())
+  patternBookDesignId String
+  userId              String
+  projectId           String?
+
+  // Customization
+  customizations Json?
+  notes          String?
+
+  // Delivery
+  downloadedAt     DateTime?
+  permitSubmittedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  design PatternBookDesign @relation(fields: [patternBookDesignId], references: [id], onDelete: Cascade)
+  user   User              @relation("PatternBookSelector", fields: [userId], references: [id])
+
+  @@index([patternBookDesignId])
+  @@index([userId])
+  @@map("pattern_book_selections")
+}
+
+// ============================================================================
+// 21st CENTURY ROAD TO HOUSING ACT — AI DEVELOPMENT PACKAGE GENERATOR
+// ============================================================================
+
+model DevelopmentPackage {
+  id              String                  @id @default(uuid())
+  userId          String
+  projectId       String?
+  zoningProfileId String?
+
+  // Property Input
+  address     String
+  parcelNumber String?
+  city        String
+  state       String
+  zipCode     String
+  latitude    Float?
+  longitude   Float?
+
+  // Proposed Development
+  housingType HousingType
+  targetUnits Int
+  targetSqFt  Int?
+  targetStories Int @default(1)
+
+  // Status
+  status DevelopmentPackageStatus @default(INTAKE)
+
+  // Generated Components
+  zoningReport    Json?
+  conceptPlans    Json?
+  costEstimate    Json?
+  proForma        Json?
+  permitChecklist Json?
+  financingOptions Json?
+  nepaAssessment  Json?
+
+  // Linked Records
+  estimateId          String?
+  zoningComplianceId  String?
+  patternBookDesignId String?
+
+  // Package Output
+  packagePdfUrl String?
+  packageData   Json?
+
+  // AI Metadata
+  aiModelUsed       String?
+  aiTotalTokens     Int?
+  aiProcessingTimeMs Int?
+  aiConfidence      Float?
+
+  // Timing
+  generationStartedAt   DateTime?
+  generationCompletedAt DateTime?
+  expiresAt             DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user          User           @relation("DevelopmentPackageUser", fields: [userId], references: [id])
+  zoningProfile ZoningProfile? @relation(fields: [zoningProfileId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([housingType])
+  @@index([city, state])
+  @@map("development_packages")
+}
+
+// ============================================================================
+// 21st CENTURY ROAD TO HOUSING ACT — MUNICIPAL HOUSING DASHBOARD
+// CDBG Reporting, Sec 210 Pattern Book Adoption Tracking
+// ============================================================================
+
+model HousingPipelineEntry {
+  id             String @id @default(uuid())
+  jurisdictionId String
+
+  // Project Identity
+  projectName  String
+  address      String
+  parcelNumber String?
+  permitId     String?
+
+  // Housing Details
+  housingType     HousingType
+  totalUnits      Int
+  affordableUnits Int @default(0)
+  workforceUnits  Int @default(0)
+  marketRateUnits Int @default(0)
+
+  // Status
+  pipelineStage       String
+  estimatedCompletion  DateTime?
+
+  // Pattern Book Tracking (Sec 210)
+  usesPatternBook     Boolean @default(false)
+  patternBookDesignId String?
+
+  // Financial
+  totalProjectCost Decimal? @db.Decimal(14, 2)
+  publicSubsidy    Decimal? @db.Decimal(14, 2)
+  grantFunding     Json?
+
+  // Timestamps
+  proposedAt            DateTime?
+  entitledAt            DateTime?
+  permittedAt           DateTime?
+  constructionStartedAt DateTime?
+  completedAt           DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jurisdiction Jurisdiction @relation("JurisdictionHousingPipeline", fields: [jurisdictionId], references: [id])
+
+  @@index([jurisdictionId])
+  @@index([pipelineStage])
+  @@index([housingType])
+  @@index([jurisdictionId, pipelineStage])
+  @@map("housing_pipeline_entries")
+}
+
+model HousingDashboardSnapshot {
+  id             String   @id @default(uuid())
+  jurisdictionId String
+  snapshotDate   DateTime @default(now())
+
+  // Pipeline Metrics
+  totalProjects        Int @default(0)
+  totalUnitsInPipeline Int @default(0)
+  unitsPermittedYTD    Int @default(0)
+  unitsCompletedYTD    Int @default(0)
+  affordableUnitsYTD   Int @default(0)
+
+  // Pattern Book Metrics (Sec 210)
+  patternBookAdoptions Int @default(0)
+  patternBookProjects  Int @default(0)
+
+  // Permit Metrics
+  avgPermitReviewDays Float?
+  permitApprovalRate  Float?
+
+  // Detailed Data
+  housingTypeBreakdown Json?
+  monthlyTrend         Json?
+  grantUtilization     Json?
+
+  createdAt DateTime @default(now())
+
+  jurisdiction Jurisdiction @relation("JurisdictionDashboardSnapshots", fields: [jurisdictionId], references: [id])
+
+  @@index([jurisdictionId, snapshotDate])
+  @@map("housing_dashboard_snapshots")
+}
+
+// ============================================================================
+// 21st CENTURY ROAD TO HOUSING ACT — HUD FINANCING ENGINE
+// FHA Multifamily, HOME Program, $200M Innovation Fund, CDBG
+// ============================================================================
+
+model HUDEligibilityCheck {
+  id                   String  @id @default(uuid())
+  userId               String
+  projectId            String?
+  developmentPackageId String?
+
+  // Project Financials
+  totalProjectCost   Decimal @db.Decimal(14, 2)
+  landCost           Decimal @db.Decimal(14, 2)
+  constructionCost   Decimal @db.Decimal(14, 2)
+  softCosts          Decimal @db.Decimal(14, 2)
+  equityContribution Decimal @db.Decimal(14, 2)
+
+  // Unit Mix
+  totalUnits     Int
+  unitMix        Json
+  affordableUnits Int @default(0)
+  workforceUnits  Int @default(0)
+
+  // Income Analysis (HOME Program Modernization)
+  areaMedianIncome  Decimal? @db.Decimal(10, 2)
+  targetAMIPercent  Int?
+  workforceEligible Boolean  @default(false)
+
+  // FHA Multifamily Assessment
+  fhaEligible      Boolean  @default(false)
+  fhaProgramType   String?
+  maxLoanAmount    Decimal? @db.Decimal(14, 2)
+  loanToValue      Float?
+  debtServiceCoverage Float?
+
+  // Pro Forma
+  proForma           Json?
+  rentalProjections  Json?
+  operatingExpenses  Json?
+  netOperatingIncome Decimal? @db.Decimal(14, 2)
+  capRate            Float?
+  irr                Float?
+  cashOnCash         Float?
+
+  // Grant Eligibility (Sec 209 - $200M Housing Innovation Fund)
+  innovationFundEligible Boolean @default(false)
+  innovationFundDetails  Json?
+  cdbgEligible           Boolean @default(false)
+  homeEligible           Boolean @default(false)
+
+  // Lender Package
+  lenderPackagePdfUrl String?
+  investorDeckPdfUrl  String?
+
+  // AI
+  aiModelUsed  String?
+  aiConfidence Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation("HUDEligibilityUser", fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([fhaEligible])
+  @@index([workforceEligible])
+  @@map("hud_eligibility_checks")
 }

@@ -33,6 +33,16 @@ import {
   CreditCard,
   BadgeCheck,
   ArrowDown,
+  Droplets,
+  Layers,
+  TreePine,
+  Flame,
+  Warehouse,
+  Landmark,
+  TrendingUp,
+  Sun,
+  Lightbulb,
+  Thermometer,
 } from 'lucide-react';
 
 import {
@@ -748,31 +758,46 @@ export function ProjectOwnerLandingClient() {
               className="text-3xl lg:text-4xl font-bold mb-4"
               style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}
             >
-              From Kitchens to Custom Homes
+              From Kitchens to Custom Homes &mdash; and Everything In Between
             </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Whatever you are building, we have the professional services, technology, and contractor network to deliver it on time and on budget.
+            </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
-              { icon: PaintBucket, title: 'Renovations', desc: 'Kitchen, bathroom, basement, whole-home remodels' },
-              { icon: Building2, title: 'Additions', desc: 'Room additions, second stories, ADUs, garages' },
-              { icon: Home, title: 'New Construction', desc: 'Custom homes, townhomes, duplexes' },
-              { icon: Wrench, title: 'Commercial TI', desc: 'Tenant improvements, retail buildouts, offices' },
+              { icon: PaintBucket, title: 'Kitchen Remodels', desc: 'Full kitchen renovations — cabinets, countertops, appliances, and layout changes' },
+              { icon: Droplets, title: 'Bathroom Renovations', desc: 'Complete bath remodels with tile, fixtures, vanities, and plumbing upgrades' },
+              { icon: Layers, title: 'Basement Finishing', desc: 'Transform unfinished basements into living rooms, bedrooms, or home offices' },
+              { icon: Home, title: 'Whole-Home Remodels', desc: 'Complete home transformations — structural changes, finishes, and systems' },
+              { icon: Building2, title: 'Room Additions', desc: 'Expand your footprint with new rooms, sunrooms, or bump-out extensions' },
+              { icon: TrendingUp, title: 'Second Story Additions', desc: 'Add a full second level to maximize lot value and living space' },
+              { icon: Landmark, title: 'ADU / In-Law Suites', desc: 'Accessory dwelling units, granny flats, guest houses, and detached studios' },
+              { icon: Warehouse, title: 'Garage Conversions', desc: 'Convert attached or detached garages into living space, studios, or apartments' },
+              { icon: Hammer, title: 'Custom Home Builds', desc: 'New construction single-family homes designed and built to your specifications' },
+              { icon: Building2, title: 'Townhomes & Duplexes', desc: 'Multi-unit residential new construction for investment or owner-occupied' },
+              { icon: TreePine, title: 'Decks & Outdoor Living', desc: 'Decks, patios, pergolas, outdoor kitchens, and hardscaping projects' },
+              { icon: Flame, title: 'Roofing & Siding', desc: 'Roof replacement, siding installation, windows, and exterior envelope work' },
+              { icon: Lightbulb, title: 'Electrical Upgrades', desc: 'Panel upgrades, rewiring, EV charger installation, and smart home systems' },
+              { icon: Thermometer, title: 'HVAC & Plumbing', desc: 'New systems, replacements, ductwork, water heaters, and radiant heating' },
+              { icon: Sun, title: 'Energy & Solar', desc: 'Solar panel installation, insulation upgrades, and energy efficiency retrofits' },
+              { icon: Wrench, title: 'Commercial TI', desc: 'Tenant improvements, retail buildouts, office renovations, and restaurant fit-outs' },
             ].map((item) => {
               const Icon = item.icon;
               return (
                 <div
                   key={item.title}
-                  className="bg-white rounded-xl p-6 text-center border border-gray-200 hover:shadow-lg transition"
+                  className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-lg transition"
                 >
                   <div
-                    className="w-14 h-14 rounded-xl mx-auto mb-4 flex items-center justify-center"
+                    className="w-12 h-12 rounded-xl mb-3 flex items-center justify-center"
                     style={{ backgroundColor: `${brand.teal}15` }}
                   >
-                    <Icon className="w-7 h-7" style={{ color: brand.teal }} />
+                    <Icon className="w-6 h-6" style={{ color: brand.teal }} />
                   </div>
-                  <h3 className="font-bold text-gray-900 mb-1">{item.title}</h3>
-                  <p className="text-sm text-gray-600">{item.desc}</p>
+                  <h3 className="font-bold text-gray-900 mb-1 text-sm">{item.title}</h3>
+                  <p className="text-xs text-gray-600 leading-relaxed">{item.desc}</p>
                 </div>
               );
             })}

@@ -48,17 +48,29 @@ export function HeroSection({
           border: 'none',
         };
       case 'outline':
-        return {
-          backgroundColor: 'transparent',
-          color: brand.navy,
-          border: `2px solid ${brand.navy}`,
-        };
+        return hasBackgroundImage
+          ? {
+              backgroundColor: '#C8882A',
+              color: '#FFFFFF',
+              border: 'none',
+            }
+          : {
+              backgroundColor: 'transparent',
+              color: brand.navy,
+              border: `2px solid ${brand.navy}`,
+            };
       case 'ghost':
-        return {
-          backgroundColor: 'transparent',
-          color: brand.gray[600],
-          border: 'none',
-        };
+        return hasBackgroundImage
+          ? {
+              backgroundColor: '#C8882A',
+              color: '#FFFFFF',
+              border: 'none',
+            }
+          : {
+              backgroundColor: 'transparent',
+              color: brand.gray[600],
+              border: 'none',
+            };
     }
   };
 

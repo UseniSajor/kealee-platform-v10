@@ -19,6 +19,7 @@ import {
   User,
   Building2,
   Home,
+  BookOpen,
 } from 'lucide-react';
 import { CartButton } from './CartButton';
 import { DashboardNotifications } from './DashboardNotifications';
@@ -49,7 +50,7 @@ const solutions = [
   {
     category: 'Finance',
     items: [
-      { name: 'Finance & Escrow', description: 'Secure payments & trust', href: '/finance', icon: DollarSign },
+      { name: 'Milestone Payments', description: 'Secure project payments', href: '/finance', icon: DollarSign },
     ],
   },
 ];
@@ -57,6 +58,7 @@ const solutions = [
 const products = [
   { name: 'Stock Plans', description: 'Browse 100+ house plans', href: '/plans', icon: ShoppingBag },
   { name: 'Design Catalog', description: 'Custom concept designs', href: '/services/design', icon: Palette },
+  { name: 'Pattern Book', description: 'Pre-approved housing designs', href: '/pattern-book', icon: BookOpen },
 ];
 
 const portals = [
