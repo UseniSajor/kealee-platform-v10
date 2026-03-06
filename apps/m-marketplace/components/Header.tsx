@@ -202,7 +202,7 @@ export function Header() {
               Network
             </Link>
 
-            <Link href="/services/design" className="flex items-center gap-1.5 text-gray-700 hover:text-blue-600 transition font-medium">
+            <Link href="/owner" className="flex items-center gap-1.5 text-gray-700 hover:text-blue-600 transition font-medium">
               <Home className="w-4 h-4" />
               Homeowner
             </Link>

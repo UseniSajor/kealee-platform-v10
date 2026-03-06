@@ -422,6 +422,151 @@ export function ProjectOwnerLandingClient() {
         bgPattern
       />
 
+      {/* SECTION: SERVICES OVERVIEW */}
+      <motion.section
+        {...fadeInUp}
+        id="services"
+        className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8"
+      >
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <SectionLabel text="HOMEOWNER SERVICES" color="teal" className="mb-4" />
+            <h2
+              className="text-3xl lg:text-4xl font-bold mb-4"
+              style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}
+            >
+              Everything You Need Under One Roof
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              From your first sketch to your final walkthrough, Kealee connects every service
+              your project needs in a single platform.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Brain,
+                title: 'AI Concept Design',
+                desc: 'Get AI-generated floor plans, 3D renderings, and cost estimates in minutes. Explore multiple layouts before committing to an architect.',
+                color: brand.navy,
+              },
+              {
+                icon: Ruler,
+                title: 'Architecture & Engineering',
+                desc: 'Licensed architects develop your approved concept into permit-ready construction documents. Structural, MEP, and civil engineering coordinated.',
+                color: brand.teal,
+              },
+              {
+                icon: FileCheck,
+                title: 'Permit Management',
+                desc: 'We handle all permit applications, plan review corrections, resubmissions, and inspection scheduling from start to certificate of occupancy.',
+                color: '#059669',
+              },
+              {
+                icon: Search,
+                title: 'Contractor Marketplace',
+                desc: 'Vetted, licensed, and insured contractors compete for your project. Compare bids, read reviews, and choose with confidence.',
+                color: brand.orange,
+              },
+              {
+                icon: Shield,
+                title: 'Escrow Payments',
+                desc: 'Your funds are held in escrow and only released when you approve completed milestones. Never pay for work that is not done.',
+                color: brand.navy,
+              },
+              {
+                icon: BarChart3,
+                title: 'Project Management',
+                desc: 'Real-time dashboards, scheduling, budget tracking, photo logs, and daily reports. Optional dedicated PM available from $1,750/mo.',
+                color: brand.teal,
+              },
+            ].map((service) => {
+              const Icon = service.icon;
+              return (
+                <div
+                  key={service.title}
+                  className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition"
+                >
+                  <div
+                    className="w-14 h-14 rounded-xl mb-4 flex items-center justify-center"
+                    style={{ backgroundColor: `${service.color}15` }}
+                  >
+                    <Icon className="w-7 h-7" style={{ color: service.color }} />
+                  </div>
+                  <h3 className="font-bold text-gray-900 text-lg mb-2">{service.title}</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">{service.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-10 text-center">
+            <Link
+              href="#precon-pricing"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold text-white transition hover:opacity-90"
+              style={{ backgroundColor: brand.teal }}
+            >
+              Get Started — From $199 <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+        </div>
+      </motion.section>
+
+      {/* SECTION: PLATFORM FEATURES */}
+      <motion.section
+        {...fadeInUp}
+        id="features"
+        className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8"
+        style={{ backgroundColor: '#F7FAFC' }}
+      >
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <SectionLabel text="PLATFORM FEATURES" color="navy" className="mb-4" />
+            <h2
+              className="text-3xl lg:text-4xl font-bold mb-4"
+              style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}
+            >
+              Built for Homeowners, Powered by AI
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Kealee is not just a directory &mdash; it is a full construction management platform
+              designed to keep you in control and your money protected.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              { icon: Brain, title: 'AI Design Engine', desc: 'Generate floor plans and 3D concepts from a text description of your project' },
+              { icon: DollarSign, title: 'Instant Cost Estimates', desc: 'Assembly-level cost breakdowns with regional pricing before you hire anyone' },
+              { icon: MapPin, title: 'Zoning Checker', desc: 'Verify what you can build on your lot — setbacks, height, density, and variances' },
+              { icon: FileCheck, title: 'Permit Tracker', desc: 'Track every permit from application through inspection to certificate of occupancy' },
+              { icon: ShieldCheck, title: 'Milestone Escrow', desc: 'Pay only for completed work. Funds held securely until you approve each milestone' },
+              { icon: Calendar, title: 'Live Scheduling', desc: 'See your project timeline, track delays, and get notified of upcoming milestones' },
+              { icon: MessageSquare, title: 'In-App Messaging', desc: 'Communicate with your architect, contractors, and PM all in one thread' },
+              { icon: ClipboardCheck, title: 'Daily Reports & Photos', desc: 'Photo-verified progress reports so you always know what happened on-site today' },
+            ].map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={feature.title}
+                  className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-md transition"
+                >
+                  <div
+                    className="w-10 h-10 rounded-lg mb-3 flex items-center justify-center"
+                    style={{ backgroundColor: `${brand.navy}10` }}
+                  >
+                    <Icon className="w-5 h-5" style={{ color: brand.navy }} />
+                  </div>
+                  <h3 className="font-bold text-gray-900 text-sm mb-1">{feature.title}</h3>
+                  <p className="text-xs text-gray-600 leading-relaxed">{feature.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </motion.section>
+
       {/* SECTION: HOW IT WORKS — THE FULL PROCESS */}
       <motion.section
         {...fadeInUp}
