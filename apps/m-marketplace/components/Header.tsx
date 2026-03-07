@@ -59,6 +59,7 @@ const products = [
   { name: 'Stock Plans', description: 'Browse 100+ house plans', href: '/plans', icon: ShoppingBag },
   { name: 'Design Catalog', description: 'Custom concept designs', href: '/services/design', icon: Palette },
   { name: 'Pattern Book', description: 'Pre-approved housing designs', href: '/pattern-book', icon: BookOpen },
+  { name: 'Dev Package', description: 'AI feasibility analysis', href: '/development-package', icon: Building2 },
 ];
 
 const portals = [
