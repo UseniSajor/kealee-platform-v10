@@ -44,6 +44,10 @@ import {
   FileSearch,
   TrendingUp,
   CheckCircle,
+  BookOpen,
+  Scale,
+  FileBarChart,
+  MapPinned,
 } from 'lucide-react';
 
 import {
@@ -863,6 +867,156 @@ export function HomePageClient({
               ]}
               ctaHref="/network"
             />
+            <PortalPreview
+              portalName="Pattern Book"
+              portalUrl="kealee.com/pattern-book"
+              description="Pre-approved housing designs from the 21st Century Housing Act — permit-ready plans with location-adjusted costs."
+              heroImage={portalImages.patternBook.src}
+              heroImageAlt={portalImages.patternBook.alt}
+              accentColor="navy"
+              sidebarItems={[
+                { icon: BookOpen, label: 'Designs' },
+                { icon: Home, label: 'Types' },
+                { icon: FileCheck, label: 'Pre-Approved' },
+                { icon: DollarSign, label: 'Costs' },
+              ]}
+              stats={[
+                { label: 'Designs', value: '24+' },
+                { label: 'Types', value: '8' },
+                { label: 'Pre-Approved', value: '18' },
+              ]}
+              features={[
+                'Sec 210 pre-approved plans',
+                'Location-adjusted costs',
+                'Permit-ready designs',
+              ]}
+              ctaHref="/pattern-book"
+            />
+            <PortalPreview
+              portalName="Dev Package Generator"
+              portalUrl="kealee.com/development-package"
+              description="AI-powered feasibility analysis for any address — zoning, costs, pro forma, and grant eligibility in minutes."
+              heroImage={portalImages.devPackage.src}
+              heroImageAlt={portalImages.devPackage.alt}
+              accentColor="teal"
+              sidebarItems={[
+                { icon: FileBarChart, label: 'Analysis' },
+                { icon: MapPinned, label: 'Zoning' },
+                { icon: DollarSign, label: 'Pro Forma' },
+                { icon: CheckCircle, label: 'Grants' },
+              ]}
+              stats={[
+                { label: 'Analyses', value: '8' },
+                { label: 'Time', value: '<5 min' },
+                { label: 'Score', value: '0-100' },
+              ]}
+              features={[
+                'Zoning + compliance check',
+                'Cost + pro forma analysis',
+                'Grant eligibility check',
+              ]}
+              ctaHref="/development-package"
+            />
+            <PortalPreview
+              portalName="Workforce Housing"
+              portalUrl="kealee.com/workforce-housing"
+              description="Federal grants and financing programs — HOME, CDBG, LIHTC eligibility, FHA loan analysis, and AMI income targeting."
+              heroImage={portalImages.workforceHousing.src}
+              heroImageAlt={portalImages.workforceHousing.alt}
+              accentColor="green"
+              sidebarItems={[
+                { icon: Scale, label: 'Programs' },
+                { icon: DollarSign, label: 'Grants' },
+                { icon: Home, label: 'Financing' },
+                { icon: CheckCircle, label: 'Eligibility' },
+              ]}
+              stats={[
+                { label: 'Programs', value: '12+' },
+                { label: 'Grants', value: '4' },
+                { label: 'Financing', value: '5' },
+              ]}
+              features={[
+                'HOME/CDBG/LIHTC eligibility',
+                'FHA loan analysis',
+                'AMI income targeting',
+              ]}
+              ctaHref="/workforce-housing"
+            />
+          </div>
+        </div>
+      </motion.section>
+
+      {/* SECTION 6.7 - 21st Century Housing Act */}
+      <motion.section {...fadeInUp} className="py-16 lg:py-20 px-4 sm:px-6 lg:px-8" style={{ borderTop: `4px solid ${brand.navy}` }}>
+        <div className="max-w-7xl mx-auto pl-6" style={{ borderLeft: `6px solid ${brand.navy}` }}>
+          <div className="text-center mb-12">
+            <SectionLabel text="21ST CENTURY HOUSING ACT" color="navy" className="mb-4" />
+            <h2
+              className="text-3xl lg:text-4xl font-bold mb-4"
+              style={{ fontFamily: '"Clash Display", sans-serif', color: brand.navy }}
+            >
+              Affordable Housing Tools{' '}
+              <em className="italic">Built Into the Platform</em>
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Leverage the 21st Century Housing Act with AI-powered tools for zoning analysis, pre-approved designs, feasibility studies, and federal grant eligibility.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                icon: MapPin,
+                title: 'Zoning Accelerator',
+                description: 'AI-powered zoning compliance, density analysis, and setback calculations for any address.',
+                href: '/zoning/analyze',
+                color: brand.teal,
+              },
+              {
+                icon: BookOpen,
+                title: 'Pattern Book',
+                description: 'Pre-approved Sec 210 housing designs with location-adjusted costs and permit-ready plans.',
+                href: '/pattern-book',
+                color: brand.navy,
+              },
+              {
+                icon: FileBarChart,
+                title: 'AI Dev Package',
+                description: 'Complete feasibility analysis — zoning, cost estimates, pro forma, and grant eligibility in minutes.',
+                href: '/development-package',
+                color: brand.orange,
+              },
+              {
+                icon: Scale,
+                title: 'Workforce Housing & Grants',
+                description: 'HOME, CDBG, LIHTC eligibility checker plus FHA loan analysis and AMI income targeting.',
+                href: '/workforce-housing',
+                color: '#059669',
+              },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <a
+                  key={item.title}
+                  href={item.href}
+                  className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition group"
+                >
+                  <div
+                    className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center"
+                    style={{ backgroundColor: `${item.color}15` }}
+                  >
+                    <Icon className="w-6 h-6" style={{ color: item.color }} />
+                  </div>
+                  <h3
+                    className="text-lg font-bold mb-2 group-hover:text-blue-600 transition"
+                    style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', color: brand.navy }}
+                  >
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-gray-600">{item.description}</p>
+                </a>
+              );
+            })}
           </div>
         </div>
       </motion.section>

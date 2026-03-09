@@ -96,4 +96,10 @@ export const portalImages = {
   engineer: unsplash('photo-1581092160607-ee22621dd758', 800, 450, 'Engineering and structural analysis work'),
   /** PM Software - project management dashboard and planning */
   pmSoftware: unsplash('photo-1460472178825-e5240623afd5', 800, 450, 'Project management planning and scheduling tools'),
+  /** Pattern Book - pre-approved housing designs */
+  patternBook: unsplash('photo-1600596542815-ffad4c1539a9', 800, 450, 'Pre-approved housing designs from the 21st Century Housing Act'),
+  /** Dev Package Generator - AI feasibility analysis */
+  devPackage: unsplash('photo-1551836022-4c4c79ecde51', 800, 450, 'AI-powered development feasibility analysis'),
+  /** Workforce Housing - federal grants and financing */
+  workforceHousing: unsplash('photo-1560518883-ce09059eeffa', 800, 450, 'Workforce housing and federal grant programs'),
 };

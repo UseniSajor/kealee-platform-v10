@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { prismaAny } from '../../lib/prisma';
-import { sanitizeErrorMessage } from '../../lib/errors';
+import { prismaAny } from '../../utils/prisma-helper';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error';
 
 /**
  * Workforce Housing Marketplace Routes — Phase 6

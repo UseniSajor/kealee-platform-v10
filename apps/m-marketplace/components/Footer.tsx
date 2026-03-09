@@ -4,7 +4,7 @@ export function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-8 mb-8">
           {/* Company */}
           <div className="lg:col-span-1">
             <div className="flex items-center space-x-2 mb-4">
@@ -124,6 +124,38 @@ export function Footer() {
               <li>
                 <Link href="/faq" className="hover:text-white transition">
                   FAQ
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Housing Programs */}
+          <div>
+            <h3 className="text-white font-semibold mb-4">Housing Programs</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/pattern-book" className="hover:text-white transition">
+                  Pattern Book
+                </Link>
+              </li>
+              <li>
+                <Link href="/development-package" className="hover:text-white transition">
+                  Dev Package
+                </Link>
+              </li>
+              <li>
+                <Link href="/workforce-housing" className="hover:text-white transition">
+                  Workforce Housing
+                </Link>
+              </li>
+              <li>
+                <Link href="/finance/hud/eligibility" className="hover:text-white transition">
+                  HUD Eligibility
+                </Link>
+              </li>
+              <li>
+                <Link href="/zoning/analyze" className="hover:text-white transition">
+                  Zoning Analysis
                 </Link>
               </li>
             </ul>

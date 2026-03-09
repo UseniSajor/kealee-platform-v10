@@ -1,4 +1,4 @@
-import { prismaAny } from '../../lib/prisma';
+import { prismaAny } from '../../utils/prisma-helper';
 
 /**
  * Housing Dashboard Service — Phase 4

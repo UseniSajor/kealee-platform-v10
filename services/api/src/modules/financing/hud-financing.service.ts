@@ -1,4 +1,4 @@
-import { prismaAny } from '../../lib/prisma';
+import { prismaAny } from '../../utils/prisma-helper';
 
 /**
  * HUD Financing Service — Phase 5

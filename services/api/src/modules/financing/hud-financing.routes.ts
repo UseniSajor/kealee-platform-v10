@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { hudFinancingService } from './hud-financing.service';
 import { authenticateUser } from '../../middleware/auth';
-import { sanitizeErrorMessage } from '../../lib/errors';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error';
 
 /**
  * HUD Financing Routes — Phase 5

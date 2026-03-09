@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { housingDashboardService } from './housing-dashboard.service';
 import { authenticateUser } from '../../middleware/auth';
-import { sanitizeErrorMessage } from '../../lib/errors';
+import { sanitizeErrorMessage } from '../../utils/sanitize-error';
 
 /**
  * Housing Dashboard Routes — Phase 4

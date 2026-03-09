@@ -20,6 +20,7 @@ import {
   Building2,
   Home,
   BookOpen,
+  Scale,
 } from 'lucide-react';
 import { CartButton } from './CartButton';
 import { DashboardNotifications } from './DashboardNotifications';
@@ -51,6 +52,14 @@ const solutions = [
     category: 'Finance',
     items: [
       { name: 'Milestone Payments', description: 'Secure project payments', href: '/finance', icon: DollarSign },
+    ],
+  },
+  {
+    category: 'Housing Programs',
+    items: [
+      { name: 'Pattern Book', description: 'Pre-approved designs (Sec 210)', href: '/pattern-book', icon: BookOpen },
+      { name: 'Workforce Housing', description: 'Grants & financing', href: '/workforce-housing', icon: Home },
+      { name: 'HUD Eligibility', description: 'FHA, HOME, CDBG checker', href: '/finance/hud/eligibility', icon: Scale },
     ],
   },
 ];
@@ -353,7 +362,7 @@ export function Header() {
               <Link href="/network" className="block px-2 py-2 text-gray-700 hover:text-blue-600 font-medium" onClick={() => setMobileMenuOpen(false)}>
                 Network
               </Link>
-              <Link href="/services/design" className="flex items-center gap-1.5 px-2 py-2 text-gray-700 hover:text-blue-600 font-medium" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/owner" className="flex items-center gap-1.5 px-2 py-2 text-gray-700 hover:text-blue-600 font-medium" onClick={() => setMobileMenuOpen(false)}>
                 <Home className="w-4 h-4" />
                 Homeowner
               </Link>
