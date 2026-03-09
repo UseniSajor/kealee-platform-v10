@@ -52,11 +52,11 @@ COPY packages/funnel-session/ ./packages/funnel-session/
 COPY packages/shared-ai/ ./packages/shared-ai/
 COPY apps/m-marketplace/ ./apps/m-marketplace/
 
-# Generate Prisma client
+# Generate Prisma client and build database package (needed by auth and others)
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \
-    cd packages/database && npx prisma generate
+    cd packages/database && npx prisma generate && pnpm run build
 
-# Build workspace packages that m-marketplace depends on
+# Build workspace packages that m-marketplace depends on (order matters)
 RUN cd packages/shared && pnpm run build 2>/dev/null || true
 RUN cd packages/ui && pnpm run build
 RUN cd packages/auth && pnpm run build
