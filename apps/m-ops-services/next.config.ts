@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   // Typed routes generation is currently producing stale/phantom routes in this monorepo.
   // Disable until we explicitly re-enable and verify route typing works end-to-end.
   typedRoutes: false,

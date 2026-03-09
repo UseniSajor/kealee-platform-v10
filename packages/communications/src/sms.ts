@@ -133,15 +133,17 @@ export async function sendWhatsApp(opts: SendWhatsAppOptions): Promise<SendSMSRe
  * SMS Templates - Short versions of email templates.
  * Kept under 160 chars where possible for single-segment SMS.
  */
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.kealee.com';
+
 export const SMS_TEMPLATES = {
   WELCOME: (name: string) =>
-    `Welcome to Kealee, ${name}! Your account is ready. Log in: app.kealee.com`,
+    `Welcome to Kealee, ${name}! Your account is ready. Log in: ${APP_URL}`,
 
   NEW_LEAD: (projectType: string, location: string) =>
-    `New ${projectType} lead in ${location}. Bid now: app.kealee.com/leads`,
+    `New ${projectType} lead in ${location}. Bid now: ${APP_URL}/leads`,
 
   BID_SUBMITTED: (projectName: string) =>
-    `New bid received on ${projectName}. Review it now: app.kealee.com`,
+    `New bid received on ${projectName}. Review it now: ${APP_URL}`,
 
   BID_ACCEPTED: (projectName: string) =>
     `Your bid was accepted for ${projectName}! Check your dashboard for next steps.`,
@@ -150,13 +152,13 @@ export const SMS_TEMPLATES = {
     `Contract signed for ${projectName}. Work can now begin!`,
 
   MILESTONE_COMPLETE: (milestoneName: string) =>
-    `${milestoneName} is complete. Please review and approve payment: app.kealee.com`,
+    `${milestoneName} is complete. Please review and approve payment: ${APP_URL}`,
 
   PAYMENT_RELEASED: (amount: string) =>
     `Payment of ${amount} has been released to your account.`,
 
   PAYMENT_FAILED: () =>
-    `Your Kealee payment failed. Update your payment method to avoid interruption: app.kealee.com/billing`,
+    `Your Kealee payment failed. Update your payment method to avoid interruption: ${APP_URL}/billing`,
 
   INSPECTION_REMINDER: (date: string, address: string) =>
     `Inspection reminder: ${date} at ${address}. Be prepared.`,
@@ -168,28 +170,28 @@ export const SMS_TEMPLATES = {
     `Inspection failed for ${projectName}. Issues need correction.`,
 
   QA_ISSUE: (severity: string) =>
-    `${severity} QA issue found. Correction required: app.kealee.com`,
+    `${severity} QA issue found. Correction required: ${APP_URL}`,
 
   DECISION_NEEDED: (title: string) =>
-    `Action needed: ${title}. Review and decide: app.kealee.com`,
+    `Action needed: ${title}. Review and decide: ${APP_URL}`,
 
   BUDGET_ALERT: (projectName: string) =>
-    `Budget alert for ${projectName}. Review the overrun: app.kealee.com`,
+    `Budget alert for ${projectName}. Review the overrun: ${APP_URL}`,
 
   WEEKLY_REPORT: (projectName: string) =>
-    `Your weekly report for ${projectName} is ready: app.kealee.com`,
+    `Your weekly report for ${projectName} is ready: ${APP_URL}`,
 
   SCHEDULE_DISRUPTION: (projectName: string) =>
-    `Schedule disruption on ${projectName}. Review impact: app.kealee.com`,
+    `Schedule disruption on ${projectName}. Review impact: ${APP_URL}`,
 
   CHANGE_ORDER: (projectName: string) =>
-    `Change order requested for ${projectName}. Review: app.kealee.com`,
+    `Change order requested for ${projectName}. Review: ${APP_URL}`,
 
   DOCUMENT_READY: (docType: string) =>
-    `Your ${docType} is ready for review: app.kealee.com`,
+    `Your ${docType} is ready for review: ${APP_URL}`,
 
   PROJECT_COMPLETED: (projectName: string) =>
-    `${projectName} is complete! View your project summary: app.kealee.com`,
+    `${projectName} is complete! View your project summary: ${APP_URL}`,
 
   ESCROW_FUNDED: (amount: string) =>
     `Escrow funded with ${amount}. Project can proceed.`,

@@ -141,7 +141,7 @@ export class EmailService {
                 <p style="margin: 0; color: #6b7280;">${data.taskDescription || ''}</p>
                 <p style="margin: 8px 0 0 0;"><strong>Due:</strong> ${data.dueDate || 'N/A'}</p>
               </div>
-              <a href="https://pm.kealee.com/tasks/${data.taskId || ''}" style="display: inline-block; padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; margin-top: 16px;">
+              <a href="${process.env.PM_BASE_URL || 'https://pm.kealee.com'}/tasks/${data.taskId || ''}" style="display: inline-block; padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; margin-top: 16px;">
                 View Task
               </a>
             </div>
@@ -156,12 +156,12 @@ export class EmailService {
               <h1 style="color: #ef4444;">Payment Failed</h1>
               <p>We were unable to process your payment of $${data.amount || 0}.</p>
               <p>Please update your payment method to avoid service interruption.</p>
-              <a href="${data.invoiceUrl || 'https://app.kealee.com/billing'}" style="display: inline-block; padding: 12px 24px; background: #ef4444; color: white; text-decoration: none; border-radius: 8px; margin-top: 16px;">
+              <a href="${data.invoiceUrl || `${process.env.APP_BASE_URL || 'https://app.kealee.com'}/billing`}" style="display: inline-block; padding: 12px 24px; background: #ef4444; color: white; text-decoration: none; border-radius: 8px; margin-top: 16px;">
                 Update Payment Method
               </a>
             </div>
           `,
-          text: `Payment failed: $${data.amount || 0}. Update payment method: ${data.invoiceUrl || 'https://app.kealee.com/billing'}`,
+          text: `Payment failed: $${data.amount || 0}. Update payment method: ${data.invoiceUrl || `${process.env.APP_BASE_URL || 'https://app.kealee.com'}/billing`}`,
         }
 
       default:
