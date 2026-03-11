@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
 import { gcIntakeSchema } from "@ops/lib/validations/gc-intake";
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";

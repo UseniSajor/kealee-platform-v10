@@ -1,4 +1,5 @@
 // apps/m-project-owner/app/api/owner/projects/route.ts
+export const dynamic = 'force-dynamic';
 // API route for creating projects - proxies to backend API
 
 import { NextRequest, NextResponse } from 'next/server';

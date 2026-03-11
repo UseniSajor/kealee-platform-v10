@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
 import { intakeSchema } from "@ops/lib/validations/intake";
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";

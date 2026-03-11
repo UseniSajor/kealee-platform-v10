@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
 import { permitServiceIntakeSchema } from "@permits/lib/validations/permit-service-intake";
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";

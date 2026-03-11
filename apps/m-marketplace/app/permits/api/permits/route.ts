@@ -1,4 +1,5 @@
 // apps/m-permits-inspections/app/api/permits/route.ts
+export const dynamic = 'force-dynamic';
 // API route for creating permit applications - proxies to backend /permits/applications
 
 import { NextRequest, NextResponse } from 'next/server';

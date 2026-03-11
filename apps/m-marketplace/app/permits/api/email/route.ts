@@ -1,4 +1,5 @@
 // apps/m-permits-inspections/app/api/email/route.ts
+export const dynamic = 'force-dynamic';
 // Email sending API endpoint
 
 import { NextRequest, NextResponse } from 'next/server';

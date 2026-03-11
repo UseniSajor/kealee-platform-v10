@@ -67,6 +67,9 @@ RUN cd packages/funnel-session && pnpm run build
 
 # Build the marketplace app
 ENV NEXT_TELEMETRY_DISABLED=1
+# Provide dummy Supabase vars so prerendering doesn't crash (runtime vars override)
+ENV NEXT_PUBLIC_SUPABASE_URL="https://placeholder.supabase.co"
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY="placeholder-anon-key"
 RUN cd apps/m-marketplace && pnpm run build
 
 # ============================================================================

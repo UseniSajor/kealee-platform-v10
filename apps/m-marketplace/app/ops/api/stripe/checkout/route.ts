@@ -1,4 +1,5 @@
 // apps/m-ops-services/app/api/stripe/checkout/route.ts
+export const dynamic = 'force-dynamic';
 // Stripe Checkout Session creation - proxies to backend API
 
 import { NextRequest, NextResponse } from 'next/server';

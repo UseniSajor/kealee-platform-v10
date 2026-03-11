@@ -1,4 +1,5 @@
 // apps/m-project-owner/app/api/owner/projects/draft/route.ts
+export const dynamic = 'force-dynamic';
 // API route for saving project drafts - proxies to backend pre-con API
 
 import { NextRequest, NextResponse } from 'next/server';

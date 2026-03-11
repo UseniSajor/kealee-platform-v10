@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
 import { prisma } from "@kealee/database";
 
 function asRecord(value: unknown): Record<string, unknown> {

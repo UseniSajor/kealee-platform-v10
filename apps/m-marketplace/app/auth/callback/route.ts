@@ -1,4 +1,5 @@
 /**
+export const dynamic = 'force-dynamic';
  * OAuth callback handler for Supabase auth (Google OAuth, etc.)
  * Exchanges the authorization code for a session, then redirects.
  *

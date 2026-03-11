@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 
 /**
  * File Upload/Management Routes (Proxy to Backend API)

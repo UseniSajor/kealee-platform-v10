@@ -1,4 +1,5 @@
 // apps/m-architect/app/api/quote/route.ts
+export const dynamic = 'force-dynamic';
 // API route for submitting quote requests - proxies to marketplace quotes API
 
 import { NextRequest, NextResponse } from 'next/server';

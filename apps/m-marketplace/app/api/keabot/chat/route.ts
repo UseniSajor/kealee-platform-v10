@@ -1,4 +1,5 @@
 /**
+export const dynamic = 'force-dynamic';
  * Next.js API Route — KeaBot Chat Proxy
  *
  * Proxies chat requests from the frontend widget to the Fastify API.

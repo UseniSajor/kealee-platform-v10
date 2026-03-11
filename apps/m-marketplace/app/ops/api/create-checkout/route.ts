@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import Stripe from 'stripe';
 
 // ── Stripe client — only initialize if secret key is available ──

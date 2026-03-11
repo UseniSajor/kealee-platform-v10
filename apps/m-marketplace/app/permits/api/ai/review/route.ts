@@ -1,4 +1,5 @@
 // apps/m-permits-inspections/app/api/ai/review/route.ts
+export const dynamic = 'force-dynamic';
 // AI document review API endpoint
 
 import { NextRequest, NextResponse } from 'next/server';
