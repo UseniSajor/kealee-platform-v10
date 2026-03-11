@@ -502,6 +502,15 @@ const start = async () => {
       await fastify.register(disputeRoutes, { prefix: '/disputes' })
     })
 
+    // ── Canonical Stripe Webhook ──
+    // This is the SINGLE production Stripe webhook endpoint.
+    // Consolidates /billing/stripe/webhook, /payments/webhooks/stripe,
+    // and the previously-disabled /webhooks/stripe (routes/stripe-webhook.routes.ts).
+    await safeRegisterBlock('Canonical Stripe webhook route', async () => {
+      const { canonicalStripeWebhookRoutes } = await import('./modules/webhooks/canonical-stripe-webhook.routes')
+      await fastify.register(canonicalStripeWebhookRoutes, { prefix: '/webhooks' })
+    })
+
     // ── Analytics & Compliance ──
     await safeRegisterBlock('Analytics & Compliance routes', async () => {
       const { analyticsRoutes } = await import('./modules/analytics/analytics.routes')

@@ -169,19 +169,23 @@ export async function billingRoutes(fastify: FastifyInstance) {
     }
   )
 
-  // POST /billing/stripe/webhook - Stripe webhooks (raw body required)
-  // This route uses the production-ready webhook handler
+  // POST /billing/stripe/webhook — DEPRECATED
+  // Redirects to the canonical endpoint at POST /webhooks/stripe.
+  // Kept temporarily so in-flight Stripe retries are not lost.
+  // Safe to remove once the Stripe Dashboard webhook URL has been updated.
   fastify.post(
     '/stripe/webhook',
     {
       config: { rawBody: true },
       schema: {
-        description: 'Stripe webhook receiver for GC subscriptions',
+        description: '[DEPRECATED] Use POST /webhooks/stripe instead',
         tags: ['billing'],
       },
     },
     async (request, reply) => {
+      // Forward to canonical handler (same in-process handler, no HTTP redirect)
       const { handleStripeWebhook } = await import('../webhooks/stripe.webhook')
+      request.log.warn('DEPRECATED: /billing/stripe/webhook called — migrate to /webhooks/stripe')
       await handleStripeWebhook(request, reply)
     }
   )

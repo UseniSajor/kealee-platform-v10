@@ -122,6 +122,12 @@ export async function handleStripeWebhook(
 
 /**
  * Process webhook event asynchronously
+ *
+ * This is the unified event router.  It handles:
+ *   - Billing / subscription lifecycle (checkout, subscriptions, invoices)
+ *   - One-time payments (concept packages, permits)
+ *   - Milestone / escrow payments (delegated to paymentWebhookService)
+ *   - Connect events (delegated to stripeConnectService)
  */
 async function processWebhookEvent(event: Stripe.Event): Promise<void> {
   const maxRetries = 3
@@ -129,54 +135,96 @@ async function processWebhookEvent(event: Stripe.Event): Promise<void> {
 
   while (retryCount < maxRetries) {
     try {
+      // ── Primary routing ──
+      let handled = false
+
       switch (event.type) {
+        // ── Checkout ──
         case 'checkout.session.completed':
           await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session)
-          return
+          handled = true
+          break
 
+        // ── Subscriptions (billing-level) ──
         case 'customer.subscription.created':
           await handleSubscriptionCreated(event.data.object as Stripe.Subscription)
-          return
+          handled = true
+          break
 
         case 'customer.subscription.updated':
           await handleSubscriptionUpdated(event.data.object as Stripe.Subscription)
-          return
+          handled = true
+          break
 
         case 'customer.subscription.deleted':
           await handleSubscriptionDeleted(event.data.object as Stripe.Subscription)
-          return
+          handled = true
+          break
 
+        // ── Invoices ──
         case 'invoice.paid':
           await handleInvoicePaid(event.data.object as Stripe.Invoice)
-          return
+          handled = true
+          break
 
         case 'invoice.payment_failed':
           await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice)
-          return
+          handled = true
+          break
 
+        // ── Payment intents ──
         case 'payment_intent.succeeded':
           await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent)
-          return
+          handled = true
+          break
 
         case 'payment_intent.payment_failed':
           await handlePaymentIntentFailed(event.data.object as Stripe.PaymentIntent)
-          return
-
-        default:
-          console.log(`ℹ️  Unhandled event type: ${event.type}`)
-          return
+          handled = true
+          break
       }
+
+      // ── Delegate milestone / escrow / Connect events to paymentWebhookService ──
+      // These event types were previously only reachable via /payments/webhooks/stripe
+      // and are now merged into this canonical handler.
+      if (!handled) {
+        try {
+          const { paymentWebhookService } = await import('../payments/payment-webhook.service')
+          const result = await paymentWebhookService.routeWebhook(event)
+          if (result.handled) {
+            handled = true
+          }
+        } catch (delegateErr: any) {
+          console.warn(`[canonical-webhook] paymentWebhookService delegation error: ${delegateErr.message}`)
+        }
+      }
+
+      // ── Connect account events ──
+      if (event.type.startsWith('account.')) {
+        try {
+          const { stripeConnectService } = await import('../payments/stripe-connect.service')
+          await stripeConnectService.handleConnectWebhook(event)
+          handled = true
+        } catch (connectErr: any) {
+          console.warn(`[canonical-webhook] stripeConnectService delegation error: ${connectErr.message}`)
+        }
+      }
+
+      if (!handled) {
+        console.log(`[canonical-webhook] Unhandled event type: ${event.type}`)
+      }
+      return
     } catch (error: any) {
       retryCount++
       const delay = Math.pow(2, retryCount) * 1000 // Exponential backoff
 
       if (retryCount >= maxRetries) {
-        console.error(`❌ Failed to process webhook event ${event.id} after ${maxRetries} retries:`, error)
+        console.error(`Failed to process webhook event ${event.id} after ${maxRetries} retries:`, error)
         await logWebhookError(event.id, event.type, sanitizeErrorMessage(error, 'Unknown error'), retryCount)
         throw error
       }
 
-      console.warn(`⚠️  Retry ${retryCount}/${maxRetries} for event ${event.id} after ${delay}ms`)
+      console.warn(`Retry ${retryCount}/${maxRetries} for event ${event.id} after ${delay}ms`)
       await new Promise((resolve) => setTimeout(resolve, delay))
     }
   }
