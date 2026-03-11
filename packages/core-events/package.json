@@ -1,0 +1,27 @@
+{
+  "name": "@kealee/core-events",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Core Events — Redis Streams, sagas, dead-letter",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "ioredis": "^5.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.30",
+    "typescript": "^5.3.3"
+  }
+}

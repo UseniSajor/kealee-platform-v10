@@ -376,10 +376,10 @@ model Jurisdiction {
   inspectionAssignments InspectionAssignment[]
 
   // Housing Act – Zoning, Pattern Book, Municipal Dashboard
-  zoningProfiles         ZoningProfile[]            @relation("JurisdictionZoning")
-  patternBookDesigns     PatternBookDesign[]         @relation("JurisdictionPatternBooks")
-  housingPipeline        HousingPipelineEntry[]      @relation("JurisdictionHousingPipeline")
-  dashboardSnapshots     HousingDashboardSnapshot[]  @relation("JurisdictionDashboardSnapshots")
+  zoningProfiles     ZoningProfile[]            @relation("JurisdictionZoning")
+  patternBookDesigns PatternBookDesign[]        @relation("JurisdictionPatternBooks")
+  housingPipeline    HousingPipelineEntry[]     @relation("JurisdictionHousingPipeline")
+  dashboardSnapshots HousingDashboardSnapshot[] @relation("JurisdictionDashboardSnapshots")
 
   @@index([code])
   @@index([state, county])
@@ -1589,14 +1589,26 @@ model Project {
   lookaheadItems LookaheadItem[]
 
   // Spatial & Financing relations (Backend Consolidation v10)
-  spatialScans            SpatialScan[]
-  financingApplications   FinancingApplication[]
-  items                   ProjectItem[]
+  spatialScans          SpatialScan[]
+  financingApplications FinancingApplication[]
+  items                 ProjectItem[]
 
   // GHL (GoHighLevel) CRM integration
   ghlOpportunityId String? @unique
   ghlPipelineId    String?
   ghlStageId       String?
+
+  // V20 — DDTS & OS Service relations
+  digitalTwin           DigitalTwin?           @relation("ProjectTwin")
+  capitalStack          CapitalStack?
+  investorReports       InvestorReport[]
+  entitlements          Entitlement[]
+  turnoverChecklists    TurnoverChecklist[]
+  maintenanceSchedules  MaintenanceSchedule[]
+  maintenanceWorkOrders MaintenanceWorkOrder[]
+  escrowReconciliations EscrowReconciliation[]
+  feasibilityStudies    FeasibilityStudy[]
+  buildingAssets        BuildingAsset[]
 
   @@index([clientId])
   @@index([orgId])
@@ -1968,9 +1980,9 @@ model User {
   projectMemberships ProjectMembership[] @relation("ProjectMemberships")
 
   // Spatial & Financing relations (Backend Consolidation v10)
-  spatialVerifications   SpatialVerification[] @relation("SpatialVerifier")
-  financingApplications  FinancingApplication[]
-  milestoneApprovals     MilestoneApproval[]   @relation("MilestoneApprover")
+  spatialVerifications  SpatialVerification[]  @relation("SpatialVerifier")
+  financingApplications FinancingApplication[]
+  milestoneApprovals    MilestoneApproval[]    @relation("MilestoneApprover")
 
   // Evidence relations
   uploadedEvidence Evidence[] @relation("EvidenceUploader")
@@ -1980,8 +1992,8 @@ model User {
   ghlSyncedAt  DateTime?
 
   // Opportunities Phase 06 relations
-  postedOpportunityListings  OpportunityListing[]      @relation("OpportunityListingPostedBy")
-  opportunityApplications    OpportunityApplication[]  @relation("OpportunityApplicationApplicant")
+  postedOpportunityListings OpportunityListing[]     @relation("OpportunityListingPostedBy")
+  opportunityApplications   OpportunityApplication[] @relation("OpportunityApplicationApplicant")
 
   // Contractor License Verification
   contractorVerification ContractorVerification? @relation("ContractorVerificationUser")
@@ -1993,7 +2005,7 @@ model User {
   zoningComplianceReports ZoningComplianceReport[] @relation("ZoningComplianceRequester")
   patternBooksCreated     PatternBookDesign[]      @relation("PatternBookCreator")
   patternBookSelections   PatternBookSelection[]   @relation("PatternBookSelector")
-  developmentPackages     DevelopmentPackage[]      @relation("DevelopmentPackageUser")
+  developmentPackages     DevelopmentPackage[]     @relation("DevelopmentPackageUser")
   hudEligibilityChecks    HUDEligibilityCheck[]    @relation("HUDEligibilityUser")
 }
 
@@ -4674,8 +4686,8 @@ model Payment {
 
   financingApplicationId String?
 
-  project                Project?              @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  financingApplication   FinancingApplication? @relation("FinancingPayments", fields: [financingApplicationId], references: [id], onDelete: SetNull)
+  project              Project?              @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  financingApplication FinancingApplication? @relation("FinancingPayments", fields: [financingApplicationId], references: [id], onDelete: SetNull)
   // org          Org?              @relation(fields: [orgId], references: [id], onDelete: SetNull)
   // subscription ServiceSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
 
@@ -6555,9 +6567,9 @@ model Assembly {
   tradesRequired String[] @default([])
 
   // CTC (Construction Task Catalog) fields
-  ctcTaskNumber  String?  // e.g. "01-001", "03-210" — CTC/Gordian task number
-  ctcModifierOf  String?  // Parent task number if this is a modifier task
-  sourceDatabase String?  // Origin identifier: "CTC-Gordian-MD-DGS-2023", "Kealee-Marketplace", etc.
+  ctcTaskNumber  String? // e.g. "01-001", "03-210" — CTC/Gordian task number
+  ctcModifierOf  String? // Parent task number if this is a modifier task
+  sourceDatabase String? // Origin identifier: "CTC-Gordian-MD-DGS-2023", "Kealee-Marketplace", etc.
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -11102,6 +11114,11 @@ model BIMModel {
   designProject DesignProject @relation(fields: [designProjectId], references: [id], onDelete: Cascade)
   uploadedBy    User          @relation("BIMModelUploader", fields: [uploadedById], references: [id])
 
+  // BIM domain reverse relations
+  elements     BIMElement[]
+  clashes      BIMClash[]
+  viewerStates BIMViewerState[]
+
   @@index([designProjectId])
   @@index([format])
   @@index([uploadedById])
@@ -11466,7 +11483,6 @@ model MultifamilyAreaPhase {
   @@index([projectId, status])
 }
 
-
 // ═══════════════════════════════════════════════════════════════
 // BID PIPELINE — Opportunity tracking from BuildingConnected,
 // eMMA, OpenGov, SHA/MDOT, and direct invitations
@@ -11525,76 +11541,76 @@ enum BidPriority {
 // ═══════════════════════════════════════════════════════════════
 
 model OpportunityBid {
-  id              String        @id @default(cuid())
+  id String @id @default(cuid())
 
   // Source & identification
-  source          BidSource
-  externalId      String?
-  sourceUrl       String?
+  source     BidSource
+  externalId String?
+  sourceUrl  String?
 
   // Project details
-  projectName     String
-  description     String?       @db.Text
-  scope           String?
-  location        String?
-  city            String?
-  state           String?       @default("MD")
-  county          String?
+  projectName String
+  description String? @db.Text
+  scope       String?
+  location    String?
+  city        String?
+  state       String? @default("MD")
+  county      String?
 
   // Owner / GC info
-  ownerName       String?
-  gcName          String?
-  gcContactName   String?
-  gcContactEmail  String?
-  gcContactPhone  String?
+  ownerName      String?
+  gcName         String?
+  gcContactName  String?
+  gcContactEmail String?
+  gcContactPhone String?
 
   // Financials
-  estimatedValue  Decimal?      @db.Decimal(12, 2)
-  bidAmount       Decimal?      @db.Decimal(12, 2)
-  bondRequired    Boolean?      @default(false)
-  bondAmount      Decimal?      @db.Decimal(12, 2)
+  estimatedValue Decimal? @db.Decimal(12, 2)
+  bidAmount      Decimal? @db.Decimal(12, 2)
+  bondRequired   Boolean? @default(false)
+  bondAmount     Decimal? @db.Decimal(12, 2)
 
   // Deadlines & dates
-  prebidDate      DateTime?
-  prebidLocation  String?
+  prebidDate        DateTime?
+  prebidLocation    String?
   questionsDeadline DateTime?
-  bidDeadline     DateTime
-  projectStart    DateTime?
-  projectEnd      DateTime?
+  bidDeadline       DateTime
+  projectStart      DateTime?
+  projectEnd        DateTime?
 
   // Status & tracking
-  status          BidStatus     @default(DISCOVERED)
-  priority        String?       @default("MEDIUM")
-  winProbability  Int?
+  status         BidStatus @default(DISCOVERED)
+  priority       String?   @default("MEDIUM")
+  winProbability Int?
 
   // AI Analysis
   aiScore         Int?
-  aiNotes         String?       @db.Text
+  aiNotes         String?  @db.Text
   matchReasons    String[]
   keyRequirements String[]
   risks           String[]
 
   // Internal tracking
-  assignedTo      String?
-  internalNotes   String?       @db.Text
-  decisionNotes   String?       @db.Text
+  assignedTo    String?
+  internalNotes String? @db.Text
+  decisionNotes String? @db.Text
 
   // Email tracking
-  emailThreadId   String?
-  lastEmailDate   DateTime?
+  emailThreadId String?
+  lastEmailDate DateTime?
 
   // Timestamps
-  discoveredAt    DateTime      @default(now())
-  submittedAt     DateTime?
-  decisionDate    DateTime?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  discoveredAt DateTime  @default(now())
+  submittedAt  DateTime?
+  decisionDate DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   // Relations
-  documents       OpportunityBidDocument[]
-  checklist       OpportunityBidChecklist[]
-  subQuotes       SubcontractorQuote[]
-  activities      OpportunityBidActivity[]
+  documents  OpportunityBidDocument[]
+  checklist  OpportunityBidChecklist[]
+  subQuotes  SubcontractorQuote[]
+  activities OpportunityBidActivity[]
 
   @@index([status])
   @@index([bidDeadline])
@@ -11606,15 +11622,15 @@ model OpportunityBid {
 }
 
 model OpportunityBidDocument {
-  id          String   @id @default(cuid())
-  bidId       String
-  name        String
-  fileUrl     String
-  fileType    String?
-  fileSize    Int?
-  category    String?
-  version     Int      @default(1)
-  uploadedAt  DateTime @default(now())
+  id         String   @id @default(cuid())
+  bidId      String
+  name       String
+  fileUrl    String
+  fileType   String?
+  fileSize   Int?
+  category   String?
+  version    Int      @default(1)
+  uploadedAt DateTime @default(now())
 
   bid OpportunityBid @relation(fields: [bidId], references: [id], onDelete: Cascade)
 
@@ -11624,15 +11640,15 @@ model OpportunityBidDocument {
 }
 
 model OpportunityBidChecklist {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   bidId       String
   item        String
   category    String?
-  completed   Boolean  @default(false)
+  completed   Boolean   @default(false)
   completedAt DateTime?
   completedBy String?
-  notes       String?  @db.Text
-  order       Int      @default(0)
+  notes       String?   @db.Text
+  order       Int       @default(0)
 
   bid OpportunityBid @relation(fields: [bidId], references: [id], onDelete: Cascade)
 
@@ -11642,19 +11658,19 @@ model OpportunityBidChecklist {
 }
 
 model SubcontractorQuote {
-  id             String   @id @default(cuid())
-  bidId          String
-  subName        String
-  subEmail       String?
-  subPhone       String?
-  trade          String
-  scope          String?  @db.Text
-  quoteAmount    Decimal  @db.Decimal(12, 2)
-  notes          String?  @db.Text
-  attachments    String[]
-  receivedAt     DateTime @default(now())
-  validUntil     DateTime?
-  status         String   @default("RECEIVED")
+  id          String    @id @default(cuid())
+  bidId       String
+  subName     String
+  subEmail    String?
+  subPhone    String?
+  trade       String
+  scope       String?   @db.Text
+  quoteAmount Decimal   @db.Decimal(12, 2)
+  notes       String?   @db.Text
+  attachments String[]
+  receivedAt  DateTime  @default(now())
+  validUntil  DateTime?
+  status      String    @default("RECEIVED")
 
   bid OpportunityBid @relation(fields: [bidId], references: [id], onDelete: Cascade)
 
@@ -11912,11 +11928,11 @@ model BidEmbedding {
 }
 
 model BidSimilarity {
-  id              String   @id @default(cuid())
-  sourceBidId     String
-  similarBidId    String
-  similarity      Decimal  @db.Decimal(5, 4)
-  createdAt       DateTime @default(now())
+  id           String   @id @default(cuid())
+  sourceBidId  String
+  similarBidId String
+  similarity   Decimal  @db.Decimal(5, 4)
+  createdAt    DateTime @default(now())
 
   @@unique([sourceBidId, similarBidId])
   @@index([sourceBidId])
@@ -12294,7 +12310,7 @@ model LookaheadItem {
   description    String?
   startDate      DateTime
   endDate        DateTime
-  status         String   // NOT_STARTED, IN_PROGRESS, COMPLETED, AT_RISK
+  status         String // NOT_STARTED, IN_PROGRESS, COMPLETED, AT_RISK
   assignedTo     String?
 
   createdAt DateTime @default(now())
@@ -12323,26 +12339,26 @@ enum TakeoffJobStatus {
 }
 
 model TakeoffJob {
-  id             String          @id @default(uuid())
+  id             String  @id @default(uuid())
   organizationId String?
   userId         String
   estimateId     String?
 
   // Input files
-  fileName     String
-  fileUrl      String?
-  fileSize     Int?
-  mimeType     String   @default("application/pdf")
-  pageCount    Int?
+  fileName  String
+  fileUrl   String?
+  fileSize  Int?
+  mimeType  String  @default("application/pdf")
+  pageCount Int?
 
   // Processing state
   status   TakeoffJobStatus @default(TAKEOFF_PENDING)
   progress Int              @default(0) // 0-100
 
   // AI extraction results
-  extractedScopes  Json?  // Array of detected scope items from plans
-  extractedTasks   Json?  // Mapped CTC tasks with quantities
-  confidence       Decimal? @db.Decimal(5, 4)
+  extractedScopes Json? // Array of detected scope items from plans
+  extractedTasks  Json? // Mapped CTC tasks with quantities
+  confidence      Decimal? @db.Decimal(5, 4)
 
   // Mapping results
   ctcTasksMatched    Int @default(0)
@@ -12350,9 +12366,9 @@ model TakeoffJob {
   lineItemsGenerated Int @default(0)
 
   // Review
-  reviewedBy    String?
-  reviewNotes   String?
-  adjustments   Json?   // User modifications before confirmation
+  reviewedBy  String?
+  reviewNotes String?
+  adjustments Json? // User modifications before confirmation
 
   // Errors
   errors Json?
@@ -12574,8 +12590,8 @@ model ProjectItem {
 model ReportTemplate {
   id        String   @id @default(uuid())
   name      String
-  type      String   // DAILY, WEEKLY, MONTHLY, MILESTONE, CUSTOM, etc.
-  sections  Json     // Array of section definitions
+  type      String // DAILY, WEEKLY, MONTHLY, MILESTONE, CUSTOM, etc.
+  sections  Json // Array of section definitions
   styling   Json?
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -12634,15 +12650,15 @@ enum FunnelSessionStatus {
 }
 
 model FunnelSession {
-  id            String              @id @default(uuid())
-  userType      FunnelUserType?
-  projectType   FunnelProjectType?
-  city          String?
-  state         String?
-  budget        BudgetRange?
-  timeline      FunnelTimeline?
-  currentStep   Int                 @default(0)
-  status        FunnelSessionStatus @default(IN_PROGRESS)
+  id          String              @id @default(uuid())
+  userType    FunnelUserType?
+  projectType FunnelProjectType?
+  city        String?
+  state       String?
+  budget      BudgetRange?
+  timeline    FunnelTimeline?
+  currentStep Int                 @default(0)
+  status      FunnelSessionStatus @default(IN_PROGRESS)
 
   // UTM tracking
   utmSource   String?
@@ -12693,12 +12709,12 @@ model CaseStudy {
 
 // ── S3/R2 File Upload Tracking ─────────────────────────────────
 model File {
-  id         String   @id @default(uuid())
-  key        String   @unique
+  id         String @id @default(uuid())
+  key        String @unique
   fileName   String
   mimeType   String
-  size       Int      @default(0)
-  status     String   @default("UPLOADING") // UPLOADING, COMPLETED
+  size       Int    @default(0)
+  status     String @default("UPLOADING") // UPLOADING, COMPLETED
   uploadedBy String
   metadata   Json?
 
@@ -12750,14 +12766,14 @@ model MarketingLead {
 
 // ── Stripe Product Catalog ────────────────────────────────────
 model StripeProduct {
-  id          String   @id
+  id          String  @id
   name        String
   description String?
-  price       Int      // price in cents
-  interval    String?  // "month", "year", null for one-time
-  productType String   // "concept", "pm_package", "architecture", "permit"
-  tierLevel   String?  // "basic", "enhanced", "premium"
-  active      Boolean  @default(true)
+  price       Int // price in cents
+  interval    String? // "month", "year", null for one-time
+  productType String // "concept", "pm_package", "architecture", "permit"
+  tierLevel   String? // "basic", "enhanced", "premium"
+  active      Boolean @default(true)
 
   @@map("stripe_products")
 }
@@ -12779,12 +12795,12 @@ model GhlWebhookLog {
 
 model GhlSyncStatus {
   id            String   @id @default(cuid())
-  entityType    String   // "user", "project", "quote", "checkout"
+  entityType    String // "user", "project", "quote", "checkout"
   entityId      String
   ghlId         String
   lastSynced    DateTime
-  syncDirection String   // "kealee_to_ghl" or "ghl_to_kealee"
-  status        String   // "success", "failed", "pending"
+  syncDirection String // "kealee_to_ghl" or "ghl_to_kealee"
+  status        String // "success", "failed", "pending"
   error         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -12902,8 +12918,8 @@ model ApprenticeshipProgram {
 }
 
 model GovernmentContract {
-  id              String   @id @default(cuid())
-  solicitationNum String   @unique
+  id              String    @id @default(cuid())
+  solicitationNum String    @unique
   title           String
   agency          String
   agencyLevel     String
@@ -12915,12 +12931,12 @@ model GovernmentContract {
   dueDate         DateTime
   awardDate       DateTime?
   status          String
-  description     String   @db.Text
+  description     String    @db.Text
   requirementsUrl String?
   sourceUrl       String
-  isTracked       Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  isTracked       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@index([status])
   @@index([agencyLevel])
@@ -13000,12 +13016,12 @@ model ConceptPackageOrder {
   user                  User      @relation("ConceptPackageOrderUser", fields: [userId], references: [id])
   stripeSessionId       String    @unique
   stripePaymentIntentId String?
-  packageTier           String    // essential, professional, premium, white-glove
+  packageTier           String // essential, professional, premium, white-glove
   packageName           String
-  amount                Int       // cents
+  amount                Int // cents
   currency              String    @default("usd")
   status                String    @default("completed") // completed, refunded, disputed
-  deliveryStatus        String    @default("pending")   // pending, generating, ready, delivered
+  deliveryStatus        String    @default("pending") // pending, generating, ready, delivered
   deliveryUrl           String?
   deliveredAt           DateTime?
   metadata              Json?
@@ -13086,20 +13102,20 @@ enum PatternBookStatus {
 // ============================================================================
 
 model ZoningProfile {
-  id               String            @id @default(uuid())
-  jurisdictionId   String
-  parcelNumber     String?
-  address          String
-  city             String
-  state            String
-  zipCode          String
-  latitude         Float?
-  longitude        Float?
+  id             String  @id @default(uuid())
+  jurisdictionId String
+  parcelNumber   String?
+  address        String
+  city           String
+  state          String
+  zipCode        String
+  latitude       Float?
+  longitude      Float?
 
   // Zoning Classification
-  zoningDistrict    ZoningDistrictType @default(UNKNOWN)
-  zoningCode        String             @default("")
-  overlayDistricts  String[]           @default([])
+  zoningDistrict   ZoningDistrictType @default(UNKNOWN)
+  zoningCode       String             @default("")
+  overlayDistricts String[]           @default([])
 
   // Permitted Uses
   allowedHousingTypes HousingType[] @default([])
@@ -13107,17 +13123,17 @@ model ZoningProfile {
   prohibitedUses      HousingType[] @default([])
 
   // Dimensional Standards
-  maxDensity        Float?
-  maxHeight         Float?
-  maxStories        Int?
-  minLotSize        Float?
-  minLotWidth       Float?
-  frontSetback      Float?
-  sideSetback       Float?
-  rearSetback       Float?
-  maxLotCoverage    Float?
-  maxFAR            Float?
-  minOpenSpace      Float?
+  maxDensity     Float?
+  maxHeight      Float?
+  maxStories     Int?
+  minLotSize     Float?
+  minLotWidth    Float?
+  frontSetback   Float?
+  sideSetback    Float?
+  rearSetback    Float?
+  maxLotCoverage Float?
+  maxFAR         Float?
+  minOpenSpace   Float?
 
   // Parking
   parkingMinPerUnit Float?
@@ -13125,22 +13141,22 @@ model ZoningProfile {
   bikeParking       Float?
 
   // Special Provisions
-  densityBonuses    Json?
-  inclusionaryReq   Json?
+  densityBonuses  Json?
+  inclusionaryReq Json?
 
   // NEPA
   nepaExemption       NEPAExemptionType @default(NONE)
   nepaExemptionReason String?
 
   // Transit-Oriented Development (Build More Housing Near Transit Act)
-  transitProximity    Float?
-  transitType         String?
+  transitProximity Float?
+  transitType      String?
 
   // AI Analysis
-  aiAnalyzedAt      DateTime?
-  aiConfidence      Float?
-  aiRawResponse     Json?
-  sourceDocumentUrls String[] @default([])
+  aiAnalyzedAt       DateTime?
+  aiConfidence       Float?
+  aiRawResponse      Json?
+  sourceDocumentUrls String[]  @default([])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -13173,10 +13189,10 @@ model ZoningComplianceReport {
   proposedParking     Int?
 
   // Compliance Results
-  isCompliant     Boolean @default(false)
-  complianceScore Int?
-  violations      Json?
-  variances       Json?
+  isCompliant         Boolean @default(false)
+  complianceScore     Int?
+  violations          Json?
+  variances           Json?
   conditionalApproval Json?
 
   // NEPA Assessment
@@ -13216,13 +13232,13 @@ model ZoningComplianceReport {
 // ============================================================================
 
 model PatternBookDesign {
-  id               String  @id @default(uuid())
-  jurisdictionId   String?
+  id             String  @id @default(uuid())
+  jurisdictionId String?
 
   // Design Identity
-  name              String
-  slug              String  @unique
-  housingType       HousingType
+  name               String
+  slug               String          @unique
+  housingType        HousingType
   architecturalStyle AutoDesignStyle @default(MODERN)
   description        String          @db.Text
   tags               String[]        @default([])
@@ -13245,12 +13261,12 @@ model PatternBookDesign {
   lotDepthMin    Float?
 
   // Floor Plan Data
-  floorPlanUrls   String[] @default([])
-  elevationUrls   String[] @default([])
-  siteLayoutUrl   String?
-  renderingUrls   String[] @default([])
-  floorPlanData   Json?
-  roomSchedule    Json?
+  floorPlanUrls String[] @default([])
+  elevationUrls String[] @default([])
+  siteLayoutUrl String?
+  renderingUrls String[] @default([])
+  floorPlanData Json?
+  roomSchedule  Json?
 
   // Cost Data
   estimatedCostLow  Decimal? @db.Decimal(12, 2)
@@ -13267,9 +13283,9 @@ model PatternBookDesign {
   sustainabilityScore Int?
 
   // Compliance Data
-  applicableCodes             String[]         @default([])
-  preApprovedJurisdictions    String[]         @default([])
-  complianceNotes             Json?
+  applicableCodes          String[] @default([])
+  preApprovedJurisdictions String[] @default([])
+  complianceNotes          Json?
 
   // Status & Publication
   status              PatternBookStatus @default(DRAFT)
@@ -13289,8 +13305,8 @@ model PatternBookDesign {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  jurisdiction Jurisdiction?        @relation("JurisdictionPatternBooks", fields: [jurisdictionId], references: [id])
-  createdBy    User                 @relation("PatternBookCreator", fields: [createdById], references: [id])
+  jurisdiction Jurisdiction?          @relation("JurisdictionPatternBooks", fields: [jurisdictionId], references: [id])
+  createdBy    User                   @relation("PatternBookCreator", fields: [createdById], references: [id])
   selections   PatternBookSelection[]
 
   @@index([housingType])
@@ -13312,7 +13328,7 @@ model PatternBookSelection {
   notes          String?
 
   // Delivery
-  downloadedAt     DateTime?
+  downloadedAt      DateTime?
   permitSubmittedAt DateTime?
 
   createdAt DateTime @default(now())
@@ -13330,37 +13346,37 @@ model PatternBookSelection {
 // ============================================================================
 
 model DevelopmentPackage {
-  id              String                  @id @default(uuid())
+  id              String  @id @default(uuid())
   userId          String
   projectId       String?
   zoningProfileId String?
 
   // Property Input
-  address     String
+  address      String
   parcelNumber String?
-  city        String
-  state       String
-  zipCode     String
-  latitude    Float?
-  longitude   Float?
+  city         String
+  state        String
+  zipCode      String
+  latitude     Float?
+  longitude    Float?
 
   // Proposed Development
-  housingType HousingType
-  targetUnits Int
-  targetSqFt  Int?
-  targetStories Int @default(1)
+  housingType   HousingType
+  targetUnits   Int
+  targetSqFt    Int?
+  targetStories Int         @default(1)
 
   // Status
   status DevelopmentPackageStatus @default(INTAKE)
 
   // Generated Components
-  zoningReport    Json?
-  conceptPlans    Json?
-  costEstimate    Json?
-  proForma        Json?
-  permitChecklist Json?
+  zoningReport     Json?
+  conceptPlans     Json?
+  costEstimate     Json?
+  proForma         Json?
+  permitChecklist  Json?
   financingOptions Json?
-  nepaAssessment  Json?
+  nepaAssessment   Json?
 
   // Linked Records
   estimateId          String?
@@ -13372,10 +13388,10 @@ model DevelopmentPackage {
   packageData   Json?
 
   // AI Metadata
-  aiModelUsed       String?
-  aiTotalTokens     Int?
+  aiModelUsed        String?
+  aiTotalTokens      Int?
   aiProcessingTimeMs Int?
-  aiConfidence      Float?
+  aiConfidence       Float?
 
   // Timing
   generationStartedAt   DateTime?
@@ -13413,13 +13429,13 @@ model HousingPipelineEntry {
   // Housing Details
   housingType     HousingType
   totalUnits      Int
-  affordableUnits Int @default(0)
-  workforceUnits  Int @default(0)
-  marketRateUnits Int @default(0)
+  affordableUnits Int         @default(0)
+  workforceUnits  Int         @default(0)
+  marketRateUnits Int         @default(0)
 
   // Status
   pipelineStage       String
-  estimatedCompletion  DateTime?
+  estimatedCompletion DateTime?
 
   // Pattern Book Tracking (Sec 210)
   usesPatternBook     Boolean @default(false)
@@ -13501,10 +13517,10 @@ model HUDEligibilityCheck {
   equityContribution Decimal @db.Decimal(14, 2)
 
   // Unit Mix
-  totalUnits     Int
-  unitMix        Json
-  affordableUnits Int @default(0)
-  workforceUnits  Int @default(0)
+  totalUnits      Int
+  unitMix         Json
+  affordableUnits Int  @default(0)
+  workforceUnits  Int  @default(0)
 
   // Income Analysis (HOME Program Modernization)
   areaMedianIncome  Decimal? @db.Decimal(10, 2)
@@ -13512,10 +13528,10 @@ model HUDEligibilityCheck {
   workforceEligible Boolean  @default(false)
 
   // FHA Multifamily Assessment
-  fhaEligible      Boolean  @default(false)
-  fhaProgramType   String?
-  maxLoanAmount    Decimal? @db.Decimal(14, 2)
-  loanToValue      Float?
+  fhaEligible         Boolean  @default(false)
+  fhaProgramType      String?
+  maxLoanAmount       Decimal? @db.Decimal(14, 2)
+  loanToValue         Float?
   debtServiceCoverage Float?
 
   // Pro Forma
@@ -13550,4 +13566,1541 @@ model HUDEligibilityCheck {
   @@index([fhaEligible])
   @@index([workforceEligible])
   @@map("hud_eligibility_checks")
+}
+
+// ============================================================================
+// ============================================================================
+// V20 — DIGITAL DEVELOPMENT TWIN SYSTEM (DDTS)
+// ============================================================================
+// ============================================================================
+
+enum TwinTier {
+  L1 // Light — basic tracking, milestone updates
+  L2 // Standard — full scheduling, cost tracking, document management
+  L3 // Premium — AI-powered predictions, real-time IoT, advanced analytics
+}
+
+enum TwinStatus {
+  INTAKE // Initial creation, data gathering
+  LAND_ANALYSIS // Land/parcel analysis phase
+  FEASIBILITY // Feasibility study in progress
+  ENTITLEMENT // Permits, zoning, approvals
+  PRE_CONSTRUCTION // Design, bidding, contracting
+  CONSTRUCTION // Active construction
+  CLOSEOUT // Punch list, final inspections
+  OPERATIONS // Post-construction maintenance/warranty
+  ARCHIVED // Project complete, twin archived
+}
+
+enum TwinHealthStatus {
+  HEALTHY // All KPIs within thresholds
+  AT_RISK // Some KPIs approaching thresholds
+  CRITICAL // KPIs breached, intervention needed
+  UNKNOWN // Insufficient data
+}
+
+// Digital Twin — one per project, central nervous system
+model DigitalTwin {
+  id        String @id @default(uuid())
+  projectId String @unique
+  orgId     String
+
+  // Twin configuration
+  tier         TwinTier         @default(L1)
+  status       TwinStatus       @default(INTAKE)
+  healthStatus TwinHealthStatus @default(UNKNOWN)
+  healthScore  Float            @default(0) // 0-100
+  label        String? // Human-readable label
+
+  // Lifecycle tracking
+  currentPhase   String? // Current lifecycle phase
+  phaseStartedAt DateTime?
+  phaseHistory   Json? // Array of { phase, startedAt, endedAt }
+
+  // Aggregate metrics (cached, updated by event handlers)
+  metrics         Json? // { budgetVariance, scheduleVariance, riskScore, ... }
+  lastMetricsCalc DateTime?
+
+  // Configuration
+  enabledModules String[] // Which OS modules are active: ["os-land", "os-pm", ...]
+  config         Json? // Twin-specific configuration overrides
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project   Project        @relation("ProjectTwin", fields: [projectId], references: [id], onDelete: Cascade)
+  snapshots TwinSnapshot[]
+  events    TwinEvent[]
+  modules   TwinModule[]
+  kpis      TwinKPI[]
+
+  @@index([orgId])
+  @@index([status])
+  @@index([healthStatus])
+  @@index([tier])
+  @@map("digital_twins")
+}
+
+// Point-in-time state capture
+model TwinSnapshot {
+  id     String @id @default(uuid())
+  twinId String
+
+  // Snapshot data
+  label      String? // "Pre-construction baseline", "Month 3 review"
+  snapshotAt DateTime @default(now())
+  trigger    String? // "manual", "phase_change", "scheduled", "event"
+
+  // Captured state
+  status      TwinStatus
+  healthScore Float
+  metrics     Json // Full metrics at snapshot time
+  moduleState Json? // State of all active modules
+  kpiValues   Json? // All KPI values at snapshot time
+
+  createdAt DateTime @default(now())
+
+  twin DigitalTwin @relation(fields: [twinId], references: [id], onDelete: Cascade)
+
+  @@index([twinId])
+  @@index([snapshotAt])
+  @@map("twin_snapshots")
+}
+
+// Event log with causality tracking
+model TwinEvent {
+  id     String @id @default(uuid())
+  twinId String
+
+  // Event identification
+  eventType String // "phase.changed", "kpi.breached", "module.activated"
+  source    String // Which OS service emitted: "os-land", "os-pm", etc.
+  severity  String @default("INFO") // INFO, LOW, MEDIUM, HIGH, CRITICAL
+
+  // Event data
+  payload     Json // Event-specific data
+  description String? // Human-readable description
+
+  // Causality
+  correlationId String? // Links related events
+  causedBy      String? // ID of event that triggered this one
+
+  // Actor
+  actorType String  @default("SYSTEM") // USER, SYSTEM, AI, BOT
+  actorId   String?
+
+  createdAt DateTime @default(now())
+
+  twin DigitalTwin @relation(fields: [twinId], references: [id], onDelete: Cascade)
+
+  @@index([twinId])
+  @@index([eventType])
+  @@index([source])
+  @@index([correlationId])
+  @@index([createdAt])
+  @@map("twin_events")
+}
+
+// Active OS modules per twin
+model TwinModule {
+  id     String @id @default(uuid())
+  twinId String
+
+  moduleKey     String // "os-land", "os-feas", "os-pm", etc.
+  isActive      Boolean   @default(true)
+  activatedAt   DateTime  @default(now())
+  deactivatedAt DateTime?
+
+  // Module-specific state
+  state      Json? // Module-scoped state data
+  lastSyncAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  twin DigitalTwin @relation(fields: [twinId], references: [id], onDelete: Cascade)
+
+  @@unique([twinId, moduleKey])
+  @@index([twinId])
+  @@index([moduleKey])
+  @@map("twin_modules")
+}
+
+// Key performance indicators with thresholds
+model TwinKPI {
+  id     String @id @default(uuid())
+  twinId String
+
+  // KPI definition
+  kpiKey   String // "budget_variance", "schedule_spi", "risk_score"
+  label    String // "Budget Variance %"
+  category String // "cost", "schedule", "quality", "risk", "safety"
+
+  // Current value
+  currentValue Float   @default(0)
+  unit         String? // "%", "days", "score", "$"
+
+  // Thresholds
+  targetValue Float?
+  warningMin  Float? // Below this → AT_RISK
+  warningMax  Float? // Above this → AT_RISK
+  criticalMin Float? // Below this → CRITICAL
+  criticalMax Float? // Above this → CRITICAL
+
+  // Status
+  status      String   @default("HEALTHY") // HEALTHY, AT_RISK, CRITICAL
+  lastUpdated DateTime @default(now())
+
+  // History (last N values for sparkline)
+  history Json? // Array of { value, timestamp }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  twin DigitalTwin @relation(fields: [twinId], references: [id], onDelete: Cascade)
+
+  @@unique([twinId, kpiKey])
+  @@index([twinId])
+  @@index([category])
+  @@index([status])
+  @@map("twin_kpis")
+}
+
+// ============================================================================
+// ============================================================================
+// V20 — OS-LAND (Parcel Intake, Zoning, Development Readiness)
+// ============================================================================
+// ============================================================================
+
+enum ParcelStatus {
+  IDENTIFIED // Initial identification
+  UNDER_ANALYSIS // Zoning/assessment in progress
+  OFFER_PENDING // Offer submitted
+  UNDER_CONTRACT // Purchase agreement signed
+  DUE_DILIGENCE // Due diligence period
+  ACQUIRED // Parcel purchased
+  CONVERTED // Converted to project
+  REJECTED // Not viable
+  ARCHIVED // No longer active
+}
+
+enum AssessmentType {
+  ENVIRONMENTAL // Phase I/II ESA
+  GEOTECHNICAL // Soil boring, bearing capacity
+  SURVEY // ALTA survey, boundary
+  TITLE // Title search, encumbrances
+  TRAFFIC // Traffic impact study
+  UTILITY // Utility availability
+  FLOOD // Flood zone determination
+  WETLAND // Wetland delineation
+}
+
+enum AssessmentStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  FLAGGED // Issues found
+  CLEARED // Issues resolved
+}
+
+// Parcel record with location, characteristics, ownership
+model Parcel {
+  id    String @id @default(uuid())
+  orgId String
+
+  // Identification
+  parcelNumber String? // County parcel/APN number
+  legalDesc    String? // Legal description
+  label        String // Human-readable name
+
+  // Location
+  address     String?
+  city        String?
+  county      String?
+  state       String?
+  zipCode     String?
+  latitude    Float?
+  longitude   Float?
+  geoBoundary Json? // GeoJSON polygon
+
+  // Characteristics
+  acreage    Decimal? @db.Decimal(10, 4)
+  squareFeet Decimal? @db.Decimal(14, 2)
+  frontage   Decimal? @db.Decimal(10, 2) // Street frontage in feet
+  depth      Decimal? @db.Decimal(10, 2)
+  topography String? // flat, sloped, hilly, etc.
+  currentUse String? // vacant, agricultural, residential, commercial
+
+  // Ownership
+  currentOwner  String?
+  ownerContact  Json? // { name, phone, email, address }
+  taxAssessment Decimal? @db.Decimal(14, 2)
+  annualTaxes   Decimal? @db.Decimal(10, 2)
+
+  // Scoring
+  developmentScore Float? // 0-100 AI-generated development readiness
+  scoringFactors   Json? // Breakdown of scoring factors
+
+  // Status & lifecycle
+  status       ParcelStatus @default(IDENTIFIED)
+  identifiedAt DateTime     @default(now())
+  identifiedBy String? // User ID who identified
+
+  // Conversion
+  projectId String? // Set when converted to project
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  zoning      ParcelZoning[]
+  assessments SiteAssessment[]
+  comparables ParcelComparable[]
+  documents   ParcelDocument[]
+  notes       ParcelNote[]
+  offers      LandOffer[]
+
+  @@index([orgId])
+  @@index([status])
+  @@index([state, county])
+  @@index([developmentScore])
+  @@index([projectId])
+  @@map("parcels")
+}
+
+// Zoning analysis with density, height, FAR, setbacks, uses
+model ParcelZoning {
+  id       String @id @default(uuid())
+  parcelId String
+
+  // Zoning designation
+  zoningCode   String // R-1, C-2, MU-3, etc.
+  zoningDesc   String? // "Single Family Residential"
+  overlay      String? // Overlay district
+  jurisdiction String? // City/county name
+
+  // Development standards
+  maxDensity     Float? // Units per acre
+  maxHeight      Float? // Feet
+  maxFAR         Float? // Floor Area Ratio
+  maxLotCoverage Float? // Percentage
+  minLotSize     Decimal? @db.Decimal(10, 2) // Sq ft
+
+  // Setbacks (feet)
+  frontSetback Float?
+  sideSetback  Float?
+  rearSetback  Float?
+
+  // Allowed uses
+  allowedUses     String[] // ["single_family", "duplex", "townhome"]
+  conditionalUses String[] // Uses requiring special permit
+  prohibitedUses  String[]
+
+  // Parking requirements
+  parkingRatio Float? // Spaces per unit
+  parkingNotes String?
+
+  // AI analysis
+  aiAnalysis      Json? // AI-generated zoning summary
+  complianceNotes String?
+
+  // Source
+  sourceUrl  String? // Link to zoning ordinance
+  verifiedAt DateTime?
+  verifiedBy String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parcel Parcel @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+
+  @@index([parcelId])
+  @@index([zoningCode])
+  @@map("parcel_zonings")
+}
+
+// Site assessment — environmental, geotech, survey, title
+model SiteAssessment {
+  id       String @id @default(uuid())
+  parcelId String
+
+  // Assessment info
+  assessmentType AssessmentType
+  status         AssessmentStatus @default(NOT_STARTED)
+  title          String?
+  description    String?
+
+  // Vendor/consultant
+  vendorName    String?
+  vendorContact Json?
+  estimatedCost Decimal? @db.Decimal(10, 2)
+  actualCost    Decimal? @db.Decimal(10, 2)
+
+  // Schedule
+  orderedAt   DateTime?
+  scheduledAt DateTime?
+  completedAt DateTime?
+
+  // Results
+  findings      Json? // Structured findings
+  summary       String? // Human-readable summary
+  riskLevel     String? // LOW, MEDIUM, HIGH, CRITICAL
+  flaggedIssues Json? // Array of issues found
+
+  // Documents
+  reportUrl   String?
+  attachments Json? // Array of { name, url, type }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parcel Parcel @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+
+  @@index([parcelId])
+  @@index([assessmentType])
+  @@index([status])
+  @@map("site_assessments")
+}
+
+// Comparable sales data
+model ParcelComparable {
+  id       String @id @default(uuid())
+  parcelId String
+
+  // Comparable property
+  address      String?
+  saleDate     DateTime?
+  salePrice    Decimal?  @db.Decimal(14, 2)
+  pricePerSqFt Decimal?  @db.Decimal(10, 2)
+  pricePerAcre Decimal?  @db.Decimal(14, 2)
+  acreage      Decimal?  @db.Decimal(10, 4)
+  zoningCode   String?
+
+  // Comparison metrics
+  distanceMiles Float?
+  similarity    Float? // 0-100 similarity score
+  adjustments   Json? // Price adjustments for differences
+  adjustedPrice Decimal? @db.Decimal(14, 2)
+
+  sourceUrl String?
+  notes     String?
+
+  createdAt DateTime @default(now())
+
+  parcel Parcel @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+
+  @@index([parcelId])
+  @@map("parcel_comparables")
+}
+
+// Parcel documents — deed, survey, environmental reports
+model ParcelDocument {
+  id       String @id @default(uuid())
+  parcelId String
+
+  documentType String // "deed", "survey", "phase_i_esa", "title_report", etc.
+  title        String
+  description  String?
+  fileUrl      String
+  fileSize     Int?
+  mimeType     String?
+
+  uploadedBy String? // User ID
+
+  createdAt DateTime @default(now())
+
+  parcel Parcel @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+
+  @@index([parcelId])
+  @@index([documentType])
+  @@map("parcel_documents")
+}
+
+// Notes/comments on parcels
+model ParcelNote {
+  id       String @id @default(uuid())
+  parcelId String
+
+  content    String
+  authorId   String // User ID
+  authorName String?
+  isPinned   Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parcel Parcel @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+
+  @@index([parcelId])
+  @@map("parcel_notes")
+}
+
+// Land offers with due diligence tracking
+model LandOffer {
+  id       String @id @default(uuid())
+  parcelId String
+
+  // Offer details
+  offerAmount    Decimal   @db.Decimal(14, 2)
+  earnestMoney   Decimal?  @db.Decimal(10, 2)
+  offerDate      DateTime  @default(now())
+  expirationDate DateTime?
+
+  // Status
+  status String @default("DRAFT") // DRAFT, SUBMITTED, COUNTERED, ACCEPTED, REJECTED, EXPIRED, WITHDRAWN
+
+  // Counter offer
+  counterAmount Decimal?  @db.Decimal(14, 2)
+  counterDate   DateTime?
+  counterNotes  String?
+
+  // Due diligence
+  ddPeriodDays Int? // Due diligence period in days
+  ddStartDate  DateTime?
+  ddEndDate    DateTime?
+  ddCompleted  Boolean   @default(false)
+
+  // Closing
+  closingDate   DateTime?
+  closingAmount Decimal?  @db.Decimal(14, 2)
+  closedAt      DateTime?
+
+  // Documents & notes
+  offerDocUrl String?
+  notes       String?
+  createdBy   String? // User ID
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parcel Parcel @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+
+  @@index([parcelId])
+  @@index([status])
+  @@map("land_offers")
+}
+
+// ============================================================================
+// ============================================================================
+// V20 — OS-FEAS (Feasibility Studies, Scenario Modeling, Proformas)
+// ============================================================================
+// ============================================================================
+
+enum FeasibilityStatus {
+  DRAFT // Initial creation
+  DATA_GATHERING // Collecting assumptions
+  ANALYZING // AI analysis in progress
+  REVIEW // Ready for human review
+  GO // Approved to proceed
+  NO_GO // Not viable
+  ON_HOLD // Paused for more info
+  ARCHIVED // Historical record
+}
+
+// Feasibility study lifecycle
+model FeasibilityStudy {
+  id        String  @id @default(uuid())
+  projectId String? // Optional — may not have project yet
+  parcelId  String? // May be linked to a parcel
+  orgId     String
+
+  // Study info
+  title       String
+  description String?
+  status      FeasibilityStatus @default(DRAFT)
+
+  // Key inputs
+  landCost         Decimal? @db.Decimal(14, 2)
+  targetUnits      Int?
+  targetSqFt       Decimal? @db.Decimal(14, 2)
+  productType      String? // "single_family", "multifamily", "mixed_use", "commercial"
+  constructionType String? // "wood_frame", "steel", "concrete", "masonry"
+
+  // AI analysis
+  aiAnalysis   Json? // AI-generated feasibility assessment
+  aiConfidence Float? // 0-100
+  aiModelUsed  String?
+
+  // Decision
+  decision      String? // "GO", "NO_GO", "CONDITIONAL"
+  decisionDate  DateTime?
+  decisionBy    String? // User ID
+  decisionNotes String?
+
+  // Summary metrics (best scenario)
+  bestIRR          Float?
+  bestROI          Float?
+  bestNOI          Decimal? @db.Decimal(14, 2)
+  totalProjectCost Decimal? @db.Decimal(14, 2)
+
+  createdBy String? // User ID
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project            Project?                       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  scenarios          FeasibilityScenario[]
+  costAssumptions    FeasibilityCostAssumption[]
+  revenueAssumptions FeasibilityRevenueAssumption[]
+  comparisons        FeasibilityComparison[]
+
+  @@index([orgId])
+  @@index([projectId])
+  @@index([parcelId])
+  @@index([status])
+  @@map("feasibility_studies")
+}
+
+// Scenario with unit mix, costs, revenue, returns
+model FeasibilityScenario {
+  id      String @id @default(uuid())
+  studyId String
+
+  // Scenario info
+  name        String // "Base Case", "Optimistic", "Conservative"
+  description String?
+  isBaseline  Boolean @default(false)
+  sortOrder   Int     @default(0)
+
+  // Unit mix
+  unitMix    Json // Array of { type, count, avgSqFt, pricePerUnit }
+  totalUnits Int      @default(0)
+  totalSqFt  Decimal? @db.Decimal(14, 2)
+
+  // Cost summary
+  landCost         Decimal? @db.Decimal(14, 2)
+  hardCosts        Decimal? @db.Decimal(14, 2)
+  softCosts        Decimal? @db.Decimal(14, 2)
+  contingency      Decimal? @db.Decimal(14, 2)
+  totalDevelopCost Decimal? @db.Decimal(14, 2)
+  costPerUnit      Decimal? @db.Decimal(10, 2)
+  costPerSqFt      Decimal? @db.Decimal(10, 2)
+
+  // Revenue
+  grossRevenue         Decimal? @db.Decimal(14, 2)
+  grossRentalIncome    Decimal? @db.Decimal(14, 2) // Monthly
+  vacancyRate          Float? // Percentage
+  effectiveGrossIncome Decimal? @db.Decimal(14, 2)
+  operatingExpenses    Decimal? @db.Decimal(14, 2)
+  netOperatingIncome   Decimal? @db.Decimal(14, 2)
+
+  // Returns
+  irr            Float?
+  roi            Float?
+  cashOnCash     Float?
+  capRate        Float?
+  equityMultiple Float?
+  paybackMonths  Int?
+
+  // Proforma
+  proformaYears Int   @default(10)
+  proforma      Json? // Year-by-year projection
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  study FeasibilityStudy @relation(fields: [studyId], references: [id], onDelete: Cascade)
+
+  @@index([studyId])
+  @@map("feasibility_scenarios")
+}
+
+// Categorized cost assumptions with sources
+model FeasibilityCostAssumption {
+  id      String @id @default(uuid())
+  studyId String
+
+  // Category
+  category    String // "land", "hard_cost", "soft_cost", "financing", "contingency"
+  subcategory String? // "sitework", "foundation", "framing", etc.
+  lineItem    String // Description
+
+  // Cost
+  amount    Decimal  @db.Decimal(14, 2)
+  unit      String? // "per_sf", "per_unit", "lump_sum", "percentage"
+  quantity  Decimal? @db.Decimal(10, 2)
+  totalCost Decimal? @db.Decimal(14, 2)
+
+  // Source
+  source     String? // "rsmeans", "contractor_bid", "historical", "estimate"
+  confidence Float? // 0-100
+  notes      String?
+
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  study FeasibilityStudy @relation(fields: [studyId], references: [id], onDelete: Cascade)
+
+  @@index([studyId])
+  @@index([category])
+  @@map("feasibility_cost_assumptions")
+}
+
+// Revenue by unit type with escalation
+model FeasibilityRevenueAssumption {
+  id      String @id @default(uuid())
+  studyId String
+
+  // Unit type
+  unitType  String // "1BR", "2BR", "3BR", "studio", "retail", "parking"
+  unitCount Int
+  avgSqFt   Decimal? @db.Decimal(10, 2)
+
+  // For-sale revenue
+  pricePerUnit Decimal? @db.Decimal(14, 2)
+  pricePerSqFt Decimal? @db.Decimal(10, 2)
+
+  // Rental revenue
+  monthlyRent      Decimal? @db.Decimal(10, 2)
+  annualEscalation Float? // Percentage
+
+  // Occupancy
+  stabilizedOccupancy Float? // Percentage
+  absorptionMonths    Int? // Months to stabilize
+
+  notes     String?
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  study FeasibilityStudy @relation(fields: [studyId], references: [id], onDelete: Cascade)
+
+  @@index([studyId])
+  @@map("feasibility_revenue_assumptions")
+}
+
+// Comparable project data
+model FeasibilityComparison {
+  id      String @id @default(uuid())
+  studyId String
+
+  // Comparable project
+  projectName String
+  address     String?
+  completedAt DateTime?
+  productType String?
+  totalUnits  Int?
+  totalSqFt   Decimal?  @db.Decimal(14, 2)
+
+  // Cost metrics
+  totalCost   Decimal? @db.Decimal(14, 2)
+  costPerUnit Decimal? @db.Decimal(10, 2)
+  costPerSqFt Decimal? @db.Decimal(10, 2)
+
+  // Revenue metrics
+  avgSalePrice Decimal? @db.Decimal(14, 2)
+  avgRent      Decimal? @db.Decimal(10, 2)
+  capRate      Float?
+
+  // Comparison
+  similarity Float? // 0-100
+  notes      String?
+  sourceUrl  String?
+
+  createdAt DateTime @default(now())
+
+  study FeasibilityStudy @relation(fields: [studyId], references: [id], onDelete: Cascade)
+
+  @@index([studyId])
+  @@map("feasibility_comparisons")
+}
+
+// ============================================================================
+// ============================================================================
+// V20 — OS-DEV (Capital Stacks, Draw Tracking, Investor Reporting)
+// ============================================================================
+// ============================================================================
+
+enum CapitalSourceType {
+  SENIOR_DEBT // Construction loan, permanent loan
+  MEZZANINE // Mezzanine debt
+  PREFERRED_EQUITY // Preferred equity
+  COMMON_EQUITY // Common equity / JV equity
+  GRANT // Government grant
+  TAX_CREDIT // LIHTC, Historic, etc.
+  SELLER_FINANCING // Seller carryback
+  OTHER
+}
+
+enum DrawStatus {
+  DRAFT // Being prepared
+  SUBMITTED // Submitted to lender
+  IN_REVIEW // Under review
+  APPROVED // Approved for funding
+  FUNDED // Funds disbursed
+  REJECTED // Rejected, needs revision
+  CANCELLED // Cancelled
+}
+
+enum EntitlementType {
+  REZONING // Zone change
+  VARIANCE // Variance from code
+  CONDITIONAL_USE // Conditional/special use permit
+  SITE_PLAN // Site plan approval
+  SUBDIVISION // Subdivision plat
+  PUD // Planned unit development
+  ENVIRONMENTAL // Environmental review/NEPA
+  HISTORIC // Historic preservation
+  OTHER
+}
+
+enum EntitlementStatus {
+  NOT_STARTED
+  APPLICATION_PREP
+  SUBMITTED
+  UNDER_REVIEW
+  PUBLIC_HEARING
+  APPROVED
+  APPROVED_WITH_CONDITIONS
+  DENIED
+  APPEALED
+  EXPIRED
+}
+
+// Total capital with senior/mezz/equity breakdown
+model CapitalStack {
+  id        String @id @default(uuid())
+  projectId String @unique
+  orgId     String
+
+  // Summary
+  totalCapital    Decimal @db.Decimal(14, 2)
+  seniorDebt      Decimal @default(0) @db.Decimal(14, 2)
+  mezzanineDebt   Decimal @default(0) @db.Decimal(14, 2)
+  preferredEquity Decimal @default(0) @db.Decimal(14, 2)
+  commonEquity    Decimal @default(0) @db.Decimal(14, 2)
+  grants          Decimal @default(0) @db.Decimal(14, 2)
+  otherSources    Decimal @default(0) @db.Decimal(14, 2)
+
+  // Leverage metrics
+  loanToValue         Float?
+  loanToCost          Float?
+  debtServiceCoverage Float?
+
+  // Status
+  isFinalized Boolean   @default(false)
+  finalizedAt DateTime?
+  finalizedBy String?
+  notes       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project       Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sources       CapitalSource[]
+  drawSchedules DrawSchedule[]
+
+  @@index([orgId])
+  @@index([projectId])
+  @@map("capital_stacks")
+}
+
+// Individual funding sources with terms
+model CapitalSource {
+  id             String @id @default(uuid())
+  capitalStackId String
+
+  // Source info
+  sourceType  CapitalSourceType
+  lenderName  String
+  contactInfo Json? // { name, email, phone }
+
+  // Amount
+  commitmentAmount Decimal @db.Decimal(14, 2)
+  fundedAmount     Decimal @default(0) @db.Decimal(14, 2)
+  remainingAmount  Decimal @default(0) @db.Decimal(14, 2)
+
+  // Terms
+  interestRate  Float?
+  term          Int? // Months
+  amortization  Int? // Months
+  ioPeriod      Int? // Interest-only period in months
+  origFee       Float? // Origination fee percentage
+  exitFee       Float?
+  prepayPenalty String?
+
+  // Covenants
+  covenants Json? // Array of covenant conditions
+
+  // Status
+  status       String    @default("PENDING") // PENDING, COMMITTED, ACTIVE, REPAID, DEFAULTED
+  closedAt     DateTime?
+  maturityDate DateTime?
+
+  notes       String?
+  documentUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  capitalStack CapitalStack @relation(fields: [capitalStackId], references: [id], onDelete: Cascade)
+
+  @@index([capitalStackId])
+  @@index([sourceType])
+  @@map("capital_sources")
+}
+
+// Draw requests with inspection and lien waiver tracking
+model DrawSchedule {
+  id             String @id @default(uuid())
+  capitalStackId String
+
+  // Draw info
+  drawNumber  Int
+  requestDate DateTime  @default(now())
+  periodStart DateTime?
+  periodEnd   DateTime?
+
+  // Amounts
+  requestedAmount Decimal  @db.Decimal(14, 2)
+  approvedAmount  Decimal? @db.Decimal(14, 2)
+  retainage       Decimal? @db.Decimal(14, 2)
+  netDisbursement Decimal? @db.Decimal(14, 2)
+
+  // Breakdown
+  lineItems Json? // Array of { costCode, description, thisRequest, toDate, remaining }
+
+  // Approval workflow
+  status          DrawStatus @default(DRAFT)
+  submittedAt     DateTime?
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  approvedAt      DateTime?
+  approvedBy      String?
+  fundedAt        DateTime?
+  rejectionReason String?
+
+  // Inspection
+  inspectionRequired Boolean   @default(true)
+  inspectionDate     DateTime?
+  inspectionResult   String? // PASS, FAIL, CONDITIONAL
+  inspectorName      String?
+  inspectionReport   String? // URL
+  completionPercent  Float? // Verified % complete
+
+  // Lien waivers
+  lienWaiversRequired Boolean @default(true)
+  lienWaiversReceived Boolean @default(false)
+  lienWaiverDocs      Json? // Array of { contractor, type, url, receivedAt }
+
+  // Supporting docs
+  supportingDocs Json? // Array of { name, url, type }
+  notes          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  capitalStack CapitalStack @relation(fields: [capitalStackId], references: [id], onDelete: Cascade)
+
+  @@index([capitalStackId])
+  @@index([status])
+  @@index([drawNumber])
+  @@map("draw_schedules")
+}
+
+// Monthly/quarterly investor reports
+model InvestorReport {
+  id        String @id @default(uuid())
+  projectId String
+  orgId     String
+
+  // Report info
+  reportType  String // "monthly", "quarterly", "annual", "special"
+  periodStart DateTime
+  periodEnd   DateTime
+  title       String?
+
+  // Financial summary
+  totalInvested   Decimal? @db.Decimal(14, 2)
+  totalSpent      Decimal? @db.Decimal(14, 2)
+  budgetRemaining Decimal? @db.Decimal(14, 2)
+  budgetVariance  Float? // Percentage
+
+  // Construction progress
+  overallCompletion Float? // Percentage
+  scheduleVariance  Float? // Days ahead/behind
+
+  // Distribution
+  distributionAmount Decimal?  @db.Decimal(14, 2)
+  distributionDate   DateTime?
+  distributionType   String? // "return_of_capital", "preferred_return", "profit_share"
+
+  // Content
+  narrative  String? // Written summary
+  highlights Json? // Array of key highlights
+  risks      Json? // Array of risk items
+  nextSteps  Json? // Array of upcoming milestones
+
+  // Attachments
+  reportPdfUrl String?
+  attachments  Json? // Array of { name, url }
+
+  // AI generated
+  aiGenerated Boolean @default(false)
+  aiModelUsed String?
+
+  // Status
+  status      String    @default("DRAFT") // DRAFT, REVIEW, PUBLISHED, ARCHIVED
+  publishedAt DateTime?
+  publishedBy String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([orgId])
+  @@index([reportType])
+  @@index([periodEnd])
+  @@map("investor_reports")
+}
+
+// Entitlement tracking — rezoning, variance, conditional use
+model Entitlement {
+  id        String @id @default(uuid())
+  projectId String
+  orgId     String
+
+  // Entitlement info
+  entitlementType EntitlementType
+  status          EntitlementStatus @default(NOT_STARTED)
+  title           String
+  description     String?
+
+  // Jurisdiction
+  jurisdiction String? // City/county name
+  department   String? // Planning dept, zoning board, etc.
+  caseNumber   String? // Application/case number
+
+  // Timeline
+  applicationDate DateTime?
+  hearingDate     DateTime?
+  decisionDate    DateTime?
+  expirationDate  DateTime?
+
+  // Conditions
+  conditions    Json? // Array of approval conditions
+  conditionsMet Boolean @default(false)
+
+  // Costs
+  applicationFee  Decimal? @db.Decimal(10, 2)
+  legalCosts      Decimal? @db.Decimal(10, 2)
+  consultantCosts Decimal? @db.Decimal(10, 2)
+  impactFees      Decimal? @db.Decimal(14, 2)
+  totalCosts      Decimal? @db.Decimal(14, 2)
+
+  // Documents
+  applicationUrl String?
+  approvalUrl    String?
+  attachments    Json?
+
+  notes      String?
+  assignedTo String? // User ID
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([orgId])
+  @@index([entitlementType])
+  @@index([status])
+  @@map("entitlements")
+}
+
+// ============================================================================
+// ============================================================================
+// V20 — OS-PAY (Payment Schedule Templates, Escrow Reconciliation)
+// ============================================================================
+// ============================================================================
+
+// Reusable milestone payment templates
+model PaymentScheduleTemplate {
+  id    String @id @default(uuid())
+  orgId String
+
+  // Template info
+  name        String
+  description String?
+  projectType String? // "residential", "commercial", "renovation"
+  isDefault   Boolean @default(false)
+
+  // Milestones
+  milestones      Json // Array of { name, percentOfTotal, description, requiredDocs }
+  totalMilestones Int  @default(0)
+
+  // Usage
+  usageCount Int       @default(0)
+  lastUsedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orgId])
+  @@index([projectType])
+  @@map("payment_schedule_templates")
+}
+
+// Escrow reconciliation snapshots
+model EscrowReconciliation {
+  id        String @id @default(uuid())
+  projectId String
+  orgId     String
+
+  // Reconciliation period
+  periodStart        DateTime
+  periodEnd          DateTime
+  reconciliationDate DateTime @default(now())
+
+  // Balances
+  expectedBalance Decimal @db.Decimal(14, 2)
+  actualBalance   Decimal @db.Decimal(14, 2)
+  discrepancy     Decimal @default(0) @db.Decimal(14, 2)
+
+  // Details
+  totalDeposits      Decimal @default(0) @db.Decimal(14, 2)
+  totalDisbursements Decimal @default(0) @db.Decimal(14, 2)
+  totalHolds         Decimal @default(0) @db.Decimal(14, 2)
+
+  // Discrepancy tracking
+  hasDiscrepancy      Boolean   @default(false)
+  discrepancyItems    Json? // Array of { description, amount, type, resolvedAt }
+  discrepancyResolved Boolean   @default(false)
+  resolvedAt          DateTime?
+  resolvedBy          String?
+  resolutionNotes     String?
+
+  // Status
+  status     String    @default("DRAFT") // DRAFT, PENDING_REVIEW, APPROVED, FLAGGED
+  reviewedBy String?
+  approvedBy String?
+  approvedAt DateTime?
+
+  // Documents
+  reportUrl   String?
+  attachments Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([orgId])
+  @@index([periodEnd])
+  @@index([hasDiscrepancy])
+  @@map("escrow_reconciliations")
+}
+
+// ============================================================================
+// ============================================================================
+// V20 — OS-OPS (Turnover, Warranty, Maintenance)
+// ============================================================================
+// ============================================================================
+
+enum TurnoverItemStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  NOT_APPLICABLE
+  DEFERRED
+}
+
+enum WorkOrderPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+  EMERGENCY
+}
+
+enum WorkOrderStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CLOSED
+  CANCELLED
+}
+
+// Turnover checklist
+model TurnoverChecklist {
+  id        String @id @default(uuid())
+  projectId String
+  orgId     String
+
+  // Checklist info
+  title       String
+  description String?
+  category    String? // "residential", "commercial", "mixed_use"
+
+  // Progress
+  totalItems     Int   @default(0)
+  completedItems Int   @default(0)
+  completionPct  Float @default(0)
+
+  // Schedule
+  targetDate  DateTime?
+  completedAt DateTime?
+
+  // Status
+  status      String    @default("DRAFT") // DRAFT, IN_PROGRESS, REVIEW, COMPLETED, SIGNED_OFF
+  signedOffBy String?
+  signedOffAt DateTime?
+
+  // Template reference
+  templateId String? // If created from a template
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  items   TurnoverItem[]
+
+  @@index([projectId])
+  @@index([orgId])
+  @@index([status])
+  @@map("turnover_checklists")
+}
+
+// Individual turnover items
+model TurnoverItem {
+  id          String @id @default(uuid())
+  checklistId String
+
+  // Item info
+  category    String // "documents", "keys_access", "training", "systems", "warranties", "certificates"
+  title       String
+  description String?
+  sortOrder   Int     @default(0)
+
+  // Status
+  status      TurnoverItemStatus @default(PENDING)
+  completedAt DateTime?
+  completedBy String?
+
+  // Verification
+  requiresPhoto     Boolean @default(false)
+  requiresDocument  Boolean @default(false)
+  requiresSignature Boolean @default(false)
+  photoUrl          String?
+  documentUrl       String?
+  signatureUrl      String?
+
+  // Notes
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  checklist TurnoverChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+
+  @@index([checklistId])
+  @@index([category])
+  @@index([status])
+  @@map("turnover_items")
+}
+
+// Recurring maintenance schedule
+model MaintenanceSchedule {
+  id        String @id @default(uuid())
+  projectId String
+  orgId     String
+
+  // Schedule info
+  title       String
+  description String?
+  category    String? // "hvac", "plumbing", "electrical", "structural", "landscape", "general"
+
+  // Recurrence
+  frequency         String // "daily", "weekly", "biweekly", "monthly", "quarterly", "semiannual", "annual"
+  nextDueDate       DateTime?
+  lastCompletedDate DateTime?
+
+  // Assignment
+  assignedTo    String? // User or contractor ID
+  assignedName  String?
+  vendorName    String?
+  vendorContact Json?
+
+  // Cost
+  estimatedCost Decimal? @db.Decimal(10, 2)
+
+  // Status
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project    Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workOrders MaintenanceWorkOrder[]
+
+  @@index([projectId])
+  @@index([orgId])
+  @@index([nextDueDate])
+  @@index([isActive])
+  @@map("maintenance_schedules")
+}
+
+// Maintenance work orders
+model MaintenanceWorkOrder {
+  id         String  @id @default(uuid())
+  scheduleId String?
+  projectId  String
+  orgId      String
+
+  // Work order info
+  title       String
+  description String?
+  category    String?
+
+  // Priority & status
+  priority WorkOrderPriority @default(MEDIUM)
+  status   WorkOrderStatus   @default(OPEN)
+
+  // Assignment
+  assignedTo   String?
+  assignedName String?
+
+  // Schedule
+  reportedAt    DateTime  @default(now())
+  reportedBy    String?
+  scheduledDate DateTime?
+  startedAt     DateTime?
+  completedAt   DateTime?
+
+  // Location
+  location String? // "Unit 204", "Roof", "Parking garage"
+
+  // Cost tracking
+  estimatedCost Decimal? @db.Decimal(10, 2)
+  actualCost    Decimal? @db.Decimal(10, 2)
+  laborHours    Decimal? @db.Decimal(6, 2)
+  materialsCost Decimal? @db.Decimal(10, 2)
+
+  // Documentation
+  photos      Json? // Array of photo URLs
+  attachments Json?
+  resolution  String? // Description of how it was resolved
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project  Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  schedule MaintenanceSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([orgId])
+  @@index([scheduleId])
+  @@index([status])
+  @@index([priority])
+  @@map("maintenance_work_orders")
+}
+
+// ============================================================================
+// BIM (Building Information Modeling) — Domain: bim | Owner: OS-PM service
+// ============================================================================
+
+enum BIMElementType {
+  WALL
+  FLOOR
+  CEILING
+  ROOF
+  DOOR
+  WINDOW
+  STAIR
+  COLUMN
+  BEAM
+  SLAB
+  FOUNDATION
+  MECHANICAL
+  ELECTRICAL
+  PLUMBING
+  FIRE_PROTECTION
+  SITE
+  FURNITURE
+  OTHER
+}
+
+enum BIMElementStatus {
+  PLANNED
+  IN_PROGRESS
+  INSTALLED
+  INSPECTED
+  APPROVED
+  DEFICIENT
+}
+
+enum ModelConversionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ViewerLayerType {
+  DESIGN
+  PERMIT
+  CONSTRUCTION
+  FINANCIAL
+  OPERATIONS
+  LAND
+}
+
+// BIM Element — individual elements extracted from BIM models
+model BIMElement {
+  id          String  @id @default(uuid())
+  bimModelId  String
+  ifcGlobalId String?
+
+  // Classification
+  elementType BIMElementType
+  name        String
+  description String?
+
+  // Geometry
+  boundingBox Json? // { min: {x,y,z}, max: {x,y,z} }
+  centroid    Json? // { x, y, z }
+  volume      Decimal? @db.Decimal(14, 4)
+  area        Decimal? @db.Decimal(14, 4)
+
+  // Properties
+  ifcProperties  Json? // Full IFC property sets
+  materials      String[] // Material names
+  classification String? // Uniformat / OmniClass code
+
+  // Status
+  status          BIMElementStatus @default(PLANNED)
+  lastInspectedAt DateTime?
+
+  // Schedule & Cost links
+  scheduleItemId     String?
+  estimateLineItemId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bimModel BIMModel @relation(fields: [bimModelId], references: [id], onDelete: Cascade)
+
+  @@index([bimModelId])
+  @@index([elementType])
+  @@index([status])
+  @@index([scheduleItemId])
+  @@map("bim_elements")
+}
+
+// BIM Clash — clash detection results between elements
+model BIMClash {
+  id         String @id @default(uuid())
+  bimModelId String
+  elementAId String
+  elementBId String
+
+  // Clash details
+  clashType String // HARD, SOFT, CLEARANCE
+  severity  String // LOW, MEDIUM, HIGH, CRITICAL
+  location  Json? // { x, y, z }
+
+  // Resolution
+  status     String    @default("OPEN") // OPEN, RESOLVED, ACCEPTED
+  resolvedAt DateTime?
+  resolvedBy String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bimModel BIMModel @relation(fields: [bimModelId], references: [id], onDelete: Cascade)
+
+  @@index([bimModelId])
+  @@index([status])
+  @@map("bim_clashes")
+}
+
+// BIM Viewer State — saved viewer states (camera positions, layer visibility)
+model BIMViewerState {
+  id         String @id @default(uuid())
+  bimModelId String
+  userId     String
+
+  // State info
+  name        String
+  description String?
+
+  // Viewer configuration
+  cameraPosition Json? // { x, y, z, target, up }
+  visibleLayers  ViewerLayerType[]
+  elementFilters Json? // Filter criteria
+  colorScheme    String? // Which coloring to apply
+  annotations    Json? // Markup data
+
+  // Flags
+  isDefault Boolean @default(false)
+  isShared  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bimModel BIMModel @relation(fields: [bimModelId], references: [id], onDelete: Cascade)
+
+  @@index([bimModelId])
+  @@index([userId])
+  @@map("bim_viewer_states")
+}
+
+// Building Asset — physical assets tracked after construction (for operations)
+model BuildingAsset {
+  id           String  @id @default(uuid())
+  projectId    String
+  bimElementId String?
+
+  // Identification
+  assetTag     String  @unique
+  name         String
+  description  String?
+  category     String // "hvac", "plumbing", "electrical", "structural", etc.
+  manufacturer String?
+  modelNumber  String?
+  serialNumber String?
+
+  // Location
+  location String? // Room/space identifier
+  floor    String?
+
+  // Lifecycle
+  installedAt     DateTime?
+  warrantyExpires DateTime?
+  condition       String? // EXCELLENT, GOOD, FAIR, POOR
+
+  // Cost
+  replacementCost Decimal? @db.Decimal(12, 2)
+
+  // Maintenance
+  maintenanceScheduleId String?
+  lastServicedAt        DateTime?
+
+  // Extended data
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([assetTag])
+  @@index([category])
+  @@map("building_assets")
 }

@@ -21,6 +21,8 @@ COPY packages/shared/ ./packages/shared/
 COPY packages/ui/ ./packages/ui/
 COPY packages/auth/ ./packages/auth/
 COPY apps/m-architect/ ./apps/m-architect/
+# Re-link workspace packages after COPY (pnpm symlinks break across Docker stages)
+RUN pnpm install --filter m-architect... --prod=false --frozen-lockfile --ignore-scripts 2>/dev/null || true
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" cd packages/database && npx prisma generate
 RUN cd packages/shared && pnpm run build 2>/dev/null || true
 RUN cd packages/ui && pnpm run build

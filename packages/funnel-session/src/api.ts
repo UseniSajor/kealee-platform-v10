@@ -27,7 +27,7 @@ export async function createSession(utmParams?: Record<string, string>): Promise
     body: JSON.stringify({ utmParams }),
   })
   if (!res.ok) throw new Error('Failed to create funnel session')
-  const data: CreateSessionResponse = await res.json()
+  const data = (await res.json()) as CreateSessionResponse
   return data.id
 }
 
@@ -46,7 +46,7 @@ export async function updateSession(
 export async function getSession(sessionId: string): Promise<SessionResponse> {
   const res = await fetch(`${API_URL}/funnel/sessions/${sessionId}`)
   if (!res.ok) throw new Error('Failed to get funnel session')
-  return res.json()
+  return (await res.json()) as SessionResponse
 }
 
 export async function triggerGeneration(sessionId: string): Promise<void> {
@@ -59,7 +59,7 @@ export async function triggerGeneration(sessionId: string): Promise<void> {
 export async function getProgress(sessionId: string): Promise<number> {
   const res = await fetch(`${API_URL}/funnel/sessions/${sessionId}/progress`)
   if (!res.ok) return 0
-  const data = await res.json()
+  const data = (await res.json()) as { progress?: number }
   return data.progress ?? 0
 }
 

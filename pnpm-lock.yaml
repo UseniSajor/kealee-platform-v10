@@ -106,6 +106,104 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  apps/admin-console:
+    dependencies:
+      '@kealee/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@kealee/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@supabase/ssr':
+        specifier: ^0.5.2
+        version: 0.5.2(@supabase/supabase-js@2.93.2)
+      '@supabase/supabase-js':
+        specifier: ^2.39.0
+        version: 2.93.2
+      lucide-react:
+        specifier: ^0.294.0
+        version: 0.294.0(react@18.2.0)
+      next:
+        specifier: 14.2.35
+        version: 14.2.35(@babel/core@7.28.6)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.0)(react-dom@18.2.0)(react@18.2.0)
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.30
+      '@types/react':
+        specifier: ^18
+        version: 18.3.27
+      '@types/react-dom':
+        specifier: ^18
+        version: 18.3.7(@types/react@18.3.27)
+      autoprefixer:
+        specifier: ^10.4.16
+        version: 10.4.23(postcss@8.5.6)
+      postcss:
+        specifier: ^8.4.32
+        version: 8.5.6
+      tailwindcss:
+        specifier: ^3.4.0
+        version: 3.4.19
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  apps/command-center:
+    dependencies:
+      '@kealee/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@kealee/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@supabase/ssr':
+        specifier: ^0.5.2
+        version: 0.5.2(@supabase/supabase-js@2.93.2)
+      '@supabase/supabase-js':
+        specifier: ^2.39.0
+        version: 2.93.2
+      lucide-react:
+        specifier: ^0.294.0
+        version: 0.294.0(react@18.2.0)
+      next:
+        specifier: 14.2.35
+        version: 14.2.35(@babel/core@7.28.6)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.0)(react-dom@18.2.0)(react@18.2.0)
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.30
+      '@types/react':
+        specifier: ^18
+        version: 18.3.27
+      '@types/react-dom':
+        specifier: ^18
+        version: 18.3.7(@types/react@18.3.27)
+      autoprefixer:
+        specifier: ^10.4.16
+        version: 10.4.23(postcss@8.5.6)
+      postcss:
+        specifier: ^8.4.32
+        version: 8.5.6
+      tailwindcss:
+        specifier: ^3.4.0
+        version: 3.4.19
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   apps/m-architect:
     dependencies:
       '@kealee/auth':
@@ -1064,6 +1162,560 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  apps/portal-contractor:
+    dependencies:
+      '@kealee/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@kealee/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@supabase/ssr':
+        specifier: ^0.5.2
+        version: 0.5.2(@supabase/supabase-js@2.93.2)
+      '@supabase/supabase-js':
+        specifier: ^2.39.0
+        version: 2.93.2
+      lucide-react:
+        specifier: ^0.294.0
+        version: 0.294.0(react@18.2.0)
+      next:
+        specifier: 14.2.35
+        version: 14.2.35(@babel/core@7.28.6)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.0)(react-dom@18.2.0)(react@18.2.0)
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.30
+      '@types/react':
+        specifier: ^18
+        version: 18.3.27
+      '@types/react-dom':
+        specifier: ^18
+        version: 18.3.7(@types/react@18.3.27)
+      autoprefixer:
+        specifier: ^10.4.16
+        version: 10.4.23(postcss@8.5.6)
+      postcss:
+        specifier: ^8.4.32
+        version: 8.5.6
+      tailwindcss:
+        specifier: ^3.4.0
+        version: 3.4.19
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  apps/portal-developer:
+    dependencies:
+      '@kealee/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@kealee/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@supabase/ssr':
+        specifier: ^0.5.2
+        version: 0.5.2(@supabase/supabase-js@2.93.2)
+      '@supabase/supabase-js':
+        specifier: ^2.39.0
+        version: 2.93.2
+      lucide-react:
+        specifier: ^0.294.0
+        version: 0.294.0(react@18.2.0)
+      next:
+        specifier: 14.2.35
+        version: 14.2.35(@babel/core@7.28.6)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.0)(react-dom@18.2.0)(react@18.2.0)
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.30
+      '@types/react':
+        specifier: ^18
+        version: 18.3.27
+      '@types/react-dom':
+        specifier: ^18
+        version: 18.3.7(@types/react@18.3.27)
+      autoprefixer:
+        specifier: ^10.4.16
+        version: 10.4.23(postcss@8.5.6)
+      postcss:
+        specifier: ^8.4.32
+        version: 8.5.6
+      tailwindcss:
+        specifier: ^3.4.0
+        version: 3.4.19
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  apps/portal-owner:
+    dependencies:
+      '@kealee/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@kealee/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@supabase/ssr':
+        specifier: ^0.5.2
+        version: 0.5.2(@supabase/supabase-js@2.93.2)
+      '@supabase/supabase-js':
+        specifier: ^2.39.0
+        version: 2.93.2
+      lucide-react:
+        specifier: ^0.294.0
+        version: 0.294.0(react@18.2.0)
+      next:
+        specifier: 14.2.35
+        version: 14.2.35(@babel/core@7.28.6)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.0)(react-dom@18.2.0)(react@18.2.0)
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.30
+      '@types/react':
+        specifier: ^18
+        version: 18.3.27
+      '@types/react-dom':
+        specifier: ^18
+        version: 18.3.7(@types/react@18.3.27)
+      autoprefixer:
+        specifier: ^10.4.16
+        version: 10.4.23(postcss@8.5.6)
+      postcss:
+        specifier: ^8.4.32
+        version: 8.5.6
+      tailwindcss:
+        specifier: ^3.4.0
+        version: 3.4.19
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  apps/web-main:
+    dependencies:
+      '@kealee/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      framer-motion:
+        specifier: ^11.15.0
+        version: 11.18.2(react-dom@18.2.0)(react@18.2.0)
+      lucide-react:
+        specifier: ^0.294.0
+        version: 0.294.0(react@18.2.0)
+      next:
+        specifier: 14.2.35
+        version: 14.2.35(@babel/core@7.28.6)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.0)(react-dom@18.2.0)(react@18.2.0)
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.30
+      '@types/react':
+        specifier: ^18
+        version: 18.3.27
+      '@types/react-dom':
+        specifier: ^18
+        version: 18.3.7(@types/react@18.3.27)
+      autoprefixer:
+        specifier: ^10.4.16
+        version: 10.4.23(postcss@8.5.6)
+      postcss:
+        specifier: ^8.4.32
+        version: 8.5.6
+      tailwindcss:
+        specifier: ^3.4.0
+        version: 3.4.19
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  bots/keabot-command:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@3.25.76)
+      '@kealee/core-bots':
+        specifier: workspace:*
+        version: link:../../packages/core-bots
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  bots/keabot-construction:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@3.25.76)
+      '@kealee/core-bots':
+        specifier: workspace:*
+        version: link:../../packages/core-bots
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  bots/keabot-developer:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@3.25.76)
+      '@kealee/core-bots':
+        specifier: workspace:*
+        version: link:../../packages/core-bots
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  bots/keabot-estimate:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@3.25.76)
+      '@kealee/core-bots':
+        specifier: workspace:*
+        version: link:../../packages/core-bots
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  bots/keabot-feasibility:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@3.25.76)
+      '@kealee/core-bots':
+        specifier: workspace:*
+        version: link:../../packages/core-bots
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  bots/keabot-finance:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@3.25.76)
+      '@kealee/core-bots':
+        specifier: workspace:*
+        version: link:../../packages/core-bots
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  bots/keabot-gc:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@3.25.76)
+      '@kealee/core-bots':
+        specifier: workspace:*
+        version: link:../../packages/core-bots
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  bots/keabot-land:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@3.25.76)
+      '@kealee/core-bots':
+        specifier: workspace:*
+        version: link:../../packages/core-bots
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  bots/keabot-marketplace:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@3.25.76)
+      '@kealee/core-bots':
+        specifier: workspace:*
+        version: link:../../packages/core-bots
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  bots/keabot-operations:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@3.25.76)
+      '@kealee/core-bots':
+        specifier: workspace:*
+        version: link:../../packages/core-bots
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  bots/keabot-owner:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@3.25.76)
+      '@kealee/core-bots':
+        specifier: workspace:*
+        version: link:../../packages/core-bots
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  bots/keabot-payments:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@3.25.76)
+      '@kealee/core-bots':
+        specifier: workspace:*
+        version: link:../../packages/core-bots
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  bots/keabot-permit:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@3.25.76)
+      '@kealee/core-bots':
+        specifier: workspace:*
+        version: link:../../packages/core-bots
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
   packages/ai:
     dependencies:
       '@anthropic-ai/sdk':
@@ -1242,6 +1894,168 @@ importers:
         version: 20.19.30
       typescript:
         specifier: ^5.9.0
+        version: 5.9.3
+
+  packages/core-auth:
+    dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.39.0
+        version: 2.93.2
+      fastify:
+        specifier: ^4.24.0
+        version: 4.29.1
+      fastify-plugin:
+        specifier: ^4.5.1
+        version: 4.5.1
+    devDependencies:
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+
+  packages/core-bots:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@3.25.76)
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../core-events
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../shared
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  packages/core-ddts:
+    dependencies:
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../core-events
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
+      ioredis:
+        specifier: ^5.3.2
+        version: 5.9.2
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  packages/core-documents:
+    dependencies:
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
+      '@kealee/storage':
+        specifier: workspace:*
+        version: link:../storage
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  packages/core-events:
+    dependencies:
+      ioredis:
+        specifier: ^5.3.2
+        version: 5.9.2
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  packages/core-integrations:
+    dependencies:
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../core-events
+      axios:
+        specifier: ^1.6.0
+        version: 1.13.4
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  packages/core-notifications:
+    dependencies:
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../core-events
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
+      ioredis:
+        specifier: ^5.3.2
+        version: 5.9.2
+      resend:
+        specifier: ^3.0.0
+        version: 3.5.0(react-dom@18.2.0)(react@18.2.0)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  packages/core-rules:
+    dependencies:
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  packages/core-search:
+    dependencies:
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      typescript:
+        specifier: ^5.3.3
         version: 5.9.3
 
   packages/database:
@@ -1932,6 +2746,307 @@ importers:
       vitest:
         specifier: ^2.1.2
         version: 2.1.9(@types/node@22.19.7)
+
+  services/marketplace:
+    dependencies:
+      '@fastify/cors':
+        specifier: ^8.5.0
+        version: 8.5.0
+      '@kealee/core-ddts':
+        specifier: workspace:*
+        version: link:../../packages/core-ddts
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@prisma/client':
+        specifier: ^5.22.0
+        version: 5.22.0(prisma@5.22.0)
+      fastify:
+        specifier: ^4.26.0
+        version: 4.29.1
+      ioredis:
+        specifier: ^5.3.2
+        version: 5.9.2
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.2
+        version: 1.6.1(@types/node@20.19.30)
+
+  services/os-dev:
+    dependencies:
+      '@fastify/cors':
+        specifier: ^8.5.0
+        version: 8.5.0
+      '@kealee/core-ddts':
+        specifier: workspace:*
+        version: link:../../packages/core-ddts
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@prisma/client':
+        specifier: ^5.22.0
+        version: 5.22.0(prisma@5.22.0)
+      fastify:
+        specifier: ^4.26.0
+        version: 4.29.1
+      ioredis:
+        specifier: ^5.3.2
+        version: 5.9.2
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.2
+        version: 1.6.1(@types/node@20.19.30)
+
+  services/os-feas:
+    dependencies:
+      '@fastify/cors':
+        specifier: ^8.5.0
+        version: 8.5.0
+      '@kealee/core-ddts':
+        specifier: workspace:*
+        version: link:../../packages/core-ddts
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@prisma/client':
+        specifier: ^5.22.0
+        version: 5.22.0(prisma@5.22.0)
+      fastify:
+        specifier: ^4.26.0
+        version: 4.29.1
+      ioredis:
+        specifier: ^5.3.2
+        version: 5.9.2
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.2
+        version: 1.6.1(@types/node@20.19.30)
+
+  services/os-land:
+    dependencies:
+      '@fastify/cors':
+        specifier: ^8.5.0
+        version: 8.5.0
+      '@kealee/core-ddts':
+        specifier: workspace:*
+        version: link:../../packages/core-ddts
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@prisma/client':
+        specifier: ^5.22.0
+        version: 5.22.0(prisma@5.22.0)
+      fastify:
+        specifier: ^4.26.0
+        version: 4.29.1
+      ioredis:
+        specifier: ^5.3.2
+        version: 5.9.2
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.2
+        version: 1.6.1(@types/node@20.19.30)
+
+  services/os-ops:
+    dependencies:
+      '@fastify/cors':
+        specifier: ^8.5.0
+        version: 8.5.0
+      '@kealee/core-ddts':
+        specifier: workspace:*
+        version: link:../../packages/core-ddts
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@prisma/client':
+        specifier: ^5.22.0
+        version: 5.22.0(prisma@5.22.0)
+      fastify:
+        specifier: ^4.26.0
+        version: 4.29.1
+      ioredis:
+        specifier: ^5.3.2
+        version: 5.9.2
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.2
+        version: 1.6.1(@types/node@20.19.30)
+
+  services/os-pay:
+    dependencies:
+      '@fastify/cors':
+        specifier: ^8.5.0
+        version: 8.5.0
+      '@kealee/core-ddts':
+        specifier: workspace:*
+        version: link:../../packages/core-ddts
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@prisma/client':
+        specifier: ^5.22.0
+        version: 5.22.0(prisma@5.22.0)
+      fastify:
+        specifier: ^4.26.0
+        version: 4.29.1
+      ioredis:
+        specifier: ^5.3.2
+        version: 5.9.2
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.2
+        version: 1.6.1(@types/node@20.19.30)
+
+  services/os-pm:
+    dependencies:
+      '@fastify/cors':
+        specifier: ^8.5.0
+        version: 8.5.0
+      '@kealee/core-ddts':
+        specifier: workspace:*
+        version: link:../../packages/core-ddts
+      '@kealee/core-events':
+        specifier: workspace:*
+        version: link:../../packages/core-events
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@prisma/client':
+        specifier: ^5.22.0
+        version: 5.22.0(prisma@5.22.0)
+      fastify:
+        specifier: ^4.26.0
+        version: 4.29.1
+      ioredis:
+        specifier: ^5.3.2
+        version: 5.9.2
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.30
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.2
+        version: 1.6.1(@types/node@20.19.30)
 
   services/worker:
     dependencies:
@@ -17650,7 +18765,7 @@ packages:
 
   /glob@7.1.6:
     resolution: {integrity: sha512-LwaxwyZ72Lk7vZINtNNrywX0ZuLyStrdDtabefZKAY5ZGJhVtgdznluResxNmPitE0SAO+O26sWTHeKSI2wMBA==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     dependencies:
       fs.realpath: 1.0.0
       inflight: 1.0.6
@@ -17662,7 +18777,7 @@ packages:
 
   /glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     dependencies:
       fs.realpath: 1.0.0
       inflight: 1.0.6
@@ -17674,7 +18789,7 @@ packages:
   /glob@8.1.0:
     resolution: {integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ==}
     engines: {node: '>=12'}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     dependencies:
       fs.realpath: 1.0.0
       inflight: 1.0.6

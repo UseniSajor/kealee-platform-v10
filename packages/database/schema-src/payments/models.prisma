@@ -1,0 +1,1323 @@
+// PAYMENTS — Models
+// Auto-generated from schema splitter
+
+model ContractAgreement {
+  id                 String         @id @default(uuid())
+  projectId          String
+  ownerId            String
+  contractorId       String
+  amount             Decimal
+  status             ContractStatus @default(DRAFT)
+  signedAt           DateTime?
+  expiresAt          DateTime?
+  docusignEnvelopeId String?
+  signedDocumentUrl  String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  owner           User             @relation("ContractOwner", fields: [ownerId], references: [id])
+  contractor      User             @relation("ContractContractor", fields: [contractorId], references: [id])
+  milestones      Milestone[]
+  escrowAgreement EscrowAgreement?
+  disputes        Dispute[]
+  lienWaivers     LienWaiver[]
+
+  // Compliance relations
+  complianceChecks ComplianceCheck[] @relation("ComplianceCheckContract")
+  bonds            BondTracking[]    @relation("ContractBonds")
+  complianceAlerts ComplianceAlert[] @relation("ComplianceAlertContract")
+
+  @@index([projectId])
+  @@index([ownerId])
+  @@index([contractorId])
+  @@index([status])
+  @@index([status, createdAt])
+}
+
+model Milestone {
+  id          String          @id @default(uuid())
+  contractId  String
+  name        String
+  description String?
+  amount      Decimal
+  status      MilestoneStatus @default(PENDING)
+  dependsOnId String?
+  completedAt DateTime?
+  approvedAt  DateTime?
+  paidAt      DateTime?
+  approvedBy  String?
+
+  contract            ContractAgreement @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  dependsOn           Milestone?        @relation("MilestoneDependency", fields: [dependsOnId], references: [id])
+  dependentMilestones Milestone[]       @relation("MilestoneDependency")
+  evidence            Evidence[]
+  payouts             Payout[] // Payouts from this milestone
+  lienWaivers         LienWaiver[] // Lien waivers for this milestone
+  fileUploads         FileUpload[] // File uploads associated with this milestone
+
+  // Spatial & Financing relations (Backend Consolidation v10)
+  spatialVerifications SpatialVerification[]
+  approvals            MilestoneApproval[]
+
+  @@index([contractId])
+  @@index([status])
+  @@index([dependsOnId])
+  // ── Performance: Compound indexes for milestone dashboards ──
+  @@index([contractId, status]) // Contract detail: milestones by status
+}
+
+model Evidence {
+  id           String   @id @default(uuid())
+  milestoneId  String
+  type         String
+  fileUrl      String
+  caption      String?
+  uploadedById String
+  uploadedAt   DateTime @default(now())
+
+  milestone  Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  uploadedBy User      @relation("EvidenceUploader", fields: [uploadedById], references: [id])
+
+  @@index([milestoneId])
+  @@index([uploadedById])
+}
+
+model EscrowAgreement {
+  id                  String @id @default(uuid())
+  contractId          String @unique
+  projectId           String
+  escrowAccountNumber String @unique // Auto-generated: ESC-YYYYMMDD-XXXX
+
+  // Financial Fields
+  totalContractAmount  Decimal @db.Decimal(18, 2) // From contract
+  initialDepositAmount Decimal @db.Decimal(18, 2) // Calculated percentage
+  holdbackPercentage   Int     @default(10) // Default 10%
+  currentBalance       Decimal @default(0) @db.Decimal(18, 2) // Current total in escrow
+  availableBalance     Decimal @default(0) @db.Decimal(18, 2) // Current - holds
+  heldBalance          Decimal @default(0) @db.Decimal(18, 2) // Sum of active holds
+  currency             String  @default("USD") // Currency code
+
+  // Interest Tracking (for interest-bearing escrows)
+  interestRate    Decimal? @db.Decimal(5, 4) // e.g., 0.0250 for 2.5%
+  interestAccrued Decimal  @default(0) @db.Decimal(18, 2)
+
+  // Status & Lifecycle
+  status      EscrowStatus @default(PENDING_DEPOSIT)
+  createdAt   DateTime     @default(now())
+  activatedAt DateTime? // When first deposit made
+  closedAt    DateTime? // When escrow closed
+  updatedAt   DateTime     @updatedAt
+
+  // Relationships
+  contract        ContractAgreement   @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  project         Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  transactions    EscrowTransaction[]
+  holds           EscrowHold[]
+  disputes        Dispute[]
+  depositRequests DepositRequest[]    @relation("EscrowDepositRequests")
+
+  @@index([contractId])
+  @@index([projectId])
+  @@index([status])
+  @@index([escrowAccountNumber])
+  @@index([status, createdAt])
+}
+
+model EscrowTransaction {
+  id             String  @id @default(uuid())
+  escrowId       String // CORRECT FIELD NAME
+  journalEntryId String? @unique // Link to accounting entry
+
+  // Transaction Details
+  type        EscrowTransactionType
+  amount      Decimal               @db.Decimal(18, 2)
+  currency    String                @default("USD")
+  description String?               @db.Text
+
+  // Balance Tracking
+  balanceBefore Decimal @db.Decimal(18, 2)
+  balanceAfter  Decimal @db.Decimal(18, 2)
+
+  // Status & Processing
+  status        EscrowTransactionStatus @default(PENDING)
+  scheduledDate DateTime? // When transaction is scheduled
+  processedDate DateTime? // When transaction completed
+
+  // Payment & Reference
+  reference       String? // Payment ID, Milestone ID, etc.
+  stripePaymentId String? // Stripe payment reference
+
+  // Audit Trail
+  initiatedBy String // User ID who initiated
+  approvedBy  String? // User ID who approved (if required)
+
+  // Flexible Metadata
+  metadata Json? // For flexible data storage
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  escrow       EscrowAgreement @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+  journalEntry JournalEntry?   @relation(fields: [journalEntryId], references: [id])
+  initiator    User            @relation("EscrowTransactionInitiator", fields: [initiatedBy], references: [id])
+  approver     User?           @relation("EscrowTransactionApprover", fields: [approvedBy], references: [id])
+  payout       Payout? // Reverse relation for payout
+  lienWaivers  LienWaiver[] // Lien waivers generated for this transaction
+
+  @@index([escrowId])
+  @@index([status])
+  @@index([type])
+  @@index([processedDate])
+  @@index([initiatedBy])
+  @@index([reference])
+  @@index([status, createdAt])
+}
+
+model EscrowHold {
+  id       String @id @default(uuid())
+  escrowId String // CORRECT FIELD NAME
+
+  // Hold Details
+  amount Decimal          @db.Decimal(18, 2)
+  reason EscrowHoldReason
+  status EscrowHoldStatus @default(ACTIVE)
+  notes  String?          @db.Text
+
+  // Lifecycle
+  placedBy   String // User ID who placed hold
+  releasedBy String? // User ID who released hold
+  placedAt   DateTime  @default(now())
+  releasedAt DateTime?
+  expiresAt  DateTime? // Optional expiration date
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  escrow   EscrowAgreement @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+  placer   User            @relation("EscrowHoldPlacer", fields: [placedBy], references: [id])
+  releaser User?           @relation("EscrowHoldReleaser", fields: [releasedBy], references: [id])
+
+  @@index([escrowId])
+  @@index([status])
+  @@index([placedBy])
+  @@index([placedAt])
+}
+
+model Account {
+  id          String          @id @default(uuid())
+  code        String          @unique // Auto-assigned: 1000-1999 Assets, 2000-2999 Liabilities, etc.
+  name        String
+  type        AccountType
+  subType     AccountSubType?
+  description String?
+  parentId    String? // Account hierarchy support
+  isActive    Boolean         @default(true) // Soft delete pattern
+  balance     Decimal         @default(0) @db.Decimal(18, 4) // Current balance (precision: 18, scale: 4)
+  currency    String          @default("USD") // Multi-currency support
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+
+  // Relationships
+  parent         Account?           @relation("AccountHierarchy", fields: [parentId], references: [id])
+  children       Account[]          @relation("AccountHierarchy")
+  lines          JournalEntryLine[]
+  periodBalances AccountBalance[]
+
+  @@index([type])
+  @@index([subType])
+  @@index([isActive])
+  @@index([code])
+  @@index([parentId])
+}
+
+model JournalEntry {
+  id          String             @id @default(uuid())
+  entryNumber String             @unique // Auto-increment format: JE-2025-000001
+  description String
+  reference   String? // Reference type (e.g., "ESCROW_DEPOSIT", "MILESTONE_PAYMENT")
+  referenceId String? // ID of source transaction
+  entryDate   DateTime           @default(now())
+  status      JournalEntryStatus @default(DRAFT)
+
+  // Approval workflow for large transactions
+  requiresApproval Boolean   @default(false) // Auto-set for entries > $10,000
+  approvedBy       String? // User ID who approved
+  approvedAt       DateTime?
+
+  // Posting (immutable once POSTED)
+  postedAt   DateTime? // When entry was posted (null = draft, immutable once set)
+  postedBy   String? // User who posted the entry
+  voidedAt   DateTime? // When entry was voided
+  voidedBy   String? // User who voided
+  voidReason String?
+
+  // Audit trail
+  createdAt DateTime @default(now())
+  createdBy String
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  lines             JournalEntryLine[]
+  escrowTransaction EscrowTransaction? // Reverse relation for 1:1
+
+  @@index([entryDate])
+  @@index([status])
+  @@index([postedAt])
+  @@index([reference, referenceId])
+  @@index([requiresApproval])
+  @@index([entryNumber])
+}
+
+model JournalEntryLine {
+  id             String  @id @default(uuid())
+  journalEntryId String
+  accountId      String
+  lineOrder      Int     @default(0) // Line ordering within entry
+  debit          Decimal @default(0) @db.Decimal(18, 4)
+  credit         Decimal @default(0) @db.Decimal(18, 4)
+  description    String?
+
+  // Audit trail
+  createdAt DateTime @default(now())
+
+  // Relationships
+  journalEntry JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  account      Account      @relation(fields: [accountId], references: [id])
+
+  @@index([journalEntryId])
+  @@index([accountId])
+  @@index([lineOrder])
+}
+
+// Period-based account balances for reconciliation
+model AccountBalance {
+  id           String @id @default(uuid())
+  accountId    String
+  fiscalYear   Int // e.g., 2025
+  fiscalPeriod Int // 1-12 for months, or custom period
+
+  // Balances
+  openingBalance Decimal @default(0) @db.Decimal(18, 4)
+  closingBalance Decimal @default(0) @db.Decimal(18, 4)
+  debitTotal     Decimal @default(0) @db.Decimal(18, 4) // Sum of debits in period
+  creditTotal    Decimal @default(0) @db.Decimal(18, 4) // Sum of credits in period
+
+  // Reconciliation
+  isReconciled        Boolean   @default(false)
+  reconciledAt        DateTime?
+  reconciledBy        String?
+  reconciliationNotes String?
+
+  // Audit trail
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, fiscalYear, fiscalPeriod])
+  @@index([accountId])
+  @@index([fiscalYear, fiscalPeriod])
+  @@index([isReconciled])
+}
+
+model ConnectedAccount {
+  id     String @id @default(uuid())
+  userId String @unique // Contractor user ID
+
+  // Stripe Account Details
+  stripeAccountId String                 @unique
+  accountType     ConnectedAccountType
+  status          ConnectedAccountStatus @default(PENDING)
+
+  // Account Configuration
+  country  String
+  currency String @default("USD")
+  email    String
+
+  // Onboarding Status
+  hasCompletedOnboarding Boolean   @default(false)
+  onboardingLink         String? // Last generated onboarding link
+  onboardingLinkExpires  DateTime?
+
+  // Capabilities
+  payoutsEnabled Boolean @default(false)
+  chargesEnabled Boolean @default(false)
+
+  // Requirements from Stripe
+  requirements Json? // Store currently_due, eventually_due, past_due, disabled_reason
+
+  // Platform Fee Configuration
+  platformFeePercentage Decimal @default(0) @db.Decimal(5, 2) // e.g., 2.50 for 2.5%
+
+  // Tax Information
+  taxFormStatus     String? // W9_COLLECTED, W8BEN_COLLECTED, PENDING
+  taxClassification String? // INDIVIDUAL, C_CORP, S_CORP, PARTNERSHIP, LLC, etc.
+  taxId             String? // TIN/EIN (encrypted)
+
+  // Metadata
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  user    User     @relation("ConnectedAccountUser", fields: [userId], references: [id], onDelete: Cascade)
+  payouts Payout[]
+
+  @@index([userId])
+  @@index([stripeAccountId])
+  @@index([status])
+  @@index([hasCompletedOnboarding])
+}
+
+model Payout {
+  id                  String  @id @default(uuid())
+  connectedAccountId  String
+  escrowTransactionId String? @unique // Link to escrow transaction if from escrow release (1:1)
+  milestoneId         String? // Link to milestone if milestone payment
+
+  // Payout Details
+  amount           Decimal @db.Decimal(18, 2)
+  currency         String  @default("USD")
+  stripePayoutId   String? @unique
+  stripeTransferId String? // Transfer ID if using Stripe Transfers
+
+  // Status & Processing
+  status      PayoutStatus @default(PENDING)
+  method      PayoutMethod @default(STANDARD)
+  arrivalDate DateTime? // Expected/actual arrival date
+  processedAt DateTime? // When payout was processed
+  failedAt    DateTime? // When payout failed
+
+  // Failure Information
+  failureCode    String?
+  failureMessage String?
+
+  // Fee Information
+  platformFee      Decimal @default(0) @db.Decimal(18, 2)
+  stripeFee        Decimal @default(0) @db.Decimal(18, 2)
+  instantPayoutFee Decimal @default(0) @db.Decimal(18, 2) // 1% for instant payouts
+
+  // Audit Trail
+  initiatedBy String // User who initiated payout
+  approvedBy  String? // User who approved (if manual approval required)
+
+  // Metadata
+  metadata Json? // For flexible data (milestone details, etc.)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  connectedAccount  ConnectedAccount   @relation(fields: [connectedAccountId], references: [id], onDelete: Cascade)
+  escrowTransaction EscrowTransaction? @relation(fields: [escrowTransactionId], references: [id])
+  milestone         Milestone?         @relation(fields: [milestoneId], references: [id])
+  initiator         User               @relation("PayoutInitiator", fields: [initiatedBy], references: [id])
+  approver          User?              @relation("PayoutApprover", fields: [approvedBy], references: [id])
+
+  @@index([connectedAccountId])
+  @@index([status])
+  @@index([stripePayoutId])
+  @@index([escrowTransactionId])
+  @@index([milestoneId])
+  @@index([initiatedBy])
+  @@index([arrivalDate])
+  @@index([status, createdAt])
+}
+
+model Dispute {
+  id            String @id @default(uuid())
+  disputeNumber String @unique // Auto-generated: DISP-YYYYMMDD-XXXX
+
+  // Linked Entities
+  escrowAgreementId String
+  contractId        String
+  projectId         String
+
+  // Parties
+  initiatedBy  String // User ID who filed dispute
+  respondentId String // User ID of other party
+  mediatorId   String? // Assigned mediator user ID
+
+  // Dispute Details
+  type           DisputeType
+  status         DisputeStatus @default(OPEN)
+  disputedAmount Decimal       @db.Decimal(18, 2) // Amount in dispute
+  frozenAmount   Decimal       @default(0) @db.Decimal(18, 2) // Amount actually frozen
+
+  // Description & Resolution
+  title       String // Brief title
+  description String  @db.Text // Detailed description
+  resolution  String? @db.Text // Final resolution text
+
+  // Timestamps & Deadlines
+  createdAt         DateTime  @default(now())
+  evidenceDeadline  DateTime? // Deadline for evidence submission
+  mediationDeadline DateTime? // Deadline for mediation
+  resolvedAt        DateTime? // When resolution was decided
+  closedAt          DateTime? // When dispute was fully closed
+  updatedAt         DateTime  @updatedAt
+
+  // Metadata
+  metadata Json? // Flexible data storage
+
+  // Relationships
+  escrowAgreement EscrowAgreement     @relation(fields: [escrowAgreementId], references: [id], onDelete: Cascade)
+  contract        ContractAgreement   @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  project         Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  initiator       User                @relation("DisputeInitiator", fields: [initiatedBy], references: [id])
+  respondent      User                @relation("DisputeRespondent", fields: [respondentId], references: [id])
+  mediator        User?               @relation("DisputeMediator", fields: [mediatorId], references: [id])
+  evidence        DisputeEvidence[]
+  messages        DisputeMessage[]
+  resolutions     DisputeResolution[]
+
+  @@index([escrowAgreementId])
+  @@index([contractId])
+  @@index([projectId])
+  @@index([status])
+  @@index([initiatedBy])
+  @@index([respondentId])
+  @@index([mediatorId])
+  @@index([disputeNumber])
+  @@index([createdAt])
+}
+
+model DisputeEvidence {
+  id          String @id @default(uuid())
+  disputeId   String
+  submittedBy String // User ID
+
+  // Evidence Details
+  evidenceType DisputeEvidenceType
+  fileUrl      String // S3 or storage URL
+  fileName     String
+  fileSize     Int // Size in bytes
+  mimeType     String? // e.g., application/pdf, image/jpeg
+
+  // Description & Review
+  description String?   @db.Text
+  uploadedAt  DateTime  @default(now())
+  isReviewed  Boolean   @default(false)
+  reviewedBy  String? // Mediator user ID who reviewed
+  reviewedAt  DateTime?
+
+  // Metadata
+  metadata Json?
+
+  // Relationships
+  dispute   Dispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  submitter User    @relation("DisputeEvidenceSubmitter", fields: [submittedBy], references: [id])
+  reviewer  User?   @relation("DisputeEvidenceReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([disputeId])
+  @@index([submittedBy])
+  @@index([uploadedAt])
+}
+
+model DisputeMessage {
+  id        String @id @default(uuid())
+  disputeId String
+  senderId  String // User ID
+
+  // Message Content
+  message    String  @db.Text
+  isInternal Boolean @default(false) // Visible only to mediators/admins
+
+  // Read Tracking
+  readBy Json? // Array of user IDs who have read this message
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  dispute Dispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  sender  User    @relation("DisputeMessageSender", fields: [senderId], references: [id])
+
+  @@index([disputeId])
+  @@index([senderId])
+  @@index([createdAt])
+}
+
+model DisputeResolution {
+  id         String @id @default(uuid())
+  disputeId  String
+  mediatorId String // User ID of mediator
+
+  // Resolution Details
+  resolutionType   DisputeResolutionType
+  ownerAmount      Decimal               @default(0) @db.Decimal(18, 2) // Amount awarded to owner
+  contractorAmount Decimal               @default(0) @db.Decimal(18, 2) // Amount awarded to contractor
+  refundAmount     Decimal               @default(0) @db.Decimal(18, 2) // Amount refunded
+
+  // Reasoning & Decision
+  reasoning String   @db.Text
+  decidedAt DateTime @default(now())
+
+  // Appeal Process
+  appealDeadline DateTime // 7 days after decision
+  appealStatus   DisputeAppealStatus @default(NONE)
+  appealReason   String?             @db.Text
+  appealedAt     DateTime?
+  appealedBy     String? // User ID who filed appeal
+
+  // Metadata
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  dispute  Dispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  mediator User    @relation("DisputeResolutionMediator", fields: [mediatorId], references: [id])
+  appealer User?   @relation("DisputeResolutionAppealer", fields: [appealedBy], references: [id])
+
+  @@index([disputeId])
+  @@index([mediatorId])
+  @@index([decidedAt])
+  @@index([appealStatus])
+}
+
+model LienWaiver {
+  id                  String  @id @default(uuid())
+  paymentReleaseId    String? // Link to payment release/escrow transaction
+  escrowTransactionId String? // Direct link to escrow transaction
+  contractId          String
+  projectId           String
+  milestoneId         String? // Link to milestone if applicable
+
+  // Waiver Classification
+  waiverType  LienWaiverType
+  waiverScope LienWaiverScope
+  status      LienWaiverStatus @default(GENERATED)
+
+  // Project Information
+  projectName    String
+  projectAddress String @db.Text
+  state          String // US State code for form selection
+
+  // Claimant Information (Contractor/Sub/Supplier)
+  claimantName    String
+  claimantAddress String  @db.Text
+  claimantEmail   String?
+  claimantPhone   String?
+
+  // Owner Information
+  ownerName    String
+  ownerAddress String? @db.Text
+
+  // Payment Details
+  throughDate      DateTime // Payment period end date
+  waiverAmount     Decimal  @db.Decimal(18, 2) // Amount covered by this waiver
+  cumulativeAmount Decimal  @db.Decimal(18, 2) // Total amount to date
+
+  // Documents
+  documentUrl       String? // Generated waiver PDF URL
+  signedDocumentUrl String? // Signed waiver PDF URL
+  templateUsed      String? // Template identifier used
+
+  // Timestamps
+  generatedAt DateTime  @default(now())
+  sentAt      DateTime? // When sent for signature
+  signedAt    DateTime? // When signed
+  expiresAt   DateTime? // For conditional waivers
+  recordedAt  DateTime? // When officially recorded
+
+  // Metadata
+  metadata Json? // Additional clauses, notary info, etc.
+
+  // Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String // User ID who generated
+
+  // Relationships
+  contract          ContractAgreement     @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  project           Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  escrowTransaction EscrowTransaction?    @relation(fields: [escrowTransactionId], references: [id])
+  milestone         Milestone?            @relation(fields: [milestoneId], references: [id])
+  creator           User                  @relation("LienWaiverCreator", fields: [createdBy], references: [id])
+  signatures        LienWaiverSignature[]
+
+  @@index([contractId])
+  @@index([projectId])
+  @@index([status])
+  @@index([escrowTransactionId])
+  @@index([milestoneId])
+  @@index([generatedAt])
+  @@index([state])
+}
+
+model LienWaiverSignature {
+  id           String @id @default(uuid())
+  lienWaiverId String
+  signerId     String // User ID
+
+  // Signer Information
+  signerRole    LienWaiverSignerRole
+  signerName    String
+  signerTitle   String?
+  signerCompany String?
+  signerEmail   String
+
+  // Digital Signature
+  signatureImageUrl String? // URL to signature image
+  ipAddress         String? // IP address when signed
+  userAgent         String? // Browser/device info
+
+  // Electronic Consent
+  electronicConsentGiven Boolean   @default(false)
+  consentTimestamp       DateTime?
+
+  // Notarization (for states requiring it)
+  isNotarized      Boolean   @default(false)
+  notaryName       String?
+  notaryCommission String?
+  notaryExpiration DateTime?
+  notarySeal       String? // URL to notary seal image
+
+  // Third-party E-Signature Integration
+  docusignEnvelopeId String? // DocuSign envelope ID
+  docusignStatus     String? // DocuSign status
+  hellosignRequestId String? // HelloSign request ID
+
+  // Timestamps
+  signedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  lienWaiver LienWaiver @relation(fields: [lienWaiverId], references: [id], onDelete: Cascade)
+  signer     User       @relation("LienWaiverSigner", fields: [signerId], references: [id])
+
+  @@index([lienWaiverId])
+  @@index([signerId])
+  @@index([signedAt])
+}
+
+model Statement {
+  id            String        @id @default(uuid())
+  statementType StatementType
+  recipientId   String // User ID
+  recipientRole RecipientRole
+
+  // Period Coverage
+  periodStart DateTime
+  periodEnd   DateTime
+
+  // Content
+  documentUrl String? // URL to generated PDF
+  status      StatementStatus @default(GENERATED)
+
+  // Financial Summary (stored in metadata)
+  openingBalance   Decimal @db.Decimal(18, 2)
+  closingBalance   Decimal @db.Decimal(18, 2)
+  totalDeposits    Decimal @db.Decimal(18, 2)
+  totalReleases    Decimal @db.Decimal(18, 2)
+  totalFees        Decimal @db.Decimal(18, 2)
+  transactionCount Int     @default(0)
+
+  // Metadata
+  metadata Json? // Transaction details, charts data, etc.
+
+  // Timestamps
+  generatedAt DateTime  @default(now())
+  sentAt      DateTime?
+  viewedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relationships
+  recipient User @relation("StatementRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId])
+  @@index([statementType])
+  @@index([status])
+  @@index([periodStart, periodEnd])
+  @@index([generatedAt])
+}
+
+model StatementSchedule {
+  id            String        @id @default(uuid())
+  recipientId   String // User ID
+  statementType StatementType
+  frequency     String        @default("MONTHLY") // MONTHLY, QUARTERLY, ANNUAL
+
+  // Schedule Configuration
+  dayOfMonth     Int            @default(1) // Day of month to generate (1-31)
+  isActive       Boolean        @default(true)
+  deliveryMethod DeliveryMethod @default(EMAIL)
+
+  // Tracking
+  lastGenerated DateTime?
+  nextScheduled DateTime?
+
+  // Metadata
+  metadata Json? // Additional configuration
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  recipient User @relation("StatementScheduleRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId])
+  @@index([isActive])
+  @@index([nextScheduled])
+}
+
+model FinancialAuditEntry {
+  id             String  @id @default(uuid())
+  journalEntryId String? // Journal entry being audited
+  transactionId  String? // Transaction being audited
+  escrowId       String? // Escrow account being audited
+
+  // Audit Details
+  auditType   String           @default("REVIEW") // CREATION, MODIFICATION, REVERSAL, RECONCILIATION, REVIEW
+  auditorId   String // User ID performing audit
+  auditDate   DateTime         @default(now())
+  findingType AuditFindingType @default(PASS)
+
+  // Findings
+  notes         String? @db.Text
+  discrepancies Json? // Detailed discrepancies found
+  resolution    String? @db.Text
+  actionTaken   String? // What action was taken
+
+  // Verification (Dual Control)
+  verifiedBy String? // Secondary auditor
+  verifiedAt DateTime?
+  isVerified Boolean   @default(false)
+
+  // Amount Verification
+  expectedAmount Decimal? @db.Decimal(18, 2)
+  actualAmount   Decimal? @db.Decimal(18, 2)
+  variance       Decimal? @db.Decimal(18, 2)
+
+  // Compliance
+  isCompliant Boolean  @default(true)
+  violations  String[] // List of violations found
+
+  // Metadata
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  auditor  User  @relation("FinancialAuditAuditor", fields: [auditorId], references: [id])
+  verifier User? @relation("FinancialAuditVerifier", fields: [verifiedBy], references: [id])
+
+  @@index([journalEntryId])
+  @@index([transactionId])
+  @@index([escrowId])
+  @@index([auditorId])
+  @@index([auditDate])
+  @@index([findingType])
+  @@index([isVerified])
+}
+
+model PaymentMethod {
+  id                    String   @id @default(uuid())
+  userId                String
+  type                  String // CARD, ACH, WIRE
+  stripePaymentMethodId String   @unique
+  last4                 String
+  brand                 String?
+  bankName              String?
+  isDefault             Boolean  @default(false)
+  isVerified            Boolean  @default(false)
+  status                String   @default("ACTIVE") // ACTIVE, VERIFICATION_PENDING, FAILED, REMOVED
+  expiryMonth           Int?
+  expiryYear            Int?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  user            User             @relation("UserPaymentMethods", fields: [userId], references: [id], onDelete: Cascade)
+  depositRequests DepositRequest[] @relation("PaymentMethodDepositRequests")
+
+  @@index([userId])
+  @@index([stripePaymentMethodId])
+  @@index([status])
+  @@index([type])
+  @@index([isDefault])
+}
+
+model DepositRequest {
+  id                    String    @id @default(uuid())
+  escrowId              String // CORRECT FIELD NAME (not escrowAgreementId!)
+  paymentMethodId       String
+  userId                String
+  amount                Decimal   @db.Decimal(18, 2)
+  currency              String    @default("USD")
+  status                String    @default("PENDING") // PENDING, PROCESSING, CLEARING, COMPLETED, FAILED, CANCELLED, REFUNDED
+  requiresVerification  Boolean   @default(false)
+  expectedClearanceDate DateTime?
+  stripePaymentIntentId String?   @unique
+  stripeChargeId        String?
+  failureReason         String?
+  failureCode           String?
+  retryCount            Int       @default(0)
+  createdAt             DateTime  @default(now())
+  clearedAt             DateTime?
+  updatedAt             DateTime  @updatedAt
+
+  // Relations
+  escrow        EscrowAgreement @relation("EscrowDepositRequests", fields: [escrowId], references: [id], onDelete: Cascade)
+  paymentMethod PaymentMethod   @relation("PaymentMethodDepositRequests", fields: [paymentMethodId], references: [id], onDelete: Restrict)
+  user          User            @relation("UserDepositRequests", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([escrowId])
+  @@index([paymentMethodId])
+  @@index([userId])
+  @@index([status])
+  @@index([stripePaymentIntentId])
+  @@index([escrowId, status])
+  @@index([createdAt])
+}
+
+model TaxForm {
+  id          String    @id @default(uuid())
+  userId      String // CORRECT FIELD NAME (not recipientId!)
+  taxYear     Int
+  formType    String // 1099_NEC, 1099_K, W9
+  totalAmount Decimal   @db.Decimal(18, 2)
+  status      String    @default("NOT_FILED") // NOT_FILED, FILED, 1099_READY, NOT_REQUIRED
+  filedAt     DateTime?
+  sentAt      DateTime?
+  documentUrl String?
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  user User @relation("UserTaxForms", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([taxYear])
+  @@index([formType])
+  @@index([status])
+  @@index([userId, taxYear])
+  @@index([userId, formType, taxYear])
+}
+
+model Payment {
+  id                    String    @id @default(uuid())
+  orgId                 String?
+  projectId             String?
+  subscriptionId        String?
+  stripeInvoiceId       String?
+  stripePaymentIntentId String?   @unique
+  amount                Decimal   @db.Decimal(10, 2)
+  currency              String    @default("usd")
+  status                String // completed, failed, pending, refunded
+  paidAt                DateTime?
+  failedAt              DateTime?
+  refundedAt            DateTime?
+  refundAmount          Decimal?  @db.Decimal(10, 2)
+  metadata              Json?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  financingApplicationId String?
+
+  project                Project?              @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  financingApplication   FinancingApplication? @relation("FinancingPayments", fields: [financingApplicationId], references: [id], onDelete: SetNull)
+  // org          Org?              @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  // subscription ServiceSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([orgId])
+  @@index([projectId])
+  @@index([subscriptionId])
+  @@index([stripePaymentIntentId])
+  @@index([financingApplicationId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([status, createdAt])
+}
+
+model Invoice {
+  id               String    @id @default(uuid())
+  orgId            String?
+  subscriptionId   String?
+  stripeInvoiceId  String    @unique
+  invoiceNumber    String?
+  amount           Decimal   @db.Decimal(10, 2)
+  currency         String    @default("usd")
+  status           String // draft, open, paid, uncollectible, void
+  periodStart      DateTime?
+  periodEnd        DateTime?
+  paidAt           DateTime?
+  hostedInvoiceUrl String?
+  invoicePdf       String?
+  metadata         Json?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // org          Org?              @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  // subscription ServiceSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([orgId])
+  @@index([subscriptionId])
+  @@index([stripeInvoiceId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([status, createdAt])
+}
+
+// Platform Fee - Tracks all fees owed to Kealee platform
+model PlatformFee {
+  id              String  @id @default(uuid())
+  preConProjectId String?
+  projectId       String?
+  contractId      String?
+
+  // Fee Details
+  feeType  PlatformFeeType
+  amount   Decimal         @db.Decimal(12, 2)
+  currency String          @default("USD")
+
+  // Calculation
+  baseAmount    Decimal? @db.Decimal(12, 2) // Contract amount or base
+  feePercentage Decimal? @db.Decimal(5, 4) // e.g., 0.0350 = 3.5%
+  flatFee       Decimal? @db.Decimal(12, 2)
+
+  // Status
+  status PlatformFeeStatus @default(PENDING)
+
+  // Payment Method: GUARANTEED at Contract Ratification
+  // Fee is held in escrow from contractor's first milestone payment
+  escrowHoldId          String? // Links to escrow hold
+  stripePaymentIntentId String?
+  stripeTransferId      String?
+
+  // Collection
+  collectedAt      DateTime?
+  collectedAmount  Decimal?  @db.Decimal(12, 2)
+  collectionMethod String? // ESCROW_DEDUCTION, DIRECT_CHARGE, INVOICE
+
+  // Payer Info
+  payerId   String? // User or Profile ID
+  payerType String? // OWNER, CONTRACTOR
+
+  // Refund
+  refundedAt   DateTime?
+  refundAmount Decimal?  @db.Decimal(12, 2)
+  refundReason String?
+
+  // Metadata
+  description   String?
+  invoiceNumber String?
+  notes         String? @db.Text
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  dueAt     DateTime?
+
+  // Relationships
+  preConProject PreConProject? @relation(fields: [preConProjectId], references: [id])
+
+  @@index([preConProjectId])
+  @@index([projectId])
+  @@index([feeType])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model PlatformFeeConfig {
+  id String @id @default(uuid())
+
+  // Fee Configuration
+  feeType     PlatformFeeType @unique
+  name        String
+  description String?
+
+  // Rates
+  flatFee       Decimal? @db.Decimal(12, 2)
+  percentageFee Decimal? @db.Decimal(5, 4) // e.g., 0.035 = 3.5%
+  minimumFee    Decimal? @db.Decimal(12, 2)
+  maximumFee    Decimal? @db.Decimal(12, 2)
+
+  // Tiers (for design packages)
+  tierPricing Json? // { BASIC: 199, STANDARD: 499, PREMIUM: 999 }
+
+  // Active
+  isActive       Boolean   @default(true)
+  effectiveFrom  DateTime  @default(now())
+  effectiveUntil DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ScheduledPayment {
+  id            String    @id @default(uuid())
+  projectId     String
+  milestoneId   String?
+  contractorId  String?
+  description   String
+  amount        Decimal   @db.Decimal(14, 2)
+  scheduledDate DateTime
+  status        String    @default("SCHEDULED") // SCHEDULED, PENDING_APPROVAL, APPROVED, PAID, CANCELLED
+  paymentType   String // PROGRESS, MILESTONE, RETENTION, FINAL
+  invoiceNumber String?
+  paidAt        DateTime?
+  notes         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([scheduledDate])
+  @@index([status])
+  @@map("scheduled_payments")
+}
+
+// Receipt tracking with OCR (Guide Section 5 - During Project)
+model Receipt {
+  id           String @id @default(uuid())
+  projectId    String
+  uploadedById String
+
+  // Receipt information
+  vendor       String?
+  amount       Decimal?  @db.Decimal(12, 2)
+  category     String? // "Materials", "Equipment Rental", "Subcontractor", etc.
+  purchaseDate DateTime?
+
+  // File reference
+  fileUploadId String? @unique
+  imageUrl     String // Original receipt image
+
+  // OCR extracted data
+  ocrRawData    Json? // Raw OCR output
+  ocrConfidence Float? // OCR confidence score (0-1)
+
+  // Budget tracking
+  budgetLineItemId String?
+  isApproved       Boolean   @default(false)
+  approvedBy       String?
+  approvedAt       DateTime?
+
+  // Notes
+  notes         String? @db.Text
+  internalNotes String? @db.Text // PM-only notes
+
+  // Status
+  status String @default("PENDING") // PENDING, APPROVED, REJECTED, DISPUTED
+
+  // Metadata
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project    Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadedBy User        @relation("ReceiptUploadedBy", fields: [uploadedById], references: [id])
+  fileUpload FileUpload? @relation(fields: [fileUploadId], references: [id])
+
+  @@index([projectId])
+  @@index([uploadedById])
+  @@index([status])
+  @@index([purchaseDate])
+  @@map("receipts")
+}
+
+model MilestoneApproval {
+  id           String         @id @default(uuid())
+  milestoneId  String
+  approverType ApproverType
+  approverId   String
+  status       ApprovalStatus @default(PENDING)
+  notes        String?
+  createdAt    DateTime       @default(now())
+  decidedAt    DateTime?
+
+  milestone Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  approver  User      @relation("MilestoneApprover", fields: [approverId], references: [id])
+
+  @@index([milestoneId])
+  @@index([approverId])
+  @@index([approverType, status])
+}
+
+model Product {
+  id             String          @id @default(uuid())
+  name           String
+  description    String?
+  sku            String          @unique
+  category       ProductCategory
+  brand          String?
+  manufacturer   String?
+  unitPrice      Decimal         @db.Decimal(18, 2)
+  unitOfMeasure  String?
+  leadTimeDays   Int?
+  supplier       String?
+  imageUrl       String?
+  arModelUrl     String?
+  dimensions     Json?
+  specifications Json?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  projectItems ProjectItem[]
+
+  @@index([category])
+  @@index([sku])
+}
+
+model ProjectItem {
+  id          String    @id @default(uuid())
+  projectId   String
+  productId   String
+  quantity    Int       @default(1)
+  unitPrice   Decimal   @db.Decimal(18, 2)
+  totalPrice  Decimal   @db.Decimal(18, 2)
+  installed   Boolean   @default(false)
+  installedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([projectId])
+  @@index([productId])
+}
+
+// ── Stripe Product Catalog ────────────────────────────────────
+model StripeProduct {
+  id          String   @id
+  name        String
+  description String?
+  price       Int      // price in cents
+  interval    String?  // "month", "year", null for one-time
+  productType String   // "concept", "pm_package", "architecture", "permit"
+  tierLevel   String?  // "basic", "enhanced", "premium"
+  active      Boolean  @default(true)
+
+  @@map("stripe_products")
+}
+
+model ConceptPackageOrder {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation("ConceptPackageOrderUser", fields: [userId], references: [id])
+  stripeSessionId       String    @unique
+  stripePaymentIntentId String?
+  packageTier           String    // essential, professional, premium, white-glove
+  packageName           String
+  amount                Int       // cents
+  currency              String    @default("usd")
+  status                String    @default("completed") // completed, refunded, disputed
+  deliveryStatus        String    @default("pending")   // pending, generating, ready, delivered
+  deliveryUrl           String?
+  deliveredAt           DateTime?
+  metadata              Json?
+  funnelSessionId       String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([deliveryStatus])
+  @@map("concept_package_orders")
+}
+
+// Reusable milestone payment templates
+model PaymentScheduleTemplate {
+  id    String @id @default(uuid())
+  orgId String
+
+  // Template info
+  name          String
+  description   String?
+  projectType   String?   // "residential", "commercial", "renovation"
+  isDefault     Boolean   @default(false)
+
+  // Milestones
+  milestones    Json      // Array of { name, percentOfTotal, description, requiredDocs }
+  totalMilestones Int     @default(0)
+
+  // Usage
+  usageCount    Int       @default(0)
+  lastUsedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orgId])
+  @@index([projectType])
+  @@map("payment_schedule_templates")
+}
+
+// Escrow reconciliation snapshots
+model EscrowReconciliation {
+  id        String @id @default(uuid())
+  projectId String
+  orgId     String
+
+  // Reconciliation period
+  periodStart     DateTime
+  periodEnd       DateTime
+  reconciliationDate DateTime @default(now())
+
+  // Balances
+  expectedBalance   Decimal  @db.Decimal(14, 2)
+  actualBalance     Decimal  @db.Decimal(14, 2)
+  discrepancy       Decimal  @db.Decimal(14, 2) @default(0)
+
+  // Details
+  totalDeposits     Decimal  @db.Decimal(14, 2) @default(0)
+  totalDisbursements Decimal @db.Decimal(14, 2) @default(0)
+  totalHolds        Decimal  @db.Decimal(14, 2) @default(0)
+
+  // Discrepancy tracking
+  hasDiscrepancy    Boolean  @default(false)
+  discrepancyItems  Json?    // Array of { description, amount, type, resolvedAt }
+  discrepancyResolved Boolean @default(false)
+  resolvedAt        DateTime?
+  resolvedBy        String?
+  resolutionNotes   String?
+
+  // Status
+  status            String   @default("DRAFT") // DRAFT, PENDING_REVIEW, APPROVED, FLAGGED
+  reviewedBy        String?
+  approvedBy        String?
+  approvedAt        DateTime?
+
+  // Documents
+  reportUrl         String?
+  attachments       Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([orgId])
+  @@index([periodEnd])
+  @@index([hasDiscrepancy])
+  @@map("escrow_reconciliations")
+}

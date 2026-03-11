@@ -1,0 +1,48 @@
+// BIM — Enums
+// Domain: bim | Owner: OS-PM service
+
+enum BIMElementType {
+  WALL
+  FLOOR
+  CEILING
+  ROOF
+  DOOR
+  WINDOW
+  STAIR
+  COLUMN
+  BEAM
+  SLAB
+  FOUNDATION
+  MECHANICAL
+  ELECTRICAL
+  PLUMBING
+  FIRE_PROTECTION
+  SITE
+  FURNITURE
+  OTHER
+}
+
+enum BIMElementStatus {
+  PLANNED
+  IN_PROGRESS
+  INSTALLED
+  INSPECTED
+  APPROVED
+  DEFICIENT
+}
+
+enum ModelConversionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ViewerLayerType {
+  DESIGN
+  PERMIT
+  CONSTRUCTION
+  FINANCIAL
+  OPERATIONS
+  LAND
+}

@@ -1,0 +1,10 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "cd ../.. && pnpm install --frozen-lockfile && pnpm turbo build --filter=./apps/portal-contractor"
+watchPatterns = ["apps/portal-contractor/**", "packages/**"]
+
+[deploy]
+startCommand = "cd apps/portal-contractor && npx next start -p ${PORT:-3002}"
+healthcheckPath = "/"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10

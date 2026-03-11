@@ -119,13 +119,12 @@ export default function CampaignPage({ campaign }: Props) {
                 <select required style={{ width: '100%', padding: '0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
                   value={formData.projectType} onChange={e => setFormData({...formData, projectType: e.target.value})}>
                   <option value="">Select One</option>
+                  <option value="renovation">Renovation / Remodel</option>
                   <option value="home-addition">Home Addition</option>
-                  <option value="kitchen-remodel">Kitchen Remodel</option>
-                  <option value="bathroom-remodel">Bathroom Remodel</option>
-                  <option value="exterior-siding">Exterior Siding</option>
-                  <option value="deck-patio">Deck or Patio</option>
-                  <option value="roof-replacement">Roof Replacement</option>
-                  <option value="whole-home-renovation">Whole Home Renovation</option>
+                  <option value="new-home">New Home Construction</option>
+                  <option value="commercial">Commercial Build-Out</option>
+                  <option value="multifamily">Multifamily Development</option>
+                  <option value="mixed-use">Mixed-Use Development</option>
                   <option value="other">Other</option>
                 </select>
               </div>
@@ -155,12 +154,12 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
     headline: 'See Your Dream Home Renovation in 3D - From $99',
     subheadline: 'AI-Powered Design Concepts Ready in 48 Hours',
     benefits: [
-      'AI-Generated 3D Concepts Starting at $99',
-      'Choose from 3 Package Levels ($99, $499, $899)',
-      'Approve Your Design Before Major Architect Costs',
-      'Full Architectural Services Available After Approval',
-      'Kealee Platform - Track Everything in Real-Time',
-      '20+ Years Serving DC, MD, VA & Nationwide'
+      'Digital Twin for Every Project — L1/L2/L3 Tiers',
+      '7 Integrated Operating Systems (Land to Ops)',
+      '13 AI KeaBot Assistants Powered by Claude',
+      'Escrow-Protected Milestone Payments (7-Step Schedule)',
+      'Full 12-Phase Lifecycle Tracking',
+      'Serving DC-Baltimore Corridor & Beyond'
     ]
   };
 

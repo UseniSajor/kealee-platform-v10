@@ -1,0 +1,68 @@
+// PM — REPORTS
+// Domain: pm | Owner: OS-PM service
+
+model Report {
+  id          String    @id @default(uuid())
+  projectId   String?
+  type        String
+  title       String
+  description String?
+  data        Json?
+  status      String    @default("DRAFT")
+  generatedBy String?
+  periodStart DateTime?
+  periodEnd   DateTime?
+  generatedAt DateTime?
+  content     Json?
+  narrative   String?   @db.Text
+  templateId  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project  Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  template ReportTemplate? @relation(fields: [templateId], references: [id])
+
+  @@index([projectId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// APP-04: Weekly Report
+model WeeklyReport {
+  id        String   @id @default(uuid())
+  projectId String
+  weekStart DateTime
+  weekEnd   DateTime
+
+  summary String @db.Text // AI-generated
+  metrics Json
+  risks   Json?
+
+  photos       String[]
+  fileUrl      String?
+  sentToClient Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([weekEnd])
+  @@map("weekly_reports")
+}
+
+model ReportTemplate {
+  id        String   @id @default(uuid())
+  name      String
+  type      String   // DAILY, WEEKLY, MONTHLY, MILESTONE, CUSTOM, etc.
+  sections  Json     // Array of section definitions
+  styling   Json?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reports Report[]
+
+  @@map("report_templates")
+}

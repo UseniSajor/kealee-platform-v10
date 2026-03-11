@@ -1,0 +1,1090 @@
+// PM — Enums
+// Auto-generated from schema splitter
+
+enum OnboardingStepStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+}
+
+enum TemplateCategory {
+  DETAIL
+  SCHEDULE
+  SHEET
+  SPECIFICATION
+  CALCULATION
+  STANDARD_DETAIL
+}
+
+enum TemplateStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum JurisdictionStatus {
+  ACTIVE
+  INACTIVE
+  PENDING_SETUP
+}
+
+enum SubscriptionTier {
+  BASIC
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum StaffRole {
+  PLAN_REVIEWER
+  INSPECTOR
+  PERMIT_COORDINATOR
+  ADMINISTRATOR
+}
+
+// ENUMS
+enum PermitType {
+  BUILDING
+  ELECTRICAL
+  PLUMBING
+  MECHANICAL
+  FIRE
+  GRADING
+  DEMOLITION
+  SIGN
+  FENCE
+  ROOFING
+  HVAC
+  SOLAR
+  POOL
+}
+
+enum PermitStatus {
+  DRAFT
+  AI_PRE_REVIEW
+  READY_TO_SUBMIT
+  SUBMITTED
+  UNDER_REVIEW
+  CORRECTIONS_REQUESTED
+  RESUBMITTED
+  APPROVED
+  ISSUED
+  ACTIVE
+  INSPECTION_HOLD
+  EXPIRED
+  COMPLETED
+  CANCELLED
+  REJECTED
+}
+
+enum ApplicantType {
+  OWNER
+  CONTRACTOR
+  ARCHITECT
+  ENGINEER
+  DESIGN_BUILDER
+  DEVELOPER
+}
+
+enum ReviewDiscipline {
+  ZONING
+  BUILDING
+  STRUCTURAL
+  ELECTRICAL
+  PLUMBING
+  MECHANICAL
+  FIRE
+  ENERGY
+  ACCESSIBILITY
+  ENVIRONMENTAL
+  HEALTH
+  TRANSPORTATION
+}
+
+enum InspectionType {
+  SITE
+  FOOTING
+  FOUNDATION
+  SLAB
+  UNDER_SLAB_PLUMBING
+  ROUGH_FRAMING
+  ROUGH_ELECTRICAL
+  ROUGH_PLUMBING
+  ROUGH_MECHANICAL
+  INSULATION
+  GYPSUM_BOARD
+  FINAL_ELECTRICAL
+  FINAL_PLUMBING
+  FINAL_MECHANICAL
+  FINAL_BUILDING
+  FINAL_FIRE
+  CERTIFICATE_OF_OCCUPANCY
+  SPECIAL_INSPECTION
+  REINSPECTION
+}
+
+enum InspectionResult {
+  PASS
+  PASS_WITH_COMMENTS
+  FAIL
+  PARTIAL_PASS
+  CANCELLED
+  NOT_READY
+}
+
+enum AIReviewSource {
+  CLIENT_SIDE_PRE_REVIEW
+  JURISDICTION_SIDE_ASSIST
+  REMOTE_INSPECTION_ANALYSIS
+  DOCUMENT_COMPLIANCE_CHECK
+}
+
+enum DocumentType {
+  SITE_PLAN
+  FLOOR_PLAN
+  ELEVATION
+  STRUCTURAL_CALCS
+  ENERGY_CALCS
+  SURVEY
+  PROOF_OF_OWNERSHIP
+  HOA_APPROVAL
+  ENGINEERING_STAMP
+  ARCHITECTURAL_STAMP
+  OTHER
+}
+
+enum RoutingStatus {
+  PENDING
+  ROUTED
+  IN_REVIEW
+  COMPLETED
+  RE_ROUTED
+  ESCALATED
+}
+
+enum EscalationReason {
+  DELAYED_REVIEW
+  OVERDUE
+  NO_ASSIGNMENT
+  WORKLOAD_OVERFLOW
+  QUALITY_CONCERN
+}
+
+enum ProjectPhaseType {
+  PRE_CONSTRUCTION // Planning, permits, design
+  SITE_PREPARATION // Demolition, grading, utilities
+  FOUNDATION // Excavation, footings, foundation walls
+  FRAMING // Structural framing, roof structure
+  ROUGH_IN // Electrical, plumbing, HVAC rough
+  EXTERIOR // Siding, roofing, windows, doors
+  INSULATION // Insulation, vapor barriers
+  DRYWALL // Drywall, taping, texturing
+  INTERIOR_FINISHES // Cabinets, flooring, trim, paint
+  MEP_FINISH // Electrical/plumbing/HVAC finish
+  FINAL_INSPECTION // Inspections, punch list
+  CLOSEOUT // Final walkthrough, handover
+  WARRANTY // Post-completion warranty period
+  CUSTOM // Custom phase for unique projects
+}
+
+enum ProjectPhaseStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  ON_HOLD
+  DELAYED
+  COMPLETED
+  SKIPPED
+}
+
+enum PreConPhase {
+  INTAKE // Initial project request submitted
+  DESIGN_IN_PROGRESS // Design concepts being created
+  DESIGN_REVIEW // Owner reviewing concepts
+  DESIGN_APPROVED // Owner approved final design
+  SRP_GENERATED // Suggested Retail Price calculated
+  MARKETPLACE_READY // Ready for contractor bids
+  BIDDING_OPEN // Actively receiving bids
+  AWARDED // Contractor selected
+  CONTRACT_PENDING // Contract being prepared
+  CONTRACT_RATIFIED // Contract signed - fees collected
+  COMPLETED // Pre-con complete, project started
+}
+
+enum DesignPackageTier {
+  BASIC // $199 - Basic concept sketches
+  STANDARD // $499 - Detailed designs with 3D
+  PREMIUM // $999 - Full architectural package
+}
+
+enum CostDatabaseType {
+  NATIONAL
+  REGIONAL
+  LOCAL
+  CUSTOM
+  IMPORTED
+}
+
+enum CostDatabaseTier {
+  STANDARD // Tier 1: Kealee base cost book — admin upload/remove only
+  COMMUNITY // Tier 2: User-uploaded, curated — feeds AI & platform intelligence
+  ORGANIZATION // Tier 3: Private org-scoped — customizable per user/org
+}
+
+enum CostDataVisibility {
+  PUBLIC // Visible to all authenticated users (standard books)
+  AI_STAFF_ONLY // Visible to platform AI and Kealee staff only (community data)
+  ORG_ONLY // Visible only to the uploading organization (private)
+  ADMIN_ONLY // Visible only to Kealee admin (internal reference)
+}
+
+enum CostDataReviewStatus {
+  DRAFT // Just uploaded, not yet submitted for review
+  PENDING_REVIEW // Submitted for Kealee admin review
+  APPROVED // Approved by admin — available per visibility rules
+  REJECTED // Rejected by admin — not available
+  ARCHIVED // Previously approved, now archived
+}
+
+enum MaterialCategory {
+  CONCRETE
+  MASONRY
+  METALS
+  WOOD_PLASTICS_COMPOSITES
+  THERMAL_MOISTURE
+  OPENINGS
+  FINISHES
+  SPECIALTIES
+  EQUIPMENT_MATERIAL
+  FURNISHINGS
+  SPECIAL_CONSTRUCTION
+  CONVEYING
+  FIRE_SUPPRESSION
+  PLUMBING_MATERIAL
+  HVAC_MATERIAL
+  ELECTRICAL_MATERIAL
+  COMMUNICATIONS
+  ELECTRONIC_SAFETY
+  EARTHWORK
+  EXTERIOR_IMPROVEMENTS
+  UTILITIES
+  GENERAL_CONDITIONS
+  OTHER_MATERIAL
+}
+
+enum LaborTrade {
+  GENERAL_LABOR
+  CARPENTER
+  ELECTRICIAN
+  PLUMBER
+  HVAC_TECHNICIAN
+  PAINTER
+  DRYWALL_FINISHER
+  TILE_SETTER
+  ROOFER
+  MASON
+  CONCRETE_FINISHER
+  IRONWORKER
+  SHEET_METAL_WORKER
+  INSULATOR
+  GLAZIER
+  FLOORING_INSTALLER
+  CABINET_MAKER
+  DEMOLITION
+  EXCAVATOR_OPERATOR
+  CRANE_OPERATOR
+  FOREMAN
+  SUPERINTENDENT
+  PROJECT_MANAGER_LABOR
+  SAFETY_OFFICER
+  OTHER_LABOR
+}
+
+enum EquipmentCategory {
+  EXCAVATION
+  LIFTING
+  CONCRETE_EQUIP
+  COMPACTION
+  HAULING
+  SCAFFOLDING
+  POWER_TOOLS
+  SAFETY_EQUIP
+  TEMPORARY_FACILITIES
+  SURVEYING
+  TESTING_EQUIP
+  CLEANING_EQUIP
+  OTHER_EQUIP
+}
+
+enum AssemblyCategory {
+  SITEWORK
+  FOUNDATIONS
+  CONCRETE_FLATWORK
+  FRAMING
+  ROOFING_ASSEMBLY
+  EXTERIOR_FINISHES
+  INTERIOR_FINISHES
+  DRYWALL
+  PAINTING
+  FLOORING
+  TILE
+  CABINETRY
+  COUNTERTOPS
+  DOORS_HARDWARE
+  WINDOWS
+  PLUMBING_ROUGH
+  PLUMBING_FINISH
+  ELECTRICAL_ROUGH
+  ELECTRICAL_FINISH
+  HVAC_ROUGH
+  HVAC_FINISH
+  INSULATION_ASSEMBLY
+  DEMOLITION_ASSEMBLY
+  CLEANUP
+  PERMITS_FEES
+  GENERAL_CONDITIONS_ASSEMBLY
+  OTHER_ASSEMBLY
+}
+
+enum AssemblyComplexity {
+  SIMPLE
+  STANDARD
+  COMPLEX
+  CUSTOM_COMPLEXITY
+}
+
+enum AssemblyItemType {
+  MATERIAL_ITEM
+  LABOR_ITEM
+  EQUIPMENT_ITEM
+  SUBCONTRACTOR_ITEM
+  OTHER_ITEM
+}
+
+enum EstimateType {
+  QUICK_BUDGET
+  CONCEPTUAL
+  PRELIMINARY
+  DETAILED
+  BID_ESTIMATE
+  CHANGE_ORDER_ESTIMATE
+  VALUE_ENGINEERING
+  AS_BUILT
+}
+
+enum EstimateStatus {
+  DRAFT_ESTIMATE
+  IN_PROGRESS_ESTIMATE
+  UNDER_REVIEW_ESTIMATE
+  PENDING_APPROVAL_ESTIMATE
+  APPROVED_ESTIMATE
+  SENT_ESTIMATE
+  ACCEPTED_ESTIMATE
+  REJECTED_ESTIMATE
+  EXPIRED_ESTIMATE
+  SUPERSEDED
+  ARCHIVED_ESTIMATE
+}
+
+enum EstimationServiceType {
+  QUICK_BUDGET_SERVICE
+  BASIC_TAKEOFF
+  DETAILED_ESTIMATE_SERVICE
+  ESTIMATE_REVIEW
+  PROFESSIONAL_BID
+  ENTERPRISE_SERVICE
+  MONTHLY_SUPPORT
+}
+
+enum LineItemType {
+  MATERIAL_LINE
+  LABOR_LINE
+  EQUIPMENT_LINE
+  ASSEMBLY_LINE
+  SUBCONTRACTOR_LINE
+  ALLOWANCE_LINE
+  FEE_LINE
+  OTHER_LINE
+}
+
+enum TakeoffSource {
+  MANUAL
+  PLAN_MEASUREMENT
+  AI_EXTRACTED
+  IMPORTED
+  ASSEMBLY_CALC
+}
+
+enum ImportJobStatus {
+  PENDING
+  UPLOADING
+  EXTRACTING
+  STRUCTURING
+  IMPORTING
+  COMPLETED
+  FAILED
+}
+
+// Enhanced file upload tracking (Guide Section 10)
+enum FileCategory {
+  // Site & Progress
+  SITE_PHOTO
+  PROGRESS_PHOTO
+  INSPECTION_CORRECTION_PHOTO
+  EXISTING_CONDITION_PHOTO
+
+  // Financial
+  RECEIPT
+  INVOICE
+  SUBCONTRACTOR_INVOICE
+  LIEN_WAIVER
+
+  // Legal & Compliance
+  LICENSE
+  INSURANCE_CERTIFICATE
+  WORKERS_COMP_CERTIFICATE
+  PERMIT_DOCUMENT
+  PERMIT_APPLICATION
+  PERMIT_APPROVAL
+
+  // Design & Plans
+  FLOOR_PLAN
+  DESIGN_FILE
+  STAMPED_DRAWING
+  AS_BUILT
+  SPECIFICATION
+  RENDERING
+
+  // Portfolio & Marketing
+  PORTFOLIO_PHOTO
+  COMPANY_LOGO
+  PROFILE_PHOTO
+
+  // Project Documents
+  CONTRACT
+  CHANGE_ORDER
+  WARRANTY
+  CLOSEOUT_PACKAGE
+
+  // Other
+  OTHER
+}
+
+enum UploadedByRole {
+  HOMEOWNER
+  DEVELOPER
+  PROPERTY_MANAGER
+  CONTRACTOR
+  SUBCONTRACTOR
+  ARCHITECT
+  ENGINEER
+  KEALEE_PM
+  KEALEE_ADMIN
+}
+
+enum TaskStatus {
+  PENDING
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELED
+}
+
+enum RFIStatus {
+  DRAFT
+  OPEN
+  ANSWERED
+  CLOSED
+  VOID
+}
+
+enum RFIPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum SubmittalStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  APPROVED_AS_NOTED
+  REJECTED
+  REVISE_RESUBMIT
+}
+
+enum SubmittalType {
+  PRODUCT_DATA
+  SHOP_DRAWING
+  SAMPLE
+  MOCK_UP
+  DESIGN_MIX
+  TEST_REPORT
+  CERTIFICATE
+  MAINTENANCE_DATA
+}
+
+enum BallInCourt {
+  PM
+  ARCHITECT
+  OWNER
+  CONTRACTOR
+}
+
+enum ConflictStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+}
+
+enum ChecklistStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETE
+}
+
+enum MeetingType {
+  OAC
+  PROGRESS
+  SAFETY
+  PRECONSTRUCTION
+  COORDINATION
+  OWNER
+  SUBCONTRACTOR
+  CLOSEOUT
+}
+
+enum MeetingStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum SelectionStatus {
+  PENDING
+  OPTIONS_PROVIDED
+  SELECTED
+  APPROVED
+  ORDERED
+  INSTALLED
+}
+
+enum WarrantyStatus {
+  ACTIVE
+  EXPIRING_SOON
+  EXPIRED
+  CLAIMED
+}
+
+enum ClaimStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  DENIED
+  RESOLVED
+}
+
+enum TimeEntryType {
+  REGULAR
+  OVERTIME
+  DOUBLE_TIME
+  PTO
+  HOLIDAY
+}
+
+enum IncidentSeverity {
+  NEAR_MISS
+  FIRST_AID
+  MEDICAL
+  LOST_TIME
+  FATALITY
+}
+
+enum IncidentStatus {
+  REPORTED
+  INVESTIGATING
+  CORRECTIVE_ACTION
+  CLOSED
+}
+
+enum DrawingDiscipline {
+  ARCHITECTURAL
+  STRUCTURAL
+  MECHANICAL
+  ELECTRICAL
+  PLUMBING
+  CIVIL
+  LANDSCAPE
+  FIRE_PROTECTION
+  INTERIORS
+  TELECOMMUNICATIONS
+  OTHER_DISCIPLINE
+}
+
+enum DrawingStatus {
+  CURRENT
+  SUPERSEDED
+  VOID
+  FOR_REVIEW
+  DRAWING_APPROVED
+}
+
+enum EstimateAction {
+  CREATED
+  UPDATED
+  STATUS_CHANGED
+  SUBMITTED
+  REVIEWED
+  APPROVED_ACTION
+  REJECTED_ACTION
+  SENT_ACTION
+  REVISED
+  EXPORTED
+  ARCHIVED_ACTION
+}
+
+enum TakeoffType {
+  GENERAL
+  SITEWORK
+  STRUCTURAL
+  ARCHITECTURAL
+  MECHANICAL
+  ELECTRICAL
+  PLUMBING
+  FIRE_PROTECTION
+}
+
+enum TakeoffStatus {
+  NOT_STARTED
+  TAKEOFF_IN_PROGRESS
+  TAKEOFF_COMPLETED
+  VERIFIED
+}
+
+enum MeasurementType {
+  LINEAR
+  AREA_MEASUREMENT
+  VOLUME_MEASUREMENT
+  COUNT_MEASUREMENT
+  WEIGHT
+}
+
+enum EstimationOrderStatus {
+  ORDER_PENDING
+  ORDER_PAID
+  ORDER_ASSIGNED
+  ORDER_IN_PROGRESS
+  ORDER_UNDER_REVIEW
+  ORDER_COMPLETED
+  ORDER_DELIVERED
+  ORDER_REVISION_REQUESTED
+  ORDER_CANCELLED
+  ORDER_REFUNDED
+}
+
+enum OrderPriority {
+  ORDER_LOW
+  ORDER_NORMAL
+  ORDER_HIGH
+  ORDER_RUSH
+}
+
+enum QualityLevel {
+  ECONOMY
+  STANDARD_QUALITY
+  PREMIUM
+  LUXURY
+  CUSTOM_QUALITY
+}
+
+enum AISessionType {
+  PLAN_ANALYSIS
+  SCOPE_EXTRACTION
+  COST_PREDICTION
+  ASSEMBLY_SUGGESTION
+  VALUE_ENGINEERING_AI
+  RISK_ASSESSMENT
+}
+
+enum AIEstSessionStatus {
+  AI_EST_ACTIVE
+  AI_EST_PROCESSING
+  AI_EST_COMPLETED
+  AI_EST_FAILED
+  AI_EST_CANCELLED
+}
+
+enum CostDataReviewAction {
+  SUBMITTED // User submitted for review
+  APPROVED // Admin approved
+  REJECTED // Admin rejected
+  REQUESTED_CHANGES // Admin requested edits before approval
+  ARCHIVED // Admin archived previously approved data
+  RESTORED // Admin restored archived data
+}
+
+enum AutoDesignStatus {
+  INTAKE // Owner providing preferences
+  GENERATING // AI actively generating options
+  REVIEW // Owner reviewing AI options
+  REVISION // Owner requested changes, AI regenerating (max 5 rounds)
+  FINAL_SELECTION // 5 revisions used — AI presents 3 final versions to choose from
+  APPROVED // Owner approved one of the 3 final versions
+  DESIGNER_MEETING // Post-approval: designer meets owner for minor additions/cleanup
+  READY_FOR_HANDOFF // Meeting complete, ready for architect queue
+  HANDED_OFF // Assigned to architect
+  CANCELLED
+}
+
+enum AutoDesignStyle {
+  MODERN
+  CONTEMPORARY
+  TRADITIONAL
+  CRAFTSMAN
+  FARMHOUSE
+  COLONIAL
+  MEDITERRANEAN
+  MID_CENTURY_MODERN
+  INDUSTRIAL
+  MINIMALIST
+  TRANSITIONAL
+  COASTAL
+  CUSTOM
+}
+
+enum RoomType {
+  LIVING_ROOM
+  FAMILY_ROOM
+  BEDROOM
+  MASTER_BEDROOM
+  BATHROOM
+  MASTER_BATHROOM
+  KITCHEN
+  DINING_ROOM
+  HOME_OFFICE
+  GARAGE
+  LAUNDRY
+  MUDROOM
+  PANTRY
+  CLOSET
+  WALK_IN_CLOSET
+  BONUS_ROOM
+  MEDIA_ROOM
+  GYM
+  GUEST_SUITE
+  NURSERY
+  STUDIO
+  OUTDOOR_LIVING
+  POOL_HOUSE
+  ADU
+  OTHER_ROOM
+}
+
+enum DesignQueueStatus {
+  QUEUED // Waiting for architect assignment
+  ASSIGNED // Assigned to an architect, awaiting response
+  ACCEPTED // Architect accepted the assignment
+  DECLINED // Architect declined
+  EXPIRED // 48hr SLA expired, rotating to next
+  IN_PROGRESS // Architect actively working
+  COMPLETED_DQ // Design work completed
+  CANCELLED_DQ // Owner cancelled or project withdrawn
+}
+
+enum ArchitectAvailability {
+  AVAILABLE // Accepting new projects
+  BUSY // At capacity but can be queued
+  UNAVAILABLE // Not accepting work (vacation, etc.)
+  SUSPENDED // Account issue
+}
+
+enum HandoffStatus {
+  INITIATED // Handoff record created
+  MEETING_SCHEDULED // Designer meeting scheduled with owner (post-approval cleanup)
+  MEETING_COMPLETED // Designer met owner, minor additions/cleanup agreed
+  REVIEWING // Architect reviewing auto-design materials + meeting notes
+  ACKNOWLEDGED // Architect confirmed receipt of materials
+  IN_PROGRESS_HO // Architect actively developing from auto-design
+  COMPLETED_HO // Handoff complete, DesignProject fully active
+  REJECTED_HO // Architect rejected after reviewing (rare)
+}
+
+enum DesignProjectStatus {
+  DRAFT_DP
+  ACTIVE_DP
+  ON_HOLD_DP
+  COMPLETED_DP
+  ARCHIVED_DP
+  CANCELLED_DP
+}
+
+enum DesignProjectType {
+  RESIDENTIAL
+  COMMERCIAL
+  INSTITUTIONAL
+  MIXED_USE
+  INDUSTRIAL_DESIGN
+  HOSPITALITY
+  HEALTHCARE_DESIGN
+  EDUCATIONAL
+}
+
+enum DesignPhaseType {
+  PROGRAMMING // Pre-design / programming
+  SCHEMATIC // Schematic Design (SD)
+  DESIGN_DEV // Design Development (DD)
+  CONSTRUCTION_DOC // Construction Documents (CD)
+  BIDDING // Bidding & Negotiation
+  CONSTRUCTION_ADMIN // Construction Administration (CA)
+}
+
+enum DesignPhaseStatus {
+  NOT_STARTED_DP
+  IN_PROGRESS_DP
+  IN_REVIEW_DP
+  APPROVED_DP
+  COMPLETED_DP
+}
+
+enum SheetStatus {
+  NOT_STARTED_SH
+  STARTED_SH
+  IN_PROGRESS_SH
+  CHECKED_SH
+  APPROVED_SH
+  ISSUED_SH
+}
+
+enum BIMModelFormat {
+  RVT // Revit
+  IFC // Industry Foundation Classes
+  SKP // SketchUp
+  DWG_3D
+  OBJ
+  GLTF
+  FBX
+  OTHER_FORMAT
+}
+
+enum UnitConstructionStatus {
+  NOT_STARTED
+  ROUGH_IN
+  DRYWALL
+  FINISH
+  PUNCH
+  COMPLETE
+  TURNED_OVER
+}
+
+enum DrawRequestStatus {
+  DRAFT
+  SUBMITTED
+  IN_REVIEW
+  APPROVED
+  FUNDED
+  REJECTED
+}
+
+enum AreaPhaseStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETE
+}
+
+enum BidSource {
+  BUILDINGCONNECTED
+  BUILDING_CONNECTED
+  EMARYLAND_MARKETPLACE
+  EMMA
+  OPENGOV
+  SHA_MDOT
+  DIRECT_EMAIL
+  DIRECT_INVITE
+  NETWORKING
+  MANUAL
+  OTHER
+}
+
+// Used by OpportunityBid (WSL pipeline)
+enum BidStatus {
+  DISCOVERED
+  REVIEWING
+  PREPARING
+  READY
+  SUBMITTED
+  AWARDED
+  LOST
+  NO_BID
+  EXPIRED
+}
+
+// Used by BidOpportunity (Windows pipeline)
+enum BidPipelineStatus {
+  NEW
+  REVIEWING
+  PREPARING
+  SUBMITTED
+  AWARDED
+  LOST
+  NO_BID
+  CANCELLED
+}
+
+enum BidPriority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum BidChecklistStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETE
+  SKIPPED
+  BLOCKED
+}
+
+enum BidDocumentType {
+  SPECS
+  DRAWINGS
+  ADDENDUM
+  PROPOSAL
+  ESTIMATE
+  BID_FORM
+  BID_BOND
+  INSURANCE_CERT
+  MBE_CERT
+  SUBCONTRACTOR_LIST
+  COVER_LETTER
+  OTHER
+}
+
+enum BidSubRequestStatus {
+  PENDING
+  SENT
+  RECEIVED
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum SOPStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum SOPStepStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+}
+
+enum SOPExecutionStatus {
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  EXECUTED
+  CANCELLED
+}
+
+enum BillStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  PAID
+  REJECTED
+}
+
+enum RFQStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  AWARDED
+  CANCELLED
+}
+
+enum DeliveryStatus {
+  SCHEDULED
+  IN_TRANSIT
+  DELIVERED
+  RECEIVED
+  CONFIRMED
+  LATE
+  CANCELLED
+}
+
+enum CloseoutItemStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  VERIFIED
+}
+
+enum CloseoutItemType {
+  DOCUMENT
+  INSPECTION
+  CERTIFICATE
+  WARRANTY
+  MANUAL
+  OTHER
+}
+
+// ── AI Takeoff Job ──────────────────────────────────────────────────
+// Tracks AI-powered plan takeoff jobs that process architectural drawings
+// into CTC task breakdowns and estimate line items.
+enum TakeoffJobStatus {
+  TAKEOFF_PENDING
+  TAKEOFF_UPLOADING
+  TAKEOFF_ANALYZING
+  TAKEOFF_EXTRACTING
+  TAKEOFF_MAPPING
+  TAKEOFF_REVIEW
+  TAKEOFF_CONFIRMED
+  TAKEOFF_FAILED
+}
+
+enum ScanType {
+  LIDAR
+  PHOTOGRAMMETRY
+  DRONE
+  MOBILE_SCAN
+  BEFORE
+  DURING
+  AFTER
+}
+
+enum VerificationStatus {
+  PENDING
+  IN_PROGRESS
+  PASSED
+  FAILED
+  NEEDS_REVIEW
+}
+
+enum ProductCategory {
+  KITCHEN
+  BATH
+  WHOLE_HOME
+  ADDITION
+  FACADE
+  ELECTRICAL
+  PLUMBING
+  HVAC
+  FLOORING
+  ROOFING
+  WINDOWS_DOORS
+}

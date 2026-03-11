@@ -1,0 +1,63 @@
+// PM — WARRANTY
+// Domain: pm | Owner: OS-PM service
+
+model Warranty {
+  id        String @id @default(uuid())
+  projectId String
+
+  title              String
+  description        String?        @db.Text
+  type               String // MANUFACTURER, CONTRACTOR, EXTENDED
+  provider           String
+  contactName        String?
+  contactEmail       String?
+  contactPhone       String?
+  startDate          DateTime
+  endDate            DateTime
+  duration           Int // months
+  coverageDetails    String?        @db.Text
+  documentUrl        String?
+  status             WarrantyStatus @default(ACTIVE)
+  notificationSentAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  claims  WarrantyClaim[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([endDate])
+  @@index([projectId, status])
+  @@map("warranties")
+}
+
+model WarrantyClaim {
+  id         String @id @default(uuid())
+  warrantyId String
+  projectId  String
+
+  title         String
+  description   String      @db.Text
+  status        ClaimStatus @default(SUBMITTED)
+  filedDate     DateTime    @default(now())
+  filedById     String
+  resolvedDate  DateTime?
+  resolution    String?     @db.Text
+  photos        String[]
+  estimatedCost Decimal?    @db.Decimal(12, 2)
+  actualCost    Decimal?    @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  warranty Warranty @relation(fields: [warrantyId], references: [id], onDelete: Cascade)
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  filedBy  User     @relation("WarrantyClaimFiler", fields: [filedById], references: [id])
+
+  @@index([warrantyId])
+  @@index([projectId])
+  @@index([status])
+  @@map("warranty_claims")
+}

@@ -1,0 +1,60 @@
+// LAND — Enums
+// Auto-generated from schema splitter
+
+enum HousingType {
+  SINGLE_FAMILY
+  ADU
+  DUPLEX
+  TRIPLEX
+  FOURPLEX
+  TOWNHOUSE
+  SMALL_APARTMENT
+  MID_RISE
+  MIXED_USE
+  MANUFACTURED
+  MODULAR
+}
+
+enum ZoningDistrictType {
+  R1_SINGLE_FAMILY
+  R2_TWO_FAMILY
+  R3_MULTI_FAMILY
+  R4_HIGH_DENSITY
+  MX_MIXED_USE
+  C1_COMMERCIAL
+  PD_PLANNED_DEVELOPMENT
+  TO_TRANSIT_ORIENTED
+  OVERLAY
+  UNKNOWN
+}
+
+enum ParcelStatus {
+  IDENTIFIED     // Initial identification
+  UNDER_ANALYSIS // Zoning/assessment in progress
+  OFFER_PENDING  // Offer submitted
+  UNDER_CONTRACT // Purchase agreement signed
+  DUE_DILIGENCE  // Due diligence period
+  ACQUIRED       // Parcel purchased
+  CONVERTED      // Converted to project
+  REJECTED       // Not viable
+  ARCHIVED       // No longer active
+}
+
+enum AssessmentType {
+  ENVIRONMENTAL  // Phase I/II ESA
+  GEOTECHNICAL   // Soil boring, bearing capacity
+  SURVEY         // ALTA survey, boundary
+  TITLE          // Title search, encumbrances
+  TRAFFIC        // Traffic impact study
+  UTILITY        // Utility availability
+  FLOOD          // Flood zone determination
+  WETLAND        // Wetland delineation
+}
+
+enum AssessmentStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  FLAGGED       // Issues found
+  CLEARED       // Issues resolved
+}

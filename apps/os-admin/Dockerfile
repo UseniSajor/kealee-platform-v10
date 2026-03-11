@@ -25,6 +25,8 @@ COPY packages/auth/ ./packages/auth/
 COPY packages/api-client/ ./packages/api-client/
 COPY packages/types/ ./packages/types/
 COPY apps/os-admin/ ./apps/os-admin/
+# Re-link workspace packages after COPY (pnpm symlinks break across Docker stages)
+RUN pnpm install --filter os-admin... --prod=false --frozen-lockfile --ignore-scripts 2>/dev/null || true
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" cd packages/database && npx prisma generate
 RUN cd packages/shared && pnpm run build 2>/dev/null || true
 RUN cd packages/types && pnpm run build 2>/dev/null || true

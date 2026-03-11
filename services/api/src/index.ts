@@ -205,6 +205,13 @@ import { registerAuditMiddleware } from './middleware/audit.middleware'
 import { pmRoutes } from './modules/pm/pm.routes'
 import { billingRoutes } from './modules/billing/billing.routes'
 import { projectRoutes } from './modules/projects/project.routes'
+import { twinRoutes } from './modules/twins/twin.routes'
+import { landRoutes } from './modules/land/land.routes'
+import { feasibilityRoutes } from './modules/feasibility/feasibility.routes'
+import { developmentRoutes } from './modules/development/development.routes'
+import { operationsRoutes } from './modules/operations/operations.routes'
+import { marketplaceV1Routes } from './modules/marketplace-v1/marketplace-v1.routes'
+import { paymentsV1Routes } from './modules/payments-v1/payments-v1.routes'
 import { propertyRoutes } from './modules/properties/property.routes'
 import { readinessRoutes } from './modules/readiness/readiness.routes'
 import { contractTemplateRoutes } from './modules/contracts/contract-template.routes'
@@ -510,6 +517,13 @@ const start = async () => {
       await fastify.register(accountingRoutes, { prefix: '/accounting' })
       await fastify.register(stripeConnectRoutes, { prefix: '/connect' })
       await fastify.register(projectRoutes, { prefix: '/projects' })
+      await fastify.register(twinRoutes, { prefix: '/api/v1/twins' })
+      await fastify.register(landRoutes, { prefix: '/api/v1/land' })
+      await fastify.register(feasibilityRoutes, { prefix: '/api/v1/feasibility' })
+      await fastify.register(developmentRoutes, { prefix: '/api/v1/dev' })
+      await fastify.register(operationsRoutes, { prefix: '/api/v1/ops' })
+      await fastify.register(marketplaceV1Routes, { prefix: '/api/v1/marketplace' })
+      await fastify.register(paymentsV1Routes, { prefix: '/api/v1/payments' })
       await fastify.register(propertyRoutes, { prefix: '/properties' })
       await fastify.register(readinessRoutes, { prefix: '/readiness' })
       await fastify.register(contractTemplateRoutes, { prefix: '/contracts' })

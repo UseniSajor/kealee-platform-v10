@@ -1,0 +1,122 @@
+// PM — RFIS SUBMITTALS
+// Domain: pm | Owner: OS-PM service
+
+model RFI {
+  id        String @id @default(uuid())
+  projectId String
+
+  rfiNumber Int         @default(autoincrement())
+  subject   String
+  question  String      @db.Text
+  status    RFIStatus   @default(DRAFT)
+  priority  RFIPriority @default(MEDIUM)
+
+  createdById  String
+  assignedToId String?
+  dueDate      DateTime?
+
+  costImpact       Boolean     @default(false)
+  scheduleImpact   Boolean     @default(false)
+  drawingRef       String?
+  specSection      String?
+  distributionList String[]
+  ballInCourt      BallInCourt @default(PM)
+  attachments      String[]
+
+  closedAt   DateTime?
+  closedById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project    Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy  User            @relation("RFICreator", fields: [createdById], references: [id])
+  assignedTo User?           @relation("RFIAssignee", fields: [assignedToId], references: [id])
+  closedBy   User?           @relation("RFICloser", fields: [closedById], references: [id])
+  responses  RFIResponse[]
+  conflicts  FieldConflict[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdById])
+  @@index([assignedToId])
+  @@index([projectId, status])
+  @@map("rfis")
+}
+
+model RFIResponse {
+  id            String   @id @default(uuid())
+  rfiId         String
+  responderId   String
+  response      String   @db.Text
+  isOfficial    Boolean  @default(false)
+  attachmentIds String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rfi       RFI  @relation(fields: [rfiId], references: [id], onDelete: Cascade)
+  responder User @relation("RFIResponder", fields: [responderId], references: [id])
+
+  @@index([rfiId])
+  @@index([responderId])
+  @@map("rfi_responses")
+}
+
+model Submittal {
+  id        String @id @default(uuid())
+  projectId String
+
+  submittalNumber Int             @default(autoincrement())
+  title           String
+  description     String?         @db.Text
+  type            SubmittalType   @default(PRODUCT_DATA)
+  status          SubmittalStatus @default(DRAFT)
+  specSection     String?
+
+  createdById  String
+  assignedToId String?
+  dueDate      DateTime?
+  receivedDate DateTime?
+  approvedDate DateTime?
+
+  contractorId      String?
+  subcontractorName String?
+  copies            Int     @default(1)
+  remarks           String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project    Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy  User              @relation("SubmittalCreator", fields: [createdById], references: [id])
+  assignedTo User?             @relation("SubmittalAssignee", fields: [assignedToId], references: [id])
+  reviews    SubmittalReview[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([type])
+  @@index([specSection])
+  @@index([projectId, status])
+  @@map("submittals")
+}
+
+model SubmittalReview {
+  id          String          @id @default(uuid())
+  submittalId String
+  reviewerId  String
+  status      SubmittalStatus
+  comments    String?         @db.Text
+  reviewedAt  DateTime        @default(now())
+  stampUrl    String?
+
+  createdAt DateTime @default(now())
+
+  submittal Submittal @relation(fields: [submittalId], references: [id], onDelete: Cascade)
+  reviewer  User      @relation("SubmittalReviewer", fields: [reviewerId], references: [id])
+
+  @@index([submittalId])
+  @@index([reviewerId])
+  @@map("submittal_reviews")
+}

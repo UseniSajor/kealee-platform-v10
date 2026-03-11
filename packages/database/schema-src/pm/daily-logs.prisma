@@ -1,0 +1,112 @@
+// PM — DAILY LOGS
+// Domain: pm | Owner: OS-PM service
+
+model Photo {
+  id           String    @id @default(uuid())
+  projectId    String
+  visitId      String?
+  url          String
+  thumbnailUrl String?
+  caption      String?
+  category     String? // PROGRESS, INSPECTION, ISSUE, COMPLETION
+  takenAt      DateTime?
+  takenBy      String?
+  metadata     Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@index([visitId])
+  @@index([category])
+  // ── Performance: Compound indexes for photo gallery ──
+  @@index([projectId, category]) // Photo gallery filtered by type
+  @@index([projectId, createdAt]) // Photo gallery sorted by date
+  @@map("photos")
+}
+
+model WeatherLog {
+  id            String   @id @default(uuid())
+  projectId     String
+  date          DateTime
+  condition     String // CLEAR, RAIN, SNOW, EXTREME_HEAT, etc.
+  temperature   Decimal? @db.Decimal(5, 2)
+  precipitation Decimal? @db.Decimal(5, 2) // inches
+  windSpeed     Decimal? @db.Decimal(5, 2) // mph
+  workable      Boolean  @default(true)
+  notes         String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, date])
+  @@index([projectId])
+  @@index([date])
+  @@map("weather_logs")
+}
+
+// Crew GPS Check-In/Check-Out tracking
+model CrewCheckIn {
+  id          String   @id @default(uuid())
+  projectId   String
+  userId      String
+  type        String // ARRIVE, DEPART
+  latitude    Decimal  @db.Decimal(10, 8)
+  longitude   Decimal  @db.Decimal(11, 8)
+  verified    Boolean  @default(false) // Within geofence?
+  distance    Decimal? @db.Decimal(10, 2) // Distance from site in meters
+  hoursOnSite Decimal? @db.Decimal(5, 2) // Calculated on DEPART
+  notes       String?
+  photo       String? // Optional site photo URL
+
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([projectId, userId, createdAt])
+  @@map("crew_check_ins")
+}
+
+// Contractor daily log entries (Guide Section 5 - During Project)
+model DailyLog {
+  id           String @id @default(uuid())
+  projectId    String
+  contractorId String // User who created the log
+
+  // Daily work information
+  date          DateTime @default(now())
+  workPerformed String   @db.Text // What was done today
+  crewCount     Int? // Number of workers on site
+  hoursWorked   Float? // Total hours worked
+
+  // Conditions
+  weather     String? // Weather conditions
+  temperature String? // Temperature
+
+  // Progress & Issues
+  progressNotes   String? @db.Text
+  issues          String? @db.Text // Any problems encountered
+  safetyIncidents String? @db.Text
+
+  // Materials & Equipment
+  materialsDelivered String? @db.Text
+  equipmentUsed      String? @db.Text
+
+  // Subcontractors
+  subsOnSite String[] // List of subcontractors present
+
+  // Photos (references to Document records)
+  photoIds String[] // Array of document IDs
+
+  // Metadata
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  contractor User    @relation("DailyLogContractor", fields: [contractorId], references: [id])
+
+  @@index([projectId])
+  @@index([contractorId])
+  @@index([date])
+  @@map("daily_logs")
+}

@@ -1,6 +1,6 @@
 {
   "name": "kealee-platform",
-  "version": "10.0.0",
+  "version": "20.0.0",
   "private": true,
   "packageManager": "pnpm@8.15.9",
   "scripts": {
@@ -71,7 +71,8 @@
   "workspaces": [
     "apps/*",
     "packages/*",
-    "services/*"
+    "services/*",
+    "bots/*"
   ],
   "devDependencies": {
     "@playwright/test": "^1.40.0",

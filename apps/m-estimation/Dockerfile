@@ -19,6 +19,8 @@ COPY packages/database/ ./packages/database/
 COPY packages/shared/ ./packages/shared/
 COPY packages/auth/ ./packages/auth/
 COPY apps/m-estimation/ ./apps/m-estimation/
+# Re-link workspace packages after COPY (pnpm symlinks break across Docker stages)
+RUN pnpm install --filter m-estimation... --prod=false --frozen-lockfile --ignore-scripts 2>/dev/null || true
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" cd packages/database && npx prisma generate
 RUN cd packages/shared && pnpm run build 2>/dev/null || true
 RUN cd packages/auth && pnpm run build

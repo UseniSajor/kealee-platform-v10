@@ -1,0 +1,28 @@
+// OPERATIONS — Enums
+// Auto-generated from schema splitter
+
+enum TurnoverItemStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  NOT_APPLICABLE
+  DEFERRED
+}
+
+enum WorkOrderPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+  EMERGENCY
+}
+
+enum WorkOrderStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CLOSED
+  CANCELLED
+}

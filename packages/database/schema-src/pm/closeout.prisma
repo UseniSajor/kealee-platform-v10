@@ -1,0 +1,28 @@
+// PM — CLOSEOUT
+// Domain: pm | Owner: OS-PM service
+
+model CloseoutItem {
+  id          String             @id @default(uuid())
+  projectId   String
+  type        CloseoutItemType
+  name        String
+  description String?
+  status      CloseoutItemStatus @default(PENDING)
+  dueDate     DateTime?
+  completedAt DateTime?
+  verifiedAt  DateTime?
+  verifiedBy  String?
+  documents   String[]
+
+  assignedTo String?
+  createdBy  String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([type])
+  @@index([status])
+  @@map("closeout_items")
+}

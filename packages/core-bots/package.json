@@ -1,0 +1,30 @@
+{
+  "name": "@kealee/core-bots",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bot base class, registry, handoff protocol",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.74.0",
+    "@kealee/core-events": "workspace:*",
+    "@kealee/shared": "workspace:*",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.30",
+    "typescript": "^5.3.3"
+  }
+}

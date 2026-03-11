@@ -1,0 +1,249 @@
+// PAYMENTS — Enums
+// Auto-generated from schema splitter
+
+enum ContractStatus {
+  DRAFT
+  SENT
+  SENT_FOR_SIGNATURE
+  PARTIALLY_SIGNED
+  FULLY_SIGNED
+  SIGNED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  ARCHIVED
+}
+
+enum MilestoneStatus {
+  PENDING
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  DISPUTED
+  PAID
+}
+
+enum EscrowStatus {
+  PENDING_DEPOSIT
+  ACTIVE
+  FROZEN
+  CLOSED
+}
+
+enum EscrowTransactionType {
+  DEPOSIT
+  RELEASE
+  REFUND
+  FEE
+  INTEREST
+}
+
+enum EscrowTransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REVERSED
+}
+
+enum EscrowHoldReason {
+  DISPUTE
+  COMPLIANCE
+  MANUAL
+  LIEN
+}
+
+enum EscrowHoldStatus {
+  ACTIVE
+  RELEASED
+}
+
+enum DisputeStatus {
+  OPEN // Initial status
+  UNDER_REVIEW // Evidence review phase
+  MEDIATION // Active mediation
+  RESOLVED // Resolution decided
+  CLOSED // Fully closed
+  CANCELLED // Cancelled by initiator
+}
+
+enum DisputeType {
+  PAYMENT // Payment dispute
+  QUALITY // Quality of work
+  SCOPE // Scope of work
+  TIMELINE // Timeline/delays
+  OTHER // Other issues
+}
+
+enum DisputeEvidenceType {
+  DOCUMENT
+  PHOTO
+  VIDEO
+  MESSAGE
+  OTHER
+}
+
+enum DisputeResolutionType {
+  FULL_RELEASE // Release full amount to contractor
+  PARTIAL_RELEASE // Split between parties
+  NO_RELEASE // No release, return to owner
+  REFUND // Full refund to owner
+}
+
+enum DisputeAppealStatus {
+  NONE // No appeal
+  PENDING // Appeal filed, under review
+  ACCEPTED // Appeal accepted, case reopened
+  REJECTED // Appeal rejected
+}
+
+enum LienWaiverType {
+  CONDITIONAL // Payment pending
+  UNCONDITIONAL // Payment cleared
+}
+
+enum LienWaiverScope {
+  PARTIAL // Progress payment
+  FINAL // Final payment with holdback
+}
+
+enum LienWaiverStatus {
+  GENERATED // Created, not sent
+  SENT // Sent for signature
+  SIGNED // Signed by contractor
+  RECORDED // Officially recorded
+  EXPIRED // Expired without signature
+}
+
+enum LienWaiverSignerRole {
+  CONTRACTOR
+  SUBCONTRACTOR
+  SUPPLIER
+  OWNER
+}
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+enum AccountSubType {
+  // Assets (1000-1999)
+  CASH
+  ESCROW_HOLDINGS
+  ACCOUNTS_RECEIVABLE
+  PREPAID_EXPENSES
+  // Liabilities (2000-2999)
+  ACCOUNTS_PAYABLE
+  ESCROW_LIABILITIES
+  PLATFORM_FEES_PAYABLE
+  DEFERRED_REVENUE
+  // Equity (3000-3999)
+  RETAINED_EARNINGS
+  OWNER_EQUITY
+  // Revenue (4000-4999)
+  PLATFORM_FEES
+  TRANSACTION_FEES
+  SUBSCRIPTION_REVENUE
+  // Expenses (5000-5999)
+  PROCESSING_FEES
+  OPERATING_EXPENSES
+  CONTRACTOR_PAYOUTS
+}
+
+enum JournalEntryStatus {
+  DRAFT
+  POSTED
+  VOID
+}
+
+enum ConnectedAccountType {
+  STANDARD
+  EXPRESS
+}
+
+enum ConnectedAccountStatus {
+  PENDING
+  ACTIVE
+  RESTRICTED
+  DISABLED
+}
+
+enum PayoutStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELED
+}
+
+enum PayoutMethod {
+  STANDARD // Next business day, no fee
+  INSTANT // Within 30 minutes, 1% fee (max $10)
+}
+
+enum StatementType {
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+  CUSTOM
+}
+
+enum StatementStatus {
+  GENERATED // Created but not sent
+  SENT // Sent to recipient
+  VIEWED // Opened by recipient
+  ARCHIVED // Archived after retention period
+}
+
+enum RecipientRole {
+  OWNER
+  CONTRACTOR
+  ADMIN
+  FINANCE
+}
+
+enum DeliveryMethod {
+  EMAIL
+  DOWNLOAD
+  BOTH
+}
+
+enum PlatformFeeType {
+  DESIGN_PACKAGE // Upfront design fee
+  CONTRACT_COMMISSION // % of contract at ratification
+  LEAD_SALE // Lead sold to contractor (B2B only)
+}
+
+enum PlatformFeeStatus {
+  PENDING // Fee calculated but not collected
+  HOLD // Held in escrow
+  COLLECTED // Fee collected successfully
+  REFUNDED // Fee refunded
+  WAIVED // Fee waived (promo/dispute)
+}
+
+enum FinancingStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  FUNDED
+  CLOSED
+}
+
+enum ApproverType {
+  HOMEOWNER
+  CONTRACTOR
+  LENDER
+  INSPECTOR
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

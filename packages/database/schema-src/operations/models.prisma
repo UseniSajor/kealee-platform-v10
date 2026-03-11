@@ -1,0 +1,180 @@
+// OPERATIONS — Models
+// Auto-generated from schema splitter
+
+// Turnover checklist
+model TurnoverChecklist {
+  id        String @id @default(uuid())
+  projectId String
+  orgId     String
+
+  // Checklist info
+  title         String
+  description   String?
+  category      String?   // "residential", "commercial", "mixed_use"
+
+  // Progress
+  totalItems    Int       @default(0)
+  completedItems Int      @default(0)
+  completionPct Float     @default(0)
+
+  // Schedule
+  targetDate    DateTime?
+  completedAt   DateTime?
+
+  // Status
+  status        String    @default("DRAFT") // DRAFT, IN_PROGRESS, REVIEW, COMPLETED, SIGNED_OFF
+  signedOffBy   String?
+  signedOffAt   DateTime?
+
+  // Template reference
+  templateId    String?   // If created from a template
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  items   TurnoverItem[]
+
+  @@index([projectId])
+  @@index([orgId])
+  @@index([status])
+  @@map("turnover_checklists")
+}
+
+// Individual turnover items
+model TurnoverItem {
+  id          String @id @default(uuid())
+  checklistId String
+
+  // Item info
+  category    String    // "documents", "keys_access", "training", "systems", "warranties", "certificates"
+  title       String
+  description String?
+  sortOrder   Int       @default(0)
+
+  // Status
+  status      TurnoverItemStatus @default(PENDING)
+  completedAt DateTime?
+  completedBy String?
+
+  // Verification
+  requiresPhoto    Boolean  @default(false)
+  requiresDocument Boolean  @default(false)
+  requiresSignature Boolean @default(false)
+  photoUrl         String?
+  documentUrl      String?
+  signatureUrl     String?
+
+  // Notes
+  notes       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  checklist TurnoverChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+
+  @@index([checklistId])
+  @@index([category])
+  @@index([status])
+  @@map("turnover_items")
+}
+
+// Recurring maintenance schedule
+model MaintenanceSchedule {
+  id        String @id @default(uuid())
+  projectId String
+  orgId     String
+
+  // Schedule info
+  title         String
+  description   String?
+  category      String?   // "hvac", "plumbing", "electrical", "structural", "landscape", "general"
+
+  // Recurrence
+  frequency     String    // "daily", "weekly", "biweekly", "monthly", "quarterly", "semiannual", "annual"
+  nextDueDate   DateTime?
+  lastCompletedDate DateTime?
+
+  // Assignment
+  assignedTo    String?   // User or contractor ID
+  assignedName  String?
+  vendorName    String?
+  vendorContact Json?
+
+  // Cost
+  estimatedCost Decimal?  @db.Decimal(10, 2)
+
+  // Status
+  isActive      Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  project    Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workOrders MaintenanceWorkOrder[]
+
+  @@index([projectId])
+  @@index([orgId])
+  @@index([nextDueDate])
+  @@index([isActive])
+  @@map("maintenance_schedules")
+}
+
+// Maintenance work orders
+model MaintenanceWorkOrder {
+  id         String @id @default(uuid())
+  scheduleId String?
+  projectId  String
+  orgId      String
+
+  // Work order info
+  title         String
+  description   String?
+  category      String?
+
+  // Priority & status
+  priority      WorkOrderPriority @default(MEDIUM)
+  status        WorkOrderStatus   @default(OPEN)
+
+  // Assignment
+  assignedTo    String?
+  assignedName  String?
+
+  // Schedule
+  reportedAt    DateTime  @default(now())
+  reportedBy    String?
+  scheduledDate DateTime?
+  startedAt     DateTime?
+  completedAt   DateTime?
+
+  // Location
+  location      String?   // "Unit 204", "Roof", "Parking garage"
+
+  // Cost tracking
+  estimatedCost Decimal?  @db.Decimal(10, 2)
+  actualCost    Decimal?  @db.Decimal(10, 2)
+  laborHours    Decimal?  @db.Decimal(6, 2)
+  materialsCost Decimal?  @db.Decimal(10, 2)
+
+  // Documentation
+  photos        Json?     // Array of photo URLs
+  attachments   Json?
+  resolution    String?   // Description of how it was resolved
+
+  notes         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project  Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  schedule MaintenanceSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([orgId])
+  @@index([scheduleId])
+  @@index([status])
+  @@index([priority])
+  @@map("maintenance_work_orders")
+}

@@ -1,0 +1,94 @@
+// PM — SOPS
+// Domain: pm | Owner: OS-PM service
+
+model SOPTemplate {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  projectType String
+  status      SOPStatus @default(DRAFT)
+  active      Boolean   @default(true)
+  version     Int       @default(1)
+  createdBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  phases     SOPPhase[]
+  executions SOPExecution[]
+
+  @@index([projectType])
+  @@index([status])
+}
+
+model SOPPhase {
+  id             String  @id @default(uuid())
+  templateId     String
+  name           String
+  description    String?
+  order          Int
+  entryCondition String?
+  exitCondition  String?
+
+  template SOPTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  steps    SOPStep[]
+
+  @@index([templateId])
+  @@index([templateId, order])
+}
+
+model SOPStep {
+  id                  String  @id @default(uuid())
+  phaseId             String
+  name                String
+  description         String?
+  order               Int
+  mandatory           Boolean @default(true)
+  estimatedMinutes    Int?
+  requiredIntegration String?
+  validations         Json?
+  dependencies        Json?   @default("[]")
+  metadata            Json?
+
+  phase          SOPPhase           @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  stepExecutions SOPStepExecution[]
+
+  @@index([phaseId])
+  @@index([phaseId, order])
+}
+
+model SOPExecution {
+  id          String             @id @default(uuid())
+  templateId  String
+  projectId   String
+  status      SOPExecutionStatus @default(IN_PROGRESS)
+  progress    Float              @default(0)
+  startedAt   DateTime           @default(now())
+  completedAt DateTime?
+
+  template       SOPTemplate        @relation(fields: [templateId], references: [id])
+  project        Project            @relation(fields: [projectId], references: [id])
+  stepExecutions SOPStepExecution[]
+
+  @@index([templateId])
+  @@index([projectId])
+  @@index([status])
+}
+
+model SOPStepExecution {
+  id          String        @id @default(uuid())
+  executionId String
+  stepId      String
+  status      SOPStepStatus @default(PENDING)
+  completedBy String?
+  completedAt DateTime?
+  skipReason  String?
+  notes       String?
+  evidence    Json?
+
+  execution SOPExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  step      SOPStep      @relation(fields: [stepId], references: [id])
+
+  @@index([executionId])
+  @@index([stepId])
+  @@index([executionId, status])
+}

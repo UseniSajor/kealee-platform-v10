@@ -1,0 +1,276 @@
+// INTEGRATIONS — Models
+// Auto-generated from schema splitter
+
+model APIIntegration {
+  id             String @id @default(uuid())
+  jurisdictionId String
+
+  // Provider Info
+  provider        String // ACCELA, TYLER, GOVOS, CUSTOM, KEALEE_API
+  integrationType String // REST_API, SOAP, GRAPHQL, WEBHOOK
+
+  // Credentials (Encrypted)
+  apiUrl         String
+  apiKey         String
+  clientId       String?
+  clientSecret   String?
+  authToken      String?
+  tokenExpiresAt DateTime?
+
+  // Configuration
+  endpoints     Json // Endpoint mappings
+  fieldMappings Json // Data transformation rules
+  webhookUrl    String? // Our webhook endpoint for them
+  webhookSecret String?
+
+  // Status
+  isActive   Boolean   @default(true)
+  lastSyncAt DateTime?
+  lastError  String?
+  errorCount Int       @default(0)
+
+  // Performance
+  totalRequests      Int  @default(0)
+  successfulRequests Int  @default(0)
+  failedRequests     Int  @default(0)
+  avgResponseTime    Int? // Milliseconds
+
+  // Rate Limiting
+  rateLimitRemaining Int?
+  rateLimitReset     DateTime?
+
+  jurisdiction  Jurisdiction   @relation(fields: [jurisdictionId], references: [id])
+  apiCalls      APICall[]
+  webhookEvents WebhookEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([jurisdictionId])
+  @@index([provider])
+  @@index([isActive])
+}
+
+model APICall {
+  id            String @id @default(uuid())
+  integrationId String
+
+  // Request
+  endpoint       String
+  method         String // GET, POST, PUT, DELETE, PATCH
+  requestPayload Json?
+  requestHeaders Json?
+
+  // Response
+  statusCode      Int?
+  responsePayload Json?
+  responseHeaders Json?
+  responseTime    Int? // Milliseconds
+
+  // Context
+  action       String // SUBMIT_PERMIT, CHECK_STATUS, GET_DOCUMENTS
+  permitId     String?
+  inspectionId String?
+
+  // Outcome
+  success      Boolean
+  errorMessage String?
+  retryCount   Int     @default(0)
+
+  executedAt DateTime @default(now())
+
+  integration APIIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@index([integrationId])
+  @@index([executedAt])
+  @@index([action])
+  @@index([permitId])
+}
+
+model WebhookEvent {
+  id            String  @id @default(uuid())
+  integrationId String?
+
+  // Event Details
+  eventType   String // permit.submitted, permit.approved, inspection.scheduled
+  eventSource String // ACCELA, TYLER, CLIENT, JURISDICTION
+  eventId     String? // Source event ID
+
+  // Payload
+  payload   Json
+  signature String? // For verification
+  rawBody   String? // Original raw body
+
+  // Processing
+  receivedAt   DateTime  @default(now())
+  processedAt  DateTime?
+  status       String    @default("PENDING") // PENDING, PROCESSED, FAILED, RETRYING
+  errorMessage String?
+  retryCount   Int       @default(0)
+
+  // Related Records
+  permitId     String?
+  inspectionId String?
+
+  integration APIIntegration? @relation(fields: [integrationId], references: [id])
+
+  @@index([integrationId])
+  @@index([eventType])
+  @@index([receivedAt])
+  @@index([status])
+  @@index([permitId])
+}
+
+// Webhook Management
+model Webhook {
+  id     String   @id @default(uuid())
+  url    String
+  secret String // HMAC secret for signing
+  events String[] // Event types to subscribe to
+
+  // Ownership
+  jurisdictionId String?
+  organizationId String?
+  userId         String?
+
+  // Status
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  deliveries WebhookDelivery[]
+
+  @@index([jurisdictionId])
+  @@index([organizationId])
+  @@index([active])
+}
+
+// Webhook Delivery Tracking
+model WebhookDelivery {
+  id        String @id @default(uuid())
+  webhookId String
+  event     String
+  payload   Json
+
+  // Delivery status
+  status        WebhookDeliveryStatus @default(PENDING)
+  attempts      Int                   @default(0)
+  lastAttemptAt DateTime?
+  nextRetryAt   DateTime?
+
+  // Response
+  responseCode Int?
+  responseBody String? // Truncated response body
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([status])
+  @@index([nextRetryAt])
+}
+
+model WebhookLog {
+  id         String  @id @default(uuid())
+  webhookId  String  @unique // Stripe webhook ID or other source ID
+  status     String  @default("PENDING") // PENDING, PROCESSED, FAILED
+  result     Json?
+  error      String?
+  retryCount Int     @default(0)
+
+  processedAt   DateTime?
+  lastAttemptAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  retries WebhookRetry[]
+
+  @@index([webhookId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model WebhookRetry {
+  id           String    @id @default(uuid())
+  webhookId    String
+  retryCount   Int
+  scheduledFor DateTime
+  payload      Json
+  status       String    @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  error        String?
+  completedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  webhookLog WebhookLog @relation(fields: [webhookId], references: [webhookId])
+
+  @@index([webhookId])
+  @@index([status])
+  @@index([scheduledFor])
+}
+
+model IntegrationCredential {
+  id             String             @id @default(uuid())
+  orgId          String?
+  service        IntegrationService
+  credentials    Json // Encrypted credentials (API keys, tokens, etc.)
+  status         IntegrationStatus  @default(PENDING_AUTH)
+  scope          String[]           @default([]) // OAuth scopes granted
+  accessToken    String?            @db.Text // OAuth access token (encrypted)
+  refreshToken   String?            @db.Text // OAuth refresh token (encrypted)
+  tokenExpiresAt DateTime?
+  lastUsedAt     DateTime?
+  lastError      String?
+  metadata       Json? // Service-specific metadata
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  org Org? @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, service])
+  @@index([service])
+  @@index([status])
+  @@map("integration_credentials")
+}
+
+// ── GHL (GoHighLevel) CRM Integration ────────────────────────
+model GhlWebhookLog {
+  id        String   @id @default(cuid())
+  eventType String
+  payload   Json
+  processed Boolean  @default(false)
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@index([eventType])
+  @@index([processed])
+  @@index([createdAt])
+  @@map("ghl_webhook_logs")
+}
+
+model GhlSyncStatus {
+  id            String   @id @default(cuid())
+  entityType    String   // "user", "project", "quote", "checkout"
+  entityId      String
+  ghlId         String
+  lastSynced    DateTime
+  syncDirection String   // "kealee_to_ghl" or "ghl_to_kealee"
+  status        String   // "success", "failed", "pending"
+  error         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([ghlId])
+  @@index([status])
+  @@map("ghl_sync_status")
+}

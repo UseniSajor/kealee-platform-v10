@@ -52,6 +52,9 @@ COPY packages/funnel-session/ ./packages/funnel-session/
 COPY packages/shared-ai/ ./packages/shared-ai/
 COPY apps/m-marketplace/ ./apps/m-marketplace/
 
+# Re-link workspace packages after COPY (pnpm symlinks break across Docker stages)
+RUN pnpm install --filter m-marketplace... --prod=false --frozen-lockfile --ignore-scripts 2>/dev/null || true
+
 # Generate Prisma client and build database package (needed by auth and others)
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \
     cd packages/database && npx prisma generate && pnpm run build

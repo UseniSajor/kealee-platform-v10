@@ -1,0 +1,165 @@
+// PM — FIELD OPS
+// Domain: pm | Owner: OS-PM service
+
+model BeforeAfterPair {
+  id        String @id @default(uuid())
+  projectId String
+
+  area                String // descriptive area name (e.g., "Kitchen North Wall")
+  beforePhotoUrl      String
+  afterPhotoUrl       String
+  beforeVisitId       String // SiteVisit ID
+  afterVisitId        String // SiteVisit ID
+  beforeDate          DateTime
+  afterDate           DateTime
+  matchConfidence     Int      @default(0) // 0-100 confidence in area match
+  progressDescription String?
+  beforePhase         String? // construction phase in before photo
+  afterPhase          String? // construction phase in after photo
+  progressPercent     Int      @default(0) // estimated area completion
+
+  createdAt DateTime @default(now())
+
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  beforeVisit SiteVisit @relation("BeforePairs", fields: [beforeVisitId], references: [id])
+  afterVisit  SiteVisit @relation("AfterPairs", fields: [afterVisitId], references: [id])
+
+  @@index([projectId, afterDate])
+  @@index([area])
+  @@map("before_after_pairs")
+}
+
+model SensorDevice {
+  id              String    @id @default(uuid())
+  projectId       String
+  type            String // "temperature", "humidity", "vibration", "noise", "water_leak", "air_quality", "motion"
+  name            String // "Kitchen Humidity Sensor", "Basement Temp #1"
+  location        String // "Kitchen wall A", "Basement NE corner"
+  deviceId        String    @unique // hardware device identifier
+  status          String    @default("active") // active, offline, low_battery, error
+  batteryLevel    Int? // percentage, if applicable
+  lastReading     DateTime?
+  config          Json? // threshold settings: { alertAbove: 80, alertBelow: 32, unit: "°F" }
+  metadata        Json? // additional device metadata
+  installedAt     DateTime?
+  installedBy     String?
+  firmwareVersion String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relationships
+  project  Project         @relation("ProjectSensors", fields: [projectId], references: [id], onDelete: Cascade)
+  readings SensorReading[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([type])
+  @@map("sensor_devices")
+}
+
+model SensorReading {
+  id        String   @id @default(uuid())
+  deviceId  String
+  value     Float
+  unit      String // "°F", "%RH", "dB", "g", "ppm", "boolean"
+  timestamp DateTime @default(now())
+  alert     Boolean  @default(false) // true if this reading triggered an alert
+  alertType String? // "above_threshold", "below_threshold", "rate_of_change", "offline"
+  metadata  Json? // additional reading context
+
+  // Relationships
+  device SensorDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId, timestamp])
+  @@index([alert])
+  @@index([timestamp])
+  @@map("sensor_readings")
+}
+
+model FieldConflict {
+  id           String         @id @default(cuid())
+  projectId    String
+  project      Project        @relation(fields: [projectId], references: [id])
+  reportedBy   String
+  reportedDate DateTime       @default(now())
+  location     String
+  gpsLat       Float?
+  gpsLng       Float?
+  description  String         @db.Text
+  photos       String[]
+  severity     RFIPriority    @default(MEDIUM)
+  status       ConflictStatus @default(OPEN)
+  linkedRFIId  String?
+  linkedRFI    RFI?           @relation(fields: [linkedRFIId], references: [id])
+  resolvedDate DateTime?
+  resolution   String?        @db.Text
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([projectId])
+  @@index([linkedRFIId])
+}
+
+model MobilizationChecklist {
+  id          String          @id @default(cuid())
+  projectId   String
+  project     Project         @relation(fields: [projectId], references: [id])
+  templateId  String
+  name        String          @default("")
+  status      ChecklistStatus @default(NOT_STARTED)
+  items       Json
+  assignedTo  String?
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([projectId])
+}
+
+model SpatialScan {
+  id              String    @id @default(uuid())
+  projectId       String
+  scanType        ScanType
+  scanDate        DateTime  @default(now())
+  fileUrl         String
+  fileSize        Int?
+  format          String?
+  deviceInfo      Json?
+  pointCount      Int?
+  coverage        Float?
+  accuracy        Float?
+  processed       Boolean   @default(false)
+  processedAt     DateTime?
+  processingNotes String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  project       Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  verifications SpatialVerification[]
+
+  @@index([projectId])
+  @@index([scanType])
+}
+
+model SpatialVerification {
+  id           String             @id @default(uuid())
+  milestoneId  String
+  scanId       String
+  verifiedById String?
+  aiScore      Float?
+  aiNotes      Json?
+  manualReview Boolean            @default(false)
+  reviewNotes  String?
+  status       VerificationStatus @default(PENDING)
+  createdAt    DateTime           @default(now())
+  verifiedAt   DateTime?
+
+  milestone  Milestone   @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  scan       SpatialScan @relation(fields: [scanId], references: [id])
+  verifiedBy User?       @relation("SpatialVerifier", fields: [verifiedById], references: [id])
+
+  @@index([milestoneId])
+  @@index([scanId])
+  @@index([status])
+}

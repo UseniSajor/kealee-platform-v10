@@ -1,0 +1,232 @@
+// DOCUMENTS — Models
+// Auto-generated from schema splitter
+
+model GeneratedDocument {
+  id              String    @id @default(uuid())
+  projectId       String?
+  type            String // CONTRACT, PROPOSAL, REPORT, INVOICE, etc.
+  category        String // CONTRACTS, PROPOSALS, REPORTS, etc.
+  name            String
+  content         Json? // Structured content
+  fileUrl         String?
+  format          String    @default("PDF") // PDF, DOCX, etc.
+  status          String    @default("DRAFT") // DRAFT, FINAL, SIGNED
+  signatureStatus String? // PENDING, SIGNED, DECLINED
+  signedAt        DateTime?
+  signedBy        String?
+  metadata        Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([type])
+  @@index([status])
+  @@map("generated_documents")
+}
+
+model Document {
+  id                 String    @id @default(uuid())
+  projectId          String?
+  templateId         String?
+  type               String // CONTRACT, PROPOSAL, REPORT, INVOICE, LIEN_WAIVER, CHANGE_ORDER, RFI, SUBMITTAL
+  category           String // CONTRACTS, PROPOSALS, REPORTS, FINANCIAL, LEGAL, ADMINISTRATIVE
+  name               String
+  description        String?
+  version            Int       @default(1)
+  content            Json? // Structured content for generation
+  fileUrl            String?
+  format             String    @default("PDF") // PDF, DOCX, XLSX
+  size               Int? // File size in bytes
+  status             String    @default("DRAFT") // DRAFT, GENERATED, REVIEW, APPROVED, SIGNED, ARCHIVED
+  signatureStatus    String? // PENDING, PARTIALLY_SIGNED, SIGNED, DECLINED
+  docusignEnvelopeId String?
+  signedAt           DateTime?
+  signedBy           String?
+  approvedAt         DateTime?
+  approvedBy         String?
+  expiresAt          DateTime?
+  metadata           Json?
+  tags               String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  template      DocumentTemplate?      @relation(fields: [templateId], references: [id])
+  distributions DocumentDistribution[]
+
+  @@index([projectId])
+  @@index([templateId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  // ── Performance: Compound indexes for document galleries ──
+  @@index([projectId, type, createdAt]) // Doc gallery: filtered by type + sorted
+  @@index([projectId, status]) // Doc listing: project docs by status
+  @@map("documents")
+}
+
+model DocumentTemplate {
+  id             String  @id @default(uuid())
+  name           String
+  description    String?
+  type           String // CONTRACT, PROPOSAL, REPORT, INVOICE, etc.
+  category       String // CONTRACTS, PROPOSALS, etc.
+  content        String  @db.Text // Template content with placeholders
+  format         String  @default("PDF")
+  variables      Json? // Schema for required variables
+  sections       Json? // Template sections
+  styling        Json? // Styling configuration
+  isActive       Boolean @default(true)
+  isSystem       Boolean @default(false)
+  organizationId String?
+  version        Int     @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  documents Document[]
+
+  @@unique([name, organizationId, version])
+  @@index([type])
+  @@index([category])
+  @@index([isActive])
+  @@map("document_templates")
+}
+
+model DocumentDistribution {
+  id             String    @id @default(uuid())
+  documentId     String
+  recipientId    String?
+  recipientEmail String
+  recipientName  String?
+  method         String // EMAIL, PORTAL, DOCUSIGN
+  status         String    @default("PENDING") // PENDING, SENT, DELIVERED, VIEWED, SIGNED
+  sentAt         DateTime?
+  deliveredAt    DateTime?
+  viewedAt       DateTime?
+  signedAt       DateTime?
+  accessLink     String?
+  accessExpires  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([recipientEmail])
+  @@index([status])
+  @@map("document_distributions")
+}
+
+// File upload record with validation metadata
+model FileUpload {
+  id String @id @default(uuid())
+
+  // File information
+  fileName String
+  fileUrl  String // S3 URL
+  fileSize Int // Bytes
+  mimeType String
+  category FileCategory
+
+  // Context
+  projectId      String?
+  propertyId     String?
+  milestoneId    String?
+  leadId         String?
+  organizationId String?
+
+  // Upload metadata
+  uploadedById   String
+  uploadedByRole UploadedByRole
+
+  // Validation
+  isValidated Boolean   @default(false)
+  validatedAt DateTime?
+  validatedBy String?
+
+  // AI Analysis (for photos)
+  aiAnalysis    Json? // QA findings, defects, etc.
+  aiProcessed   Boolean   @default(false)
+  aiProcessedAt DateTime?
+
+  // OCR Results (for receipts)
+  ocrData        Json? // Vendor, amount, date, etc.
+  ocrProcessed   Boolean   @default(false)
+  ocrProcessedAt DateTime?
+
+  // Tags & Search
+  tags        String[]
+  description String?  @db.Text
+  location    String? // "Kitchen - North Wall"
+
+  // Metadata
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  uploadedBy User       @relation("FileUploadUser", fields: [uploadedById], references: [id])
+  project    Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestone  Milestone? @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  receipt    Receipt? // Reverse relation for receipts
+
+  @@index([projectId])
+  @@index([uploadedById])
+  @@index([category])
+  @@index([createdAt])
+  @@index([isValidated])
+  @@map("file_uploads")
+}
+
+// User action tracking (for audit and analytics)
+model UserAction {
+  id       String @id @default(uuid())
+  userId   String
+  userRole String // HOMEOWNER, CONTRACTOR, ARCHITECT, PM, ADMIN
+
+  // Action details
+  action   String // "CREATE_PROJECT", "UPLOAD_PHOTO", "APPROVE_MILESTONE", etc.
+  entity   String // "Project", "Milestone", "Document", etc.
+  entityId String?
+
+  // Context
+  projectId      String?
+  organizationId String?
+
+  // Details
+  details   Json?
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  user User @relation("UserActionHistory", fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("user_actions")
+}
+
+// ── S3/R2 File Upload Tracking ─────────────────────────────────
+model File {
+  id         String   @id @default(uuid())
+  key        String   @unique
+  fileName   String
+  mimeType   String
+  size       Int      @default(0)
+  status     String   @default("UPLOADING") // UPLOADING, COMPLETED
+  uploadedBy String
+  metadata   Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([uploadedBy])
+  @@index([status])
+  @@map("files")
+}

@@ -1,0 +1,46 @@
+// INTEGRATIONS — Enums
+// Auto-generated from schema splitter
+
+enum AccessAction {
+  VIEW
+  DOWNLOAD
+  EXPORT
+  PRINT
+  SHARE
+  DELETE
+}
+
+enum WebhookDeliveryStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+// Integration Credentials (external service authentication)
+enum IntegrationService {
+  GOOGLE_CALENDAR
+  GOOGLE_DRIVE
+  GOOGLE_MAPS
+  DOCUSIGN
+  SENDGRID
+  TWILIO
+  STRIPE
+  GOHIGHLEVEL
+  OPENWEATHER
+  ANTHROPIC
+  OPENAI
+  GOOGLE_VISION
+  AWS_S3
+  AZURE_BLOB
+  QUICKBOOKS
+  PROCORE
+  BUILDERTREND
+}
+
+enum IntegrationStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+  ERROR
+  PENDING_AUTH
+}

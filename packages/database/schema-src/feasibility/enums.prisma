@@ -1,0 +1,21 @@
+// FEASIBILITY — Enums
+// Auto-generated from schema splitter
+
+enum NEPAExemptionType {
+  INFILL_DEVELOPMENT
+  SMALL_SCALE_HOUSING
+  PREVIOUSLY_DEVELOPED
+  CATEGORICAL_EXCLUSION
+  NONE
+}
+
+enum FeasibilityStatus {
+  DRAFT          // Initial creation
+  DATA_GATHERING // Collecting assumptions
+  ANALYZING      // AI analysis in progress
+  REVIEW         // Ready for human review
+  GO             // Approved to proceed
+  NO_GO          // Not viable
+  ON_HOLD        // Paused for more info
+  ARCHIVED       // Historical record
+}

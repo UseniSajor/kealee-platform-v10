@@ -1,0 +1,97 @@
+// MARKETPLACE — Enums
+// Auto-generated from schema splitter
+
+enum LeadStatus {
+  OPEN
+  INTAKE
+  DISTRIBUTED
+  QUOTED
+  AWARDED
+  LOST
+  CLOSED
+}
+
+enum PMPackageTier {
+  PACKAGE_A // Starter - $1,750/month
+  PACKAGE_B // Professional - $3,750/month
+  PACKAGE_C // Premium - $9,500/month (Most Popular)
+  PACKAGE_D // Enterprise - $16,500/month
+}
+
+enum PermitPackageTier {
+  PERMIT_A // Basic - $495 one-time
+  PERMIT_B // Full Service - $1,295 one-time
+  PERMIT_C // Premium - $2,995 one-time
+  PERMIT_D // Enterprise - $7,500/month
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  EXPIRED
+  TRIAL
+  PENDING_PAYMENT
+}
+
+enum GCOpsLeadStatus {
+  NEW
+  CONTACTED
+  TRIAL_ACTIVE
+  TRIAL_ENDED
+  CONVERTED
+  CHURNED
+  ARCHIVED
+}
+
+enum PermitServiceLeadStatus {
+  NEW
+  CONTACTED
+  FIRST_PERMIT_ACTIVE
+  ACTIVE_CLIENT
+  CHURNED
+  ARCHIVED
+}
+
+enum FunnelUserType {
+  HOMEOWNER
+  CONTRACTOR
+  ARCHITECT
+  INVESTOR
+  PROPERTY_MANAGER
+}
+
+enum FunnelProjectType {
+  KITCHEN_REMODEL
+  BATHROOM_REMODEL
+  WHOLE_HOME
+  ADDITION
+  NEW_CONSTRUCTION
+  EXTERIOR
+  LANDSCAPING
+  COMMERCIAL
+}
+
+enum BudgetRange {
+  UNDER_25K
+  RANGE_25K_50K
+  RANGE_50K_100K
+  RANGE_100K_250K
+  OVER_250K
+}
+
+enum FunnelTimeline {
+  ASAP
+  ONE_TO_THREE_MONTHS
+  THREE_TO_SIX_MONTHS
+  SIX_TO_TWELVE_MONTHS
+  JUST_EXPLORING
+}
+
+enum FunnelSessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  GENERATING
+  GENERATED
+  FAILED
+}

@@ -1,0 +1,111 @@
+// FOUNDATION — Enums
+// Auto-generated from schema splitter
+
+enum SensitivityLevel {
+  PUBLIC // Public information
+  INTERNAL // Internal use only
+  CONFIDENTIAL // Confidential data
+  RESTRICTED // Highly restricted (financial, PII)
+}
+
+enum SecurityEventType {
+  API_ACCESS
+  AUTHENTICATION
+  AUTHORIZATION
+  DATA_ACCESS
+  CONFIG_CHANGE
+}
+
+enum SecuritySeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// Dashboard Widget Configuration
+enum WidgetType {
+  PROJECT_SUMMARY
+  TASK_LIST
+  CALENDAR
+  BUDGET_OVERVIEW
+  SCHEDULE_TIMELINE
+  RISK_ALERTS
+  PREDICTIONS
+  RECENT_ACTIVITY
+  METRICS_CHART
+  PERMIT_STATUS
+  INSPECTION_CALENDAR
+  COMMUNICATION_FEED
+  WEATHER_FORECAST
+  AI_INSIGHTS
+  CUSTOM
+}
+
+// Job Queue Tracking (persistent tracking for BullMQ jobs)
+enum JobStatus {
+  WAITING
+  ACTIVE
+  COMPLETED
+  FAILED
+  DELAYED
+  PAUSED
+}
+
+enum ConversationType {
+  DIRECT
+  GROUP
+  PROJECT_CHANNEL
+  SUPPORT
+  AI_ASSISTANT
+}
+
+enum ParticipantRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum ChatMessageType {
+  TEXT
+  FILE
+  IMAGE
+  SYSTEM
+  AI_RESPONSE
+  CHANGE_ORDER
+  PAYMENT
+  RFI
+}
+
+enum PlatformKnowledgeCategory {
+  ARCHITECTURE_DECISION // How the platform is structured
+  SCHEMA_DESIGN // Database schema decisions
+  AUTH_STRATEGY // Authentication and authorization
+  API_DESIGN // API endpoint design
+  PRICING_STRUCTURE // Pricing and billing decisions
+  FEATURE_SPEC // Feature specifications
+  UI_UX_DECISION // UI/UX design decisions
+  INTEGRATION // Third-party integration decisions
+  SECURITY // Security architecture
+  DEPLOYMENT // Deployment and infrastructure
+  BUSINESS_RULE // Business logic rules
+  DATA_FLOW // How data moves between apps
+  COST_BOOK_ARCHITECTURE // Cost database tier structure
+  PROMPT_RECOMMENDATION // AI prompt Q&A recommendations
+}
+
+enum KnowledgeStatus {
+  ACTIVE // Currently in effect
+  SUPERSEDED // Replaced by a newer decision
+  DEPRECATED // No longer relevant
+  PROPOSED // Under consideration
+  REJECTED_KB // Was considered but not adopted
+}
+
+enum KnowledgePriority {
+  LOW
+  NORMAL
+  HIGH
+  CRITICAL
+}

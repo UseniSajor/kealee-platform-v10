@@ -1,0 +1,173 @@
+// WORKFLOW — Enums
+// Auto-generated from schema splitter
+
+enum ComplianceReportType {
+  SAR // Suspicious Activity Report
+  CTR // Currency Transaction Report
+  FORM_1099_NEC
+  FORM_1099_K
+  FORM_1099_MISC
+}
+
+enum ComplianceReportStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  FILED
+  REJECTED
+}
+
+enum RuleType {
+  STATE_ESCROW // State-specific escrow requirements
+  AML // Anti-Money Laundering
+  KYC // Know Your Customer
+  LICENSING // Contractor licensing
+  INSURANCE // Insurance requirements
+  BOND // Surety bond requirements
+  LIEN_LAW // State lien law compliance
+  TAX // Tax compliance
+}
+
+enum ComplianceSeverity {
+  LOW // Minor issue, informational
+  MEDIUM // Should be addressed
+  HIGH // Must be addressed soon
+  CRITICAL // Blocking issue, immediate action required
+}
+
+enum CheckStatus {
+  PASS // Compliance check passed
+  FAIL // Compliance check failed
+  PENDING // Check in progress
+  WAIVED // Check waived by admin
+  EXPIRED // Check result expired
+}
+
+enum LicenseStatus {
+  ACTIVE // License is current and valid
+  EXPIRED // License has expired
+  SUSPENDED // License temporarily suspended
+  REVOKED // License permanently revoked
+  PENDING // Application pending
+}
+
+enum InsuranceStatus {
+  ACTIVE // Insurance is current
+  EXPIRED // Insurance has expired
+  CANCELLED // Insurance cancelled
+  PENDING // Certificate pending verification
+}
+
+enum RemediationStatus {
+  OPEN // Issue identified, not addressed
+  IN_PROGRESS // Working on remediation
+  RESOLVED // Issue resolved
+  ESCALATED // Escalated to management
+}
+
+enum AuditEntityType {
+  USER
+  CONTRACT
+  ESCROW
+  TRANSACTION
+  PAYMENT
+  MILESTONE
+  PROJECT
+  PAYOUT
+  DISPUTE
+  LICENSE
+  INSURANCE
+  BOND
+  COMPLIANCE_CHECK
+  JOURNAL_ENTRY
+  ACCOUNT
+  STATEMENT
+  REPORT
+  BID
+  CHANGE_ORDER
+  SCHEDULE_ITEM
+  QA_ISSUE
+  SUBSCRIPTION
+  ROLE
+  INVITATION
+  SESSION
+  DATA_EXPORT
+}
+
+enum AuditAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  APPROVE
+  REJECT
+  VOID
+  REVERSE
+  EXPORT
+  DOWNLOAD
+  PRINT
+  SEND
+  SIGN
+  LOGIN
+  LOGOUT
+  ACCESS
+  ESCALATE
+}
+
+enum AuditCategory {
+  FINANCIAL // Monetary transactions, journal entries
+  OPERATIONAL // Day-to-day operations
+  SECURITY // Authentication, authorization, access
+  COMPLIANCE // Regulatory compliance actions
+  ADMINISTRATIVE // System administration
+}
+
+enum AuditSeverity {
+  INFO // Informational, routine operations
+  WARNING // Unusual but not problematic
+  CRITICAL // Requires attention, security concern
+}
+
+enum AuditFindingType {
+  PASS // Audit check passed
+  DISCREPANCY // Minor discrepancy found
+  IRREGULARITY // Significant issue found
+  FRAUD // Potential fraud detected
+}
+
+enum ApprovalRequestType {
+  EXPENSE
+  TIME_OFF
+  PURCHASE
+  DOCUMENT
+  CUSTOM
+}
+
+enum ApprovalRequestStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum ApprovalPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ApprovalStepStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SKIPPED
+}
+
+enum AutonomousDecision {
+  AUTO_APPROVED
+  AUTO_REJECTED
+  AUTO_EXECUTED
+  ESCALATED
+}

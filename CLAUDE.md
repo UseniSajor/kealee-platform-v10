@@ -1,10 +1,10 @@
-# Kealee Platform - Claude Code Context
+# Kealee Platform v20 - Claude Code Context
 
 This file preserves key context for Claude Code sessions working on this project.
 
 ## Project Overview
 
-Kealee Platform is a construction project management system with 15 mini-apps (automation tools) built as a monorepo using pnpm workspaces.
+Kealee Platform v20 is a full-lifecycle construction development platform with 18 apps, 11 services, 34 packages, and 13 AI bots, built as a monorepo using pnpm workspaces. Evolved from v10 with formal service layers, Digital Development Twin System (DDTS), and KeaBot automation agents.
 
 ## Repository Structure
 

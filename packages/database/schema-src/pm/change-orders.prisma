@@ -1,0 +1,93 @@
+// PM — CHANGE ORDERS
+// Domain: pm | Owner: OS-PM service
+
+model ChangeOrder {
+  id                String  @id @default(uuid())
+  projectId         String
+  contractId        String?
+  changeOrderNumber String
+  number            Int?    @default(autoincrement()) // Auto-incrementing number for display
+  title             String
+  description       String? @db.Text
+  reason            String? // OWNER_REQUEST, DESIGN_CHANGE, UNFORESEEN_CONDITIONS, CODE_COMPLIANCE
+  requestedBy       String? // User ID who requested the change
+
+  // Amounts
+  originalAmount Decimal  @db.Decimal(12, 2)
+  adjustedAmount Decimal? @db.Decimal(12, 2)
+  estimatedCost  Decimal? @db.Decimal(12, 2)
+  approvedCost   Decimal? @db.Decimal(12, 2)
+  laborCost      Decimal? @db.Decimal(12, 2)
+  materialCost   Decimal? @db.Decimal(12, 2)
+  markupPercent  Decimal? @db.Decimal(5, 2)
+  totalCost      Decimal  @db.Decimal(12, 2)
+
+  // Schedule impact
+  scheduleDays         Int  @default(0)
+  scheduleDaysAffected Int?
+
+  // Status
+  status          String    @default("DRAFT") // DRAFT, SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, CANCELLED
+  submittedAt     DateTime?
+  reviewedAt      DateTime?
+  approvedAt      DateTime?
+  approvedBy      String?
+  rejectionReason String?
+
+  // AI analysis
+  aiAnalysis       Json?
+  aiScore          Int?
+  aiRecommendation String?
+  impactAnalysis   Json? // Impact analysis results
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  approvals ChangeOrderApproval[]
+  lineItems ChangeOrderLineItem[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([changeOrderNumber])
+  @@index([status, createdAt])
+  @@map("change_order_records")
+}
+
+model ChangeOrderApproval {
+  id            String    @id @default(uuid())
+  changeOrderId String
+  approverId    String
+  role          String // PM, OWNER, ARCHITECT
+  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  comments      String?   @db.Text
+  approvedAt    DateTime?
+  decidedAt     DateTime?
+
+  createdAt DateTime @default(now())
+
+  changeOrder ChangeOrder @relation(fields: [changeOrderId], references: [id], onDelete: Cascade)
+  approver    User?       @relation("ChangeOrderApprover", fields: [approverId], references: [id])
+
+  @@index([changeOrderId])
+  @@index([approverId])
+  @@map("change_order_approvals")
+}
+
+model ChangeOrderLineItem {
+  id            String  @id @default(uuid())
+  changeOrderId String
+  description   String
+  quantity      Decimal @db.Decimal(10, 2)
+  unit          String
+  unitCost      Decimal @db.Decimal(10, 2)
+  totalCost     Decimal @db.Decimal(12, 2)
+  category      String? // LABOR, MATERIAL, EQUIPMENT
+
+  createdAt DateTime @default(now())
+
+  changeOrder ChangeOrder @relation(fields: [changeOrderId], references: [id], onDelete: Cascade)
+
+  @@index([changeOrderId])
+  @@map("change_order_line_items")
+}

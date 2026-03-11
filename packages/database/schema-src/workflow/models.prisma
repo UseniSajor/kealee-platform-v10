@@ -1,0 +1,695 @@
+// WORKFLOW — Models
+// Auto-generated from schema splitter
+
+model ComplianceReport {
+  id         String                 @id @default(uuid())
+  reportType ComplianceReportType
+  status     ComplianceReportStatus @default(DRAFT)
+
+  // Report Details
+  title       String
+  description String? @db.Text
+
+  // Period Coverage
+  periodStart DateTime?
+  periodEnd   DateTime?
+
+  // Filing Information
+  filedWith    String? // FinCEN, IRS, etc.
+  filingNumber String? // Reference number from filing
+  filedAt      DateTime?
+
+  // Related Entities
+  relatedUserId        String? // User involved
+  relatedTransactionId String? // Transaction involved
+  relatedEscrowId      String? // Escrow account involved
+
+  // Document
+  documentUrl String? // URL to generated report
+
+  // Review & Approval
+  reviewedBy String? // User ID of reviewer
+  reviewedAt DateTime?
+  approvedBy String? // User ID of approver
+  approvedAt DateTime?
+
+  // Metadata
+  metadata Json? // Report-specific data (SAR details, 1099 data, etc.)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  relatedUser User? @relation("ComplianceReportUser", fields: [relatedUserId], references: [id])
+  reviewer    User? @relation("ComplianceReportReviewer", fields: [reviewedBy], references: [id])
+  approver    User? @relation("ComplianceReportApprover", fields: [approvedBy], references: [id])
+
+  @@index([reportType])
+  @@index([status])
+  @@index([relatedUserId])
+  @@index([periodStart, periodEnd])
+  @@index([filedAt])
+}
+
+model ComplianceRule {
+  id   String   @id @default(uuid())
+  name String // Unique rule name
+  type RuleType
+
+  // Jurisdiction
+  jurisdiction String  @default("US") // Country
+  state        String? // State code (for US)
+  county       String? // County (if applicable)
+
+  // Rule Details
+  description  String  @db.Text
+  requirements Json // Detailed requirements (JSONB)
+  citations    String? @db.Text // Legal citations
+
+  // Validity
+  effectiveDate  DateTime
+  expirationDate DateTime?
+  isActive       Boolean            @default(true)
+  severity       ComplianceSeverity @default(MEDIUM)
+
+  // Thresholds (if applicable)
+  thresholdAmount     Decimal? @db.Decimal(18, 2) // Dollar amount threshold
+  thresholdDays       Int? // Days threshold
+  thresholdPercentage Decimal? @db.Decimal(5, 2) // Percentage threshold
+
+  // Metadata
+  metadata Json? // Additional rule configuration
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  checks ComplianceCheck[] @relation("ComplianceRuleChecks")
+
+  @@index([type])
+  @@index([jurisdiction, state])
+  @@index([isActive])
+  @@index([effectiveDate, expirationDate])
+}
+
+model ComplianceCheck {
+  id        String @id @default(uuid())
+  ruleId    String
+  checkType String // "pre_contract", "pre_payment", "daily_monitoring", "manual"
+
+  // Entity Being Checked
+  userId     String? // User being checked
+  contractId String? // Contract being checked
+  escrowId   String? // Escrow account being checked
+  entityType String? // Generic entity type
+  entityId   String? // Generic entity ID
+
+  // Check Result
+  status        CheckStatus @default(PENDING)
+  checkDate     DateTime    @default(now())
+  expiresAt     DateTime? // When check result expires
+  passedChecks  String[] // List of checks that passed
+  failedChecks  String[] // List of checks that failed
+  failureReason String?     @db.Text
+
+  // Remediation
+  remediation        Json? // Remediation steps and tracking
+  remediationStatus  RemediationStatus?
+  remediationDueDate DateTime?
+
+  // Performed By
+  performedBy String? // "system" or user ID
+  isAutomated Boolean @default(true)
+
+  // Metadata
+  metadata Json? // Additional check data
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  rule      ComplianceRule     @relation("ComplianceRuleChecks", fields: [ruleId], references: [id])
+  user      User?              @relation("ComplianceCheckUser", fields: [userId], references: [id])
+  contract  ContractAgreement? @relation("ComplianceCheckContract", fields: [contractId], references: [id])
+  performer User?              @relation("ComplianceCheckPerformer", fields: [performedBy], references: [id])
+
+  @@index([ruleId])
+  @@index([userId])
+  @@index([contractId])
+  @@index([status])
+  @@index([checkDate])
+  @@index([expiresAt])
+}
+
+model LicenseTracking {
+  id     String @id @default(uuid())
+  userId String // Contractor ID
+
+  // License Details
+  licenseType      String // "general_contractor", "electrical", "plumbing", etc.
+  licenseNumber    String
+  issuingAuthority String // "California CSLB", "Texas TDLR", etc.
+  state            String // State code
+  county           String? // County (if applicable)
+
+  // License Information
+  issueDate       DateTime
+  expirationDate  DateTime
+  status          LicenseStatus @default(ACTIVE)
+  classifications String[] // License classifications/specialties
+
+  // Document
+  documentUrl String? // URL to license document
+  verifiedAt  DateTime? // When license was verified
+  verifiedBy  String? // User ID who verified
+
+  // Validation
+  lastChecked        DateTime? // Last time we checked with state board
+  nextCheck          DateTime? // Next scheduled check
+  autoVerified       Boolean   @default(false) // Verified via API
+  verificationSource String? // "manual", "state_api", "third_party"
+
+  // Alerts
+  expirationAlertSent Boolean   @default(false)
+  alertSentAt         DateTime?
+
+  // Metadata
+  metadata Json? // Additional license data
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  contractor User @relation("ContractorLicenses", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([licenseNumber])
+  @@index([state])
+  @@index([status])
+  @@index([expirationDate])
+  @@index([nextCheck])
+}
+
+model InsuranceCertificate {
+  id     String @id @default(uuid())
+  userId String // Contractor ID
+
+  // Insurance Details
+  insuranceType String // "general_liability", "workers_comp", "professional_liability"
+  carrier       String // Insurance company name
+  policyNumber  String
+
+  // Coverage
+  coverageAmount Decimal  @db.Decimal(18, 2)
+  deductible     Decimal? @db.Decimal(18, 2)
+  perOccurrence  Decimal? @db.Decimal(18, 2) // Per occurrence limit
+  aggregate      Decimal? @db.Decimal(18, 2) // Aggregate limit
+
+  // Validity
+  effectiveDate  DateTime
+  expirationDate DateTime
+  status         InsuranceStatus @default(ACTIVE)
+
+  // Additional Insured
+  additionalInsureds String[] // List of additional insureds
+
+  // Document
+  documentUrl String? // URL to certificate
+  verifiedAt  DateTime? // When certificate was verified
+  verifiedBy  String? // User ID who verified
+
+  // Alerts
+  expirationAlertSent Boolean   @default(false)
+  alertSentAt         DateTime?
+
+  // Metadata
+  metadata Json? // Additional insurance data
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  contractor User @relation("ContractorInsurance", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([policyNumber])
+  @@index([status])
+  @@index([expirationDate])
+  @@index([insuranceType])
+}
+
+model BondTracking {
+  id         String  @id @default(uuid())
+  userId     String // Contractor ID
+  contractId String? // Specific contract (if project-specific bond)
+
+  // Bond Details
+  bondType      String // "license_bond", "contract_bond", "payment_bond", "performance_bond"
+  bondNumber    String
+  suretyCompany String
+  bondAmount    Decimal @db.Decimal(18, 2)
+
+  // Validity
+  effectiveDate  DateTime
+  expirationDate DateTime?
+  status         String    @default("ACTIVE") // ACTIVE, EXPIRED, CLAIMED, RELEASED
+
+  // Obligee
+  obligee String? // Who is protected by the bond
+
+  // Document
+  documentUrl String? // URL to bond document
+  verifiedAt  DateTime?
+  verifiedBy  String?
+
+  // Claims
+  hasClaims   Boolean  @default(false)
+  claimAmount Decimal? @db.Decimal(18, 2)
+  claimNotes  String?  @db.Text
+
+  // Alerts
+  expirationAlertSent Boolean   @default(false)
+  alertSentAt         DateTime?
+
+  // Metadata
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  contractor User               @relation("ContractorBonds", fields: [userId], references: [id], onDelete: Cascade)
+  contract   ContractAgreement? @relation("ContractBonds", fields: [contractId], references: [id])
+
+  @@index([userId])
+  @@index([contractId])
+  @@index([bondNumber])
+  @@index([status])
+  @@index([expirationDate])
+}
+
+model ComplianceAlert {
+  id        String @id @default(uuid())
+  alertType String // "license_expiring", "insurance_lapsing", "bond_insufficient", etc.
+
+  // Related Entities
+  userId     String? // User involved
+  contractId String? // Contract involved
+  entityType String? // "license", "insurance", "bond", "check"
+  entityId   String? // ID of entity
+
+  // Alert Details
+  title       String
+  description String             @db.Text
+  severity    ComplianceSeverity @default(MEDIUM)
+  dueDate     DateTime? // When action must be taken
+
+  // Status
+  status           RemediationStatus @default(OPEN)
+  resolvedBy       String? // User ID
+  resolvedAt       DateTime?
+  resolution       String?           @db.Text
+  remediationSteps String[] // Steps taken
+
+  // Notification
+  notificationSent Boolean   @default(false)
+  sentAt           DateTime?
+  recipients       String[] // User IDs notified
+  escalated        Boolean   @default(false)
+  escalatedAt      DateTime?
+
+  // Metadata
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  user     User?              @relation("ComplianceAlertUser", fields: [userId], references: [id])
+  contract ContractAgreement? @relation("ComplianceAlertContract", fields: [contractId], references: [id])
+  resolver User?              @relation("ComplianceAlertResolver", fields: [resolvedBy], references: [id])
+
+  @@index([alertType])
+  @@index([userId])
+  @@index([contractId])
+  @@index([severity])
+  @@index([status])
+  @@index([dueDate])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id         String          @id @default(uuid())
+  entityType AuditEntityType
+  entityId   String // ID of the entity
+  action     AuditAction
+
+  // User Context
+  performedBy String // User ID
+  performedAt DateTime @default(now())
+  userEmail   String? // Denormalized for fast search
+  userRole    String? // Role at time of action
+
+  // Session Context
+  ipAddress String?
+  userAgent String? @db.Text
+  sessionId String?
+  location  String? // Geolocated location
+
+  // Change Tracking
+  beforeData   Json? // State before change
+  afterData    Json? // State after change
+  fieldChanges Json? // Specific field changes with reasons
+
+  // Description
+  changeDescription String? @db.Text
+  description       String? @db.Text // Human-readable description
+  businessReason    String? @db.Text // Why the change was made
+
+  // Scope
+  projectId      String? // Project scope
+  organizationId String? // Organization scope
+
+  // Tracing
+  traceId String? // Links to OpenTelemetry distributed trace
+  source  String? // Origin: 'api', 'command-center', 'webhook', 'cron', 'system'
+
+  // Classification
+  category AuditCategory
+  severity AuditSeverity @default(INFO)
+
+  // Metadata
+  metadata Json? // Additional context
+
+  // Immutability
+  isImmutable Boolean @default(true) // Cannot be modified once created
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  // Relationships
+  performer User @relation("AuditLogPerformer", fields: [performedBy], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([performedBy])
+  @@index([performedAt])
+  @@index([action])
+  @@index([category])
+  @@index([severity])
+  @@index([createdAt])
+  @@index([projectId])
+  @@index([organizationId])
+  @@index([userEmail])
+  @@index([traceId])
+  @@index([source])
+}
+
+model AuditReport {
+  id          String  @id @default(uuid())
+  reportType  String // SOC2, FINANCIAL, REGULATORY, SECURITY, CUSTOM
+  title       String
+  description String? @db.Text
+
+  // Report Period
+  periodStart DateTime
+  periodEnd   DateTime
+
+  // Generated By
+  generatedBy String // User ID
+  generatedAt DateTime @default(now())
+
+  // Report Content
+  summary         String   @db.Text
+  findings        Json // Detailed findings
+  metrics         Json // Key metrics
+  recommendations String[] // Recommendations
+
+  // Document
+  documentUrl String? // URL to generated report PDF
+
+  // Distribution
+  sharedWith String[] // User IDs who can access
+  isPublic   Boolean  @default(false)
+
+  // Status
+  status String @default("DRAFT") // DRAFT, FINAL, ARCHIVED
+
+  // Metadata
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  generator User @relation("AuditReportGenerator", fields: [generatedBy], references: [id])
+
+  @@index([reportType])
+  @@index([generatedBy])
+  @@index([periodStart, periodEnd])
+  @@index([generatedAt])
+  @@index([status])
+}
+
+model ApprovalRequest {
+  id          String                @id @default(uuid())
+  type        ApprovalRequestType
+  subtype     String?
+  status      ApprovalRequestStatus @default(DRAFT)
+  priority    ApprovalPriority      @default(MEDIUM)
+  title       String
+  description String?
+  requesterId String
+  amount      Decimal?              @db.Decimal(12, 2)
+  currency    String?               @default("usd")
+  startDate   DateTime?
+  endDate     DateTime?
+  metadata    Json? // Additional metadata
+  submittedAt DateTime?
+  completedAt DateTime?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  requester     User                 @relation("ApprovalRequestRequester", fields: [requesterId], references: [id])
+  approvalSteps ApprovalStep[]
+  attachments   ApprovalAttachment[]
+  comments      ApprovalComment[]
+
+  @@index([requesterId])
+  @@index([status])
+  @@index([type])
+  @@index([priority])
+  @@index([createdAt])
+  @@index([submittedAt])
+}
+
+model ApprovalStep {
+  id                String             @id @default(uuid())
+  approvalRequestId String
+  approverId        String
+  approverRole      String?
+  status            ApprovalStepStatus @default(PENDING)
+  comments          String?
+  order             Int // Order in approval chain
+  required          Boolean            @default(true)
+  approvedAt        DateTime?
+  rejectedAt        DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  approvalRequest ApprovalRequest @relation(fields: [approvalRequestId], references: [id], onDelete: Cascade)
+  approver        User            @relation("ApprovalStepApprover", fields: [approverId], references: [id])
+
+  @@index([approvalRequestId])
+  @@index([approverId])
+  @@index([status])
+  @@index([order])
+}
+
+model ApprovalRule {
+  id            String            @id @default(uuid())
+  name          String
+  type          String
+  subtype       String?
+  conditions    Json // Array of condition objects
+  approvalChain Json // Array of approval chain steps
+  priority      ApprovalPriority?
+  sla           Int? // SLA in hours
+  active        Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([type])
+  @@index([active])
+  @@index([createdAt])
+}
+
+model ApprovalAttachment {
+  id                String   @id @default(uuid())
+  approvalRequestId String
+  fileId            String? // Reference to File model
+  fileName          String
+  fileUrl           String
+  fileType          String
+  fileSize          Int // Bytes
+  uploadedAt        DateTime @default(now())
+
+  approvalRequest ApprovalRequest @relation(fields: [approvalRequestId], references: [id], onDelete: Cascade)
+
+  @@index([approvalRequestId])
+}
+
+model ApprovalComment {
+  id                String   @id @default(uuid())
+  approvalRequestId String
+  userId            String
+  content           String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  approvalRequest ApprovalRequest @relation(fields: [approvalRequestId], references: [id], onDelete: Cascade)
+  user            User            @relation("ApprovalCommentUser", fields: [userId], references: [id])
+
+  @@index([approvalRequestId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model AutomationTask {
+  id           String    @id @default(uuid())
+  type         String // Task type
+  status       String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, FAILED
+  priority     String    @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+  projectId    String?
+  clientId     String?
+  assignedPmId String?
+  sourceApp    String? // "APP-01" through "APP-15"
+  payload      Json?
+  result       Json?
+  error        String?   @db.Text
+  retryCount   Int       @default(0)
+  maxRetries   Int       @default(3)
+  dueAt        DateTime?
+  scheduledAt  DateTime?
+  startedAt    DateTime?
+  completedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([type])
+  @@index([status])
+  @@index([projectId])
+  @@index([sourceApp])
+  @@index([assignedPmId])
+  @@index([scheduledAt])
+  @@map("automation_tasks")
+}
+
+model DecisionLog {
+  id             String    @id @default(uuid())
+  projectId      String
+  type           String // BUDGET, SCHEDULE, QUALITY, SCOPE, VENDOR
+  question       String    @db.Text
+  context        Json?
+  recommendation String    @db.Text
+  confidence     Decimal   @db.Decimal(5, 4)
+  reasoning      String?   @db.Text
+  alternatives   Json?
+  risks          Json?
+  dataPoints     Json?
+  accepted       Boolean?
+  acceptedAt     DateTime?
+  feedback       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("decision_logs")
+}
+
+// APP-15: Automation Event Bus
+model AutomationEvent {
+  id          String   @id @default(uuid())
+  eventType   String
+  sourceApp   String // "APP-01" through "APP-15"
+  projectId   String?
+  payload     Json
+  processedBy String[]
+  createdAt   DateTime @default(now())
+
+  @@index([eventType])
+  @@index([sourceApp])
+  @@index([projectId])
+  @@index([createdAt])
+  @@map("automation_events")
+}
+
+// APP-14: Decision Queue for PM Actions
+model DecisionQueue {
+  id        String @id @default(uuid())
+  projectId String
+  pmId      String
+
+  type  String // bid_award, change_order, payment_release, schedule_change
+  title String
+
+  context          Json
+  aiRecommendation String?  @db.Text
+  aiConfidence     Decimal? @db.Decimal(5, 4)
+  options          Json
+
+  decision  String? // approved, rejected, deferred
+  decidedAt DateTime?
+  decidedBy String?
+  reasoning String?   @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([pmId])
+  @@index([projectId])
+  @@index([type])
+  @@index([decision])
+  @@map("decision_queue")
+}
+
+model AutonomousActionLog {
+  id            String             @id @default(uuid())
+  projectId     String
+  appSource     String // e.g. "APP-03", "APP-01", "APP-07"
+  actionType    String // e.g. "change_order_approve", "bid_reject", "budget_acknowledge"
+  description   String
+  decision      AutonomousDecision
+  reasoning     String             @db.Text
+  data          Json? // Action-specific data (amounts, IDs, etc.)
+  confidence    Int                @default(0) // 0-100
+  autonomyLevel Int // The autonomy level that was active when this action was taken
+
+  // Review tracking
+  reviewedByPM Boolean   @default(false)
+  reviewedAt   DateTime?
+  revertedAt   DateTime?
+  revertedBy   String?
+
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+  @@index([appSource])
+  @@index([decision])
+  @@index([reviewedByPM])
+  @@map("autonomous_action_logs")
+}

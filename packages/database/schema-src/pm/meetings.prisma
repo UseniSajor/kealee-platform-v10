@@ -1,0 +1,78 @@
+// PM — MEETINGS
+// Domain: pm | Owner: OS-PM service
+
+model Meeting {
+  id        String @id @default(uuid())
+  projectId String
+
+  meetingNumber     Int           @default(autoincrement())
+  title             String
+  type              MeetingType   @default(PROGRESS)
+  date              DateTime
+  startTime         String? // "09:00"
+  endTime           String? // "10:30"
+  location          String?
+  agenda            String?       @db.Text
+  minutes           String?       @db.Text
+  status            MeetingStatus @default(SCHEDULED)
+  createdById       String
+  recurringSchedule Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project     Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy   User                @relation("MeetingCreator", fields: [createdById], references: [id])
+  attendees   MeetingAttendee[]
+  actionItems MeetingActionItem[]
+
+  @@index([projectId])
+  @@index([date])
+  @@index([type])
+  @@index([status])
+  @@index([projectId, date])
+  @@map("meetings")
+}
+
+model MeetingAttendee {
+  id           String  @id @default(uuid())
+  meetingId    String
+  userId       String?
+  name         String
+  email        String?
+  company      String?
+  role         String?
+  attended     Boolean @default(false)
+  signatureUrl String?
+
+  createdAt DateTime @default(now())
+
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
+  @@map("meeting_attendees")
+}
+
+model MeetingActionItem {
+  id             String    @id @default(uuid())
+  meetingId      String
+  description    String    @db.Text
+  assignedToId   String?
+  assignedToName String?
+  dueDate        DateTime?
+  status         String    @default("OPEN") // OPEN, IN_PROGRESS, COMPLETED, OVERDUE
+  priority       String    @default("MEDIUM") // LOW, MEDIUM, HIGH
+  completedAt    DateTime?
+  notes          String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  meeting    Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  assignedTo User?   @relation("ActionItemAssignee", fields: [assignedToId], references: [id])
+
+  @@index([meetingId])
+  @@index([assignedToId])
+  @@index([status])
+  @@map("meeting_action_items")
+}

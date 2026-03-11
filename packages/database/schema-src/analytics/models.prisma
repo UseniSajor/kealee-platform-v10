@@ -1,0 +1,569 @@
+// ANALYTICS — Models
+// Auto-generated from schema splitter
+
+model AnalyticsSnapshot {
+  id           String       @id @default(uuid())
+  snapshotDate DateTime     @default(now())
+  snapshotType SnapshotType
+
+  // Calculated Metrics (stored as JSON for flexibility)
+  metrics Json // All calculated metrics for this period
+
+  // Trend Indicators
+  trends Json? // Trend analysis results
+
+  // Forecasts & Predictions
+  forecasts Json? // Predictive analytics results
+
+  // Metadata
+  calculationTime Int? // Time taken to calculate (ms)
+  dataPoints      Int? // Number of records analyzed
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([snapshotDate])
+  @@index([snapshotType])
+  @@index([createdAt])
+}
+
+model KPI {
+  id   String  @id @default(uuid())
+  name String  @unique // Unique identifier (e.g., "monthly_revenue")
+  type KPIType
+
+  // Display Information
+  displayName String // Human-readable name
+  description String? @db.Text
+  unit        String? // e.g., "USD", "count", "percent"
+  category    String? // Grouping category
+
+  // Current State
+  currentValue Decimal  @db.Decimal(18, 2)
+  targetValue  Decimal? @db.Decimal(18, 2)
+  threshold    Decimal? @db.Decimal(18, 2) // Alert threshold
+
+  // Trend Analysis
+  trendDirection TrendDirection
+  changePercent  Decimal?       @db.Decimal(8, 2) // % change vs. previous period
+  previousValue  Decimal?       @db.Decimal(18, 2)
+  isHealthy      Boolean        @default(true) // Is KPI within acceptable range?
+
+  // Calculation Settings
+  calculationFrequency CalculationFrequency @default(DAILY)
+  lastCalculated       DateTime             @default(now())
+  nextCalculation      DateTime?
+
+  // Alert Configuration
+  alertEnabled   Boolean   @default(false)
+  alertThreshold Decimal?  @db.Decimal(18, 2)
+  lastAlertSent  DateTime?
+
+  // Metadata
+  metadata Json? // Additional configuration
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@index([type])
+  @@index([lastCalculated])
+  @@index([isHealthy])
+}
+
+model FraudScore {
+  id            String  @id @default(uuid())
+  transactionId String? // EscrowTransaction ID
+  userId        String? // User being scored
+  entityType    String // "transaction", "user", "payout"
+  entityId      String // ID of the entity
+
+  // Fraud Scoring
+  score      Int       @default(0) // 0-100 (100 = highest fraud risk)
+  riskLevel  RiskLevel @default(VERY_LOW)
+  confidence Decimal   @db.Decimal(5, 2) // Confidence level 0-100%
+
+  // Features Used (for ML model)
+  features Json // Input features used for scoring
+
+  // Detection Details
+  flaggedReasons       String[] // Array of reasons
+  manualReviewRequired Boolean   @default(false)
+  reviewedBy           String? // User ID of reviewer
+  reviewedAt           DateTime?
+  isFraud              Boolean? // Final determination
+
+  // Actions Taken
+  actionsTaken String[] // e.g., ["transaction_held", "user_notified"]
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  user     User? @relation("FraudScoreUser", fields: [userId], references: [id])
+  reviewer User? @relation("FraudScoreReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([score])
+  @@index([riskLevel])
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([manualReviewRequired])
+  @@index([createdAt])
+}
+
+model ChurnPrediction {
+  id     String @id @default(uuid())
+  userId String @unique // Contractor being scored
+
+  // Churn Prediction
+  churnScore       Int       @default(0) // 0-100 (100 = highest churn risk)
+  riskLevel        RiskLevel @default(VERY_LOW)
+  confidence       Decimal   @db.Decimal(5, 2)
+  churnProbability Decimal   @db.Decimal(5, 2) // 0-100%
+
+  // Risk Factors
+  riskFactors Json // Array of contributing factors
+
+  // Features Used
+  features Json // Input features: transaction frequency, disputes, etc.
+
+  // Recommendations
+  retentionActions String[] // Recommended actions
+  priorityLevel    String   @default("low") // low, medium, high, critical
+
+  // Tracking
+  lastEngagement    DateTime? // Last transaction or activity
+  daysSinceActivity Int? // Days since last activity
+
+  // Review & Action
+  reviewedBy   String? // User ID
+  reviewedAt   DateTime?
+  actionsToken String[] // Actions taken
+
+  // Prediction Outcome (to track model accuracy)
+  actuallyChurned Boolean? // Did they actually churn?
+  churnedAt       DateTime?
+
+  // Timestamps
+  calculatedAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  user     User  @relation("ChurnPredictionUser", fields: [userId], references: [id], onDelete: Cascade)
+  reviewer User? @relation("ChurnPredictionReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([churnScore])
+  @@index([riskLevel])
+  @@index([calculatedAt])
+}
+
+model AnalyticsAlert {
+  id          String        @id @default(uuid())
+  alertType   String // "kpi_threshold", "fraud_detected", "churn_risk", etc.
+  severity    AlertSeverity @default(INFO)
+  title       String
+  description String        @db.Text
+
+  // Related Entities
+  relatedKPIId      String? // KPI that triggered alert
+  relatedUserId     String? // User involved
+  relatedEntityType String? // "transaction", "escrow", "user"
+  relatedEntityId   String? // ID of entity
+
+  // Alert Data
+  data Json? // Additional alert data
+
+  // Status
+  isResolved Boolean   @default(false)
+  resolvedBy String? // User ID
+  resolvedAt DateTime?
+  resolution String?   @db.Text
+
+  // Notification
+  notificationSent Boolean   @default(false)
+  sentAt           DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  relatedUser User? @relation("AnalyticsAlertUser", fields: [relatedUserId], references: [id])
+  resolver    User? @relation("AnalyticsAlertResolver", fields: [resolvedBy], references: [id])
+
+  @@index([alertType])
+  @@index([severity])
+  @@index([isResolved])
+  @@index([createdAt])
+}
+
+model CustomReport {
+  id          String  @id @default(uuid())
+  name        String
+  description String? @db.Text
+  createdBy   String // User ID
+
+  // Report Configuration
+  metrics       String[] // List of metrics to include
+  filters       Json // Filter configuration
+  groupBy       String[] // Grouping dimensions
+  visualization String   @default("table") // table, line, bar, pie
+
+  // Schedule
+  isScheduled        Boolean   @default(false)
+  scheduleFrequency  String? // "daily", "weekly", "monthly"
+  scheduleDayOfWeek  Int? // 0-6 for weekly
+  scheduleDayOfMonth Int? // 1-31 for monthly
+  lastGenerated      DateTime?
+  nextScheduled      DateTime?
+
+  // Sharing
+  isPublic   Boolean  @default(false)
+  sharedWith String[] // Array of user IDs
+
+  // Metadata
+  metadata Json? // Additional configuration
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  creator User @relation("CustomReportCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([createdBy])
+  @@index([isScheduled])
+  @@index([nextScheduled])
+}
+
+model Client {
+  id               String   @id @default(uuid())
+  name             String
+  email            String?
+  phone            String?
+  assignedPM       String? // PM user ID
+  status           String   @default("ACTIVE")
+  subscriptionTier String?  @default("BASIC") // BASIC, STANDARD, PREMIUM, ENTERPRISE
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  projects           Project[]
+  tasks              Task[]
+  assignmentRequests AssignmentRequest[]
+
+  // SOP v2 Service Subscriptions
+  pmSubscriptions     PMServiceSubscription[]     @relation("PMServiceSubscriptionClient")
+  permitSubscriptions PermitServiceSubscription[] @relation("PermitServiceSubscriptionClient")
+  alaCarteServices    ALaCarteService[]           @relation("ALaCarteServiceClient")
+
+  @@index([assignedPM])
+  @@index([status])
+}
+
+model OFACScreening {
+  id             String   @id @default(uuid())
+  screeningId    String   @unique
+  entityName     String
+  entityType     String
+  matchFound     Boolean
+  matchScore     Float
+  matchDetails   Json?
+  requestData    Json?
+  sdnListVersion String?
+  error          String?
+  screenedAt     DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  @@index([entityName])
+  @@index([matchFound])
+  @@index([screenedAt])
+}
+
+model OFACCache {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  data      Json
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+  @@index([expiresAt])
+}
+
+model ActivityLog {
+  id          String  @id @default(uuid())
+  projectId   String?
+  userId      String?
+  action      String
+  category    String? // Category for filtering
+  entityType  String? // PROJECT, TASK, PERMIT, etc.
+  entityId    String?
+  description String? @db.Text
+  metadata    Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([category])
+  @@index([entityType])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+model Prediction {
+  id                String    @id @default(uuid())
+  projectId         String
+  type              String // DELAY, BUDGET_OVERRUN, QUALITY_ISSUE, etc.
+  probability       Decimal   @db.Decimal(5, 4) // 0.0000 to 1.0000
+  confidence        Decimal   @db.Decimal(5, 4)
+  impact            String // LOW, MEDIUM, HIGH, CRITICAL
+  description       String    @db.Text
+  factors           Json? // Contributing factors
+  recommendedAction String?   @db.Text
+  acknowledged      Boolean   @default(false)
+  acknowledgedAt    DateTime?
+  acknowledgedBy    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([type])
+  @@index([acknowledged])
+  @@map("predictions")
+}
+
+// AI Conversation History
+model AIConversation {
+  id            String   @id @default(uuid())
+  projectId     String?
+  userId        String
+  title         String? // Auto-generated or user-provided title
+  messages      Json // Array of conversation messages
+  context       Json? // Project context, selected files, etc.
+  summary       String?  @db.Text // AI-generated conversation summary
+  tokens        Int      @default(0) // Total tokens used
+  model         String? // AI model used (e.g., "claude-3-opus")
+  isArchived    Boolean  @default(false)
+  lastMessageAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([lastMessageAt])
+  @@index([isArchived])
+  @@map("ai_conversations")
+}
+
+model SoftwareSubscription {
+  id             String                     @id @default(cuid())
+  userId         String
+  organizationId String?
+  softwareTier   SoftwareTier
+  pricingTier    String // basic, standard, plus
+  status         SoftwareSubscriptionStatus @default(ACTIVE)
+
+  // Limits (from Stripe metadata)
+  maxProjects Int
+  maxUsers    Int
+
+  // Billing
+  monthlyPrice           Decimal   @db.Decimal(10, 2)
+  billingInterval        String    @default("month") // month or year
+  stripeSubscriptionId   String?   @unique
+  stripeCustomerId       String?
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
+
+  // Trial
+  trialEndsAt    DateTime?
+  trialStartedAt DateTime?
+
+  // Lifecycle
+  startDate    DateTime  @default(now())
+  cancelledAt  DateTime?
+  cancelReason String?
+  pausedAt     DateTime?
+  resumesAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation("UserSoftwareSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([softwareTier])
+  @@index([status])
+  @@index([stripeSubscriptionId])
+  @@map("software_subscriptions")
+}
+
+// AI Estimation Sessions — AI-powered estimation features
+model AIEstimationSession {
+  id          String             @id @default(uuid())
+  estimateId  String?
+  userId      String
+  sessionType AISessionType
+  status      AIEstSessionStatus @default(AI_EST_ACTIVE)
+
+  // Input
+  inputType String
+  inputData Json
+
+  // Processing
+  processingSteps Json?
+  extractedData   Json?
+
+  // Output
+  generatedItems Json?
+  confidence     Decimal? @db.Decimal(5, 4)
+  warnings       Json?
+
+  // Feedback
+  accepted      Boolean?
+  feedbackNotes String?
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  metadata    Json?
+
+  @@index([estimateId])
+  @@index([userId])
+  @@index([sessionType])
+  @@map("ai_estimation_sessions")
+}
+
+model FunnelSession {
+  id            String              @id @default(uuid())
+  userType      FunnelUserType?
+  projectType   FunnelProjectType?
+  city          String?
+  state         String?
+  budget        BudgetRange?
+  timeline      FunnelTimeline?
+  currentStep   Int                 @default(0)
+  status        FunnelSessionStatus @default(IN_PROGRESS)
+
+  // UTM tracking
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+
+  // Visitor info
+  ipAddress String?
+  userAgent String?
+
+  // AI-generated page data (durable fallback for Redis cache)
+  generatedPageData Json?
+
+  // Marketing lead linkage
+  marketingLeads MarketingLead[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("funnel_sessions")
+}
+
+// ── Marketing & Lead Capture ──────────────────────────────────
+model MarketingCampaign {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  headline    String?
+  subheadline String?
+  benefits    Json?    @default("[]")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  leads MarketingLead[]
+
+  @@map("marketing_campaigns")
+}
+
+model MarketingLead {
+  id              String             @id @default(uuid())
+  name            String
+  email           String
+  phone           String?
+  projectType     String?
+  source          String?
+  campaignSlug    String?
+  campaign        MarketingCampaign? @relation(fields: [campaignSlug], references: [slug])
+  status          String             @default("new")
+  funnelSessionId String?
+  funnelSession   FunnelSession?     @relation(fields: [funnelSessionId], references: [id])
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([campaignSlug])
+  @@map("marketing_leads")
+}
+
+model ApprenticeshipProgram {
+  id            String   @id @default(cuid())
+  title         String
+  sponsor       String
+  tradeType     String
+  duration      String
+  hoursRequired Int
+  wageStart     Float?
+  wageEnd       Float?
+  locations     String[]
+  isRapids      Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  description   String   @db.Text
+  applyUrl      String?
+  contactEmail  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tradeType])
+  @@index([isActive])
+  @@map("apprenticeship_programs")
+}
+
+model GovernmentContract {
+  id              String   @id @default(cuid())
+  solicitationNum String   @unique
+  title           String
+  agency          String
+  agencyLevel     String
+  jurisdiction    String
+  naicsCode       String
+  setAsideType    String?
+  estimatedValue  Float?
+  issueDate       DateTime
+  dueDate         DateTime
+  awardDate       DateTime?
+  status          String
+  description     String   @db.Text
+  requirementsUrl String?
+  sourceUrl       String
+  isTracked       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([agencyLevel])
+  @@index([naicsCode])
+  @@index([dueDate])
+  @@map("government_contracts")
+}
