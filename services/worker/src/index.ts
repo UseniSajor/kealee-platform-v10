@@ -18,7 +18,51 @@ import { createConceptDeliveryWorker } from './processors/concept-delivery.proce
 import { cronManager } from './cron/cron.manager'
 import type { Worker } from 'bullmq'
 
-console.log('🚀 Starting Kealee Platform Worker Service...')
+console.log('Starting Kealee Platform Worker Service...')
+
+// ── Startup env validation ──
+function validateWorkerEnv(): void {
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production'
+
+  const required: { name: string; description: string }[] = [
+    { name: 'REDIS_URL', description: 'Redis URL (BullMQ job queues)' },
+  ]
+
+  const recommended: { name: string; description: string }[] = [
+    { name: 'DATABASE_URL', description: 'PostgreSQL connection string' },
+    { name: 'ANTHROPIC_API_KEY', description: 'Anthropic API key (ML/AI queues)' },
+    { name: 'SENDGRID_API_KEY', description: 'SendGrid API key (email queue)' },
+  ]
+
+  console.log('')
+  console.log('='.repeat(60))
+  console.log('  Worker Environment Validation')
+  console.log('='.repeat(60))
+
+  const missingRequired = required.filter(v => !process.env[v.name]?.trim())
+  if (missingRequired.length > 0 && isProduction) {
+    console.error('FATAL: Missing required environment variables:')
+    for (const v of missingRequired) {
+      console.error(`   - ${v.name}  (${v.description})`)
+    }
+    console.error('='.repeat(60))
+    process.exit(1)
+  }
+
+  const missingRecommended = recommended.filter(v => !process.env[v.name]?.trim())
+  if (missingRecommended.length > 0) {
+    console.log('  Recommended variables not set (some queues may not function):')
+    for (const v of missingRecommended) {
+      console.log(`   - ${v.name}  (${v.description})`)
+    }
+  }
+
+  console.log(`  Environment: ${process.env.APP_ENV || process.env.NODE_ENV || 'development'}`)
+  console.log('='.repeat(60))
+  console.log('')
+}
+
+validateWorkerEnv()
 
 // Workers
 let emailWorker: Worker | null = null
@@ -219,15 +263,31 @@ async function initializeSpatialVerificationQueue() {
 }
 
 // Initialize concept delivery queue and worker
+// This queue is CRITICAL for revenue — failures are always fatal in production.
 async function initializeConceptDeliveryQueue() {
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production'
   try {
     console.log('Initializing concept delivery queue...')
     conceptDeliveryWorker = createConceptDeliveryWorker()
     console.log('Concept delivery worker started')
     console.log('Concept delivery queue initialized')
   } catch (error) {
-    console.error('Failed to initialize concept delivery queue:', error)
-    throw error
+    console.error('')
+    console.error('='.repeat(80))
+    console.error('CONCEPT DELIVERY QUEUE FAILED TO INITIALIZE')
+    console.error('='.repeat(80))
+    console.error('This queue is required for delivering paid concepts to customers.')
+    console.error('Failure means customers will not receive purchased deliverables.')
+    console.error('')
+    console.error('Root cause:', error)
+    console.error('')
+    if (isProduction) {
+      console.error('FATAL in production — exiting to prevent silent delivery failures.')
+      console.error('='.repeat(80))
+      process.exit(1)
+    }
+    console.error('Continuing in development mode (concept delivery disabled).')
+    console.error('='.repeat(80))
   }
 }
 

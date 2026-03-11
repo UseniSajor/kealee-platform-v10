@@ -5,8 +5,9 @@ import { syncNewUser } from '../integrations/ghl/ghl-sync'
 
 export class AuthService {
   async signup(email: string, password: string, name: string) {
-    // 1. Create user in Supabase Auth
     const supabase = getSupabaseClient()
+
+    // 1. Create user in Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -14,15 +15,38 @@ export class AuthService {
 
     if (authError) throw authError
 
-    // 2. Create user record in our database
-    const user = await prismaAny.user.create({
-      data: {
-        id: authData.user!.id,
-        email,
-        name,
-        status: 'ACTIVE',
-      },
-    })
+    const supabaseUserId = authData.user!.id
+
+    // 2. Create user record in our database — rollback Supabase if this fails
+    let user: any
+    try {
+      user = await prismaAny.user.create({
+        data: {
+          id: supabaseUserId,
+          email,
+          name,
+          status: 'ACTIVE',
+        },
+      })
+    } catch (prismaError) {
+      // Prisma failed — delete the orphaned Supabase user to prevent divergence
+      console.error(
+        `[auth] Prisma user creation failed for ${email}, rolling back Supabase user ${supabaseUserId}:`,
+        prismaError,
+      )
+      try {
+        await supabase.auth.admin.deleteUser(supabaseUserId)
+        console.log(`[auth] Supabase user ${supabaseUserId} rolled back successfully`)
+      } catch (rollbackError) {
+        // Log the rollback failure — manual cleanup may be needed
+        console.error(
+          `[auth] CRITICAL: Failed to rollback Supabase user ${supabaseUserId}. ` +
+          `Orphaned auth record exists. Manual cleanup required.`,
+          rollbackError,
+        )
+      }
+      throw prismaError
+    }
 
     auditService.log({ userId: user.id, action: 'CREATE', entityType: 'USER', entityId: user.id, description: `User registered: ${email}`, category: 'SECURITY', severity: 'INFO' })
 
