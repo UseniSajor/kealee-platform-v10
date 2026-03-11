@@ -82,7 +82,7 @@ export class GLTFConverter {
     const modelId = this.ifcApi.OpenModel(data, {
       COORDINATE_TO_ORIGIN: true,
       USE_FAST_BOOLS: true,
-    });
+    } as any);
 
     try {
       // Extract all geometry from the model
@@ -306,7 +306,7 @@ export class GLTFConverter {
       const positionBytes = geom.vertices.buffer.slice(
         geom.vertices.byteOffset,
         geom.vertices.byteOffset + geom.vertices.byteLength
-      );
+      ) as ArrayBuffer;
       const positionViewIndex = bufferViews.length;
       bufferViews.push({
         buffer: 0,
@@ -344,7 +344,7 @@ export class GLTFConverter {
       const normalBytes = geom.normals.buffer.slice(
         geom.normals.byteOffset,
         geom.normals.byteOffset + geom.normals.byteLength
-      );
+      ) as ArrayBuffer;
       const normalViewIndex = bufferViews.length;
       bufferViews.push({
         buffer: 0,
@@ -367,7 +367,7 @@ export class GLTFConverter {
       const indexBytes = geom.indices.buffer.slice(
         geom.indices.byteOffset,
         geom.indices.byteOffset + geom.indices.byteLength
-      );
+      ) as ArrayBuffer;
       const indexViewIndex = bufferViews.length;
       bufferViews.push({
         buffer: 0,

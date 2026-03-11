@@ -19,7 +19,7 @@ export class DeadLetterQueue {
    * Add a failed event to the dead letter queue
    */
   async add(entry: Omit<DeadLetterEntry, 'retryCount'>): Promise<string> {
-    return this.redis.xadd(
+    const id = await this.redis.xadd(
       DeadLetterQueue.STREAM_NAME,
       '*',
       'originalStream', entry.originalStream,
@@ -29,6 +29,7 @@ export class DeadLetterQueue {
       'failedAt', entry.failedAt,
       'retryCount', '0',
     );
+    return id!;
   }
 
   /**

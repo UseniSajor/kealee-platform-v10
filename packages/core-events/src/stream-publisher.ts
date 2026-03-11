@@ -48,7 +48,7 @@ export class StreamPublisher {
       'source', event.source,
     );
 
-    return messageId;
+    return messageId!;
   }
 
   /**

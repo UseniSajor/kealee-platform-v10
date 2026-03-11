@@ -19,7 +19,7 @@
  * 5. Recalculates twin health if KPIs changed
  */
 
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@kealee/database';
 import { StreamPublisher, createEvent } from '@kealee/core-events';
 import type { EventEnvelope } from '@kealee/core-events';
 import { TwinManager } from './twin-manager';
