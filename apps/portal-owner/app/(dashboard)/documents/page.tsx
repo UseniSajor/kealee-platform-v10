@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { FileText, Upload, Download, Search, FolderOpen, File, Image, FileSpreadsheet, Shield, Clock, CheckCircle, AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { FileText, Upload, Download, Search, FolderOpen, File, Image, FileSpreadsheet, Shield, Clock, CheckCircle, AlertTriangle, ChevronDown, ChevronRight, Loader2 } from 'lucide-react'
+import { api } from '@/lib/api'
 
 // ── Permit Types from seed-v20-core ──
 // BUILDING (21 days), ELECTRICAL (10 days), PLUMBING (10 days), MECHANICAL (14 days), ZONING (45 days), DEMOLITION (14 days)
@@ -185,8 +186,47 @@ export default function DocumentsPage() {
   const [category, setCategory] = useState('All')
   const [view, setView] = useState<'permits' | 'documents'>('permits')
   const [expandedPermit, setExpandedPermit] = useState<string | null>('BUILDING')
+  const [documents, setDocuments] = useState<Document[]>(DOCUMENTS)
+  const [loading, setLoading] = useState(true)
 
-  const filtered = DOCUMENTS.filter(d => {
+  useEffect(() => {
+    async function fetchDocuments() {
+      try {
+        const projRes = await api.listMyProjects()
+        if (projRes.projects?.[0]) {
+          const docsRes = await api.listProjectDocuments(projRes.projects[0].id).catch(() => null)
+          if (docsRes?.documents?.length) {
+            const mapped: Document[] = docsRes.documents.map((d, i) => ({
+              id: d.id || String(i),
+              name: d.fileName || d.title,
+              type: (d.fileName || '').split('.').pop() || 'pdf',
+              project: projRes.projects[0].name,
+              size: d.sizeBytes ? `${(d.sizeBytes / 1024 / 1024).toFixed(1)} MB` : '—',
+              uploaded: d.createdAt,
+              category: d.documentType || 'General',
+              status: (d.status === 'APPROVED' ? 'approved' : d.status === 'PENDING' ? 'pending_review' : 'uploaded') as Document['status'],
+            }))
+            setDocuments(mapped)
+          }
+        }
+      } catch {
+        // Fall back to mock documents
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchDocuments()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: '#2ABFBF' }} />
+      </div>
+    )
+  }
+
+  const filtered = documents.filter(d => {
     const matchSearch = d.name.toLowerCase().includes(search.toLowerCase()) || d.project.toLowerCase().includes(search.toLowerCase())
     const matchCat = category === 'All' || d.category === category
     return matchSearch && matchCat
@@ -195,14 +235,14 @@ export default function DocumentsPage() {
   const approvedCount = PERMIT_CATEGORIES.filter(p => p.status === 'approved').length
   const pendingCount = PERMIT_CATEGORIES.filter(p => p.status === 'pending').length
   const totalRequiredDocs = PERMIT_CATEGORIES.reduce((s, p) => s + p.requiredDocuments.length, 0)
-  const uploadedPermitDocs = DOCUMENTS.filter(d => d.permitType).length
+  const uploadedPermitDocs = documents.filter(d => d.permitType).length
 
   return (
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Documents</h1>
-          <p className="mt-1 text-sm text-gray-600">{DOCUMENTS.length} files across all projects</p>
+          <p className="mt-1 text-sm text-gray-600">{documents.length} files across all projects</p>
         </div>
         <button className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90" style={{ backgroundColor: '#E8793A' }}>
           <Upload className="h-4 w-4" />
@@ -251,7 +291,7 @@ export default function DocumentsPage() {
         <div className="space-y-3">
           {PERMIT_CATEGORIES.map((permit) => {
             const isExpanded = expandedPermit === permit.key
-            const permitDocs = DOCUMENTS.filter(d => d.permitType === permit.key)
+            const permitDocs = documents.filter(d => d.permitType === permit.key)
             const uploadedCount = permitDocs.length
             const requiredCount = permit.requiredDocuments.length
 

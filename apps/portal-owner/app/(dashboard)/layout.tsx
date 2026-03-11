@@ -2,13 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   FolderKanban, DollarSign, FileText, MessageSquare,
   Boxes, LogOut, LayoutDashboard, Bot, Menu, X,
-  ChevronRight, Bell, User,
+  ChevronRight, Bell, User, Send,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { api } from '@/lib/api'
 
 const NAV_ITEMS = [
   { href: '/projects', label: 'Projects', icon: FolderKanban },
@@ -21,10 +22,55 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [showBot, setShowBot] = useState(false)
+  const [userInitials, setUserInitials] = useState('JA')
+  const [userName, setUserName] = useState('')
+  const [botInput, setBotInput] = useState('')
+  const [botMessages, setBotMessages] = useState<Array<{ role: 'bot' | 'user'; text: string }>>([
+    { role: 'bot', text: "Hi! I'm your KeaBot Owner assistant. I can help you with project status, payment questions, scheduling, and more. What can I help you with?" },
+  ])
+  const [botSending, setBotSending] = useState(false)
+
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const meta = (user.user_metadata || {}) as Record<string, string>
+          const fullName = meta.full_name || meta.firstName || user.email || ''
+          setUserName(fullName)
+          const parts = fullName.split(' ')
+          if (parts.length >= 2) {
+            setUserInitials(`${parts[0][0]}${parts[1][0]}`.toUpperCase())
+          } else if (parts.length === 1 && parts[0]) {
+            setUserInitials(parts[0].substring(0, 2).toUpperCase())
+          }
+        }
+      } catch {
+        // Keep defaults
+      }
+    }
+    fetchUser()
+  }, [])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     window.location.href = '/login'
+  }
+
+  const handleBotSend = async () => {
+    if (!botInput.trim() || botSending) return
+    const msg = botInput
+    setBotInput('')
+    setBotMessages(prev => [...prev, { role: 'user', text: msg }])
+    setBotSending(true)
+    try {
+      const res = await api.chatWithKeaBot(msg)
+      setBotMessages(prev => [...prev, { role: 'bot', text: res.reply }])
+    } catch {
+      setBotMessages(prev => [...prev, { role: 'bot', text: 'Sorry, I could not reach the server. Please try again.' }])
+    } finally {
+      setBotSending(false)
+    }
   }
 
   return (
@@ -126,7 +172,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full" style={{ backgroundColor: '#E8793A' }} />
             </button>
             <div className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white" style={{ backgroundColor: '#1A2B4A' }}>
-              JA
+              {userInitials}
             </div>
           </div>
         </header>
@@ -171,20 +217,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <X className="h-4 w-4" />
             </button>
           </div>
-          <div className="h-64 overflow-y-auto p-4">
-            <div className="mb-3 max-w-[80%] rounded-xl rounded-tl-none p-3 text-sm" style={{ backgroundColor: '#F7FAFC', color: '#1A2B4A' }}>
-              Hi! I&apos;m your KeaBot Owner assistant. I can help you with project status, payment questions, scheduling, and more. What can I help you with?
-            </div>
+          <div className="h-64 overflow-y-auto p-4 space-y-3">
+            {botMessages.map((msg, i) => (
+              <div key={i} className={`max-w-[80%] rounded-xl p-3 text-sm ${
+                msg.role === 'user' ? 'ml-auto rounded-tr-none text-white' : 'rounded-tl-none'
+              }`} style={msg.role === 'user' ? { backgroundColor: '#1A2B4A' } : { backgroundColor: '#F7FAFC', color: '#1A2B4A' }}>
+                {msg.text}
+              </div>
+            ))}
+            {botSending && (
+              <div className="max-w-[80%] rounded-xl rounded-tl-none p-3 text-sm text-gray-400" style={{ backgroundColor: '#F7FAFC' }}>
+                Thinking...
+              </div>
+            )}
           </div>
           <div className="border-t border-gray-200 p-3">
             <div className="flex gap-2">
               <input
                 type="text"
                 placeholder="Ask about your project..."
+                value={botInput}
+                onChange={(e) => setBotInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleBotSend()}
                 className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-teal focus:outline-none focus:ring-1 focus:ring-teal/30"
               />
-              <button className="rounded-lg p-2 text-white" style={{ backgroundColor: '#E8793A' }}>
-                <ChevronRight className="h-4 w-4" />
+              <button onClick={handleBotSend} disabled={botSending} className="rounded-lg p-2 text-white disabled:opacity-50" style={{ backgroundColor: '#E8793A' }}>
+                <Send className="h-4 w-4" />
               </button>
             </div>
           </div>

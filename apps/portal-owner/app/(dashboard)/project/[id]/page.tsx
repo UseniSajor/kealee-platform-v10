@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   ArrowLeft, Calendar, DollarSign, CheckCircle, Clock, AlertTriangle, Boxes,
-  Layers, Cpu, Activity, Shield, TrendingUp, BarChart3, FileText, Users
+  Layers, Cpu, Activity, Shield, TrendingUp, BarChart3, FileText, Users, Loader2
 } from 'lucide-react'
+import { api } from '@/lib/api'
 
 // ── All 12 Lifecycle Phases from seed-v20-core ──
 const LIFECYCLE_PHASES = [
@@ -100,10 +101,55 @@ const formatKpiValue = (kpi: typeof TWIN_KPIS[0]) => {
 
 export default function ProjectDetailPage({ params }: { params: { id: string } }) {
   const [activeTab, setActiveTab] = useState<'timeline' | 'lifecycle' | 'milestones' | 'modules' | 'kpis'>('timeline')
+  const [project, setProject] = useState<Record<string, unknown> | null>(null)
+  const [apiMilestones, setApiMilestones] = useState<Array<{ id: string; name: string; amount: number; status: string; description?: string | null }>>([])
+  const [loading, setLoading] = useState(true)
 
-  const totalBudget = 520000
-  const completedAmount = PAYMENT_MILESTONES.filter(m => m.status === 'paid').reduce((s, m) => s + m.amount, 0)
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [projRes] = await Promise.all([
+          api.getProject(params.id).catch(() => null),
+        ])
+        if (projRes?.project) {
+          setProject(projRes.project)
+          // Try to get contracts & milestones
+          try {
+            const contractsRes = await api.listProjectContracts(params.id)
+            if (contractsRes.contracts?.[0]) {
+              const msRes = await api.getContractMilestones(contractsRes.contracts[0].id)
+              if (msRes.milestones) {
+                setApiMilestones(msRes.milestones)
+              }
+            }
+          } catch {
+            // Milestones fetch is best-effort
+          }
+        }
+      } catch {
+        // Will fall back to static display
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [params.id])
+
+  const projectName = (project?.name as string) || 'Modern Duplex - 5th Avenue'
+  const projectAddress = ((project?.categoryMetadata as Record<string, unknown>)?.location as string) || '142 5th Ave, Bethesda MD'
+  const totalBudget = (project?.budgetTotal as number) || 520000
+  const completedAmount = apiMilestones.length > 0
+    ? apiMilestones.filter(m => m.status === 'PAID').reduce((s, m) => s + m.amount, 0)
+    : PAYMENT_MILESTONES.filter(m => m.status === 'paid').reduce((s, m) => s + m.amount, 0)
   const twinHealth = 87
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: '#2ABFBF' }} />
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -115,8 +161,8 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       {/* Project Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Modern Duplex - 5th Avenue</h1>
-          <p className="mt-1 text-sm text-gray-600">142 5th Ave, Bethesda MD</p>
+          <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>{projectName}</h1>
+          <p className="mt-1 text-sm text-gray-600">{projectAddress}</p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <span
               className="inline-flex items-center gap-1 rounded px-2.5 py-1 text-xs font-medium"

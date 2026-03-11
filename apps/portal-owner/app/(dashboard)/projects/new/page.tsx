@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   ArrowLeft, ArrowRight, Check, MapPin, Boxes,
   Home, Building2, Warehouse, Building, Landmark, Layers,
   ChevronRight, AlertCircle,
 } from 'lucide-react'
+import { api } from '@/lib/api'
 
 type Step = 'type' | 'details' | 'location' | 'twin' | 'review'
 
@@ -59,12 +61,14 @@ const STEPS: { id: Step; label: string }[] = [
 ]
 
 export default function NewProjectPage() {
+  const router = useRouter()
   const [step, setStep] = useState<Step>('type')
   const [projectType, setProjectType] = useState<string | null>(null)
   const [twinTier, setTwinTier] = useState<string>('L1')
   const [details, setDetails] = useState({ name: '', description: '', budget: '', sqft: '' })
   const [location, setLocation] = useState({ address: '', city: '', state: '', zip: '' })
   const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const currentStepIndex = STEPS.findIndex(s => s.id === step)
   const selectedType = PROJECT_TYPES.find(t => t.id === projectType)
@@ -89,9 +93,56 @@ export default function NewProjectPage() {
 
   const handleSubmit = async () => {
     setSubmitting(true)
-    // In production: POST /api/v1/projects with twin creation
-    await new Promise(r => setTimeout(r, 2000))
-    window.location.href = '/projects'
+    setSubmitError(null)
+    try {
+      // Map wizard project type to API category
+      const categoryMap: Record<string, string> = {
+        ADDITION: 'ADDITION',
+        RENOVATION: 'RENOVATION',
+        NEW_HOME: 'NEW_CONSTRUCTION',
+        MULTIFAMILY: 'NEW_CONSTRUCTION',
+        COMMERCIAL: 'OTHER',
+        MIXED_USE: 'OTHER',
+      }
+      const category = (categoryMap[projectType || ''] || 'OTHER') as 'ADDITION' | 'NEW_CONSTRUCTION' | 'RENOVATION' | 'OTHER'
+
+      // Create property first if location provided
+      let propertyId: string | undefined
+      if (location.address && location.city && location.state) {
+        try {
+          const propResult = await api.createProperty({
+            address: location.address,
+            city: location.city,
+            state: location.state,
+            zip: location.zip,
+          })
+          propertyId = propResult.property.id
+        } catch {
+          // Property creation is best-effort; continue with project creation
+        }
+      }
+
+      const budgetNum = Number(details.budget.replace(/[^0-9.]/g, ''))
+
+      await api.createProject({
+        name: details.name,
+        description: details.description || undefined,
+        category,
+        categoryMetadata: {
+          projectType,
+          twinTier,
+          location: `${location.address}, ${location.city} ${location.state} ${location.zip}`.trim(),
+          budget: budgetNum || undefined,
+          sqft: details.sqft ? Number(details.sqft.replace(/[^0-9]/g, '')) : undefined,
+          propertyId,
+        },
+      })
+
+      router.push('/projects')
+    } catch (err) {
+      setSubmitError((err as Error).message)
+      setSubmitting(false)
+    }
   }
 
   // Auto-select recommended twin tier when project type changes
@@ -437,6 +488,12 @@ export default function NewProjectPage() {
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {submitError && (
+          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {submitError}
           </div>
         )}
 

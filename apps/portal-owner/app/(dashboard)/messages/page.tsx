@@ -1,16 +1,18 @@
 'use client'
 
-import { useState } from 'react'
-import { Send, Search, User, Clock } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Send, Search, User, Clock, Loader2 } from 'lucide-react'
+import { api } from '@/lib/api'
+import { supabase } from '@/lib/supabase'
 
-const CONVERSATIONS = [
+const FALLBACK_CONVERSATIONS = [
   { id: '1', name: 'Mike Rodriguez (GC)', lastMessage: 'Framing inspection is scheduled for Thursday', time: '2 hours ago', unread: 2, project: 'Modern Duplex' },
   { id: '2', name: 'Sarah Chen (Architect)', lastMessage: 'Updated plans uploaded to the documents folder', time: '1 day ago', unread: 0, project: 'Kitchen Remodel' },
   { id: '3', name: 'Kealee PM Bot', lastMessage: 'Your draw request #3 has been approved', time: '3 days ago', unread: 0, project: 'Modern Duplex' },
   { id: '4', name: 'Tom Jackson (Inspector)', lastMessage: 'Foundation passed - report attached', time: '1 week ago', unread: 0, project: 'Modern Duplex' },
 ]
 
-const MESSAGES = [
+const FALLBACK_MESSAGES = [
   { id: '1', sender: 'Mike Rodriguez', content: 'Good morning! Just wanted to let you know the trusses arrived on site today.', time: '10:30 AM', isMine: false },
   { id: '2', sender: 'You', content: 'Great news! Are we still on track for the framing inspection this week?', time: '10:45 AM', isMine: true },
   { id: '3', sender: 'Mike Rodriguez', content: 'Yes, framing inspection is scheduled for Thursday at 9 AM. The inspector from the city will be on site.', time: '11:02 AM', isMine: false },
@@ -22,6 +24,64 @@ const MESSAGES = [
 export default function MessagesPage() {
   const [selectedConv, setSelectedConv] = useState('1')
   const [newMessage, setNewMessage] = useState('')
+  const [conversations, setConversations] = useState(FALLBACK_CONVERSATIONS)
+  const [messages, setMessages] = useState(FALLBACK_MESSAGES)
+  const [loading, setLoading] = useState(true)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchMessages() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) setCurrentUserId(user.id)
+
+        const projRes = await api.listMyProjects()
+        if (projRes.projects?.[0]) {
+          setActiveProjectId(projRes.projects[0].id)
+          const msgRes = await api.listProjectMessages(projRes.projects[0].id).catch(() => null)
+          if (msgRes?.messages?.length) {
+            setMessages(msgRes.messages.map((m, i) => ({
+              id: m.id || String(i),
+              sender: m.sender?.name || 'Unknown',
+              content: m.content,
+              time: new Date(m.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+              isMine: m.sender?.id === user?.id,
+            })))
+          }
+        }
+      } catch {
+        // Fall back to mock messages
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchMessages()
+  }, [])
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim()) return
+    const content = newMessage
+    setNewMessage('')
+
+    // Optimistic UI update
+    const tempMsg = {
+      id: `temp-${Date.now()}`,
+      sender: 'You',
+      content,
+      time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+      isMine: true,
+    }
+    setMessages(prev => [...prev, tempMsg])
+
+    if (activeProjectId) {
+      try {
+        await api.sendProjectMessage(activeProjectId, content)
+      } catch {
+        // Message saved optimistically; API failure is non-blocking
+      }
+    }
+  }
 
   return (
     <div>
@@ -43,7 +103,7 @@ export default function MessagesPage() {
             </div>
           </div>
           <div className="divide-y divide-gray-50 overflow-y-auto">
-            {CONVERSATIONS.map((conv) => (
+            {conversations.map((conv) => (
               <button key={conv.id} onClick={() => setSelectedConv(conv.id)}
                 className={`w-full p-4 text-left transition-colors ${selectedConv === conv.id ? '' : 'hover:bg-gray-50'}`}
                 style={selectedConv === conv.id ? { backgroundColor: 'rgba(42,191,191,0.1)' } : undefined}>
@@ -78,7 +138,7 @@ export default function MessagesPage() {
           </div>
 
           <div className="flex-1 space-y-3 overflow-y-auto p-5">
-            {MESSAGES.map((msg) => (
+            {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.isMine ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
                   msg.isMine ? 'text-white' : 'bg-gray-100 text-gray-900'
@@ -101,7 +161,7 @@ export default function MessagesPage() {
                 className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-1"
                 style={{ '--tw-ring-color': '#2ABFBF' } as React.CSSProperties}
               />
-              <button className="rounded-lg p-2.5 text-white hover:opacity-90" style={{ backgroundColor: '#E8793A' }}>
+              <button onClick={handleSendMessage} className="rounded-lg p-2.5 text-white hover:opacity-90" style={{ backgroundColor: '#E8793A' }}>
                 <Send className="h-5 w-5" />
               </button>
             </div>

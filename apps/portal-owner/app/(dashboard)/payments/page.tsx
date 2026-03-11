@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { DollarSign, ArrowUpRight, CreditCard, Clock, CheckCircle, AlertCircle, TrendingUp, Shield } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { DollarSign, ArrowUpRight, CreditCard, Clock, CheckCircle, AlertCircle, TrendingUp, Shield, Loader2 } from 'lucide-react'
+import { api } from '@/lib/api'
 
 // ── 7 Payment Milestone Templates from seed-v20-core ──
 // DEPOSIT (10%) → FOUNDATION (15%) → FRAMING (20%) → MEP_ROUGH (15%) → DRYWALL_INTERIOR (15%) → FINISH (15%) → COMPLETION (10%)
@@ -119,12 +120,49 @@ const milestoneStatusConfig = {
 export default function PaymentsPage() {
   const [activeTab, setActiveTab] = useState<'milestones' | 'history'>('milestones')
   const [expandedMilestone, setExpandedMilestone] = useState<string | null>(null)
+  const [paymentHistory, setPaymentHistory] = useState(PAYMENT_HISTORY)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchPayments() {
+      try {
+        // Try to load real projects and find the first one to fetch payments
+        const projRes = await api.listMyProjects()
+        if (projRes.projects?.[0]) {
+          const histRes = await api.getPaymentHistory(projRes.projects[0].id).catch(() => null)
+          if (histRes?.transactions?.length) {
+            setPaymentHistory(histRes.transactions.map((t, i) => ({
+              id: t.id || String(i),
+              date: t.createdAt,
+              project: t.milestone?.name || 'Project',
+              milestone: t.milestone?.name || t.type,
+              description: t.type,
+              amount: t.amount,
+              status: t.status === 'COMPLETED' ? 'completed' : t.status.toLowerCase(),
+            })))
+          }
+        }
+      } catch {
+        // Fall back to mock payment history
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPayments()
+  }, [])
 
   const totalPaid = MILESTONES.filter(m => m.status === 'paid').reduce((s, m) => s + m.amount, 0)
-  const partialPaid = PAYMENT_HISTORY.filter(p => p.project === 'Modern Duplex - 5th Avenue').reduce((s, p) => s + p.amount, 0)
   const totalUpcoming = MILESTONES.filter(m => m.status === 'upcoming' || m.status === 'in_progress').reduce((s, m) => s + m.amount, 0)
   const paidPct = Math.round((totalPaid / CONTRACT_AMOUNT) * 100)
   const nextMilestone = MILESTONES.find(m => m.status === 'in_progress') || MILESTONES.find(m => m.status === 'upcoming')
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: '#2ABFBF' }} />
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -312,7 +350,7 @@ export default function PaymentsPage() {
       ) : (
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
           <div className="divide-y divide-gray-50">
-            {PAYMENT_HISTORY.map((p) => (
+            {paymentHistory.map((p) => (
               <div key={p.id} className="flex items-center justify-between px-5 py-4">
                 <div className="flex items-center gap-3">
                   <div className="rounded-lg bg-green-100 p-2">
@@ -337,7 +375,7 @@ export default function PaymentsPage() {
           <div className="border-t border-gray-200 px-5 py-4 flex justify-between items-center">
             <span className="text-sm font-medium text-gray-500">Total Disbursed (all projects)</span>
             <span className="text-sm font-bold" style={{ color: '#1A2B4A' }}>
-              ${PAYMENT_HISTORY.reduce((s, p) => s + p.amount, 0).toLocaleString()}
+              ${paymentHistory.reduce((s, p) => s + p.amount, 0).toLocaleString()}
             </span>
           </div>
         </div>
