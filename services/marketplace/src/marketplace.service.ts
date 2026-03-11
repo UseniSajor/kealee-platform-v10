@@ -110,14 +110,14 @@ export const marketplaceService = {
         businessName: data.businessName,
         description: data.description,
         specialties: data.specialties ?? [],
-        serviceArea: data.serviceArea ?? undefined,
+        serviceArea: (data.serviceArea ?? undefined) as any,
         subscriptionTier: data.subscriptionTier,
         maxPipelineValue: data.maxPipelineValue as any,
         acceptingLeads: true,
       },
       include: {
         user: {
-          select: { id: true, name: true, email: true, phone: true, avatar: true },
+          select: { id: true, name: true, email: true, phone: true },
         },
         portfolio: true,
       },
@@ -129,7 +129,7 @@ export const marketplaceService = {
       where: { id: profileId },
       include: {
         user: {
-          select: { id: true, name: true, email: true, phone: true, avatar: true },
+          select: { id: true, name: true, email: true, phone: true },
         },
         portfolio: true,
         quotes: {
@@ -166,7 +166,7 @@ export const marketplaceService = {
       where: { userId },
       include: {
         user: {
-          select: { id: true, name: true, email: true, phone: true, avatar: true },
+          select: { id: true, name: true, email: true, phone: true },
         },
         portfolio: true,
       },
@@ -180,7 +180,7 @@ export const marketplaceService = {
       data: data as any,
       include: {
         user: {
-          select: { id: true, name: true, email: true, phone: true, avatar: true },
+          select: { id: true, name: true, email: true, phone: true },
         },
         portfolio: true,
       },
@@ -224,7 +224,7 @@ export const marketplaceService = {
         where,
         include: {
           user: {
-            select: { id: true, name: true, email: true, phone: true, avatar: true },
+            select: { id: true, name: true, email: true, phone: true },
           },
         },
         take: limit,
@@ -292,7 +292,7 @@ export const marketplaceService = {
       where,
       include: {
         user: {
-          select: { id: true, name: true, email: true, avatar: true },
+          select: { id: true, name: true, email: true },
         },
         portfolio: { take: 3 },
       },
@@ -347,8 +347,8 @@ export const marketplaceService = {
         projectsCompleted: s.profile.projectsCompleted,
         verified: s.profile.verified,
         matchScore: s.matchScore,
-        user: s.profile.user,
-        portfolio: s.profile.portfolio,
+        user: (s.profile as any).user,
+        portfolio: (s.profile as any).portfolio,
       })),
       totalCandidates: profiles.length,
       criteria: {
@@ -441,7 +441,7 @@ export const marketplaceService = {
       include: {
         profile: {
           include: {
-            user: { select: { id: true, name: true, avatar: true } },
+            user: { select: { id: true, name: true } },
           },
         },
       },

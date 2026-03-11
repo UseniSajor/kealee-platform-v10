@@ -1908,8 +1908,11 @@ importers:
         specifier: ^4.5.1
         version: 4.5.1
     devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.30
       typescript:
-        specifier: ^5.9.0
+        specifier: ^5.6.0
         version: 5.9.3
 
   packages/core-bim:
@@ -2783,6 +2786,9 @@ importers:
       '@fastify/cors':
         specifier: ^8.5.0
         version: 8.5.0
+      '@kealee/core-auth':
+        specifier: workspace:*
+        version: link:../../packages/core-auth
       '@kealee/core-ddts':
         specifier: workspace:*
         version: link:../../packages/core-ddts
@@ -2826,6 +2832,9 @@ importers:
       '@fastify/cors':
         specifier: ^8.5.0
         version: 8.5.0
+      '@kealee/core-auth':
+        specifier: workspace:*
+        version: link:../../packages/core-auth
       '@kealee/core-ddts':
         specifier: workspace:*
         version: link:../../packages/core-ddts
@@ -2869,6 +2878,9 @@ importers:
       '@fastify/cors':
         specifier: ^8.5.0
         version: 8.5.0
+      '@kealee/core-auth':
+        specifier: workspace:*
+        version: link:../../packages/core-auth
       '@kealee/core-ddts':
         specifier: workspace:*
         version: link:../../packages/core-ddts
@@ -2912,6 +2924,9 @@ importers:
       '@fastify/cors':
         specifier: ^8.5.0
         version: 8.5.0
+      '@kealee/core-auth':
+        specifier: workspace:*
+        version: link:../../packages/core-auth
       '@kealee/core-ddts':
         specifier: workspace:*
         version: link:../../packages/core-ddts
@@ -2955,6 +2970,9 @@ importers:
       '@fastify/cors':
         specifier: ^8.5.0
         version: 8.5.0
+      '@kealee/core-auth':
+        specifier: workspace:*
+        version: link:../../packages/core-auth
       '@kealee/core-ddts':
         specifier: workspace:*
         version: link:../../packages/core-ddts
@@ -2998,6 +3016,9 @@ importers:
       '@fastify/cors':
         specifier: ^8.5.0
         version: 8.5.0
+      '@kealee/core-auth':
+        specifier: workspace:*
+        version: link:../../packages/core-auth
       '@kealee/core-ddts':
         specifier: workspace:*
         version: link:../../packages/core-ddts
@@ -3041,6 +3062,9 @@ importers:
       '@fastify/cors':
         specifier: ^8.5.0
         version: 8.5.0
+      '@kealee/core-auth':
+        specifier: workspace:*
+        version: link:../../packages/core-auth
       '@kealee/core-ddts':
         specifier: workspace:*
         version: link:../../packages/core-ddts

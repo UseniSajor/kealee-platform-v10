@@ -95,11 +95,11 @@ export const scheduleService = {
     return prisma.scheduleItem.create({
       data: {
         projectId: data.projectId,
-        title: data.title,
+        taskName: data.title,
         description: data.description ?? null,
         startDate: new Date(data.startDate),
-        endDate: data.endDate ? new Date(data.endDate) : null,
-        duration: data.duration ?? null,
+        endDate: data.endDate ? new Date(data.endDate) : new Date(data.startDate),
+        duration: data.duration ?? 1,
         trade: data.trade ?? null,
         assignedTo: data.assignedTo ?? null,
         dependencies: data.dependencies ?? [],
@@ -107,10 +107,6 @@ export const scheduleService = {
         criticalPath: data.criticalPath ?? false,
         progress: data.progress ?? 0,
         status: data.status ?? 'NOT_STARTED',
-        priority: data.priority ?? 'MEDIUM',
-        color: data.color ?? null,
-        createdById: userId,
-        metadata: data.metadata ?? {},
       },
     });
   },
@@ -227,17 +223,14 @@ export const milestoneService = {
     return prisma.scheduleItem.create({
       data: {
         projectId: data.projectId,
-        title: data.title,
+        taskName: data.title,
         description: data.description ?? null,
         startDate: new Date(data.startDate),
-        endDate: data.endDate ? new Date(data.endDate) : null,
+        endDate: data.endDate ? new Date(data.endDate) : new Date(data.startDate),
+        duration: 1,
         milestone: true,
         progress: 0,
         status: 'NOT_STARTED',
-        priority: data.priority ?? 'HIGH',
-        color: data.color ?? null,
-        createdById: userId,
-        metadata: data.metadata ?? {},
       },
     });
   },

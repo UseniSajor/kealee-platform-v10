@@ -3,8 +3,34 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { StreamPublisher, createEvent } from '@kealee/core-events';
 
 const prisma = new PrismaClient();
+
+// Lazy-init publisher (only connects when first event is emitted)
+let _publisher: StreamPublisher | null = null;
+function getPublisher(): StreamPublisher {
+  if (!_publisher) {
+    _publisher = new StreamPublisher();
+  }
+  return _publisher;
+}
+
+async function emitEvent(
+  type: string,
+  payload: Record<string, unknown>,
+  severity: 'INFO' | 'LOW' | 'MEDIUM' | 'HIGH' = 'INFO',
+) {
+  try {
+    const publisher = getPublisher();
+    await publisher.connect();
+    const event = createEvent({ type, source: 'os-land', payload, severity });
+    await publisher.publish(event);
+  } catch (err) {
+    // Non-blocking: event emission failure should not break the request
+    console.warn('[os-land] Event emission failed:', (err as Error).message);
+  }
+}
 
 export type ParcelStatus =
   | 'IDENTIFIED' | 'UNDER_ANALYSIS' | 'OFFER_PENDING' | 'UNDER_CONTRACT'
@@ -30,7 +56,7 @@ export const parcelService = {
     currentOwner?: string;
     identifiedBy?: string;
   }) {
-    return prisma.parcel.create({
+    const parcel = await prisma.parcel.create({
       data: {
         orgId: data.orgId,
         label: data.label,
@@ -51,6 +77,8 @@ export const parcelService = {
       },
       include: { zoning: true, assessments: true },
     });
+    emitEvent('land.parcel.created', { parcelId: parcel.id, orgId: data.orgId, label: data.label });
+    return parcel;
   },
 
   async getParcel(id: string) {
@@ -100,10 +128,12 @@ export const parcelService = {
   },
 
   async updateParcelStatus(id: string, status: ParcelStatus) {
-    return prisma.parcel.update({
+    const parcel = await prisma.parcel.update({
       where: { id },
       data: { status },
     });
+    emitEvent('land.parcel.statusChanged', { parcelId: id, status }, 'MEDIUM');
+    return parcel;
   },
 
   // ── Zoning Analysis ────────────────────────────────────────
@@ -302,6 +332,7 @@ export const parcelService = {
       },
     });
 
+    emitEvent('land.parcel.converted', { parcelId, projectId: project.id, orgId: projectData.orgId }, 'MEDIUM');
     return project;
   },
 

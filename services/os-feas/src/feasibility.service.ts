@@ -142,7 +142,7 @@ async function addScenario(
     description?: string;
     isBaseline?: boolean;
     sortOrder?: number;
-    unitMix: any;
+    unitMix?: any;
     totalUnits?: number;
     totalSqFt?: number;
     landCost?: number;

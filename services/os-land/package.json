@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "description": "OS-Land Service — Parcel intake, zoning analysis, development readiness",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": { "require": "./dist/index.js", "types": "./dist/index.d.ts" },
+    "./parcel.routes": { "require": "./dist/parcel.routes.js", "types": "./dist/parcel.routes.d.ts" },
+    "./parcel.service": { "require": "./dist/parcel.service.js", "types": "./dist/parcel.service.d.ts" }
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "pnpm --filter @kealee/database db:generate && tsc --incremental false",
@@ -10,6 +16,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@kealee/core-auth": "workspace:*",
     "@kealee/database": "workspace:*",
     "@kealee/shared": "workspace:*",
     "@kealee/core-events": "workspace:*",
