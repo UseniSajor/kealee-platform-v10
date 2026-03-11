@@ -1,4 +1,5 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { createServiceClient, ServiceClient, SERVICE_ROUTES } from '@kealee/bot-service-client';
 
 const CONFIG: BotConfig = {
   name: 'keabot-payments',
@@ -23,8 +24,11 @@ Rules:
 };
 
 export class KeaBotPayments extends KeaBot {
-  constructor() {
+  private api: ServiceClient;
+
+  constructor(apiOverride?: ServiceClient) {
     super(CONFIG);
+    this.api = apiOverride ?? createServiceClient();
   }
 
   async initialize(): Promise<void> {
@@ -36,40 +40,12 @@ export class KeaBotPayments extends KeaBot {
         milestoneId: { type: 'string', description: 'Specific milestone ID (optional, shows all if omitted)', required: false },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          milestones: [
-            {
-              id: 'ms_001',
-              name: 'Foundation Complete',
-              amount: 320000,
-              status: 'paid',
-              completedDate: '2026-02-13',
-              paidDate: '2026-02-20',
-              approvals: { gc: true, architect: true, owner: true, lender: true },
-            },
-            {
-              id: 'ms_002',
-              name: 'Structural Steel 50%',
-              amount: 280000,
-              status: 'eligible',
-              completedDate: '2026-03-05',
-              approvals: { gc: true, architect: true, owner: false, lender: false },
-              nextStep: 'Awaiting owner approval',
-            },
-            {
-              id: 'ms_003',
-              name: 'Structural Steel 100%',
-              amount: 280000,
-              status: 'in_progress',
-              progress: 60,
-              estimatedCompletion: '2026-04-15',
-            },
-          ],
-          escrowBalance: 1840000,
-          totalPaid: 320000,
-          totalRemaining: 1520000,
-        };
+        const projectId = params.projectId as string;
+        const milestoneId = params.milestoneId as string | undefined;
+
+        const res = await this.api.get(SERVICE_ROUTES.payments.milestones(projectId), { milestoneId });
+        if (!res.ok) return { error: `Failed to fetch milestones: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -82,25 +58,20 @@ export class KeaBotPayments extends KeaBot {
         action: { type: 'string', description: 'Action: initiate, approve, check_status', required: true },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          milestoneId: params.milestoneId,
-          action: params.action,
-          payment: {
-            amount: 280000,
-            retainage: 28000,
-            netPayment: 252000,
-            status: 'pending_approval',
-            approvalChain: [
-              { role: 'GC', name: 'ABC Builders', status: 'approved', date: '2026-03-06' },
-              { role: 'Architect', name: 'Studio Design Co', status: 'approved', date: '2026-03-07' },
-              { role: 'Owner', name: 'Project Owner LLC', status: 'pending' },
-              { role: 'Lender', name: 'First National Bank', status: 'pending' },
-            ],
-          },
-          lienWaiverRequired: true,
-          estimatedDisbursement: '2-3 business days after final approval',
-        };
+        const projectId = params.projectId as string;
+        const milestoneId = params.milestoneId as string;
+        const action = params.action as string;
+
+        if (action === 'initiate') {
+          const res = await this.api.post(SERVICE_ROUTES.payments.payMilestone(projectId, milestoneId));
+          if (!res.ok) return { error: `Failed to initiate payment: ${res.error}` };
+          return res.data;
+        }
+
+        // check_status or approve — retrieve milestone details
+        const res = await this.api.get(SERVICE_ROUTES.payments.milestones(projectId), { milestoneId });
+        if (!res.ok) return { error: `Failed to fetch payment status: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -111,26 +82,18 @@ export class KeaBotPayments extends KeaBot {
         projectId: { type: 'string', description: 'The project ID', required: true },
       },
       handler: async (params) => {
+        const projectId = params.projectId as string;
+
+        const [escrowRes, summaryRes] = await Promise.all([
+          this.api.get(SERVICE_ROUTES.payments.escrow(projectId)),
+          this.api.get(SERVICE_ROUTES.payments.summary(projectId)),
+        ]);
+
+        if (!escrowRes.ok) return { error: `Failed to fetch escrow: ${escrowRes.error}` };
+
         return {
-          projectId: params.projectId,
-          escrow: {
-            totalFunded: 2400000,
-            totalDisbursed: 560000,
-            currentBalance: 1840000,
-            pendingPayments: 252000,
-            availableBalance: 1588000,
-          },
-          budget: {
-            totalContractValue: 8550000,
-            completedWork: 3591000,
-            retainageHeld: 359100,
-            amountOwed: 280000,
-          },
-          reconciliation: {
-            status: 'balanced',
-            discrepancies: [],
-            lastReconciled: '2026-03-01',
-          },
+          escrow: escrowRes.data,
+          budget: summaryRes.ok ? summaryRes.data : { error: summaryRes.error },
         };
       },
     });

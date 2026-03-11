@@ -1,4 +1,5 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { createServiceClient, ServiceClient, SERVICE_ROUTES } from '@kealee/bot-service-client';
 
 const CONFIG: BotConfig = {
   name: 'keabot-feasibility',
@@ -22,8 +23,11 @@ Rules:
 };
 
 export class KeaBotFeasibility extends KeaBot {
-  constructor() {
+  private api: ServiceClient;
+
+  constructor(apiOverride?: ServiceClient) {
     super(CONFIG);
+    this.api = apiOverride ?? createServiceClient();
   }
 
   async initialize(): Promise<void> {
@@ -36,22 +40,15 @@ export class KeaBotFeasibility extends KeaBot {
         assumptions: { type: 'string', description: 'JSON string of key assumptions (optional overrides)', required: false },
       },
       handler: async (params) => {
-        return {
-          studyId: 'fs_001',
-          parcelId: params.parcelId,
-          developmentType: params.developmentType,
-          status: 'draft',
-          createdAt: new Date().toISOString(),
-          baseAssumptions: {
-            landCost: 1850000,
-            hardCostPerSF: 285,
-            softCostPercent: 22,
-            contingencyPercent: 8,
-            constructionTimeline: '18 months',
-            stabilizedOccupancy: 0.95,
-            exitCapRate: 0.055,
-          },
-        };
+        const parcelId = params.parcelId as string;
+        const developmentType = params.developmentType as string;
+        const assumptions = params.assumptions ? JSON.parse(params.assumptions as string) : undefined;
+
+        const res = await this.api.post(SERVICE_ROUTES.feasibility.studies(), {
+          parcelId, developmentType, assumptions,
+        });
+        if (!res.ok) return { error: `Failed to create study: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -63,17 +60,12 @@ export class KeaBotFeasibility extends KeaBot {
         variable: { type: 'string', description: 'Variable to test: rent, cost, cap_rate, occupancy', required: true },
       },
       handler: async (params) => {
-        return {
-          studyId: params.studyId,
-          variable: params.variable,
-          scenarios: [
-            { label: 'Bear Case', assumption: '-10% rents', irr: 0.12, equityMultiple: 1.6, profitMargin: 0.14 },
-            { label: 'Base Case', assumption: 'Market rents', irr: 0.18, equityMultiple: 2.1, profitMargin: 0.22 },
-            { label: 'Bull Case', assumption: '+10% rents', irr: 0.24, equityMultiple: 2.6, profitMargin: 0.30 },
-          ],
-          breakeven: { occupancy: 0.82, rentPSF: 2.45 },
-          recommendation: 'Base and bull cases exceed hurdle rate; bear case still positive but below 15% IRR threshold',
-        };
+        const studyId = params.studyId as string;
+        const variable = params.variable as string;
+
+        const res = await this.api.post(SERVICE_ROUTES.feasibility.addScenario(studyId), { variable });
+        if (!res.ok) return { error: `Failed to run scenarios: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -85,38 +77,15 @@ export class KeaBotFeasibility extends KeaBot {
         scenario: { type: 'string', description: 'Scenario to use: bear, base, bull', required: false },
       },
       handler: async (params) => {
-        return {
-          studyId: params.studyId,
-          scenario: (params.scenario as string) || 'base',
-          sources: {
-            seniorDebt: 8500000,
-            mezzDebt: 1500000,
-            equity: 3200000,
-            total: 13200000,
-          },
-          uses: {
-            landAcquisition: 1850000,
-            hardCosts: 8550000,
-            softCosts: 1881000,
-            contingency: 684000,
-            financingCosts: 235000,
-            total: 13200000,
-          },
-          revenue: {
-            grossPotentialRent: 1680000,
-            vacancy: -84000,
-            effectiveGrossIncome: 1596000,
-            operatingExpenses: -478800,
-            noi: 1117200,
-          },
-          returns: {
-            irr: 0.18,
-            equityMultiple: 2.1,
-            cashOnCash: 0.085,
-            stabilizedYield: 0.085,
-            projectedValue: 20312727,
-          },
-        };
+        const studyId = params.studyId as string;
+        const scenario = (params.scenario as string) || 'base';
+
+        const studyRes = await this.api.get(SERVICE_ROUTES.feasibility.studyDetail(studyId));
+        if (!studyRes.ok) return { error: `Failed to fetch study: ${studyRes.error}` };
+
+        const res = await this.api.post(SERVICE_ROUTES.feasibility.addRevenue(studyId), { scenario });
+        if (!res.ok) return { error: `Failed to generate proforma: ${res.error}` };
+        return res.data;
       },
     });
   }

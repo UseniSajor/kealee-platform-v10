@@ -1,4 +1,5 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { createServiceClient, ServiceClient, SERVICE_ROUTES } from '@kealee/bot-service-client';
 
 const CONFIG: BotConfig = {
   name: 'keabot-owner',
@@ -21,8 +22,11 @@ Rules:
 };
 
 export class KeaBotOwner extends KeaBot {
-  constructor() {
+  private api: ServiceClient;
+
+  constructor(apiOverride?: ServiceClient) {
     super(CONFIG);
+    this.api = apiOverride ?? createServiceClient();
   }
 
   async initialize(): Promise<void> {
@@ -34,14 +38,9 @@ export class KeaBotOwner extends KeaBot {
       },
       handler: async (params) => {
         const status = (params.status as string) || 'active';
-        return {
-          projects: [
-            { id: 'proj_001', name: 'Downtown Mixed-Use', status: 'active', progress: 42, budget: 2400000 },
-            { id: 'proj_002', name: 'Riverside Condos', status: 'active', progress: 78, budget: 5100000 },
-          ],
-          filter: status,
-          total: 2,
-        };
+        const res = await this.api.get(SERVICE_ROUTES.projects.list(), { status });
+        if (!res.ok) return { error: `Failed to list projects: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -52,19 +51,10 @@ export class KeaBotOwner extends KeaBot {
         projectId: { type: 'string', description: 'The project ID', required: true },
       },
       handler: async (params) => {
-        return {
-          id: params.projectId,
-          name: 'Downtown Mixed-Use',
-          address: '123 Main St, Portland, OR',
-          status: 'active',
-          type: 'mixed-use',
-          startDate: '2025-11-01',
-          targetCompletion: '2026-08-30',
-          gc: { name: 'ABC Builders', contact: 'john@abcbuilders.com' },
-          architect: { name: 'Studio Design Co', contact: 'maria@studiodesign.com' },
-          progress: 42,
-          currentPhase: 'Structural Steel',
-        };
+        const projectId = params.projectId as string;
+        const res = await this.api.get(SERVICE_ROUTES.projects.detail(projectId));
+        if (!res.ok) return { error: `Failed to fetch project: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -75,18 +65,10 @@ export class KeaBotOwner extends KeaBot {
         projectId: { type: 'string', description: 'The project ID', required: true },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          phases: [
-            { name: 'Site Prep', start: '2025-11-01', end: '2025-12-15', status: 'completed' },
-            { name: 'Foundation', start: '2025-12-16', end: '2026-02-15', status: 'completed' },
-            { name: 'Structural Steel', start: '2026-02-16', end: '2026-05-01', status: 'in_progress' },
-            { name: 'Enclosure', start: '2026-05-02', end: '2026-06-30', status: 'upcoming' },
-            { name: 'Finishes', start: '2026-07-01', end: '2026-08-30', status: 'upcoming' },
-          ],
-          criticalPath: ['Structural Steel', 'Enclosure'],
-          daysRemaining: 174,
-        };
+        const projectId = params.projectId as string;
+        const res = await this.api.get(SERVICE_ROUTES.projects.timeline(projectId), { projectId });
+        if (!res.ok) return { error: `Failed to fetch timeline: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -97,21 +79,10 @@ export class KeaBotOwner extends KeaBot {
         projectId: { type: 'string', description: 'The project ID', required: true },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          totalBudget: 2400000,
-          spent: 1008000,
-          committed: 350000,
-          remaining: 1042000,
-          percentSpent: 42,
-          contingency: { allocated: 240000, used: 45000, remaining: 195000 },
-          forecast: { projectedTotal: 2380000, variance: -20000, status: 'on_budget' },
-          topCategories: [
-            { name: 'Structural', budgeted: 680000, spent: 510000 },
-            { name: 'Mechanical', budgeted: 420000, spent: 168000 },
-            { name: 'Electrical', budgeted: 310000, spent: 124000 },
-          ],
-        };
+        const projectId = params.projectId as string;
+        const res = await this.api.get(SERVICE_ROUTES.payments.summary(projectId));
+        if (!res.ok) return { error: `Failed to fetch budget: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -123,16 +94,11 @@ export class KeaBotOwner extends KeaBot {
         status: { type: 'string', description: 'Filter: completed, upcoming, overdue, all', required: false },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          milestones: [
-            { id: 'ms_001', name: 'Foundation Complete', dueDate: '2026-02-15', status: 'completed', completedDate: '2026-02-13' },
-            { id: 'ms_002', name: 'Steel Erection Complete', dueDate: '2026-04-15', status: 'in_progress', progress: 60 },
-            { id: 'ms_003', name: 'Watertight Enclosure', dueDate: '2026-06-30', status: 'upcoming' },
-            { id: 'ms_004', name: 'Substantial Completion', dueDate: '2026-08-15', status: 'upcoming' },
-          ],
-          nextDue: { name: 'Steel Erection Complete', dueDate: '2026-04-15', daysRemaining: 37 },
-        };
+        const projectId = params.projectId as string;
+        const status = params.status as string | undefined;
+        const res = await this.api.get(SERVICE_ROUTES.payments.milestones(projectId), { status });
+        if (!res.ok) return { error: `Failed to fetch milestones: ${res.error}` };
+        return res.data;
       },
     });
   }

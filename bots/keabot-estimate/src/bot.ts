@@ -1,4 +1,5 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { createServiceClient, ServiceClient, SERVICE_ROUTES } from '@kealee/bot-service-client';
 
 const CONFIG: BotConfig = {
   name: 'keabot-estimate',
@@ -23,8 +24,11 @@ Rules:
 };
 
 export class KeaBotEstimate extends KeaBot {
-  constructor() {
+  private api: ServiceClient;
+
+  constructor(apiOverride?: ServiceClient) {
     super(CONFIG);
+    this.api = apiOverride ?? createServiceClient();
   }
 
   async initialize(): Promise<void> {
@@ -37,30 +41,17 @@ export class KeaBotEstimate extends KeaBot {
         estimateType: { type: 'string', description: 'Type: conceptual, schematic, detailed, bid_check', required: false },
       },
       handler: async (params) => {
+        const projectId = params.projectId as string;
+        const scope = params.scope as string;
         const estimateType = (params.estimateType as string) || 'schematic';
-        return {
-          estimateId: 'est_001',
-          projectId: params.projectId,
-          type: estimateType,
-          scope: params.scope,
-          createdAt: new Date().toISOString(),
-          summary: {
-            totalCost: 8550000,
-            costPerSF: 285,
-            grossSF: 30000,
-            accuracyRange: estimateType === 'conceptual' ? '+/- 25%' : estimateType === 'schematic' ? '+/- 15%' : '+/- 5%',
-          },
-          divisions: [
-            { code: '03', name: 'Concrete', cost: 1282500, percentOfTotal: 15 },
-            { code: '05', name: 'Metals', cost: 1539000, percentOfTotal: 18 },
-            { code: '07', name: 'Thermal & Moisture', cost: 598500, percentOfTotal: 7 },
-            { code: '22', name: 'Plumbing', cost: 513000, percentOfTotal: 6 },
-            { code: '23', name: 'HVAC', cost: 855000, percentOfTotal: 10 },
-            { code: '26', name: 'Electrical', cost: 769500, percentOfTotal: 9 },
-          ],
-          locationFactor: 1.08,
-          costBasis: 'RSMeans 2026, Portland OR',
-        };
+
+        const res = await this.api.post(SERVICE_ROUTES.estimation.estimate(), {
+          projectId,
+          scope,
+          estimateType,
+        });
+        if (!res.ok) return { error: `Failed to create estimate: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -73,27 +64,17 @@ export class KeaBotEstimate extends KeaBot {
         quantity: { type: 'number', description: 'Quantity for total cost calculation', required: false },
       },
       handler: async (params) => {
-        return {
-          item: params.item,
-          location: (params.location as string) || 'Portland, OR',
-          results: [
-            {
-              rsmeansCode: '03 30 53.40',
-              description: 'Cast-in-place concrete, 4000 PSI, with formwork',
-              unit: 'CY',
-              materialCost: 145.00,
-              laborCost: 82.00,
-              equipmentCost: 18.00,
-              totalUnitCost: 245.00,
-              locationFactor: 1.08,
-              adjustedUnitCost: 264.60,
-            },
-          ],
-          quantity: params.quantity,
-          totalCost: params.quantity ? (params.quantity as number) * 264.60 : undefined,
-          source: 'RSMeans 2026',
-          lastUpdated: '2026-01-15',
-        };
+        const item = params.item as string;
+        const location = params.location as string | undefined;
+        const quantity = params.quantity as number | undefined;
+
+        const res = await this.api.post(SERVICE_ROUTES.estimation.materials(), {
+          item,
+          location,
+          quantity,
+        });
+        if (!res.ok) return { error: `Failed to look up costs: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -105,22 +86,12 @@ export class KeaBotEstimate extends KeaBot {
         scopeId: { type: 'string', description: 'The bid scope/trade package ID', required: true },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          scopeId: params.scopeId,
-          scopeName: 'Mechanical (HVAC + Plumbing)',
-          engineersEstimate: 1368000,
-          bids: [
-            { contractor: 'AirFlow Mechanical', total: 1295000, variance: -5.3, inclusions: 'Full scope', exclusions: 'Controls', qualifications: 1, score: 88 },
-            { contractor: 'Pacific Systems', total: 1420000, variance: 3.8, inclusions: 'Full scope + controls', exclusions: 'None', qualifications: 0, score: 92 },
-            { contractor: 'Metro Plumbing & HVAC', total: 1185000, variance: -13.4, inclusions: 'Full scope', exclusions: 'Controls, testing', qualifications: 3, score: 72 },
-          ],
-          analysis: {
-            averageBid: 1300000,
-            spread: '17.2% between low and high',
-            recommendation: 'AirFlow Mechanical offers best value; Pacific Systems is most complete but premium priced; Metro is concerning low with exclusions',
-          },
-        };
+        const scopeId = params.scopeId as string;
+        const projectId = params.projectId as string;
+
+        const res = await this.api.post(SERVICE_ROUTES.bids.analyze(scopeId), { projectId });
+        if (!res.ok) return { error: `Failed to analyze bids: ${res.error}` };
+        return res.data;
       },
     });
   }

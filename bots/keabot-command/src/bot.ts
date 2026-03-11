@@ -1,4 +1,5 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { createServiceClient, ServiceClient, SERVICE_ROUTES } from '@kealee/bot-service-client';
 
 const CONFIG: BotConfig = {
   name: 'keabot-command',
@@ -37,8 +38,11 @@ const DOMAIN_KEYWORDS: Record<string, string[]> = {
 };
 
 export class KeaBotCommand extends KeaBot {
-  constructor() {
+  private api: ServiceClient;
+
+  constructor(apiOverride?: ServiceClient) {
     super(CONFIG);
+    this.api = apiOverride ?? createServiceClient();
   }
 
   async initialize(): Promise<void> {
@@ -69,13 +73,21 @@ export class KeaBotCommand extends KeaBot {
         projectId: { type: 'string', description: 'The project ID to get status for', required: true },
       },
       handler: async (params) => {
+        const projectId = params.projectId as string;
+
+        const [projectRes, budgetRes, milestonesRes] = await Promise.all([
+          this.api.get(SERVICE_ROUTES.projects.detail(projectId)),
+          this.api.get(SERVICE_ROUTES.payments.summary(projectId)),
+          this.api.get(SERVICE_ROUTES.payments.milestones(projectId)),
+        ]);
+
+        if (!projectRes.ok) return { error: `Failed to fetch project: ${projectRes.error}` };
+
         return {
-          projectId: params.projectId,
-          overallHealth: 'green',
-          budgetStatus: { spent: 450000, total: 1200000, percentUsed: 37.5 },
-          scheduleStatus: { daysRemaining: 142, onTrack: true },
-          openIssues: 3,
-          nextMilestone: { name: 'Foundation Complete', dueDate: '2026-04-15' },
+          projectId,
+          project: projectRes.data,
+          budgetStatus: budgetRes.ok ? budgetRes.data : { error: budgetRes.error },
+          milestones: milestonesRes.ok ? milestonesRes.data : { error: milestonesRes.error },
           lastUpdate: new Date().toISOString(),
         };
       },
@@ -88,16 +100,10 @@ export class KeaBotCommand extends KeaBot {
         projectId: { type: 'string', description: 'The project ID', required: true },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          twinHealthScore: 87,
-          components: {
-            model: { status: 'synced', lastUpdate: '2026-03-08T14:30:00Z' },
-            schedule: { status: 'synced', lastUpdate: '2026-03-09T08:00:00Z' },
-            budget: { status: 'warning', lastUpdate: '2026-03-07T10:00:00Z', note: 'Pending change order #4' },
-            inspections: { status: 'synced', lastUpdate: '2026-03-09T09:15:00Z' },
-          },
-        };
+        const projectId = params.projectId as string;
+        const res = await this.api.get(SERVICE_ROUTES.twins.byProject(projectId));
+        if (!res.ok) return { error: `Failed to fetch twin data: ${res.error}` };
+        return res.data;
       },
     });
 

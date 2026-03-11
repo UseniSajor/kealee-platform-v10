@@ -1,4 +1,5 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { createServiceClient, ServiceClient, SERVICE_ROUTES } from '@kealee/bot-service-client';
 
 const CONFIG: BotConfig = {
   name: 'keabot-gc',
@@ -22,8 +23,11 @@ Rules:
 };
 
 export class KeaBotGC extends KeaBot {
-  constructor() {
+  private api: ServiceClient;
+
+  constructor(apiOverride?: ServiceClient) {
     super(CONFIG);
+    this.api = apiOverride ?? createServiceClient();
   }
 
   async initialize(): Promise<void> {
@@ -36,17 +40,35 @@ export class KeaBotGC extends KeaBot {
         scopeId: { type: 'string', description: 'Scope/trade package ID', required: false },
       },
       handler: async (params) => {
+        const projectId = params.projectId as string;
         const action = params.action as string;
-        return {
-          projectId: params.projectId,
-          action,
-          bids: [
-            { id: 'bid_001', contractor: 'Elite Plumbing', amount: 185000, status: 'submitted', score: 87 },
-            { id: 'bid_002', contractor: 'Metro Plumbing Co', amount: 172000, status: 'submitted', score: 82 },
-            { id: 'bid_003', contractor: 'ProPipe Services', amount: 198000, status: 'submitted', score: 91 },
-          ],
-          recommendation: 'bid_002 offers best value; bid_003 has highest quality score',
-        };
+        const scopeId = params.scopeId as string | undefined;
+
+        if (action === 'list') {
+          const res = await this.api.get(SERVICE_ROUTES.bids.list(), { projectId, scopeId });
+          if (!res.ok) return { error: `Failed to list bids: ${res.error}` };
+          return res.data;
+        }
+
+        if (action === 'create') {
+          const res = await this.api.post(SERVICE_ROUTES.bids.create(), { projectId, scopeId });
+          if (!res.ok) return { error: `Failed to create bid: ${res.error}` };
+          return res.data;
+        }
+
+        if (action === 'compare') {
+          const res = await this.api.get(SERVICE_ROUTES.bids.pipeline(), { projectId, scopeId });
+          if (!res.ok) return { error: `Failed to compare bids: ${res.error}` };
+          return res.data;
+        }
+
+        if (scopeId) {
+          const res = await this.api.post(SERVICE_ROUTES.bids.analyze(scopeId), { projectId });
+          if (!res.ok) return { error: `Failed to analyze bid: ${res.error}` };
+          return res.data;
+        }
+
+        return { error: `Unknown bid action: ${action}` };
       },
     });
 
@@ -58,16 +80,11 @@ export class KeaBotGC extends KeaBot {
         subId: { type: 'string', description: 'Specific subcontractor ID (optional, lists all if omitted)', required: false },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          subcontractors: [
-            { id: 'sub_001', name: 'Elite Plumbing', trade: 'Plumbing', status: 'on_site', nextDeliverable: 'Rough-in complete', dueDate: '2026-03-20' },
-            { id: 'sub_002', name: 'Sparks Electric', trade: 'Electrical', status: 'mobilizing', startDate: '2026-03-15' },
-            { id: 'sub_003', name: 'AirFlow HVAC', trade: 'HVAC', status: 'awaiting_materials', eta: '2026-03-12' },
-          ],
-          pendingRFIs: 2,
-          openChangeOrders: 1,
-        };
+        const projectId = params.projectId as string;
+        const subId = params.subId as string | undefined;
+        const res = await this.api.get(SERVICE_ROUTES.pm.tasks(), { projectId, assignee: subId, type: 'sub_coordination' });
+        if (!res.ok) return { error: `Failed to fetch sub coordination data: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -79,17 +96,11 @@ export class KeaBotGC extends KeaBot {
         type: { type: 'string', description: 'Compliance type: insurance, licensing, safety, all', required: false },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          overall: 'compliant_with_warnings',
-          items: [
-            { type: 'insurance', entity: 'Elite Plumbing', status: 'compliant', expiresAt: '2026-09-15' },
-            { type: 'insurance', entity: 'Sparks Electric', status: 'warning', expiresAt: '2026-03-30', note: 'Expiring in 21 days' },
-            { type: 'licensing', entity: 'AirFlow HVAC', status: 'compliant', licenseNumber: 'HVAC-2024-88712' },
-            { type: 'safety', entity: 'Project Site', status: 'compliant', lastAudit: '2026-03-05' },
-          ],
-          actionRequired: ['Remind Sparks Electric to renew insurance before 2026-03-30'],
-        };
+        const projectId = params.projectId as string;
+        const complianceType = params.type as string | undefined;
+        const res = await this.api.get(SERVICE_ROUTES.compliance.alerts(), { projectId, type: complianceType });
+        if (!res.ok) return { error: `Failed to fetch compliance data: ${res.error}` };
+        return res.data;
       },
     });
   }

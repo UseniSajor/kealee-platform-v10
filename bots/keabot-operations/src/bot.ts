@@ -1,4 +1,5 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { createServiceClient, ServiceClient, SERVICE_ROUTES } from '@kealee/bot-service-client';
 
 const CONFIG: BotConfig = {
   name: 'keabot-operations',
@@ -22,8 +23,11 @@ Rules:
 };
 
 export class KeaBotOperations extends KeaBot {
-  constructor() {
+  private api: ServiceClient;
+
+  constructor(apiOverride?: ServiceClient) {
     super(CONFIG);
+    this.api = apiOverride ?? createServiceClient();
   }
 
   async initialize(): Promise<void> {
@@ -35,24 +39,19 @@ export class KeaBotOperations extends KeaBot {
         action: { type: 'string', description: 'Action: view_checklist, update_item, generate_report', required: false },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          turnoverStatus: 'in_progress',
-          percentComplete: 68,
-          checklist: [
-            { category: 'Documentation', items: 12, completed: 10, status: 'in_progress' },
-            { category: 'O&M Manuals', items: 8, completed: 4, status: 'in_progress' },
-            { category: 'As-Built Drawings', items: 6, completed: 3, status: 'in_progress' },
-            { category: 'Warranty Letters', items: 15, completed: 12, status: 'in_progress' },
-            { category: 'Final Inspections', items: 5, completed: 5, status: 'complete' },
-            { category: 'Training Sessions', items: 4, completed: 2, status: 'in_progress' },
-          ],
-          blockers: [
-            'Awaiting HVAC O&M manual from AirFlow Mechanical',
-            'Elevator as-built drawings pending final inspection',
-          ],
-          targetTurnover: '2026-09-15',
-        };
+        const projectId = params.projectId as string;
+        const action = (params.action as string) || 'view_checklist';
+
+        if (action === 'view_checklist') {
+          const res = await this.api.get(SERVICE_ROUTES.ops.checklists(), { projectId });
+          if (!res.ok) return { error: `Failed to fetch checklists: ${res.error}` };
+          return res.data;
+        }
+
+        // create a new checklist or report
+        const res = await this.api.post(SERVICE_ROUTES.ops.checklists(), { projectId, action });
+        if (!res.ok) return { error: `Failed to manage turnover: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -64,19 +63,12 @@ export class KeaBotOperations extends KeaBot {
         system: { type: 'string', description: 'Specific system to check (e.g., HVAC, Roofing, Elevator)', required: false },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          warranties: [
-            { system: 'Roofing', contractor: 'Pacific Roofing', startDate: '2026-08-30', endDate: '2046-08-30', duration: '20 years', type: 'manufacturer + labor', status: 'active', claims: 0 },
-            { system: 'HVAC', contractor: 'AirFlow Mechanical', startDate: '2026-08-30', endDate: '2027-08-30', duration: '1 year labor', status: 'active', claims: 0, extended: { endDate: '2031-08-30', type: 'parts only' } },
-            { system: 'Elevator', contractor: 'Otis Elevator', startDate: '2026-08-30', endDate: '2028-08-30', duration: '2 years', type: 'full coverage', status: 'active', claims: 0 },
-            { system: 'Plumbing', contractor: 'Elite Plumbing', startDate: '2026-08-30', endDate: '2027-08-30', duration: '1 year', type: 'labor + materials', status: 'active', claims: 1 },
-          ],
-          expiringWithin90Days: [],
-          activeClaims: [
-            { system: 'Plumbing', claimId: 'WC-001', description: 'Floor 3 bathroom leak at fitting', status: 'repair_scheduled', scheduledDate: '2026-03-14' },
-          ],
-        };
+        const projectId = params.projectId as string;
+        const system = params.system as string | undefined;
+
+        const res = await this.api.get(SERVICE_ROUTES.ops.maintenanceSchedules(), { projectId, system });
+        if (!res.ok) return { error: `Failed to fetch warranties: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -90,24 +82,16 @@ export class KeaBotOperations extends KeaBot {
         system: { type: 'string', description: 'Building system affected', required: false },
       },
       handler: async (params) => {
+        const projectId = params.projectId as string;
+        const description = params.description as string;
         const priority = (params.priority as string) || 'medium';
-        return {
-          workOrderId: 'WO-2026-0042',
-          projectId: params.projectId,
-          description: params.description,
-          priority,
-          system: params.system || 'General',
-          status: 'created',
-          createdAt: new Date().toISOString(),
-          warrantyCheck: {
-            covered: true,
-            warrantyId: 'W-PLB-001',
-            contractor: 'Elite Plumbing',
-            note: 'Within 1-year labor + materials warranty',
-          },
-          assignedTo: priority === 'emergency' ? 'On-call maintenance team' : 'Pending assignment',
-          estimatedResponse: priority === 'emergency' ? '2 hours' : priority === 'high' ? '24 hours' : '3-5 business days',
-        };
+        const system = params.system as string | undefined;
+
+        const res = await this.api.post(SERVICE_ROUTES.ops.workOrders(), {
+          projectId, description, priority, system,
+        });
+        if (!res.ok) return { error: `Failed to create work order: ${res.error}` };
+        return res.data;
       },
     });
   }

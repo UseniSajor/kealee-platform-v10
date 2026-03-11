@@ -1,4 +1,5 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { createServiceClient, ServiceClient, SERVICE_ROUTES } from '@kealee/bot-service-client';
 
 const CONFIG: BotConfig = {
   name: 'keabot-developer',
@@ -22,8 +23,11 @@ Rules:
 };
 
 export class KeaBotDeveloper extends KeaBot {
-  constructor() {
+  private api: ServiceClient;
+
+  constructor(apiOverride?: ServiceClient) {
     super(CONFIG);
+    this.api = apiOverride ?? createServiceClient();
   }
 
   async initialize(): Promise<void> {
@@ -35,24 +39,12 @@ export class KeaBotDeveloper extends KeaBot {
         status: { type: 'string', description: 'Filter: active, completed, pipeline, all', required: false },
       },
       handler: async (params) => {
-        return {
-          developerId: params.developerId,
-          portfolioSummary: {
-            totalProjects: 5,
-            activeProjects: 3,
-            totalInvested: 18500000,
-            totalProjectValue: 67000000,
-            weightedIRR: 0.19,
-            avgEquityMultiple: 2.2,
-          },
-          projects: [
-            { id: 'proj_001', name: 'Downtown Mixed-Use', status: 'construction', equity: 3200000, projectedIRR: 0.18, health: 'green' },
-            { id: 'proj_003', name: 'Waterfront Towers', status: 'entitlement', equity: 5800000, projectedIRR: 0.22, health: 'yellow' },
-            { id: 'proj_004', name: 'Tech Campus Phase 1', status: 'construction', equity: 4500000, projectedIRR: 0.16, health: 'green' },
-            { id: 'proj_005', name: 'Suburban Retail', status: 'stabilized', equity: 2200000, actualIRR: 0.21, health: 'green' },
-            { id: 'proj_006', name: 'Industrial Park', status: 'pipeline', equity: 2800000, projectedIRR: 0.17, health: 'green' },
-          ],
-        };
+        const developerId = params.developerId as string;
+        const status = params.status as string | undefined;
+
+        const res = await this.api.get(SERVICE_ROUTES.projects.list(), { ownerId: developerId, status });
+        if (!res.ok) return { error: `Failed to fetch portfolio: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -64,27 +56,18 @@ export class KeaBotDeveloper extends KeaBot {
         developerId: { type: 'string', description: 'Developer ID for portfolio analysis', required: false },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId || 'portfolio',
-          returns: {
-            irr: 0.18,
-            equityMultiple: 2.1,
-            cashOnCash: 0.085,
-            netProfitMargin: 0.22,
-            returnOnCost: 0.084,
-          },
-          cashFlows: [
-            { period: 'Q1-2026', invested: -1600000, distributions: 0, net: -1600000 },
-            { period: 'Q2-2026', invested: -1600000, distributions: 0, net: -1600000 },
-            { period: 'Q3-2026', invested: 0, distributions: 0, net: 0 },
-            { period: 'Q4-2026', invested: 0, distributions: 250000, net: 250000 },
-          ],
-          benchmarks: {
-            marketIRR: 0.15,
-            peerGroupIRR: 0.17,
-            riskAdjustedReturn: 0.16,
-          },
-        };
+        const projectId = params.projectId as string | undefined;
+
+        if (projectId) {
+          const res = await this.api.get(SERVICE_ROUTES.payments.summary(projectId));
+          if (!res.ok) return { error: `Failed to fetch returns: ${res.error}` };
+          return res.data;
+        }
+
+        const developerId = params.developerId as string | undefined;
+        const res = await this.api.get(SERVICE_ROUTES.projects.list(), { ownerId: developerId });
+        if (!res.ok) return { error: `Failed to fetch portfolio returns: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -95,23 +78,10 @@ export class KeaBotDeveloper extends KeaBot {
         projectId: { type: 'string', description: 'The project ID', required: true },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          entitlements: [
-            { type: 'Design Review', status: 'approved', approvedDate: '2025-08-15', conditions: 2, conditionsMet: 2 },
-            { type: 'Land Use Permit', status: 'approved', approvedDate: '2025-09-20', conditions: 4, conditionsMet: 4 },
-            { type: 'Building Permit', status: 'issued', issuedDate: '2025-10-30', expiresAt: '2027-10-30' },
-            { type: 'Stormwater Permit', status: 'in_review', submitDate: '2026-02-01', expectedDecision: '2026-04-15' },
-          ],
-          risks: [
-            { item: 'Stormwater Permit', risk: 'medium', note: 'New DEQ requirements may require revised plan' },
-          ],
-          timeline: {
-            entitlementStart: '2025-06-01',
-            allApprovals: '2026-04-15 (projected)',
-            daysRemaining: 37,
-          },
-        };
+        const projectId = params.projectId as string;
+        const res = await this.api.get(SERVICE_ROUTES.dev.entitlements(projectId));
+        if (!res.ok) return { error: `Failed to fetch entitlements: ${res.error}` };
+        return res.data;
       },
     });
   }

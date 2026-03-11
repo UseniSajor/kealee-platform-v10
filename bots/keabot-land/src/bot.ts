@@ -1,4 +1,5 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { createServiceClient, ServiceClient, SERVICE_ROUTES } from '@kealee/bot-service-client';
 
 const CONFIG: BotConfig = {
   name: 'keabot-land',
@@ -22,8 +23,11 @@ Rules:
 };
 
 export class KeaBotLand extends KeaBot {
-  constructor() {
+  private api: ServiceClient;
+
+  constructor(apiOverride?: ServiceClient) {
     super(CONFIG);
+    this.api = apiOverride ?? createServiceClient();
   }
 
   async initialize(): Promise<void> {
@@ -37,14 +41,16 @@ export class KeaBotLand extends KeaBot {
         zoning: { type: 'string', description: 'Zoning designation filter (e.g., R1, C2, MU)', required: false },
       },
       handler: async (params) => {
-        return {
-          query: { location: params.location, minAcres: params.minAcres, maxPrice: params.maxPrice, zoning: params.zoning },
-          results: [
-            { parcelId: 'P-2026-001', address: '4500 SE Division St', acres: 1.2, zoning: 'CM2', askingPrice: 1850000, assessedValue: 1620000 },
-            { parcelId: 'P-2026-002', address: '2100 NW Industrial Pkwy', acres: 3.5, zoning: 'EG2', askingPrice: 2200000, assessedValue: 1950000 },
-          ],
-          totalResults: 2,
-        };
+        const location = params.location as string;
+        const minAcres = params.minAcres as number | undefined;
+        const maxPrice = params.maxPrice as number | undefined;
+        const zoning = params.zoning as string | undefined;
+
+        const res = await this.api.get(SERVICE_ROUTES.land.parcels(), {
+          location, minAcres, maxPrice, zoning,
+        });
+        if (!res.ok) return { error: `Failed to search parcels: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -55,19 +61,10 @@ export class KeaBotLand extends KeaBot {
         parcelId: { type: 'string', description: 'The parcel ID to analyze', required: true },
       },
       handler: async (params) => {
-        return {
-          parcelId: params.parcelId,
-          zoning: 'CM2',
-          zoningName: 'Commercial Mixed-Use 2',
-          permittedUses: ['Retail', 'Office', 'Residential (multi-family)', 'Restaurant', 'Light industrial'],
-          conditionalUses: ['Drive-through', 'Gas station'],
-          maxHeight: '75 feet / 6 stories',
-          maxFAR: 4.0,
-          setbacks: { front: 0, side: 0, rear: 5 },
-          parkingRequirements: '1 space per unit + 1 per 500 sqft commercial',
-          overlays: ['Design Review', 'Transit Corridor'],
-          constraints: ['Historic resource adjacent', 'Environmental zone within 200ft'],
-        };
+        const parcelId = params.parcelId as string;
+        const res = await this.api.get(SERVICE_ROUTES.land.parcelDetail(parcelId));
+        if (!res.ok) return { error: `Failed to fetch parcel zoning: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -79,20 +76,12 @@ export class KeaBotLand extends KeaBot {
         developmentType: { type: 'string', description: 'Proposed development type: residential, commercial, mixed-use, industrial', required: false },
       },
       handler: async (params) => {
-        return {
-          parcelId: params.parcelId,
-          overallScore: 78,
-          factors: {
-            zoningFit: { score: 85, note: 'CM2 supports proposed mixed-use' },
-            marketDemand: { score: 82, note: 'Strong rental demand in area, 3.2% vacancy' },
-            infrastructure: { score: 75, note: 'Utilities available; transit within 0.25mi' },
-            entitlementRisk: { score: 65, note: 'Design review required; adjacent historic resource adds complexity' },
-            financialViability: { score: 80, note: 'Land cost to project value ratio favorable at 18%' },
-          },
-          maxBuildableUnits: 48,
-          estimatedGrossSF: 62000,
-          recommendation: 'Proceed with feasibility study; entitlement risk manageable with early design review engagement',
-        };
+        const parcelId = params.parcelId as string;
+        const developmentType = params.developmentType as string | undefined;
+
+        const res = await this.api.post(SERVICE_ROUTES.land.createAssessment(parcelId), { developmentType });
+        if (!res.ok) return { error: `Failed to evaluate parcel: ${res.error}` };
+        return res.data;
       },
     });
   }

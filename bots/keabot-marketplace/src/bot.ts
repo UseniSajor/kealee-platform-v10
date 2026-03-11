@@ -1,4 +1,5 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { createServiceClient, ServiceClient, SERVICE_ROUTES } from '@kealee/bot-service-client';
 
 const CONFIG: BotConfig = {
   name: 'keabot-marketplace',
@@ -22,8 +23,11 @@ Rules:
 };
 
 export class KeaBotMarketplace extends KeaBot {
-  constructor() {
+  private api: ServiceClient;
+
+  constructor(apiOverride?: ServiceClient) {
     super(CONFIG);
+    this.api = apiOverride ?? createServiceClient();
   }
 
   async initialize(): Promise<void> {
@@ -36,30 +40,15 @@ export class KeaBotMarketplace extends KeaBot {
         minRating: { type: 'number', description: 'Minimum rating (1-5 scale)', required: false },
       },
       handler: async (params) => {
-        return {
-          query: { trade: params.trade, location: params.location, minRating: params.minRating },
-          results: [
-            {
-              id: 'ctr_001', name: 'Elite Plumbing LLC', trade: params.trade, rating: 4.8, reviewCount: 47,
-              location: 'Portland, OR', availability: 'available_in_2_weeks',
-              verified: true, insuranceValid: true, licenseValid: true,
-              projectsCompleted: 124, avgBidAccuracy: 0.95,
-            },
-            {
-              id: 'ctr_002', name: 'Metro Plumbing Co', trade: params.trade, rating: 4.2, reviewCount: 31,
-              location: 'Portland, OR', availability: 'immediately',
-              verified: true, insuranceValid: true, licenseValid: true,
-              projectsCompleted: 78, avgBidAccuracy: 0.88,
-            },
-            {
-              id: 'ctr_003', name: 'ProPipe Services', trade: params.trade, rating: 4.9, reviewCount: 63,
-              location: 'Beaverton, OR', availability: 'available_in_4_weeks',
-              verified: true, insuranceValid: true, licenseValid: true,
-              projectsCompleted: 201, avgBidAccuracy: 0.97,
-            },
-          ],
-          totalResults: 3,
-        };
+        const trade = params.trade as string;
+        const location = params.location as string | undefined;
+        const minRating = params.minRating as number | undefined;
+
+        const res = await this.api.get(SERVICE_ROUTES.marketplace.contractors(), {
+          trade, location, minRating,
+        });
+        if (!res.ok) return { error: `Failed to search contractors: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -72,21 +61,15 @@ export class KeaBotMarketplace extends KeaBot {
         certifications: { type: 'string', description: 'Comma-separated required certifications', required: false },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          trade: params.trade,
-          requirements: {
-            minExperience: '5 years commercial',
-            certifications: ['Master Plumber License', 'Backflow Prevention Certified'],
-            insuranceMinimum: '$2M general liability',
-            bondingRequired: true,
-          },
-          matches: [
-            { id: 'ctr_001', name: 'Elite Plumbing LLC', matchScore: 95, meetsAll: true, strengths: ['15 years commercial experience', 'All certifications held'] },
-            { id: 'ctr_003', name: 'ProPipe Services', matchScore: 92, meetsAll: true, strengths: ['20+ years experience', 'Highest platform rating'] },
-            { id: 'ctr_002', name: 'Metro Plumbing Co', matchScore: 78, meetsAll: false, gaps: ['Missing backflow certification'] },
-          ],
-        };
+        const projectId = params.projectId as string;
+        const trade = params.trade as string;
+        const certifications = params.certifications as string | undefined;
+
+        const res = await this.api.get(SERVICE_ROUTES.marketplace.contractors(), {
+          trade, projectId, certifications,
+        });
+        if (!res.ok) return { error: `Failed to match contractors: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -97,20 +80,10 @@ export class KeaBotMarketplace extends KeaBot {
         contractorId: { type: 'string', description: 'The contractor ID to verify', required: true },
       },
       handler: async (params) => {
-        return {
-          contractorId: params.contractorId,
-          contractor: 'Elite Plumbing LLC',
-          verification: {
-            generalLiability: { status: 'valid', amount: '$2M/$4M', carrier: 'Hartford', expires: '2026-12-31' },
-            workersComp: { status: 'valid', carrier: 'SAIF', expires: '2026-09-30' },
-            license: { status: 'valid', number: 'CCB-2018-77432', type: 'Plumbing Contractor', expires: '2027-06-30' },
-            bonding: { status: 'valid', amount: '$500,000', surety: 'Travelers' },
-            w9: { status: 'on_file', lastUpdated: '2026-01-15' },
-            safetyRecord: { emr: 0.82, osha300Log: 'on_file', lastIncident: '2024-08-12' },
-          },
-          overallStatus: 'fully_verified',
-          lastVerified: '2026-03-01',
-        };
+        const contractorId = params.contractorId as string;
+        const res = await this.api.get(SERVICE_ROUTES.marketplace.contractorDetail(contractorId));
+        if (!res.ok) return { error: `Failed to verify credentials: ${res.error}` };
+        return res.data;
       },
     });
   }

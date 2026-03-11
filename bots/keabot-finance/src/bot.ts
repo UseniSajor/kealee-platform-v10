@@ -1,4 +1,5 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { createServiceClient, ServiceClient, SERVICE_ROUTES } from '@kealee/bot-service-client';
 
 const CONFIG: BotConfig = {
   name: 'keabot-finance',
@@ -23,8 +24,11 @@ Rules:
 };
 
 export class KeaBotFinance extends KeaBot {
-  constructor() {
+  private api: ServiceClient;
+
+  constructor(apiOverride?: ServiceClient) {
     super(CONFIG);
+    this.api = apiOverride ?? createServiceClient();
   }
 
   async initialize(): Promise<void> {
@@ -36,22 +40,18 @@ export class KeaBotFinance extends KeaBot {
         totalProjectCost: { type: 'number', description: 'Total project cost (for new stacks)', required: false },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          totalProjectCost: 13200000,
-          stack: [
-            { layer: 'Senior Debt', amount: 8500000, percent: 64.4, provider: 'First National Bank', rate: '7.25%', term: '24 months', ltc: 0.644 },
-            { layer: 'Mezzanine', amount: 1500000, percent: 11.4, provider: 'Capital Bridge Fund', rate: '12.5%', term: '24 months' },
-            { layer: 'Sponsor Equity', amount: 2200000, percent: 16.7, provider: 'Kealee Dev LLC' },
-            { layer: 'LP Equity', amount: 1000000, percent: 7.6, provider: 'Various LPs' },
-          ],
-          metrics: {
-            ltc: 0.644,
-            ltv: 0.55,
-            dscr: 1.35,
-            debtYield: 0.084,
-          },
-        };
+        const projectId = params.projectId as string;
+        const totalProjectCost = params.totalProjectCost as number | undefined;
+
+        if (totalProjectCost) {
+          const res = await this.api.post(SERVICE_ROUTES.dev.createCapitalStack(), { projectId, totalProjectCost });
+          if (!res.ok) return { error: `Failed to create capital stack: ${res.error}` };
+          return res.data;
+        }
+
+        const res = await this.api.get(SERVICE_ROUTES.dev.capitalStack(projectId));
+        if (!res.ok) return { error: `Failed to fetch capital stack: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -63,20 +63,12 @@ export class KeaBotFinance extends KeaBot {
         drawNumber: { type: 'number', description: 'Specific draw number to view (optional)', required: false },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          loanAmount: 8500000,
-          totalDrawn: 3825000,
-          remainingBalance: 4675000,
-          percentDrawn: 45,
-          draws: [
-            { number: 1, date: '2025-12-15', amount: 1275000, status: 'disbursed', description: 'Foundation' },
-            { number: 2, date: '2026-01-30', amount: 1275000, status: 'disbursed', description: 'Structural 50%' },
-            { number: 3, date: '2026-03-01', amount: 1275000, status: 'disbursed', description: 'Structural 100% + MEP start' },
-            { number: 4, date: '2026-04-01', amount: 1275000, status: 'pending_inspection', description: 'MEP rough-in + enclosure' },
-          ],
-          retainage: { rate: 0.10, held: 382500 },
-        };
+        const projectId = params.projectId as string;
+        const drawNumber = params.drawNumber as number | undefined;
+
+        const res = await this.api.get(SERVICE_ROUTES.payments.draws(projectId), { drawNumber });
+        if (!res.ok) return { error: `Failed to fetch draws: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -88,30 +80,12 @@ export class KeaBotFinance extends KeaBot {
         period: { type: 'string', description: 'Reporting period: monthly, quarterly', required: false },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          period: (params.period as string) || 'quarterly',
-          reportDate: new Date().toISOString(),
-          executive_summary: 'Project on schedule and within budget. 42% complete with no material change orders.',
-          financials: {
-            totalBudget: 13200000,
-            costToDate: 5544000,
-            commitments: 2640000,
-            projectedTotal: 13100000,
-            varianceToBudget: -100000,
-          },
-          returns: {
-            projectedIRR: 0.18,
-            equityMultipleProjected: 2.1,
-            distributionsToDate: 0,
-            nextProjectedDistribution: '2027-Q1',
-          },
-          schedule: {
-            percentComplete: 42,
-            onSchedule: true,
-            targetCompletion: '2026-08-30',
-          },
-        };
+        const projectId = params.projectId as string;
+        const period = (params.period as string) || 'quarterly';
+
+        const res = await this.api.post(SERVICE_ROUTES.dev.createInvestorReport(), { projectId, period });
+        if (!res.ok) return { error: `Failed to generate investor report: ${res.error}` };
+        return res.data;
       },
     });
   }

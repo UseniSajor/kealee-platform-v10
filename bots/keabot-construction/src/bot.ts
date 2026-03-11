@@ -1,4 +1,5 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { createServiceClient, ServiceClient, SERVICE_ROUTES } from '@kealee/bot-service-client';
 
 const CONFIG: BotConfig = {
   name: 'keabot-construction',
@@ -22,8 +23,11 @@ Rules:
 };
 
 export class KeaBotConstruction extends KeaBot {
-  constructor() {
+  private api: ServiceClient;
+
+  constructor(apiOverride?: ServiceClient) {
     super(CONFIG);
+    this.api = apiOverride ?? createServiceClient();
   }
 
   async initialize(): Promise<void> {
@@ -35,21 +39,12 @@ export class KeaBotConstruction extends KeaBot {
         scope: { type: 'string', description: 'Scope: overall, phase, trade', required: false },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          overallProgress: 42,
-          phases: [
-            { name: 'Structural Steel', progress: 65, onTrack: true },
-            { name: 'MEP Rough-In', progress: 20, onTrack: true },
-            { name: 'Fireproofing', progress: 0, onTrack: true, startDate: '2026-04-01' },
-          ],
-          todayActivity: {
-            crewsOnSite: 4,
-            totalWorkers: 28,
-            activeAreas: ['Floors 2-4 steel erection', 'Floor 1 plumbing rough-in'],
-          },
-          lastUpdated: new Date().toISOString(),
-        };
+        const projectId = params.projectId as string;
+        const scope = params.scope as string | undefined;
+
+        const res = await this.api.get(SERVICE_ROUTES.pm.stats(), { projectId, scope });
+        if (!res.ok) return { error: `Failed to track progress: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -61,21 +56,12 @@ export class KeaBotConstruction extends KeaBot {
         lookAheadDays: { type: 'number', description: 'Number of days to look ahead (default 14)', required: false },
       },
       handler: async (params) => {
-        const lookAhead = (params.lookAheadDays as number) || 14;
-        return {
-          projectId: params.projectId,
-          lookAheadDays: lookAhead,
-          criticalPath: [
-            { activity: 'Floor 4 Steel', duration: 5, start: '2026-03-10', end: '2026-03-14', float: 0 },
-            { activity: 'Floor 5 Steel', duration: 5, start: '2026-03-17', end: '2026-03-21', float: 0 },
-          ],
-          delayRisks: [
-            { activity: 'HVAC Equipment Delivery', risk: 'medium', note: 'Supplier confirmed 2-day delay, absorbed by float' },
-          ],
-          scheduledInspections: [
-            { type: 'Structural Steel - Floors 1-3', date: '2026-03-13', status: 'scheduled' },
-          ],
-        };
+        const projectId = params.projectId as string;
+        const lookAheadDays = params.lookAheadDays as number | undefined;
+
+        const res = await this.api.get(SERVICE_ROUTES.pm.schedule(), { projectId, lookAheadDays });
+        if (!res.ok) return { error: `Failed to check schedule: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -87,23 +73,12 @@ export class KeaBotConstruction extends KeaBot {
         inspectionType: { type: 'string', description: 'Type of inspection to assess', required: false },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          upcoming: [
-            {
-              type: 'Structural Steel - Floors 1-3',
-              date: '2026-03-13',
-              readiness: 85,
-              checklist: [
-                { item: 'Connection bolts torqued', status: 'complete' },
-                { item: 'Welding inspections documented', status: 'complete' },
-                { item: 'Fire-stop details ready', status: 'in_progress' },
-                { item: 'Special inspection reports filed', status: 'complete' },
-              ],
-              blockers: ['Fire-stop details for 3 penetrations still being documented'],
-            },
-          ],
-        };
+        const projectId = params.projectId as string;
+        const inspectionType = params.inspectionType as string | undefined;
+
+        const res = await this.api.get(SERVICE_ROUTES.pm.inspections(), { projectId, type: inspectionType });
+        if (!res.ok) return { error: `Failed to assess inspection readiness: ${res.error}` };
+        return res.data;
       },
     });
   }

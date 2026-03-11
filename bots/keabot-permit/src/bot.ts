@@ -1,4 +1,5 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { createServiceClient, ServiceClient, SERVICE_ROUTES } from '@kealee/bot-service-client';
 
 const CONFIG: BotConfig = {
   name: 'keabot-permit',
@@ -22,8 +23,11 @@ Rules:
 };
 
 export class KeaBotPermit extends KeaBot {
-  constructor() {
+  private api: ServiceClient;
+
+  constructor(apiOverride?: ServiceClient) {
     super(CONFIG);
+    this.api = apiOverride ?? createServiceClient();
   }
 
   async initialize(): Promise<void> {
@@ -36,22 +40,15 @@ export class KeaBotPermit extends KeaBot {
         scopeDescription: { type: 'string', description: 'Brief description of project scope', required: false },
       },
       handler: async (params) => {
-        return {
-          projectType: params.projectType,
-          jurisdiction: params.jurisdiction,
-          requiredPermits: [
-            { type: 'Building Permit', authority: 'City Building Dept', estimatedReviewTime: '6-8 weeks', fee: '$8,500' },
-            { type: 'Grading Permit', authority: 'City Engineering', estimatedReviewTime: '4-6 weeks', fee: '$3,200' },
-            { type: 'Stormwater Permit', authority: 'DEQ', estimatedReviewTime: '8-12 weeks', fee: '$2,100' },
-            { type: 'Fire Life Safety Review', authority: 'Fire Marshal', estimatedReviewTime: '3-4 weeks', fee: '$1,800' },
-          ],
-          additionalReviews: [
-            { type: 'Design Review', required: true, note: 'Type III review for projects over 40,000 SF' },
-            { type: 'Traffic Impact Study', required: true, note: 'Required for >50 parking spaces' },
-          ],
-          estimatedTotalTimeline: '12-16 weeks (parallel review)',
-          totalEstimatedFees: 15600,
-        };
+        const projectType = params.projectType as string;
+        const jurisdiction = params.jurisdiction as string;
+        const scopeDescription = params.scopeDescription as string | undefined;
+
+        const res = await this.api.get(SERVICE_ROUTES.permits.dashboard(), {
+          projectType, jurisdiction, scopeDescription,
+        });
+        if (!res.ok) return { error: `Failed to check requirements: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -62,16 +59,10 @@ export class KeaBotPermit extends KeaBot {
         projectId: { type: 'string', description: 'The project ID', required: true },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          permits: [
-            { id: 'pmt_001', type: 'Building Permit', number: 'BP-2025-04821', status: 'issued', issuedDate: '2025-10-30', expiresAt: '2027-10-30', inspectionsPassed: 4, inspectionsRemaining: 8 },
-            { id: 'pmt_002', type: 'Grading Permit', number: 'GP-2025-01923', status: 'issued', issuedDate: '2025-09-15', expiresAt: '2026-09-15', inspectionsPassed: 2, inspectionsRemaining: 1 },
-            { id: 'pmt_003', type: 'Stormwater Permit', number: 'SW-2026-00342', status: 'in_review', submitDate: '2026-02-01', reviewCycle: 2, lastComment: 'Revised calculations needed for detention basin' },
-          ],
-          overallStatus: 'active_with_pending',
-          nextAction: 'Respond to stormwater review comments by 2026-03-15',
-        };
+        const projectId = params.projectId as string;
+        const res = await this.api.get(SERVICE_ROUTES.permits.list(), { projectId });
+        if (!res.ok) return { error: `Failed to track permits: ${res.error}` };
+        return res.data;
       },
     });
 
@@ -84,18 +75,29 @@ export class KeaBotPermit extends KeaBot {
         requestedDate: { type: 'string', description: 'Preferred date for inspection (ISO format)', required: false },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          scheduled: [
-            { type: 'Structural Steel - Floors 1-3', date: '2026-03-13', time: '9:00 AM', inspector: 'J. Martinez', status: 'confirmed' },
-            { type: 'Plumbing Rough-In - Floor 1', date: '2026-03-20', time: '10:00 AM', inspector: 'TBD', status: 'requested' },
-          ],
-          upcoming_required: [
-            { type: 'Structural Steel - Floors 4-5', earliest: '2026-03-25', note: 'Must pass floors 1-3 first' },
-            { type: 'Fire Sprinkler Rough-In', earliest: '2026-04-10', note: 'After MEP rough-in complete' },
-          ],
-          jurisdictionNotes: 'Request inspections 48 hours in advance. Online portal available.',
-        };
+        const projectId = params.projectId as string;
+        const inspectionType = params.inspectionType as string | undefined;
+        const requestedDate = params.requestedDate as string | undefined;
+
+        // List permits first to find the active permit
+        const permitsRes = await this.api.get(SERVICE_ROUTES.permits.list(), { projectId });
+        if (!permitsRes.ok) return { error: `Failed to fetch permits: ${permitsRes.error}` };
+
+        const permits = permitsRes.data as { permits?: Array<{ id: string }> };
+        const permitId = permits.permits?.[0]?.id;
+        if (!permitId) return { error: 'No active permits found for this project' };
+
+        if (inspectionType && requestedDate) {
+          const res = await this.api.post(SERVICE_ROUTES.permits.scheduleInspection(permitId), {
+            inspectionType, requestedDate,
+          });
+          if (!res.ok) return { error: `Failed to schedule inspection: ${res.error}` };
+          return res.data;
+        }
+
+        const res = await this.api.get(SERVICE_ROUTES.permits.inspections(permitId));
+        if (!res.ok) return { error: `Failed to fetch inspections: ${res.error}` };
+        return res.data;
       },
     });
   }
