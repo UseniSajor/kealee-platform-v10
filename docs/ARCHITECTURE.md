@@ -334,3 +334,61 @@ See `docs/adr/` for all formal ADRs:
 | [005](adr/005-services-as-fastify-plugins.md) | OS services implemented as Fastify plugins |
 | [006](adr/006-kxl-integration-adapter-pattern.md) | Adapter pattern for all external integrations |
 | [007](adr/007-housing-act-alignment.md) | Platform features mapped to Rebuild America's Housing Act |
+
+---
+
+## Canonical Implementation Map
+
+> This section documents **where business logic lives** for each core domain. Apps must consume the canonical service — never reimplement logic locally.
+
+### Marketplace (Contractor Listings, Bidding, Lead Assignment)
+
+| Location | Contents |
+|----------|----------|
+| `services/api/src/modules/marketplace/leads.service.ts` | Lead creation, distribution, stage management |
+| `services/api/src/modules/marketplace/marketplace.service.ts` | Contractor profile, matchmaking, scoring |
+| `services/api/src/modules/marketplace/quotes.service.ts` | Quote/bid management |
+| `services/api/src/modules/marketplace/leads.routes.ts` | Lead endpoints |
+| `services/api/src/modules/marketplace/marketplace.routes.ts` | Profile and search endpoints |
+| `services/api/src/modules/marketplace/portfolio.routes.ts` | Portfolio management |
+| `services/marketplace/src/` | Legacy service wrapper — being refactored into `services/api` |
+
+**Rule:** App-level code in `apps/m-marketplace/*` only consumes API clients. No business logic duplication.
+
+---
+
+### Payments / Escrow (Milestone Payments, Escrow, Stripe Connect)
+
+| Location | Contents |
+|----------|----------|
+| `services/api/src/modules/payments/payment.service.ts` | Escrow agreements, payment calculations, holdback logic |
+| `services/api/src/modules/payments/milestone-payment.service.ts` | Milestone release, Stripe Connect, platform fees (3%) |
+| `services/api/src/modules/payments/stripe-payment.service.ts` | Stripe payment integration |
+| `services/api/src/modules/payments/stripe-connect.service.ts` | Stripe Connect account management |
+| `services/api/src/modules/payments/unified-payment.service.ts` | Payment orchestration |
+| `services/api/src/modules/escrow/escrow.service.ts` | Escrow deposits, releases, holds, refunds — auto-posts journal entries |
+| `services/api/src/modules/finance/` | Double-entry bookkeeping, account balances, GL validation |
+| `services/api/src/modules/stripe-connect/payout.service.ts` | Contractor payouts via Stripe Connect |
+| `services/os-pay/src/pay.service.ts` | Alternative payment impl — transitioning into `services/api` |
+| `packages/payments/src/` | Stripe client, product catalog, platform fee utilities |
+
+**Key rules:**
+- Default holdback: 10% per milestone (configurable)
+- Platform fee: 3% (configurable in payment services)
+- Every escrow transaction automatically creates double-entry journal entries via `services/api/src/modules/escrow`
+
+---
+
+### Notifications (Email, SMS, In-App)
+
+| Location | Contents |
+|----------|----------|
+| `packages/communications/src/email.ts` | Email via Resend — canonical email sender |
+| `packages/communications/src/sms.ts` | SMS and WhatsApp via Twilio |
+| `packages/communications/src/in-app.ts` | In-app notifications stored in `Notification` model |
+| `packages/communications/src/templates/` | 25+ React/TSX email templates (leads, bids, payments, milestones, inspections, etc.) |
+| `packages/core-notifications/src/notification-service.ts` | Unified `NotificationService` — multi-channel abstraction (email, SMS, push, in-app) |
+| `services/api/src/modules/notifications/notification.service.ts` | Notification dispatch with user preference checking (50+ notification types) |
+| `services/api/src/modules/email/email.service.ts` | Email template rendering and Resend dispatch |
+
+**Rule:** All apps import from `@kealee/communications` and `@kealee/core-notifications`. No app-level notification implementations. Channels: Resend (email), Twilio (SMS/WhatsApp), Supabase Realtime (push).
