@@ -2,6 +2,7 @@ import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
+import { engagementService } from '../engagement/engagement.service'
 
 // Package tier definitions
 export const PACKAGE_TIERS = {
@@ -78,6 +79,17 @@ export const servicePlanService = {
           },
         },
       },
+    })
+
+    // Create canonical Engagement for this PM service subscription
+    await engagementService.createEngagement({
+      type: 'PM_SERVICE',
+      status: 'SUBSCRIPTION_ACTIVE',
+      deliveryModel: 'SUBSCRIPTION',
+      assignmentMode: 'ROTATING_QUEUE',
+      initiatorUserId: data.userId,
+      servicePlanId: plan.id,
+      totalValue: tierInfo.monthlyPrice,
     })
 
     // Log audit
@@ -312,6 +324,13 @@ export const servicePlanService = {
         cancelledAt: new Date(),
       },
     })
+
+    // Advance canonical Engagement to SUBSCRIPTION_CANCELLED
+    const linkedEngagement = await prismaAny.engagement.findFirst({
+      where: { servicePlanId: planId },
+      select: { id: true },
+    })
+    await engagementService.advanceEngagement(linkedEngagement?.id, 'SUBSCRIPTION_CANCELLED')
 
     // Log audit
     await auditService.recordAudit({

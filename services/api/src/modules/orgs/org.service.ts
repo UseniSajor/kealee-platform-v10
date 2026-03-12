@@ -8,6 +8,7 @@ export class OrgService {
     description?: string
     logo?: string
     ownerId: string
+    orgType?: string // Canonical OrgType enum value (optional, additive)
   }) {
     // Check if slug is already taken
     const existing = await prismaAny.org.findUnique({
@@ -26,6 +27,7 @@ export class OrgService {
         description: data.description,
         logo: data.logo,
         status: 'ACTIVE',
+        orgType: data.orgType ?? null,
         members: {
           create: {
             userId: data.ownerId,

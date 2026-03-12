@@ -1,6 +1,7 @@
 import Stripe from 'stripe'
 import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError } from '../../errors/app.error'
+import { engagementService } from '../engagement/engagement.service'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
     apiVersion: '2023-10-16',
@@ -57,6 +58,16 @@ export const designService = {
             throw new NotFoundError('User', userId)
         }
 
+        // Create canonical Engagement before initiating payment — captures commercial intent
+        const engagementId = await engagementService.createEngagement({
+            type: 'PRECON_DESIGN',
+            status: 'PROPOSAL_SENT',
+            deliveryModel: 'ONE_TIME_PURCHASE',
+            assignmentMode: 'SELF_SELECTED',
+            initiatorUserId: userId,
+            totalValue: pkg.price / 100, // cents → dollars
+        })
+
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: [
@@ -81,6 +92,7 @@ export const designService = {
             metadata: {
                 packageId,
                 userId,
+                engagementId,
                 type: 'DESIGN_HUB_PURCHASE'
             },
         })

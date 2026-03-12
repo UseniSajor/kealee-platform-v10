@@ -4,6 +4,7 @@ import { AuthorizationError, NotFoundError, ValidationError } from '../../errors
 import { readinessService } from '../readiness/readiness.service'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
+import { engagementService } from '../engagement/engagement.service'
 
 export type CreateProjectInput = {
   ownerId: string
@@ -80,6 +81,19 @@ export const projectService = {
     // Admin override requires reason
     if (input.adminOverride && !input.adminReason) {
       throw new ValidationError('adminReason is required when adminOverride is true')
+    }
+
+    // Verify the owner is a member of the specified org
+    if (input.orgId) {
+      const membership = await prismaAny.orgMember.findUnique({
+        where: { userId_orgId: { userId: input.ownerId, orgId: input.orgId } },
+        select: { id: true },
+      })
+      if (!membership) {
+        throw new ValidationError(
+          `User is not a member of org ${input.orgId}. Add the user to the org before creating a project under it.`
+        )
+      }
     }
 
     const project = await prismaAny.project.create({
@@ -263,6 +277,13 @@ export const projectService = {
       console.warn(`Failed to create default readiness checklist for project ${result.id}:`, error.message)
     }
 
+    // Link canonical Engagement to the new Project and advance to CONTRACT_PENDING
+    if (lead.engagementId) {
+      await engagementService.advanceEngagement(lead.engagementId, 'CONTRACT_PENDING', {
+        projectId: result.id,
+      })
+    }
+
     // Log audit
     await auditService.recordAudit({
       action: 'PROJECT_CREATED_FROM_LEAD',
@@ -312,8 +333,14 @@ export const projectService = {
   },
 
   async listMyProjects(userId: string) {
+    // Return projects the user owns OR is a member of
     return prismaAny.project.findMany({
-      where: { ownerId: userId },
+      where: {
+        OR: [
+          { ownerId: userId },
+          { memberships: { some: { userId } } },
+        ],
+      },
       orderBy: { createdAt: 'desc' },
     })
   },

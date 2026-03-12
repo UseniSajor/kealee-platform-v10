@@ -2,6 +2,7 @@ import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
+import { engagementService } from '../engagement/engagement.service'
 // Prisma Decimal type - use any for now
 type PrismaDecimal = any
 
@@ -57,6 +58,22 @@ export const leadsService = {
         projectId: input.projectId,
         stage: 'OPEN',
       },
+    })
+
+    // Create canonical Engagement and link it to the Lead
+    const engagementId = await engagementService.createEngagement({
+      type: 'MARKETPLACE_PROJECT',
+      status: 'LEAD_CAPTURED',
+      deliveryModel: 'MARKETPLACE',
+      assignmentMode: 'ROTATING_QUEUE',
+      initiatorUserId: input.userId,
+      sourceLeadId: lead.id,
+      projectId: input.projectId,
+      totalValue: input.estimatedValue,
+    })
+    await prismaAny.lead.update({
+      where: { id: lead.id },
+      data: { engagementId },
     })
 
     // Log audit
@@ -684,6 +701,13 @@ export const leadsService = {
   async awardContractor(leadId: string, profileId: string, userId?: string) {
     const lead = await prismaAny.lead.findUnique({
       where: { id: leadId },
+      select: {
+        id: true,
+        stage: true,
+        awardedProfileId: true,
+        lostReason: true,
+        engagementId: true,
+      },
     })
 
     if (!lead) {
@@ -740,6 +764,11 @@ export const leadsService = {
       },
     })
 
+    // Advance canonical Engagement to AWARDED
+    await engagementService.advanceEngagement(lead.engagementId, 'AWARDED', {
+      awardedToUserId: profile.userId,
+    })
+
     // Log audit
     await auditService.recordAudit({
       action: 'LEAD_CONTRACTOR_AWARDED',
@@ -780,6 +809,7 @@ export const leadsService = {
   async closeLost(leadId: string, reason: string, userId?: string) {
     const lead = await prismaAny.lead.findUnique({
       where: { id: leadId },
+      select: { id: true, stage: true, lostReason: true, engagementId: true },
     })
 
     if (!lead) {
@@ -795,6 +825,9 @@ export const leadsService = {
         stageChangedAt: new Date(),
       },
     })
+
+    // Advance canonical Engagement to LOST
+    await engagementService.advanceEngagement(lead.engagementId, 'LOST')
 
     // Log audit
     await auditService.recordAudit({

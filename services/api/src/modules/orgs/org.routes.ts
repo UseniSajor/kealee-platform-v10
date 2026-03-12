@@ -59,11 +59,12 @@ export async function orgRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const user = (request as any).user
-        const { name, slug, description, logo } = request.body as {
+        const { name, slug, description, logo, orgType } = request.body as {
           name: string
           slug: string
           description?: string
           logo?: string
+          orgType?: string
         }
 
         const org = await orgService.createOrg({
@@ -72,6 +73,7 @@ export async function orgRoutes(fastify: FastifyInstance) {
           description,
           logo,
           ownerId: user.id,
+          orgType,
         })
 
         return reply.code(201).send({ org })
