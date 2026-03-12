@@ -400,13 +400,18 @@ model SoftwareSubscription {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation("UserSoftwareSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
+  // ── Canonical Engagement FK (additive, nullable) ──────────────────────────
+  engagementId String?
+
+  user       User        @relation("UserSoftwareSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
+  engagement Engagement? @relation("EngagementSoftwareSubs", fields: [engagementId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([organizationId])
   @@index([softwareTier])
   @@index([status])
   @@index([stripeSubscriptionId])
+  @@index([engagementId])
   @@map("software_subscriptions")
 }
 

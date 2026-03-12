@@ -1,0 +1,172 @@
+// ENGAGEMENT — Models
+//
+// Canonical commercial-relationship anchor for the Kealee platform.
+//
+// An Engagement is the single parent record that ties together the full
+// commercial lifecycle: lead capture → qualification → proposal → bid →
+// award → contract → execution → completion.
+//
+// Every existing commercial record (Lead, Quote, BidSubmission,
+// ContractAgreement, Subscription variants, PlatformFee, Invoice, Payment)
+// should eventually carry an engagementId FK.  Those FKs are added as
+// NULLABLE columns so existing rows are never broken.
+//
+// Canonical lineage:
+//   User (initiator)  ──┐
+//   Org  (initiator)  ──┤
+//   Project           ──┤──▶ Engagement ──▶ ContractAgreement
+//                        │               └──▶ EscrowAgreement (via contract)
+//                        │               └──▶ Milestone[]
+//                        │               └──▶ Lead[] / Quote[] / BidSubmission[]
+//                        └──▶ EngagementNote[]
+//                        └──▶ EngagementActivity[]
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ENGAGEMENT — core anchor model
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Engagement {
+  id   String           @id @default(uuid())
+
+  // ── Classification ────────────────────────────────────────────────────────
+  type           EngagementType
+  status         EngagementStatus @default(LEAD_CAPTURED)
+  deliveryModel  DeliveryModel?   // How the service is commercially delivered
+  assignmentMode AssignmentMode?  // How the professional was assigned
+
+  // ── Primary parties ───────────────────────────────────────────────────────
+  /// The User who originated this engagement (owner, developer, GC signing up).
+  initiatorUserId  String
+  /// The Org the initiator represents.  Nullable for individual consumers.
+  initiatorOrgId   String?
+  /// Kealee staff or PM assigned to manage / execute this engagement.
+  assignedToUserId String?
+  /// The professional (contractor, architect, etc.) who was awarded this
+  /// engagement.  References User.id — may be null until award stage.
+  awardedToUserId  String?
+
+  // ── Project linkage ───────────────────────────────────────────────────────
+  /// Set when a canonical Project is created from or linked to this engagement.
+  /// Nullable — not all engagements produce a project (e.g. SaaS subscriptions).
+  projectId        String?
+
+  // ── Commercial outcome ────────────────────────────────────────────────────
+  /// FK to the ServicePlan product being sold (for subscription / package flows).
+  servicePlanId    String?
+  /// Total engagement value in currency units (not cents).
+  totalValue       Decimal? @db.Decimal(14, 2)
+  currency         String   @default("USD")
+
+  // ── Source / attribution ──────────────────────────────────────────────────
+  /// FK to Lead if this engagement originated from a marketplace lead capture.
+  sourceLeadId     String?
+  /// FK to FunnelSession if originated from the web funnel.
+  sourceFunnelId   String?
+  /// FK to MarketingCampaign if originated from a campaign.
+  sourceCampaignSlug String?
+  /// Referral code used at registration.
+  referralCode     String?
+  /// UTM parameters for marketing attribution.
+  utmSource        String?
+  utmMedium        String?
+  utmCampaign      String?
+
+  // ── Lifecycle timestamps ──────────────────────────────────────────────────
+  leadCapturedAt   DateTime?
+  qualifiedAt      DateTime?
+  proposalSentAt   DateTime?
+  awardedAt        DateTime?
+  contractSignedAt DateTime?
+  activatedAt      DateTime?  // Subscription started / project kicked off
+  completedAt      DateTime?
+  lostAt           DateTime?
+  lostReason       String?
+
+  // ── Metadata ─────────────────────────────────────────────────────────────
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ── Relations ─────────────────────────────────────────────────────────────
+  initiatorUser  User     @relation("EngagementInitiatorUser",  fields: [initiatorUserId],  references: [id], onDelete: Restrict)
+  initiatorOrg   Org?     @relation("EngagementInitiatorOrg",   fields: [initiatorOrgId],   references: [id], onDelete: SetNull)
+  assignedToUser User?    @relation("EngagementAssignedTo",      fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  awardedToUser  User?    @relation("EngagementAwardedTo",       fields: [awardedToUserId],  references: [id], onDelete: SetNull)
+  project        Project? @relation("ProjectEngagements",        fields: [projectId],        references: [id], onDelete: SetNull)
+  servicePlan    ServicePlan? @relation("EngagementServicePlan", fields: [servicePlanId],    references: [id], onDelete: SetNull)
+
+  // Child records — added via nullable FKs on the child side (additive)
+  leads                  Lead[]                  @relation("EngagementLeads")
+  quotes                 Quote[]                 @relation("EngagementQuotes")
+  bidSubmissions         BidSubmission[]         @relation("EngagementBidSubmissions")
+  contractAgreements     ContractAgreement[]     @relation("EngagementContracts")
+  pmSubscriptions        PMServiceSubscription[] @relation("EngagementPMSubs")
+  permitSubscriptions    PermitServiceSubscription[] @relation("EngagementPermitSubs")
+  softwareSubscriptions  SoftwareSubscription[]  @relation("EngagementSoftwareSubs")
+  alaCarteServices       ALaCarteService[]       @relation("EngagementALaCarte")
+  conceptPackageOrders   ConceptPackageOrder[]   @relation("EngagementConceptOrders")
+  platformFees           PlatformFee[]           @relation("EngagementPlatformFees")
+  notes                  EngagementNote[]
+  activities             EngagementActivity[]
+
+  @@index([initiatorUserId])
+  @@index([initiatorOrgId])
+  @@index([projectId])
+  @@index([type])
+  @@index([status])
+  @@index([type, status])
+  @@index([status, createdAt])
+  @@index([awardedToUserId])
+  @@map("engagements")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ENGAGEMENT NOTE — internal / external notes on an engagement
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EngagementNote {
+  id           String   @id @default(uuid())
+  engagementId String
+  authorId     String
+  content      String   @db.Text
+  /// When true: visible only to Kealee staff.  When false: also visible to the
+  /// engagement initiator (e.g. a status update shared with the owner/client).
+  isInternal   Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  engagement Engagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  author     User       @relation("EngagementNoteAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([engagementId])
+  @@index([authorId])
+  @@map("engagement_notes")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ENGAGEMENT ACTIVITY — immutable audit trail of state transitions
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EngagementActivity {
+  id           String   @id @default(uuid())
+  engagementId String
+  /// The User who triggered this activity (null for system/automated events).
+  actorId      String?
+  /// Machine-readable action code.  Examples:
+  ///   "status_changed" | "bid_submitted" | "contract_signed" | "lead_assigned"
+  action       String
+  fromStatus   EngagementStatus?
+  toStatus     EngagementStatus?
+  /// Additional context for this event (bid amount, contract ID, reason, etc.).
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  engagement Engagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  actor      User?      @relation("EngagementActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([engagementId])
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("engagement_activities")
+}

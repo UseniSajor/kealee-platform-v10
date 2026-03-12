@@ -81,17 +81,22 @@ model BidSubmission {
   withdrawnAt    DateTime?
   withdrawReason String?
 
+  // ── Canonical Engagement FK (additive, nullable) ──────────────────────────
+  engagementId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  bidRequest BidRequest @relation(fields: [bidRequestId], references: [id], onDelete: Cascade)
-  contractor Contractor @relation(fields: [contractorId], references: [id])
+  bidRequest BidRequest  @relation(fields: [bidRequestId], references: [id], onDelete: Cascade)
+  contractor Contractor  @relation(fields: [contractorId], references: [id])
+  engagement Engagement? @relation("EngagementBidSubmissions", fields: [engagementId], references: [id], onDelete: SetNull)
 
   @@index([bidRequestId])
   @@index([contractorId])
   @@index([status])
   @@index([score])
   @@index([status, createdAt])
+  @@index([engagementId])
   @@map("bid_submissions")
 }
 

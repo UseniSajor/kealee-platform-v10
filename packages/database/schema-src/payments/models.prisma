@@ -15,6 +15,11 @@ model ContractAgreement {
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
 
+  // ── Canonical Engagement FK (additive, nullable) ──────────────────────────
+  // A ContractAgreement is the commitment-stage outcome of an Engagement.
+  // Null for contracts created before the Engagement model was introduced.
+  engagementId String?
+
   project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
   owner           User             @relation("ContractOwner", fields: [ownerId], references: [id])
   contractor      User             @relation("ContractContractor", fields: [contractorId], references: [id])
@@ -22,6 +27,7 @@ model ContractAgreement {
   escrowAgreement EscrowAgreement?
   disputes        Dispute[]
   lienWaivers     LienWaiver[]
+  engagement      Engagement?      @relation("EngagementContracts", fields: [engagementId], references: [id], onDelete: SetNull)
 
   // Compliance relations
   complianceChecks ComplianceCheck[] @relation("ComplianceCheckContract")
@@ -33,6 +39,7 @@ model ContractAgreement {
   @@index([contractorId])
   @@index([status])
   @@index([status, createdAt])
+  @@index([engagementId])
 }
 
 model Milestone {
@@ -1031,14 +1038,19 @@ model PlatformFee {
   updatedAt DateTime  @updatedAt
   dueAt     DateTime?
 
+  // ── Canonical Engagement FK (additive, nullable) ──────────────────────────
+  engagementId String?
+
   // Relationships
   preConProject PreConProject? @relation(fields: [preConProjectId], references: [id])
+  engagement    Engagement?    @relation("EngagementPlatformFees", fields: [engagementId], references: [id], onDelete: SetNull)
 
   @@index([preConProjectId])
   @@index([projectId])
   @@index([feeType])
   @@index([status])
   @@index([createdAt])
+  @@index([engagementId])
 }
 
 model PlatformFeeConfig {
@@ -1222,7 +1234,6 @@ model StripeProduct {
 model ConceptPackageOrder {
   id                    String    @id @default(cuid())
   userId                String
-  user                  User      @relation("ConceptPackageOrderUser", fields: [userId], references: [id])
   stripeSessionId       String    @unique
   stripePaymentIntentId String?
   packageTier           String    // essential, professional, premium, white-glove
@@ -1235,12 +1246,20 @@ model ConceptPackageOrder {
   deliveredAt           DateTime?
   metadata              Json?
   funnelSessionId       String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+
+  // ── Canonical Engagement FK (additive, nullable) ──────────────────────────
+  engagementId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User        @relation("ConceptPackageOrderUser", fields: [userId], references: [id])
+  engagement Engagement? @relation("EngagementConceptOrders", fields: [engagementId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([status])
   @@index([deliveryStatus])
+  @@index([engagementId])
   @@map("concept_package_orders")
 }
 

@@ -1,0 +1,171 @@
+// ENGAGEMENT — Enums
+// Canonical commercial-relationship vocabulary for the Kealee platform.
+//
+// These enums standardise the lifecycle terms used across leads, bids, contracts,
+// and subscriptions.  All existing enum/string fields on older models are PRESERVED;
+// these are the canonical definitions that new code and future migrations should
+// reference.
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ORG CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// What kind of organisation an Org record represents.
+/// Added as Org.orgType (nullable) — does not replace the legacy status String.
+enum OrgType {
+  OWNER_CLIENT        // Property owner / client company
+  CONTRACTOR_FIRM     // General contractor business
+  ARCHITECTURE_FIRM   // Architecture / design practice
+  ENGINEERING_FIRM    // Structural, MEP, or other engineering firm
+  DESIGN_BUILD        // Combined design-build entity
+  DEVELOPER           // Real-estate / housing developer
+  INVESTOR            // Investment / capital entity
+  SUBCONTRACTOR       // Specialty subcontractor firm
+  GOVERNMENT          // Government or public agency
+  NONPROFIT           // Non-profit housing organisation
+  KEALEE_INTERNAL     // Internal Kealee operational org (os-pm, os-admin)
+  PLATFORM            // Platform-level pseudo-org for system actions
+}
+
+/// Canonical Org lifecycle status.
+/// Added as Org.orgStatus (nullable) alongside the existing `status String`.
+/// Future migration: once all writers use orgStatus, the String field can be
+/// deprecated and then removed.
+enum OrgStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED       // Access blocked by platform admin
+  PENDING_REVIEW  // Awaiting verification
+  ARCHIVED        // Soft-deleted / historical record
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VERIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Unified verification lifecycle used for contractors, architects, engineers,
+/// and any professional profile that requires licence/insurance review.
+/// Replaces the scattered Boolean `isVerified` + nullable `verifiedAt` pattern.
+enum VerificationStatus {
+  UNVERIFIED     // Profile created; verification not yet started
+  PENDING        // Documents submitted; under review
+  IN_REVIEW      // Actively being reviewed by Kealee staff
+  VERIFIED       // Fully verified — can receive leads and execute contracts
+  REJECTED       // Verification failed; reason in metadata
+  SUSPENDED      // Was verified; access revoked (insurance lapse, violation, etc.)
+  EXPIRED        // Verification valid period elapsed; renewal required
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROJECT CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Canonical construction project type.
+/// Added as Project.projectType (nullable) alongside the existing `category String`.
+enum ProjectType {
+  RESIDENTIAL_SINGLE_FAMILY
+  RESIDENTIAL_MULTI_UNIT   // Duplex, triplex, etc.
+  MULTIFAMILY              // 4+ unit apartment / condo building
+  MIXED_USE
+  COMMERCIAL_RETAIL
+  COMMERCIAL_OFFICE
+  COMMERCIAL_INDUSTRIAL
+  INSTITUTIONAL            // Schools, hospitals, government buildings
+  AFFORDABLE_HOUSING       // Includes HUD / Section 8 / LIHTC projects
+  ACCESSORY_DWELLING_UNIT  // ADU / granny flat
+  RENOVATION_REMODEL       // Renovation of existing structure
+  NEW_CONSTRUCTION         // Ground-up build
+  INFRASTRUCTURE           // Roads, utilities, site work
+  INTERIOR_ONLY            // Interior remodel only (no structural)
+  LANDSCAPE                // Landscape / hardscape only
+}
+
+/// The canonical CONSTRUCTION_READY gate status for a project.
+/// Gates contractor engagement per the platform architecture rules:
+///   Plans complete + Permits submitted → CONSTRUCTION_READY → Contractors engaged
+enum ConstructionReadinessStatus {
+  NOT_STARTED          // Pre-construction work not yet begun
+  DESIGN_IN_PROGRESS   // Active design work underway
+  PERMITS_PENDING      // Permit application in preparation
+  PERMITS_SUBMITTED    // Permits filed with jurisdiction — this + plans complete = gate
+  CONSTRUCTION_READY   // Gate passed: plans complete AND permits submitted
+  UNDER_CONSTRUCTION   // Active construction phase
+  CONSTRUCTION_COMPLETE
+  CLOSED
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ENGAGEMENT CLASSIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// How a service is structurally delivered — the commercial model.
+enum DeliveryModel {
+  MARKETPLACE         // Buyer sources provider via marketplace (lead/bid flow)
+  DIRECT              // Direct engagement bypassing marketplace (owner brings own pro)
+  SUBSCRIPTION        // Recurring service contract (PM, Permit service packages)
+  SAAS                // Platform software subscription (S1–S4 tiers)
+  ONE_TIME_PURCHASE   // Single transaction (concept package, a-la-carte service)
+  GOVERNMENT_CONTRACT // Publicly-bid government/municipal work
+}
+
+/// How a professional or PM is assigned to an engagement.
+enum AssignmentMode {
+  ROTATING_QUEUE   // Next-in-line from approved rotating queue (standard platform rule)
+  SPONSORED        // Buyer clicked a sponsored / preferred professional
+  DIRECT_ASSIGN    // Kealee staff manually assigned (override)
+  OWNER_NOMINATED  // Owner brought their own professional (must still register)
+  SELF_SELECTED    // Professional self-selected via platform (e.g. bid accepted)
+  AI_MATCHED       // KeaBot matchmaking recommendation accepted
+}
+
+/// The type of commercial engagement this record represents.
+/// Drives which child records are expected and which service logic applies.
+enum EngagementType {
+  // ── B2C Marketplace flows ────────────────────────────────────────────────
+  MARKETPLACE_PROJECT      // Owner → GC via marketplace lead + bid pipeline
+  PRECON_DESIGN            // Owner → Kealee design services (concept packages)
+  ARCHITECT_SERVICE        // Owner → Architect via platform
+  ENGINEER_SERVICE         // Owner → Engineer via platform
+
+  // ── B2B SaaS / Service subscriptions ────────────────────────────────────
+  PM_SERVICE               // GC or owner subscribes to PM management service (A–D)
+  PERMIT_SERVICE           // Contractor subscribes to permit service (A–D)
+  SOFTWARE                 // Any user subscribes to platform SaaS (S1–S4)
+  ALACARTE                 // One-off service purchase (site visit, budget setup, etc.)
+
+  // ── Development & Investment flows ──────────────────────────────────────
+  DEVELOPMENT_SERVICES     // Developer/investor engagement for full development services
+  GOVERNMENT_CONTRACT      // Government contracting pipeline (BidOpportunity)
+
+  // ── Internal / platform ─────────────────────────────────────────────────
+  INTERNAL                 // Platform-internal engagement (ops, support, etc.)
+}
+
+/// The canonical lifecycle status for an Engagement record.
+/// Maps to all existing lead/bid/subscription statuses across domain models.
+enum EngagementStatus {
+  // ── Discovery / top-of-funnel ───────────────────────────────────────────
+  LEAD_CAPTURED      // Raw lead or enquiry exists; not yet qualified
+  LEAD_QUALIFIED     // Lead verified, scored, and ready to progress
+
+  // ── Active pipeline ─────────────────────────────────────────────────────
+  PROPOSAL_SENT      // Quote or formal proposal delivered to buyer
+  BIDDING_OPEN       // Open for contractor bids (marketplace flow)
+  BID_EVALUATION     // Bids under review by Kealee or owner
+  AWARDED            // Winning bid or provider selected
+
+  // ── Commitment ──────────────────────────────────────────────────────────
+  CONTRACT_PENDING   // Contract being drafted or sent for signature
+  CONTRACT_ACTIVE    // Contract fully signed; engagement in execution
+
+  // ── Subscription lifecycle ───────────────────────────────────────────────
+  TRIAL              // Trial period active (GC Ops, Permit service)
+  SUBSCRIPTION_ACTIVE
+  SUBSCRIPTION_PAUSED
+  SUBSCRIPTION_CANCELLED
+
+  // ── Terminal ────────────────────────────────────────────────────────────
+  COMPLETED          // Engagement fully fulfilled
+  LOST               // Lost to competitor, cancelled pre-contract
+  ARCHIVED           // Historical record; no further action expected
+}

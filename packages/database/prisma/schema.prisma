@@ -1509,6 +1509,13 @@ model Project {
   autonomyEnabledAt DateTime?
   autonomyEnabledBy String?
 
+  // ── Canonical classification fields (additive 2026-03-12) ─────────────────
+  // Legacy: category String? is preserved. projectType is the canonical enum.
+  projectType            ProjectType?
+  // Tracks CONSTRUCTION_READY gate. Rule: plans complete + permits submitted.
+  // Contractors may NOT be engaged before CONSTRUCTION_READY is reached.
+  constructionReadiness  ConstructionReadinessStatus?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1610,11 +1617,16 @@ model Project {
   feasibilityStudies    FeasibilityStudy[]
   buildingAssets        BuildingAsset[]
 
+  // Canonical Engagement relations (additive 2026-03-12)
+  engagements Engagement[] @relation("ProjectEngagements")
+
   @@index([clientId])
   @@index([orgId])
   @@index([propertyId])
   @@index([pmId])
   @@index([status])
+  @@index([projectType])
+  @@index([constructionReadiness])
   // ── Performance: Compound indexes for dashboard queries ──
   @@index([clientId, status]) // Client dashboard: "my active projects"
   @@index([pmId, status]) // PM dashboard: "my active projects"
@@ -2007,6 +2019,13 @@ model User {
   patternBookSelections   PatternBookSelection[]   @relation("PatternBookSelector")
   developmentPackages     DevelopmentPackage[]     @relation("DevelopmentPackageUser")
   hudEligibilityChecks    HUDEligibilityCheck[]    @relation("HUDEligibilityUser")
+
+  // ── Canonical Engagement relations (additive 2026-03-12) ──────────────────
+  initiatedEngagements  Engagement[]         @relation("EngagementInitiatorUser")
+  assignedEngagements   Engagement[]         @relation("EngagementAssignedTo")
+  awardedEngagements    Engagement[]         @relation("EngagementAwardedTo")
+  engagementNotes       EngagementNote[]     @relation("EngagementNoteAuthor")
+  engagementActivities  EngagementActivity[] @relation("EngagementActivityActor")
 }
 
 // ============================================================================
@@ -2068,7 +2087,17 @@ model Org {
   slug        String   @unique
   description String?
   logo        String?
+
+  // Legacy status field (String) — preserved for backwards compat.
+  // Canonical replacement: orgStatus (OrgStatus enum).
   status      String   @default("ACTIVE")
+
+  // ── Canonical classification fields (additive 2026-03-12) ─────────────────
+  orgType     OrgType?   // What type of organisation this is
+  orgStatus   OrgStatus? // Canonical lifecycle status (replaces status String long-term)
+  website     String?
+  phone       String?
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -2080,8 +2109,13 @@ model Org {
   // Command Center Infrastructure relations
   integrationCredentials IntegrationCredential[]
 
+  // Canonical Engagement relations
+  initiatedEngagements   Engagement[] @relation("EngagementInitiatorOrg")
+
   @@index([slug])
   @@index([status])
+  @@index([orgType])
+  @@index([orgStatus])
 }
 
 model OrgMember {
@@ -2270,6 +2304,10 @@ model ContractAgreement {
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
 
+  // Canonical Engagement FK (additive, nullable)
+  // A ContractAgreement is the commitment-stage outcome of an Engagement.
+  engagementId String?
+
   project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
   owner           User             @relation("ContractOwner", fields: [ownerId], references: [id])
   contractor      User             @relation("ContractContractor", fields: [contractorId], references: [id])
@@ -2277,6 +2315,7 @@ model ContractAgreement {
   escrowAgreement EscrowAgreement?
   disputes        Dispute[]
   lienWaivers     LienWaiver[]
+  engagement      Engagement?      @relation("EngagementContracts", fields: [engagementId], references: [id], onDelete: SetNull)
 
   // Compliance relations
   complianceChecks ComplianceCheck[] @relation("ComplianceCheckContract")
@@ -2288,6 +2327,7 @@ model ContractAgreement {
   @@index([contractorId])
   @@index([status])
   @@index([status, createdAt])
+  @@index([engagementId])
 }
 
 model Milestone {
@@ -4204,13 +4244,18 @@ model Lead {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Canonical Engagement FK (additive, nullable)
+  engagementId String?
+
   project        Project?        @relation(fields: [projectId], references: [id])
   quotes         Quote[]
   quickEstimates QuickEstimate[]
+  engagement     Engagement?     @relation("EngagementLeads", fields: [engagementId], references: [id], onDelete: SetNull)
 
   @@index([projectId])
   @@index([stage])
   @@index([status])
+  @@index([engagementId])
   // ── Performance: Compound indexes for marketplace queries ──
   @@index([stage, createdAt]) // Lead pipeline: filter by stage + sort by time
   @@index([status, createdAt]) // Lead listing with time-based pagination
@@ -4271,12 +4316,17 @@ model Quote {
   status      String // SUBMITTED, ACCEPTED, REJECTED
   submittedAt DateTime @default(now())
 
-  lead    Lead               @relation(fields: [leadId], references: [id])
-  profile MarketplaceProfile @relation(fields: [profileId], references: [id])
+  // Canonical Engagement FK (additive, nullable)
+  engagementId String?
+
+  lead       Lead               @relation(fields: [leadId], references: [id])
+  profile    MarketplaceProfile @relation(fields: [profileId], references: [id])
+  engagement Engagement?        @relation("EngagementQuotes", fields: [engagementId], references: [id], onDelete: SetNull)
 
   @@index([leadId])
   @@index([profileId])
   @@index([status])
+  @@index([engagementId])
 }
 
 // ============================================================================
@@ -5452,14 +5502,19 @@ model PlatformFee {
   updatedAt DateTime  @updatedAt
   dueAt     DateTime?
 
+  // Canonical Engagement FK (additive, nullable)
+  engagementId String?
+
   // Relationships
   preConProject PreConProject? @relation(fields: [preConProjectId], references: [id])
+  engagement    Engagement?    @relation("EngagementPlatformFees", fields: [engagementId], references: [id], onDelete: SetNull)
 
   @@index([preConProjectId])
   @@index([projectId])
   @@index([feeType])
   @@index([status])
   @@index([createdAt])
+  @@index([engagementId])
 }
 
 // Pre-Con Phase History - Audit trail of phase transitions
@@ -5730,14 +5785,19 @@ model BidSubmission {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  bidRequest BidRequest @relation(fields: [bidRequestId], references: [id], onDelete: Cascade)
-  contractor Contractor @relation(fields: [contractorId], references: [id])
+  // Canonical Engagement FK (additive, nullable)
+  engagementId String?
+
+  bidRequest BidRequest  @relation(fields: [bidRequestId], references: [id], onDelete: Cascade)
+  contractor Contractor  @relation(fields: [contractorId], references: [id])
+  engagement Engagement? @relation("EngagementBidSubmissions", fields: [engagementId], references: [id], onDelete: SetNull)
 
   @@index([bidRequestId])
   @@index([contractorId])
   @@index([status])
   @@index([score])
   @@index([status, createdAt])
+  @@index([engagementId])
   @@map("bid_submissions")
 }
 
@@ -7645,7 +7705,11 @@ model PMServiceSubscription {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  client Client @relation("PMServiceSubscriptionClient", fields: [clientId], references: [id], onDelete: Cascade)
+  // Canonical Engagement FK (additive, nullable)
+  engagementId String?
+
+  client     Client      @relation("PMServiceSubscriptionClient", fields: [clientId], references: [id], onDelete: Cascade)
+  engagement Engagement? @relation("EngagementPMSubs", fields: [engagementId], references: [id], onDelete: SetNull)
 
   // Assigned PM for execution (os-pm)
   assignedPMs ProjectManager[] @relation("PMServiceAssignments")
@@ -7653,6 +7717,7 @@ model PMServiceSubscription {
   @@index([clientId])
   @@index([status])
   @@index([packageTier])
+  @@index([engagementId])
   @@map("pm_service_subscriptions")
 }
 
@@ -7683,15 +7748,20 @@ model PermitServiceSubscription {
   resubmittalsIncluded    Int     @default(0) // 0, 1, unlimited
   turnaroundDays          Int     @default(3) // 2-3, 1-2, same-day
 
+  // Canonical Engagement FK (additive, nullable)
+  engagementId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  client Client @relation("PermitServiceSubscriptionClient", fields: [clientId], references: [id], onDelete: Cascade)
+  client     Client      @relation("PermitServiceSubscriptionClient", fields: [clientId], references: [id], onDelete: Cascade)
+  engagement Engagement? @relation("EngagementPermitSubs", fields: [engagementId], references: [id], onDelete: SetNull)
 
   @@index([clientId])
   @@index([projectId])
   @@index([status])
   @@index([packageTier])
+  @@index([engagementId])
   @@map("permit_service_subscriptions")
 }
 
@@ -7721,15 +7791,20 @@ model ALaCarteService {
   // Execution (os-pm)
   assignedPMId String?
 
+  // Canonical Engagement FK (additive, nullable)
+  engagementId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  client Client @relation("ALaCarteServiceClient", fields: [clientId], references: [id], onDelete: Cascade)
+  client     Client      @relation("ALaCarteServiceClient", fields: [clientId], references: [id], onDelete: Cascade)
+  engagement Engagement? @relation("EngagementALaCarte", fields: [engagementId], references: [id], onDelete: SetNull)
 
   @@index([clientId])
   @@index([projectId])
   @@index([serviceType])
   @@index([status])
+  @@index([engagementId])
   @@map("a_la_carte_services")
 }
 
@@ -7784,6 +7859,9 @@ model ServicePlan {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Canonical Engagement back-relation (additive)
+  engagements Engagement[] @relation("EngagementServicePlan")
 
   @@map("service_plans")
 }
@@ -9842,13 +9920,18 @@ model SoftwareSubscription {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation("UserSoftwareSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
+  // Canonical Engagement FK (additive, nullable)
+  engagementId String?
+
+  user       User        @relation("UserSoftwareSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
+  engagement Engagement? @relation("EngagementSoftwareSubs", fields: [engagementId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([organizationId])
   @@index([softwareTier])
   @@index([status])
   @@index([stripeSubscriptionId])
+  @@index([engagementId])
   @@map("software_subscriptions")
 }
 
@@ -13013,7 +13096,6 @@ model ContractorVerification {
 model ConceptPackageOrder {
   id                    String    @id @default(cuid())
   userId                String
-  user                  User      @relation("ConceptPackageOrderUser", fields: [userId], references: [id])
   stripeSessionId       String    @unique
   stripePaymentIntentId String?
   packageTier           String // essential, professional, premium, white-glove
@@ -13026,12 +13108,20 @@ model ConceptPackageOrder {
   deliveredAt           DateTime?
   metadata              Json?
   funnelSessionId       String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+
+  // Canonical Engagement FK (additive, nullable)
+  engagementId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User        @relation("ConceptPackageOrderUser", fields: [userId], references: [id])
+  engagement Engagement? @relation("EngagementConceptOrders", fields: [engagementId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([status])
   @@index([deliveryStatus])
+  @@index([engagementId])
   @@map("concept_package_orders")
 }
 
@@ -15104,3 +15194,352 @@ model BuildingAsset {
   @@index([category])
   @@map("building_assets")
 }
+
+// ============================================================================
+// CANONICAL SCHEMA HARDENING — v10 Anchor Pass
+// Added: 2026-03-12
+//
+// This section introduces:
+//   1. Standard classification enums (OrgType, OrgStatus, VerificationStatus,
+//      ProjectType, DeliveryModel, AssignmentMode, ConstructionReadinessStatus)
+//   2. Canonical commercial lifecycle enums (EngagementType, EngagementStatus)
+//   3. The Engagement anchor model + EngagementNote + EngagementActivity
+//
+// ALL changes are additive:
+//   - New enum types do not touch existing String fields
+//   - New columns on existing models are nullable (no data migration required)
+//   - New FK relations use onDelete: SetNull so orphaned rows cannot occur
+//   - No existing model, table, or column is renamed or removed
+// ============================================================================
+
+// ── ORG CLASSIFICATION ───────────────────────────────────────────────────────
+
+/// What kind of organisation an Org record represents.
+/// Added as Org.orgType (nullable) — does not replace legacy status String.
+enum OrgType {
+  OWNER_CLIENT        // Property owner / client company
+  CONTRACTOR_FIRM     // General contractor business
+  ARCHITECTURE_FIRM   // Architecture / design practice
+  ENGINEERING_FIRM    // Structural, MEP, or other engineering firm
+  DESIGN_BUILD        // Combined design-build entity
+  DEVELOPER           // Real-estate / housing developer
+  INVESTOR            // Investment / capital entity
+  SUBCONTRACTOR       // Specialty subcontractor firm
+  GOVERNMENT          // Government or public agency
+  NONPROFIT           // Non-profit housing organisation
+  KEALEE_INTERNAL     // Internal Kealee operational org (os-pm, os-admin)
+  PLATFORM            // Platform-level pseudo-org for system actions
+}
+
+/// Canonical Org lifecycle status.
+/// Added as Org.orgStatus (nullable) alongside the existing `status String`.
+/// Migration path: once all writers use orgStatus, deprecate the String field.
+enum OrgStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED       // Access blocked by platform admin
+  PENDING_REVIEW  // Awaiting verification
+  ARCHIVED        // Soft-deleted / historical record
+}
+
+// ── VERIFICATION ─────────────────────────────────────────────────────────────
+
+/// Unified verification lifecycle for contractors, architects, and engineers.
+/// Replaces the scattered Boolean isVerified + nullable verifiedAt pattern.
+/// Attach via ContractorProfile.verificationStatus (additive nullable column).
+enum VerificationStatus {
+  UNVERIFIED     // Profile created; verification not yet started
+  PENDING        // Documents submitted; under review
+  IN_REVIEW      // Actively being reviewed by Kealee staff
+  VERIFIED       // Fully verified — can receive leads and execute contracts
+  REJECTED       // Verification failed; reason in metadata
+  SUSPENDED      // Was verified; access revoked (insurance lapse, violation, etc.)
+  EXPIRED        // Verification valid period elapsed; renewal required
+}
+
+// ── PROJECT CLASSIFICATION ───────────────────────────────────────────────────
+
+/// Canonical construction project type.
+/// Added as Project.projectType (nullable) alongside existing category String.
+enum ProjectType {
+  RESIDENTIAL_SINGLE_FAMILY
+  RESIDENTIAL_MULTI_UNIT   // Duplex, triplex, etc.
+  MULTIFAMILY              // 4+ unit apartment / condo building
+  MIXED_USE
+  COMMERCIAL_RETAIL
+  COMMERCIAL_OFFICE
+  COMMERCIAL_INDUSTRIAL
+  INSTITUTIONAL            // Schools, hospitals, government buildings
+  AFFORDABLE_HOUSING       // HUD / Section 8 / LIHTC projects
+  ACCESSORY_DWELLING_UNIT  // ADU / granny flat
+  RENOVATION_REMODEL       // Renovation of existing structure
+  NEW_CONSTRUCTION         // Ground-up build
+  INFRASTRUCTURE           // Roads, utilities, site work
+  INTERIOR_ONLY            // Interior remodel only (no structural)
+  LANDSCAPE                // Landscape / hardscape only
+}
+
+/// The canonical CONSTRUCTION_READY gate status for a project.
+/// Rule: plans complete + permits submitted → CONSTRUCTION_READY → contractors engaged.
+/// Added as Project.constructionReadiness (nullable).
+enum ConstructionReadinessStatus {
+  NOT_STARTED          // Pre-construction work not yet begun
+  DESIGN_IN_PROGRESS   // Active design work underway
+  PERMITS_PENDING      // Permit application in preparation
+  PERMITS_SUBMITTED    // Permits filed — this + plans complete = gate passed
+  CONSTRUCTION_READY   // Gate passed: plans complete AND permits submitted
+  UNDER_CONSTRUCTION   // Active construction phase
+  CONSTRUCTION_COMPLETE
+  CLOSED
+}
+
+// ── ENGAGEMENT CLASSIFICATION ────────────────────────────────────────────────
+
+/// How a service is structurally delivered — the commercial model.
+enum DeliveryModel {
+  MARKETPLACE         // Buyer sources provider via marketplace (lead/bid flow)
+  DIRECT              // Direct engagement bypassing marketplace
+  SUBSCRIPTION        // Recurring service contract (PM, Permit service packages)
+  SAAS                // Platform software subscription (S1–S4 tiers)
+  ONE_TIME_PURCHASE   // Single transaction (concept package, a-la-carte)
+  GOVERNMENT_CONTRACT // Publicly-bid government/municipal work
+}
+
+/// How a professional or PM is assigned to an engagement.
+enum AssignmentMode {
+  ROTATING_QUEUE   // Next-in-line from approved rotating queue (standard rule)
+  SPONSORED        // Buyer clicked a sponsored / preferred professional
+  DIRECT_ASSIGN    // Kealee staff manually assigned (override)
+  OWNER_NOMINATED  // Owner brought their own pro (must still register)
+  SELF_SELECTED    // Professional self-selected via platform
+  AI_MATCHED       // KeaBot matchmaking recommendation accepted
+}
+
+/// The type of commercial engagement this record represents.
+enum EngagementType {
+  // B2C Marketplace flows
+  MARKETPLACE_PROJECT      // Owner → GC via marketplace lead + bid pipeline
+  PRECON_DESIGN            // Owner → Kealee design services (concept packages)
+  ARCHITECT_SERVICE        // Owner → Architect via platform
+  ENGINEER_SERVICE         // Owner → Engineer via platform
+  // B2B SaaS / Service subscriptions
+  PM_SERVICE               // GC or owner subscribes to PM management service (A–D)
+  PERMIT_SERVICE           // Contractor subscribes to permit service (A–D)
+  SOFTWARE                 // Any user subscribes to platform SaaS (S1–S4)
+  ALACARTE                 // One-off service purchase
+  // Development & Investment flows
+  DEVELOPMENT_SERVICES     // Developer/investor engagement
+  GOVERNMENT_CONTRACT      // Government contracting pipeline (BidOpportunity)
+  // Internal / platform
+  INTERNAL                 // Platform-internal engagement
+}
+
+/// The canonical lifecycle status for an Engagement record.
+enum EngagementStatus {
+  // Discovery / top-of-funnel
+  LEAD_CAPTURED      // Raw lead or enquiry exists; not yet qualified
+  LEAD_QUALIFIED     // Lead verified, scored, and ready to progress
+  // Active pipeline
+  PROPOSAL_SENT      // Quote or formal proposal delivered to buyer
+  BIDDING_OPEN       // Open for contractor bids (marketplace flow)
+  BID_EVALUATION     // Bids under review by Kealee or owner
+  AWARDED            // Winning bid or provider selected
+  // Commitment
+  CONTRACT_PENDING   // Contract being drafted or sent for signature
+  CONTRACT_ACTIVE    // Contract fully signed; engagement in execution
+  // Subscription lifecycle
+  TRIAL              // Trial period active (GC Ops, Permit service)
+  SUBSCRIPTION_ACTIVE
+  SUBSCRIPTION_PAUSED
+  SUBSCRIPTION_CANCELLED
+  // Terminal
+  COMPLETED          // Engagement fully fulfilled
+  LOST               // Lost to competitor, cancelled pre-contract
+  ARCHIVED           // Historical record; no further action expected
+}
+
+// ── ENGAGEMENT ANCHOR MODEL ──────────────────────────────────────────────────
+//
+// The Engagement model is the canonical parent record for every commercial
+// relationship on the platform.  It ties together:
+//
+//   User (initiator)  ──┐
+//   Org  (initiator)  ──┤──▶ Engagement ──▶ ContractAgreement
+//   Project           ──┘               └──▶ Lead / Quote / BidSubmission
+//                                        └──▶ Subscription variants
+//                                        └──▶ PlatformFee / Invoice
+//
+// ADDITIVE: all FK columns on child models are nullable.  No existing rows
+// are broken.  Backfill is a separate migration step.
+
+model Engagement {
+  id   String           @id @default(uuid())
+
+  // ── Classification ────────────────────────────────────────────────────────
+  type           EngagementType
+  status         EngagementStatus @default(LEAD_CAPTURED)
+  deliveryModel  DeliveryModel?
+  assignmentMode AssignmentMode?
+
+  // ── Primary parties ───────────────────────────────────────────────────────
+  /// User who originated this engagement (owner, developer, GC signing up).
+  initiatorUserId  String
+  /// Org the initiator represents.  Nullable for individual consumers.
+  initiatorOrgId   String?
+  /// Kealee staff or PM assigned to manage / execute this engagement.
+  assignedToUserId String?
+  /// Professional awarded this engagement.  Set at AWARDED status.
+  awardedToUserId  String?
+
+  // ── Project linkage ───────────────────────────────────────────────────────
+  /// Canonical Project linked to this engagement.  Null until project is created.
+  projectId        String?
+
+  // ── Commercial outcome ────────────────────────────────────────────────────
+  /// FK to ServicePlan product being sold (subscription / package flows).
+  servicePlanId    String?
+  totalValue       Decimal? @db.Decimal(14, 2)
+  currency         String   @default("USD")
+
+  // ── Source / attribution ──────────────────────────────────────────────────
+  sourceLeadId       String?  // FK to Lead if originated from marketplace lead
+  sourceFunnelId     String?  // FK to FunnelSession if from web funnel
+  sourceCampaignSlug String?  // FK to MarketingCampaign slug if from campaign
+  referralCode       String?
+  utmSource          String?
+  utmMedium          String?
+  utmCampaign        String?
+
+  // ── Lifecycle timestamps ──────────────────────────────────────────────────
+  leadCapturedAt   DateTime?
+  qualifiedAt      DateTime?
+  proposalSentAt   DateTime?
+  awardedAt        DateTime?
+  contractSignedAt DateTime?
+  activatedAt      DateTime? // Subscription started / project kicked off
+  completedAt      DateTime?
+  lostAt           DateTime?
+  lostReason       String?
+
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ── Relations ─────────────────────────────────────────────────────────────
+  initiatorUser  User         @relation("EngagementInitiatorUser",  fields: [initiatorUserId],  references: [id], onDelete: Restrict)
+  initiatorOrg   Org?         @relation("EngagementInitiatorOrg",   fields: [initiatorOrgId],   references: [id], onDelete: SetNull)
+  assignedToUser User?        @relation("EngagementAssignedTo",      fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  awardedToUser  User?        @relation("EngagementAwardedTo",       fields: [awardedToUserId],  references: [id], onDelete: SetNull)
+  project        Project?     @relation("ProjectEngagements",        fields: [projectId],        references: [id], onDelete: SetNull)
+  servicePlan    ServicePlan? @relation("EngagementServicePlan",     fields: [servicePlanId],    references: [id], onDelete: SetNull)
+
+  // Child records — linked via nullable engagementId FKs on each child model
+  leads                 Lead[]                   @relation("EngagementLeads")
+  quotes                Quote[]                  @relation("EngagementQuotes")
+  bidSubmissions        BidSubmission[]          @relation("EngagementBidSubmissions")
+  contractAgreements    ContractAgreement[]      @relation("EngagementContracts")
+  pmSubscriptions       PMServiceSubscription[]  @relation("EngagementPMSubs")
+  permitSubscriptions   PermitServiceSubscription[] @relation("EngagementPermitSubs")
+  softwareSubscriptions SoftwareSubscription[]   @relation("EngagementSoftwareSubs")
+  alaCarteServices      ALaCarteService[]        @relation("EngagementALaCarte")
+  conceptPackageOrders  ConceptPackageOrder[]    @relation("EngagementConceptOrders")
+  platformFees          PlatformFee[]            @relation("EngagementPlatformFees")
+  notes                 EngagementNote[]
+  activities            EngagementActivity[]
+
+  @@index([initiatorUserId])
+  @@index([initiatorOrgId])
+  @@index([projectId])
+  @@index([type])
+  @@index([status])
+  @@index([type, status])
+  @@index([status, createdAt])
+  @@index([awardedToUserId])
+  @@map("engagements")
+}
+
+// ── ENGAGEMENT NOTE ───────────────────────────────────────────────────────────
+
+model EngagementNote {
+  id           String   @id @default(uuid())
+  engagementId String
+  authorId     String
+  content      String   @db.Text
+  /// true = visible to Kealee staff only.  false = also visible to initiator.
+  isInternal   Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  engagement Engagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  author     User       @relation("EngagementNoteAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([engagementId])
+  @@index([authorId])
+  @@map("engagement_notes")
+}
+
+// ── ENGAGEMENT ACTIVITY ───────────────────────────────────────────────────────
+// Immutable audit trail of state transitions on an engagement.
+
+model EngagementActivity {
+  id           String            @id @default(uuid())
+  engagementId String
+  /// User who triggered this event.  Null for automated / system events.
+  actorId      String?
+  /// Machine-readable action code.
+  /// Examples: "status_changed" | "bid_submitted" | "contract_signed" | "lead_assigned"
+  action       String
+  fromStatus   EngagementStatus?
+  toStatus     EngagementStatus?
+  /// Additional context: bid amount, contract ID, reason, etc.
+  metadata     Json?
+  createdAt    DateTime          @default(now())
+
+  engagement Engagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  actor      User?      @relation("EngagementActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([engagementId])
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("engagement_activities")
+}
+
+// ── ADDITIVE FIELD ADDITIONS ON EXISTING MODELS ──────────────────────────────
+//
+// The following lines document which nullable columns were added to existing
+// models.  The actual ALTER TABLE statements are in the migration SQL draft.
+// Source-of-truth edits are in schema-src/<domain>/models.prisma.
+//
+// Org
+//   + orgType   OrgType?
+//   + orgStatus OrgStatus?
+//   + website   String?
+//   + phone     String?
+//   + initiatedEngagements Engagement[] @relation("EngagementInitiatorOrg")
+//
+// Project
+//   + projectType           ProjectType?
+//   + constructionReadiness ConstructionReadinessStatus?
+//   + engagements           Engagement[] @relation("ProjectEngagements")
+//
+// User
+//   + initiatedEngagements  Engagement[] @relation("EngagementInitiatorUser")
+//   + assignedEngagements   Engagement[] @relation("EngagementAssignedTo")
+//   + awardedEngagements    Engagement[] @relation("EngagementAwardedTo")
+//   + engagementNotes       EngagementNote[] @relation("EngagementNoteAuthor")
+//   + engagementActivities  EngagementActivity[] @relation("EngagementActivityActor")
+//
+// Lead                    + engagementId String?
+// Quote                   + engagementId String?
+// ContractAgreement       + engagementId String?
+// BidSubmission           + engagementId String?
+// PMServiceSubscription   + engagementId String?
+// PermitServiceSubscription + engagementId String?
+// SoftwareSubscription    + engagementId String?
+// ALaCarteService         + engagementId String?
+// ConceptPackageOrder     + engagementId String?
+// PlatformFee             + engagementId String?
+//
+// ServicePlan (no change needed — already exists as catalog table)
+// ── END CANONICAL HARDENING BLOCK ────────────────────────────────────────────

@@ -27,6 +27,7 @@ const OUTPUT = path.join(__dirname, '..', 'prisma', 'schema.generated.prisma')
 const DOMAIN_ORDER = [
   'foundation',
   'identity',
+  'engagement',  // canonical commercial-relationship layer (Engagement, enums)
   'ddts',
   'land',
   'feasibility',

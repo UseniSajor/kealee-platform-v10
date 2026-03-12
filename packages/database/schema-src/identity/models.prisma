@@ -246,6 +246,18 @@ model User {
   patternBookSelections   PatternBookSelection[]   @relation("PatternBookSelector")
   developmentPackages     DevelopmentPackage[]      @relation("DevelopmentPackageUser")
   hudEligibilityChecks    HUDEligibilityCheck[]    @relation("HUDEligibilityUser")
+
+  // ── Canonical Engagement relations (additive) ─────────────────────────────
+  // Engagements this user initiated (as owner, developer, GC signing up, etc.)
+  initiatedEngagements   Engagement[] @relation("EngagementInitiatorUser")
+  // Engagements assigned to this user (Kealee staff / PM / assigned professional)
+  assignedEngagements    Engagement[] @relation("EngagementAssignedTo")
+  // Engagements awarded to this user (contractor / architect who won the bid)
+  awardedEngagements     Engagement[] @relation("EngagementAwardedTo")
+  // Notes authored on engagements
+  engagementNotes        EngagementNote[]      @relation("EngagementNoteAuthor")
+  // Activity records where this user was the actor
+  engagementActivities   EngagementActivity[]  @relation("EngagementActivityActor")
 }
 
 model ModuleEntitlement {
@@ -273,7 +285,26 @@ model Org {
   slug        String   @unique
   description String?
   logo        String?
+
+  // ── Legacy status field (String) — preserved for backwards compat ─────────
+  // Canonical replacement: orgStatus (OrgStatus enum below).
+  // Migration path: write to both fields during transition; drop String field
+  // once all readers use orgStatus.
   status      String   @default("ACTIVE")
+
+  // ── Canonical classification fields (additive) ────────────────────────────
+  /// What type of organisation this record represents.
+  /// See OrgType enum in schema-src/engagement/enums.prisma.
+  orgType     OrgType?
+  /// Canonical lifecycle status.  Nullable so existing rows are unaffected.
+  /// See OrgStatus enum in schema-src/engagement/enums.prisma.
+  orgStatus   OrgStatus?
+
+  /// Website URL for the organisation.
+  website     String?
+  /// Primary phone number for the organisation.
+  phone       String?
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -285,8 +316,13 @@ model Org {
   // Command Center Infrastructure relations
   integrationCredentials IntegrationCredential[]
 
+  // Engagement relations (canonical commercial relationships this org initiates)
+  initiatedEngagements   Engagement[] @relation("EngagementInitiatorOrg")
+
   @@index([slug])
   @@index([status])
+  @@index([orgType])
+  @@index([orgStatus])
 }
 
 model OrgMember {

@@ -43,6 +43,16 @@ model Project {
   autonomyEnabledAt DateTime?
   autonomyEnabledBy String?
 
+  // ── Canonical classification fields (additive) ────────────────────────────
+  // Legacy: `category String?` is preserved; projectType is the canonical enum.
+  // See ProjectType enum in schema-src/engagement/enums.prisma.
+  projectType            ProjectType?
+  // Tracks whether this project has passed the CONSTRUCTION_READY gate.
+  // Gate rule: plans complete + permits submitted → CONSTRUCTION_READY.
+  // Contractors may NOT be engaged before this status is reached.
+  // See ConstructionReadinessStatus in schema-src/engagement/enums.prisma.
+  constructionReadiness  ConstructionReadinessStatus?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -142,6 +152,9 @@ model Project {
   maintenanceWorkOrders MaintenanceWorkOrder[]
   escrowReconciliations EscrowReconciliation[]
   feasibilityStudies    FeasibilityStudy[]
+
+  // Canonical Engagement relations (additive)
+  engagements Engagement[] @relation("ProjectEngagements")
 
   @@index([clientId])
   @@index([orgId])

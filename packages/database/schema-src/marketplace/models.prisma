@@ -27,16 +27,23 @@ model Lead {
   sqft           Decimal? @db.Decimal(10, 2)
   qualityTier    String? // "low", "mid", "high"
 
+  // ── Canonical Engagement FK (additive, nullable) ──────────────────────────
+  // Links this lead to its parent Engagement record once one is created.
+  // Null for leads that pre-date the Engagement model introduction.
+  engagementId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   project        Project?        @relation(fields: [projectId], references: [id])
   quotes         Quote[]
   quickEstimates QuickEstimate[]
+  engagement     Engagement?     @relation("EngagementLeads", fields: [engagementId], references: [id], onDelete: SetNull)
 
   @@index([projectId])
   @@index([stage])
   @@index([status])
+  @@index([engagementId])
   // ── Performance: Compound indexes for marketplace queries ──
   @@index([stage, createdAt]) // Lead pipeline: filter by stage + sort by time
   @@index([status, createdAt]) // Lead listing with time-based pagination
@@ -97,12 +104,17 @@ model Quote {
   status      String // SUBMITTED, ACCEPTED, REJECTED
   submittedAt DateTime @default(now())
 
-  lead    Lead               @relation(fields: [leadId], references: [id])
-  profile MarketplaceProfile @relation(fields: [profileId], references: [id])
+  // ── Canonical Engagement FK (additive, nullable) ──────────────────────────
+  engagementId String?
+
+  lead       Lead               @relation(fields: [leadId], references: [id])
+  profile    MarketplaceProfile @relation(fields: [profileId], references: [id])
+  engagement Engagement?        @relation("EngagementQuotes", fields: [engagementId], references: [id], onDelete: SetNull)
 
   @@index([leadId])
   @@index([profileId])
   @@index([status])
+  @@index([engagementId])
 }
 
 model AssignmentRequest {
@@ -384,10 +396,14 @@ model PMServiceSubscription {
   hoursPerWeekMax   Int    @default(10)
   tierLevel         String @default("A") // A, B, C, D
 
+  // ── Canonical Engagement FK (additive, nullable) ──────────────────────────
+  engagementId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  client Client @relation("PMServiceSubscriptionClient", fields: [clientId], references: [id], onDelete: Cascade)
+  client     Client      @relation("PMServiceSubscriptionClient", fields: [clientId], references: [id], onDelete: Cascade)
+  engagement Engagement? @relation("EngagementPMSubs", fields: [engagementId], references: [id], onDelete: SetNull)
 
   // Assigned PM for execution (os-pm)
   assignedPMs ProjectManager[] @relation("PMServiceAssignments")
@@ -395,6 +411,7 @@ model PMServiceSubscription {
   @@index([clientId])
   @@index([status])
   @@index([packageTier])
+  @@index([engagementId])
   @@map("pm_service_subscriptions")
 }
 
@@ -425,15 +442,20 @@ model PermitServiceSubscription {
   resubmittalsIncluded    Int     @default(0) // 0, 1, unlimited
   turnaroundDays          Int     @default(3) // 2-3, 1-2, same-day
 
+  // ── Canonical Engagement FK (additive, nullable) ──────────────────────────
+  engagementId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  client Client @relation("PermitServiceSubscriptionClient", fields: [clientId], references: [id], onDelete: Cascade)
+  client     Client      @relation("PermitServiceSubscriptionClient", fields: [clientId], references: [id], onDelete: Cascade)
+  engagement Engagement? @relation("EngagementPermitSubs", fields: [engagementId], references: [id], onDelete: SetNull)
 
   @@index([clientId])
   @@index([projectId])
   @@index([status])
   @@index([packageTier])
+  @@index([engagementId])
   @@map("permit_service_subscriptions")
 }
 
@@ -463,15 +485,20 @@ model ALaCarteService {
   // Execution (os-pm)
   assignedPMId String?
 
+  // ── Canonical Engagement FK (additive, nullable) ──────────────────────────
+  engagementId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  client Client @relation("ALaCarteServiceClient", fields: [clientId], references: [id], onDelete: Cascade)
+  client     Client      @relation("ALaCarteServiceClient", fields: [clientId], references: [id], onDelete: Cascade)
+  engagement Engagement? @relation("EngagementALaCarte", fields: [engagementId], references: [id], onDelete: SetNull)
 
   @@index([clientId])
   @@index([projectId])
   @@index([serviceType])
   @@index([status])
+  @@index([engagementId])
   @@map("a_la_carte_services")
 }
 
