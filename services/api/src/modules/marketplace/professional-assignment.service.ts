@@ -22,6 +22,7 @@ import { NotFoundError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
 import { constructionEngagementService } from './construction-engagement.service'
+import { workflowOrchestratorService } from '../workflow/workflow-orchestrator.service'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -362,6 +363,13 @@ export const professionalAssignmentService = {
       professionalType: assignment.professionalType,
     })
 
+    workflowOrchestratorService.onAssignmentAccepted({
+      assignmentId,
+      acceptedByUserId: userId,
+    }).catch((err: any) => {
+      console.warn('[workflow] onAssignmentAccepted failed (non-fatal):', err?.message)
+    })
+
     return updated
   },
 
@@ -409,6 +417,14 @@ export const professionalAssignmentService = {
 
     await this._emitAndAudit('ASSIGNMENT_DECLINED', assignment.leadId, userId, {
       assignmentId, profileId: assignment.profileId, declineReason,
+    })
+
+    workflowOrchestratorService.onAssignmentDeclined({
+      assignmentId,
+      declinedByUserId: userId,
+      reason: declineReason,
+    }).catch((err: any) => {
+      console.warn('[workflow] onAssignmentDeclined failed (non-fatal):', err?.message)
     })
 
     // Forward to next in queue (same acceptWindowMs if provided, else default 48h)
@@ -476,6 +492,12 @@ export const professionalAssignmentService = {
           assignmentId: assignment.id,
           profileId:    assignment.profileId,
           professionalType: assignment.professionalType,
+        })
+
+        workflowOrchestratorService.onAssignmentExpired({
+          assignmentId: assignment.id,
+        }).catch((err: any) => {
+          console.warn('[workflow] onAssignmentExpired failed (non-fatal):', err?.message)
         })
 
         // Step 4: Route lead to next in queue
@@ -836,7 +858,7 @@ export const professionalAssignmentService = {
     const now            = new Date()
     const acceptDeadline = new Date(now.getTime() + input.acceptWindowMs)
 
-    return prismaAny.professionalAssignment.create({
+    const assignment = await prismaAny.professionalAssignment.create({
       data: {
         leadId:           input.leadId,
         profileId:        input.profileId,
@@ -848,6 +870,17 @@ export const professionalAssignmentService = {
         acceptDeadline,
       },
     })
+
+    // Mirror into workflow primitives (fire-and-forget; never throws)
+    workflowOrchestratorService.onLeadAssigned({
+      assignmentId:     assignment.id,
+      leadId:           input.leadId,
+      assignedToUserId: assignment.id, // profileId used as proxy until userId is available
+    }).catch((err: any) => {
+      console.warn('[workflow] onLeadAssigned failed (non-fatal):', err?.message)
+    })
+
+    return assignment
   },
 
   /** Fire audit + event records (best-effort; never throws). */

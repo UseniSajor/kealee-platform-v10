@@ -31,6 +31,7 @@ import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
+import { workflowOrchestratorService } from '../workflow/workflow-orchestrator.service'
 
 // ─── Project-type categories ──────────────────────────────────────────────────
 
@@ -338,6 +339,14 @@ export const constructionEngagementService = {
         },
       }),
     ])
+
+    // Mirror into workflow stage (fire-and-forget; does not replace canonical field)
+    workflowOrchestratorService.onConstructionReady({
+      projectId,
+      triggeredByUserId: confirmedBy,
+    }).catch((err: any) => {
+      console.warn('[workflow] onConstructionReady failed (non-fatal):', err?.message)
+    })
 
     return updated
   },

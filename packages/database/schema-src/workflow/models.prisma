@@ -693,3 +693,73 @@ model AutonomousActionLog {
   @@index([reviewedByPM])
   @@map("autonomous_action_logs")
 }
+
+// ─── Lifecycle Workflow Primitives ────────────────────────────────────────────
+
+/// Append-only stage log for any canonical subject.
+/// Never replaces Organization / Project / Engagement / ProfessionalAssignment —
+/// it wraps them, recording the stage timeline.
+model WorkflowStage {
+  id          String              @id @default(cuid())
+  subjectType WorkflowSubjectType
+  subjectId   String
+  stage       WorkflowStageName
+  enteredAt   DateTime            @default(now())
+  enteredById String?
+  metadata    Json?
+  createdAt   DateTime            @default(now())
+
+  @@index([subjectType, subjectId, enteredAt])
+  @@index([subjectType, subjectId, stage])
+  @@map("workflow_stages")
+}
+
+/// An actionable task assigned to a user or org.
+/// Used for assignment acceptance windows, verification uploads, review queues, etc.
+model WorkItem {
+  id               String              @id @default(cuid())
+  type             WorkItemType
+  subjectType      WorkflowSubjectType
+  subjectId        String
+
+  organizationId   String?
+  assignedToUserId String?
+  assignedToOrgId  String?
+
+  status           WorkItemStatus      @default(OPEN)
+  title            String?
+  description      String?
+  dueAt            DateTime?
+  completedAt      DateTime?
+  completedById    String?
+  metadata         Json?
+
+  createdBySystem  Boolean             @default(false)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@index([subjectType, subjectId])
+  @@index([assignedToUserId, status])
+  @@index([assignedToOrgId, status])
+  @@index([organizationId, status])
+  @@index([status, dueAt])
+  @@index([type, status])
+  @@map("work_items")
+}
+
+/// Durable event log with idempotency guard.
+/// Enables reliable event replay, audit trails, and side-effect orchestration.
+model WorkflowEvent {
+  id             String              @id @default(cuid())
+  eventType      String
+  subjectType    WorkflowSubjectType
+  subjectId      String
+  payload        Json?
+  idempotencyKey String              @unique
+  processedAt    DateTime?
+  createdAt      DateTime            @default(now())
+
+  @@index([subjectType, subjectId, createdAt])
+  @@index([eventType, createdAt])
+  @@map("workflow_events")
+}
