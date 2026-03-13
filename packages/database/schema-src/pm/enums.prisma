@@ -210,6 +210,27 @@ enum PreConPhase {
   COMPLETED // Pre-con complete, project started
 }
 
+/// Canonical construction readiness status.
+///
+/// Replaces the CONSTRUCTION_READY_PHASES Set proxy in
+/// professional-assignment.service.ts.  Set on Project when the associated
+/// PreConProject reaches BIDDING_OPEN or later (plans approved + permits
+/// at least submitted), confirmed explicitly via
+/// constructionEngagementService.markConstructionReady().
+///
+/// Transition path in professional-assignment.service.ts:
+///   - Phase 1 (current): dual-path check — canonical field preferred,
+///     CONSTRUCTION_READY_PHASES Set used as backward-compat fallback.
+///   - Phase 2 (future): remove the Set fallback once all Projects have
+///     constructionReadiness populated via markConstructionReady() or
+///     the precon.service.ts BIDDING_OPEN transition hook.
+enum ConstructionReadinessStatus {
+  NOT_READY          // Default; plans or permits not yet complete
+  DESIGN_READY       // Plans (design) approved; permits not yet submitted
+  PERMITS_SUBMITTED  // Plans approved + permits submitted; eligible for engagement
+  CONSTRUCTION_READY // All gates passed; contractor may be formally engaged
+}
+
 enum DesignPackageTier {
   BASIC // $199 - Basic concept sketches
   STANDARD // $499 - Detailed designs with 3D

@@ -95,3 +95,34 @@ enum FunnelSessionStatus {
   GENERATED
   FAILED
 }
+
+// ── Lead Assignment / Rotation Queue enums ────────────────────────────────────
+// Canonical definitions.  Models that use these enums live in lead-assignment.prisma.
+
+enum ProfessionalType {
+  ARCHITECT
+  ENGINEER
+  CONTRACTOR
+  DESIGN_BUILD
+}
+
+enum LeadSourceType {
+  SPONSORED_AD     // Paid click → direct assignment
+  PLATFORM_SERVICE // Organic platform click → rotating queue
+  OWNER_INVITED    // Owner invited a specific professional → must be registered
+}
+
+enum AssignmentStatus {
+  PENDING    // Awaiting response (48 h window)
+  ACCEPTED   // Accepted in time
+  DECLINED   // Manually declined
+  EXPIRED    // 48 h elapsed (pre-FORFEITED state set synchronously)
+  FORFEITED  // Worker confirmed expiry; professional sent to back of queue
+}
+
+enum QueueEligibilityStatus {
+  ELIGIBLE             // In rotation
+  SUSPENDED            // Temporarily paused by admin
+  PENDING_VERIFICATION // Awaiting license/insurance confirmation
+  INELIGIBLE           // Permanently excluded
+}

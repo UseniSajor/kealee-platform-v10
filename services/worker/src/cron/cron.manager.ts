@@ -8,6 +8,7 @@ import { executeSalesSlaReminders } from '../jobs/sales-sla-reminders.job'
 import { executeFileCleanup } from '../jobs/file-cleanup.job'
 import { executeBidDailyAlerts } from '../jobs/bid-daily-alerts.job'
 import { executeBidUrgentCheck } from '../jobs/bid-urgent-check.job'
+import { executeLeadAssignmentExpiry } from '../jobs/lead-assignment-expiry.job'
 
 /**
  * Cron job manager
@@ -71,6 +72,9 @@ export class CronManager {
             case 'bid_urgent_check':
               result = await executeBidUrgentCheck()
               break
+            case 'lead_assignment_expiry':
+              result = await executeLeadAssignmentExpiry()
+              break
             default:
               console.error(`❌ Unknown cron job type: ${config.type}`)
               return
@@ -124,6 +128,9 @@ export class CronManager {
     // Register bid pipeline jobs
     this.registerJob(CRON_JOBS.bidDailyAlerts)
     this.registerJob(CRON_JOBS.bidUrgentCheck)
+
+    // Register lead assignment expiry job (every 30 minutes)
+    this.registerJob(CRON_JOBS.leadAssignmentExpiry)
 
     console.log(`✅ Registered ${this.jobs.size} cron jobs`)
   }

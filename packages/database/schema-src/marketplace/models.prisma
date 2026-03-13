@@ -27,12 +27,25 @@ model Lead {
   sqft           Decimal? @db.Decimal(10, 2)
   qualityTier    String? // "low", "mid", "high"
 
+  // ── Rotating assignment fields (lead-assignment.prisma) ──────────────────
+  /// How this lead was sourced — determines routing path (SPONSORED_AD bypasses
+  /// the queue; PLATFORM_SERVICE uses fair rotation; OWNER_INVITED gates on
+  /// registration).
+  sourceType         LeadSourceType    @default(PLATFORM_SERVICE)
+  /// Which professional discipline this lead is for.  Drives queue selection.
+  professionalType   ProfessionalType?
+  /// Set only when sourceType = OWNER_INVITED.  The specific MarketplaceProfile
+  /// the owner wants to work with.  Must be a registered Kealee professional.
+  invitedProfileId   String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  project        Project?        @relation(fields: [projectId], references: [id])
+  project        Project?               @relation(fields: [projectId], references: [id])
   quotes         Quote[]
   quickEstimates QuickEstimate[]
+  /// All assignment offers ever made for this lead (one per rotation attempt)
+  assignments    ProfessionalAssignment[] @relation("LeadAssignments")
 
   @@index([projectId])
   @@index([stage])
@@ -40,6 +53,8 @@ model Lead {
   // ── Performance: Compound indexes for marketplace queries ──
   @@index([stage, createdAt]) // Lead pipeline: filter by stage + sort by time
   @@index([status, createdAt]) // Lead listing with time-based pagination
+  @@index([sourceType])
+  @@index([professionalType, stage]) // Queue routing: find active leads by discipline
 }
 
 model MarketplaceProfile {
@@ -61,16 +76,27 @@ model MarketplaceProfile {
   maxPipelineValue     Decimal?
   currentPipelineValue Decimal?  @default(0)
   lastWonAt            DateTime?
+
+  // ── Rotating assignment fields (lead-assignment.prisma) ──────────────────
+  /// Primary professional discipline for this profile.  A professional who
+  /// works in multiple disciplines has multiple RotationQueueEntry rows.
+  professionalType     ProfessionalType?
+
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
   user      User        @relation("MarketplaceProfileUser", fields: [userId], references: [id])
   portfolio Portfolio[]
   quotes    Quote[]
+  /// All assignment offers sent to this professional
+  assignments  ProfessionalAssignment[] @relation("ProfessionalAssignments")
+  /// Queue entries — one per professional discipline
+  queueEntries RotationQueueEntry[]     @relation("RotationQueueEntries")
 
   @@index([verified])
   @@index([subscriptionTier])
   @@index([acceptingLeads])
+  @@index([professionalType])
 }
 
 model Portfolio {

@@ -1,0 +1,136 @@
+// LEAD ASSIGNMENT & ROTATION QUEUE — Models
+//
+// Implements the Kealee professional rotating lead assignment system.
+//
+// Business rules encoded here:
+//   1. SPONSORED_AD     → direct route to that professional; bypasses queue entirely
+//   2. PLATFORM_SERVICE → next approved professional in fair rotating queue
+//   3. OWNER_INVITED    → professional must register through Kealee before receiving a lead
+//   4. 48-hour accept window; missed → FORFEITED, professional goes to back of queue
+//   5. PM/Ops software access does NOT require license/insurance (softwareAccessOnly flag)
+//   6. Platform referral/lead access DOES require licenseVerified + insuranceVerified
+//   7. Contractor engagement requires project to be in a CONSTRUCTION_READY phase.
+//      TEMPORARY COMPATIBILITY NOTE: ConstructionReadinessStatus enum does not yet
+//      exist in the platform schema.  The service layer proxies this gate using
+//      PreConProject.phase values (BIDDING_OPEN | AWARDED | CONTRACT_PENDING |
+//      CONTRACT_RATIFIED | COMPLETED).  When ConstructionReadinessStatus is added
+//      platform-wide, update the CONSTRUCTION_READY_PHASES constant in:
+//        services/api/src/modules/marketplace/professional-assignment.service.ts
+//        services/worker/src/jobs/lead-assignment-expiry.job.ts
+//   8. Supports: ARCHITECT, ENGINEER, CONTRACTOR, DESIGN_BUILD
+//
+// Enums for this domain are defined in enums.prisma (same directory).
+// See: ProfessionalType, LeadSourceType, AssignmentStatus, QueueEligibilityStatus
+//
+// Mirrors the DesignQueueAssignment / DesignProfessionalProfile pattern used
+// for architects in schema-src/pm/design.prisma, generalised for all pro types.
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+/// ProfessionalAssignment — one row per professional per lead offer.
+///
+/// When a lead is routed to a professional (any source type) a row is created
+/// here with a 48-hour acceptDeadline.  The worker cron scans the
+/// (status, acceptDeadline) index every 30 minutes and handles expiry.
+///
+/// Only one PENDING row should exist per leadId at any time (enforced in service).
+/// Multiple FORFEITED/DECLINED rows are expected as the lead moves through the queue.
+model ProfessionalAssignment {
+  id               String             @id @default(uuid())
+
+  leadId           String
+  lead             Lead               @relation("LeadAssignments", fields: [leadId], references: [id])
+
+  /// MarketplaceProfile.id — who received this offer
+  profileId        String
+  profile          MarketplaceProfile @relation("ProfessionalAssignments", fields: [profileId], references: [id])
+
+  professionalType ProfessionalType
+  sourceType       LeadSourceType
+
+  status           AssignmentStatus   @default(PENDING)
+
+  /// 0-based position in the queue snapshot when this offer was created.
+  /// Null for SPONSORED_AD (bypasses queue entirely).
+  rotationPosition Int?
+
+  assignedAt       DateTime           @default(now())
+  /// assignedAt + 48 h; set by the service, not DB default (for testability)
+  acceptDeadline   DateTime
+
+  respondedAt      DateTime?   // stamped when ACCEPTED or DECLINED
+  forwardedAt      DateTime?   // stamped when FORFEITED and forwarded to next pro
+
+  declineReason    String?
+
+  /// Admin can override the normal routing and force-assign any professional.
+  adminOverride    Boolean            @default(false)
+  adminNote        String?
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([leadId])
+  @@index([profileId])
+  /// Worker cron scans this to find expired assignments efficiently
+  @@index([status, acceptDeadline])
+  /// Quick lookup: all pending offers for a lead
+  @@index([leadId, status])
+  @@map("professional_assignments")
+}
+
+/// RotationQueueEntry — one row per professional per professional type.
+///
+/// Tracks a professional's eligibility, verification status, and rotation
+/// position.  The actual queue order is determined at query time by sorting
+/// on lastAssignedAt ASC NULLS FIRST (never-assigned professionals go first).
+///
+/// A professional who operates as both an architect and a contractor has
+/// two separate rows (one per type).
+model RotationQueueEntry {
+  id               String                 @id @default(uuid())
+
+  /// MarketplaceProfile.id
+  profileId        String
+  profile          MarketplaceProfile     @relation("RotationQueueEntries", fields: [profileId], references: [id])
+
+  professionalType ProfessionalType
+  eligibility      QueueEligibilityStatus @default(PENDING_VERIFICATION)
+
+  // ── Rotation fairness ────────────────────────────────────────────────────
+  /// Updated whenever a lead offer is sent to this professional.
+  /// Null = never offered a lead → highest priority (front of queue).
+  lastAssignedAt   DateTime?
+  /// Updated whenever a lead is forfeited (expired without response).
+  /// Logged for audit/transparency; does not directly affect ordering.
+  lastForwardedAt  DateTime?
+
+  // ── Cumulative counters (for admin dashboard / performance view) ─────────
+  totalOffered     Int                    @default(0)
+  totalAccepted    Int                    @default(0)
+  totalDeclined    Int                    @default(0)
+  totalForfeited   Int                    @default(0)
+
+  // ── Access-control gates ─────────────────────────────────────────────────
+  /// Business rule 6: platform referral/lead access requires both flags true.
+  licenseVerified     Boolean   @default(false)
+  insuranceVerified   Boolean   @default(false)
+  licenseVerifiedAt   DateTime?
+  insuranceVerifiedAt DateTime?
+
+  /// Business rule 5: PM/Ops software access does NOT require license check.
+  /// When true, this entry is excluded from lead rotation entirely but the
+  /// professional can still use PM/Ops software features.
+  softwareAccessOnly  Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// One entry per professional per discipline
+  @@unique([profileId, professionalType])
+  /// Primary scan index for getNextInQueue():
+  ///   WHERE professionalType = ? AND eligibility = 'ELIGIBLE'
+  ///   ORDER BY lastAssignedAt ASC NULLS FIRST
+  @@index([professionalType, eligibility, lastAssignedAt])
+  @@map("rotation_queue_entries")
+}

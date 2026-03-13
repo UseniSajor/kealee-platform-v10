@@ -43,6 +43,15 @@ model Project {
   autonomyEnabledAt DateTime?
   autonomyEnabledBy String?
 
+  // ── Construction Readiness (canonical gate) ──────────────────────────────
+  // Set to CONSTRUCTION_READY when plans are approved and permits are at least
+  // submitted.  Used by professional-assignment.service.ts → engageContractor()
+  // to gate formal contractor engagement.  Replaces the CONSTRUCTION_READY_PHASES
+  // Set proxy once populated; see ConstructionReadinessStatus enum comments.
+  constructionReadiness            ConstructionReadinessStatus @default(NOT_READY)
+  constructionReadinessUpdatedAt   DateTime?
+  constructionReadinessConfirmedBy String? // User.id who confirmed readiness
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

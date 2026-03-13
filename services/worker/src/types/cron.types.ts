@@ -11,6 +11,7 @@ export type CronJobType =
   | 'file_cleanup'
   | 'bid_daily_alerts'
   | 'bid_urgent_check'
+  | 'lead_assignment_expiry'
   | 'custom'
 
 export interface CronJobConfig {
@@ -116,6 +117,19 @@ export const CRON_JOBS: Record<string, CronJobConfig> = {
     timezone: 'UTC',
     metadata: {
       description: 'Check for bids due within 48h, send urgent alerts',
+    },
+  },
+  leadAssignmentExpiry: {
+    name: 'Lead Assignment Expiry',
+    type: 'lead_assignment_expiry',
+    schedule: '*/30 * * * *', // Every 30 minutes
+    enabled: true,
+    timezone: 'UTC',
+    metadata: {
+      description:
+        'Finds PENDING ProfessionalAssignments past their 48-hour accept window, ' +
+        'marks them FORFEITED, pushes professionals to back of rotation queue, ' +
+        'and forwards leads to the next eligible professional.',
     },
   },
 }

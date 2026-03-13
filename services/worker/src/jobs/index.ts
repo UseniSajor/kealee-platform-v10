@@ -6,6 +6,9 @@ export { executeSalesSlaReminders } from './sales-sla-reminders.job'
 export { executeBidDailyAlerts } from './bid-daily-alerts.job'
 export { executeBidUrgentCheck } from './bid-urgent-check.job'
 
+// Export lead assignment expiry job
+export { executeLeadAssignmentExpiry } from './lead-assignment-expiry.job'
+
 // Export ML prediction engine
 export { mlPredictionEngine } from './ml-predictions'
 

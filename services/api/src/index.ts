@@ -259,6 +259,8 @@ import { contractSecurityRoutes } from './modules/contracts/contract-security.ro
 import { leadsRoutes } from './modules/marketplace/leads.routes'
 import { quotesRoutes } from './modules/marketplace/quotes.routes'
 import { designRoutes } from './modules/marketplace/design.routes'
+import { professionalAssignmentRoutes } from './modules/marketplace/professional-assignment.routes'
+import { constructionEngagementRoutes } from './modules/marketplace/construction-engagement.routes'
 import { paymentRoutes } from './modules/payments/payment.routes'
 import { escrowRoutes } from './modules/escrow/escrow.routes'
 import { depositRoutes } from './modules/deposits/deposit.routes'
@@ -538,6 +540,8 @@ const start = async () => {
       await fastify.register(leadsRoutes, { prefix: '/marketplace' })
       await fastify.register(quotesRoutes, { prefix: '/marketplace' })
       await fastify.register(designRoutes, { prefix: '/marketplace' })
+      await fastify.register(professionalAssignmentRoutes, { prefix: '/marketplace' })
+      await fastify.register(constructionEngagementRoutes, { prefix: '/marketplace' })
       await fastify.register(paymentRoutes, { prefix: '/payments' })
       await fastify.register(spatialRoutes, { prefix: '/spatial' })
       await fastify.register(financingRoutes, { prefix: '/financing' })
