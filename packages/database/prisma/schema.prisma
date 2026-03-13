@@ -5340,6 +5340,18 @@ model ContractorProfile {
   isActive      Boolean @default(true)
   acceptingBids Boolean @default(true)
 
+  // Extended profile — P3 (additive)
+  website               String?
+  teamSize              Int?
+  serviceRadius         Int?      // miles from primary location
+  serviceStates         String[]
+  serviceCities         String[]
+  serviceCategories     String[]
+  commercialFocus       Boolean   @default(false)
+  residentialFocus      Boolean   @default(true)
+  emergencyServices     Boolean   @default(false)
+  preferredProjectSizes String[]
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
