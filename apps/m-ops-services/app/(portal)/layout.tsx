@@ -17,6 +17,7 @@ export default function PortalLayout({
     { href: "/portal/team", label: "Team" },
     { href: "/portal/billing", label: "Billing" },
     { href: "/portal/settings", label: "Settings" },
+    { href: "/contractor/leads",   label: "My Leads" },
     { href: "/contractor/profile", label: "My Profile" },
   ] as const;
 
