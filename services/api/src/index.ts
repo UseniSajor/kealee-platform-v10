@@ -264,6 +264,7 @@ import { constructionEngagementRoutes } from './modules/marketplace/construction
 import { contractorRegistrationRoutes } from './modules/marketplace/contractor-registration.routes'
 import { contractorProfileRoutes } from './modules/marketplace/contractor-profile.routes'
 import { contractorLeadsRoutes } from './modules/marketplace/contractor-leads.routes'
+import { verificationDocumentRoutes } from './modules/verification/verification-document.routes'
 import { paymentRoutes } from './modules/payments/payment.routes'
 import { escrowRoutes } from './modules/escrow/escrow.routes'
 import { depositRoutes } from './modules/deposits/deposit.routes'
@@ -547,7 +548,8 @@ const start = async () => {
       await fastify.register(constructionEngagementRoutes, { prefix: '/marketplace' })
       await fastify.register(contractorRegistrationRoutes, { prefix: '/marketplace' })
       await fastify.register(contractorProfileRoutes, { prefix: '/marketplace' })
-      await fastify.register(contractorLeadsRoutes,  { prefix: '/marketplace' })
+      await fastify.register(contractorLeadsRoutes,   { prefix: '/marketplace' })
+      await fastify.register(verificationDocumentRoutes, { prefix: '/verification' })
       await fastify.register(paymentRoutes, { prefix: '/payments' })
       await fastify.register(spatialRoutes, { prefix: '/spatial' })
       await fastify.register(financingRoutes, { prefix: '/financing' })
@@ -818,6 +820,8 @@ const start = async () => {
     await safeRegisterBlock('Admin Verification routes', async () => {
       const { adminVerificationRoutes } = await import('./modules/admin/admin-verification.routes')
       await fastify.register(adminVerificationRoutes, { prefix: '/admin' })
+      const { adminVerificationDocumentsRoutes } = await import('./modules/admin/admin-verification-documents.routes')
+      await fastify.register(adminVerificationDocumentsRoutes, { prefix: '/admin' })
     })
 
     await safeRegisterBlock('Phase 1 - Permit Templates, Analytics, API Integrations routes', async () => {

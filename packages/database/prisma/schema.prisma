@@ -4238,13 +4238,88 @@ model MarketplaceProfile {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
-  user      User        @relation("MarketplaceProfileUser", fields: [userId], references: [id])
-  portfolio Portfolio[]
-  quotes    Quote[]
+  user                  User                   @relation("MarketplaceProfileUser", fields: [userId], references: [id])
+  portfolio             Portfolio[]
+  quotes                Quote[]
+  verificationDocuments VerificationDocument[] @relation("ProfileVerificationDocuments")
 
   @@index([verified])
   @@index([subscriptionTier])
   @@index([acceptingLeads])
+}
+
+// ─── Verification Document enums ──────────────────────────────────────────────
+
+enum VerificationDocumentType {
+  LICENSE
+  INSURANCE
+  BOND
+  CERTIFICATION
+  OTHER
+}
+
+enum VerificationDocumentStatus {
+  UPLOADED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  EXPIRED
+  ARCHIVED
+}
+
+/// VerificationDocument — one row per uploaded credential file.
+///
+/// Each upload of the same documentType for the same profile creates a new
+/// record with version = max(version) + 1 and archives the prior versions.
+///
+/// Status lifecycle:
+///   UPLOADED → UNDER_REVIEW → APPROVED | REJECTED
+///   Any status → EXPIRED  (when expiresAt < now and document was APPROVED)
+///   Any status → ARCHIVED (when replaced by a newer version or manually archived)
+///
+/// Storage: S3/R2, accessed via presigned URLs only (never public).
+/// Key format: verification-docs/{marketplaceProfileId}/{documentType}/{uuid}/{filename}
+model VerificationDocument {
+  id                   String                     @id @default(uuid())
+
+  /// MarketplaceProfile.id — owner of this document
+  marketplaceProfileId String
+  profile              MarketplaceProfile         @relation("ProfileVerificationDocuments", fields: [marketplaceProfileId], references: [id])
+
+  documentType         VerificationDocumentType
+  status               VerificationDocumentStatus @default(UPLOADED)
+
+  /// Monotonically increasing per (marketplaceProfileId, documentType).
+  /// When a new upload replaces a previous version, version = max + 1.
+  version              Int                        @default(1)
+
+  /// S3/R2 object key — never exposed directly; always via signed URL
+  fileKey              String
+  fileName             String
+  mimeType             String
+  fileSize             Int                        // bytes
+
+  // Contractor-supplied metadata
+  description          String?                    // Optional note
+  issuerName           String?                    // "State of Arizona", "Farmers Insurance"
+  documentNumber       String?                    // License # or policy #
+  expiresAt            DateTime?                  // For insurance/license expiry checking
+
+  // Admin review fields
+  reviewedBy           String?                    // Admin User.id
+  reviewedAt           DateTime?
+  reviewNote           String?                    // Admin feedback
+  rejectionReason      String?                    // Reason when status = REJECTED
+
+  createdAt            DateTime                   @default(now())
+  updatedAt            DateTime                   @updatedAt
+
+  @@index([marketplaceProfileId])
+  @@index([documentType])
+  @@index([status])
+  @@index([marketplaceProfileId, documentType])
+  @@index([expiresAt])
+  @@map("verification_documents")
 }
 
 model Portfolio {
