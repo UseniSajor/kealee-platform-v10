@@ -1,257 +1,411 @@
 'use client'
 
-import { useState } from 'react'
-import { Search, MapPin, DollarSign, Calendar, Star, ChevronRight, Cpu, Wrench, Activity } from 'lucide-react'
+import { useEffect, useState, useCallback } from 'react'
+import {
+  Megaphone, MapPin, DollarSign, Clock, ChevronRight,
+  CheckCircle, XCircle, AlertTriangle, Cpu, Activity,
+} from 'lucide-react'
+import {
+  getContractorLeads, acceptAssignment, declineAssignment,
+} from '@/lib/api/contractor'
+import type { Lead, LeadCounts, LeadTab } from '@/lib/api/contractor'
 
-// ── Seed-aligned constants ──────────────────────────────────────────
-const LIFECYCLE_PHASES = [
-  { key: 'IDEA', name: 'Idea', order: 1 },
-  { key: 'LAND', name: 'Land Acquisition & Analysis', order: 2 },
-  { key: 'FEASIBILITY', name: 'Feasibility Study', order: 3 },
-  { key: 'DESIGN', name: 'Design & Architecture', order: 4 },
-  { key: 'PERMITS', name: 'Permitting & Entitlements', order: 5 },
-  { key: 'PRECONSTRUCTION', name: 'Pre-Construction', order: 6 },
-  { key: 'CONSTRUCTION', name: 'Construction', order: 7 },
-  { key: 'INSPECTIONS', name: 'Inspections & QA', order: 8 },
-] as const
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-const CSI_DIVISIONS = {
-  '03': 'Concrete',
-  '04': 'Masonry',
-  '05': 'Metals',
-  '06': 'Wood, Plastics & Composites',
-  '07': 'Thermal & Moisture Protection',
-  '08': 'Doors & Windows',
-  '09': 'Finishes',
-  '22': 'Plumbing',
-  '23': 'HVAC',
-  '26': 'Electrical',
-} as const
-
-const MOCK_LEADS = [
-  {
-    id: '1',
-    title: 'Whole-Home Renovation - Westlake Hills',
-    projectType: 'Renovation / Remodel',
-    projectTypeKey: 'RENOVATION',
-    twinTier: 'L1' as const,
-    location: 'Westlake Hills, TX',
-    budget: '$120,000 - $165,000',
-    posted: '2 hours ago',
-    matchScore: 96,
-    lifecyclePhase: 'PRECONSTRUCTION',
-    ownerRole: 'Homeowner',
-    csiTrades: ['06', '09', '22', '26'] as const,
-    description: 'Full interior renovation of a 2,800 sq ft ranch home. Kitchen, 3 bathrooms, flooring throughout, and electrical panel upgrade. Plans in hand, permit-ready.',
-  },
-  {
-    id: '2',
-    title: 'Custom New Home - Dripping Springs',
-    projectType: 'New Home Construction',
-    projectTypeKey: 'NEW_HOME',
-    twinTier: 'L2' as const,
-    location: 'Dripping Springs, TX',
-    budget: '$650,000 - $800,000',
-    posted: '5 hours ago',
-    matchScore: 91,
-    lifecyclePhase: 'DESIGN',
-    ownerRole: 'Homeowner',
-    csiTrades: ['03', '05', '06', '07', '08', '09', '22', '23', '26'] as const,
-    description: 'Ground-up 3,600 sq ft single-family residence on 2-acre lot. Hill Country modern style with standing-seam metal roof, ICF foundation, and full smart-home package.',
-  },
-  {
-    id: '3',
-    title: 'Second-Story Addition - Mueller',
-    projectType: 'Home Addition',
-    projectTypeKey: 'ADDITION',
-    twinTier: 'L2' as const,
-    location: 'Mueller, Austin TX',
-    budget: '$280,000 - $340,000',
-    posted: '1 day ago',
-    matchScore: 88,
-    lifecyclePhase: 'PERMITS',
-    ownerRole: 'Homeowner',
-    csiTrades: ['03', '05', '06', '07', '09', '22', '23', '26'] as const,
-    description: '1,200 sq ft second-story addition over existing single-story. 2 bedrooms, full bath, laundry, and new HVAC system. Structural engineering complete.',
-  },
-  {
-    id: '4',
-    title: 'Office Build-Out - Domain',
-    projectType: 'Commercial Build-Out',
-    projectTypeKey: 'COMMERCIAL',
-    twinTier: 'L2' as const,
-    location: 'The Domain, Austin TX',
-    budget: '$380,000 - $520,000',
-    posted: '1 day ago',
-    matchScore: 78,
-    lifecyclePhase: 'PRECONSTRUCTION',
-    ownerRole: 'Developer',
-    csiTrades: ['05', '06', '08', '09', '22', '23', '26'] as const,
-    description: '5,400 sq ft Class A office tenant improvement. Open plan with 4 conference rooms, server room, and break room. LEED Silver target. Architect drawings 90% CD.',
-  },
-  {
-    id: '5',
-    title: 'Kitchen & Bath Remodel - Cedar Park',
-    projectType: 'Renovation / Remodel',
-    projectTypeKey: 'RENOVATION',
-    twinTier: 'L1' as const,
-    location: 'Cedar Park, TX',
-    budget: '$65,000 - $85,000',
-    posted: '2 days ago',
-    matchScore: 93,
-    lifecyclePhase: 'PRECONSTRUCTION',
-    ownerRole: 'Homeowner',
-    csiTrades: ['06', '09', '22', '26'] as const,
-    description: 'Kitchen gut-and-remodel (180 sq ft) plus primary bath renovation. Custom cabinets, quartz counters, heated tile floors, and full re-plumb.',
-  },
-  {
-    id: '6',
-    title: 'Garage Apartment ADU - East Austin',
-    projectType: 'Home Addition',
-    projectTypeKey: 'ADDITION',
-    twinTier: 'L2' as const,
-    location: 'East Austin, TX',
-    budget: '$180,000 - $240,000',
-    posted: '3 days ago',
-    matchScore: 85,
-    lifecyclePhase: 'DESIGN',
-    ownerRole: 'Homeowner',
-    csiTrades: ['03', '05', '06', '07', '08', '09', '22', '23', '26'] as const,
-    description: '650 sq ft detached ADU above 2-car garage. Full kitchen, bathroom, living area, and covered patio. Separate utility meters required per COA code.',
-  },
-]
-
-const twinTierLabels: Record<string, { label: string; color: string; bgColor: string }> = {
-  L1: { label: 'L1 Light', color: '#2ABFBF', bgColor: 'rgba(42,191,191,0.1)' },
-  L2: { label: 'L2 Standard', color: '#E8793A', bgColor: 'rgba(232,121,58,0.1)' },
-  L3: { label: 'L3 Premium', color: '#7C3AED', bgColor: 'rgba(124,58,237,0.1)' },
+function formatCountdown(deadline: string | null): { label: string; urgent: boolean } {
+  if (!deadline) return { label: '—', urgent: false }
+  const ms = new Date(deadline).getTime() - Date.now()
+  if (ms <= 0) return { label: 'Expired', urgent: true }
+  const h = Math.floor(ms / 3_600_000)
+  const m = Math.floor((ms % 3_600_000) / 60_000)
+  if (h < 6) return { label: `${h}h ${m}m`, urgent: true }
+  if (h < 24) return { label: `${h}h ${m}m`, urgent: false }
+  const d = Math.floor(h / 24)
+  return { label: `${d}d ${h % 24}h`, urgent: false }
 }
 
-const phaseColors: Record<string, { color: string; bgColor: string }> = {
-  IDEA: { color: '#6B7280', bgColor: 'rgba(107,114,128,0.1)' },
-  DESIGN: { color: '#7C3AED', bgColor: 'rgba(124,58,237,0.1)' },
-  PERMITS: { color: '#92400E', bgColor: 'rgba(251,191,36,0.15)' },
-  PRECONSTRUCTION: { color: '#2ABFBF', bgColor: 'rgba(42,191,191,0.1)' },
-  CONSTRUCTION: { color: '#E8793A', bgColor: 'rgba(232,121,58,0.1)' },
+function formatBudget(min: number | null, max: number | null): string {
+  if (!min && !max) return 'Budget TBD'
+  const fmt = (n: number) => n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : `$${(n / 1000).toFixed(0)}K`
+  if (min && max) return `${fmt(min)} – ${fmt(max)}`
+  if (min) return `From ${fmt(min)}`
+  return `Up to ${fmt(max!)}`
 }
+
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  PENDING:   { bg: 'rgba(234,179,8,0.12)',  text: '#92400E' },
+  ACCEPTED:  { bg: 'rgba(56,161,105,0.1)',  text: '#38A169' },
+  DECLINED:  { bg: 'rgba(107,114,128,0.1)', text: '#6B7280' },
+  EXPIRED:   { bg: 'rgba(229,62,62,0.08)',  text: '#C53030' },
+  FORFEITED: { bg: 'rgba(107,114,128,0.1)', text: '#6B7280' },
+}
+
+function Skeleton({ className }: { className?: string }) {
+  return <div className={`animate-pulse rounded bg-gray-200 ${className ?? ''}`} />
+}
+
+// ── Decline dialog ─────────────────────────────────────────────────────────────
+
+function DeclineDialog({
+  open,
+  onClose,
+  onConfirm,
+  busy,
+}: {
+  open: boolean
+  onClose: () => void
+  onConfirm: (reason: string) => void
+  busy: boolean
+}) {
+  const [reason, setReason] = useState('')
+  if (!open) return null
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+      <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+        <h3 className="font-display mb-1 text-base font-bold" style={{ color: '#1A2B4A' }}>
+          Decline this lead?
+        </h3>
+        <p className="mb-4 text-sm text-gray-500">This will remove the assignment. Optional: tell us why.</p>
+        <textarea
+          value={reason}
+          onChange={e => setReason(e.target.value)}
+          rows={3}
+          placeholder="Reason (optional)..."
+          className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:outline-none"
+          onFocus={e => { e.target.style.borderColor = '#2ABFBF'; e.target.style.boxShadow = '0 0 0 1px #2ABFBF' }}
+          onBlur={e => { e.target.style.borderColor = '#d1d5db'; e.target.style.boxShadow = 'none' }}
+        />
+        <div className="mt-4 flex gap-3">
+          <button
+            onClick={onClose}
+            disabled={busy}
+            className="flex-1 rounded-lg border border-gray-300 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onConfirm(reason)}
+            disabled={busy}
+            className="flex-1 rounded-lg py-2 text-sm font-medium text-white disabled:opacity-50"
+            style={{ backgroundColor: '#E53E3E' }}
+          >
+            {busy ? 'Declining…' : 'Decline'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Lead card ──────────────────────────────────────────────────────────────────
+
+function LeadCard({
+  assignment,
+  onAccept,
+  onDecline,
+  busy,
+}: {
+  assignment: Lead
+  onAccept: (id: string) => void
+  onDecline: (id: string) => void
+  busy: boolean
+}) {
+  const { label: countdown, urgent } = formatCountdown(assignment.acceptDeadline)
+  const lead = assignment.lead
+  const sc = STATUS_COLORS[assignment.status] ?? STATUS_COLORS['PENDING']
+  const isHistory = ['DECLINED', 'EXPIRED', 'FORFEITED'].includes(assignment.status)
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
+      {/* Header */}
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="flex-1">
+          <h3 className="font-display font-semibold leading-tight" style={{ color: '#1A2B4A' }}>
+            {lead?.title ?? lead?.project?.name ?? 'Unnamed Lead'}
+          </h3>
+          <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-gray-500">
+            {lead?.location && (
+              <span className="flex items-center gap-1">
+                <MapPin className="h-3 w-3" />{lead.location}
+              </span>
+            )}
+            {(lead?.budget || lead?.budgetMax) && (
+              <span className="flex items-center gap-1">
+                <DollarSign className="h-3 w-3" />
+                {formatBudget(lead.budget ?? null, lead.budgetMax ?? null)}
+              </span>
+            )}
+            <span className="text-gray-400">
+              {new Date(assignment.assignedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </span>
+          </div>
+        </div>
+
+        <span
+          className="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium"
+          style={{ backgroundColor: sc.bg, color: sc.text }}
+        >
+          {assignment.isExpired && assignment.status === 'PENDING' ? 'EXPIRED' : assignment.status}
+        </span>
+      </div>
+
+      {/* Description */}
+      {lead?.description && (
+        <p className="mb-3 text-sm text-gray-600 line-clamp-2">{lead.description}</p>
+      )}
+
+      {/* Meta badges */}
+      <div className="mb-3 flex flex-wrap gap-2">
+        {lead?.twinTier && (
+          <span
+            className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium"
+            style={{ backgroundColor: 'rgba(232,121,58,0.1)', color: '#E8793A' }}
+          >
+            <Cpu className="h-3 w-3" />Twin {lead.twinTier}
+          </span>
+        )}
+        {lead?.lifecyclePhase && (
+          <span
+            className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium"
+            style={{ backgroundColor: 'rgba(42,191,191,0.1)', color: '#2ABFBF' }}
+          >
+            <Activity className="h-3 w-3" />{lead.lifecyclePhase}
+          </span>
+        )}
+        {lead?.projectType && (
+          <span className="rounded border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs text-gray-600">
+            {lead.projectType.replace(/_/g, ' ')}
+          </span>
+        )}
+      </div>
+
+      {/* Countdown / Actions */}
+      {assignment.status === 'PENDING' && !assignment.isExpired && (
+        <div className="flex items-center gap-3">
+          <div
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium"
+            style={{
+              backgroundColor: urgent ? 'rgba(229,62,62,0.08)' : 'rgba(234,179,8,0.1)',
+              color: urgent ? '#C53030' : '#92400E',
+              animation: urgent ? 'pulse 2s infinite' : 'none',
+            }}
+          >
+            <Clock className="h-3.5 w-3.5" />
+            {countdown} remaining
+          </div>
+          <div className="ml-auto flex gap-2">
+            <button
+              onClick={() => onDecline(assignment.id)}
+              disabled={busy}
+              className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              <XCircle className="h-3.5 w-3.5" />Decline
+            </button>
+            <button
+              onClick={() => onAccept(assignment.id)}
+              disabled={busy}
+              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+              style={{ backgroundColor: '#38A169' }}
+            >
+              <CheckCircle className="h-3.5 w-3.5" />Accept
+            </button>
+          </div>
+        </div>
+      )}
+
+      {assignment.status === 'ACCEPTED' && (
+        <div className="flex items-center gap-2 text-xs text-gray-500">
+          <CheckCircle className="h-4 w-4 text-green-500" />
+          <span>Accepted — awaiting project match</span>
+          <button className="ml-auto flex items-center gap-1 font-medium" style={{ color: '#2ABFBF' }}>
+            View details <ChevronRight className="h-3 w-3" />
+          </button>
+        </div>
+      )}
+
+      {isHistory && (
+        <p className="text-xs text-gray-400">
+          {assignment.status === 'DECLINED' && assignment.respondedAt
+            ? `Declined ${new Date(assignment.respondedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+            : assignment.status}
+        </p>
+      )}
+    </div>
+  )
+}
+
+// ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function LeadsPage() {
-  const [search, setSearch] = useState('')
-  const [typeFilter, setTypeFilter] = useState('All')
+  const [tab, setTab] = useState<LeadTab>('active')
+  const [assignments, setAssignments] = useState<Lead[]>([])
+  const [counts, setCounts] = useState<LeadCounts | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [busyId, setBusyId] = useState<string | null>(null)
+  const [declineTarget, setDeclineTarget] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
 
-  const projectTypes = ['All', 'Renovation / Remodel', 'New Home Construction', 'Home Addition', 'Commercial Build-Out']
-  const filtered = MOCK_LEADS.filter(l => {
-    const matchSearch = l.title.toLowerCase().includes(search.toLowerCase()) || l.location.toLowerCase().includes(search.toLowerCase())
-    const matchType = typeFilter === 'All' || l.projectType === typeFilter
-    return matchSearch && matchType
-  })
+  const load = useCallback(async (t: LeadTab) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await getContractorLeads(t)
+      setAssignments(data.assignments)
+      setCounts(data.counts)
+    } catch (err: any) {
+      setError(err.message ?? 'Failed to load leads')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { load(tab) }, [tab, load])
+
+  const showToast = (type: 'success' | 'error', msg: string) => {
+    setToast({ type, msg })
+    setTimeout(() => setToast(null), 3500)
+  }
+
+  const handleAccept = async (id: string) => {
+    setBusyId(id)
+    try {
+      await acceptAssignment(id)
+      showToast('success', 'Lead accepted!')
+      await load(tab)
+    } catch (err: any) {
+      showToast('error', err.message ?? 'Could not accept lead')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  const handleDeclineConfirm = async (reason: string) => {
+    if (!declineTarget) return
+    setBusyId(declineTarget)
+    try {
+      await declineAssignment(declineTarget, reason || undefined)
+      setDeclineTarget(null)
+      showToast('success', 'Lead declined')
+      await load(tab)
+    } catch (err: any) {
+      showToast('error', err.message ?? 'Could not decline lead')
+    } finally {
+      setBusyId(null)
+    }
+  }
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Available Leads</h1>
-        <p className="mt-1 text-sm text-gray-600">{MOCK_LEADS.length} new leads matching your profile across {projectTypes.length - 1} project types</p>
+      {/* Toast */}
+      {toast && (
+        <div
+          className="fixed right-4 top-20 z-50 rounded-xl px-4 py-3 text-sm font-medium text-white shadow-lg"
+          style={{ backgroundColor: toast.type === 'success' ? '#38A169' : '#E53E3E' }}
+        >
+          {toast.msg}
+        </div>
+      )}
+
+      <DeclineDialog
+        open={!!declineTarget}
+        onClose={() => setDeclineTarget(null)}
+        onConfirm={handleDeclineConfirm}
+        busy={!!busyId}
+      />
+
+      {/* Header */}
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>My Leads</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            {counts ? (
+              <>
+                {counts.pending} pending · {counts.accepted} accepted · {counts.history} history
+              </>
+            ) : 'Loading…'}
+          </p>
+        </div>
       </div>
 
-      {/* Filters */}
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <input type="text" placeholder="Search leads by name, location, or trade..." value={search} onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-1"
-            onFocus={(e) => { e.target.style.borderColor = '#2ABFBF'; e.target.style.boxShadow = '0 0 0 1px #2ABFBF' }}
-            onBlur={(e) => { e.target.style.borderColor = '#d1d5db'; e.target.style.boxShadow = 'none' }}
-          />
-        </div>
-        <div className="flex gap-1 overflow-x-auto">
-          {projectTypes.map((t) => (
-            <button key={t} onClick={() => setTypeFilter(t)}
-              className="shrink-0 rounded-lg px-3 py-2 text-xs font-medium"
+      {/* Tabs */}
+      <div className="mb-6 border-b border-gray-200">
+        <div className="flex gap-6">
+          {([
+            { key: 'active' as const, label: 'Active', count: counts?.active },
+            { key: 'history' as const, label: 'History', count: counts?.history },
+            { key: 'all' as const, label: 'All', count: counts?.total },
+          ]).map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className="flex items-center gap-1.5 border-b-2 pb-3 text-sm font-medium transition-colors"
               style={{
-                backgroundColor: typeFilter === t ? 'rgba(42,191,191,0.1)' : '#F3F4F6',
-                color: typeFilter === t ? '#2ABFBF' : '#4B5563',
-              }}>{t}</button>
+                borderColor: tab === t.key ? '#E8793A' : 'transparent',
+                color: tab === t.key ? '#E8793A' : '#6B7280',
+              }}
+            >
+              {t.label}
+              {t.count !== undefined && (
+                <span
+                  className="rounded-full px-2 py-0.5 text-xs font-semibold"
+                  style={{
+                    backgroundColor: tab === t.key ? 'rgba(232,121,58,0.1)' : '#F3F4F6',
+                    color: tab === t.key ? '#E8793A' : '#6B7280',
+                  }}
+                >
+                  {t.count}
+                </span>
+              )}
+            </button>
           ))}
         </div>
       </div>
 
-      {/* Lead Cards */}
-      <div className="space-y-4">
-        {filtered.map((lead) => {
-          const phaseMeta = LIFECYCLE_PHASES.find(p => p.key === lead.lifecyclePhase)
-          const pColor = phaseColors[lead.lifecyclePhase] || { color: '#6B7280', bgColor: 'rgba(107,114,128,0.1)' }
-          const twinMeta = twinTierLabels[lead.twinTier]
+      {/* Error */}
+      {error && (
+        <div className="mb-4 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4">
+          <AlertTriangle className="h-5 w-5 text-red-500" />
+          <p className="text-sm text-red-700">{error}</p>
+          <button
+            onClick={() => load(tab)}
+            className="ml-auto text-xs font-medium text-red-700 underline"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
-          return (
-            <div key={lead.id} className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
-              {/* Header */}
-              <div className="mb-3 flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-display font-semibold" style={{ color: '#1A2B4A' }}>{lead.title}</h3>
-                    <span className="rounded px-2 py-0.5 text-xs font-medium" style={{ backgroundColor: 'rgba(232,121,58,0.1)', color: '#E8793A' }}>{lead.projectType}</span>
-                  </div>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-gray-500">
-                    <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{lead.location}</span>
-                    <span className="flex items-center gap-1"><DollarSign className="h-3 w-3" />{lead.budget}</span>
-                    <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{lead.posted}</span>
-                    <span className="flex items-center gap-1 text-xs text-gray-400">from {lead.ownerRole}</span>
-                  </div>
-                </div>
-                <div className="ml-3 flex items-center gap-1 rounded-full px-2.5 py-1" style={{ backgroundColor: 'rgba(56,161,105,0.1)' }}>
-                  <Star className="h-3.5 w-3.5" style={{ color: '#38A169' }} />
-                  <span className="text-xs font-semibold" style={{ color: '#38A169' }}>{lead.matchScore}%</span>
-                </div>
-              </div>
-
-              <p className="mb-3 text-sm text-gray-600">{lead.description}</p>
-
-              {/* Twin Tier & Lifecycle Phase */}
-              <div className="mb-3 flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: twinMeta.bgColor, color: twinMeta.color }}>
-                  <Cpu className="h-3 w-3" />
-                  Twin: {twinMeta.label}
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: pColor.bgColor, color: pColor.color }}>
-                  <Activity className="h-3 w-3" />
-                  {phaseMeta?.name || lead.lifecyclePhase}
-                </span>
-              </div>
-
-              {/* CSI Trade Categories */}
-              <div className="mb-4">
-                <p className="mb-1.5 flex items-center gap-1 text-xs font-medium text-gray-500">
-                  <Wrench className="h-3 w-3" />
-                  Required CSI Trades
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {lead.csiTrades.map((div) => (
-                    <span key={div} className="rounded border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs text-gray-600">
-                      Div {div} - {CSI_DIVISIONS[div]}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-3">
-                <button
-                  className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-white"
-                  style={{ backgroundColor: '#E8793A' }}
-                  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#C65A20')}
-                  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#E8793A')}
-                >
-                  Submit Bid
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-                <button className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                  View Details
-                </button>
-              </div>
-            </div>
-          )
-        })}
-      </div>
+      {/* Content */}
+      {loading ? (
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-40 w-full rounded-xl" />)}
+        </div>
+      ) : assignments.length === 0 ? (
+        <div className="rounded-xl border border-gray-200 bg-white py-16 text-center">
+          <Megaphone className="mx-auto h-12 w-12 text-gray-300" />
+          <h3 className="mt-4 text-sm font-medium" style={{ color: '#1A2B4A' }}>
+            No leads in this tab
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            {tab === 'active'
+              ? 'New leads matched to your profile will appear here'
+              : 'No historical records yet'}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {assignments.map(a => (
+            <LeadCard
+              key={a.id}
+              assignment={a}
+              onAccept={handleAccept}
+              onDecline={(id) => setDeclineTarget(id)}
+              busy={busyId === a.id}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

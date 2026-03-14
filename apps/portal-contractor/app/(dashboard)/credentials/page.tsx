@@ -1,394 +1,543 @@
 'use client'
 
-import { useState } from 'react'
-import { ShieldCheck, Upload, Calendar, AlertTriangle, CheckCircle, Clock, FileText, Wrench, Award, Shield, DollarSign } from 'lucide-react'
+import { useEffect, useState, useRef } from 'react'
+import {
+  ShieldCheck, Upload, AlertTriangle, CheckCircle, Clock,
+  FileText, Download, Trash2, RefreshCw, X,
+} from 'lucide-react'
+import {
+  getVerificationDocuments,
+  getDocumentDownloadUrl,
+  getContractorProfile,
+} from '@/lib/api/contractor'
+import { apiFetch } from '@/lib/api/client'
+import type { VerificationDocument, DocumentType, DocumentStatus } from '@/lib/api/contractor'
 
-// ── v20 Seed: CSI Cost Categories ──────────────────────────────────
-const CSI_TRADE_CATEGORIES = [
-  { division: '03', key: 'CSI_03_CONCRETE', name: 'Concrete', typicalTrades: ['Concrete Finisher', 'Ironworker (Rebar)', 'General Labor', 'Crane Operator'] },
-  { division: '04', key: 'CSI_04_MASONRY', name: 'Masonry', typicalTrades: ['Mason', 'General Labor', 'Ironworker (Rebar)'] },
-  { division: '05', key: 'CSI_05_METALS', name: 'Metals', typicalTrades: ['Ironworker', 'Welder', 'Crane Operator', 'Sheet Metal Worker'] },
-  { division: '06', key: 'CSI_06_WOOD_PLASTICS', name: 'Wood, Plastics & Composites', typicalTrades: ['Carpenter', 'Cabinet Maker', 'General Labor'] },
-  { division: '07', key: 'CSI_07_THERMAL_MOISTURE', name: 'Thermal & Moisture Protection', typicalTrades: ['Roofer', 'Insulator', 'General Labor', 'Sheet Metal Worker'] },
-  { division: '08', key: 'CSI_08_DOORS_WINDOWS', name: 'Doors & Windows', typicalTrades: ['Carpenter', 'Glazier', 'General Labor'] },
-  { division: '09', key: 'CSI_09_FINISHES', name: 'Finishes', typicalTrades: ['Drywall Finisher', 'Tile Setter', 'Painter', 'Flooring Installer'] },
-  { division: '22', key: 'CSI_22_PLUMBING', name: 'Plumbing', typicalTrades: ['Plumber', 'General Labor'] },
-  { division: '23', key: 'CSI_23_MECHANICAL', name: 'Heating, Ventilating & Air Conditioning', typicalTrades: ['HVAC Technician', 'Sheet Metal Worker', 'Insulator', 'General Labor'] },
-  { division: '26', key: 'CSI_26_ELECTRICAL', name: 'Electrical', typicalTrades: ['Electrician', 'General Labor'] },
-] as const
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-// ── Contractor Credential Data ─────────────────────────────────────
-interface License {
-  id: string
-  name: string
-  issuer: string
-  number: string
-  expiry: string
-  status: 'active' | 'expiring_soon' | 'expired'
-  daysUntilExpiry: number
+const DOC_TYPES: DocumentType[] = ['LICENSE', 'INSURANCE', 'BOND', 'CERTIFICATION', 'OTHER']
+
+const STATUS_CONFIG: Record<DocumentStatus, { label: string; bg: string; text: string; icon: typeof CheckCircle }> = {
+  UPLOADED:     { label: 'Uploaded',     bg: 'rgba(49,130,206,0.1)',  text: '#3182CE', icon: Clock },
+  UNDER_REVIEW: { label: 'Under Review', bg: 'rgba(234,179,8,0.12)', text: '#92400E', icon: Clock },
+  APPROVED:     { label: 'Approved',     bg: 'rgba(56,161,105,0.1)', text: '#38A169', icon: CheckCircle },
+  REJECTED:     { label: 'Rejected',     bg: 'rgba(229,62,62,0.1)',  text: '#E53E3E', icon: AlertTriangle },
+  EXPIRED:      { label: 'Expired',      bg: 'rgba(229,62,62,0.08)', text: '#C53030', icon: AlertTriangle },
+  ARCHIVED:     { label: 'Archived',     bg: 'rgba(107,114,128,0.1)',text: '#6B7280', icon: FileText },
 }
 
-interface Insurance {
-  id: string
-  name: string
-  carrier: string
-  policyNumber: string
-  expiry: string
-  status: 'active' | 'expiring_soon' | 'expired'
-  daysUntilExpiry: number
-  coverageAmount: number
+function Skeleton({ className }: { className?: string }) {
+  return <div className={`animate-pulse rounded bg-gray-200 ${className ?? ''}`} />
 }
 
-interface CsiCertification {
-  division: string
-  name: string
-  certified: boolean
-  licenses: License[]
-  certifications: string[]
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-const GENERAL_LICENSES: License[] = [
-  { id: 'gl-1', name: 'General Contractor License', issuer: 'Texas TDLR', number: 'GC-2024-78432', expiry: '2027-06-30', status: 'active', daysUntilExpiry: 477 },
-  { id: 'gl-2', name: 'Residential Building Contractor', issuer: 'Texas TDLR', number: 'RBC-2025-11289', expiry: '2027-12-15', status: 'active', daysUntilExpiry: 645 },
-  { id: 'gl-3', name: 'EPA Lead-Safe Certification', issuer: 'EPA', number: 'NAT-F228943-1', expiry: '2026-05-20', status: 'expiring_soon', daysUntilExpiry: 71 },
-  { id: 'gl-4', name: 'OSHA 30-Hour Card', issuer: 'OSHA', number: 'OSHA-30-2023-5541', expiry: '2028-01-01', status: 'active', daysUntilExpiry: 662 },
-]
+// ── Upload modal ──────────────────────────────────────────────────────────────
 
-const INSURANCE_POLICIES: Insurance[] = [
-  { id: 'ins-1', name: 'General Liability Insurance', carrier: 'State Farm', policyNumber: 'GLI-99284756', expiry: '2026-09-15', status: 'active', daysUntilExpiry: 189, coverageAmount: 2000000 },
-  { id: 'ins-2', name: 'Workers Compensation', carrier: 'Hartford Insurance', policyNumber: 'WC-44829173', expiry: '2026-04-30', status: 'expiring_soon', daysUntilExpiry: 51, coverageAmount: 1000000 },
-  { id: 'ins-3', name: 'Commercial Auto Insurance', carrier: 'Progressive', policyNumber: 'AI-33571920', expiry: '2026-12-01', status: 'active', daysUntilExpiry: 266, coverageAmount: 500000 },
-  { id: 'ins-4', name: 'Umbrella / Excess Liability', carrier: 'State Farm', policyNumber: 'UL-77432901', expiry: '2026-09-15', status: 'active', daysUntilExpiry: 189, coverageAmount: 5000000 },
-  { id: 'ins-5', name: 'Builders Risk Insurance', carrier: 'Zurich', policyNumber: 'BR-55019287', expiry: '2026-06-01', status: 'active', daysUntilExpiry: 83, coverageAmount: 1500000 },
-]
+function UploadModal({
+  open,
+  profileId,
+  onClose,
+  onSuccess,
+}: {
+  open: boolean
+  profileId: string | null
+  onClose: () => void
+  onSuccess: () => void
+}) {
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [docType, setDocType] = useState<DocumentType>('LICENSE')
+  const [issuerName, setIssuerName] = useState('')
+  const [documentNumber, setDocumentNumber] = useState('')
+  const [expiresAt, setExpiresAt] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+  const [step, setStep] = useState<'form' | 'uploading' | 'confirming' | 'done' | 'error'>('form')
+  const [errorMsg, setErrorMsg] = useState('')
 
-const CSI_CERTIFICATIONS: CsiCertification[] = [
-  {
-    division: '03',
-    name: 'Concrete',
-    certified: true,
-    licenses: [
-      { id: 'csi-03-1', name: 'ACI Concrete Field Technician', issuer: 'American Concrete Institute', number: 'ACI-FT-44921', expiry: '2027-03-15', status: 'active', daysUntilExpiry: 370 },
-    ],
-    certifications: ['ACI Grade I Field Technician', 'Flatwork Finishing Specialist'],
-  },
-  {
-    division: '05',
-    name: 'Metals',
-    certified: false,
-    licenses: [],
-    certifications: [],
-  },
-  {
-    division: '06',
-    name: 'Wood, Plastics & Composites',
-    certified: true,
-    licenses: [
-      { id: 'csi-06-1', name: 'Finish Carpentry Certification', issuer: 'United Brotherhood of Carpenters', number: 'UBC-FC-2024-7819', expiry: '2027-08-01', status: 'active', daysUntilExpiry: 509 },
-    ],
-    certifications: ['Journeyman Carpenter', 'Cabinet Installation Specialist', 'AWI Quality Certification Program'],
-  },
-  {
-    division: '07',
-    name: 'Thermal & Moisture Protection',
-    certified: true,
-    licenses: [
-      { id: 'csi-07-1', name: 'Roofing Contractor License', issuer: 'Texas TDLR', number: 'RC-2025-33041', expiry: '2027-01-31', status: 'active', daysUntilExpiry: 327 },
-    ],
-    certifications: ['GAF Master Elite Contractor', 'BPI Building Envelope Specialist'],
-  },
-  {
-    division: '08',
-    name: 'Doors & Windows',
-    certified: true,
-    licenses: [],
-    certifications: ['Pella Certified Installer', 'AAMA InstallationMasters'],
-  },
-  {
-    division: '09',
-    name: 'Finishes',
-    certified: true,
-    licenses: [
-      { id: 'csi-09-1', name: 'Certified Tile Installer', issuer: 'CTEF', number: 'CTI-2024-09921', expiry: '2027-05-01', status: 'active', daysUntilExpiry: 417 },
-    ],
-    certifications: ['CTEF Certified Tile Installer', 'NWFA Certified Installer (Hardwood)', 'Painting & Decorating Contractors of America (PDCA)'],
-  },
-  {
-    division: '22',
-    name: 'Plumbing',
-    certified: true,
-    licenses: [
-      { id: 'csi-22-1', name: 'Master Plumber License', issuer: 'TSBPE', number: 'MP-2023-65521', expiry: '2027-09-30', status: 'active', daysUntilExpiry: 569 },
-    ],
-    certifications: ['Texas Master Plumber', 'Backflow Prevention Assembly Tester'],
-  },
-  {
-    division: '23',
-    name: 'Heating, Ventilating & Air Conditioning',
-    certified: true,
-    licenses: [
-      { id: 'csi-23-1', name: 'HVAC Contractor License', issuer: 'Texas TDLR', number: 'HVAC-2024-88403', expiry: '2026-11-30', status: 'active', daysUntilExpiry: 265 },
-      { id: 'csi-23-2', name: 'EPA 608 Universal Certification', issuer: 'EPA', number: 'EPA608-UNI-339021', expiry: '2099-12-31', status: 'active', daysUntilExpiry: 9999 },
-    ],
-    certifications: ['NATE Certified HVAC Technician', 'EPA 608 Universal', 'ACCA Manual J/D/S Certified'],
-  },
-  {
-    division: '26',
-    name: 'Electrical',
-    certified: true,
-    licenses: [
-      { id: 'csi-26-1', name: 'Master Electrician License', issuer: 'Texas TDLR', number: 'ME-2024-22817', expiry: '2027-04-15', status: 'active', daysUntilExpiry: 401 },
-    ],
-    certifications: ['Texas Master Electrician', 'NABCEP PV Installation Professional (Solar)'],
-  },
-  {
-    division: '04',
-    name: 'Masonry',
-    certified: false,
-    licenses: [],
-    certifications: [],
-  },
-]
+  const reset = () => {
+    setDocType('LICENSE')
+    setIssuerName('')
+    setDocumentNumber('')
+    setExpiresAt('')
+    setFile(null)
+    setStep('form')
+    setErrorMsg('')
+  }
 
-// Sort by division number
-const sortedCsiCerts = [...CSI_CERTIFICATIONS].sort((a, b) => a.division.localeCompare(b.division))
+  const handleClose = () => { reset(); onClose() }
 
-const statusConfig: Record<string, { label: string; color: string; bgColor: string; icon: typeof CheckCircle }> = {
-  active: { label: 'Active', color: '#38A169', bgColor: 'rgba(56,161,105,0.1)', icon: CheckCircle },
-  expiring_soon: { label: 'Expiring Soon', color: '#92400E', bgColor: 'rgba(251,191,36,0.15)', icon: AlertTriangle },
-  expired: { label: 'Expired', color: '#E53E3E', bgColor: 'rgba(229,62,62,0.1)', icon: AlertTriangle },
+  const handleUpload = async () => {
+    if (!file) return
+    setStep('uploading')
+    setErrorMsg('')
+
+    try {
+      // Step 1: Get presigned URL
+      const { presignedUrl, key } = await apiFetch<{
+        presignedUrl: string
+        key: string
+        expiresAt: string
+        marketplaceProfileId: string
+      }>('/verification/documents/presigned-url', {
+        method: 'POST',
+        body: JSON.stringify({
+          documentType: docType,
+          fileName: file.name,
+          mimeType: file.type,
+          fileSize: file.size,
+        }),
+      })
+
+      // Step 2: PUT file to S3
+      const putRes = await fetch(presignedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': file.type },
+      })
+      if (!putRes.ok) throw new Error('S3 upload failed')
+
+      // Step 3: Confirm
+      setStep('confirming')
+      await apiFetch('/verification/documents', {
+        method: 'POST',
+        body: JSON.stringify({
+          key,
+          documentType: docType,
+          fileName: file.name,
+          mimeType: file.type,
+          fileSize: file.size,
+          issuerName: issuerName || undefined,
+          documentNumber: documentNumber || undefined,
+          expiresAt: expiresAt || undefined,
+        }),
+      })
+
+      setStep('done')
+      onSuccess()
+      setTimeout(() => { handleClose() }, 1500)
+    } catch (err: any) {
+      setStep('error')
+      setErrorMsg(err.message ?? 'Upload failed')
+    }
+  }
+
+  if (!open) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="font-display text-base font-bold" style={{ color: '#1A2B4A' }}>Upload Document</h3>
+          <button onClick={handleClose} className="rounded-lg p-1 hover:bg-gray-100">
+            <X className="h-4 w-4 text-gray-500" />
+          </button>
+        </div>
+
+        {step === 'done' ? (
+          <div className="py-8 text-center">
+            <CheckCircle className="mx-auto mb-3 h-12 w-12 text-green-500" />
+            <p className="font-medium text-green-700">Document uploaded successfully!</p>
+          </div>
+        ) : step === 'error' ? (
+          <div>
+            <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3">
+              <AlertTriangle className="h-4 w-4 text-red-500" />
+              <p className="text-sm text-red-700">{errorMsg}</p>
+            </div>
+            <button
+              onClick={() => setStep('form')}
+              className="w-full rounded-lg border border-gray-300 py-2 text-sm text-gray-700 hover:bg-gray-50"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Document type */}
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-700">Document Type</label>
+              <select
+                value={docType}
+                onChange={e => setDocType(e.target.value as DocumentType)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none"
+                disabled={step !== 'form'}
+              >
+                {DOC_TYPES.map(t => (
+                  <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* File */}
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-700">File</label>
+              <div
+                className="flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-6 hover:border-teal-400"
+                onClick={() => fileRef.current?.click()}
+              >
+                {file ? (
+                  <div className="text-center">
+                    <FileText className="mx-auto mb-1 h-6 w-6 text-gray-400" />
+                    <p className="text-sm font-medium text-gray-700">{file.name}</p>
+                    <p className="text-xs text-gray-400">{formatBytes(file.size)}</p>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <Upload className="mx-auto mb-2 h-8 w-8 text-gray-300" />
+                    <p className="text-sm text-gray-500">Click to select file</p>
+                    <p className="text-xs text-gray-400">PDF, DOCX, XLSX, JPEG, PNG up to 20MB</p>
+                  </div>
+                )}
+              </div>
+              <input
+                ref={fileRef}
+                type="file"
+                className="hidden"
+                accept=".pdf,.docx,.xlsx,.jpeg,.jpg,.png,.webp"
+                onChange={e => setFile(e.target.files?.[0] ?? null)}
+              />
+            </div>
+
+            {/* Optional metadata */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-700">Issuer (optional)</label>
+                <input
+                  value={issuerName}
+                  onChange={e => setIssuerName(e.target.value)}
+                  placeholder="e.g. Texas TDLR"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none"
+                  disabled={step !== 'form'}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-700">Doc # (optional)</label>
+                <input
+                  value={documentNumber}
+                  onChange={e => setDocumentNumber(e.target.value)}
+                  placeholder="License/policy #"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none"
+                  disabled={step !== 'form'}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-700">Expiry Date (optional)</label>
+              <input
+                type="date"
+                value={expiresAt}
+                onChange={e => setExpiresAt(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none"
+                disabled={step !== 'form'}
+              />
+            </div>
+
+            <button
+              onClick={handleUpload}
+              disabled={!file || step !== 'form'}
+              className="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+              style={{ backgroundColor: '#E8793A' }}
+            >
+              {step === 'uploading' ? (
+                <><RefreshCw className="h-4 w-4 animate-spin" />Uploading…</>
+              ) : step === 'confirming' ? (
+                <><RefreshCw className="h-4 w-4 animate-spin" />Saving…</>
+              ) : (
+                <><Upload className="h-4 w-4" />Upload Document</>
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
+
+// ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function CredentialsPage() {
-  const [activeTab, setActiveTab] = useState<'csi' | 'licenses' | 'insurance'>('csi')
+  const [docs, setDocs] = useState<VerificationDocument[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [profileId, setProfileId] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<DocumentType | 'ALL'>('ALL')
+  const [showUpload, setShowUpload] = useState(false)
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
 
-  const totalCsiCertified = sortedCsiCerts.filter(c => c.certified).length
-  const expiringSoon = [...GENERAL_LICENSES, ...INSURANCE_POLICIES].filter(c => c.status === 'expiring_soon').length
-  const totalLicenses = GENERAL_LICENSES.length + sortedCsiCerts.reduce((s, c) => s + c.licenses.length, 0)
+  const showToast = (type: 'success' | 'error', msg: string) => {
+    setToast({ type, msg })
+    setTimeout(() => setToast(null), 3000)
+  }
+
+  const load = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const [docsData, profileData] = await Promise.all([
+        getVerificationDocuments(),
+        getContractorProfile().catch(() => null),
+      ])
+      setDocs(docsData.documents)
+      setProfileId(profileData?.id ?? null)
+    } catch (err: any) {
+      setError(err.message ?? 'Failed to load documents')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { load() }, [])
+
+  const handleDownload = async (doc: VerificationDocument) => {
+    try {
+      const { url } = await getDocumentDownloadUrl(doc.id)
+      window.open(url, '_blank')
+    } catch (err: any) {
+      showToast('error', err.message ?? 'Download failed')
+    }
+  }
+
+  const handleArchive = async (docId: string) => {
+    try {
+      await apiFetch(`/verification/documents/${docId}`, { method: 'DELETE' })
+      showToast('success', 'Document archived')
+      await load()
+    } catch (err: any) {
+      showToast('error', err.message ?? 'Archive failed')
+    }
+  }
+
+  // ── Derived ─────────────────────────────────────────────────────────────────
+
+  const filtered = activeTab === 'ALL' ? docs : docs.filter(d => d.documentType === activeTab)
+
+  const countByType: Record<string, number> = {}
+  for (const d of docs) {
+    countByType[d.documentType] = (countByType[d.documentType] ?? 0) + 1
+  }
+
+  const expiringSoon = docs.filter(
+    d => ['EXPIRED', 'REJECTED'].includes(d.effectiveStatus),
+  ).length
+
+  const approvedCount = docs.filter(d => d.effectiveStatus === 'APPROVED').length
+  const underReviewCount = docs.filter(d => d.effectiveStatus === 'UNDER_REVIEW').length
 
   return (
     <div>
+      {/* Toast */}
+      {toast && (
+        <div
+          className="fixed right-4 top-20 z-50 rounded-xl px-4 py-3 text-sm font-medium text-white shadow-lg"
+          style={{ backgroundColor: toast.type === 'success' ? '#38A169' : '#E53E3E' }}
+        >
+          {toast.msg}
+        </div>
+      )}
+
+      <UploadModal
+        open={showUpload}
+        profileId={profileId}
+        onClose={() => setShowUpload(false)}
+        onSuccess={() => { load(); showToast('success', 'Document uploaded successfully') }}
+      />
+
+      {/* Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Credentials</h1>
-          <p className="mt-1 text-sm text-gray-600">Licenses, insurance, and CSI trade certifications</p>
+          <p className="mt-1 text-sm text-gray-500">Licenses, insurance, and certification documents</p>
         </div>
         <button
+          onClick={() => setShowUpload(true)}
           className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white"
           style={{ backgroundColor: '#E8793A' }}
-          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#C65A20')}
-          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#E8793A')}
+          onMouseOver={e => (e.currentTarget.style.backgroundColor = '#C65A20')}
+          onMouseOut={e => (e.currentTarget.style.backgroundColor = '#E8793A')}
         >
-          <Upload className="h-4 w-4" />
-          Upload Document
+          <Upload className="h-4 w-4" />Upload Document
         </button>
       </div>
 
-      {/* Alert Banner */}
-      {expiringSoon > 0 && (
+      {/* Alert banner */}
+      {!loading && expiringSoon > 0 && (
         <div className="mb-6 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
           <AlertTriangle className="h-5 w-5 flex-shrink-0 text-amber-600" />
           <div>
-            <p className="text-sm font-medium text-amber-800">{expiringSoon} credential{expiringSoon > 1 ? 's' : ''} expiring within 90 days</p>
-            <p className="text-xs text-amber-700">Please renew before expiry to maintain your active bidding status</p>
+            <p className="text-sm font-medium text-amber-800">
+              {expiringSoon} document{expiringSoon > 1 ? 's' : ''} need attention
+            </p>
+            <p className="text-xs text-amber-700">Upload updated documents to maintain active bidding status</p>
           </div>
         </div>
       )}
 
-      {/* Summary Stats */}
+      {/* Summary stats */}
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-xs text-gray-500">CSI Divisions Certified</p>
-          <p className="mt-1 text-2xl font-bold" style={{ color: '#2ABFBF' }}>{totalCsiCertified} / {CSI_TRADE_CATEGORIES.length}</p>
+          <p className="text-xs text-gray-500">Total Documents</p>
+          {loading ? <Skeleton className="mt-1 h-8 w-12" /> : (
+            <p className="mt-1 text-2xl font-bold font-display" style={{ color: '#1A2B4A' }}>{docs.length}</p>
+          )}
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-xs text-gray-500">Active Licenses</p>
-          <p className="mt-1 text-2xl font-bold" style={{ color: '#1A2B4A' }}>{totalLicenses}</p>
+          <p className="text-xs text-gray-500">Approved</p>
+          {loading ? <Skeleton className="mt-1 h-8 w-12" /> : (
+            <p className="mt-1 text-2xl font-bold font-display" style={{ color: '#38A169' }}>{approvedCount}</p>
+          )}
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-xs text-gray-500">Insurance Policies</p>
-          <p className="mt-1 text-2xl font-bold" style={{ color: '#38A169' }}>{INSURANCE_POLICIES.length}</p>
+          <p className="text-xs text-gray-500">Under Review</p>
+          {loading ? <Skeleton className="mt-1 h-8 w-12" /> : (
+            <p className="mt-1 text-2xl font-bold font-display" style={{ color: '#92400E' }}>{underReviewCount}</p>
+          )}
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-xs text-gray-500">Expiring Soon</p>
-          <p className="mt-1 text-2xl font-bold" style={{ color: expiringSoon > 0 ? '#92400E' : '#38A169' }}>{expiringSoon}</p>
+          <p className="text-xs text-gray-500">Need Action</p>
+          {loading ? <Skeleton className="mt-1 h-8 w-12" /> : (
+            <p className="mt-1 text-2xl font-bold font-display" style={{ color: expiringSoon > 0 ? '#E53E3E' : '#38A169' }}>
+              {expiringSoon}
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Tab Navigation */}
+      {/* Tab filter */}
       <div className="mb-6 border-b border-gray-200">
-        <div className="flex gap-6">
-          {[
-            { key: 'csi' as const, label: 'CSI Trade Certifications', icon: Wrench },
-            { key: 'licenses' as const, label: 'General Licenses', icon: Award },
-            { key: 'insurance' as const, label: 'Insurance Certificates', icon: Shield },
-          ].map(tab => (
-            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-              className="flex items-center gap-1.5 border-b-2 pb-3 text-sm font-medium"
+        <div className="flex gap-4 overflow-x-auto">
+          {(['ALL', ...DOC_TYPES] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => setActiveTab(t)}
+              className="flex items-center gap-1 border-b-2 pb-3 text-sm font-medium whitespace-nowrap"
               style={{
-                borderColor: activeTab === tab.key ? '#E8793A' : 'transparent',
-                color: activeTab === tab.key ? '#E8793A' : '#6B7280',
-              }}>
-              <tab.icon className="h-3.5 w-3.5" />
-              {tab.label}
+                borderColor: activeTab === t ? '#E8793A' : 'transparent',
+                color: activeTab === t ? '#E8793A' : '#6B7280',
+              }}
+            >
+              {t === 'ALL' ? 'All Documents' : t.replace(/_/g, ' ')}
+              {t !== 'ALL' && countByType[t] !== undefined && (
+                <span
+                  className="rounded-full px-1.5 py-0.5 text-xs"
+                  style={{
+                    backgroundColor: activeTab === t ? 'rgba(232,121,58,0.1)' : '#F3F4F6',
+                    color: activeTab === t ? '#E8793A' : '#6B7280',
+                  }}
+                >
+                  {countByType[t]}
+                </span>
+              )}
             </button>
           ))}
         </div>
       </div>
 
-      {/* CSI Trade Certifications Tab */}
-      {activeTab === 'csi' && (
-        <div className="space-y-4">
-          {sortedCsiCerts.map((csi) => {
-            const seedData = CSI_TRADE_CATEGORIES.find(c => c.division === csi.division)
+      {/* Error */}
+      {error && (
+        <div className="mb-4 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4">
+          <AlertTriangle className="h-5 w-5 text-red-500" />
+          <p className="text-sm text-red-700">{error}</p>
+          <button onClick={load} className="ml-auto text-xs font-medium text-red-700 underline">Retry</button>
+        </div>
+      )}
+
+      {/* Document list */}
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="rounded-xl border border-gray-200 bg-white py-16 text-center">
+          <ShieldCheck className="mx-auto h-12 w-12 text-gray-300" />
+          <h3 className="mt-4 text-sm font-medium" style={{ color: '#1A2B4A' }}>No documents</h3>
+          <p className="mt-1 text-sm text-gray-500">Upload your first credential document</p>
+          <button
+            onClick={() => setShowUpload(true)}
+            className="mt-4 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white"
+            style={{ backgroundColor: '#E8793A' }}
+          >
+            <Upload className="h-4 w-4" />Upload Document
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map(doc => {
+            const config = STATUS_CONFIG[doc.effectiveStatus]
+            const StatusIcon = config.icon
             return (
-              <div key={csi.division} className="rounded-xl border border-gray-200 bg-white shadow-sm" style={{ borderLeftWidth: '4px', borderLeftColor: csi.certified ? '#38A169' : '#E5E7EB' }}>
-                <div className="p-5">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3">
-                      <div className="rounded-lg p-2.5" style={{ backgroundColor: csi.certified ? 'rgba(56,161,105,0.1)' : 'rgba(229,231,235,0.5)' }}>
-                        <Wrench className="h-5 w-5" style={{ color: csi.certified ? '#38A169' : '#9CA3AF' }} />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-display font-semibold" style={{ color: '#1A2B4A' }}>Division {csi.division} - {csi.name}</h3>
-                          {csi.certified ? (
-                            <span className="rounded-full px-2 py-0.5 text-xs font-medium" style={{ backgroundColor: 'rgba(56,161,105,0.1)', color: '#38A169' }}>Certified</span>
-                          ) : (
-                            <span className="rounded-full px-2 py-0.5 text-xs font-medium" style={{ backgroundColor: 'rgba(229,231,235,0.5)', color: '#9CA3AF' }}>Not Certified</span>
-                          )}
-                        </div>
-                        {seedData && (
-                          <p className="mt-0.5 text-xs text-gray-500">Typical trades: {seedData.typicalTrades.join(', ')}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {csi.certified && (
-                    <div className="mt-4 space-y-3">
-                      {/* Trade Licenses */}
-                      {csi.licenses.length > 0 && (
-                        <div>
-                          <p className="mb-1.5 text-xs font-medium text-gray-500">Licenses</p>
-                          {csi.licenses.map((lic) => {
-                            const config = statusConfig[lic.status]
-                            const StatusIcon = config.icon
-                            return (
-                              <div key={lic.id} className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
-                                <div>
-                                  <p className="text-sm font-medium" style={{ color: '#1A2B4A' }}>{lic.name}</p>
-                                  <div className="mt-0.5 flex items-center gap-3 text-xs text-gray-500">
-                                    <span>{lic.issuer}</span>
-                                    <span className="flex items-center gap-1"><FileText className="h-3 w-3" />{lic.number}</span>
-                                    <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />Exp: {new Date(lic.expiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                                  </div>
-                                </div>
-                                <span className="flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: config.bgColor, color: config.color }}>
-                                  <StatusIcon className="h-3 w-3" />{config.label}
-                                </span>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      )}
-
-                      {/* Certifications */}
-                      {csi.certifications.length > 0 && (
-                        <div>
-                          <p className="mb-1.5 text-xs font-medium text-gray-500">Certifications</p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {csi.certifications.map((cert) => (
-                              <span key={cert} className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs text-gray-700">
-                                <CheckCircle className="h-3 w-3" style={{ color: '#38A169' }} />
-                                {cert}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {!csi.certified && (
-                    <div className="mt-3">
-                      <button
-                        className="text-xs font-medium"
-                        style={{ color: '#E8793A' }}
+              <div
+                key={doc.id}
+                className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
+                style={{
+                  borderLeftWidth: '4px',
+                  borderLeftColor:
+                    doc.effectiveStatus === 'APPROVED' ? '#38A169' :
+                    doc.effectiveStatus === 'REJECTED' || doc.effectiveStatus === 'EXPIRED' ? '#E53E3E' :
+                    '#E5E7EB',
+                }}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>
+                        {doc.documentType.replace(/_/g, ' ')}
+                      </span>
+                      <span className="text-xs text-gray-400">v{doc.version}</span>
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium"
+                        style={{ backgroundColor: config.bg, color: config.text }}
                       >
-                        + Add credentials for this division
+                        <StatusIcon className="h-3 w-3" />{config.label}
+                      </span>
+                    </div>
+
+                    <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <FileText className="h-3 w-3" />{doc.fileName}
+                      </span>
+                      {doc.issuerName && <span>{doc.issuerName}</span>}
+                      {doc.documentNumber && <span>#{doc.documentNumber}</span>}
+                      {doc.expiresAt && (
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          Exp: {new Date(doc.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                      )}
+                    </div>
+
+                    {doc.rejectionReason && (
+                      <p className="mt-2 text-xs text-red-600">
+                        Rejection reason: {doc.rejectionReason}
+                      </p>
+                    )}
+                    {doc.reviewNote && (
+                      <p className="mt-1 text-xs text-gray-500">Note: {doc.reviewNote}</p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleDownload(doc)}
+                      className="rounded-lg border border-gray-200 p-2 hover:bg-gray-50"
+                      title="Download"
+                    >
+                      <Download className="h-4 w-4 text-gray-500" />
+                    </button>
+                    {!['APPROVED', 'ARCHIVED'].includes(doc.effectiveStatus) && (
+                      <button
+                        onClick={() => handleArchive(doc.id)}
+                        className="rounded-lg border border-gray-200 p-2 hover:bg-red-50"
+                        title="Archive"
+                      >
+                        <Trash2 className="h-4 w-4 text-gray-400 hover:text-red-500" />
                       </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      {/* General Licenses Tab */}
-      {activeTab === 'licenses' && (
-        <div className="space-y-4">
-          {GENERAL_LICENSES.map((lic) => {
-            const config = statusConfig[lic.status]
-            const StatusIcon = config.icon
-            return (
-              <div key={lic.id} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4">
-                    <div className="rounded-lg p-2.5" style={{ backgroundColor: lic.status === 'expiring_soon' ? 'rgba(251,191,36,0.15)' : 'rgba(56,161,105,0.1)' }}>
-                      <ShieldCheck className="h-5 w-5" style={{ color: lic.status === 'expiring_soon' ? '#92400E' : '#38A169' }} />
-                    </div>
-                    <div>
-                      <h3 className="font-display font-semibold" style={{ color: '#1A2B4A' }}>{lic.name}</h3>
-                      <p className="text-sm text-gray-600">{lic.issuer}</p>
-                      <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
-                        <span className="flex items-center gap-1"><FileText className="h-3 w-3" />{lic.number}</span>
-                        <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />Expires {new Date(lic.expiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{lic.daysUntilExpiry} days remaining</span>
-                      </div>
-                    </div>
+                    )}
                   </div>
-                  <span className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium" style={{ backgroundColor: config.bgColor, color: config.color }}>
-                    <StatusIcon className="h-3.5 w-3.5" />
-                    {config.label}
-                  </span>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Insurance Certificates Tab */}
-      {activeTab === 'insurance' && (
-        <div className="space-y-4">
-          {INSURANCE_POLICIES.map((ins) => {
-            const config = statusConfig[ins.status]
-            const StatusIcon = config.icon
-            return (
-              <div key={ins.id} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4">
-                    <div className="rounded-lg p-2.5" style={{ backgroundColor: ins.status === 'expiring_soon' ? 'rgba(251,191,36,0.15)' : 'rgba(56,161,105,0.1)' }}>
-                      <Shield className="h-5 w-5" style={{ color: ins.status === 'expiring_soon' ? '#92400E' : '#38A169' }} />
-                    </div>
-                    <div>
-                      <h3 className="font-display font-semibold" style={{ color: '#1A2B4A' }}>{ins.name}</h3>
-                      <p className="text-sm text-gray-600">{ins.carrier}</p>
-                      <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-gray-500">
-                        <span className="flex items-center gap-1"><FileText className="h-3 w-3" />{ins.policyNumber}</span>
-                        <span className="flex items-center gap-1"><DollarSign className="h-3 w-3" />Coverage: ${(ins.coverageAmount / 1000000).toFixed(1)}M</span>
-                        <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />Expires {new Date(ins.expiry).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{ins.daysUntilExpiry} days remaining</span>
-                      </div>
-                    </div>
-                  </div>
-                  <span className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium" style={{ backgroundColor: config.bgColor, color: config.color }}>
-                    <StatusIcon className="h-3.5 w-3.5" />
-                    {config.label}
-                  </span>
                 </div>
               </div>
             )
