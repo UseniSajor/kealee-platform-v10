@@ -138,6 +138,21 @@ class WorkItemService {
   }
 
   /**
+   * Admin queue: all OPEN work items, optionally filtered by type and limited.
+   */
+  async getAdminQueue(opts: { type?: WorkItemType; limit?: number } = {}) {
+    const { type, limit = 50 } = opts
+    return prismaAny.workItem.findMany({
+      where: {
+        status: 'OPEN',
+        ...(type ? { type } : {}),
+      },
+      orderBy: [{ dueAt: 'asc' }, { createdAt: 'asc' }],
+      take: limit,
+    })
+  }
+
+  /**
    * Cancel a work item (soft-delete; preserves audit trail).
    */
   async cancelWorkItem(workItemId: string) {

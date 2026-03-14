@@ -273,7 +273,7 @@ import { closeoutRoutes } from './modules/closeout/closeout.routes'
 import { handoffRoutes } from './modules/handoff/handoff.routes'
 import { serviceRequestRoutes } from './modules/ops-services/service-request.routes'
 import { servicePlanRoutes } from './modules/ops-services/service-plan.routes'
-import { workflowRoutes } from './modules/workflow/workflow.routes'
+import { workflowRoutes, workflowPrimitiveRoutes } from './modules/workflow/workflow.routes'
 import { fileRoutes } from './modules/files/file.routes'
 import { accountingRoutes } from './routes/accounting.routes'
 import { stripeConnectRoutes } from './routes/stripe-connect.routes'
@@ -605,6 +605,7 @@ const start = async () => {
       await fastify.register(serviceRequestRoutes, { prefix: '/ops-services' })
       await fastify.register(servicePlanRoutes, { prefix: '/ops-services' })
       await fastify.register(workflowRoutes, { prefix: '/workflow' })
+      await fastify.register(workflowPrimitiveRoutes, { prefix: '/workflow' })
       await fastify.register(fileRoutes, { prefix: '/files' })
       // File Upload Pipeline (site photos, receipts, documents -> Supabase -> Command Center)
       await fastify.register(uploadRoutes, { prefix: '/api/v1/uploads' })
