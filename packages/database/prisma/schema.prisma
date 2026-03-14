@@ -1826,10 +1826,11 @@ model User {
   receivedPermitNotifications PermitNotification[] @relation("PermitNotificationRecipient")
 
   // Contract & Marketplace relations
-  ownedContracts      ContractAgreement[] @relation("ContractOwner")
-  contractorContracts ContractAgreement[] @relation("ContractContractor")
-  marketplaceProfile  MarketplaceProfile? @relation("MarketplaceProfileUser")
-  contractorProfile   ContractorProfile?  @relation("ContractorProfileUser")
+  ownedContracts         ContractAgreement[]    @relation("ContractOwner")
+  contractorContracts    ContractAgreement[]    @relation("ContractContractor")
+  marketplaceProfile     MarketplaceProfile?    @relation("MarketplaceProfileUser")
+  contractorProfile      ContractorProfile?     @relation("ContractorProfileUser")
+  contractorOnboarding   ContractorOnboarding?  @relation("ContractorOnboardingUser") // P9
 
   // Approval Workflow relations
   approvalRequests ApprovalRequest[] @relation("ApprovalRequestRequester")
@@ -15190,4 +15191,114 @@ model BuildingAsset {
   @@index([assetTag])
   @@index([category])
   @@map("building_assets")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// P9: NATIONAL MARKETPLACE LAUNCH MODELS
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum ContractorOnboardingStage {
+  REGISTRATION
+  EMAIL_VERIFIED
+  PROFILE_BASIC
+  PROFILE_SERVICES
+  DOCUMENTS_UPLOADED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  ACTIVE
+}
+
+/// Tracks every contractor's position in the onboarding funnel.
+/// Registration + profile creation happens in contractor-registration.routes.ts;
+/// this model records funnel state for analytics and progressive disclosure.
+model ContractorOnboarding {
+  id                  String                    @id @default(cuid())
+  userId              String                    @unique
+  email               String
+  stage               ContractorOnboardingStage @default(REGISTRATION)
+  completedStages     String[]
+  profileId           String?
+  formData            Json                      @default("{}")
+  inviteSource        String?
+  inviteCode          String?
+  cohortId            String?
+  assignedRegion      String?
+  approvedAt          DateTime?
+  rejectedAt          DateTime?
+  rejectionReason     String?
+  lastActivityAt      DateTime                  @default(now())
+  completedAt         DateTime?
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+
+  user                User                      @relation("ContractorOnboardingUser", fields: [userId], references: [id])
+  cohort              LaunchCohort?             @relation(fields: [cohortId], references: [id])
+
+  @@index([stage])
+  @@index([cohortId])
+  @@index([assignedRegion])
+  @@index([createdAt])
+  @@map("contractor_onboardings")
+}
+
+/// A geographic region for staged national rollout.
+model ServiceRegion {
+  id                      String    @id @default(cuid())
+  name                    String    @unique
+  slug                    String    @unique
+  cities                  String[]
+  states                  String[]
+  zipCodes                String[]
+  isLaunched              Boolean   @default(false)
+  launchedAt              DateTime?
+  isActive                Boolean   @default(true)
+  targetContractorCount   Int       @default(50)
+  currentContractorCount  Int       @default(0)
+  targetLeadsPerWeek      Int       @default(20)
+  costIndexMultiplier     Float     @default(1.0)
+  timezone                String    @default("America/New_York")
+  notes                   String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@map("service_regions")
+}
+
+/// Key-value feature flags and operational config for the marketplace launch.
+model MarketplaceLaunchConfig {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  description String?
+  category    String   @default("general")
+  isActive    Boolean  @default(true)
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@map("marketplace_launch_config")
+}
+
+/// A cohort groups contractors onboarding together for a regional wave.
+model LaunchCohort {
+  id          String    @id @default(cuid())
+  name        String
+  regionSlug  String
+  targetSize  Int       @default(25)
+  currentSize Int       @default(0)
+  openedAt    DateTime  @default(now())
+  closedAt    DateTime?
+  isActive    Boolean   @default(true)
+  inviteCode  String?   @unique
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  onboardings ContractorOnboarding[]
+
+  @@index([regionSlug])
+  @@index([isActive])
+  @@map("launch_cohorts")
 }

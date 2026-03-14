@@ -264,6 +264,8 @@ import { constructionEngagementRoutes } from './modules/marketplace/construction
 import { contractorRegistrationRoutes } from './modules/marketplace/contractor-registration.routes'
 import { contractorProfileRoutes } from './modules/marketplace/contractor-profile.routes'
 import { contractorLeadsRoutes } from './modules/marketplace/contractor-leads.routes'
+import { onboardingRoutes }        from './modules/marketplace/onboarding.routes'
+import { launchMetricsRoutes }     from './modules/marketplace/launch-metrics.routes'
 import { verificationDocumentRoutes } from './modules/verification/verification-document.routes'
 import { paymentRoutes } from './modules/payments/payment.routes'
 import { escrowRoutes } from './modules/escrow/escrow.routes'
@@ -548,7 +550,9 @@ const start = async () => {
       await fastify.register(constructionEngagementRoutes, { prefix: '/marketplace' })
       await fastify.register(contractorRegistrationRoutes, { prefix: '/marketplace' })
       await fastify.register(contractorProfileRoutes, { prefix: '/marketplace' })
-      await fastify.register(contractorLeadsRoutes,   { prefix: '/marketplace' })
+      await fastify.register(contractorLeadsRoutes,    { prefix: '/marketplace' })
+      await fastify.register(onboardingRoutes,         { prefix: '/marketplace' })   // P9: onboarding funnel
+      await fastify.register(launchMetricsRoutes,      { prefix: '/marketplace/launch' })  // P9: launch KPIs
       await fastify.register(verificationDocumentRoutes, { prefix: '/verification' })
       await fastify.register(paymentRoutes, { prefix: '/payments' })
       await fastify.register(spatialRoutes, { prefix: '/spatial' })
