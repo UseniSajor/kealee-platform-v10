@@ -15584,3 +15584,210 @@ model EntityScore {
   @@index([entityType, overallScore(sort: Desc)])
   @@map("entity_scores")
 }
+
+// ============================================================================
+// P19 — MULTI-MARKET EXPANSION OPERATING SYSTEM
+// ============================================================================
+
+enum MarketStatus {
+  PLANNED
+  SOFT_LAUNCH
+  ACTIVE
+  PAUSED
+  DEPRECATED
+}
+
+enum LaunchChecklistItemStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  SKIPPED
+}
+
+enum LaunchChecklistCategory {
+  LEGAL
+  CONTRACTOR_SUPPLY
+  DEMAND_GEN
+  PRICING
+  COMPLIANCE
+  OPERATIONS
+}
+
+/// Geographic market / jurisdiction configuration.
+model Market {
+  id               String       @id @default(cuid())
+  name             String
+  jurisdictionCode String       @unique
+  countryCode      String       @default("US")
+  stateCode        String?
+  city             String?
+  timezone         String       @default("America/Los_Angeles")
+  status           MarketStatus @default(PLANNED)
+  launchDate       DateTime?
+  notes            String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  checklistItems LaunchChecklistItem[]
+  configs        MarketConfig[]
+
+  @@index([status])
+  @@map("markets")
+}
+
+/// Launch readiness checklist item for a market.
+model LaunchChecklistItem {
+  id          String                     @id @default(cuid())
+  marketId    String
+  category    LaunchChecklistCategory
+  title       String
+  description String?
+  status      LaunchChecklistItemStatus  @default(TODO)
+  dueDate     DateTime?
+  assigneeId  String?
+  completedAt DateTime?
+  createdAt   DateTime                   @default(now())
+  updatedAt   DateTime                   @updatedAt
+
+  market Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
+
+  @@index([marketId, status])
+  @@index([marketId, category])
+  @@map("launch_checklist_items")
+}
+
+/// Per-market key-value configuration (pricing overrides, regulatory rules, etc.).
+model MarketConfig {
+  id        String   @id @default(cuid())
+  marketId  String
+  key       String
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  market Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
+
+  @@unique([marketId, key], name: "marketId_key")
+  @@map("market_configs")
+}
+
+// ============================================================================
+// P20 — ENTERPRISE / B2B PLATFORM LAYER
+// ============================================================================
+
+enum TeamRole {
+  OWNER
+  ADMIN
+  PROJECT_MANAGER
+  ESTIMATOR
+  FINANCE
+  VIEWER
+}
+
+enum EntitlementStatus {
+  ACTIVE
+  TRIAL
+  EXPIRED
+  CANCELLED
+}
+
+enum PartnerType {
+  LENDER
+  TITLE_COMPANY
+  INSURANCE_PROVIDER
+  MATERIAL_SUPPLIER
+  EQUIPMENT_RENTAL
+  SURETY
+}
+
+enum FeatureFlagScope {
+  GLOBAL
+  ORG
+  USER
+  MARKET
+}
+
+/// Enterprise portfolio organization (multi-project, multi-user).
+model PortfolioOrg {
+  id        String   @id @default(cuid())
+  name      String
+  domain    String?
+  logoUrl   String?
+  planId    String?
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members  TeamMembership[]
+  projects Project[]        @relation("OrgProjects")
+
+  @@index([ownerId])
+  @@map("portfolio_orgs")
+}
+
+/// Team membership record for a user within a portfolio org.
+model TeamMembership {
+  id         String    @id @default(cuid())
+  orgId      String
+  userId     String
+  role       TeamRole
+  projectIds String[]
+  invitedAt  DateTime  @default(now())
+  joinedAt   DateTime?
+
+  org  PortfolioOrg @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user User         @relation("UserTeamMemberships", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, userId])
+  @@index([userId])
+  @@map("team_memberships")
+}
+
+/// Feature flag with scope-based resolution (USER > ORG > MARKET > GLOBAL).
+model FeatureFlag {
+  id             String           @id @default(cuid())
+  flagKey        String
+  enabled        Boolean          @default(false)
+  scope          FeatureFlagScope
+  scopeId        String?
+  rolloutPercent Float?
+  expiresAt      DateTime?
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([flagKey, scope, scopeId], name: "flagKey_scope_scopeId")
+  @@index([flagKey, scope])
+  @@map("feature_flags")
+}
+
+/// Feature entitlement granted to a portfolio org.
+model OrgEntitlement {
+  id         String            @id @default(cuid())
+  orgId      String
+  featureKey String
+  status     EntitlementStatus @default(ACTIVE)
+  expiresAt  DateTime?
+  metadata   Json              @default("{}")
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@unique([orgId, featureKey], name: "orgId_featureKey")
+  @@index([orgId, status])
+  @@map("org_entitlements")
+}
+
+/// External partner integration (lenders, title companies, suppliers, etc.).
+model PartnerIntegration {
+  id             String      @id @default(cuid())
+  name           String
+  partnerType    PartnerType
+  webhookUrl     String?
+  apiKeyHash     String?
+  contactEmail   String?
+  markets        String[]
+  active         Boolean     @default(true)
+  metadata       Json        @default("{}")
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([partnerType, active])
+  @@map("partner_integrations")
+}
