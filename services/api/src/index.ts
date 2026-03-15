@@ -1029,8 +1029,8 @@ const start = async () => {
     })
 
     await safeRegisterBlock('Multi-market expansion routes (P19)', async () => {
-      const { marketRoutes } = await import('./modules/markets/markets.routes')
-      await fastify.register(marketRoutes, { prefix: '/markets' })
+      const { marketsRoutes } = await import('./modules/markets/markets.routes')
+      await fastify.register(marketsRoutes, { prefix: '/markets' })
     })
 
     await safeRegisterBlock('Enterprise platform routes (P20)', async () => {
