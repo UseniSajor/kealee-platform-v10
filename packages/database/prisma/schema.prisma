@@ -15302,3 +15302,49 @@ model LaunchCohort {
   @@index([isActive])
   @@map("launch_cohorts")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// P10: CONSTRUCTION OS EXPANSION MODELS
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum OSFeatureTier {
+  STANDARD
+  PRO
+  ENTERPRISE
+}
+
+/// A single Construction OS feature that can be gated per project/org/tier.
+/// Slugs must match OS_FEATURES constants in packages/types/src/construction-os.ts
+model ConstructionOSFeature {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  name        String
+  description String?
+  phase       Int           @default(1)
+  tier        OSFeatureTier @default(STANDARD)
+  isEnabled   Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([phase])
+  @@index([tier])
+  @@index([isEnabled])
+  @@map("construction_os_features")
+}
+
+/// Per-project OS access config — which features are unlocked for this project.
+model ProjectOSAccess {
+  id            String        @id @default(cuid())
+  projectId     String        @unique
+  orgId         String?
+  phase         Int           @default(1)
+  tier          OSFeatureTier @default(STANDARD)
+  enabledSlugs  String[]
+  disabledSlugs String[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([orgId])
+  @@index([phase])
+  @@map("project_os_access")
+}

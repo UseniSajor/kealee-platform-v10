@@ -32,6 +32,7 @@ import { pmBidRoutes } from "./pm-bids.routes"
 import { pmTeamRoutes } from "./pm-team.routes"
 import { pmProjectRoutes } from "./pm-projects.routes"
 import { pmReportRoutes } from "./pm-reports.routes"
+import { pmFeaturesRoutes } from "./pm-features.routes"
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
 export async function pmRoutes(fastify: FastifyInstance) {
@@ -71,7 +72,8 @@ export async function pmRoutes(fastify: FastifyInstance) {
   await fastify.register(pmBidRoutes, { prefix: '/bids' })
   await fastify.register(pmTeamRoutes, { prefix: '/team' })
   await fastify.register(pmReportRoutes, { prefix: '/reports' })
-  
+  await fastify.register(pmFeaturesRoutes, { prefix: '/features' })  // P10: OS feature gates
+
   // GET /pm/stats - PM dashboard stats
   fastify.get("/stats", { preHandler: authenticateUser }, async (request, reply) => {
     const user = (request as any).user
