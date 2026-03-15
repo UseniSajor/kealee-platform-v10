@@ -15449,8 +15449,8 @@ model InAppNotification {
   @@map("in_app_notifications")
 }
 
-/// Per-user, per-event notification channel preference.
-model NotificationPreference {
+/// Per-user, per-event notification channel preference (P16).
+model NotifEventPreference {
   id        String   @id @default(cuid())
   userId    String
   event     String
@@ -15458,11 +15458,11 @@ model NotificationPreference {
   enabled   Boolean  @default(true)
   updatedAt DateTime @updatedAt
 
-  user User @relation("UserNotificationPreferences", fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation("UserNotifEventPreferences", fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, event], name: "userId_event")
+  @@unique([userId, event], name: "notifEventPref_userId_event")
   @@index([userId])
-  @@map("notification_preferences")
+  @@map("notif_event_preferences")
 }
 
 // ============================================================================
@@ -15683,7 +15683,7 @@ enum TeamRole {
   VIEWER
 }
 
-enum EntitlementStatus {
+enum OrgEntitlementStatus {
   ACTIVE
   TRIAL
   EXPIRED
@@ -15760,10 +15760,10 @@ model FeatureFlag {
 
 /// Feature entitlement granted to a portfolio org.
 model OrgEntitlement {
-  id         String            @id @default(cuid())
+  id         String               @id @default(cuid())
   orgId      String
   featureKey String
-  status     EntitlementStatus @default(ACTIVE)
+  status     OrgEntitlementStatus @default(ACTIVE)
   expiresAt  DateTime?
   metadata   Json              @default("{}")
   createdAt  DateTime          @default(now())

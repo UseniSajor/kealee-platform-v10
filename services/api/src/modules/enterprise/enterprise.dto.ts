@@ -15,7 +15,7 @@ export const TeamRoleEnum = z.enum([
   'VIEWER',
 ])
 
-export const EntitlementStatusEnum = z.enum(['ACTIVE', 'TRIAL', 'EXPIRED', 'CANCELLED'])
+export const OrgEntitlementStatusEnum = z.enum(['ACTIVE', 'TRIAL', 'EXPIRED', 'CANCELLED'])
 
 export const PartnerTypeEnum = z.enum([
   'LENDER',
@@ -89,7 +89,7 @@ export const RegisterPartnerDto = z.object({
 export const GrantEntitlementDto = z.object({
   orgId: z.string(),
   featureKey: z.string().min(1),
-  status: EntitlementStatusEnum,
+  status: OrgEntitlementStatusEnum,
   expiresAt: z.string().datetime().optional(),
   metadata: z.record(z.unknown()).optional(),
 })

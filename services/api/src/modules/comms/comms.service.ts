@@ -112,7 +112,7 @@ export async function sendNotification(body: SendNotificationBody): Promise<InAp
 // ─── Notification Preferences ─────────────────────────────────────────────────
 
 export async function getPreferences(userId: string): Promise<NotificationPreferenceDto[]> {
-  const prefs = await db.notificationPreference.findMany({
+  const prefs = await db.notifEventPreference.findMany({
     where: { userId },
     orderBy: { event: 'asc' },
   })
@@ -130,8 +130,8 @@ export async function updatePreferences(
   // Upsert each preference entry
   await Promise.all(
     body.preferences.map(pref =>
-      db.notificationPreference.upsert({
-        where: { userId_event: { userId, event: pref.event } },
+      db.notifEventPreference.upsert({
+        where: { notifEventPref_userId_event: { userId, event: pref.event } },
         create: {
           userId,
           event: pref.event,

@@ -13,7 +13,7 @@ vi.mock('../../../lib/prisma', () => ({
       findFirst: vi.fn(),
       delete: vi.fn(),
     },
-    notificationPreference: {
+    notifEventPreference: {
       findMany: vi.fn(),
       upsert: vi.fn(),
     },
@@ -175,7 +175,7 @@ describe('getPreferences', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('returns mapped preference array', async () => {
-    db.notificationPreference.findMany.mockResolvedValue([
+    db.notifEventPreference.findMany.mockResolvedValue([
       { event: 'MILESTONE_APPROVED', channels: ['IN_APP', 'EMAIL'], enabled: true },
     ])
     const result = await getPreferences(USER_ID)
@@ -191,8 +191,8 @@ describe('updatePreferences', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('upserts all preferences and returns updated list', async () => {
-    db.notificationPreference.upsert.mockResolvedValue({})
-    db.notificationPreference.findMany.mockResolvedValue([
+    db.notifEventPreference.upsert.mockResolvedValue({})
+    db.notifEventPreference.findMany.mockResolvedValue([
       { event: 'MILESTONE_APPROVED', channels: ['EMAIL'], enabled: false },
     ])
 
@@ -200,7 +200,7 @@ describe('updatePreferences', () => {
       preferences: [{ event: 'MILESTONE_APPROVED', channels: ['EMAIL'], enabled: false }],
     })
 
-    expect(db.notificationPreference.upsert).toHaveBeenCalledTimes(1)
+    expect(db.notifEventPreference.upsert).toHaveBeenCalledTimes(1)
     expect(result[0].enabled).toBe(false)
   })
 })

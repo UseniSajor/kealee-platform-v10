@@ -63,7 +63,7 @@ ALTER TABLE "market_configs" ADD CONSTRAINT "market_configs_marketId_fkey"
 -- portfolio_orgs, team_memberships, feature_flags, org_entitlements, partner_integrations
 
 CREATE TYPE "TeamRole" AS ENUM ('OWNER', 'ADMIN', 'PROJECT_MANAGER', 'ESTIMATOR', 'FINANCE', 'VIEWER');
-CREATE TYPE "EntitlementStatus" AS ENUM ('ACTIVE', 'TRIAL', 'EXPIRED', 'CANCELLED');
+CREATE TYPE "OrgEntitlementStatus" AS ENUM ('ACTIVE', 'TRIAL', 'EXPIRED', 'CANCELLED');
 CREATE TYPE "PartnerType" AS ENUM ('LENDER', 'TITLE_COMPANY', 'INSURANCE_PROVIDER', 'MATERIAL_SUPPLIER', 'EQUIPMENT_RENTAL', 'SURETY');
 CREATE TYPE "FeatureFlagScope" AS ENUM ('GLOBAL', 'ORG', 'USER', 'MARKET');
 
@@ -109,7 +109,7 @@ CREATE TABLE "org_entitlements" (
     "id"         TEXT NOT NULL,
     "orgId"      TEXT NOT NULL,
     "featureKey" TEXT NOT NULL,
-    "status"     "EntitlementStatus" NOT NULL DEFAULT 'ACTIVE',
+    "status"     "OrgEntitlementStatus" NOT NULL DEFAULT 'ACTIVE',
     "expiresAt"  TIMESTAMP(3),
     "metadata"   JSONB NOT NULL DEFAULT '{}',
     "createdAt"  TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
