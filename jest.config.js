@@ -18,6 +18,15 @@ module.exports = {
       testEnvironment: 'jsdom',
       setupFilesAfterEnv: ['<rootDir>/apps/m-ops-services/__tests__/setup.ts'],
     },
+    {
+      displayName: 'web-main',
+      testMatch: ['<rootDir>/apps/web-main/**/__tests__/**/*.test.{ts,tsx}'],
+      testEnvironment: 'node',
+      transform: { '^.+\\.tsx?$': ['ts-jest', { tsconfig: '<rootDir>/apps/web-main/tsconfig.json' }] },
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/apps/web-main/$1',
+      },
+    },
   ],
   collectCoverageFrom: [
     'apps/**/*.{ts,tsx}',
