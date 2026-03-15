@@ -1,3 +1,4 @@
+import { createServer } from 'http'
 import { redis } from './config/redis.config'
 import { emailQueue } from './queues/email.queue'
 import { webhookQueue } from './queues/webhook.queue'
@@ -372,7 +373,33 @@ async function start() {
   }, 1000 * 60 * 60) // 1 hour
 }
 
-start().catch((error) => {
-  console.error('❌ Failed to start worker service:', error)
-  process.exit(1)
-})
+start()
+  .then(() => {
+    // Health check HTTP server — required for Railway healthcheck probes
+    const HEALTH_PORT = Number(process.env.HEALTH_PORT) || 3099
+    const healthServer = createServer((_req, res) => {
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify({
+        status: 'ok',
+        service: 'worker',
+        queues: {
+          email: !!emailWorker,
+          webhook: !!webhookWorker,
+          ml: !!mlWorker,
+          reports: !!reportsWorker,
+          sales: !!salesWorker,
+          mlPrediction: !!mlPredictionWorker,
+          spatialVerification: !!spatialVerificationWorker,
+          conceptDelivery: !!conceptDeliveryWorker,
+        },
+        timestamp: new Date().toISOString(),
+      }))
+    })
+    healthServer.listen(HEALTH_PORT, '0.0.0.0', () => {
+      console.log(`✅ Worker health endpoint: http://0.0.0.0:${HEALTH_PORT}/health`)
+    })
+  })
+  .catch((error) => {
+    console.error('❌ Failed to start worker service:', error)
+    process.exit(1)
+  })

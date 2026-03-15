@@ -4,6 +4,7 @@
  * Wraps canonical Project + ContractAgreement models — never replaces them.
  */
 import prisma from '../../lib/prisma'
+import { emitEvent } from '../../lib/emit-event'
 import type {
   CreateProjectBody,
   UpdateProjectBody,
@@ -148,6 +149,14 @@ export async function ownerCreateProject(userId: string, orgId: string | null, b
     adminReason: body.adminReason,
   })
 
+  emitEvent({
+    type: 'project.created',
+    projectId: project.id,
+    initiatorId: userId,
+    entity: { type: 'project', id: project.id },
+    payload: { projectId: project.id, name: project.name, category: project.category },
+  })
+
   return project
 }
 
@@ -253,6 +262,14 @@ export async function ownerAdvanceReadiness(projectId: string, userId: string, t
     from: project.constructionReadiness,
     to: targetGate,
     notes,
+  })
+
+  emitEvent({
+    type: 'project.readiness.advanced',
+    projectId,
+    initiatorId: userId,
+    entity: { type: 'project', id: projectId },
+    payload: { projectId, from: project.constructionReadiness, to: targetGate },
   })
 
   return { projectId, gate: targetGate }

@@ -5,6 +5,7 @@
  * Wraps ContractAgreement, EscrowAgreement, Milestone. No replacements.
  */
 import prisma from '../../lib/prisma'
+import { emitEvent } from '../../lib/emit-event'
 import type {
   CreateChangeOrderBody,
   RespondChangeOrderBody,
@@ -55,6 +56,13 @@ export async function createChangeOrder(userId: string, body: CreateChangeOrderB
       status: 'PENDING',
       requestedById: userId,
     },
+  })
+
+  emitEvent({
+    type: 'engagement.changeOrder.created',
+    initiatorId: userId,
+    entity: { type: 'changeOrder', id: co.id },
+    payload: { changeOrderId: co.id, contractId: body.contractId, amountDelta: body.amountDelta },
   })
 
   return _mapChangeOrder(co)
@@ -111,6 +119,13 @@ export async function respondToChangeOrder(
     return updatedCo
   })
 
+  emitEvent({
+    type: 'engagement.changeOrder.responded',
+    initiatorId: userId,
+    entity: { type: 'changeOrder', id: changeOrderId },
+    payload: { changeOrderId, action: body.action, newStatus },
+  })
+
   return _mapChangeOrder(updated)
 }
 
@@ -135,6 +150,13 @@ export async function submitMilestone(userId: string, body: SubmitMilestoneBody)
       status: 'SUBMITTED',
       completedAt: new Date(),
     },
+  })
+
+  emitEvent({
+    type: 'engagement.milestone.submitted',
+    initiatorId: userId,
+    entity: { type: 'milestone', id: body.milestoneId },
+    payload: { milestoneId: body.milestoneId },
   })
 
   return _mapMilestoneApproval(updated)
@@ -196,6 +218,14 @@ export async function approveMilestone(userId: string, body: ApproveMilestoneBod
     return updatedMilestone
   })
 
+  const eventType = body.approved ? 'engagement.milestone.approved' : 'engagement.milestone.rejected'
+  emitEvent({
+    type: eventType,
+    initiatorId: userId,
+    entity: { type: 'milestone', id: body.milestoneId },
+    payload: { milestoneId: body.milestoneId, approved: body.approved },
+  })
+
   return _mapMilestoneApproval(updated)
 }
 
@@ -225,6 +255,14 @@ export async function releaseMilestonePayment(userId: string, body: ReleaseEscro
         status: 'COMPLETED',
       },
     })
+  })
+
+  emitEvent({
+    type: 'engagement.payment.released',
+    initiatorId: userId,
+    entity: { type: 'milestone', id: body.milestoneId },
+    payload: { milestoneId: body.milestoneId, amount: body.amount },
+    severity: 'HIGH',
   })
 
   return { success: true, paidAmount: body.amount }
@@ -270,6 +308,14 @@ export async function openDispute(userId: string, body: OpenDisputeBody): Promis
     return d
   })
 
+  emitEvent({
+    type: 'engagement.dispute.opened',
+    initiatorId: userId,
+    entity: { type: 'dispute', id: dispute.id },
+    payload: { disputeId: dispute.id, contractId: body.contractId, reason: body.reason },
+    severity: 'HIGH',
+  })
+
   return _mapDispute(dispute)
 }
 
@@ -312,6 +358,13 @@ export async function resolveDispute(
     })
 
     return d
+  })
+
+  emitEvent({
+    type: 'engagement.dispute.resolved',
+    initiatorId: userId,
+    entity: { type: 'dispute', id: disputeId },
+    payload: { disputeId, contractId: dispute.contractId, resolutionType: body.resolutionType },
   })
 
   return _mapDispute(updated)

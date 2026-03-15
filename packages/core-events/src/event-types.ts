@@ -126,4 +126,37 @@ export const EVENT_TYPES_V20 = {
       processed: 'integration.webhook.processed',
     },
   },
+
+  // ── Project ──────────────────────────────────────────────────
+  project: {
+    created: 'project.created',
+    updated: 'project.updated',
+    statusChanged: 'project.statusChanged',
+    readiness: {
+      advanced: 'project.readiness.advanced',
+    },
+    phase: {
+      changed: 'project.phase.changed',
+    },
+  },
+
+  // ── Engagement (ContractAgreement execution) ─────────────────
+  engagement: {
+    changeOrder: {
+      created: 'engagement.changeOrder.created',
+      responded: 'engagement.changeOrder.responded',
+    },
+    milestone: {
+      submitted: 'engagement.milestone.submitted',
+      approved: 'engagement.milestone.approved',
+      rejected: 'engagement.milestone.rejected',
+    },
+    payment: {
+      released: 'engagement.payment.released',
+    },
+    dispute: {
+      opened: 'engagement.dispute.opened',
+      resolved: 'engagement.dispute.resolved',
+    },
+  },
 } as const;

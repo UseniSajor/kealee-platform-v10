@@ -156,10 +156,30 @@ async function routeEmail(body: SendNotificationBody): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) return // silently skip if not configured
 
-  // TODO: resolve user email from userId, build template, call Resend API
-  // const user = await db.user.findUnique({ where: { id: body.userId }, select: { email: true } })
-  // if (!user?.email) return
-  // await resend.emails.send({ from: 'notify@kealee.com', to: user.email, subject: body.title, html: buildEmailTemplate(body) })
+  const user = await db.user.findUnique({
+    where: { id: body.userId },
+    select: { email: true, name: true },
+  })
+  if (!user?.email) return
+
+  const from = process.env.RESEND_FROM_EMAIL ?? 'Kealee <noreply@kealee.com>'
+  const html = `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+      <h2 style="color:#1A2B4A;">${body.title}</h2>
+      <p style="color:#333;">${body.body}</p>
+      ${body.entityType && body.entityId ? `<p style="font-size:12px;color:#999;">Ref: ${body.entityType}/${body.entityId}</p>` : ''}
+    </div>
+  `
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from, to: [user.email], subject: body.title, html }),
+  })
+
+  if (!res.ok) {
+    throw new Error(`Resend API error ${res.status}: ${await res.text()}`)
+  }
 }
 
 async function routeSms(body: SendNotificationBody): Promise<void> {
