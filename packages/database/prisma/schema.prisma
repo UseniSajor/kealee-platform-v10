@@ -15464,3 +15464,123 @@ model NotificationPreference {
   @@index([userId])
   @@map("notification_preferences")
 }
+
+// ============================================================================
+// P17 — REVENUE OPTIMIZATION LAYER
+// ============================================================================
+
+enum PlanTier {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum LeadPricingStrategy {
+  FLAT
+  AUCTION
+  SUBSCRIPTION_INCLUDED
+}
+
+enum PlacementType {
+  FEATURED_CONTRACTOR
+  FEATURED_PROJECT
+  BANNER_AD
+  CATEGORY_SPONSOR
+}
+
+/// Subscription plan configuration (managed by admins).
+model SubscriptionPlan {
+  id                   String    @id @default(cuid())
+  name                 String
+  tier                 PlanTier
+  monthlyPriceCents    Int
+  annualPriceCents     Int
+  features             Json      @default("{}")
+  leadCreditsPerMonth  Int?
+  maxProjects          Int?
+  maxTeamMembers       Int?
+  active               Boolean   @default(true)
+  stripePriceIdMonthly String?
+  stripePriceIdAnnual  String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@index([tier, active])
+  @@map("subscription_plans")
+}
+
+/// Per-trade, per-jurisdiction lead pricing configuration.
+model LeadPricing {
+  id                 String               @id @default(cuid())
+  tradeCategory      String
+  jurisdictionCode   String
+  strategy           LeadPricingStrategy
+  flatPriceCents     Int?
+  minBidCents        Int?
+  maxBidCents        Int?
+  active             Boolean              @default(true)
+  updatedAt          DateTime             @updatedAt
+
+  @@unique([tradeCategory, jurisdictionCode], name: "tradeCategory_jurisdictionCode")
+  @@index([tradeCategory, active])
+  @@map("lead_pricing")
+}
+
+/// Paid sponsored placement for contractors, projects, or categories.
+model SponsoredPlacement {
+  id                     String        @id @default(cuid())
+  sponsorId              String
+  placementType          PlacementType
+  entityId               String
+  entityType             String
+  startDate              DateTime
+  endDate                DateTime
+  budgetCents            Int
+  spentCents             Int           @default(0)
+  impressions            Int           @default(0)
+  clicks                 Int           @default(0)
+  active                 Boolean       @default(true)
+  targetJurisdictions    String[]
+  targetTradeCategories  String[]
+  createdAt              DateTime      @default(now())
+
+  @@index([placementType, active, startDate, endDate])
+  @@index([sponsorId])
+  @@map("sponsored_placements")
+}
+
+// ============================================================================
+// P18 — MARKETPLACE INTELLIGENCE LAYER
+// ============================================================================
+
+/// Immutable score event log for contractor/owner/project entities.
+model ScoreEvent {
+  id         String   @id @default(cuid())
+  entityId   String
+  entityType String
+  eventType  String
+  weight     Float
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  @@index([entityId, entityType])
+  @@index([entityType, eventType])
+  @@map("score_events")
+}
+
+/// Aggregated scores per entity, kept current by recompute on each ScoreEvent.
+model EntityScore {
+  id             String   @id @default(cuid())
+  entityId       String
+  entityType     String
+  overallScore   Float    @default(50)
+  responsiveness Float    @default(50)
+  reliability    Float    @default(50)
+  quality        Float    @default(50)
+  updatedAt      DateTime @updatedAt
+
+  @@unique([entityId, entityType], name: "entityId_entityType")
+  @@index([entityType, overallScore(sort: Desc)])
+  @@map("entity_scores")
+}
