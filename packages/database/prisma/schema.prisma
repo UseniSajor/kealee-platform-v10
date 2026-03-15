@@ -15423,3 +15423,44 @@ model DesignProfessionalAssignment {
   @@index([projectId, status])
   @@map("design_professional_assignments")
 }
+
+// ============================================================================
+// P16 — UNIFIED COMMUNICATIONS LAYER
+// ============================================================================
+
+/// In-app notification delivered to a user's notification center.
+model InAppNotification {
+  id         String   @id @default(cuid())
+  userId     String
+  event      String
+  title      String
+  body       String
+  entityType String?
+  entityId   String?
+  isRead     Boolean  @default(false)
+  readAt     DateTime?
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  user User @relation("UserInAppNotifications", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("in_app_notifications")
+}
+
+/// Per-user, per-event notification channel preference.
+model NotificationPreference {
+  id        String   @id @default(cuid())
+  userId    String
+  event     String
+  channels  String[]
+  enabled   Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+
+  user User @relation("UserNotificationPreferences", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, event], name: "userId_event")
+  @@index([userId])
+  @@map("notification_preferences")
+}
