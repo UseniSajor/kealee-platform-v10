@@ -15348,3 +15348,78 @@ model ProjectOSAccess {
   @@index([phase])
   @@map("project_os_access")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// P13: DESIGN PROFESSIONALS (ADDITIVE)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum DesignProfessionalRole {
+  ARCHITECT
+  STRUCTURAL_ENGINEER
+  MEP_ENGINEER
+  CIVIL_ENGINEER
+  LANDSCAPE_ARCHITECT
+  INTERIOR_DESIGNER
+}
+
+enum DPStatus {
+  PENDING_REVIEW
+  VERIFIED
+  SUSPENDED
+  REJECTED
+}
+
+enum DPAssignmentStatus {
+  INVITED
+  ACTIVE
+  PAUSED
+  COMPLETED
+  DECLINED
+}
+
+/// Design professional profile — architect, engineer, or designer.
+/// Additive model — does not replace any canonical models.
+model DesignProfessional {
+  id              String                      @id @default(cuid())
+  userId          String                      @unique
+  role            DesignProfessionalRole
+  status          DPStatus                    @default(PENDING_REVIEW)
+  firmName        String?
+  licenseNumber   String?
+  licenseState    String?
+  licenseExpiry   DateTime?
+  portfolioUrl    String?
+  specialties     String[]
+  bio             String?
+  yearsExperience Int?
+  jurisdictions   String[]
+  verifiedAt      DateTime?
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+
+  user        User                            @relation("DesignProfessionalUser", fields: [userId], references: [id], onDelete: Cascade)
+  assignments DesignProfessionalAssignment[]
+
+  @@index([role, status])
+  @@index([status])
+  @@map("design_professionals")
+}
+
+/// Assignment of a design professional to a project in a specific role.
+model DesignProfessionalAssignment {
+  id             String               @id @default(cuid())
+  professionalId String
+  projectId      String
+  role           String
+  status         DPAssignmentStatus   @default(INVITED)
+  invitedAt      DateTime             @default(now())
+  acceptedAt     DateTime?
+  completedAt    DateTime?
+  notes          String?
+
+  professional DesignProfessional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@index([professionalId, status])
+  @@index([projectId, status])
+  @@map("design_professional_assignments")
+}

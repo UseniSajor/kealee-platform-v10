@@ -995,6 +995,50 @@ const start = async () => {
     })
 
     // ══════════════════════════════════════════════════════════════
+    // P11-P20 — Owner, Design Professionals, Escrow Execution, etc.
+    // ══════════════════════════════════════════════════════════════
+
+    await safeRegisterBlock('Owner namespace routes (P11)', async () => {
+      const { ownerRoutes } = await import('./modules/owner/owner.routes')
+      await fastify.register(ownerRoutes, { prefix: '/owner' })
+    })
+
+    await safeRegisterBlock('Design Professionals routes (P13)', async () => {
+      const { dpRoutes } = await import('./modules/design-professionals/dp.routes')
+      await fastify.register(dpRoutes, { prefix: '/design-professionals' })
+    })
+
+    await safeRegisterBlock('Engagement execution routes (P14)', async () => {
+      const { engagementExecRoutes } = await import('./modules/engagement-exec/engagement-exec.routes')
+      await fastify.register(engagementExecRoutes, { prefix: '/engagement-exec' })
+    })
+
+    await safeRegisterBlock('Unified communications routes (P16)', async () => {
+      const { commsRoutes } = await import('./modules/comms/comms.routes')
+      await fastify.register(commsRoutes, { prefix: '/comms' })
+    })
+
+    await safeRegisterBlock('Revenue optimization routes (P17)', async () => {
+      const { revenueRoutes } = await import('./modules/revenue/revenue.routes')
+      await fastify.register(revenueRoutes, { prefix: '/revenue' })
+    })
+
+    await safeRegisterBlock('Marketplace intelligence routes (P18)', async () => {
+      const { intelligenceRoutes } = await import('./modules/intelligence/intelligence.routes')
+      await fastify.register(intelligenceRoutes, { prefix: '/intelligence' })
+    })
+
+    await safeRegisterBlock('Multi-market expansion routes (P19)', async () => {
+      const { marketRoutes } = await import('./modules/markets/markets.routes')
+      await fastify.register(marketRoutes, { prefix: '/markets' })
+    })
+
+    await safeRegisterBlock('Enterprise platform routes (P20)', async () => {
+      const { enterpriseRoutes } = await import('./modules/enterprise/enterprise.routes')
+      await fastify.register(enterpriseRoutes, { prefix: '/enterprise' })
+    })
+
+    // ══════════════════════════════════════════════════════════════
 
     // GraphQL DISABLED FOR MVP - Uncomment when needed
     /*
