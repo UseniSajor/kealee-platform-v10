@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@kealee/auth": "workspace:*",
+    "@kealee/core-hooks": "workspace:*",
     "@kealee/ui": "workspace:*",
     "@supabase/supabase-js": "^2.39.0",
     "@supabase/ssr": "^0.5.2",

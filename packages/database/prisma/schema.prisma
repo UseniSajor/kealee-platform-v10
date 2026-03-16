@@ -2081,6 +2081,9 @@ model Org {
   // Command Center Infrastructure relations
   integrationCredentials IntegrationCredential[]
 
+  // Stripe service subscriptions
+  serviceSubscriptions ServiceSubscription[] @relation("OrgServiceSubscriptions")
+
   @@index([slug])
   @@index([status])
 }
@@ -7819,6 +7822,40 @@ model ALaCarteService {
   @@index([serviceType])
   @@index([status])
   @@map("a_la_carte_services")
+}
+
+// Platform Service Subscription — created by Stripe webhook on checkout.session.completed
+// Referenced 17× in services/api/src/modules/webhooks/stripe.webhook.ts
+model ServiceSubscription {
+  id        String @id @default(uuid())
+  orgId     String
+  servicePlanId String
+
+  // Status
+  status    String @default("active") // active, canceled, past_due, trialing, incomplete
+
+  // Stripe identifiers
+  stripeId          String  @unique // subscription.id from Stripe
+  stripeCustomerId  String?
+
+  // Billing period
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean  @default(false)
+  canceledAt         DateTime?
+
+  // Flexible metadata (planSlug, priceId, interval, etc.)
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  org Org @relation("OrgServiceSubscriptions", fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@index([status])
+  @@index([stripeId])
+  @@map("service_subscriptions")
 }
 
 // Marketplace Fee Configuration (per SOP v2)

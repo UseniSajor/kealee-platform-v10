@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { getProject, getProjectReadiness } from '@/lib/api/owner'
 import type { Project, ProjectReadiness, ReadinessStatus } from '@/lib/api/owner'
+import { RevenueHookModal, type HookStage } from '@kealee/core-hooks'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -154,6 +155,8 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   const [readinessLoading, setReadinessLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'overview' | 'readiness'>('overview')
+  const [activeHook, setActiveHook] = useState<HookStage | null>(null)
+  const [hookDismissed, setHookDismissed] = useState<Set<HookStage>>(new Set())
 
   useEffect(() => {
     let mounted = true
@@ -197,6 +200,21 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       </div>
     )
   }
+
+  // Trigger phase-based revenue hooks once project loads
+  useEffect(() => {
+    if (!project || loading) return
+    const phase = (project.lifecyclePhase ?? '').toUpperCase()
+    const phaseHookMap: Record<string, HookStage> = {
+      DESIGN:          'design_complete',
+      PRECONSTRUCTION: 'estimate_complete',
+      PERMITS:         'permit_detected',
+    }
+    const hook = phaseHookMap[phase]
+    if (hook && !hookDismissed.has(hook)) {
+      setActiveHook(hook)
+    }
+  }, [project, loading])
 
   const phaseKey = (project?.lifecyclePhase ?? 'IDEA').toUpperCase().replace(/\s+/g, '_')
   const phase = phaseStyles[phaseKey] ?? phaseStyles['PRECONSTRUCTION'] ?? { bg: 'rgba(160,174,192,0.1)', text: '#A0AEC0' }
@@ -408,6 +426,22 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
             <p className="text-xs text-gray-400">A checklist will be generated when pre-construction begins</p>
           </div>
         )
+      )}
+
+      {/* Phase-triggered revenue hooks: design_complete, estimate_complete, permit_detected */}
+      {activeHook && (
+        <RevenueHookModal
+          stage={activeHook}
+          projectId={params.id}
+          onSelect={() => {
+            setHookDismissed(prev => new Set(prev).add(activeHook))
+            setActiveHook(null)
+          }}
+          onDismiss={() => {
+            setHookDismissed(prev => new Set(prev).add(activeHook))
+            setActiveHook(null)
+          }}
+        />
       )}
     </div>
   )

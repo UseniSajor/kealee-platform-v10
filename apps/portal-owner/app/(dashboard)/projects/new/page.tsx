@@ -7,6 +7,7 @@ import {
   Home, Building2, Warehouse, Building, Landmark, Layers,
   ChevronRight, AlertCircle,
 } from 'lucide-react'
+import { RevenueHookModal } from '@kealee/core-hooks'
 
 type Step = 'type' | 'details' | 'location' | 'twin' | 'review'
 
@@ -65,6 +66,8 @@ export default function NewProjectPage() {
   const [details, setDetails] = useState({ name: '', description: '', budget: '', sqft: '' })
   const [location, setLocation] = useState({ address: '', city: '', state: '', zip: '' })
   const [submitting, setSubmitting] = useState(false)
+  const [showIntakeHook, setShowIntakeHook] = useState(false)
+  const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
 
   const currentStepIndex = STEPS.findIndex(s => s.id === step)
   const selectedType = PROJECT_TYPES.find(t => t.id === projectType)
@@ -89,9 +92,37 @@ export default function NewProjectPage() {
 
   const handleSubmit = async () => {
     setSubmitting(true)
-    // In production: POST /api/v1/projects with twin creation
-    await new Promise(r => setTimeout(r, 2000))
-    window.location.href = '/projects'
+    try {
+      const res = await fetch('/api/v1/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: projectType,
+          name: details.name,
+          description: details.description,
+          budget: parseFloat(details.budget.replace(/,/g, '')) || 0,
+          sqft: parseInt(details.sqft.replace(/,/g, '')) || undefined,
+          address: location.address,
+          city: location.city,
+          state: location.state,
+          zip: location.zip,
+          twinTier,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setCreatedProjectId(data.project?.id ?? null)
+        // Show project_intake revenue hook before redirecting
+        setShowIntakeHook(true)
+      } else {
+        // Fall back gracefully
+        window.location.href = '/projects'
+      }
+    } catch {
+      window.location.href = '/projects'
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   // Auto-select recommended twin tier when project type changes
@@ -484,6 +515,16 @@ export default function NewProjectPage() {
           )}
         </div>
       </div>
+
+      {/* Revenue Hook: project_intake — fires after project created, before redirect */}
+      {showIntakeHook && (
+        <RevenueHookModal
+          stage="project_intake"
+          projectId={createdProjectId ?? undefined}
+          onSelect={() => { window.location.href = `/projects${createdProjectId ? `/${createdProjectId}` : ''}` }}
+          onDismiss={() => { window.location.href = `/projects${createdProjectId ? `/${createdProjectId}` : ''}` }}
+        />
+      )}
     </div>
   )
 }

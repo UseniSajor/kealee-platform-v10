@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
   Megaphone, ShieldCheck, FolderKanban, ArrowRight,
-  AlertTriangle, CheckCircle, Clock, User,
+  AlertTriangle, CheckCircle, Clock, User, TrendingUp,
 } from 'lucide-react'
 import { getContractorProfile, getContractorLeads, getVerificationDocuments } from '@/lib/api/contractor'
 import type { ContractorProfile, LeadCounts, VerificationDocument } from '@/lib/api/contractor'
+import { RevenueHookModal } from '@kealee/core-hooks'
 
 // ── Loading skeleton ──────────────────────────────────────────────────────────
 
@@ -39,6 +40,7 @@ export default function DashboardPage() {
   const [docs, setDocs] = useState<VerificationDocument[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showGrowthHook, setShowGrowthHook] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -63,6 +65,17 @@ export default function DashboardPage() {
     load()
     return () => { mounted = false }
   }, [])
+
+  // Show growth hook once per session for verified contractors
+  useEffect(() => {
+    if (!loading && profile?.verificationStatus === 'VERIFIED') {
+      const key = 'kea_growth_hook_shown'
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, '1')
+        setShowGrowthHook(true)
+      }
+    }
+  }, [loading, profile])
 
   // ── Derived doc summary ─────────────────────────────────────────────────────
 
@@ -378,6 +391,37 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Grow Your Business panel */}
+      {!loading && profile?.verificationStatus === 'VERIFIED' && (
+        <div className="mt-6 flex items-center justify-between rounded-xl border border-teal-200 bg-teal-50 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: 'rgba(42,191,191,0.15)' }}>
+              <TrendingUp className="h-5 w-5" style={{ color: '#2ABFBF' }} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>Grow your business on Kealee</p>
+              <p className="text-xs text-gray-500">Get featured leads, priority matching, and marketing tools</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowGrowthHook(true)}
+            className="ml-4 flex-shrink-0 rounded-lg px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            style={{ backgroundColor: '#E8793A' }}
+          >
+            Upgrade
+          </button>
+        </div>
+      )}
+
+      {/* Revenue Hook: contractor_growth */}
+      {showGrowthHook && (
+        <RevenueHookModal
+          stage="contractor_growth"
+          onSelect={() => setShowGrowthHook(false)}
+          onDismiss={() => setShowGrowthHook(false)}
+        />
+      )}
     </div>
   )
 }

@@ -12,7 +12,8 @@ RUN pnpm install --filter @kealee/worker... --prod=false --ignore-scripts
 
 COPY packages/database/ ./packages/database/
 COPY services/worker/ ./services/worker/
-RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" cd packages/database && npx prisma generate
+RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" && \
+    cd packages/database && npx prisma generate
 RUN cd services/worker && pnpm run build
 
 FROM node:20-slim AS runner
