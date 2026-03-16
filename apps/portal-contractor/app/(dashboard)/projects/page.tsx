@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { MapPin, Calendar, DollarSign, Users, Cpu, CheckCircle, Clock, Layers, Wrench, ChevronDown, ChevronUp } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { MapPin, Calendar, DollarSign, Users, Cpu, CheckCircle, Clock, Layers, Wrench, ChevronDown, ChevronUp, Loader2, AlertCircle, FolderOpen } from 'lucide-react'
+import { getContractorProjects, type ContractorProject } from '@/lib/api/contractor'
 
 // ── v20 Seed: Lifecycle Phases ─────────────────────────────────────
 const LIFECYCLE_PHASES = [
@@ -222,8 +223,60 @@ function HealthBadge({ label, value, unit, warningThreshold, criticalThreshold, 
   )
 }
 
+// ─── Map API project → ActiveProject shape ───────────────────────────────────
+
+function apiToActiveProject(p: ContractorProject): ActiveProject {
+  return {
+    id:          p.assignmentId,
+    name:        p.projectName,
+    projectType: p.projectType ?? 'Construction',
+    client:      'Project Owner',
+    clientRole:  'Owner',
+    address:     [p.address, p.city, p.state].filter(Boolean).join(', ') || 'Location TBD',
+    twinTier:    'L1',
+    lifecyclePhase: p.lifecyclePhase ?? 'CONSTRUCTION',
+    progress:    p.contractStatus === 'ACTIVE' ? 30 : 5,
+    contractAmount: p.contractAmount ?? 0,
+    startDate:   p.startDate ? p.startDate.split('T')[0] : p.assignedAt.split('T')[0],
+    crew:        0,
+    activeModules: ['os-pm', 'os-pay', 'marketplace'],
+    twinHealth:  { budgetVariance: 0, spi: 1.0, qualityScore: 0, openIssues: 0 },
+    milestones:  PAYMENT_MILESTONES.map((m) => ({ key: m.key, status: 'upcoming' as const, amount: Math.round((p.contractAmount ?? 0) * m.percentage / 100) })),
+    schedule:    [],
+  }
+}
+
 export default function ProjectsPage() {
   const [expandedProject, setExpandedProject] = useState<string | null>(null)
+  const [projects, setProjects] = useState<ActiveProject[]>([])
+  const [loading, setLoading]   = useState(true)
+  const [error, setError]       = useState<string | null>(null)
+
+  useEffect(() => {
+    getContractorProjects({ status: 'active' })
+      .then(res => setProjects(res.projects.map(apiToActiveProject)))
+      .catch(err => setError(err instanceof Error ? err.message : 'Failed to load projects.'))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-7 w-7 animate-spin" style={{ color: '#2ABFBF' }} />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 p-6 flex gap-3 text-red-700">
+        <AlertCircle className="h-5 w-5 flex-shrink-0" />
+        <p className="text-sm">{error}</p>
+      </div>
+    )
+  }
+
+  const ACTIVE_PROJECTS = projects
   const totalRevenue = ACTIVE_PROJECTS.reduce((s, p) => s + p.contractAmount, 0)
   const totalPaid = ACTIVE_PROJECTS.reduce((s, p) => s + p.milestones.filter(m => m.status === 'paid').reduce((ms, m) => ms + m.amount, 0), 0)
 
@@ -232,9 +285,19 @@ export default function ProjectsPage() {
       <div className="mb-6">
         <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Active Projects</h1>
         <p className="mt-1 text-sm text-gray-600">
-          {ACTIVE_PROJECTS.length} projects | ${totalRevenue.toLocaleString()} total contract value | ${totalPaid.toLocaleString()} received
+          {ACTIVE_PROJECTS.length} projects
+          {totalRevenue > 0 ? ` | $${totalRevenue.toLocaleString()} total contract value` : ''}
+          {totalPaid > 0 ? ` | $${totalPaid.toLocaleString()} received` : ''}
         </p>
       </div>
+
+      {ACTIVE_PROJECTS.length === 0 && (
+        <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
+          <FolderOpen className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+          <p className="font-semibold text-gray-600">No active projects yet</p>
+          <p className="text-sm text-gray-400 mt-1">Your accepted project assignments will appear here.</p>
+        </div>
+      )}
 
       <div className="space-y-5">
         {ACTIVE_PROJECTS.map((project) => {

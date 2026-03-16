@@ -264,6 +264,7 @@ import { constructionEngagementRoutes } from './modules/marketplace/construction
 import { contractorRegistrationRoutes } from './modules/marketplace/contractor-registration.routes'
 import { contractorProfileRoutes } from './modules/marketplace/contractor-profile.routes'
 import { contractorLeadsRoutes } from './modules/marketplace/contractor-leads.routes'
+import { contractorProjectsRoutes } from './modules/marketplace/contractor-projects.routes'
 import { onboardingRoutes }        from './modules/marketplace/onboarding.routes'
 import { launchMetricsRoutes }     from './modules/marketplace/launch-metrics.routes'
 import { verificationDocumentRoutes } from './modules/verification/verification-document.routes'
@@ -551,6 +552,7 @@ const start = async () => {
       await fastify.register(contractorRegistrationRoutes, { prefix: '/marketplace' })
       await fastify.register(contractorProfileRoutes, { prefix: '/marketplace' })
       await fastify.register(contractorLeadsRoutes,    { prefix: '/marketplace' })
+      await fastify.register(contractorProjectsRoutes, { prefix: '/marketplace' })
       await fastify.register(onboardingRoutes,         { prefix: '/marketplace' })   // P9: onboarding funnel
       await fastify.register(launchMetricsRoutes,      { prefix: '/marketplace/launch' })  // P9: launch KPIs
       await fastify.register(verificationDocumentRoutes, { prefix: '/verification' })

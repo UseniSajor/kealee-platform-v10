@@ -5,6 +5,7 @@
  *   GET /marketplace/contractors/profile
  *   PATCH /marketplace/contractors/profile
  *   GET /marketplace/contractors/leads
+ *   GET /marketplace/contractors/projects
  *   POST /marketplace/assignments/:id/accept
  *   POST /marketplace/assignments/:id/decline
  *   GET /verification/documents
@@ -173,4 +174,44 @@ export async function getDocumentDownloadUrl(
   return apiFetch<{ url: string; expiresAt: string }>(
     `/verification/documents/${documentId}/download`,
   )
+}
+
+// ─── Projects ─────────────────────────────────────────────────────────────────
+
+export type ProjectStatus = 'active' | 'completed' | 'all'
+
+export interface ContractorProject {
+  assignmentId:     string
+  assignmentStatus: string
+  respondedAt:      string | null
+  projectId:        string | null
+  leadId:           string | null
+  projectName:      string
+  projectType:      string | null
+  description:      string | null
+  address:          string | null
+  city:             string | null
+  state:            string | null
+  contractId:       string | null
+  contractAmount:   number | null
+  contractStatus:   string | null
+  lifecyclePhase:   string
+  constructionReadiness: string | null
+  csiDivisions:     string[]
+  startDate:        string | null
+  assignedAt:       string
+}
+
+export interface ContractorProjectsResponse {
+  projects: ContractorProject[]
+  total:    number
+}
+
+export async function getContractorProjects(
+  params: { status?: ProjectStatus } = {},
+): Promise<ContractorProjectsResponse> {
+  const qs = new URLSearchParams()
+  if (params.status) qs.set('status', params.status)
+  const query = qs.toString() ? `?${qs}` : ''
+  return apiFetch<ContractorProjectsResponse>(`/marketplace/contractors/projects${query}`)
 }

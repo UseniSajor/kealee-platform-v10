@@ -1,132 +1,236 @@
 'use client'
 
-import { User, MapPin, Phone, Mail, Star, Award, Briefcase, Camera } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { User, MapPin, Phone, Mail, Star, Award, Briefcase, Shield, Globe, AlertCircle, Pencil, Loader2 } from 'lucide-react'
+import { getContractorProfile, type ContractorProfile } from '@/lib/api/contractor'
 
-const PORTFOLIO_ITEMS = [
-  { id: '1', title: 'Modern Kitchen Remodel', type: 'Residential', year: '2025', value: '$92,000', image: '/placeholder-project-1.jpg' },
-  { id: '2', title: 'ADU Construction - South Lamar', type: 'New Build', year: '2025', value: '$165,000', image: '/placeholder-project-2.jpg' },
-  { id: '3', title: 'Office Build-Out - Domain', type: 'Commercial', year: '2024', value: '$280,000', image: '/placeholder-project-3.jpg' },
-  { id: '4', title: 'Pool House & Outdoor Kitchen', type: 'Residential', year: '2024', value: '$148,000', image: '/placeholder-project-4.jpg' },
-]
+// ─── Status badge ─────────────────────────────────────────────────────────────
 
-const REVIEWS = [
-  { id: '1', author: 'Jennifer Adams', rating: 5, text: 'Excellent work on our kitchen remodel. On time and on budget. Highly recommended!', date: '2025-12-15' },
-  { id: '2', author: 'Mark Thompson', rating: 5, text: 'Professional team, great communication throughout the project.', date: '2025-10-20' },
-  { id: '3', author: 'Sarah Kim', rating: 4, text: 'Good quality work. Minor scheduling delays but overall very satisfied.', date: '2025-08-05' },
-]
+function VerificationBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; color: string; bg: string }> = {
+    ELIGIBLE:             { label: 'Verified',          color: '#059669', bg: 'rgba(5,150,105,0.08)' },
+    PENDING_VERIFICATION: { label: 'Pending Review',    color: '#d97706', bg: 'rgba(217,119,6,0.08)' },
+    SUSPENDED:            { label: 'Suspended',         color: '#dc2626', bg: 'rgba(220,38,38,0.08)' },
+    INELIGIBLE:           { label: 'Not Eligible',      color: '#6b7280', bg: 'rgba(107,114,128,0.08)' },
+  }
+  const cfg = map[status] ?? map['PENDING_VERIFICATION']
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold" style={{ color: cfg.color, backgroundColor: cfg.bg }}>
+      <Shield className="h-3 w-3" />
+      {cfg.label}
+    </span>
+  )
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function ProfilePage() {
+  const [profile, setProfile] = useState<ContractorProfile | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError]     = useState<string | null>(null)
+
+  useEffect(() => {
+    getContractorProfile()
+      .then(setProfile)
+      .catch(err => setError(err instanceof Error ? err.message : 'Failed to load profile.'))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-7 w-7 animate-spin" style={{ color: '#2ABFBF' }} />
+      </div>
+    )
+  }
+
+  if (error || !profile) {
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 p-6 flex items-center gap-3 text-red-700">
+        <AlertCircle className="h-5 w-5 flex-shrink-0" />
+        <p className="text-sm">{error ?? 'Profile not found.'}</p>
+      </div>
+    )
+  }
+
+  const specialties = profile.csiDivisions ?? []
+  const serviceArea = profile.serviceArea ?? ''
+
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Contractor Profile</h1>
-        <p className="mt-1 text-sm text-gray-600">Manage your public profile and portfolio</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Contractor Profile</h1>
+          <p className="mt-1 text-sm text-gray-600">Your public profile and credentials</p>
+        </div>
+        <Link
+          href="/profile/edit"
+          className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          <Pencil className="h-4 w-4" />
+          Edit Profile
+        </Link>
       </div>
 
-      {/* Profile header */}
-      <div className="mb-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-          <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-2xl" style={{ backgroundColor: 'rgba(42,191,191,0.1)' }}>
-            <User className="h-12 w-12" style={{ color: '#2ABFBF' }} />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-start justify-between">
-              <div>
-                <h2 className="font-display text-xl font-bold" style={{ color: '#1A2B4A' }}>Summit Construction LLC</h2>
-                <p className="text-sm text-gray-600">General Contractor | Licensed since 2018</p>
-                <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-500">
-                  <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />Austin, TX</span>
-                  <span className="flex items-center gap-1"><Phone className="h-3 w-3" />(512) 555-0142</span>
-                  <span className="flex items-center gap-1"><Mail className="h-3 w-3" />info@summitconstruction.com</span>
-                </div>
-                <div className="mt-3 flex items-center gap-4">
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} className={`h-4 w-4 ${s <= 4.7 ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} />
-                    ))}
-                    <span className="ml-1 text-sm font-medium" style={{ color: '#1A2B4A' }}>4.7</span>
-                    <span className="text-xs text-gray-500">(23 reviews)</span>
-                  </div>
-                </div>
-              </div>
-              <button className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                Edit Profile
-              </button>
-            </div>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              {['Kitchen Remodels', 'ADU Construction', 'Commercial TI', 'Additions', 'Outdoor Living'].map((spec) => (
-                <span key={spec} className="rounded-full px-3 py-1 text-xs font-medium" style={{ backgroundColor: 'rgba(42,191,191,0.1)', color: '#1A8F8F' }}>{spec}</span>
-              ))}
-            </div>
+      {/* Reverification notice */}
+      {profile.requiresReverification && (
+        <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 flex gap-3 text-amber-800">
+          <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <p className="font-semibold">Reverification Required</p>
+            <p className="mt-0.5 text-amber-700">Your license or insurance details were updated and are pending re-verification by our team.</p>
           </div>
         </div>
+      )}
+
+      {/* Profile header */}
+      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+          <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-2xl" style={{ backgroundColor: 'rgba(42,191,191,0.1)' }}>
+            <User className="h-10 w-10" style={{ color: '#2ABFBF' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="font-display text-xl font-bold" style={{ color: '#1A2B4A' }}>{profile.businessName}</h2>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  {profile.businessType ?? 'General Contractor'}
+                  {profile.yearsInBusiness ? ` · ${profile.yearsInBusiness} years in business` : ''}
+                </p>
+              </div>
+              <VerificationBadge status={profile.verificationStatus} />
+            </div>
+
+            {/* Contact info */}
+            <div className="mt-3 flex flex-wrap gap-4 text-xs text-gray-500">
+              {serviceArea && (
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5" />{serviceArea}
+                </span>
+              )}
+              {profile.website && (
+                <a
+                  href={profile.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 hover:underline"
+                  style={{ color: '#2ABFBF' }}
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                  {profile.website.replace(/^https?:\/\//, '')}
+                </a>
+              )}
+            </div>
+
+            {/* Rating */}
+            {profile.rating != null && (
+              <div className="mt-3 flex items-center gap-2">
+                <div className="flex">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star
+                      key={s}
+                      className={`h-4 w-4 ${s <= Math.round(profile.rating ?? 0) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>{profile.rating.toFixed(1)}</span>
+              </div>
+            )}
+
+            {/* Specialties */}
+            {specialties.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {specialties.map((spec) => (
+                  <span
+                    key={spec}
+                    className="rounded-full px-3 py-1 text-xs font-medium"
+                    style={{ backgroundColor: 'rgba(42,191,191,0.1)', color: '#1A8F8F' }}
+                  >
+                    {spec}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Bio */}
+        {profile.bio && (
+          <p className="mt-5 text-sm text-gray-600 border-t border-gray-100 pt-5 leading-relaxed">{profile.bio}</p>
+        )}
       </div>
 
       {/* Stats */}
-      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-center">
-          <Briefcase className="mx-auto h-6 w-6" style={{ color: '#E8793A' }} />
-          <p className="mt-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>47</p>
-          <p className="text-xs text-gray-500">Projects Completed</p>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-center">
-          <Award className="mx-auto h-6 w-6" style={{ color: '#E8793A' }} />
-          <p className="mt-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>8</p>
-          <p className="text-xs text-gray-500">Years Experience</p>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-center">
-          <Star className="mx-auto h-6 w-6" style={{ color: '#E8793A' }} />
-          <p className="mt-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>4.7</p>
-          <p className="text-xs text-gray-500">Avg Rating</p>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-center">
-          <Camera className="mx-auto h-6 w-6" style={{ color: '#E8793A' }} />
-          <p className="mt-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>126</p>
-          <p className="text-xs text-gray-500">Portfolio Photos</p>
-        </div>
+      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <StatCard icon={Briefcase} label="Projects Completed" value={profile.completedProjects} />
+        {profile.yearsInBusiness != null && (
+          <StatCard icon={Award} label="Years in Business" value={profile.yearsInBusiness} />
+        )}
+        {profile.rating != null && (
+          <StatCard icon={Star} label="Avg Rating" value={profile.rating.toFixed(1)} />
+        )}
       </div>
 
-      {/* Portfolio */}
-      <div className="mb-8">
-        <h2 className="font-display mb-4 text-lg font-semibold" style={{ color: '#1A2B4A' }}>Portfolio</h2>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {PORTFOLIO_ITEMS.map((item) => (
-            <div key={item.id} className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-              <div className="h-32 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(42,191,191,0.15) 0%, rgba(26,43,74,0.1) 100%)' }}>
-                <Camera className="h-8 w-8" style={{ color: '#2ABFBF' }} />
+      {/* Credentials */}
+      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <h3 className="font-display text-base font-semibold mb-4" style={{ color: '#1A2B4A' }}>Credentials</h3>
+        <div className="space-y-4">
+          {/* Licenses */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">License Numbers</p>
+            {(profile.allLicenses ?? []).length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {profile.allLicenses.map((lic) => (
+                  <span key={lic} className="rounded-lg bg-gray-50 border border-gray-200 px-3 py-1.5 text-sm font-mono text-gray-700">
+                    {lic}
+                  </span>
+                ))}
               </div>
-              <div className="p-3">
-                <p className="text-sm font-medium" style={{ color: '#1A2B4A' }}>{item.title}</p>
-                <p className="text-xs text-gray-500">{item.type} | {item.year} | {item.value}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+            ) : (
+              <p className="text-sm text-gray-400 italic">No license numbers on file. <Link href="/profile/edit" className="underline not-italic" style={{ color: '#2ABFBF' }}>Add one →</Link></p>
+            )}
+          </div>
 
-      {/* Reviews */}
-      <div>
-        <h2 className="font-display mb-4 text-lg font-semibold" style={{ color: '#1A2B4A' }}>Recent Reviews</h2>
-        <div className="space-y-3">
-          {REVIEWS.map((review) => (
-            <div key={review.id} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <div className="mb-2 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium" style={{ color: '#1A2B4A' }}>{review.author}</span>
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} className={`h-3.5 w-3.5 ${s <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} />
-                    ))}
-                  </div>
-                </div>
-                <span className="text-xs text-gray-500">{new Date(review.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+          {/* Insurance */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Insurance</p>
+            {profile.insuranceCarrier ? (
+              <div className="flex flex-wrap gap-6 text-sm">
+                <span className="text-gray-700">
+                  <span className="text-gray-500 mr-1">Carrier:</span>{profile.insuranceCarrier}
+                </span>
+                {profile.insuranceExpiration && (
+                  <span className="text-gray-700">
+                    <span className="text-gray-500 mr-1">Expires:</span>
+                    {new Date(profile.insuranceExpiration).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  </span>
+                )}
+                {profile.insuranceCoverageAmount != null && (
+                  <span className="text-gray-700">
+                    <span className="text-gray-500 mr-1">Coverage:</span>
+                    ${profile.insuranceCoverageAmount.toLocaleString()}
+                  </span>
+                )}
               </div>
-              <p className="text-sm text-gray-600">{review.text}</p>
-            </div>
-          ))}
+            ) : (
+              <p className="text-sm text-gray-400 italic">No insurance on file. <Link href="/profile/edit" className="underline not-italic" style={{ color: '#2ABFBF' }}>Add one →</Link></p>
+            )}
+          </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+// ─── StatCard ─────────────────────────────────────────────────────────────────
+
+function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string | number }) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-center">
+      <Icon className="mx-auto h-6 w-6" style={{ color: '#E8793A' }} />
+      <p className="mt-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>{value}</p>
+      <p className="text-xs text-gray-500">{label}</p>
     </div>
   )
 }
