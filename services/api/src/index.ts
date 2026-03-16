@@ -1050,6 +1050,16 @@ const start = async () => {
       await fastify.register(enterpriseRoutes, { prefix: '/enterprise' })
     })
 
+    await safeRegisterBlock('Revenue Hooks routes', async () => {
+      const { revenueHooksRoutes } = await import('./modules/revenue-hooks/revenue-hooks.routes.js')
+      await fastify.register(revenueHooksRoutes, { prefix: '/revenue-hooks' })
+    })
+
+    await safeRegisterBlock('Contractor Marketing routes', async () => {
+      const { marketingRoutes } = await import('./modules/marketing/marketing.routes.js')
+      await fastify.register(marketingRoutes, { prefix: '/marketing' })
+    })
+
     // ══════════════════════════════════════════════════════════════
 
     // GraphQL DISABLED FOR MVP - Uncomment when needed
