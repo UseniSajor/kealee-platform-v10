@@ -415,13 +415,14 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     try {
       // Load platform fee config
       const feeConfig = await prismaAny.marketplaceFeeConfig.findFirst({
-        where: { active: true },
+        where: { isActive: true },
         select: { standardPlatformFee: true },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { effectiveFrom: 'desc' },
       }).catch(() => null)
 
+      // standardPlatformFee is stored as a decimal fraction (0.03 = 3%)
       const feePct = feeConfig?.standardPlatformFee
-        ? Number(feeConfig.standardPlatformFee) / 100
+        ? Number(feeConfig.standardPlatformFee)
         : 0.03 // fallback to 3%
 
       const amountTotal = session.amount_total ?? 0
@@ -434,7 +435,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
           contractorId:    metadata.contractorId   ?? null,
           milestoneId:     metadata.milestoneId    ?? null,
           grossAmount:     amountTotal,
-          feePct:          feePct * 100,
+          feePct:          feePct * 100, // stored as % (e.g. 3.0 for 3%)
           feeAmount,
           currency:        session.currency ?? 'usd',
           status:          'COLLECTED',
