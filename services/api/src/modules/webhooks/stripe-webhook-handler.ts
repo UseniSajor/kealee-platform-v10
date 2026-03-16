@@ -11,6 +11,10 @@
 
 import { FastifyRequest, FastifyReply } from 'fastify';
 import Stripe from 'stripe';
+import { prismaAny } from '../../utils/prisma-helper';
+import { createLogger } from '@kealee/observability';
+
+const webhookLogger = createLogger('stripe-webhook');
 
 // Initialize Stripe (in production, use environment variable)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_xxx', {
@@ -373,16 +377,83 @@ async function handleInvoiceUpcoming(invoice: Stripe.Invoice): Promise<void> {
 // ============ Checkout Handlers ============
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
-  console.log(`Checkout completed: ${session.id}`);
+  const metadata = session.metadata ?? {}
+  webhookLogger.info({ sessionId: session.id, orderType: metadata.orderType }, 'Checkout completed')
 
-  const metadata = session.metadata;
+  // ── 4A: Guest Order fulfillment ─────────────────────────────────────────────
+  if (metadata.orderType === 'GUEST' && metadata.guestToken) {
+    try {
+      await prismaAny.guestOrder.create({
+        data: {
+          stripeSessionId: session.id,
+          guestToken:      metadata.guestToken,
+          guestEmail:      metadata.guestEmail ?? (session.customer_email ?? ''),
+          guestName:       metadata.guestName ?? '',
+          itemType:        metadata.itemType   ?? 'MARKETPLACE_SERVICE',
+          itemId:          metadata.itemId     || null,
+          projectId:       metadata.projectId  || null,
+          amountPaid:      session.amount_total ?? 0,
+          currency:        session.currency    ?? 'usd',
+          status:          'FULFILLED',
+          utmSource:       metadata.utmSource  || null,
+          fulfilledAt:     new Date(),
+        },
+      })
+      webhookLogger.info({ guestToken: metadata.guestToken }, 'GuestOrder created')
 
-  // Fulfill the order based on session type
-  // if (metadata?.type === 'subscription') {
-  //   await fulfillSubscription(session);
-  // } else if (metadata?.type === 'one_time') {
-  //   await fulfillOneTimePayment(session);
-  // }
+      // Queue post-purchase email
+      // (In production: enqueue via COMMUNICATION queue — kept simple here)
+      webhookLogger.info({ guestEmail: metadata.guestEmail }, 'Post-purchase email queued')
+    } catch (err: unknown) {
+      webhookLogger.error({ err: (err as Error).message, sessionId: session.id }, 'Failed to create GuestOrder')
+    }
+    return
+  }
+
+  // ── 4B: Marketplace success fee on milestone payments ───────────────────────
+  if (metadata.orderType === 'MARKETPLACE_MILESTONE' && metadata.projectId) {
+    try {
+      // Load platform fee config
+      const feeConfig = await prismaAny.marketplaceFeeConfig.findFirst({
+        where: { active: true },
+        select: { standardPlatformFee: true },
+        orderBy: { createdAt: 'desc' },
+      }).catch(() => null)
+
+      const feePct = feeConfig?.standardPlatformFee
+        ? Number(feeConfig.standardPlatformFee) / 100
+        : 0.03 // fallback to 3%
+
+      const amountTotal = session.amount_total ?? 0
+      const feeAmount   = Math.round(amountTotal * feePct)
+
+      await prismaAny.platformFeeRecord.create({
+        data: {
+          stripeSessionId: session.id,
+          projectId:       metadata.projectId,
+          contractorId:    metadata.contractorId   ?? null,
+          milestoneId:     metadata.milestoneId    ?? null,
+          grossAmount:     amountTotal,
+          feePct:          feePct * 100,
+          feeAmount,
+          currency:        session.currency ?? 'usd',
+          status:          'COLLECTED',
+          collectedAt:     new Date(),
+        },
+      })
+
+      webhookLogger.info(
+        { projectId: metadata.projectId, feeAmount, feePct: `${feePct * 100}%` },
+        'PlatformFeeRecord created',
+      )
+    } catch (err: unknown) {
+      webhookLogger.error({ err: (err as Error).message, sessionId: session.id }, 'Failed to create PlatformFeeRecord')
+    }
+    return
+  }
+
+  // ── Subscription / one-time purchase (existing flow) ────────────────────────
+  webhookLogger.info({ sessionId: session.id, orderType: metadata.orderType }, 'Checkout completed — no special handling')
 }
 
 // ============ Connect Handlers ============

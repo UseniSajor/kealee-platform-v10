@@ -555,6 +555,9 @@ const start = async () => {
       await fastify.register(contractorProjectsRoutes, { prefix: '/marketplace' })
       await fastify.register(onboardingRoutes,         { prefix: '/marketplace' })   // P9: onboarding funnel
       await fastify.register(launchMetricsRoutes,      { prefix: '/marketplace/launch' })  // P9: launch KPIs
+      // Sprint 4A: Guest checkout (no auth required)
+      const { guestCheckoutRoutes } = await import('./modules/marketplace/guest-checkout.routes')
+      await fastify.register(guestCheckoutRoutes, { prefix: '/marketplace' })
       await fastify.register(verificationDocumentRoutes, { prefix: '/verification' })
       await fastify.register(paymentRoutes, { prefix: '/payments' })
       await fastify.register(spatialRoutes, { prefix: '/spatial' })

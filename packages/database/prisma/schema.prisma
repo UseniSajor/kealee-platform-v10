@@ -15828,3 +15828,197 @@ model PartnerIntegration {
   @@index([partnerType, active])
   @@map("partner_integrations")
 }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Sprint 6: Canonical Engagement + ProfessionalAssignment models
+// Sprint 4A: GuestOrder
+// Sprint 4B: PlatformFeeRecord
+// Sprint 5B: FailedSync
+// Migration: 20260316000002_sprint6_canonical_models
+// ──────────────────────────────────────────────────────────────────────────────
+
+enum EngagementStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+
+  @@map("engagement_status")
+}
+
+enum EngagementPhase {
+  PRECONSTRUCTION
+  DESIGN
+  PERMITS
+  CONSTRUCTION
+  CLOSEOUT
+  ONGOING
+
+  @@map("engagement_phase")
+}
+
+/// Canonical professional engagement — tracks a hired professional across project phases.
+/// Links ContractAgreement + EscrowAgreement + Milestones for a single engagement scope.
+model Engagement {
+  id             String           @id @default(cuid())
+  projectId      String
+  contractorId   String?
+  ownerId        String
+  status         EngagementStatus @default(DRAFT)
+  phase          EngagementPhase  @default(PRECONSTRUCTION)
+  scopeNotes     String?
+  startDate      DateTime?
+  endDate        DateTime?
+  contractValue  Decimal?         @db.Decimal(14, 2)
+  currency       String           @default("USD")
+  /// Linked contract agreement (DocuSign / CDA)
+  contractAgreementId String?
+  /// Linked escrow agreement
+  escrowAgreementId   String?
+  metadata       Json             @default("{}")
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([projectId, status])
+  @@index([contractorId])
+  @@index([ownerId])
+  @@map("engagements")
+}
+
+enum ProfessionalType {
+  GENERAL_CONTRACTOR
+  ARCHITECT
+  ENGINEER
+  PROJECT_MANAGER
+  LEGAL_COUNSEL
+  FINANCIAL_ADVISOR
+  INSPECTOR
+  CONSULTANT
+  SPECIALIST
+
+  @@map("professional_type")
+}
+
+enum AssignmentStatus {
+  INVITED
+  PENDING_ACCEPTANCE
+  ACTIVE
+  SUSPENDED
+  COMPLETED
+  REJECTED
+
+  @@map("assignment_status")
+}
+
+/// Canonical professional assignment — one record per professional per project.
+/// matchScore from ContractorMatchBot; replaces ad-hoc assignment fields spread across modules.
+model ProfessionalAssignment {
+  id               String           @id @default(cuid())
+  projectId        String
+  professionalId   String
+  professionalType ProfessionalType
+  assignmentStatus AssignmentStatus @default(INVITED)
+  /// Bot-generated match score 0–100
+  matchScore       Int?
+  invitedAt        DateTime         @default(now())
+  acceptedAt       DateTime?
+  completedAt      DateTime?
+  notes            String?
+  metadata         Json             @default("{}")
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@unique([projectId, professionalId, professionalType])
+  @@index([projectId, assignmentStatus])
+  @@index([professionalId])
+  @@map("professional_assignments")
+}
+
+enum GuestOrderStatus {
+  PENDING
+  FULFILLED
+  REFUNDED
+  FAILED
+
+  @@map("guest_order_status")
+}
+
+/// Anonymous / guest checkout order — created by Stripe webhook on session.completed.
+/// claimedByUserId is set when an authenticated user claims the order post-signup.
+model GuestOrder {
+  id               String           @id @default(cuid())
+  stripeSessionId  String           @unique
+  guestToken       String           @unique
+  guestEmail       String
+  guestName        String
+  itemType         String
+  itemId           String?
+  projectId        String?
+  amountPaid       Int              // cents
+  currency         String           @default("usd")
+  status           GuestOrderStatus @default(PENDING)
+  utmSource        String?
+  fulfilledAt      DateTime?
+  claimedByUserId  String?
+  claimedAt        DateTime?
+  metadata         Json             @default("{}")
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([guestEmail])
+  @@index([claimedByUserId])
+  @@map("guest_orders")
+}
+
+/// Platform fee charged on marketplace milestone payments (Sprint 4B).
+/// standardPlatformFee defaults to 3% from MarketplaceFeeConfig.
+model PlatformFeeRecord {
+  id               String   @id @default(cuid())
+  stripeSessionId  String   @unique
+  projectId        String
+  contractorId     String?
+  milestoneId      String?
+  grossAmount      Int      // cents
+  feePct           Decimal  @db.Decimal(6, 4)
+  feeAmount        Int      // cents
+  currency         String   @default("usd")
+  status           String   @default("COLLECTED")
+  collectedAt      DateTime
+  metadata         Json     @default("{}")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([contractorId])
+  @@map("platform_fee_records")
+}
+
+enum FailedSyncStatus {
+  PENDING
+  RETRYING
+  RECOVERED
+  ABANDONED
+
+  @@map("failed_sync_status")
+}
+
+/// Persistent record of failed external sync attempts (Sprint 5B).
+/// Recovery job polls PENDING records and retries via retryWithBackoff.
+model FailedSync {
+  id         String           @id @default(cuid())
+  service    String           // e.g. "zoho"
+  operation  String           // e.g. "zoho.post/zoho/leads"
+  errorMsg   String
+  payload    Json             @default("{}")
+  retryCount Int              @default(0)
+  status     FailedSyncStatus @default(PENDING)
+  lastRetryAt DateTime?
+  recoveredAt DateTime?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@index([status, service])
+  @@index([createdAt])
+  @@map("failed_syncs")
+}

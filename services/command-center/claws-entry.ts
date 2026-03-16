@@ -22,6 +22,14 @@ import { CommandAutomationClaw } from './claws/command-automation/index';
 // Infrastructure
 import { ClawRegistry } from './claws/registry';
 import { buildClawsGateway } from './gateway/claws-router';
+import { registerAllBots } from './bots/register-bots';
+import {
+  createProjectMonitorQueue,
+  createProjectMonitorWorker,
+  scheduleDailyMonitor,
+} from './queues/project-monitor.queue';
+import { createContractorMatchWorker } from './queues/contractor-match.queue';
+import { createSupportWorker } from './queues/support.queue';
 
 const PORT = parseInt(process.env.CLAWS_PORT || '3002', 10);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -37,6 +45,18 @@ async function main(): Promise<void> {
   const eventBus = new EventBus(process.env.REDIS_URL);
   await eventBus.connect();
   console.log('[Kealee Claws] EventBus connected');
+
+  // 1b. Register operational bots + start queue workers
+  const redis = new (await import('ioredis')).Redis(process.env.REDIS_URL!, {
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+  })
+  registerAllBots(redis)
+  createContractorMatchWorker(process.env.REDIS_URL!)
+  createSupportWorker(process.env.REDIS_URL!)
+  const pmQueue = createProjectMonitorQueue(process.env.REDIS_URL!)
+  createProjectMonitorWorker(process.env.REDIS_URL!)
+  await scheduleDailyMonitor(pmQueue)
 
   // 2. Create all 8 claw instances
   const clawA = new AcquisitionPreConClaw(eventBus, prisma);

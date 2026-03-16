@@ -412,7 +412,27 @@ export const constructionEngagementService = {
     const errors: string[] = []
     let contractId:       string | undefined
     let escrowId:         string | undefined
+    let engagementId:     string | undefined
     let milestonesCreated = 0
+
+    // ── Step 0.5: Create canonical Engagement record ──────────────────────
+    try {
+      const engagement = await prismaAny.engagement.create({
+        data: {
+          projectId,
+          contractorId:  contractorUserId,
+          ownerId:       ownerUserId,
+          status:        'ACTIVE',
+          phase:         'CONSTRUCTION',
+          contractValue: contractAmount,
+          startDate:     new Date(),
+        },
+      })
+      engagementId = engagement.id
+    } catch (err: any) {
+      // Non-fatal — canonical record, not blocking
+      errors.push(`Engagement record creation failed: ${err?.message ?? String(err)}`)
+    }
 
     // ── Step 1: Create ContractAgreement (DRAFT) ──────────────────────────
     try {
@@ -426,6 +446,14 @@ export const constructionEngagementService = {
         },
       })
       contractId = contract.id
+
+      // Back-link engagement → contract
+      if (engagementId) {
+        await prismaAny.engagement.update({
+          where: { id: engagementId },
+          data:  { contractAgreementId: contractId },
+        }).catch(() => null)
+      }
     } catch (err: any) {
       errors.push(`Contract creation failed: ${err?.message ?? String(err)}`)
     }
@@ -474,6 +502,14 @@ export const constructionEngagementService = {
           },
         })
         escrowId = escrow.id
+
+        // Back-link engagement → escrow
+        if (engagementId) {
+          await prismaAny.engagement.update({
+            where: { id: engagementId },
+            data:  { escrowAgreementId: escrowId },
+          }).catch(() => null)
+        }
       } catch (err: any) {
         errors.push(`Escrow creation failed: ${err?.message ?? String(err)}`)
       }

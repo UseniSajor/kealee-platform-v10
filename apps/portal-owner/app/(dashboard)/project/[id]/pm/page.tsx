@@ -5,9 +5,10 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   Calendar, CheckSquare, MessageSquare, Package,
-  Search, FileText, BarChart3, ChevronRight, AlertCircle
+  Search, FileText, BarChart3, ChevronRight, AlertCircle, Users
 } from 'lucide-react'
 import { apiFetch } from '@/lib/api/client'
+import { RevenueHookModal, type HookTier } from '@kealee/core-hooks'
 
 // Owner PM view — read-heavy, no contractor-only actions
 
@@ -34,6 +35,7 @@ export default function OwnerPMPage() {
   const { id: projectId } = useParams<{ id: string }>()
   const [summary, setSummary] = useState<PMSummary | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showAssignmentHook, setShowAssignmentHook] = useState(false)
 
   useEffect(() => {
     if (!projectId) return
@@ -64,6 +66,7 @@ export default function OwnerPMPage() {
     { icon: <FileText className="h-5 w-5" />, label: 'Daily Logs', sub: 'Site activity', href: `${ownerBase}/construction`, color: '#38A169' },
     { icon: <AlertCircle className="h-5 w-5" />, label: 'Change Orders', sub: 'Scope changes', href: `${ownerBase}/construction`, color: '#E8793A' },
     { icon: <BarChart3 className="h-5 w-5" />, label: 'Budget', sub: 'Cost tracking', href: `${ownerBase}/construction`, color: '#1A2B4A' },
+    { icon: <Users className="h-5 w-5" />, label: 'Engagements', sub: 'Professionals & advisors', href: `${ownerBase}/engagements`, color: '#2ABFBF' },
   ]
 
   return (
@@ -94,6 +97,25 @@ export default function OwnerPMPage() {
         </div>
       )}
 
+      {/* contractor_assignment hook — show when project has active milestones or pending approvals */}
+      {!loading && ((summary?.activeMilestones ?? 0) > 0 || (summary?.pendingApprovals ?? 0) > 0) && (
+        <div
+          className="mt-6 flex items-center justify-between rounded-xl px-5 py-4 cursor-pointer transition-opacity hover:opacity-90"
+          style={{ background: 'linear-gradient(135deg, #1A2B4A 0%, #0f1c32 100%)', border: '1px solid rgba(42,191,191,0.3)' }}
+          onClick={() => setShowAssignmentHook(true)}
+        >
+          <div>
+            <p className="text-sm font-semibold text-white">Assign a Professional to This Project</p>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              Owner&apos;s rep, project manager, or oversight consultant — covered by Kealee
+            </p>
+          </div>
+          <span className="ml-4 shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold text-white" style={{ backgroundColor: '#E8793A' }}>
+            Learn More →
+          </span>
+        </div>
+      )}
+
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {MODULES.map(mod => (
           <Link
@@ -114,6 +136,15 @@ export default function OwnerPMPage() {
           </Link>
         ))}
       </div>
+
+      {showAssignmentHook && (
+        <RevenueHookModal
+          stage="contractor_assignment"
+          projectId={projectId}
+          onSelect={(_tier: HookTier) => setShowAssignmentHook(false)}
+          onDismiss={() => setShowAssignmentHook(false)}
+        />
+      )}
     </div>
   )
 }

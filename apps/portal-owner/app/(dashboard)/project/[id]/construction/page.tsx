@@ -11,6 +11,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { constructionOS, type BudgetOverview, type RFI } from '@/lib/api/construction-os'
+import { RevenueHookModal, type HookTier } from '@kealee/core-hooks'
 
 interface Props { params: { id: string } }
 
@@ -137,6 +138,7 @@ export default function OwnerConstructionPage({ params }: Props) {
   const [rfiStats,   setRfiStats]   = useState<Record<string, number>>({})
   const [loading,    setLoading]    = useState(true)
   const [error,      setError]      = useState<string | null>(null)
+  const [showExecHook, setShowExecHook] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -188,6 +190,25 @@ export default function OwnerConstructionPage({ params }: Props) {
       </div>
 
       <main className="max-w-3xl mx-auto px-6 py-6 space-y-5">
+        {/* project_execution revenue hook banner — autoShow:false, triggered by button */}
+        {!loading && !error && (
+          <div
+            className="flex items-center justify-between rounded-xl px-5 py-4 cursor-pointer transition-opacity hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg, #1A2B4A 0%, #0f1c32 100%)', border: '1px solid rgba(42,191,191,0.3)' }}
+            onClick={() => setShowExecHook(true)}
+          >
+            <div>
+              <p className="text-sm font-semibold text-white">Unlock Construction OS Monitoring</p>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                Real-time budget alerts, milestone reminders &amp; automated reports
+              </p>
+            </div>
+            <span className="ml-4 shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold text-white" style={{ backgroundColor: '#E8793A' }}>
+              Upgrade →
+            </span>
+          </div>
+        )}
+
         {loading && (
           <div className="text-center py-16 text-gray-400 animate-pulse">Loading construction data...</div>
         )}
@@ -296,6 +317,15 @@ export default function OwnerConstructionPage({ params }: Props) {
           </>
         )}
       </main>
+
+      {showExecHook && (
+        <RevenueHookModal
+          stage="project_execution"
+          projectId={id}
+          onSelect={(_tier: HookTier) => setShowExecHook(false)}
+          onDismiss={() => setShowExecHook(false)}
+        />
+      )}
     </div>
   )
 }

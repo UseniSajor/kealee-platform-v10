@@ -26,6 +26,7 @@
 
 import { Redis }  from 'ioredis';
 import { createLogger } from '@kealee/observability';
+import { retryWithBackoff } from '../utils/retry.js';
 import {
   sendRecruitmentEmail1,
   sendRecruitmentEmail2,
@@ -53,29 +54,35 @@ const logger = createLogger('contractor-acquisition');
 const API_BASE = process.env.INTERNAL_API_URL ?? 'http://api:3000';
 
 async function apiPost(path: string, body: unknown): Promise<unknown> {
-  try {
-    const res = await fetch(`${API_BASE}${path}`, {
-      method:  'POST',
-      headers: {
-        'Content-Type':   'application/json',
-        'x-internal-key': process.env.INTERNAL_API_KEY ?? '',
-      },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      logger.warn({ path, status: res.status, text }, 'Internal API call failed (non-fatal)');
-      return null;
-    }
-    return res.json();
-  } catch (err) {
-    logger.warn({ err, path }, 'Internal API call error (non-fatal)');
-    return null;
-  }
+  return retryWithBackoff(
+    async () => {
+      const res = await fetch(`${API_BASE}${path}`, {
+        method:  'POST',
+        headers: {
+          'Content-Type':   'application/json',
+          'x-internal-key': process.env.INTERNAL_API_KEY ?? '',
+        },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`${res.status}: ${text}`);
+      }
+      return res.json();
+    },
+    {
+      attempts:    3,
+      baseDelayMs: 1000,
+      label:       `zoho.post${path}`,
+      recordSync:  true,
+      syncPayload: { path, body: JSON.stringify(body).slice(0, 500) },
+    },
+  );
 }
 
 async function apiPut(path: string, body: unknown): Promise<unknown> {
-  try {
+  return retryWithBackoff(
+    async () => {
     const res = await fetch(`${API_BASE}${path}`, {
       method:  'PUT',
       headers: {
@@ -84,12 +91,20 @@ async function apiPut(path: string, body: unknown): Promise<unknown> {
       },
       body: JSON.stringify(body),
     });
-    if (!res.ok) return null;
-    return res.json();
-  } catch (err) {
-    logger.warn({ err, path }, 'Internal API PUT error (non-fatal)');
-    return null;
-  }
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`${res.status}: ${text}`);
+      }
+      return res.json();
+    },
+    {
+      attempts:    3,
+      baseDelayMs: 1000,
+      label:       `zoho.put${path}`,
+      recordSync:  true,
+      syncPayload: { path, body: JSON.stringify(body).slice(0, 500) },
+    },
+  );
 }
 
 // ─── Deduplication ────────────────────────────────────────────────────────────
