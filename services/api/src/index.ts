@@ -959,6 +959,16 @@ const start = async () => {
       await fastify.register(ghlWebhookRoutes, { prefix: '/webhooks' })
     })
 
+    await safeRegisterBlock('Zoho CRM routes', async () => {
+      const { zohoRoutes } = await import('./modules/integrations/zoho/zoho.routes.js')
+      await fastify.register(zohoRoutes, { prefix: '/zoho' })
+    })
+
+    await safeRegisterBlock('Zoho Webhook routes', async () => {
+      const { zohoWebhookRoutes } = await import('./modules/integrations/zoho/zoho.webhook.routes.js')
+      await fastify.register(zohoWebhookRoutes, { prefix: '/zoho' })
+    })
+
     await safeRegisterBlock('KeaBot AI Chat routes', async () => {
       const { keabotRoutes } = await import('./modules/keabot/keabot.routes')
       await fastify.register(keabotRoutes, { prefix: '/keabot' })

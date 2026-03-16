@@ -133,6 +133,14 @@ export const EVENT_TYPES = {
   MARKETPLACE_CONTRACTOR_INACTIVE:   'marketplace.contractor.inactive',
   MARKETPLACE_ASSIGNMENT_EXPIRED:    'marketplace.assignment.expired',
   GROWTH_ANALYSIS_SCHEDULED:         'growth.analysis.scheduled',
+
+  // Contractor Acquisition Pipeline events
+  CONTRACTOR_ACQUISITION_LEAD_CAPTURED:          'contractor.acquisition.lead_captured',
+  CONTRACTOR_ACQUISITION_REGISTRATION_STARTED:   'contractor.acquisition.registration_started',
+  CONTRACTOR_ACQUISITION_DOCUMENTS_UPLOADED:     'contractor.acquisition.documents_uploaded',
+  CONTRACTOR_ACQUISITION_VERIFICATION_PENDING:   'contractor.acquisition.verification_pending',
+  CONTRACTOR_ACQUISITION_ACTIVATED:              'contractor.acquisition.activated',
+  CONTRACTOR_ACQUISITION_REENGAGEMENT_TRIGGERED: 'contractor.acquisition.reengagement_triggered',
 } as const;
 
 export type EventType = typeof EVENT_TYPES[keyof typeof EVENT_TYPES];

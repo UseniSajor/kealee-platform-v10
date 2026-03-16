@@ -14,6 +14,14 @@
 import { Redis } from 'ioredis'
 import { createLogger } from '@kealee/observability'
 import type { SuggestedAction, GrowthRecommendation } from '../bots/growth/growth.types.js'
+import {
+  sendRecruitmentEmail1,
+  sendReengagementEmail,
+} from './sendgrid.js'
+import {
+  sendOutreachSms,
+  sendReengagementSms,
+} from './twilio.js'
 
 const logger = createLogger('growth-outbound')
 
@@ -87,68 +95,43 @@ async function ghlEnroll(action: SuggestedAction, rec: GrowthRecommendation): Pr
 // ─── SendGrid email sequence ───────────────────────────────────────────────────
 
 async function sendgridSequence(action: SuggestedAction, rec: GrowthRecommendation): Promise<void> {
-  const apiKey = process.env.SENDGRID_API_KEY
-
-  if (!apiKey) {
-    logger.warn('SENDGRID_API_KEY not set — skipping email sequence')
-    return
-  }
-
-  const { sequenceId, audienceSegment, variables = {} } = action.params as {
-    sequenceId: string
+  const { sequenceId, audienceSegment, variables = {}, targetEmails = [] } = action.params as {
+    sequenceId:       string
     audienceSegment?: string
-    variables?: Record<string, string>
+    variables?:       Record<string, string>
+    targetEmails?:    Array<{ email: string; firstName?: string }>
   }
 
-  // In production: use SendGrid Marketing Campaigns API to enroll a contact list
-  // in a specific sequence / automation.
-  logger.info({
-    recId: rec.id,
-    sequenceId,
-    audienceSegment,
-    variables,
-  }, 'SendGrid sequence enrollment (mock — wire real endpoint)')
+  logger.info({ recId: rec.id, sequenceId, audienceSegment }, 'SendGrid sequence enrollment')
 
-  // Real call would look like:
-  // await sgMail.send({ ... })
-  // or POST to SendGrid Contacts API to add to a list, then automation picks up
+  // Send recruitment Email 1 to each target
+  for (const target of targetEmails as Array<{ email: string; firstName?: string }>) {
+    await sendRecruitmentEmail1({
+      email:     target.email,
+      firstName: target.firstName,
+      trade:     rec.targetTrade ?? (variables.trade as string | undefined),
+      geoArea:   rec.targetGeo  ?? (variables.region as string | undefined),
+    }).catch(err => logger.error({ err, email: target.email }, 'SendGrid sequence send failed'))
+  }
 }
 
 // ─── Twilio SMS ───────────────────────────────────────────────────────────────
 
 async function twilioSms(action: SuggestedAction, rec: GrowthRecommendation): Promise<void> {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID
-  const authToken  = process.env.TWILIO_AUTH_TOKEN
-  const from       = process.env.TWILIO_PHONE_NUMBER
-
-  if (!accountSid || !authToken || !from) {
-    logger.warn('Twilio credentials not set — skipping SMS')
-    return
+  const { targetPhones = [] } = action.params as {
+    targetPhones?: Array<{ phone: string; firstName?: string }>
   }
 
-  const { message, audienceEmails } = action.params as {
-    message: string
-    audienceEmails?: string[]
-    audienceProfileIds?: string[]
+  logger.info({ recId: rec.id, recipientCount: targetPhones.length }, 'Twilio SMS outreach')
+
+  for (const target of targetPhones as Array<{ phone: string; firstName?: string }>) {
+    await sendOutreachSms({
+      phone:     target.phone,
+      firstName: target.firstName,
+      trade:     rec.targetTrade,
+      geoArea:   rec.targetGeo,
+    }).catch(err => logger.error({ err, phone: target.phone }, 'Twilio outreach SMS failed'))
   }
-
-  // In production: look up phone numbers for audienceProfileIds, then send via Twilio
-  // For now log the intent
-  logger.info({
-    recId: rec.id,
-    message: message?.slice(0, 80),
-    recipientCount: (audienceEmails?.length ?? 0),
-  }, 'Twilio SMS outreach (mock — wire real send)')
-
-  // Real:
-  // const creds = Buffer.from(`${accountSid}:${authToken}`).toString('base64')
-  // for (const phone of resolvedPhones) {
-  //   await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, {
-  //     method: 'POST',
-  //     headers: { Authorization: `Basic ${creds}`, 'Content-Type': 'application/x-www-form-urlencoded' },
-  //     body: new URLSearchParams({ From: from, To: phone, Body: message }),
-  //   })
-  // }
 }
 
 // ─── Internal alert ───────────────────────────────────────────────────────────

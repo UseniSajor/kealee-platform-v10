@@ -16,6 +16,7 @@ import {
 } from '../shared/bot.interface.js'
 import { GROWTH_EVENTS, GROWTH_SUBSCRIBED_EVENTS } from './growth.events.js'
 import { runGrowthAnalysis, analyzeTradeQuick } from './growth.service.js'
+import { getAcquisitionWorkflow } from '../../workflows/contractor-acquisition.workflow.js'
 import type {
   GrowthAnalysis,
   GrowthRecommendation,
@@ -102,6 +103,11 @@ export class GrowthBot extends OperationalBot {
           unfilledCount: ts.demand.unfilledAssignmentCount,
         }, 'HIGH')
 
+        // Trigger acquisition campaign for this trade shortage
+        void getAcquisitionWorkflow(this.redis)
+          .handleTradeShortageDetected({ trade, shortageScore: ts.shortageScore })
+          .catch(err => logger.error({ err }, 'Acquisition campaign trigger failed'))
+
         const alert = this.makeAction('INTERNAL_ALERT', {
           message: `Trade shortage: ${trade} shortage score ${ts.shortageScore}/100 detected after project.created`,
           projectId: event.payload.projectId,
@@ -114,6 +120,20 @@ export class GrowthBot extends OperationalBot {
   }
 
   private async _handleContractorEvent(event: BotEvent, start: number): Promise<BotResult> {
+    // Handle inactivity re-engagement
+    if (event.type === 'marketplace.contractor.inactive') {
+      void getAcquisitionWorkflow(this.redis)
+        .handleContractorInactive({
+          email:            event.payload.email as string | undefined,
+          phone:            event.payload.phone as string | undefined,
+          firstName:        event.payload.firstName as string | undefined,
+          trade:            event.payload.trade as string | undefined,
+          kealeeProfileId:  event.payload.profileId as string | undefined,
+          daysSinceLast:    event.payload.daysSinceLast as number | undefined,
+          inactivityScore:  event.payload.inactivityScore as number | undefined,
+        })
+        .catch(err => logger.error({ err }, 'Re-engagement trigger failed'))
+    }
     // A new verified contractor may resolve a shortage — run full analysis
     return this._handleFullAnalysis(event, start)
   }
@@ -176,13 +196,17 @@ export class GrowthBot extends OperationalBot {
       }
     }
 
-    // Emit critical shortage/surplus events
+    // Emit critical shortage/surplus events + trigger acquisition campaigns
     for (const ts of analysis.tradeScores) {
       if (ts.shortageScore >= 75) {
         await this._publishEvent(GROWTH_EVENTS.TRADE_SHORTAGE_DETECTED, {
           trade: ts.trade, shortageScore: ts.shortageScore,
           unfilledCount: ts.demand.unfilledAssignmentCount,
         }, 'HIGH')
+        // Fire acquisition campaign (fire-and-forget)
+        void getAcquisitionWorkflow(this.redis)
+          .handleTradeShortageDetected({ trade: ts.trade, shortageScore: ts.shortageScore })
+          .catch(err => logger.error({ err, trade: ts.trade }, 'Acquisition campaign failed'))
       }
       if (ts.surplusScore >= 50) {
         await this._publishEvent(GROWTH_EVENTS.TRADE_SURPLUS_DETECTED, {
