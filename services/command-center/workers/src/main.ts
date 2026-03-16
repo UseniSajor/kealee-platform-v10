@@ -23,6 +23,8 @@ import { smartSchedulerWorker } from '../../apps/APP-12-smart-scheduler/src/inde
 import { qaInspectorWorker } from '../../apps/APP-13-qa-inspector/src/index.js';
 import { decisionSupportWorker } from '../../apps/APP-14-decision-support/src/index.js';
 import { estimationWorker } from '../../apps/APP-15-estimation/src/index.js';
+import { createGrowthWorker } from '../../queues/growth.queue.js';
+import { getGrowthTrigger } from '../../triggers/growth.trigger.js';
 
 // Track all workers
 const workers: Map<string, Worker> = new Map();
@@ -135,6 +137,9 @@ async function shutdown(signal: string): Promise<void> {
 
   await Promise.all(closePromises);
 
+  // Stop GrowthBot trigger (cron + Redis subscriber)
+  await getGrowthTrigger().stop();
+
   // Shutdown queues and event buses
   await shutdownQueues();
   await closeAllEventBuses();
@@ -151,7 +156,7 @@ async function main(): Promise<void> {
 ╔═══════════════════════════════════════════════════════════╗
 ║        KEALEE COMMAND CENTER - WORKER ORCHESTRATION       ║
 ╠═══════════════════════════════════════════════════════════╣
-║  Starting workers for 15 automation mini-apps...          ║
+║  Starting workers for 15 automation mini-apps + GrowthBot ║
 ╚═══════════════════════════════════════════════════════════╝
   `);
 
@@ -174,6 +179,12 @@ async function main(): Promise<void> {
   registerWorker('APP-13-qa-inspector', qaInspectorWorker);
   registerWorker('APP-14-decision-support', decisionSupportWorker);
   registerWorker('APP-15-estimation', estimationWorker);
+
+  // GrowthBot — marketplace liquidity & demand generation
+  const growthWorker = createGrowthWorker(process.env.REDIS_URL!);
+  registerWorker(QUEUE_NAMES.GROWTH_BOT, growthWorker);
+  const growthTrigger = getGrowthTrigger();
+  await growthTrigger.start();
 
   console.log(`
 ╠═══════════════════════════════════════════════════════════╣

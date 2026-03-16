@@ -114,6 +114,25 @@ export const EVENT_TYPES = {
   // Contractor Scoring events
   CONTRACTOR_SCORE_UPDATED: 'kealee.scoring.contractor_updated',
   CONTRACTOR_SCORE_RECALCULATED: 'kealee.scoring.contractor_recalculated',
+
+  // GrowthBot marketplace liquidity events
+  GROWTH_ANALYSIS_COMPLETE:       'growth.analysis.complete',
+  GROWTH_TRADE_SHORTAGE_DETECTED: 'growth.trade.shortage_detected',
+  GROWTH_TRADE_SURPLUS_DETECTED:  'growth.trade.surplus_detected',
+  GROWTH_GEO_SHORTAGE_DETECTED:   'growth.geo.shortage_detected',
+  GROWTH_BACKLOG_RISK_DETECTED:   'growth.backlog.risk_detected',
+  GROWTH_CONTRACTOR_CHURN_RISK:   'growth.contractor.churn_risk',
+  GROWTH_RECRUITMENT_RECOMMENDED: 'growth.recruitment.recommended',
+  GROWTH_DEMAND_GEN_RECOMMENDED:  'growth.demand_gen.recommended',
+  GROWTH_OPS_ALERT:               'growth.ops.alert',
+  GROWTH_METRICS_REFRESHED:       'growth.metrics.refreshed',
+
+  // Marketplace platform events (inbound triggers for GrowthBot)
+  MARKETPLACE_CONTRACTOR_REGISTERED: 'marketplace.contractor.registered',
+  MARKETPLACE_CONTRACTOR_VERIFIED:   'marketplace.contractor.verified',
+  MARKETPLACE_CONTRACTOR_INACTIVE:   'marketplace.contractor.inactive',
+  MARKETPLACE_ASSIGNMENT_EXPIRED:    'marketplace.assignment.expired',
+  GROWTH_ANALYSIS_SCHEDULED:         'growth.analysis.scheduled',
 } as const;
 
 export type EventType = typeof EVENT_TYPES[keyof typeof EVENT_TYPES];

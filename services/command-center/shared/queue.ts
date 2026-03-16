@@ -36,6 +36,7 @@ export const QUEUE_NAMES = {
   QA_INSPECTOR: 'kealee-qa-inspector',
   DECISION_SUPPORT: 'kealee-decision-support',
   ESTIMATION: 'kealee-estimation-engine',
+  GROWTH_BOT: 'kealee-growth-bot',
 } as const;
 
 export type QueueName = typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES];
