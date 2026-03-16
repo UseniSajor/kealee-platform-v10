@@ -205,7 +205,74 @@ export async function stripeRoutes(fastify: FastifyInstance) {
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  const packageId = session.metadata?.packageId;
+  const metadata = session.metadata ?? {};
+
+  // ── Sprint 4A: Guest Order fulfillment ────────────────────────────────────
+  if (metadata.orderType === 'GUEST' && metadata.guestToken) {
+    try {
+      await prismaAny.guestOrder.create({
+        data: {
+          stripeSessionId: session.id,
+          guestToken:      metadata.guestToken,
+          guestEmail:      metadata.guestEmail ?? (session.customer_email ?? ''),
+          guestName:       metadata.guestName  ?? '',
+          itemType:        metadata.itemType   ?? 'MARKETPLACE_SERVICE',
+          itemId:          metadata.itemId     || null,
+          projectId:       metadata.projectId  || null,
+          amountPaid:      session.amount_total ?? 0,
+          currency:        session.currency    ?? 'usd',
+          status:          'FULFILLED',
+          utmSource:       metadata.utmSource  || null,
+          fulfilledAt:     new Date(),
+        },
+      });
+      console.log('GuestOrder created:', metadata.guestToken);
+    } catch (err: any) {
+      console.error('Failed to create GuestOrder:', err?.message);
+    }
+    return; // guest orders don't create subscriptions
+  }
+
+  // ── Sprint 4B: Marketplace success fee on milestone payments ──────────────
+  if (metadata.orderType === 'MARKETPLACE_MILESTONE' && metadata.projectId) {
+    try {
+      const feeConfig = await prismaAny.marketplaceFeeConfig.findFirst({
+        where: { isActive: true },
+        select: { standardPlatformFee: true },
+        orderBy: { effectiveFrom: 'desc' },
+      }).catch(() => null);
+
+      // standardPlatformFee stored as decimal fraction (0.03 = 3%)
+      const feePct = feeConfig?.standardPlatformFee
+        ? Number(feeConfig.standardPlatformFee)
+        : 0.03;
+
+      const amountTotal = session.amount_total ?? 0;
+      const feeAmount   = Math.round(amountTotal * feePct);
+
+      await prismaAny.platformFeeRecord.create({
+        data: {
+          stripeSessionId: session.id,
+          projectId:       metadata.projectId,
+          contractorId:    metadata.contractorId  ?? null,
+          milestoneId:     metadata.milestoneId   ?? null,
+          grossAmount:     amountTotal,
+          feePct:          feePct * 100, // stored as % (e.g. 3.0)
+          feeAmount,
+          currency:        session.currency ?? 'usd',
+          status:          'COLLECTED',
+          collectedAt:     new Date(),
+        },
+      });
+      console.log('PlatformFeeRecord created:', session.id, `fee=${feeAmount}`);
+    } catch (err: any) {
+      console.error('Failed to create PlatformFeeRecord:', err?.message);
+    }
+    return; // marketplace milestone payments don't create subscriptions
+  }
+
+  // ── Existing subscription flow ─────────────────────────────────────────────
+  const packageId = metadata.packageId;
   const customerId = session.customer as string;
   const subscriptionId = session.subscription as string;
 
