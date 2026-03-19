@@ -558,6 +558,11 @@ const start = async () => {
       // Sprint 4A: Guest checkout (no auth required)
       const { guestCheckoutRoutes } = await import('./modules/marketplace/guest-checkout.routes')
       await fastify.register(guestCheckoutRoutes, { prefix: '/marketplace' })
+      // Concept intake + queue routes
+      const { conceptIntakeRoutes } = await import('./modules/concepts/concept-intake.routes')
+      await fastify.register(conceptIntakeRoutes, { prefix: '/concepts' })
+      const { conceptQueueRoutes } = await import('./modules/concepts/concept-queue.routes')
+      await fastify.register(conceptQueueRoutes, { prefix: '/concepts' })
       await fastify.register(verificationDocumentRoutes, { prefix: '/verification' })
       await fastify.register(paymentRoutes, { prefix: '/payments' })
       await fastify.register(spatialRoutes, { prefix: '/spatial' })
@@ -841,11 +846,18 @@ const start = async () => {
       await fastify.register(permitTemplateRoutes, { prefix: '/permits/templates' })
       await fastify.register(permitAnalyticsRoutes, { prefix: '/permits/analytics' })
       await fastify.register(apiIntegrationRoutes, { prefix: '/permits/integrations' })
+
+      // County SEO page lead capture — public, no auth required
+      const { permitEstimateRoutes } = await import('./modules/permits/permit-estimate.routes')
+      await fastify.register(permitEstimateRoutes, { prefix: '/api/v1/permits' })
     })
 
     await safeRegisterBlock('Phase 1 - Project History, Portfolios, PreCon Extras routes', async () => {
       const { projectHistoryRoutes } = await import('./modules/projects/project-history.routes')
       await fastify.register(projectHistoryRoutes, { prefix: '/projects' })
+
+      const { projectPhotoRoutes } = await import('./modules/projects/project-photo.routes')
+      await fastify.register(projectPhotoRoutes, { prefix: '/api/v1/projects' })
 
       const { portfolioRoutes } = await import('./modules/marketplace/portfolio.routes')
       await fastify.register(portfolioRoutes, { prefix: '/marketplace/portfolios' })
@@ -1058,9 +1070,20 @@ const start = async () => {
       await fastify.register(revenueHooksRoutes, { prefix: '/revenue-hooks' })
     })
 
+    await safeRegisterBlock('Developer Services routes (N7)', async () => {
+      const { developerServicesRoutes } = await import('./modules/developer/developer-services.routes')
+      await fastify.register(developerServicesRoutes, { prefix: '/developer/services' })
+    })
+
     await safeRegisterBlock('Contractor Marketing routes', async () => {
       const { marketingRoutes } = await import('./modules/marketing/marketing.routes.js')
       await fastify.register(marketingRoutes, { prefix: '/marketing' })
+    })
+
+    // Sprint 7: Design Concept + Validation ($395 combined product)
+    await safeRegisterBlock('Design Concept + Validation routes (Sprint 7)', async () => {
+      const { conceptValidationRoutes } = await import('./modules/design/concept-validation.routes.js')
+      await fastify.register(conceptValidationRoutes, { prefix: '/design/concept-validation' })
     })
 
     // ══════════════════════════════════════════════════════════════

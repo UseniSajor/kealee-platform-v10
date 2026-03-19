@@ -49,8 +49,38 @@ jobs:
           railway_token: ${{ secrets.RAILWAY_TOKEN }}
           service: api
 
-  deploy-vercel:
-    name: Deploy Apps to Vercel - ${{ matrix.app }}
+  deploy-portals:
+    name: Deploy Portal Apps to Railway
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: portal-owner
+            service: portal-owner
+          - app: portal-contractor
+            service: portal-contractor
+          - app: portal-developer
+            service: portal-developer
+          - app: command-center
+            service: command-center
+          - app: web-main
+            service: web-main
+          - app: admin-console
+            service: admin-console
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy ${{ matrix.app }} to Railway
+        uses: bervProject/railway-deploy@main
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          service: ${{ matrix.service }}
+
+  deploy-legacy-apps:
+    name: Deploy Legacy Apps to Vercel - ${{ matrix.app }}
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     strategy:

@@ -12,12 +12,12 @@ export const PACKAGE_TIERS = {
   },
   B: {
     name: 'Package B',
-    monthlyPrice: 3500,
+    monthlyPrice: 3750,
     features: ['Enhanced PM support', 'Bi-weekly reports', 'Priority support'],
   },
   C: {
     name: 'Package C',
-    monthlyPrice: 7500,
+    monthlyPrice: 9500,
     features: ['Dedicated PM', 'Weekly reports', 'Phone support', 'Project health monitoring'],
   },
   D: {

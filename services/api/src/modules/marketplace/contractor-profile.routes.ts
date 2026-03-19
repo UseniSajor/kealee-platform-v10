@@ -134,6 +134,70 @@ function buildProfileResponse(contractor: any, marketplace: any, queueEntry: any
 
 export async function contractorProfileRoutes(fastify: FastifyInstance) {
   // ──────────────────────────────────────────────────────────────────────────
+  // GET /marketplace/contractors/slugs — public, for sitemap generation
+  // ──────────────────────────────────────────────────────────────────────────
+
+  fastify.get(
+    '/contractors/slugs',
+    async (request, reply) => {
+      try {
+        const contractors = await prismaAny.contractorProfile.findMany({
+          where: { profileVisibility: 'PUBLIC', isVerified: true, slug: { not: null } },
+          select: { slug: true, updatedAt: true },
+          orderBy: { updatedAt: 'desc' },
+        });
+        return contractors;
+      } catch (error: any) {
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to fetch slugs') });
+      }
+    },
+  );
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // GET /marketplace/contractors/profile/:slug — public, no auth
+  // ──────────────────────────────────────────────────────────────────────────
+
+  fastify.get(
+    '/contractors/profile/:slug',
+    async (request, reply) => {
+      try {
+        const { slug } = request.params as { slug: string };
+
+        const profile = await prismaAny.contractorProfile.findFirst({
+          where: {
+            slug,
+            profileVisibility: 'PUBLIC',
+            isVerified: true,
+          },
+          select: {
+            id:                    true,
+            slug:                  true,
+            companyName:           true,
+            tradeSpecialties:      true,
+            serviceAreas:          true,
+            isVerified:            true,
+            rating:                true,
+            reviewCount:           true,
+            bio:                   true,
+            listingTier:           true,
+            city:                  true,
+            state:                 true,
+          },
+        });
+
+        if (!profile) {
+          return reply.code(404).send({ error: 'Contractor not found' });
+        }
+
+        return profile;
+      } catch (error: any) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: 'Failed to fetch contractor profile' });
+      }
+    },
+  );
+
+  // ──────────────────────────────────────────────────────────────────────────
   // GET /marketplace/contractors/profile
   // Returns the authenticated contractor's own combined profile.
   // ──────────────────────────────────────────────────────────────────────────

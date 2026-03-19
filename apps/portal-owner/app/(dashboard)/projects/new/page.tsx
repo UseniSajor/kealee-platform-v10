@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { RevenueHookModal } from '@kealee/core-hooks'
 
-type Step = 'type' | 'details' | 'location' | 'twin' | 'review'
+type Step = 'type' | 'details' | 'location' | 'twin' | 'photos' | 'review'
 
 const PROJECT_TYPES = [
   { id: 'ADDITION', label: 'Addition', desc: 'Expand your existing home', icon: Home, twinTier: 'L1' },
@@ -56,6 +56,7 @@ const STEPS: { id: Step; label: string }[] = [
   { id: 'details', label: 'Details' },
   { id: 'location', label: 'Location' },
   { id: 'twin', label: 'Digital Twin' },
+  { id: 'photos', label: 'Photos' },
   { id: 'review', label: 'Review' },
 ]
 
@@ -68,6 +69,8 @@ export default function NewProjectPage() {
   const [submitting, setSubmitting] = useState(false)
   const [showIntakeHook, setShowIntakeHook] = useState(false)
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
+  const [uploadedPhotos, setUploadedPhotos] = useState<Array<{id: string, url: string, filename: string}>>([])
+  const [uploading, setUploading] = useState(false)
 
   const currentStepIndex = STEPS.findIndex(s => s.id === step)
   const selectedType = PROJECT_TYPES.find(t => t.id === projectType)
@@ -77,6 +80,7 @@ export default function NewProjectPage() {
     if (step === 'details') return !!details.name && !!details.budget
     if (step === 'location') return !!location.address && !!location.city && !!location.state
     if (step === 'twin') return true
+    if (step === 'photos') return uploadedPhotos.length >= 1
     return true
   }
 
@@ -112,6 +116,36 @@ export default function NewProjectPage() {
       if (res.ok) {
         const data = await res.json()
         setCreatedProjectId(data.project?.id ?? null)
+
+        // Upload photos to project
+        if (uploadedPhotos.length > 0 && data.project?.id) {
+          const pid = data.project.id
+          for (const photo of uploadedPhotos as any[]) {
+            if (!photo.file) continue
+            try {
+              // Get presigned URL
+              const urlRes = await fetch(`/api/v1/projects/${pid}/photos/presign`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: photo.filename, contentType: photo.file.type }),
+              })
+              const { uploadUrl, photoId } = await urlRes.json()
+              // Upload to S3
+              await fetch(uploadUrl, {
+                method: 'PUT',
+                body: photo.file,
+                headers: { 'Content-Type': photo.file.type },
+              })
+              // Confirm upload
+              await fetch(`/api/v1/projects/${pid}/photos/${photoId}/confirm`, {
+                method: 'POST',
+              })
+            } catch (photoErr) {
+              console.warn('Photo upload failed for', photo.filename, photoErr)
+            }
+          }
+        }
+
         // Show project_intake revenue hook before redirecting
         setShowIntakeHook(true)
       } else {
@@ -391,6 +425,87 @@ export default function NewProjectPage() {
           </div>
         )}
 
+        {step === 'photos' && (
+          <div>
+            <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>Project Photos</h2>
+            <p className="mb-2 text-sm text-gray-500">Add photos of your current space, lot, or reference images.</p>
+            <p className="mb-6 text-xs text-gray-400">Better photos = better AI concept. Minimum 1 required.</p>
+
+            {/* Drop zone */}
+            <label
+              className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 transition-colors hover:bg-gray-50"
+              style={{ borderColor: uploading ? '#2ABFBF' : '#E5E7EB' }}
+            >
+              <input
+                type="file"
+                className="hidden"
+                accept="image/jpeg,image/png,image/heic"
+                multiple
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files ?? [])
+                  if (!files.length) return
+                  setUploading(true)
+                  try {
+                    for (const file of files.slice(0, 10 - uploadedPhotos.length)) {
+                      if (file.size > 20 * 1024 * 1024) {
+                        alert(`${file.name} exceeds 20MB limit`)
+                        continue
+                      }
+                      // For now store locally — actual S3 upload wired after project creation
+                      const url = URL.createObjectURL(file)
+                      setUploadedPhotos(prev => [...prev, {
+                        id:       Math.random().toString(36).slice(2),
+                        url,
+                        filename: file.name,
+                        file,
+                      } as any])
+                    }
+                  } finally {
+                    setUploading(false)
+                  }
+                }}
+              />
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl"
+                style={{ backgroundColor: 'rgba(42,191,191,0.1)' }}>
+                {uploading ? (
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-teal-500 border-t-transparent" />
+                ) : (
+                  <svg className="h-6 w-6" style={{ color: '#2ABFBF' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                )}
+              </div>
+              <p className="text-sm font-medium" style={{ color: '#1A2B4A' }}>
+                {uploading ? 'Uploading…' : 'Click to add photos'}
+              </p>
+              <p className="mt-1 text-xs text-gray-400">JPEG, PNG, HEIC · Max 10 files · 20MB each</p>
+            </label>
+
+            {/* Thumbnail grid */}
+            {uploadedPhotos.length > 0 && (
+              <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
+                {uploadedPhotos.map((photo) => (
+                  <div key={photo.id} className="group relative aspect-square overflow-hidden rounded-xl border border-gray-200">
+                    <img src={photo.url} alt={photo.filename} className="h-full w-full object-cover" />
+                    <button
+                      onClick={() => setUploadedPhotos(prev => prev.filter(p => p.id !== photo.id))}
+                      className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white opacity-0 transition-opacity group-hover:opacity-100 text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {uploadedPhotos.length === 0 && (
+              <p className="mt-3 text-center text-xs font-medium text-red-500">
+                At least 1 photo is required to generate your AI concept
+              </p>
+            )}
+          </div>
+        )}
+
         {step === 'review' && (
           <div>
             <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>Review & Create</h2>
@@ -447,6 +562,15 @@ export default function NewProjectPage() {
                   </div>
                 </div>
                 <button onClick={() => setStep('twin')} className="text-xs" style={{ color: '#2ABFBF' }}>Edit</button>
+              </div>
+
+              {/* Photos */}
+              <div className="flex items-center justify-between rounded-lg border border-gray-100 p-4">
+                <div>
+                  <p className="text-xs text-gray-500">Project Photos</p>
+                  <p className="font-medium" style={{ color: '#1A2B4A' }}>{uploadedPhotos.length} photo{uploadedPhotos.length !== 1 ? 's' : ''} added</p>
+                </div>
+                <button onClick={() => setStep('photos')} className="text-xs" style={{ color: '#2ABFBF' }}>Edit</button>
               </div>
             </div>
 

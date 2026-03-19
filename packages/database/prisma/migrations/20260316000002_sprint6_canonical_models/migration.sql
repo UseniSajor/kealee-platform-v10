@@ -5,25 +5,31 @@
 -- Migration: 20260316000002_sprint6_canonical_models
 
 -- CreateEnum: engagement_status
-CREATE TYPE "engagement_status" AS ENUM ('DRAFT', 'ACTIVE', 'PAUSED', 'COMPLETED', 'CANCELLED');
+DO $$ BEGIN CREATE TYPE "engagement_status" AS ENUM ('DRAFT', 'ACTIVE', 'PAUSED', 'COMPLETED', 'CANCELLED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- CreateEnum: engagement_phase
-CREATE TYPE "engagement_phase" AS ENUM ('PRECONSTRUCTION', 'DESIGN', 'PERMITS', 'CONSTRUCTION', 'CLOSEOUT', 'ONGOING');
+DO $$ BEGIN CREATE TYPE "engagement_phase" AS ENUM ('PRECONSTRUCTION', 'DESIGN', 'PERMITS', 'CONSTRUCTION', 'CLOSEOUT', 'ONGOING');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- CreateEnum: professional_type
-CREATE TYPE "professional_type" AS ENUM ('GENERAL_CONTRACTOR', 'ARCHITECT', 'ENGINEER', 'PROJECT_MANAGER', 'LEGAL_COUNSEL', 'FINANCIAL_ADVISOR', 'INSPECTOR', 'CONSULTANT', 'SPECIALIST');
+DO $$ BEGIN CREATE TYPE "professional_type" AS ENUM ('GENERAL_CONTRACTOR', 'ARCHITECT', 'ENGINEER', 'PROJECT_MANAGER', 'LEGAL_COUNSEL', 'FINANCIAL_ADVISOR', 'INSPECTOR', 'CONSULTANT', 'SPECIALIST');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- CreateEnum: assignment_status
-CREATE TYPE "assignment_status" AS ENUM ('INVITED', 'PENDING_ACCEPTANCE', 'ACTIVE', 'SUSPENDED', 'COMPLETED', 'REJECTED');
+DO $$ BEGIN CREATE TYPE "assignment_status" AS ENUM ('INVITED', 'PENDING_ACCEPTANCE', 'ACTIVE', 'SUSPENDED', 'COMPLETED', 'REJECTED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- CreateEnum: guest_order_status
-CREATE TYPE "guest_order_status" AS ENUM ('PENDING', 'FULFILLED', 'REFUNDED', 'FAILED');
+DO $$ BEGIN CREATE TYPE "guest_order_status" AS ENUM ('PENDING', 'FULFILLED', 'REFUNDED', 'FAILED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- CreateEnum: failed_sync_status
-CREATE TYPE "failed_sync_status" AS ENUM ('PENDING', 'RETRYING', 'RECOVERED', 'ABANDONED');
+DO $$ BEGIN CREATE TYPE "failed_sync_status" AS ENUM ('PENDING', 'RETRYING', 'RECOVERED', 'ABANDONED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- CreateTable: engagements
-CREATE TABLE "engagements" (
+CREATE TABLE IF NOT EXISTS "engagements" (
     "id"                  TEXT NOT NULL,
     "projectId"           TEXT NOT NULL,
     "contractorId"        TEXT,
@@ -39,17 +45,17 @@ CREATE TABLE "engagements" (
     "escrowAgreementId"   TEXT,
     "metadata"            JSONB NOT NULL DEFAULT '{}',
     "createdAt"           TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt"           TIMESTAMP(3) NOT NULL,
+    "updatedAt"           TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "engagements_pkey" PRIMARY KEY ("id")
 );
 
-CREATE INDEX "engagements_projectId_status_idx"  ON "engagements"("projectId", "status");
-CREATE INDEX "engagements_contractorId_idx"       ON "engagements"("contractorId");
-CREATE INDEX "engagements_ownerId_idx"            ON "engagements"("ownerId");
+CREATE INDEX IF NOT EXISTS "engagements_projectId_status_idx"  ON "engagements"("projectId", "status");
+CREATE INDEX IF NOT EXISTS "engagements_contractorId_idx"       ON "engagements"("contractorId");
+CREATE INDEX IF NOT EXISTS "engagements_ownerId_idx"            ON "engagements"("ownerId");
 
 -- CreateTable: professional_assignments
-CREATE TABLE "professional_assignments" (
+CREATE TABLE IF NOT EXISTS "professional_assignments" (
     "id"               TEXT NOT NULL,
     "projectId"        TEXT NOT NULL,
     "professionalId"   TEXT NOT NULL,
@@ -62,18 +68,18 @@ CREATE TABLE "professional_assignments" (
     "notes"            TEXT,
     "metadata"         JSONB NOT NULL DEFAULT '{}',
     "createdAt"        TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt"        TIMESTAMP(3) NOT NULL,
+    "updatedAt"        TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "professional_assignments_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX "professional_assignments_projectId_professionalId_professionalType_key"
+CREATE UNIQUE INDEX IF NOT EXISTS "professional_assignments_projectId_professionalId_professionalType_key"
     ON "professional_assignments"("projectId", "professionalId", "professionalType");
-CREATE INDEX "professional_assignments_projectId_assignmentStatus_idx" ON "professional_assignments"("projectId", "assignmentStatus");
-CREATE INDEX "professional_assignments_professionalId_idx"              ON "professional_assignments"("professionalId");
+CREATE INDEX IF NOT EXISTS "professional_assignments_projectId_assignmentStatus_idx" ON "professional_assignments"("projectId", "assignmentStatus");
+CREATE INDEX IF NOT EXISTS "professional_assignments_professionalId_idx"              ON "professional_assignments"("professionalId");
 
 -- CreateTable: guest_orders
-CREATE TABLE "guest_orders" (
+CREATE TABLE IF NOT EXISTS "guest_orders" (
     "id"              TEXT NOT NULL,
     "stripeSessionId" TEXT NOT NULL,
     "guestToken"      TEXT NOT NULL,
@@ -91,18 +97,18 @@ CREATE TABLE "guest_orders" (
     "claimedAt"       TIMESTAMP(3),
     "metadata"        JSONB NOT NULL DEFAULT '{}',
     "createdAt"       TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt"       TIMESTAMP(3) NOT NULL,
+    "updatedAt"       TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "guest_orders_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX "guest_orders_stripeSessionId_key" ON "guest_orders"("stripeSessionId");
-CREATE UNIQUE INDEX "guest_orders_guestToken_key"      ON "guest_orders"("guestToken");
-CREATE INDEX "guest_orders_guestEmail_idx"        ON "guest_orders"("guestEmail");
-CREATE INDEX "guest_orders_claimedByUserId_idx"   ON "guest_orders"("claimedByUserId");
+CREATE UNIQUE INDEX IF NOT EXISTS "guest_orders_stripeSessionId_key" ON "guest_orders"("stripeSessionId");
+CREATE UNIQUE INDEX IF NOT EXISTS "guest_orders_guestToken_key"      ON "guest_orders"("guestToken");
+CREATE INDEX IF NOT EXISTS "guest_orders_guestEmail_idx"        ON "guest_orders"("guestEmail");
+CREATE INDEX IF NOT EXISTS "guest_orders_claimedByUserId_idx"   ON "guest_orders"("claimedByUserId");
 
 -- CreateTable: platform_fee_records
-CREATE TABLE "platform_fee_records" (
+CREATE TABLE IF NOT EXISTS "platform_fee_records" (
     "id"              TEXT NOT NULL,
     "stripeSessionId" TEXT NOT NULL,
     "projectId"       TEXT NOT NULL,
@@ -116,17 +122,17 @@ CREATE TABLE "platform_fee_records" (
     "collectedAt"     TIMESTAMP(3) NOT NULL,
     "metadata"        JSONB NOT NULL DEFAULT '{}',
     "createdAt"       TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt"       TIMESTAMP(3) NOT NULL,
+    "updatedAt"       TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "platform_fee_records_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX "platform_fee_records_stripeSessionId_key" ON "platform_fee_records"("stripeSessionId");
-CREATE INDEX "platform_fee_records_projectId_idx"    ON "platform_fee_records"("projectId");
-CREATE INDEX "platform_fee_records_contractorId_idx" ON "platform_fee_records"("contractorId");
+CREATE UNIQUE INDEX IF NOT EXISTS "platform_fee_records_stripeSessionId_key" ON "platform_fee_records"("stripeSessionId");
+CREATE INDEX IF NOT EXISTS "platform_fee_records_projectId_idx"    ON "platform_fee_records"("projectId");
+CREATE INDEX IF NOT EXISTS "platform_fee_records_contractorId_idx" ON "platform_fee_records"("contractorId");
 
 -- CreateTable: failed_syncs
-CREATE TABLE "failed_syncs" (
+CREATE TABLE IF NOT EXISTS "failed_syncs" (
     "id"          TEXT NOT NULL,
     "service"     TEXT NOT NULL,
     "operation"   TEXT NOT NULL,
@@ -137,10 +143,10 @@ CREATE TABLE "failed_syncs" (
     "lastRetryAt" TIMESTAMP(3),
     "recoveredAt" TIMESTAMP(3),
     "createdAt"   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt"   TIMESTAMP(3) NOT NULL,
+    "updatedAt"   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "failed_syncs_pkey" PRIMARY KEY ("id")
 );
 
-CREATE INDEX "failed_syncs_status_service_idx" ON "failed_syncs"("status", "service");
-CREATE INDEX "failed_syncs_createdAt_idx"       ON "failed_syncs"("createdAt");
+CREATE INDEX IF NOT EXISTS "failed_syncs_status_service_idx" ON "failed_syncs"("status", "service");
+CREATE INDEX IF NOT EXISTS "failed_syncs_createdAt_idx"       ON "failed_syncs"("createdAt");

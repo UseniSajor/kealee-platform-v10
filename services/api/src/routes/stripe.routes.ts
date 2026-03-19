@@ -271,6 +271,105 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return; // marketplace milestone payments don't create subscriptions
   }
 
+  // ── Concept Package fulfillment (intake-to-payment flow) ──────────────────
+  if (metadata.source === 'concept-package' && metadata.intakeId) {
+    try {
+      // Resolve userId from metadata or customer email
+      let cpUserId = metadata.userId || null;
+      if (!cpUserId && session.customer_email) {
+        const cpUser = await prismaAny.user.findUnique({
+          where: { email: session.customer_email },
+          select: { id: true },
+        });
+        cpUserId = cpUser?.id ?? null;
+      }
+      if (!cpUserId) {
+        console.error('concept-package: could not resolve userId', session.id);
+        return;
+      }
+
+      const order = await prismaAny.conceptPackageOrder.create({
+        data: {
+          userId: cpUserId,
+          stripeSessionId: session.id,
+          stripePaymentIntentId: session.payment_intent as string | null,
+          packageTier: metadata.packageTier ?? 'essential',
+          packageName: metadata.packageName ?? 'Concept Package',
+          amount: session.amount_total ?? 0,
+          currency: session.currency ?? 'usd',
+          status: 'completed',
+          deliveryStatus: 'pending',
+          funnelSessionId: metadata.funnelSessionId || null,
+          metadata: {
+            intakeId: metadata.intakeId,
+            customerEmail: metadata.customerEmail ?? session.customer_email,
+            customerName: metadata.customerName ?? '',
+          },
+        },
+      });
+
+      // Enqueue concept generation job
+      try {
+        const { Queue } = await import('bullmq');
+        const queue = new Queue('concept-delivery', {
+          connection: { url: process.env.REDIS_URL || 'redis://localhost:6379' },
+        });
+        await queue.add('generate-concept', {
+          orderId: order.id,
+          userId: cpUserId,
+          packageTier: order.packageTier,
+          packageName: order.packageName,
+          funnelSessionId: order.funnelSessionId,
+          customerEmail: metadata.customerEmail ?? session.customer_email ?? '',
+          customerName: metadata.customerName ?? '',
+        }, { priority: 1, attempts: 3 });
+        await queue.close();
+      } catch (qErr: any) {
+        console.warn('concept-package: queue enqueue failed (non-fatal):', qErr.message);
+      }
+
+      console.log('ConceptPackageOrder created:', order.id);
+    } catch (err: any) {
+      console.error('Failed to create ConceptPackageOrder:', err?.message);
+    }
+    return;
+  }
+
+  // ── Sprint 7: Concept + Validation fulfillment ─────────────────────────────
+  if (metadata.productType === 'CONCEPT_VALIDATION' && metadata.projectId && metadata.conceptValidationId) {
+    try {
+      // Call the webhook-activate endpoint internally
+      // We update the record directly since we're in the same service
+      await prismaAny.projectConceptValidation.update({
+        where: { id: metadata.conceptValidationId },
+        data: {
+          status:         'PAID',
+          stripePaymentId: session.payment_intent as string ?? session.id,
+        },
+      });
+
+      // Emit design.concept.initiated event
+      try {
+        const { Redis } = await import('ioredis');
+        const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+        await redis.publish('kealee:events', JSON.stringify({
+          type:                'design.concept.initiated',
+          projectId:           metadata.projectId,
+          conceptValidationId: metadata.conceptValidationId,
+          timestamp:           new Date().toISOString(),
+        }));
+        redis.disconnect();
+      } catch (redisErr: any) {
+        console.warn('Redis publish failed (non-fatal):', redisErr.message);
+      }
+
+      console.log('ConceptValidation activated:', metadata.conceptValidationId);
+    } catch (err: any) {
+      console.error('Failed to activate ConceptValidation:', err?.message);
+    }
+    return; // Concept validation fulfillment complete
+  }
+
   // ── Existing subscription flow ─────────────────────────────────────────────
   const packageId = metadata.packageId;
   const customerId = session.customer as string;

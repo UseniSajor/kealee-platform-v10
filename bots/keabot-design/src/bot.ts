@@ -93,7 +93,7 @@ export class KeaBotDesign extends KeaBot {
         projectId,
         status: 'ready',
         tier:   'free',
-        message: 'AI concept is available. Upgrade options: architect_review ($999) or full_design ($4,499).',
+        message: 'AI concept is available. Upgrade options: advanced_concept ($899) or full_design ($4,499).',
       }),
     });
 
@@ -361,5 +361,137 @@ export class KeaBotDesign extends KeaBot {
       hasMepWork:           true,  // new construction always has MEP
       programElements:      ctx.programNotes?.split(',').map(s => s.trim()) ?? ['residential'],
     };
+  }
+
+  /**
+   * Handle design.concept.initiated Redis event.
+   * Called by the event listener in the service entry point.
+   */
+  async handleConceptInitiated(data: {
+    projectId: string;
+    conceptValidationId: string;
+  }): Promise<void> {
+    const { scoreDCS, projectToDCSInput } = await import('./scoring.js');
+    const { prismaAny } = await import('../../../services/api/src/utils/prisma-helper.js').catch(
+      () => ({ prismaAny: null as any })
+    );
+
+    // Try to import prisma from the package directly
+    let prisma: any;
+    try {
+      const mod = await import('@kealee/database');
+      prisma = mod.prismaAny ?? mod.default;
+    } catch {
+      prisma = prismaAny;
+    }
+
+    if (!prisma) {
+      console.error('[DesignBot] No database client available for handleConceptInitiated');
+      return;
+    }
+
+    try {
+      // Load project data
+      const project = await prisma.project.findUnique({
+        where: { id: data.projectId },
+      });
+      if (!project) {
+        console.error('[DesignBot] Project not found:', data.projectId);
+        return;
+      }
+
+      // Run DCS scoring
+      const dcsInput  = projectToDCSInput(project);
+      const dcsResult = scoreDCS(dcsInput);
+
+      // Save DCS score and design route to Project
+      await prisma.project.update({
+        where: { id: data.projectId },
+        data: {
+          dcsScore:    dcsResult.total,
+          designRoute: dcsResult.route,
+        },
+      });
+
+      // Update ConceptValidation with DCS score and route
+      await prisma.projectConceptValidation.update({
+        where: { id: data.conceptValidationId },
+        data: {
+          status:      'IN_REVIEW',
+          dcsScore:    dcsResult.total,
+          designRoute: dcsResult.route,
+        },
+      });
+
+      if (dcsResult.skipAiConcept) {
+        // DCS >= 71 — skip AI concept, just flag for architect
+        console.log(`[DesignBot] DCS ${dcsResult.total} >= 71 — skipping AI concept, flagging architect required`);
+        // Emit architect.engagement.required event
+        return;
+      }
+
+      if (dcsResult.route === 'ARCHITECT_REQUIRED') {
+        // DCS 41-70 or budget >= $65K — generate reference sketch only
+        console.log(`[DesignBot] ${dcsResult.routingReason} — generating reference sketch`);
+
+        const ctx = {
+          projectId:    data.projectId,
+          projectType:  project.type ?? 'residential',
+          buildingSqft: project.sqft ?? 1500,
+          lotSqft:      project.lotSqft,
+          stories:      project.stories,
+          bedrooms:     project.bedrooms,
+          bathrooms:    project.bathrooms,
+          budget:       project.budgetEstimated,
+          location:     `${project.city ?? ''}, ${project.state ?? ''}`.trim(),
+          zoning:       project.zoning,
+          programNotes: project.description ?? '',
+        };
+
+        const concept = await this._generateConcept(ctx);
+
+        await prisma.projectConceptValidation.update({
+          where: { id: data.conceptValidationId },
+          data: {
+            aiConceptJson: {
+              ...concept,
+              architectRequired: true,
+              routingReason:     dcsResult.routingReason,
+              note:              'AI concept provided as reference only. Architect required for permit-ready drawings.',
+            },
+          },
+        });
+      } else {
+        // AI_ONLY route — generate full concept
+        console.log(`[DesignBot] ${dcsResult.routingReason} — generating full AI concept`);
+
+        const ctx = {
+          projectId:    data.projectId,
+          projectType:  project.type ?? 'residential',
+          buildingSqft: project.sqft ?? 1500,
+          lotSqft:      project.lotSqft,
+          stories:      project.stories,
+          bedrooms:     project.bedrooms,
+          bathrooms:    project.bathrooms,
+          budget:       project.budgetEstimated,
+          location:     `${project.city ?? ''}, ${project.state ?? ''}`.trim(),
+          zoning:       project.zoning,
+          programNotes: project.description ?? '',
+        };
+
+        const concept = await this._generateConcept(ctx);
+
+        await prisma.projectConceptValidation.update({
+          where: { id: data.conceptValidationId },
+          data: {
+            aiConceptJson: concept,
+            dcsScore:      dcsResult.total,
+            designRoute:   dcsResult.route,
+          },
+        });
+      }
+    } catch (err: any) {
+      console.error('[DesignBot] handleConceptInitiated error:', err?.message);
+    }
   }
 }

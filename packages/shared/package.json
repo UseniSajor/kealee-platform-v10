@@ -24,9 +24,15 @@
   },
   "typesVersions": {
     "*": {
-      "software-tiers": ["dist/software-tiers/index.d.ts"],
-      "feature-flags": ["dist/feature-flags/index.d.ts"],
-      "types/network": ["dist/types/network.d.ts"]
+      "software-tiers": [
+        "dist/software-tiers/index.d.ts"
+      ],
+      "feature-flags": [
+        "dist/feature-flags/index.d.ts"
+      ],
+      "types/network": [
+        "dist/types/network.d.ts"
+      ]
     }
   },
   "scripts": {
@@ -35,5 +41,8 @@
   },
   "devDependencies": {
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "zod": "^3.22.0"
   }
 }

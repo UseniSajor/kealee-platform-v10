@@ -10,6 +10,7 @@ import {
   Database,
   LogOut,
   Shield,
+  ClipboardCheck,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { href: '/users', label: 'Users', icon: Users },
   { href: '/orgs', label: 'Organizations', icon: Building2 },
   { href: '/subscriptions', label: 'Subscriptions', icon: CreditCard },
+  { href: '/validation', label: 'Validation Queue', icon: ClipboardCheck },
   { href: '/schema', label: 'Schema Map', icon: Database },
 ]
 

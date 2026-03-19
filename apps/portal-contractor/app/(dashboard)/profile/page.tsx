@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { User, MapPin, Phone, Mail, Star, Award, Briefcase, Shield, Globe, AlertCircle, Pencil, Loader2 } from 'lucide-react'
+import { User, MapPin, Phone, Mail, Star, Award, Briefcase, Shield, Globe, AlertCircle, Pencil, Loader2, ExternalLink, Eye, EyeOff } from 'lucide-react'
 import { getContractorProfile, type ContractorProfile } from '@/lib/api/contractor'
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://contractor.kealee.com'
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
@@ -171,6 +173,48 @@ export default function ProfilePage() {
           <StatCard icon={Star} label="Avg Rating" value={profile.rating.toFixed(1)} />
         )}
       </div>
+
+      {/* Public Profile card */}
+      {profile.slug && (
+        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="font-display text-base font-semibold" style={{ color: '#1A2B4A' }}>Public Profile</h3>
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
+              style={{
+                backgroundColor: profile.isVerified ? 'rgba(5,150,105,0.08)' : 'rgba(107,114,128,0.08)',
+                color: profile.isVerified ? '#059669' : '#6b7280',
+              }}
+            >
+              {profile.isVerified ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+              {profile.isVerified ? 'Publicly Visible' : 'Not Yet Public'}
+            </span>
+          </div>
+          <p className="mb-3 text-sm text-gray-500">
+            {profile.isVerified
+              ? 'Your profile is live and indexed by search engines.'
+              : 'Your profile will become public once your account is verified.'}
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-mono text-gray-600">
+              <Globe className="h-4 w-4 flex-shrink-0 text-gray-400" />
+              <span className="truncate">{BASE_URL}/{profile.slug}</span>
+            </div>
+            {profile.isVerified && (
+              <a
+                href={`${BASE_URL}/${profile.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-white"
+                style={{ backgroundColor: '#2ABFBF' }}
+              >
+                <ExternalLink className="h-4 w-4" />
+                Preview
+              </a>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Credentials */}
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">

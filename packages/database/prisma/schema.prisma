@@ -1486,6 +1486,11 @@ model Project {
   startDate        DateTime?
   endDate          DateTime?
 
+  // Sprint 7 — DCS + Design Route
+  dcsScore        Int?
+  designRoute     DesignRoute?
+  budgetEstimated Int?
+
   // Project details
   address   String?
   city      String?
@@ -4234,6 +4239,7 @@ model MarketplaceProfile {
   verified             Boolean   @default(false)
   verifiedAt           DateTime?
   subscriptionTier     String?
+  listingTier          ListingTier @default(BASIC)
   leadCredits          Int       @default(0)
   acceptingLeads       Boolean   @default(true)
   maxPipelineValue     Decimal?
@@ -5418,6 +5424,11 @@ model ContractorProfile {
   // Status
   isActive      Boolean @default(true)
   acceptingBids Boolean @default(true)
+
+  // Sprint 7 — Listing & Visibility
+  slug              String?           @unique
+  profileVisibility ProfileVisibility @default(PUBLIC)
+  listingTier       ListingTier       @default(BASIC)
 
   // Extended profile — P3 (additive)
   website               String?
@@ -16021,4 +16032,101 @@ model FailedSync {
   @@index([status, service])
   @@index([createdAt])
   @@map("failed_syncs")
+}
+
+// ============================================================================
+// SPRINT 7 — Full Restructure Models
+// ============================================================================
+
+enum ConceptValidationStatus {
+  PENDING
+  PAID
+  IN_REVIEW
+  DELIVERED
+}
+
+enum DesignRoute {
+  AI_ONLY
+  ARCHITECT_REQUIRED
+}
+
+enum DevServiceType {
+  FEASIBILITY_STUDY
+  PRO_FORMA
+  CAPITAL_STACK
+  ENTITLEMENTS
+}
+
+enum DevServiceStatus {
+  PENDING
+  PAID
+  IN_PROGRESS
+  DELIVERED
+}
+
+enum ListingTier {
+  BASIC
+  PRO
+  PREMIUM
+}
+
+enum ProfileVisibility {
+  PUBLIC
+  HIDDEN
+}
+
+model ProjectConceptValidation {
+  id                   String                  @id @default(cuid())
+  projectId            String                  @unique
+  status               ConceptValidationStatus @default(PENDING)
+  dcsScore             Int?
+  designRoute          DesignRoute?
+  aiConceptJson        Json?
+  floorPlanUrl         String?
+  feasibilityConfirmed Boolean?
+  zoningConfirmed      Boolean?
+  structuralRisk       RiskLevel?
+  costBandLow          Int?
+  costBandHigh         Int?
+  permitRisk           RiskLevel?
+  contractorScopeNotes String?
+  staffReviewedAt      DateTime?
+  staffReviewedBy      String?
+  stripePaymentId      String?
+  deliveredAt          DateTime?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  @@map("project_concept_validations")
+  @@index([status])
+}
+
+model ProjectPhoto {
+  id         String   @id @default(cuid())
+  projectId  String
+  s3Key      String
+  url        String
+  filename   String?
+  uploadedAt DateTime @default(now())
+
+  @@map("project_photos")
+  @@index([projectId])
+}
+
+model DeveloperServiceRequest {
+  id              String           @id @default(cuid())
+  userId          String
+  serviceType     DevServiceType
+  status          DevServiceStatus @default(PENDING)
+  projectDetails  Json?
+  propertyAddress String?
+  stripePaymentId String?
+  deliverableUrl  String?
+  assignedStaffId String?
+  requestedAt     DateTime         @default(now())
+  deliveredAt     DateTime?
+
+  @@map("developer_service_requests")
+  @@index([userId])
+  @@index([status])
 }

@@ -146,4 +146,4 @@ CREATE INDEX "partner_integrations_partnerType_active_idx" ON "partner_integrati
 ALTER TABLE "team_memberships" ADD CONSTRAINT "team_memberships_orgId_fkey"
     FOREIGN KEY ("orgId") REFERENCES "portfolio_orgs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "team_memberships" ADD CONSTRAINT "team_memberships_userId_fkey"
-    FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

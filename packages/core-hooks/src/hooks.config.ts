@@ -1,13 +1,12 @@
 /**
  * packages/core-hooks/src/hooks.config.ts
  *
- * Revenue hook pricing configuration for all 8 lifecycle stages.
+ * Revenue hook pricing configuration — Sprint 7 canonical prices.
  *
- * Each hook fires at a natural moment in the project lifecycle and presents
- * the owner with tiered service options — from free to premium.
- *
- * Stripe price IDs must be set in the STRIPE_PRICES env var or configured
- * in the Stripe dashboard. The priceId field here is the Stripe Price object ID.
+ * IMPORTANT billing notes:
+ *   - design, estimate, permit, pm, developer = one-time ('payment' mode)
+ *   - listing, growth, ops = recurring ('subscription' mode)
+ *   - PM (project_execution) = one-time per project — NOT recurring
  */
 
 export type HookStage =
@@ -21,105 +20,85 @@ export type HookStage =
   | 'contractor_growth';
 
 export interface HookTier {
-  id:          string;   // unique tier identifier
-  name:        string;
-  price:       number;   // USD cents (0 = free)
-  priceLabel:  string;   // display string e.g. "$1,500"
-  description: string;
-  features:    string[];
-  cta:         string;   // call-to-action button label
-  priceId?:    string;   // Stripe Price ID (null = free tier, no checkout)
-  highlighted?: boolean; // show as recommended
-  badge?:      string;   // e.g. "Most Popular"
+  id:           string;
+  name:         string;
+  price:        number;    // USD cents (0 = free)
+  priceLabel:   string;
+  description:  string;
+  features:     string[];
+  cta:          string;
+  priceId?:     string;    // Stripe Price ID
+  highlighted?: boolean;
+  badge?:       string;
+  billing?:     'one_time' | 'monthly'; // default: one_time
 }
 
 export interface RevenueHook {
-  stage:      HookStage;
-  trigger:    string;    // description of what triggers this hook
-  headline:   string;    // main headline shown to user
-  subheadline?: string;
-  tiers:      HookTier[];
-  analyticsEvent: string; // event name for tracking
-  dismissable: boolean;  // can user skip/dismiss?
-  autoShow:    boolean;  // show without explicit user action?
+  stage:          HookStage;
+  trigger:        string;
+  headline:       string;
+  subheadline?:   string;
+  tiers:          HookTier[];
+  analyticsEvent: string;
+  dismissable:    boolean;
+  autoShow:       boolean;
 }
-
-// ─── Revenue Hook Definitions ─────────────────────────────────────────────────
 
 export const REVENUE_HOOKS: Record<HookStage, RevenueHook> = {
 
   // ── Hook 1: Project Intake ────────────────────────────────────────────────
   project_intake: {
-    stage:      'project_intake',
-    trigger:    'User creates a new project',
-    headline:   'Start your project the right way.',
-    subheadline: 'Choose how much support you need from day one.',
+    stage:          'project_intake',
+    trigger:        'User creates a new project',
+    headline:       'Start your project the right way.',
+    subheadline:    'Get an AI concept, zoning check, cost band, and permit risk — all in one $395 report.',
     analyticsEvent: 'revenue_hook_project_intake',
-    dismissable: false,
-    autoShow:    true,
+    dismissable:    false,
+    autoShow:       true,
     tiers: [
       {
         id:          'intake_free',
         name:        'Self-Guided',
         price:       0,
         priceLabel:  'Free',
-        description: 'Use the Kealee platform tools to manage your project yourself.',
+        description: 'Use Kealee platform tools to manage your project yourself.',
         features:    ['Project dashboard', 'Basic tools', 'Community support'],
         cta:         'Start free',
       },
       {
-        id:          'intake_feasibility',
-        name:        'Feasibility Review',
-        price:       49900,
-        priceLabel:  '$499',
-        description: 'Our team reviews your project for feasibility, zoning, and budget alignment.',
-        features:    ['Zoning check', 'Budget feasibility', 'Risk assessment report', '1 review call'],
-        cta:         'Get reviewed',
-        priceId:     process.env.STRIPE_PRICE_INTAKE_FEASIBILITY,
+        id:          'intake_concept_validation',
+        name:        'Project Concept + Validation',
+        price:       39500,
+        priceLabel:  '$395',
+        description: 'AI concept + zoning check + structural review + cost band + permit risk. Delivered in 24 hours.',
+        features:    ['AI concept & floor plan', 'Zoning confirmed', 'Structural risk assessment', 'Cost band ($X–$Y)', 'Permit risk rating', 'Contractor scope notes'],
+        cta:         'Get my concept + validation',
+        priceId:     process.env.STRIPE_PRICE_DESIGN_CONCEPT_VALIDATION,
         highlighted: true,
-        badge:       'Most Popular',
-      },
-      {
-        id:          'intake_full_service',
-        name:        'Full Intake Package',
-        price:       149900,
-        priceLabel:  '$1,499',
-        description: 'Complete intake: feasibility, design brief, estimate model, and permit scope.',
-        features:    ['Everything in Feasibility', 'Design brief', 'Preliminary estimate', 'Permit scope', '2 review calls'],
-        cta:         'Get full package',
-        priceId:     process.env.STRIPE_PRICE_INTAKE_FULL,
+        badge:       'Start Here — $395',
       },
     ],
   },
 
-  // ── Hook 2: DesignBot Complete ────────────────────────────────────────────
+  // ── Hook 2: Design Upgrades (AI_ONLY route only) ──────────────────────────
   design_complete: {
-    stage:      'design_complete',
-    trigger:    'DesignBot generates initial concept',
-    headline:   'Your design concept is ready.',
-    subheadline: 'Take it further with an architect or a full design package.',
+    stage:          'design_complete',
+    trigger:        'ProjectConceptValidation delivered with AI_ONLY route — offer design upgrades',
+    headline:       'Your concept is ready — take it further.',
+    subheadline:    'Upgrade to more floor plan options or a permit-ready drawing set.',
     analyticsEvent: 'revenue_hook_design_complete',
-    dismissable: true,
-    autoShow:    true,
+    dismissable:    true,
+    autoShow:       true,
     tiers: [
       {
-        id:          'design_free',
-        name:        'AI Concept',
-        price:       0,
-        priceLabel:  'Included',
-        description: 'AI-generated concept layout, floor plan sketch, and design brief.',
-        features:    ['Concept layout', 'Floor plan sketch', 'Design brief PDF'],
-        cta:         'Use AI concept',
-      },
-      {
-        id:          'design_architect_review',
-        name:        'Architect Review',
-        price:       99900,
-        priceLabel:  '$999',
-        description: 'Licensed architect reviews and refines your AI concept.',
-        features:    ['AI concept + architect review', 'Refined floor plan', 'Code compliance check', 'Written report'],
-        cta:         'Get architect review',
-        priceId:     process.env.STRIPE_PRICE_DESIGN_ARCHITECT_REVIEW,
+        id:          'design_advanced',
+        name:        'Advanced AI Concept',
+        price:       89900,
+        priceLabel:  '$899',
+        description: '3 floor plan options, 3D exterior views, and detailed material suggestions.',
+        features:    ['3 floor plan variations', '3D exterior views', 'Material palette', 'Room-by-room specs'],
+        cta:         'Get advanced concept',
+        priceId:     process.env.STRIPE_PRICE_DESIGN_ADVANCED,
         highlighted: true,
         badge:       'Recommended',
       },
@@ -128,23 +107,23 @@ export const REVENUE_HOOKS: Record<HookStage, RevenueHook> = {
         name:        'Full Design Package',
         price:       449900,
         priceLabel:  '$4,499',
-        description: 'Complete design documents — schematic, design development, permit-ready drawings.',
-        features:    ['Everything in Architect Review', 'Schematic design', 'Design development', 'Permit-ready drawing set', 'Specification sheet'],
+        description: 'Complete design documents — schematic through permit-ready drawing set.',
+        features:    ['Schematic design', 'Design development', 'Permit-ready drawings', 'Specification sheet', 'Structural details'],
         cta:         'Get full design',
         priceId:     process.env.STRIPE_PRICE_DESIGN_FULL,
       },
     ],
   },
 
-  // ── Hook 3: EstimateBot Complete ──────────────────────────────────────────
+  // ── Hook 3: Estimate Upgrades ─────────────────────────────────────────────
   estimate_complete: {
-    stage:      'estimate_complete',
-    trigger:    'EstimateBot generates project estimate',
-    headline:   'Your project estimate is ready.',
-    subheadline: 'Unlock a detailed cost analysis or a certified cost report.',
+    stage:          'estimate_complete',
+    trigger:        'EstimateBot generates project estimate',
+    headline:       'Your project estimate is ready.',
+    subheadline:    'Unlock a detailed cost analysis or a certified cost report.',
     analyticsEvent: 'revenue_hook_estimate_complete',
-    dismissable: true,
-    autoShow:    true,
+    dismissable:    true,
+    autoShow:       true,
     tiers: [
       {
         id:          'estimate_basic',
@@ -157,92 +136,92 @@ export const REVENUE_HOOKS: Record<HookStage, RevenueHook> = {
       },
       {
         id:          'estimate_detailed',
-        name:        'Detailed Cost Analysis',
-        price:       49900,
-        priceLabel:  '$499',
+        name:        'Detailed Estimate',
+        price:       59500,
+        priceLabel:  '$595',
         description: 'Professional cost analyst reviews and validates your estimate.',
         features:    ['AI estimate + human review', 'Trade-by-trade breakdown', 'Market rate validation', 'PDF report'],
-        cta:         'Get detailed analysis',
+        cta:         'Get detailed estimate',
         priceId:     process.env.STRIPE_PRICE_ESTIMATE_DETAILED,
         highlighted: true,
         badge:       'Most Popular',
       },
       {
         id:          'estimate_certified',
-        name:        'Certified Cost Report',
-        price:       149900,
-        priceLabel:  '$1,499',
+        name:        'Certified Estimate',
+        price:       185000,
+        priceLabel:  '$1,850',
         description: 'Certified cost report for lender submission, insurance, or investor decks.',
-        features:    ['Detailed analysis', 'Certified by licensed estimator', 'Lender-ready format', 'RSMeans data'],
+        features:    ['Detailed estimate', 'Certified by licensed estimator', 'Lender-ready format', 'RSMeans data'],
         cta:         'Get certified report',
         priceId:     process.env.STRIPE_PRICE_ESTIMATE_CERTIFIED,
       },
     ],
   },
 
-  // ── Hook 4: PermitBot Detects Permit Requirement ──────────────────────────
+  // ── Hook 4: Permit Services ───────────────────────────────────────────────
   permit_detected: {
-    stage:      'permit_detected',
-    trigger:    'PermitBot identifies permit requirements for the project',
-    headline:   'Your project requires permits.',
-    subheadline: 'Handle permitting yourself or let us manage the entire process.',
+    stage:          'permit_detected',
+    trigger:        'PermitBot identifies permit requirements for the project',
+    headline:       'Your project requires permits.',
+    subheadline:    'Handle permitting yourself or let us manage the entire process.',
     analyticsEvent: 'revenue_hook_permit_detected',
-    dismissable: true,
-    autoShow:    true,
+    dismissable:    true,
+    autoShow:       true,
     tiers: [
       {
         id:          'permit_free',
-        name:        'Permit Checklist',
+        name:        'Permit Guidance',
         price:       0,
         priceLabel:  'Free',
-        description: 'AI-generated permit checklist specific to your project and jurisdiction.',
+        description: 'AI-generated permit checklist for your project and jurisdiction.',
         features:    ['Permit type identification', 'Checklist PDF', 'Jurisdiction contact info'],
-        cta:         'Get free checklist',
+        cta:         'Get free guidance',
       },
       {
-        id:          'permit_prep',
-        name:        'Permit Preparation',
-        price:       150000,
-        priceLabel:  '$1,500',
-        description: 'We prepare your permit application package — drawings, forms, and supporting docs.',
-        features:    ['Application forms', 'Drawing preparation', 'Supporting documentation', 'Review meeting'],
-        cta:         'Get permit prep',
-        priceId:     process.env.STRIPE_PRICE_PERMIT_PREP,
+        id:          'permit_simple',
+        name:        'Simple Permit Filing',
+        price:       14900,
+        priceLabel:  '$149',
+        description: 'Filing service for straightforward single-trade permits.',
+        features:    ['Application forms', 'Single-trade scope', 'Status tracking'],
+        cta:         'File my permit',
+        priceId:     process.env.STRIPE_PRICE_PERMIT_SIMPLE,
+      },
+      {
+        id:          'permit_package',
+        name:        'Permit Package',
+        price:       95000,
+        priceLabel:  '$950',
+        description: 'Full application prep, submission, and tracking for standard residential permits.',
+        features:    ['Application forms', 'Drawing preparation', 'Supporting documentation', 'Submission + tracking'],
+        cta:         'Get permit package',
+        priceId:     process.env.STRIPE_PRICE_PERMIT_PACKAGE,
         highlighted: true,
         badge:       'Most Popular',
       },
       {
         id:          'permit_coordination',
         name:        'Permit Coordination',
-        price:       300000,
-        priceLabel:  '$3,000',
-        description: 'We submit and track your permit through the jurisdiction.',
-        features:    ['Everything in Prep', 'Submission handling', 'Response to comments', 'Status tracking'],
+        price:       275000,
+        priceLabel:  '$2,750',
+        description: 'Submit, track, and respond to comments — full coordination through approval.',
+        features:    ['Everything in Package', 'Response to comments', 'Multiple jurisdiction contacts'],
         cta:         'Get coordination',
         priceId:     process.env.STRIPE_PRICE_PERMIT_COORDINATION,
-      },
-      {
-        id:          'permit_expediting',
-        name:        'Permit Expediting',
-        price:       500000,
-        priceLabel:  '$5,000',
-        description: 'Priority expediting service — we push for fastest possible approval.',
-        features:    ['Everything in Coordination', 'Expeditor liaison', 'Priority routing', 'Approval guarantee*'],
-        cta:         'Expedite my permit',
-        priceId:     process.env.STRIPE_PRICE_PERMIT_EXPEDITING,
       },
     ],
   },
 
   // ── Hook 5: Contractor Assignment ─────────────────────────────────────────
   contractor_assignment: {
-    stage:      'contractor_assignment',
-    trigger:    'Project owner is ready to assign a contractor',
-    headline:   'Ready to assign your contractor?',
-    subheadline: 'Protect your project with the right contract and oversight.',
+    stage:          'contractor_assignment',
+    trigger:        'Project owner is ready to assign a contractor',
+    headline:       'Ready to assign your contractor?',
+    subheadline:    'Protect your project with the right contract and oversight.',
     analyticsEvent: 'revenue_hook_contractor_assignment',
-    dismissable: true,
-    autoShow:    true,
+    dismissable:    true,
+    autoShow:       true,
     tiers: [
       {
         id:          'assignment_basic',
@@ -279,13 +258,13 @@ export const REVENUE_HOOKS: Record<HookStage, RevenueHook> = {
 
   // ── Hook 6: Engagement Creation ───────────────────────────────────────────
   engagement_creation: {
-    stage:      'engagement_creation',
-    trigger:    'Engagement document is being created for a project',
-    headline:   'Create your engagement agreement.',
-    subheadline: 'Choose the right level of documentation for your project.',
+    stage:          'engagement_creation',
+    trigger:        'Engagement document is being created for a project',
+    headline:       'Create your engagement agreement.',
+    subheadline:    'Choose the right level of documentation for your project.',
     analyticsEvent: 'revenue_hook_engagement_creation',
-    dismissable: false,
-    autoShow:    true,
+    dismissable:    false,
+    autoShow:       true,
     tiers: [
       {
         id:          'engagement_standard',
@@ -312,7 +291,7 @@ export const REVENUE_HOOKS: Record<HookStage, RevenueHook> = {
         name:        'Full Legal Package',
         price:       349900,
         priceLabel:  '$3,499',
-        description: 'Complete legal documentation: engagement, NDA, IP assignment, and dispute clause.',
+        description: 'Complete legal documentation package.',
         features:    ['Custom agreement', 'NDA', 'IP assignment', 'Dispute resolution clause', 'Notarization support'],
         cta:         'Get legal package',
         priceId:     process.env.STRIPE_PRICE_ENGAGEMENT_LEGAL,
@@ -320,15 +299,15 @@ export const REVENUE_HOOKS: Record<HookStage, RevenueHook> = {
     ],
   },
 
-  // ── Hook 7: Project Execution ─────────────────────────────────────────────
+  // ── Hook 7: PM Services (one-time per project — NOT recurring) ────────────
   project_execution: {
-    stage:      'project_execution',
-    trigger:    'Project moves to active execution phase',
-    headline:   'Your project is under construction.',
-    subheadline: 'Add monitoring and financial protection for your build.',
+    stage:          'project_execution',
+    trigger:        'Project moves to active execution phase',
+    headline:       'Your project is under construction.',
+    subheadline:    'Add professional PM oversight for your build — one-time fee per project.',
     analyticsEvent: 'revenue_hook_project_execution',
-    dismissable: true,
-    autoShow:    false, // show on demand or when milestone is missed
+    dismissable:    true,
+    autoShow:       false,
     tiers: [
       {
         id:          'execution_basic',
@@ -340,39 +319,41 @@ export const REVENUE_HOOKS: Record<HookStage, RevenueHook> = {
         cta:         'Continue self-managed',
       },
       {
-        id:          'execution_monitoring',
-        name:        'Construction Monitoring',
-        price:       99900,
-        priceLabel:  '$999/mo',
-        description: 'Monthly site inspection reports and milestone verification.',
-        features:    ['Monthly inspections', 'Photo documentation', 'Progress reports', 'Milestone sign-off'],
-        cta:         'Add monitoring',
-        priceId:     process.env.STRIPE_PRICE_EXECUTION_MONITORING,
+        id:          'execution_pm_advisory',
+        name:        'PM Advisory',
+        price:       95000,
+        priceLabel:  '$950',
+        description: 'Milestone reviews, budget oversight, and owner guidance — one-time per project.',
+        features:    ['Milestone review calls', 'Budget variance alerts', 'Owner guidance', 'Photo documentation'],
+        cta:         'Add PM Advisory',
+        priceId:     process.env.STRIPE_PRICE_PM_ADVISORY,
         highlighted: true,
         badge:       'Recommended',
+        billing:     'one_time',
       },
       {
-        id:          'execution_financial_control',
-        name:        'Financial Control',
-        price:       199900,
-        priceLabel:  '$1,999/mo',
-        description: 'Full financial oversight — pay-app review, lien management, and budget tracking.',
-        features:    ['Monitoring included', 'Pay-app review', 'Lien waiver tracking', 'Budget variance alerts', 'Retainage management'],
-        cta:         'Add financial control',
-        priceId:     process.env.STRIPE_PRICE_EXECUTION_FINANCIAL,
+        id:          'execution_pm_oversight',
+        name:        'PM Oversight',
+        price:       295000,
+        priceLabel:  '$2,950',
+        description: 'Full PM oversight from groundbreaking to closeout — one-time per project.',
+        features:    ['Advisory included', 'Dedicated PM', 'Weekly check-ins', 'Pay-app review', 'Closeout management'],
+        cta:         'Add PM Oversight',
+        priceId:     process.env.STRIPE_PRICE_PM_OVERSIGHT,
+        billing:     'one_time',
       },
     ],
   },
 
-  // ── Hook 8: Contractor Growth Tools ───────────────────────────────────────
+  // ── Hook 8: Contractor Growth ─────────────────────────────────────────────
   contractor_growth: {
-    stage:      'contractor_growth',
-    trigger:    'Contractor accesses marketing or growth section of portal',
-    headline:   'Grow your contractor business.',
-    subheadline: 'Get more projects, more visibility, and more leads.',
+    stage:          'contractor_growth',
+    trigger:        'Contractor accesses marketing or growth section of portal',
+    headline:       'Grow your contractor business.',
+    subheadline:    'Get more projects, more visibility, and more leads.',
     analyticsEvent: 'revenue_hook_contractor_growth',
-    dismissable: true,
-    autoShow:    false,
+    dismissable:    true,
+    autoShow:       false,
     tiers: [
       {
         id:          'growth_starter',
@@ -383,6 +364,7 @@ export const REVENUE_HOOKS: Record<HookStage, RevenueHook> = {
         features:    ['Profile optimization', 'Marketplace listing priority', 'Monthly performance report'],
         cta:         'Get Starter',
         priceId:     process.env.STRIPE_PRICE_GROWTH_STARTER,
+        billing:     'monthly',
       },
       {
         id:          'growth_pro',
@@ -395,6 +377,7 @@ export const REVENUE_HOOKS: Record<HookStage, RevenueHook> = {
         priceId:     process.env.STRIPE_PRICE_GROWTH_PRO,
         highlighted: true,
         badge:       'Most Popular',
+        billing:     'monthly',
       },
       {
         id:          'growth_enterprise',
@@ -405,19 +388,18 @@ export const REVENUE_HOOKS: Record<HookStage, RevenueHook> = {
         features:    ['Growth features', 'Google Ads management', 'Monthly ad spend ($500 included)', 'Email/SMS sequences', 'Dedicated account manager'],
         cta:         'Get Pro',
         priceId:     process.env.STRIPE_PRICE_GROWTH_ENTERPRISE,
+        billing:     'monthly',
       },
     ],
   },
 };
 
-// ─── Helper: get hook by stage ────────────────────────────────────────────────
-
 export function getHook(stage: HookStage): RevenueHook {
   return REVENUE_HOOKS[stage];
 }
 
-export function getFreeTier(stage: HookStage): HookTier {
-  return REVENUE_HOOKS[stage].tiers.find(t => t.price === 0)!;
+export function getFreeTier(stage: HookStage): HookTier | undefined {
+  return REVENUE_HOOKS[stage].tiers.find(t => t.price === 0);
 }
 
 export function getPaidTiers(stage: HookStage): HookTier[] {

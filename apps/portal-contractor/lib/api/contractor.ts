@@ -35,6 +35,8 @@ export interface ContractorProfile {
   verificationStatus: string
   requiresReverification: boolean
   profileExists: boolean
+  slug: string | null
+  isVerified: boolean
 }
 
 export async function getContractorProfile(): Promise<ContractorProfile> {

@@ -10,6 +10,7 @@ import {
   FileBarChart,
   LogOut,
   Building,
+  Briefcase,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -19,6 +20,7 @@ const NAV_ITEMS = [
   { href: '/capital', label: 'Capital', icon: Landmark },
   { href: '/portfolio', label: 'Portfolio', icon: LayoutGrid },
   { href: '/reports', label: 'Reports', icon: FileBarChart },
+  { href: '/services', label: 'Services', icon: Briefcase },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

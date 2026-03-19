@@ -5,80 +5,113 @@ import { RoleWorkflow } from '@/components/roles/RoleWorkflow'
 import { RoleCTA } from '@/components/roles/RoleCTA'
 
 export const metadata: Metadata = {
-  title: 'For Homeowners',
+  title: 'For Homeowners — Kealee',
   description:
-    'Manage your renovation or new build with full transparency. Track milestones, control payments, and get AI guidance — all from one place.',
+    'Plan, price, permit, and control your renovation or new build. Transparent pricing at every step — pay only for what your project needs.',
 }
 
 const BENEFITS = [
   {
-    emoji: '📋',
+    icon: '📋',
     title: 'Full Project Visibility',
-    description:
-      'See every milestone, payment, and inspection in real time. No more chasing updates from your contractor.',
+    desc: 'See every milestone, payment, and inspection in real time. No more chasing updates from your contractor.',
   },
   {
-    emoji: '💳',
+    icon: '💳',
     title: 'Escrow-Protected Payments',
-    description:
-      'Funds are held securely until each milestone is verified complete. You never pay for work that hasn't been done.',
+    desc: "Funds are held securely until each milestone is verified complete. You never pay for work that hasn't been done.",
   },
   {
-    emoji: '🤖',
+    icon: '🤖',
     title: 'KeaBot Owner Assistant',
-    description:
-      'Your dedicated AI advisor answers questions about budget, schedule, and decisions — 24/7 on any device.',
+    desc: 'Your dedicated AI advisor answers questions about budget, schedule, and decisions — 24/7 on any device.',
   },
   {
-    emoji: '🔨',
+    icon: '🔨',
     title: 'Vetted Contractor Network',
-    description:
-      'Every contractor is licensed, insured, background-checked, and reputation-scored before entering the Kealee network.',
+    desc: 'Every contractor is licensed, insured, background-checked, and reputation-scored before entering the Kealee network.',
   },
   {
-    emoji: '📊',
+    icon: '📊',
     title: 'Budget Tracking',
-    description:
-      'Track spending vs. budget with automatic variance alerts. Know exactly where every dollar is going.',
+    desc: 'Track spending vs. budget with automatic variance alerts. Know exactly where every dollar is going.',
   },
   {
-    emoji: '✅',
+    icon: '✅',
     title: 'Inspection Coordination',
-    description:
-      'Schedule and track code inspections automatically. Punch lists ensure nothing slips through the cracks.',
+    desc: 'Schedule and track code inspections automatically. Punch lists ensure nothing slips through the cracks.',
   },
 ]
 
 const WORKFLOW = [
   {
-    title: 'Describe Your Project',
-    description:
-      'Tell us what you want to build — renovation, addition, or new construction. Kealee matches you to the right project type and Digital Twin tier.',
+    number: 1,
+    title: 'Get Your Concept + Validation',
+    desc: 'For $395, get an AI-generated floor plan concept, zoning check, structural risk, cost band, and permit risk — delivered in 24 hours.',
   },
   {
+    number: 2,
+    title: 'Price Your Project',
+    desc: 'AI estimate is included free. Upgrade to a Detailed Estimate ($595) or Certified Estimate ($1,850) for lender-ready reports.',
+  },
+  {
+    number: 3,
+    title: 'Handle Your Permits',
+    desc: 'Permit guidance is free. Let us file ($149), package ($950), coordinate ($2,750), or expedite ($5,500) for you.',
+  },
+  {
+    number: 4,
     title: 'Get Matched to Contractors',
-    description:
-      'AI matching surfaces verified contractors in your area with the right trade, license, and capacity for your project.',
+    desc: 'AI matching surfaces verified contractors in your area with the right trade, license, and capacity for your project.',
   },
   {
+    number: 5,
     title: 'Review Bids & Sign Contracts',
-    description:
-      'Compare AI-analyzed bids side by side. Digital contracts are signed and stored automatically.',
+    desc: 'Compare AI-analyzed bids side by side. Add PM Advisory ($950) or PM Oversight ($2,950) for professional oversight.',
   },
   {
-    title: 'Fund Escrow',
-    description:
-      'Deposit project funds into a secure escrow account. Payments are released only when you approve each milestone.',
-  },
-  {
+    number: 6,
     title: 'Track Every Milestone',
-    description:
-      'Watch your project advance through the 12-phase lifecycle with photos, daily logs, and inspection results in real time.',
+    desc: 'Escrow-protected payments release only when you approve each milestone. Full project visibility from day one.',
+  },
+]
+
+const PRICING = [
+  {
+    section: 'Plan Your Project',
+    items: [
+      { name: 'Project Concept + Validation', price: '$395', note: 'AI concept + zoning + cost band + permit risk. Delivered in 24hrs.', highlight: true },
+      { name: 'Advanced AI Concept', price: '$899', note: '3 floor plan options, 3D views, material suggestions' },
+      { name: 'Full Design Package', price: '$4,499', note: 'Permit-ready drawing set' },
+    ],
+    note: 'Projects over $65,000 or with structural complexity are connected with a licensed architect.',
   },
   {
-    title: 'Close Out & Move In',
-    description:
-      'Final inspection, certificate of occupancy, and warranty handover — all managed in one place. Your digital twin stays active for operations.',
+    section: 'Price Your Project',
+    items: [
+      { name: 'AI Estimate', price: 'Free', note: 'Included with all projects' },
+      { name: 'Detailed Estimate', price: '$595', note: 'Professional cost analyst review' },
+      { name: 'Certified Estimate', price: '$1,850', note: 'Lender-ready certified report' },
+    ],
+  },
+  {
+    section: 'Permit Your Project',
+    items: [
+      { name: 'Permit Guidance', price: 'Free', note: 'AI checklist + jurisdiction info' },
+      { name: 'Simple Permit Filing', price: '$149', note: 'Single-trade permits' },
+      { name: 'Permit Package', price: '$950', note: 'Full application prep + submission', highlight: true },
+      { name: 'Permit Coordination', price: '$2,750', note: 'Submission, tracking + comment response' },
+      { name: 'Permit Expediting', price: '$5,500', note: 'Priority approval service' },
+    ],
+  },
+  {
+    section: 'Control Your Project',
+    items: [
+      { name: 'Self-Managed', price: 'Free', note: 'Platform tools included' },
+      { name: 'PM Advisory', price: '$950', note: 'Milestone reviews + budget oversight', highlight: true },
+      { name: 'PM Oversight', price: '$2,950', note: 'Full PM from groundbreaking to closeout' },
+    ],
+    note: 'One-time per project fee — not a subscription.',
   },
 ]
 
@@ -87,32 +120,93 @@ export default function HomeownersPage() {
     <>
       <RoleHero
         badge="For Homeowners & Renovation Projects"
-        badgeColor="#2ABFBF"
-        headline='Build with <span style="color:#E8793A">Confidence</span> — Not Chaos'
-        subheadline="Kealee gives homeowners full transparency into their renovation or new build. Track milestones, control payments, and get AI-powered guidance — without needing a construction degree."
-        primaryCTA={{ label: 'Start Your Project', href: '/contact' }}
-        secondaryCTA={{ label: 'Browse Contractors', href: '/marketplace' }}
+        headline="Build with Confidence"
+        highlight="Confidence"
+        subhead="Plan, price, permit, and control your project. Transparent pricing at every step — pay only for what your project needs."
+        cta={{ label: 'Start with $395 Concept + Validation', href: '/homeowners/start' }}
+        secondaryCta={{ label: 'Browse Contractors', href: '/marketplace' }}
         trustItems={['No surprise invoices', 'Escrow-protected payments', 'Licensed & insured contractors', 'AI advisor included']}
         dark
       />
+
+      {/* Pricing Section */}
+      <section className="mx-auto max-w-5xl px-4 py-20">
+        <div className="mb-12 text-center">
+          <h2 className="text-3xl font-bold" style={{ color: '#1A2B4A' }}>
+            Transparent pricing at every step
+          </h2>
+          <p className="mt-3 text-gray-500">Pay only for what your project needs. No subscriptions for homeowners.</p>
+        </div>
+
+        <div className="space-y-12">
+          {PRICING.map(section => (
+            <div key={section.section}>
+              <h3 className="mb-4 text-lg font-bold" style={{ color: '#1A2B4A' }}>{section.section}</h3>
+              <div className="overflow-hidden rounded-xl border border-gray-200">
+                {section.items.map((item, i) => (
+                  <div
+                    key={item.name}
+                    className="flex items-center justify-between px-5 py-4"
+                    style={{
+                      backgroundColor: item.highlight ? 'rgba(42,191,191,0.04)' : i % 2 === 0 ? 'white' : '#FAFAFA',
+                      borderBottom: i < section.items.length - 1 ? '1px solid #F3F4F6' : undefined,
+                    }}
+                  >
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>
+                        {item.name}
+                        {item.highlight && (
+                          <span className="ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold"
+                            style={{ backgroundColor: 'rgba(42,191,191,0.1)', color: '#2ABFBF' }}>
+                            Popular
+                          </span>
+                        )}
+                      </p>
+                      <p className="mt-0.5 text-xs text-gray-400">{item.note}</p>
+                    </div>
+                    <span className="ml-4 flex-shrink-0 text-sm font-bold" style={{ color: '#E8793A' }}>
+                      {item.price}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              {section.note && (
+                <p className="mt-2 text-xs text-gray-400">{section.note}</p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Typical path callout */}
+        <div className="mt-12 rounded-2xl p-8" style={{ backgroundColor: 'rgba(26,43,74,0.03)' }}>
+          <p className="text-center text-sm font-medium text-gray-600">
+            Typical fully-managed project:
+            <span className="ml-2 font-bold" style={{ color: '#1A2B4A' }}>
+              $395 + $595 + $950 + $2,950 = $4,890
+            </span>
+          </p>
+          <p className="mt-2 text-center text-xs text-gray-400">
+            Concept + Validation · Detailed Estimate · Permit Package · PM Oversight
+          </p>
+        </div>
+      </section>
+
       <RoleBenefits
-        eyebrow="What You Get"
+        badge="What You Get"
         headline="Everything You Need to Build Smarter"
-        subheadline="From finding the right contractor to final walkthrough — Kealee handles the complexity so you can focus on the outcome."
+        subhead="From finding the right contractor to final walkthrough — Kealee handles the complexity so you can focus on the outcome."
         benefits={BENEFITS}
       />
       <RoleWorkflow
-        eyebrow="How It Works"
         headline="From Idea to Completion in 6 Steps"
         steps={WORKFLOW}
-        accentColor="#2ABFBF"
+        accent="#2ABFBF"
       />
       <RoleCTA
         headline="Ready to Start Your Project?"
-        subheadline="Join thousands of homeowners who have built smarter with Kealee's AI-powered platform."
-        primaryCTA={{ label: 'Start Your Project', href: '/contact' }}
-        secondaryCTA={{ label: 'Browse Contractors', href: '/marketplace' }}
-        accentColor="#E8793A"
+        subhead="Join thousands of homeowners who have built smarter with Kealee's AI-powered platform."
+        cta={{ label: 'Get my $395 Concept + Validation', href: '/homeowners/start' }}
+        secondaryCta={{ label: 'Browse Contractors', href: '/marketplace' }}
       />
     </>
   )

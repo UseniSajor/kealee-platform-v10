@@ -64,10 +64,11 @@ export const PRIMARY_NAV: NavItem[] = [
           { label: 'Track My Build',        href: '/portal-owner',       description: 'Monitor progress and milestones' },
           { label: 'Escrow Payments',       href: '/homeowners#payments', description: 'Milestone-based, protected payments' },
           { label: 'AI Project Assistant',  href: '/homeowners#keabot',  description: 'Ask KeaBot Owner anything about your project' },
+          { label: 'Pricing',               href: '/pricing',            description: 'Transparent per-project pricing — no subscriptions' },
         ],
       },
     ],
-    featured: { label: 'Get a Free Estimate', href: '/contact', description: 'Tell us about your project — we\'ll match you today' },
+    featured: { label: 'Start with $395 Concept + Validation', href: '/homeowners/start', description: 'Get your AI concept, zoning check, and cost band in 24hrs' },
   },
   {
     label: 'For Developers',
@@ -136,6 +137,23 @@ export const PRIMARY_NAV: NavItem[] = [
         ],
       },
     ],
+  },
+  {
+    label: 'Ops OS',
+    type:  'dropdown',
+    href:  '/ops',
+    groups: [
+      {
+        title: 'Operations Tiers',
+        links: [
+          { label: 'Tier A — $1,750/mo',   href: '/pricing#ops',        description: 'Small operators & independents (up to 5 projects)' },
+          { label: 'Tier B — $3,750/mo',   href: '/pricing#ops',        description: 'Growing contractors (up to 15 projects)' },
+          { label: 'Tier C — $9,500/mo',   href: '/pricing#ops',        description: 'Large GCs & multi-trade operations (up to 50 projects)' },
+          { label: 'Tier D — $16,500/mo',  href: '/pricing#ops',        description: 'Enterprise developers & portfolio operators' },
+        ],
+      },
+    ],
+    featured: { label: 'View Ops OS pricing', href: '/pricing', description: 'Full platform access for construction businesses' },
   },
   { label: 'About', href: '/about' },
 ]

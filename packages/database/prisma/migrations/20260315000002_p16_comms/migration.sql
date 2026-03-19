@@ -36,7 +36,7 @@ CREATE UNIQUE INDEX "notif_event_preferences_userId_event_key" ON "notif_event_p
 
 -- Foreign keys (references users table)
 ALTER TABLE "in_app_notifications" ADD CONSTRAINT "in_app_notifications_userId_fkey"
-    FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "notif_event_preferences" ADD CONSTRAINT "notif_event_preferences_userId_fkey"
-    FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

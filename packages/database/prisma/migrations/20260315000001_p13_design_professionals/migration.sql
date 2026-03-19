@@ -56,7 +56,7 @@ CREATE INDEX "dpa_project_status" ON "design_professional_assignments"("projectI
 
 ALTER TABLE "design_professionals"
   ADD CONSTRAINT "dp_user_fk" FOREIGN KEY ("userId")
-  REFERENCES "users"("id") ON DELETE CASCADE;
+  REFERENCES "User"("id") ON DELETE CASCADE;
 
 ALTER TABLE "design_professional_assignments"
   ADD CONSTRAINT "dpa_professional_fk" FOREIGN KEY ("professionalId")
