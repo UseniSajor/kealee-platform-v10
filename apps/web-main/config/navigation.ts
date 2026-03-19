@@ -156,6 +156,7 @@ export const PRIMARY_NAV: NavItem[] = [
     featured: { label: 'View Ops OS pricing', href: '/pricing', description: 'Full platform access for construction businesses' },
   },
   { label: 'About', href: '/about' },
+  { label: 'Careers', href: '/careers' },
 ]
 
 // ── CTA buttons ───────────────────────────────────────────────────────────────
