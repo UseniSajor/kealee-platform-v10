@@ -102,12 +102,12 @@ const CONTRACTOR_GROWTH = [
 
 const OPS_OS_TIERS = [
   {
-    name: 'Tier A',
-    price: '$1,750',
+    name: 'Starter',
+    price: '$1,749',
     period: '/mo',
-    description: 'Small operators & independents.',
+    description: 'Small operators & independents getting started.',
     features: [
-      'Up to 5 active projects',
+      '5 active projects',
       'OS-PM + OS-Pay core',
       'KeaBot Construction',
       'Milestone payment escrow',
@@ -118,28 +118,28 @@ const OPS_OS_TIERS = [
     ctaHref: '/contact',
   },
   {
-    name: 'Tier B',
-    price: '$3,750',
+    name: 'Professional',
+    price: '$6,999',
     period: '/mo',
     description: 'Growing contractors & mid-size operators.',
     features: [
-      'Up to 15 active projects',
+      '20 active projects',
       'Full OS-PM + OS-Pay + Marketplace',
       'All KeaBots included',
       'Change orders + RFI tracking',
-      'Custom reporting',
+      'Custom reporting + analytics',
     ],
     highlight: true,
     cta: 'Contact Sales',
     ctaHref: '/contact',
   },
   {
-    name: 'Tier C',
-    price: '$9,500',
+    name: 'Enterprise',
+    price: '$14,424',
     period: '/mo',
     description: 'Large GCs & multi-trade operations.',
     features: [
-      'Up to 50 active projects',
+      '50 active projects',
       'All 7 OS modules',
       'OS-Land + OS-Feas access',
       'Lender draw coordination',
@@ -150,19 +150,19 @@ const OPS_OS_TIERS = [
     ctaHref: '/contact',
   },
   {
-    name: 'Tier D',
-    price: '$16,500',
-    period: '/mo',
-    description: 'Enterprise developers & portfolio operators.',
+    name: 'Custom',
+    price: 'Custom',
+    period: '',
+    description: 'Custom API + app design-build for GC firms, builders, and construction professionals.',
     features: [
-      'Unlimited projects',
-      'Full platform access',
-      'White-label options',
-      'Custom integrations + API',
-      'Dedicated success team',
+      '50+ active projects',
+      'Custom API access + integrations',
+      'Custom mobile/web app design-build',
+      'Dedicated engineering + design team',
+      'White-label + branded platform',
     ],
     highlight: false,
-    cta: 'Contact Sales',
+    cta: 'Talk to Us',
     ctaHref: '/contact',
   },
 ]
@@ -193,7 +193,7 @@ const FAQ_ITEMS = [
   },
   {
     question: 'What is the Ops OS pricing for?',
-    answer: 'Ops OS tiers (A–D, $1,750–$16,500/mo) are for construction businesses and operators running multiple projects. They include full Construction OS access, all 7 platform modules, and KeaBot AI assistants — priced by active project count and complexity.',
+    answer: 'Ops OS tiers (Starter $1,749/mo · Professional $6,999/mo · Enterprise $14,424/mo) are for construction businesses running multiple projects simultaneously. They include full Construction OS access, all 7 platform modules, and KeaBot AI assistants — priced by active project count. Custom tier covers 50+ projects with a dedicated API and app design-build.',
   },
   {
     question: 'What do developer services cover?',
@@ -443,7 +443,7 @@ export default function PricingPage() {
           <SectionHeader
             label="Operations OS"
             title="For businesses running multiple projects"
-            subtitle="Full platform access with AI, escrow payments, and all 7 OS modules — priced by scale."
+            subtitle="Full platform access with AI, escrow payments, and all 7 OS modules — priced by active project count."
           />
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

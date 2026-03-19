@@ -29,6 +29,48 @@ const OPEN_ROLES = [
     team: 'Operations',
     location: 'Washington, DC',
     type: 'Full-time',
+    badge: 'Hiring Now',
+  },
+  {
+    title: 'Senior Project Manager',
+    team: 'Operations',
+    location: 'DC / MD / VA',
+    type: 'Full-time',
+    badge: null,
+  },
+  {
+    title: 'Construction Superintendent',
+    team: 'Field Operations',
+    location: 'DC / MD / VA',
+    type: 'Full-time',
+    badge: 'Hiring Now',
+  },
+  {
+    title: 'Construction Estimator',
+    team: 'Estimation',
+    location: 'Remote (US) or DC Metro',
+    type: 'Full-time',
+    badge: 'Hiring Now',
+  },
+  {
+    title: 'Senior Estimator',
+    team: 'Estimation',
+    location: 'Remote (US) or DC Metro',
+    type: 'Full-time',
+    badge: null,
+  },
+  {
+    title: 'Product Specialist',
+    team: 'Product',
+    location: 'Remote (US)',
+    type: 'Full-time',
+    badge: 'Hiring Now',
+  },
+  {
+    title: 'Product Designer',
+    team: 'Product',
+    location: 'Remote (US)',
+    type: 'Full-time',
     badge: null,
   },
   {
@@ -37,13 +79,6 @@ const OPEN_ROLES = [
     location: 'DC / MD / VA',
     type: 'Full-time',
     badge: null,
-  },
-  {
-    title: 'Product Designer',
-    team: 'Product',
-    location: 'Remote (US)',
-    type: 'Full-time',
-    badge: 'Hiring Now',
   },
   {
     title: 'Business Development Manager',
@@ -141,8 +176,8 @@ const TEAMS = [
     description: 'KeaBots, Claude API, multi-turn tool-use agents, Digital Development Twin System (DDTS). We\'re building AI that understands the construction lifecycle, not just text.',
   },
   {
-    name: 'Operations',
-    description: 'Project management, permit coordination, contractor matching, and client delivery. The engine that makes the platform real for clients.',
+    name: 'Operations & Field',
+    description: 'Project managers, superintendents, permit coordinators, and estimators. The engine that delivers the platform to real projects on real job sites.',
   },
   {
     name: 'Design & Product',
