@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+import { MarketplaceTopbar } from '@/components/marketplace/MarketplaceTopbar'
 import { MarketplaceNav } from '@/components/marketplace/MarketplaceNav'
 import { MarketplaceFilterBar } from '@/components/marketplace/MarketplaceFilterBar'
 import { MarketplaceCard, type ContractorCardData } from '@/components/marketplace/MarketplaceCard'
@@ -191,27 +192,24 @@ export default function MarketplacePage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F7FAFC' }}>
+      {/* Topbar — rows 1 + 2: brand/roles/auth + utility links */}
+      <MarketplaceTopbar />
+
       {/* Hero */}
       <div className="bg-white border-b border-gray-200">
-        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <span
-                className="text-xs font-bold uppercase tracking-widest"
-                style={{ color: '#E8793A' }}
-              >
-                Contractor Marketplace
-              </span>
-              <h1 className="mt-2 font-display text-3xl font-bold" style={{ color: '#1A2B4A' }}>
+              <h1 className="font-display text-2xl font-bold sm:text-3xl" style={{ color: '#1A2B4A' }}>
                 Vetted Contractors, Every Trade
               </h1>
-              <p className="mt-2 text-gray-500">
+              <p className="mt-1.5 text-sm text-gray-500">
                 Licensed, insured, background-checked, and reputation-scored professionals in the DC-Baltimore corridor.
               </p>
             </div>
             <Link
               href="/contractor/register"
-              className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              className="inline-flex shrink-0 items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#1A2B4A' }}
             >
               Join as Contractor <ArrowRight className="h-4 w-4" />
@@ -220,7 +218,7 @@ export default function MarketplacePage() {
         </div>
       </div>
 
-      {/* Nav */}
+      {/* Row 3 — Nav: trade + category filters */}
       <MarketplaceNav
         activeTrade={activeTrade}
         activeCategory={activeCategory}

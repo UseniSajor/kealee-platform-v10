@@ -1,0 +1,23 @@
+{
+  "name": "@kealee/intake",
+  "version": "1.0.0",
+  "description": "Public intake system for Kealee — config, schemas, scoring, routing, and submission logic",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "zod": "^3.22.0"
+  }
+}

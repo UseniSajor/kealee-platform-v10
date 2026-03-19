@@ -558,6 +558,9 @@ const start = async () => {
       // Sprint 4A: Guest checkout (no auth required)
       const { guestCheckoutRoutes } = await import('./modules/marketplace/guest-checkout.routes')
       await fastify.register(guestCheckoutRoutes, { prefix: '/marketplace' })
+      // Public intake (no-auth) — /api/v1/intake/public, /checkout, /task
+      const { publicIntakeRoutes } = await import('./modules/intake/public-intake.routes')
+      await fastify.register(publicIntakeRoutes, { prefix: '/intake' })
       // Concept intake + queue routes
       const { conceptIntakeRoutes } = await import('./modules/concepts/concept-intake.routes')
       await fastify.register(conceptIntakeRoutes, { prefix: '/concepts' })
