@@ -1,6 +1,7 @@
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import type {
   Complexity,
   DesignBrief,
@@ -13,14 +14,34 @@ function id(prefix: string) {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
-function imageSet(prefix: string, count: number) {
-  return Array.from({ length: count }, (_, i) => {
-    return `https://placeholder.kealee.com/concept/${prefix}-${i + 1}.jpg`;
-  });
-}
-
 function getAnthropicClient(): Anthropic {
   return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+}
+
+function getOpenAIClient(): OpenAI {
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+}
+
+/**
+ * Generate a single image via DALL-E 3 and return its URL.
+ * Falls back to null on failure so callers can handle gracefully.
+ */
+async function generateDalleImage(prompt: string, size: "1792x1024" | "1024x1792" | "1024x1024" = "1792x1024"): Promise<string | null> {
+  try {
+    const client = getOpenAIClient();
+    const response = await client.images.generate({
+      model: "dall-e-3",
+      prompt,
+      n: 1,
+      size,
+      quality: "hd",
+      response_format: "url",
+    });
+    return response.data[0]?.url ?? null;
+  } catch (err) {
+    console.warn("[generateDalleImage] DALL-E 3 call failed:", (err as Error).message);
+    return null;
+  }
 }
 
 export const createIntakeRecord = tool(
@@ -257,40 +278,113 @@ Return only valid JSON, no markdown.`;
 );
 
 export const generateExteriorConceptImages = tool(
-  async (input: { intakeId: string; designBriefId: string; variations: number; imageStyle: string; preserveStructure: boolean }) => {
+  async (input: { intakeId: string; designBriefId: string; variations: number; imageStyle: string; preserveStructure: boolean; facadeStrategy?: string; materials?: string[]; palette?: string[]; buildingType?: string; stylePreferences?: string[] }) => {
+    const style = input.imageStyle === "photoreal" ? "photorealistic architectural visualization" : `${input.imageStyle} architectural rendering`;
+    const styleHint = (input.stylePreferences ?? []).join(", ") || "modern transitional";
+    const materials = (input.materials ?? []).join(", ") || "fiber cement, stone accents, black metal details";
+    const palette = (input.palette ?? []).join(", ") || "warm white, charcoal, natural wood";
+    const facade = input.facadeStrategy || "modernized curb appeal with clean lines";
+    const buildingType = input.buildingType || "single-family detached home";
+
+    const basePrompt = `${style} of a ${buildingType} exterior renovation concept. ${facade}. Materials: ${materials}. Color palette: ${palette}. Style: ${styleHint}. Front elevation view, professional real estate photography, golden hour lighting, high resolution 8K, ultra detailed, no people, clean sky.`;
+
+    const variationSuffixes = [
+      "main concept render, primary design direction",
+      "alternative material variation, slightly warmer palette",
+      "night rendering with exterior lighting and landscaping glow",
+      "twilight render showing landscape integration",
+      "close-up facade detail render",
+      "wide angle street view context render",
+    ];
+
+    const count = Math.min(input.variations, 6);
+    const prompts = Array.from({ length: count }, (_, i) =>
+      `${basePrompt} ${variationSuffixes[i] ?? variationSuffixes[0]}`
+    );
+
+    // Generate images sequentially to avoid rate limits (DALL-E 3: 1 img/req)
+    const images: string[] = [];
+    for (const prompt of prompts) {
+      const url = await generateDalleImage(prompt, "1792x1024");
+      if (url) {
+        images.push(url);
+      } else {
+        // Fallback placeholder if DALL-E fails
+        images.push(`https://placeholder.kealee.com/concept/exterior-${images.length + 1}.jpg`);
+      }
+    }
+
     return {
       designBriefId: input.designBriefId,
-      images: imageSet("exterior", input.variations),
+      images,
+      generatedWithAI: images.some(u => !u.includes("placeholder.kealee.com")),
     };
   },
   {
     name: "generateExteriorConceptImages",
-    description: "Generate exterior concept image URLs.",
+    description: "Generate exterior concept images using DALL-E 3 AI image generation.",
     schema: z.object({
       intakeId: z.string(),
       designBriefId: z.string(),
       variations: z.number().int().min(1).max(6),
       imageStyle: z.string().default("photoreal"),
       preserveStructure: z.boolean().default(true),
+      facadeStrategy: z.string().optional(),
+      materials: z.array(z.string()).optional(),
+      palette: z.array(z.string()).optional(),
+      buildingType: z.string().optional(),
+      stylePreferences: z.array(z.string()).optional(),
     }),
   },
 );
 
 export const generateLandscapeConceptImages = tool(
-  async (input: { intakeId: string; designBriefId: string; zones: string[]; variations: number }) => {
+  async (input: { intakeId: string; designBriefId: string; zones: string[]; variations: number; landscapeStrategy?: string; materials?: string[]; palette?: string[] }) => {
+    const zones = input.zones.length > 0 ? input.zones.join(", ") : "front yard, entry path, foundation planting";
+    const strategy = input.landscapeStrategy || "layered planting with clean hardscape and defined pathway";
+    const palette = (input.palette ?? []).join(", ") || "warm white, charcoal, natural wood";
+
+    const variationSuffixes = [
+      "spring season landscape concept, lush greenery",
+      "minimal modern landscape with clean lines and hardscape focus",
+      "evening landscape lighting concept",
+      "close-up entry and pathway detail",
+    ];
+
+    const basePrompt = `Photorealistic landscape architecture visualization, front yard residential concept. Zones: ${zones}. Design: ${strategy}. Color accents: ${palette}. Professional landscape photography, natural light, 8K resolution, ultra detailed, no people.`;
+
+    const count = Math.min(input.variations, 4);
+    const prompts = Array.from({ length: count }, (_, i) =>
+      `${basePrompt} ${variationSuffixes[i] ?? variationSuffixes[0]}`
+    );
+
+    const images: string[] = [];
+    for (const prompt of prompts) {
+      const url = await generateDalleImage(prompt, "1792x1024");
+      if (url) {
+        images.push(url);
+      } else {
+        images.push(`https://placeholder.kealee.com/concept/landscape-${images.length + 1}.jpg`);
+      }
+    }
+
     return {
       designBriefId: input.designBriefId,
-      images: imageSet("landscape", input.variations),
+      images,
+      generatedWithAI: images.some(u => !u.includes("placeholder.kealee.com")),
     };
   },
   {
     name: "generateLandscapeConceptImages",
-    description: "Generate landscape concept image URLs.",
+    description: "Generate landscape concept images using DALL-E 3 AI image generation.",
     schema: z.object({
       intakeId: z.string(),
       designBriefId: z.string(),
       zones: z.array(z.string()),
-      variations: z.number().int().min(1).max(6),
+      variations: z.number().int().min(1).max(4),
+      landscapeStrategy: z.string().optional(),
+      materials: z.array(z.string()).optional(),
+      palette: z.array(z.string()).optional(),
     }),
   },
 );

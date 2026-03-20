@@ -58,19 +58,53 @@ async function processConceptDeliveryJob(job: Job<ConceptDeliveryJobData>) {
 
     await job.updateProgress(20)
 
-    // 3. Generate concept page using page-builder
+    // 3. Run AI concept workflow to generate images + design brief
+    let aiResult: any = null
+    try {
+      const { executeExteriorConceptWorkflow } = await import('@kealee/ai')
+
+      const intakeInput = {
+        intakeId: orderId,
+        intakeData: {
+          clientName: customerName,
+          contactEmail: customerEmail,
+          projectAddress: funnelData?.address || funnelData?.projectAddress || '',
+          projectType: funnelData?.projectType || packageTier,
+          budgetRange: funnelData?.budgetRange || funnelData?.budget || '',
+          timelineGoal: funnelData?.timelineGoal || funnelData?.timeline || '',
+          stylePreferences: funnelData?.stylePreferences || [],
+          goals: funnelData?.goals || [],
+          desiredMaterials: funnelData?.desiredMaterials || [],
+          uploadedPhotos: funnelData?.uploadedPhotos || [],
+        },
+        status: 'NEW' as const,
+        userMessageHistory: [],
+        missingFields: [],
+      }
+
+      console.log(`[concept-delivery] Running AI workflow for order ${orderId}`)
+      aiResult = await executeExteriorConceptWorkflow(intakeInput)
+      console.log(`[concept-delivery] AI workflow complete: status=${aiResult?.status}`)
+    } catch (aiErr: any) {
+      console.error(`[concept-delivery] AI workflow failed for order ${orderId}:`, aiErr.message)
+      // Non-fatal — fallback to page-builder or dashboard URL
+    }
+
+    await job.updateProgress(55)
+
+    // 4. Optionally call page-builder with AI results
     try {
       const { buildPage } = await import('@kealee/page-builder')
 
-      // Build request from funnel session data or defaults
       const buildRequest = {
         sessionId: funnelSessionId || orderId,
         userType: funnelData?.userType || 'HOMEOWNER',
-        projectType: funnelData?.projectType || 'KITCHEN_REMODEL',
-        city: funnelData?.city || 'Washington',
-        state: funnelData?.state || 'DC',
-        budget: funnelData?.budget || '$50K',
-        timeline: funnelData?.timeline || '3MONTHS',
+        projectType: funnelData?.projectType || 'EXTERIOR_CONCEPT',
+        city: funnelData?.city || '',
+        state: funnelData?.state || '',
+        budget: funnelData?.budget || '',
+        timeline: funnelData?.timeline || '',
+        aiResult: aiResult?.state ?? null,
       }
 
       console.log(`[concept-delivery] Calling buildPage for order ${orderId}`)
@@ -84,7 +118,7 @@ async function processConceptDeliveryJob(job: Job<ConceptDeliveryJobData>) {
 
     await job.updateProgress(70)
 
-    // 4. Determine delivery URL
+    // 5. Determine delivery URL
     // If page was built, the delivery URL points to the generated page
     // Otherwise, fallback to the dashboard order page
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.kealee.com'
@@ -105,13 +139,18 @@ async function processConceptDeliveryJob(job: Job<ConceptDeliveryJobData>) {
           generatedAt: new Date().toISOString(),
           hasPageData: !!pageData,
           sections: pageData?.sections?.length || 0,
+          aiWorkflowStatus: aiResult?.status ?? null,
+          exteriorImages: aiResult?.state?.exteriorConceptImages ?? [],
+          landscapeImages: aiResult?.state?.landscapeConceptImages ?? [],
+          designBriefId: aiResult?.state?.designBrief?.id ?? null,
+          generatedWithAI: !!(aiResult?.state?.exteriorConceptImages?.length),
         },
       },
     })
 
     await job.updateProgress(85)
 
-    // 5. Create in-app notification
+    // 6. Create in-app notification
     try {
       await prisma.notification.create({
         data: {
@@ -134,7 +173,7 @@ async function processConceptDeliveryJob(job: Job<ConceptDeliveryJobData>) {
       console.warn(`[concept-delivery] In-app notification failed: ${notifErr.message}`)
     }
 
-    // 6. Broadcast realtime update to user dashboard
+    // 7. Broadcast realtime update to user dashboard
     try {
       const { broadcastToUser } = await import('@kealee/realtime')
       await broadcastToUser(userId, {
@@ -152,7 +191,7 @@ async function processConceptDeliveryJob(job: Job<ConceptDeliveryJobData>) {
       console.warn(`[concept-delivery] Realtime broadcast failed: ${rtErr.message}`)
     }
 
-    // 7. Queue delivery email to customer
+    // 8. Queue delivery email to customer
     try {
       await emailQueue.sendEmail({
         to: customerEmail,

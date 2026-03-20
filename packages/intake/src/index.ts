@@ -59,8 +59,8 @@ export type { SubmitIntakeResult, SubmitIntakeOptions } from "./lib/submit-intak
 export { CAPTURE_ZONE_META, REQUIRED_CAPTURE_ZONES_BY_PROJECT_PATH, HVAC_CAPTURE_ZONES, CAPTURE_REQUIRED_PROJECT_PATHS, getRequiredZones, isCaptureRequired, getZoneMeta } from "./config/capture-zones";
 export type { CaptureZoneMeta } from "./config/capture-zones";
 
-export { CreateCaptureSessionSchema, SendCaptureLinkSchema, StartCaptureSessionSchema, CaptureAssetUploadSchema, CaptureVoiceNoteSchema, CompleteCaptureSessionSchema, CaptureZoneEnum, SystemCategoryEnum, CaptureModeEnum } from "./schemas/capture-schemas";
-export type { CaptureZone, CaptureMode, SystemCategory, CaptureSessionRecord, CaptureAssetRecord, CaptureCompletenessReport } from "./schemas/capture-schemas";
+export { CreateCaptureSessionSchema, SendCaptureLinkSchema, StartCaptureSessionSchema, CaptureAssetUploadSchema, CaptureVoiceNoteSchema, CompleteCaptureSessionSchema, CaptureZoneEnum, SystemCategoryEnum, CaptureModeEnum, SiteVisitStatusEnum } from "./schemas/capture-schemas";
+export type { CaptureZone, CaptureMode, SiteVisitStatus, SystemCategory, CaptureSessionRecord, CaptureAssetRecord, CaptureCompletenessReport } from "./schemas/capture-schemas";
 
 export { CreateDigitalTwinSchema, UpdateTwinFromCaptureSchema, DigitalTwinCreationPathEnum } from "./schemas/twin-schemas";
 export type { DigitalTwinCreationPath, DigitalTwinRecord, SpatialNodeRecord, SystemNodeRecord, ObservationRecord, DigitalTwinDetail } from "./schemas/twin-schemas";
@@ -74,3 +74,19 @@ export { generateCaptureToken, generateCaptureId, generateAssetId, generateVoice
 export { reviewCaptureCompleteness, getNextRequiredZone, summarizeCapture } from "./lib/review-capture-completeness";
 export { CAPTURE_EVENTS, buildChannelName, buildProgressPayload, subscribeToCaptureChannel } from "./lib/realtime-capture-channel";
 export type { CaptureEventType, CaptureRealtimeEvent, CaptureProgressPayload, RealtimeClient } from "./lib/realtime-capture-channel";
+
+// User-type schemas (homeowner + developer intake)
+export {
+  HomeownerProjectPathSchema,
+  HomeownerIntakeSchema,
+  DeveloperProjectTypeSchema,
+  DeveloperIntakeSchema,
+  UserIntakeSchema,
+} from "./schemas/user-type-schemas";
+export type {
+  HomeownerProjectPath,
+  HomeownerIntake,
+  DeveloperProjectType,
+  DeveloperIntake,
+  UserIntake,
+} from "./schemas/user-type-schemas";

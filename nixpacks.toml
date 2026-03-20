@@ -1,8 +1,11 @@
-# Nixpacks configuration for Railway
-# Optimized for faster builds and reduced timeouts
+# Nixpacks configuration for Railway — monorepo root
+# All services share this install phase. Build + start are defined per-service
+# in each apps/*/railway.toml via buildCommand/startCommand.
+# API service uses the [phases.build] + [start] below.
+# Portal apps override those via their railway.toml.
 
 [phases.setup]
-nixPkgs = ["nodejs-20_x", "pnpm"]
+nixPkgs = ["nodejs_20"]
 
 [phases.setup.env]
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
@@ -10,7 +13,8 @@ NODE_ENV = "production"
 
 [phases.install]
 cmds = [
-  "pnpm install --frozen-lockfile || pnpm install",
+  "corepack enable && corepack prepare pnpm@8.15.9 --activate",
+  "pnpm install --no-frozen-lockfile",
   "pnpm --filter @kealee/database db:generate"
 ]
 
