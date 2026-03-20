@@ -1,6 +1,6 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "cd ../.. && pnpm install --frozen-lockfile && pnpm turbo build --filter=./apps/portal-owner"
+buildCommand = "corepack enable && corepack prepare pnpm@8.15.9 --activate && pnpm install --no-frozen-lockfile && pnpm turbo build --filter=./apps/portal-owner"
 watchPatterns = ["apps/portal-owner/**", "packages/**"]
 
 [deploy]

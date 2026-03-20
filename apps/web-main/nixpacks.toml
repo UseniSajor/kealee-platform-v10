@@ -1,12 +1,12 @@
 [phases.install]
 cmds = [
-  "corepack enable && corepack prepare pnpm@8.15.9 --activate && cd ../.. && pnpm install --no-frozen-lockfile"
+  "corepack enable && corepack prepare pnpm@8.15.9 --activate && pnpm install --no-frozen-lockfile"
 ]
 
 [phases.build]
 cmds = [
-  "cd ../.. && pnpm turbo build --filter=./apps/web-main"
+  "pnpm turbo build --filter=./apps/web-main"
 ]
 
 [start]
-cmd = "npx next start -p $PORT"
+cmd = "cd apps/web-main && npx next start -p $PORT"
