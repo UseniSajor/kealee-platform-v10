@@ -15,22 +15,28 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
 
 // ── Payment amounts per project path ─────────────────────────────────────────
 const PATH_AMOUNTS: Record<string, number> = {
-  exterior_concept:    58500, // $585 AI Concept Design Package
-  interior_renovation: 58500, // $585 AI Concept Design Package
-  whole_home_remodel:  58500, // $585 AI Concept Design Package
-  addition_expansion:  58500, // $585 AI Concept Design Package
-  design_build:        58500, // $585 AI Concept Design Package
+  exterior_concept:    38500, // $385 AI Concept Package
+  interior_renovation: 38500, // $385 AI Concept Package
+  kitchen_remodel:     38500, // $385 AI Concept Package
+  bathroom_remodel:    38500, // $385 AI Concept Package
+  whole_home_remodel:  38500, // $385 AI Concept Package
+  addition_expansion:  38500, // $385 AI Concept Package
+  design_build:        38500, // $385 AI Concept Package
   permit_path_only:    14900, // $149 Permit Path Intake
 };
 
 const PATH_NAMES: Record<string, string> = {
-  exterior_concept:    "Exterior Concept Intake",
-  interior_renovation: "Interior Renovation Intake",
-  whole_home_remodel:  "Whole-Home Remodel Intake",
-  addition_expansion:  "Addition / Expansion Intake",
-  design_build:        "Design + Build Intake",
+  exterior_concept:    "Exterior Concept AI Package",
+  interior_renovation: "Interior Renovation AI Package",
+  kitchen_remodel:     "Kitchen Remodel AI Package",
+  bathroom_remodel:    "Bathroom Remodel AI Package",
+  whole_home_remodel:  "Whole-Home Remodel AI Package",
+  addition_expansion:  "Addition / Expansion AI Package",
+  design_build:        "Design + Build AI Package",
   permit_path_only:    "Permit Path Intake",
 };
+
+const SITE_VISIT_FEE = 12500; // $125
 
 // ── Schemas ───────────────────────────────────────────────────────────────────
 const PublicIntakeBody = z.object({
@@ -52,12 +58,17 @@ const CheckoutBody = z.object({
   amount: z.number().int().positive(),
   successUrl: z.string().url(),
   cancelUrl: z.string().url(),
+  siteVisitRequested: z.boolean().default(false),
 });
 
 const CreateTaskBody = z.object({
   intakeId: z.string(),
   projectPath: z.string(),
   tags: z.array(z.string()).default([]),
+  siteVisitRequested: z.boolean().default(false),
+  clientName: z.string().optional(),
+  projectAddress: z.string().optional(),
+  preferredVisitWindow: z.string().optional(),
 });
 
 // ── Lead scoring ──────────────────────────────────────────────────────────────
@@ -149,25 +160,41 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ error: "Invalid request" });
     }
 
-    const { intakeId, projectPath, amount, successUrl, cancelUrl } = parse.data;
+    const { intakeId, projectPath, amount, successUrl, cancelUrl, siteVisitRequested } = parse.data;
 
     try {
+      const baseAmount = siteVisitRequested ? amount - SITE_VISIT_FEE : amount;
+
+      const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+        {
+          price_data: {
+            currency: "usd",
+            unit_amount: baseAmount,
+            product_data: { name: PATH_NAMES[projectPath] ?? "Project Intake" },
+          },
+          quantity: 1,
+        },
+      ];
+
+      if (siteVisitRequested) {
+        lineItems.push({
+          price_data: {
+            currency: "usd",
+            unit_amount: SITE_VISIT_FEE,
+            product_data: { name: "Kealee Site Visit Scan" },
+          },
+          quantity: 1,
+        });
+      }
+
       const session = await stripe.checkout.sessions.create({
         mode: "payment",
-        line_items: [
-          {
-            price_data: {
-              currency: "usd",
-              unit_amount: amount,
-              product_data: { name: PATH_NAMES[projectPath] ?? "Project Intake" },
-            },
-            quantity: 1,
-          },
-        ],
+        line_items: lineItems,
         metadata: {
           source: "public_intake",
           intakeId,
           projectPath,
+          siteVisitRequested: siteVisitRequested ? "true" : "false",
         },
         success_url: successUrl,
         cancel_url: cancelUrl,
@@ -190,9 +217,10 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ error: "Invalid request" });
     }
 
-    const { intakeId, projectPath, tags } = parse.data;
+    const { intakeId, projectPath, tags, siteVisitRequested, clientName, projectAddress, preferredVisitWindow } = parse.data;
 
     try {
+      // Create standard intake review task
       const task = await prismaAny.commandCenterTask?.create?.({
         data: {
           title: `New public intake: ${PATH_NAMES[projectPath] ?? projectPath}`,
@@ -204,10 +232,38 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
         },
       }).catch(() => null);
 
-      return reply.send({ ok: true, taskId: task?.id ?? null });
+      // Create site visit scheduling task if requested
+      let siteVisitTaskId: string | null = null;
+      if (siteVisitRequested) {
+        const notes = [
+          "Contact client to schedule Kealee Site Visit Scan.",
+          clientName ? `Client: ${clientName}` : null,
+          projectAddress ? `Address: ${projectAddress}` : null,
+          preferredVisitWindow ? `Preferred availability: ${preferredVisitWindow}` : null,
+        ].filter(Boolean).join(" | ");
+
+        const siteVisitTask = await prismaAny.commandCenterTask?.create?.({
+          data: {
+            title: `Schedule Site Visit: ${clientName ?? "New Client"} — ${PATH_NAMES[projectPath] ?? projectPath}`,
+            referenceId: intakeId,
+            referenceType: "public_intake_lead",
+            tags: ["site_visit", "needs_scheduling", "operations"],
+            status: "open",
+            source: "site_visit_intake",
+            taskType: "schedule_site_visit",
+            queue: "operations",
+            priority: "HIGH",
+            notes,
+          },
+        }).catch(() => null);
+
+        siteVisitTaskId = siteVisitTask?.id ?? null;
+      }
+
+      return reply.send({ ok: true, taskId: task?.id ?? null, siteVisitTaskId });
     } catch {
       // Non-fatal
-      return reply.send({ ok: true, taskId: null });
+      return reply.send({ ok: true, taskId: null, siteVisitTaskId: null });
     }
   });
 }

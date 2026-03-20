@@ -10,6 +10,7 @@ export async function POST(req: NextRequest) {
       amount: number
       successUrl: string
       cancelUrl: string
+      siteVisitRequested?: boolean
     }
 
     const upstream = await fetch(`${INTERNAL_API_URL}/api/v1/intake/checkout`, {

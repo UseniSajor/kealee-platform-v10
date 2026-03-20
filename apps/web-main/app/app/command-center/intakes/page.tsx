@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, RefreshCw, Filter, ChevronRight, Camera, Clock, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Loader2, RefreshCw, Filter, ChevronRight, Camera, Clock, CheckCircle2, AlertCircle, MapPin, Scan } from 'lucide-react'
 
 interface IntakeRow {
   id: string
@@ -17,6 +17,14 @@ interface IntakeRow {
   payment_amount: number
   created_at: string
   captureSessionCount: number
+  captureMode: string | null
+  scanCompleted: boolean
+  siteVisit: {
+    requested: boolean
+    status: string
+    preferredWindow: string | null
+    fee: number
+  } | null
 }
 
 const STATUS_META: Record<string, { label: string; bg: string; text: string; icon: React.ReactNode }> = {
@@ -171,14 +179,28 @@ export default function CommandCenterIntakesPage() {
                       </span>
                     </td>
                     <td className="hidden px-4 py-3 md:table-cell">
-                      {intake.captureSessionCount > 0 ? (
-                        <span className="flex items-center gap-1 text-xs text-gray-500">
-                          <Camera className="h-3.5 w-3.5" />
-                          {intake.captureSessionCount}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-300">—</span>
-                      )}
+                      <div className="flex flex-col gap-1">
+                        {intake.siteVisit?.requested ? (
+                          <span className="flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                            style={{ backgroundColor: '#E0E7FF', color: '#3730A3' }}>
+                            <MapPin className="h-3 w-3" />
+                            {intake.siteVisit.status === 'requested' ? 'Needs Scheduling' : 'Site Visit'}
+                          </span>
+                        ) : intake.captureMode === 'enhanced_scan' ? (
+                          <span className="flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                            style={{ backgroundColor: '#EEF2FF', color: '#4338CA' }}>
+                            <Scan className="h-3 w-3" />
+                            Enhanced{intake.scanCompleted ? ' ✓' : ''}
+                          </span>
+                        ) : intake.captureSessionCount > 0 ? (
+                          <span className="flex items-center gap-1 text-xs text-gray-500">
+                            <Camera className="h-3.5 w-3.5" />
+                            {intake.captureSessionCount}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-300">—</span>
+                        )}
+                      </div>
                     </td>
                     <td className="hidden px-4 py-3 text-xs text-gray-400 lg:table-cell">
                       {new Date(intake.created_at).toLocaleDateString('en-US', {

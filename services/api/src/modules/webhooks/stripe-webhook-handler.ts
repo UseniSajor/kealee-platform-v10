@@ -453,6 +453,56 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     return
   }
 
+  // ── Public intake payment (AI Concept Package) ──────────────────────────────
+  if (metadata.source === 'public_intake' && metadata.intakeId) {
+    try {
+      // Update intake status to 'paid'
+      await prismaAny.publicIntakeLead.update({
+        where: { id: metadata.intakeId },
+        data: { status: 'paid', paymentStatus: 'paid' },
+      }).catch(() => null)
+
+      webhookLogger.info({ intakeId: metadata.intakeId }, 'Public intake marked as paid')
+
+      // If site visit was requested: create scheduling task
+      if (metadata.siteVisitRequested === 'true') {
+        // Fetch intake details for the task
+        const intake = await prismaAny.publicIntakeLead.findUnique({
+          where: { id: metadata.intakeId },
+          select: { clientName: true, projectAddress: true, contactEmail: true, contactPhone: true },
+        }).catch(() => null)
+
+        const notes = [
+          'Client has paid for Kealee Site Visit Scan. Contact to schedule.',
+          intake?.clientName ? `Client: ${intake.clientName}` : null,
+          intake?.projectAddress ? `Address: ${intake.projectAddress}` : null,
+          intake?.contactEmail ? `Email: ${intake.contactEmail}` : null,
+          intake?.contactPhone ? `Phone: ${intake.contactPhone}` : null,
+        ].filter(Boolean).join(' | ')
+
+        await prismaAny.commandCenterTask?.create?.({
+          data: {
+            title: `Schedule Site Visit: ${intake?.clientName ?? 'New Client'} — ${metadata.projectPath ?? 'Project'}`,
+            referenceId: metadata.intakeId,
+            referenceType: 'public_intake_lead',
+            tags: ['site_visit', 'needs_scheduling', 'operations', 'paid'],
+            status: 'open',
+            source: 'site_visit_paid',
+            taskType: 'schedule_site_visit',
+            queue: 'operations',
+            priority: 'HIGH',
+            notes,
+          },
+        }).catch(() => null)
+
+        webhookLogger.info({ intakeId: metadata.intakeId }, 'Site visit scheduling task created')
+      }
+    } catch (err: unknown) {
+      webhookLogger.error({ err: (err as Error).message, intakeId: metadata.intakeId }, 'Failed to process public intake payment')
+    }
+    return
+  }
+
   // ── Subscription / one-time purchase (existing flow) ────────────────────────
   webhookLogger.info({ sessionId: session.id, orderType: metadata.orderType }, 'Checkout completed — no special handling')
 }

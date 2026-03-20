@@ -23,7 +23,10 @@ export async function POST(req: NextRequest) {
     const captureToken = generateCaptureToken()
     const tokenExpiresAt = getTokenExpiresAt(48)
     const requiredZones = getRequiredZones(project_path)
-    const captureMode = (parsed.data as { capture_mode?: string }).capture_mode ?? 'standard'
+    const captureMode = (parsed.data as { capture_mode?: string; preferred_visit_window?: string }).capture_mode ?? 'self_capture'
+    const preferredVisitWindow = (parsed.data as { preferred_visit_window?: string }).preferred_visit_window ?? null
+    const isSiteVisit = captureMode === 'kealee_site_visit'
+    const sessionStatus = isSiteVisit ? 'pending_site_visit' : 'pending'
 
     const supabase = getSupabaseAdmin()
     const { error } = await supabase.from('capture_sessions').insert({
@@ -36,9 +39,9 @@ export async function POST(req: NextRequest) {
       created_by_user_id: created_by_user_id ?? null,
       capture_token: captureToken,
       token_expires_at: tokenExpiresAt,
-      required_zones: requiredZones,
+      required_zones: isSiteVisit ? [] : requiredZones,
       completed_zones: [],
-      status: 'pending',
+      status: sessionStatus,
       uploaded_assets_count: 0,
       voice_notes_count: 0,
       walkthrough_video_uploaded: false,
@@ -46,6 +49,10 @@ export async function POST(req: NextRequest) {
       capture_mode: captureMode,
       scan_enabled: captureMode === 'enhanced_scan',
       scan_completed: false,
+      site_visit_requested: isSiteVisit,
+      site_visit_status: isSiteVisit ? 'requested' : 'not_scheduled',
+      site_visit_fee: isSiteVisit ? 12500 : 0,
+      preferred_visit_window: preferredVisitWindow,
     })
 
     if (error) {

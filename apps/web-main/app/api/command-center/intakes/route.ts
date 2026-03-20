@@ -47,19 +47,34 @@ export async function GET(req: NextRequest) {
   const { data: captureSessions } = intakeIds.length > 0
     ? await supabase
         .from('capture_sessions')
-        .select('intake_id, status, capture_mode, scan_completed')
+        .select('intake_id, status, capture_mode, scan_completed, site_visit_requested, site_visit_status, preferred_visit_window, site_visit_fee')
         .in('intake_id', intakeIds)
     : { data: [] }
 
   const captureCountMap = new Map<string, number>()
   const captureModeMap = new Map<string, string>()
   const scanCompletedMap = new Map<string, boolean>()
+  const siteVisitMap = new Map<string, {
+    requested: boolean
+    status: string
+    preferredWindow: string | null
+    fee: number
+  }>()
+
   for (const cs of captureSessions ?? []) {
     const count = captureCountMap.get(cs.intake_id) ?? 0
     captureCountMap.set(cs.intake_id, count + 1)
     if (!captureModeMap.has(cs.intake_id)) {
-      captureModeMap.set(cs.intake_id, cs.capture_mode ?? 'standard')
+      captureModeMap.set(cs.intake_id, cs.capture_mode ?? 'self_capture')
       scanCompletedMap.set(cs.intake_id, cs.scan_completed ?? false)
+      if (cs.site_visit_requested) {
+        siteVisitMap.set(cs.intake_id, {
+          requested: true,
+          status: cs.site_visit_status ?? 'requested',
+          preferredWindow: cs.preferred_visit_window ?? null,
+          fee: cs.site_visit_fee ?? 12500,
+        })
+      }
     }
   }
 
@@ -68,6 +83,7 @@ export async function GET(req: NextRequest) {
     captureSessionCount: captureCountMap.get(intake.id as string) ?? 0,
     captureMode: captureModeMap.get(intake.id as string) ?? null,
     scanCompleted: scanCompletedMap.get(intake.id as string) ?? false,
+    siteVisit: siteVisitMap.get(intake.id as string) ?? null,
   }))
 
   return NextResponse.json({ intakes: enriched, total: enriched.length })

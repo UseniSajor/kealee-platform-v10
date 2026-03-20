@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Camera, Building2, CheckCircle2, Clock, Loader2, AlertTriangle, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Camera, Building2, CheckCircle2, Clock, Loader2, AlertTriangle, ExternalLink, MapPin, Scan, Calendar } from 'lucide-react'
 
 interface IntakeDetail {
   id: string
@@ -29,9 +29,13 @@ interface CaptureSession {
   voice_notes_count: number
   completed_zones: string[]
   required_zones: string[]
-  capture_mode: 'standard' | 'enhanced_scan'
+  capture_mode: 'self_capture' | 'enhanced_scan' | 'kealee_site_visit'
   scan_enabled: boolean
   scan_completed: boolean
+  site_visit_requested: boolean
+  site_visit_status: string
+  preferred_visit_window: string | null
+  site_visit_fee: number
   created_at: string
   completed_at?: string | null
 }
@@ -264,43 +268,82 @@ export default function IntakeDetailPage() {
             <p className="text-sm text-gray-400">No capture sessions yet.</p>
           ) : (
             <div className="space-y-2">
-              {captureSessions.map((cs) => (
-                <button
-                  key={cs.id}
-                  onClick={() => router.push(`/app/projects/unknown/captures/${cs.id}`)}
-                  className="flex w-full items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-left hover:bg-orange-50/40 transition-colors"
-                >
-                  {cs.status === 'completed' ? (
-                    <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
-                  ) : (
-                    <Clock className="h-4 w-4 text-orange-400 flex-shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-gray-800 capitalize">{cs.status.replace('_', ' ')}</p>
-                      <span
-                        className="rounded-full px-1.5 py-0.5 text-xs font-medium"
-                        style={{
-                          backgroundColor: cs.capture_mode === 'enhanced_scan' ? '#EEF2FF' : '#F0FDF4',
-                          color: cs.capture_mode === 'enhanced_scan' ? '#4338CA' : '#15803D',
-                        }}
-                      >
-                        {cs.capture_mode === 'enhanced_scan' ? 'Enhanced' : 'Standard'}
-                      </span>
-                      {cs.scan_completed && (
-                        <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-xs font-medium text-indigo-700">
-                          Scan ✓
-                        </span>
+              {captureSessions.map((cs) => {
+                const isSiteVisit = cs.capture_mode === 'kealee_site_visit'
+                const isEnhanced = cs.capture_mode === 'enhanced_scan'
+                const needsScheduling = isSiteVisit && cs.site_visit_status === 'requested'
+
+                return (
+                  <div
+                    key={cs.id}
+                    className={`rounded-xl border px-4 py-3 ${needsScheduling ? 'border-indigo-200 bg-indigo-50' : 'border-gray-100 bg-gray-50'}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      {isSiteVisit ? (
+                        <MapPin className={`mt-0.5 h-4 w-4 flex-shrink-0 ${needsScheduling ? 'text-indigo-500' : 'text-green-500'}`} />
+                      ) : cs.status === 'completed' ? (
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 text-green-500 flex-shrink-0" />
+                      ) : (
+                        <Clock className="mt-0.5 h-4 w-4 text-orange-400 flex-shrink-0" />
                       )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <p className="text-sm font-medium text-gray-800 capitalize">
+                            {cs.status.replace(/_/g, ' ')}
+                          </p>
+                          {isSiteVisit ? (
+                            <span className="rounded-full px-1.5 py-0.5 text-xs font-medium"
+                              style={{ backgroundColor: '#E0E7FF', color: '#3730A3' }}>
+                              Site Visit
+                            </span>
+                          ) : isEnhanced ? (
+                            <span className="rounded-full px-1.5 py-0.5 text-xs font-medium"
+                              style={{ backgroundColor: '#EEF2FF', color: '#4338CA' }}>
+                              <Scan className="inline h-2.5 w-2.5 mr-0.5" />Enhanced
+                            </span>
+                          ) : (
+                            <span className="rounded-full px-1.5 py-0.5 text-xs font-medium"
+                              style={{ backgroundColor: '#F0FDF4', color: '#15803D' }}>
+                              Self Capture
+                            </span>
+                          )}
+                          {cs.scan_completed && (
+                            <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-xs font-medium text-indigo-700">
+                              Scan ✓
+                            </span>
+                          )}
+                          {needsScheduling && (
+                            <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700">
+                              Needs Scheduling
+                            </span>
+                          )}
+                        </div>
+                        {isSiteVisit ? (
+                          <div className="mt-1 space-y-0.5">
+                            <p className="text-xs text-indigo-600 font-medium">
+                              Site Visit Status: {cs.site_visit_status?.replace(/_/g, ' ')}
+                            </p>
+                            {cs.preferred_visit_window && (
+                              <p className="flex items-center gap-1 text-xs text-indigo-500">
+                                <Calendar className="h-3 w-3" />
+                                Preferred: {cs.preferred_visit_window}
+                              </p>
+                            )}
+                            <p className="text-xs text-gray-400">
+                              Fee: ${(cs.site_visit_fee / 100).toFixed(0)}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            {cs.progress_percent}% · {cs.uploaded_assets_count} photos · {cs.voice_notes_count ?? 0} voice ·{' '}
+                            {cs.completed_zones.length}/{cs.required_zones.length} zones
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-400">
-                      {cs.progress_percent}% · {cs.uploaded_assets_count} photos · {cs.voice_notes_count ?? 0} voice ·{' '}
-                      {cs.completed_zones.length}/{cs.required_zones.length} zones
-                    </p>
                   </div>
-                  <ExternalLink className="h-3.5 w-3.5 text-gray-300 flex-shrink-0" />
-                </button>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
