@@ -26,8 +26,12 @@ interface CaptureSession {
   status: string
   progress_percent: number
   uploaded_assets_count: number
+  voice_notes_count: number
   completed_zones: string[]
   required_zones: string[]
+  capture_mode: 'standard' | 'enhanced_scan'
+  scan_enabled: boolean
+  scan_completed: boolean
   created_at: string
   completed_at?: string | null
 }
@@ -44,6 +48,8 @@ const INTAKE_STATUSES = ['new', 'in_review', 'active', 'completed', 'cancelled']
 const PATH_LABELS: Record<string, string> = {
   exterior_concept: 'Exterior Concept',
   interior_renovation: 'Interior Renovation',
+  kitchen_remodel: 'Kitchen Remodel',
+  bathroom_remodel: 'Bathroom Remodel',
   whole_home_remodel: 'Whole-Home Remodel',
   addition_expansion: 'Addition / Expansion',
   design_build: 'Design + Build',
@@ -270,9 +276,25 @@ export default function IntakeDetailPage() {
                     <Clock className="h-4 w-4 text-orange-400 flex-shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 capitalize">{cs.status.replace('_', ' ')}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-gray-800 capitalize">{cs.status.replace('_', ' ')}</p>
+                      <span
+                        className="rounded-full px-1.5 py-0.5 text-xs font-medium"
+                        style={{
+                          backgroundColor: cs.capture_mode === 'enhanced_scan' ? '#EEF2FF' : '#F0FDF4',
+                          color: cs.capture_mode === 'enhanced_scan' ? '#4338CA' : '#15803D',
+                        }}
+                      >
+                        {cs.capture_mode === 'enhanced_scan' ? 'Enhanced' : 'Standard'}
+                      </span>
+                      {cs.scan_completed && (
+                        <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-xs font-medium text-indigo-700">
+                          Scan ✓
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-400">
-                      {cs.progress_percent}% · {cs.uploaded_assets_count} photos ·{' '}
+                      {cs.progress_percent}% · {cs.uploaded_assets_count} photos · {cs.voice_notes_count ?? 0} voice ·{' '}
                       {cs.completed_zones.length}/{cs.required_zones.length} zones
                     </p>
                   </div>

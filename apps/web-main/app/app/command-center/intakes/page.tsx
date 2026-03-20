@@ -30,6 +30,8 @@ const STATUS_META: Record<string, { label: string; bg: string; text: string; ico
 const PATH_LABELS: Record<string, string> = {
   exterior_concept: 'Exterior Concept',
   interior_renovation: 'Interior Renovation',
+  kitchen_remodel: 'Kitchen Remodel',
+  bathroom_remodel: 'Bathroom Remodel',
   whole_home_remodel: 'Whole-Home Remodel',
   addition_expansion: 'Addition / Expansion',
   design_build: 'Design + Build',

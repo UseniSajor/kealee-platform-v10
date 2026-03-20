@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
     const captureToken = generateCaptureToken()
     const tokenExpiresAt = getTokenExpiresAt(48)
     const requiredZones = getRequiredZones(project_path)
+    const captureMode = (parsed.data as { capture_mode?: string }).capture_mode ?? 'standard'
 
     const supabase = getSupabaseAdmin()
     const { error } = await supabase.from('capture_sessions').insert({
@@ -42,13 +43,16 @@ export async function POST(req: NextRequest) {
       voice_notes_count: 0,
       walkthrough_video_uploaded: false,
       progress_percent: 0,
+      capture_mode: captureMode,
+      scan_enabled: captureMode === 'enhanced_scan',
+      scan_completed: false,
     })
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ captureSessionId, captureToken, requiredZones })
+    return NextResponse.json({ captureSessionId, captureToken, requiredZones, captureMode })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Internal error'
     return NextResponse.json({ error: msg }, { status: 500 })

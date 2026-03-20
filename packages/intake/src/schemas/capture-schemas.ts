@@ -12,7 +12,10 @@ export const CaptureZoneEnum = z.enum([
   "garage_interior", "utility_room", "mechanical_room",
   "hvac_air_handler", "hvac_furnace", "hvac_thermostat", "water_heater",
   "electrical_panel", "plumbing_fixture_area", "structural_concern_area", "problem_area_interior",
+  "scan_room", "scan_full_property",
 ]);
+
+export const CaptureModeEnum = z.enum(["standard", "enhanced_scan"]);
 
 export const SystemCategoryEnum = z.enum([
   "architecture", "structure", "roofing", "envelope", "hvac", "plumbing",
@@ -29,6 +32,7 @@ export const CreateCaptureSessionSchema = z.object({
   source_device: z.string().optional(),
   source_platform: z.string().optional(),
   required_zones: z.array(CaptureZoneEnum).min(1),
+  capture_mode: CaptureModeEnum.default("standard"),
 });
 
 export const SendCaptureLinkSchema = z.object({
@@ -79,6 +83,7 @@ export const CompleteCaptureSessionSchema = z.object({
   walkthrough_video_uploaded: z.boolean().default(false),
 });
 
+export type CaptureMode = z.infer<typeof CaptureModeEnum>;
 export type CreateCaptureSessionInput = z.infer<typeof CreateCaptureSessionSchema>;
 export type SendCaptureLinkInput = z.infer<typeof SendCaptureLinkSchema>;
 export type StartCaptureSessionInput = z.infer<typeof StartCaptureSessionSchema>;
@@ -103,6 +108,9 @@ export interface CaptureSessionRecord {
   completed_zones: string[];
   skipped_zones: string[];
   capture_progress_percent: number;
+  capture_mode: CaptureMode;
+  scan_enabled: boolean;
+  scan_completed: boolean;
   walkthrough_video_uploaded: boolean;
   voice_notes_count: number;
   uploaded_assets_count: number;

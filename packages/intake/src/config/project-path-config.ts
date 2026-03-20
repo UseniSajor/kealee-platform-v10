@@ -1,6 +1,8 @@
 export const PROJECT_PATHS = [
   "exterior_concept",
   "interior_renovation",
+  "kitchen_remodel",
+  "bathroom_remodel",
   "whole_home_remodel",
   "addition_expansion",
   "design_build",
@@ -21,6 +23,7 @@ export interface ProjectPathMeta {
   requiresPayment: boolean;
   paymentAmount: number;
   paymentTier: string;
+  requiresCapture: boolean;
   minFields: string[];
 }
 
@@ -32,6 +35,7 @@ export const PROJECT_PATH_META: Record<ProjectPath, ProjectPathMeta> = {
     requiresPayment: true,
     paymentAmount: 58500,
     paymentTier: "essential",
+    requiresCapture: false,
     minFields: ["clientName", "contactEmail", "projectAddress", "budgetRange"],
   },
   interior_renovation: {
@@ -41,6 +45,27 @@ export const PROJECT_PATH_META: Record<ProjectPath, ProjectPathMeta> = {
     requiresPayment: true,
     paymentAmount: 58500,
     paymentTier: "interior_intake",
+    requiresCapture: true,
+    minFields: ["clientName", "contactEmail", "projectAddress", "budgetRange"],
+  },
+  kitchen_remodel: {
+    path: "kitchen_remodel",
+    label: "Kitchen Remodel",
+    description: "Full kitchen transformation — layout, cabinetry, countertops, and appliances.",
+    requiresPayment: true,
+    paymentAmount: 58500,
+    paymentTier: "interior_intake",
+    requiresCapture: true,
+    minFields: ["clientName", "contactEmail", "projectAddress", "budgetRange"],
+  },
+  bathroom_remodel: {
+    path: "bathroom_remodel",
+    label: "Bathroom Remodel",
+    description: "Bath and master suite redesign — tile, fixtures, vanities, and layout.",
+    requiresPayment: true,
+    paymentAmount: 58500,
+    paymentTier: "interior_intake",
+    requiresCapture: true,
     minFields: ["clientName", "contactEmail", "projectAddress", "budgetRange"],
   },
   whole_home_remodel: {
@@ -50,6 +75,7 @@ export const PROJECT_PATH_META: Record<ProjectPath, ProjectPathMeta> = {
     requiresPayment: true,
     paymentAmount: 58500,
     paymentTier: "essential",
+    requiresCapture: true,
     minFields: ["clientName", "contactEmail", "projectAddress", "budgetRange"],
   },
   addition_expansion: {
@@ -59,6 +85,7 @@ export const PROJECT_PATH_META: Record<ProjectPath, ProjectPathMeta> = {
     requiresPayment: true,
     paymentAmount: 58500,
     paymentTier: "essential",
+    requiresCapture: true,
     minFields: ["clientName", "contactEmail", "projectAddress", "budgetRange"],
   },
   design_build: {
@@ -68,6 +95,7 @@ export const PROJECT_PATH_META: Record<ProjectPath, ProjectPathMeta> = {
     requiresPayment: true,
     paymentAmount: 58500,
     paymentTier: "design_build",
+    requiresCapture: false,
     minFields: ["clientName", "contactEmail", "projectAddress", "budgetRange"],
   },
   permit_path_only: {
@@ -77,6 +105,7 @@ export const PROJECT_PATH_META: Record<ProjectPath, ProjectPathMeta> = {
     requiresPayment: true,
     paymentAmount: 14900,
     paymentTier: "permit_intake",
+    requiresCapture: false,
     minFields: ["clientName", "contactEmail", "projectAddress", "permitType"],
   },
   capture_site_concept: {
@@ -86,6 +115,7 @@ export const PROJECT_PATH_META: Record<ProjectPath, ProjectPathMeta> = {
     requiresPayment: false,
     paymentAmount: 0,
     paymentTier: "capture_only",
+    requiresCapture: true,
     minFields: ["clientName", "contactEmail", "projectAddress"],
   },
 };

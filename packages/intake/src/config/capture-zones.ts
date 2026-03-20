@@ -9,7 +9,8 @@ export type CaptureZone =
   | "basement_finished" | "basement_unfinished" | "attic" | "crawlspace"
   | "garage_interior" | "utility_room" | "mechanical_room"
   | "hvac_air_handler" | "hvac_furnace" | "hvac_thermostat" | "water_heater"
-  | "electrical_panel" | "plumbing_fixture_area" | "structural_concern_area" | "problem_area_interior";
+  | "electrical_panel" | "plumbing_fixture_area" | "structural_concern_area" | "problem_area_interior"
+  | "scan_room" | "scan_full_property";
 
 export type CaptureAreaType = "interior" | "exterior" | "document" | "system";
 
@@ -78,17 +79,31 @@ export const CAPTURE_ZONE_META: Record<CaptureZone, CaptureZoneMeta> = {
   plumbing_fixture_area: { zone: "plumbing_fixture_area", displayName: "Plumbing Fixture Area", areaType: "interior", systemCategory: "plumbing", prompt: "Capture under-sink areas, visible supply and drain pipes, shutoff valves, and any signs of leaks or corrosion." },
   structural_concern_area: { zone: "structural_concern_area", displayName: "Structural Concern Area", areaType: "interior", systemCategory: "structure", prompt: "Capture any areas of structural concern — sagging floors, cracks in walls or ceilings, bowing walls, or unlevel framing." },
   problem_area_interior: { zone: "problem_area_interior", displayName: "Problem Area (Interior)", areaType: "interior", prompt: "Capture any known interior problem areas — water stains, mold, damaged flooring. Describe in a voice note." },
+  scan_room: { zone: "scan_room", displayName: "3D Room Scan", areaType: "interior", prompt: "Move slowly around the room, holding your phone steady. Walk around all walls, then move to the center. LiDAR will capture room boundaries automatically. For video-based scan, move in a slow, continuous arc.", systemCategory: "architecture" },
+  scan_full_property: { zone: "scan_full_property", displayName: "Full Property Scan", areaType: "exterior", prompt: "Walk the full perimeter of the property slowly with your phone held at chest height. Then capture the front, sides, and rear from a fixed position before walking inside for interior rooms.", systemCategory: "architecture" },
 };
 
 export const REQUIRED_CAPTURE_ZONES_BY_PROJECT_PATH: Record<string, CaptureZone[]> = {
   exterior_concept: ["front_exterior", "rear_exterior", "left_side_exterior", "right_side_exterior", "facade_detail", "front_yard", "hvac_exterior_unit"],
   interior_renovation: ["entry", "living_room", "kitchen", "primary_bath", "hallway", "problem_area_interior", "hvac_thermostat"],
+  kitchen_remodel: ["kitchen", "dining_room", "entry", "problem_area_interior"],
+  bathroom_remodel: ["primary_bath", "bathroom_2", "problem_area_interior"],
   whole_home_remodel: ["front_exterior", "rear_exterior", "entry", "living_room", "kitchen", "primary_bedroom", "primary_bath", "bathroom_2", "stairs", "basement_unfinished", "mechanical_room", "hvac_exterior_unit", "hvac_furnace", "water_heater", "electrical_panel", "problem_area_interior"],
   addition_expansion: ["front_exterior", "rear_exterior", "left_side_exterior", "right_side_exterior", "problem_area_exterior", "drainage_grading"],
   design_build: ["front_exterior", "rear_exterior", "left_side_exterior", "right_side_exterior", "roof_visible", "problem_area_exterior"],
   permit_path_only: ["problem_area_exterior"],
   capture_site_concept: ["front_exterior", "rear_exterior", "entry", "kitchen", "living_room", "problem_area_interior"],
 };
+
+// Paths that require a capture step before payment/review
+export const CAPTURE_REQUIRED_PROJECT_PATHS = new Set([
+  "kitchen_remodel",
+  "bathroom_remodel",
+  "whole_home_remodel",
+  "addition_expansion",
+  "capture_site_concept",
+  "interior_renovation",
+]);
 
 export const HVAC_CAPTURE_ZONES: CaptureZone[] = [
   "hvac_exterior_unit", "hvac_air_handler", "hvac_furnace", "hvac_thermostat",

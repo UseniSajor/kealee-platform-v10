@@ -47,19 +47,27 @@ export async function GET(req: NextRequest) {
   const { data: captureSessions } = intakeIds.length > 0
     ? await supabase
         .from('capture_sessions')
-        .select('intake_id, status')
+        .select('intake_id, status, capture_mode, scan_completed')
         .in('intake_id', intakeIds)
     : { data: [] }
 
   const captureCountMap = new Map<string, number>()
+  const captureModeMap = new Map<string, string>()
+  const scanCompletedMap = new Map<string, boolean>()
   for (const cs of captureSessions ?? []) {
     const count = captureCountMap.get(cs.intake_id) ?? 0
     captureCountMap.set(cs.intake_id, count + 1)
+    if (!captureModeMap.has(cs.intake_id)) {
+      captureModeMap.set(cs.intake_id, cs.capture_mode ?? 'standard')
+      scanCompletedMap.set(cs.intake_id, cs.scan_completed ?? false)
+    }
   }
 
   const enriched = (data ?? []).map((intake: Record<string, unknown>) => ({
     ...intake,
     captureSessionCount: captureCountMap.get(intake.id as string) ?? 0,
+    captureMode: captureModeMap.get(intake.id as string) ?? null,
+    scanCompleted: scanCompletedMap.get(intake.id as string) ?? false,
   }))
 
   return NextResponse.json({ intakes: enriched, total: enriched.length })

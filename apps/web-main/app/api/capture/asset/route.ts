@@ -116,3 +116,43 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
+
+// PATCH /api/capture/asset — special actions (e.g., mark_scan_completed)
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { captureToken, captureSessionId, action } = body
+
+    if (!captureToken || !captureSessionId || !action) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    const supabase = getSupabaseAdmin()
+
+    const { data: session, error: sessionErr } = await supabase
+      .from('capture_sessions')
+      .select('id, capture_token')
+      .eq('id', captureSessionId)
+      .eq('capture_token', captureToken)
+      .single()
+
+    if (sessionErr || !session) {
+      return NextResponse.json({ error: 'Invalid session' }, { status: 403 })
+    }
+
+    if (action === 'mark_scan_completed') {
+      const { error } = await supabase
+        .from('capture_sessions')
+        .update({ scan_completed: true, updated_at: new Date().toISOString() })
+        .eq('id', captureSessionId)
+
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ ok: true })
+    }
+
+    return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Internal error'
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
+}

@@ -33,6 +33,18 @@ export const INTAKE_OPTION_CARDS: IntakeOptionCard[] = [
     cta: "Start Addition Intake",
   },
   {
+    path: "kitchen_remodel",
+    title: "Kitchen Remodel",
+    subtitle: "Full kitchen transformation — layout, cabinetry, countertops, and appliances.",
+    cta: "Start Kitchen Intake",
+  },
+  {
+    path: "bathroom_remodel",
+    title: "Bathroom Remodel",
+    subtitle: "Bath and master suite redesign — tile, fixtures, vanities, and layout.",
+    cta: "Start Bathroom Intake",
+  },
+  {
     path: "design_build",
     title: "Design + Build",
     subtitle: "Integrated project intake for design, permitting, and execution planning.",

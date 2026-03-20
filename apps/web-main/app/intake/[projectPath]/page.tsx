@@ -2,8 +2,17 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { DynamicIntakeForm } from '@kealee/ui/components/intake/dynamic-intake-form'
-import { isValidProjectPath } from '@kealee/intake'
+import { isValidProjectPath, CAPTURE_REQUIRED_PROJECT_PATHS } from '@kealee/intake'
 import { notFound } from 'next/navigation'
+
+// Paths that route to capture gate immediately after intake (before review)
+const CAPTURE_FIRST_PATHS = new Set([
+  'capture_site_concept',
+  'kitchen_remodel',
+  'bathroom_remodel',
+  'whole_home_remodel',
+  'addition_expansion',
+])
 
 export default function IntakeFormPage() {
   const params = useParams()
@@ -19,8 +28,8 @@ export default function IntakeFormPage() {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem(`kealee_intake_${projectPath}`, JSON.stringify(data))
     }
-    // capture_site_concept goes directly to capture gate (no payment required)
-    if (projectPath === 'capture_site_concept') {
+    // Paths that require capture go to capture gate before review
+    if (CAPTURE_FIRST_PATHS.has(projectPath) || CAPTURE_REQUIRED_PROJECT_PATHS.has(projectPath)) {
       router.push(`/intake/${projectPath}/capture`)
     } else {
       router.push(`/intake/${projectPath}/review`)

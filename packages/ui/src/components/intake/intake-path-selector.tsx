@@ -15,6 +15,8 @@ const PATH_ICONS: Record<string, string> = {
   addition_expansion: '📐',
   design_build: '✏️',
   permit_path_only: '📋',
+  kitchen_remodel: '🍳',
+  bathroom_remodel: '🛁',
   capture_site_concept: '📸',
 }
 

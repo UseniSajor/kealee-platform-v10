@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { isValidProjectPath, getRequiredZones } from '@kealee/intake'
 import { CaptureHandoffPanel } from '@kealee/ui/components/intake/capture-handoff-panel'
 import { CaptureProgressPanel } from '@kealee/ui/components/intake/capture-progress-panel'
+import { CaptureModeSelector, type CaptureMode } from '@kealee/ui/components/intake/capture-mode-selector'
 import { CheckCircle2, ArrowRight, Loader2 } from 'lucide-react'
 import { notFound } from 'next/navigation'
 
@@ -12,6 +13,7 @@ interface SessionData {
   captureSessionId: string
   captureToken: string
   requiredZones: string[]
+  captureMode: CaptureMode
 }
 
 export default function CaptureGatePage() {
@@ -27,31 +29,28 @@ export default function CaptureGatePage() {
   const intakeId = searchParams.get('intakeId')
   const projectId = searchParams.get('projectId')
 
+  const [step, setStep] = useState<'select_mode' | 'handoff'>('select_mode')
+  const [captureMode, setCaptureMode] = useState<CaptureMode>('standard')
   const [session, setSession] = useState<SessionData | null>(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [captureComplete, setCaptureComplete] = useState(false)
-  const [twinId, setTwinId] = useState<string | null>(null)
   const [linkSent, setLinkSent] = useState(false)
 
+  // Restore existing session if any
   useEffect(() => {
-    // Check if session already exists in sessionStorage
     const stored = typeof window !== 'undefined'
       ? sessionStorage.getItem(`kealee_capture_session_${projectPath}`)
       : null
-
     if (stored) {
       try {
         setSession(JSON.parse(stored))
-        return
+        setStep('handoff')
       } catch {}
     }
-
-    // Create capture session
-    createCaptureSession()
   }, [projectPath])
 
-  async function createCaptureSession() {
+  async function handleModeConfirmed() {
     setCreating(true)
     setError(null)
     try {
@@ -69,6 +68,7 @@ export default function CaptureGatePage() {
           project_id: projectId ?? undefined,
           address: parsed.projectAddress ?? parsed.address ?? 'Unknown address',
           client_name: parsed.clientName ?? undefined,
+          capture_mode: captureMode,
         }),
       })
       const data = await resp.json()
@@ -81,6 +81,7 @@ export default function CaptureGatePage() {
         captureSessionId: data.captureSessionId,
         captureToken: data.captureToken,
         requiredZones: data.requiredZones,
+        captureMode: data.captureMode ?? captureMode,
       }
       setSession(sessionData)
 
@@ -90,6 +91,8 @@ export default function CaptureGatePage() {
           JSON.stringify(sessionData),
         )
       }
+
+      setStep('handoff')
     } catch {
       setError('Network error — please try again')
     } finally {
@@ -102,8 +105,8 @@ export default function CaptureGatePage() {
   }
 
   function handleProceed() {
-    if (twinId) {
-      router.push(`/app/projects/${projectId ?? 'new'}/twin?twinId=${twinId}`)
+    if (projectId) {
+      router.push(`/app/projects/${projectId}/twin`)
     } else {
       router.push(`/intake/${projectPath}/success?intakeId=${intakeId ?? 'captured'}`)
     }
@@ -111,32 +114,7 @@ export default function CaptureGatePage() {
 
   const requiredZones = session?.requiredZones ?? getRequiredZones(projectPath)
 
-  if (creating) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="mx-auto mb-3 h-8 w-8 animate-spin" style={{ color: '#E8793A' }} />
-          <p className="text-sm text-gray-500">Setting up your capture session…</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="mx-auto max-w-md py-20 text-center">
-        <p className="mb-4 text-red-600">{error}</p>
-        <button
-          onClick={createCaptureSession}
-          className="rounded-lg px-4 py-2 text-sm font-medium text-white"
-          style={{ backgroundColor: '#E8793A' }}
-        >
-          Retry
-        </button>
-      </div>
-    )
-  }
-
+  // ─── Mode complete state ────────────────────────────────────────────────────
   if (captureComplete) {
     return (
       <div className="mx-auto max-w-lg py-16 text-center">
@@ -158,17 +136,69 @@ export default function CaptureGatePage() {
     )
   }
 
+  // ─── Step 1: Select capture mode ────────────────────────────────────────────
+  if (step === 'select_mode') {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold" style={{ color: '#1A2B4A' }}>
+            Mobile Site Capture
+          </h1>
+          <p className="mt-1 text-gray-500">
+            Choose how your property will be captured. You can always upgrade later.
+          </p>
+        </div>
+
+        <CaptureModeSelector
+          defaultMode={captureMode}
+          onChange={setCaptureMode}
+        />
+
+        {error && (
+          <p className="mt-4 text-sm text-red-600">{error}</p>
+        )}
+
+        <button
+          onClick={handleModeConfirmed}
+          disabled={creating}
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-semibold text-white disabled:opacity-60"
+          style={{ backgroundColor: '#E8793A' }}
+        >
+          {creating ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <>
+              Continue to Capture <ArrowRight className="h-5 w-5" />
+            </>
+          )}
+        </button>
+      </div>
+    )
+  }
+
+  // ─── Step 2: Handoff + live progress ────────────────────────────────────────
   if (!session) return null
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold" style={{ color: '#1A2B4A' }}>
-          Mobile Site Capture
-        </h1>
-        <p className="mt-1 text-gray-500">
-          Send the guided capture link to your phone. As you capture each zone, progress updates here in real time.
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: '#1A2B4A' }}>
+            Mobile Site Capture
+          </h1>
+          <p className="mt-1 text-gray-500">
+            Send the guided capture link to your phone. Progress updates here in real time.
+          </p>
+        </div>
+        <span
+          className="rounded-full px-3 py-1 text-xs font-semibold"
+          style={{
+            backgroundColor: session.captureMode === 'enhanced_scan' ? '#EEF2FF' : '#F0FDF4',
+            color: session.captureMode === 'enhanced_scan' ? '#4338CA' : '#15803D',
+          }}
+        >
+          {session.captureMode === 'enhanced_scan' ? 'Enhanced Scan' : 'Standard Capture'}
+        </span>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -181,7 +211,12 @@ export default function CaptureGatePage() {
           />
           {linkSent && (
             <div className="rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
-              Link sent! Open it on your phone and start capturing. This page will update automatically.
+              Link sent! Open it on your phone and start capturing.
+              {session.captureMode === 'enhanced_scan' && (
+                <span className="block mt-1 font-medium">
+                  After completing all zones, you&apos;ll see a 3D scan step at the end.
+                </span>
+              )}
             </div>
           )}
         </div>
