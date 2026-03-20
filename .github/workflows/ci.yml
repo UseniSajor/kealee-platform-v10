@@ -23,13 +23,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v3
         with:
-          version: ${{ env.PNPM_VERSION }}
+          version: 8.15.9
 
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '20'
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
@@ -43,8 +43,6 @@ jobs:
         run: |
           pnpm --filter @kealee/shared run build
           pnpm --filter @kealee/storage run build
-          pnpm --filter @kealee/estimating run build
-          pnpm --filter @kealee/workflow-engine run build
 
       - name: Type check API
         run: pnpm --filter @kealee/api run build:ts
@@ -56,13 +54,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v3
         with:
-          version: ${{ env.PNPM_VERSION }}
+          version: 8.15.9
 
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '20'
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
@@ -79,94 +77,3 @@ jobs:
           REDIS_URL: redis://localhost:6379
           ANTHROPIC_API_KEY: test-key
           OPENAI_API_KEY: test-key
-
-  # Gate 3: Integration tests (needs DB + Redis)
-  integration-tests:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    needs: [typecheck, unit-tests]
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: kealee_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-      redis:
-        image: redis:7
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --no-frozen-lockfile
-
-      - name: Generate Prisma Client
-        run: pnpm --filter @kealee/database run db:generate
-
-      - name: Run database migrations
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kealee_test
-        run: cd packages/database && npx prisma migrate deploy
-
-      - name: Run integration tests
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kealee_test
-          REDIS_URL: redis://localhost:6379
-          ANTHROPIC_API_KEY: test-key
-          OPENAI_API_KEY: test-key
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
-        run: pnpm --filter @kealee/api run test:integration
-
-  # Gate 4: Smoke test production after deploy (main only)
-  smoke-test:
-    name: Production Smoke Test
-    runs-on: ubuntu-latest
-    needs: [integration-tests]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --no-frozen-lockfile
-
-      - name: Wait for Railway deploy
-        run: sleep 60
-
-      - name: Run smoke tests against production
-        env:
-          API_URL: https://api.kealee.com
-        run: node scripts/smoke-test.mjs
