@@ -335,6 +335,68 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return;
   }
 
+  // ── Public intake payment fulfillment ─────────────────────────────────────
+  if (metadata.source === 'public_intake' && metadata.intakeId) {
+    try {
+      // Mark the PermitServiceLead as paid
+      await prismaAny.permitServiceLead.update({
+        where: { id: metadata.intakeId },
+        data: {
+          status: 'paid',
+          stripeSessionId: session.id,
+          stripePaymentIntentId: (session.payment_intent as string) ?? null,
+          paidAt: new Date(),
+        },
+      }).catch(() => {
+        // field may not exist yet — update status only
+        return prismaAny.permitServiceLead.update({
+          where: { id: metadata.intakeId },
+          data: { status: 'paid' },
+        });
+      });
+
+      // Enqueue intake processing job
+      try {
+        const { Queue } = await import('bullmq');
+        const queue = new Queue('intake-processing', {
+          connection: { url: process.env.REDIS_URL || 'redis://localhost:6379' },
+        });
+        await queue.add('process-paid-intake', {
+          intakeId: metadata.intakeId,
+          projectPath: metadata.projectPath ?? 'exterior_concept',
+          amount: session.amount_total ?? 0,
+          customerEmail: session.customer_email ?? '',
+          stripeSessionId: session.id,
+        }, { priority: 1, attempts: 3 });
+        await queue.close();
+      } catch (qErr: any) {
+        console.warn('public_intake: queue enqueue failed (non-fatal):', qErr.message);
+      }
+
+      // Publish event to Redis for command-center
+      try {
+        const { Redis } = await import('ioredis');
+        const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+        await redis.publish('kealee:events', JSON.stringify({
+          type: 'intake.payment.completed',
+          intakeId: metadata.intakeId,
+          projectPath: metadata.projectPath,
+          amount: session.amount_total,
+          customerEmail: session.customer_email,
+          timestamp: new Date().toISOString(),
+        }));
+        redis.disconnect();
+      } catch (redisErr: any) {
+        console.warn('public_intake: Redis publish failed (non-fatal):', redisErr.message);
+      }
+
+      console.log('Public intake payment fulfilled:', metadata.intakeId);
+    } catch (err: any) {
+      console.error('Failed to fulfill public intake:', err?.message);
+    }
+    return;
+  }
+
   // ── Sprint 7: Concept + Validation fulfillment ─────────────────────────────
   if (metadata.productType === 'CONCEPT_VALIDATION' && metadata.projectId && metadata.conceptValidationId) {
     try {
