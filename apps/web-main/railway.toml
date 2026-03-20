@@ -1,10 +1,11 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "cd ../.. && pnpm install --frozen-lockfile && pnpm turbo build --filter=./apps/web-main"
+buildCommand = "pnpm install --no-frozen-lockfile && pnpm turbo build --filter=./apps/web-main"
 watchPatterns = ["apps/web-main/**", "packages/**"]
 
 [deploy]
 startCommand = "cd apps/web-main && npx next start -p ${PORT:-3000}"
 healthcheckPath = "/"
+healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
