@@ -15,7 +15,7 @@ const fadeInUp = {
 // ── Homeowner project services (one-time per project) ─────────────────────────
 
 const PLAN_ITEMS = [
-  { name: 'Project Concept + Validation', price: '$395', note: 'AI concept + zoning + cost band + permit risk. Delivered in 24hrs.', highlight: true },
+  { name: 'AI Concept Design Package', price: '$585', note: 'Property-specific visuals, design direction, zoning brief, path-to-approval plan + consultation included.', highlight: true },
   { name: 'Advanced AI Concept', price: '$899', note: '3 floor plan options, 3D views, material suggestions' },
   { name: 'Full Design Package', price: '$4,499', note: 'Permit-ready drawing set with licensed architect' },
 ]
@@ -180,8 +180,8 @@ const DEVELOPER_SERVICES = [
 
 const FAQ_ITEMS = [
   {
-    question: 'What does the $395 Concept + Validation include?',
-    answer: 'You get an AI-generated floor plan concept, a zoning compliance check for your parcel, a structural risk assessment, a cost band (low/mid/high estimate range), and a permit risk summary — all delivered within 24 hours. It is the fastest way to know whether your project is viable before spending more.',
+    question: 'What does the $585 AI Concept Design Package include?',
+    answer: 'You get 8 structured deliverables: property-specific concept visuals (2–4 options), a design direction summary, layout and flow recommendations, a property-based zoning analysis, a path-to-approval plan, rough scope direction, a downloadable digital concept package, and an included design consultation call. Everything is built around your specific property — not generic AI outputs.',
   },
   {
     question: 'Are homeowner fees subscriptions?',
@@ -343,7 +343,7 @@ export default function PricingPage() {
               <p className="text-center text-sm font-medium text-gray-600">
                 Typical fully-managed project:
                 <span className="ml-2 font-bold" style={{ color: '#1A2B4A' }}>
-                  $395 + $595 + $950 + $2,950 = $4,890
+                  $585 + $595 + $950 + $2,950 = $5,080
                 </span>
               </p>
               <p className="mt-2 text-center text-xs text-gray-400">
@@ -593,7 +593,7 @@ export default function PricingPage() {
               Schedule a Call <ArrowRight className="h-5 w-5" />
             </Link>
             <Link href="/homeowners/start" className="btn-outline-white">
-              Start with $395 Concept
+              Start with $585 Concept Package
             </Link>
           </div>
         </div>

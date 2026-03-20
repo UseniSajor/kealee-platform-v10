@@ -15,12 +15,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
 
 // ── Payment amounts per project path ─────────────────────────────────────────
 const PATH_AMOUNTS: Record<string, number> = {
-  exterior_concept:    29900,
-  interior_renovation: 19900,
-  whole_home_remodel:  29900,
-  addition_expansion:  29900,
-  design_build:        49900,
-  permit_path_only:    14900,
+  exterior_concept:    58500, // $585 AI Concept Design Package
+  interior_renovation: 58500, // $585 AI Concept Design Package
+  whole_home_remodel:  58500, // $585 AI Concept Design Package
+  addition_expansion:  58500, // $585 AI Concept Design Package
+  design_build:        58500, // $585 AI Concept Design Package
+  permit_path_only:    14900, // $149 Permit Path Intake
 };
 
 const PATH_NAMES: Record<string, string> = {

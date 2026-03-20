@@ -68,7 +68,7 @@ export const PRIMARY_NAV: NavItem[] = [
         ],
       },
     ],
-    featured: { label: 'Start with $395 Concept + Validation', href: '/homeowners/start', description: 'Get your AI concept, zoning check, and cost band in 24hrs' },
+    featured: { label: 'AI Concept Design Package — $585', href: '/concept-package', description: 'Property-specific visuals, design direction, zoning brief + consultation included' },
   },
   {
     label: 'For Developers',

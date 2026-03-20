@@ -47,7 +47,7 @@ const WORKFLOW = [
   {
     number: 1,
     title: 'Get Your Concept + Validation',
-    desc: 'For $395, get an AI-generated floor plan concept, zoning check, structural risk, cost band, and permit risk — delivered in 24 hours.',
+    desc: 'For $585, get a structured, property-specific AI Concept Design Package — visuals, design direction, zoning brief, path-to-approval plan, and an included design consultation.',
   },
   {
     number: 2,
@@ -80,7 +80,7 @@ const PRICING = [
   {
     section: 'Plan Your Project',
     items: [
-      { name: 'Project Concept + Validation', price: '$395', note: 'AI concept + zoning + cost band + permit risk. Delivered in 24hrs.', highlight: true },
+      { name: 'AI Concept Design Package', price: '$585', note: 'Property-specific visuals, design direction, zoning brief, path-to-approval + consultation included.', highlight: true },
       { name: 'Advanced AI Concept', price: '$899', note: '3 floor plan options, 3D views, material suggestions' },
       { name: 'Full Design Package', price: '$4,499', note: 'Permit-ready drawing set' },
     ],
@@ -123,7 +123,7 @@ export default function HomeownersPage() {
         headline="Build with Confidence"
         highlight="Confidence"
         subhead="Plan, price, permit, and control your project. Transparent pricing at every step — pay only for what your project needs."
-        cta={{ label: 'Start with $395 Concept + Validation', href: '/homeowners/start' }}
+        cta={{ label: 'Start with $585 AI Concept Package', href: '/homeowners/start' }}
         secondaryCta={{ label: 'Browse Contractors', href: '/marketplace' }}
         trustItems={['No surprise invoices', 'Escrow-protected payments', 'Licensed & insured contractors', 'AI advisor included']}
         dark
@@ -182,7 +182,7 @@ export default function HomeownersPage() {
           <p className="text-center text-sm font-medium text-gray-600">
             Typical fully-managed project:
             <span className="ml-2 font-bold" style={{ color: '#1A2B4A' }}>
-              $395 + $595 + $950 + $2,950 = $4,890
+              $585 + $595 + $950 + $2,950 = $5,080
             </span>
           </p>
           <p className="mt-2 text-center text-xs text-gray-400">
@@ -205,7 +205,7 @@ export default function HomeownersPage() {
       <RoleCTA
         headline="Ready to Start Your Project?"
         subhead="Join thousands of homeowners who have built smarter with Kealee's AI-powered platform."
-        cta={{ label: 'Get my $395 Concept + Validation', href: '/homeowners/start' }}
+        cta={{ label: 'Get My $585 Concept Package', href: '/homeowners/start' }}
         secondaryCta={{ label: 'Browse Contractors', href: '/marketplace' }}
       />
     </>

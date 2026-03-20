@@ -15,8 +15,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
 });
 
 const PACKAGE_PRICES: Record<string, { name: string; amount: number }> = {
-  essential:    { name: "Essential Concept Package",    amount: 29900 },
-  professional: { name: "Professional Concept Package", amount: 59900 },
+  essential:    { name: "AI Concept Design Package",    amount: 58500 },
+  professional: { name: "AI Concept Design Package — Priority", amount: 77500 }, // $585 + $195 priority
   premium:      { name: "Premium Concept Package",      amount: 99900 },
   white_glove:  { name: "White Glove Concept Package",  amount: 199900 },
 };
