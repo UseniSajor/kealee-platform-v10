@@ -338,8 +338,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   // ── Public intake payment fulfillment ─────────────────────────────────────
   if (metadata.source === 'public_intake' && metadata.intakeId) {
     try {
-      // Mark the PermitServiceLead as paid
-      await prismaAny.permitServiceLead.update({
+      // Mark the PublicIntakeLead as paid
+      await prismaAny.publicIntakeLead.update({
         where: { id: metadata.intakeId },
         data: {
           status: 'paid',
@@ -347,12 +347,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
           stripePaymentIntentId: (session.payment_intent as string) ?? null,
           paidAt: new Date(),
         },
-      }).catch(() => {
-        // field may not exist yet — update status only
-        return prismaAny.permitServiceLead.update({
-          where: { id: metadata.intakeId },
-          data: { status: 'paid' },
-        });
       });
 
       // Enqueue intake processing job
@@ -388,6 +382,69 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         redis.disconnect();
       } catch (redisErr: any) {
         console.warn('public_intake: Redis publish failed (non-fatal):', redisErr.message);
+      }
+
+      // Send immediate emails via Resend (belt-and-suspenders alongside worker queue)
+      try {
+        const lead = await prismaAny.publicIntakeLead.findUnique({ where: { id: metadata.intakeId } });
+        if (lead) {
+          const pathLabels: Record<string, string> = {
+            exterior_concept: 'Exterior Concept Package',
+            interior_renovation: 'Interior Renovation Package',
+            whole_home_remodel: 'Whole Home Remodel',
+            addition_expansion: 'Addition & Expansion',
+            design_build: 'Design-Build Package',
+            permit_path_only: 'Permit Path Package',
+          };
+          const packageLabel = pathLabels[metadata.projectPath ?? ''] ?? metadata.projectPath ?? 'Package';
+          const amountDollars = ((session.amount_total ?? 0) / 100).toFixed(2);
+          const ccUrl = process.env.COMMAND_CENTER_URL || 'https://command-center.kealee.com';
+          const teamEmail = process.env.TEAM_INTAKE_EMAIL || 'team@kealee.com';
+
+          // Client confirmation
+          await emailService.sendEmail({
+            to: lead.contactEmail,
+            subject: `We received your ${packageLabel} request`,
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto"><h2>Your request is confirmed!</h2><p>Hi ${lead.clientName},</p><p>Thank you — your <strong>${packageLabel}</strong> request is confirmed and payment of <strong>$${amountDollars}</strong> received. Our team will review your details and deliver your concept package within 1-2 business days.</p><table style="width:100%;border-collapse:collapse;margin:20px 0"><tr style="background:#f5f5f5"><td style="padding:8px 12px;font-weight:600">Address</td><td style="padding:8px 12px">${lead.projectAddress}</td></tr><tr><td style="padding:8px 12px;font-weight:600">Package</td><td style="padding:8px 12px">${packageLabel}</td></tr><tr style="background:#f5f5f5"><td style="padding:8px 12px;font-weight:600">Budget</td><td style="padding:8px 12px">${lead.budgetRange}</td></tr></table><p>Questions? Reply to this email anytime.</p><p>— The Kealee Team</p></div>`,
+          });
+
+          // Team alert
+          const tier = (lead.leadTier ?? 'cold').toUpperCase();
+          const tierEmoji = lead.leadTier === 'hot' ? '🔴' : lead.leadTier === 'warm' ? '🟡' : '🔵';
+          await emailService.sendEmail({
+            to: teamEmail,
+            subject: `${tierEmoji} New Intake: ${lead.clientName} — ${packageLabel} ($${amountDollars})`,
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto"><h2>${tierEmoji} New Paid Intake — ${tier}</h2><p><strong>Score: ${lead.leadScore}/100 | Route: ${lead.leadRoute}</strong></p><table style="width:100%;border-collapse:collapse;margin:16px 0"><tr style="background:#f5f5f5"><td style="padding:8px 12px;font-weight:600">Client</td><td style="padding:8px 12px">${lead.clientName}</td></tr><tr><td style="padding:8px 12px;font-weight:600">Email</td><td style="padding:8px 12px"><a href="mailto:${lead.contactEmail}">${lead.contactEmail}</a></td></tr><tr style="background:#f5f5f5"><td style="padding:8px 12px;font-weight:600">Phone</td><td style="padding:8px 12px">${lead.contactPhone ?? 'N/A'}</td></tr><tr><td style="padding:8px 12px;font-weight:600">Address</td><td style="padding:8px 12px">${lead.projectAddress}</td></tr><tr style="background:#f5f5f5"><td style="padding:8px 12px;font-weight:600">Package</td><td style="padding:8px 12px">${packageLabel}</td></tr><tr><td style="padding:8px 12px;font-weight:600">Budget</td><td style="padding:8px 12px">${lead.budgetRange}</td></tr><tr style="background:#f5f5f5"><td style="padding:8px 12px;font-weight:600">Paid</td><td style="padding:8px 12px">$${amountDollars}</td></tr></table><p><a href="${ccUrl}/intake/${metadata.intakeId}" style="background:#2563eb;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;display:inline-block">View in Command Center</a></p></div>`,
+          });
+        }
+      } catch (emailErr: any) {
+        console.warn('public_intake: direct email failed (non-fatal):', emailErr.message);
+      }
+
+      // Create command center task directly
+      try {
+        const lead = await prismaAny.publicIntakeLead.findUnique({ where: { id: metadata.intakeId } });
+        if (lead) {
+          await prismaAny.task.create({
+            data: {
+              title: `Intake: ${lead.clientName} — ${metadata.projectPath ?? 'package'}`,
+              status: lead.leadTier === 'hot' ? 'URGENT' : 'PENDING',
+              priority: lead.leadTier === 'hot' ? 'HIGH' : lead.leadTier === 'warm' ? 'MEDIUM' : 'LOW',
+              source: 'intake',
+              metadata: {
+                intakeId: metadata.intakeId,
+                projectPath: metadata.projectPath,
+                leadTier: lead.leadTier,
+                leadRoute: lead.leadRoute,
+                amount: session.amount_total,
+                stripeSessionId: session.id,
+                contactEmail: lead.contactEmail,
+              },
+            },
+          });
+        }
+      } catch (taskErr: any) {
+        console.warn('public_intake: task creation failed (non-fatal):', taskErr.message);
       }
 
       console.log('Public intake payment fulfilled:', metadata.intakeId);

@@ -16,6 +16,8 @@ import { spatialVerificationQueue } from './queues/spatial-verification.queue'
 import { createSpatialVerificationWorker } from './processors/spatial-verification.processor'
 import { conceptDeliveryQueue } from './queues/concept-delivery.queue'
 import { createConceptDeliveryWorker } from './processors/concept-delivery.processor'
+import { intakeProcessingQueue } from './queues/intake-processing.queue'
+import { createIntakeProcessingWorker } from './processors/intake-processing.processor'
 import { cronManager } from './cron/cron.manager'
 import type { Worker } from 'bullmq'
 
@@ -30,6 +32,7 @@ let salesWorker: Worker | null = null
 let mlPredictionWorker: Worker | null = null
 let spatialVerificationWorker: Worker | null = null
 let conceptDeliveryWorker: Worker | null = null
+let intakeProcessingWorker: Worker | null = null
 
 // Test Redis connection
 async function testRedisConnection() {
@@ -232,6 +235,18 @@ async function initializeConceptDeliveryQueue() {
   }
 }
 
+// Initialize intake processing queue and worker
+async function initializeIntakeProcessingQueue() {
+  try {
+    console.log('Initializing intake processing queue...')
+    intakeProcessingWorker = createIntakeProcessingWorker()
+    console.log('Intake processing worker started')
+  } catch (error) {
+    console.error('Failed to initialize intake processing queue:', error)
+    throw error
+  }
+}
+
 // Graceful shutdown
 async function shutdown() {
   console.log('\n⚠️ Shutting down worker service...')
@@ -282,6 +297,11 @@ async function shutdown() {
       console.log('✅ Concept delivery worker closed')
     }
 
+    if (intakeProcessingWorker) {
+      await intakeProcessingWorker.close()
+      console.log('✅ Intake processing worker closed')
+    }
+
     // Close queues
     await emailQueue.close()
     console.log('✅ Email queue closed')
@@ -306,6 +326,9 @@ async function shutdown() {
 
     await conceptDeliveryQueue.close()
     console.log('✅ Concept delivery queue closed')
+
+    await intakeProcessingQueue.close()
+    console.log('✅ Intake processing queue closed')
 
     // Close Redis
     await redis.quit()
@@ -354,6 +377,7 @@ async function start() {
   await initializeMLPredictionQueue()
   await initializeSpatialVerificationQueue()
   await initializeConceptDeliveryQueue()
+  await initializeIntakeProcessingQueue()
   await initializeCronJobs()
 
   console.log('✅ Worker service ready')

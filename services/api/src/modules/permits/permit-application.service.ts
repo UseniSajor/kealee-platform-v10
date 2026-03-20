@@ -3,9 +3,10 @@ import { NotFoundError, ValidationError } from '../../errors/app.error'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
 import { permitRoutingService } from './permit-routing.service'
+import Anthropic from '@anthropic-ai/sdk'
 
 /**
- * Run AI review on permit application
+ * Run AI review on permit application using Claude
  */
 async function runAIReview(permitApplicationId: string, documents: any[]): Promise<{
   overallScore: number
@@ -15,53 +16,78 @@ async function runAIReview(permitApplicationId: string, documents: any[]): Promi
   missingDocuments: any
   suggestedFixes: any
 }> {
-  // AI-powered review using document analysis for completeness and compliance
-  
-  // Checkreview
-  const hasArchitecturalPlans = documents.some((d: any) => 
-    d.type === 'ARCHITECTURAL_PLANS' || d.type === 'FLOOR_PLAN'
-  )
-  const hasStructuralCalcs = documents.some((d: any) => 
-    d.type === 'STRUCTURAL_CALCS' || d.type === 'STRUCTURAL'
-  )
-  
-  const issues: any[] = []
-  const missing: string[] = []
-  
-  if (!hasArchitecturalPlans) {
-    missing.push('ARCHITECTURAL_PLANS')
-    issues.push({
-      type: 'MISSING_DOCUMENT',
-      severity: 'HIGH',
-      message: 'Architectural plans are required',
+  const docSummary = documents.map((d: any) =>
+    `- ${d.type || 'UNKNOWN'}: ${d.name || d.filename || 'unnamed'} (${d.status || 'uploaded'})`
+  ).join('\n') || '- No documents uploaded'
+
+  try {
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+    const prompt = `You are an expert permit application reviewer. Review this permit application document checklist and return a JSON analysis.
+
+Permit Application ID: ${permitApplicationId}
+Documents submitted:
+${docSummary}
+
+Typical residential permit requirements:
+- ARCHITECTURAL_PLANS (required)
+- SITE_PLAN (required)
+- STRUCTURAL_CALCS (required for additions/structural work)
+- ENERGY_COMPLIANCE (required in most jurisdictions)
+- MEP_PLANS (required if mechanical/electrical/plumbing work)
+- OWNER_AUTHORIZATION (required if applicant is not owner)
+
+Return a JSON object with exactly these fields:
+{
+  "overallScore": number (0-100, based on completeness and quality),
+  "readyToSubmit": boolean (true if score >= 70 and no critical missing docs),
+  "planIssues": [{"type": string, "severity": "HIGH"|"MEDIUM"|"LOW", "message": string}],
+  "codeViolations": [{"code": string, "description": string, "severity": string}],
+  "missingDocuments": string[],
+  "suggestedFixes": [{"issue": string, "suggestion": string}]
+}
+Return only valid JSON, no markdown.`
+
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 800,
+      messages: [{ role: 'user', content: prompt }],
     })
-  }
-  
-  if (!hasStructuralCalcs) {
-    missing.push('STRUCTURAL_CALCS')
-    issues.push({
-      type: 'MISSING_DOCUMENT',
-      severity: 'MEDIUM',
-      message: 'Structural calculations are recommended for this project type',
-    })
-  }
-  
-  // Simulate score calculation
-  let score = 100
-  if (missing.length > 0) score -= missing.length * 10
-  if (issues.length > 0) score -= issues.length * 5
-  score = Math.max(0, Math.min(100, score))
-  
-  return {
-    overallScore: score,
-    readyToSubmit: score >= 70 && missing.length === 0,
-    planIssues: issues.filter((i: any) => i.type !== 'MISSING_DOCUMENT'),
-    codeViolations: [],
-    missingDocuments: missing,
-    suggestedFixes: issues.map((i: any) => ({
-      issue: i.message,
-      suggestion: `Add ${i.type === 'MISSING_DOCUMENT' ? 'required' : 'recommended'} document`,
-    })),
+
+    const raw = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
+    return JSON.parse(raw)
+  } catch (err: any) {
+    console.warn('[runAIReview] Claude failed, using rule-based fallback:', err.message)
+
+    // Rule-based fallback
+    const hasArchitecturalPlans = documents.some((d: any) =>
+      d.type === 'ARCHITECTURAL_PLANS' || d.type === 'FLOOR_PLAN'
+    )
+    const hasStructuralCalcs = documents.some((d: any) =>
+      d.type === 'STRUCTURAL_CALCS' || d.type === 'STRUCTURAL'
+    )
+    const issues: any[] = []
+    const missing: string[] = []
+    if (!hasArchitecturalPlans) {
+      missing.push('ARCHITECTURAL_PLANS')
+      issues.push({ type: 'MISSING_DOCUMENT', severity: 'HIGH', message: 'Architectural plans are required' })
+    }
+    if (!hasStructuralCalcs) {
+      missing.push('STRUCTURAL_CALCS')
+      issues.push({ type: 'MISSING_DOCUMENT', severity: 'MEDIUM', message: 'Structural calculations are recommended' })
+    }
+    let score = 100
+    if (missing.length > 0) score -= missing.length * 10
+    if (issues.length > 0) score -= issues.length * 5
+    score = Math.max(0, Math.min(100, score))
+    return {
+      overallScore: score,
+      readyToSubmit: score >= 70 && missing.length === 0,
+      planIssues: issues.filter((i: any) => i.type !== 'MISSING_DOCUMENT'),
+      codeViolations: [],
+      missingDocuments: missing,
+      suggestedFixes: issues.map((i: any) => ({ issue: i.message, suggestion: 'Upload the required document' })),
+    }
   }
 }
 

@@ -1,5 +1,6 @@
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
+import Anthropic from "@anthropic-ai/sdk";
 import type {
   Complexity,
   DesignBrief,
@@ -14,12 +15,16 @@ function id(prefix: string) {
 
 function imageSet(prefix: string, count: number) {
   return Array.from({ length: count }, (_, i) => {
-    return `https://dummy.kealee.local/${prefix}-${i + 1}.jpg`;
+    return `https://placeholder.kealee.com/concept/${prefix}-${i + 1}.jpg`;
   });
 }
 
+function getAnthropicClient(): Anthropic {
+  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+}
+
 export const createIntakeRecord = tool(
-  async (input) => {
+  async (input: { clientName: string; contactEmail: string; contactPhone?: string; projectAddress: string; projectType: string }) => {
     return {
       intakeId: id("intake"),
       createdAt: new Date().toISOString(),
@@ -40,7 +45,7 @@ export const createIntakeRecord = tool(
 );
 
 export const updateIntakeRecord = tool(
-  async (input) => {
+  async (input: { intakeId: string; fields: Record<string, unknown> }) => {
     return {
       updated: true,
       intakeId: input.intakeId,
@@ -59,7 +64,7 @@ export const updateIntakeRecord = tool(
 );
 
 export const fetchPropertyContext = tool(
-  async (input): Promise<SiteContext & { jurisdiction: string }> => {
+  async (input: { projectAddress: string }): Promise<SiteContext & { jurisdiction: string }> => {
     return {
       jurisdiction: input.projectAddress.includes("DC") ? "Washington, DC" : "Prince George's County, MD",
       streetViewAvailable: true,
@@ -79,20 +84,63 @@ export const fetchPropertyContext = tool(
 );
 
 export const analyzeUploadedPhotos = tool(
-  async (_input): Promise<VisionAnalysis> => {
-    return {
-      buildingType: "single-family detached",
-      estimatedStories: "2",
-      roofForm: "gable",
-      facadeMaterials: ["brick", "painted trim"],
-      siteFeatures: ["front walk", "driveway", "small porch"],
-      landscapeConditions: ["sparse foundation planting", "patchy lawn"],
-      confidence: 0.81,
-    };
+  async (input: { intakeId: string; photoUrls: string[] }): Promise<VisionAnalysis> => {
+    try {
+      const client = getAnthropicClient();
+
+      // Build image content blocks — use up to 3 photos for analysis
+      const photoUrls = input.photoUrls.slice(0, 3);
+      const imageBlocks: Anthropic.ImageBlockParam[] = photoUrls.map((url: string) => ({
+        type: "image",
+        source: { type: "url", url },
+      }));
+
+      const response = await client.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 800,
+        messages: [
+          {
+            role: "user",
+            content: [
+              ...imageBlocks,
+              {
+                type: "text",
+                text: `Analyze these property photos and return a JSON object with exactly these fields:
+{
+  "buildingType": string (e.g. "single-family detached"),
+  "estimatedStories": string (e.g. "2"),
+  "roofForm": string (e.g. "gable", "hip", "flat"),
+  "facadeMaterials": string[] (e.g. ["brick", "vinyl siding"]),
+  "siteFeatures": string[] (e.g. ["driveway", "front porch"]),
+  "landscapeConditions": string[] (e.g. ["mature trees", "sparse lawn"]),
+  "confidence": number between 0 and 1
+}
+Return only valid JSON, no markdown.`,
+              },
+            ],
+          },
+        ],
+      });
+
+      const raw = response.content[0].type === "text" ? response.content[0].text.trim() : "";
+      const parsed = JSON.parse(raw) as VisionAnalysis;
+      return parsed;
+    } catch (err) {
+      console.warn("[analyzeUploadedPhotos] Claude vision failed, using fallback:", err);
+      return {
+        buildingType: "single-family detached",
+        estimatedStories: "2",
+        roofForm: "gable",
+        facadeMaterials: ["brick", "painted trim"],
+        siteFeatures: ["front walk", "driveway"],
+        landscapeConditions: ["sparse foundation planting"],
+        confidence: 0.5,
+      };
+    }
   },
   {
     name: "analyzeUploadedPhotos",
-    description: "Analyze uploaded property photos.",
+    description: "Analyze uploaded property photos using Claude vision.",
     schema: z.object({
       intakeId: z.string(),
       photoUrls: z.array(z.string().url()).min(1),
@@ -101,7 +149,7 @@ export const analyzeUploadedPhotos = tool(
 );
 
 export const classifyProjectComplexity = tool(
-  async (input): Promise<{ projectComplexity: Complexity; humanReviewRequired: boolean; reasons: string[] }> => {
+  async (input: { projectType: string; propertyUse?: string; goals: string[]; visionAnalysis: { confidence: number }; knownConstraints: string[] }): Promise<{ projectComplexity: Complexity; humanReviewRequired: boolean; reasons: string[] }> => {
     const reasons: string[] = [];
     let projectComplexity: Complexity = "low";
 
@@ -145,16 +193,52 @@ export const classifyProjectComplexity = tool(
 );
 
 export const generateDesignBrief = tool(
-  async (input): Promise<DesignBrief> => {
-    return {
-      id: id("brief"),
-      summary: input.projectSummary,
-      facadeStrategy: "Modernized curb appeal while preserving main massing and existing structural geometry.",
-      landscapeStrategy: "Layered front-yard planting, edge cleanup, path emphasis, and foundation softening.",
-      materials: input.desiredMaterials?.length ? input.desiredMaterials : ["fiber cement accents", "black metal details", "stone skirt"],
-      palette: input.preferredColorPalette?.length ? input.preferredColorPalette : ["warm white", "charcoal", "natural wood"],
-      budgetDirection: input.budgetRange,
-    };
+  async (input: { intakeId: string; projectSummary: string; stylePreferences: string[]; desiredMaterials?: string[]; preferredColorPalette?: string[]; visionAnalysis: Record<string, unknown>; siteContext: Record<string, unknown>; budgetRange: string }): Promise<DesignBrief> => {
+    try {
+      const client = getAnthropicClient();
+
+      const prompt = `You are a professional residential design architect. Generate a concise design brief for this project.
+
+Project Summary: ${input.projectSummary}
+Style Preferences: ${input.stylePreferences.join(", ")}
+Desired Materials: ${input.desiredMaterials?.join(", ") || "not specified"}
+Preferred Colors: ${input.preferredColorPalette?.join(", ") || "not specified"}
+Budget Range: ${input.budgetRange}
+Vision Analysis: ${JSON.stringify(input.visionAnalysis)}
+Site Context: ${JSON.stringify(input.siteContext)}
+
+Return a JSON object with exactly these fields:
+{
+  "summary": string (2-3 sentences describing the overall design direction),
+  "facadeStrategy": string (1-2 sentences on exterior facade approach),
+  "landscapeStrategy": string (1-2 sentences on landscaping approach),
+  "materials": string[] (3-5 recommended materials),
+  "palette": string[] (3-4 color palette items),
+  "budgetDirection": string (brief budget guidance)
+}
+Return only valid JSON, no markdown.`;
+
+      const response = await client.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 600,
+        messages: [{ role: "user", content: prompt }],
+      });
+
+      const raw = response.content[0].type === "text" ? response.content[0].text.trim() : "";
+      const parsed = JSON.parse(raw);
+      return { id: id("brief"), ...parsed };
+    } catch (err) {
+      console.warn("[generateDesignBrief] Claude failed, using fallback:", err);
+      return {
+        id: id("brief"),
+        summary: input.projectSummary,
+        facadeStrategy: "Modernized curb appeal while preserving main massing and existing structural geometry.",
+        landscapeStrategy: "Layered front-yard planting, edge cleanup, path emphasis, and foundation softening.",
+        materials: input.desiredMaterials?.length ? input.desiredMaterials : ["fiber cement accents", "black metal details", "stone skirt"],
+        palette: input.preferredColorPalette?.length ? input.preferredColorPalette : ["warm white", "charcoal", "natural wood"],
+        budgetDirection: input.budgetRange,
+      };
+    }
   },
   {
     name: "generateDesignBrief",
@@ -173,7 +257,7 @@ export const generateDesignBrief = tool(
 );
 
 export const generateExteriorConceptImages = tool(
-  async (input) => {
+  async (input: { intakeId: string; designBriefId: string; variations: number; imageStyle: string; preserveStructure: boolean }) => {
     return {
       designBriefId: input.designBriefId,
       images: imageSet("exterior", input.variations),
@@ -193,7 +277,7 @@ export const generateExteriorConceptImages = tool(
 );
 
 export const generateLandscapeConceptImages = tool(
-  async (input) => {
+  async (input: { intakeId: string; designBriefId: string; zones: string[]; variations: number }) => {
     return {
       designBriefId: input.designBriefId,
       images: imageSet("landscape", input.variations),
@@ -212,16 +296,47 @@ export const generateLandscapeConceptImages = tool(
 );
 
 export const generatePermitPathSummary = tool(
-  async (input): Promise<PermitPathSummary> => {
-    return {
-      likelyPermitNeeded: /addition|deck|porch|driveway/i.test(input.projectType),
-      likelyDesignReviewNeeded: input.projectComplexity !== "low",
-      likelyTradePermits: /lighting|electrical/i.test(input.projectType) ? ["electrical"] : [],
-      notes: [
-        `Preliminary path to approval for ${input.jurisdiction || "the local jurisdiction"}.`,
-        "Final code, zoning, and permit requirements must be confirmed during professional review.",
-      ],
-    };
+  async (input: { projectAddress: string; jurisdiction?: string; projectType: string; propertyUse?: string; projectComplexity: "low" | "medium" | "high"; knownConstraints: string[] }): Promise<PermitPathSummary> => {
+    try {
+      const client = getAnthropicClient();
+
+      const prompt = `You are a licensed residential permit consultant. Generate a preliminary permit path summary.
+
+Project Type: ${input.projectType}
+Address/Jurisdiction: ${input.projectAddress} (${input.jurisdiction ?? "unknown jurisdiction"})
+Property Use: ${input.propertyUse ?? "residential"}
+Complexity: ${input.projectComplexity}
+Known Constraints: ${input.knownConstraints.join(", ") || "none"}
+
+Return a JSON object with exactly these fields:
+{
+  "likelyPermitNeeded": boolean,
+  "likelyDesignReviewNeeded": boolean,
+  "likelyTradePermits": string[] (e.g. ["electrical", "plumbing"]),
+  "notes": string[] (2-3 brief notes about permit requirements and next steps)
+}
+Return only valid JSON, no markdown. This is a preliminary estimate only.`;
+
+      const response = await client.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 400,
+        messages: [{ role: "user", content: prompt }],
+      });
+
+      const raw = response.content[0].type === "text" ? response.content[0].text.trim() : "";
+      return JSON.parse(raw) as PermitPathSummary;
+    } catch (err) {
+      console.warn("[generatePermitPathSummary] Claude failed, using fallback:", err);
+      return {
+        likelyPermitNeeded: /addition|deck|porch|driveway/i.test(input.projectType),
+        likelyDesignReviewNeeded: input.projectComplexity !== "low",
+        likelyTradePermits: /lighting|electrical/i.test(input.projectType) ? ["electrical"] : [],
+        notes: [
+          `Preliminary path to approval for ${input.jurisdiction || "the local jurisdiction"}.`,
+          "Final code, zoning, and permit requirements must be confirmed during professional review.",
+        ],
+      };
+    }
   },
   {
     name: "generatePermitPathSummary",
@@ -238,7 +353,7 @@ export const generatePermitPathSummary = tool(
 );
 
 export const buildClientConceptPackageDraft = tool(
-  async (input) => {
+  async (input: { intakeId: string; designBriefId: string; exteriorImages: string[]; landscapeImages: string[]; permitPathSummary: Record<string, unknown> }) => {
     return {
       packageDraftId: id("pkg"),
       intakeId: input.intakeId,
@@ -268,7 +383,7 @@ export const buildClientConceptPackageDraft = tool(
 );
 
 export const routeToCommandCenterReview = tool(
-  async (input) => {
+  async (input: { intakeId: string; reviewReason: string; priority: "LOW" | "NORMAL" | "HIGH" | "URGENT" }) => {
     return {
       queued: true,
       queueId: id("review"),

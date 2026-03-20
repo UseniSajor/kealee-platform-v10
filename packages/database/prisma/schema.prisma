@@ -1603,6 +1603,10 @@ model Project {
   ghlPipelineId    String?
   ghlStageId       String?
 
+  // V20 — PortfolioOrg relation
+  portfolioOrgId String?
+  portfolioOrg   PortfolioOrg? @relation("OrgProjects", fields: [portfolioOrgId], references: [id])
+
   // V20 — DDTS & OS Service relations
   digitalTwin           DigitalTwin?           @relation("ProjectTwin")
   capitalStack          CapitalStack?
@@ -2013,6 +2017,12 @@ model User {
   patternBookSelections   PatternBookSelection[]   @relation("PatternBookSelector")
   developmentPackages     DevelopmentPackage[]     @relation("DevelopmentPackageUser")
   hudEligibilityChecks    HUDEligibilityCheck[]    @relation("HUDEligibilityUser")
+
+  // PortfolioOrg & notification relations (Sprint 7+)
+  designProfessional    DesignProfessional?    @relation("DesignProfessionalUser")
+  inAppNotifications    InAppNotification[]    @relation("UserInAppNotifications")
+  notifEventPreferences NotifEventPreference[] @relation("UserNotifEventPreferences")
+  teamMemberships       TeamMembership[]       @relation("UserTeamMemberships")
 }
 
 // ============================================================================
@@ -16129,4 +16139,60 @@ model DeveloperServiceRequest {
   @@map("developer_service_requests")
   @@index([userId])
   @@index([status])
+}
+
+// ── Public Intake Lead ─────────────────────────────────────────────────────
+// Stores homeowner/client intake form submissions from /intake flow
+
+enum PublicIntakeStatus {
+  new
+  paid
+  processing
+  delivered
+  cancelled
+}
+
+model PublicIntakeLead {
+  id String @id @default(uuid())
+
+  // Contact
+  clientName    String
+  contactEmail  String
+  contactPhone  String?
+
+  // Project
+  projectAddress String
+  projectPath    String  // exterior_concept | interior_renovation | etc.
+  budgetRange    String
+  timelineGoal   String?
+  uploadedPhotos String[]
+
+  // Lead Scoring
+  leadScore Int    @default(0)
+  leadTier  String @default("cold")  // hot | warm | cold
+  leadRoute String @default("standard") // fast_track | standard | nurture
+
+  // Payment
+  status                  PublicIntakeStatus @default(new)
+  requiresPayment         Boolean @default(true)
+  paymentAmount           Int     @default(0)  // cents
+  stripeSessionId         String?
+  stripePaymentIntentId   String?
+  paidAt                  DateTime?
+
+  // Routing
+  source         String  @default("public_intake")
+  funnelSessionId String?
+
+  // Extra fields (flexible)
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("public_intake_leads")
+  @@index([contactEmail])
+  @@index([status])
+  @@index([createdAt])
+  @@index([stripeSessionId])
 }

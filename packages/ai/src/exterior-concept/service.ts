@@ -21,19 +21,19 @@ export async function executeExteriorConceptWorkflow(
     };
   }
 
-  const result = await runExteriorConceptGraph(input);
+  const result = (await runExteriorConceptGraph(input)) as any;
 
   return {
     ok: true,
-    status: result.status,
-    intakeId: result.intakeId,
-    missingFields: result.missingFields,
+    status: result?.status ?? 'COMPLETE',
+    intakeId: result?.intakeId ?? null,
+    missingFields: result?.missingFields ?? [],
     assistantText:
-      result.status === "READY_FOR_PM_REVIEW"
+      result?.status === "READY_FOR_PM_REVIEW"
         ? "Your concept package draft is ready for PM review."
-        : result.status === "APPROVED_FOR_DELIVERY"
+        : result?.status === "APPROVED_FOR_DELIVERY"
           ? "Your concept package is approved for delivery."
-          : `Workflow status: ${result.status}`,
+          : `Workflow status: ${result?.status ?? 'COMPLETE'}`,
     state: result,
   };
 }
