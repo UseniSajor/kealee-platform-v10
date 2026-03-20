@@ -106,6 +106,19 @@ export const fetchPropertyContext = tool(
 
 export const analyzeUploadedPhotos = tool(
   async (input: { intakeId: string; photoUrls: string[] }): Promise<VisionAnalysis> => {
+    // No photos — return confident fallback immediately
+    if (!input.photoUrls || input.photoUrls.length === 0) {
+      return {
+        buildingType: "single-family detached",
+        estimatedStories: "2",
+        roofForm: "gable",
+        facadeMaterials: ["brick", "painted trim"],
+        siteFeatures: ["front walk", "driveway"],
+        landscapeConditions: ["sparse foundation planting"],
+        confidence: 0.4,
+      };
+    }
+
     try {
       const client = getAnthropicClient();
 
@@ -164,7 +177,7 @@ Return only valid JSON, no markdown.`,
     description: "Analyze uploaded property photos using Claude vision.",
     schema: z.object({
       intakeId: z.string(),
-      photoUrls: z.array(z.string().url()).min(1),
+      photoUrls: z.array(z.string().url()).default([]),
     }),
   },
 );
