@@ -5,6 +5,7 @@ export const PROJECT_PATHS = [
   "addition_expansion",
   "design_build",
   "permit_path_only",
+  "capture_site_concept",
 ] as const;
 
 export type ProjectPath = (typeof PROJECT_PATHS)[number];
@@ -77,5 +78,14 @@ export const PROJECT_PATH_META: Record<ProjectPath, ProjectPathMeta> = {
     paymentAmount: 14900,
     paymentTier: "permit_intake",
     minFields: ["clientName", "contactEmail", "projectAddress", "permitType"],
+  },
+  capture_site_concept: {
+    path: "capture_site_concept",
+    label: "Capture Site",
+    description: "Mobile-guided full property capture to build your digital twin.",
+    requiresPayment: false,
+    paymentAmount: 0,
+    paymentTier: "capture_only",
+    minFields: ["clientName", "contactEmail", "projectAddress"],
   },
 };

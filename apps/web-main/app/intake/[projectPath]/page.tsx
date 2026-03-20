@@ -19,7 +19,12 @@ export default function IntakeFormPage() {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem(`kealee_intake_${projectPath}`, JSON.stringify(data))
     }
-    router.push(`/intake/${projectPath}/review`)
+    // capture_site_concept goes directly to capture gate (no payment required)
+    if (projectPath === 'capture_site_concept') {
+      router.push(`/intake/${projectPath}/capture`)
+    } else {
+      router.push(`/intake/${projectPath}/review`)
+    }
   }
 
   return (

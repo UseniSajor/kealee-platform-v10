@@ -54,3 +54,23 @@ export type { CreateTaskResult, CreateTaskOptions } from "./lib/create-command-c
 
 export { submitIntake } from "./lib/submit-intake";
 export type { SubmitIntakeResult, SubmitIntakeOptions } from "./lib/submit-intake";
+
+// Capture
+export { CAPTURE_ZONE_META, REQUIRED_CAPTURE_ZONES_BY_PROJECT_PATH, HVAC_CAPTURE_ZONES, getRequiredZones, isCaptureRequired, getZoneMeta } from "./config/capture-zones";
+export type { CaptureZoneMeta } from "./config/capture-zones";
+
+export { CreateCaptureSessionSchema, SendCaptureLinkSchema, StartCaptureSessionSchema, CaptureAssetUploadSchema, CaptureVoiceNoteSchema, CompleteCaptureSessionSchema, CaptureZoneEnum, SystemCategoryEnum } from "./schemas/capture-schemas";
+export type { CaptureZone, SystemCategory, CaptureSessionRecord, CaptureAssetRecord, CaptureCompletenessReport } from "./schemas/capture-schemas";
+
+export { CreateDigitalTwinSchema, UpdateTwinFromCaptureSchema, DigitalTwinCreationPathEnum } from "./schemas/twin-schemas";
+export type { DigitalTwinCreationPath, DigitalTwinRecord, SpatialNodeRecord, SystemNodeRecord, ObservationRecord, DigitalTwinDetail } from "./schemas/twin-schemas";
+
+export { normalizeCaptureSession, normalizeAsset, buildCompletenessReport } from "./lib/normalize-capture";
+export { buildDigitalTwinRecord, deriveSpatialNodes, deriveSystemNodes, deriveObservations } from "./lib/create-digital-twin";
+export { buildTwinUpdateFromCapture } from "./lib/update-digital-twin-from-capture";
+export { buildCaptureUrl, buildCaptureSmsBody, sendMobileCaptureLinkViaTwilio } from "./lib/send-mobile-capture-link";
+export type { SendMobileCaptureLinkInput, SendMobileCaptureLinkResult } from "./lib/send-mobile-capture-link";
+export { generateCaptureToken, generateCaptureId, generateAssetId, generateVoiceNoteId, computeProgressPercent, getTokenExpiresAt, isTokenExpired } from "./lib/submit-capture-session";
+export { reviewCaptureCompleteness, getNextRequiredZone, summarizeCapture } from "./lib/review-capture-completeness";
+export { CAPTURE_EVENTS, buildChannelName, buildProgressPayload, subscribeToCaptureChannel } from "./lib/realtime-capture-channel";
+export type { CaptureEventType, CaptureRealtimeEvent, CaptureProgressPayload, RealtimeClient } from "./lib/realtime-capture-channel";

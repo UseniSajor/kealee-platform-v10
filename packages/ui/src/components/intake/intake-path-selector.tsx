@@ -15,6 +15,7 @@ const PATH_ICONS: Record<string, string> = {
   addition_expansion: '📐',
   design_build: '✏️',
   permit_path_only: '📋',
+  capture_site_concept: '📸',
 }
 
 export function IntakePathSelector({ onSelect }: IntakePathSelectorProps) {

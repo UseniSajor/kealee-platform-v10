@@ -44,4 +44,10 @@ export const INTAKE_OPTION_CARDS: IntakeOptionCard[] = [
     subtitle: "Get your project organized for a path-to-approval review.",
     cta: "Start Permit Intake",
   },
+  {
+    path: "capture_site_concept",
+    title: "Capture Site",
+    subtitle: "Mobile-guided full property capture to build your digital twin. No payment required.",
+    cta: "Start Site Capture",
+  },
 ];
