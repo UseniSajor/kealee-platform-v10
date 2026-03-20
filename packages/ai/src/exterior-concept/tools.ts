@@ -37,7 +37,7 @@ async function generateDalleImage(prompt: string, size: "1792x1024" | "1024x1792
       quality: "hd",
       response_format: "url",
     });
-    return response.data[0]?.url ?? null;
+    return response.data?.[0]?.url ?? null;
   } catch (err) {
     console.warn("[generateDalleImage] DALL-E 3 call failed:", (err as Error).message);
     return null;

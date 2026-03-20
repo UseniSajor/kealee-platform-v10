@@ -1,4 +1,3 @@
-import { Annotation, StateGraph } from "@langchain/langgraph";
 import { createInitialState, detectMissingFields } from "./state";
 import type { ExteriorConceptState } from "./types";
 import {
@@ -15,48 +14,11 @@ import {
   updateIntakeRecord,
 } from "./tools";
 
-const GraphState = Annotation.Root<ExteriorConceptState>({
-  intakeId: Annotation<string | undefined>(),
-  userMessageHistory: Annotation<Array<{ role: "user" | "assistant"; content: string }>>({
-    reducer: (_x, y) => y,
-    default: () => [],
-  }),
-  intakeData: Annotation<ExteriorConceptState["intakeData"]>({
-    reducer: (_x, y) => y,
-    default: () => ({}),
-  }),
-  missingFields: Annotation<string[]>({
-    reducer: (_x, y) => y,
-    default: () => [],
-  }),
-  siteContext: Annotation<ExteriorConceptState["siteContext"] | undefined>(),
-  visionAnalysis: Annotation<ExteriorConceptState["visionAnalysis"] | undefined>(),
-  projectComplexity: Annotation<ExteriorConceptState["projectComplexity"] | undefined>(),
-  humanReviewRequired: Annotation<boolean>({
-    reducer: (_x, y) => y,
-    default: () => false,
-  }),
-  designBrief: Annotation<ExteriorConceptState["designBrief"] | undefined>(),
-  exteriorConceptImages: Annotation<string[]>({
-    reducer: (_x, y) => y,
-    default: () => [],
-  }),
-  landscapeConceptImages: Annotation<string[]>({
-    reducer: (_x, y) => y,
-    default: () => [],
-  }),
-  permitPathSummary: Annotation<ExteriorConceptState["permitPathSummary"] | undefined>(),
-  packageDraftId: Annotation<string | undefined>(),
-  status: Annotation<ExteriorConceptState["status"]>({
-    reducer: (_x, y) => y,
-    default: () => "NEW",
-  }),
-  humanDecision: Annotation<ExteriorConceptState["humanDecision"] | undefined>(),
-  errors: Annotation<string[]>({
-    reducer: (_x, y) => y,
-    default: () => [],
-  }),
-});
+// @langchain/core 1.x tool.invoke() returns a complex union type that TypeScript
+// cannot resolve. This helper casts cleanly.
+function inv<T>(t: { invoke: (i: unknown) => unknown }, input: unknown): Promise<T> {
+  return (t.invoke as (i: unknown) => Promise<T>)(input);
+}
 
 export async function collectIntake(state: ExteriorConceptState): Promise<Partial<ExteriorConceptState>> {
   const missingFields = detectMissingFields(state.intakeData);
@@ -68,7 +30,7 @@ export async function collectIntake(state: ExteriorConceptState): Promise<Partia
 
 export async function createOrUpdateIntake(state: ExteriorConceptState): Promise<Partial<ExteriorConceptState>> {
   if (!state.intakeId) {
-    const created = await createIntakeRecord.invoke({
+    const created = await inv<{ intakeId: string }>(createIntakeRecord, {
       clientName: state.intakeData.clientName!,
       contactEmail: state.intakeData.contactEmail!,
       contactPhone: state.intakeData.contactPhone,
@@ -78,7 +40,7 @@ export async function createOrUpdateIntake(state: ExteriorConceptState): Promise
     return { intakeId: created.intakeId };
   }
 
-  await updateIntakeRecord.invoke({
+  await inv<unknown>(updateIntakeRecord, {
     intakeId: state.intakeId,
     fields: state.intakeData,
   });
@@ -86,7 +48,7 @@ export async function createOrUpdateIntake(state: ExteriorConceptState): Promise
 }
 
 export async function fetchPropertyContextNode(state: ExteriorConceptState): Promise<Partial<ExteriorConceptState>> {
-  const ctx = await fetchPropertyContext.invoke({
+  const ctx = await inv<ExteriorConceptState["siteContext"] & { jurisdiction: string }>(fetchPropertyContext, {
     projectAddress: state.intakeData.projectAddress!,
   });
   return {
@@ -97,15 +59,15 @@ export async function fetchPropertyContextNode(state: ExteriorConceptState): Pro
 }
 
 export async function analyzePhotosNode(state: ExteriorConceptState): Promise<Partial<ExteriorConceptState>> {
-  const result = await analyzeUploadedPhotos.invoke({
+  const result = await inv<NonNullable<ExteriorConceptState["visionAnalysis"]>>(analyzeUploadedPhotos, {
     intakeId: state.intakeId!,
-    photoUrls: state.intakeData.uploadedPhotos!,
+    photoUrls: state.intakeData.uploadedPhotos ?? [],
   });
   return { visionAnalysis: result };
 }
 
 export async function classifyComplexityNode(state: ExteriorConceptState): Promise<Partial<ExteriorConceptState>> {
-  const result = await classifyProjectComplexity.invoke({
+  const result = await inv<{ projectComplexity: NonNullable<ExteriorConceptState["projectComplexity"]>; humanReviewRequired: boolean }>(classifyProjectComplexity, {
     projectType: state.intakeData.projectType!,
     propertyUse: state.intakeData.propertyUse ?? "residential",
     goals: state.intakeData.goals ?? [],
@@ -119,7 +81,7 @@ export async function classifyComplexityNode(state: ExteriorConceptState): Promi
 }
 
 export async function routeReviewEarlyNode(state: ExteriorConceptState): Promise<Partial<ExteriorConceptState>> {
-  await routeToCommandCenterReview.invoke({
+  await inv<unknown>(routeToCommandCenterReview, {
     intakeId: state.intakeId!,
     reviewReason: "EARLY_COMPLEXITY_REVIEW",
     priority: "HIGH",
@@ -134,7 +96,7 @@ export async function awaitHumanInputNode(state: ExteriorConceptState): Promise<
 }
 
 export async function generateDesignBriefNode(state: ExteriorConceptState): Promise<Partial<ExteriorConceptState>> {
-  const brief = await generateDesignBrief.invoke({
+  const brief = await inv<NonNullable<ExteriorConceptState["designBrief"]>>(generateDesignBrief, {
     intakeId: state.intakeId!,
     projectSummary: `${state.intakeData.projectType} at ${state.intakeData.projectAddress}. Goals: ${(state.intakeData.goals ?? []).join(", ")}`,
     stylePreferences: state.intakeData.stylePreferences ?? [],
@@ -148,7 +110,7 @@ export async function generateDesignBriefNode(state: ExteriorConceptState): Prom
 }
 
 export async function generateExteriorVisualsNode(state: ExteriorConceptState): Promise<Partial<ExteriorConceptState>> {
-  const result = await generateExteriorConceptImages.invoke({
+  const result = await inv<{ images: string[] }>(generateExteriorConceptImages, {
     intakeId: state.intakeId!,
     designBriefId: state.designBrief!.id,
     variations: 3,
@@ -159,7 +121,7 @@ export async function generateExteriorVisualsNode(state: ExteriorConceptState): 
 }
 
 export async function generateLandscapeVisualsNode(state: ExteriorConceptState): Promise<Partial<ExteriorConceptState>> {
-  const result = await generateLandscapeConceptImages.invoke({
+  const result = await inv<{ images: string[] }>(generateLandscapeConceptImages, {
     intakeId: state.intakeId!,
     designBriefId: state.designBrief!.id,
     zones: ["front-yard", "foundation"],
@@ -169,7 +131,7 @@ export async function generateLandscapeVisualsNode(state: ExteriorConceptState):
 }
 
 export async function generatePermitPathNode(state: ExteriorConceptState): Promise<Partial<ExteriorConceptState>> {
-  const permitPath = await generatePermitPathSummary.invoke({
+  const permitPath = await inv<NonNullable<ExteriorConceptState["permitPathSummary"]>>(generatePermitPathSummary, {
     projectAddress: state.intakeData.projectAddress!,
     jurisdiction: state.intakeData.jurisdiction,
     projectType: state.intakeData.projectType!,
@@ -181,7 +143,7 @@ export async function generatePermitPathNode(state: ExteriorConceptState): Promi
 }
 
 export async function buildPackageDraftNode(state: ExteriorConceptState): Promise<Partial<ExteriorConceptState>> {
-  const draft = await buildClientConceptPackageDraft.invoke({
+  const draft = await inv<{ packageDraftId: string }>(buildClientConceptPackageDraft, {
     intakeId: state.intakeId!,
     designBriefId: state.designBrief!.id,
     exteriorImages: state.exteriorConceptImages ?? [],
@@ -192,7 +154,7 @@ export async function buildPackageDraftNode(state: ExteriorConceptState): Promis
 }
 
 export async function routeFinalReviewNode(state: ExteriorConceptState): Promise<Partial<ExteriorConceptState>> {
-  await routeToCommandCenterReview.invoke({
+  await inv<unknown>(routeToCommandCenterReview, {
     intakeId: state.intakeId!,
     reviewReason: "FINAL_QA_REVIEW",
     priority: "NORMAL",
@@ -219,58 +181,65 @@ export async function failedNode(state: ExteriorConceptState): Promise<Partial<E
   return { status: "FAILED", errors: [...(state.errors ?? []), "Workflow failed"] };
 }
 
-export function compileGraph() {
-  const graph = new StateGraph(GraphState)
-    .addNode("collectIntake", collectIntake)
-    .addNode("createOrUpdateIntake", createOrUpdateIntake)
-    .addNode("fetchPropertyContext", fetchPropertyContextNode)
-    .addNode("analyzePhotos", analyzePhotosNode)
-    .addNode("classifyComplexity", classifyComplexityNode)
-    .addNode("routeReviewEarly", routeReviewEarlyNode)
-    .addNode("awaitHumanInput", awaitHumanInputNode)
-    .addNode("generateDesignBrief", generateDesignBriefNode)
-    .addNode("generateExteriorVisuals", generateExteriorVisualsNode)
-    .addNode("generateLandscapeVisuals", generateLandscapeVisualsNode)
-    .addNode("generatePermitPath", generatePermitPathNode)
-    .addNode("buildPackageDraft", buildPackageDraftNode)
-    .addNode("routeFinalReview", routeFinalReviewNode)
-    .addNode("awaitFinalDecision", awaitFinalDecisionNode)
-    .addNode("approved", approvedNode)
-    .addNode("failed", failedNode)
-    .addEdge("__start__", "collectIntake")
-    .addConditionalEdges("collectIntake", (state) => {
-      if (state.missingFields.length > 0) return "__end__";
-      return "createOrUpdateIntake";
-    })
-    .addEdge("createOrUpdateIntake", "fetchPropertyContext")
-    .addEdge("fetchPropertyContext", "analyzePhotos")
-    .addEdge("analyzePhotos", "classifyComplexity")
-    .addConditionalEdges("classifyComplexity", (state) => {
-      return state.humanReviewRequired ? "routeReviewEarly" : "generateDesignBrief";
-    })
-    .addEdge("routeReviewEarly", "awaitHumanInput")
-    .addConditionalEdges("awaitHumanInput", (state) => {
-      if (state.status === "GENERATING_BRIEF") return "generateDesignBrief";
-      return "__end__";
-    })
-    .addEdge("generateDesignBrief", "generateExteriorVisuals")
-    .addEdge("generateExteriorVisuals", "generateLandscapeVisuals")
-    .addEdge("generateLandscapeVisuals", "generatePermitPath")
-    .addEdge("generatePermitPath", "buildPackageDraft")
-    .addEdge("buildPackageDraft", "routeFinalReview")
-    .addEdge("routeFinalReview", "awaitFinalDecision")
-    .addConditionalEdges("awaitFinalDecision", (state) => {
-      if (state.status === "APPROVED_FOR_DELIVERY") return "approved";
-      if (state.humanDecision?.action === "regenerate_exterior") return "generateExteriorVisuals";
-      if (state.humanDecision?.action === "regenerate_landscape") return "generateLandscapeVisuals";
-      return "__end__";
-    })
-    .addEdge("approved", "__end__");
-
-  return graph.compile();
+function merge(state: ExteriorConceptState, patch: Partial<ExteriorConceptState>): ExteriorConceptState {
+  return { ...state, ...patch };
 }
 
-export async function runExteriorConceptGraph(input: Partial<ExteriorConceptState>) {
-  const app = compileGraph();
-  return app.invoke(createInitialState(input));
+export async function runExteriorConceptGraph(
+  input: Partial<ExteriorConceptState>,
+): Promise<ExteriorConceptState> {
+  let state = createInitialState(input);
+
+  // Step 1: validate intake
+  state = merge(state, await collectIntake(state));
+  if (state.missingFields.length > 0) return state;
+
+  // Step 2: persist intake record
+  state = merge(state, await createOrUpdateIntake(state));
+
+  // Step 3: fetch property context
+  state = merge(state, await fetchPropertyContextNode(state));
+
+  // Step 4: analyze photos (no-op if none uploaded)
+  state = merge(state, await analyzePhotosNode(state));
+
+  // Step 5: classify complexity
+  state = merge(state, await classifyComplexityNode(state));
+
+  // Step 6: early human review path for complex projects
+  if (state.humanReviewRequired) {
+    state = merge(state, await routeReviewEarlyNode(state));
+    // Human decision is resolved externally; if not yet provided, stop here
+    if (!state.humanDecision || state.humanDecision.action !== "approve") {
+      return state;
+    }
+  }
+
+  // Step 7: generate design brief
+  state = merge(state, await generateDesignBriefNode(state));
+
+  // Step 8: generate visuals (exterior + landscape in parallel)
+  const [exteriorPatch, landscapePatch] = await Promise.all([
+    generateExteriorVisualsNode(state),
+    generateLandscapeVisualsNode(state),
+  ]);
+  state = merge(merge(state, exteriorPatch), landscapePatch);
+
+  // Step 9: permit path
+  state = merge(state, await generatePermitPathNode(state));
+
+  // Step 10: build draft package
+  state = merge(state, await buildPackageDraftNode(state));
+
+  // Step 11: route for final review
+  state = merge(state, await routeFinalReviewNode(state));
+
+  // Step 12: await final decision (resolved externally on re-invoke)
+  state = merge(state, await awaitFinalDecisionNode(state));
+
+  if (state.status === "APPROVED_FOR_DELIVERY") {
+    state = merge(state, await approvedNode());
+  }
+
+  return state;
 }
