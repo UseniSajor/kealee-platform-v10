@@ -1,6 +1,6 @@
 [phases.install]
 cmds = [
-  "npm install -g pnpm@8.15.9 && cd ../.. && pnpm install --no-frozen-lockfile"
+  "corepack enable && corepack prepare pnpm@8.15.9 --activate && cd ../.. && pnpm install --no-frozen-lockfile"
 ]
 
 [phases.build]
