@@ -100,13 +100,14 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
     const score = scoreLead(data as Record<string, unknown>);
 
     try {
-      const intake = await prismaAny.permitServiceLead.create({
+      const paymentAmount = PATH_AMOUNTS[data.projectPath] ?? 29900;
+      const intake = await prismaAny.publicIntakeLead.create({
         data: {
           clientName: data.clientName,
           contactEmail: data.contactEmail,
           contactPhone: data.contactPhone ?? null,
           projectAddress: data.projectAddress,
-          projectType: data.projectPath,
+          projectPath: data.projectPath,
           budgetRange: data.budgetRange,
           timelineGoal: data.timelineGoal ?? null,
           uploadedPhotos: data.uploadedPhotos,
@@ -115,13 +116,14 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
           leadScore: score.total,
           leadTier: score.tier,
           leadRoute: score.route,
+          requiresPayment: true,
+          paymentAmount,
           metadata: data as unknown as Record<string, unknown>,
           status: "new",
         },
       });
 
-      const requiresPayment = true; // all public intake paths require payment
-      const paymentAmount = PATH_AMOUNTS[data.projectPath] ?? 29900;
+      const requiresPayment = true;
 
       return reply.send({
         ok: true,
@@ -195,7 +197,7 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
         data: {
           title: `New public intake: ${PATH_NAMES[projectPath] ?? projectPath}`,
           referenceId: intakeId,
-          referenceType: "permit_service_lead",
+          referenceType: "public_intake_lead",
           tags,
           status: "open",
           source: "public_intake",
