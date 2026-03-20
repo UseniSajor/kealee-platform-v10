@@ -5,8 +5,8 @@ import { useState, useEffect } from 'react'
 import { isValidProjectPath, getRequiredZones } from '@kealee/intake'
 import { CaptureHandoffPanel } from '@kealee/ui/components/intake/capture-handoff-panel'
 import { CaptureProgressPanel } from '@kealee/ui/components/intake/capture-progress-panel'
-import { CaptureModeSelector, type CaptureMode } from '@kealee/ui/components/intake/capture-mode-selector'
-import { CheckCircle2, ArrowRight, Loader2 } from 'lucide-react'
+import { CaptureModeSelector, type CaptureMode, SITE_VISIT_FEE_CENTS } from '@kealee/ui/components/intake/capture-mode-selector'
+import { CheckCircle2, ArrowRight, Loader2, MapPin } from 'lucide-react'
 import { notFound } from 'next/navigation'
 
 interface SessionData {
@@ -16,41 +16,112 @@ interface SessionData {
   captureMode: CaptureMode
 }
 
+const SITE_VISIT_MODE_BADGE_STYLE = {
+  backgroundColor: '#E0E7FF',
+  color: '#3730A3',
+}
+
+const STANDARD_MODE_BADGE_STYLE = {
+  enhanced_scan: { backgroundColor: '#EEF2FF', color: '#4338CA' },
+  self_capture:  { backgroundColor: '#F0FDF4', color: '#15803D' },
+}
+
 export default function CaptureGatePage() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
   const projectPath = params.projectPath as string
 
-  if (!isValidProjectPath(projectPath)) {
-    notFound()
-  }
+  if (!isValidProjectPath(projectPath)) notFound()
 
   const intakeId = searchParams.get('intakeId')
   const projectId = searchParams.get('projectId')
 
   const [step, setStep] = useState<'select_mode' | 'handoff'>('select_mode')
-  const [captureMode, setCaptureMode] = useState<CaptureMode>('standard')
+  const [captureMode, setCaptureMode] = useState<CaptureMode>('self_capture')
+  const [preferredWindow, setPreferredWindow] = useState<string | undefined>()
   const [session, setSession] = useState<SessionData | null>(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [captureComplete, setCaptureComplete] = useState(false)
   const [linkSent, setLinkSent] = useState(false)
 
-  // Restore existing session if any
+  // Restore existing session
   useEffect(() => {
     const stored = typeof window !== 'undefined'
       ? sessionStorage.getItem(`kealee_capture_session_${projectPath}`)
       : null
     if (stored) {
       try {
-        setSession(JSON.parse(stored))
+        const parsed = JSON.parse(stored)
+        setSession(parsed)
+        // If stored mode is site_visit, redirect to review
+        if (parsed.captureMode === 'kealee_site_visit') {
+          router.push(`/intake/${projectPath}/review?intakeId=${intakeId ?? ''}`)
+          return
+        }
         setStep('handoff')
       } catch {}
     }
-  }, [projectPath])
+  }, [projectPath, intakeId, router])
 
   async function handleModeConfirmed() {
+    // Site visit: create minimal capture session, then go directly to review
+    if (captureMode === 'kealee_site_visit') {
+      setCreating(true)
+      setError(null)
+      try {
+        const intakeData = typeof window !== 'undefined'
+          ? sessionStorage.getItem(`kealee_intake_${projectPath}`)
+          : null
+        const parsed = intakeData ? JSON.parse(intakeData) : {}
+
+        const resp = await fetch('/api/capture/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            project_path: projectPath,
+            intake_id: intakeId ?? undefined,
+            project_id: projectId ?? undefined,
+            address: parsed.projectAddress ?? parsed.address ?? 'Unknown address',
+            client_name: parsed.clientName ?? undefined,
+            capture_mode: 'kealee_site_visit',
+            preferred_visit_window: preferredWindow ?? undefined,
+          }),
+        })
+        const data = await resp.json()
+        if (!resp.ok) {
+          setError(data.error ?? 'Failed to create session')
+          return
+        }
+
+        // Persist session so review page can read capture mode
+        const sessionData: SessionData = {
+          captureSessionId: data.captureSessionId,
+          captureToken: data.captureToken,
+          requiredZones: [],
+          captureMode: 'kealee_site_visit',
+        }
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(`kealee_capture_session_${projectPath}`, JSON.stringify(sessionData))
+          // Also persist capture mode for review/payment pages
+          sessionStorage.setItem(`kealee_capture_mode_${projectPath}`, JSON.stringify({
+            captureMode: 'kealee_site_visit',
+            siteVisitFee: SITE_VISIT_FEE_CENTS,
+            preferredVisitWindow: preferredWindow ?? null,
+          }))
+        }
+
+        router.push(`/intake/${projectPath}/review?intakeId=${intakeId ?? ''}`)
+      } catch {
+        setError('Network error — please try again')
+      } finally {
+        setCreating(false)
+      }
+      return
+    }
+
+    // Self capture / Enhanced scan: create session and show handoff panel
     setCreating(true)
     setError(null)
     try {
@@ -84,14 +155,14 @@ export default function CaptureGatePage() {
         captureMode: data.captureMode ?? captureMode,
       }
       setSession(sessionData)
-
       if (typeof window !== 'undefined') {
-        sessionStorage.setItem(
-          `kealee_capture_session_${projectPath}`,
-          JSON.stringify(sessionData),
-        )
+        sessionStorage.setItem(`kealee_capture_session_${projectPath}`, JSON.stringify(sessionData))
+        sessionStorage.setItem(`kealee_capture_mode_${projectPath}`, JSON.stringify({
+          captureMode,
+          siteVisitFee: 0,
+          preferredVisitWindow: null,
+        }))
       }
-
       setStep('handoff')
     } catch {
       setError('Network error — please try again')
@@ -105,16 +176,12 @@ export default function CaptureGatePage() {
   }
 
   function handleProceed() {
-    if (projectId) {
-      router.push(`/app/projects/${projectId}/twin`)
-    } else {
-      router.push(`/intake/${projectPath}/success?intakeId=${intakeId ?? 'captured'}`)
-    }
+    // After capture complete: go to review
+    router.push(`/intake/${projectPath}/review?intakeId=${intakeId ?? ''}`)
   }
 
   const requiredZones = session?.requiredZones ?? getRequiredZones(projectPath)
 
-  // ─── Mode complete state ────────────────────────────────────────────────────
   if (captureComplete) {
     return (
       <div className="mx-auto max-w-lg py-16 text-center">
@@ -123,14 +190,14 @@ export default function CaptureGatePage() {
           Capture complete!
         </h2>
         <p className="mb-8 text-gray-500">
-          Your digital twin is being built from the captured data. You can review it now.
+          Your property data has been captured. Review your intake below.
         </p>
         <button
           onClick={handleProceed}
           className="flex items-center gap-2 mx-auto rounded-xl px-6 py-3 font-medium text-white"
           style={{ backgroundColor: '#E8793A' }}
         >
-          View Digital Twin <ArrowRight className="h-4 w-4" />
+          Review & Continue <ArrowRight className="h-4 w-4" />
         </button>
       </div>
     )
@@ -142,30 +209,37 @@ export default function CaptureGatePage() {
       <div className="mx-auto max-w-lg px-4 py-8">
         <div className="mb-6">
           <h1 className="text-2xl font-bold" style={{ color: '#1A2B4A' }}>
-            Mobile Site Capture
+            Site Capture
           </h1>
           <p className="mt-1 text-gray-500">
-            Choose how your property will be captured. You can always upgrade later.
+            Choose how your property will be captured for the AI concept package.
           </p>
         </div>
 
         <CaptureModeSelector
           defaultMode={captureMode}
-          onChange={setCaptureMode}
+          onChange={(mode, window) => {
+            setCaptureMode(mode)
+            setPreferredWindow(window)
+          }}
         />
 
-        {error && (
-          <p className="mt-4 text-sm text-red-600">{error}</p>
-        )}
+        {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
         <button
           onClick={handleModeConfirmed}
           disabled={creating}
           className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-semibold text-white disabled:opacity-60"
-          style={{ backgroundColor: '#E8793A' }}
+          style={{
+            backgroundColor: captureMode === 'kealee_site_visit' ? '#4F46E5' : '#E8793A',
+          }}
         >
           {creating ? (
             <Loader2 className="h-5 w-5 animate-spin" />
+          ) : captureMode === 'kealee_site_visit' ? (
+            <>
+              <MapPin className="h-5 w-5" /> Request Site Visit — Continue to Review
+            </>
           ) : (
             <>
               Continue to Capture <ArrowRight className="h-5 w-5" />
@@ -176,8 +250,18 @@ export default function CaptureGatePage() {
     )
   }
 
-  // ─── Step 2: Handoff + live progress ────────────────────────────────────────
+  // ─── Step 2: Handoff + live progress ─────────────────────────────────────────
   if (!session) return null
+
+  const modeBadgeStyle =
+    session.captureMode === 'enhanced_scan' || session.captureMode === 'self_capture'
+      ? STANDARD_MODE_BADGE_STYLE[session.captureMode as 'enhanced_scan' | 'self_capture']
+      : SITE_VISIT_MODE_BADGE_STYLE
+
+  const modeLabel =
+    session.captureMode === 'enhanced_scan' ? 'Enhanced Scan'
+    : session.captureMode === 'kealee_site_visit' ? 'Site Visit'
+    : 'Self Capture'
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -190,14 +274,8 @@ export default function CaptureGatePage() {
             Send the guided capture link to your phone. Progress updates here in real time.
           </p>
         </div>
-        <span
-          className="rounded-full px-3 py-1 text-xs font-semibold"
-          style={{
-            backgroundColor: session.captureMode === 'enhanced_scan' ? '#EEF2FF' : '#F0FDF4',
-            color: session.captureMode === 'enhanced_scan' ? '#4338CA' : '#15803D',
-          }}
-        >
-          {session.captureMode === 'enhanced_scan' ? 'Enhanced Scan' : 'Standard Capture'}
+        <span className="rounded-full px-3 py-1 text-xs font-semibold" style={modeBadgeStyle}>
+          {modeLabel}
         </span>
       </div>
 
@@ -214,7 +292,7 @@ export default function CaptureGatePage() {
               Link sent! Open it on your phone and start capturing.
               {session.captureMode === 'enhanced_scan' && (
                 <span className="block mt-1 font-medium">
-                  After completing all zones, you&apos;ll see a 3D scan step at the end.
+                  After all zones, you&apos;ll see a 3D scan step.
                 </span>
               )}
             </div>

@@ -13,6 +13,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import Stripe from 'stripe';
 import { prismaAny } from '../../utils/prisma-helper';
 import { createLogger } from '@kealee/observability';
+import { getEmailQueue } from '../../utils/email-queue';
 
 const webhookLogger = createLogger('stripe-webhook');
 
@@ -463,6 +464,40 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
       }).catch(() => null)
 
       webhookLogger.info({ intakeId: metadata.intakeId }, 'Public intake marked as paid')
+
+      // Send payment confirmation email to customer
+      try {
+        const intake = await prismaAny.publicIntakeLead.findUnique({
+          where: { id: metadata.intakeId },
+          select: { clientName: true, contactEmail: true },
+        }).catch(() => null)
+
+        if (intake?.contactEmail) {
+          const amountDollars = session.amount_total ? (session.amount_total / 100).toFixed(2) : '0.00'
+          const packageName = metadata.projectPath
+            ? metadata.projectPath.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+            : 'Exterior Concept Package'
+
+          await getEmailQueue().add('concept_package_confirmation', {
+            to: intake.contactEmail,
+            subject: `Your ${packageName} is confirmed!`,
+            template: 'concept_package_confirmation',
+            templateData: {
+              customerName: intake.clientName || intake.contactEmail.split('@')[0],
+              packageName,
+              packageTier: metadata.packageTier || 'standard',
+              amount: amountDollars,
+            },
+            metadata: {
+              intakeId: metadata.intakeId,
+              eventType: 'concept_package_confirmation',
+            },
+          })
+          webhookLogger.info({ intakeId: metadata.intakeId, email: intake.contactEmail }, 'Confirmation email queued')
+        }
+      } catch (emailErr: any) {
+        webhookLogger.warn({ err: emailErr.message }, 'Failed to queue confirmation email — non-fatal')
+      }
 
       // If site visit was requested: create scheduling task
       if (metadata.siteVisitRequested === 'true') {

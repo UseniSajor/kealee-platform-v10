@@ -1,20 +1,24 @@
 import { Worker, Job } from 'bullmq'
-import sgMail from '@sendgrid/mail'
+import { Resend } from 'resend'
 import { redis } from '../config/redis.config'
 import { EmailJobData } from '../types/email.types'
 import { EMAIL_TEMPLATES } from '../types/email.types'
 
-// Initialize SendGrid
-const sendGridApiKey = process.env.SENDGRID_API_KEY
-if (sendGridApiKey) {
-  sgMail.setApiKey(sendGridApiKey)
-} else {
-  console.warn('⚠️ SENDGRID_API_KEY not set. Email sending will fail.')
+// Lazy-initialize Resend client
+let resendClient: Resend | null = null
+
+function getResendClient(): Resend | null {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('⚠️ RESEND_API_KEY not set. Email sending will fail.')
+    return null
+  }
+  if (!resendClient) {
+    resendClient = new Resend(process.env.RESEND_API_KEY)
+  }
+  return resendClient
 }
 
-// Default from address
-const DEFAULT_FROM = process.env.SENDGRID_FROM_EMAIL || 'noreply@kealee.com'
-const DEFAULT_FROM_NAME = process.env.SENDGRID_FROM_NAME || 'Kealee Platform'
+const DEFAULT_FROM = process.env.RESEND_FROM_EMAIL || 'Kealee Platform <noreply@kealee.com>'
 
 /**
  * Process email template with data
@@ -32,13 +36,13 @@ function processTemplate(template: string, data: Record<string, any>): string {
  * Process email job
  */
 async function processEmailJob(job: Job<EmailJobData>) {
-  const { to, from, subject, text, html, template, templateData, cc, bcc, replyTo, attachments } = job.data
+  const { to, subject, text, html, template, templateData, cc, bcc, replyTo } = job.data
 
   try {
-    // Get template if specified
+    // Resolve template if specified
     let emailSubject = subject
-    let emailText = text
     let emailHtml = html
+    let emailText = text
 
     if (template) {
       const emailTemplate = EMAIL_TEMPLATES[template]
@@ -61,72 +65,45 @@ async function processEmailJob(job: Job<EmailJobData>) {
       throw new Error('Email must have either html or text content')
     }
 
-    // Prepare SendGrid message
-    const msg: any = {
-      to: Array.isArray(to) ? to : [to],
-      from: from || `${DEFAULT_FROM_NAME} <${DEFAULT_FROM}>`,
-      subject: emailSubject,
-      text: emailText,
-      html: emailHtml,
-    }
+    const resend = getResendClient()
 
-    if (cc) {
-      msg.cc = Array.isArray(cc) ? cc : [cc]
-    }
-
-    if (bcc) {
-      msg.bcc = Array.isArray(bcc) ? bcc : [bcc]
-    }
-
-    if (replyTo) {
-      msg.replyTo = replyTo
-    }
-
-    if (attachments && attachments.length > 0) {
-      msg.attachments = attachments.map((att) => ({
-        content: att.content,
-        filename: att.filename,
-        type: att.type || 'application/octet-stream',
-        disposition: att.disposition || 'attachment',
-      }))
-    }
-
-    // Add metadata as custom args
-    if (job.data.metadata) {
-      msg.customArgs = job.data.metadata
-    }
-
-    // Send email via SendGrid
-    if (!sendGridApiKey) {
-      // In development, log instead of sending
+    if (!resend) {
       if (process.env.NODE_ENV === 'development') {
         console.log('📧 [DEV MODE] Email would be sent:', {
-          to: msg.to,
-          subject: msg.subject,
-          from: msg.from,
+          to,
+          subject: emailSubject,
+          from: DEFAULT_FROM,
         })
         return { success: true, messageId: 'dev-mode' }
       }
-      throw new Error('SENDGRID_API_KEY not configured')
+      throw new Error('RESEND_API_KEY not configured')
     }
 
-    const [response] = await sgMail.send(msg)
+    const payload: any = {
+      from: DEFAULT_FROM,
+      to: Array.isArray(to) ? to : [to],
+      subject: emailSubject,
+      html: emailHtml,
+      text: emailText || (emailHtml ? emailHtml.replace(/<[^>]*>/g, '') : undefined),
+    }
+
+    if (cc) payload.cc = Array.isArray(cc) ? cc : [cc]
+    if (bcc) payload.bcc = Array.isArray(bcc) ? bcc : [bcc]
+    if (replyTo) payload.reply_to = replyTo
+
+    const result = await resend.emails.send(payload)
+
+    const emailId = (result as any).data?.id || (result as any).id || job.id
 
     console.log(`✅ Email sent successfully: ${job.id}`, {
-      to: msg.to,
-      subject: msg.subject,
-      statusCode: response.statusCode,
+      to: payload.to,
+      subject: emailSubject,
+      emailId,
     })
 
-    return {
-      success: true,
-      messageId: response.headers['x-message-id'] || job.id,
-      statusCode: response.statusCode,
-    }
+    return { success: true, messageId: emailId }
   } catch (error: any) {
     console.error(`❌ Failed to send email ${job.id}:`, error)
-    
-    // Re-throw to trigger retry logic
     throw new Error(`Email send failed: ${error.message}`)
   }
 }
@@ -142,10 +119,10 @@ export function createEmailWorker(): Worker<EmailJobData> {
     },
     {
       connection: redis,
-      concurrency: 10, // Process up to 10 emails concurrently
+      concurrency: 10,
       limiter: {
-        max: 100, // Max 100 emails per
-        duration: 60000, // 1 minute (SendGrid free tier: 100/day)
+        max: 200,
+        duration: 60000, // 200 emails per minute (Resend free: 100/day, paid: 50k+/month)
       },
     }
   )

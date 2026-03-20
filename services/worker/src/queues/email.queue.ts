@@ -2,7 +2,7 @@ import { BaseQueue, BaseJobData } from './base.queue'
 import { EmailJobData } from '../types/email.types'
 
 /**
- * Email queue for sending emails via SendGrid
+ * Email queue for sending emails via Resend
  */
 export class EmailQueue extends BaseQueue<EmailJobData> {
   constructor() {

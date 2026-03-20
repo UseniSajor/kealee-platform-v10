@@ -15,7 +15,11 @@ export const CaptureZoneEnum = z.enum([
   "scan_room", "scan_full_property",
 ]);
 
-export const CaptureModeEnum = z.enum(["standard", "enhanced_scan"]);
+export const CaptureModeEnum = z.enum(["self_capture", "enhanced_scan", "kealee_site_visit"]);
+
+export const SiteVisitStatusEnum = z.enum([
+  "not_scheduled", "requested", "scheduled", "completed",
+]);
 
 export const SystemCategoryEnum = z.enum([
   "architecture", "structure", "roofing", "envelope", "hvac", "plumbing",
@@ -27,12 +31,13 @@ export const CreateCaptureSessionSchema = z.object({
   property_id: z.string().optional(),
   project_id: z.string().optional(),
   project_path: z.string().min(1),
-  handoff_method: z.enum(["desktop_sms", "desktop_qr", "mobile_direct"]),
+  handoff_method: z.enum(["desktop_sms", "desktop_qr", "mobile_direct"]).default("mobile_direct"),
   phone_number: z.string().min(7).optional(),
   source_device: z.string().optional(),
   source_platform: z.string().optional(),
-  required_zones: z.array(CaptureZoneEnum).min(1),
-  capture_mode: CaptureModeEnum.default("standard"),
+  required_zones: z.array(CaptureZoneEnum).min(1).optional(),
+  capture_mode: CaptureModeEnum.default("self_capture"),
+  preferred_visit_window: z.string().optional(),
 });
 
 export const SendCaptureLinkSchema = z.object({
@@ -84,6 +89,7 @@ export const CompleteCaptureSessionSchema = z.object({
 });
 
 export type CaptureMode = z.infer<typeof CaptureModeEnum>;
+export type SiteVisitStatus = z.infer<typeof SiteVisitStatusEnum>;
 export type CreateCaptureSessionInput = z.infer<typeof CreateCaptureSessionSchema>;
 export type SendCaptureLinkInput = z.infer<typeof SendCaptureLinkSchema>;
 export type StartCaptureSessionInput = z.infer<typeof StartCaptureSessionSchema>;
@@ -111,6 +117,10 @@ export interface CaptureSessionRecord {
   capture_mode: CaptureMode;
   scan_enabled: boolean;
   scan_completed: boolean;
+  site_visit_requested: boolean;
+  site_visit_status: SiteVisitStatus;
+  site_visit_fee: number;
+  preferred_visit_window?: string;
   walkthrough_video_uploaded: boolean;
   voice_notes_count: number;
   uploaded_assets_count: number;
