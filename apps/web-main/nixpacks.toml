@@ -1,0 +1,13 @@
+[phases.install]
+cmds = [
+  "npm install -g pnpm@8.15.9",
+  "cd ../.. && pnpm install --no-frozen-lockfile"
+]
+
+[phases.build]
+cmds = [
+  "cd ../.. && pnpm turbo build --filter=./apps/web-main"
+]
+
+[start]
+cmd = "npx next start -p $PORT"
