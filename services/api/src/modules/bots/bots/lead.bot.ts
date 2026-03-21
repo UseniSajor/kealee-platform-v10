@@ -97,7 +97,7 @@ export class LeadBot implements IBot<LeadBotInput, LeadBotOutput> {
   ): Promise<BotOutput<LeadBotOutput>> {
     const requestId = ctx.requestId
     const startedAt = new Date()
-    const steps     = []
+    const steps: ReturnType<typeof startStep>[] = []
 
     // ── Step 1: Deterministic scoring ────────────────────────────────────────
     const scoreTimer = startStep('deterministic', 'score_lead', input.data.message.slice(0, 80))

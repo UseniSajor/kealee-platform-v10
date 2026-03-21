@@ -128,7 +128,7 @@ export class EstimateBot implements IBot<EstimateBotInput, EstimateBotOutput> {
     const { data }  = input
     const requestId = ctx.requestId
     const startedAt = new Date()
-    const steps     = []
+    const steps: ReturnType<typeof startStep>[] = []
 
     // ── Step 1: Deterministic pre-estimate ───────────────────────────────────
     const preTimer = startStep('deterministic', 'base_rate_estimate', data.projectType)

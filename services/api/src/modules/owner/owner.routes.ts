@@ -5,7 +5,7 @@
  * Prefix: /owner
  */
 import type { FastifyInstance } from 'fastify'
-import { authenticateUser } from '../middleware/auth'
+import { authenticateUser } from '../../middleware/auth'
 import {
   CreateProjectBodyDto,
   UpdateProjectBodyDto,

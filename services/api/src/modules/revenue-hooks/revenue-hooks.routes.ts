@@ -16,7 +16,7 @@ import { authenticateUser } from '../../middleware/auth.middleware.js';
 // ─── Stripe ───────────────────────────────────────────────────────────────────
 
 const stripe = process.env.STRIPE_SECRET_KEY
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' })
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' as any })
   : null;
 
 // ─── Hook Stage → metadata ────────────────────────────────────────────────────

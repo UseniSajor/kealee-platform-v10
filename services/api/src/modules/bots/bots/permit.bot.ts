@@ -118,7 +118,7 @@ export class PermitBot implements IBot<PermitBotInput, PermitBotOutput> {
     const { data }  = input
     const requestId = ctx.requestId
     const startedAt = new Date()
-    const steps     = []
+    const steps: ReturnType<typeof startStep>[] = []
 
     // ── Step 1: Build deterministic checklist ────────────────────────────────
     const checklistTimer = startStep('deterministic', 'build_checklist', data.projectType)

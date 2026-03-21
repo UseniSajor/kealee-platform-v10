@@ -3,7 +3,7 @@
  * Prefix: /design-professionals
  */
 import type { FastifyInstance } from 'fastify'
-import { authenticateUser } from '../middleware/auth'
+import { authenticateUser } from '../../middleware/auth'
 import {
   RegisterDPBodyDto,
   UpdateDPProfileDto,

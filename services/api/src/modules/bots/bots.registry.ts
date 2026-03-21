@@ -13,10 +13,14 @@ import { ContractorMatchBot }  from './bots/contractor-match.bot'
 import { ProjectMonitorBot }   from './bots/project-monitor.bot'
 import { SupportBot }          from './bots/support.bot'
 
+// Use any-typed IBot to allow specific input/output generics in concrete bots
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyBot = IBot<any, any>
+
 // ── Registry class ────────────────────────────────────────────────────────────
 
 class BotRegistry {
-  private readonly _bots = new Map<BotId, IBot>()
+  private readonly _bots = new Map<BotId, AnyBot>()
 
   constructor() {
     this._register(new LeadBot())
@@ -27,11 +31,11 @@ class BotRegistry {
     this._register(new SupportBot())
   }
 
-  private _register(bot: IBot): void {
+  private _register(bot: AnyBot): void {
     this._bots.set(bot.id, bot)
   }
 
-  get(id: BotId): IBot | undefined {
+  get(id: BotId): AnyBot | undefined {
     return this._bots.get(id)
   }
 

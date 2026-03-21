@@ -12,7 +12,7 @@ import { MARKETING_PACKAGES, type MarketingPackageId } from './marketing.package
 const logger = createLogger('marketing-service');
 
 const stripe = process.env.STRIPE_SECRET_KEY
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' })
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' as any })
   : null;
 
 const API_BASE = process.env.INTERNAL_API_URL ?? 'http://api:3000';

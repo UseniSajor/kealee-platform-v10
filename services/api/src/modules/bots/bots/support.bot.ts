@@ -126,7 +126,7 @@ export class SupportBot implements IBot<SupportBotInput, SupportBotOutput> {
     const { data }  = input
     const requestId = ctx.requestId
     const startedAt = new Date()
-    const steps     = []
+    const steps: ReturnType<typeof startStep>[] = []
 
     // ── Step 1: Classify category ────────────────────────────────────────────
     const classTimer = startStep('deterministic', 'classify_category', data.message.slice(0, 60))

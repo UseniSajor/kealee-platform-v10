@@ -19,7 +19,7 @@ function getResendClient(): Resend | null {
 export interface EmailOptions {
   to: string | string[]
   subject: string
-  template?: 'welcome' | 'password-reset' | 'invoice-paid' | 'subscription-canceled' | 'milestone-approved' | 'payment-released' | 'payment-failed'
+  template?: 'welcome' | 'password-reset' | 'invoice-paid' | 'subscription-canceled' | 'milestone-approved' | 'payment-released' | 'payment-failed' | 'concept-validation-delivered' | 'developer-service-delivered' | 'concept_package_confirmation' | 'task-assigned'
   data?: Record<string, any>
   html?: string
   text?: string

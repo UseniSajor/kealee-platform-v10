@@ -78,3 +78,4 @@ class WorkflowEventService {
 }
 
 export const workflowEventService = new WorkflowEventService()
+export { WorkflowEventService }

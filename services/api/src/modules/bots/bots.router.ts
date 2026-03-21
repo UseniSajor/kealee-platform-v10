@@ -11,6 +11,7 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk'
+import type { MessageParam, TextBlock } from '@anthropic-ai/sdk/resources/messages'
 import type { ModelTier, ConvMessage } from './bots.types'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -77,7 +78,7 @@ export async function callModel(params: ModelCallParams): Promise<ModelCallResul
   const maxTokens = params.maxTokens ?? TOKEN_LIMITS[tier]
 
   // Build messages array (optionally prepend conversation history)
-  const messages: Anthropic.MessageParam[] = [
+  const messages: MessageParam[] = [
     ...(params.history?.map(m => ({ role: m.role, content: m.content })) ?? []),
     { role: 'user', content: params.userPrompt },
   ]
@@ -92,7 +93,7 @@ export async function callModel(params: ModelCallParams): Promise<ModelCallResul
 
   const content = response.content
     .filter(b => b.type === 'text')
-    .map(b => (b as Anthropic.TextBlock).text)
+    .map(b => (b as TextBlock).text)
     .join('')
 
   const inputTokens  = response.usage.input_tokens

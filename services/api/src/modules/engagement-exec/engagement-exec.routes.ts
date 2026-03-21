@@ -4,7 +4,7 @@
  * Change orders, milestone approvals, escrow releases, disputes.
  */
 import type { FastifyInstance } from 'fastify'
-import { authenticateUser } from '../middleware/auth'
+import { authenticateUser } from '../../middleware/auth'
 import {
   CreateChangeOrderDto,
   RespondChangeOrderDto,

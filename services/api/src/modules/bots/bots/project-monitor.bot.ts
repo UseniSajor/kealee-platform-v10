@@ -104,7 +104,7 @@ export class ProjectMonitorBot implements IBot<ProjectMonitorBotInput, ProjectMo
     const { data }  = input
     const requestId = ctx.requestId
     const startedAt = new Date()
-    const steps     = []
+    const steps: ReturnType<typeof startStep>[] = []
 
     // ── Step 1: Load project data ─────────────────────────────────────────────
     const loadTimer = startStep('lookup', 'load_project', data.projectId)

@@ -3,7 +3,7 @@
  * Prefix: /revenue
  */
 import type { FastifyInstance } from 'fastify'
-import { authenticateUser } from '../middleware/auth'
+import { authenticateUser } from '../../middleware/auth'
 import {
   CreateSubscriptionPlanDto,
   UpdateSubscriptionPlanDto,

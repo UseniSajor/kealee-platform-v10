@@ -482,7 +482,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
             to: intake.contactEmail,
             subject: `Your ${packageName} is confirmed!`,
             template: 'concept_package_confirmation',
-            templateData: {
+            data: {
               customerName: intake.clientName || intake.contactEmail.split('@')[0],
               packageName,
               packageTier: metadata.packageTier || 'standard',

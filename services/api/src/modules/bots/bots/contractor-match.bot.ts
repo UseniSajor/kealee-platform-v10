@@ -124,7 +124,7 @@ export class ContractorMatchBot implements IBot<ContractorMatchBotInput, Contrac
     const { data }  = input
     const requestId = ctx.requestId
     const startedAt = new Date()
-    const steps     = []
+    const steps: ReturnType<typeof startStep>[] = []
 
     // ── Step 1: Load rotation queue + profiles ───────────────────────────────
     const loadTimer = startStep('lookup', 'load_candidates', data.projectType)
