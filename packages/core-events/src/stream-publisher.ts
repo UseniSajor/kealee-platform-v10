@@ -48,7 +48,8 @@ export class StreamPublisher {
       'source', event.source,
     );
 
-    return messageId;
+    // ioredis xadd returns string|null — null only if NOMKSTREAM and stream missing, which we never use
+    return messageId as string;
   }
 
   /**

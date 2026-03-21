@@ -28,7 +28,7 @@ export class DeadLetterQueue {
       'error', entry.error,
       'failedAt', entry.failedAt,
       'retryCount', '0',
-    );
+    ) as Promise<string>;
   }
 
   /**
