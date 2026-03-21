@@ -3,7 +3,7 @@
  * System of record for project lifecycle state
  */
 
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient, Prisma } from '@prisma/client';
 import { TwinStateMachine } from './state-machine';
 import { HealthCalculator, type KPIValue } from './health-calculator';
 import type {
@@ -206,7 +206,7 @@ export class TwinManager {
         eventType: input.eventType,
         source: input.source,
         severity: input.severity ?? 'INFO',
-        payload: input.payload,
+        payload: input.payload as Prisma.InputJsonValue,
         description: input.description,
         correlationId: input.correlationId,
         causedBy: input.causedBy,
