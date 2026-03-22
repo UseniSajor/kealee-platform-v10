@@ -1,0 +1,85 @@
+FROM node:20-slim AS base
+
+# Install system dependencies
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+# Enable corepack and install pnpm
+RUN corepack enable && corepack prepare pnpm@8.15.9 --activate
+
+WORKDIR /app
+
+# ============================================================
+# Stage 1: Install dependencies
+# ============================================================
+FROM base AS deps
+
+# Copy workspace manifests for dependency resolution
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY turbo.json ./
+
+# Copy all package.json files so pnpm can resolve the workspace graph
+COPY apps/web-main/package.json ./apps/web-main/package.json
+COPY packages ./packages
+
+# Install all workspace dependencies (no frozen lockfile for Railway compatibility)
+RUN pnpm install --no-frozen-lockfile
+
+# ============================================================
+# Stage 2: Build the web-main app
+# ============================================================
+FROM base AS builder
+
+WORKDIR /app
+
+# Copy installed node_modules from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages ./packages
+
+# Copy the full source needed for the build
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY apps/web-main ./apps/web-main
+
+# Re-link workspace packages
+RUN pnpm install --no-frozen-lockfile --prefer-offline
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build only the web-main app via turbo
+RUN pnpm turbo build --filter=./apps/web-main
+
+# ============================================================
+# Stage 3: Production runner
+# ============================================================
+FROM node:20-slim AS runner
+
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Copy the built Next.js app
+COPY --from=builder /app/apps/web-main/public ./apps/web-main/public
+COPY --from=builder /app/apps/web-main/.next ./apps/web-main/.next
+COPY --from=builder /app/apps/web-main/package.json ./apps/web-main/package.json
+
+# Copy production node_modules for the app
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+
+EXPOSE 3000
+
+ENV PORT=3000
+
+CMD ["sh", "-c", "cd apps/web-main && npx next start -p ${PORT:-3000}"]
