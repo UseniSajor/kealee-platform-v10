@@ -59,6 +59,7 @@ export function generateFloorplan(input: GenerateFloorplanInput): GenerateFloorp
   const validPaths = [
     'kitchen_remodel', 'bathroom_remodel', 'interior_renovation',
     'whole_home_remodel', 'addition_expansion', 'exterior_concept',
+    'capture_site_concept',
   ] as const;
 
   const projectPath = validPaths.includes(input.projectPath as typeof validPaths[number])

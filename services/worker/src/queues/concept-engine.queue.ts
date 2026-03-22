@@ -6,7 +6,12 @@
 import { BaseQueue } from './base.queue';
 
 export interface ConceptEngineJobData {
-  jobType:     'generate_floorplan' | 'generate_concept_package' | 'create_architect_review_task';
+  jobType:
+    | 'generate_floorplan'
+    | 'generate_concept_package'
+    | 'create_architect_review_task'
+    | 'generate_visual_prompt_bundle'
+    | 'generate_buildability_snapshot';
   intakeId:    string;
   floorplanId?:string;
   projectPath: string;
@@ -20,6 +25,11 @@ export interface ConceptEngineJobData {
   conceptPackageId?:  string;
   assignedArchitect?: string;
   notes?:             string;
+  // For generate_buildability_snapshot
+  address?: string;
+  jurisdiction?: string;
+  budgetRange?: string;
+  constraints?: string[];
 }
 
 export class ConceptEngineQueue extends BaseQueue<ConceptEngineJobData> {
@@ -44,6 +54,14 @@ export class ConceptEngineQueue extends BaseQueue<ConceptEngineJobData> {
 
   async createArchitectReviewTask(data: Omit<ConceptEngineJobData, 'jobType'>) {
     return this.add('create_architect_review_task', { ...data, jobType: 'create_architect_review_task' }, { priority: 2 });
+  }
+
+  async generateVisualPromptBundle(data: Omit<ConceptEngineJobData, 'jobType'>) {
+    return this.add('generate_visual_prompt_bundle', { ...data, jobType: 'generate_visual_prompt_bundle' }, { priority: 2 });
+  }
+
+  async generateBuildabilitySnapshot(data: Omit<ConceptEngineJobData, 'jobType'>) {
+    return this.add('generate_buildability_snapshot', { ...data, jobType: 'generate_buildability_snapshot' }, { priority: 2 });
   }
 }
 

@@ -1,10 +1,12 @@
 /**
  * Concept Engine Worker Processor
  *
- * Handles three job types:
- * 1. generate_floorplan    — builds room graph + SVG, saves to concept_floorplans
- * 2. generate_concept_package — runs Claude narrative + assembles package, saves to concept_packages
- * 3. create_architect_review_task — creates architect review record
+ * Handles five job types:
+ * 1. generate_floorplan             — builds room graph + SVG, saves to concept_floorplans
+ * 2. generate_concept_package       — runs Claude narrative + assembles package, saves to concept_packages
+ * 3. create_architect_review_task   — creates architect review record
+ * 4. generate_visual_prompt_bundle  — builds Midjourney + SD prompts, updates concept_packages
+ * 5. generate_buildability_snapshot — zoning + risk flags, updates concept_packages
  */
 
 import { Worker, Job } from 'bullmq';
@@ -182,6 +184,93 @@ async function processCreateArchitectReviewTask(
   console.log(`[concept-engine] Architect review task created for concept package ${conceptPackageId}`);
 }
 
+// ── Job 4: Generate Visual Prompt Bundle ─────────────────────────────────────
+
+async function processGenerateVisualPromptBundle(
+  job: Job<ConceptEngineJobData>,
+  prisma: any,
+): Promise<void> {
+  const { intakeId, floorplanId, projectPath, intake } = job.data;
+
+  await job.updateProgress(10);
+
+  // Load floor plan
+  const fpRows = await prisma.$queryRaw`
+    SELECT id, floorplan_json FROM concept_floorplans WHERE intake_id = ${intakeId} LIMIT 1
+  ` as Array<{ id: string; floorplan_json: any }>;
+
+  const floorplanJson = fpRows.length
+    ? (typeof fpRows[0].floorplan_json === 'string' ? JSON.parse(fpRows[0].floorplan_json) : fpRows[0].floorplan_json)
+    : null;
+
+  await job.updateProgress(30);
+
+  const { buildVisualPromptBundle } = await import('@kealee/concept-engine');
+  const intakeInput = {
+    intakeId,
+    projectPath: projectPath as any,
+    address: (intake as any)?.address ?? '',
+    budgetRange: (intake as any)?.budgetRange ?? 'under_10k',
+    stylePreference: (intake as any)?.stylePreference ?? 'modern',
+    constraints: (intake as any)?.constraints ?? [],
+    uploadedPhotos: (intake as any)?.uploadedPhotos ?? [],
+    captureAssets: (intake as any)?.captureAssets ?? [],
+    spatialNodes: (intake as any)?.spatialNodes ?? [],
+    ...(intake ?? {}),
+  };
+
+  const bundle = floorplanJson
+    ? buildVisualPromptBundle(intakeInput as any, floorplanJson)
+    : null;
+
+  if (bundle) {
+    await prisma.$executeRaw`
+      UPDATE concept_packages
+      SET visual_prompts_json = ${JSON.stringify(bundle)}::jsonb,
+          updated_at = now()
+      WHERE intake_id = ${intakeId}
+    `;
+  }
+
+  await job.updateProgress(100);
+  console.log(`[concept-engine] Visual prompt bundle generated for intake ${intakeId}`);
+}
+
+// ── Job 5: Generate Buildability Snapshot ────────────────────────────────────
+
+async function processGenerateBuildabilitySnapshot(
+  job: Job<ConceptEngineJobData>,
+  prisma: any,
+): Promise<void> {
+  const { intakeId, projectPath, address, jurisdiction, budgetRange, constraints } = job.data;
+
+  await job.updateProgress(10);
+
+  const { buildBuildabilitySnapshot } = await import('@kealee/concept-engine');
+
+  const snapshot = await buildBuildabilitySnapshot({
+    intakeId,
+    projectPath,
+    address: address ?? '',
+    jurisdiction: jurisdiction ?? undefined,
+    budgetRange: budgetRange ?? undefined,
+    constraints: constraints ?? [],
+    zoningData: null, // will attempt Claude inference
+  });
+
+  await job.updateProgress(80);
+
+  await prisma.$executeRaw`
+    UPDATE concept_packages
+    SET buildability_json = ${JSON.stringify(snapshot)}::jsonb,
+        updated_at = now()
+    WHERE intake_id = ${intakeId}
+  `;
+
+  await job.updateProgress(100);
+  console.log(`[concept-engine] Buildability snapshot generated for intake ${intakeId} (AI inferred: ${snapshot.inferredByAI})`);
+}
+
 // ── Router ───────────────────────────────────────────────────────────────────
 
 async function processConceptEngineJob(job: Job<ConceptEngineJobData>): Promise<void> {
@@ -199,6 +288,12 @@ async function processConceptEngineJob(job: Job<ConceptEngineJobData>): Promise<
         break;
       case 'create_architect_review_task':
         await processCreateArchitectReviewTask(job, prisma);
+        break;
+      case 'generate_visual_prompt_bundle':
+        await processGenerateVisualPromptBundle(job, prisma);
+        break;
+      case 'generate_buildability_snapshot':
+        await processGenerateBuildabilitySnapshot(job, prisma);
         break;
       default:
         throw new Error(`Unknown jobType: ${(job.data as any).jobType}`);

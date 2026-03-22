@@ -39,3 +39,6 @@ export { buildArchitectReviewTask } from './api/create-architect-review-task';
 export type { GenerateFloorplanInput, GenerateFloorplanResult } from './api/generate-floorplan';
 export type { GenerateConceptPackageInput, GenerateConceptPackageResult } from './api/generate-concept-package';
 export type { CreateArchitectReviewInput, CreateArchitectReviewResult } from './api/create-architect-review-task';
+
+// AI Concept — orchestration, journey config, intake resolution, upsell routing, buildability
+export * from './ai-concept';

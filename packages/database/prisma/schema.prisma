@@ -16196,3 +16196,77 @@ model PublicIntakeLead {
   @@index([createdAt])
   @@index([stripeSessionId])
 }
+
+// ─── AI Concept Engine ────────────────────────────────────────────────────────
+
+enum ArchitectReviewStatus {
+  pending
+  in_review
+  approved
+  revision_requested
+  rejected
+
+  @@map("architect_review_status")
+}
+
+model ConceptFloorplan {
+  id            String   @id @default(cuid())
+  intakeId      String   @unique
+  projectPath   String
+  roomCount     Int
+  totalSqFt     Float?
+  svgData       String   @db.Text
+  layoutJson    Json
+  adjacencyJson Json?
+  issueCount    Int      @default(0)
+  generatedAt   DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("concept_floorplans")
+  @@index([intakeId])
+  @@index([generatedAt])
+}
+
+model ConceptPackage {
+  id                   String   @id @default(cuid())
+  intakeId             String   @unique
+  floorplanId          String?
+  homeownerJson        Json
+  architectHandoffJson Json
+  visualPromptsJson    Json?
+  buildabilityJson     Json?
+  deliveredAt          DateTime?
+  approvedAt           DateTime?
+  approvedBy           String?
+  status               String   @default("pending")
+  generatedAt          DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("concept_packages")
+  @@index([intakeId])
+  @@index([status])
+  @@index([generatedAt])
+}
+
+model ArchitectReviewTask {
+  id                  BigInt                @id @default(autoincrement())
+  intakeId            String
+  conceptPackageId    String?
+  status              ArchitectReviewStatus @default(pending)
+  priority            String                @default("normal")
+  recommendedService  String?
+  upsellNotes         String?               @db.Text
+  flaggedUncertainties Json?
+  assignedArchitectId String?
+  architectNotes      String?               @db.Text
+  reviewStartedAt     DateTime?
+  reviewCompletedAt   DateTime?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  @@map("architect_review_tasks")
+  @@index([intakeId])
+  @@index([status])
+  @@index([assignedArchitectId])
+  @@index([createdAt])
+}

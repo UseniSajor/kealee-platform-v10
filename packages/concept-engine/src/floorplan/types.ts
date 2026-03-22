@@ -9,7 +9,8 @@ export type ProjectPath =
   | 'interior_renovation'
   | 'whole_home_remodel'
   | 'addition_expansion'
-  | 'exterior_concept';
+  | 'exterior_concept'
+  | 'capture_site_concept';
 
 export type RoomType =
   | 'kitchen'
