@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { StatusBadge } from "./status-badge";
+import { ConceptEnginePanel } from "./concept-engine-panel";
+import type { ConceptEnginePanelProps } from "./concept-engine-panel";
 
 interface IntakeDetailData {
   status: string;
@@ -14,6 +16,12 @@ interface IntakeDetailData {
   uploadedPhotos?: string[];
   designBrief?: { summary?: string };
   permitPathSummary?: { notes?: string[] };
+  // Concept engine fields
+  intakeId?: string;
+  projectPath?: string;
+  conceptFloorplan?: ConceptEnginePanelProps['floorplan'];
+  conceptPackage?:   ConceptEnginePanelProps['conceptPackage'];
+  handoffReadiness?: ConceptEnginePanelProps['handoffReadiness'];
 }
 
 interface IntakeDetailProps {
@@ -23,6 +31,12 @@ interface IntakeDetailProps {
   onRegenerateVisuals?: () => void;
   onEscalate?: () => void;
   onRoutePermit?: () => void;
+  // Concept engine actions
+  onGenerateFloorplan?:      () => Promise<void>;
+  onGenerateConceptPackage?: () => Promise<void>;
+  onRouteToArchitectReview?: () => Promise<void>;
+  onRequestMoreCapture?:     () => void;
+  onApproveForDelivery?:     () => Promise<void>;
 }
 
 export function IntakeDetail({
@@ -32,6 +46,11 @@ export function IntakeDetail({
   onRegenerateVisuals,
   onEscalate,
   onRoutePermit,
+  onGenerateFloorplan,
+  onGenerateConceptPackage,
+  onRouteToArchitectReview,
+  onRequestMoreCapture,
+  onApproveForDelivery,
 }: IntakeDetailProps) {
   const [actionNote, setActionNote] = useState("");
 
@@ -87,6 +106,22 @@ export function IntakeDetail({
             </ul>
           )}
         </section>
+
+        {/* Concept Engine Panel */}
+        {data.intakeId && (
+          <ConceptEnginePanel
+            intakeId={data.intakeId}
+            projectPath={data.projectPath ?? data.projectType ?? 'interior_renovation'}
+            floorplan={data.conceptFloorplan}
+            conceptPackage={data.conceptPackage}
+            handoffReadiness={data.handoffReadiness}
+            onGenerateFloorplan={onGenerateFloorplan}
+            onGenerateConceptPackage={onGenerateConceptPackage}
+            onRouteToArchitectReview={onRouteToArchitectReview}
+            onRequestMoreCapture={onRequestMoreCapture}
+            onApproveForDelivery={onApproveForDelivery}
+          />
+        )}
 
         <section className="rounded-2xl border bg-white p-5 shadow-sm">
           <h3 className="mb-3 text-lg font-semibold">Actions</h3>

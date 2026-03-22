@@ -566,6 +566,9 @@ const start = async () => {
       await fastify.register(conceptIntakeRoutes, { prefix: '/concepts' })
       const { conceptQueueRoutes } = await import('./modules/concepts/concept-queue.routes')
       await fastify.register(conceptQueueRoutes, { prefix: '/concepts' })
+      // Concept engine — floor plan + package + architect review
+      const { conceptEngineRoutes } = await import('./modules/concept-engine/concept-engine.routes')
+      await fastify.register(conceptEngineRoutes, { prefix: '/concept' })
       await fastify.register(verificationDocumentRoutes, { prefix: '/verification' })
       await fastify.register(paymentRoutes, { prefix: '/payments' })
       await fastify.register(spatialRoutes, { prefix: '/spatial' })
