@@ -38,6 +38,10 @@ COPY packages/observability/package.json         ./packages/observability/packag
 COPY packages/realtime/package.json              ./packages/realtime/package.json
 COPY packages/scoring/package.json               ./packages/scoring/package.json
 COPY packages/page-builder/package.json          ./packages/page-builder/package.json
+COPY packages/concept-engine/package.json        ./packages/concept-engine/package.json
+COPY packages/core-ddts/package.json             ./packages/core-ddts/package.json
+COPY packages/core-events/package.json           ./packages/core-events/package.json
+COPY packages/types/package.json                 ./packages/types/package.json
 
 # ── Layer 2: install dependencies ──
 RUN pnpm install --filter @kealee/api... --prod=false --ignore-scripts
@@ -55,6 +59,10 @@ COPY packages/observability/  ./packages/observability/
 COPY packages/realtime/       ./packages/realtime/
 COPY packages/scoring/        ./packages/scoring/
 COPY packages/page-builder/   ./packages/page-builder/
+COPY packages/concept-engine/ ./packages/concept-engine/
+COPY packages/core-ddts/      ./packages/core-ddts/
+COPY packages/core-events/    ./packages/core-events/
+COPY packages/types/          ./packages/types/
 COPY services/api/            ./services/api/
 
 # ── Layer 4: generate Prisma client ──
@@ -74,6 +82,10 @@ RUN pnpm --filter @kealee/observability run build 2>/dev/null || true
 RUN pnpm --filter @kealee/realtime run build 2>/dev/null || true
 RUN pnpm --filter @kealee/scoring run build 2>/dev/null || true
 RUN pnpm --filter @kealee/page-builder run build 2>/dev/null || true
+RUN pnpm --filter @kealee/types run build 2>/dev/null || true
+RUN pnpm --filter @kealee/core-events run build 2>/dev/null || true
+RUN pnpm --filter @kealee/core-ddts run build 2>/dev/null || true
+RUN pnpm --filter @kealee/concept-engine run build 2>/dev/null || true
 
 # ── Layer 6: build the API ──
 RUN cd services/api && pnpm run build:ts && \
