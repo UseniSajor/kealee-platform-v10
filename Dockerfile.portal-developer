@@ -1,0 +1,67 @@
+# ============================================================
+# Dockerfile.portal-developer
+# Railway Deployment - pnpm Monorepo (portal-developer)
+# ============================================================
+# Builds the portal-developer Next.js app from the monorepo
+# root so that pnpm workspace packages (@kealee/auth, etc.)
+# are available during install and build.
+# ============================================================
+
+# ---- Stage 1: Builder ----
+FROM node:20-slim AS builder
+
+# Install system dependencies
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    openssl \
+  && rm -rf /var/lib/apt/lists/*
+
+# Enable corepack and activate the exact pnpm version used by the monorepo
+RUN corepack enable && corepack prepare pnpm@8.15.9 --activate
+
+WORKDIR /app
+
+# Copy workspace manifests first for better layer caching
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+
+# Copy all workspace package sources so pnpm can resolve workspace:* deps
+COPY packages ./packages
+COPY apps ./apps
+COPY services ./services
+
+# Install all workspace dependencies (no frozen lockfile to tolerate minor drift)
+RUN pnpm install --no-frozen-lockfile
+
+# Build only the portal-developer app and its workspace dependencies via turbo
+RUN pnpm turbo build --filter=./apps/portal-developer
+
+# ---- Stage 2: Runner ----
+FROM node:20-slim AS runner
+
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    openssl \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN corepack enable && corepack prepare pnpm@8.15.9 --activate
+
+ENV NODE_ENV=production
+
+WORKDIR /app
+
+# Copy the full monorepo output from the builder stage.
+# Next.js standalone output and workspace packages must remain
+# accessible at their original relative paths.
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/apps/portal-developer ./apps/portal-developer
+
+EXPOSE 3003
+
+# Start Next.js from the app directory; PORT can be overridden at runtime
+CMD ["sh", "-c", "cd apps/portal-developer && npx next start -p ${PORT:-3003}"]
