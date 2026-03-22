@@ -1,0 +1,62 @@
+# ============================================================
+# Dockerfile.command-center
+# Railway Deployment - pnpm Monorepo (Next.js)
+# App: apps/command-center | Default Port: 3004
+# ============================================================
+# Builds from the monorepo root so that pnpm workspace packages
+# (@kealee/auth, @kealee/ui, etc.) are resolved correctly.
+# Uses turbo --filter to build only the command-center app and
+# its workspace dependencies.
+# ============================================================
+
+# ── Stage 1: Builder ─────────────────────────────────────────
+FROM node:20-slim AS builder
+
+WORKDIR /app
+
+# Install corepack and activate the pinned pnpm version
+RUN corepack enable && corepack prepare pnpm@8.15.9 --activate
+
+# Copy workspace manifests first so dependency installation is
+# cached independently of application source changes.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+
+# Copy all workspace package manifests (needed for pnpm to
+# resolve the workspace graph before copying full source).
+COPY packages ./packages
+COPY apps ./apps
+COPY services ./services
+COPY bots ./bots
+
+# Install all workspace dependencies from the monorepo root.
+# --no-frozen-lockfile allows minor lockfile drift on Railway.
+RUN pnpm install --no-frozen-lockfile
+
+# Build only the command-center app and its workspace deps.
+RUN pnpm turbo build --filter=./apps/command-center
+
+# ── Stage 2: Runner ──────────────────────────────────────────
+FROM node:20-slim AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Re-enable corepack so `npx next` resolves correctly at runtime.
+RUN corepack enable && corepack prepare pnpm@8.15.9 --activate
+
+# Copy workspace manifests and lockfile for a production-only
+# dependency install in the final image.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# Copy built artifacts and source from the builder stage.
+# We need the full monorepo layout so workspace symlinks work.
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/apps/command-center ./apps/command-center
+
+# Expose the application port (Railway injects $PORT at runtime).
+EXPOSE 3004
+
+# Start Next.js from the app directory, honouring $PORT.
+CMD ["sh", "-c", "cd apps/command-center && npx next start -p ${PORT:-3004}"]
