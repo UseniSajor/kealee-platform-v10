@@ -500,4 +500,130 @@ export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
     },
     ASSETS_STEP,
   ],
+
+  kitchen_remodel: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Kitchen Details",
+      fields: [
+        {
+          key: "kitchenLayout",
+          label: "Current Kitchen Layout",
+          type: "select",
+          options: [
+            { value: "galley", label: "Galley" },
+            { value: "l_shape", label: "L-Shape" },
+            { value: "u_shape", label: "U-Shape" },
+            { value: "open_concept", label: "Open Concept" },
+            { value: "island", label: "Island Kitchen" },
+          ],
+        },
+        {
+          key: "remodelingScope",
+          label: "Remodel Scope",
+          type: "multiselect",
+          options: [
+            { value: "cabinets", label: "Cabinets" },
+            { value: "countertops", label: "Countertops" },
+            { value: "appliances", label: "Appliances" },
+            { value: "flooring", label: "Flooring" },
+            { value: "lighting", label: "Lighting" },
+            { value: "plumbing", label: "Plumbing / Sink" },
+            { value: "layout_change", label: "Layout Change" },
+          ],
+        },
+        {
+          key: "designStyle",
+          label: "Design Style",
+          type: "multiselect",
+          options: [
+            { value: "modern", label: "Modern / Contemporary" },
+            { value: "traditional", label: "Traditional" },
+            { value: "transitional", label: "Transitional" },
+            { value: "farmhouse", label: "Farmhouse" },
+            { value: "coastal", label: "Coastal" },
+          ],
+        },
+        { key: "goals", label: "Project Goals", type: "textarea", placeholder: "What do you want to achieve with this kitchen remodel?", rows: 4 },
+      ],
+    },
+    { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
+    ASSETS_STEP,
+  ],
+
+  bathroom_remodel: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Bathroom Details",
+      fields: [
+        {
+          key: "bathroomType",
+          label: "Bathroom Type",
+          type: "select",
+          required: true,
+          options: [
+            { value: "primary_bath", label: "Primary / Master Bath" },
+            { value: "guest_bath", label: "Guest Bathroom" },
+            { value: "half_bath", label: "Half Bath / Powder Room" },
+            { value: "multiple", label: "Multiple Bathrooms" },
+          ],
+        },
+        {
+          key: "remodelingScope",
+          label: "Remodel Scope",
+          type: "multiselect",
+          options: [
+            { value: "tile", label: "Tile / Flooring" },
+            { value: "vanity", label: "Vanity / Sink" },
+            { value: "shower", label: "Shower / Tub" },
+            { value: "toilet", label: "Toilet" },
+            { value: "lighting", label: "Lighting / Ventilation" },
+            { value: "layout_change", label: "Layout Change" },
+          ],
+        },
+        {
+          key: "designStyle",
+          label: "Design Style",
+          type: "multiselect",
+          options: [
+            { value: "modern", label: "Modern / Spa" },
+            { value: "traditional", label: "Traditional" },
+            { value: "transitional", label: "Transitional" },
+            { value: "coastal", label: "Coastal" },
+            { value: "farmhouse", label: "Farmhouse" },
+          ],
+        },
+        { key: "goals", label: "Project Goals", type: "textarea", placeholder: "What do you want to achieve with this bathroom remodel?", rows: 4 },
+      ],
+    },
+    { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
+    ASSETS_STEP,
+  ],
+
+  capture_site_concept: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Property Details",
+      fields: [
+        { key: "squareFootage", label: "Approximate Square Footage", type: "numeric", placeholder: "2000" },
+        {
+          key: "propertyType",
+          label: "Property Type",
+          type: "select",
+          options: [
+            { value: "single_family", label: "Single Family Home" },
+            { value: "townhouse", label: "Townhouse" },
+            { value: "condo", label: "Condo / Apartment" },
+            { value: "multifamily", label: "Multifamily" },
+            { value: "commercial", label: "Commercial" },
+          ],
+        },
+        { key: "captureGoals", label: "What are you capturing for?", type: "textarea", placeholder: "Describe the purpose of this property capture...", rows: 4 },
+      ],
+    },
+    ASSETS_STEP,
+  ],
 };
