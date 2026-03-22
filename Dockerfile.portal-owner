@@ -1,0 +1,151 @@
+# ============================================================
+# Dockerfile.portal-owner
+# Multi-stage build for the portal-owner Next.js app
+# Built from the monorepo root so pnpm workspace packages
+# (@kealee/auth, @kealee/core-hooks, @kealee/ui) are resolvable.
+# Leverages next.config.js `output: 'standalone'` for a lean
+# final image that contains only the files needed at runtime.
+# ============================================================
+
+# ── Stage 1: dependency installation ────────────────────────
+FROM node:20-slim AS deps
+
+# Install system packages required by Prisma (openssl) and
+# native node module compilation (python3, make, gcc, g++)
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+    python3 \
+    make \
+    gcc \
+    g++ \
+  && rm -rf /var/lib/apt/lists/*
+
+# Enable corepack and pin the exact pnpm version used by the repo
+RUN corepack enable && corepack prepare pnpm@8.15.9 --activate
+
+WORKDIR /app
+
+# Copy manifest files first so this layer is cached until
+# dependencies actually change
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY turbo.json ./
+
+# Copy every workspace package.json so pnpm can resolve the
+# full workspace graph before installing
+COPY packages/auth/package.json        ./packages/auth/package.json
+COPY packages/core-hooks/package.json  ./packages/core-hooks/package.json
+COPY packages/ui/package.json          ./packages/ui/package.json
+COPY packages/database/package.json    ./packages/database/package.json
+COPY packages/observability/package.json ./packages/observability/package.json
+COPY packages/intake/package.json      ./packages/intake/package.json
+COPY apps/portal-owner/package.json    ./apps/portal-owner/package.json
+
+# Install all workspace dependencies.
+# --no-frozen-lockfile: tolerate minor lockfile drift in CI.
+# --ignore-scripts:     skip postinstall scripts (Prisma generate
+#                       runs explicitly in the build stage).
+RUN pnpm install --no-frozen-lockfile --ignore-scripts
+
+
+# ── Stage 2: build ──────────────────────────────────────────
+FROM node:20-slim AS builder
+
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN corepack enable && corepack prepare pnpm@8.15.9 --activate
+
+WORKDIR /app
+
+# Bring in installed node_modules from the deps stage
+COPY --from=deps /app/node_modules        ./node_modules
+COPY --from=deps /app/packages/auth/node_modules       ./packages/auth/node_modules
+COPY --from=deps /app/packages/core-hooks/node_modules ./packages/core-hooks/node_modules
+COPY --from=deps /app/packages/ui/node_modules         ./packages/ui/node_modules
+COPY --from=deps /app/packages/database/node_modules   ./packages/database/node_modules
+COPY --from=deps /app/packages/observability/node_modules ./packages/observability/node_modules
+COPY --from=deps /app/packages/intake/node_modules     ./packages/intake/node_modules
+COPY --from=deps /app/apps/portal-owner/node_modules   ./apps/portal-owner/node_modules
+
+# Copy the full monorepo source (workspace packages + the app)
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY turbo.json ./
+COPY packages/auth        ./packages/auth
+COPY packages/core-hooks  ./packages/core-hooks
+COPY packages/ui          ./packages/ui
+COPY packages/database    ./packages/database
+COPY packages/observability ./packages/observability
+COPY packages/intake      ./packages/intake
+COPY apps/portal-owner    ./apps/portal-owner
+
+# Skip Puppeteer Chrome download (pulled in transitively by some packages)
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=""
+
+# Generate Prisma client (required by @kealee/auth → @kealee/database)
+# A placeholder DATABASE_URL is sufficient for code generation.
+RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \
+    pnpm --filter @kealee/database exec prisma generate --schema=./prisma/schema.prisma
+
+# Build workspace packages that compile to dist/ before Next.js
+# needs to resolve them.  @kealee/ui is source-only and transpiled
+# directly by Next.js via transpilePackages, so no build needed.
+RUN pnpm --filter @kealee/observability run build
+RUN pnpm --filter @kealee/database      run build
+RUN pnpm --filter @kealee/auth          run build
+RUN pnpm --filter @kealee/core-hooks    run build
+
+# Ensure a public/ directory exists so the runner-stage COPY never fails
+# (the directory is optional in Next.js but COPY requires the source to exist)
+RUN mkdir -p apps/portal-owner/public
+
+# Build only the portal-owner app via Turborepo
+ENV NODE_ENV=production
+RUN pnpm turbo build --filter=./apps/portal-owner
+
+
+# ── Stage 3: production runner ──────────────────────────────
+FROM node:20-slim AS runner
+
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+ENV NODE_ENV=production
+# Default port — Railway overrides this via the PORT env var
+ENV PORT=3001
+
+WORKDIR /app
+
+# Create a non-root user for security
+RUN addgroup --system --gid 1001 nodejs \
+ && adduser  --system --uid 1001 nextjs
+
+# Copy the standalone Next.js output — this is a self-contained
+# server bundle that includes all required node_modules.
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/apps/portal-owner/.next/standalone ./
+
+# Copy static assets and the pre-rendered pages
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/apps/portal-owner/.next/static \
+    ./apps/portal-owner/.next/static
+
+COPY --from=builder --chown=nextjs:nodejs \
+    /app/apps/portal-owner/public \
+    ./apps/portal-owner/public
+
+USER nextjs
+
+EXPOSE ${PORT}
+
+# The standalone output places the server entry point at
+# apps/portal-owner/server.js inside the copied tree.
+CMD ["node", "apps/portal-owner/server.js"]
