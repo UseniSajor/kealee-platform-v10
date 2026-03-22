@@ -1,10 +1,9 @@
 [build]
-builder = "NIXPACKS"
-buildCommand = "corepack enable && corepack prepare pnpm@8.15.9 --activate && pnpm install --no-frozen-lockfile && pnpm turbo build --filter=./apps/command-center"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.command-center"
 watchPatterns = ["apps/command-center/**", "packages/**"]
 
 [deploy]
-startCommand = "cd apps/command-center && npx next start -p ${PORT:-3004}"
 healthcheckPath = "/"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
