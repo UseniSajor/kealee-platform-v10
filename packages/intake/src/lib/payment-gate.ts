@@ -32,8 +32,11 @@ export function evaluatePaymentGate(
 const PAYMENT_REASONS: Record<ProjectPath, string> = {
   exterior_concept: "Exterior concept package includes AI-generated design direction, site analysis, and visual concepts.",
   interior_renovation: "Interior intake fee covers initial scope review, room-by-room analysis, and consultation scheduling.",
+  kitchen_remodel: "Kitchen remodel intake covers scope review, layout analysis, and design direction for your kitchen transformation.",
+  bathroom_remodel: "Bathroom remodel intake covers scope review, fixture planning, and design direction for your bath renovation.",
   whole_home_remodel: "Whole-home remodel intake includes project assessment, design direction, and scope review.",
   addition_expansion: "Addition intake fee covers feasibility review, scope analysis, and path-to-permit guidance.",
   design_build: "Design + Build intake includes project assessment, scope review, and team matching.",
   permit_path_only: "Permit path intake covers jurisdiction review, document checklist, and approval pathway assessment.",
+  capture_site_concept: "Site capture is included at no charge — your digital twin will be built from your mobile capture session.",
 };

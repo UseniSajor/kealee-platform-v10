@@ -88,6 +88,8 @@ export const CompleteCaptureSessionSchema = z.object({
   walkthrough_video_uploaded: z.boolean().default(false),
 });
 
+export type CaptureZone = z.infer<typeof CaptureZoneEnum>;
+export type SystemCategory = z.infer<typeof SystemCategoryEnum>;
 export type CaptureMode = z.infer<typeof CaptureModeEnum>;
 export type SiteVisitStatus = z.infer<typeof SiteVisitStatusEnum>;
 export type CreateCaptureSessionInput = z.infer<typeof CreateCaptureSessionSchema>;

@@ -500,4 +500,174 @@ export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
     },
     ASSETS_STEP,
   ],
+
+  kitchen_remodel: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Kitchen Details",
+      fields: [
+        {
+          key: "kitchenProjectType",
+          label: "Type of Kitchen Work",
+          type: "radio",
+          required: true,
+          options: [
+            { value: "full_gut_remodel", label: "Full Gut Remodel" },
+            { value: "cabinet_refresh", label: "Cabinet Refresh / Reface" },
+            { value: "layout_change", label: "Layout Change" },
+            { value: "countertop_upgrade", label: "Countertop Upgrade" },
+            { value: "appliance_upgrade", label: "Appliance Upgrade" },
+            { value: "full_custom", label: "Full Custom Kitchen" },
+          ],
+        },
+        {
+          key: "currentCondition",
+          label: "Current Kitchen Condition",
+          type: "select",
+          options: [
+            { value: "dated_but_functional", label: "Dated but functional" },
+            { value: "needs_repairs", label: "Needs repairs" },
+            { value: "partial_demo", label: "Partial demo / gut" },
+            { value: "complete_gut", label: "Complete gut renovation" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scope",
+      title: "Design Direction",
+      fields: [
+        {
+          key: "designStyle",
+          label: "Design Style",
+          type: "multiselect",
+          options: [
+            { value: "modern", label: "Modern / Contemporary" },
+            { value: "traditional", label: "Traditional" },
+            { value: "transitional", label: "Transitional" },
+            { value: "farmhouse", label: "Farmhouse" },
+            { value: "shaker", label: "Shaker" },
+            { value: "industrial", label: "Industrial" },
+          ],
+        },
+        { key: "goals", label: "Project Goals", type: "textarea", placeholder: "What do you want to achieve with your kitchen?", rows: 4 },
+        { key: "knownConstraints", label: "Known Constraints", type: "textarea", placeholder: "Structural walls, plumbing locations...", rows: 3 },
+      ],
+    },
+    { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
+    ASSETS_STEP,
+  ],
+
+  bathroom_remodel: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Bathroom Details",
+      fields: [
+        {
+          key: "bathroomType",
+          label: "Which Bathroom?",
+          type: "radio",
+          required: true,
+          options: [
+            { value: "primary_bath", label: "Primary / Master Bath" },
+            { value: "guest_bath", label: "Guest Bathroom" },
+            { value: "powder_room", label: "Powder Room" },
+            { value: "multiple_baths", label: "Multiple Bathrooms" },
+          ],
+        },
+        {
+          key: "bathroomProjectType",
+          label: "Type of Bathroom Work",
+          type: "radio",
+          required: true,
+          options: [
+            { value: "full_gut_remodel", label: "Full Gut Remodel" },
+            { value: "tile_fixtures", label: "Tile & Fixtures Update" },
+            { value: "vanity_upgrade", label: "Vanity Upgrade" },
+            { value: "walk_in_shower", label: "Walk-In Shower Conversion" },
+            { value: "layout_change", label: "Layout Change" },
+          ],
+        },
+        {
+          key: "currentCondition",
+          label: "Current Condition",
+          type: "select",
+          options: [
+            { value: "dated_but_functional", label: "Dated but functional" },
+            { value: "needs_repairs", label: "Needs repairs" },
+            { value: "partial_demo", label: "Partial demo / gut" },
+            { value: "complete_gut", label: "Complete gut renovation" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scope",
+      title: "Design Direction",
+      fields: [
+        {
+          key: "designStyle",
+          label: "Design Style",
+          type: "multiselect",
+          options: [
+            { value: "modern", label: "Modern / Spa" },
+            { value: "traditional", label: "Traditional" },
+            { value: "transitional", label: "Transitional" },
+            { value: "coastal", label: "Coastal" },
+            { value: "minimalist", label: "Minimalist" },
+          ],
+        },
+        { key: "goals", label: "Project Goals", type: "textarea", placeholder: "What do you want to achieve with your bathroom?", rows: 4 },
+        { key: "knownConstraints", label: "Known Constraints", type: "textarea", placeholder: "Plumbing locations, structural concerns...", rows: 3 },
+      ],
+    },
+    { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
+    ASSETS_STEP,
+  ],
+
+  capture_site_concept: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Capture Details",
+      fields: [
+        {
+          key: "captureScope",
+          label: "What would you like to capture?",
+          type: "multiselect",
+          required: true,
+          options: [
+            { value: "full_exterior", label: "Full Exterior" },
+            { value: "full_interior", label: "Full Interior" },
+            { value: "specific_rooms", label: "Specific Rooms" },
+            { value: "mechanical_systems", label: "Mechanical Systems" },
+            { value: "problem_areas", label: "Problem Areas" },
+            { value: "full_property", label: "Full Property (Interior + Exterior)" },
+          ],
+        },
+        {
+          key: "captureGoal",
+          label: "Purpose of Capture",
+          type: "select",
+          options: [
+            { value: "digital_twin", label: "Build a Digital Twin" },
+            { value: "renovation_planning", label: "Renovation Planning" },
+            { value: "insurance_documentation", label: "Insurance Documentation" },
+            { value: "pre_listing", label: "Pre-Listing Documentation" },
+            { value: "general_record", label: "General Property Record" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scope",
+      title: "Additional Notes",
+      fields: [
+        { key: "specialInstructions", label: "Special Instructions", type: "textarea", placeholder: "Any areas to focus on or avoid?", rows: 4 },
+      ],
+    },
+    ASSETS_STEP,
+  ],
 };

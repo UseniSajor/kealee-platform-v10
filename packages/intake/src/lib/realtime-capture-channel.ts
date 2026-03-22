@@ -42,14 +42,21 @@ export function buildProgressPayload(args: CaptureProgressPayload): CaptureRealt
   };
 }
 
+export interface RealtimeSubscription {
+  unsubscribe: () => void;
+}
+
+export interface RealtimeChannel {
+  on: (
+    type: string,
+    filter: Record<string, unknown>,
+    callback: (payload: { payload: unknown }) => void,
+  ) => RealtimeChannel;
+  subscribe: () => RealtimeSubscription;
+}
+
 export interface RealtimeClient {
-  channel: (name: string) => {
-    on: (
-      type: string,
-      filter: Record<string, unknown>,
-      callback: (payload: { payload: unknown }) => void,
-    ) => { subscribe: () => { unsubscribe: () => void } };
-  };
+  channel: (name: string) => RealtimeChannel;
 }
 
 export function subscribeToCaptureChannel(
