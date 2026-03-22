@@ -300,6 +300,99 @@ export async function conceptEngineRoutes(fastify: FastifyInstance) {
   });
 
   /**
+   * GET /api/concept/status/:intakeId
+   * Poll current generation status for a concept package.
+   * Used by the frontend `generating` step.
+   */
+  fastify.get('/status/:intakeId', async (request, reply) => {
+    const { intakeId } = request.params as { intakeId: string };
+    try {
+      // Fetch floor plan status
+      const fpRows = await prismaAny.$queryRaw`
+        SELECT id, status, svg_url, created_at
+        FROM concept_floorplans
+        WHERE intake_id = ${intakeId}
+        ORDER BY created_at DESC
+        LIMIT 1
+      ` as Array<{ id: string; status: string; svg_url: string | null; created_at: string }>;
+
+      // Fetch package status
+      const pkgRows = await prismaAny.$queryRaw`
+        SELECT id, status, delivery_url, pdf_url, buildability_json,
+               visual_prompts_json, delivered_at, approved_at, created_at
+        FROM concept_packages
+        WHERE intake_id = ${intakeId}
+        ORDER BY created_at DESC
+        LIMIT 1
+      ` as Array<{
+        id: string;
+        status: string;
+        delivery_url: string | null;
+        pdf_url: string | null;
+        buildability_json: unknown;
+        visual_prompts_json: unknown;
+        delivered_at: string | null;
+        approved_at: string | null;
+        created_at: string;
+      }>;
+
+      const fp  = fpRows[0]  ?? null;
+      const pkg = pkgRows[0] ?? null;
+
+      const floorplanReady   = !!fp && fp.status !== 'error';
+      const packageReady     = !!pkg && pkg.status !== 'error' && pkg.status !== 'pending';
+      const buildabilityReady = !!pkg?.buildability_json;
+      const visualsReady      = !!pkg?.visual_prompts_json;
+      const delivered        = !!pkg?.delivered_at;
+      const approved         = !!pkg?.approved_at;
+
+      // Derive overall status
+      let overallStatus: 'pending' | 'generating' | 'review' | 'delivered' | 'error' = 'pending';
+      if (!fp) {
+        overallStatus = 'pending';
+      } else if (fp.status === 'error' || pkg?.status === 'error') {
+        overallStatus = 'error';
+      } else if (delivered || approved) {
+        overallStatus = 'delivered';
+      } else if (packageReady) {
+        overallStatus = 'review';
+      } else {
+        overallStatus = 'generating';
+      }
+
+      // Compute progress pct
+      let progress = 0;
+      if (floorplanReady)   progress += 25;
+      if (packageReady)     progress += 35;
+      if (buildabilityReady) progress += 20;
+      if (visualsReady)     progress += 10;
+      if (delivered)        progress += 10;
+      progress = Math.min(progress, 100);
+
+      return reply.send({
+        intakeId,
+        status:            overallStatus,
+        progress,
+        floorplanReady,
+        packageReady,
+        buildabilityReady,
+        visualsReady,
+        delivered,
+        approved,
+        svgUrl:            fp?.svg_url ?? null,
+        pdfUrl:            pkg?.pdf_url ?? null,
+        deliveryUrl:       pkg?.delivery_url ?? null,
+        floorplanId:       fp?.id ?? null,
+        packageId:         pkg?.id ?? null,
+        generatedAt:       fp?.created_at ?? null,
+      });
+    } catch (err: any) {
+      fastify.log.error({ err }, '[concept-engine] status check failed');
+      return reply.status(500).send({ error: sanitizeErrorMessage(err) });
+    }
+  });
+
+  /**
    * PATCH /api/concept/architect-tasks/:taskId
    * Update architect review task (assign, change status, add notes, signoff).
    */

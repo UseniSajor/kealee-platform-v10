@@ -5,6 +5,7 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk'
+import type { ZoningLookupFn } from './zoning-lookup'
 
 export interface ZoningData {
   zoningCode: string
@@ -56,7 +57,10 @@ interface BuildabilityInput {
   jurisdiction?: string
   budgetRange?: string
   constraints?: string[]
+  /** Pre-fetched zoning data. If null, zoningLookupFn will be called, then falls back to Claude. */
   zoningData?: ZoningData | null
+  /** Optional live GIS/DB resolver. When provided, called before Claude AI inference. */
+  zoningLookupFn?: ZoningLookupFn
 }
 
 const PERMIT_PATH_BY_PROJECT: Record<string, string[]> = {
@@ -235,7 +239,21 @@ Respond ONLY with valid JSON matching this structure:
 export async function buildBuildabilitySnapshot(
   input: BuildabilityInput
 ): Promise<BuildabilitySnapshot> {
-  const zoning = input.zoningData ?? null
+  // Step 1: Use pre-fetched zoning data if provided
+  let zoning = input.zoningData ?? null
+
+  // Step 2: Try live GIS/DB lookup if no data and a lookup function is provided
+  if (!zoning && input.zoningLookupFn) {
+    try {
+      zoning = await input.zoningLookupFn({
+        address: input.address,
+        jurisdiction: input.jurisdiction,
+      })
+    } catch (_err) {
+      // Lookup failed — proceed to AI inference
+    }
+  }
+
   let zoningCode = zoning?.zoningCode ?? ''
   let zoningDistrict = zoning?.zoningDistrict ?? ''
   let setbacks = {
@@ -247,7 +265,7 @@ export async function buildBuildabilitySnapshot(
   let inferredByAI = false
   let aiFlags: BuildabilityRiskFlag[] = []
 
-  // If no live zoning data, infer from Claude
+  // Step 3: If still no zoning data, infer from Claude
   if (!zoning) {
     inferredByAI = true
     const inferred = await inferBuildabilityFromClaude(input)

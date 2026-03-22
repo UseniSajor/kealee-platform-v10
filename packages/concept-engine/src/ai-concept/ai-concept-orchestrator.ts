@@ -11,6 +11,7 @@ import { buildVisualPromptBundle } from '../visuals/build-visual-prompt-bundle'
 import { routeUpsell } from './upsell-router'
 import type { ConceptIntakeInput } from '../floorplan/types'
 import type { BuildabilitySnapshot, ZoningData } from './buildability-snapshot'
+import type { ZoningLookupFn } from './zoning-lookup'
 import type { UpsellRoute } from './upsell-router'
 import type { VisualPromptBundle } from '../visuals/build-visual-prompt-bundle'
 import type { GenerateFloorplanResult } from '../api/generate-floorplan'
@@ -27,6 +28,7 @@ export interface OrchestrationInput {
   intake: ConceptIntakeInput
   mode: OrchestrationMode
   zoningData?: ZoningData | null
+  zoningLookupFn?: ZoningLookupFn
   existingFloorplanResult?: GenerateFloorplanResult | null
 }
 
@@ -47,7 +49,7 @@ export interface OrchestrationResult {
 export async function orchestrateConcept(
   opts: OrchestrationInput
 ): Promise<OrchestrationResult> {
-  const { intake, mode, zoningData, existingFloorplanResult } = opts
+  const { intake, mode, zoningData, zoningLookupFn, existingFloorplanResult } = opts
   const startMs = Date.now()
   const errors: string[] = []
 
@@ -93,6 +95,7 @@ export async function orchestrateConcept(
         budgetRange: intake.budgetRange,
         constraints: intake.knownConstraints,
         zoningData: zoningData ?? null,
+        zoningLookupFn,
       })
     } catch (err) {
       errors.push(`buildability: ${String(err)}`)

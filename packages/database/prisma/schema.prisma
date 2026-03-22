@@ -16216,6 +16216,7 @@ model ConceptFloorplan {
   roomCount     Int
   totalSqFt     Float?
   svgData       String   @db.Text
+  svgUrl        String?
   layoutJson    Json
   adjacencyJson Json?
   issueCount    Int      @default(0)
@@ -16235,6 +16236,8 @@ model ConceptPackage {
   architectHandoffJson Json
   visualPromptsJson    Json?
   buildabilityJson     Json?
+  pdfUrl               String?
+  deliveryUrl          String?
   deliveredAt          DateTime?
   approvedAt           DateTime?
   approvedBy           String?

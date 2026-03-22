@@ -499,6 +499,51 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
         webhookLogger.warn({ err: emailErr.message }, 'Failed to queue confirmation email — non-fatal')
       }
 
+      // Enqueue concept engine generation job with full intake data
+      try {
+        const fullIntake = await prismaAny.publicIntakeLead.findUnique({
+          where: { id: metadata.intakeId },
+        }).catch(() => null)
+
+        if (fullIntake) {
+          const { Queue } = await import('bullmq')
+          const IORedis = (await import('ioredis')).default
+          const redisUrl = process.env.REDIS_URL
+          if (redisUrl) {
+            const connection = new IORedis(redisUrl, { maxRetriesPerRequest: null })
+            const queue = new Queue('concept-engine', { connection: connection as any })
+            await queue.add('generate_floorplan', {
+              jobType: 'generate_floorplan',
+              intakeId: fullIntake.id,
+              projectPath: fullIntake.projectType ?? fullIntake.project_type ?? 'interior_renovation',
+              intake: {
+                intakeId:         fullIntake.id,
+                projectPath:      fullIntake.projectType ?? fullIntake.project_type ?? 'interior_renovation',
+                clientName:       fullIntake.clientName ?? fullIntake.contact_name ?? '',
+                contactEmail:     fullIntake.contactEmail ?? fullIntake.contact_email ?? '',
+                projectAddress:   fullIntake.projectAddress ?? fullIntake.project_address ?? '',
+                budgetRange:      fullIntake.budgetRange ?? fullIntake.budget_range ?? 'under_10k',
+                stylePreferences: fullIntake.stylePreference ? [fullIntake.stylePreference] : [],
+                knownConstraints: fullIntake.constraints ?? [],
+                jurisdiction:     fullIntake.jurisdiction ?? null,
+                uploadedPhotos:   fullIntake.uploadedPhotos ?? fullIntake.uploaded_photos ?? [],
+                captureZones:     [],
+                captureAssets:    [],
+                spatialNodes:     [],
+              },
+            }, {
+              priority: 1,
+              attempts: 3,
+              backoff: { type: 'exponential', delay: 5000 },
+            })
+            await queue.close()
+            webhookLogger.info({ intakeId: metadata.intakeId }, 'Concept engine generate_floorplan job enqueued')
+          }
+        }
+      } catch (jobErr: any) {
+        webhookLogger.warn({ err: jobErr.message, intakeId: metadata.intakeId }, 'Failed to enqueue concept engine job — non-fatal')
+      }
+
       // If site visit was requested: create scheduling task
       if (metadata.siteVisitRequested === 'true') {
         // Fetch intake details for the task

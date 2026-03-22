@@ -50,26 +50,47 @@ async function processGenerateFloorplan(
   };
 
   const result = generateFloorplan(intakeInput as any);
-  await job.updateProgress(50);
+  await job.updateProgress(40);
+
+  // Upload SVG to Supabase Storage
+  let svgUrl: string | null = null;
+  try {
+    const { uploadFile } = await import('@kealee/storage');
+    const svgBuffer = Buffer.from(result.svgString, 'utf-8');
+    const uploadResult = await uploadFile({
+      bucket: 'designs',
+      path: `concept-packages/${intakeId}/floorplan.svg`,
+      file: svgBuffer,
+      contentType: 'image/svg+xml',
+    });
+    svgUrl = uploadResult.url;
+    console.log(`[concept-engine] SVG uploaded: ${svgUrl}`);
+  } catch (uploadErr) {
+    console.warn('[concept-engine] SVG upload failed (non-fatal):', uploadErr);
+  }
+
+  await job.updateProgress(55);
 
   // Persist floor plan
   await prisma.$executeRaw`
     INSERT INTO concept_floorplans
       (id, intake_id, project_id, twin_id, capture_session_id,
-       floorplan_json, svg_inline, version, status, created_at, updated_at)
+       floorplan_json, svg_inline, svg_url, version, status, created_at, updated_at)
     VALUES
       (${result.floorplanId}, ${intakeId}, ${projectId ?? null},
        ${twinId ?? null}, ${captureSessionId ?? null},
        ${JSON.stringify(result.floorplanJson)}::jsonb,
        ${result.svgString},
+       ${svgUrl},
        1, 'generated', now(), now())
     ON CONFLICT (id) DO UPDATE SET
       floorplan_json = EXCLUDED.floorplan_json,
       svg_inline = EXCLUDED.svg_inline,
+      svg_url = EXCLUDED.svg_url,
       updated_at = now()
   `;
 
-  await job.updateProgress(80);
+  await job.updateProgress(75);
 
   // Chain: enqueue generate_concept_package
   const { conceptEngineQueue } = await import('../queues/concept-engine.queue');
@@ -131,23 +152,45 @@ async function processGenerateConceptPackage(
   const result = await generateConceptPackage(conceptInput);
   await job.updateProgress(70);
 
+  // Generate PDF
+  let pdfUrl: string | null = null;
+  try {
+    const { renderConceptPdf } = await import('@kealee/concept-engine');
+    const { uploadFile } = await import('@kealee/storage');
+    const pdfBuffer = await renderConceptPdf({ homeownerDeliverables: result.packageJson });
+    const pdfUpload = await uploadFile({
+      bucket: 'designs',
+      path: `concept-packages/${intakeId}/concept-package.pdf`,
+      file: pdfBuffer,
+      contentType: 'application/pdf',
+    });
+    pdfUrl = pdfUpload.url;
+    console.log(`[concept-engine] PDF uploaded: ${pdfUrl}`);
+  } catch (pdfErr) {
+    console.warn('[concept-engine] PDF generation/upload failed (non-fatal):', pdfErr);
+  }
+
+  await job.updateProgress(82);
+
   // Persist concept package
   await prisma.$executeRaw`
     INSERT INTO concept_packages
       (id, intake_id, floorplan_id, package_json, architect_handoff_json,
-       status, created_at, updated_at)
+       pdf_url, status, created_at, updated_at)
     VALUES
       (${result.conceptPackageId}, ${intakeId}, ${floorplanId},
        ${JSON.stringify(result.packageJson)}::jsonb,
        ${JSON.stringify(result.architectHandoffJson)}::jsonb,
+       ${pdfUrl},
        'generated', now(), now())
     ON CONFLICT (id) DO UPDATE SET
       package_json           = EXCLUDED.package_json,
       architect_handoff_json = EXCLUDED.architect_handoff_json,
+      pdf_url                = EXCLUDED.pdf_url,
       updated_at             = now()
   `;
 
-  await job.updateProgress(85);
+  await job.updateProgress(88);
 
   // Chain: enqueue architect review task
   const { conceptEngineQueue } = await import('../queues/concept-engine.queue');

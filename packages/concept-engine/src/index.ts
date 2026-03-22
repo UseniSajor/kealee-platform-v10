@@ -42,3 +42,7 @@ export type { CreateArchitectReviewInput, CreateArchitectReviewResult } from './
 
 // AI Concept — orchestration, journey config, intake resolution, upsell routing, buildability
 export * from './ai-concept';
+
+// PDF renderer
+export { renderConceptPdf } from './pdf/render-concept-pdf';
+export type { ConceptPdfInput, ConceptPdfResult } from './pdf/render-concept-pdf';
