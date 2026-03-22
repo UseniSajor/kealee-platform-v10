@@ -67,10 +67,10 @@ const CAPTURE_MODES: CaptureModeOption[] = [
   },
 ]
 
-const BADGE_STYLES: Record<string, { bg: string; text: string }> = {
-  blue:   { bg: '#DBEAFE', text: '#1D4ED8' },
-  amber:  { bg: '#FEF3C7', text: '#92400E' },
-  indigo: { bg: '#E0E7FF', text: '#3730A3' },
+const BADGE_STYLES: Record<string, { backgroundColor: string; color: string }> = {
+  blue:   { backgroundColor: '#DBEAFE', color: '#1D4ED8' },
+  amber:  { backgroundColor: '#FEF3C7', color: '#92400E' },
+  indigo: { backgroundColor: '#E0E7FF', color: '#3730A3' },
 }
 
 interface CaptureModeCardProps {
