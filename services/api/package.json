@@ -48,7 +48,7 @@
     "@kealee/workflow-engine": "workspace:*",
     "@prisma/client": "^5.22.0",
     "axios": "^1.6.7",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "bullmq": "^5.23.1",
     "docusign-esign": "^7.0.0",
     "fastify": "^4.26.0",
@@ -68,7 +68,7 @@
     "zod-validation-error": "^3.0.0"
   },
   "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
+    "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.19.30",
     "@types/pdf-parse": "^1.1.5",

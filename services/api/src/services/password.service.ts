@@ -3,7 +3,7 @@
  * Secure password hashing, validation, and policy enforcement
  */
 
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@kealee/database';
 
 const prisma = new PrismaClient();
