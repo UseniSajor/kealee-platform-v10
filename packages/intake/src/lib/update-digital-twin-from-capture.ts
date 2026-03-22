@@ -23,18 +23,17 @@ function buildScanSpatialNodes(
       id: `${twinId}_scan_${idx}`,
       twin_id: twinId,
       node_key: nodeKey,
-      node_label: isScanRoom ? `Scan-Generated Room ${idx + 1}` : "Full Property Scan",
-      node_type: isScanRoom ? "room" : "building",
-      level: isScanRoom ? "interior" : "site",
-      parent_key: null,
-      floor_level: null,
-      estimated_sqft: null,
-      asset_count: 1,
-      observation_count: 0,
-      source: "scan_generated",
-      created_at: now,
-      updated_at: now,
-    } as SpatialNodeRecord);
+      display_name: isScanRoom ? `Scan-Generated Room ${idx + 1}` : "Full Property Scan",
+      node_type: isScanRoom ? "room" : "property",
+      floor_level: isScanRoom ? "interior" : undefined,
+      metadata: {
+        source: "scan_generated",
+        asset_count: 1,
+        observation_count: 0,
+        created_at: now,
+        updated_at: now,
+      },
+    } as unknown as SpatialNodeRecord);
 
     existingSpatialKeys.add(nodeKey);
   });

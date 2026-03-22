@@ -500,4 +500,113 @@ export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
     },
     ASSETS_STEP,
   ],
+
+  kitchen_remodel: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Kitchen Details",
+      fields: [
+        {
+          key: "kitchenProjectType",
+          label: "Type of Kitchen Remodel",
+          type: "radio",
+          options: [
+            { value: "cosmetic", label: "Cosmetic update (paint, hardware, fixtures)" },
+            { value: "partial", label: "Partial remodel (cabinets or countertops)" },
+            { value: "full", label: "Full kitchen remodel" },
+            { value: "layout_change", label: "Full remodel with layout change" },
+          ],
+        },
+        { key: "projectDescription", label: "Describe your kitchen goals", type: "textarea", placeholder: "What do you want to change or improve?", rows: 4 },
+        { key: "knownConstraints", label: "Known Constraints", type: "textarea", placeholder: "Load-bearing walls, plumbing location, HOA rules...", rows: 3 },
+      ],
+    },
+    {
+      id: "style",
+      title: "Style & Budget",
+      fields: [
+        {
+          key: "stylePreferences",
+          label: "Preferred Kitchen Style",
+          type: "multiselect",
+          options: [
+            { value: "modern", label: "Modern / Contemporary" },
+            { value: "transitional", label: "Transitional" },
+            { value: "traditional", label: "Traditional / Classic" },
+            { value: "farmhouse", label: "Farmhouse" },
+            { value: "industrial", label: "Industrial" },
+          ],
+        },
+        ...SHARED_BUDGET_FIELDS,
+      ],
+    },
+    ASSETS_STEP,
+  ],
+
+  bathroom_remodel: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Bathroom Details",
+      fields: [
+        {
+          key: "bathroomProjectType",
+          label: "Type of Bathroom Remodel",
+          type: "radio",
+          options: [
+            { value: "cosmetic", label: "Cosmetic update (fixtures, tile, paint)" },
+            { value: "partial", label: "Partial remodel (shower or vanity)" },
+            { value: "full", label: "Full bathroom remodel" },
+            { value: "addition", label: "New bathroom addition" },
+          ],
+        },
+        { key: "projectDescription", label: "Describe your bathroom goals", type: "textarea", placeholder: "What do you want to change or improve?", rows: 4 },
+        { key: "knownConstraints", label: "Known Constraints", type: "textarea", placeholder: "Plumbing location, wet wall access, HOA rules...", rows: 3 },
+      ],
+    },
+    {
+      id: "style",
+      title: "Style & Budget",
+      fields: [
+        {
+          key: "stylePreferences",
+          label: "Preferred Bathroom Style",
+          type: "multiselect",
+          options: [
+            { value: "modern", label: "Modern / Spa" },
+            { value: "transitional", label: "Transitional" },
+            { value: "traditional", label: "Traditional / Classic" },
+            { value: "farmhouse", label: "Farmhouse" },
+            { value: "luxury", label: "Luxury" },
+          ],
+        },
+        ...SHARED_BUDGET_FIELDS,
+      ],
+    },
+    ASSETS_STEP,
+  ],
+
+  capture_site_concept: [
+    CONTACT_STEP,
+    {
+      id: "capture",
+      title: "Site Capture",
+      fields: [
+        {
+          key: "captureGoal",
+          label: "What would you like to capture?",
+          type: "radio",
+          options: [
+            { value: "exterior_only", label: "Exterior only" },
+            { value: "interior_only", label: "Interior only" },
+            { value: "full_property", label: "Full property (interior + exterior)" },
+            { value: "specific_area", label: "Specific area or room" },
+          ],
+        },
+        { key: "projectDescription", label: "Describe your project vision", type: "textarea", placeholder: "What are you hoping to build, renovate, or explore?", rows: 4 },
+      ],
+    },
+    ASSETS_STEP,
+  ],
 };
