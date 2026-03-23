@@ -13,7 +13,7 @@
 import { callModel, parseJSON, isLLMAvailable } from '../bots.router'
 import { startStep, recordTrace } from '../bots.logger'
 import type {
-  IBot, BotInput, BotOutput, BotContext,
+  IBot, BotInput, BotOutput, BotContext, BotStep,
   PermitBotInput, PermitBotOutput, PermitRequired, PermitIssue, PermitChecklistItem,
 } from '../bots.types'
 
@@ -118,7 +118,7 @@ export class PermitBot implements IBot<PermitBotInput, PermitBotOutput> {
     const { data }  = input
     const requestId = ctx.requestId
     const startedAt = new Date()
-    const steps: ReturnType<typeof startStep>[] = []
+    const steps: BotStep[] = []
 
     // ── Step 1: Build deterministic checklist ────────────────────────────────
     const checklistTimer = startStep('deterministic', 'build_checklist', data.projectType)

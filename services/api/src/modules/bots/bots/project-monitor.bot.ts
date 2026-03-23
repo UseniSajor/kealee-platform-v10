@@ -14,7 +14,7 @@ import { prismaAny } from '../../../utils/prisma-helper'
 import { callModel, parseJSON, isLLMAvailable } from '../bots.router'
 import { startStep, recordTrace } from '../bots.logger'
 import type {
-  IBot, BotInput, BotOutput, BotContext,
+  IBot, BotInput, BotOutput, BotContext, BotStep,
   ProjectMonitorBotInput, ProjectMonitorBotOutput, ProjectRisk, ProjectAction,
 } from '../bots.types'
 
@@ -104,7 +104,7 @@ export class ProjectMonitorBot implements IBot<ProjectMonitorBotInput, ProjectMo
     const { data }  = input
     const requestId = ctx.requestId
     const startedAt = new Date()
-    const steps: ReturnType<typeof startStep>[] = []
+    const steps: BotStep[] = []
 
     // ── Step 1: Load project data ─────────────────────────────────────────────
     const loadTimer = startStep('lookup', 'load_project', data.projectId)

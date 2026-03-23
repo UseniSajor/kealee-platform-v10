@@ -23,7 +23,7 @@ import { randomUUID } from 'crypto'
 import { callModel, parseJSON, isLLMAvailable } from '../bots.router'
 import { startStep, newRequestId, recordTrace } from '../bots.logger'
 import type {
-  IBot, BotInput, BotOutput, BotContext,
+  IBot, BotInput, BotOutput, BotContext, BotStep,
   LeadBotInput, LeadBotOutput,
 } from '../bots.types'
 
@@ -97,7 +97,7 @@ export class LeadBot implements IBot<LeadBotInput, LeadBotOutput> {
   ): Promise<BotOutput<LeadBotOutput>> {
     const requestId = ctx.requestId
     const startedAt = new Date()
-    const steps: ReturnType<typeof startStep>[] = []
+    const steps: BotStep[] = []
 
     // ── Step 1: Deterministic scoring ────────────────────────────────────────
     const scoreTimer = startStep('deterministic', 'score_lead', input.data.message.slice(0, 80))

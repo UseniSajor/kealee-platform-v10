@@ -14,7 +14,7 @@ import { randomUUID } from 'crypto'
 import { callModel, parseJSON, isLLMAvailable } from '../bots.router'
 import { startStep, newRequestId, recordTrace } from '../bots.logger'
 import type {
-  IBot, BotInput, BotOutput, BotContext,
+  IBot, BotInput, BotOutput, BotContext, BotStep,
   EstimateBotInput, EstimateBotOutput, EstimateLineItem,
 } from '../bots.types'
 
@@ -128,7 +128,7 @@ export class EstimateBot implements IBot<EstimateBotInput, EstimateBotOutput> {
     const { data }  = input
     const requestId = ctx.requestId
     const startedAt = new Date()
-    const steps: ReturnType<typeof startStep>[] = []
+    const steps: BotStep[] = []
 
     // ── Step 1: Deterministic pre-estimate ───────────────────────────────────
     const preTimer = startStep('deterministic', 'base_rate_estimate', data.projectType)

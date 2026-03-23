@@ -13,7 +13,7 @@ import { prismaAny } from '../../../utils/prisma-helper'
 import { callModel, parseJSON, isLLMAvailable } from '../bots.router'
 import { startStep, recordTrace } from '../bots.logger'
 import type {
-  IBot, BotInput, BotOutput, BotContext,
+  IBot, BotInput, BotOutput, BotContext, BotStep,
   ContractorMatchBotInput, ContractorMatchBotOutput, ContractorMatch,
 } from '../bots.types'
 
@@ -124,7 +124,7 @@ export class ContractorMatchBot implements IBot<ContractorMatchBotInput, Contrac
     const { data }  = input
     const requestId = ctx.requestId
     const startedAt = new Date()
-    const steps: ReturnType<typeof startStep>[] = []
+    const steps: BotStep[] = []
 
     // ── Step 1: Load rotation queue + profiles ───────────────────────────────
     const loadTimer = startStep('lookup', 'load_candidates', data.projectType)
