@@ -85,23 +85,38 @@ const UPSELL_DEFINITIONS: Record<UpsellService, Omit<UpsellOption, 'highlight'>>
 }
 
 const PRIMARY_UPSELL_BY_PATH: Record<ProjectPath, UpsellService> = {
-  kitchen_remodel: 'permit_expediting',
-  bathroom_remodel: 'contractor_matching',
-  interior_renovation: 'permit_expediting',
-  whole_home_remodel: 'full_architecture',
-  addition_expansion: 'full_architecture',
-  exterior_concept: 'contractor_matching',
-  capture_site_concept: 'schematic_design',
+  kitchen_remodel:           'permit_expediting',
+  bathroom_remodel:          'contractor_matching',
+  interior_renovation:       'permit_expediting',
+  whole_home_remodel:        'full_architecture',
+  addition_expansion:        'full_architecture',
+  exterior_concept:          'contractor_matching',
+  capture_site_concept:      'schematic_design',
+  // Commercial paths — architect review is the primary next step
+  multi_unit_residential:    'full_architecture',
+  mixed_use:                 'full_architecture',
+  commercial_office:         'full_architecture',
+  development_feasibility:   'full_architecture',
+  townhome_subdivision:      'full_architecture',
+  single_family_subdivision: 'full_architecture',
+  single_lot_development:    'schematic_design',
 }
 
 const SECONDARY_UPSELLS_BY_PATH: Record<ProjectPath, UpsellService[]> = {
-  kitchen_remodel: ['schematic_design', 'contractor_matching', 'build_ops'],
-  bathroom_remodel: ['permit_expediting', 'build_ops'],
-  interior_renovation: ['schematic_design', 'contractor_matching', 'build_ops'],
-  whole_home_remodel: ['design_development', 'permit_expediting', 'build_ops'],
-  addition_expansion: ['design_development', 'permit_expediting', 'build_ops'],
-  exterior_concept: ['schematic_design', 'another_concept'],
-  capture_site_concept: ['design_development', 'permit_expediting'],
+  kitchen_remodel:           ['schematic_design', 'contractor_matching', 'build_ops'],
+  bathroom_remodel:          ['permit_expediting', 'build_ops'],
+  interior_renovation:       ['schematic_design', 'contractor_matching', 'build_ops'],
+  whole_home_remodel:        ['design_development', 'permit_expediting', 'build_ops'],
+  addition_expansion:        ['design_development', 'permit_expediting', 'build_ops'],
+  exterior_concept:          ['schematic_design', 'another_concept'],
+  capture_site_concept:      ['design_development', 'permit_expediting'],
+  multi_unit_residential:    ['permit_expediting', 'build_ops', 'design_development'],
+  mixed_use:                 ['permit_expediting', 'build_ops'],
+  commercial_office:         ['permit_expediting', 'contractor_matching'],
+  development_feasibility:   ['full_architecture', 'permit_expediting', 'build_ops'],
+  townhome_subdivision:      ['permit_expediting', 'build_ops'],
+  single_family_subdivision: ['permit_expediting', 'build_ops', 'design_development'],
+  single_lot_development:    ['permit_expediting', 'contractor_matching'],
 }
 
 const HANDOFF_MESSAGES: Record<ProjectPath, string> = {
@@ -119,6 +134,20 @@ const HANDOFF_MESSAGES: Record<ProjectPath, string> = {
     'Your exterior concept is ready. Get matched with a contractor to get started on your curb appeal.',
   capture_site_concept:
     'Your site has been captured. Upgrade to a full concept package to unlock your floor plan, narrative, and permit path.',
+  multi_unit_residential:
+    'Your multi-unit concept and pro forma are ready. The next step is full architectural services to move from concept to construction documents.',
+  mixed_use:
+    'Your mixed-use development concept is complete. Engage an architect to advance to schematic design and entitlement.',
+  commercial_office:
+    'Your office layout concept is ready. We can connect you with a commercial architect and permit expeditor.',
+  development_feasibility:
+    'Your feasibility analysis is complete. Use this to engage an architect and land use attorney for formal entitlement.',
+  townhome_subdivision:
+    'Your subdivision concept and phased pro forma are ready. Next: engage a civil engineer and land use attorney.',
+  single_family_subdivision:
+    'Your subdivision site plan and sellout analysis are ready. Engage a civil engineer for your tentative map.',
+  single_lot_development:
+    'Your single-lot concept is ready. We can connect you with a licensed architect or contractor to get your permit filed.',
 }
 
 export function routeUpsell(intakeId: string, projectPath: ProjectPath): UpsellRoute {

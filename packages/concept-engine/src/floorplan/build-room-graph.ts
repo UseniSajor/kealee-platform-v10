@@ -14,16 +14,27 @@ import type {
 import { inferRoomDimensions } from './infer-room-dimensions';
 
 // Default room sets per project path
+// Commercial paths use the commercial concept engine — room graph returns empty.
 const PROJECT_PATH_ROOMS: Record<ProjectPath, RoomType[]> = {
-  kitchen_remodel:    ['kitchen', 'dining', 'pantry'],
-  bathroom_remodel:   ['primary_bathroom', 'secondary_bathroom', 'powder_room'],
-  interior_renovation:['living', 'dining', 'kitchen', 'primary_bedroom',
-                       'secondary_bedroom', 'primary_bathroom', 'secondary_bathroom', 'hallway'],
-  whole_home_remodel: ['living', 'dining', 'kitchen', 'pantry', 'primary_bedroom',
-                       'secondary_bedroom', 'primary_bathroom', 'secondary_bathroom',
-                       'laundry', 'mudroom', 'hallway', 'garage'],
-  addition_expansion: ['addition_room', 'connecting_hall', 'flex_room'],
-  exterior_concept:   ['front_yard', 'rear_yard', 'porch', 'deck', 'driveway'],
+  kitchen_remodel:       ['kitchen', 'dining', 'pantry'],
+  bathroom_remodel:      ['primary_bathroom', 'secondary_bathroom', 'powder_room'],
+  interior_renovation:   ['living', 'dining', 'kitchen', 'primary_bedroom',
+                          'secondary_bedroom', 'primary_bathroom', 'secondary_bathroom', 'hallway'],
+  whole_home_remodel:    ['living', 'dining', 'kitchen', 'pantry', 'primary_bedroom',
+                          'secondary_bedroom', 'primary_bathroom', 'secondary_bathroom',
+                          'laundry', 'mudroom', 'hallway', 'garage'],
+  addition_expansion:    ['addition_room', 'connecting_hall', 'flex_room'],
+  exterior_concept:      ['front_yard', 'rear_yard', 'porch', 'deck', 'driveway'],
+  capture_site_concept:  ['living', 'kitchen', 'primary_bedroom', 'secondary_bedroom',
+                          'primary_bathroom', 'hallway'],
+  // Commercial paths — room graph not used (handled by commercial engine)
+  multi_unit_residential:    [],
+  mixed_use:                 [],
+  commercial_office:         [],
+  development_feasibility:   [],
+  townhome_subdivision:      [],
+  single_family_subdivision: [],
+  single_lot_development:    [],
 };
 
 export const ROOM_LABELS: Record<RoomType, string> = {

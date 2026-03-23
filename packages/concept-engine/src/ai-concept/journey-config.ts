@@ -3,19 +3,9 @@
  * Defines the full user journey from homepage → intake → capture → payment → generation → delivery → upsell
  */
 
-export type ProjectPath =
-  | 'kitchen_remodel'
-  | 'bathroom_remodel'
-  | 'interior_renovation'
-  | 'whole_home_remodel'
-  | 'addition_expansion'
-  | 'exterior_concept'
-  | 'capture_site_concept'
-  // Commercial / developer paths
-  | 'multi_unit_residential'
-  | 'mixed_use'
-  | 'commercial_office'
-  | 'development_feasibility'
+// Re-export canonical path types from floorplan/types — single source of truth
+export type { ProjectPath, ResidentialProjectPath, CommercialProjectPath } from '../floorplan/types'
+import type { ProjectPath, ResidentialProjectPath } from '../floorplan/types'
 
 export type UserType = 'homeowner' | 'investor' | 'developer' | 'contractor' | 'anonymous'
 
@@ -29,10 +19,13 @@ export const PATH_USER_TYPES: Record<ProjectPath, UserType[]> = {
   exterior_concept:       ['homeowner', 'anonymous'],
   capture_site_concept:   ['homeowner', 'developer', 'investor', 'anonymous'],
   // Commercial — developer and investor only
-  multi_unit_residential: ['developer', 'investor'],
-  mixed_use:              ['developer', 'investor'],
-  commercial_office:      ['developer', 'investor'],
-  development_feasibility:['developer', 'investor'],
+  multi_unit_residential:    ['developer', 'investor'],
+  mixed_use:                 ['developer', 'investor'],
+  commercial_office:         ['developer', 'investor'],
+  development_feasibility:   ['developer', 'investor'],
+  townhome_subdivision:      ['developer', 'investor'],
+  single_family_subdivision: ['developer', 'investor'],
+  single_lot_development:    ['developer', 'investor'],
 }
 
 export type JourneyStep =
@@ -173,7 +166,7 @@ export const JOURNEY_STEPS: JourneyStepConfig[] = [
   },
 ]
 
-export const PROJECT_PATH_CONFIGS: Record<ProjectPath, ProjectPathConfig> = {
+export const PROJECT_PATH_CONFIGS: Record<ResidentialProjectPath, ProjectPathConfig> = {
   kitchen_remodel: {
     path: 'kitchen_remodel',
     label: 'Kitchen Remodel',
@@ -324,7 +317,13 @@ export const PROJECT_PATH_CONFIGS: Record<ProjectPath, ProjectPathConfig> = {
 }
 
 export const COMMERCIAL_PROJECT_PATH_CONFIGS: Record<
-  'multi_unit_residential' | 'mixed_use' | 'commercial_office' | 'development_feasibility',
+  | 'multi_unit_residential'
+  | 'mixed_use'
+  | 'commercial_office'
+  | 'development_feasibility'
+  | 'townhome_subdivision'
+  | 'single_family_subdivision'
+  | 'single_lot_development',
   ProjectPathConfig
 > = {
   multi_unit_residential: {
@@ -423,12 +422,89 @@ export const COMMERCIAL_PROJECT_PATH_CONFIGS: Record<
     maxBudget: 'unlimited',
     typicalTimeline: 'Project-dependent',
   },
+  townhome_subdivision: {
+    path: 'townhome_subdivision',
+    label: 'Townhome Subdivision',
+    tagline: 'Lot-by-lot site plan, for-sale pro forma, and phasing strategy',
+    basePrice: 999,
+    captureRequired: false,
+    captureOptional: false,
+    architectReviewDefault: true,
+    permitPathIncluded: true,
+    deliverables: [
+      'AI-generated site plan with lot layout and street network',
+      'Phase plan (3 phases with revenue and cost per phase)',
+      'Unit mix and lot configuration (22–26ft wide attached townhomes)',
+      'Infrastructure cost estimate (streets, utilities, grading)',
+      'For-sale pro forma (revenue, margin, IRR, equity multiple)',
+      'Density analysis and open space compliance',
+      '3 alternative development scenarios',
+      'Architect handoff with entitlement checklist',
+    ],
+    upsellServices: ['full_architecture', 'permit_expediting', 'build_ops'],
+    minBudget: '500k',
+    maxBudget: '10M+',
+    typicalTimeline: '18–36 months',
+  },
+  single_family_subdivision: {
+    path: 'single_family_subdivision',
+    label: 'Single-Family Subdivision',
+    tagline: 'Horizontal land development — lot creation, infrastructure, and sellout analysis',
+    basePrice: 1199,
+    captureRequired: false,
+    captureOptional: false,
+    architectReviewDefault: true,
+    permitPathIncluded: true,
+    deliverables: [
+      'AI-generated subdivision site plan with lot numbering',
+      'Lot layout optimized for yield and setback compliance',
+      'Street network design (ROW, paved width, connectivity)',
+      'Phase plan with infrastructure and per-phase cash flow',
+      'For-sale pro forma (lot-only and build-to-sell options)',
+      'Density and FAR compliance analysis',
+      '3 alternative scenarios (affordable, luxury, ADU-included)',
+      'Architect handoff with subdivision map checklist',
+    ],
+    upsellServices: ['full_architecture', 'permit_expediting', 'build_ops', 'design_development'],
+    minBudget: '1M',
+    maxBudget: '25M+',
+    typicalTimeline: '24–60 months',
+  },
+  single_lot_development: {
+    path: 'single_lot_development',
+    label: 'Single-Lot Development',
+    tagline: 'SFR, duplex, or triplex — concept to pro forma on a single parcel',
+    basePrice: 599,
+    captureRequired: false,
+    captureOptional: true,
+    architectReviewDefault: false,
+    permitPathIncluded: true,
+    deliverables: [
+      'Building type analysis (SFR vs. duplex vs. triplex — best fit for lot)',
+      'Site layout with setbacks, FAR, and lot coverage',
+      'Unit floor plan concepts for each building type',
+      'Construction cost estimate (hard + soft + contingency)',
+      'For-sale and hold/rent financial comparison',
+      'Cap rate, NOI, and stabilized value (hold scenario)',
+      'Profit margin and IRR (sell scenario)',
+      'Permit path and zoning compliance notes',
+    ],
+    upsellServices: ['schematic_design', 'permit_expediting', 'contractor_matching'],
+    minBudget: '100k',
+    maxBudget: '2M',
+    typicalTimeline: '6–18 months',
+  },
+}
+
+export function getPathConfig(path: ProjectPath): ProjectPathConfig {
+  if (path in PROJECT_PATH_CONFIGS) return PROJECT_PATH_CONFIGS[path as keyof typeof PROJECT_PATH_CONFIGS];
+  return COMMERCIAL_PROJECT_PATH_CONFIGS[path as keyof typeof COMMERCIAL_PROJECT_PATH_CONFIGS];
 }
 
 export function getJourneyStepsForPath(path: ProjectPath): JourneyStep[] {
   const base: JourneyStep[] = ['homepage', 'path_select', 'intake_form']
 
-  const config = PROJECT_PATH_CONFIGS[path]
+  const config = getPathConfig(path)
 
   if (config.captureRequired) {
     base.push('capture_prompt', 'capture_upload', 'capture_sms')
@@ -449,6 +525,3 @@ export function getJourneyStepsForPath(path: ProjectPath): JourneyStep[] {
   return base
 }
 
-export function getPathConfig(path: ProjectPath): ProjectPathConfig {
-  return PROJECT_PATH_CONFIGS[path]
-}

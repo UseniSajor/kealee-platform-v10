@@ -16,6 +16,7 @@ const VALID_PATHS: ProjectPath[] = [
   'capture_site_concept',
   'multi_unit_residential', 'mixed_use', 'commercial_office',
   'development_feasibility',
+  'townhome_subdivision', 'single_family_subdivision', 'single_lot_development',
 ];
 
 export interface GenerateFloorplanInput {

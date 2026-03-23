@@ -1,15 +1,23 @@
 import type { ProjectPath } from "../config/project-path-config";
 
 const REQUIRED_BY_PATH: Record<ProjectPath, string[]> = {
-  exterior_concept:    ["clientName", "contactEmail", "projectAddress", "budgetRange"],
-  interior_renovation: ["clientName", "contactEmail", "projectAddress", "budgetRange"],
-  kitchen_remodel:     ["clientName", "contactEmail", "projectAddress", "budgetRange"],
-  bathroom_remodel:    ["clientName", "contactEmail", "projectAddress", "budgetRange"],
-  whole_home_remodel:  ["clientName", "contactEmail", "projectAddress", "budgetRange"],
-  addition_expansion:  ["clientName", "contactEmail", "projectAddress", "budgetRange"],
-  design_build:        ["clientName", "contactEmail", "projectAddress", "budgetRange"],
-  permit_path_only:    ["clientName", "contactEmail", "projectAddress", "permitJurisdiction", "projectDescription"],
-  capture_site_concept: ["clientName", "contactEmail", "projectAddress"],
+  exterior_concept:          ["clientName", "contactEmail", "projectAddress", "budgetRange"],
+  interior_renovation:       ["clientName", "contactEmail", "projectAddress", "budgetRange"],
+  kitchen_remodel:           ["clientName", "contactEmail", "projectAddress", "budgetRange"],
+  bathroom_remodel:          ["clientName", "contactEmail", "projectAddress", "budgetRange"],
+  whole_home_remodel:        ["clientName", "contactEmail", "projectAddress", "budgetRange"],
+  addition_expansion:        ["clientName", "contactEmail", "projectAddress", "budgetRange"],
+  design_build:              ["clientName", "contactEmail", "projectAddress", "budgetRange"],
+  permit_path_only:          ["clientName", "contactEmail", "projectAddress", "permitJurisdiction", "projectDescription"],
+  capture_site_concept:      ["clientName", "contactEmail", "projectAddress"],
+  // Commercial paths
+  multi_unit_residential:    ["clientName", "contactEmail", "projectAddress", "lotSizeSqFt", "askingPrice"],
+  mixed_use:                 ["clientName", "contactEmail", "projectAddress", "lotSizeSqFt", "askingPrice"],
+  commercial_office:         ["clientName", "contactEmail", "projectAddress", "totalGfaSqFt"],
+  development_feasibility:   ["clientName", "contactEmail", "projectAddress", "lotSizeSqFt", "askingPrice"],
+  townhome_subdivision:      ["clientName", "contactEmail", "projectAddress", "lotSizeSqFt", "askingPrice"],
+  single_family_subdivision: ["clientName", "contactEmail", "projectAddress", "lotSizeSqFt", "askingPrice"],
+  single_lot_development:    ["clientName", "contactEmail", "projectAddress", "lotSizeSqFt", "askingPrice"],
 };
 
 export interface ValidationResult {

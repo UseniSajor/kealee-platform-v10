@@ -13,6 +13,8 @@ import type {
   DevelopmentProgram,
   DevelopmentType,
   AlternativeScenario,
+  UnitMixProgram,
+  UnitMixItem,
 } from './types';
 import { optimizeUnitMix } from './unit-mix-optimizer';
 import { generateMultiFloorLayout } from './floor-plate-layout';
@@ -20,23 +22,30 @@ import { generateMultiFloorLayout } from './floor-plate-layout';
 // ── Hard cost benchmarks ($/sqft, varies by type and region) ─────────────────
 
 const HARD_COST_PER_SQFT: Record<DevelopmentType, number> = {
-  mid_rise_apartment:       250,
-  low_rise_apartment:       180,
-  mixed_use_residential:    275,
-  townhome:                 160,
-  commercial_office:        300,
-  adu_portfolio:            200,
-  single_family_subdivision:145,
+  mid_rise_apartment:        250,
+  low_rise_apartment:        180,
+  mixed_use_residential:     275,
+  townhome:                  160,
+  commercial_office:         300,
+  adu_portfolio:             200,
+  single_family_subdivision: 145,
+  // Single-lot types — handled by generate-single-lot-analysis.ts; default here
+  single_lot_sfr:            165,
+  single_lot_duplex:         185,
+  single_lot_triplex:        195,
 };
 
 const SOFT_COST_PCT: Record<DevelopmentType, number> = {
-  mid_rise_apartment:       0.25,
-  low_rise_apartment:       0.20,
-  mixed_use_residential:    0.28,
-  townhome:                 0.18,
-  commercial_office:        0.30,
-  adu_portfolio:            0.22,
-  single_family_subdivision:0.18,
+  mid_rise_apartment:        0.25,
+  low_rise_apartment:        0.20,
+  mixed_use_residential:     0.28,
+  townhome:                  0.18,
+  commercial_office:         0.30,
+  adu_portfolio:             0.22,
+  single_family_subdivision: 0.18,
+  single_lot_sfr:            0.18,
+  single_lot_duplex:         0.18,
+  single_lot_triplex:        0.18,
 };
 
 const MAX_FAR: Record<string, number> = {
@@ -61,13 +70,16 @@ const MAX_HEIGHT_FT: Record<string, number> = {
 
 // Market cap rates by development type
 const MARKET_CAP_RATE: Record<DevelopmentType, number> = {
-  mid_rise_apartment:       0.045,
-  low_rise_apartment:       0.052,
-  mixed_use_residential:    0.055,
-  townhome:                 0.060,
-  commercial_office:        0.065,
-  adu_portfolio:            0.058,
-  single_family_subdivision:0.062,
+  mid_rise_apartment:        0.045,
+  low_rise_apartment:        0.052,
+  mixed_use_residential:     0.055,
+  townhome:                  0.060,
+  commercial_office:         0.065,
+  adu_portfolio:             0.058,
+  single_family_subdivision: 0.062,
+  single_lot_sfr:            0.058,
+  single_lot_duplex:         0.055,
+  single_lot_triplex:        0.052,
 };
 
 // ── Main feasibility function ─────────────────────────────────────────────────
@@ -309,7 +321,7 @@ function buildHighlights(unitMix: UnitMixProgram, income: IncomeProjection, devT
     `${income.capRate}% return on cost with stabilized NOI of $${income.netOperatingIncome.toLocaleString()}/year`,
     `Estimated IRR of ${income.irr}% on a ${income.equityMultiple}x equity multiple`,
     `Break-even at ${income.breakEvenOccupancy}% occupancy — strong buffer against vacancy`,
-    `Unit mix optimized for this market: ${unitMix.units.map(u => `${u.count} ${u.label}`).join(', ')}`,
+    `Unit mix optimized for this market: ${unitMix.units.map((u: UnitMixItem) => `${u.count} ${u.label}`).join(', ')}`,
   ];
 }
 

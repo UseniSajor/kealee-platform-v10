@@ -609,4 +609,228 @@ export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
     },
     ASSETS_STEP,
   ],
+
+  // ── Commercial / developer paths ─────────────────────────────────────────────
+
+  multi_unit_residential: [
+    CONTACT_STEP,
+    {
+      id: "site",
+      title: "Site & Zoning",
+      fields: [
+        { key: "lotSizeSqFt", label: "Lot Size (sq ft)", type: "numeric", placeholder: "10000", required: true },
+        { key: "askingPrice", label: "Land / Acquisition Cost ($)", type: "numeric", placeholder: "500000", required: true },
+        { key: "zoningCode", label: "Zoning Code (if known)", type: "text", placeholder: "e.g. R-3, MU-2" },
+        { key: "jurisdiction", label: "City / Jurisdiction", type: "text", placeholder: "e.g. Los Angeles, CA" },
+      ],
+    },
+    {
+      id: "program",
+      title: "Development Program",
+      fields: [
+        { key: "totalGfaSqFt", label: "Target GFA (sq ft, optional)", type: "numeric", placeholder: "15000" },
+        {
+          key: "targetDevelopmentType",
+          label: "Preferred Unit Type",
+          type: "radio",
+          options: [
+            { value: "low_rise_apartment", label: "Low-Rise Apartment (3 stories or less)" },
+            { value: "mid_rise_apartment", label: "Mid-Rise Apartment (4–8 stories)" },
+            { value: "adu_portfolio", label: "ADU Portfolio" },
+          ],
+        },
+        { key: "targetRoiPct", label: "Target ROI / IRR (%)", type: "numeric", placeholder: "15" },
+        { key: "notes", label: "Additional Notes", type: "textarea", rows: 3 },
+      ],
+    },
+  ],
+
+  mixed_use: [
+    CONTACT_STEP,
+    {
+      id: "site",
+      title: "Site & Zoning",
+      fields: [
+        { key: "lotSizeSqFt", label: "Lot Size (sq ft)", type: "numeric", placeholder: "20000", required: true },
+        { key: "askingPrice", label: "Land / Acquisition Cost ($)", type: "numeric", placeholder: "1200000", required: true },
+        { key: "zoningCode", label: "Zoning Code", type: "text", placeholder: "e.g. MU-3, C-2" },
+        { key: "jurisdiction", label: "City / Jurisdiction", type: "text", placeholder: "e.g. Seattle, WA" },
+      ],
+    },
+    {
+      id: "program",
+      title: "Development Program",
+      fields: [
+        { key: "totalGfaSqFt", label: "Target GFA (sq ft)", type: "numeric", placeholder: "40000" },
+        { key: "targetRoiPct", label: "Target IRR (%)", type: "numeric", placeholder: "14" },
+        { key: "notes", label: "Additional Notes / Retail Tenants in Mind?", type: "textarea", rows: 3 },
+      ],
+    },
+  ],
+
+  commercial_office: [
+    CONTACT_STEP,
+    {
+      id: "program",
+      title: "Space Program",
+      fields: [
+        { key: "totalGfaSqFt", label: "Total Office Area (sq ft)", type: "numeric", placeholder: "25000", required: true },
+        { key: "askingPrice", label: "Fit-Out Budget ($)", type: "numeric", placeholder: "750000" },
+        {
+          key: "officeLayout",
+          label: "Preferred Layout",
+          type: "radio",
+          options: [
+            { value: "open_plan", label: "Open Plan" },
+            { value: "private_office", label: "Private Offices" },
+            { value: "hybrid", label: "Hybrid (open + private)" },
+          ],
+        },
+        { key: "headcount", label: "Approximate Headcount", type: "numeric", placeholder: "50" },
+        { key: "notes", label: "Workplace Priorities or Requirements", type: "textarea", rows: 3 },
+      ],
+    },
+  ],
+
+  development_feasibility: [
+    CONTACT_STEP,
+    {
+      id: "site",
+      title: "Site & Acquisition",
+      fields: [
+        { key: "lotSizeSqFt", label: "Lot / Site Size (sq ft)", type: "numeric", placeholder: "43560", required: true },
+        { key: "askingPrice", label: "Asking / Acquisition Price ($)", type: "numeric", placeholder: "2000000", required: true },
+        { key: "zoningCode", label: "Zoning Code", type: "text", placeholder: "e.g. MU-3, C-2" },
+        { key: "jurisdiction", label: "City / Jurisdiction", type: "text", required: true },
+      ],
+    },
+    {
+      id: "goals",
+      title: "Development Vision",
+      fields: [
+        {
+          key: "targetDevelopmentType",
+          label: "Preferred Development Type",
+          type: "radio",
+          options: [
+            { value: "mid_rise_apartment", label: "Mid-Rise Residential" },
+            { value: "mixed_use_residential", label: "Mixed-Use" },
+            { value: "commercial_office", label: "Commercial Office" },
+            { value: "low_rise_apartment", label: "Low-Rise Residential" },
+          ],
+        },
+        { key: "targetRoiPct", label: "Target IRR (%)", type: "numeric", placeholder: "18" },
+        { key: "equityAvailable", label: "Equity Available ($)", type: "numeric", placeholder: "500000" },
+        { key: "notes", label: "Known Constraints or Opportunities", type: "textarea", rows: 3 },
+      ],
+    },
+  ],
+
+  townhome_subdivision: [
+    CONTACT_STEP,
+    {
+      id: "site",
+      title: "Site Details",
+      fields: [
+        { key: "lotSizeSqFt", label: "Total Site Area (sq ft)", type: "numeric", placeholder: "87120", hint: "87,120 sf = 2 acres", required: true },
+        { key: "askingPrice", label: "Land Acquisition Cost ($)", type: "numeric", placeholder: "1200000", required: true },
+        { key: "zoningCode", label: "Zoning Code", type: "text", placeholder: "e.g. R-3, PUD" },
+        { key: "jurisdiction", label: "City / Jurisdiction", type: "text", required: true },
+      ],
+    },
+    {
+      id: "program",
+      title: "Subdivision Program",
+      fields: [
+        { key: "targetLotCount", label: "Target Unit Count (optional — AI will optimise)", type: "numeric", placeholder: "24" },
+        { key: "targetLotWidthFt", label: "Preferred Lot Width (ft)", type: "numeric", placeholder: "22" },
+        {
+          key: "buildToSell",
+          label: "Development Strategy",
+          type: "radio",
+          options: [
+            { value: "true", label: "Build-to-sell (full construction)" },
+            { value: "false", label: "Horizontal only (sell improved lots to a builder)" },
+          ],
+        },
+        { key: "targetSalesPrice", label: "Target Sales Price per Unit ($)", type: "numeric", placeholder: "490000" },
+        { key: "notes", label: "Additional Notes", type: "textarea", rows: 3 },
+      ],
+    },
+  ],
+
+  single_family_subdivision: [
+    CONTACT_STEP,
+    {
+      id: "site",
+      title: "Site Details",
+      fields: [
+        { key: "lotSizeSqFt", label: "Total Site Area (sq ft)", type: "numeric", placeholder: "217800", hint: "217,800 sf = 5 acres", required: true },
+        { key: "askingPrice", label: "Land Acquisition Cost ($)", type: "numeric", placeholder: "2500000", required: true },
+        { key: "zoningCode", label: "Zoning Code", type: "text", placeholder: "e.g. R-1, R-2" },
+        { key: "jurisdiction", label: "City / Jurisdiction", type: "text", required: true },
+      ],
+    },
+    {
+      id: "program",
+      title: "Subdivision Program",
+      fields: [
+        { key: "targetLotCount", label: "Target Lot Count (optional)", type: "numeric", placeholder: "18" },
+        { key: "targetLotWidthFt", label: "Typical Lot Width (ft)", type: "numeric", placeholder: "60" },
+        {
+          key: "buildToSell",
+          label: "Development Strategy",
+          type: "radio",
+          options: [
+            { value: "true", label: "Build-to-sell (full construction)" },
+            { value: "false", label: "Horizontal only (sell finished lots)" },
+          ],
+        },
+        { key: "targetSalesPrice", label: "Target Sales Price per Home ($)", type: "numeric", placeholder: "625000" },
+        { key: "notes", label: "Additional Notes", type: "textarea", rows: 3 },
+      ],
+    },
+  ],
+
+  single_lot_development: [
+    CONTACT_STEP,
+    {
+      id: "site",
+      title: "Lot Details",
+      fields: [
+        { key: "lotSizeSqFt", label: "Lot Size (sq ft)", type: "numeric", placeholder: "7500", required: true },
+        { key: "askingPrice", label: "Lot / Acquisition Cost ($)", type: "numeric", placeholder: "350000", required: true },
+        { key: "zoningCode", label: "Zoning Code", type: "text", placeholder: "e.g. R-2, R-MF" },
+        { key: "jurisdiction", label: "City / Jurisdiction", type: "text", required: true },
+      ],
+    },
+    {
+      id: "program",
+      title: "Building Program",
+      fields: [
+        {
+          key: "preferredBuildingType",
+          label: "Preferred Building Type",
+          type: "radio",
+          options: [
+            { value: "single_family", label: "Single-Family Home (SFR)" },
+            { value: "duplex", label: "Duplex (2 units)" },
+            { value: "triplex", label: "Triplex (3 units)" },
+          ],
+        },
+        {
+          key: "intendToSell",
+          label: "Exit Strategy",
+          type: "radio",
+          options: [
+            { value: "true", label: "Sell on completion" },
+            { value: "false", label: "Hold and rent" },
+          ],
+        },
+        { key: "targetSalesPrice", label: "Target Sales Price per Unit ($, optional)", type: "numeric", placeholder: "650000" },
+        { key: "targetRentPerUnit", label: "Target Monthly Rent per Unit ($, optional)", type: "numeric", placeholder: "3200" },
+        { key: "notes", label: "Additional Notes", type: "textarea", rows: 3 },
+      ],
+    },
+  ],
 };
