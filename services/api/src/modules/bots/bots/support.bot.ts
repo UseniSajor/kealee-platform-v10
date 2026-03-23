@@ -13,7 +13,7 @@
 import { callModel, isLLMAvailable } from '../bots.router'
 import { startStep, recordTrace } from '../bots.logger'
 import type {
-  IBot, BotInput, BotOutput, BotContext,
+  IBot, BotInput, BotOutput, BotContext, BotStep,
   SupportBotInput, SupportBotOutput, SupportAction,
 } from '../bots.types'
 
@@ -126,7 +126,7 @@ export class SupportBot implements IBot<SupportBotInput, SupportBotOutput> {
     const { data }  = input
     const requestId = ctx.requestId
     const startedAt = new Date()
-    const steps: ReturnType<typeof startStep>[] = []
+    const steps: BotStep[] = []
 
     // ── Step 1: Classify category ────────────────────────────────────────────
     const classTimer = startStep('deterministic', 'classify_category', data.message.slice(0, 60))
