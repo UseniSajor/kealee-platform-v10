@@ -7,23 +7,33 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./software-tiers": {
       "types": "./dist/software-tiers/index.d.ts",
-      "require": "./dist/software-tiers/index.js"
+      "import": "./dist/software-tiers/index.js",
+      "require": "./dist/software-tiers/index.js",
+      "default": "./dist/software-tiers/index.js"
     },
     "./feature-flags": {
       "types": "./dist/feature-flags/index.d.ts",
-      "require": "./dist/feature-flags/index.js"
+      "import": "./dist/feature-flags/index.js",
+      "require": "./dist/feature-flags/index.js",
+      "default": "./dist/feature-flags/index.js"
     },
     "./types/network": {
       "types": "./dist/types/network.d.ts",
-      "require": "./dist/types/network.js"
+      "import": "./dist/types/network.js",
+      "require": "./dist/types/network.js",
+      "default": "./dist/types/network.js"
     },
     "./intake": {
       "types": "./dist/intake/index.d.ts",
-      "require": "./dist/intake/index.js"
+      "import": "./dist/intake/index.js",
+      "require": "./dist/intake/index.js",
+      "default": "./dist/intake/index.js"
     }
   },
   "typesVersions": {
