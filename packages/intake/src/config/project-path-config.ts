@@ -24,15 +24,41 @@ export function isValidProjectPath(path: string): path is ProjectPath {
   return (PROJECT_PATHS as readonly string[]).includes(path);
 }
 
+export interface PricingTier {
+  /** Inclusive upper bound on unit/lot count. Use Infinity for the top tier. */
+  maxUnits: number;
+  /** Price in cents */
+  amount: number;
+  /** Human-readable label shown at checkout e.g. "Up to 20 units" */
+  label: string;
+}
+
 export interface ProjectPathMeta {
   path: ProjectPath;
   label: string;
   description: string;
   requiresPayment: boolean;
+  /** Base / minimum price in cents (used when pricingTiers is absent or unit count unknown) */
   paymentAmount: number;
   paymentTier: string;
   requiresCapture: boolean;
   minFields: string[];
+  /** When present, price scales with the unit/lot count provided at intake */
+  pricingTiers?: PricingTier[];
+}
+
+/** Resolve the applicable price in cents given an optional unit/lot count. */
+export function resolvePaymentAmount(meta: ProjectPathMeta, unitCount?: number): number {
+  if (!meta.pricingTiers || unitCount === undefined) return meta.paymentAmount;
+  const tier = meta.pricingTiers.find(t => unitCount <= t.maxUnits);
+  return tier?.amount ?? meta.pricingTiers[meta.pricingTiers.length - 1].amount;
+}
+
+/** Return the tier label for display ("Up to 20 units", etc.) */
+export function resolveTierLabel(meta: ProjectPathMeta, unitCount?: number): string | undefined {
+  if (!meta.pricingTiers || unitCount === undefined) return undefined;
+  const tier = meta.pricingTiers.find(t => unitCount <= t.maxUnits);
+  return tier?.label ?? meta.pricingTiers[meta.pricingTiers.length - 1].label;
 }
 
 export const PROJECT_PATH_META: Record<ProjectPath, ProjectPathMeta> = {
@@ -176,6 +202,11 @@ export const PROJECT_PATH_META: Record<ProjectPath, ProjectPathMeta> = {
     paymentTier: "commercial_standard",
     requiresCapture: false,
     minFields: ["clientName", "contactEmail", "projectAddress", "lotSizeSqFt", "askingPrice"],
+    pricingTiers: [
+      { maxUnits: 20,       amount:  99900, label: "Up to 20 units — $999"  },
+      { maxUnits: 50,       amount: 149900, label: "21–50 units — $1,499"   },
+      { maxUnits: Infinity, amount: 199900, label: "51+ units — $1,999"     },
+    ],
   },
   single_family_subdivision: {
     path: "single_family_subdivision",
@@ -186,6 +217,11 @@ export const PROJECT_PATH_META: Record<ProjectPath, ProjectPathMeta> = {
     paymentTier: "commercial_premium",
     requiresCapture: false,
     minFields: ["clientName", "contactEmail", "projectAddress", "lotSizeSqFt", "askingPrice"],
+    pricingTiers: [
+      { maxUnits: 15,       amount: 119900, label: "Up to 15 lots — $1,199" },
+      { maxUnits: 40,       amount: 179900, label: "16–40 lots — $1,799"    },
+      { maxUnits: Infinity, amount: 249900, label: "41+ lots — $2,499"      },
+    ],
   },
   single_lot_development: {
     path: "single_lot_development",

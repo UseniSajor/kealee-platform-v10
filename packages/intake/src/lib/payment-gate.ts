@@ -1,4 +1,4 @@
-import { PROJECT_PATH_META } from "../config/project-path-config";
+import { PROJECT_PATH_META, resolvePaymentAmount, resolveTierLabel } from "../config/project-path-config";
 import type { ProjectPath } from "../config/project-path-config";
 import type { LeadScore } from "./score-lead";
 
@@ -8,24 +8,42 @@ export interface PaymentGateResult {
   tier: string;
   displayAmount: string;
   reason: string;
+  /** Set when pricing is tiered — e.g. "Up to 20 units — $999" */
+  tierLabel?: string;
+  /** True when this path has tiered pricing so the UI can show a tier selector */
+  hasTieredPricing: boolean;
 }
 
 export function evaluatePaymentGate(
   projectPath: ProjectPath,
-  _score: LeadScore
+  _score: LeadScore,
+  /** Unit or lot count — used to resolve tiered pricing for subdivision paths */
+  unitCount?: number,
 ): PaymentGateResult {
   const meta = PROJECT_PATH_META[projectPath];
 
   if (!meta.requiresPayment) {
-    return { requiresPayment: false, amount: 0, tier: "free", displayAmount: "$0", reason: "Free intake path" };
+    return {
+      requiresPayment: false,
+      amount: 0,
+      tier: "free",
+      displayAmount: "$0",
+      reason: "Free intake path",
+      hasTieredPricing: false,
+    };
   }
+
+  const amount     = resolvePaymentAmount(meta, unitCount);
+  const tierLabel  = resolveTierLabel(meta, unitCount);
 
   return {
     requiresPayment: true,
-    amount: meta.paymentAmount,
+    amount,
     tier: meta.paymentTier,
-    displayAmount: `$${(meta.paymentAmount / 100).toFixed(0)}`,
+    displayAmount: `$${(amount / 100).toLocaleString("en-US", { maximumFractionDigits: 0 })}`,
     reason: PAYMENT_REASONS[projectPath],
+    tierLabel,
+    hasTieredPricing: !!(meta.pricingTiers && meta.pricingTiers.length > 0),
   };
 }
 

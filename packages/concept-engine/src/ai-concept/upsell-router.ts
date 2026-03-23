@@ -13,6 +13,10 @@ export type UpsellService =
   | 'build_ops'
   | 'contractor_matching'
   | 'another_concept'
+  // Engineering & architectural packages (developer/investor paths)
+  | 'civil_engineering'
+  | 'architectural_package'
+  | 'structural_engineering'
 
 export interface UpsellOption {
   service: UpsellService
@@ -82,6 +86,27 @@ const UPSELL_DEFINITIONS: Record<UpsellService, Omit<UpsellOption, 'highlight'>>
     ctaText: 'Start Another Concept',
     price: 'From $149',
   },
+  civil_engineering: {
+    service: 'civil_engineering',
+    label: 'Civil Engineering Package',
+    tagline: 'Tentative map, grading plan, utility design, and street improvement plans',
+    ctaText: 'Engage Civil Engineering',
+    price: 'From $3,500',
+  },
+  architectural_package: {
+    service: 'architectural_package',
+    label: 'Full Architecture Package',
+    tagline: 'Schematic design through construction documents and permit-ready drawing set',
+    ctaText: 'Start Architecture Package',
+    price: 'From $8,500',
+  },
+  structural_engineering: {
+    service: 'structural_engineering',
+    label: 'Structural Engineering',
+    tagline: 'Foundation design, framing plans, and lateral analysis for permit',
+    ctaText: 'Engage Structural Engineering',
+    price: 'From $2,500',
+  },
 }
 
 const PRIMARY_UPSELL_BY_PATH: Record<ProjectPath, UpsellService> = {
@@ -92,14 +117,15 @@ const PRIMARY_UPSELL_BY_PATH: Record<ProjectPath, UpsellService> = {
   addition_expansion:        'full_architecture',
   exterior_concept:          'contractor_matching',
   capture_site_concept:      'schematic_design',
-  // Commercial paths — architect review is the primary next step
+  // Commercial paths
   multi_unit_residential:    'full_architecture',
   mixed_use:                 'full_architecture',
   commercial_office:         'full_architecture',
   development_feasibility:   'full_architecture',
-  townhome_subdivision:      'full_architecture',
-  single_family_subdivision: 'full_architecture',
-  single_lot_development:    'schematic_design',
+  // Subdivision — civil engineering is first critical step
+  townhome_subdivision:      'civil_engineering',
+  single_family_subdivision: 'civil_engineering',
+  single_lot_development:    'architectural_package',
 }
 
 const SECONDARY_UPSELLS_BY_PATH: Record<ProjectPath, UpsellService[]> = {
@@ -114,9 +140,10 @@ const SECONDARY_UPSELLS_BY_PATH: Record<ProjectPath, UpsellService[]> = {
   mixed_use:                 ['permit_expediting', 'build_ops'],
   commercial_office:         ['permit_expediting', 'contractor_matching'],
   development_feasibility:   ['full_architecture', 'permit_expediting', 'build_ops'],
-  townhome_subdivision:      ['permit_expediting', 'build_ops'],
-  single_family_subdivision: ['permit_expediting', 'build_ops', 'design_development'],
-  single_lot_development:    ['permit_expediting', 'contractor_matching'],
+  // Subdivision — engineering stack as secondary options
+  townhome_subdivision:      ['architectural_package', 'structural_engineering', 'permit_expediting', 'build_ops'],
+  single_family_subdivision: ['architectural_package', 'structural_engineering', 'permit_expediting', 'build_ops'],
+  single_lot_development:    ['structural_engineering', 'permit_expediting', 'contractor_matching'],
 }
 
 const HANDOFF_MESSAGES: Record<ProjectPath, string> = {
@@ -143,11 +170,11 @@ const HANDOFF_MESSAGES: Record<ProjectPath, string> = {
   development_feasibility:
     'Your feasibility analysis is complete. Use this to engage an architect and land use attorney for formal entitlement.',
   townhome_subdivision:
-    'Your subdivision concept and phased pro forma are ready. Next: engage a civil engineer and land use attorney.',
+    'Your townhome subdivision concept, phased pro forma, and site plan are ready. The next step is civil engineering — tentative map, grading plan, and utility design. We can connect you with the right team.',
   single_family_subdivision:
-    'Your subdivision site plan and sellout analysis are ready. Engage a civil engineer for your tentative map.',
+    'Your subdivision site plan and sellout analysis are ready. Engage a civil engineer for your tentative tract map and infrastructure plans — we can connect you directly.',
   single_lot_development:
-    'Your single-lot concept is ready. We can connect you with a licensed architect or contractor to get your permit filed.',
+    'Your single-lot analysis is ready. Move to a full architecture package to get your permit-ready drawings — including floor plans, elevations, and structural notes.',
 }
 
 export function routeUpsell(intakeId: string, projectPath: ProjectPath): UpsellRoute {
