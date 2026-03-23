@@ -41,6 +41,14 @@
       "types": "./src/components/intake/*.tsx",
       "default": "./src/components/intake/*.tsx"
     },
+    "./components/command-center/*": {
+      "types": "./src/components/command-center/*.tsx",
+      "default": "./src/components/command-center/*.tsx"
+    },
+    "./components/twin/*": {
+      "types": "./src/components/twin/*.tsx",
+      "default": "./src/components/twin/*.tsx"
+    },
     "./*": "./src/*"
   },
   "scripts": {

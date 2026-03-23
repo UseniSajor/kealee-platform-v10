@@ -20,6 +20,10 @@
     "./types/network": {
       "types": "./dist/types/network.d.ts",
       "require": "./dist/types/network.js"
+    },
+    "./intake": {
+      "types": "./dist/intake/index.d.ts",
+      "require": "./dist/intake/index.js"
     }
   },
   "typesVersions": {
@@ -32,6 +36,9 @@
       ],
       "types/network": [
         "dist/types/network.d.ts"
+      ],
+      "intake": [
+        "dist/intake/index.d.ts"
       ]
     }
   },
