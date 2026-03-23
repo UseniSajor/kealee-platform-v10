@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { PACKAGE_TIERS } from "@kealee/shared/intake";
+import { PACKAGE_TIERS } from "@kealee/shared";
 
 function PayContent() {
   const params = useSearchParams();

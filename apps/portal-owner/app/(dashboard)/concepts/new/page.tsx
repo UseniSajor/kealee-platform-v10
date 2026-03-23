@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { EXTERIOR_CONCEPT_FORM_STEPS } from "@kealee/shared/intake";
-import type { IntakeFormStep } from "@kealee/shared/intake";
+import { EXTERIOR_CONCEPT_FORM_STEPS } from "@kealee/shared";
+import type { IntakeFormStep } from "@kealee/shared";
 
 export default function NewConceptPage() {
   const router = useRouter();
