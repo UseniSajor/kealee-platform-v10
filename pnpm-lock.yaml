@@ -1289,6 +1289,9 @@ importers:
       '@kealee/core-hooks':
         specifier: workspace:*
         version: link:../../packages/core-hooks
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@kealee/ui':
         specifier: workspace:*
         version: link:../../packages/ui
