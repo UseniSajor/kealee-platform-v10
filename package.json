@@ -114,5 +114,8 @@
     "@as-integrations/fastify": {
       "fastify": "^4.28.0"
     }
+  },
+  "pnpm": {
+    "neverBuiltDependencies": ["msgpackr-extract", "unrs-resolver"]
   }
 }
