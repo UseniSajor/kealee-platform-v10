@@ -11,6 +11,7 @@ import {
   LogOut,
   Shield,
   ClipboardCheck,
+  FlaskConical,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -21,6 +22,7 @@ const NAV_ITEMS = [
   { href: '/subscriptions', label: 'Subscriptions', icon: CreditCard },
   { href: '/validation', label: 'Validation Queue', icon: ClipboardCheck },
   { href: '/schema', label: 'Schema Map', icon: Database },
+  { href: '/test-panel', label: 'Test Panel', icon: FlaskConical },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
