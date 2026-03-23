@@ -4,17 +4,24 @@ import { Container } from '@/components/ui/Container'
 import { Badge } from '@/components/ui/Badge'
 
 interface RoleHeroProps {
-  badge:       string
-  headline:    string
-  highlight?:  string     // colored word/phrase within headline
-  subhead:     string
-  cta:         { label: string; href: string }
+  badge:         string
+  badgeColor?:   string
+  headline:      string
+  highlight?:    string
+  subhead?:      string
+  subheadline?:  string
+  cta?:          { label: string; href: string }
+  primaryCTA?:   { label: string; href: string }
   secondaryCta?: { label: string; href: string }
-  trustItems?: string[]
-  dark?:       boolean
+  secondaryCTA?: { label: string; href: string }
+  trustItems?:   string[]
+  dark?:         boolean
 }
 
-export function RoleHero({ badge, headline, highlight, subhead, cta, secondaryCta, trustItems, dark = true }: RoleHeroProps) {
+export function RoleHero({ badge, headline, highlight, subhead, subheadline, cta, primaryCTA, secondaryCta, secondaryCTA, trustItems, dark = true }: RoleHeroProps) {
+  const resolvedCta = cta ?? primaryCTA
+  const resolvedSecondaryCta = secondaryCta ?? secondaryCTA
+  const resolvedSubhead = subhead ?? subheadline ?? ''
   const bg     = dark ? '#1A2B4A' : '#F7FAFC'
   const text   = dark ? 'text-white' : ''
   const subClr = dark ? 'text-gray-300' : 'text-gray-600'
@@ -42,24 +49,26 @@ export function RoleHero({ badge, headline, highlight, subhead, cta, secondaryCt
           />
 
           <p className={`mx-auto mt-6 max-w-2xl text-lg leading-relaxed ${subClr}`}>
-            {subhead}
+            {resolvedSubhead}
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href={cta.href}
-              className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90"
-              style={{ backgroundColor: '#E8793A' }}
-            >
-              {cta.label} <ArrowRight className="h-4 w-4" />
-            </Link>
-            {secondaryCta && (
+            {resolvedCta && (
               <Link
-                href={secondaryCta.href}
+                href={resolvedCta.href}
+                className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90"
+                style={{ backgroundColor: '#E8793A' }}
+              >
+                {resolvedCta.label} <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
+            {resolvedSecondaryCta && (
+              <Link
+                href={resolvedSecondaryCta.href}
                 className="inline-flex items-center gap-2 rounded-xl border-2 px-7 py-3.5 text-sm font-semibold transition-all"
                 style={{ borderColor: dark ? 'rgba(255,255,255,0.3)' : '#2ABFBF', color: dark ? 'white' : '#2ABFBF' }}
               >
-                {secondaryCta.label}
+                {resolvedSecondaryCta.label}
               </Link>
             )}
           </div>
