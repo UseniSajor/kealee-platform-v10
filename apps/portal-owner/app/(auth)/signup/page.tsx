@@ -34,15 +34,15 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-xl text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-green-100">
-          <Mail className="h-7 w-7 text-green-600" />
+      <div className="rounded-2xl border p-8 shadow-2xl text-center" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl" style={{ backgroundColor: '#2ABFBF20' }}>
+          <Mail className="h-7 w-7" style={{ color: '#2ABFBF' }} />
         </div>
-        <h2 className="text-xl font-bold text-gray-900">Check Your Email</h2>
-        <p className="mt-2 text-sm text-gray-600">
-          We sent a confirmation link to <strong>{email}</strong>. Click the link to activate your account.
+        <h2 className="text-xl font-bold text-white">Check Your Email</h2>
+        <p className="mt-2 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
+          We sent a confirmation link to <strong className="text-white">{email}</strong>. Click the link to activate your account.
         </p>
-        <Link href="/login" className="mt-4 inline-block text-sm font-medium text-blue-600 hover:underline">
+        <Link href="/login" className="mt-4 inline-block text-sm font-medium hover:underline" style={{ color: '#2ABFBF' }}>
           Back to sign in
         </Link>
       </div>
@@ -50,83 +50,73 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-xl">
+    <div className="rounded-2xl border p-8 shadow-2xl" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
       <div className="mb-6 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-blue-600">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl" style={{ backgroundColor: '#2ABFBF' }}>
           <UserPlus className="h-7 w-7 text-white" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">Create Your Account</h1>
-        <p className="mt-1 text-sm text-gray-600">Start managing your construction project</p>
+        <h1 className="font-display text-2xl font-bold text-white">Create Your Account</h1>
+        <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>Start managing your construction project</p>
       </div>
 
       <form onSubmit={handleSignup} className="space-y-4">
         {error && (
-          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
+          <div className="rounded-lg p-3 text-sm" style={{ backgroundColor: 'rgba(220,38,38,0.2)', color: '#FCA5A5' }}>
+            {error}
+          </div>
         )}
 
         <div>
-          <label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-700">Full Name</label>
+          <label htmlFor="name" className="mb-1 block text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>Full Name</label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
             <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="John Smith"
-              required
+              id="name" type="text" value={name} onChange={(e) => setName(e.target.value)}
+              className="w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1"
+              style={{ borderColor: '#2A3D5F', backgroundColor: '#0F1A2E', '--tw-ring-color': '#2ABFBF' } as React.CSSProperties}
+              placeholder="John Smith" required
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">Email</label>
+          <label htmlFor="email" className="mb-1 block text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>Email</label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
             <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="your@email.com"
-              required
+              id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1"
+              style={{ borderColor: '#2A3D5F', backgroundColor: '#0F1A2E', '--tw-ring-color': '#2ABFBF' } as React.CSSProperties}
+              placeholder="your@email.com" required
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">Password</label>
+          <label htmlFor="password" className="mb-1 block text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>Password</label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.3)' }} />
             <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="Min 8 characters"
-              required
-              minLength={8}
+              id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1"
+              style={{ borderColor: '#2A3D5F', backgroundColor: '#0F1A2E', '--tw-ring-color': '#2ABFBF' } as React.CSSProperties}
+              placeholder="Min 8 characters" required minLength={8}
             />
           </div>
         </div>
 
         <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+          type="submit" disabled={loading}
+          className="w-full rounded-lg py-2.5 text-sm font-semibold text-white disabled:opacity-50 transition-opacity hover:opacity-90"
+          style={{ backgroundColor: '#E8793A' }}
         >
           {loading ? 'Creating account...' : 'Create Account'}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-gray-600">
+      <p className="mt-6 text-center text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
         Already have an account?{' '}
-        <Link href="/login" className="font-medium text-blue-600 hover:underline">
-          Sign in
-        </Link>
+        <Link href="/login" className="font-medium hover:underline" style={{ color: '#2ABFBF' }}>Sign in</Link>
       </p>
     </div>
   )

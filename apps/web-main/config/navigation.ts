@@ -163,7 +163,7 @@ export const PRIMARY_NAV: NavItem[] = [
 
 export const NAV_CTA_PRIMARY = { label: 'Request Design Consult', href: '/intake' }
 export const NAV_CTA_SECONDARY = { label: 'Join Marketplace', href: '/contractor/register' }
-export const NAV_LOGIN = { label: 'Log In', href: '/portal-owner' }
+export const NAV_LOGIN = { label: 'Log In', href: '/login' }
 
 // ── Footer links ──────────────────────────────────────────────────────────────
 
