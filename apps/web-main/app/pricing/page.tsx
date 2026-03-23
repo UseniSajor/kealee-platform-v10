@@ -44,58 +44,55 @@ const PM_ITEMS = [
 
 const CONTRACTOR_LISTING = [
   {
-    name: 'Basic',
-    price: '$49',
+    name: 'Starter',
+    price: '$99',
     period: '/mo',
-    description: 'Get listed and start receiving matched leads.',
+    description: 'Get listed, verified, and start receiving AI-matched leads.',
     features: [
       'Verified contractor profile',
       'AI-matched lead delivery',
-      'Up to 5 active bid responses/mo',
+      'Up to 10 active bid responses/mo',
       'Basic analytics dashboard',
+      'Reputation score tracking',
     ],
     highlight: false,
-    cta: 'Start Free Trial',
+    cta: 'Join as Contractor',
+    ctaHref: '/contractor/register',
+  },
+  {
+    name: 'Growth',
+    price: '$199',
+    period: '/mo',
+    description: 'Priority matching, KeaBot GC, and full pipeline tools.',
+    features: [
+      'Everything in Starter',
+      'Priority lead matching',
+      'Unlimited bid responses',
+      'KeaBot GC bid assistant',
+      'Pipeline CRM + follow-up tools',
+      'Reputation score badge',
+    ],
+    highlight: true,
+    cta: 'Join as Contractor',
     ctaHref: '/contractor/register',
   },
   {
     name: 'Pro',
-    price: '$149',
+    price: '$499',
     period: '/mo',
-    description: 'More leads, better tools, priority matching.',
+    description: 'Full Construction OS, top placement, and enterprise ops.',
     features: [
-      'Everything in Basic',
-      'Priority lead matching',
-      'Unlimited bid responses',
-      'KeaBot GC bid assistant',
-      'Reputation score badge',
-    ],
-    highlight: true,
-    cta: 'Start Free Trial',
-    ctaHref: '/contractor/register',
-  },
-  {
-    name: 'Premium',
-    price: '$299',
-    period: '/mo',
-    description: 'Full Construction OS + top-of-feed placement.',
-    features: [
-      'Everything in Pro',
+      'Everything in Growth',
       'Top-of-feed placement',
       'Full Construction OS access',
-      'Advanced analytics & pipeline',
+      'Advanced analytics & profitability',
+      'Custom integrations + API access',
       'Dedicated account support',
     ],
     highlight: false,
     cta: 'Contact Sales',
     ctaHref: '/contact',
   },
-]
-
-const CONTRACTOR_GROWTH = [
-  { name: 'Starter', price: '$99/mo', note: 'Lead pipeline tools + basic CRM' },
-  { name: 'Growth', price: '$299/mo', note: 'Full business development suite' },
-  { name: 'Pro', price: '$799/mo', note: 'Enterprise-grade ops + integrations' },
 ]
 
 // ── Operations OS (B2B) ───────────────────────────────────────────────────────
@@ -188,8 +185,8 @@ const FAQ_ITEMS = [
     answer: 'No. All homeowner project fees are one-time per project. You pay for the services your project needs — Concept + Validation, estimate, permits, PM — without any ongoing subscription.',
   },
   {
-    question: 'How does contractor listing pricing work?',
-    answer: 'Contractor listing tiers (Basic $49/mo, Pro $149/mo, Premium $299/mo) are monthly subscriptions that control your lead volume, bid tools, and platform visibility. Growth packages are separate and cover business development and pipeline tools.',
+    question: 'How does contractor pricing work?',
+    answer: 'Contractor packages (Starter $99/mo, Growth $199/mo, Pro $499/mo) are monthly subscriptions that control your lead volume, AI bid tools, Construction OS access, and platform visibility. Cancel anytime. All plans include a 14-day free trial.',
   },
   {
     question: 'What is the Ops OS pricing for?',
@@ -417,23 +414,9 @@ export default function PricingPage() {
             ))}
           </div>
 
-          {/* Growth packages teaser */}
-          <div className="mt-10 rounded-2xl border border-gray-200 bg-white p-6">
-            <h4 className="mb-1 font-bold" style={{ color: '#1A2B4A' }}>Growth Packages</h4>
-            <p className="mb-4 text-sm text-gray-500">Business development tools for contractors looking to scale.</p>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {CONTRACTOR_GROWTH.map(pkg => (
-                <div key={pkg.name} className="rounded-lg bg-gray-50 px-4 py-3">
-                  <p className="text-sm font-bold" style={{ color: '#1A2B4A' }}>{pkg.name}</p>
-                  <p className="text-sm font-semibold" style={{ color: '#E8793A' }}>{pkg.price}</p>
-                  <p className="mt-1 text-xs text-gray-400">{pkg.note}</p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-4 text-xs text-gray-400">
-              Verify your contractor account to see full growth package details and unlock all features.
-            </p>
-          </div>
+          <p className="mt-4 text-xs text-gray-400 text-center">
+            Cancel anytime. All plans include a 14-day free trial. Verify your contractor account to unlock full features.
+          </p>
         </div>
       </section>
 

@@ -3,6 +3,7 @@ import { RoleHero } from '@/components/roles/RoleHero'
 import { RoleBenefits } from '@/components/roles/RoleBenefits'
 import { RoleWorkflow } from '@/components/roles/RoleWorkflow'
 import { RoleCTA } from '@/components/roles/RoleCTA'
+import { RoleFAQ } from '@/components/roles/RoleFAQ'
 
 export const metadata: Metadata = {
   title: 'For Architects',
@@ -106,6 +107,26 @@ export default function ArchitectsPage() {
         headline="Design-to-Closeout in 6 Steps"
         steps={WORKFLOW}
         accentColor="#1A2B4A"
+      />
+      <RoleFAQ
+        items={[
+          {
+            question: 'How does Kealee integrate with my existing design workflow?',
+            answer: 'Kealee connects your design deliverables directly to the owner, contractor, and permit authority. Drawing sets, RFIs, submittals, and change orders are managed on the platform — reducing coordination overhead and email chains.',
+          },
+          {
+            question: 'Does Kealee handle permit submissions for architects?',
+            answer: 'Yes. Our permit coordination service manages AHJ submissions, plan check tracking, comment responses, and inspection scheduling — all linked to your drawing set on the platform.',
+          },
+          {
+            question: 'Can I coordinate with contractors and owners in one place?',
+            answer: 'Yes. The Kealee platform connects architects, owners, and contractors on every project — with shared drawing management, RFI workflows, submittal reviews, and milestone sign-offs.',
+          },
+          {
+            question: 'Does Kealee offer onsite services?',
+            answer: 'No. All onsite construction activities must be performed by the contractor of record. Kealee provides coordination, platform tools, and advisory services only.',
+          },
+        ]}
       />
       <RoleCTA
         headline="Join the Kealee Professional Network"

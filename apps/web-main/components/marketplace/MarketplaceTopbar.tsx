@@ -5,21 +5,19 @@ import { ArrowRight } from 'lucide-react'
 
 // ── Row 1: Role navigation ────────────────────────────────────────────────────
 const ROLES = [
-  { label: 'Homeowners',           href: '/homeowners' },
-  { label: 'Contractors & GC',     href: '/contractors' },
-  { label: 'Architects',           href: '/architects' },
-  { label: 'Engineers',            href: '/engineers' },
-  { label: 'Developers',           href: '/developers' },
-  { label: 'Design Professionals', href: '/design-professionals' },
-  { label: 'Government',           href: '/government' },
+  { label: 'Homeowners',                    href: '/homeowners' },
+  { label: 'GC / Builders / Contractors',   href: '/contractors' },
+  { label: 'Developers & Investors',        href: '/developers' },
+  { label: 'Property Managers',             href: '/property-managers' },
+  { label: 'Government',                    href: '/government' },
 ]
 
 // ── Row 2: Marketplace utility links ─────────────────────────────────────────
 const UTILITY_LINKS = [
-  { label: 'How It Works',    href: '/marketplace#how-it-works' },
-  { label: 'Pricing',         href: '/pricing' },
-  { label: 'FAQ',             href: '/#faq' },
-  { label: 'Join as Contractor', href: '/contractor/register' },
+  { label: 'AI Concept Engine',  href: '/concept-engine' },
+  { label: 'How It Works',       href: '/marketplace#how-it-works' },
+  { label: 'FAQ',                href: '/faq' },
+  { label: 'Join as GC / Contractor', href: '/contractor/register' },
 ]
 
 export function MarketplaceTopbar() {
@@ -57,17 +55,17 @@ export function MarketplaceTopbar() {
           {/* Auth CTAs */}
           <div className="flex items-center gap-2 ml-auto pl-4">
             <Link
-              href="/portal"
+              href="/login"
               className="text-xs font-medium text-gray-600 hover:text-[#1A2B4A]"
             >
               Sign In
             </Link>
             <Link
-              href="/intake"
+              href="/concept-engine"
               className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#E8793A' }}
             >
-              Request Design Consult <ArrowRight className="h-3 w-3" />
+              Start AI Concept <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { RoleHero } from '@/components/roles/RoleHero'
 import { RoleBenefits } from '@/components/roles/RoleBenefits'
 import { RoleWorkflow } from '@/components/roles/RoleWorkflow'
 import { RoleCTA } from '@/components/roles/RoleCTA'
+import { RoleFAQ } from '@/components/roles/RoleFAQ'
 
 export const metadata: Metadata = {
   title: 'For Contractors — Kealee',
@@ -80,49 +81,46 @@ const WORKFLOW = [
 
 const LISTING_TIERS = [
   {
-    name: 'Basic',
-    price: '$49/mo',
-    description: 'Get listed and start receiving matched leads.',
+    name: 'Starter',
+    price: '$99/mo',
+    description: 'Get listed, verified, and start receiving AI-matched leads.',
     features: [
       'Verified contractor profile',
       'AI-matched lead delivery',
-      'Up to 5 active bid responses/mo',
+      'Up to 10 active bid responses/mo',
       'Basic analytics dashboard',
+      'Reputation score tracking',
     ],
     highlight: false,
   },
   {
-    name: 'Pro',
-    price: '$149/mo',
-    description: 'More leads, better tools, priority matching.',
+    name: 'Growth',
+    price: '$199/mo',
+    description: 'Priority matching, KeaBot GC, and full pipeline tools.',
     features: [
-      'Everything in Basic',
+      'Everything in Starter',
       'Priority lead matching',
       'Unlimited bid responses',
       'KeaBot GC bid assistant',
+      'Pipeline CRM + follow-up tools',
       'Reputation score badge',
     ],
     highlight: true,
   },
   {
-    name: 'Premium',
-    price: '$299/mo',
-    description: 'Full Construction OS + top-of-feed placement.',
+    name: 'Pro',
+    price: '$499/mo',
+    description: 'Full Construction OS, top placement, and enterprise ops.',
     features: [
-      'Everything in Pro',
+      'Everything in Growth',
       'Top-of-feed placement',
       'Full Construction OS access',
-      'Advanced analytics & pipeline',
+      'Advanced analytics & profitability',
+      'Custom integrations + API access',
       'Dedicated account support',
     ],
     highlight: false,
   },
-]
-
-const GROWTH_TIERS = [
-  { name: 'Starter', price: '$99/mo', note: 'Lead pipeline tools + basic CRM' },
-  { name: 'Growth', price: '$299/mo', note: 'Full business development suite' },
-  { name: 'Pro', price: '$799/mo', note: 'Enterprise-grade ops + integrations' },
 ]
 
 export default function ContractorsPage() {
@@ -198,25 +196,9 @@ export default function ContractorsPage() {
             ))}
           </div>
 
-          {/* Growth packages teaser */}
-          <div className="mt-10 rounded-2xl border border-gray-200 bg-white p-6">
-            <h4 className="mb-1 font-bold" style={{ color: '#1A2B4A' }}>Growth Packages</h4>
-            <p className="mb-4 text-sm text-gray-500">
-              Scale your business with pipeline tools, CRM, and advanced ops integrations.
-            </p>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {GROWTH_TIERS.map(pkg => (
-                <div key={pkg.name} className="rounded-lg bg-gray-50 px-4 py-3">
-                  <p className="text-sm font-bold" style={{ color: '#1A2B4A' }}>{pkg.name}</p>
-                  <p className="text-sm font-semibold" style={{ color: '#E8793A' }}>{pkg.price}</p>
-                  <p className="mt-1 text-xs text-gray-400">{pkg.note}</p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-4 text-xs text-gray-400">
-              Verify to see full growth package details and unlock all features.
-            </p>
-          </div>
+          <p className="mt-6 text-center text-xs text-gray-400">
+            Cancel anytime. 14-day free trial included. Verify your account to unlock full features.
+          </p>
         </div>
       </section>
 
@@ -230,6 +212,30 @@ export default function ContractorsPage() {
         headline="From Application to First Project in Days"
         steps={WORKFLOW}
         accent="#E8793A"
+      />
+      <RoleFAQ
+        items={[
+          {
+            question: 'How does the contractor verification process work?',
+            answer: 'Submit your license, insurance, and references. Our team verifies your credentials within 48 hours. Once verified, your profile goes live and you start receiving AI-matched leads.',
+          },
+          {
+            question: 'What is the difference between the Starter, Growth, and Pro plans?',
+            answer: 'Starter ($99/mo) gets you listed and receiving matched leads with up to 10 bid responses per month. Growth ($199/mo) adds priority matching, unlimited bids, KeaBot GC, and CRM tools. Pro ($499/mo) adds full Construction OS access, top-of-feed placement, and enterprise integrations.',
+          },
+          {
+            question: 'Does Kealee offer onsite services or supervision?',
+            answer: 'No. All onsite services — including inspections, site visits, and construction supervision — must be performed by the contractor of record. Kealee is a platform and advisory service only.',
+          },
+          {
+            question: 'How does KeaBot GC help with bids?',
+            answer: 'KeaBot GC analyzes project scope and specs, pulls line-item costs, and helps you prepare competitive proposals in a fraction of the time. Available on Growth and Pro plans.',
+          },
+          {
+            question: 'Can I cancel my plan anytime?',
+            answer: 'Yes. All plans are month-to-month and can be cancelled at any time. A 14-day free trial is included when you first join.',
+          },
+        ]}
       />
       <RoleCTA
         headline="Ready to Grow Your Business?"

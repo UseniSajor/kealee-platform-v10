@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Sparkles } from 'lucide-react'
 import { MarketplaceTopbar } from '@/components/marketplace/MarketplaceTopbar'
 import { MarketplaceNav } from '@/components/marketplace/MarketplaceNav'
 import { MarketplaceFilterBar } from '@/components/marketplace/MarketplaceFilterBar'
@@ -212,7 +212,30 @@ export default function MarketplacePage() {
               className="inline-flex shrink-0 items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#1A2B4A' }}
             >
-              Join as Contractor <ArrowRight className="h-4 w-4" />
+              Join as GC / Contractor <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+
+        {/* AI Concept Engine banner */}
+        <div className="mx-auto max-w-7xl px-4 pb-4 sm:px-6 lg:px-8">
+          <div
+            className="flex flex-col gap-3 rounded-xl p-4 sm:flex-row sm:items-center sm:justify-between"
+            style={{ backgroundColor: 'rgba(232,121,58,0.07)', border: '1px solid rgba(232,121,58,0.2)' }}
+          >
+            <div className="flex items-start gap-3">
+              <Sparkles className="mt-0.5 h-5 w-5 shrink-0" style={{ color: '#E8793A' }} />
+              <div>
+                <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>Get an AI Concept Design first — then match to a contractor</p>
+                <p className="text-xs text-gray-500 mt-0.5">Property-specific design concepts starting at $395. Exterior, garden, whole home, interior reno, and developer packages available.</p>
+              </div>
+            </div>
+            <Link
+              href="/concept-engine"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ backgroundColor: '#E8793A' }}
+            >
+              Start AI Concept <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>

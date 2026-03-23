@@ -3,6 +3,7 @@ import { RoleHero } from '@/components/roles/RoleHero'
 import { RoleBenefits } from '@/components/roles/RoleBenefits'
 import { RoleWorkflow } from '@/components/roles/RoleWorkflow'
 import { RoleCTA } from '@/components/roles/RoleCTA'
+import { RoleFAQ } from '@/components/roles/RoleFAQ'
 
 export const metadata: Metadata = {
   title: 'For Architects & Design Professionals',
@@ -106,6 +107,26 @@ export default function DesignProfessionalsPage() {
         headline="Design-to-Construction in 6 Phases"
         steps={WORKFLOW}
         accentColor="#1A2B4A"
+      />
+      <RoleFAQ
+        items={[
+          {
+            question: 'What design professional types does Kealee support?',
+            answer: 'Architects, structural engineers, MEP engineers, landscape architects, interior designers, and specialty consultants can all coordinate through the Kealee platform.',
+          },
+          {
+            question: 'How does document version control work for design professionals?',
+            answer: 'All drawing sets and specifications are versioned with full history. Every revision is stamped, tracked, and linked to the relevant RFI, submittal, or change order.',
+          },
+          {
+            question: 'Can design professionals be matched to projects through Kealee?',
+            answer: 'Yes. Register your firm and credentials on the platform. Kealee will match you to projects that fit your specialization, project size, and geography.',
+          },
+          {
+            question: 'Does Kealee offer onsite services?',
+            answer: 'No. All onsite construction activities must be performed by the contractor of record. Kealee provides coordination, document management, and advisory services only.',
+          },
+        ]}
       />
       <RoleCTA
         headline="Bring Clarity to Every Project"

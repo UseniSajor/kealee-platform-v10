@@ -73,11 +73,11 @@ export function ConceptPackageSection() {
 
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <Link
-                href="/concept-package"
+                href="/concept-engine"
                 className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition-all hover:opacity-90"
                 style={{ backgroundColor: '#E8793A' }}
               >
-                Get Your Concept Package <ArrowRight className="h-4 w-4" />
+                Start Your Project <ArrowRight className="h-4 w-4" />
               </Link>
               <div className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
                 Starting at{' '}

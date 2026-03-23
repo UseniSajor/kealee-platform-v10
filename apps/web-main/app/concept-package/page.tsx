@@ -13,7 +13,7 @@ const DELIVERABLES = [
     icon: Eye,
     number: '01',
     title: 'Exterior + Interior Concept Visuals',
-    subtitle: '2–4 options (where exterior or design work is involved)',
+    subtitle: '3 concept options, 1 round of feedback included',
     items: [
       'AI-generated concepts based on your specific property',
       'Style-driven variations — modern, transitional, luxury, farmhouse, and more',

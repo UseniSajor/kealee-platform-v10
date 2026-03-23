@@ -5,6 +5,7 @@ import { RoleHero } from '@/components/roles/RoleHero'
 import { RoleBenefits } from '@/components/roles/RoleBenefits'
 import { RoleWorkflow } from '@/components/roles/RoleWorkflow'
 import { RoleCTA } from '@/components/roles/RoleCTA'
+import { RoleFAQ } from '@/components/roles/RoleFAQ'
 
 export const metadata: Metadata = {
   title: 'For Real Estate Developers — Kealee',
@@ -174,6 +175,30 @@ export default function DevelopersPage() {
         </div>
       </section>
 
+      <RoleFAQ
+        items={[
+          {
+            question: 'What is included in a Kealee feasibility study?',
+            answer: 'Our feasibility packages include pro forma modeling, IRR and cash-on-cash analysis, unit mix optimization, scenario modeling, and a go/no-go recommendation. Pricing ranges from $4,500 to $12,000 based on project size and complexity.',
+          },
+          {
+            question: 'Does Kealee support commercial and mixed-use development?',
+            answer: 'Yes. Office, retail, industrial, mixed-use, and multifamily projects are all supported. See our Commercial Projects page for the full list of project types.',
+          },
+          {
+            question: 'What is the Digital Development Twin System (DDTS)?',
+            answer: 'The DDTS is a live digital model of every project — tracking milestones, payments, change orders, inspection records, and lender draws in real time. Available to all developer and Ops OS accounts.',
+          },
+          {
+            question: 'How does commercial IT infrastructure work under developer services?',
+            answer: 'Managed network installation, security systems, AV, EV charging, and building technology (BMS) are available as part of commercial project coordination for developers and property managers.',
+          },
+          {
+            question: 'Does Kealee offer onsite construction services?',
+            answer: 'No. All onsite construction must be performed by your licensed contractor of record. Kealee provides advisory, feasibility, permitting, contractor matching, and platform management services only.',
+          },
+        ]}
+      />
       <RoleCTA
         headline="Ready to Scale Your Development Business?"
         subhead="Kealee's developer platform gives you institutional-grade tools without the institutional complexity."

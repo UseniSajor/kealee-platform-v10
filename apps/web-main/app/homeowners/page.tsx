@@ -3,6 +3,7 @@ import { RoleHero } from '@/components/roles/RoleHero'
 import { RoleBenefits } from '@/components/roles/RoleBenefits'
 import { RoleWorkflow } from '@/components/roles/RoleWorkflow'
 import { RoleCTA } from '@/components/roles/RoleCTA'
+import { RoleFAQ } from '@/components/roles/RoleFAQ'
 
 export const metadata: Metadata = {
   title: 'For Homeowners — Kealee',
@@ -47,7 +48,7 @@ const WORKFLOW = [
   {
     number: 1,
     title: 'Get Your Concept + Validation',
-    desc: 'For $585, get a structured, property-specific AI Concept Design Package — visuals, design direction, zoning brief, path-to-approval plan, and an included design consultation.',
+    desc: 'For $585, get a structured, property-specific AI Concept Design Package — 3 concept options, 1 round of feedback, design direction, zoning brief, path-to-approval plan, and an included design consultation. Additional revision rounds available as a paid add-on (Unlimited Package includes unlimited rounds).',
   },
   {
     number: 2,
@@ -76,13 +77,19 @@ const WORKFLOW = [
   },
 ]
 
+const REVISION_TIERS = [
+  { tier: 'Starter', price: 'No revisions', note: 'Concept package is final as delivered. Additional rounds available as add-on.' },
+  { tier: 'Standard (Advanced AI)', price: 'Up to 3 rounds', note: 'Three revision rounds included. Upgrade to Full Design Package to unlock Premium tier.', highlight: true },
+  { tier: 'Premium (Full Design)', price: 'Up to 5 rounds', note: 'Five revision rounds. Requires Full Design Package ($4,499) minimum tier to access.' },
+]
+
 const PRICING = [
   {
     section: 'Plan Your Project',
     items: [
-      { name: 'AI Concept Design Package', price: '$585', note: 'Property-specific visuals, design direction, zoning brief, path-to-approval + consultation included.', highlight: true },
-      { name: 'Advanced AI Concept', price: '$899', note: '3 floor plan options, 3D views, material suggestions' },
-      { name: 'Full Design Package', price: '$4,499', note: 'Permit-ready drawing set' },
+      { name: 'AI Concept Design Package', price: '$585', note: '3 concept options, 1 round of feedback. Design direction, zoning brief, path-to-approval + consultation included.', highlight: true },
+      { name: 'Advanced AI Concept', price: '$899', note: '3 floor plan options, 3D views, material suggestions — up to 3 revision rounds' },
+      { name: 'Full Design Package', price: '$4,499', note: 'Permit-ready drawing set — up to 5 revision rounds' },
     ],
     note: 'Projects over $65,000 or with structural complexity are connected with a licensed architect.',
   },
@@ -177,8 +184,41 @@ export default function HomeownersPage() {
           ))}
         </div>
 
+        {/* Revision Tiers */}
+        <div className="mt-10">
+          <h3 className="mb-4 text-lg font-bold" style={{ color: '#1A2B4A' }}>Design Revision Rounds by Package</h3>
+          <div className="overflow-hidden rounded-xl border border-gray-200">
+            {REVISION_TIERS.map((r, i) => (
+              <div
+                key={r.tier}
+                className="flex items-center justify-between px-5 py-4"
+                style={{
+                  backgroundColor: r.highlight ? 'rgba(42,191,191,0.04)' : i % 2 === 0 ? 'white' : '#FAFAFA',
+                  borderBottom: i < REVISION_TIERS.length - 1 ? '1px solid #F3F4F6' : undefined,
+                }}
+              >
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>{r.tier}</p>
+                  <p className="mt-0.5 text-xs text-gray-400">{r.note}</p>
+                </div>
+                <span className="ml-4 flex-shrink-0 text-sm font-bold" style={{ color: '#E8793A' }}>{r.price}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-gray-400">Premium revision credit only applies when upgrading to Full Design Package tier or higher.</p>
+        </div>
+
+        {/* Onsite services disclaimer */}
+        <div className="mt-8 rounded-xl border border-gray-200 bg-white p-5">
+          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#1A2B4A' }}>Important — Onsite Services</p>
+          <p className="mt-2 text-sm text-gray-600">
+            All services requiring onsite support (inspections, site visits, construction oversight) must be performed by your contractor of record.
+            Kealee is a platform and advisory service — we do not offer direct onsite services at this time.
+          </p>
+        </div>
+
         {/* Typical path callout */}
-        <div className="mt-12 rounded-2xl p-8" style={{ backgroundColor: 'rgba(26,43,74,0.03)' }}>
+        <div className="mt-10 rounded-2xl p-8" style={{ backgroundColor: 'rgba(26,43,74,0.03)' }}>
           <p className="text-center text-sm font-medium text-gray-600">
             Typical fully-managed project:
             <span className="ml-2 font-bold" style={{ color: '#1A2B4A' }}>
@@ -201,6 +241,34 @@ export default function HomeownersPage() {
         headline="From Idea to Completion in 6 Steps"
         steps={WORKFLOW}
         accent="#2ABFBF"
+      />
+      <RoleFAQ
+        items={[
+          {
+            question: 'What is included in the $585 AI Concept Design Package?',
+            answer: '3 property-specific concept visuals, design direction summary, layout and flow recommendations, property analysis, path-to-approval plan, rough scope direction, a downloadable digital package, and an included design consultation call. 1 round of feedback is included.',
+          },
+          {
+            question: 'Can I request more design revisions?',
+            answer: 'The Starter package ($585) includes 1 round of feedback. Additional revision rounds are available as a paid add-on. Upgrading to Advanced AI Concept ($899) includes up to 3 rounds. The Full Design Package ($4,499) includes up to 5 rounds.',
+          },
+          {
+            question: 'Does Kealee provide onsite services?',
+            answer: 'No. All services requiring onsite support — such as inspections, site visits, and construction oversight — must be performed by your contractor of record. Kealee is a platform and advisory service and does not offer direct onsite services.',
+          },
+          {
+            question: 'How are homeowner fees structured?',
+            answer: 'All homeowner project fees are one-time per project. There are no monthly subscriptions for homeowners. You pay only for the services your project needs.',
+          },
+          {
+            question: 'How does contractor matching work?',
+            answer: "Kealee's AI matches you with licensed, insured, background-checked contractors based on your trade type, geography, project scope, and budget. You review bids and select your contractor on the platform.",
+          },
+          {
+            question: 'What are escrow-protected payments?',
+            answer: 'Funds are held securely in escrow and released only when you verify each milestone is complete. You never pay for work that has not been done.',
+          },
+        ]}
       />
       <RoleCTA
         headline="Ready to Start Your Project?"

@@ -33,13 +33,6 @@ const ROLES = [
     accent:      '#E8793A',
   },
   {
-    icon:        '📐',
-    label:       'Architect / Engineer',
-    description: 'Design professionals working on construction projects',
-    href:        '/design-professionals',
-    accent:      '#805AD5',
-  },
-  {
     icon:        '🏛️',
     label:       'Government / Municipal',
     description: 'Permit authorities, housing agencies, and municipal planners',

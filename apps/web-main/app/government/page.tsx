@@ -3,6 +3,7 @@ import { RoleHero } from '@/components/roles/RoleHero'
 import { RoleBenefits } from '@/components/roles/RoleBenefits'
 import { RoleWorkflow } from '@/components/roles/RoleWorkflow'
 import { RoleCTA } from '@/components/roles/RoleCTA'
+import { RoleFAQ } from '@/components/roles/RoleFAQ'
 
 export const metadata: Metadata = {
   title: 'For Government & Public Agencies',
@@ -106,6 +107,26 @@ export default function GovernmentPage() {
         headline="From Onboarding to Community Impact"
         steps={WORKFLOW}
         accentColor="#38A169"
+      />
+      <RoleFAQ
+        items={[
+          {
+            question: 'What government agency types use Kealee?',
+            answer: 'Municipal permit offices, housing authorities, redevelopment agencies, and public works departments use Kealee for permit tracking, project oversight, and affordable housing program coordination.',
+          },
+          {
+            question: 'Does Kealee support affordable housing programs?',
+            answer: 'Yes. Kealee supports LIHTC, CDBG, HOME, and other housing finance programs with compliance tracking, draw coordination, and investor-ready reporting.',
+          },
+          {
+            question: 'How does Kealee integrate with existing permit systems?',
+            answer: 'Kealee can be configured to connect with existing AHJ permit management systems via API. Contact our government solutions team for integration details.',
+          },
+          {
+            question: 'Does Kealee offer onsite inspection services?',
+            answer: 'No. All onsite inspections must be performed by licensed public inspectors or the contractor of record. Kealee provides tracking, coordination, and reporting tools only.',
+          },
+        ]}
       />
       <RoleCTA
         headline="Modernize Your Public Works Program"

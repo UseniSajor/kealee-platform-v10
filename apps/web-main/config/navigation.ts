@@ -15,9 +15,9 @@ export interface NavLink {
 
 export interface NavDropdown {
   label:    string
-  href?:    string          // optional top-level link
+  href?:    string
   groups:   NavGroup[]
-  featured?: NavLink        // highlighted item at bottom of dropdown
+  featured?: NavLink
 }
 
 export interface NavGroup {
@@ -30,46 +30,117 @@ export type NavItem = NavLink | (NavDropdown & { type: 'dropdown' })
 // ── Primary navigation items ──────────────────────────────────────────────────
 
 export const PRIMARY_NAV: NavItem[] = [
+  // 1 — AI Concept Engine (flagship product)
   {
-    label: 'Marketplace',
+    label: 'AI Concept Engine',
     type:  'dropdown',
-    href:  '/marketplace',
+    href:  '/concept-engine',
     groups: [
       {
-        title: 'Find Professionals',
+        title: 'Choose Your Design Path',
         links: [
-          { label: 'Browse Contractors',  href: '/marketplace',           description: 'Search verified local contractors' },
-          { label: 'Post a Project',      href: '/contact',               description: 'Describe your project and get matched' },
-          { label: 'How It Works',        href: '/marketplace#how-it-works', description: 'Our vetting and matching process' },
-        ],
-      },
-      {
-        title: 'For Contractors',
-        links: [
-          { label: 'Join the Network',    href: '/contractor/register',   description: 'Apply to become a Kealee contractor', badge: 'Apply' },
-          { label: 'Manage My Bids',      href: '/portal-contractor',     description: 'Access your contractor dashboard' },
+          {
+            label:       'Exterior Design',
+            href:        '/concept-engine/homeowner',
+            description: 'Facade, curb appeal, landscaping, hardscaping, outdoor living',
+          },
+          {
+            label:       'Garden & Farming',
+            href:        '/concept-engine/garden',
+            description: 'Raised beds, backyard farming, irrigation, greenhouse design',
+            badge:       'New',
+          },
+          {
+            label:       'Whole Home Renovation',
+            href:        '/concept-engine/whole-home',
+            description: 'Floor plan redesign, structural, systems, every room',
+          },
+          {
+            label:       'Interior Reno & Addition',
+            href:        '/concept-engine/interior-reno',
+            description: 'Kitchen, bath, additions, ADUs, and full interior redesign',
+          },
+          {
+            label:       'Developer Concept',
+            href:        '/concept-engine/developer',
+            description: 'Multifamily, mixed-use, and new development project concepts',
+          },
         ],
       },
     ],
-    featured: { label: 'Start a Project Today', href: '/contact', description: 'Get matched with a vetted contractor in 24 hours' },
+    featured: {
+      label:       'AI Concept Package — From $395',
+      href:        '/get-started',
+      description: 'AI design + contractor-ready PDF · 5–7 business day delivery',
+    },
   },
+
+  // 2 — For Homeowners
   {
     label: 'For Homeowners',
     type:  'dropdown',
     href:  '/homeowners',
     groups: [
       {
+        title: 'Start a Project',
         links: [
-          { label: 'Start a Project',       href: '/homeowners',         description: 'Renovations, additions, new construction' },
-          { label: 'Track My Build',        href: '/portal-owner',       description: 'Monitor progress and milestones' },
-          { label: 'Escrow Payments',       href: '/homeowners#payments', description: 'Milestone-based, protected payments' },
-          { label: 'AI Project Assistant',  href: '/homeowners#keabot',  description: 'Ask KeaBot Owner anything about your project' },
-          { label: 'Pricing',               href: '/pricing',            description: 'Transparent per-project pricing — no subscriptions' },
+          {
+            label:       'Get AI Concept Design',
+            href:        '/concept-engine',
+            description: 'See your project before breaking ground — from $395',
+            badge:       'AI',
+          },
+          {
+            label:       'Exterior & Curb Appeal',
+            href:        '/homeowners',
+            description: 'Facade, landscaping, hardscaping, outdoor living',
+          },
+          {
+            label:       'Garden & Farming',
+            href:        '/homeowners/garden-farming',
+            description: 'Garden design, raised beds, irrigation, greenhouse build',
+          },
+          {
+            label:       'Whole Home Renovation',
+            href:        '/homeowners',
+            description: 'Complete transformation — floor plan to finish',
+          },
+          {
+            label:       'Kitchen, Bath & Additions',
+            href:        '/homeowners',
+            description: 'Interior renovations, room additions, and ADUs',
+          },
+        ],
+      },
+      {
+        title: 'Manage Your Build',
+        links: [
+          {
+            label:       'Owner Portal',
+            href:        '/login',
+            description: 'Track progress, approve payments, message your team',
+          },
+          {
+            label:       'Escrow Payments',
+            href:        '/homeowners#payments',
+            description: 'Milestone-based, escrow-protected payments',
+          },
+          {
+            label:       'AI Project Assistant',
+            href:        '/homeowners#keabot',
+            description: 'KeaBot Owner — ask anything about your project',
+          },
         ],
       },
     ],
-    featured: { label: 'AI Concept Design Package — $585', href: '/concept-package', description: 'Property-specific visuals, design direction, zoning brief + consultation included' },
+    featured: {
+      label:       'Start with AI Concept Design',
+      href:        '/get-started',
+      description: 'Property-specific design concept + consultation — from $395',
+    },
   },
+
+  // 3 — For Developers
   {
     label: 'For Developers',
     type:  'dropdown',
@@ -78,126 +149,220 @@ export const PRIMARY_NAV: NavItem[] = [
       {
         title: 'Development Tools',
         links: [
-          { label: 'Land Intelligence',     href: '/developers#land',         description: 'Parcel analysis, zoning, due diligence' },
-          { label: 'Feasibility Studies',   href: '/developers#feasibility',  description: 'Pro forma modeling and scenario analysis' },
-          { label: 'Development Finance',   href: '/developers#finance',      description: 'Capital stack, draw tracking, investor reports' },
+          {
+            label:       'Land Intelligence',
+            href:        '/developers#land',
+            description: 'Parcel analysis, zoning, and due diligence tools',
+          },
+          {
+            label:       'Feasibility Studies',
+            href:        '/developers#feasibility',
+            description: 'Pro forma modeling and go/no-go scenario analysis',
+          },
+          {
+            label:       'Development Finance',
+            href:        '/developers#finance',
+            description: 'Capital stack, draw tracking, investor reporting',
+          },
+          {
+            label:       'Commercial Projects',
+            href:        '/commercial',
+            description: 'Office, retail, industrial, mixed-use, multifamily',
+          },
+          {
+            label:       'AI Developer Concept',
+            href:        '/concept-engine/developer',
+            description: 'AI concept packages for new development projects',
+            badge:       'AI',
+          },
         ],
       },
       {
-        title: 'Management',
+        title: 'Portals & Dashboards',
         links: [
-          { label: 'Portfolio Dashboard',   href: '/portal-developer',     description: 'Multi-project analytics and reporting' },
-          { label: 'Digital Twin System',   href: '/developers#ddts',      description: 'Live digital model of every project' },
+          {
+            label:       'Developer Portal',
+            href:        '/login',
+            description: 'Portfolio dashboard, analytics, and multi-project reporting',
+          },
+          {
+            label:       'Digital Twin System',
+            href:        '/developers#ddts',
+            description: 'Live digital model of every project in your portfolio',
+          },
+          {
+            label:       'Property Managers',
+            href:        '/property-managers',
+            description: 'Capital improvement and portfolio project management',
+          },
         ],
       },
     ],
+    featured: {
+      label:       'Open Developer Portal',
+      href:        '/login',
+      description: 'Land · Feasibility · Capital · Portfolio — one platform',
+    },
   },
+
+  // 4 — For GC & Contractors
   {
-    label: 'For Contractors',
+    label: 'For GC & Contractors',
     type:  'dropdown',
     href:  '/contractors',
     groups: [
       {
+        title: 'Join & Win Work',
         links: [
-          { label: 'Join the Marketplace',  href: '/contractor/register',   description: 'Get verified and start winning bids', badge: 'Apply' },
-          { label: 'Manage Projects',       href: '/portal-contractor',     description: 'Construction OS: schedule, RFIs, punch list' },
-          { label: 'Lead Pipeline',         href: '/contractor/leads',      description: 'Track and respond to matched leads' },
-          { label: 'KeaBot GC',             href: '/contractors#keabot',    description: 'AI assistant for bids, compliance, crew' },
+          {
+            label:       'Join as GC / Builder / Contractor',
+            href:        '/contractor/register',
+            description: 'Get verified and start winning matched project bids',
+            badge:       'Apply',
+          },
+          {
+            label:       'Browse Open Projects',
+            href:        '/marketplace',
+            description: 'Find projects matched to your trade, license, and area',
+          },
+          {
+            label:       'Lead Pipeline',
+            href:        '/contractors',
+            description: 'Track and respond to matched leads from homeowners',
+          },
+        ],
+      },
+      {
+        title: 'Run Your Business',
+        links: [
+          {
+            label:       'Contractor Portal',
+            href:        '/login',
+            description: 'Construction OS — schedules, RFIs, punch lists, payments',
+          },
+          {
+            label:       'KeaBot GC',
+            href:        '/contractors#keabot',
+            description: 'AI assistant for bids, compliance, and crew management',
+          },
+          {
+            label:       'Milestone Payments',
+            href:        '/contractors#payments',
+            description: 'Escrow-backed payments released at each verified milestone',
+          },
         ],
       },
     ],
-    featured: { label: 'Apply to Join', href: '/contractor/register', description: 'Licensed & insured contractors — apply in minutes' },
+    featured: {
+      label:       'Apply to Join',
+      href:        '/contractor/register',
+      description: 'Licensed & insured contractors — apply in minutes',
+    },
   },
+
+  // 5 — Marketplace
   {
-    label: 'Architects & Engineers',
+    label: 'Marketplace',
     type:  'dropdown',
-    href:  '/design-professionals',
+    href:  '/marketplace',
     groups: [
       {
+        title: 'Find Professionals',
         links: [
-          { label: 'Project Coordination',  href: '/design-professionals',         description: 'Collaborate across the full project team' },
-          { label: 'RFI Management',        href: '/design-professionals#rfis',    description: 'Streamlined request-for-information workflows' },
-          { label: 'Drawing Management',    href: '/design-professionals#drawings',description: 'Version control for construction documents' },
-          { label: 'Submittals',            href: '/design-professionals#submittals', description: 'Shop drawing review and approval tracking' },
+          {
+            label:       'Browse GC / Builders / Contractors',
+            href:        '/marketplace',
+            description: 'Search verified, background-checked professionals',
+          },
+          {
+            label:       'Post a Project',
+            href:        '/contact',
+            description: 'Describe your project and get matched in 24 hrs',
+          },
+          {
+            label:       'AI Concept + Contractor Match',
+            href:        '/get-started',
+            description: 'Get an AI design concept, then match to a contractor',
+            badge:       'AI',
+          },
+          {
+            label:       'How It Works',
+            href:        '/marketplace#how-it-works',
+            description: 'Vetting, matching, and milestone payment protection',
+          },
         ],
       },
-    ],
-  },
-  {
-    label: 'Government',
-    type:  'dropdown',
-    href:  '/government',
-    groups: [
       {
+        title: 'For GC / Builders / Contractors',
         links: [
-          { label: 'Municipal Dashboard',   href: '/government',                description: 'Oversight tools for permit authorities' },
-          { label: 'Permit Coordination',   href: '/government#permits',        description: 'Digital permit tracking and status' },
-          { label: 'Affordable Housing',    href: '/government#affordable',     description: 'Tools aligned with housing finance programs' },
-          { label: 'Analytics & Reporting', href: '/government#analytics',      description: 'Construction activity data for your jurisdiction' },
+          {
+            label:       'Join the Marketplace',
+            href:        '/contractor/register',
+            description: 'Apply as a verified GC, builder, or specialty contractor',
+            badge:       'Apply',
+          },
+          {
+            label:       'Contractor Portal',
+            href:        '/login',
+            description: 'Manage bids, projects, crew, and payments',
+          },
         ],
       },
     ],
+    featured: {
+      label:       'Start a Project',
+      href:        '/get-started',
+      description: 'AI concept design + vetted contractor match — from $395',
+    },
   },
-  {
-    label: 'Ops OS',
-    type:  'dropdown',
-    href:  '/ops',
-    groups: [
-      {
-        title: 'Operations Tiers',
-        links: [
-          { label: 'Tier A — $1,750/mo',   href: '/pricing#ops',        description: 'Small operators & independents (up to 5 projects)' },
-          { label: 'Tier B — $3,750/mo',   href: '/pricing#ops',        description: 'Growing contractors (up to 15 projects)' },
-          { label: 'Tier C — $9,500/mo',   href: '/pricing#ops',        description: 'Large GCs & multi-trade operations (up to 50 projects)' },
-          { label: 'Tier D — $16,500/mo',  href: '/pricing#ops',        description: 'Enterprise developers & portfolio operators' },
-        ],
-      },
-    ],
-    featured: { label: 'View Ops OS pricing', href: '/pricing', description: 'Full platform access for construction businesses' },
-  },
+
+  // 6 — About
   { label: 'About', href: '/about' },
-  { label: 'Careers', href: '/careers' },
 ]
 
 // ── CTA buttons ───────────────────────────────────────────────────────────────
 
-export const NAV_CTA_PRIMARY = { label: 'Request Design Consult', href: '/intake' }
-export const NAV_CTA_SECONDARY = { label: 'Join Marketplace', href: '/contractor/register' }
-export const NAV_LOGIN = { label: 'Log In', href: '/login' }
+export const NAV_CTA_PRIMARY   = { label: 'Start AI Concept',          href: '/get-started' }
+export const NAV_CTA_SECONDARY = { label: 'Join as GC / Contractor',   href: '/contractor/register' }
+export const NAV_LOGIN         = { label: 'Log In', href: '/login' }
 
 // ── Footer links ──────────────────────────────────────────────────────────────
 
 export const FOOTER_NAV = {
   platform: [
-    { label: 'Digital Twins',           href: '/developers#ddts' },
-    { label: 'Land Intelligence',        href: '/developers#land' },
-    { label: 'Feasibility Studies',      href: '/developers#feasibility' },
-    { label: 'Construction OS',          href: '/contractors' },
-    { label: 'Payments & Escrow',        href: '/homeowners#payments' },
-    { label: 'Marketplace',              href: '/marketplace' },
-    { label: 'AI KeaBots',               href: '/#keabots' },
+    { label: 'AI Concept Engine',          href: '/concept-engine' },
+    { label: 'Digital Twins',              href: '/developers#ddts' },
+    { label: 'Land Intelligence',          href: '/developers#land' },
+    { label: 'Feasibility Studies',        href: '/developers#feasibility' },
+    { label: 'Construction OS',            href: '/contractors' },
+    { label: 'Payments & Escrow',          href: '/homeowners#payments' },
+    { label: 'Marketplace',                href: '/marketplace' },
+    { label: 'AI KeaBots',                 href: '/#keabots' },
   ],
   solutions: [
-    { label: 'For Homeowners',           href: '/homeowners' },
-    { label: 'For Developers',           href: '/developers' },
-    { label: 'For Contractors',          href: '/contractors' },
-    { label: 'For Architects & Engineers', href: '/design-professionals' },
-    { label: 'Government',               href: '/government' },
+    { label: 'For Homeowners',             href: '/homeowners' },
+    { label: 'Garden & Farming',           href: '/homeowners/garden-farming' },
+    { label: 'For Developers',             href: '/developers' },
+    { label: 'For GC & Contractors',       href: '/contractors' },
+    { label: 'For Property Managers',      href: '/property-managers' },
+    { label: 'Commercial Projects',        href: '/commercial' },
+    { label: 'Government',                 href: '/government' },
   ],
   portals: [
-    { label: 'Owner Portal',             href: '/portal-owner' },
-    { label: 'Contractor Portal',        href: '/portal-contractor' },
-    { label: 'Developer Portal',         href: '/portal-developer' },
-    { label: 'Command Center',           href: '/command-center' },
+    { label: 'Owner Portal',               href: '/login' },
+    { label: 'Contractor Portal',          href: '/login' },
+    { label: 'Developer Portal',           href: '/login' },
+    { label: 'Command Center',             href: '/login' },
   ],
   company: [
-    { label: 'About Us',                 href: '/about' },
-    { label: 'Blog',                     href: '/blog' },
-    { label: 'Pricing',                  href: '/pricing' },
-    { label: 'Contact',                  href: '/contact' },
+    { label: 'About Us',                   href: '/about' },
+    { label: 'Blog',                       href: '/blog' },
+    { label: 'FAQ',                        href: '/faq' },
+    { label: 'Contact',                    href: '/contact' },
+    { label: 'Pricing',                    href: '/pricing' },
   ],
   legal: [
-    { label: 'Terms of Service',         href: '/terms' },
-    { label: 'Privacy Policy',           href: '/privacy' },
+    { label: 'Terms of Service',           href: '/terms' },
+    { label: 'Privacy Policy',             href: '/privacy' },
   ],
 }

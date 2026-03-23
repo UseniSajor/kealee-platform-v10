@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Shield } from 'lucide-react'
+import { ArrowRight, Shield, Sparkles } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 import { Heading } from '@/components/ui/Heading'
 
@@ -38,12 +38,31 @@ export function MarketplaceSection() {
               ))}
             </ul>
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            {/* AI Concept Engine callout */}
+            <div
+              className="mt-8 flex items-start gap-3 rounded-xl p-4"
+              style={{ backgroundColor: 'rgba(232,121,58,0.06)', border: '1px solid rgba(232,121,58,0.2)' }}
+            >
+              <Sparkles className="mt-0.5 h-5 w-5 shrink-0" style={{ color: '#E8793A' }} />
+              <div>
+                <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>Start with an AI Concept Design</p>
+                <p className="mt-0.5 text-xs text-gray-500">Get a property-specific design concept, then match to a vetted contractor — all in one platform.</p>
+                <Link
+                  href="/concept-engine"
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-semibold hover:underline"
+                  style={{ color: '#E8793A' }}
+                >
+                  Start AI Concept — From $395 <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-3">
               <Link href="/marketplace" className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90" style={{ backgroundColor: '#E8793A' }}>
                 Browse Contractors <ArrowRight className="h-4 w-4" />
               </Link>
               <Link href="/contractor/register" className="inline-flex items-center gap-2 rounded-xl border-2 px-5 py-2.5 text-sm font-semibold hover:bg-teal-50" style={{ borderColor: '#2ABFBF', color: '#2ABFBF' }}>
-                Join as Contractor
+                Join as GC / Contractor
               </Link>
             </div>
           </div>

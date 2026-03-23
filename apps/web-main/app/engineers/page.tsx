@@ -3,6 +3,7 @@ import { RoleHero } from '@/components/roles/RoleHero'
 import { RoleBenefits } from '@/components/roles/RoleBenefits'
 import { RoleWorkflow } from '@/components/roles/RoleWorkflow'
 import { RoleCTA } from '@/components/roles/RoleCTA'
+import { RoleFAQ } from '@/components/roles/RoleFAQ'
 
 export const metadata: Metadata = {
   title: 'For Engineers',
@@ -106,6 +107,26 @@ export default function EngineersPage() {
         headline="From Design Documents to Final Certification"
         steps={WORKFLOW}
         accentColor="#38A169"
+      />
+      <RoleFAQ
+        items={[
+          {
+            question: 'What engineering disciplines does Kealee support?',
+            answer: 'Structural, civil, MEP (mechanical, electrical, plumbing), geotechnical, and specialty engineering. All disciplines can coordinate on the same project through the Kealee platform.',
+          },
+          {
+            question: 'How does Kealee manage RFIs and submittals for engineers?',
+            answer: 'RFIs and submittals are tracked with full version control, routing, and response deadlines — linked directly to the relevant drawing or specification section.',
+          },
+          {
+            question: 'Does Kealee offer onsite services?',
+            answer: 'No. All onsite construction activities must be performed by the contractor of record. Kealee provides coordination, platform tools, and advisory services only.',
+          },
+          {
+            question: 'Can engineers apply to join the Kealee professional network?',
+            answer: 'Yes. Licensed engineers can apply to join the Kealee network and be matched to projects requiring their specialty. Submit your application via the Engineer Register page.',
+          },
+        ]}
       />
       <RoleCTA
         headline="Join the Kealee Engineering Network"

@@ -28,17 +28,8 @@ const ROLES = [
     tagline:     'Win more. Build better.',
     description: 'Join the vetted marketplace, manage bids, track field operations, and grow your reputation through verified work.',
     href:        '/contractors',
-    cta:         'Join the Network',
+    cta:         'Join as GC / Contractor',
     accent:      '#E8793A',
-  },
-  {
-    emoji:       '📐',
-    title:       'Architects & Engineers',
-    tagline:     'Collaborate seamlessly',
-    description: 'Coordinate RFIs, manage submittals, distribute drawing sets, and stay connected to every project stakeholder.',
-    href:        '/design-professionals',
-    cta:         'See AE Tools',
-    accent:      '#805AD5',
   },
   {
     emoji:       '🏛️',
@@ -62,7 +53,7 @@ export function RoleCards() {
           </p>
         </div>
 
-        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {ROLES.map(role => (
             <Link
               key={role.title}
