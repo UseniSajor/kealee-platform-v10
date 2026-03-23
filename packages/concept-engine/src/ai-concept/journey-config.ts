@@ -11,8 +11,29 @@ export type ProjectPath =
   | 'addition_expansion'
   | 'exterior_concept'
   | 'capture_site_concept'
+  // Commercial / developer paths
+  | 'multi_unit_residential'
+  | 'mixed_use'
+  | 'commercial_office'
+  | 'development_feasibility'
 
 export type UserType = 'homeowner' | 'investor' | 'developer' | 'contractor' | 'anonymous'
+
+/** Which user types have access to each project path */
+export const PATH_USER_TYPES: Record<ProjectPath, UserType[]> = {
+  kitchen_remodel:        ['homeowner', 'contractor', 'anonymous'],
+  bathroom_remodel:       ['homeowner', 'contractor', 'anonymous'],
+  interior_renovation:    ['homeowner', 'contractor', 'anonymous'],
+  whole_home_remodel:     ['homeowner', 'contractor', 'anonymous'],
+  addition_expansion:     ['homeowner', 'developer', 'contractor', 'anonymous'],
+  exterior_concept:       ['homeowner', 'anonymous'],
+  capture_site_concept:   ['homeowner', 'developer', 'investor', 'anonymous'],
+  // Commercial — developer and investor only
+  multi_unit_residential: ['developer', 'investor'],
+  mixed_use:              ['developer', 'investor'],
+  commercial_office:      ['developer', 'investor'],
+  development_feasibility:['developer', 'investor'],
+}
 
 export type JourneyStep =
   | 'homepage'
@@ -299,6 +320,108 @@ export const PROJECT_PATH_CONFIGS: Record<ProjectPath, ProjectPathConfig> = {
     minBudget: 'under_10k',
     maxBudget: '100k_plus',
     typicalTimeline: 'TBD',
+  },
+}
+
+export const COMMERCIAL_PROJECT_PATH_CONFIGS: Record<
+  'multi_unit_residential' | 'mixed_use' | 'commercial_office' | 'development_feasibility',
+  ProjectPathConfig
+> = {
+  multi_unit_residential: {
+    path: 'multi_unit_residential',
+    label: 'Multi-Unit Residential',
+    tagline: 'ADU, duplex, or apartment — optimized unit mix and pro forma',
+    basePrice: 799,
+    captureRequired: false,
+    captureOptional: true,
+    architectReviewDefault: true,
+    permitPathIncluded: true,
+    deliverables: [
+      'AI-optimized unit mix (studio/1BR/2BR/3BR allocation)',
+      'Multi-floor plate layouts with exterior exposure scoring',
+      'Development program (GFA, FAR, parking, amenities)',
+      'Pro forma financials (NOI, cap rate, IRR)',
+      'Permit path + zoning compliance notes',
+      'Investor summary package',
+      'Architect handoff document',
+    ],
+    upsellServices: ['full_architecture', 'permit_expediting', 'build_ops', 'design_development'],
+    minBudget: '500k',
+    maxBudget: '10M+',
+    typicalTimeline: '18–36 months',
+  },
+  mixed_use: {
+    path: 'mixed_use',
+    label: 'Mixed-Use Development',
+    tagline: 'Retail ground floor + residential above — full stack concept',
+    basePrice: 1299,
+    captureRequired: false,
+    captureOptional: true,
+    architectReviewDefault: true,
+    permitPathIncluded: true,
+    deliverables: [
+      'Mixed-use program (retail GFA + residential unit mix)',
+      'Floor-by-floor plate layouts',
+      'Retail configuration and tenant-ready sizing',
+      'Full pro forma with retail + residential income streams',
+      'Zoning compliance + mixed-use permit path',
+      'Development cost estimate (hard + soft costs)',
+      'Investor package with 3 development scenarios',
+      'Architect handoff',
+    ],
+    upsellServices: ['full_architecture', 'permit_expediting', 'build_ops'],
+    minBudget: '1M',
+    maxBudget: '50M+',
+    typicalTimeline: '24–60 months',
+  },
+  commercial_office: {
+    path: 'commercial_office',
+    label: 'Commercial Office',
+    tagline: 'Workspace planning with AI — from headcount to floor plan',
+    basePrice: 999,
+    captureRequired: false,
+    captureOptional: true,
+    architectReviewDefault: true,
+    permitPathIncluded: true,
+    deliverables: [
+      'Space program (seat count → room requirements)',
+      'AI-optimized floor plan with 3 layout variants',
+      'Open plan, private office, and hybrid configurations',
+      'Space efficiency metrics (NUF, circulation %)',
+      'Workplace design narrative',
+      'Permit path notes',
+      'Quantity takeoff (workstations, rooms, amenities)',
+      'Architect handoff',
+    ],
+    upsellServices: ['full_architecture', 'permit_expediting', 'contractor_matching'],
+    minBudget: '100k',
+    maxBudget: '5M+',
+    typicalTimeline: '8–20 weeks',
+  },
+  development_feasibility: {
+    path: 'development_feasibility',
+    label: 'Development Feasibility',
+    tagline: 'Land + vision → bankable concept with pro forma in minutes',
+    basePrice: 1499,
+    captureRequired: false,
+    captureOptional: false,
+    architectReviewDefault: true,
+    permitPathIncluded: true,
+    deliverables: [
+      'Full development program with recommended typology',
+      'Unit mix optimization across 3 alternative scenarios',
+      'Zoning analysis (FAR, height, setbacks)',
+      'Development cost estimate (land + hard + soft)',
+      'Pro forma financials (NOI, cap rate, IRR, equity multiple)',
+      'Break-even analysis and sensitivity table',
+      'Investor executive summary',
+      'Risk factors + opportunity analysis',
+      'Architect handoff with entitlement checklist',
+    ],
+    upsellServices: ['full_architecture', 'permit_expediting', 'build_ops', 'design_development'],
+    minBudget: '500k',
+    maxBudget: 'unlimited',
+    typicalTimeline: 'Project-dependent',
   },
 }
 

@@ -6,10 +6,16 @@
 // Floor plan
 export * from './floorplan/types';
 export { buildRoomGraph }         from './floorplan/build-room-graph';
-export { buildLayoutJson }        from './floorplan/build-layout-json';
+export { buildLayoutJson, buildLayoutVariants } from './floorplan/build-layout-json';
 export { scoreAdjacency, generateAdjacencyNotes } from './floorplan/build-adjacency';
 export { inferRoomDimensions }    from './floorplan/infer-room-dimensions';
 export { renderSvgFloorplan }     from './floorplan/render-svg-floorplan';
+// Optimizer layer
+export { optimizeLayout }         from './floorplan/layout-optimizer';
+export type { LayoutScore, OptimizedLayout } from './floorplan/layout-optimizer';
+export type { EnergyWeights }     from './floorplan/layout-energy';
+export { checkCodeCompliance }    from './floorplan/layout-constraints';
+export { scoreRoomLighting, scoreLayoutLighting } from './floorplan/orientation-model';
 
 // Concept package
 export { generateConceptNarrative } from './package/generate-concept-narrative';
@@ -46,3 +52,6 @@ export * from './ai-concept';
 // PDF renderer
 export { renderConceptPdf } from './pdf/render-concept-pdf';
 export type { ConceptPdfInput, ConceptPdfResult } from './pdf/render-concept-pdf';
+
+// Commercial concept engine (developer / investor)
+export * from './commercial';

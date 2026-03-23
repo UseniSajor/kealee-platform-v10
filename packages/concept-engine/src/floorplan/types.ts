@@ -3,7 +3,8 @@
  * Supports all six project paths. Not a BIM replacement.
  */
 
-export type ProjectPath =
+// ── Residential project paths ────────────────────────────────────────────────
+export type ResidentialProjectPath =
   | 'kitchen_remodel'
   | 'bathroom_remodel'
   | 'interior_renovation'
@@ -11,6 +12,15 @@ export type ProjectPath =
   | 'addition_expansion'
   | 'exterior_concept'
   | 'capture_site_concept';
+
+// ── Commercial project paths (developer / investor) ───────────────────────────
+export type CommercialProjectPath =
+  | 'multi_unit_residential'
+  | 'mixed_use'
+  | 'commercial_office'
+  | 'development_feasibility';
+
+export type ProjectPath = ResidentialProjectPath | CommercialProjectPath;
 
 export type RoomType =
   | 'kitchen'
@@ -108,6 +118,27 @@ export interface FloorPlanJson {
   totalDepthFt: number;
   layoutIssues: string[];
   generatedAt: string;
+}
+
+// ── Layout scoring (output of optimizer) ────────────────────────────────────
+
+export interface LayoutScore {
+  overallScore: number;       // 0–100 composite
+  adjacencyScore: number;     // % of adjacency requirements satisfied
+  naturalLightScore: number;  // avg light score for habitable rooms
+  circulationScore: number;   // 0–100 flow score
+  spaceEfficiency: number;    // usable area / footprint %
+  codeCompliant: boolean;
+  codeViolations: string[];
+}
+
+export interface FloorPlanVariant {
+  variantId: 'A' | 'B' | 'C';
+  variantLabel: string;       // "Open Flow" | "Private & Defined" | "Efficient"
+  floorplanJson: FloorPlanJson;
+  svgString: string;
+  score: LayoutScore;
+  primaryDifferentiator: string;
 }
 
 // ── Intake input passed into the concept engine ─────────────────────────────

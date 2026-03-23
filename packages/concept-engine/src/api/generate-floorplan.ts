@@ -1,12 +1,22 @@
 /**
- * API contract: generate a floor plan from intake + capture data.
- * Called by the API route POST /api/concept/generate-floorplan
+ * API contract: generate floor plan variants from intake + capture data.
+ * Returns 3 layout alternatives (A/B/C) + recommended variant.
+ * Called by POST /api/concept/generate-floorplan
  */
 
-import type { ConceptIntakeInput, FloorPlanJson } from '../floorplan/types';
-import { buildRoomGraph }      from '../floorplan/build-room-graph';
-import { buildLayoutJson }     from '../floorplan/build-layout-json';
-import { renderSvgFloorplan }  from '../floorplan/render-svg-floorplan';
+import type { ConceptIntakeInput, FloorPlanJson, FloorPlanVariant, ProjectPath } from '../floorplan/types';
+import { buildRoomGraph }         from '../floorplan/build-room-graph';
+import { buildLayoutVariants }    from '../floorplan/build-layout-json';
+import { renderSvgFloorplan }     from '../floorplan/render-svg-floorplan';
+
+// All valid project paths (residential + commercial)
+const VALID_PATHS: ProjectPath[] = [
+  'kitchen_remodel', 'bathroom_remodel', 'interior_renovation',
+  'whole_home_remodel', 'addition_expansion', 'exterior_concept',
+  'capture_site_concept',
+  'multi_unit_residential', 'mixed_use', 'commercial_office',
+  'development_feasibility',
+];
 
 export interface GenerateFloorplanInput {
   intakeId:          string;
@@ -28,13 +38,18 @@ export interface GenerateFloorplanInput {
   propertyUse?:      string;
   jurisdiction?:     string;
   timelineGoal?:     string;
+  // Commercial / developer fields
+  totalUnits?:       number;
+  totalGfaSqFt?:     number;
+  targetRoi?:        number;
+  unitMixProgram?:   Record<string, number>; // { studio: 20, oneBr: 40, ... }
   // Enrichment from capture layer (optional)
   captureZones?:     string[];
   captureAssets?:    Array<{
-    zone:          string;
-    aiLabel?:      string;
-    aiDescription?:string;
-    aiTags?:       string[];
+    zone:           string;
+    aiLabel?:       string;
+    aiDescription?: string;
+    aiTags?:        string[];
     systemCategory?:string;
   }>;
   voiceNoteTranscriptions?: string[];
@@ -46,24 +61,30 @@ export interface GenerateFloorplanInput {
 }
 
 export interface GenerateFloorplanResult {
-  floorplanId:  string;
-  floorplanJson:FloorPlanJson;
-  svgString:    string;
-  totalAreaFt2: number;
-  roomCount:    number;
-  layoutIssues: string[];
+  /** Primary (recommended) variant */
+  floorplanId:   string;
+  floorplanJson: FloorPlanJson;
+  svgString:     string;
+  totalAreaFt2:  number;
+  roomCount:     number;
+  layoutIssues:  string[];
+  /** Score of recommended variant */
+  score: {
+    overallScore:       number;
+    adjacencyScore:     number;
+    naturalLightScore:  number;
+    circulationScore:   number;
+    spaceEfficiency:    number;
+    codeCompliant:      boolean;
+  };
+  /** All 3 variants for comparison UI */
+  variants:    FloorPlanVariant[];
+  recommended: 'A' | 'B' | 'C';
 }
 
 export function generateFloorplan(input: GenerateFloorplanInput): GenerateFloorplanResult {
-  // Validate and cast project path
-  const validPaths = [
-    'kitchen_remodel', 'bathroom_remodel', 'interior_renovation',
-    'whole_home_remodel', 'addition_expansion', 'exterior_concept',
-    'capture_site_concept',
-  ] as const;
-
-  const projectPath = validPaths.includes(input.projectPath as typeof validPaths[number])
-    ? (input.projectPath as ConceptIntakeInput['projectPath'])
+  const projectPath: ProjectPath = VALID_PATHS.includes(input.projectPath as ProjectPath)
+    ? (input.projectPath as ProjectPath)
     : 'interior_renovation';
 
   const conceptInput: ConceptIntakeInput = {
@@ -91,16 +112,27 @@ export function generateFloorplan(input: GenerateFloorplanInput): GenerateFloorp
     spatialNodes:    input.spatialNodes,
   };
 
-  const graph          = buildRoomGraph(conceptInput);
-  const { layout, json } = buildLayoutJson(graph, conceptInput);
-  const svgString      = renderSvgFloorplan(layout);
+  const graph = buildRoomGraph(conceptInput);
+  const { variants, recommended } = buildLayoutVariants(graph, conceptInput);
+
+  const rec = recommended;
 
   return {
-    floorplanId:  json.id,
-    floorplanJson:json,
-    svgString,
-    totalAreaFt2: json.totalAreaFt2,
-    roomCount:    json.rooms.length,
-    layoutIssues: json.layoutIssues,
+    floorplanId:   rec.floorplanJson.id,
+    floorplanJson: rec.floorplanJson,
+    svgString:     rec.svgString,
+    totalAreaFt2:  rec.floorplanJson.totalAreaFt2,
+    roomCount:     rec.floorplanJson.rooms.length,
+    layoutIssues:  rec.floorplanJson.layoutIssues,
+    score: {
+      overallScore:      rec.score.overallScore,
+      adjacencyScore:    rec.score.adjacencyScore,
+      naturalLightScore: rec.score.naturalLightScore,
+      circulationScore:  rec.score.circulationScore,
+      spaceEfficiency:   rec.score.spaceEfficiency,
+      codeCompliant:     rec.score.codeCompliant,
+    },
+    variants,
+    recommended: rec.variantId,
   };
 }
