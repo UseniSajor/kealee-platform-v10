@@ -17,6 +17,7 @@ WORKDIR /app
 # Copy workspace manifests for dependency resolution
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/m-marketplace/package.json ./apps/m-marketplace/package.json
+COPY packages/intake/package.json ./packages/intake/package.json
 COPY packages/ui/package.json ./packages/ui/package.json
 COPY packages/auth/package.json ./packages/auth/package.json
 COPY packages/funnel-session/package.json ./packages/funnel-session/package.json
@@ -46,6 +47,7 @@ COPY --from=deps /app/ ./
 # Copy source code for workspace packages
 COPY packages/database/ ./packages/database/
 COPY packages/shared/ ./packages/shared/
+COPY packages/intake/ ./packages/intake/
 COPY packages/ui/ ./packages/ui/
 COPY packages/auth/ ./packages/auth/
 COPY packages/funnel-session/ ./packages/funnel-session/
@@ -61,6 +63,7 @@ RUN cd packages/database && npx prisma generate && pnpm run build
 
 # Build workspace packages that m-marketplace depends on (order matters)
 RUN cd packages/shared && pnpm run build 2>/dev/null || true
+RUN cd packages/intake && pnpm run build 2>/dev/null || true
 RUN cd packages/ui && pnpm run build
 RUN cd packages/auth && pnpm run build
 RUN cd packages/funnel-session && pnpm run build

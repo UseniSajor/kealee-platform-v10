@@ -31,6 +31,7 @@ COPY packages/shared/package.json                ./packages/shared/package.json
 COPY packages/storage/package.json               ./packages/storage/package.json
 COPY packages/estimating/package.json            ./packages/estimating/package.json
 COPY packages/workflow-engine/package.json       ./packages/workflow-engine/package.json
+COPY packages/ai/package.json                    ./packages/ai/package.json
 COPY packages/ai-chat/package.json               ./packages/ai-chat/package.json
 COPY packages/analytics/package.json             ./packages/analytics/package.json
 COPY packages/audit/package.json                 ./packages/audit/package.json
@@ -52,6 +53,7 @@ COPY packages/shared/         ./packages/shared/
 COPY packages/storage/        ./packages/storage/
 COPY packages/estimating/     ./packages/estimating/
 COPY packages/workflow-engine/ ./packages/workflow-engine/
+COPY packages/ai/             ./packages/ai/
 COPY packages/ai-chat/        ./packages/ai-chat/
 COPY packages/analytics/      ./packages/analytics/
 COPY packages/audit/          ./packages/audit/
@@ -75,6 +77,7 @@ RUN pnpm --filter @kealee/shared run build 2>/dev/null || true
 RUN pnpm --filter @kealee/storage run build 2>/dev/null || true
 RUN pnpm --filter @kealee/estimating run build 2>/dev/null || true
 RUN pnpm --filter @kealee/workflow-engine run build 2>/dev/null || true
+RUN pnpm --filter @kealee/ai run build 2>/dev/null || true
 RUN pnpm --filter @kealee/ai-chat run build 2>/dev/null || true
 RUN pnpm --filter @kealee/analytics run build 2>/dev/null || true
 RUN pnpm --filter @kealee/audit run build 2>/dev/null || true

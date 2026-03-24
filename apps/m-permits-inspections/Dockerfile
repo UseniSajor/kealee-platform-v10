@@ -5,6 +5,7 @@ RUN npm install -g pnpm@8.12.0
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/m-permits-inspections/package.json ./apps/m-permits-inspections/package.json
+COPY packages/intake/package.json ./packages/intake/package.json
 COPY packages/ui/package.json ./packages/ui/package.json
 COPY packages/auth/package.json ./packages/auth/package.json
 COPY packages/shared-ai/package.json ./packages/shared-ai/package.json
@@ -19,6 +20,7 @@ WORKDIR /app
 COPY --from=deps /app/ ./
 COPY packages/database/ ./packages/database/
 COPY packages/shared/ ./packages/shared/
+COPY packages/intake/ ./packages/intake/
 COPY packages/ui/ ./packages/ui/
 COPY packages/auth/ ./packages/auth/
 COPY packages/shared-ai/ ./packages/shared-ai/
@@ -27,6 +29,7 @@ COPY apps/m-permits-inspections/ ./apps/m-permits-inspections/
 RUN pnpm install --filter m-permits-inspections... --prod=false --frozen-lockfile --ignore-scripts 2>/dev/null || true
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" cd packages/database && npx prisma generate
 RUN cd packages/shared && pnpm run build 2>/dev/null || true
+RUN cd packages/intake && pnpm run build 2>/dev/null || true
 RUN cd packages/ui && pnpm run build
 RUN cd packages/auth && pnpm run build
 RUN cd packages/shared-ai && pnpm run build 2>/dev/null || true

@@ -5,6 +5,7 @@ RUN npm install -g pnpm@8.12.0
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/os-admin/package.json ./apps/os-admin/package.json
+COPY packages/intake/package.json ./packages/intake/package.json
 COPY packages/ui/package.json ./packages/ui/package.json
 COPY packages/auth/package.json ./packages/auth/package.json
 COPY packages/api-client/package.json ./packages/api-client/package.json
@@ -20,6 +21,7 @@ WORKDIR /app
 COPY --from=deps /app/ ./
 COPY packages/database/ ./packages/database/
 COPY packages/shared/ ./packages/shared/
+COPY packages/intake/ ./packages/intake/
 COPY packages/ui/ ./packages/ui/
 COPY packages/auth/ ./packages/auth/
 COPY packages/api-client/ ./packages/api-client/
@@ -29,6 +31,7 @@ COPY apps/os-admin/ ./apps/os-admin/
 RUN pnpm install --filter os-admin... --prod=false --frozen-lockfile --ignore-scripts 2>/dev/null || true
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" cd packages/database && npx prisma generate
 RUN cd packages/shared && pnpm run build 2>/dev/null || true
+RUN cd packages/intake && pnpm run build 2>/dev/null || true
 RUN cd packages/types && pnpm run build 2>/dev/null || true
 RUN cd packages/api-client && pnpm run build 2>/dev/null || true
 RUN cd packages/ui && pnpm run build

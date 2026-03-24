@@ -5,6 +5,7 @@ RUN npm install -g pnpm@8.12.0
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/m-finance-trust/package.json ./apps/m-finance-trust/package.json
+COPY packages/intake/package.json ./packages/intake/package.json
 COPY packages/ui/package.json ./packages/ui/package.json
 COPY packages/auth/package.json ./packages/auth/package.json
 COPY packages/database/package.json ./packages/database/package.json
@@ -18,6 +19,7 @@ WORKDIR /app
 COPY --from=deps /app/ ./
 COPY packages/database/ ./packages/database/
 COPY packages/shared/ ./packages/shared/
+COPY packages/intake/ ./packages/intake/
 COPY packages/ui/ ./packages/ui/
 COPY packages/auth/ ./packages/auth/
 COPY apps/m-finance-trust/ ./apps/m-finance-trust/
@@ -25,6 +27,7 @@ COPY apps/m-finance-trust/ ./apps/m-finance-trust/
 RUN pnpm install --filter m-finance-trust... --prod=false --frozen-lockfile --ignore-scripts 2>/dev/null || true
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" cd packages/database && npx prisma generate
 RUN cd packages/shared && pnpm run build 2>/dev/null || true
+RUN cd packages/intake && pnpm run build 2>/dev/null || true
 RUN cd packages/ui && pnpm run build
 RUN cd packages/auth && pnpm run build
 ENV NEXT_TELEMETRY_DISABLED=1
