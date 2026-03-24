@@ -81,6 +81,7 @@ const INTEGRATION_STATUS = [
 
 export default function CommandCenterOverview() {
   const seedTotalUsers = V20_ROLES.reduce((s, r) => s + r.userCount, 0)
+  const totalUsers = stats?.totalUsers ?? seedTotalUsers
   const totalModuleEvents = OS_MODULES.reduce((s, m) => s + m.eventsToday, 0)
 
   const [stats, setStats]     = useState<PlatformStats | null>(null)
