@@ -109,12 +109,14 @@ const LISTING_TIERS = [
   },
   {
     name: 'Pro',
-    price: '$499/mo',
-    description: 'Full Construction OS, top placement, and enterprise ops.',
+    price: '$899/mo',
+    description: 'Full Construction OS, top placement, enterprise ops, and marketing services.',
     features: [
       'Everything in Growth',
       'Top-of-feed placement',
       'Full Construction OS access',
+      'Professional website + SEO',
+      'Digital marketing presence',
       'Advanced analytics & profitability',
       'Custom integrations + API access',
       'Dedicated account support',
@@ -221,7 +223,7 @@ export default function ContractorsPage() {
           },
           {
             question: 'What is the difference between the Starter, Growth, and Pro plans?',
-            answer: 'Starter ($99/mo) gets you listed and receiving matched leads with up to 10 bid responses per month. Growth ($199/mo) adds priority matching, unlimited bids, KeaBot GC, and CRM tools. Pro ($499/mo) adds full Construction OS access, top-of-feed placement, and enterprise integrations.',
+            answer: 'Starter ($99/mo) gets you listed and receiving matched leads with up to 10 bid responses per month. Growth ($199/mo) adds priority matching, unlimited bids, KeaBot GC, and CRM tools. Pro ($899/mo) adds full Construction OS access, top-of-feed placement, enterprise integrations, a professional website, SEO, and digital marketing presence.',
           },
           {
             question: 'Does Kealee offer onsite services or supervision?',
