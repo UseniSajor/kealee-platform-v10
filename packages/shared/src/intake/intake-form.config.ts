@@ -159,6 +159,7 @@ export const EXTERIOR_CONCEPT_FORM_STEPS: IntakeFormStep[] = [
   },
 ];
 
+// ─── Homeowner Exterior ───────────────────────────────────────────────────────
 export const PACKAGE_TIERS = [
   {
     id: "essential",
@@ -206,3 +207,193 @@ export const PACKAGE_TIERS = [
 ] as const;
 
 export type PackageTierId = (typeof PACKAGE_TIERS)[number]["id"];
+
+// ─── Garden & Farming ─────────────────────────────────────────────────────────
+export const GARDEN_PACKAGE_TIERS = [
+  {
+    id: "garden_basic",
+    name: "AI Garden Concept",
+    price: 395,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_GARDEN_BASIC ?? "",
+    features: [
+      "3 garden layout options",
+      "Raised bed placement plan",
+      "Irrigation overview",
+      "Planting guide",
+      "1 revision round",
+      "Delivered in 5–7 business days",
+    ],
+    highlighted: false,
+  },
+  {
+    id: "garden_advanced",
+    name: "Advanced Garden Design",
+    price: 750,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_GARDEN_ADVANCED ?? "",
+    features: [
+      "Detailed plant lists + spacing",
+      "Drip irrigation specs",
+      "3D garden views",
+      "Seasonal planting calendar",
+      "Up to 3 revision rounds",
+      "Consultation call included",
+    ],
+    highlighted: true,
+  },
+  {
+    id: "garden_full",
+    name: "Full Landscape Design",
+    price: 2500,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_GARDEN_FULL ?? "",
+    features: [
+      "Permit-ready landscape package",
+      "Hardscape + softscape plans",
+      "Full irrigation design",
+      "Greenhouse / structure siting",
+      "Up to 5 revision rounds",
+      "PM review included",
+    ],
+    highlighted: false,
+  },
+] as const;
+
+export type GardenPackageTierId = (typeof GARDEN_PACKAGE_TIERS)[number]["id"];
+
+// ─── Interior Renovation ──────────────────────────────────────────────────────
+export const INTERIOR_PACKAGE_TIERS = [
+  {
+    id: "interior_basic",
+    name: "AI Interior Concept",
+    price: 395,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_INTERIOR_BASIC ?? "",
+    features: [
+      "3 layout options",
+      "Finish direction board",
+      "Rough cost range",
+      "1 revision round",
+      "Delivered in 5–7 business days",
+    ],
+    highlighted: false,
+  },
+  {
+    id: "interior_advanced",
+    name: "Advanced Interior Design",
+    price: 750,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_INTERIOR_ADVANCED ?? "",
+    features: [
+      "Detailed floor plans",
+      "Material + fixture specs",
+      "3D perspective views",
+      "Trade coordination summary",
+      "Up to 3 revision rounds",
+    ],
+    highlighted: true,
+  },
+  {
+    id: "interior_full",
+    name: "Full Interior Package",
+    price: 2500,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_INTERIOR_FULL ?? "",
+    features: [
+      "Permit-ready drawing set",
+      "Full finish schedule",
+      "Lighting + electrical layout",
+      "Contractor-ready scope doc",
+      "Up to 5 revision rounds",
+    ],
+    highlighted: false,
+  },
+] as const;
+
+export type InteriorPackageTierId = (typeof INTERIOR_PACKAGE_TIERS)[number]["id"];
+
+// ─── Whole Home ───────────────────────────────────────────────────────────────
+export const WHOLE_HOME_PACKAGE_TIERS = [
+  {
+    id: "whole_home_basic",
+    name: "AI Whole Home Concept",
+    price: 585,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_WHOLE_HOME_BASIC ?? "",
+    features: [
+      "Floor plan direction",
+      "Scope summary",
+      "Material palette",
+      "Rough cost range",
+      "1 revision round",
+    ],
+    highlighted: false,
+  },
+  {
+    id: "whole_home_advanced",
+    name: "Advanced Whole Home Design",
+    price: 1200,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_WHOLE_HOME_ADVANCED ?? "",
+    features: [
+      "3D views + floor plans",
+      "Contractor-ready scope",
+      "Full material schedule",
+      "PM review included",
+      "Up to 3 revision rounds",
+    ],
+    highlighted: true,
+  },
+  {
+    id: "whole_home_full",
+    name: "Full Design Package",
+    price: 6500,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_WHOLE_HOME_FULL ?? "",
+    features: [
+      "Permit-ready drawing set",
+      "Structural direction",
+      "Full scope + trade assignments",
+      "Dedicated PM",
+      "Up to 5 revision rounds",
+    ],
+    highlighted: false,
+  },
+] as const;
+
+export type WholeHomePackageTierId = (typeof WHOLE_HOME_PACKAGE_TIERS)[number]["id"];
+
+// ─── Developer / Feasibility ──────────────────────────────────────────────────
+export const DEVELOPER_PACKAGE_TIERS = [
+  {
+    id: "dev_feasibility",
+    name: "Full Feasibility Study",
+    price: 4500,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_DEV_FEASIBILITY ?? "",
+    features: [
+      "Pro forma + IRR analysis",
+      "Scenario modeling",
+      "Go / no-go recommendation",
+      "Site constraints summary",
+    ],
+    highlighted: false,
+  },
+  {
+    id: "dev_proforma",
+    name: "Pro Forma Analysis",
+    price: 2500,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_DEV_PROFORMA ?? "",
+    features: [
+      "Unit mix modeling",
+      "Cost + revenue assumptions",
+      "Sensitivity analysis",
+    ],
+    highlighted: true,
+  },
+  {
+    id: "dev_capital",
+    name: "Capital Stack Modeling",
+    price: 3500,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_DEV_CAPITAL ?? "",
+    features: [
+      "Debt/equity structure",
+      "Draw schedule",
+      "Waterfall projections",
+    ],
+    highlighted: false,
+  },
+] as const;
+
+export type DeveloperPackageTierId = (typeof DEVELOPER_PACKAGE_TIERS)[number]["id"];

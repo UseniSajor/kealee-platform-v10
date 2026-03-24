@@ -1,0 +1,27 @@
+{
+  "name": "@kealee/keacore",
+  "version": "1.0.0",
+  "description": "KeaCore agent orchestration service — REST API for sessions, tasks, and tools",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc --incremental false",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@kealee/core-agents": "workspace:*",
+    "@kealee/core-tools": "workspace:*",
+    "@kealee/database": "workspace:*",
+    "fastify": "^4.28.1",
+    "@fastify/cors": "^8.5.0",
+    "@fastify/sensible": "^5.5.0",
+    "zod": "^3.22.0",
+    "dotenv": "^16.0.3",
+    "tsx": "^4.7.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.11.0"
+  }
+}
