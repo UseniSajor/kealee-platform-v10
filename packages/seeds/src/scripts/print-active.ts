@@ -94,7 +94,7 @@ function printRules(): void {
   for (const [type, rules] of Object.entries(byType)) {
     console.log(`\n  ${BOLD}${type.replace(/_/g, " ").toUpperCase()}${RESET}`);
     for (const r of rules) {
-      console.log(`    [p${r.priority}] ${r.code}`);
+      console.log(`    [${r.severity}] ${r.code}`);
       console.log(`    ${DIM}${r.description}${RESET}`);
     }
   }

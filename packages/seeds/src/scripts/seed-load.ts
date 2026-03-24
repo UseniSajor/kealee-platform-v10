@@ -99,14 +99,14 @@ async function upsertToDatabase(): Promise<void> {
     log("✓", GREEN, `Upserted ${keacoreSeedBlueprint.intents.length} intents`);
 
     // Workflow templates — store steps as JSON
-    for (const wf of keacoreSeedBlueprint.workflowTemplates) {
+    for (const wf of keacoreSeedBlueprint.workflows) {
       await prisma.workflowTemplate.upsert({
         where: { code: wf.code },
         update: { ...wf, steps: JSON.stringify(wf.steps) },
         create: { ...wf, steps: JSON.stringify(wf.steps) },
       });
     }
-    log("✓", GREEN, `Upserted ${keacoreSeedBlueprint.workflowTemplates.length} workflow templates`);
+    log("✓", GREEN, `Upserted ${keacoreSeedBlueprint.workflows.length} workflow templates`);
 
     // Service offerings
     for (const svc of keacoreSeedBlueprint.services) {

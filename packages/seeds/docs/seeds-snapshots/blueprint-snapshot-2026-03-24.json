@@ -1,0 +1,82 @@
+{
+  "generatedAt": "2026-03-24T00:00:00.000Z",
+  "version": "1.0.0",
+  "counts": {
+    "intents": 10,
+    "workflows": 10,
+    "tools": 15,
+    "jurisdictions": 7,
+    "services": 10,
+    "roles": 11,
+    "rules": 12,
+    "prompts": 8
+  },
+  "totals": {
+    "totalRecords": 83,
+    "activeRecords": 80,
+    "draftRecords": 3,
+    "inactiveRecords": 0
+  },
+  "packs": {
+    "intents": [
+      "design_concept", "renovation", "new_build", "permit_only", "feasibility_light",
+      "developer_feasibility", "estimate_only", "contractor_match", "construction_execution", "payment_disbursement"
+    ],
+    "workflows": [
+      "wf_homeowner_concept_v1", "wf_homeowner_renovation_v1", "wf_new_build_precon_v1",
+      "wf_permit_only_v1", "wf_feasibility_light_v1", "wf_developer_feasibility_v1",
+      "wf_estimate_only_v1", "wf_contractor_match_v1", "wf_construction_execution_v1", "wf_payment_disbursement_v1"
+    ],
+    "tools": {
+      "active": [
+        "create_project", "update_project_context", "check_zoning", "run_feasibility",
+        "generate_concept_brief", "create_estimate", "create_checkout", "request_human_approval",
+        "assign_contractor", "create_milestone_schedule", "send_email", "send_sms", "get_permit_status"
+      ],
+      "draft": ["create_permit_case", "create_engagement"]
+    },
+    "jurisdictions": ["dc", "montgomery_md", "prince_georges_md", "fairfax_va", "arlington_va", "alexandria_va", "loudoun_va"],
+    "services": [
+      "ai_concept_basic", "feasibility_light_package", "estimate_package", "permit_path_review",
+      "permit_prep", "full_permit_coordination", "contractor_match_service", "contractor_growth_package",
+      "developer_advisory", "escrow_finance_trust"
+    ],
+    "roles": {
+      "external": ["role_homeowner", "role_developer", "role_contractor", "role_architect", "role_engineer", "role_lender"],
+      "internal": ["role_operator", "role_admin", "role_finance_reviewer", "role_permit_reviewer"],
+      "system": ["role_system"]
+    },
+    "rules": {
+      "risk_rule": [
+        "rule_missing_address_blocks_zoning", "rule_estimate_confidence_low_without_plans_or_address",
+        "rule_permit_status_requires_record", "rule_verified_contractor_only", "rule_missing_scope_summary_blocks_project_quality"
+      ],
+      "approval_rule": [
+        "rule_checkout_requires_approval", "rule_assignment_requires_approval",
+        "rule_external_comms_require_template_or_approval", "rule_financial_actions_operator_visible", "rule_lender_outputs_approval"
+      ],
+      "routing_rule": [
+        "rule_high_complexity_route_professional_review", "rule_jurisdiction_outside_seed_market"
+      ]
+    },
+    "prompts": {
+      "system": ["prompt_keacore_system_v1"],
+      "planner": ["prompt_planner_v1"],
+      "reflection": ["prompt_reflection_v1"],
+      "policy": [
+        "policy_design_qualification_v1", "policy_permit_agent_v1",
+        "policy_estimate_confidence_v1", "policy_financial_controls_v1", "policy_operator_escalation_v1"
+      ]
+    }
+  },
+  "approvalGatedTools": ["create_checkout", "assign_contractor", "send_email", "send_sms"],
+  "financialTools": ["create_checkout"],
+  "externalWriteTools": ["assign_contractor", "send_email", "send_sms"],
+  "todoVerify": [
+    "stripeProductKey values in service-catalog.seed.ts need mapping to actual STRIPE_PRICE_* env keys",
+    "get_permit_status tool not yet built in core-tools — seeded as active",
+    "Supabase JWT role claim key format in API auth middleware",
+    "Loudoun incorporated towns (Leesburg, Purcellville) may need separate jurisdiction seeds",
+    "create_permit_case and create_engagement tools are draft seeds"
+  ]
+}
