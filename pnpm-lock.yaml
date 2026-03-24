@@ -4,6 +4,10 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+neverBuiltDependencies:
+  - msgpackr-extract
+  - unrs-resolver
+
 importers:
 
   .:
@@ -84,6 +88,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.23
         version: 10.4.23(postcss@8.5.6)
+      concurrently:
+        specifier: ^9.0.1
+        version: 9.2.1
       ioredis:
         specifier: ^5.3.2
         version: 5.9.2
@@ -160,6 +167,9 @@ importers:
       '@ai-sdk/react':
         specifier: ^3.0.118
         version: 3.0.118(react@18.2.0)(zod@4.3.6)
+      '@kealee/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@kealee/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -21939,7 +21949,6 @@ packages:
   /msgpackr-extract@3.0.3:
     resolution: {integrity: sha512-P0efT1C9jIdVRefqjzOQ9Xml57zpOXnIuS+csaB4MdZbTdmGDLo8XhzBG1N7aO11gKDDkJvBLULeFTo46wwreA==}
     hasBin: true
-    requiresBuild: true
     dependencies:
       node-gyp-build-optional-packages: 5.2.2
     optionalDependencies:
@@ -26166,7 +26175,6 @@ packages:
 
   /unrs-resolver@1.11.1:
     resolution: {integrity: sha512-bSjt9pjaEBnNiGgc9rUiHGKv5l4/TGzDmYw3RhnkJGtLhbnnA/5qJj7x3dNDCRx/PJxu774LlH8lCOlB4hEfKg==}
-    requiresBuild: true
     dependencies:
       napi-postinstall: 0.3.4
     optionalDependencies:
