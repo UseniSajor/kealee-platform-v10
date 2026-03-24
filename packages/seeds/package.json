@@ -1,0 +1,30 @@
+{
+  "name": "@kealee/seeds",
+  "version": "1.0.0",
+  "private": true,
+  "description": "KeaCore seed blueprint — intents, workflows, tools, jurisdictions, services, roles, rules, prompts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "validate": "tsx src/validate.ts",
+    "print-active": "tsx src/scripts/print-active.ts",
+    "seed:load": "tsx src/scripts/seed-load.ts"
+  },
+  "dependencies": {
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "tsx": "^4.7.0"
+  }
+}

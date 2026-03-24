@@ -20,6 +20,7 @@
   "dependencies": {
     "@kealee/core-agents": "workspace:*",
     "@kealee/database": "workspace:*",
+    "@anthropic-ai/sdk": "^0.74.0",
     "zod": "^3.22.0",
     "stripe": "^14.21.0"
   },
