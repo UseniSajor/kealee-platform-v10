@@ -81,7 +81,6 @@ const INTEGRATION_STATUS = [
 
 export default function CommandCenterOverview() {
   const seedTotalUsers = V20_ROLES.reduce((s, r) => s + r.userCount, 0)
-  const totalUsers = stats?.totalUsers ?? seedTotalUsers
   const totalModuleEvents = OS_MODULES.reduce((s, m) => s + m.eventsToday, 0)
 
   const [stats, setStats]     = useState<PlatformStats | null>(null)
@@ -89,6 +88,8 @@ export default function CommandCenterOverview() {
   const [events, setEvents]   = useState<PlatformEvent[]>([])
   const [isLive, setIsLive]   = useState(false)
   const [loading, setLoading] = useState(true)
+
+  const totalUsers = stats?.totalUsers ?? seedTotalUsers
 
   useEffect(() => {
     async function load() {
