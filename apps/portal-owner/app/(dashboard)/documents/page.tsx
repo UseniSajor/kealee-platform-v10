@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { FileText, Upload, Download, Search, FolderOpen, File, Image, FileSpreadsheet, Shield, Clock, CheckCircle, AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { FileText, Upload, Download, Search, FolderOpen, File, Image, FileSpreadsheet, Shield, Clock, CheckCircle, AlertTriangle, ChevronDown, ChevronRight, Loader2, Trash2 } from 'lucide-react'
+import { listFiles, uploadFile, getDownloadUrl, deleteFile, type UploadedFile } from '@/lib/api/files'
 
 // ── Permit Types from seed-v20-core ──
 // BUILDING (21 days), ELECTRICAL (10 days), PLUMBING (10 days), MECHANICAL (14 days), ZONING (45 days), DEMOLITION (14 days)
@@ -180,13 +181,82 @@ const permitStatusBadge = (status: PermitCategory['status']) => {
   }
 }
 
+function mapApiFileToDoc(f: UploadedFile): Document {
+  const ext = f.fileName.split('.').pop()?.toLowerCase() || 'pdf'
+  const sizeKB = f.size / 1024
+  const sizeStr = sizeKB > 1024 ? `${(sizeKB / 1024).toFixed(1)} MB` : `${Math.round(sizeKB)} KB`
+  return {
+    id: f.id,
+    name: f.fileName,
+    type: ['pdf','xlsx','zip','png','jpg'].includes(ext) ? ext : 'pdf',
+    project: f.metadata?.project || 'My Project',
+    size: sizeStr,
+    uploaded: f.createdAt.split('T')[0],
+    category: f.metadata?.category || 'Uploads',
+    status: 'uploaded',
+  }
+}
+
 export default function DocumentsPage() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All')
   const [view, setView] = useState<'permits' | 'documents'>('permits')
   const [expandedPermit, setExpandedPermit] = useState<string | null>('BUILDING')
+  const [documents, setDocuments] = useState<Document[]>(DOCUMENTS)
+  const [isLive, setIsLive] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const filtered = DOCUMENTS.filter(d => {
+  const loadFiles = useCallback(async () => {
+    try {
+      const data = await listFiles('project-documents')
+      if (data.files?.length) {
+        setDocuments([...DOCUMENTS, ...data.files.map(mapApiFileToDoc)])
+        setIsLive(true)
+      }
+    } catch { /* keep seed data */ }
+  }, [])
+
+  useEffect(() => { loadFiles() }, [loadFiles])
+
+  async function handleFilesSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
+    setUploading(true)
+    setUploadError('')
+    try {
+      const uploaded = await Promise.all(
+        files.map(f => uploadFile(f, 'project-documents', { category: 'Uploads', project: 'My Project' }))
+      )
+      setDocuments(prev => [...prev, ...uploaded.map(mapApiFileToDoc)])
+      setIsLive(true)
+    } catch (err: any) {
+      setUploadError(err.message || 'Upload failed')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  async function handleDownload(doc: Document) {
+    try {
+      const { url } = await getDownloadUrl(doc.id)
+      window.open(url, '_blank', 'noopener')
+    } catch {
+      // fall through — no download URL for seed docs
+    }
+  }
+
+  async function handleDelete(doc: Document) {
+    if (!confirm(`Delete "${doc.name}"?`)) return
+    try {
+      await deleteFile(doc.id)
+      setDocuments(prev => prev.filter(d => d.id !== doc.id))
+    } catch { /* ignore */ }
+  }
+
+  const filtered = documents.filter(d => {
     const matchSearch = d.name.toLowerCase().includes(search.toLowerCase()) || d.project.toLowerCase().includes(search.toLowerCase())
     const matchCat = category === 'All' || d.category === category
     return matchSearch && matchCat
@@ -195,20 +265,41 @@ export default function DocumentsPage() {
   const approvedCount = PERMIT_CATEGORIES.filter(p => p.status === 'approved').length
   const pendingCount = PERMIT_CATEGORIES.filter(p => p.status === 'pending').length
   const totalRequiredDocs = PERMIT_CATEGORIES.reduce((s, p) => s + p.requiredDocuments.length, 0)
-  const uploadedPermitDocs = DOCUMENTS.filter(d => d.permitType).length
+  const uploadedPermitDocs = documents.filter(d => d.permitType).length
 
   return (
     <div>
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="hidden"
+        accept=".pdf,.doc,.docx,.xlsx,.xls,.png,.jpg,.jpeg,.zip,.dwg"
+        onChange={handleFilesSelected}
+      />
+
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Documents</h1>
-          <p className="mt-1 text-sm text-gray-600">{DOCUMENTS.length} files across all projects</p>
+          <p className="mt-1 text-sm text-gray-600">
+            {documents.length} files across all projects
+            {isLive && <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700"><span className="h-1.5 w-1.5 rounded-full bg-green-500" />Live</span>}
+          </p>
         </div>
-        <button className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90" style={{ backgroundColor: '#E8793A' }}>
-          <Upload className="h-4 w-4" />
-          Upload
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
+          style={{ backgroundColor: '#E8793A' }}
+        >
+          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+          {uploading ? 'Uploading…' : 'Upload'}
         </button>
       </div>
+      {uploadError && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">{uploadError}</div>
+      )}
 
       {/* Permit Summary Cards */}
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -330,7 +421,7 @@ export default function DocumentsPage() {
                             <div className="flex items-center gap-2">
                               {doc ? statusBadge(doc.status) : statusBadge('missing')}
                               {doc && (
-                                <button className="rounded-lg p-2 text-gray-400 hover:bg-gray-200 hover:text-gray-600">
+                                <button onClick={() => handleDownload(doc)} className="rounded-lg p-2 text-gray-400 hover:bg-gray-200 hover:text-gray-600">
                                   <Download className="h-4 w-4" />
                                 </button>
                               )}
@@ -391,9 +482,14 @@ export default function DocumentsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       {statusBadge(doc.status)}
-                      <button className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                      <button onClick={() => handleDownload(doc)} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
                         <Download className="h-4 w-4" />
                       </button>
+                      {isLive && (
+                        <button onClick={() => handleDelete(doc)} className="rounded-lg p-2 text-gray-300 hover:bg-red-50 hover:text-red-500">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

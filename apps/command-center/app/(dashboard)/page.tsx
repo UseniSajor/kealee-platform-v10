@@ -1,6 +1,8 @@
 'use client'
 
-import { Boxes, Activity, AlertTriangle, Users, Bot, Plug, TrendingUp, CheckCircle, Layers, Cpu, Box, Shield } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Boxes, Activity, AlertTriangle, Users, Plug, Cpu, Box, RefreshCw } from 'lucide-react'
+import { getPlatformStats, getSystemStatus, getRecentEvents, type PlatformStats, type SystemStatus, type PlatformEvent } from '@/lib/api/platform'
 
 // ── v20 Seed: 7 Roles ──────────────────────────────────────
 const V20_ROLES = [
@@ -78,21 +80,89 @@ const INTEGRATION_STATUS = [
 ]
 
 export default function CommandCenterOverview() {
-  const totalUsers = V20_ROLES.reduce((s, r) => s + r.userCount, 0)
+  const seedTotalUsers = V20_ROLES.reduce((s, r) => s + r.userCount, 0)
   const totalModuleEvents = OS_MODULES.reduce((s, m) => s + m.eventsToday, 0)
+
+  const [stats, setStats]     = useState<PlatformStats | null>(null)
+  const [status, setStatus]   = useState<SystemStatus | null>(null)
+  const [events, setEvents]   = useState<PlatformEvent[]>([])
+  const [isLive, setIsLive]   = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [s, st, ev] = await Promise.allSettled([
+          getPlatformStats(),
+          getSystemStatus(),
+          getRecentEvents(10),
+        ])
+        if (s.status  === 'fulfilled') { setStats(s.value);  setIsLive(true) }
+        if (st.status === 'fulfilled') setStatus(st.value)
+        if (ev.status === 'fulfilled' && ev.value.length > 0) setEvents(ev.value)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+    const interval = setInterval(load, 30_000) // refresh every 30s
+    return () => clearInterval(interval)
+  }, [])
+
+  const displayStats = [
+    {
+      label: 'Active Projects',
+      value: stats ? String(stats.totalProjects) : STATS[0].value,
+      change: stats ? `${stats.metrics.activeWorkers} active workers` : STATS[0].change,
+      icon: Boxes, color: '#2ABFBF', bg: 'rgba(42,191,191,0.1)',
+    },
+    {
+      label: 'Active Alerts',
+      value: stats ? String(stats.activeAlerts) : STATS[2].value,
+      change: status ? `${status.warningApps ?? 0} warning apps` : STATS[2].change,
+      icon: AlertTriangle, color: '#E8793A', bg: 'rgba(232,121,58,0.1)',
+    },
+    {
+      label: 'Active Users',
+      value: stats ? String(stats.totalUsers) : String(seedTotalUsers),
+      change: `${V20_ROLES.length} roles`,
+      icon: Users, color: '#A78BFA', bg: 'rgba(167,139,250,0.1)',
+    },
+    {
+      label: 'Job Success Rate',
+      value: stats ? `${Math.round((stats.metrics.successRate ?? 1) * 100)}%` : '—',
+      change: stats ? `avg ${stats.metrics.avgDuration}ms` : 'connecting...',
+      icon: Activity, color: '#38A169', bg: 'rgba(56,161,105,0.1)',
+    },
+  ]
+
+  const displayEvents = events.length > 0 ? events : RECENT_EVENTS
+  const displayIntegrations = status?.apps?.length
+    ? status.apps.map(a => ({
+        name: a.appName,
+        status: a.status === 'healthy' ? 'operational' : 'degraded',
+        latency: `${a.avgDuration}ms`,
+      }))
+    : INTEGRATION_STATUS
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-white">Command Center</h1>
-        <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
-          Real-time platform operations | {V20_ROLES.length} roles | {LIFECYCLE_PHASES.length} lifecycle phases | {OS_MODULES.length} OS modules
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-white">Command Center</h1>
+          <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            {isLive ? '● Live data' : loading ? '○ Connecting...' : '○ Seed data'} · {V20_ROLES.length} roles · {LIFECYCLE_PHASES.length} lifecycle phases · {OS_MODULES.length} OS modules
+          </p>
+        </div>
+        <div className="flex items-center gap-1 text-xs" style={{ color: isLive ? '#38A169' : 'rgba(255,255,255,0.3)' }}>
+          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+          {isLive ? 'Live' : 'Seed'}
+        </div>
       </div>
 
       {/* Top Stats */}
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {STATS.map((stat) => (
+        {displayStats.map((stat) => (
           <div key={stat.label} className="rounded-xl border p-5" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
             <div className="flex items-center gap-3">
               <div className="rounded-lg p-2.5" style={{ backgroundColor: stat.bg }}>
@@ -200,17 +270,23 @@ export default function CommandCenterOverview() {
         <div className="rounded-xl border p-6" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
           <h2 className="font-display mb-4 text-lg font-semibold text-white">Live Event Feed</h2>
           <div className="space-y-3">
-            {RECENT_EVENTS.map((event, i) => (
-              <div key={i} className="flex items-start gap-3 rounded-lg p-3" style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
-                <div className="mt-0.5 h-2 w-2 flex-shrink-0 rounded-full" style={{
-                  backgroundColor: event.type === 'success' ? '#38A169' : event.type === 'error' ? '#E53E3E' : '#2ABFBF'
-                }} />
-                <div className="flex-1">
-                  <p className="text-sm" style={{ color: 'rgba(255,255,255,0.8)' }}>{event.message}</p>
-                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{event.time}</p>
+            {displayEvents.map((event: any, i: number) => {
+              const isApiEvent = 'eventType' in event
+              const msg  = isApiEvent ? (event.message ?? event.eventType) : event.message
+              const time = isApiEvent ? new Date(event.occurredAt).toLocaleTimeString() : event.time
+              const type = isApiEvent ? 'info' : event.type
+              return (
+                <div key={i} className="flex items-start gap-3 rounded-lg p-3" style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
+                  <div className="mt-0.5 h-2 w-2 flex-shrink-0 rounded-full" style={{
+                    backgroundColor: type === 'success' ? '#38A169' : type === 'error' ? '#E53E3E' : '#2ABFBF'
+                  }} />
+                  <div className="flex-1">
+                    <p className="text-sm" style={{ color: 'rgba(255,255,255,0.8)' }}>{msg}</p>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{time}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
@@ -218,7 +294,7 @@ export default function CommandCenterOverview() {
         <div className="rounded-xl border p-6" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
           <h2 className="font-display mb-4 text-lg font-semibold text-white">Integration Health</h2>
           <div className="space-y-3">
-            {INTEGRATION_STATUS.map((int) => (
+            {displayIntegrations.map((int: any) => (
               <div key={int.name} className="flex items-center justify-between rounded-lg p-3" style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
                 <div className="flex items-center gap-3">
                   <Plug className="h-4 w-4" style={{ color: 'rgba(255,255,255,0.4)' }} />

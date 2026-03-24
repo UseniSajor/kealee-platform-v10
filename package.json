@@ -80,6 +80,7 @@
     "@playwright/test": "^1.40.0",
     "@types/jsonwebtoken": "^9.0.5",
     "autoprefixer": "^10.4.23",
+    "concurrently": "^9.0.1",
     "ioredis": "^5.3.2",
     "isomorphic-dompurify": "^2.35.0",
     "jsonwebtoken": "^9.0.3",
@@ -118,6 +119,9 @@
     }
   },
   "pnpm": {
-    "neverBuiltDependencies": ["msgpackr-extract", "unrs-resolver"]
+    "neverBuiltDependencies": [
+      "msgpackr-extract",
+      "unrs-resolver"
+    ]
   }
 }
