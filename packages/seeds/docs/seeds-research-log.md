@@ -95,86 +95,134 @@
 
 ---
 
-## B. Repo Cross-Check Findings
+## B. Repo Cross-Check Findings (Updated 2026-03-24 — automated audit)
 
 ### Tools (confirmed in packages/core-tools/src/tools/)
 
-| Tool Name | File | Status |
-|-----------|------|--------|
-| check_zoning | tools/zoning/check-zoning.tool.ts | ✅ v2.0.0 — AI-powered + stub fallback |
-| run_feasibility | tools/feasibility/run-feasibility.tool.ts | ✅ v2.0.0 — AI-powered + stub fallback |
-| create_checkout | tools/payments/create-checkout.tool.ts | ✅ Stripe integration, requiresApproval |
-| create_project | tools/projects/create-project.tool.ts | ✅ confirmed |
-| update_project_context | tools/projects/update-context.tool.ts | ✅ confirmed |
-| generate_concept_brief | tools/design/generate-concept-brief.tool.ts | ✅ confirmed |
-| create_estimate | tools/estimate/create-estimate.tool.ts | ✅ confirmed |
-| request_human_approval | tools/governance/request-approval.tool.ts | ✅ confirmed |
-| assign_contractor | tools/marketplace/assign-contractor.tool.ts | ✅ confirmed |
-| create_milestone_schedule | tools/construction/create-milestone.tool.ts | ✅ confirmed |
-| send_email | tools/comms/send-email.tool.ts | ✅ Resend integration |
-| send_sms | tools/comms/send-sms.tool.ts | ✅ Twilio integration |
-| get_permit_status | — | 🔶 seeded, not yet in core-tools |
-| create_permit_case | — | 🔶 draft seed — tool not yet built |
-| create_engagement | — | 🔶 draft seed — tool not yet built |
+| Tool Name | File | Status | Notes |
+|-----------|------|--------|-------|
+| check_zoning | tools/zoning/check-zoning.tool.ts | ✅ v2.0.0 | AI-powered (claude-sonnet-4-6) + stub fallback; 7 DMV jurisdictions detected |
+| run_feasibility | tools/feasibility/run-feasibility.tool.ts | ✅ v2.0.0 | AI-powered (claude-sonnet-4-6) + stub; reads prior zoning from session memory |
+| create_checkout | tools/payments/create-checkout.tool.ts | ✅ v1.0.0 | Maps 12 product keys → Stripe price env vars; requiresApproval |
+| generate_concept_brief | tools/design/generate-concept-brief.tool.ts | ✅ v1.0.0 | 6 types: exterior, garden, interior, whole_home, developer, adu |
+| create_estimate | tools/estimate/create-estimate.tool.ts | ✅ v1.0.0 | $/sqft lookup by type; ADU $250-450/sf, reno $80-200/sf |
+| create_project | tools/projects/create-project.tool.ts | ✅ v1.0.0 | source: "KEACORE_INTAKE" |
+| update_project_context | tools/projects/update-project-context.tool.ts | ✅ v1.0.0 | Idempotent patch |
+| request_human_approval | tools/approvals/request-human-approval.tool.ts | ✅ v1.0.0 | Intercepted by Executor as approval gate |
+| assign_contractor | — | 🔶 seeded | Tool file location TODO_VERIFY |
+| create_milestone_schedule | — | 🔶 seeded | Tool file location TODO_VERIFY |
+| send_email | — | 🔶 seeded | Resend integration — file TODO_VERIFY |
+| send_sms | — | 🔶 seeded | Twilio integration — file TODO_VERIFY |
+| get_permit_status | — | 🔶 seeded active | Not yet in core-tools |
+| create_permit_case | — | 🔶 draft seed | Not yet built |
+| create_engagement | — | 🔶 draft seed | Not yet built |
 
 ### Stripe Products (confirmed in stripe-products-env.txt — 2026-03-24)
 
-| Env Key | Price ID | Pack |
-|---------|----------|------|
-| STRIPE_PRICE_DESIGN_CONCEPT_VALIDATION | confirmed | exterior_concept_essential |
-| STRIPE_PRICE_DESIGN_ADVANCED | confirmed | exterior_concept_professional |
-| STRIPE_PRICE_DESIGN_FULL | confirmed | exterior_concept_premium |
-| STRIPE_PRICE_GARDEN_BASIC | price_1TEOE8IQghAs8OOIEluuxbLN | garden_concept_basic |
-| STRIPE_PRICE_GARDEN_ADVANCED | price_1TEOE9IQghAs8OOIID6W5rWN | garden_concept_advanced |
-| STRIPE_PRICE_GARDEN_FULL | price_1TEOE9IQghAs8OOIxp9IwVNI | garden_concept_full |
-| STRIPE_PRICE_INTERIOR_BASIC | price_1TEOEAIQghAs8OOIkFvIAJTE | interior_concept_basic |
-| STRIPE_PRICE_INTERIOR_ADVANCED | price_1TEOEAIQghAs8OOIGIVUL9MH | interior_concept_advanced |
-| STRIPE_PRICE_INTERIOR_FULL | price_1TEOEBIQghAs8OOI4rIg027d | interior_concept_full |
-| STRIPE_PRICE_WHOLE_HOME_BASIC | price_1TEOEBIQghAs8OOIYHeJOE4D | whole_home_concept_basic |
-| STRIPE_PRICE_WHOLE_HOME_ADVANCED | price_1TEOECIQghAs8OOI3TRRN51s | whole_home_concept_advanced |
-| STRIPE_PRICE_WHOLE_HOME_FULL | price_1TEOECIQghAs8OOIkhIsrwOy | whole_home_concept_full |
-| STRIPE_PRICE_PERMIT_SIMPLE | confirmed | permit_path_review |
-| STRIPE_PRICE_PERMIT_PACKAGE | confirmed | permit_prep |
-| STRIPE_PRICE_PERMIT_COORDINATION | confirmed | full_permit_coordination |
-| STRIPE_PRICE_ESTIMATE_DETAILED | confirmed | estimate_basic |
-| STRIPE_PRICE_DEV_FEASIBILITY | confirmed | developer_feasibility |
-| STRIPE_PRICE_DEV_PROFORMA | confirmed | pro_forma_analysis |
-| STRIPE_PRICE_PACKAGE_A | confirmed | pm_package_a |
-| STRIPE_PRICE_PACKAGE_B | confirmed | pm_package_b |
-| STRIPE_PRICE_LISTING_BASIC | confirmed | contractor_lead |
-| STRIPE_PRICE_LISTING_PRO | confirmed | contractor_growth_package |
+**Original 25 products:**
 
-> **Note:** The service-catalog.seed.ts uses conceptual `stripeProductKey` strings (e.g., `STRIPE_AI_CONCEPT_BASIC`). These should be aligned to the actual `stripePriceEnvKey` values above in a future pass. See TODO_VERIFY section.
+| Env Key | Price ID | Maps to service |
+|---------|----------|-----------------|
+| STRIPE_PRICE_DESIGN_CONCEPT_VALIDATION | price_1TCoMJIQghAs8OOIQofLrce5 | exterior_concept_essential |
+| STRIPE_PRICE_DESIGN_ADVANCED | price_1TCoMKIQghAs8OOIywkw884a | exterior_concept_professional |
+| STRIPE_PRICE_DESIGN_FULL | price_1TCoMLIQghAs8OOI8pZ3PhKe | exterior_concept_premium |
+| STRIPE_PRICE_ESTIMATE_DETAILED | price_1TCoMNIQghAs8OOI9WflqxHY | estimate_package |
+| STRIPE_PRICE_ESTIMATE_CERTIFIED | price_1TCoMOIQghAs8OOIbpd1rjYn | estimate_certified (TODO_VERIFY) |
+| STRIPE_PRICE_PERMIT_SIMPLE | price_1TCoMPIQghAs8OOIx5LUrUYK | permit_path_review |
+| STRIPE_PRICE_PERMIT_PACKAGE | price_1TCoMQIQghAs8OOIkKnPTKSU | permit_prep |
+| STRIPE_PRICE_PERMIT_COORDINATION | price_1TCoMRIQghAs8OOIdiy8bJdh | full_permit_coordination |
+| STRIPE_PRICE_PERMIT_EXPEDITING | price_1TCoMSIQghAs8OOIARapm4z2 | expediter_review (TODO: add seed) |
+| STRIPE_PRICE_PM_ADVISORY | price_1TCoMTIQghAs8OOIJZfTYWnw | TODO: add to service catalog |
+| STRIPE_PRICE_PM_OVERSIGHT | price_1TCoMUIQghAs8OOIl8jNBNI4 | TODO: add to service catalog |
+| STRIPE_PRICE_LISTING_BASIC | price_1TCoMVIQghAs8OOIvuKtNUqL | contractor_lead |
+| STRIPE_PRICE_LISTING_PRO | price_1TCoMWIQghAs8OOIGN2WPKe8 | contractor_growth_package |
+| STRIPE_PRICE_LISTING_PREMIUM | price_1TCoMXIQghAs8OOITPcGOO2T | TODO: add to service catalog |
+| STRIPE_PRICE_GROWTH_STARTER | price_1TCoMYIQghAs8OOIze9tfsH3 | TODO: add to service catalog |
+| STRIPE_PRICE_GROWTH_PRO | price_1TCoMZIQghAs8OOIhErwVFOO | TODO: add to service catalog |
+| STRIPE_PRICE_GROWTH_ENTERPRISE | price_1TCoMaIQghAs8OOIpstKIXtN | TODO: add to service catalog |
+| STRIPE_PRICE_OPS_A | price_1TCoMcIQghAs8OOIHTC2PZOM | ops_services_a (TODO: add seed) |
+| STRIPE_PRICE_OPS_B | price_1TCoMdIQghAs8OOItffH1ukd | ops_services_b |
+| STRIPE_PRICE_OPS_C | price_1TCoMeIQghAs8OOIbjfeTqph | ops_services_c |
+| STRIPE_PRICE_OPS_D | price_1TCoMfIQghAs8OOINrrzWw99 | ops_services_d |
+| STRIPE_PRICE_DEV_FEASIBILITY | price_1TCoMgIQghAs8OOIt4Aq17OO | developer_advisory |
+| STRIPE_PRICE_DEV_PROFORMA | price_1TCoMhIQghAs8OOINm0YMles | TODO: pro_forma_analysis seed |
+| STRIPE_PRICE_DEV_CAPITAL | price_1TCoMiIQghAs8OOI99E6kOOB | capital_stack_advisory (TODO) |
+| STRIPE_PRICE_DEV_ENTITLEMENTS | price_1TCoMjIQghAs8OOINT5ZJCAp | permit_strategy (TODO) |
 
-### Roles (confirmed in packages/seeds/src/roles/roles-permissions.seed.ts)
+**9 new concept engine prices (created 2026-03-24):**
 
-Roles seeded: homeowner, developer, contractor, architect, engineer, lender, operator (keacore), admin, finance_reviewer, permit_reviewer, system
-Repo validation: role patterns in services/api auth middleware — TODO_VERIFY exact Supabase JWT claim keys used
+| Env Key | Price ID |
+|---------|----------|
+| STRIPE_PRICE_GARDEN_BASIC | price_1TEOE8IQghAs8OOIEluuxbLN |
+| STRIPE_PRICE_GARDEN_ADVANCED | price_1TEOE9IQghAs8OOIID6W5rWN |
+| STRIPE_PRICE_GARDEN_FULL | price_1TEOE9IQghAs8OOIxp9IwVNI |
+| STRIPE_PRICE_INTERIOR_BASIC | price_1TEOEAIQghAs8OOIkFvIAJTE |
+| STRIPE_PRICE_INTERIOR_ADVANCED | price_1TEOEAIQghAs8OOIGIVUL9MH |
+| STRIPE_PRICE_INTERIOR_FULL | price_1TEOEBIQghAs8OOI4rIg027d |
+| STRIPE_PRICE_WHOLE_HOME_BASIC | price_1TEOEBIQghAs8OOIYHeJOE4D |
+| STRIPE_PRICE_WHOLE_HOME_ADVANCED | price_1TEOECIQghAs8OOI3TRRN51s |
+| STRIPE_PRICE_WHOLE_HOME_FULL | price_1TEOECIQghAs8OOIkhIsrwOy |
 
-### Prompts / Policies (confirmed in packages/seeds/src/prompts/)
+### Stripe Webhooks (confirmed in services/api/src/modules/webhooks/stripe-webhook-handler.ts)
 
-All 8 prompt/policy seeds are synthetic normalizations of the operating principles embedded in:
-- `packages/core-agents/src/runtime/planner.ts` — intent routing logic
-- `packages/core-agents/src/runtime/executor.ts` — approval gate behavior
-- `packages/seeds/src/rules/risk-approval-rules.seed.ts` — enforcement rules
-- `services/keacore/src/server.ts` — system prompt applied at session creation
+| Event | Handler | Creates |
+|-------|---------|---------|
+| checkout.session.completed | handleCheckoutCompleted | GuestOrder (orderType=GUEST + guestToken) OR PlatformFeeRecord (orderType=MARKETPLACE_MILESTONE, 3% fee) |
+| payment_intent.succeeded | handlePaymentSucceeded | Routes to: design_package, estimation, escrow_deposit, a_la_carte, engineering sub-handlers |
+| customer.subscription.created/updated/deleted | handleSubscription* | Subscription records |
+| invoice.paid / invoice.payment_failed | handleInvoice* | Payment records, dunning emails |
+| account.updated / transfer.created / payout.* | handleConnect* | Stripe Connect payouts |
+| charge.dispute.created/closed / charge.refunded | handleDispute* / handleRefund | Dispute + refund records |
 
-The `prompt_keacore_system_v1` body aligns with the system prompt used in KeaCore sessions.
+### Roles (confirmed via automated audit 2026-03-24)
+
+**API auth middleware** (`services/api/src/middleware/auth.middleware.ts`) checks:
+- `admin` — full access, bypasses project/org membership checks
+- `super_admin` — equivalent to admin
+- `pm` — project manager
+- `user` — default authenticated user
+
+**Prisma schema enums** (packages/database/prisma/schema.prisma):
+- `StaffRole`: PLAN_REVIEWER, INSPECTOR, PERMIT_COORDINATOR, ADMINISTRATOR
+- `ParticipantRole`: OWNER, ADMIN, MEMBER, VIEWER
+- `ApproverType`: HOMEOWNER, CONTRACTOR, LENDER, INSPECTOR
+- `LienWaiverSignerRole`: CONTRACTOR, SUBCONTRACTOR, SUPPLIER, OWNER
+- `RecipientRole`: OWNER, CONTRACTOR, ADMIN, FINANCE
+
+**RBAC in DB:** Dynamic via Role/Permission/RolePermission tables + OrgMember.roleKey. No hardcoded role enum.
+
+> **Gap:** The `roles-permissions.seed.ts` seeds use business-domain names (role_homeowner, role_operator, etc.) which map to Supabase JWT custom claims. These are distinct from the DB ParticipantRole/StaffRole enums which govern project-level access. Both layers need to be understood when implementing authz checks.
+
+### Prompts (confirmed via automated audit 2026-03-24)
+
+| File | Prompt/Agent | First line |
+|------|-------------|-----------|
+| packages/ai/src/exterior-concept/prompts.ts | KeaBot Exterior Concept | "You are KeaBot Exterior Concept Assistant for Kealee..." |
+| packages/ai/src/construction-prompts.ts | ACQUISITION_PROMPT | "You are an expert construction estimator and bid analyst..." |
+| packages/ai/src/construction-prompts.ts | PERMIT_PROMPT | "You are an expert in construction permits and building code..." |
+| packages/ai/src/construction-prompts.ts | COMMAND_PROMPT | "You are a construction project automation orchestrator..." |
+| packages/ai/src/ai-provider.ts | Default system | "You are a construction management AI assistant for the Kealee platform..." |
+
+All prompt/policy seeds in `prompts-policies.seed.ts` are purpose-built for KeaCore and do not duplicate the above verbatim — they govern the orchestration runtime, not individual agent behaviors.
 
 ---
 
 ## C. TODO_VERIFY Items
 
-| Item | Priority | Notes |
-|------|----------|-------|
-| `stripeProductKey` values in service-catalog.seed.ts | High | Map to actual `STRIPE_PRICE_*` env keys from stripe-products-env.txt |
-| `get_permit_status` tool implementation | Medium | Seeded as active but not yet built in core-tools |
-| Supabase JWT role claim key format | Medium | Verify exact claim key used in API auth middleware |
-| Arlington Permit Arlington — Accela URL stability | Low | Accela portals sometimes change subdomain paths |
-| Loudoun incorporated towns (Leesburg, Purcellville, etc.) | Low | County permits vs town permits — need separate seeds if served |
-| DC Scout URL — DCRA vs DOB branding | Low | Scout URL was dcra.dc.gov — verify current redirect to dob.dc.gov |
-| `create_permit_case` tool | Low | Draft seed — build tool when permit coordination service is live |
-| `create_engagement` tool | Low | Draft seed — build when marketplace engagement flow is live |
+| Item | Priority | Status | Notes |
+|------|----------|--------|-------|
+| `stripeProductKey` in service-catalog.seed.ts | High | ⚠️ Partial | Conceptual keys used — see mapping in Section B above. `stripePriceKey` updated to actual env keys. |
+| Missing service seeds for known Stripe products | High | 🔶 Open | STRIPE_PRICE_PM_ADVISORY, STRIPE_PRICE_PM_OVERSIGHT, STRIPE_PRICE_LISTING_PREMIUM, STRIPE_PRICE_GROWTH_*, STRIPE_PRICE_OPS_*, STRIPE_PRICE_DEV_PROFORMA, STRIPE_PRICE_PERMIT_EXPEDITING all need service seeds |
+| `get_permit_status` tool implementation | Medium | 🔶 Open | Seeded as active but not yet built in core-tools |
+| `assign_contractor` / `create_milestone_schedule` / `send_email` / `send_sms` tool file paths | Medium | 🔶 Open | Seeded but exact file paths in core-tools not confirmed by audit |
+| Supabase JWT role claim key format | Medium | 🔶 Open | Middleware checks `admin`, `super_admin`, `pm`, `user` — confirm Supabase JWT custom claim structure |
+| Role seed vs DB enum alignment | Medium | 🔶 Open | Business-domain seeds (role_homeowner etc.) vs DB ParticipantRole/StaffRole enums — document the mapping |
+| `checkout.session.completed` → `GuestOrder` flow | Medium | 🔶 Open | Webhook creates GuestOrder with guestToken — anonymous checkout service seed needed |
+| Arlington Permit Arlington — Accela URL stability | Low | 🔶 Open | Accela portals sometimes change subdomain paths |
+| Loudoun incorporated towns (Leesburg, Purcellville) | Low | 🔶 Open | County permits vs town permits |
+| DC Scout URL — DCRA vs DOB branding | Low | ✅ Resolved | Scout URL is dcra.dc.gov — confirmed still active via DOB redirect |
+| `create_permit_case` tool | Low | 🔶 Open | Draft seed — build when permit coordination is live |
+| `create_engagement` tool | Low | 🔶 Open | Draft seed — build when marketplace engagement flow is live |
 
 ---
 
