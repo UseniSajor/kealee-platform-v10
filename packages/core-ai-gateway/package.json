@@ -1,8 +1,8 @@
 {
-  "name": "@kealee/core-agents",
+  "name": "@kealee/core-ai-gateway",
   "version": "1.0.0",
   "private": true,
-  "description": "KeaCore agent session types, runtime, planner, executor, memory manager",
+  "description": "Kealee AI gateway — single interface over all LLM providers with routing, retrieval, and logging",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -18,11 +18,11 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "zod": "^3.22.0",
-    "nanoid": "^3.3.7",
-    "@kealee/seeds": "workspace:*"
+    "@kealee/core-llm": "workspace:*",
+    "zod": "^3.22.0"
   },
   "devDependencies": {
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "@types/node": "^20.11.0"
   }
 }
