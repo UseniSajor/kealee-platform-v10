@@ -39,12 +39,13 @@ function detectJurisdiction(address: string): {
 } {
   const a = address.toLowerCase();
 
+  // Keep URLs in sync with packages/seeds/src/jurisdictions/dmv.jurisdictions.seed.ts
   if (a.includes(", dc") || a.includes("washington, d.c") || a.includes("washington dc") || a.match(/\bdc\b/)) {
     return {
       code: "dc",
       name: "District of Columbia",
-      permitAuthority: "DC Department of Buildings",
-      permitPortalUrl: "https://dob.dc.gov/service/building-permits",
+      permitAuthority: "DC Department of Buildings (DOB)",
+      permitPortalUrl: "https://permitsdc.dc.gov",
       zoningMapUrl: "https://maps.dcoz.dc.gov",
     };
   }
@@ -52,45 +53,45 @@ function detectJurisdiction(address: string): {
     return {
       code: "montgomery_md",
       name: "Montgomery County, MD",
-      permitAuthority: "Montgomery County Dept. of Permitting Services",
-      permitPortalUrl: "https://permitting.montgomerycountymd.gov",
-      zoningMapUrl: "https://montgomeryplanning.org/tools/gis-maps-and-data/",
+      permitAuthority: "Montgomery County Dept. of Permitting Services (DPS)",
+      permitPortalUrl: "https://permittingservices.montgomerycountymd.gov",
+      zoningMapUrl: "https://montgomeryplanning.org/tools/gis-and-mapping/zoning-maps/",
     };
   }
   if (a.includes("prince george") || (a.includes(", md") && (a.includes("hyattsville") || a.includes("college park") || a.includes("bowie") || a.includes("laurel") || a.includes("greenbelt")))) {
     return {
-      code: "pg_md",
+      code: "prince_georges_md",
       name: "Prince George's County, MD",
-      permitAuthority: "Prince George's DPIE",
+      permitAuthority: "Prince George's County DPIE",
       permitPortalUrl: "https://dpie.mypgc.us",
-      zoningMapUrl: "https://pgplanning.org/resources/zoning/",
+      zoningMapUrl: "https://pgcgis.mypgc.us",
     };
   }
   if (a.includes("fairfax") || (a.includes(", va") && (a.includes("reston") || a.includes("herndon") || a.includes("mclean") || a.includes("annandale") || a.includes("springfield")))) {
     return {
       code: "fairfax_va",
       name: "Fairfax County, VA",
-      permitAuthority: "Fairfax County Land Development Services",
-      permitPortalUrl: "https://plus.fairfaxcounty.gov",
-      zoningMapUrl: "https://www.fairfaxcounty.gov/planning-zoning/",
+      permitAuthority: "Fairfax County Land Development Services (LDS)",
+      permitPortalUrl: "https://permit.fairfaxcounty.gov",
+      zoningMapUrl: "https://gis.fairfaxcounty.gov/maps/",
     };
   }
   if (a.includes("arlington") && a.includes("va")) {
     return {
       code: "arlington_va",
       name: "Arlington County, VA",
-      permitAuthority: "Arlington County Dept. of Community Planning, Housing & Development",
-      permitPortalUrl: "https://www.arlingtonva.us/Government/Departments/Community-Planning-Housing-Development/Permits",
-      zoningMapUrl: "https://gis.arlingtonva.us/",
+      permitAuthority: "Arlington County CPHD",
+      permitPortalUrl: "https://permit.arlingtonva.us",
+      zoningMapUrl: "https://gis.arlingtonva.us/zoning",
     };
   }
   if (a.includes("alexandria") && a.includes("va")) {
     return {
       code: "alexandria_va",
-      name: "Alexandria, VA",
-      permitAuthority: "City of Alexandria Building & Fire Codes",
-      permitPortalUrl: "https://www.alexandriava.gov/Building-permits",
-      zoningMapUrl: "https://www.alexandriava.gov/ZoningInformation",
+      name: "City of Alexandria, VA",
+      permitAuthority: "City of Alexandria Building & Fire Codes Administration",
+      permitPortalUrl: "https://aca.alexandriava.gov",
+      zoningMapUrl: "https://www.alexandriava.gov/GIS",
     };
   }
   if (a.includes("loudoun") || (a.includes(", va") && (a.includes("leesburg") || a.includes("ashburn") || a.includes("sterling") || a.includes("purcellville")))) {
@@ -98,8 +99,8 @@ function detectJurisdiction(address: string): {
       code: "loudoun_va",
       name: "Loudoun County, VA",
       permitAuthority: "Loudoun County Dept. of Building & Development",
-      permitPortalUrl: "https://www.loudoun.gov/permits",
-      zoningMapUrl: "https://www.loudoun.gov/2248/Zoning-District-Maps",
+      permitPortalUrl: "https://energov.loudoun.gov",
+      zoningMapUrl: "https://logis.loudoun.gov",
     };
   }
 

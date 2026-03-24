@@ -211,18 +211,20 @@ All prompt/policy seeds in `prompts-policies.seed.ts` are purpose-built for KeaC
 
 | Item | Priority | Status | Notes |
 |------|----------|--------|-------|
-| `stripeProductKey` in service-catalog.seed.ts | High | ⚠️ Partial | Conceptual keys used — see mapping in Section B above. `stripePriceKey` updated to actual env keys. |
-| Missing service seeds for known Stripe products | High | 🔶 Open | STRIPE_PRICE_PM_ADVISORY, STRIPE_PRICE_PM_OVERSIGHT, STRIPE_PRICE_LISTING_PREMIUM, STRIPE_PRICE_GROWTH_*, STRIPE_PRICE_OPS_*, STRIPE_PRICE_DEV_PROFORMA, STRIPE_PRICE_PERMIT_EXPEDITING all need service seeds |
-| `get_permit_status` tool implementation | Medium | 🔶 Open | Seeded as active but not yet built in core-tools |
-| `assign_contractor` / `create_milestone_schedule` / `send_email` / `send_sms` tool file paths | Medium | 🔶 Open | Seeded but exact file paths in core-tools not confirmed by audit |
-| Supabase JWT role claim key format | Medium | 🔶 Open | Middleware checks `admin`, `super_admin`, `pm`, `user` — confirm Supabase JWT custom claim structure |
-| Role seed vs DB enum alignment | Medium | 🔶 Open | Business-domain seeds (role_homeowner etc.) vs DB ParticipantRole/StaffRole enums — document the mapping |
+| `stripeProductKey` in service-catalog.seed.ts | High | ✅ Resolved | All `stripePriceKey` fields use actual STRIPE_PRICE_* env vars. Prices corrected to match live pages. |
+| Missing service seeds for known Stripe products | High | ✅ Resolved | 26 new seeds added 2026-03-24: design advanced/full, garden/interior/whole-home all tiers, estimate certified, permit expediting, PM advisory/oversight, listing premium, growth starter/pro/enterprise, ops A/B/C/D, dev proforma/capital/entitlements. |
+| Price corrections | High | ✅ Resolved | ai_concept_basic $149→$585, estimate_package $249→$595, permit_path_review $325→$149 (simple filing), permit_prep $500→$950, full_permit_coordination $1000→$2750. All aligned to live customer-facing pages. |
+| `get_permit_status` tool implementation | Medium | ✅ Resolved | Built at `packages/core-tools/src/tools/permits/get-permit-status.tool.ts`. Follows ToolDefinition pattern, uses jurisdiction portal lookup table, AI-powered with stub fallback, bubbles riskFlags into session memory. Registered in index.ts. |
+| `assign_contractor` / `create_milestone_schedule` / `send_email` / `send_sms` tool file paths | Medium | 🔶 Open | Seeded as active — implementations not yet confirmed in core-tools. Build next. |
+| Supabase JWT role claim key format | Medium | ✅ Resolved | **No JWT role claims used.** Auth middleware calls `supabase.auth.getUser(token)` for user ID only, then fetches role from DB via `OrgMember.roleKey`. Role values: `admin`, `super_admin`, `pm`, `user`. No Supabase custom claims needed for role resolution. |
+| Role seed vs DB enum alignment | Medium | 🔶 Open | Business-domain seeds (role_homeowner etc.) are KeaCore orchestration-layer concepts. DB uses ParticipantRole/StaffRole/ApproverType enums for data modeling. API auth uses OrgMember.roleKey strings. These are separate layers — document cross-reference. |
 | `checkout.session.completed` → `GuestOrder` flow | Medium | 🔶 Open | Webhook creates GuestOrder with guestToken — anonymous checkout service seed needed |
-| Arlington Permit Arlington — Accela URL stability | Low | 🔶 Open | Accela portals sometimes change subdomain paths |
-| Loudoun incorporated towns (Leesburg, Purcellville) | Low | 🔶 Open | County permits vs town permits |
+| Arlington Permit Arlington — Accela URL stability | Low | 🔶 Open | Accela portals sometimes change subdomain paths — re-verify annually |
+| Loudoun incorporated towns (Leesburg, Purcellville) | Low | 🔶 Open | County permits vs town permits — may need separate jurisdiction seeds |
 | DC Scout URL — DCRA vs DOB branding | Low | ✅ Resolved | Scout URL is dcra.dc.gov — confirmed still active via DOB redirect |
 | `create_permit_case` tool | Low | 🔶 Open | Draft seed — build when permit coordination is live |
 | `create_engagement` tool | Low | 🔶 Open | Draft seed — build when marketplace engagement flow is live |
+| Jurisdiction URL verification (permit portal, plan upload, status, inspections) | Low | ✅ Seeded | All 7 jurisdictions have `permitPortalUrl`, `planUploadSystem`, `permitStatusUrl`, `inspectionUrl`, `propertyLookupUrl`. Web verification ongoing — re-run annually per protocol. |
 
 ---
 

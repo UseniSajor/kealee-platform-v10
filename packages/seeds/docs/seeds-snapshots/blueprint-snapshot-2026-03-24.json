@@ -1,21 +1,27 @@
 {
-  "generatedAt": "2026-03-24T00:00:00.000Z",
-  "version": "1.0.0",
+  "generatedAt": "2026-03-24T12:00:00.000Z",
+  "version": "2.0.0",
   "counts": {
     "intents": 10,
     "workflows": 10,
     "tools": 15,
     "jurisdictions": 7,
-    "services": 10,
+    "services": 36,
     "roles": 11,
     "rules": 12,
     "prompts": 8
   },
   "totals": {
-    "totalRecords": 83,
-    "activeRecords": 80,
-    "draftRecords": 3,
+    "totalRecords": 109,
+    "activeRecords": 105,
+    "draftRecords": 4,
     "inactiveRecords": 0
+  },
+  "changes_since_v1": {
+    "services": "26 new seeds added (design/garden/interior/whole-home tiers, estimates, permits, PM, marketplace growth, ops A-D, developer, entitlements). Price corrections: ai_concept_basic $149→$585, estimate_package $249→$595, permit_path_review $325→$149, permit_prep $500→$950, full_permit_coordination $1000→$2750.",
+    "tools": "get_permit_status tool now built at packages/core-tools/src/tools/permits/get-permit-status.tool.ts. Registered in index.ts.",
+    "jurisdictions": "URLs updated: DC→permitsdc.dc.gov, Fairfax→permit.fairfaxcounty.gov (FIDO), Arlington→permit.arlingtonva.us, Alexandria→aca.alexandriava.gov, Loudoun→energov.loudoun.gov (EnerGov). All jurisdictions verified with planUploadSystem names. check-zoning.tool.ts URLs synced. PG County code corrected: pg_md→prince_georges_md.",
+    "auth": "JWT role claim format resolved: roles come from OrgMember.roleKey in DB, not JWT claims. Supabase JWT used for user ID only."
   },
   "packs": {
     "intents": [
@@ -29,18 +35,38 @@
     ],
     "tools": {
       "active": [
-        "create_project", "update_project_context", "check_zoning", "run_feasibility",
-        "generate_concept_brief", "create_estimate", "create_checkout", "request_human_approval",
-        "assign_contractor", "create_milestone_schedule", "send_email", "send_sms", "get_permit_status"
+        "tool_create_project", "tool_update_project_context", "tool_check_zoning", "tool_run_feasibility",
+        "tool_generate_concept_brief", "tool_create_estimate", "tool_create_checkout", "tool_request_human_approval",
+        "tool_assign_contractor", "tool_create_milestone_schedule", "tool_send_email", "tool_send_sms",
+        "tool_get_permit_status"
       ],
-      "draft": ["create_permit_case", "create_engagement"]
+      "draft": ["tool_create_permit_case", "tool_create_engagement"]
     },
     "jurisdictions": ["dc", "montgomery_md", "prince_georges_md", "fairfax_va", "arlington_va", "alexandria_va", "loudoun_va"],
-    "services": [
-      "ai_concept_basic", "feasibility_light_package", "estimate_package", "permit_path_review",
-      "permit_prep", "full_permit_coordination", "contractor_match_service", "contractor_growth_package",
-      "developer_advisory", "escrow_finance_trust"
-    ],
+    "jurisdictionPortalSystems": {
+      "dc": "Accela (permitsdc.dc.gov) + ProjectDox (eplans.dc.gov)",
+      "montgomery_md": "Accela (permittingservices.montgomerycountymd.gov) + ProjectDox",
+      "prince_georges_md": "Accela (dpie.mypgc.us) + ProjectDox (eplans.mypgc.us)",
+      "fairfax_va": "FIDO (permit.fairfaxcounty.gov) + ProjectDox",
+      "arlington_va": "Accela (permit.arlingtonva.us) + ProjectDox (eplans.arlingtonva.us)",
+      "alexandria_va": "Accela/ACA (aca.alexandriava.gov) + ProjectDox (eplans.alexandriava.gov)",
+      "loudoun_va": "Tyler EnerGov (energov.loudoun.gov, integrated plan upload)"
+    },
+    "services": {
+      "design": ["ai_concept_basic", "ai_concept_advanced", "full_design_package"],
+      "design_garden": ["garden_concept_basic", "garden_concept_advanced", "garden_concept_full"],
+      "design_interior": ["interior_reno_basic", "interior_reno_advanced", "interior_reno_full"],
+      "design_whole_home": ["whole_home_basic", "whole_home_advanced", "whole_home_full"],
+      "feasibility": ["feasibility_light_package"],
+      "estimate": ["estimate_package", "estimate_certified"],
+      "permits": ["permit_path_review", "permit_prep", "full_permit_coordination", "permit_expediting"],
+      "project_management": ["pm_advisory", "pm_oversight"],
+      "marketplace": ["contractor_match_service", "contractor_growth_package", "listing_premium"],
+      "contractor_growth": ["growth_starter", "growth_pro", "growth_enterprise"],
+      "ops_services": ["ops_services_a", "ops_services_b", "ops_services_c", "ops_services_d"],
+      "developer": ["developer_advisory", "dev_proforma", "dev_capital_stack", "dev_entitlements"],
+      "finance": ["escrow_finance_trust"]
+    },
     "roles": {
       "external": ["role_homeowner", "role_developer", "role_contractor", "role_architect", "role_engineer", "role_lender"],
       "internal": ["role_operator", "role_admin", "role_finance_reviewer", "role_permit_reviewer"],
@@ -69,14 +95,15 @@
       ]
     }
   },
-  "approvalGatedTools": ["create_checkout", "assign_contractor", "send_email", "send_sms"],
-  "financialTools": ["create_checkout"],
-  "externalWriteTools": ["assign_contractor", "send_email", "send_sms"],
-  "todoVerify": [
-    "stripeProductKey values in service-catalog.seed.ts need mapping to actual STRIPE_PRICE_* env keys",
-    "get_permit_status tool not yet built in core-tools — seeded as active",
-    "Supabase JWT role claim key format in API auth middleware",
-    "Loudoun incorporated towns (Leesburg, Purcellville) may need separate jurisdiction seeds",
-    "create_permit_case and create_engagement tools are draft seeds"
+  "approvalGatedTools": ["tool_create_checkout", "tool_assign_contractor", "tool_send_email", "tool_send_sms"],
+  "financialTools": ["tool_create_checkout"],
+  "externalWriteTools": ["tool_assign_contractor", "tool_send_email", "tool_send_sms"],
+  "openTodoItems": [
+    "assign_contractor / create_milestone_schedule / send_email / send_sms — implementations not yet confirmed in core-tools",
+    "role seed vs DB enum alignment (ParticipantRole/StaffRole vs KeaCore role seeds) — needs cross-reference doc",
+    "GuestOrder anonymous checkout flow — service seed needed",
+    "Incorporated towns in Loudoun (Leesburg, Purcellville) — may need separate jurisdiction seeds",
+    "create_permit_case tool — build when permit coordination is live",
+    "create_engagement tool — build when marketplace engagement flow is live"
   ]
 }

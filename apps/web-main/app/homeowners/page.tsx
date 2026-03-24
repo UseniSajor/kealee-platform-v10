@@ -231,6 +231,39 @@ export default function HomeownersPage() {
         </div>
       </section>
 
+      {/* Garden & Farming callout */}
+      <section className="mx-auto max-w-5xl px-4 pb-4">
+        <div
+          className="flex flex-col gap-5 rounded-2xl border-2 p-7 sm:flex-row sm:items-center sm:justify-between"
+          style={{ borderColor: '#38A169', backgroundColor: 'rgba(56,161,105,0.04)' }}
+        >
+          <div className="flex items-start gap-4">
+            <div
+              className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl text-xl"
+              style={{ backgroundColor: 'rgba(56,161,105,0.12)' }}
+            >
+              🌱
+            </div>
+            <div>
+              <p className="text-base font-bold" style={{ color: '#1A2B4A' }}>
+                Growing a garden or food garden?
+              </p>
+              <p className="mt-1 text-sm text-gray-600">
+                AI garden design, raised beds, backyard farming, irrigation, and greenhouse build — all under one roof.
+                From $395 · Contractor matching included.
+              </p>
+            </div>
+          </div>
+          <a
+            href="/homeowners/garden-farming"
+            className="flex-shrink-0 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90"
+            style={{ backgroundColor: '#38A169' }}
+          >
+            Explore Garden + Farming →
+          </a>
+        </div>
+      </section>
+
       <RoleBenefits
         badge="What You Get"
         headline="Everything You Need to Build Smarter"

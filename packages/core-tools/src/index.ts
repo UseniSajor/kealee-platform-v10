@@ -9,6 +9,7 @@ export { generateConceptBriefTool } from "./tools/design/generate-concept-brief.
 export { createEstimateTool } from "./tools/estimate/create-estimate.tool";
 export { createCheckoutTool } from "./tools/payments/create-checkout.tool";
 export { requestHumanApprovalTool } from "./tools/approvals/request-human-approval.tool";
+export { getPermitStatusTool } from "./tools/permits/get-permit-status.tool";
 
 // Re-export result types
 export type { ZoningResult } from "./tools/zoning/check-zoning.tool";
@@ -16,6 +17,7 @@ export type { FeasibilityResult } from "./tools/feasibility/run-feasibility.tool
 export type { ConceptBriefResult } from "./tools/design/generate-concept-brief.tool";
 export type { EstimateResult } from "./tools/estimate/create-estimate.tool";
 export type { CheckoutResult } from "./tools/payments/create-checkout.tool";
+export type { PermitStatusResult } from "./tools/permits/get-permit-status.tool";
 
 // Auto-register all tools on import
 import { toolRegistry } from "./registry";
@@ -27,6 +29,7 @@ import { generateConceptBriefTool } from "./tools/design/generate-concept-brief.
 import { createEstimateTool } from "./tools/estimate/create-estimate.tool";
 import { createCheckoutTool } from "./tools/payments/create-checkout.tool";
 import { requestHumanApprovalTool } from "./tools/approvals/request-human-approval.tool";
+import { getPermitStatusTool } from "./tools/permits/get-permit-status.tool";
 
 toolRegistry.register(createProjectTool);
 toolRegistry.register(updateProjectContextTool);
@@ -36,3 +39,4 @@ toolRegistry.register(generateConceptBriefTool);
 toolRegistry.register(createEstimateTool);
 toolRegistry.register(createCheckoutTool);
 toolRegistry.register(requestHumanApprovalTool);
+toolRegistry.register(getPermitStatusTool);
