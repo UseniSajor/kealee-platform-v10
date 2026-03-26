@@ -163,7 +163,7 @@ export interface LlmRunRecord {
 
 export interface RetrievedContextBlock {
   id: string;
-  sourceType: "intent" | "workflow" | "tool" | "jurisdiction" | "service" | "role" | "rule" | "prompt";
+  sourceType: "intent" | "workflow" | "tool" | "jurisdiction" | "service" | "role" | "rule" | "prompt" | "zoning";
   seedPack: string;
   content: string;
   metadata: Record<string, unknown>;

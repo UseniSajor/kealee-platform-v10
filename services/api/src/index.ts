@@ -187,6 +187,7 @@ validateEnv()
 import { initTracing } from '@kealee/observability';
 initTracing('kealee-api');
 
+import { ingestAllSeeds } from '@kealee/core-llm';
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
@@ -602,9 +603,9 @@ const start = async () => {
       await fastify.register(permitPackageRoutes, { prefix: '/architect' })
       await fastify.register(constructionHandoffRoutes, { prefix: '/architect' })
       // Architect onboarding, templates, benchmarks, and backup/DR
-      const { onboardingRoutes } = await import('./modules/architect/onboarding.routes')
+      const { onboardingRoutes: architectOnboardingRoutes } = await import('./modules/architect/onboarding.routes')
       const { backupDRRoutes } = await import('./modules/architect/backup-dr.routes')
-      await fastify.register(onboardingRoutes, { prefix: '/architect' })
+      await fastify.register(architectOnboardingRoutes, { prefix: '/architect' })
       await fastify.register(backupDRRoutes, { prefix: '/architect' })
       await fastify.register(jurisdictionRoutes, { prefix: '/permits' })
       await fastify.register(jurisdictionConfigRoutes, { prefix: '/permits' })
@@ -1147,6 +1148,13 @@ const start = async () => {
     const port = Number(process.env.PORT) || 3000
     console.log(`🔌 Starting server on port ${port}...`)
 
+    // Load zoning and other seed data into the retrieval layer
+    try {
+      ingestAllSeeds()
+    } catch (err: any) {
+      console.error('[SeedIngest] Failed to load seeds:', err?.message || err)
+    }
+
     await fastify.listen({ port, host: '0.0.0.0' })
 
     // Startup complete message
@@ -1188,7 +1196,7 @@ const start = async () => {
     console.error('='.repeat(60))
     console.error('❌ FATAL: Server failed to start')
     console.error('='.repeat(60))
-    console.error('Error:', err?.message || err)
+   console.error('Error:', err?.message || err)
     console.error('Stack:', err?.stack || '(no stack)')
     console.error('='.repeat(60))
     fastify.log.error(err)

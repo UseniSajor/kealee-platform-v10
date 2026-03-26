@@ -13,9 +13,70 @@
 
 import type { SeedChunk } from "../types";
 import { createId } from "../utils/ids";
-
+import fs from 'fs';
+import path from 'path';
+import { parse } from 'csv-parse/sync';
 // ─── Seed chunk store ─────────────────────────────────────────────────────────
+function loadZoningCSV() {
+  // Try multiple candidate paths so the module works whether cwd is the monorepo
+  // root, services/api, or any other service directory.
+  const candidates = [
+    path.resolve(process.cwd(), 'data/zoning/dmv_zoning_seed.csv'),
+    path.resolve(process.cwd(), '../../data/zoning/dmv_zoning_seed.csv'),
+    path.resolve(__dirname, '../../../../data/zoning/dmv_zoning_seed.csv'),
+    path.resolve(__dirname, '../../../../../data/zoning/dmv_zoning_seed.csv'),
+  ];
+  const filePath = candidates.find((p) => fs.existsSync(p));
 
+  if (!filePath) {
+    console.warn('[SeedIngest] Zoning CSV not found in any of:', candidates);
+    return [];
+  }
+
+  const fileContent = fs.readFileSync(filePath, 'utf-8');
+
+  const records = parse(fileContent, {
+    columns: true,
+    skip_empty_lines: true
+  });
+
+  return records.map((row: any) => ({
+    id: `zoning_${row.Address.replace(/\s+/g, '_')}`,
+    type: 'zoning',
+    content: `
+Address: ${row.Address}
+Jurisdiction: ${row.Jurisdiction}
+Zoning: ${row.ZoningCode}
+Setbacks: Front ${row.FrontSetback}, Side ${row.SideSetback}, Rear ${row.RearSetback}
+Height Limit: ${row.HeightLimit}
+Lot Coverage: ${row.LotCoverage}
+Permit Authority: ${row.PermitAuthorityURL}
+Typical Timeline: ${row.TypicalPermitTimelineDays} days
+Notes: ${row.Notes}
+    `,
+    metadata: {
+      jurisdiction: row.Jurisdiction,
+      zoning: row.ZoningCode
+    }
+  }));
+}
+function ingestZoning(): void {
+  const zoningSeeds = loadZoningCSV();
+
+  zoningSeeds.forEach((seed: { id: string; content: string; metadata: Record<string, unknown> }) => {
+    const text = seed.content.trim();
+    chunkStore.push({
+      id: seed.id,
+      sourceType: "zoning",
+      seedPack: "zoning",
+      text,
+      metadata: seed.metadata,
+      keywords: extractKeywords(text),
+    });
+  });
+
+  console.log(`[SeedIngest] Loaded ${zoningSeeds.length} zoning seeds`);
+}
 const chunkStore: SeedChunk[] = [];
 let ingested = false;
 
@@ -189,6 +250,7 @@ export function ingestAllSeeds(): void {
   ingestTools();
   ingestRules();
   ingestPrompts();
+  ingestZoning();
   ingested = true;
   console.log(`[SeedIngest] Ingested ${chunkStore.length} seed chunks into retrieval layer`);
 }
@@ -197,8 +259,7 @@ export function getAllChunks(): SeedChunk[] {
   return chunkStore;
 }
 
-export function getChunksByType(sourceType: SeedChunk["sourceType"]): SeedChunk[] {
-  return chunkStore.filter((c) => c.sourceType === sourceType);
+export function getChunksByType(sourceType: SeedChunk["sourceType"]): SeedChunk[] {  return chunkStore.filter((c) => c.sourceType === sourceType);
 }
 
 export function getChunkByJurisdiction(jurisdictionCode: string): SeedChunk[] {

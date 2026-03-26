@@ -33,14 +33,14 @@ export class InternalProvider implements LlmProvider {
 
   private readonly text: QwenProvider;
   private readonly vl: QwenVLProvider;
-  private readonly embed: EmbedProvider;
-  private readonly rerank: RerankProvider;
+  private readonly embedProvider: EmbedProvider;
+  private readonly rerankProvider: RerankProvider;
 
   constructor() {
     this.text = new QwenProvider();
     this.vl = new QwenVLProvider();
-    this.embed = new EmbedProvider();
-    this.rerank = new RerankProvider();
+    this.embedProvider = new EmbedProvider();
+    this.rerankProvider = new RerankProvider();
   }
 
   isAvailable(): boolean {
@@ -73,11 +73,11 @@ export class InternalProvider implements LlmProvider {
   }
 
   async embed(args: EmbedArgs): Promise<EmbedResult> {
-    return this.embed.embed(args);
+    return this.embedProvider.embed(args);
   }
 
   async rerank(args: RerankArgs): Promise<RerankResult> {
-    return this.rerank.rerank(args);
+    return this.rerankProvider.rerank(args);
   }
 
   /** Readiness status for startup checks */
@@ -85,8 +85,8 @@ export class InternalProvider implements LlmProvider {
     return {
       text: this.text.isAvailable(),
       vl: this.vl.isAvailable(),
-      embed: this.embed.isAvailable(),
-      rerank: this.rerank.isAvailable(),
+      embed: this.embedProvider.isAvailable(),
+      rerank: this.rerankProvider.isAvailable(),
     };
   }
 }

@@ -135,7 +135,7 @@ export class QwenProvider implements LlmProvider {
   async classify<TLabel extends string>(args: ClassifyArgs<TLabel>): Promise<ClassifyResult<TLabel>> {
     const start = Date.now();
     const systemPrompt = args.systemPrompt ?? "You are a classification assistant. Respond with exactly one label from the list provided. No other text.";
-    const prompt = `Classify the following text into exactly one of these labels: ${args.labels.join(", ")}\n\nText: ${args.text}\n\nLabel:`;
+    const prompt = `Classify the following text into exactly one of these labels: ${args.labels.join(", ")}\n\nText: ${args.prompt}\n\nLabel:`;
 
     const textResult = await this.generateText({ ...args, prompt, systemPrompt, maxTokens: 50, temperature: 0 });
     const latencyMs = Date.now() - start;

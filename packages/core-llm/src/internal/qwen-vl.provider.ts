@@ -163,7 +163,7 @@ export class QwenVLProvider implements LlmProvider {
 
   async classify<TLabel extends string>(args: ClassifyArgs<TLabel>): Promise<ClassifyResult<TLabel>> {
     const start = Date.now();
-    const prompt = `Classify the following into exactly one of these labels: ${args.labels.join(", ")}\n\nText: ${args.text}\n\nLabel:`;
+    const prompt = `Classify the following into exactly one of these labels: ${args.labels.join(", ")}\n\nText: ${args.prompt}\n\nLabel:`;
     const textResult = await this.generateText({ ...args, prompt, maxTokens: 50, temperature: 0 });
     const latencyMs = Date.now() - start;
 

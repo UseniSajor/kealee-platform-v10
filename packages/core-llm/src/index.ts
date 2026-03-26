@@ -20,6 +20,7 @@
 export * from "./types";
 export * from "./confidence";
 export * from "./provider-registry";
+import { providerRegistry } from "./provider-registry";
 export * from "./router";
 
 // Providers
