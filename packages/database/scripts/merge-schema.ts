@@ -39,6 +39,7 @@ const DOMAIN_ORDER = [
   'workflow',
   'integrations',
   'analytics',
+  'pre-design',
 ]
 
 function collectFiles(): string[] {

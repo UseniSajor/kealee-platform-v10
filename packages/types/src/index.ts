@@ -3,7 +3,7 @@
 // ============================================================================
 
 export type LeadStage = "INTAKE" | "QUALIFIED" | "SCOPED" | "QUOTED" | "WON" | "LOST"
-
+export * from './construction-os';
 export interface Lead {
   id: string
   stage: LeadStage

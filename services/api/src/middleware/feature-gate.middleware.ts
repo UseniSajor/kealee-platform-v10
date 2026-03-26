@@ -15,7 +15,7 @@
 
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { prismaAny } from '../utils/prisma-helper'
-import { featuresUpToPhase, OS_FEATURES } from '@kealee/types/construction-os'
+import { featuresUpToPhase, OS_FEATURES } from '@kealee/types';
 
 // ── Phase 1 feature slugs (always on) ─────────────────────────────────────────
 

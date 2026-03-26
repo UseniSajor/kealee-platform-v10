@@ -55,3 +55,11 @@ export type { ConceptPdfInput, ConceptPdfResult } from './pdf/render-concept-pdf
 
 // Commercial concept engine (developer / investor)
 export * from './commercial';
+
+// Execution router
+export { routeExecution } from './routing/execution-router';
+export type { RouterInput, RouterOutput, ExecutionRoute as ConceptExecutionRoute } from './routing/execution-router';
+
+// Export package builder
+export { buildExportPackage } from './export/export-package-builder';
+export type { ExportPackageInput, ExportManifest, HandoffSummary, ExportPackageResult } from './export/export-package-builder';

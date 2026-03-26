@@ -20,7 +20,11 @@ import { intakeProcessingQueue } from './queues/intake-processing.queue'
 import { createIntakeProcessingWorker } from './processors/intake-processing.processor'
 import { conceptEngineQueue } from './queues/concept-engine.queue'
 import { createConceptEngineWorker } from './processors/concept-engine.processor'
+import { captureAnalysisQueue } from './queues/capture-analysis.queue'
+import { createCaptureVisionWorker, pollAndAnalyzePending } from './processors/capture-vision.processor'
+import { createVoiceTranscriptionWorker, pollAndTranscribePending } from './processors/voice-transcription.processor'
 import { cronManager } from './cron/cron.manager'
+import cron from 'node-cron'
 import type { Worker } from 'bullmq'
 
 console.log('🚀 Starting Kealee Platform Worker Service...')
@@ -36,6 +40,8 @@ let spatialVerificationWorker: Worker | null = null
 let conceptDeliveryWorker: Worker | null = null
 let intakeProcessingWorker: Worker | null = null
 let conceptEngineWorker: Worker | null = null
+let captureVisionWorker: Worker | null = null
+let voiceTranscriptionWorker: Worker | null = null
 
 // Test Redis connection
 async function testRedisConnection() {
@@ -262,6 +268,31 @@ async function initializeConceptEngineQueue() {
   }
 }
 
+// Initialize capture analysis workers (vision + voice transcription)
+async function initializeCaptureAnalysisWorkers() {
+  try {
+    console.log('Initializing capture analysis workers...')
+    captureVisionWorker = createCaptureVisionWorker()
+    voiceTranscriptionWorker = createVoiceTranscriptionWorker()
+    console.log('Capture vision + voice transcription workers started')
+
+    // Register polling cron (every 2 minutes)
+    cron.schedule('*/2 * * * *', async () => {
+      try { await pollAndAnalyzePending() } catch (e: any) {
+        console.error('[cron] pollAndAnalyzePending failed:', e.message)
+      }
+      try { await pollAndTranscribePending() } catch (e: any) {
+        console.error('[cron] pollAndTranscribePending failed:', e.message)
+      }
+    }, { scheduled: true, timezone: 'UTC' })
+
+    console.log('Capture analysis poll cron registered (every 2 min)')
+  } catch (error) {
+    console.error('Failed to initialize capture analysis workers:', error)
+    throw error
+  }
+}
+
 // Graceful shutdown
 async function shutdown() {
   console.log('\n⚠️ Shutting down worker service...')
@@ -322,6 +353,16 @@ async function shutdown() {
       console.log('✅ Concept engine worker closed')
     }
 
+    if (captureVisionWorker) {
+      await captureVisionWorker.close()
+      console.log('✅ Capture vision worker closed')
+    }
+
+    if (voiceTranscriptionWorker) {
+      await voiceTranscriptionWorker.close()
+      console.log('✅ Voice transcription worker closed')
+    }
+
     // Close queues
     await emailQueue.close()
     console.log('✅ Email queue closed')
@@ -352,6 +393,9 @@ async function shutdown() {
 
     await conceptEngineQueue.close()
     console.log('✅ Concept engine queue closed')
+
+    await captureAnalysisQueue.close()
+    console.log('✅ Capture analysis queue closed')
 
     // Close Redis
     await redis.quit()
@@ -402,6 +446,7 @@ async function start() {
   await initializeConceptDeliveryQueue()
   await initializeIntakeProcessingQueue()
   await initializeConceptEngineQueue()
+  await initializeCaptureAnalysisWorkers()
   await initializeCronJobs()
 
   console.log('✅ Worker service ready')
@@ -439,6 +484,8 @@ start()
           mlPrediction: !!mlPredictionWorker,
           spatialVerification: !!spatialVerificationWorker,
           conceptDelivery: !!conceptDeliveryWorker,
+          captureVision: !!captureVisionWorker,
+          voiceTranscription: !!voiceTranscriptionWorker,
         },
         timestamp: new Date().toISOString(),
       }))

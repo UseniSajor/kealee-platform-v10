@@ -570,6 +570,12 @@ const start = async () => {
       // Concept engine — floor plan + package + architect review
       const { conceptEngineRoutes } = await import('./modules/concept-engine/concept-engine.routes')
       await fastify.register(conceptEngineRoutes, { prefix: '/concept' })
+      // AI Pre-Design routes
+      const { preDesignRoutes } = await import('./modules/pre-design/pre-design.routes')
+      await fastify.register(preDesignRoutes, { prefix: '/pre-design' })
+      // OS-PM routes
+      const { osPmRoutes } = await import('./modules/os-pm/os-pm.routes')
+      await fastify.register(osPmRoutes, { prefix: '/os-pm' })
       await fastify.register(verificationDocumentRoutes, { prefix: '/verification' })
       await fastify.register(paymentRoutes, { prefix: '/payments' })
       await fastify.register(spatialRoutes, { prefix: '/spatial' })

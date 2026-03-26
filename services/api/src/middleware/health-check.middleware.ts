@@ -112,14 +112,15 @@ function getMetricsQueues(): Record<string, Queue> | null {
   if (!redisUrl) return null
 
   try {
+    const parsed = new URL(redisUrl)
+    const host = parsed.hostname
+    const port = parseInt(parsed.port || '6379')
+    const password = parsed.password || undefined
+
     metricsQueues = {}
     for (const [key, name] of Object.entries(QUEUE_NAMES)) {
       metricsQueues[key] = new Queue(name, {
-        connection: {
-          host: new URL(redisUrl.replace('redis://', 'http://')).hostname,
-          port: parseInt(new URL(redisUrl.replace('redis://', 'http://')).port || '6379'),
-          maxRetriesPerRequest: null,
-        },
+        connection: { host, port, password, maxRetriesPerRequest: null },
       })
     }
     return metricsQueues
@@ -277,7 +278,7 @@ function calculateOverallStatus(checks: HealthStatus['checks']): 'healthy' | 'de
   const allChecks = [
     checks.database,
     checks.redis,
-    ...Object.values(checks.external || {}),
+    checks.external,
   ].filter((c): c is { status: 'healthy' | 'degraded' | 'down'; latency?: number; error?: string } =>
     c !== undefined && typeof c === 'object' && 'status' in c
   )

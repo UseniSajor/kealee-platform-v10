@@ -1,0 +1,44 @@
+// AI Pre-Design Domain — Enums
+// Domain: pre-design | Owner: concept-engine + web-main
+
+enum PreDesignProjectType {
+  INTERIOR_ADDITION
+  EXTERIOR_FACADE
+  LANDSCAPE_OUTDOOR
+}
+
+enum PreDesignTier {
+  STARTER
+  VISUALIZATION
+  PRE_DESIGN
+}
+
+enum PreDesignStatus {
+  DRAFT
+  PENDING_PAYMENT
+  PROCESSING
+  COMPLETED
+  FAILED
+  ARCHITECT_ROUTED
+}
+
+enum PreDesignCaptureMode {
+  PHOTOS
+  SMARTSCAN
+  PRO_SCAN
+}
+
+enum ExecutionRoute {
+  AI_ONLY
+  ARCHITECT_RECOMMENDED
+  ARCHITECT_REQUIRED
+}
+
+enum ArchitectEngagementStatus {
+  NEW
+  MATCHING
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELED
+}
