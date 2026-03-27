@@ -1122,41 +1122,44 @@ export async function seedDocumentTemplates(prisma: any): Promise<number> {
   let seeded = 0;
 
   for (const tmpl of DOC_TEMPLATES) {
-    await prisma.documentTemplate.upsert({
-      where: {
-        name_organizationId_version: {
-          name: tmpl.name,
-          organizationId: null as any,
+    // Prisma upsert does not support null in composite unique keys — use find + create/update
+    const existingDoc = await prisma.documentTemplate.findFirst({
+      where: { name: tmpl.name, organizationId: null, version: 1 },
+    });
+    if (existingDoc) {
+      await prisma.documentTemplate.update({
+        where: { id: existingDoc.id },
+        data: {
+          description: tmpl.description,
+          type: tmpl.type,
+          category: tmpl.category,
+          content: tmpl.content,
+          variables: tmpl.variables,
+          sections: tmpl.sections,
+          isActive: true,
+          isSystem: true,
+          format: "PDF",
           version: 1,
         },
-      },
-      update: {
-        description: tmpl.description,
-        type: tmpl.type,
-        category: tmpl.category,
-        content: tmpl.content,
-        variables: tmpl.variables,
-        sections: tmpl.sections,
-        isActive: true,
-        isSystem: true,
-        format: "PDF",
-        version: 1,
-      },
-      create: {
-        name: tmpl.name,
-        description: tmpl.description,
-        type: tmpl.type,
-        category: tmpl.category,
-        content: tmpl.content,
-        variables: tmpl.variables,
-        sections: tmpl.sections,
-        isActive: true,
-        isSystem: true,
-        format: "PDF",
-        version: 1,
-        organizationId: null,
-      },
-    });
+      });
+    } else {
+      await prisma.documentTemplate.create({
+        data: {
+          name: tmpl.name,
+          description: tmpl.description,
+          type: tmpl.type,
+          category: tmpl.category,
+          content: tmpl.content,
+          variables: tmpl.variables,
+          sections: tmpl.sections,
+          isActive: true,
+          isSystem: true,
+          format: "PDF",
+          version: 1,
+          organizationId: null,
+        },
+      });
+    }
 
     seeded++;
   }

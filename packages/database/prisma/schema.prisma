@@ -16273,3 +16273,61 @@ model ArchitectReviewTask {
   @@index([assignedArchitectId])
   @@index([createdAt])
 }
+
+// ─── KeaCore Orchestration Engine ────────────────────────────────────────────
+
+/// Approval gate created when KeaCore decides REQUIRE_APPROVAL for a workflow step.
+/// Maps to ApprovalGateType in @kealee/core.
+model OrchestrationGate {
+  id              String    @id @default(cuid())
+  projectId       String
+  sessionId       String?
+  /// ARCHITECT_VALIDATION | PERMIT_SUBMISSION | PAYMENT_RELEASE | CHANGE_ORDER_APPROVAL | DISPUTE_REVIEW
+  gateType        String
+  /// PENDING | APPROVED | REJECTED | EXPIRED | BYPASSED
+  status          String    @default("PENDING")
+  /// CAPTURE_ANALYSIS | PRE_DESIGN | ESTIMATE | PERMIT_PREP | CONTRACTOR_MATCH | PM_AUTOMATION | PAYMENT_RECOMMENDATION | CHANGE_ORDER
+  workflowType    String
+  decisionPayload Json?
+  reasonCodes     Json?
+  confidenceScore Float?
+  riskScore       Float?
+  resolvedBy      String?
+  resolvedAt      DateTime?
+  expiresAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("orchestration_gates")
+  @@index([projectId])
+  @@index([status])
+  @@index([gateType])
+  @@index([workflowType])
+  @@index([createdAt])
+}
+
+/// Append-only log of every orchestration decision.
+/// DB-backed complement to the in-memory AiActionLog ring buffer in @kealee/core.
+model OrchestrationActionLog {
+  id              String   @id @default(cuid())
+  projectId       String
+  sessionId       String?
+  workflowType    String
+  actionType      String
+  inputPayload    Json?
+  outputPayload   Json?
+  confidenceScore Float?
+  riskScore       Float?
+  /// AUTO_EXECUTE | REQUIRE_APPROVAL | ESCALATE | BLOCK
+  decision        String?
+  reasonCodes     Json?
+  approvalGateId  String?
+  overriddenBy    String?
+  createdAt       DateTime @default(now())
+
+  @@map("orchestration_action_log")
+  @@index([projectId])
+  @@index([workflowType])
+  @@index([decision])
+  @@index([createdAt])
+}

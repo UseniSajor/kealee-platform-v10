@@ -62,7 +62,7 @@ export const createCheckoutTool: ToolDefinition<In, CheckoutResult> = {
     const priceId = process.env[priceEnvKey];
     if (!priceId) throw new Error(`Stripe price ID not configured for: ${priceEnvKey}`);
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
+    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://kealee.com";
 

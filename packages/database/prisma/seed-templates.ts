@@ -1014,36 +1014,40 @@ export async function seedMessageTemplates(prisma: any): Promise<number> {
 
       const name = `${tmpl.name} (${channel})`;
 
-      await prisma.messageTemplate.upsert({
-        where: {
-          name_organizationId: {
-            name,
-            organizationId: null as any,
-          },
-        },
-        update: {
-          description: tmpl.description,
-          type: tmpl.type,
-          channel,
-          subject,
-          body,
-          variables: tmpl.variables,
-          isActive: true,
-          isSystem: true,
-        },
-        create: {
-          name,
-          description: tmpl.description,
-          type: tmpl.type,
-          channel,
-          subject,
-          body,
-          variables: tmpl.variables,
-          isActive: true,
-          isSystem: true,
-          organizationId: null,
-        },
+      // Prisma upsert does not support null in composite unique keys — use find + create/update
+      const existing = await prisma.messageTemplate.findFirst({
+        where: { name, organizationId: null },
       });
+      if (existing) {
+        await prisma.messageTemplate.update({
+          where: { id: existing.id },
+          data: {
+            description: tmpl.description,
+            type: tmpl.type,
+            channel,
+            subject,
+            body,
+            variables: tmpl.variables,
+            isActive: true,
+            isSystem: true,
+          },
+        });
+      } else {
+        await prisma.messageTemplate.create({
+          data: {
+            name,
+            description: tmpl.description,
+            type: tmpl.type,
+            channel,
+            subject,
+            body,
+            variables: tmpl.variables,
+            isActive: true,
+            isSystem: true,
+            organizationId: null,
+          },
+        });
+      }
 
       seeded++;
     }

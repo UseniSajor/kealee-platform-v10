@@ -26,19 +26,24 @@ export interface HomeownerDeliverables {
     goals:            string[];
     knownConstraints: string[];
     timeline?:        string;
+    address?:         string;
   };
   floorPlan: {
     floorplanId:   string;
     totalAreaFt2:  number;
     roomCount:     number;
+    totalWidthFt?: number;
+    totalDepthFt?: number;
     rooms: Array<{
       label:   string;
       widthFt: number;
       depthFt: number;
       areaFt2: number;
+      type?:   string;
     }>;
-    layoutNotes: string[];
-    svgUrl?:     string;
+    layoutNotes:   string[];
+    layoutIssues?: string[];
+    svgUrl?:       string;
   };
   narrative: {
     projectSummary:    string;
@@ -48,6 +53,7 @@ export interface HomeownerDeliverables {
     lifestyleAlignment:string;
     nextSteps:         string;
     rooms:             Record<string, string>;
+    spaceBySpace?:     Record<string, string>;
   };
   scope: {
     totalEstimatedMin: number;
@@ -55,6 +61,8 @@ export interface HomeownerDeliverables {
     budgetFitNote:     string;
     topRequiredTrades: string[];
     exclusions:        string[];
+    lineItems?:        Array<{ trade?: string; description?: string; estimatedLow?: string; estimatedHigh?: string }>;
+    estimatedTotal?:   string;
   };
   permit: {
     requiresPermit:          boolean;
@@ -66,12 +74,29 @@ export interface HomeownerDeliverables {
     keyConsiderations:       string[];
     disclaimer:              string;
   };
+  permitPath?: {
+    requiresPermit:          boolean;
+    likelyPermits:           string[];
+    estimatedTimeline:       string;
+    estimatedCost?:          string;
+    permits?:                string[];
+    tradeLicenses?:          string[];
+    structuralReviewRequired?: boolean;
+    designReviewRequired?:   boolean;
+    notes:                   string[];
+    disclaimer:              string;
+  };
   visuals: {
     midjourneyPrompts:       string[];
     stableDiffusionPrompts:  string[];
     descriptions:            string[];
     roomFocus:               string[];
     styleKeywords:           string[];
+    materialKeywords?:       string[];
+    paletteSuggestion?:      string;
+    lightingDirection?:      string;
+    cameraGuidance?:         string;
+    consistencyNotes?:       string[];
   };
   nextSteps: {
     recommendedService:  string;

@@ -249,7 +249,7 @@ export class AiGateway {
       confidence: result.confidence,
       fallbackUsed: usedFallback,
       sessionId: args.sessionId,
-      promptSnapshot: `Classify: ${args.text.slice(0, 500)}`,
+      promptSnapshot: `Classify: ${args.prompt.slice(0, 500)}`,
       retrievedContextRefs: [],
       latencyMs: Date.now() - start,
     });

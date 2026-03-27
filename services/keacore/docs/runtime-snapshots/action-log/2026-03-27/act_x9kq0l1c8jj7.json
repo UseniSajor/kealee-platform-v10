@@ -1,0 +1,26 @@
+{
+  "id": "act_x9kq0l1c8jj7",
+  "recordedAt": "2026-03-27T03:46:12.387Z",
+  "sessionId": "proj_test_001",
+  "projectId": "proj_test_001",
+  "actionType": "tool_execution",
+  "actionTarget": "PRE_DESIGN",
+  "outcome": "AUTO_EXECUTE",
+  "riskLevel": "MEDIUM",
+  "confidence": 0.861,
+  "reasoning": "High capture quality (85%); Risk factors within acceptable range",
+  "warnings": [],
+  "engineResults": {
+    "confidenceScore": 0.861,
+    "riskScore": 0.3
+  },
+  "metadata": {
+    "workflowType": "PRE_DESIGN",
+    "reasonCodes": [
+      "SYSTEMS_IMPACTED",
+      "AUTO_EXECUTE_APPROVED",
+      "CONFIDENCE_MEETS_THRESHOLD",
+      "RISK_WITHIN_TOLERANCE"
+    ]
+  }
+}

@@ -4,12 +4,14 @@
  * POST /keacore/orchestrate/decide    — evaluate a workflow context, return decision
  * POST /keacore/orchestrate/advance   — evaluate + return dispatch intent
  * POST /keacore/orchestrate/phase-gate — evaluate a project phase transition
- * GET  /keacore/orchestrate/log       — recent AI action log entries
+ * POST /keacore/orchestrate/pm-phase-gate — Kealee PM phase gate
+ * GET  /keacore/orchestrate/log       — recent AI action log entries (in-memory + DB)
  * GET  /keacore/orchestrate/stats     — action log aggregate stats
  */
 
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { prisma } from "@kealee/database";
 
 // ─── Input schemas ────────────────────────────────────────────────────────────
 
@@ -61,6 +63,69 @@ const PmPhaseGateSchema = z.object({
   budgetMax: z.number().optional(),
 });
 
+// ─── DB helpers (fire-and-forget — never block the response path) ─────────────
+
+function persistActionLog(data: {
+  projectId: string;
+  sessionId?: string;
+  workflowType: string;
+  actionType: string;
+  inputPayload?: unknown;
+  outputPayload?: unknown;
+  confidenceScore?: number;
+  riskScore?: number;
+  decision?: string;
+  reasonCodes?: unknown;
+  approvalGateId?: string;
+}): void {
+  prisma.orchestrationActionLog
+    .create({
+      data: {
+        projectId: data.projectId,
+        sessionId: data.sessionId,
+        workflowType: data.workflowType,
+        actionType: data.actionType,
+        inputPayload: data.inputPayload ?? undefined,
+        outputPayload: data.outputPayload ?? undefined,
+        confidenceScore: data.confidenceScore,
+        riskScore: data.riskScore,
+        decision: data.decision,
+        reasonCodes: data.reasonCodes ?? undefined,
+        approvalGateId: data.approvalGateId,
+      },
+    })
+    .catch(() => { /* swallow — log is best-effort */ });
+}
+
+function persistGate(data: {
+  projectId: string;
+  sessionId?: string;
+  gateType: string;
+  workflowType: string;
+  decisionPayload?: unknown;
+  reasonCodes?: unknown;
+  confidenceScore?: number;
+  riskScore?: number;
+}): Promise<string> {
+  return prisma.orchestrationGate
+    .create({
+      data: {
+        projectId: data.projectId,
+        sessionId: data.sessionId,
+        gateType: data.gateType,
+        workflowType: data.workflowType,
+        status: "PENDING",
+        decisionPayload: data.decisionPayload ?? undefined,
+        reasonCodes: data.reasonCodes ?? undefined,
+        confidenceScore: data.confidenceScore,
+        riskScore: data.riskScore,
+      },
+      select: { id: true },
+    })
+    .then((g) => g.id)
+    .catch(() => ""); // return empty string on failure — caller handles
+}
+
 // ─── Route plugin ─────────────────────────────────────────────────────────────
 
 export async function orchestrationRoutes(fastify: FastifyInstance): Promise<void> {
@@ -79,6 +144,19 @@ export async function orchestrationRoutes(fastify: FastifyInstance): Promise<voi
 
     const confidenceExplanation = explainConfidence(ctx);
     const riskExplanation = explainRisk(ctx);
+
+    // Persist to DB (fire-and-forget)
+    persistActionLog({
+      projectId: ctx.projectId,
+      workflowType: ctx.workflowType,
+      actionType: "DECIDE",
+      inputPayload: ctx,
+      outputPayload: result,
+      confidenceScore: result.confidenceScore,
+      riskScore: result.riskScore,
+      decision: result.decision,
+      reasonCodes: result.reasonCodes,
+    });
 
     return reply.send({
       projectId: ctx.projectId,
@@ -116,6 +194,34 @@ export async function orchestrationRoutes(fastify: FastifyInstance): Promise<voi
     const gate = createApprovalGateIfNeeded(ctx, advance);
     const escalation = createEscalationIfNeeded(ctx, advance);
 
+    // Persist gate to DB first (we want its ID in the action log)
+    let gateId: string | undefined;
+    if (gate.shouldCreate && gate.gatePayload) {
+      gateId = await persistGate({
+        projectId: ctx.projectId,
+        gateType: gate.gatePayload.gateType as string,
+        workflowType: ctx.workflowType,
+        decisionPayload: gate.gatePayload,
+        reasonCodes: advance.reasonCodes,
+        confidenceScore: advance.confidenceScore,
+        riskScore: advance.riskScore,
+      }) || undefined;
+    }
+
+    // Persist action log (fire-and-forget)
+    persistActionLog({
+      projectId: ctx.projectId,
+      workflowType: ctx.workflowType,
+      actionType: "ADVANCE",
+      inputPayload: ctx,
+      outputPayload: { advance, dispatch, gate: gate.gatePayload, escalation: escalation.escalationPayload },
+      confidenceScore: advance.confidenceScore,
+      riskScore: advance.riskScore,
+      decision: advance.decision,
+      reasonCodes: advance.reasonCodes,
+      approvalGateId: gateId,
+    });
+
     return reply.send({
       projectId: ctx.projectId,
       workflowType: ctx.workflowType,
@@ -127,7 +233,7 @@ export async function orchestrationRoutes(fastify: FastifyInstance): Promise<voi
       shouldPause: advance.shouldPause,
       shouldEscalate: advance.shouldEscalate,
       dispatch,
-      gate: gate.shouldCreate ? gate.gatePayload : null,
+      gate: gate.shouldCreate ? { ...gate.gatePayload, dbId: gateId } : null,
       escalation: escalation.shouldEscalate ? escalation.escalationPayload : null,
     });
   });
@@ -168,27 +274,52 @@ export async function orchestrationRoutes(fastify: FastifyInstance): Promise<voi
 
     const result = workflowGovernor.evaluatePhaseTransition(ctx, fromPhase, toPhase, completedItems);
 
+    // Persist (fire-and-forget)
+    persistActionLog({
+      projectId,
+      workflowType: "PHASE_GATE",
+      actionType: "PHASE_TRANSITION",
+      inputPayload: { fromPhase, toPhase, completedItems },
+      outputPayload: result,
+      decision: result.allowed ? "AUTO_EXECUTE" : "BLOCK",
+    });
+
     return reply.send({
       projectId,
       ...result,
-      // Convenience: HTTP status hint
       httpStatus: result.allowed ? 200 : 422,
     });
   });
 
   // ── GET /keacore/orchestrate/log ───────────────────────────────────────────
+  // ?source=memory|db|both (default: both — memory first, DB fallback)
   fastify.get("/orchestrate/log", async (request, reply) => {
     const query = (request.query as Record<string, string>);
     const limit = Math.min(parseInt(query.limit ?? "50", 10), 200);
     const sessionId = query.sessionId;
+    const source = query.source ?? "both";
 
     const { aiActionLog } = await import("@kealee/core");
 
-    const entries = sessionId
-      ? aiActionLog.getBySession(sessionId, limit)
-      : aiActionLog.getRecent(limit);
+    // In-memory
+    const memEntries = source !== "db"
+      ? (sessionId ? aiActionLog.getBySession(sessionId, limit) : aiActionLog.getRecent(limit))
+      : [];
 
-    return reply.send({ entries, count: entries.length });
+    // DB (when explicitly requested or memory is empty)
+    let dbEntries: unknown[] = [];
+    if (source === "db" || (source === "both" && memEntries.length === 0)) {
+      dbEntries = await prisma.orchestrationActionLog
+        .findMany({
+          where: sessionId ? { sessionId } : undefined,
+          orderBy: { createdAt: "desc" },
+          take: limit,
+        })
+        .catch(() => []);
+    }
+
+    const entries = source === "db" ? dbEntries : memEntries.length > 0 ? memEntries : dbEntries;
+    return reply.send({ entries, count: (entries as unknown[]).length, source: memEntries.length > 0 ? "memory" : "db" });
   });
 
   // ── GET /keacore/orchestrate/stats ─────────────────────────────────────────
@@ -233,6 +364,16 @@ export async function orchestrationRoutes(fastify: FastifyInstance): Promise<voi
     };
 
     const result = workflowGovernor.evaluatePmPhaseTransition(ctx, fromPhase, toPhase, completedItems);
+
+    // Persist (fire-and-forget)
+    persistActionLog({
+      projectId,
+      workflowType: "PM_PHASE_GATE",
+      actionType: "PM_PHASE_TRANSITION",
+      inputPayload: { fromPhase, toPhase, completedItems },
+      outputPayload: result,
+      decision: result.allowed ? "AUTO_EXECUTE" : "BLOCK",
+    });
 
     return reply.send({
       projectId,

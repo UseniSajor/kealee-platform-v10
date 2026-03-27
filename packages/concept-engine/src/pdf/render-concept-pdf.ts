@@ -328,7 +328,10 @@ function drawVisualsPage(doc: any, data: HomeownerDeliverables): void {
 function drawNextStepsPage(doc: any, data: HomeownerDeliverables): void {
   sectionHeader(doc, 'Next Steps')
 
-  const steps = data.nextSteps ?? []
+  const nextStepsObj = data.nextSteps as any
+  const steps: string[] = Array.isArray(nextStepsObj)
+    ? nextStepsObj
+    : (nextStepsObj?.actionItems ?? [])
   for (const step of steps) {
     doc.fontSize(10).fillColor('#0f172a').font('Helvetica')
        .text(`→  ${step}`, { width: 495 })
