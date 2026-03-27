@@ -271,6 +271,50 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return; // marketplace milestone payments don't create subscriptions
   }
 
+  // ── Permit Package fulfillment ────────────────────────────────────────────
+  if (metadata.source === 'permit-package' && metadata.intakeId) {
+    try {
+      // Mark lead as paid
+      await prismaAny.permitServiceLead.update({
+        where: { id: metadata.intakeId },
+        data: {
+          status: 'PAID',
+          metadata: {
+            tier: metadata.tier,
+            tierName: metadata.tierName,
+            stripeSessionId: session.id,
+            stripePaymentIntentId: session.payment_intent ?? null,
+            paidAt: new Date().toISOString(),
+          },
+        },
+      }).catch((e: any) => console.warn('permit-package: lead update failed', e?.message));
+
+      // Enqueue permit processing job
+      try {
+        const { Queue } = await import('bullmq');
+        const queue = new Queue('intake-processing', {
+          connection: { url: process.env.REDIS_URL || 'redis://localhost:6379' },
+        });
+        await queue.add('process-permit-intake', {
+          intakeId: metadata.intakeId,
+          tier: metadata.tier,
+          tierName: metadata.tierName,
+          customerEmail: metadata.customerEmail ?? session.customer_email ?? '',
+          customerName: metadata.customerName ?? '',
+          stripeSessionId: session.id,
+        }, { priority: 2, attempts: 3 });
+        await queue.close();
+      } catch (qErr: any) {
+        console.warn('permit-package: queue enqueue failed (non-fatal):', qErr.message);
+      }
+
+      console.log('permit-package paid:', metadata.intakeId, 'tier:', metadata.tier);
+    } catch (err: any) {
+      console.error('Failed to process permit-package payment:', err?.message);
+    }
+    return;
+  }
+
   // ── Concept Package fulfillment (intake-to-payment flow) ──────────────────
   if (metadata.source === 'concept-package' && metadata.intakeId) {
     try {

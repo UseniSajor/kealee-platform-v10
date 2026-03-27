@@ -863,6 +863,10 @@ const start = async () => {
       // County SEO page lead capture — public, no auth required
       const { permitEstimateRoutes } = await import('./modules/permits/permit-estimate.routes')
       await fastify.register(permitEstimateRoutes, { prefix: '/api/v1/permits' })
+
+      // Public permit intake + Stripe checkout — no auth required
+      const { permitIntakeRoutes } = await import('./modules/permits/permit-intake.routes')
+      await fastify.register(permitIntakeRoutes, { prefix: '/api/v1/permits' })
     })
 
     await safeRegisterBlock('Phase 1 - Project History, Portfolios, PreCon Extras routes', async () => {

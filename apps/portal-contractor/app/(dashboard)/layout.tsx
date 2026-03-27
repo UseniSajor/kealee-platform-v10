@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Bell,
   TrendingUp,
+  FileText,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -25,6 +26,7 @@ const NAV_ITEMS = [
   { href: '/leads', label: 'Leads', icon: Megaphone },
   { href: '/bids', label: 'Bids', icon: Gavel },
   { href: '/projects', label: 'Projects', icon: FolderKanban },
+  { href: '/permits', label: 'Permits', icon: FileText },
   { href: '/payments', label: 'Payments', icon: DollarSign },
   { href: '/credentials', label: 'Credentials', icon: ShieldCheck },
   { href: '/marketing', label: 'Grow', icon: TrendingUp },
