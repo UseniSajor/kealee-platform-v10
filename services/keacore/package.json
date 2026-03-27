@@ -13,6 +13,7 @@
     "providers:status": "tsx src/scripts/provider-status.ts"
   },
   "dependencies": {
+    "@kealee/core": "workspace:*",
     "@kealee/core-agents": "workspace:*",
     "@kealee/core-tools": "workspace:*",
     "@kealee/core-llm": "workspace:*",
