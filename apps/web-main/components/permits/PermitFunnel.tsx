@@ -186,7 +186,7 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
         body: JSON.stringify({
           intakeId: state.intakeId ?? 'pending',
           tier,
-          successUrl: `${origin}/permits/success?tier=${tier}&email=${encodeURIComponent(state.email)}`,
+          successUrl: `${origin}/permits/success?tier=${tier}&email=${encodeURIComponent(state.email)}&intake_id=${state.intakeId ?? ''}`,
           cancelUrl: `${origin}/permits`,
         }),
       })

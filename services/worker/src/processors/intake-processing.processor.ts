@@ -222,10 +222,123 @@ async function processIntakeJob(job: Job<IntakeProcessingJobData>) {
   }
 }
 
+// ── Permit intake processor ───────────────────────────────────────────────────
+async function processPermitIntakeJob(job: Job) {
+  const { intakeId, tier, tierName, customerEmail, customerName, stripeSessionId } = job.data
+  const prisma = await getPrisma()
+
+  try {
+    console.log(`[intake-processing] Processing permit intake ${intakeId} tier=${tier}`)
+
+    // 1. Fetch permit lead
+    const lead = await prisma.permitServiceLead.findUnique({
+      where: { id: intakeId },
+    })
+
+    if (!lead) {
+      throw new Error(`PermitServiceLead ${intakeId} not found`)
+    }
+
+    await job.updateProgress(20)
+
+    // 2. Mark as actively working
+    await prisma.permitServiceLead.update({
+      where: { id: intakeId },
+      data: { status: 'FIRST_PERMIT_ACTIVE' },
+    }).catch(() => {/* non-fatal */})
+
+    // 3. Create command center task
+    try {
+      await prisma.task.create({
+        data: {
+          title: `Permit: ${lead.fullName || customerName} — ${tierName}`,
+          description: [
+            `Customer: ${lead.fullName || customerName}`,
+            `Email: ${lead.email || customerEmail}`,
+            `Package: ${tierName}`,
+            `County: ${(lead.jurisdictions as string[] ?? []).join(', ') || 'Not specified'}`,
+            `Project: ${(lead.metadata as any)?.address || 'Address not provided'}`,
+            `Type: ${(lead.metadata as any)?.projectType || 'Unknown'}`,
+            `Has Plans: ${(lead.metadata as any)?.hasPlans || 'Unknown'}`,
+            `Stripe Session: ${stripeSessionId}`,
+            `Intake ID: ${intakeId}`,
+          ].join('\n'),
+          status: 'PENDING',
+          priority: tier === 'expediting' ? 'HIGH' : tier === 'coordination' ? 'HIGH' : 'MEDIUM',
+          source: 'permit_intake',
+          metadata: { intakeId, tier, tierName, stripeSessionId },
+        },
+      })
+    } catch (taskErr: any) {
+      console.warn(`[intake-processing] Permit task creation failed (non-fatal): ${taskErr.message}`)
+    }
+
+    await job.updateProgress(50)
+
+    // 4. Send customer confirmation
+    const email = lead.email || customerEmail
+    if (email) {
+      try {
+        await emailQueue.sendEmail({
+          to: email,
+          subject: `Your ${tierName} is confirmed — Kealee Permit Group`,
+          html: `
+            <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+              <h2 style="color:#1A2B4A">Permit package confirmed!</h2>
+              <p>Hi ${lead.fullName || customerName || 'there'},</p>
+              <p>Your <strong>${tierName}</strong> request has been received and payment confirmed.</p>
+              <h3>What happens next</h3>
+              <ol>
+                <li>Our permit team reviews your project within 1 business day</li>
+                <li>We contact you to confirm scope and any missing info</li>
+                <li>Your package is prepared and delivered per your tier</li>
+              </ol>
+              <p>Questions? Email <a href="mailto:permits@kealee.com">permits@kealee.com</a></p>
+              <p>— The Kealee Permit Team</p>
+            </div>
+          `,
+          text: `Hi ${lead.fullName || customerName || 'there'},\n\nYour ${tierName} is confirmed. Our team will review your project within 1 business day.\n\nQuestions? Email permits@kealee.com\n\n— The Kealee Permit Team`,
+          metadata: { eventType: 'permit_intake_confirmation', intakeId },
+        })
+      } catch (emailErr: any) {
+        console.warn(`[intake-processing] Permit confirmation email failed (non-fatal): ${emailErr.message}`)
+      }
+    }
+
+    // 5. Team alert
+    try {
+      await emailQueue.sendEmail({
+        to: TEAM_EMAIL,
+        subject: `New Permit Intake — ${lead.fullName || customerName} (${tierName})`,
+        html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto"><h2>New Permit Intake</h2><p><strong>${tierName}</strong></p><p>Customer: ${lead.fullName || customerName}<br>Email: ${email}<br>County: ${(lead.jurisdictions as string[] ?? []).join(', ')}<br>Intake ID: ${intakeId}</p><p><a href="${COMMAND_CENTER_URL}/permits/${intakeId}" style="background:#1A2B4A;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;display:inline-block">View in Command Center</a></p></div>`,
+        text: `New Permit Intake — ${tierName}\nCustomer: ${lead.fullName || customerName}\nEmail: ${email}\nIntake ID: ${intakeId}`,
+        metadata: { eventType: 'permit_team_alert', intakeId },
+      })
+    } catch (teamErr: any) {
+      console.warn(`[intake-processing] Permit team alert failed (non-fatal): ${teamErr.message}`)
+    }
+
+    await job.updateProgress(100)
+    console.log(`[intake-processing] Permit intake ${intakeId} fully processed`)
+    return { success: true, intakeId, tier }
+  } catch (error: any) {
+    console.error(`[intake-processing] Permit job failed for ${intakeId}:`, error.message)
+    throw error
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
 export function createIntakeProcessingWorker(): Worker<IntakeProcessingJobData> {
   const worker = new Worker<IntakeProcessingJobData>(
     'intake-processing',
-    async (job) => processIntakeJob(job),
+    async (job) => {
+      // Route by job name
+      if (job.name === 'process-permit-intake') {
+        return processPermitIntakeJob(job)
+      }
+      return processIntakeJob(job)
+    },
     {
       connection: redis,
       concurrency: 5,

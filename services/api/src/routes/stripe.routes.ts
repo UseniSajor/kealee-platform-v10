@@ -274,18 +274,22 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   // ── Permit Package fulfillment ────────────────────────────────────────────
   if (metadata.source === 'permit-package' && metadata.intakeId) {
     try {
-      // Mark lead as paid
+      // Mark lead as CONTACTED (= payment received, working on it)
+      // Append payment info to message field (no metadata column in schema)
+      const existingLead = await prismaAny.permitServiceLead.findUnique({
+        where: { id: metadata.intakeId },
+        select: { message: true },
+      }).catch(() => null);
+      const updatedMessage = [
+        existingLead?.message ?? '',
+        `[PAID tier=${metadata.tier} session=${session.id}]`,
+      ].filter(Boolean).join(' | ');
+
       await prismaAny.permitServiceLead.update({
         where: { id: metadata.intakeId },
         data: {
-          status: 'PAID',
-          metadata: {
-            tier: metadata.tier,
-            tierName: metadata.tierName,
-            stripeSessionId: session.id,
-            stripePaymentIntentId: session.payment_intent ?? null,
-            paidAt: new Date().toISOString(),
-          },
+          status: 'CONTACTED',
+          message: updatedMessage,
         },
       }).catch((e: any) => console.warn('permit-package: lead update failed', e?.message));
 

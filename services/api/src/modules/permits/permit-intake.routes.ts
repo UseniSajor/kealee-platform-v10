@@ -68,6 +68,16 @@ export async function permitIntakeRoutes(fastify: FastifyInstance) {
     try {
       const body = IntakeSchema.parse(request.body)
 
+      // Build message string — encodes all project context since no metadata column exists
+      const messageParts = [
+        `address=${body.address}`,
+        `projectType=${body.projectType}`,
+        `hasPlans=${body.hasPlans}`,
+        body.squareFootage ? `sqft=${body.squareFootage}` : null,
+        body.countySlug ? `county=${body.countySlug}` : null,
+        body.projectDescription ? `desc=${body.projectDescription.slice(0, 200)}` : null,
+      ].filter(Boolean).join(' | ')
+
       const lead = await prismaAny.permitServiceLead.create({
         data: {
           fullName: body.name,
@@ -82,18 +92,11 @@ export async function permitIntakeRoutes(fastify: FastifyInstance) {
           permitsPerMonth: '1',
           servicesNeeded: ['permit_filing'],
           urgency: 'standard',
-          message: body.projectDescription ?? '',
+          message: messageParts,
           status: 'NEW',
           priority: 'MEDIUM',
           source: 'WEB_PERMIT_INTAKE',
           consent: true,
-          metadata: {
-            projectType: body.projectType,
-            hasPlans: body.hasPlans,
-            squareFootage: body.squareFootage ?? null,
-            address: body.address,
-            countySlug: body.countySlug ?? null,
-          },
         },
         select: { id: true },
       })
@@ -165,6 +168,53 @@ export async function permitIntakeRoutes(fastify: FastifyInstance) {
       return lead
     } catch (error: any) {
       return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to fetch intake') })
+    }
+  })
+
+  // ── GET /permits/intake-status?intake_id=... ─────────────────────────────
+  // Used by success page to confirm real DB status
+  fastify.get('/intake-status', async (request, reply) => {
+    try {
+      const { intake_id } = request.query as { intake_id?: string }
+      if (!intake_id) return reply.code(400).send({ error: 'Missing intake_id' })
+
+      const lead = await prismaAny.permitServiceLead.findUnique({
+        where: { id: intake_id },
+        select: {
+          id: true,
+          status: true,
+          fullName: true,
+          email: true,
+          createdAt: true,
+          message: true,
+        },
+      })
+      if (!lead) return reply.code(404).send({ error: 'Order not found' })
+
+      // Extract tier from the message field where webhook stored it
+      const tierMatch = (lead.message as string ?? '').match(/tier=(\w+)/)
+      const tier = tierMatch?.[1] ?? null
+
+      const TIER_NAMES: Record<string, string> = {
+        simple: 'Permit Research + Checklist',
+        package: 'Full Permit Package',
+        coordination: 'Permit Coordination Service',
+        expediting: 'Expedited Permit Filing',
+      }
+
+      return {
+        id: lead.id,
+        status: lead.status,
+        fullName: lead.fullName,
+        email: lead.email,
+        createdAt: lead.createdAt,
+        tier,
+        tierName: tier ? TIER_NAMES[tier] : null,
+        // CONTACTED or beyond = payment was received
+        paid: lead.status !== 'NEW',
+      }
+    } catch (error: any) {
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to look up order') })
     }
   })
 }

@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
+import { apiFetch } from '@/lib/api/client'
 
 type PermitStatus =
   | 'DRAFT'
@@ -58,21 +57,18 @@ export default function ContractorPermitsPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const token = typeof window !== 'undefined'
-      ? document.cookie.match(/supabase-auth-token=([^;]+)/)?.[1]
-      : null
-
-    fetch(`${API}/api/v1/permits/applications`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      credentials: 'include',
-    })
-      .then((r) => r.json())
+    apiFetch<{ applications: PermitApplication[] }>('/api/v1/permits/applications')
       .then((data) => {
         setApplications(data.applications ?? [])
         setLoading(false)
       })
-      .catch(() => {
-        setError('Could not load permit applications')
+      .catch((err) => {
+        // 401 = not logged in; show empty state instead of error
+        if (err?.status === 401) {
+          setApplications([])
+        } else {
+          setError('Could not load permit applications')
+        }
         setLoading(false)
       })
   }, [])
@@ -151,7 +147,6 @@ export default function ContractorPermitsPage() {
 
       {!loading && applications.length > 0 && (
         <div className="space-y-8">
-          {/* Active */}
           {statusGroups.active.length > 0 && (
             <section>
               <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">
@@ -165,7 +160,6 @@ export default function ContractorPermitsPage() {
             </section>
           )}
 
-          {/* Approved */}
           {statusGroups.approved.length > 0 && (
             <section>
               <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">
@@ -179,7 +173,6 @@ export default function ContractorPermitsPage() {
             </section>
           )}
 
-          {/* Other */}
           {statusGroups.other.length > 0 && (
             <section>
               <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">
@@ -219,7 +212,7 @@ function ApplicationCard({ app }: { app: PermitApplication }) {
             {app.projectData?.address ?? 'No address'}
           </p>
           <p className="text-xs text-gray-400 mt-0.5">
-            {app.permitType} · Submitted {formatDate(app.createdAt)}
+            {app.permitType} · {formatDate(app.createdAt)}
           </p>
           {app.projectData?.scope && (
             <p className="text-xs text-gray-500 mt-1 truncate">{app.projectData.scope}</p>
