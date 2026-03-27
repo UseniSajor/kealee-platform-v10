@@ -43,6 +43,7 @@ COPY packages/concept-engine/package.json        ./packages/concept-engine/packa
 COPY packages/core-ddts/package.json             ./packages/core-ddts/package.json
 COPY packages/core-events/package.json           ./packages/core-events/package.json
 COPY packages/types/package.json                 ./packages/types/package.json
+COPY packages/core-llm/package.json              ./packages/core-llm/package.json
 
 # ── Layer 2: install dependencies ──
 RUN pnpm install --filter @kealee/api... --prod=false --ignore-scripts
@@ -65,6 +66,7 @@ COPY packages/concept-engine/ ./packages/concept-engine/
 COPY packages/core-ddts/      ./packages/core-ddts/
 COPY packages/core-events/    ./packages/core-events/
 COPY packages/types/          ./packages/types/
+COPY packages/core-llm/       ./packages/core-llm/
 COPY services/api/            ./services/api/
 
 # ── Layer 4: generate Prisma client + compile database package ──
@@ -90,6 +92,7 @@ RUN pnpm --filter @kealee/types run build 2>/dev/null || true
 RUN pnpm --filter @kealee/core-events run build 2>/dev/null || true
 RUN pnpm --filter @kealee/core-ddts run build 2>/dev/null || true
 RUN pnpm --filter @kealee/concept-engine run build 2>/dev/null || true
+RUN pnpm --filter @kealee/core-llm run build 2>/dev/null || true
 
 # ── Layer 6: build the API ──
 RUN cd services/api && pnpm run build:ts && \

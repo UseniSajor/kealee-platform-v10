@@ -27,9 +27,11 @@ if (!process.env.DATABASE_URL) {
 }
 
 function getPrismaDatabaseUrl(): string | undefined {
-  // Also accept Railway-injected Postgres reference variables as fallback
-  const raw = process.env.DATABASE_URL
-    || process.env.RAILWAY_SERVICE_PRODUCTION_POSTGRES__URL
+  // KEALEE_DB_URL takes priority — avoids Railway's conflicting DATABASE_URL
+  // auto-injection (Railway injects DATABASE_URL=postgres.railway.internal from
+  // linked Postgres services, which is just a hostname, not a valid postgres URL).
+  const raw = process.env.KEALEE_DB_URL
+    || process.env.DATABASE_URL
     || process.env.POSTGRES_URL
     || process.env.POSTGRESQL_URL
   if (!raw) return undefined
