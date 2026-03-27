@@ -1,9 +1,16 @@
 import { PrismaClient } from '@prisma/client'
 import { join } from 'path'
 
-// Load .env file from database package directory if DATABASE_URL is not set
-// Uses dynamic require so dotenv is optional (not needed in Railway/production)
-if (!process.env.DATABASE_URL) {
+/** Returns true if the string looks like a valid postgres connection URL */
+function isValidPgUrl(url: string | undefined): boolean {
+  return !!url && (url.startsWith('postgresql://') || url.startsWith('postgres://'))
+}
+
+// Load .env file from database package directory if no valid postgres URL is set.
+// Uses dynamic require so dotenv is optional (not needed in Railway/production).
+// Note: Railway may inject DATABASE_URL=postgres.railway.internal (just a hostname)
+// from a linked Postgres service, which is NOT a valid URL. We check isValidPgUrl.
+if (!isValidPgUrl(process.env.KEALEE_DB_URL) && !isValidPgUrl(process.env.DATABASE_URL)) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { config } = require('dotenv') as { config: (opts?: any) => any }
@@ -16,7 +23,7 @@ if (!process.env.DATABASE_URL) {
     for (const envPath of possiblePaths) {
       try {
         config({ path: envPath })
-        if (process.env.DATABASE_URL) break
+        if (isValidPgUrl(process.env.DATABASE_URL)) break
       } catch {
         // Continue to next path
       }
@@ -27,11 +34,17 @@ if (!process.env.DATABASE_URL) {
 }
 
 function getPrismaDatabaseUrl(): string | undefined {
-  // KEALEE_DB_URL takes priority — avoids Railway's conflicting DATABASE_URL
-  // auto-injection (Railway injects DATABASE_URL=postgres.railway.internal from
-  // linked Postgres services, which is just a hostname, not a valid postgres URL).
-  const raw = process.env.KEALEE_DB_URL
-    || process.env.DATABASE_URL
+  // Priority order:
+  // 1. KEALEE_DB_URL — explicit override, avoids Railway's conflicting auto-injection
+  // 2. DATABASE_URL — but only if it's a valid postgres URL (Railway may inject just
+  //    a hostname like "postgres.railway.internal" from a linked Postgres service)
+  // 3. DATABASE_PUBLIC_URL — Railway injects this as a full valid URL for the Postgres plugin
+  // 4. DATABASE_PRIVATE_URL — Railway's private network URL
+  // 5. POSTGRES_URL / POSTGRESQL_URL — other common env var names
+  const raw = (isValidPgUrl(process.env.KEALEE_DB_URL) ? process.env.KEALEE_DB_URL : undefined)
+    || (isValidPgUrl(process.env.DATABASE_URL) ? process.env.DATABASE_URL : undefined)
+    || process.env.DATABASE_PUBLIC_URL
+    || process.env.DATABASE_PRIVATE_URL
     || process.env.POSTGRES_URL
     || process.env.POSTGRESQL_URL
   if (!raw) return undefined
