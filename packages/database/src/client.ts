@@ -1,24 +1,28 @@
 import { PrismaClient } from '@prisma/client'
-import { config } from 'dotenv'
 import { join } from 'path'
 
 // Load .env file from database package directory if DATABASE_URL is not set
+// Uses dynamic require so dotenv is optional (not needed in Railway/production)
 if (!process.env.DATABASE_URL) {
-  // Try multiple possible paths
-  const possiblePaths = [
-    join(process.cwd(), 'packages/database/.env'),
-    join(process.cwd(), '.env'),
-    join(__dirname, '../../.env'),
-    join(__dirname, '../.env'),
-  ]
-  
-  for (const envPath of possiblePaths) {
-    try {
-      config({ path: envPath })
-      if (process.env.DATABASE_URL) break
-    } catch {
-      // Continue to next path
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { config } = require('dotenv') as { config: (opts?: any) => any }
+    const possiblePaths = [
+      join(process.cwd(), 'packages/database/.env'),
+      join(process.cwd(), '.env'),
+      join(__dirname, '../../.env'),
+      join(__dirname, '../.env'),
+    ]
+    for (const envPath of possiblePaths) {
+      try {
+        config({ path: envPath })
+        if (process.env.DATABASE_URL) break
+      } catch {
+        // Continue to next path
+      }
     }
+  } catch {
+    // dotenv not available (production) — env vars come from Railway/process environment
   }
 }
 
