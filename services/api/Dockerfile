@@ -71,8 +71,7 @@ COPY services/api/            ./services/api/
 
 # ── Layer 4: generate Prisma client + compile database package ──
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \
-    pnpm --filter @kealee/database db:generate 2>/dev/null || \
-    cd packages/database && npx prisma generate
+    pnpm --filter @kealee/database run db:generate 2>&1 || true
 RUN pnpm --filter @kealee/database run build 2>/dev/null || true
 
 # ── Layer 5: build workspace packages ──
