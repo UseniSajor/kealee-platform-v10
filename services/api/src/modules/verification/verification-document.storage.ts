@@ -18,7 +18,7 @@ import {
   DeleteObjectCommand,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID as uuidv4 } from 'crypto'
 
 const BUCKET_NAME          = process.env.S3_BUCKET_NAME || process.env.R2_BUCKET_NAME || 'kealee-uploads'
 const UPLOAD_URL_EXPIRY    = 3_600   // 1 h — time to complete upload

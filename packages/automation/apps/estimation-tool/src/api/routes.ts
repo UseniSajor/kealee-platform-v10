@@ -4,7 +4,7 @@
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { v4 as uuid } from 'uuid';
+import { randomUUID as uuid } from 'crypto';
 
 // Import modules
 import { costDatabaseManager } from '../cost-database/database-manager.js';

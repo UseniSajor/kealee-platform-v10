@@ -4,7 +4,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { v4 as uuid } from 'uuid';
+import { randomUUID as uuid } from 'crypto';
 import Decimal from 'decimal.js';
 import { assemblyBuilder, CreateAssemblyInput, CreateComponentInput } from './assembly-builder.js';
 

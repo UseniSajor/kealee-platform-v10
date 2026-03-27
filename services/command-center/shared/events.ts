@@ -5,7 +5,7 @@
 
 import { EventEmitter } from 'events';
 import { Redis } from 'ioredis';
-import { v4 as uuid } from 'uuid';
+import { randomUUID as uuid } from 'crypto';
 import { getTraceId, createLogger } from '@kealee/observability';
 
 const logger = createLogger('event-bus');

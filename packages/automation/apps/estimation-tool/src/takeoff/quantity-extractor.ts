@@ -6,7 +6,7 @@
  * Estimate.metadata for persistence.
  */
 
-import { v4 as uuid } from 'uuid';
+import { randomUUID as uuid } from 'crypto';
 import Decimal from 'decimal.js';
 import { DetectedElement, RoomAnalysis, MaterialEstimate, planAnalyzer } from './plan-analyzer.js';
 import { measurementTools } from './measurement-tools.js';

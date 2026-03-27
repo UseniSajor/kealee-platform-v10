@@ -6,7 +6,7 @@
  * Estimate.metadata for persistence.
  */
 
-import { v4 as uuid } from 'uuid';
+import { randomUUID as uuid } from 'crypto';
 
 // In-memory storage for takeoffs (keyed by takeoff ID)
 const takeoffStore = new Map<string, TakeoffRecord>();

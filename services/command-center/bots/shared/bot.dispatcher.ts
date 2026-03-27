@@ -11,7 +11,7 @@ import { Redis } from 'ioredis'
 import { botRegistry } from './bot.registry.js'
 import { BotEvent, BotResult } from './bot.interface.js'
 import { createLogger } from '@kealee/observability'
-import { v4 as uuid } from 'uuid'
+import { randomUUID as uuid } from 'crypto'
 
 const logger = createLogger('bot-dispatcher')
 

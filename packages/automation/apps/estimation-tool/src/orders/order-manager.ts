@@ -7,7 +7,7 @@
  */
 
 import { PrismaClient, Estimate, EstimateStatus, EstimateType, Prisma } from '@prisma/client';
-import { v4 as uuid } from 'uuid';
+import { randomUUID as uuid } from 'crypto';
 import {
   notifyOrderCreated,
   notifyOrderAssigned,

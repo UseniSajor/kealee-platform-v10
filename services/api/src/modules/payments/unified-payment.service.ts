@@ -11,7 +11,7 @@ import { paymentService } from './payment.service'
 import { NotFoundError, AuthorizationError, ValidationError } from '../../errors/app.error'
 import { eventService } from '../events/event.service'
 import { auditService } from '../audit/audit.service'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID as uuidv4 } from 'crypto'
 
 // Idempotency key storage (in-memory cache, can be moved to Redis in production)
 const idempotencyCache = new Map<string, { result: any; expiresAt: number }>()

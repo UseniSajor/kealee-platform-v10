@@ -7,7 +7,7 @@ import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { prismaAny } from '../../utils/prisma-helper'
 import { NotFoundError, ValidationError } from '../../errors/app.error'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID as uuidv4 } from 'crypto'
 
 // Initialize S3 client (works with both AWS S3 and Cloudflare R2)
 function getS3Client() {

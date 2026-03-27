@@ -12,7 +12,7 @@
 import { Redis } from 'ioredis'
 import cron from 'node-cron'
 import { createLogger } from '@kealee/observability'
-import { v4 as uuid } from 'uuid'
+import { randomUUID as uuid } from 'crypto'
 import { GROWTH_SUBSCRIBED_EVENTS } from '../bots/growth/growth.events.js'
 import {
   createGrowthQueue,

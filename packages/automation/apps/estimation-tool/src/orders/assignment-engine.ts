@@ -8,7 +8,7 @@
  */
 
 import { PrismaClient, Estimate, User } from '@prisma/client';
-import { v4 as uuid } from 'uuid';
+import { randomUUID as uuid } from 'crypto';
 import { EstimationOrder, OrderType, OrderPriority } from './order-manager.js';
 
 const prisma = new PrismaClient();

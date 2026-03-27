@@ -51,7 +51,7 @@ import type {
   RecruitmentPriorityItem,
   DemandGenPriorityItem,
 } from './growth.types.js'
-import { v4 as uuid } from 'uuid'
+import { randomUUID as uuid } from 'crypto'
 
 // ─── Trade Shortage Score ─────────────────────────────────────────────────────
 

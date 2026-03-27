@@ -6,7 +6,7 @@
  * Estimate.metadata for persistence.
  */
 
-import { v4 as uuid } from 'uuid';
+import { randomUUID as uuid } from 'crypto';
 
 // In-memory storage for plan analysis results (keyed by analysis ID)
 const analysisStore = new Map<string, PlanAnalysisRecord>();

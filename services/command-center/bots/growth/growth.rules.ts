@@ -5,7 +5,7 @@
  * All functions are pure (no side effects).
  */
 
-import { v4 as uuid } from 'uuid'
+import { randomUUID as uuid } from 'crypto'
 import type {
   TradeScore,
   GeoScore,
