@@ -23,7 +23,11 @@ if (!process.env.DATABASE_URL) {
 }
 
 function getPrismaDatabaseUrl(): string | undefined {
+  // Also accept Railway-injected Postgres reference variables as fallback
   const raw = process.env.DATABASE_URL
+    || process.env.RAILWAY_SERVICE_PRODUCTION_POSTGRES__URL
+    || process.env.POSTGRES_URL
+    || process.env.POSTGRESQL_URL
   if (!raw) return undefined
 
   // On Windows host, Docker Compose service names (e.g. "postgres") won't resolve.
