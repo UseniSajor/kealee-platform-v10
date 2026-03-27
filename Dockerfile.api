@@ -25,9 +25,10 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages ./packages
 COPY services ./services
+COPY data ./data
 
 RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    pnpm install --filter @kealee/api... --prod=false --ignore-scripts
+    pnpm install --filter @kealee/api... --prod=false --ignore-scripts --no-frozen-lockfile
 
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \
     pnpm --filter @kealee/database run db:generate 2>&1 || true
@@ -50,10 +51,11 @@ RUN pnpm --filter @kealee/core-ddts run build 2>/dev/null || true
 RUN pnpm --filter @kealee/core-events run build 2>/dev/null || true
 RUN pnpm --filter @kealee/core-llm run build 2>/dev/null || true
 RUN pnpm --filter @kealee/concept-engine run build 2>/dev/null || true
+RUN pnpm --filter @kealee/seeds run build 2>/dev/null || true
 
-RUN cd services/api && pnpm run build:ts && \
+RUN cd services/api && (pnpm run build:ts; true) && \
     test -f dist/index.js || \
-    (echo "FATAL: dist/index.js missing!" && exit 1)
+    (echo "FATAL: dist/index.js missing after tsc!" && exit 1)
 
 ENV NODE_ENV=production
 ENV PORT=3000

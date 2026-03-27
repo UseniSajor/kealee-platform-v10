@@ -5,9 +5,7 @@
 
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 
 // Import parcel service logic inline (during transition, before service extraction)
 // Once os-land runs standalone, these routes can proxy to it instead
