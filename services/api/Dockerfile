@@ -67,10 +67,11 @@ COPY packages/core-events/    ./packages/core-events/
 COPY packages/types/          ./packages/types/
 COPY services/api/            ./services/api/
 
-# ── Layer 4: generate Prisma client ──
+# ── Layer 4: generate Prisma client + compile database package ──
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \
     pnpm --filter @kealee/database db:generate 2>/dev/null || \
     cd packages/database && npx prisma generate
+RUN pnpm --filter @kealee/database run build 2>/dev/null || true
 
 # ── Layer 5: build workspace packages ──
 RUN pnpm --filter @kealee/shared run build 2>/dev/null || true
@@ -118,6 +119,7 @@ COPY --from=builder --chown=nodejs:nodejs /app/services/api/dist              ./
 COPY --from=builder --chown=nodejs:nodejs /app/services/api/package.json      ./services/api/package.json
 COPY --from=builder --chown=nodejs:nodejs /app/services/api/node_modules      ./services/api/node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/node_modules ./packages/database/node_modules
+COPY --from=builder --chown=nodejs:nodejs /app/packages/database/dist         ./packages/database/dist
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/package.json ./packages/database/package.json
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/prisma       ./packages/database/prisma
 COPY --from=builder --chown=nodejs:nodejs /app/package.json                   ./package.json
