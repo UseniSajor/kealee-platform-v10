@@ -2,7 +2,7 @@
  * markets.service.ts — Multi-Market Expansion Operating System
  * Market jurisdiction management, launch checklists, city configs.
  */
-import prisma from '../../lib/prisma'
+import { prisma } from '../../lib/prisma'
 import type {
   CreateMarketBody,
   UpdateMarketBody,

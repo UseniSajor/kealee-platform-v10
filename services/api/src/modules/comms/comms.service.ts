@@ -2,7 +2,7 @@
  * comms.service.ts — Unified Communications Layer
  * In-app inbox, preference management, channel routing.
  */
-import prisma from '../../lib/prisma'
+import { prisma } from '../../lib/prisma'
 import type {
   SendNotificationBody,
   UpdateNotificationPrefsBody,

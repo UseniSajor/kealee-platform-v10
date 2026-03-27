@@ -20,7 +20,7 @@ vi.mock('../../../lib/prisma', () => ({
   },
 }))
 
-import prisma from '../../../lib/prisma'
+import { prisma } from '../../../lib/prisma'
 import {
   getNotificationCenter,
   markNotificationsRead,

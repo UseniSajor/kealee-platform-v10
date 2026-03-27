@@ -3,7 +3,7 @@
  * Owner-scoped project, engagement, readiness, and timeline service.
  * Wraps canonical Project + ContractAgreement models — never replaces them.
  */
-import prisma from '../../lib/prisma'
+import { prisma } from '../../lib/prisma'
 import { emitEvent } from '../../lib/emit-event'
 import type {
   CreateProjectBody,

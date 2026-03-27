@@ -2,7 +2,7 @@
  * revenue.service.ts — Revenue Optimization Layer
  * Subscription plans, lead pricing, sponsored placements, upsell offers, Stripe checkout.
  */
-import prisma from '../../lib/prisma'
+import { prisma } from '../../lib/prisma'
 import type {
   CreateSubscriptionPlanBody,
   UpdateSubscriptionPlanBody,

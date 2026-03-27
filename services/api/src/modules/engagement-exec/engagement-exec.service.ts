@@ -4,7 +4,7 @@
  * escrow state machine, dispute/hold workflows.
  * Wraps ContractAgreement, EscrowAgreement, Milestone. No replacements.
  */
-import prisma from '../../lib/prisma'
+import { prisma } from '../../lib/prisma'
 import { emitEvent } from '../../lib/emit-event'
 import type {
   CreateChangeOrderBody,

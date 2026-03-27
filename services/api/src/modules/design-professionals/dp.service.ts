@@ -3,7 +3,7 @@
  * Uses DesignProfessional additive model.
  * Falls back gracefully if model not yet migrated.
  */
-import prisma from '../../lib/prisma'
+import { prisma } from '../../lib/prisma'
 import type { RegisterDPBody, UpdateDPProfile, DPProfileDto, DPAssignmentDto } from './dp.dto'
 
 const db = prisma as any

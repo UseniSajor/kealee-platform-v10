@@ -2,7 +2,7 @@
  * enterprise.service.ts — Enterprise/B2B Platform Layer
  * Portfolio organizations, team roles, feature flags, entitlements, partner integrations.
  */
-import prisma from '../../lib/prisma'
+import { prisma } from '../../lib/prisma'
 import type {
   CreatePortfolioOrgBody,
   UpdatePortfolioOrgBody,

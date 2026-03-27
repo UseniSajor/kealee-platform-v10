@@ -2,7 +2,7 @@
  * intelligence.service.ts — Marketplace Intelligence Layer
  * Scoring engine, analytics aggregation, contractor recommendations.
  */
-import prisma from '../../lib/prisma'
+import { prisma } from '../../lib/prisma'
 import type {
   RecordScoreEventBody,
   MarketInsightQuery,
