@@ -69,7 +69,7 @@ export async function dpRoutes(fastify: FastifyInstance) {
   fastify.get('/:id', async (request, reply) => {
     const { id } = DPParamsDto.parse(request.params)
     // Look up by professional id — find profile and map user
-    const db = (await import('../../lib/prisma')).default as any
+    const db = (await import('../../lib/prisma')).prisma as any
     const profile = await db.designProfessional?.findUnique({
       where: { id },
       include: { user: { select: { name: true, email: true } } },

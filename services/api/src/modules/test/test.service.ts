@@ -398,7 +398,7 @@ export async function cleanupTestData() {
 
 export async function validateStripeProducts() {
   const stripe = process.env.STRIPE_SECRET_KEY
-    ? (await import('stripe').then(m => new m.default(process.env.STRIPE_SECRET_KEY!))).catch(() => null)
+    ? await import('stripe').then(m => new m.default(process.env.STRIPE_SECRET_KEY!)).catch(() => null)
     : null
 
   return ALL_STRIPE_PRICES.map(key => {

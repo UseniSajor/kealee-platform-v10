@@ -4,9 +4,7 @@
  */
 
 import { FastifyInstance } from 'fastify';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 
 export async function paymentsV1Routes(fastify: FastifyInstance) {
   // ── Milestone Payments ──

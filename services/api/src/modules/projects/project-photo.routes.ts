@@ -47,7 +47,7 @@ export async function projectPhotoRoutes(fastify: FastifyInstance) {
           .createSignedUploadUrl(s3Key);
 
         if (error || !data) {
-          fastify.log.error('Supabase presign error:', error);
+          fastify.log.error({ err: error }, 'Supabase presign error');
           return reply.code(500).send({ error: 'Failed to generate upload URL' });
         }
 

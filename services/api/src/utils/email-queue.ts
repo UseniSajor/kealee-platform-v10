@@ -12,6 +12,7 @@ type EmailJobData = {
   template?: string
   text?: string
   html?: string
+  data?: Record<string, any>
   metadata?: Record<string, any>
 }
 
