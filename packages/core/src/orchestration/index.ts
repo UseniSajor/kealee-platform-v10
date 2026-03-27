@@ -12,6 +12,7 @@ export type {
   RiskLevel,
   AuthorityLevel,
   ProjectPhase,
+  PmProjectPhase,
   ActionType,
   WorkflowType,
   ApprovalGateType,
@@ -31,6 +32,7 @@ export type {
 
   // Phase governance
   PhaseGateResult,
+  PmPhaseGateResult,
   PhaseGateChecklistItem,
 
   // Audit
@@ -72,6 +74,7 @@ export {
   createApprovalGateIfNeeded,
   createEscalationIfNeeded,
 } from "./workflow-governor";
+
 
 // ─── Action log ───────────────────────────────────────────────────────────────
 export { AiActionLog, aiActionLog } from "./action-log";

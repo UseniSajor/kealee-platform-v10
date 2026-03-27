@@ -157,9 +157,31 @@ async function processIntakeJob(job: Job<IntakeProcessingJobData>) {
 
     await job.updateProgress(85)
 
-    // 6. Trigger AI concept generation for applicable paths
+    // 6. Orchestration gate: check if AI concept generation is approved
+    let conceptGenerationApproved = true
+    try {
+      const { orchestrateCaptureAnalysis } = await import('@kealee/core')
+      const orchResult = orchestrateCaptureAnalysis({
+        projectId: lead.id,
+        captureQualityScore: lead.uploadedPhotos?.length > 0 ? 0.75 : 0.40,
+        assetCount: lead.uploadedPhotos?.length ?? 0,
+        projectType: projectPath,
+        dcsScore: lead.budgetRange && lead.projectAddress ? 0.80 : 0.50,
+      })
+      if (orchResult.decision === 'BLOCK') {
+        conceptGenerationApproved = false
+        console.warn(`[intake-processing] Orchestration BLOCK for intake ${intakeId}: ${orchResult.reasonCodes.join(', ')}`)
+      } else if (orchResult.decision === 'REQUIRE_APPROVAL' || orchResult.decision === 'ESCALATE') {
+        // Fail-open: log the gate but don't block the job
+        console.log(`[intake-processing] Orchestration ${orchResult.decision} for intake ${intakeId} — proceeding (fail-open). Reason: ${orchResult.reasonCodes.join(', ')}`)
+      }
+    } catch (orchErr: any) {
+      console.warn(`[intake-processing] Orchestration check failed (fail-open): ${orchErr.message}`)
+    }
+
+    // 7. Trigger AI concept generation for applicable paths
     const conceptPaths = ['exterior_concept', 'interior_renovation', 'whole_home_remodel', 'addition_expansion', 'design_build']
-    if (conceptPaths.includes(projectPath) && lead.uploadedPhotos?.length > 0) {
+    if (conceptGenerationApproved && conceptPaths.includes(projectPath) && lead.uploadedPhotos?.length > 0) {
       try {
         const { Queue } = await import('bullmq')
         const aiQueue = new Queue('ml', {

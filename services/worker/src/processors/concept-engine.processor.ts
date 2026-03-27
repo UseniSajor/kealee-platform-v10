@@ -120,6 +120,29 @@ async function processGenerateConceptPackage(
 
   await job.updateProgress(10);
 
+  // Orchestration gate: check if pre-design concept generation is approved
+  try {
+    const { orchestratePreDesign } = await import('@kealee/core');
+    const orchResult = orchestratePreDesign({
+      projectId: (intake as any)?.projectId ?? intakeId,
+      projectType: projectPath,
+      dcsScore: (intake as any)?.uploadedPhotos?.length > 0 ? 0.80 : 0.55,
+      requiresArchitect: (intake as any)?.requiresArchitect ?? false,
+      budgetEstimate: undefined,
+      userInputsComplete: !!(intake as any)?.budgetRange,
+    });
+    if (orchResult.decision === 'BLOCK') {
+      throw new Error(`[concept-engine] Orchestration BLOCK for intake ${intakeId}: ${orchResult.reasonCodes.join(', ')}`);
+    }
+    if (orchResult.decision === 'REQUIRE_APPROVAL' || orchResult.decision === 'ESCALATE') {
+      console.log(`[concept-engine] Orchestration ${orchResult.decision} for intake ${intakeId} — proceeding (fail-open). Reason: ${orchResult.reasonCodes.join(', ')}`);
+    }
+  } catch (orchErr: any) {
+    // Fail-open unless it was an explicit BLOCK
+    if (orchErr.message?.includes('Orchestration BLOCK')) throw orchErr;
+    console.warn(`[concept-engine] Orchestration check unavailable (fail-open): ${orchErr.message}`);
+  }
+
   // Load floor plan from DB
   const fpRows = await prisma.$queryRaw`
     SELECT id, floorplan_json, svg_url, svg_inline

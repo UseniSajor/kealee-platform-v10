@@ -14,6 +14,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.0",
     "@kealee/concept-engine": "workspace:*",
+    "@kealee/core": "workspace:*",
     "@kealee/database": "workspace:*",
     "@kealee/storage": "workspace:*",
     "bullmq": "^5.0.0",

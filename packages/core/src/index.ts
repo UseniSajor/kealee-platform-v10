@@ -5,3 +5,4 @@
  */
 
 export * from "./orchestration";
+export * from "./integration";

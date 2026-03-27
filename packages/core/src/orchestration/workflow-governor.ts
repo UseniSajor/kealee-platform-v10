@@ -16,6 +16,8 @@ import type {
   OrchestrationContext,
   PhaseGateChecklistItem,
   PhaseGateResult,
+  PmPhaseGateResult,
+  PmProjectPhase,
   ProjectPhase,
   WorkflowOrchestrationContext,
   WorkflowOrchestrationResult,
@@ -104,6 +106,79 @@ function isValidTransition(from: ProjectPhase, to: ProjectPhase): boolean {
   const fromIdx = PHASE_ORDER.indexOf(from);
   const toIdx = PHASE_ORDER.indexOf(to);
   // Only allow forward movement of exactly one step
+  return toIdx === fromIdx + 1;
+}
+
+// ─── PM-specific phase gate definitions ──────────────────────────────────────
+
+/**
+ * Kealee PM project phase gate definitions.
+ * Phase sequence: PRE_DESIGN → ARCHITECT → PERMIT → PRE_CONSTRUCTION → CONSTRUCTION → CLOSEOUT
+ */
+const PM_PHASE_GATES: Record<string, GateDefinition> = {
+  "PRE_DESIGN→ARCHITECT": {
+    required: [
+      "pre_design_package_complete",
+      "client_brief_confirmed",
+      "budget_range_set",
+    ],
+    optional: ["concept_images_approved", "style_preferences_confirmed"],
+    requiresApproval: ["Platform Operator"],
+  },
+  "ARCHITECT→PERMIT": {
+    required: [
+      "architect_drawings_complete",
+      "structural_calcs_provided",
+      "client_approved_drawings",
+      "scope_confirmed",
+    ],
+    optional: ["energy_compliance_checked", "hoa_pre_approval"],
+    requiresApproval: ["Platform Operator", "Assigned Architect"],
+  },
+  "PERMIT→PRE_CONSTRUCTION": {
+    required: [
+      "permits_approved",
+      "permit_numbers_recorded",
+      "bid_package_distributed",
+    ],
+    optional: ["subcontractor_list_confirmed", "lead_gc_assigned"],
+    requiresApproval: ["Platform Operator"],
+  },
+  "PRE_CONSTRUCTION→CONSTRUCTION": {
+    required: [
+      "gc_contracted",
+      "mobilization_deposit_paid",
+      "insurance_coi_verified",
+      "construction_schedule_approved",
+      "site_access_confirmed",
+    ],
+    optional: ["material_procurement_started", "subcontractors_confirmed"],
+    requiresApproval: ["Platform Operator", "Finance Operator"],
+  },
+  "CONSTRUCTION→CLOSEOUT": {
+    required: [
+      "substantial_completion_declared",
+      "final_inspections_passed",
+      "punch_list_signed_off",
+      "final_payment_released",
+    ],
+    optional: ["warranty_docs_issued", "closeout_photos_uploaded"],
+    requiresApproval: ["Platform Operator"],
+  },
+};
+
+const PM_PHASE_ORDER: PmProjectPhase[] = [
+  "PRE_DESIGN",
+  "ARCHITECT",
+  "PERMIT",
+  "PRE_CONSTRUCTION",
+  "CONSTRUCTION",
+  "CLOSEOUT",
+];
+
+function isValidPmTransition(from: PmProjectPhase, to: PmProjectPhase): boolean {
+  const fromIdx = PM_PHASE_ORDER.indexOf(from);
+  const toIdx = PM_PHASE_ORDER.indexOf(to);
   return toIdx === fromIdx + 1;
 }
 
@@ -230,6 +305,144 @@ export class WorkflowGovernor {
    */
   getPhaseOrder(): ProjectPhase[] {
     return [...PHASE_ORDER];
+  }
+
+  // ── PM Phase Governance ───────────────────────────────────────────────────
+
+  /**
+   * Evaluate whether a Kealee PM project phase transition is allowed.
+   * Governs the platform's project lifecycle:
+   *   PRE_DESIGN → ARCHITECT → PERMIT → PRE_CONSTRUCTION → CONSTRUCTION → CLOSEOUT
+   *
+   * @param context       The orchestration context for the current session
+   * @param fromPhase     The current PM project phase
+   * @param toPhase       The requested next PM phase
+   * @param completedItems Checklist item keys that have been completed
+   */
+  evaluatePmPhaseTransition(
+    context: OrchestrationContext,
+    fromPhase: PmProjectPhase,
+    toPhase: PmProjectPhase,
+    completedItems: string[],
+  ): PmPhaseGateResult {
+    const now = new Date().toISOString();
+    const completedSet = new Set(completedItems);
+
+    if (!isValidPmTransition(fromPhase, toPhase)) {
+      return {
+        allowed: false,
+        fromPhase,
+        toPhase,
+        blockers: [
+          `Invalid PM phase transition: '${fromPhase}' → '${toPhase}'. ` +
+          `Phases must progress sequentially (${PM_PHASE_ORDER.join(" → ")}).`,
+        ],
+        warnings: [],
+        requiredApprovals: [],
+        checklist: [],
+        decidedAt: now,
+      };
+    }
+
+    const gateKey = `${fromPhase}→${toPhase}`;
+    const gate = PM_PHASE_GATES[gateKey];
+
+    if (!gate) {
+      return {
+        allowed: true,
+        fromPhase,
+        toPhase,
+        blockers: [],
+        warnings: [`No PM gate definition found for ${gateKey} — proceeding without checks.`],
+        requiredApprovals: [],
+        checklist: [],
+        decidedAt: now,
+      };
+    }
+
+    const checklist: PhaseGateChecklistItem[] = [
+      ...gate.required.map((item) => ({
+        item,
+        completed: completedSet.has(item),
+        blocker: true,
+      })),
+      ...gate.optional.map((item) => ({
+        item,
+        completed: completedSet.has(item),
+        blocker: false,
+      })),
+    ];
+
+    const blockers = gate.required
+      .filter((item) => !completedSet.has(item))
+      .map((item) => `Required item not complete: '${item}'`);
+
+    const warnings = gate.optional
+      .filter((item) => !completedSet.has(item))
+      .map((item) => `Optional item not complete: '${item}'`);
+
+    // ── Context-level rules ────────────────────────────────────────────────
+    // Structural work must be reviewed before the ARCHITECT phase
+    if (fromPhase === "PRE_DESIGN" && toPhase === "ARCHITECT") {
+      if (context.requiresStructuralWork && !completedSet.has("structural_review_complete")) {
+        blockers.push("Structural work flagged: 'structural_review_complete' required before ARCHITECT phase.");
+      }
+    }
+
+    // Cannot move to PRE_CONSTRUCTION without approved permits
+    if (fromPhase === "PERMIT" && toPhase === "PRE_CONSTRUCTION") {
+      if (!completedSet.has("permits_approved")) {
+        // Already in blockers via required items — add explanatory message if not present
+        const alreadyFlagged = blockers.some((b) => b.includes("permits_approved"));
+        if (!alreadyFlagged) {
+          blockers.push("Permit approval is required before advancing to PRE_CONSTRUCTION.");
+        }
+      }
+    }
+
+    // High-budget projects require verified COI before construction
+    if (fromPhase === "PRE_CONSTRUCTION" && toPhase === "CONSTRUCTION") {
+      const budgetMax = context.budgetMax ?? 0;
+      if (budgetMax > 500_000 && !completedSet.has("insurance_coi_verified")) {
+        const alreadyFlagged = blockers.some((b) => b.includes("insurance_coi_verified"));
+        if (!alreadyFlagged) {
+          blockers.push("Projects over $500k require verified contractor COI before construction.");
+        }
+      }
+    }
+
+    // HOA review warning for construction phase
+    if (toPhase === "CONSTRUCTION" && context.hoaReviewRequired) {
+      if (!completedSet.has("hoa_approved")) {
+        warnings.push("HOA review was flagged as required but 'hoa_approved' is not marked complete.");
+      }
+    }
+
+    return {
+      allowed: blockers.length === 0,
+      fromPhase,
+      toPhase,
+      blockers,
+      warnings,
+      requiredApprovals: gate.requiresApproval,
+      checklist,
+      decidedAt: now,
+    };
+  }
+
+  /**
+   * Returns all required checklist items for a given PM phase gate.
+   */
+  getPmGateChecklist(fromPhase: PmProjectPhase, toPhase: PmProjectPhase): GateDefinition | null {
+    if (!isValidPmTransition(fromPhase, toPhase)) return null;
+    return PM_PHASE_GATES[`${fromPhase}→${toPhase}`] ?? null;
+  }
+
+  /**
+   * Returns the ordered list of Kealee PM project phases.
+   */
+  getPmPhaseOrder(): PmProjectPhase[] {
+    return [...PM_PHASE_ORDER];
   }
 }
 

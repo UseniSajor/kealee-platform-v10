@@ -34,6 +34,7 @@ export type AuthorityLevel = "AGENT" | "OPERATOR" | "ADMIN";
 
 // ─── Project phases ───────────────────────────────────────────────────────────
 
+/** Generic lifecycle phases (property development) */
 export type ProjectPhase =
   | "discovery"
   | "feasibility"
@@ -42,6 +43,18 @@ export type ProjectPhase =
   | "procurement"
   | "construction"
   | "closeout";
+
+/**
+ * Kealee PM project phases — matches the platform's project lifecycle.
+ * Used by the PM phase governor for project-level gate checks.
+ */
+export type PmProjectPhase =
+  | "PRE_DESIGN"
+  | "ARCHITECT"
+  | "PERMIT"
+  | "PRE_CONSTRUCTION"
+  | "CONSTRUCTION"
+  | "CLOSEOUT";
 
 // ─── Action types ─────────────────────────────────────────────────────────────
 
@@ -282,6 +295,18 @@ export interface PhaseGateResult {
   allowed: boolean;
   fromPhase: ProjectPhase;
   toPhase: ProjectPhase;
+  blockers: string[];
+  warnings: string[];
+  requiredApprovals: string[];
+  checklist: PhaseGateChecklistItem[];
+  decidedAt: string;
+}
+
+/** Phase gate result for Kealee PM-specific phase transitions */
+export interface PmPhaseGateResult {
+  allowed: boolean;
+  fromPhase: PmProjectPhase;
+  toPhase: PmProjectPhase;
   blockers: string[];
   warnings: string[];
   requiredApprovals: string[];

@@ -51,6 +51,16 @@ const PhaseGateSchema = z.object({
   budgetMax: z.number().optional(),
 });
 
+const PmPhaseGateSchema = z.object({
+  projectId: z.string(),
+  fromPhase: z.enum(["PRE_DESIGN", "ARCHITECT", "PERMIT", "PRE_CONSTRUCTION", "CONSTRUCTION", "CLOSEOUT"]),
+  toPhase: z.enum(["PRE_DESIGN", "ARCHITECT", "PERMIT", "PRE_CONSTRUCTION", "CONSTRUCTION", "CLOSEOUT"]),
+  completedItems: z.array(z.string()).default([]),
+  requiresStructuralWork: z.boolean().optional(),
+  hoaReviewRequired: z.boolean().optional(),
+  budgetMax: z.number().optional(),
+});
+
 // ─── Route plugin ─────────────────────────────────────────────────────────────
 
 export async function orchestrationRoutes(fastify: FastifyInstance): Promise<void> {
@@ -186,5 +196,48 @@ export async function orchestrationRoutes(fastify: FastifyInstance): Promise<voi
     const { aiActionLog } = await import("@kealee/core");
     const stats = aiActionLog.getStats();
     return reply.send({ stats });
+  });
+
+  // ── POST /keacore/orchestrate/pm-phase-gate ────────────────────────────────
+  // Evaluates Kealee PM project phase transitions:
+  //   PRE_DESIGN → ARCHITECT → PERMIT → PRE_CONSTRUCTION → CONSTRUCTION → CLOSEOUT
+  fastify.post("/orchestrate/pm-phase-gate", async (request, reply) => {
+    const body = PmPhaseGateSchema.safeParse(request.body);
+    if (!body.success) {
+      return reply.status(400).send({ error: "Invalid request body", issues: body.error.issues });
+    }
+
+    const { workflowGovernor } = await import("@kealee/core");
+
+    const {
+      projectId,
+      fromPhase,
+      toPhase,
+      completedItems,
+      requiresStructuralWork,
+      hoaReviewRequired,
+      budgetMax,
+    } = body.data;
+
+    const ctx = {
+      sessionId: projectId,
+      projectId,
+      source: "api" as const,
+      mode: "operator" as const,
+      action: "phase_transition" as const,
+      riskFlags: [],
+      facts: {},
+      requiresStructuralWork,
+      hoaReviewRequired,
+      budgetMax,
+    };
+
+    const result = workflowGovernor.evaluatePmPhaseTransition(ctx, fromPhase, toPhase, completedItems);
+
+    return reply.send({
+      projectId,
+      ...result,
+      httpStatus: result.allowed ? 200 : 422,
+    });
   });
 }
