@@ -5,9 +5,8 @@
 
 import { FastifyRequest, FastifyReply } from 'fastify';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@kealee/database';
 
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../utils/prisma-helper';
 
 // JWT Configuration
 const JWT_SECRET: string = (process.env.JWT_SECRET || 'your-secret-key-min-64-chars') as string;

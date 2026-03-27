@@ -3,13 +3,13 @@
  * Handles deposit processing and coordination between Stripe and Escrow
  */
 
-import { PrismaClient, Decimal } from '@kealee/database';
+import { Decimal } from '@kealee/database';
 import { stripePaymentService } from '../payments/stripe-payment.service';
 import { escrowService } from '../escrow/escrow.service';
 import { eventBus } from '../../events/event-bus';
 import Stripe from 'stripe';
 
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 
 // Deposit status constants
 type DepositStatus = 'PENDING' | 'PROCESSING' | 'CLEARING' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | 'REFUNDED';

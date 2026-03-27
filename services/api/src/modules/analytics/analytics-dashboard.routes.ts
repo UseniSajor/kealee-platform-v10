@@ -9,7 +9,7 @@ import { validateQuery } from '../../middleware/validation.middleware'
 import { PrismaClient } from '@kealee/database'
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 
-const prisma = new PrismaClient()
+import { prismaAny as prisma } from '../../utils/prisma-helper'
 const p = prisma as any
 
 // ============================================================================

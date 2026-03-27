@@ -9,9 +9,7 @@
  * - Payment processing
  */
 
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 
 // Engineering service types
 export type EngineeringDiscipline = 'STRUCTURAL' | 'MEP' | 'CIVIL' | 'GEOTECHNICAL';

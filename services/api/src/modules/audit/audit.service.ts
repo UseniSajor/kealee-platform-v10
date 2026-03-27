@@ -6,11 +6,11 @@
  * Read path: real Prisma queries with filtering, pagination, and aggregation
  */
 
-import { PrismaClient, Prisma } from '@kealee/database';
+import { Prisma } from '@kealee/database';
 import { AuditClient } from '@kealee/audit';
 import type { AuditEntry, AuditSearchFilters, AuditSearchResult, AuditLogRecord, AuditStats } from '@kealee/audit';
 
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 
 // ============================================================================
 // SERVICE

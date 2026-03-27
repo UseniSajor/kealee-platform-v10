@@ -10,9 +10,7 @@
  *   VAPID_SUBJECT     — mailto: or URL identifier (e.g., "mailto:admin@kealee.com")
  */
 
-import { PrismaClient } from '@kealee/database';
-
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 const p = prisma as any;
 
 // ============================================================================

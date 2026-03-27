@@ -3,10 +3,9 @@
  * Real-time monitoring and manual intervention for financial operations
  */
 
-import { PrismaClient } from '@kealee/database';
 import { toNumber } from '../../utils/decimal-helpers';
 
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 
 export interface DashboardMetrics {
   financial: {

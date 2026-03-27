@@ -3,9 +3,7 @@
  * GPS-verified on-site presence tracking for contractors and PMs
  */
 
-import { PrismaClient } from '@kealee/database';
-
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 const p = prisma as any;
 
 // ============================================================================

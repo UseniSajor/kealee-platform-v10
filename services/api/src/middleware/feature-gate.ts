@@ -10,7 +10,7 @@
  */
 
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import { PrismaClient } from '@prisma/client';
+
 import {
   type SoftwareTier,
   type FeatureKey,
@@ -22,7 +22,7 @@ import {
   TIER_FEATURES,
 } from '@kealee/shared/software-tiers';
 
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../utils/prisma-helper';
 
 // ── Types ───────────────────────────────────────────────────────
 

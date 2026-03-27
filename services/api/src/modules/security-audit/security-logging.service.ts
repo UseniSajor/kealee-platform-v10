@@ -3,10 +3,9 @@
  * Centralized logging for security-related events
  */
 
-import { PrismaClient } from '@kealee/database';
 import { FastifyRequest } from 'fastify';
 
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 
 export enum SecurityEventType {
   // Authentication Events

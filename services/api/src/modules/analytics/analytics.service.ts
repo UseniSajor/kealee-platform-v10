@@ -3,9 +3,9 @@
  * Business intelligence and predictive analytics for financial data
  */
 
-import { PrismaClient, Prisma } from '@kealee/database';
+import { Prisma } from '@kealee/database';
 
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 
 export interface RevenueMetrics {
   period: string;

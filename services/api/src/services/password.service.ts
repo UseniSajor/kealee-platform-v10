@@ -4,9 +4,8 @@
  */
 
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@kealee/database';
 
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../utils/prisma-helper';
 
 // Password policy configuration
 export const PASSWORD_POLICY = {

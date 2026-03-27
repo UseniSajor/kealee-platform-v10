@@ -5,9 +5,7 @@
  * threshold alerting, and time-series queries for project sensors.
  */
 
-import { PrismaClient } from '@kealee/database';
-
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 const p = prisma as any;
 
 // ============================================================================

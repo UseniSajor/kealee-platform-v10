@@ -3,9 +3,9 @@
  * Regulatory compliance monitoring and enforcement
  */
 
-import { PrismaClient, Prisma } from '@kealee/database';
+import { Prisma } from '@kealee/database';
 
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 
 export interface ComplianceRule {
   id: string;

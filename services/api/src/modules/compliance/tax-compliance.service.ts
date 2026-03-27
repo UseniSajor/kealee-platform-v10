@@ -4,11 +4,11 @@
  */
 
 import PDFDocument from 'pdfkit';
-import { PrismaClient } from '@kealee/database';
+
 import fs from 'fs';
 import path from 'path';
 
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 
 export interface Form1099Data {
   taxYear: number;

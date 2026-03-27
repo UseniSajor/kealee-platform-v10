@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient()
+import { prismaAny as prisma } from '../../utils/prisma-helper'
 
 // ============================================================================
 // Multifamily Routes — Units, Draw Requests, Area Phases

@@ -5,9 +5,8 @@
 
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
-import { PrismaClient } from '@kealee/database';
 
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../utils/prisma-helper';
 
 const APP_NAME = 'Kealee Platform';
 

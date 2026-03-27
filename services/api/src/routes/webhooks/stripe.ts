@@ -9,11 +9,11 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import Stripe from 'stripe';
 import { sanitizeErrorMessage } from '../../utils/sanitize-error';
-import { PrismaClient } from '@kealee/database';
+
 import { getStripe } from '../../modules/billing/stripe.client';
 import { syncCheckout } from '../../modules/integrations/ghl/ghl-sync';
 
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 
 // ============================================================================

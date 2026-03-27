@@ -4,13 +4,12 @@
  */
 
 import Stripe from 'stripe';
-import { PrismaClient } from '@kealee/database';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2023-10-16',
 });
 
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 
 export interface CreatePaymentIntentOptions {
   amount: number; // in cents

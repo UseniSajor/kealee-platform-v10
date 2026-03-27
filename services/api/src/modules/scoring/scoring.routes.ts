@@ -3,10 +3,10 @@
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { PrismaClient } from '@prisma/client';
+
 import { authenticateUser } from '../auth/auth.middleware.js';
 
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 const prismaAny = prisma as any;
 
 export async function scoringRoutes(fastify: FastifyInstance) {

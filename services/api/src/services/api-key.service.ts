@@ -3,10 +3,9 @@
  * Secure API key generation, validation, and rotation
  */
 
-import { PrismaClient } from '@kealee/database';
 import crypto from 'crypto';
 
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../utils/prisma-helper';
 
 export interface APIKey {
   id: string;

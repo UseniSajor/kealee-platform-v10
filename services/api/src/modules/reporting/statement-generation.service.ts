@@ -4,12 +4,12 @@
  */
 
 import PDFDocument from 'pdfkit';
-import { PrismaClient } from '@kealee/database';
+
 import { Readable } from 'stream';
 import fs from 'fs';
 import path from 'path';
 
-const prisma = new PrismaClient();
+import { prismaAny as prisma } from '../../utils/prisma-helper';
 
 export interface StatementConfig {
   escrowId: string;
