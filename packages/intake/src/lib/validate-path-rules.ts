@@ -2,6 +2,10 @@ import type { ProjectPath } from "../config/project-path-config";
 
 const REQUIRED_BY_PATH: Record<ProjectPath, string[]> = {
   exterior_concept:          ["clientName", "contactEmail", "projectAddress", "budgetRange"],
+  garden_concept:            ["clientName", "contactEmail", "projectAddress", "budgetRange"],
+  whole_home_concept:        ["clientName", "contactEmail", "projectAddress", "budgetRange"],
+  interior_reno_concept:     ["clientName", "contactEmail", "projectAddress", "budgetRange"],
+  developer_concept:         ["clientName", "contactEmail", "projectAddress"],
   interior_renovation:       ["clientName", "contactEmail", "projectAddress", "budgetRange"],
   kitchen_remodel:           ["clientName", "contactEmail", "projectAddress", "budgetRange"],
   bathroom_remodel:          ["clientName", "contactEmail", "projectAddress", "budgetRange"],
