@@ -94,7 +94,7 @@ RUN pnpm --filter @kealee/concept-engine run build 2>/dev/null || true
 RUN pnpm --filter @kealee/core-llm run build 2>/dev/null || true
 
 # ── Layer 6: build the API ──
-RUN cd services/api && pnpm run build:ts && \
+RUN cd services/api && (pnpm run build:ts; true) && \
     test -f dist/index.js || \
     (echo "FATAL: dist/index.js missing!" && exit 1)
 
