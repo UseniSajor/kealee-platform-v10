@@ -8,10 +8,10 @@ import './globals.css'
 const NAV_LINKS = [
   { label: 'For Homeowners', href: '/homeowners' },
   { label: 'AI Concept Engine', href: '/concept-engine' },
+  { label: 'Get Permits', href: '/permits' },
   { label: 'Features', href: '/features' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'About', href: '/about' },
-  { label: 'Blog', href: '/blog' },
   { label: 'Contact', href: '/contact' },
 ]
 

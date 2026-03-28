@@ -1,5 +1,9 @@
 export const PROJECT_PATHS = [
   "exterior_concept",
+  "garden_concept",
+  "whole_home_concept",
+  "interior_reno_concept",
+  "developer_concept",
   "interior_renovation",
   "kitchen_remodel",
   "bathroom_remodel",
@@ -62,6 +66,46 @@ export function resolveTierLabel(meta: ProjectPathMeta, unitCount?: number): str
 }
 
 export const PROJECT_PATH_META: Record<ProjectPath, ProjectPathMeta> = {
+  garden_concept: {
+    path: "garden_concept",
+    label: "Garden Concept",
+    description: "Garden design, farming layout, raised beds, irrigation, and outdoor living concepts.",
+    requiresPayment: true,
+    paymentAmount: 39500,
+    paymentTier: "essential",
+    requiresCapture: false,
+    minFields: ["clientName", "contactEmail", "projectAddress", "budgetRange"],
+  },
+  whole_home_concept: {
+    path: "whole_home_concept",
+    label: "Whole Home Concept",
+    description: "Full property transformation concept with interior and exterior direction.",
+    requiresPayment: true,
+    paymentAmount: 58500,
+    paymentTier: "essential",
+    requiresCapture: false,
+    minFields: ["clientName", "contactEmail", "projectAddress", "budgetRange"],
+  },
+  interior_reno_concept: {
+    path: "interior_reno_concept",
+    label: "Interior Renovation Concept",
+    description: "Interior reno concept with layout, kitchen/bath renderings, and finish direction.",
+    requiresPayment: true,
+    paymentAmount: 39500,
+    paymentTier: "interior_intake",
+    requiresCapture: false,
+    minFields: ["clientName", "contactEmail", "projectAddress", "budgetRange"],
+  },
+  developer_concept: {
+    path: "developer_concept",
+    label: "Developer Concept",
+    description: "Business-grade concept with feasibility context, pro forma framing, and development path.",
+    requiresPayment: true,
+    paymentAmount: 58500,
+    paymentTier: "commercial_entry",
+    requiresCapture: false,
+    minFields: ["clientName", "contactEmail", "projectAddress"],
+  },
   exterior_concept: {
     path: "exterior_concept",
     label: "Exterior Concept",

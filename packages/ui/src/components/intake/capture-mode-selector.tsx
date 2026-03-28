@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircle2, Camera, Scan, Star, MapPin } from 'lucide-react'
+import { CheckCircle2, Camera, Scan, Star, MapPin, Video } from 'lucide-react'
 
-export type CaptureMode = 'self_capture' | 'enhanced_scan' | 'kealee_site_visit'
+export type CaptureMode = 'self_capture' | 'photo_video_capture' | 'enhanced_scan' | 'kealee_site_visit'
 
 export const SITE_VISIT_FEE_CENTS = 12500 // $125
 
@@ -32,6 +32,22 @@ const CAPTURE_MODES: CaptureModeOption[] = [
       'Voice notes',
       'Works on all phones',
     ],
+    skipCapture: false,
+  },
+  {
+    mode: 'photo_video_capture',
+    title: 'Mobile App Photo + Video',
+    priceLabel: 'Included with Tier 2',
+    features: [
+      'Full video walkthrough recording',
+      'High-res photo capture',
+      'Room-by-room guided flow',
+      'Auto-uploads to your project',
+    ],
+    badge: 'Tier 2 — $585',
+    badgeColor: 'blue',
+    iOSNote: 'Native camera with video + photo capture',
+    androidNote: 'Native camera with video + photo capture',
     skipCapture: false,
   },
   {
@@ -106,6 +122,9 @@ function CaptureModeCard({ option, selected, isAndroid, isIOS, onSelect }: Captu
           >
             {option.mode === 'self_capture' && (
               <Camera className="h-5 w-5" style={{ color: selected ? '#fff' : '#6B7280' }} />
+            )}
+            {option.mode === 'photo_video_capture' && (
+              <Video className="h-5 w-5" style={{ color: selected ? '#fff' : '#6B7280' }} />
             )}
             {option.mode === 'enhanced_scan' && (
               <Scan className="h-5 w-5" style={{ color: selected ? '#fff' : '#6B7280' }} />

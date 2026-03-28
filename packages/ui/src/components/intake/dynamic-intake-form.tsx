@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import type { ProjectPath } from '@kealee/intake'
 import { FORM_FIELDS_BY_PATH } from '@kealee/intake'
 import type { IntakeFormStep, IntakeField } from '@kealee/intake'
-import { ChevronRight, ChevronLeft } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Paperclip, X } from 'lucide-react'
 
 interface DynamicIntakeFormProps {
   projectPath: ProjectPath
@@ -106,6 +106,45 @@ function FieldInput({
     )
   }
 
+  if (field.type === 'file') {
+    const files = Array.isArray(value) ? (value as string[]) : []
+    return (
+      <div>
+        <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 px-4 py-6 text-sm text-gray-500 transition-colors hover:border-[#E8793A] hover:text-[#E8793A]">
+          <input
+            type="file"
+            multiple
+            accept="image/*,video/*,.pdf"
+            className="sr-only"
+            onChange={(e) => {
+              const names = Array.from(e.target.files ?? []).map((f) => f.name)
+              onChange(field.key, [...files, ...names])
+            }}
+          />
+          <Paperclip className="h-5 w-5" />
+          <span>Click to attach photos, videos, or PDFs</span>
+          <span className="text-xs text-gray-400">Exterior, interior, existing conditions, inspiration</span>
+        </label>
+        {files.length > 0 && (
+          <ul className="mt-2 space-y-1">
+            {files.map((name, i) => (
+              <li key={i} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-1.5 text-xs text-gray-600">
+                <span className="truncate">{name}</span>
+                <button
+                  type="button"
+                  onClick={() => onChange(field.key, files.filter((_, idx) => idx !== i))}
+                  className="ml-2 flex-shrink-0 text-gray-400 hover:text-red-500"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    )
+  }
+
   if (field.type === 'boolean') {
     return (
       <div className="flex gap-3">
@@ -132,7 +171,7 @@ function FieldInput({
 
   return (
     <input
-      type={field.type === 'email' ? 'email' : field.type === 'tel' ? 'tel' : 'text'}
+      type={field.type === 'email' ? 'email' : field.type === 'tel' ? 'tel' : field.type === 'numeric' ? 'number' : 'text'}
       className={base}
       placeholder={field.placeholder}
       value={String(value ?? '')}

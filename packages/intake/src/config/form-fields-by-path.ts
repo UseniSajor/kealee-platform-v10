@@ -88,6 +88,280 @@ const ASSETS_STEP: IntakeFormStep = {
 };
 
 export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
+  garden_concept: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Garden Details",
+      fields: [
+        {
+          key: "gardenType",
+          label: "Type of Garden",
+          type: "multiselect",
+          required: true,
+          options: [
+            { value: "food_garden", label: "Food / Vegetable Garden" },
+            { value: "raised_beds", label: "Raised Bed System" },
+            { value: "ornamental", label: "Ornamental / Flower Garden" },
+            { value: "fruit_trees", label: "Fruit Trees & Orchard" },
+            { value: "herb_garden", label: "Herb Garden" },
+            { value: "lawn_conversion", label: "Lawn Conversion" },
+            { value: "outdoor_living", label: "Outdoor Living / Patio" },
+            { value: "irrigation", label: "Irrigation System" },
+          ],
+        },
+        {
+          key: "yardSize",
+          label: "Approximate Yard Size",
+          type: "select",
+          options: [
+            { value: "small_under_500", label: "Small (under 500 sq ft)" },
+            { value: "medium_500_1500", label: "Medium (500–1,500 sq ft)" },
+            { value: "large_1500_plus", label: "Large (1,500+ sq ft)" },
+          ],
+        },
+        {
+          key: "existingCondition",
+          label: "Existing Condition",
+          type: "select",
+          options: [
+            { value: "grass_lawn", label: "Grass lawn" },
+            { value: "overgrown", label: "Overgrown / neglected" },
+            { value: "partial_garden", label: "Partial garden already in place" },
+            { value: "bare_soil", label: "Bare soil / recent construction" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scope",
+      title: "Goals & Style",
+      fields: [
+        {
+          key: "gardenGoals",
+          label: "Garden Goals",
+          type: "textarea",
+          placeholder: "e.g. grow vegetables year-round, create a peaceful retreat, maximize yield...",
+          rows: 3,
+        },
+        {
+          key: "sustainabilityGoals",
+          label: "Sustainability Priorities",
+          type: "multiselect",
+          options: [
+            { value: "water_conservation", label: "Water Conservation" },
+            { value: "composting", label: "Composting" },
+            { value: "native_plants", label: "Native Plants" },
+            { value: "no_pesticides", label: "No Pesticides" },
+            { value: "pollinator_friendly", label: "Pollinator Friendly" },
+          ],
+        },
+        { key: "knownConstraints", label: "Known Constraints (HOA, sun exposure, soil issues)", type: "textarea", rows: 2 },
+      ],
+    },
+    { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
+    ASSETS_STEP,
+  ],
+
+  whole_home_concept: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Home Details",
+      fields: [
+        { key: "squareFootage", label: "Approximate Square Footage", type: "numeric", placeholder: "2,400" },
+        {
+          key: "homeStyle",
+          label: "Current Home Style",
+          type: "select",
+          options: [
+            { value: "colonial", label: "Colonial" },
+            { value: "craftsman", label: "Craftsman" },
+            { value: "ranch", label: "Ranch" },
+            { value: "split_level", label: "Split Level" },
+            { value: "contemporary", label: "Contemporary" },
+            { value: "tudor", label: "Tudor" },
+            { value: "other", label: "Other" },
+          ],
+        },
+        {
+          key: "propertyUse",
+          label: "Property Use",
+          type: "select",
+          options: [
+            { value: "primary_residence", label: "Primary Residence" },
+            { value: "rental", label: "Rental / Investment" },
+            { value: "vacation_home", label: "Vacation Home" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scope",
+      title: "Transformation Scope",
+      fields: [
+        {
+          key: "transformationScope",
+          label: "Areas to Transform",
+          type: "multiselect",
+          required: true,
+          options: [
+            { value: "exterior_facade", label: "Exterior / Facade" },
+            { value: "kitchen", label: "Kitchen" },
+            { value: "bathrooms", label: "Bathrooms" },
+            { value: "living_areas", label: "Living Areas" },
+            { value: "primary_suite", label: "Primary Suite" },
+            { value: "basement", label: "Basement" },
+            { value: "landscape", label: "Landscape / Outdoor" },
+            { value: "addition", label: "Addition / Expansion" },
+          ],
+        },
+        {
+          key: "designStyle",
+          label: "Design Style Direction",
+          type: "multiselect",
+          options: [
+            { value: "modern", label: "Modern / Contemporary" },
+            { value: "transitional", label: "Transitional" },
+            { value: "traditional", label: "Traditional" },
+            { value: "farmhouse", label: "Farmhouse" },
+            { value: "coastal", label: "Coastal" },
+            { value: "scandinavian", label: "Scandinavian" },
+          ],
+        },
+        { key: "goals", label: "Vision & Goals", type: "textarea", placeholder: "What's the overall transformation you're envisioning?", rows: 4 },
+      ],
+    },
+    { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
+    ASSETS_STEP,
+  ],
+
+  interior_reno_concept: [
+    CONTACT_STEP,
+    {
+      id: "project",
+      title: "Renovation Scope",
+      fields: [
+        {
+          key: "roomScope",
+          label: "Rooms to Renovate",
+          type: "multiselect",
+          required: true,
+          options: [
+            { value: "kitchen", label: "Kitchen" },
+            { value: "primary_bath", label: "Primary Bathroom" },
+            { value: "secondary_bath", label: "Secondary Bathroom" },
+            { value: "living_room", label: "Living Room" },
+            { value: "dining_room", label: "Dining Room" },
+            { value: "bedroom", label: "Bedroom(s)" },
+            { value: "basement", label: "Basement" },
+            { value: "addition_adu", label: "Addition / ADU" },
+          ],
+        },
+        {
+          key: "currentCondition",
+          label: "Current Condition",
+          type: "select",
+          options: [
+            { value: "dated_functional", label: "Dated but functional" },
+            { value: "needs_repairs", label: "Needs repairs" },
+            { value: "partial_demo", label: "Partial demo / gut" },
+            { value: "complete_gut", label: "Complete gut renovation" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scope",
+      title: "Design Direction",
+      fields: [
+        {
+          key: "designStyle",
+          label: "Design Style",
+          type: "multiselect",
+          options: [
+            { value: "modern", label: "Modern" },
+            { value: "transitional", label: "Transitional" },
+            { value: "traditional", label: "Traditional" },
+            { value: "farmhouse", label: "Farmhouse" },
+            { value: "coastal", label: "Coastal" },
+            { value: "scandinavian", label: "Scandinavian" },
+            { value: "industrial", label: "Industrial" },
+          ],
+        },
+        { key: "renovationGoals", label: "Renovation Goals & Priorities", type: "textarea", placeholder: "What are your top priorities for this reno?", rows: 4 },
+        { key: "knownConstraints", label: "Known Constraints", type: "textarea", placeholder: "Structural concerns, permits, HOA rules...", rows: 2 },
+      ],
+    },
+    { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
+    ASSETS_STEP,
+  ],
+
+  developer_concept: [
+    CONTACT_STEP,
+    {
+      id: "property",
+      title: "Property & Deal",
+      fields: [
+        { key: "lotSizeSqFt", label: "Lot Size (sq ft)", type: "numeric", placeholder: "10,000" },
+        { key: "askingPrice", label: "Asking / Purchase Price", type: "text", placeholder: "$850,000" },
+        {
+          key: "developmentUseType",
+          label: "Intended Use Type",
+          type: "select",
+          required: true,
+          options: [
+            { value: "single_family", label: "Single Family" },
+            { value: "duplex_triplex", label: "Duplex / Triplex" },
+            { value: "adu", label: "ADU / Accessory Dwelling" },
+            { value: "multifamily", label: "Multifamily (4+ units)" },
+            { value: "mixed_use", label: "Mixed-Use (retail + residential)" },
+            { value: "commercial_office", label: "Commercial / Office" },
+            { value: "industrial_flex", label: "Industrial / Flex" },
+          ],
+        },
+        {
+          key: "currentZoning",
+          label: "Current Zoning (if known)",
+          type: "text",
+          placeholder: "e.g. R-2, MU-4, C-1",
+        },
+      ],
+    },
+    {
+      id: "goals",
+      title: "Investment Goals",
+      fields: [
+        {
+          key: "investmentStrategy",
+          label: "Investment Strategy",
+          type: "radio",
+          required: true,
+          options: [
+            { value: "build_sell", label: "Build & Sell" },
+            { value: "build_hold", label: "Build & Hold / Rent" },
+            { value: "flip", label: "Flip / Value-Add" },
+            { value: "ground_up", label: "Ground-Up Development" },
+          ],
+        },
+        { key: "projectDescription", label: "Project Description", type: "textarea", placeholder: "Describe the deal and what you're trying to accomplish...", rows: 4 },
+        {
+          key: "budgetRange",
+          label: "Total Project Budget",
+          type: "radio",
+          required: true,
+          options: [
+            { value: "under_500k", label: "Under $500K" },
+            { value: "500k_1m", label: "$500K – $1M" },
+            { value: "1m_3m", label: "$1M – $3M" },
+            { value: "3m_10m", label: "$3M – $10M" },
+            { value: "10m_plus", label: "$10M+" },
+          ],
+        },
+      ],
+    },
+  ],
+
   exterior_concept: [
     CONTACT_STEP,
     {
