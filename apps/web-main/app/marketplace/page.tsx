@@ -1,13 +1,67 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import Link from 'next/link'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import { MarketplaceTopbar } from '@/components/marketplace/MarketplaceTopbar'
 import { MarketplaceNav } from '@/components/marketplace/MarketplaceNav'
 import { MarketplaceFilterBar } from '@/components/marketplace/MarketplaceFilterBar'
 import { MarketplaceCard, type ContractorCardData } from '@/components/marketplace/MarketplaceCard'
 import { EmptyState } from '@/components/ui/EmptyState'
+
+// Full residential + commercial project type seed
+const PROJECT_TYPES = [
+  // ── Residential Interior ──────────────────────────────────────────────────
+  { label: 'Kitchen Remodel',         trade: 'General Contractor',  group: 'Residential' },
+  { label: 'Bathroom Remodel',        trade: 'General Contractor',  group: 'Residential' },
+  { label: 'Master Bath',             trade: 'General Contractor',  group: 'Residential' },
+  { label: 'Basement Finish',         trade: 'General Contractor',  group: 'Residential' },
+  { label: 'Flooring',                trade: 'Flooring',            group: 'Residential' },
+  { label: 'Interior Painting',       trade: 'Painting',            group: 'Residential' },
+  { label: 'Drywall',                 trade: 'Drywall',             group: 'Residential' },
+  { label: 'Closet & Storage',        trade: 'General Contractor',  group: 'Residential' },
+  { label: 'Home Theater / AV',       trade: 'Electrician',         group: 'Residential' },
+  // ── Residential Exterior ─────────────────────────────────────────────────
+  { label: 'Roof Replacement',        trade: 'Roofing',             group: 'Residential' },
+  { label: 'Siding & Cladding',       trade: 'General Contractor',  group: 'Residential' },
+  { label: 'Windows & Doors',         trade: 'General Contractor',  group: 'Residential' },
+  { label: 'Deck & Patio',            trade: 'General Contractor',  group: 'Residential' },
+  { label: 'Fence & Gate',            trade: 'General Contractor',  group: 'Residential' },
+  { label: 'Driveway & Hardscape',    trade: 'Masonry',             group: 'Residential' },
+  { label: 'Exterior Painting',       trade: 'Painting',            group: 'Residential' },
+  { label: 'Gutters',                 trade: 'General Contractor',  group: 'Residential' },
+  // ── Structural / Systems ─────────────────────────────────────────────────
+  { label: 'Addition / Bump-Out',     trade: 'General Contractor',  group: 'Residential' },
+  { label: 'ADU / Garage Conversion', trade: 'General Contractor',  group: 'Residential' },
+  { label: 'Whole-Home Renovation',   trade: 'General Contractor',  group: 'Residential' },
+  { label: 'HVAC / Heat Pump',        trade: 'HVAC',                group: 'Residential' },
+  { label: 'Electrical Panel',        trade: 'Electrician',         group: 'Residential' },
+  { label: 'EV Charger Install',      trade: 'Electrician',         group: 'Residential' },
+  { label: 'Plumbing',                trade: 'Plumber',             group: 'Residential' },
+  { label: 'Water Heater',            trade: 'Plumber',             group: 'Residential' },
+  { label: 'Insulation',              trade: 'General Contractor',  group: 'Residential' },
+  { label: 'Solar',                   trade: 'Electrician',         group: 'Residential' },
+  // ── Outdoor / Landscape ──────────────────────────────────────────────────
+  { label: 'Landscaping',             trade: 'Landscaping',         group: 'Residential' },
+  { label: 'Irrigation',              trade: 'Landscaping',         group: 'Residential' },
+  { label: 'Pool & Hot Tub',          trade: 'General Contractor',  group: 'Residential' },
+  { label: 'Outdoor Kitchen',         trade: 'General Contractor',  group: 'Residential' },
+  { label: 'Tree & Stump',            trade: 'Landscaping',         group: 'Residential' },
+  // ── Commercial ───────────────────────────────────────────────────────────
+  { label: 'Office Fit-Out',          trade: 'General Contractor',  group: 'Commercial' },
+  { label: 'Retail Build-Out',        trade: 'General Contractor',  group: 'Commercial' },
+  { label: 'Restaurant Renovation',   trade: 'General Contractor',  group: 'Commercial' },
+  { label: 'Medical / Dental Office', trade: 'General Contractor',  group: 'Commercial' },
+  { label: 'Warehouse / Industrial',  trade: 'Steel / Structural',  group: 'Commercial' },
+  { label: 'Multifamily Renovation',  trade: 'General Contractor',  group: 'Commercial' },
+  { label: 'Hotel / Hospitality',     trade: 'General Contractor',  group: 'Commercial' },
+  { label: 'Commercial Roofing',      trade: 'Roofing',             group: 'Commercial' },
+  { label: 'Commercial HVAC',         trade: 'HVAC',                group: 'Commercial' },
+  { label: 'Commercial Electrical',   trade: 'Electrician',         group: 'Commercial' },
+  { label: 'Commercial Plumbing',     trade: 'Plumber',             group: 'Commercial' },
+  { label: 'Parking & Site Work',     trade: 'Excavation',          group: 'Commercial' },
+  { label: 'ADA Compliance',          trade: 'General Contractor',  group: 'Commercial' },
+  { label: 'New Construction',        trade: 'General Contractor',  group: 'Commercial' },
+]
 
 // Mock contractor data — replace with API calls when backend is integrated
 const CONTRACTORS: ContractorCardData[] = [
@@ -134,7 +188,6 @@ const CONTRACTORS: ContractorCardData[] = [
 ]
 
 const DEFAULT_FILTERS = {
-  search: '',
   minRating: 0,
   priceRange: '',
   verifiedOnly: false,
@@ -143,9 +196,21 @@ const DEFAULT_FILTERS = {
 }
 
 export default function MarketplacePage() {
+  const [search, setSearch] = useState('')
   const [activeTrade, setActiveTrade] = useState('')
   const [activeCategory, setActiveCategory] = useState('')
   const [filters, setFilters] = useState(DEFAULT_FILTERS)
+  const [activeProjectType, setActiveProjectType] = useState('')
+
+  function handleProjectType(label: string, trade: string) {
+    if (activeProjectType === label) {
+      setActiveProjectType('')
+      setActiveTrade('')
+    } else {
+      setActiveProjectType(label)
+      setActiveTrade(trade)
+    }
+  }
 
   const filtered = useMemo(() => {
     let results = [...CONTRACTORS]
@@ -156,8 +221,8 @@ export default function MarketplacePage() {
     if (activeCategory) {
       results = results.filter(c => c.category === activeCategory)
     }
-    if (filters.search) {
-      const q = filters.search.toLowerCase()
+    if (search) {
+      const q = search.toLowerCase()
       results = results.filter(
         c =>
           c.name.toLowerCase().includes(q) ||
@@ -179,7 +244,6 @@ export default function MarketplacePage() {
       results = results.filter(c => c.isInsured)
     }
 
-    // Sort
     results.sort((a, b) => {
       if (filters.sortBy === 'rating') return b.rating - a.rating
       if (filters.sortBy === 'reviews') return b.reviewCount - a.reviewCount
@@ -188,56 +252,69 @@ export default function MarketplacePage() {
     })
 
     return results
-  }, [activeTrade, activeCategory, filters])
+  }, [activeTrade, activeCategory, search, filters])
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F7FAFC' }}>
-      {/* Topbar — rows 1 + 2: brand/roles/auth + utility links */}
       <MarketplaceTopbar />
 
-      {/* Hero */}
+      {/* Hero — search focused */}
       <div className="bg-white border-b border-gray-200">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h1 className="font-display text-2xl font-bold sm:text-3xl" style={{ color: '#1A2B4A' }}>
-                Vetted Contractors, Every Trade
-              </h1>
-              <p className="mt-1.5 text-sm text-gray-500">
-                Licensed, insured, background-checked, and reputation-scored professionals in the DC-Baltimore corridor.
-              </p>
-            </div>
-            <Link
-              href="/contractor/register"
-              className="inline-flex shrink-0 items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#1A2B4A' }}
-            >
-              Join as GC / Contractor <ArrowRight className="h-4 w-4" />
-            </Link>
+        <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+          <h1 className="font-display text-2xl font-bold text-center sm:text-3xl" style={{ color: '#1A2B4A' }}>
+            Find a Contractor
+          </h1>
+          <p className="mt-1.5 text-sm text-center text-gray-500 mb-5">
+            Licensed, insured, and background-checked professionals in the DC–Baltimore corridor.
+          </p>
+
+          {/* Big search bar */}
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search by trade, company, specialty, or location..."
+              className="w-full rounded-2xl border border-gray-200 py-3.5 pl-12 pr-12 text-sm shadow-sm placeholder-gray-400 focus:border-[#2ABFBF] focus:outline-none focus:ring-2 focus:ring-[#2ABFBF]/20"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
 
-        {/* AI Concept Engine banner */}
-        <div className="mx-auto max-w-7xl px-4 pb-4 sm:px-6 lg:px-8">
-          <div
-            className="flex flex-col gap-3 rounded-xl p-4 sm:flex-row sm:items-center sm:justify-between"
-            style={{ backgroundColor: 'rgba(232,121,58,0.07)', border: '1px solid rgba(232,121,58,0.2)' }}
-          >
-            <div className="flex items-start gap-3">
-              <Sparkles className="mt-0.5 h-5 w-5 shrink-0" style={{ color: '#E8793A' }} />
-              <div>
-                <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>Get an AI Concept Design first — then match to a contractor</p>
-                <p className="text-xs text-gray-500 mt-0.5">Property-specific design concepts starting at $395. Exterior, garden, whole home, interior reno, and developer packages available.</p>
+        {/* Project type chips — grouped */}
+        <div className="mx-auto max-w-7xl px-4 pb-5 sm:px-6 lg:px-8 space-y-4">
+          {(['Residential', 'Commercial'] as const).map((group) => (
+            <div key={group}>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">{group}</p>
+              <div className="flex flex-wrap gap-2">
+                {PROJECT_TYPES.filter(pt => pt.group === group).map((pt) => {
+                  const active = activeProjectType === pt.label
+                  return (
+                    <button
+                      key={pt.label}
+                      onClick={() => handleProjectType(pt.label, pt.trade)}
+                      className="rounded-full border px-3.5 py-1.5 text-sm font-medium transition-all"
+                      style={{
+                        borderColor: active ? '#1A2B4A' : '#E5E7EB',
+                        backgroundColor: active ? '#1A2B4A' : '#FFFFFF',
+                        color: active ? '#FFFFFF' : '#374151',
+                      }}
+                    >
+                      {pt.label}
+                    </button>
+                  )
+                })}
               </div>
             </div>
-            <Link
-              href="/concept-engine"
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#E8793A' }}
-            >
-              Start AI Concept <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
+          ))}
         </div>
       </div>
 
@@ -245,11 +322,11 @@ export default function MarketplacePage() {
       <MarketplaceNav
         activeTrade={activeTrade}
         activeCategory={activeCategory}
-        onTradeChange={setActiveTrade}
+        onTradeChange={(t) => { setActiveTrade(t); setActiveProjectType('') }}
         onCategoryChange={setActiveCategory}
       />
 
-      {/* Filters */}
+      {/* Filters (no search — it's in the hero) */}
       <MarketplaceFilterBar
         filters={filters}
         resultCount={filtered.length}
@@ -270,6 +347,8 @@ export default function MarketplacePage() {
                 setFilters(DEFAULT_FILTERS)
                 setActiveTrade('')
                 setActiveCategory('')
+                setSearch('')
+                setActiveProjectType('')
               },
             }}
           />
