@@ -14,15 +14,27 @@ export class AuthService {
 
     if (authError) throw authError
 
-    // 2. Create user record in our database
-    const user = await prismaAny.user.create({
-      data: {
-        id: authData.user!.id,
-        email,
-        name,
-        status: 'ACTIVE',
-      },
-    })
+    // 2. Create user record in our database — with Supabase rollback on failure
+    let user: any
+    try {
+      user = await prismaAny.user.create({
+        data: {
+          id: authData.user!.id,
+          email,
+          name,
+          status: 'ACTIVE',
+        },
+      })
+    } catch (prismaErr: any) {
+      // Rollback: delete the Supabase auth user to prevent orphaned accounts
+      try {
+        await supabase.auth.admin.deleteUser(authData.user!.id)
+        console.log(`Auth rollback: Supabase user ${authData.user!.id} deleted after Prisma failure`)
+      } catch (rollbackErr: any) {
+        console.error(`Auth rollback failed for ${authData.user!.id}:`, rollbackErr.message)
+      }
+      throw prismaErr
+    }
 
     auditService.log({ userId: user.id, action: 'CREATE', entityType: 'USER', entityId: user.id, description: `User registered: ${email}`, category: 'SECURITY', severity: 'INFO' })
 

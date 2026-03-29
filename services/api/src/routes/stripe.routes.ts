@@ -319,6 +319,72 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return;
   }
 
+  // ── Product Order fulfillment (product page direct checkout) ──────────────
+  if (metadata.source === 'product-order' && metadata.productSlug) {
+    try {
+      // Idempotency: skip if already processed
+      const alreadyFulfilled = await prismaAny.guestOrder.findFirst({
+        where: { stripeSessionId: session.id },
+        select: { id: true },
+      }).catch(() => null);
+      if (alreadyFulfilled) {
+        console.log('product-order: already processed (idempotent):', session.id);
+        return;
+      }
+
+      await prismaAny.guestOrder.create({
+        data: {
+          stripeSessionId: session.id,
+          guestToken:      `product-${session.id}`,
+          guestEmail:      metadata.customerEmail ?? session.customer_email ?? '',
+          guestName:       metadata.customerName  ?? '',
+          itemType:        'MARKETPLACE_SERVICE',
+          itemId:          metadata.productSlug,
+          amountPaid:      session.amount_total ?? 0,
+          currency:        session.currency ?? 'usd',
+          status:          'FULFILLED',
+          fulfilledAt:     new Date(),
+        },
+      }).catch((e: any) => console.warn('product-order: GuestOrder create failed:', e?.message));
+
+      // Enqueue delivery job
+      try {
+        const { Queue } = await import('bullmq');
+        const queue = new Queue('intake-processing', {
+          connection: { url: process.env.REDIS_URL || 'redis://localhost:6379' },
+        });
+        await queue.add('process-product-order', {
+          productSlug:     metadata.productSlug,
+          productName:     metadata.productName ?? metadata.productSlug,
+          customerEmail:   metadata.customerEmail ?? session.customer_email ?? '',
+          customerName:    metadata.customerName  ?? '',
+          stripeSessionId: session.id,
+          amountPaid:      session.amount_total ?? 0,
+        }, { priority: 2, attempts: 3 });
+        await queue.close();
+      } catch (qErr: any) {
+        console.warn('product-order: queue enqueue failed (non-fatal):', qErr.message);
+      }
+
+      // Send confirmation email
+      const toEmail = metadata.customerEmail ?? session.customer_email ?? '';
+      if (toEmail) {
+        const amountDollars = ((session.amount_total ?? 0) / 100).toFixed(2);
+        const productName = metadata.productName ?? metadata.productSlug ?? 'Your product';
+        await emailService.sendEmail({
+          to: toEmail,
+          subject: `Order confirmed: ${productName}`,
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto"><h2>Order Confirmed!</h2><p>Hi ${metadata.customerName ?? 'there'},</p><p>Your order for <strong>${productName}</strong> ($${amountDollars}) has been received. Our team will process your deliverable and be in touch within 1–2 business days.</p><p>— The Kealee Team</p></div>`,
+        }).catch((e: any) => console.warn('product-order: email failed (non-fatal):', e?.message));
+      }
+
+      console.log('product-order fulfilled:', metadata.productSlug, session.id);
+    } catch (err: any) {
+      console.error('Failed to fulfill product-order:', err?.message);
+    }
+    return;
+  }
+
   // ── Concept Package fulfillment (intake-to-payment flow) ──────────────────
   if (metadata.source === 'concept-package' && metadata.intakeId) {
     try {
@@ -332,7 +398,38 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         cpUserId = cpUser?.id ?? null;
       }
       if (!cpUserId) {
-        console.error('concept-package: could not resolve userId', session.id);
+        // Anonymous checkout: findOrCreate a user from the customer email
+        const anonEmail = session.customer_email ?? metadata.customerEmail ?? null;
+        if (!anonEmail) {
+          console.error('concept-package: no email to resolve userId', session.id);
+          return;
+        }
+        try {
+          const upserted = await prismaAny.user.upsert({
+            where:  { email: anonEmail },
+            update: {},
+            create: {
+              id:     crypto.randomUUID(),
+              email:  anonEmail,
+              name:   metadata.customerName ?? (session as any).customer_details?.name ?? 'Customer',
+              status: 'ACTIVE',
+            },
+            select: { id: true },
+          });
+          cpUserId = upserted.id;
+        } catch (upsertErr: any) {
+          console.error('concept-package: findOrCreate user failed:', upsertErr.message);
+          return;
+        }
+      }
+
+      // Idempotency: skip if this session was already processed
+      const existingCpOrder = await prismaAny.conceptPackageOrder.findFirst({
+        where: { stripeSessionId: session.id },
+        select: { id: true },
+      }).catch(() => null);
+      if (existingCpOrder) {
+        console.log('concept-package: already processed (idempotent):', session.id);
         return;
       }
 
