@@ -2,44 +2,10 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowLeft, ArrowRight, Home, CheckCircle, Star } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Home, CheckCircle } from 'lucide-react'
 import { useState } from 'react'
 
 const ACCENT = '#E8793A'
-
-const STEPS = [
-  {
-    n: '01',
-    title: 'Your Property',
-    desc: 'Share your address, photos of your current exterior, and any reference images you love.',
-  },
-  {
-    n: '02',
-    title: 'Your Goals',
-    desc: 'Tell us what you want: new facade, landscaping refresh, hardscaping, outdoor kitchen, driveway update.',
-  },
-  {
-    n: '03',
-    title: 'Site Analysis',
-    desc: 'Our AI evaluates your lot, existing architecture, neighborhood context, and local climate.',
-  },
-  {
-    n: '04',
-    title: 'Your Concept',
-    desc: 'Receive 3 exterior concept renderings with material palettes, a landscape plan, and a contractor-ready PDF.',
-  },
-]
-
-const INCLUDED = [
-  '3 exterior concept renderings',
-  'Facade redesign with material + color palette',
-  'Front yard landscape & planting plan',
-  'Hardscape layout (driveway, walkways, patios)',
-  'Outdoor living space design',
-  'Lighting placement overview',
-  'Downloadable PDF concept package',
-  '30-minute consultation call',
-]
 
 const TIERS = [
   {
@@ -84,10 +50,44 @@ const TIERS = [
   },
 ]
 
+const STEPS = [
+  {
+    n: '01',
+    title: 'Your Property',
+    desc: 'Share your address, photos of your current exterior, and any reference images you love.',
+  },
+  {
+    n: '02',
+    title: 'Your Goals',
+    desc: 'Tell us what you want: new facade, landscaping refresh, hardscaping, outdoor kitchen, driveway update.',
+  },
+  {
+    n: '03',
+    title: 'Site Analysis',
+    desc: 'Our AI evaluates your lot, existing architecture, neighborhood context, and local climate.',
+  },
+  {
+    n: '04',
+    title: 'Your Concept',
+    desc: 'Receive 3 exterior concept renderings with material palettes, a landscape plan, and a contractor-ready PDF.',
+  },
+]
+
+const INCLUDED = [
+  '3 exterior concept renderings',
+  'Facade redesign with material + color palette',
+  'Front yard landscape & planting plan',
+  'Hardscape layout (driveway, walkways, patios)',
+  'Outdoor living space design',
+  'Lighting placement overview',
+  'Downloadable PDF concept package',
+  '30-minute consultation call',
+]
+
 const FAQ = [
   {
     q: 'What is the AI Exterior Concept Package?',
-    a: 'It\'s a $595 AI-generated concept design package for your home\'s exterior. You submit your property details and goals; we deliver 3 rendered concepts, a material palette, a landscape overview, and a consultation call — all within 5–7 business days.',
+    a: "It's a $595 AI-generated concept design package for your home's exterior. You submit your property details and goals; we deliver 3 rendered concepts, a material palette, a landscape overview, and a consultation call — all within 5–7 business days.",
   },
   {
     q: 'Does this include contractor services?',
@@ -99,7 +99,7 @@ const FAQ = [
   },
   {
     q: 'Are permits required for exterior work?',
-    a: 'It depends on the scope. Landscape and painting typically don\'t require permits. Structural changes, driveways, retaining walls, and additions often do. We note permit scope in every concept package.',
+    a: "It depends on the scope. Landscape and painting typically don't require permits. Structural changes, driveways, retaining walls, and additions often do. We note permit scope in every concept package.",
   },
   {
     q: 'How many revision rounds are included?',
@@ -107,7 +107,7 @@ const FAQ = [
   },
   {
     q: 'Can I use the concept package to get contractor bids?',
-    a: 'Yes — that\'s the point. Every concept package is designed to be contractor-ready so you can get accurate bids from multiple contractors without paying for an architect first.',
+    a: "Yes — that's the point. Every concept package is designed to be contractor-ready so you can get accurate bids from multiple contractors without paying for an architect first.",
   },
 ]
 
@@ -158,10 +158,7 @@ export default function ExteriorConceptPage() {
                 >
                   Start My Exterior Concept <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link
-                  href="/contact"
-                  className="btn-outline-white"
-                >
+                <Link href="/contact" className="btn-outline-white">
                   Talk to Our Team
                 </Link>
               </div>
@@ -174,7 +171,6 @@ export default function ExteriorConceptPage() {
               </div>
             </motion.div>
 
-            {/* Photo */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -200,84 +196,15 @@ export default function ExteriorConceptPage() {
         </div>
       </section>
 
-      {/* What's Included + Steps */}
+      {/* Pricing Tiers — shown first so visitors see options immediately */}
       <section className="py-20" style={{ backgroundColor: '#F7FAFC' }}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-12 lg:grid-cols-3">
-            {/* Included sidebar */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="rounded-2xl p-6 text-white"
-              style={{ backgroundColor: '#1A2B4A' }}
-            >
-              <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ backgroundColor: ACCENT }}>
-                  <Home className="h-5 w-5 text-white" />
-                </div>
-                <h2 className="text-lg font-bold font-display">What&apos;s Included</h2>
-              </div>
-              <ul className="space-y-3">
-                {INCLUDED.map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-gray-300">
-                    <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: ACCENT }} />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-6 border-t border-gray-700 pt-6">
-                <p className="text-xs text-gray-400">
-                  All onsite installation and build work is performed by your contractor of record. Kealee provides AI design,
-                  advisory, and contractor matching services only.
-                </p>
-              </div>
-            </motion.div>
-
-            {/* Steps */}
-            <div className="lg:col-span-2">
-              <span className="section-label">How It Works</span>
-              <h2 className="mt-3 text-2xl font-bold font-display sm:text-3xl" style={{ color: '#1A2B4A' }}>
-                4 Steps to Your Exterior Concept
-              </h2>
-              <div className="mt-8 space-y-6">
-                {STEPS.map((step, i) => (
-                  <motion.div
-                    key={step.n}
-                    initial={{ opacity: 0, x: 20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: i * 0.1 }}
-                    className="flex gap-5 rounded-xl bg-white p-5"
-                    style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.08)' }}
-                  >
-                    <span
-                      className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg font-mono text-sm font-bold text-white"
-                      style={{ backgroundColor: ACCENT }}
-                    >
-                      {step.n}
-                    </span>
-                    <div>
-                      <h3 className="font-semibold" style={{ color: '#1A2B4A' }}>{step.title}</h3>
-                      <p className="mt-1 text-sm text-gray-600">{step.desc}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Tiers */}
-      <section className="py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <span className="section-label">Packages</span>
             <h2 className="mt-3 text-2xl font-bold font-display sm:text-3xl" style={{ color: '#1A2B4A' }}>
               Exterior Design Packages
             </h2>
+            <p className="mt-3 text-gray-500">Choose the package that fits your project scope and timeline.</p>
           </div>
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
             {TIERS.map((tier, i) => (
@@ -334,6 +261,76 @@ export default function ExteriorConceptPage() {
         </div>
       </section>
 
+      {/* What's Included + Steps */}
+      <section className="py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-3">
+            {/* Included sidebar */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="rounded-2xl p-6 text-white"
+              style={{ backgroundColor: '#1A2B4A' }}
+            >
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ backgroundColor: ACCENT }}>
+                  <Home className="h-5 w-5 text-white" />
+                </div>
+                <h2 className="text-lg font-bold font-display">What&apos;s Included</h2>
+              </div>
+              <ul className="space-y-3">
+                {INCLUDED.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-gray-300">
+                    <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: ACCENT }} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-6 border-t border-gray-700 pt-6">
+                <p className="text-xs text-gray-400">
+                  All onsite installation and build work is performed by your contractor of record. Kealee provides AI
+                  design, final design packages, permit filing, advisory, and contractor matching services only.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Steps */}
+            <div className="lg:col-span-2">
+              <span className="section-label">How It Works</span>
+              <h2 className="mt-3 text-2xl font-bold font-display sm:text-3xl" style={{ color: '#1A2B4A' }}>
+                4 Steps to Your Exterior Concept
+              </h2>
+              <div className="mt-8 space-y-6">
+                {STEPS.map((step, i) => (
+                  <motion.div
+                    key={step.n}
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: i * 0.1 }}
+                    className="flex gap-5 rounded-xl bg-white p-5"
+                    style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.08)' }}
+                  >
+                    <span
+                      className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg font-mono text-sm font-bold text-white"
+                      style={{ backgroundColor: ACCENT }}
+                    >
+                      {step.n}
+                    </span>
+                    <div>
+                      <h3 className="font-semibold" style={{ color: '#1A2B4A' }}>{step.title}</h3>
+                      <p className="mt-1 text-sm text-gray-600">{step.desc}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section className="py-20" style={{ backgroundColor: '#F7FAFC' }}>
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
@@ -383,7 +380,7 @@ export default function ExteriorConceptPage() {
           </div>
           <p className="mt-6 text-xs text-gray-500">
             All onsite installation and build work is performed by your contractor of record. Kealee provides AI design,
-            advisory, and contractor matching services only.
+            final design packages, permit filing, advisory, and contractor matching services only.
           </p>
         </div>
       </section>

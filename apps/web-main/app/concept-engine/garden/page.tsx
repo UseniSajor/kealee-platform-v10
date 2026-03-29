@@ -117,8 +117,50 @@ export default function GardenConceptEnginePage() {
         </div>
       </section>
 
+      {/* Garden design packages — shown first so visitors see options immediately */}
+      <section className="py-16">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <h2 className="mb-2 text-xl font-bold text-center" style={{ color: '#1A2B4A' }}>Garden design packages</h2>
+          <p className="mb-6 text-center text-sm text-gray-500">Choose the package that fits your garden goals.</p>
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+            {[
+              { tier: 'AI Garden Concept', price: '$395', revisions: '1 round (3 layouts)', note: 'AI layout + raised beds + irrigation overview + planting guide', href: '/intake/garden_concept' },
+              { tier: 'Advanced Garden Design', price: '$750', revisions: 'Up to 3 rounds', note: 'Detailed plant lists + irrigation specs + 3D garden views', highlight: true, href: '/intake/garden_concept' },
+              { tier: 'Full Landscape Design', price: '$2,500+', revisions: 'Up to 5 rounds', note: 'Permit-ready landscape plans + full contractor package', href: '/contact' },
+            ].map((row, i) => (
+              <div
+                key={row.tier}
+                className="flex items-center justify-between px-5 py-4"
+                style={{
+                  backgroundColor: row.highlight ? 'rgba(56,161,105,0.04)' : i % 2 === 0 ? 'white' : '#FAFAFA',
+                  borderBottom: i < 2 ? '1px solid #F3F4F6' : undefined,
+                }}
+              >
+                <div className="flex-1">
+                  <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>{row.tier}</p>
+                  <p className="mt-0.5 text-xs text-gray-400">{row.note}</p>
+                </div>
+                <div className="ml-4 flex items-center gap-4 shrink-0">
+                  <div className="text-right">
+                    <p className="text-sm font-bold" style={{ color: '#38A169' }}>{row.price}</p>
+                    <p className="text-xs text-gray-500">{row.revisions}</p>
+                  </div>
+                  <Link
+                    href={row.href}
+                    className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-all hover:opacity-90"
+                    style={{ backgroundColor: '#38A169' }}
+                  >
+                    Start <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
-      <section className="py-20">
+      <section className="py-20" style={{ backgroundColor: '#F7FAFC' }}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="text-2xl font-bold sm:text-3xl" style={{ color: '#1A2B4A' }}>
@@ -145,7 +187,7 @@ export default function GardenConceptEnginePage() {
       </section>
 
       {/* Trust signals */}
-      <section className="border-t border-gray-100 py-12" style={{ backgroundColor: '#F7FAFC' }}>
+      <section className="border-t border-gray-100 py-12">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-500">
             <span className="flex items-center gap-2">
@@ -164,38 +206,6 @@ export default function GardenConceptEnginePage() {
               <CheckCircle className="h-4 w-4 text-green-500" />
               Consultation included
             </span>
-          </div>
-        </div>
-      </section>
-
-      {/* Revision tiers */}
-      <section className="py-16">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-xl font-bold text-center" style={{ color: '#1A2B4A' }}>Garden design packages</h2>
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-            {[
-              { tier: 'AI Garden Concept', price: '$395', revisions: '1 round (3 layouts)', note: 'AI layout + raised beds + irrigation overview + planting guide' },
-              { tier: 'Advanced Garden Design', price: '$750', revisions: 'Up to 3 rounds', note: 'Detailed plant lists + irrigation specs + 3D garden views', highlight: true },
-              { tier: 'Full Landscape Design', price: '$2,500+', revisions: 'Up to 5 rounds', note: 'Permit-ready landscape plans + full contractor package' },
-            ].map((row, i) => (
-              <div
-                key={row.tier}
-                className="flex items-center justify-between px-5 py-4"
-                style={{
-                  backgroundColor: row.highlight ? 'rgba(56,161,105,0.04)' : i % 2 === 0 ? 'white' : '#FAFAFA',
-                  borderBottom: i < 2 ? '1px solid #F3F4F6' : undefined,
-                }}
-              >
-                <div>
-                  <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>{row.tier}</p>
-                  <p className="mt-0.5 text-xs text-gray-400">{row.note}</p>
-                </div>
-                <div className="ml-4 text-right shrink-0">
-                  <p className="text-sm font-bold" style={{ color: '#38A169' }}>{row.price}</p>
-                  <p className="text-xs text-gray-500">{row.revisions}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>

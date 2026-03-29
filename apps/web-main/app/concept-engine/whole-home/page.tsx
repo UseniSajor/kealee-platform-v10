@@ -118,8 +118,50 @@ export default function WholeHomeConceptEnginePage() {
         </div>
       </section>
 
+      {/* Whole home design packages — shown first so visitors see options immediately */}
+      <section className="py-16">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <h2 className="mb-2 text-xl font-bold text-center" style={{ color: '#1A2B4A' }}>Whole home design packages</h2>
+          <p className="mb-6 text-center text-sm text-gray-500">Choose the package that matches your renovation scope.</p>
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+            {[
+              { tier: 'AI Whole Home Concept', price: '$585', revisions: '1 round (3 options)', note: 'Floor plan direction + scope + material palette + cost range', href: '/intake/whole_home_concept' },
+              { tier: 'Advanced Whole Home Design', price: '$1,200', revisions: 'Up to 3 rounds', note: '3D views + detailed floor plans + contractor-ready scope', highlight: true, href: '/intake/whole_home_concept' },
+              { tier: 'Full Design Package', price: '$6,500+', revisions: 'Up to 5 rounds', note: 'Permit-ready drawing set + structural direction + full scope', href: '/contact' },
+            ].map((row, i) => (
+              <div
+                key={row.tier}
+                className="flex items-center justify-between px-5 py-4"
+                style={{
+                  backgroundColor: row.highlight ? 'rgba(232,121,58,0.04)' : i % 2 === 0 ? 'white' : '#FAFAFA',
+                  borderBottom: i < 2 ? '1px solid #F3F4F6' : undefined,
+                }}
+              >
+                <div className="flex-1">
+                  <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>{row.tier}</p>
+                  <p className="mt-0.5 text-xs text-gray-400">{row.note}</p>
+                </div>
+                <div className="ml-4 flex items-center gap-4 shrink-0">
+                  <div className="text-right">
+                    <p className="text-sm font-bold" style={{ color: '#E8793A' }}>{row.price}</p>
+                    <p className="text-xs text-gray-500">{row.revisions}</p>
+                  </div>
+                  <Link
+                    href={row.href}
+                    className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-all hover:opacity-90"
+                    style={{ backgroundColor: '#E8793A' }}
+                  >
+                    Start <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
-      <section className="py-20">
+      <section className="py-20" style={{ backgroundColor: '#F7FAFC' }}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="text-2xl font-bold sm:text-3xl" style={{ color: '#1A2B4A' }}>
@@ -146,7 +188,7 @@ export default function WholeHomeConceptEnginePage() {
       </section>
 
       {/* Trust signals */}
-      <section className="border-t border-gray-100 py-12" style={{ backgroundColor: '#F7FAFC' }}>
+      <section className="border-t border-gray-100 py-12">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-500">
             <span className="flex items-center gap-2">
@@ -165,38 +207,6 @@ export default function WholeHomeConceptEnginePage() {
               <CheckCircle className="h-4 w-4 text-green-500" />
               Consultation included
             </span>
-          </div>
-        </div>
-      </section>
-
-      {/* Revision tiers */}
-      <section className="py-16">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-xl font-bold text-center" style={{ color: '#1A2B4A' }}>Whole home design packages</h2>
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-            {[
-              { tier: 'AI Whole Home Concept', price: '$585', revisions: '1 round (3 options)', note: 'Floor plan direction + scope + material palette + cost range' },
-              { tier: 'Advanced Whole Home Design', price: '$1,200', revisions: 'Up to 3 rounds', note: '3D views + detailed floor plans + contractor-ready scope', highlight: true },
-              { tier: 'Full Design Package', price: '$6,500+', revisions: 'Up to 5 rounds', note: 'Permit-ready drawing set + structural direction + full scope' },
-            ].map((row, i) => (
-              <div
-                key={row.tier}
-                className="flex items-center justify-between px-5 py-4"
-                style={{
-                  backgroundColor: row.highlight ? 'rgba(232,121,58,0.04)' : i % 2 === 0 ? 'white' : '#FAFAFA',
-                  borderBottom: i < 2 ? '1px solid #F3F4F6' : undefined,
-                }}
-              >
-                <div>
-                  <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>{row.tier}</p>
-                  <p className="mt-0.5 text-xs text-gray-400">{row.note}</p>
-                </div>
-                <div className="ml-4 text-right shrink-0">
-                  <p className="text-sm font-bold" style={{ color: '#E8793A' }}>{row.price}</p>
-                  <p className="text-xs text-gray-500">{row.revisions}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
