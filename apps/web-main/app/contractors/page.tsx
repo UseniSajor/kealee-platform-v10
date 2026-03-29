@@ -239,6 +239,106 @@ export default function ContractorsPage() {
           },
         ]}
       />
+
+      {/* Product cards */}
+      <section className="py-20 bg-white">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-10 text-center">
+            <h2 className="text-2xl font-bold font-display sm:text-3xl" style={{ color: '#1A2B4A' }}>
+              Contractor products
+            </h2>
+            <p className="mt-3 text-gray-500">Everything you need to run and grow your contracting business.</p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-3">
+            {[
+              {
+                icon: '🤝',
+                name: 'Contractor Portal',
+                price: '$0 to join',
+                features: ['Verified contractor profile', 'AI-matched lead delivery', 'Reputation score tracking'],
+                cta: 'Join free',
+                href: '/contractor/register',
+                accent: '#2ABFBF',
+              },
+              {
+                icon: '🏗️',
+                name: 'Construction OS',
+                price: 'Per project',
+                features: ['Scheduling & daily logs', 'RFIs + change orders', 'Milestone payment tracking'],
+                cta: 'Get access',
+                href: process.env.NEXT_PUBLIC_CONTRACTOR_PORTAL_URL ?? '/auth/sign-in',
+                accent: '#C8521A',
+                highlight: true,
+              },
+              {
+                icon: '🧠',
+                name: 'AI Bid Assistant',
+                price: '$49/mo',
+                features: ['KeaBot GC analysis', 'Line-item cost pull', 'Competitive proposal builder'],
+                cta: 'Start trial',
+                href: '/contractor/register',
+                accent: '#3A7D52',
+              },
+            ].map(p => (
+              <div
+                key={p.name}
+                className="flex flex-col rounded-2xl p-6"
+                style={{
+                  border: p.highlight ? '2px solid #C8521A' : '1px solid #E2E1DC',
+                  background: 'white',
+                }}
+              >
+                <div className="mb-4 text-3xl">{p.icon}</div>
+                <h3 className="font-bold font-display" style={{ color: '#1A1C1B' }}>{p.name}</h3>
+                <p className="mt-1 text-sm font-semibold" style={{ color: p.accent }}>{p.price}</p>
+                <ul className="my-4 flex-1 space-y-1.5">
+                  {p.features.map(f => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-gray-600">
+                      <span style={{ color: p.accent }}>✓</span> {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={p.href}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  style={{ background: p.accent }}
+                >
+                  {p.cta} <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Portal CTA banner */}
+      <section className="py-14" style={{ background: '#1A2B4A' }}>
+        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
+          <h2 className="text-2xl font-bold font-display text-white sm:text-3xl">
+            Ready to grow your business?
+          </h2>
+          <p className="mt-3 text-gray-400">
+            Join the Kealee contractor network — AI-matched leads, protected payments, and a full construction OS.
+          </p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <a
+              href={process.env.NEXT_PUBLIC_CONTRACTOR_PORTAL_URL ?? '/contractor/register'}
+              className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ background: '#C8521A' }}
+            >
+              Open Contractor Portal <ArrowRight className="h-4 w-4" />
+            </a>
+            <Link
+              href="/contractor/register"
+              className="text-sm font-semibold text-gray-300 underline hover:text-white"
+            >
+              Apply to join
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <RoleCTA
         headline="Ready to Grow Your Business?"
         subhead="Join hundreds of licensed contractors winning more projects with Kealee's AI-powered platform."

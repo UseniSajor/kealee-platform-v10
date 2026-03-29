@@ -175,6 +175,105 @@ export default function DevelopersPage() {
         </div>
       </section>
 
+      {/* Developer Products */}
+      <section className="py-20 bg-white">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-10 text-center">
+            <h2 className="text-2xl font-bold font-display sm:text-3xl" style={{ color: '#1A2B4A' }}>
+              Developer products
+            </h2>
+            <p className="mt-3 text-gray-500">AI-powered tools for every phase of the development lifecycle.</p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-3">
+            {[
+              {
+                icon: '🏢',
+                name: 'Developer Portal',
+                price: 'Free to start',
+                features: ['Portfolio dashboard', 'AI project analytics', 'Multi-project reporting'],
+                cta: 'Open portal',
+                href: process.env.NEXT_PUBLIC_DEVELOPER_PORTAL_URL ?? '/auth/sign-in',
+                accent: '#2ABFBF',
+              },
+              {
+                icon: '📊',
+                name: 'OS-Land + OS-Feas',
+                price: '$499/mo',
+                features: ['AI parcel scoring', 'Pro forma modeling', 'Go/no-go scenario analysis'],
+                cta: 'Start feasibility',
+                href: '/developers/start',
+                accent: '#C8521A',
+                highlight: true,
+              },
+              {
+                icon: '🔮',
+                name: 'Digital Twin Platform',
+                price: 'Enterprise',
+                features: ['Live project model', 'Milestone + draw tracking', 'Investor report generation'],
+                cta: 'Schedule demo',
+                href: '/contact',
+                accent: '#1A2B4A',
+              },
+            ].map(p => (
+              <div
+                key={p.name}
+                className="flex flex-col rounded-2xl p-6"
+                style={{
+                  border: p.highlight ? '2px solid #C8521A' : '1px solid #E2E1DC',
+                  background: 'white',
+                }}
+              >
+                <div className="mb-4 text-3xl">{p.icon}</div>
+                <h3 className="font-bold font-display" style={{ color: '#1A1C1B' }}>{p.name}</h3>
+                <p className="mt-1 text-sm font-semibold" style={{ color: p.accent }}>{p.price}</p>
+                <ul className="my-4 flex-1 space-y-1.5">
+                  {p.features.map(f => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-gray-600">
+                      <span style={{ color: p.accent }}>✓</span> {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={p.href}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  style={{ background: p.accent }}
+                >
+                  {p.cta} <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Developer portal CTA banner */}
+      <section className="py-14" style={{ background: '#0F1A2E' }}>
+        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
+          <h2 className="text-2xl font-bold font-display text-white sm:text-3xl">
+            Start your first feasibility
+          </h2>
+          <p className="mt-3 text-gray-400">
+            AI-powered pro forma in days. Land, capital stack, digital twin — one integrated platform.
+          </p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <a
+              href={process.env.NEXT_PUBLIC_DEVELOPER_PORTAL_URL ?? '/developers/start'}
+              className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ background: '#C8521A' }}
+            >
+              Open Developer Portal <ArrowRight className="h-4 w-4" />
+            </a>
+            <Link
+              href="/contact"
+              className="text-sm font-semibold text-gray-300 underline hover:text-white"
+            >
+              Schedule a consultation
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <RoleFAQ
         items={[
           {

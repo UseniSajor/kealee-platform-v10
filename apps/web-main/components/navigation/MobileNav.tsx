@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { X, ChevronDown, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
-import { PRIMARY_NAV, NAV_CTA_PRIMARY, NAV_CTA_SECONDARY, NAV_LOGIN } from '@/config/navigation'
+import { PRIMARY_NAV, NAV_CTA_PRIMARY, NAV_LOGIN_OPTIONS } from '@/config/navigation'
 
 interface Props {
   isOpen:  boolean
@@ -11,7 +11,8 @@ interface Props {
 }
 
 export function MobileNav({ isOpen, onClose }: Props) {
-  const [openItems, setOpenItems] = useState<Record<string, boolean>>({})
+  const [openItems,   setOpenItems]   = useState<Record<string, boolean>>({})
+  const [loginExpand, setLoginExpand] = useState(false)
 
   function toggleItem(label: string) {
     setOpenItems(s => ({ ...s, [label]: !s[label] }))
@@ -33,7 +34,7 @@ export function MobileNav({ isOpen, onClose }: Props) {
         {/* Header */}
         <div className="flex h-16 items-center justify-between border-b border-gray-100 px-5">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ backgroundColor: '#E8793A' }}>
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ backgroundColor: '#C8521A' }}>
               <span className="text-xs font-bold text-white font-display">K</span>
             </div>
             <span className="text-lg font-bold font-display" style={{ color: '#1A2B4A' }}>Kealee</span>
@@ -98,7 +99,7 @@ export function MobileNav({ isOpen, onClose }: Props) {
                               {link.label}
                             </span>
                             {link.badge && (
-                              <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold text-white" style={{ backgroundColor: '#E8793A' }}>
+                              <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold text-white" style={{ backgroundColor: '#C8521A' }}>
                                 {link.badge}
                               </span>
                             )}
@@ -117,31 +118,39 @@ export function MobileNav({ isOpen, onClose }: Props) {
         </nav>
 
         {/* Bottom CTAs */}
-        <div className="border-t border-gray-100 px-5 py-4 space-y-3">
+        <div className="border-t border-gray-100 px-5 py-4 space-y-2">
           <Link
             href={NAV_CTA_PRIMARY.href}
             onClick={onClose}
             className="flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-all hover:opacity-90"
-            style={{ backgroundColor: '#E8793A' }}
+            style={{ backgroundColor: '#C8521A' }}
           >
             {NAV_CTA_PRIMARY.label}
             <ArrowRight className="h-4 w-4" />
           </Link>
-          <Link
-            href={NAV_CTA_SECONDARY.href}
-            onClick={onClose}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 py-3 text-sm font-semibold transition-all hover:bg-teal-50"
-            style={{ borderColor: '#2ABFBF', color: '#2ABFBF' }}
+
+          {/* Login accordion */}
+          <button
+            onClick={() => setLoginExpand(s => !s)}
+            className="flex w-full items-center justify-between rounded-xl py-2.5 px-3 text-sm font-medium text-gray-500 hover:bg-gray-50"
           >
-            {NAV_CTA_SECONDARY.label}
-          </Link>
-          <Link
-            href={NAV_LOGIN.href}
-            onClick={onClose}
-            className="flex w-full items-center justify-center gap-2 py-2 text-sm font-medium text-gray-500 hover:text-gray-900"
-          >
-            {NAV_LOGIN.label}
-          </Link>
+            Log In
+            <ChevronDown className={`h-4 w-4 transition-transform ${loginExpand ? 'rotate-180' : ''}`} />
+          </button>
+          {loginExpand && (
+            <div className="ml-3 space-y-1 border-l-2 border-gray-100 pl-3">
+              {NAV_LOGIN_OPTIONS.map(opt => (
+                <Link
+                  key={opt.href}
+                  href={opt.href}
+                  onClick={onClose}
+                  className="block rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                >
+                  {opt.label}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </>

@@ -69,9 +69,89 @@ export default function PermitsHubPage() {
             <p className="text-gray-600 leading-relaxed">
               Most permit delays aren't caused by the jurisdiction — they're caused by incomplete
               submissions. A single missing note, incorrect setback dimension, or unstamped drawing
-              sends you back to the end of the queue. Kealee prepares permit-ready packages
-              engineered for first-cycle approval.
+              sends you back to the end of the queue. Kealee&apos;s AI reviews your package before
+              submission, engineered for first-cycle approval.
             </p>
+          </div>
+        </Container>
+      </section>
+
+      {/* ── Pricing Tiers ─────────────────────────────────────────────── */}
+      <section className="py-16" style={{ backgroundColor: '#F5F4F0' }}>
+        <Container width="lg">
+          <div className="mb-10 text-center">
+            <span className="section-label">Permit Pricing</span>
+            <Heading as="h2" size="md" color="navy" className="mt-3 mb-4">
+              Pick your permit package
+            </Heading>
+            <p className="text-gray-500 max-w-xl mx-auto">
+              All packages include AI pre-submission review. Choose based on how much of your project scope is already defined.
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-3">
+            {[
+              {
+                name: 'Permit Path Only',
+                price: '$149',
+                desc: 'Document prep and jurisdiction filing. You provide the drawings.',
+                features: ['AI document review', 'Jurisdiction filing', 'Comment response support', 'DC / MD / VA coverage'],
+                cta: 'Start filing',
+                href: '/intake/permit_path_only',
+                accent: '#2ABFBF',
+              },
+              {
+                name: 'Full Permit Package',
+                price: '$585',
+                desc: 'AI concept design + permit-ready package. Start from scratch.',
+                features: ['AI concept visuals', 'Cost band estimate', 'Permit-ready package', 'Filing + comment response'],
+                cta: 'Get full package',
+                href: '/concept',
+                accent: '#C8521A',
+                highlight: true,
+              },
+              {
+                name: 'Developer Permits',
+                price: '$1,999+',
+                desc: 'Multi-unit, commercial, and complex mixed-use projects.',
+                features: ['Multi-unit support', 'Commercial code review', 'Entitlement coordination', 'Dedicated permit manager'],
+                cta: 'Schedule consult',
+                href: '/contact',
+                accent: '#1A2B4A',
+              },
+            ].map(tier => (
+              <div
+                key={tier.name}
+                className="flex flex-col rounded-2xl bg-white p-6"
+                style={{ border: tier.highlight ? '2px solid #C8521A' : '1px solid #E2E1DC' }}
+              >
+                {tier.highlight && (
+                  <span
+                    className="mb-3 self-start rounded-full px-3 py-1 text-xs font-semibold text-white"
+                    style={{ background: '#C8521A' }}
+                  >
+                    Most Popular
+                  </span>
+                )}
+                <h3 className="font-bold font-display text-lg" style={{ color: '#1A1C1B' }}>{tier.name}</h3>
+                <p className="mt-1 text-2xl font-bold" style={{ color: tier.accent }}>{tier.price}</p>
+                <p className="mt-2 text-sm text-gray-500">{tier.desc}</p>
+                <ul className="my-5 flex-1 space-y-2">
+                  {tier.features.map(f => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-gray-600">
+                      <span style={{ color: tier.accent }}>✓</span> {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={tier.href}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  style={{ background: tier.accent }}
+                >
+                  {tier.cta} →
+                </Link>
+              </div>
+            ))}
           </div>
         </Container>
       </section>
@@ -169,6 +249,27 @@ export default function PermitsHubPage() {
               </div>
             </div>
           ))}
+        </Container>
+      </section>
+
+      {/* ── Nationwide CTA strip ──────────────────────────────────────── */}
+      <section className="py-10 border-t border-gray-100 bg-white">
+        <Container width="lg">
+          <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
+            <div>
+              <p className="font-semibold" style={{ color: '#1A1C1B' }}>
+                Don&apos;t see your county?
+              </p>
+              <p className="text-sm text-gray-500">We file nationwide. Tell us your jurisdiction and we&apos;ll confirm coverage within 24 hours.</p>
+            </div>
+            <Link
+              href="/contact"
+              className="flex-shrink-0 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ background: '#C8521A' }}
+            >
+              Contact us →
+            </Link>
+          </div>
         </Container>
       </section>
 

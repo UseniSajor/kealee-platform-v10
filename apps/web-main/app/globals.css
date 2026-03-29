@@ -2,11 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-@import url('https://api.fontshare.com/v2/css?f[]=clash-display@200,300,400,500,600,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
 
 @layer base {
   :root {
+    /* Core brand */
+    --o: #C8521A;
+    --ink: #1A1C1B;
+    --surface: #F5F4F0;
+    --border: #E2E1DC;
+
+    /* Keeping existing for backward compat */
     --navy: #1A2B4A;
     --navy-light: #2A3D5F;
     --navy-dark: #0F1A2E;
@@ -17,23 +23,30 @@
     --teal-light: #4DD4D4;
     --teal-dark: #1A8F8F;
     --cloud: #F7FAFC;
+
+    /* Hero dark */
+    --hero-bg: #0F1110;
+
+    /* White convenience */
+    --w: #ffffff;
   }
 
   html {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
+  .font-display,
   h1, h2, h3 {
-    font-family: 'Clash Display', 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Syne', sans-serif;
   }
 }
 
 @layer components {
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 hover:scale-[1.02];
-    background-color: var(--orange);
+    background-color: var(--o);
   }
 
   .btn-outline-navy {
@@ -50,4 +63,31 @@
     @apply inline-block text-[13px] font-semibold uppercase tracking-[0.1em];
     color: var(--teal);
   }
+}
+
+/* Hero gradient text on accent words */
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(135deg, #E8733D 0%, #C8521A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Progress bar fill animation */
+@keyframes barFill {
+  from { width: 0 }
+  to   { width: var(--target-width) }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .proj-bar {
+    animation: barFill 0.8s 0.8s ease both;
+  }
+}
+
+/* Live pulse indicator */
+@keyframes pulse {
+  0%, 100% { opacity: 0.7 }
+  50%       { opacity: 1 }
 }
