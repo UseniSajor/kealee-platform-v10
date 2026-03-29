@@ -30,9 +30,9 @@ export type NavItem = NavLink | (NavDropdown & { type: 'dropdown' })
 // ── Primary navigation items ──────────────────────────────────────────────────
 
 export const PRIMARY_NAV: NavItem[] = [
-  // 1 — AI Concept Engine
+  // 1 — Start your design (AI Concept Engine)
   {
-    label: 'AI Concept Engine',
+    label: 'Start your design',
     type:  'dropdown',
     href:  '/concept',
     groups: [
@@ -41,7 +41,7 @@ export const PRIMARY_NAV: NavItem[] = [
         links: [
           {
             label:       'Exterior Design',
-            href:        '/concept-engine/homeowner',
+            href:        '/concept-engine/exterior',
             description: 'Facade, curb appeal, landscaping, hardscaping, outdoor living',
           },
           {
@@ -62,7 +62,7 @@ export const PRIMARY_NAV: NavItem[] = [
           },
           {
             label:       'Developer Concept',
-            href:        '/concept-engine/developer',
+            href:        '/intake/developer_concept',
             description: 'Multifamily, mixed-use, and new development project concepts',
           },
         ],
@@ -78,96 +78,11 @@ export const PRIMARY_NAV: NavItem[] = [
   // 2 — Get Permits
   { label: 'Get Permits', href: '/permits' },
 
-  // 3 — For Contractors
-  {
-    label: 'For Contractors',
-    type:  'dropdown',
-    href:  '/contractors',
-    groups: [
-      {
-        title: 'Join & Win Work',
-        links: [
-          {
-            label:       'Join as GC / Contractor',
-            href:        '/contractor/register',
-            description: 'Get verified and start winning AI-matched project bids',
-            badge:       'Apply',
-          },
-          {
-            label:       'Browse Open Projects',
-            href:        '/marketplace',
-            description: 'Find projects matched to your trade, license, and area',
-          },
-          {
-            label:       'AI Bid Assistant',
-            href:        '/contractors#keabot',
-            description: 'KeaBot GC helps you prepare competitive bids from plans and specs',
-            badge:       'AI',
-          },
-        ],
-      },
-      {
-        title: 'Run Your Business',
-        links: [
-          {
-            label:       'Construction OS',
-            href:        '/contractors#os',
-            description: 'Schedules, RFIs, punch lists, daily logs, and milestone payments',
-          },
-          {
-            label:       'Milestone Payments',
-            href:        '/contractors#payments',
-            description: 'Escrow-backed payments released at each verified milestone',
-          },
-        ],
-      },
-    ],
-    featured: {
-      label:       'Apply to Join',
-      href:        '/contractor/register',
-      description: 'Licensed & insured contractors — verified in 48 hours',
-    },
-  },
+  // 3 — For Contractors (direct link to landing page)
+  { label: 'For Contractors', href: '/contractors' },
 
-  // 4 — For Developers
-  {
-    label: 'For Developers',
-    type:  'dropdown',
-    href:  '/developers',
-    groups: [
-      {
-        title: 'Development Tools',
-        links: [
-          {
-            label:       'Land Intelligence',
-            href:        '/developers#land',
-            description: 'Parcel analysis, zoning, and AI-powered due diligence',
-          },
-          {
-            label:       'Feasibility Studies',
-            href:        '/developers#feasibility',
-            description: 'AI-assisted pro forma modeling and go/no-go analysis',
-          },
-          {
-            label:       'Digital Twin Platform',
-            href:        '/developers#ddts',
-            description: 'Live digital model of every project in your portfolio',
-          },
-          {
-            label:       'Developer Concept',
-            href:        '/concept-engine/developer',
-            description: 'AI concept packages for new development projects',
-            badge:       'AI',
-          },
-        ],
-      },
-    ],
-    featured: {
-      label:       'Start a Feasibility',
-      href:        '/developers',
-      description: 'Land · Feasibility · Capital · Portfolio — one AI-powered platform',
-    },
-  },
+  // 4 — For Developers (direct link to landing page)
+  { label: 'For Developers', href: '/developers' },
 
   // 5 — Pricing
   { label: 'Pricing', href: '/pricing' },
@@ -188,7 +103,7 @@ export const NAV_LOGIN_OPTIONS = [
 
 export const FOOTER_NAV = {
   platform: [
-    { label: 'AI Concept Engine',          href: '/concept' },
+    { label: 'Start Your Design',          href: '/concept' },
     { label: 'Get Permits',                href: '/permits' },
     { label: 'Contractor Marketplace',     href: '/marketplace' },
     { label: 'Construction OS',            href: '/contractors' },

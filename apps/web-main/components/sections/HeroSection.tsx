@@ -344,29 +344,112 @@ function DashboardPanel() {
 
 // ── Main Hero ─────────────────────────────────────────────────────────────────
 
+interface Suggestion { path: string; label: string }
+
 export function HeroSection() {
   const router = useRouter()
-  const [query,       setQuery]       = useState('')
-  const [area,        setArea]        = useState('All DMV areas')
-  const [areaOpen,    setAreaOpen]    = useState(false)
-  const [searchFocus, setSearchFocus] = useState(false)
-  const areaRef = useRef<HTMLDivElement>(null)
 
-  // Close area dropdown on outside click
+  // Search state
+  const [query,        setQuery]        = useState('')
+  const [area,         setArea]         = useState('All DMV areas')
+  const [areaOpen,     setAreaOpen]     = useState(false)
+  const [searchFocus,  setSearchFocus]  = useState(false)
+  const [loading,      setLoading]      = useState(false)
+  const [suggestions,  setSuggestions]  = useState<Suggestion[]>([])
+  const [suggestOpen,  setSuggestOpen]  = useState(false)
+  const [activeIdx,    setActiveIdx]    = useState(-1)
+
+  const areaRef    = useRef<HTMLDivElement>(null)
+  const wrapRef    = useRef<HTMLDivElement>(null)
+  const debounceId = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Close dropdowns on outside click
   useEffect(() => {
     function onOutside(e: MouseEvent) {
       if (areaRef.current && !areaRef.current.contains(e.target as Node)) setAreaOpen(false)
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setSuggestOpen(false)
     }
     document.addEventListener('mousedown', onOutside)
     return () => document.removeEventListener('mousedown', onOutside)
   }, [])
 
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault()
-    const params = new URLSearchParams()
-    if (query.trim()) params.set('q', query.trim())
+  // Fetch autocomplete suggestions as user types
+  function onQueryChange(val: string) {
+    setQuery(val)
+    setActiveIdx(-1)
+    if (debounceId.current) clearTimeout(debounceId.current)
+
+    if (!val.trim()) {
+      // Show all project types when field is empty but focused
+      debounceId.current = setTimeout(async () => {
+        const res = await fetch('/api/search?q=')
+        if (res.ok) { const data = await res.json() as Suggestion[]; setSuggestions(data); setSuggestOpen(true) }
+      }, 80)
+      return
+    }
+
+    debounceId.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(val)}`)
+        if (res.ok) {
+          const data = await res.json() as Suggestion[]
+          setSuggestions(data)
+          setSuggestOpen(true)
+        }
+      } catch { /* ignore */ }
+    }, 200)
+  }
+
+  // Pick a suggestion — navigate directly to intake
+  function pickSuggestion(s: Suggestion) {
+    setSuggestOpen(false)
+    setQuery(s.label)
+    const params = new URLSearchParams({ q: s.label })
     if (area !== 'All DMV areas') params.set('area', area)
-    router.push(`/concept${params.toString() ? '?' + params.toString() : ''}`)
+    router.push(`/intake/${s.path}?${params.toString()}`)
+  }
+
+  // Keyboard navigation in suggestions
+  function onKeyDown(e: React.KeyboardEvent) {
+    if (!suggestOpen || !suggestions.length) return
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx(i => Math.min(i + 1, suggestions.length - 1)) }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); setActiveIdx(i => Math.max(i - 1, -1)) }
+    if (e.key === 'Enter' && activeIdx >= 0) { e.preventDefault(); pickSuggestion(suggestions[activeIdx]) }
+    if (e.key === 'Escape') { setSuggestOpen(false); setActiveIdx(-1) }
+  }
+
+  // Submit — call Claude to classify, then route
+  async function handleSearch(e: React.FormEvent) {
+    e.preventDefault()
+    setSuggestOpen(false)
+    const q = query.trim()
+    if (!q) { router.push('/concept'); return }
+
+    setLoading(true)
+    try {
+      const res = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ query: q }),
+      })
+      const params = new URLSearchParams({ q })
+      if (area !== 'All DMV areas') params.set('area', area)
+
+      if (res.ok) {
+        const { projectPath, directRoute } = await res.json() as { projectPath: string; directRoute: boolean }
+        if (directRoute && projectPath) {
+          router.push(`/intake/${projectPath}?${params.toString()}`)
+          return
+        }
+        // Low confidence — go to concept gate with pre-selected path hint
+        if (projectPath) params.set('path', projectPath)
+      }
+      router.push(`/concept?${params.toString()}`)
+    } catch {
+      router.push(`/concept?q=${encodeURIComponent(q)}`)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -444,7 +527,8 @@ export function HeroSection() {
             </p>
 
             {/* Search bar — white card, matches screenshot */}
-            <form onSubmit={handleSearch} className="mt-8">
+            <div className="relative mt-8" ref={wrapRef}>
+            <form onSubmit={handleSearch}>
               <div
                 className="search-bar-wrap flex items-stretch overflow-hidden"
                 style={{
@@ -460,13 +544,16 @@ export function HeroSection() {
               >
                 {/* Text input */}
                 <div className="flex flex-1 items-center gap-2.5 px-4">
-                  <Search className="h-4 w-4 flex-shrink-0" style={{ color: '#9CA3AF' }} />
+                  <Search className="h-4 w-4 flex-shrink-0" style={{ color: loading ? '#C8521A' : '#9CA3AF' }} />
                   <input
                     type="text"
                     value={query}
-                    onChange={e => setQuery(e.target.value)}
+                    onChange={e => onQueryChange(e.target.value)}
+                    onKeyDown={onKeyDown}
+                    onFocus={() => { setSuggestOpen(true); if (!suggestions.length) onQueryChange('') }}
                     placeholder="Kitchen remodel, ADU, tiny home, deck, landscape..."
                     className="flex-1 py-4 text-sm focus:outline-none"
+                    autoComplete="off"
                     style={{
                       background: 'transparent',
                       color: '#1A1C1B',
@@ -522,7 +609,8 @@ export function HeroSection() {
                 {/* Search button */}
                 <button
                   type="submit"
-                  className="flex flex-shrink-0 items-center gap-2 px-6 py-4 text-sm font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80"
+                  disabled={loading}
+                  className="flex flex-shrink-0 items-center gap-2 px-6 py-4 text-sm font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80 disabled:opacity-70"
                   style={{
                     background: '#C8521A',
                     fontFamily: 'Syne, sans-serif',
@@ -530,10 +618,37 @@ export function HeroSection() {
                     borderRadius: '0 12px 12px 0',
                   }}
                 >
-                  Search
+                  {loading ? 'Searching…' : 'Search'}
                 </button>
               </div>
             </form>
+
+            {/* Autocomplete suggestions dropdown */}
+            {suggestOpen && suggestions.length > 0 && (
+              <div
+                className="absolute left-0 right-0 z-30 mt-1 overflow-hidden rounded-xl bg-white"
+                style={{ boxShadow: '0 8px 32px rgba(0,0,0,.18)', border: '1px solid #E2E1DC' }}
+              >
+                {suggestions.map((s, i) => (
+                  <button
+                    key={s.path}
+                    type="button"
+                    onMouseDown={e => { e.preventDefault(); pickSuggestion(s) }}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors"
+                    style={{
+                      background: i === activeIdx ? '#FFF5F0' : 'transparent',
+                      borderBottom: i < suggestions.length - 1 ? '1px solid #F3F2EE' : 'none',
+                    }}
+                  >
+                    <Search className="h-3.5 w-3.5 flex-shrink-0" style={{ color: '#9CA3AF' }} />
+                    <span style={{ fontSize: 14, color: '#1A1C1B', fontFamily: 'DM Sans, sans-serif' }}>
+                      {s.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+            </div>{/* /relative wrapper */}
 
             {/* Quick-select pills — match screenshot style */}
             <div className="mt-4 flex flex-wrap items-center gap-2">
