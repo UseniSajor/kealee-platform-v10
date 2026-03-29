@@ -3,7 +3,21 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Search, ArrowRight } from 'lucide-react'
+import { Search, ArrowRight, ChevronDown } from 'lucide-react'
+
+const DMV_AREAS = [
+  'All DMV areas',
+  'Washington, DC',
+  'Montgomery County, MD',
+  'Prince George\'s County, MD',
+  'Fairfax County, VA',
+  'Arlington County, VA',
+  'Alexandria City, VA',
+  'Prince William County, VA',
+  'Frederick County, MD',
+  'Howard County, MD',
+  'Anne Arundel County, MD',
+]
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -332,12 +346,27 @@ function DashboardPanel() {
 
 export function HeroSection() {
   const router = useRouter()
-  const [query, setQuery] = useState('')
+  const [query,       setQuery]       = useState('')
+  const [area,        setArea]        = useState('All DMV areas')
+  const [areaOpen,    setAreaOpen]    = useState(false)
+  const [searchFocus, setSearchFocus] = useState(false)
+  const areaRef = useRef<HTMLDivElement>(null)
+
+  // Close area dropdown on outside click
+  useEffect(() => {
+    function onOutside(e: MouseEvent) {
+      if (areaRef.current && !areaRef.current.contains(e.target as Node)) setAreaOpen(false)
+    }
+    document.addEventListener('mousedown', onOutside)
+    return () => document.removeEventListener('mousedown', onOutside)
+  }, [])
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
-    if (query.trim()) router.push(`/concept?q=${encodeURIComponent(query.trim())}`)
-    else router.push('/concept')
+    const params = new URLSearchParams()
+    if (query.trim()) params.set('q', query.trim())
+    if (area !== 'All DMV areas') params.set('area', area)
+    router.push(`/concept${params.toString() ? '?' + params.toString() : ''}`)
   }
 
   return (
@@ -414,60 +443,125 @@ export function HeroSection() {
               {' '}for homeowners and developers — guided every step by AI assistants that know your project.
             </p>
 
-            {/* Search bar */}
+            {/* Search bar — white card, matches screenshot */}
             <form onSubmit={handleSearch} className="mt-8">
               <div
-                className="flex items-center overflow-hidden rounded-xl transition-all"
+                className="search-bar-wrap flex items-stretch overflow-hidden"
                 style={{
-                  background: 'rgba(255,255,255,.06)',
-                  border: '1px solid rgba(255,255,255,.12)',
-                  backdropFilter: 'blur(12px)',
+                  background: '#ffffff',
+                  borderRadius: 12,
+                  boxShadow: searchFocus
+                    ? '0 0 0 3px rgba(200,82,26,.25), 0 4px 24px rgba(0,0,0,.22)'
+                    : '0 4px 24px rgba(0,0,0,.22)',
+                  transition: 'box-shadow .18s',
                 }}
-                onFocus={() => {}}
+                onFocusCapture={() => setSearchFocus(true)}
+                onBlurCapture={() => setSearchFocus(false)}
               >
-                <Search className="ml-4 h-4 w-4 flex-shrink-0" style={{ color: 'rgba(255,255,255,.3)' }} />
-                <input
-                  type="text"
-                  value={query}
-                  onChange={e => setQuery(e.target.value)}
-                  placeholder="What are you building? Kitchen remodel, ADU, townhomes..."
-                  className="flex-1 bg-transparent px-3 py-3.5 text-sm focus:outline-none"
-                  style={{ color: '#ffffff' }}
-                />
-                <div className="mx-2 h-5 w-px" style={{ background: 'rgba(255,255,255,.1)' }} />
+                {/* Text input */}
+                <div className="flex flex-1 items-center gap-2.5 px-4">
+                  <Search className="h-4 w-4 flex-shrink-0" style={{ color: '#9CA3AF' }} />
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={e => setQuery(e.target.value)}
+                    placeholder="Kitchen remodel, ADU, tiny home, deck, landscape..."
+                    className="flex-1 py-4 text-sm focus:outline-none"
+                    style={{
+                      background: 'transparent',
+                      color: '#1A1C1B',
+                      fontFamily: 'DM Sans, sans-serif',
+                      fontSize: 14,
+                    }}
+                  />
+                </div>
+
+                {/* Vertical divider */}
+                <div className="my-3 w-px self-stretch" style={{ background: '#E2E1DC' }} />
+
+                {/* Location dropdown */}
+                <div className="relative flex-shrink-0" ref={areaRef}>
+                  <button
+                    type="button"
+                    onClick={() => setAreaOpen(s => !s)}
+                    className="flex h-full items-center gap-1.5 px-4 text-sm font-medium transition-colors hover:bg-gray-50"
+                    style={{ color: '#6B7280', fontFamily: 'DM Sans, sans-serif', minWidth: 148 }}
+                  >
+                    <span className="truncate">{area}</span>
+                    <ChevronDown
+                      className="h-3.5 w-3.5 flex-shrink-0 transition-transform"
+                      style={{ transform: areaOpen ? 'rotate(180deg)' : 'none', color: '#9CA3AF' }}
+                    />
+                  </button>
+
+                  {areaOpen && (
+                    <div
+                      className="absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-xl bg-white py-1"
+                      style={{ boxShadow: '0 8px 24px rgba(0,0,0,.14)', border: '1px solid #E2E1DC' }}
+                    >
+                      {DMV_AREAS.map(a => (
+                        <button
+                          key={a}
+                          type="button"
+                          onClick={() => { setArea(a); setAreaOpen(false) }}
+                          className="flex w-full items-center px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-50"
+                          style={{
+                            color: a === area ? '#C8521A' : '#374151',
+                            fontWeight: a === area ? 600 : 400,
+                            fontFamily: 'DM Sans, sans-serif',
+                          }}
+                        >
+                          {a === area && <span className="mr-2 text-[#C8521A]">✓</span>}
+                          {a}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Search button */}
                 <button
                   type="submit"
-                  className="m-1.5 flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-white transition-all hover:opacity-90"
-                  style={{ background: '#C8521A' }}
+                  className="flex flex-shrink-0 items-center gap-2 px-6 py-4 text-sm font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80"
+                  style={{
+                    background: '#C8521A',
+                    fontFamily: 'Syne, sans-serif',
+                    letterSpacing: '0.01em',
+                    borderRadius: '0 12px 12px 0',
+                  }}
                 >
-                  Search <ArrowRight className="h-3.5 w-3.5" />
+                  Search
                 </button>
               </div>
             </form>
 
-            {/* Quick-select pills */}
-            <div className="mt-4 flex flex-wrap gap-2">
+            {/* Quick-select pills — match screenshot style */}
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,.3)', marginRight: 2 }}>Try:</span>
               {PILLS.map(p => (
                 <button
                   key={p}
+                  type="button"
                   onClick={() => router.push(`/concept?q=${encodeURIComponent(p)}`)}
-                  className="rounded-full px-3 py-1 text-xs transition-all hover:scale-[1.03]"
+                  className="rounded-full px-3 py-1.5 text-xs font-medium transition-all hover:-translate-y-px"
                   style={{
-                    border: '1px solid rgba(255,255,255,.1)',
-                    color: 'rgba(255,255,255,.4)',
-                    background: 'transparent',
+                    background: 'rgba(255,255,255,.09)',
+                    color: 'rgba(255,255,255,.6)',
+                    border: '1px solid rgba(255,255,255,.12)',
+                    fontFamily: 'DM Sans, sans-serif',
+                    letterSpacing: '0.01em',
                   }}
                   onMouseEnter={e => {
                     const el = e.currentTarget
-                    el.style.background = 'rgba(200,82,26,.15)'
-                    el.style.color = 'rgba(232,115,61,.9)'
-                    el.style.borderColor = 'rgba(200,82,26,.3)'
+                    el.style.background = 'rgba(200,82,26,.18)'
+                    el.style.color = '#E8733D'
+                    el.style.borderColor = 'rgba(200,82,26,.35)'
                   }}
                   onMouseLeave={e => {
                     const el = e.currentTarget
-                    el.style.background = 'transparent'
-                    el.style.color = 'rgba(255,255,255,.4)'
-                    el.style.borderColor = 'rgba(255,255,255,.1)'
+                    el.style.background = 'rgba(255,255,255,.09)'
+                    el.style.color = 'rgba(255,255,255,.6)'
+                    el.style.borderColor = 'rgba(255,255,255,.12)'
                   }}
                 >
                   {p}
