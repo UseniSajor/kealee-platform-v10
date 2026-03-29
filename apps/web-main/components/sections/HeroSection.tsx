@@ -12,6 +12,7 @@ interface Suggestion {
 const PILLS = [
   'Kitchen remodel', 'Home addition', 'ADU', 'Tiny home',
   'Whole home reno', 'New build', 'Exterior upgrade', 'Landscape', 'Garden', 'Permit filing',
+  'Historic renovation', 'Water mitigation / drainage',
 ]
 
 const AREAS = [
@@ -118,6 +119,7 @@ export default function HeroSection() {
       </div>
 
       <div className="hi-wrap">
+        <div className="hi-top">
         <div className="search-wrap">
           <h1 className="sh1">What are you<br />building<em>?</em></h1>
           <p className="sh2">Upload photos. Get a floor plan in 24 hours. We file your permit. You hire from verified contractors. Every payment is held in escrow.</p>
@@ -171,6 +173,11 @@ export default function HeroSection() {
               </button>
             ))}
           </div>
+        </div>
+        <div className="hi-photo">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=70&auto=format&fit=crop" alt="Construction project" />
+        </div>
         </div>
 
         {/* Role cards */}

@@ -18,20 +18,20 @@ export default function CoreServicesSection() {
             <div className="scimg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=700&q=60&auto=format&fit=crop" alt="AI Concept" />
-              <button className="scvp" onClick={() => openModal({ tag: 'AI concept engine', title: 'AI Concept + Validation — how it works', description: 'You upload photos of your space or lot. Our AI generates a concept floor plan, a design brief, and a room-by-room scope. A staff member checks zoning, structural risk, permit complexity, and cost band. The full report lands in your inbox within 24 hours.', thumbUrl: 'https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=900&q=60&auto=format&fit=crop' })}>
+              <button className="scvp" onClick={() => openModal({ tag: 'AI design engine', title: 'AI Design + Validation — how it works', description: 'You upload photos of your space or lot. Our AI generates a concept floor plan, a design brief, and a room-by-room scope. A staff member checks zoning, structural risk, permit complexity, and cost band. The full report lands in your inbox within 24 hours.', thumbUrl: 'https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=900&q=60&auto=format&fit=crop' })}>
                 <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="white" /></svg>
               </button>
             </div>
             <div className="scb">
-              <div className="sctag">AI concept engine</div>
+              <div className="sctag">AI design engine</div>
               <h3>Upload photos.<br />Get a floor plan in 24 hours.</h3>
               <div className="exec">You send photos. We send back a concept layout, zoning check, structural risk flag, cost band, and permit scope. Staff-reviewed before delivery.</div>
               <div className="tl">
-                <div className="tr pop"><span className="trn b">Concept + Validation <span className="pp">Start here</span></span><span className="trp">$395</span></div>
+                <div className="tr pop"><span className="trn b">Design + Validation <span className="pp">Start here</span></span><span className="trp">$395</span></div>
                 <div className="tr"><span className="trn">Advanced AI Concept — 3 options</span><span className="trp">$495</span></div>
                 <div className="tr"><span className="trn">Full Design Package</span><span className="trp">starting at $4,499</span></div>
               </div>
-              <Link href="/concept" className="scta">Start your concept</Link>
+              <Link href="/concept" className="scta">Start your design</Link>
             </div>
           </div>
 
@@ -63,8 +63,8 @@ export default function CoreServicesSection() {
           <div className="sc">
             <div className="scimg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=700&q=60&auto=format&fit=crop" alt="Build" />
-              <button className="scvp" onClick={() => openModal({ tag: 'Build your project', title: 'Build your project — what the platform tracks', description: 'Every milestone, document, pay application, and site photo lives in your project dashboard. You approve each milestone before any payment releases. Your contractor cannot receive funds without your sign-off.', thumbUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=900&q=60&auto=format&fit=crop' })}>
+              <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=700&q=60&auto=format&fit=crop" alt="Build" />
+              <button className="scvp" onClick={() => openModal({ tag: 'Build your project', title: 'Build your project — what the platform tracks', description: 'Every milestone, document, pay application, and site photo lives in your project dashboard. You approve each milestone before any payment releases. Your contractor cannot receive funds without your sign-off.', thumbUrl: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=900&q=60&auto=format&fit=crop' })}>
                 <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="white" /></svg>
               </button>
             </div>

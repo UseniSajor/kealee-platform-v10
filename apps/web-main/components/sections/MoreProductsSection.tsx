@@ -41,10 +41,10 @@ export default function MoreProductsSection() {
               <span className="fbg bgo">AI design ready</span>
             </div>
             <div className="fcb">
-              <div className="fclbl">AI concept engine</div>
+              <div className="fclbl">AI design engine</div>
               <h4>Basement finish concept</h4>
               <p>Floor plan options, egress check, structural flag, and permit scope. Staff reviewed in 24 hours.</p>
-              <div className="fcp">$395 <small>one-time</small></div>
+              <div className="fcp">Starting at $395 <small>one-time</small></div>
             </div>
           </Link>
           <Link href="/concept?q=Certified+estimate" className="fc">

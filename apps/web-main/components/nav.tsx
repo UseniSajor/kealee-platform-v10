@@ -63,11 +63,11 @@ export function SiteNav() {
         <li><Link href="/concept" className="hi">Start AI design</Link></li>
         <li><Link href="/permits" className="hi">Get permits</Link></li>
         <li><Link href="/#milestone-pay" className="hi">Milestone Pay</Link></li>
-        {!isHome && <li><Link href="/marketplace" className="tab">Marketplace</Link></li>}
-        <li><Link href="/#how-it-works" className="tab">How it works</Link></li>
-        <li><Link href="/#concept" className="tab">Services</Link></li>
-        <li><Link href="/contractors" className="tab">Contractors</Link></li>
-        <li><Link href="/developers" className="tab">Developers</Link></li>
+        <li><Link href="/marketplace" className="tab">Marketplace</Link></li>
+        <li><Link href="/features" className="tab">How it works</Link></li>
+        <li><Link href="/concept" className="tab">Services</Link></li>
+        <li><Link href="/contractors" className="gr">Contractors</Link></li>
+        <li><Link href="/developers" className="gr">Developers</Link></li>
         <li><Link href="/#faq" className="tab">FAQ</Link></li>
       </ul>
 

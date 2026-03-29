@@ -7,17 +7,17 @@ export default function FeaturedProductsSection() {
       <h2 className="h2">What homeowners are ordering now</h2>
       <p className="sub">Per-service pricing. No subscription required.</p>
       <div className="fg">
-        <Link href="/concept" className="fc">
+        <Link href="/products/ai-design" className="fc">
           <div className="fci">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=700&q=60&auto=format&fit=crop" alt="Concept" />
             <span className="fbg bgo">Start here</span>
           </div>
           <div className="fcb">
-            <div className="fclbl">AI concept engine</div>
+            <div className="fclbl">AI design engine</div>
             <h4>Concept + Validation Report</h4>
             <p>Floor plan, zoning check, cost band, and permit risk. Staff reviewed. Delivered in 24 hours.</p>
-            <div className="fcp">$395 <small>one-time</small></div>
+            <div className="fcp">Starting at $395 <small>one-time</small></div>
           </div>
         </Link>
         <Link href="/permits" className="fc">
@@ -33,7 +33,7 @@ export default function FeaturedProductsSection() {
             <div className="fcp">$950 <small>one-time</small></div>
           </div>
         </Link>
-        <Link href="/concept" className="fc">
+        <Link href="/products/cost-estimate" className="fc">
           <div className="fci">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=700&q=60&auto=format&fit=crop" alt="Estimate" />
@@ -46,7 +46,7 @@ export default function FeaturedProductsSection() {
             <div className="fcp">$595 <small>one-time</small></div>
           </div>
         </Link>
-        <Link href="/concept" className="fc">
+        <Link href="/products/adu-bundle" className="fc">
           <div className="fci">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=700&q=60&auto=format&fit=crop" alt="ADU bundle" />
@@ -72,10 +72,10 @@ export default function FeaturedProductsSection() {
             <div className="fcp">per service <small>custom quote</small></div>
           </div>
         </Link>
-        <Link href="/developers" className="fc">
+        <Link href="/products/pm-advisory" className="fc">
           <div className="fci">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=700&q=60&auto=format&fit=crop" alt="PM Advisory" />
+            <img src="https://images.unsplash.com/photo-1581092921461-eab62e97a780?w=700&q=60&auto=format&fit=crop" alt="PM Advisory" />
             <span className="fbg bgs">One-time fee</span>
           </div>
           <div className="fcb">

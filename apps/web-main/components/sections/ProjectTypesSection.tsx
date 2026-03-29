@@ -96,6 +96,26 @@ export default function ProjectTypesSection() {
           <span className="ptpr">per service</span>
           <div className="ptb"><div className="ptpre">Design + install</div><h3>Garden design &amp; install</h3><p>Beds · Hardscape · Irrigation</p></div>
         </Link>
+        {/* Historic Renovation */}
+        <Link href="/products/historic-renovation" className="ptc">
+          <div className="pti">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://images.unsplash.com/photo-1572120360610-d971b9d7767c?w=600&q=60&auto=format&fit=crop" alt="Historic renovation" />
+          </div>
+          <div className="pto" />
+          <span className="ptpr">Starting at $395</span>
+          <div className="ptb"><div className="ptpre">Preservation experts</div><h3>Historic renovation</h3><p>Preservation review · Permits · Contractors</p></div>
+        </Link>
+        {/* Water Mitigation */}
+        <Link href="/products/water-mitigation" className="ptc">
+          <div className="pti">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://images.unsplash.com/photo-1558478551-1a378f63328e?w=600&q=60&auto=format&fit=crop" alt="Water mitigation" />
+          </div>
+          <div className="pto" />
+          <span className="ptpr">Starting at $395</span>
+          <div className="ptb"><div className="ptpre">Drainage specialists</div><h3>Water mitigation &amp; drainage</h3><p>Grading · French drain · Waterproofing</p></div>
+        </Link>
         {/* Other */}
         <Link href="/intake?type=other" className="ptc" style={{ background: 'var(--smoke2)', border: '2px dashed var(--b2)' }}>
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, textAlign: 'center', gap: 10 }}>
