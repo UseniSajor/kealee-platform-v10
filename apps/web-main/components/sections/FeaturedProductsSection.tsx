@@ -1,103 +1,91 @@
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
 
-const PRODUCTS = [
-  {
-    icon: '🧠',
-    name: 'AI Concept Package',
-    price: '$395–$585',
-    desc: 'AI-generated design concepts, cost band, permit checklist — delivered in days.',
-    cta: 'Start a project',
-    href: '/concept',
-    accent: '#C8521A',
-  },
-  {
-    icon: '📋',
-    name: 'Permit Path Only',
-    price: '$149',
-    desc: 'Have drawings already? Our AI reviews and files for you.',
-    cta: 'File permits',
-    href: '/permits',
-    accent: '#2ABFBF',
-  },
-  {
-    icon: '🏠',
-    name: 'Construction OS',
-    price: 'Free to start',
-    desc: 'Milestone payments, scheduling, RFIs, and lien waivers for project owners.',
-    cta: 'Start free',
-    href: '/auth/sign-in',
-    accent: '#3A7D52',
-  },
-  {
-    icon: '🤝',
-    name: 'Contractor Marketplace',
-    price: 'Free to browse',
-    desc: 'AI-vetted GCs, electricians, HVAC, and specialty trades.',
-    cta: 'Browse contractors',
-    href: '/marketplace',
-    accent: '#4A8FA8',
-  },
-  {
-    icon: '📊',
-    name: 'Developer Feasibility',
-    price: '$1,499+',
-    desc: 'AI-assisted pro forma, IRR modeling, and go/no-go analysis.',
-    cta: 'Get started',
-    href: '/developers',
-    accent: '#C8521A',
-  },
-  {
-    icon: '🔮',
-    name: 'Digital Twin Platform',
-    price: 'Enterprise',
-    desc: 'Live digital model of every project — tracking milestones, draws, and inspections.',
-    cta: 'Learn more',
-    href: '/developers',
-    accent: '#1A2B4A',
-  },
-]
-
-export function FeaturedProductsSection() {
+export default function FeaturedProductsSection() {
   return (
-    <section className="py-20" style={{ background: 'var(--surface, #F5F4F0)' }}>
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 text-center">
-          <span className="section-label">Products</span>
-          <h2 className="mt-3 text-3xl font-bold font-display sm:text-4xl" style={{ color: '#1A2B4A' }}>
-            Everything you need to build
-          </h2>
-          <p className="mt-4 max-w-xl mx-auto text-gray-500">
-            Six AI-powered products that work together from first concept to final payment.
-          </p>
-        </div>
-
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {PRODUCTS.map(p => (
-            <div
-              key={p.name}
-              className="flex flex-col rounded-2xl bg-white p-6 transition-shadow hover:shadow-md"
-              style={{ border: '1px solid var(--border, #E2E1DC)' }}
-            >
-              <div className="mb-4 flex items-start justify-between">
-                <span className="text-3xl">{p.icon}</span>
-                <span className="rounded-full px-2.5 py-1 text-xs font-bold" style={{ background: `${p.accent}18`, color: p.accent }}>
-                  {p.price}
-                </span>
-              </div>
-              <h3 className="text-base font-bold font-display" style={{ color: '#1A1C1B' }}>{p.name}</h3>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-gray-500">{p.desc}</p>
-              <Link
-                href={p.href}
-                className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold transition-all hover:gap-2.5"
-                style={{ color: p.accent }}
-              >
-                {p.cta} <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          ))}
-        </div>
+    <div className="sec" id="featured">
+      <div className="ey">Featured products</div>
+      <h2 className="h2">What homeowners are ordering now</h2>
+      <p className="sub">Per-service pricing. No subscription required.</p>
+      <div className="fg">
+        <Link href="/concept" className="fc">
+          <div className="fci">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=700&q=60&auto=format&fit=crop" alt="Concept" />
+            <span className="fbg bgo">Start here</span>
+          </div>
+          <div className="fcb">
+            <div className="fclbl">AI concept engine</div>
+            <h4>Concept + Validation Report</h4>
+            <p>Floor plan, zoning check, cost band, and permit risk. Staff reviewed. Delivered in 24 hours.</p>
+            <div className="fcp">$395 <small>one-time</small></div>
+          </div>
+        </Link>
+        <Link href="/permits" className="fc">
+          <div className="fci">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=700&q=60&auto=format&fit=crop" alt="Permit" />
+            <span className="fbg bgs">DC · MD · VA</span>
+          </div>
+          <div className="fcb">
+            <div className="fclbl">Permit services</div>
+            <h4>Permit Package</h4>
+            <p>Application, drawings, submission, and comment response. You do not call the permit office.</p>
+            <div className="fcp">$950 <small>one-time</small></div>
+          </div>
+        </Link>
+        <Link href="/concept" className="fc">
+          <div className="fci">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=700&q=60&auto=format&fit=crop" alt="Estimate" />
+            <span className="fbg bgs">RSMeans data</span>
+          </div>
+          <div className="fcb">
+            <div className="fclbl">Cost estimation</div>
+            <h4>Detailed Cost Estimate</h4>
+            <p>Human-reviewed, RSMeans-validated, trade-by-trade breakdown. Lender-ready PDF.</p>
+            <div className="fcp">$595 <small>one-time</small></div>
+          </div>
+        </Link>
+        <Link href="/concept" className="fc">
+          <div className="fci">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=700&q=60&auto=format&fit=crop" alt="ADU bundle" />
+            <span className="fbg bgo">Bundle</span>
+          </div>
+          <div className="fcb">
+            <div className="fclbl">Project bundle</div>
+            <h4>ADU Concept + Permit Package</h4>
+            <p>Floor plan, zoning check, cost band, and full permit preparation — bundled for ADU projects.</p>
+            <div className="fcp">$1,345 <small>bundle</small></div>
+          </div>
+        </Link>
+        <Link href="/homeowners/garden-farming" className="fc">
+          <div className="fci">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=700&q=60&auto=format&fit=crop" alt="Landscape" />
+            <span className="fbg bgg">Design + Install</span>
+          </div>
+          <div className="fcb">
+            <div className="fclbl">Outdoor services</div>
+            <h4>Landscape Design &amp; Install</h4>
+            <p>Beds, hardscape, drainage, and planting — designed and installed by verified landscape contractors.</p>
+            <div className="fcp">per service <small>custom quote</small></div>
+          </div>
+        </Link>
+        <Link href="/developers" className="fc">
+          <div className="fci">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=700&q=60&auto=format&fit=crop" alt="PM Advisory" />
+            <span className="fbg bgs">One-time fee</span>
+          </div>
+          <div className="fcb">
+            <div className="fclbl">Build your project</div>
+            <h4>PM Advisory</h4>
+            <p>Monthly site inspection, photo report, milestone sign-off, and issue log for your active build.</p>
+            <div className="fcp">$950 <small>per project</small></div>
+          </div>
+        </Link>
       </div>
-    </section>
+    </div>
   )
 }

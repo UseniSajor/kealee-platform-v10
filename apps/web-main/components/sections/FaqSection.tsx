@@ -1,72 +1,64 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
 
-const FAQ_ITEMS = [
+const FAQS = [
   {
-    q: 'What is Kealee?',
-    a: 'Kealee is an AI-powered construction platform that connects homeowners, contractors, and real estate developers with the tools they need to plan, permit, and build. We handle AI concept design, building permit filing, contractor matching, and milestone-protected payments — all in one place.',
+    q: 'What is in the $395 report?',
+    a: 'AI floor plan sketch, design brief, room-by-room scope notes, zoning check, structural risk rating, cost band (low–high), permit risk rating, and contractor scope outline. Staff-reviewed before delivery. In your inbox within 24 hours of photo upload.',
   },
   {
-    q: 'How does the AI Concept Engine work?',
-    a: 'You describe your project in plain language — or use our search bar. Our AI analyzes your input, identifies the project type and scope, and generates design concepts, a cost band, permit risk score, and a jurisdiction-specific checklist. Concept packages are delivered within 2–5 business days.',
+    q: 'Do I need a permit for my project?',
+    a: 'Most construction in DC, Maryland, and Virginia requires a permit — remodels that touch plumbing or electrical, additions, ADUs, finished basements, decks over a certain size. Simple cosmetic work typically does not. The free Permit Guidance Checklist tells you exactly what your project requires in your county.',
   },
   {
-    q: 'How do permit services work?',
-    a: 'After receiving your AI concept or uploading existing drawings, our AI reviews your package against jurisdiction requirements before submission. We file on your behalf and manage responses from plan reviewers. Our first-cycle approval rate is 98% across DC, MD, and VA.',
+    q: 'How long does a permit take in the DMV?',
+    a: 'Fairfax County simple residential: 2–4 weeks. Montgomery County DPS residential: 4–8 weeks. DC Department of Buildings with plan review: 2–5 months. Commercial projects take longer across all jurisdictions. We include current average timelines for your specific jurisdiction in the $395 concept report.',
   },
   {
-    q: 'Is Kealee available outside DC/MD/VA?',
-    a: 'Our permit filing services currently focus on DC, Maryland, and Virginia jurisdictions. AI Concept Engine, contractor marketplace, and construction OS tools are available nationwide. We\'re expanding to additional permit markets throughout 2026.',
+    q: 'What if my project needs an architect?',
+    a: 'We score every project with a Design Complexity Score (DCS). Projects at DCS 41 or above, or with a budget of $65,000 or more, are routed to a licensed architect. Your $395 report still includes a reference sketch, cost band, and zoning notes. AI design alone cannot produce permit-ready drawings for complex projects — we are direct about this.',
   },
   {
-    q: 'How do contractor payments work?',
-    a: 'Payments are milestone-based and held in escrow. Before work begins on each phase, funds are deposited to escrow. When the contractor submits completion evidence (photos, lien waivers, inspection records), you review and approve. Funds release instantly upon your approval.',
+    q: 'What is free? What costs money?',
+    a: 'Always free: your homeowner or project owner dashboard, the AI estimate, the permit checklist, standard contractor assignment, and self-managed project tracking. The $395 concept report is where most projects start. Every other service — detailed estimate, permit filing, PM advisory — is per-service and optional.',
   },
   {
-    q: 'What is a Digital Twin?',
-    a: 'A Digital Twin is a live digital model of your project — updated in real time as milestones are completed, inspections are passed, payments are released, and change orders are processed. Available for developer portfolio projects and construction OS accounts.',
+    q: 'How does contractor verification work?',
+    a: 'State license check (DC, MD, or VA), general liability insurance verification, bond verification where required, identity verification, and credentials review. We turned down 40% of applicants in our last intake cycle. Verified status re-checked annually. Contractors removed immediately on failed re-verification.',
+  },
+  {
+    q: 'How does milestone escrow work?',
+    a: 'Your project funds are held in escrow from project start. They release to the contractor only after you approve a completed milestone. Each release collects a conditional lien waiver. Final 10% retainage releases after punch list sign-off and unconditional lien waiver receipt. Escrow is standard on all Kealee-coordinated projects at no extra cost.',
+  },
+  {
+    q: 'What areas do you cover?',
+    a: "Washington DC, Montgomery County MD, Prince George's County MD, Fairfax County VA, Arlington VA, Alexandria VA, Prince William County VA, Loudoun County VA, Howard County MD, and Anne Arundel County MD. Permit services and contractor matching available across all these jurisdictions.",
   },
 ]
 
-export function FaqSection() {
+export default function FaqSection() {
   const [open, setOpen] = useState<number | null>(null)
-
   return (
-    <section className="py-20 bg-white">
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 text-center">
-          <span className="section-label">FAQ</span>
-          <h2 className="mt-3 text-3xl font-bold font-display sm:text-4xl" style={{ color: '#1A2B4A' }}>
-            Common questions
-          </h2>
-        </div>
-
-        <div className="divide-y" style={{ borderTop: '1px solid var(--border, #E2E1DC)', borderBottom: '1px solid var(--border, #E2E1DC)' }}>
-          {FAQ_ITEMS.map((item, i) => (
-            <div key={i}>
-              <button
-                onClick={() => setOpen(open === i ? null : i)}
-                className="flex w-full items-center justify-between py-5 text-left transition-colors hover:text-[#C8521A]"
-              >
-                <span className="pr-4 text-base font-semibold" style={{ color: open === i ? '#C8521A' : '#1A1C1B' }}>
-                  {item.q}
-                </span>
-                <ChevronDown
-                  className="h-4 w-4 flex-shrink-0 transition-transform"
-                  style={{ color: open === i ? '#C8521A' : '#9CA3AF', transform: open === i ? 'rotate(180deg)' : 'none' }}
-                />
+    <div className="sec-s" id="faq">
+      <div className="sec-s-i">
+        <div className="ey">FAQ</div>
+        <h2 className="h2">Common questions</h2>
+        <p className="sub">
+          If it is not here, <a href="/contact" style={{ color: 'var(--o)' }}>contact us</a>.
+        </p>
+        <div className="faq-g">
+          {FAQS.map((item, i) => (
+            <div key={i} className={`fi${open === i ? ' open' : ''}`}>
+              <button className="fq" onClick={() => setOpen(open === i ? null : i)}>
+                {item.q}
+                <span className="fchev">▾</span>
               </button>
-              {open === i && (
-                <div className="pb-5">
-                  <p className="text-sm leading-relaxed text-gray-500">{item.a}</p>
-                </div>
-              )}
+              <div className="fa">{item.a}</div>
             </div>
           ))}
         </div>
       </div>
-    </section>
+    </div>
   )
 }

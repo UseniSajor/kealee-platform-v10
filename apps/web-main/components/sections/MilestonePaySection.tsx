@@ -1,66 +1,89 @@
 import Link from 'next/link'
 
-const STEPS = [
-  { label: 'Agree',              desc: 'Project scope and milestone schedule locked in digital contract' },
-  { label: 'Milestone Set',      desc: 'Funds deposited to escrow before work begins on each phase' },
-  { label: 'Work Complete',      desc: 'Contractor submits completion evidence — photos, lien waivers, inspection sign-off' },
-  { label: 'Funds Released',     desc: 'You approve, funds release instantly to contractor' },
-]
-
-export function MilestonePaySection() {
+export default function MilestonePaySection() {
   return (
-    <section className="py-24" style={{ background: '#1A2B4A' }}>
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-14 text-center">
-          <span
-            className="inline-block text-[13px] font-semibold uppercase tracking-[0.1em]"
-            style={{ color: '#2ABFBF' }}
-          >
-            Milestone Payments
-          </span>
-          <h2 className="mt-3 text-3xl font-bold font-display text-white sm:text-4xl">
-            Get Paid When the Work is Done —<br className="hidden sm:block" />
-            {' '}Not When You Hope It Is
-          </h2>
-          <p className="mt-4 max-w-xl mx-auto text-gray-400">
-            Every payment is held in escrow and only released when milestones are verified. No surprises for owners, no chasing invoices for contractors.
-          </p>
-        </div>
+    <div className="sec-s" id="milestone-pay">
+      <div className="sec-s-i">
+        <div className="ey">Milestone pay &amp; escrow</div>
+        <h2 className="h2">Your money does not move until you say so.</h2>
+        <p className="sub">Every project funded through Kealee uses milestone-based escrow. Payments release when you approve completed work — not before.</p>
 
-        {/* 4-step flow */}
-        <div className="relative">
-          {/* Connector line */}
-          <div
-            className="absolute left-1/2 top-7 hidden h-px w-[calc(100%-120px)] -translate-x-1/2 lg:block"
-            style={{ background: 'rgba(255,255,255,.12)' }}
-          />
-
-          <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
-            {STEPS.map((step, i) => (
-              <div key={step.label} className="relative flex flex-col items-center text-center">
-                {/* Step number */}
-                <div
-                  className="relative z-10 mb-4 flex h-14 w-14 items-center justify-center rounded-full text-sm font-bold text-white"
-                  style={{ background: '#2ABFBF', border: '3px solid #1A2B4A', boxShadow: '0 0 0 2px rgba(42,191,191,.3)' }}
-                >
-                  {i + 1}
-                </div>
-                <h3 className="text-sm font-semibold text-white">{step.label}</h3>
-                <p className="mt-2 text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,.4)' }}>{step.desc}</p>
+        <div className="mp-layout">
+          {/* Visual */}
+          <div className="mp-visual">
+            <div className="mp-title">How your money moves</div>
+            <div className="mp-step">
+              <div className="mp-ico ico-lock">🔒</div>
+              <div className="mp-step-body">
+                <h5>Project funded — funds deposited to escrow</h5>
+                <p>Your project budget is held in a secure escrow account. The contractor cannot access it.</p>
               </div>
-            ))}
+            </div>
+            <div className="mp-step">
+              <div className="mp-ico ico-check">✓</div>
+              <div className="mp-step-body">
+                <h5>Milestone 1 complete — you review and approve</h5>
+                <p>Contractor submits photos and pay application. You review and approve or flag an issue.</p>
+                <div className="rel">→ Funds release to contractor</div>
+              </div>
+            </div>
+            <div className="mp-step">
+              <div className="mp-ico ico-check">✓</div>
+              <div className="mp-step-body">
+                <h5>Milestone 2, 3... — same process every time</h5>
+                <p>Each milestone follows the same review cycle. Nothing moves without your sign-off.</p>
+                <div className="rel">→ Funds release to contractor</div>
+              </div>
+            </div>
+            <div className="mp-step">
+              <div className="mp-ico ico-done">✓✓</div>
+              <div className="mp-step-body">
+                <h5>Project complete — final payment + lien waiver</h5>
+                <p>Lien waiver collected automatically. Final 10% retainage released after punch list sign-off.</p>
+                <div className="rel">→ Project closed</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="mp-content">
+            <div className="mp-feat">
+              <div className="mp-ficon">🔒</div>
+              <div>
+                <h4>Escrow on every project</h4>
+                <p>Project funds are held in escrow from day one. No payment leaves until you approve a milestone. Standard on all Kealee-coordinated projects at no extra cost.</p>
+              </div>
+            </div>
+            <div className="mp-feat">
+              <div className="mp-ficon">📄</div>
+              <div>
+                <h4>Lien waivers collected automatically</h4>
+                <p>At each payment release, your contractor submits a conditional lien waiver. At final payment, an unconditional waiver is collected. Your property title stays clean.</p>
+              </div>
+            </div>
+            <div className="mp-feat">
+              <div className="mp-ficon">💰</div>
+              <div>
+                <h4>10% retainage until final sign-off</h4>
+                <p>Standard 10% holdback on the final payment. Released after punch list is complete and you confirm the work is done to spec.</p>
+              </div>
+            </div>
+            <div className="mp-feat">
+              <div className="mp-ficon">⚖️</div>
+              <div>
+                <h4>Custom contract available</h4>
+                <p>Platform terms cover standard projects. Add an attorney-reviewed custom contract with your specific scope, change order language, and dispute resolution for $999.</p>
+              </div>
+            </div>
+            <div className="mp-tiers">
+              <div className="tr"><span className="trn">Milestone pay &amp; escrow</span><span className="trp">Free with project</span></div>
+              <div className="tr"><span className="trn">Custom contract</span><span className="trp">$999</span></div>
+              <div className="tr"><span className="trn">Full legal package</span><span className="trp">$3,499</span></div>
+            </div>
+            <Link href="/developers#payments" className="scta" style={{ marginTop: 4 }}>Learn about payment protection</Link>
           </div>
         </div>
-
-        <div className="mt-14 text-center">
-          <Link
-            href="/features#payments"
-            className="inline-flex items-center gap-2 rounded-xl border-2 border-white/20 px-7 py-3.5 text-sm font-semibold text-white transition-all hover:border-white/40 hover:bg-white/5"
-          >
-            How It Works →
-          </Link>
-        </div>
       </div>
-    </section>
+    </div>
   )
 }

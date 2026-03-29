@@ -1,46 +1,40 @@
 import Link from 'next/link'
-import { ArrowRight, MessageCircle } from 'lucide-react'
 
-export function CtaSection() {
+export default function CtaSection() {
   return (
-    <section className="py-24" style={{ background: '#1A2B4A' }}>
-      <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-        {/* Badge */}
-        <div
-          className="mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-widest"
-          style={{ background: 'rgba(42,191,191,.12)', color: '#2ABFBF' }}
-        >
-          Ready to build?
+    <div className="cta">
+      <div className="ctai">
+        <div>
+          <h2>Start with a $395 concept report.</h2>
+          <p>Upload photos. Floor plan, zoning check, cost band, and permit scope — delivered the next day. No architect fee upfront. No commitment beyond the report.</p>
         </div>
-
-        <h2 className="text-3xl font-bold font-display text-white sm:text-5xl">
-          Ready to build smarter?
-        </h2>
-        <p className="mt-5 text-lg leading-relaxed text-gray-400">
-          Start with a free AI concept, get permits filed in days, and manage your entire build on one platform.
-        </p>
-
-        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link
-            href="/concept"
-            className="inline-flex items-center gap-2 rounded-xl px-7 py-4 text-sm font-semibold text-white transition-all hover:opacity-90 hover:scale-[1.02]"
-            style={{ background: '#C8521A' }}
-          >
-            Start Your Project <ArrowRight className="h-4 w-4" />
+        <div className="ccards">
+          <Link href="/concept" className="cc">
+            <div>
+              <h4>Get your concept report</h4>
+              <p>Photos in → floor plan + validation out · 24 hours</p>
+            </div>
+            <span className="ccarr">→</span>
           </Link>
-          <Link
-            href="/contact"
-            className="inline-flex items-center gap-2 rounded-xl border-2 border-white/20 px-7 py-4 text-sm font-semibold text-white transition-all hover:border-white/40 hover:bg-white/5"
-          >
-            <MessageCircle className="h-4 w-4" />
-            Talk to a Human
+          <Link href="/permits" className="cc">
+            <div>
+              <h4>Get a free permit checklist</h4>
+              <p>Know what your project requires in your county — free</p>
+            </div>
+            <span className="ccarr">→</span>
           </Link>
+          <a
+            href={process.env.NEXT_PUBLIC_CONTRACTOR_PORTAL_URL ?? '/auth/sign-in'}
+            className="cc"
+          >
+            <div>
+              <h4>Contractor portal</h4>
+              <p>Project leads, PM platform, and project operations services</p>
+            </div>
+            <span className="ccarr">→</span>
+          </a>
         </div>
-
-        <p className="mt-8 text-xs text-gray-500">
-          No credit card required to start. AI concept delivered in 2–5 business days.
-        </p>
       </div>
-    </section>
+    </div>
   )
 }

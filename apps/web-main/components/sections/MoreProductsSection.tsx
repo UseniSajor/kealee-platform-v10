@@ -1,74 +1,67 @@
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
 
-const MORE = [
-  {
-    icon: '🤖',
-    title: 'AI Bot Suite',
-    sub: '13 AI assistants',
-    desc: 'Dedicated AI for every role: KeaBot Owner, GC, Feasibility, Finance, Permits, and more — each trained on your project data.',
-    href: '/features',
-    accent: '#C8521A',
-  },
-  {
-    icon: '🔮',
-    title: 'Digital Twin Platform',
-    sub: 'Live project models',
-    desc: 'A real-time digital replica of every project — tracking milestones, draws, inspections, and lien waivers automatically.',
-    href: '/developers',
-    accent: '#2ABFBF',
-  },
-  {
-    icon: '🌍',
-    title: 'Land Intelligence',
-    sub: 'Parcel AI',
-    desc: 'Parcel scoring, zoning analysis, and development readiness reporting. Ask our AI if a parcel pencils before you make an offer.',
-    href: '/developers',
-    accent: '#3A7D52',
-  },
-  {
-    icon: '📈',
-    title: 'Investor Reporting',
-    sub: 'Auto-generated',
-    desc: 'Real-time investor reports generated directly from your digital twin data. Scheduled delivery, custom branding.',
-    href: '/developers',
-    accent: '#4A8FA8',
-  },
-]
-
-export function MoreProductsSection() {
+export default function MoreProductsSection() {
   return (
-    <section className="py-20" style={{ background: 'var(--surface, #F5F4F0)' }}>
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 text-center">
-          <span className="section-label">Platform Depth</span>
-          <h2 className="mt-3 text-3xl font-bold font-display sm:text-4xl" style={{ color: '#1A2B4A' }}>
-            More tools. More intelligence.
-          </h2>
-        </div>
-
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {MORE.map(p => (
-            <div
-              key={p.title}
-              className="rounded-2xl bg-white p-6 transition-shadow hover:shadow-md"
-              style={{ border: '1px solid var(--border, #E2E1DC)' }}
-            >
-              <div className="mb-4 text-3xl">{p.icon}</div>
-              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: p.accent }}>{p.sub}</p>
-              <h3 className="mt-1 text-base font-bold font-display" style={{ color: '#1A1C1B' }}>{p.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-gray-500">{p.desc}</p>
-              <Link
-                href={p.href}
-                className="mt-4 inline-flex items-center gap-1 text-xs font-semibold transition-all hover:gap-2"
-                style={{ color: p.accent }}
-              >
-                Learn more <ArrowRight className="h-3 w-3" />
-              </Link>
+    <div className="sec-s">
+      <div className="sec-s-i">
+        <div className="ey">More products</div>
+        <h2 className="h2">Per-service pricing on everything</h2>
+        <p className="sub">Order one service at a time. No subscription required for homeowners and project owners.</p>
+        <div className="fp2">
+          <Link href="/homeowners/garden-farming" className="fc">
+            <div className="fci">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=700&q=60&auto=format&fit=crop" alt="Garden" />
+              <span className="fbg bgg">Design + Install</span>
             </div>
-          ))}
+            <div className="fcb">
+              <div className="fclbl">Outdoor services</div>
+              <h4>Garden design &amp; install</h4>
+              <p>Beds, hardscape, irrigation, and planting by verified landscape contractors.</p>
+              <div className="fcp">per service <small>custom quote</small></div>
+            </div>
+          </Link>
+          <Link href="/concept-engine/exterior" className="fc">
+            <div className="fci">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=60&auto=format&fit=crop" alt="Exterior" />
+              <span className="fbg bgs">Permit included</span>
+            </div>
+            <div className="fcb">
+              <div className="fclbl">Exterior services</div>
+              <h4>Exterior renovation</h4>
+              <p>Deck, siding, roofing, windows — permit filing from $149 included in most exterior scopes.</p>
+              <div className="fcp">from $149 <small>permit filing</small></div>
+            </div>
+          </Link>
+          <Link href="/concept?q=Basement+finish" className="fc">
+            <div className="fci">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=700&q=60&auto=format&fit=crop" alt="Basement" />
+              <span className="fbg bgo">AI design ready</span>
+            </div>
+            <div className="fcb">
+              <div className="fclbl">AI concept engine</div>
+              <h4>Basement finish concept</h4>
+              <p>Floor plan options, egress check, structural flag, and permit scope. Staff reviewed in 24 hours.</p>
+              <div className="fcp">$395 <small>one-time</small></div>
+            </div>
+          </Link>
+          <Link href="/concept?q=Certified+estimate" className="fc">
+            <div className="fci">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=700&q=60&auto=format&fit=crop" alt="Certified estimate" />
+              <span className="fbg bgs">Lender ready</span>
+            </div>
+            <div className="fcb">
+              <div className="fclbl">Cost estimation</div>
+              <h4>Certified Cost Estimate</h4>
+              <p>Licensed estimator sign-off, RSMeans citations, investor-ready format. Accepted by most DMV lenders.</p>
+              <div className="fcp">$1,850 <small>one-time</small></div>
+            </div>
+          </Link>
         </div>
       </div>
-    </section>
+    </div>
   )
 }

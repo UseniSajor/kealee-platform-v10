@@ -1,72 +1,80 @@
+'use client'
+
 import Link from 'next/link'
-import { ArrowRight, Star, CheckCircle } from 'lucide-react'
+import { useVideoModal } from '@/context/video-modal-context'
 
-const MOCK_CONTRACTORS = [
-  { name: 'Marcus T.',        trade: 'General Contractor', area: 'Fairfax, VA',        rating: 4.9, jobs: 47 },
-  { name: 'Rivera HVAC',      trade: 'HVAC Specialist',    area: 'Montgomery, MD',     rating: 4.8, jobs: 31 },
-  { name: 'Blue Ridge Deck',  trade: 'Exterior & Decking', area: 'Northern Virginia',  rating: 4.7, jobs: 62 },
-]
-
-export function MarketplaceTeaserSection() {
+export default function MarketplaceTeaserSection() {
+  const { openModal } = useVideoModal()
   return (
-    <section id="marketplace" className="py-20 bg-white">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
-          <div>
-            <span className="section-label">Contractor Marketplace</span>
-            <h2 className="mt-3 text-3xl font-bold font-display sm:text-4xl" style={{ color: '#1A2B4A' }}>
-              Find the Right Pro for Your Project
-            </h2>
-            <p className="mt-4 max-w-lg text-gray-500">
-              Browse AI-vetted, background-checked contractors. Every profile shows verified licenses, real reviews, and work history.
-            </p>
+    <div className="mkt" id="marketplace">
+      <div className="mkti">
+        <div className="ey">Construction marketplace</div>
+        <h2 className="h2">Every trade. Every service. One platform.</h2>
+        <p className="sub">Licensed, insured, and background-checked. We turned down 40% of applicants. Matched by trade, county, and capacity.</p>
+
+        <div className="mkt-layout">
+          {/* GC — tall */}
+          <div className="mc tall" style={{ cursor: 'pointer' }} onClick={() => openModal({ tag: 'Most requested', title: 'General Contractor Marketplace', description: 'Every GC on Kealee is licensed in DC, MD, or VA — verified insurance and bonding on file. We match by trade, county, and current capacity. You review bids, select, and sign a contract through the platform.', thumbUrl: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=900&q=60&auto=format&fit=crop' })}>
+            <div className="mci">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=900&q=60&auto=format&fit=crop" alt="GC" />
+            </div>
+            <div className="mco" />
+            <div className="mcplay"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="white" /></svg></div>
+            <span className="mcc">150+ verified GCs</span>
+            <div className="mcb"><div className="mctag">Most requested</div><h4>General contractors</h4><p>Residential, commercial, mixed-use · All DMV counties</p></div>
           </div>
-          <Link
-            href="/marketplace"
-            className="inline-flex flex-shrink-0 items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            style={{ background: '#C8521A' }}
-          >
-            Browse All Contractors <ArrowRight className="h-4 w-4" />
-          </Link>
+          {/* Col 2 */}
+          <div className="mkt-col">
+            <div className="mc med">
+              <div className="mci">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=500&q=60&auto=format&fit=crop" alt="Trades" />
+              </div>
+              <div className="mco" /><span className="mcc">All MEP</span>
+              <div className="mcb"><div className="mctag">Licensed</div><h4>Specialty trades</h4><p>Electrical · Plumbing · HVAC · Structural</p></div>
+            </div>
+            <div className="mc med">
+              <div className="mci">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=500&q=60&auto=format&fit=crop" alt="Landscape" />
+              </div>
+              <div className="mco" />
+              <div className="mcb"><div className="mctag">Outdoor</div><h4>Landscape &amp; garden</h4><p>Design + install · Per service</p></div>
+            </div>
+          </div>
+          {/* Col 3 */}
+          <div className="mkt-col">
+            <div className="mc med">
+              <div className="mci">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&q=60&auto=format&fit=crop" alt="Estimation" />
+              </div>
+              <div className="mco" /><span className="mcc">Free AI estimate</span>
+              <div className="mcb"><div className="mctag">RSMeans validated</div><h4>Cost estimation</h4><p>Free AI · $595 detailed · $1,850 certified</p></div>
+            </div>
+            <div className="mc med">
+              <div className="mci">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=500&q=60&auto=format&fit=crop" alt="Support" />
+              </div>
+              <div className="mco" />
+              <div className="mcb"><div className="mctag">Per service</div><h4>Project support</h4><p>Inspections · Pay apps · Lien waivers</p></div>
+            </div>
+          </div>
         </div>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-3">
-          {MOCK_CONTRACTORS.map(c => (
-            <div
-              key={c.name}
-              className="rounded-2xl border border-gray-100 bg-white p-6 transition-shadow hover:shadow-md"
-            >
-              {/* Avatar placeholder */}
-              <div
-                className="mb-4 flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold text-white"
-                style={{ background: '#1A2B4A' }}
-              >
-                {c.name[0]}
-              </div>
+        <div className="mkt-row2">
+          <div className="mc sm"><div className="mci">{/* eslint-disable-next-line @next/next/no-img-element */}<img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=500&q=60&auto=format&fit=crop" alt="Garden" /></div><div className="mco" /><div className="mcb"><div className="mctag">Design + install</div><h4>Garden design &amp; install</h4><p>Beds · Hardscape · Irrigation</p></div></div>
+          <div className="mc sm"><div className="mci">{/* eslint-disable-next-line @next/next/no-img-element */}<img src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=60&auto=format&fit=crop" alt="Tiny home" /></div><div className="mco" /><div className="mcb"><div className="mctag">Concept + permits</div><h4>Tiny home builders</h4><p>Zoning · Design · Permits</p></div></div>
+          <div className="mc sm"><div className="mci">{/* eslint-disable-next-line @next/next/no-img-element */}<img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&q=60&auto=format&fit=crop" alt="Exterior" /></div><div className="mco" /><div className="mcb"><div className="mctag">Per service</div><h4>Exterior renovation</h4><p>Deck · Siding · Roofing · Fencing</p></div></div>
+          <div className="mc sm"><div className="mci">{/* eslint-disable-next-line @next/next/no-img-element */}<img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=500&q=60&auto=format&fit=crop" alt="Basement" /></div><div className="mco" /><div className="mcb"><div className="mctag">AI design ready</div><h4>Basement finish</h4><p>Concept · Egress check · Permits</p></div></div>
+        </div>
 
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-bold" style={{ color: '#1A1C1B' }}>{c.name}</p>
-                  <p className="text-sm text-gray-500">{c.trade}</p>
-                  <p className="text-xs text-gray-400">{c.area}</p>
-                </div>
-                <div className="flex items-center gap-1 rounded-full px-2.5 py-1" style={{ background: '#F5F4F0' }}>
-                  <Star className="h-3 w-3" style={{ color: '#C8521A' }} fill="#C8521A" />
-                  <span className="text-xs font-bold" style={{ color: '#1A1C1B' }}>{c.rating}</span>
-                </div>
-              </div>
-
-              <div className="mt-4 flex items-center justify-between">
-                <span className="text-xs text-gray-400">{c.jobs} jobs completed</span>
-                <div className="flex items-center gap-1 text-xs font-semibold" style={{ color: '#3A7D52' }}>
-                  <CheckCircle className="h-3 w-3" />
-                  Verified
-                </div>
-              </div>
-            </div>
-          ))}
+        <div style={{ textAlign: 'center' }}>
+          <Link href="/marketplace" className="btn bo blg">Browse full marketplace</Link>
         </div>
       </div>
-    </section>
+    </div>
   )
 }

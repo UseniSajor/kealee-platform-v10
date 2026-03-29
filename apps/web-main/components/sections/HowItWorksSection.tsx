@@ -1,82 +1,46 @@
-const STEPS = [
-  {
-    number: '01',
-    icon: '📝',
-    title: 'Describe your project',
-    desc: 'Use the search bar or answer a few quick questions. Our AI parses your intent and identifies the right project path in seconds.',
-  },
-  {
-    number: '02',
-    icon: '🧠',
-    title: 'AI generates your concept',
-    desc: 'Within days, you receive AI-generated design concepts, a cost band, permit risk score, and a jurisdiction-specific checklist.',
-  },
-  {
-    number: '03',
-    icon: '📋',
-    title: 'Kealee files your permits',
-    desc: 'Our AI reviews your package against local requirements before submission, dramatically reducing back-and-forth comment cycles.',
-  },
-  {
-    number: '04',
-    icon: '🤝',
-    title: 'Matched contractors bid',
-    desc: 'Verified contractors in your area receive your project. They bid through the platform — you compare, select, and sign digitally.',
-  },
-  {
-    number: '05',
-    icon: '🔒',
-    title: 'Build with protected payments',
-    desc: 'Funds are held in escrow and released only when each milestone is verified. Your AI project assistant tracks progress daily.',
-  },
-]
-
-export function HowItWorksSection() {
+export default function HowItWorksSection() {
   return (
-    <section className="py-20 bg-white">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-14 text-center">
-          <span className="section-label">How It Works</span>
-          <h2 className="mt-3 text-3xl font-bold font-display sm:text-4xl" style={{ color: '#1A2B4A' }}>
-            From idea to move-in, guided by AI
-          </h2>
-          <p className="mt-4 max-w-xl mx-auto text-gray-500">
-            Five steps with AI handling the complex parts — so you can focus on the outcome, not the paperwork.
-          </p>
+    <div className="sec" id="how-it-works">
+      <div className="ey">How it works</div>
+      <h2 className="h2">Five steps. You choose how many.</h2>
+      <p className="sub">Start with Step 1 for $395. Stop at any point. Add services when your project needs them.</p>
+      <div className="fw">
+        <div className="fwst acc">
+          <div className="fwn">1</div>
+          <h4>Upload photos</h4>
+          <p>Get a floor plan, zoning check, cost band, and permit scope the next day.</p>
+          <div className="fwpr">$395</div>
         </div>
-
-        <div className="space-y-0">
-          {STEPS.map((step, i) => (
-            <div
-              key={step.number}
-              className={`flex flex-col gap-6 py-10 lg:flex-row lg:items-start ${i % 2 === 1 ? 'lg:flex-row-reverse' : ''}`}
-              style={{ borderBottom: i < STEPS.length - 1 ? '1px solid #F0EFE8' : undefined }}
-            >
-              {/* Number + icon */}
-              <div className="flex flex-shrink-0 items-center gap-4 lg:w-48 lg:flex-col lg:items-center lg:text-center">
-                <div
-                  className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl text-2xl"
-                  style={{ background: 'var(--surface, #F5F4F0)' }}
-                >
-                  {step.icon}
-                </div>
-                <span
-                  className="text-5xl font-bold font-display leading-none"
-                  style={{ color: '#E2E1DC' }}
-                >
-                  {step.number}
-                </span>
-              </div>
-
-              {/* Content */}
-              <div className="flex-1">
-                <h3 className="text-xl font-bold font-display" style={{ color: '#1A2B4A' }}>{step.title}</h3>
-                <p className="mt-3 text-gray-500 leading-relaxed max-w-lg">{step.desc}</p>
-              </div>
-            </div>
-          ))}
+        <div className="fwst">
+          <div className="fwn">2</div>
+          <h4>Get your estimate</h4>
+          <p>Free AI estimate. Add human review and RSMeans validation for $595.</p>
+          <div className="fwpr">Free → $1,850</div>
+        </div>
+        <div className="fwst">
+          <div className="fwn">3</div>
+          <h4>We file your permit</h4>
+          <p>We fill out the forms, submit to the right agency, and track it to approval.</p>
+          <div className="fwpr">$149 → $5,500</div>
+        </div>
+        <div className="fwst">
+          <div className="fwn">4</div>
+          <h4>Pick a contractor</h4>
+          <p>Matched bids from verified contractors. Escrow and custom contract included.</p>
+          <div className="fwpr">Free → $2,499</div>
+        </div>
+        <div className="fwst">
+          <div className="fwn">5</div>
+          <h4>Build it</h4>
+          <p>Monthly site inspections. Milestone sign-off. Pay apps reviewed. Closeout documented.</p>
+          <div className="fwpr">Free → $2,950</div>
         </div>
       </div>
-    </section>
+      <div className="ftot">
+        <div className="ftpath">If you use all five paid services: $395 + $595 + $950 + $2,950</div>
+        <div className="ftnum">Fully managed total: <span>$4,890</span></div>
+        <div className="ftnote">Most homeowners and project owners use two or three services. The free tier handles the rest.</div>
+      </div>
+    </div>
   )
 }
