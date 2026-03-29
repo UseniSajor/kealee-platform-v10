@@ -78,7 +78,7 @@ const FAQS = [
   },
   {
     q: 'Does Kealee do the planting and installation onsite?',
-    a: 'No. All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, advisory, and contractor matching services only.',
+    a: 'No. All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.',
   },
   {
     q: 'What kinds of contractors do you match for garden projects?',
@@ -204,7 +204,7 @@ export default function GardenFarmingPage() {
             ))}
           </div>
           <p className="mt-6 text-center text-xs text-gray-400">
-            All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, advisory, and contractor matching services only.
+            All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.
           </p>
         </div>
       </section>

@@ -66,7 +66,7 @@ const FAQ = [
   },
   {
     q: 'Does this include installation?',
-    a: 'No. All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, advisory, and contractor matching services only.',
+    a: 'No. All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.',
   },
   {
     q: 'Can I get just a landscape design without the exterior concept?',

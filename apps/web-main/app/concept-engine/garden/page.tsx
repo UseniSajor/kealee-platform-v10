@@ -93,7 +93,7 @@ export default function GardenConceptEnginePage() {
                 </Link>
               </div>
               <p className="mt-4 text-xs text-gray-400">
-                All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, advisory, and contractor matching services only.
+                All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.
               </p>
             </div>
             <div className="lg:w-72 shrink-0">

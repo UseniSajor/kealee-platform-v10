@@ -91,7 +91,7 @@ const FAQ = [
   },
   {
     q: 'Does this include contractor services?',
-    a: 'No. The concept package is a design and planning service only. All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, advisory, and contractor matching services only.',
+    a: 'No. The concept package is a design and planning service only. All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.',
   },
   {
     q: 'What kinds of contractors do you match with?',
