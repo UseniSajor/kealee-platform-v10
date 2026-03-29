@@ -16,7 +16,7 @@ const SERVICES = [
     items: [
       { name: 'AI Garden Concept Package',  price: '$395',        note: '3 layout options · consultation included' },
       { name: 'Advanced Garden Design',     price: '$750',        note: 'Detailed plant lists + irrigation specs + 3D views' },
-      { name: 'Full Landscape Design',      price: '$2,500+',     note: 'Permit-ready landscape plans + contractor package' },
+      { name: 'Full Landscape Design',      price: '$2,500+',     note: 'Permit-ready landscape plans + contractor package · 2–3 weeks' },
     ],
   },
   {

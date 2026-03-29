@@ -17,6 +17,7 @@ const PATHS = [
     sub: 'Curb appeal, facade, landscaping, hardscaping',
     accent: '#E8793A',
     href: '/concept-engine/exterior',
+    comingSoon: false,
   },
   {
     key: 'garden_concept',
@@ -25,6 +26,7 @@ const PATHS = [
     sub: 'Raised beds, irrigation, backyard farming, greenhouse',
     accent: '#38A169',
     href: '/concept-engine/garden',
+    comingSoon: false,
   },
   {
     key: 'whole_home_concept',
@@ -33,6 +35,7 @@ const PATHS = [
     sub: 'Floor plan redesign, systems, every room',
     accent: '#2ABFBF',
     href: '/concept-engine/whole-home',
+    comingSoon: false,
   },
   {
     key: 'interior_reno_concept',
@@ -41,22 +44,16 @@ const PATHS = [
     sub: 'Kitchen, bath, ADU, additions, full interior',
     accent: '#7C3AED',
     href: '/concept-engine/interior-reno',
+    comingSoon: false,
   },
   {
-    key: 'permit_path_only',
-    icon: '📋',
-    label: 'Permit Only',
-    sub: 'Have drawings? We handle jurisdiction filing.',
-    accent: '#1A2B4A',
-    href: '/intake/permit_path_only',
-  },
-  {
-    key: 'developer_concept',
+    key: 'commercial_soon',
     icon: '🏗️',
-    label: 'Developer / Commercial',
+    label: 'Commercial / Developer',
     sub: 'Multifamily, mixed-use, new construction',
-    accent: '#C8521A',
-    href: '/intake/developer_concept',
+    accent: '#6B7280',
+    href: '/contact',
+    comingSoon: true,
   },
 ]
 
@@ -109,8 +106,56 @@ export default async function ConceptGatePage({ searchParams }: Props) {
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {PATHS.map(path => {
-              const isSuggested = suggestPath && path.key === suggestPath
-              return (
+              const isSuggested = !path.comingSoon && suggestPath && path.key === suggestPath
+              const cardContent = (
+                <>
+                  {isSuggested && (
+                    <span
+                      className="mb-3 self-start rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white"
+                      style={{ background: path.accent }}
+                    >
+                      Best match
+                    </span>
+                  )}
+                  {path.comingSoon && (
+                    <span className="mb-3 self-start rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                      Coming Soon
+                    </span>
+                  )}
+                  <div
+                    className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl text-2xl"
+                    style={{ background: `${path.accent}18` }}
+                  >
+                    {path.icon}
+                  </div>
+                  <h3 className="text-base font-bold font-display" style={{ color: path.comingSoon ? '#9CA3AF' : '#1A1C1B' }}>{path.label}</h3>
+                  <p className="mt-2 flex-1 text-sm leading-relaxed text-gray-400">{path.sub}</p>
+                  {!path.comingSoon && (
+                    <div
+                      className="mt-5 flex items-center gap-1.5 text-sm font-semibold transition-all group-hover:gap-2.5"
+                      style={{ color: path.accent }}
+                    >
+                      Start <ArrowRight className="h-3.5 w-3.5" />
+                    </div>
+                  )}
+                  {path.comingSoon && (
+                    <div className="mt-5 text-sm text-gray-400">
+                      Interested? <span className="underline">Get notified →</span>
+                    </div>
+                  )}
+                </>
+              )
+
+              return path.comingSoon ? (
+                <Link
+                  key={path.label}
+                  href={path.href}
+                  className="flex flex-col rounded-2xl bg-gray-50 p-7 opacity-70"
+                  style={{ border: '1px solid #E5E7EB' }}
+                >
+                  {cardContent}
+                </Link>
+              ) : (
                 <Link
                   key={path.label}
                   href={path.href}
@@ -120,28 +165,7 @@ export default async function ConceptGatePage({ searchParams }: Props) {
                     boxShadow: isSuggested ? `0 0 0 4px ${path.accent}18` : undefined,
                   }}
                 >
-                  {isSuggested && (
-                    <span
-                      className="mb-3 self-start rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white"
-                      style={{ background: path.accent }}
-                    >
-                      Best match
-                    </span>
-                  )}
-                  <div
-                    className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl text-2xl"
-                    style={{ background: `${path.accent}18` }}
-                  >
-                    {path.icon}
-                  </div>
-                  <h3 className="text-base font-bold font-display" style={{ color: '#1A1C1B' }}>{path.label}</h3>
-                  <p className="mt-2 flex-1 text-sm leading-relaxed text-gray-400">{path.sub}</p>
-                  <div
-                    className="mt-5 flex items-center gap-1.5 text-sm font-semibold transition-all group-hover:gap-2.5"
-                    style={{ color: path.accent }}
-                  >
-                    Start <ArrowRight className="h-3.5 w-3.5" />
-                  </div>
+                  {cardContent}
                 </Link>
               )
             })}

@@ -118,42 +118,90 @@ export default function WholeHomeConceptEnginePage() {
         </div>
       </section>
 
-      {/* Whole home design packages — shown first so visitors see options immediately */}
-      <section className="py-16">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-2 text-xl font-bold text-center" style={{ color: '#1A2B4A' }}>Whole home design packages</h2>
-          <p className="mb-6 text-center text-sm text-gray-500">Choose the package that matches your renovation scope.</p>
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-            {[
-              { tier: 'AI Whole Home Concept', price: '$585', revisions: '1 round (3 options)', note: 'Floor plan direction + scope + material palette + cost range', href: '/intake/whole_home_concept' },
-              { tier: 'Advanced Whole Home Design', price: '$1,200', revisions: 'Up to 3 rounds', note: '3D views + detailed floor plans + contractor-ready scope', highlight: true, href: '/intake/whole_home_concept' },
-              { tier: 'Full Design Package', price: '$6,500+', revisions: 'Up to 5 rounds', note: 'Permit-ready drawing set + structural direction + full scope', href: '/contact' },
-            ].map((row, i) => (
+      {/* Whole home design packages */}
+      <section className="py-20" style={{ backgroundColor: '#F7FAFC' }}>
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="section-label" style={{ color: '#E8793A' }}>Packages</span>
+            <h2 className="mt-3 text-2xl font-bold font-display sm:text-3xl" style={{ color: '#1A2B4A' }}>
+              Whole Home Design Packages
+            </h2>
+            <p className="mt-3 text-gray-500">Choose the package that matches your renovation scope.</p>
+          </div>
+          <div className="mt-12 grid gap-6 lg:grid-cols-3">
+            {([
+              {
+                name: 'AI Whole Home Concept',
+                price: '$585',
+                rounds: '1 feedback round',
+                turnaround: '7–10 business days',
+                desc: 'Floor plan direction, scope summary, material palette, and rough cost range.',
+                items: ['3 whole-home concept options', 'Floor plan reconfiguration', 'Scope + structural summary', 'Material palette direction', '30-min consultation'],
+                cta: 'Start My Whole Home Concept',
+                href: '/intake/whole_home_concept',
+                popular: false,
+              },
+              {
+                name: 'Advanced Whole Home Design',
+                price: '$1,200',
+                rounds: 'Up to 3 feedback rounds',
+                turnaround: '2–3 weeks',
+                desc: '3D views, detailed floor plans, and a full contractor-ready scope package.',
+                items: ['Everything in AI Concept', 'Detailed 3D floor plan views', 'Room-by-room finish direction', 'MEP systems summary', '60-min consultation'],
+                cta: 'Start Advanced Design',
+                href: '/intake/whole_home_concept',
+                popular: true,
+              },
+              {
+                name: 'Full Design Package',
+                price: 'From $6,500',
+                rounds: 'Up to 5 rounds',
+                turnaround: '4–6 weeks',
+                desc: 'Permit-ready drawing set with structural coordination and full project specifications.',
+                items: ['Everything in Advanced', 'Permit-ready drawing set', 'Structural coordination', 'Full specification package', 'Contractor bid documents'],
+                cta: 'Contact Us',
+                href: '/contact',
+                popular: false,
+              },
+            ] as const).map((tier) => (
               <div
-                key={row.tier}
-                className="flex items-center justify-between px-5 py-4"
+                key={tier.name}
+                className="relative flex flex-col rounded-xl bg-white p-6"
                 style={{
-                  backgroundColor: row.highlight ? 'rgba(232,121,58,0.04)' : i % 2 === 0 ? 'white' : '#FAFAFA',
-                  borderBottom: i < 2 ? '1px solid #F3F4F6' : undefined,
+                  boxShadow: tier.popular ? `0 10px 25px -5px #E8793A40` : '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+                  border: tier.popular ? `2px solid #E8793A` : '1px solid #E5E7EB',
                 }}
               >
-                <div className="flex-1">
-                  <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>{row.tier}</p>
-                  <p className="mt-0.5 text-xs text-gray-400">{row.note}</p>
+                {tier.popular && (
+                  <span className="absolute right-4 top-4 rounded-full px-2 py-0.5 text-xs font-semibold text-white" style={{ backgroundColor: '#E8793A' }}>
+                    Most Popular
+                  </span>
+                )}
+                <h3 className="font-bold font-display" style={{ color: '#1A2B4A' }}>{tier.name}</h3>
+                <div className="my-3">
+                  <span className="text-3xl font-bold font-mono" style={{ color: '#E8793A' }}>{tier.price}</span>
                 </div>
-                <div className="ml-4 flex items-center gap-4 shrink-0">
-                  <div className="text-right">
-                    <p className="text-sm font-bold" style={{ color: '#E8793A' }}>{row.price}</p>
-                    <p className="text-xs text-gray-500">{row.revisions}</p>
-                  </div>
-                  <Link
-                    href={row.href}
-                    className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-all hover:opacity-90"
-                    style={{ backgroundColor: '#E8793A' }}
-                  >
-                    Start <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
+                <p className="text-xs text-gray-500 mb-1">{tier.rounds} · {tier.turnaround}</p>
+                <p className="text-sm text-gray-600 mb-4">{tier.desc}</p>
+                <ul className="flex-1 space-y-2 mb-6">
+                  {tier.items.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
+                      <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={tier.href}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg py-3 text-sm font-semibold transition-all hover:opacity-90"
+                  style={{
+                    backgroundColor: tier.popular ? '#E8793A' : 'transparent',
+                    color: tier.popular ? '#fff' : '#E8793A',
+                    border: tier.popular ? 'none' : `2px solid #E8793A`,
+                  }}
+                >
+                  {tier.cta}
+                </Link>
               </div>
             ))}
           </div>

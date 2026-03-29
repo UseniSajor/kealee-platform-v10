@@ -117,42 +117,90 @@ export default function GardenConceptEnginePage() {
         </div>
       </section>
 
-      {/* Garden design packages — shown first so visitors see options immediately */}
-      <section className="py-16">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-2 text-xl font-bold text-center" style={{ color: '#1A2B4A' }}>Garden design packages</h2>
-          <p className="mb-6 text-center text-sm text-gray-500">Choose the package that fits your garden goals.</p>
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-            {[
-              { tier: 'AI Garden Concept', price: '$395', revisions: '1 round (3 layouts)', note: 'AI layout + raised beds + irrigation overview + planting guide', href: '/intake/garden_concept' },
-              { tier: 'Advanced Garden Design', price: '$750', revisions: 'Up to 3 rounds', note: 'Detailed plant lists + irrigation specs + 3D garden views', highlight: true, href: '/intake/garden_concept' },
-              { tier: 'Full Landscape Design', price: '$2,500+', revisions: 'Up to 5 rounds', note: 'Permit-ready landscape plans + full contractor package', href: '/contact' },
-            ].map((row, i) => (
+      {/* Garden design packages */}
+      <section className="py-20" style={{ backgroundColor: '#F7FAFC' }}>
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="section-label" style={{ color: '#38A169' }}>Packages</span>
+            <h2 className="mt-3 text-2xl font-bold font-display sm:text-3xl" style={{ color: '#1A2B4A' }}>
+              Garden Design Packages
+            </h2>
+            <p className="mt-3 text-gray-500">Choose the package that fits your garden goals.</p>
+          </div>
+          <div className="mt-12 grid gap-6 lg:grid-cols-3">
+            {([
+              {
+                name: 'AI Garden Concept',
+                price: '$395',
+                rounds: '1 feedback round',
+                turnaround: '5–7 business days',
+                desc: 'Property-specific garden layout with raised beds, irrigation overview, and planting guide.',
+                items: ['3 garden layout options', 'Raised bed placement plan', 'Irrigation overview', 'Seasonal planting calendar', '30-min consultation'],
+                cta: 'Start My Garden Concept',
+                href: '/intake/garden_concept',
+                popular: false,
+              },
+              {
+                name: 'Advanced Garden Design',
+                price: '$750',
+                rounds: 'Up to 3 feedback rounds',
+                turnaround: '10–14 business days',
+                desc: 'Detailed garden design with plant lists, irrigation specs, and 3D garden views.',
+                items: ['Everything in AI Concept', 'Detailed plant + variety list', 'Drip irrigation specs', '3D garden views', '60-min consultation'],
+                cta: 'Start Advanced Design',
+                href: '/intake/garden_concept',
+                popular: true,
+              },
+              {
+                name: 'Full Landscape Design',
+                price: 'From $2,500',
+                rounds: 'Up to 5 rounds',
+                turnaround: '2–3 weeks',
+                desc: 'Permit-ready landscape plans with full contractor bid documents.',
+                items: ['Everything in Advanced', 'Permit-ready drawings', 'Contractor bid documents', 'Irrigation system plan', 'Grading + drainage plan'],
+                cta: 'Contact Us',
+                href: '/contact',
+                popular: false,
+              },
+            ] as const).map((tier, i) => (
               <div
-                key={row.tier}
-                className="flex items-center justify-between px-5 py-4"
+                key={tier.name}
+                className="relative flex flex-col rounded-xl bg-white p-6"
                 style={{
-                  backgroundColor: row.highlight ? 'rgba(56,161,105,0.04)' : i % 2 === 0 ? 'white' : '#FAFAFA',
-                  borderBottom: i < 2 ? '1px solid #F3F4F6' : undefined,
+                  boxShadow: tier.popular ? `0 10px 25px -5px #38A16940` : '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+                  border: tier.popular ? `2px solid #38A169` : '1px solid #E5E7EB',
                 }}
               >
-                <div className="flex-1">
-                  <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>{row.tier}</p>
-                  <p className="mt-0.5 text-xs text-gray-400">{row.note}</p>
+                {tier.popular && (
+                  <span className="absolute right-4 top-4 rounded-full px-2 py-0.5 text-xs font-semibold text-white" style={{ backgroundColor: '#38A169' }}>
+                    Most Popular
+                  </span>
+                )}
+                <h3 className="font-bold font-display" style={{ color: '#1A2B4A' }}>{tier.name}</h3>
+                <div className="my-3">
+                  <span className="text-3xl font-bold font-mono" style={{ color: '#38A169' }}>{tier.price}</span>
                 </div>
-                <div className="ml-4 flex items-center gap-4 shrink-0">
-                  <div className="text-right">
-                    <p className="text-sm font-bold" style={{ color: '#38A169' }}>{row.price}</p>
-                    <p className="text-xs text-gray-500">{row.revisions}</p>
-                  </div>
-                  <Link
-                    href={row.href}
-                    className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-all hover:opacity-90"
-                    style={{ backgroundColor: '#38A169' }}
-                  >
-                    Start <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
+                <p className="text-xs text-gray-500 mb-1">{tier.rounds} · {tier.turnaround}</p>
+                <p className="text-sm text-gray-600 mb-4">{tier.desc}</p>
+                <ul className="flex-1 space-y-2 mb-6">
+                  {tier.items.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
+                      <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={tier.href}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg py-3 text-sm font-semibold transition-all hover:opacity-90"
+                  style={{
+                    backgroundColor: tier.popular ? '#38A169' : 'transparent',
+                    color: tier.popular ? '#fff' : '#38A169',
+                    border: tier.popular ? 'none' : `2px solid #38A169`,
+                  }}
+                >
+                  {tier.cta}
+                </Link>
               </div>
             ))}
           </div>
