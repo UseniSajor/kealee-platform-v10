@@ -66,8 +66,8 @@ export function SiteNav() {
         <li><Link href="/marketplace" className="tab">Marketplace</Link></li>
         <li><Link href="/features" className="tab">How it works</Link></li>
         <li><Link href="/concept" className="tab">Services</Link></li>
-        <li><Link href="/contractors" className="gr">Contractors</Link></li>
-        <li><Link href="/developers" className="gr">Developers</Link></li>
+        {isHome && <li><Link href="/contractors" className="gr">Contractors</Link></li>}
+        {isHome && <li><Link href="/developers" className="gr">Developers</Link></li>}
         <li><Link href="/#faq" className="tab">FAQ</Link></li>
       </ul>
 
