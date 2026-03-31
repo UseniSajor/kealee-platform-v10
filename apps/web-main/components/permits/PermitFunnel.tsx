@@ -362,7 +362,7 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
               </div>
             )}
 
-            {/* No plans — 3 questions */}
+            {/* No plans — Design Services gate */}
             {state.hasPlans === 'no' && (
               <div className="space-y-4">
                 <button
@@ -372,11 +372,25 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
                   Change answer
                 </button>
                 <div
-                  className="rounded-xl p-4 text-sm"
-                  style={{ backgroundColor: '#F0FAFA', color: '#1A2B4A' }}
+                  className="rounded-xl border border-orange-200 p-4 text-sm"
+                  style={{ backgroundColor: 'rgba(232,121,58,0.06)' }}
                 >
-                  We'll generate a free concept from 3 quick questions
+                  <p className="font-semibold mb-1" style={{ color: '#C05621' }}>
+                    Most projects require architect-stamped plans to get a permit.
+                  </p>
+                  <p className="text-gray-600 text-xs leading-relaxed mb-3">
+                    Without permit-ready drawings, your permit application will be rejected. Our Design
+                    Services team produces stamped, permit-ready plans starting at $1,200.
+                  </p>
+                  <a
+                    href="/design-services"
+                    className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: '#E8793A' }}
+                  >
+                    Get Design Services First →
+                  </a>
                 </div>
+                <p className="text-xs text-gray-400 text-center">Or continue to learn more about permits for your jurisdiction:</p>
                 <div className="space-y-3">
                   <div>
                     <label className="block text-sm font-medium mb-1.5" style={{ color: '#1A2B4A' }}>

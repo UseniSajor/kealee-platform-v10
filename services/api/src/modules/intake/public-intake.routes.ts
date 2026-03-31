@@ -8,6 +8,7 @@ import Stripe from "stripe";
 import { z } from "zod";
 import { prismaAny } from "../../utils/prisma-helper";
 import { sanitizeErrorMessage } from "../../utils/sanitize-error";
+import { LeadIntelligenceService } from "../../services/lead-intelligence.service.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
   apiVersion: "2023-10-16",
@@ -15,25 +16,50 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
 
 // ── Payment amounts per project path ─────────────────────────────────────────
 const PATH_AMOUNTS: Record<string, number> = {
-  exterior_concept:    38500, // $385 AI Concept Package
-  interior_renovation: 38500, // $385 AI Concept Package
-  kitchen_remodel:     38500, // $385 AI Concept Package
-  bathroom_remodel:    38500, // $385 AI Concept Package
-  whole_home_remodel:  38500, // $385 AI Concept Package
-  addition_expansion:  38500, // $385 AI Concept Package
-  design_build:        38500, // $385 AI Concept Package
-  permit_path_only:    14900, // $149 Permit Path Intake
+  // Concept engine paths
+  exterior_concept:         58500, // $585 Tier 2 AI Concept Package
+  garden_concept:           39500, // $395
+  whole_home_concept:       58500, // $585
+  interior_reno_concept:    39500, // $395
+  developer_concept:        58500, // $585
+  // Remodel / renovation paths
+  interior_renovation:      58500,
+  kitchen_remodel:          58500,
+  bathroom_remodel:         58500,
+  whole_home_remodel:       58500,
+  addition_expansion:       58500,
+  design_build:             58500,
+  permit_path_only:         14900, // $149 Permit Path Intake
+  // Commercial paths
+  multi_unit_residential:   79900,
+  mixed_use:               129900,
+  commercial_office:        99900,
+  development_feasibility: 149900,
+  townhome_subdivision:     99900,
+  single_family_subdivision:119900,
+  single_lot_development:   59900,
 };
 
 const PATH_NAMES: Record<string, string> = {
-  exterior_concept:    "Exterior Concept AI Package",
-  interior_renovation: "Interior Renovation AI Package",
-  kitchen_remodel:     "Kitchen Remodel AI Package",
-  bathroom_remodel:    "Bathroom Remodel AI Package",
-  whole_home_remodel:  "Whole-Home Remodel AI Package",
-  addition_expansion:  "Addition / Expansion AI Package",
-  design_build:        "Design + Build AI Package",
-  permit_path_only:    "Permit Path Intake",
+  exterior_concept:         "Exterior Concept AI Package",
+  garden_concept:           "Garden Concept AI Package",
+  whole_home_concept:       "Whole Home Concept AI Package",
+  interior_reno_concept:    "Interior Reno Concept AI Package",
+  developer_concept:        "Developer Concept AI Package",
+  interior_renovation:      "Interior Renovation AI Package",
+  kitchen_remodel:          "Kitchen Remodel AI Package",
+  bathroom_remodel:         "Bathroom Remodel AI Package",
+  whole_home_remodel:       "Whole-Home Remodel AI Package",
+  addition_expansion:       "Addition / Expansion AI Package",
+  design_build:             "Design + Build AI Package",
+  permit_path_only:         "Permit Path Intake",
+  multi_unit_residential:   "Multi-Unit Residential Concept",
+  mixed_use:                "Mixed-Use Development Concept",
+  commercial_office:        "Commercial Office Concept",
+  development_feasibility:  "Development Feasibility Package",
+  townhome_subdivision:     "Townhome Subdivision Package",
+  single_family_subdivision:"Single-Family Subdivision Package",
+  single_lot_development:   "Single-Lot Development Package",
 };
 
 const SITE_VISIT_FEE = 12500; // $125
@@ -135,6 +161,20 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
       });
 
       const requiresPayment = true;
+
+      // Fire-and-forget lead intelligence scoring (fail-open)
+      if (data.contactEmail) {
+        void LeadIntelligenceService.upsertLeadProfile({
+          email: data.contactEmail,
+          phone: data.contactPhone ?? undefined,
+          firstName: data.clientName?.split(' ')[0],
+          projectType: data.projectPath,
+          source: `intake:${data.projectPath}`,
+          stage: 'CONCEPT',
+        }).then(() =>
+          LeadIntelligenceService.scoreLeadByEmail(data.contactEmail!, 'intake_start')
+        ).catch(() => {})
+      }
 
       return reply.send({
         ok: true,

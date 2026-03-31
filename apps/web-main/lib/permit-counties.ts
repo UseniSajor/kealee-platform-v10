@@ -173,6 +173,60 @@ export const COUNTIES: CountyData[] = [
       'Loudoun County is one of the fastest-growing jurisdictions in the country. Development pressure has strained review capacity, and the 2019 Zoning Ordinance Rewrite still causes confusion.',
   },
   {
+    slug: 'alexandria-city',
+    name: 'Alexandria City, VA',
+    shortName: 'Alexandria City',
+    state: 'VA',
+    simpleTimeline: '4–8 weeks',
+    additionTimeline: '6–12 weeks',
+    newConstructionTimeline: '3–6 months',
+    commercialTimeline: '5–10+ months',
+    topDelays: [
+      {
+        title: 'Historic District Review',
+        desc: 'Much of Old Town Alexandria falls under Historic District review, adding a parallel approval track that can add 4–8 weeks.',
+      },
+      {
+        title: 'Urban Density Complexity',
+        desc: 'Setback, lot coverage, and FAR rules are strictly enforced and frequently misapplied in dense residential blocks.',
+      },
+      {
+        title: 'Multi-Agency Coordination',
+        desc: 'Projects near waterways or transit corridors require coordination with state and federal agencies beyond the city.',
+      },
+    ],
+    jurisdictionNote:
+      'Alexandria City operates its own permit office independent of Fairfax County. Historic District reviews in Old Town are common and add time. Confirm jurisdiction before submitting.',
+    portalName: 'Alexandria Online Permits',
+  },
+  {
+    slug: 'arlington',
+    name: 'Arlington County, VA',
+    shortName: 'Arlington County',
+    state: 'VA',
+    simpleTimeline: '3–7 weeks',
+    additionTimeline: '5–10 weeks',
+    newConstructionTimeline: '3–5 months',
+    commercialTimeline: '5–10+ months',
+    topDelays: [
+      {
+        title: 'High-Density Urban Rules',
+        desc: 'Strict FAR, setback, and lot coverage limits frequently require pre-consultation before a formal permit submission.',
+      },
+      {
+        title: 'WMATA and Utility Proximity',
+        desc: 'Projects near Metro corridors require additional coordination with WMATA and utility providers, adding weeks to review.',
+      },
+      {
+        title: 'Form-Based Code Compliance',
+        desc: "Arlington's GLUP (General Land Use Plan) and form-based zoning rules require careful coordination with design documents.",
+      },
+    ],
+    jurisdictionNote:
+      "Arlington County's CPHD office handles permits for one of the most densely zoned counties in Virginia. Metro proximity rules, GLUP compliance, and form-based code add complexity.",
+    portalName: 'Arlington ePermits',
+  },
+  {
     slug: 'baltimore',
     name: 'Baltimore, MD',
     shortName: 'Baltimore',

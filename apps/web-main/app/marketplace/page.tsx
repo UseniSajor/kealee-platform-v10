@@ -1,66 +1,131 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Search, X } from 'lucide-react'
+import { Search, X, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
 import { MarketplaceTopbar } from '@/components/marketplace/MarketplaceTopbar'
 import { MarketplaceNav } from '@/components/marketplace/MarketplaceNav'
 import { MarketplaceFilterBar } from '@/components/marketplace/MarketplaceFilterBar'
 import { MarketplaceCard, type ContractorCardData } from '@/components/marketplace/MarketplaceCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 
-// Full residential + commercial project type seed
-const PROJECT_TYPES = [
-  // ── Residential Interior ──────────────────────────────────────────────────
-  { label: 'Kitchen Remodel',         trade: 'General Contractor',  group: 'Residential' },
-  { label: 'Bathroom Remodel',        trade: 'General Contractor',  group: 'Residential' },
-  { label: 'Master Bath',             trade: 'General Contractor',  group: 'Residential' },
-  { label: 'Basement Finish',         trade: 'General Contractor',  group: 'Residential' },
-  { label: 'Flooring',                trade: 'Flooring',            group: 'Residential' },
-  { label: 'Interior Painting',       trade: 'Painting',            group: 'Residential' },
-  { label: 'Drywall',                 trade: 'Drywall',             group: 'Residential' },
-  { label: 'Closet & Storage',        trade: 'General Contractor',  group: 'Residential' },
-  { label: 'Home Theater / AV',       trade: 'Electrician',         group: 'Residential' },
-  // ── Residential Exterior ─────────────────────────────────────────────────
-  { label: 'Roof Replacement',        trade: 'Roofing',             group: 'Residential' },
-  { label: 'Siding & Cladding',       trade: 'General Contractor',  group: 'Residential' },
-  { label: 'Windows & Doors',         trade: 'General Contractor',  group: 'Residential' },
-  { label: 'Deck & Patio',            trade: 'General Contractor',  group: 'Residential' },
-  { label: 'Fence & Gate',            trade: 'General Contractor',  group: 'Residential' },
-  { label: 'Driveway & Hardscape',    trade: 'Masonry',             group: 'Residential' },
-  { label: 'Exterior Painting',       trade: 'Painting',            group: 'Residential' },
-  { label: 'Gutters',                 trade: 'General Contractor',  group: 'Residential' },
-  // ── Structural / Systems ─────────────────────────────────────────────────
-  { label: 'Addition / Bump-Out',     trade: 'General Contractor',  group: 'Residential' },
-  { label: 'ADU / Garage Conversion', trade: 'General Contractor',  group: 'Residential' },
-  { label: 'Whole-Home Renovation',   trade: 'General Contractor',  group: 'Residential' },
-  { label: 'HVAC / Heat Pump',        trade: 'HVAC',                group: 'Residential' },
-  { label: 'Electrical Panel',        trade: 'Electrician',         group: 'Residential' },
-  { label: 'EV Charger Install',      trade: 'Electrician',         group: 'Residential' },
-  { label: 'Plumbing',                trade: 'Plumber',             group: 'Residential' },
-  { label: 'Water Heater',            trade: 'Plumber',             group: 'Residential' },
-  { label: 'Insulation',              trade: 'General Contractor',  group: 'Residential' },
-  { label: 'Solar',                   trade: 'Electrician',         group: 'Residential' },
-  // ── Outdoor / Landscape ──────────────────────────────────────────────────
-  { label: 'Landscaping',             trade: 'Landscaping',         group: 'Residential' },
-  { label: 'Irrigation',              trade: 'Landscaping',         group: 'Residential' },
-  { label: 'Pool & Hot Tub',          trade: 'General Contractor',  group: 'Residential' },
-  { label: 'Outdoor Kitchen',         trade: 'General Contractor',  group: 'Residential' },
-  { label: 'Tree & Stump',            trade: 'Landscaping',         group: 'Residential' },
-  // ── Commercial ───────────────────────────────────────────────────────────
-  { label: 'Office Fit-Out',          trade: 'General Contractor',  group: 'Commercial' },
-  { label: 'Retail Build-Out',        trade: 'General Contractor',  group: 'Commercial' },
-  { label: 'Restaurant Renovation',   trade: 'General Contractor',  group: 'Commercial' },
-  { label: 'Medical / Dental Office', trade: 'General Contractor',  group: 'Commercial' },
-  { label: 'Warehouse / Industrial',  trade: 'Steel / Structural',  group: 'Commercial' },
-  { label: 'Multifamily Renovation',  trade: 'General Contractor',  group: 'Commercial' },
-  { label: 'Hotel / Hospitality',     trade: 'General Contractor',  group: 'Commercial' },
-  { label: 'Commercial Roofing',      trade: 'Roofing',             group: 'Commercial' },
-  { label: 'Commercial HVAC',         trade: 'HVAC',                group: 'Commercial' },
-  { label: 'Commercial Electrical',   trade: 'Electrician',         group: 'Commercial' },
-  { label: 'Commercial Plumbing',     trade: 'Plumber',             group: 'Commercial' },
-  { label: 'Parking & Site Work',     trade: 'Excavation',          group: 'Commercial' },
-  { label: 'ADA Compliance',          trade: 'General Contractor',  group: 'Commercial' },
-  { label: 'New Construction',        trade: 'General Contractor',  group: 'Commercial' },
+// Project types organized in 5 buckets
+const PROJECT_TYPE_BUCKETS = [
+  {
+    bucket: 'Interior Renovations',
+    color: '#7C3AED',
+    types: [
+      { label: 'Kitchen Remodel',     trade: 'General Contractor' },
+      { label: 'Bathroom Remodel',    trade: 'General Contractor' },
+      { label: 'Master Bath',         trade: 'General Contractor' },
+      { label: 'Basement Finish',     trade: 'General Contractor' },
+      { label: 'Flooring',            trade: 'Flooring' },
+      { label: 'Interior Painting',   trade: 'Painting' },
+      { label: 'Drywall',             trade: 'Drywall' },
+      { label: 'Closet & Storage',    trade: 'General Contractor' },
+      { label: 'Home Theater / AV',   trade: 'Electrician' },
+    ],
+  },
+  {
+    bucket: 'Exterior Improvements',
+    color: '#E8793A',
+    types: [
+      { label: 'Roof Replacement',    trade: 'Roofing' },
+      { label: 'Siding & Cladding',   trade: 'General Contractor' },
+      { label: 'Windows & Doors',     trade: 'General Contractor' },
+      { label: 'Deck & Patio',        trade: 'General Contractor' },
+      { label: 'Fence & Gate',        trade: 'General Contractor' },
+      { label: 'Driveway & Hardscape',trade: 'Masonry' },
+      { label: 'Exterior Painting',   trade: 'Painting' },
+      { label: 'Gutters',             trade: 'General Contractor' },
+      { label: 'Landscaping',         trade: 'Landscaping' },
+      { label: 'Outdoor Kitchen',     trade: 'General Contractor' },
+    ],
+  },
+  {
+    bucket: 'Additions & Structures',
+    color: '#2ABFBF',
+    types: [
+      { label: 'Addition / Bump-Out', trade: 'General Contractor' },
+      { label: 'ADU / Garage Conversion', trade: 'General Contractor' },
+      { label: 'Whole-Home Renovation',   trade: 'General Contractor' },
+      { label: 'New Construction',        trade: 'General Contractor' },
+      { label: 'Pool & Hot Tub',          trade: 'General Contractor' },
+    ],
+  },
+  {
+    bucket: 'Specialty Trade',
+    color: '#38A169',
+    types: [
+      { label: 'HVAC / Heat Pump',   trade: 'HVAC' },
+      { label: 'Electrical Panel',   trade: 'Electrician' },
+      { label: 'EV Charger Install', trade: 'Electrician' },
+      { label: 'Solar',              trade: 'Electrician' },
+      { label: 'Plumbing',           trade: 'Plumber' },
+      { label: 'Water Heater',       trade: 'Plumber' },
+      { label: 'Insulation',         trade: 'General Contractor' },
+      { label: 'Irrigation',         trade: 'Landscaping' },
+    ],
+  },
+  {
+    bucket: 'Property & Multifamily',
+    color: '#1A2B4A',
+    types: [
+      { label: 'Multifamily Renovation', trade: 'General Contractor' },
+      { label: 'Office Fit-Out',         trade: 'General Contractor' },
+      { label: 'Retail Build-Out',       trade: 'General Contractor' },
+      { label: 'Restaurant Renovation',  trade: 'General Contractor' },
+      { label: 'Warehouse / Industrial', trade: 'Steel / Structural' },
+      { label: 'Commercial Roofing',     trade: 'Roofing' },
+      { label: 'Commercial HVAC',        trade: 'HVAC' },
+      { label: 'ADA Compliance',         trade: 'General Contractor' },
+      { label: 'Parking & Site Work',    trade: 'Excavation' },
+    ],
+  },
+]
+
+// Flattened for filtering
+const PROJECT_TYPES = PROJECT_TYPE_BUCKETS.flatMap(b =>
+  b.types.map(t => ({ ...t, group: b.bucket }))
+)
+
+// Combo packages
+const COMBO_PACKAGES = [
+  {
+    name: 'Design + Permit Starter',
+    desc: 'AI concept → permit-ready plans → permit submission',
+    price: 'From $2,095',
+    href: '/design-services',
+    color: '#2ABFBF',
+  },
+  {
+    name: 'Concept + Estimate',
+    desc: 'AI concept design + detailed cost estimate for contractor bidding',
+    price: 'From $990',
+    href: '/estimate',
+    color: '#E8793A',
+  },
+  {
+    name: 'Permit + Owner Oversight',
+    desc: 'Full permit package + Owner Portal for milestone tracking',
+    price: 'From $597',
+    href: '/permits',
+    color: '#38A169',
+  },
+  {
+    name: 'Exterior Upgrade Package',
+    desc: 'Exterior AI concept + contractor match + milestone payments',
+    price: 'From $595',
+    href: '/concept-engine/exterior',
+    color: '#7C3AED',
+  },
+  {
+    name: 'ADU Complete',
+    desc: 'ADU concept + design services + permit + contractor match',
+    price: 'From $3,499',
+    href: '/contact',
+    color: '#1A2B4A',
+  },
 ]
 
 // Mock contractor data — replace with API calls when backend is integrated
@@ -289,13 +354,18 @@ export default function MarketplacePage() {
           </div>
         </div>
 
-        {/* Project type chips — grouped */}
+        {/* Project type chips — 5 bucket groups */}
         <div className="mx-auto max-w-7xl px-4 pb-5 sm:px-6 lg:px-8 space-y-4">
-          {(['Residential', 'Commercial'] as const).map((group) => (
-            <div key={group}>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">{group}</p>
+          {PROJECT_TYPE_BUCKETS.map((bucket) => (
+            <div key={bucket.bucket}>
+              <p
+                className="mb-2 text-xs font-bold uppercase tracking-wider"
+                style={{ color: bucket.color }}
+              >
+                {bucket.bucket}
+              </p>
               <div className="flex flex-wrap gap-2">
-                {PROJECT_TYPES.filter(pt => pt.group === group).map((pt) => {
+                {bucket.types.map((pt) => {
                   const active = activeProjectType === pt.label
                   return (
                     <button
@@ -303,8 +373,8 @@ export default function MarketplacePage() {
                       onClick={() => handleProjectType(pt.label, pt.trade)}
                       className="rounded-full border px-3.5 py-1.5 text-sm font-medium transition-all"
                       style={{
-                        borderColor: active ? '#1A2B4A' : '#E5E7EB',
-                        backgroundColor: active ? '#1A2B4A' : '#FFFFFF',
+                        borderColor: active ? bucket.color : '#E5E7EB',
+                        backgroundColor: active ? bucket.color : '#FFFFFF',
                         color: active ? '#FFFFFF' : '#374151',
                       }}
                     >
@@ -333,6 +403,31 @@ export default function MarketplacePage() {
         onFiltersChange={setFilters}
         onReset={() => setFilters(DEFAULT_FILTERS)}
       />
+
+      {/* Combo packages */}
+      <div className="mx-auto max-w-7xl px-4 pt-8 pb-2 sm:px-6 lg:px-8">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400">Featured Packages</h2>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {COMBO_PACKAGES.map(pkg => (
+            <Link
+              key={pkg.name}
+              href={pkg.href}
+              className="group flex flex-col rounded-xl bg-white p-4 transition-all hover:shadow-md hover:-translate-y-0.5"
+              style={{ border: `1px solid ${pkg.color}30` }}
+            >
+              <div className="h-0.5 w-8 rounded-full mb-3" style={{ backgroundColor: pkg.color }} />
+              <p className="text-xs font-bold mb-1" style={{ color: pkg.color }}>{pkg.name}</p>
+              <p className="flex-1 text-xs text-gray-500 leading-relaxed mb-2">{pkg.desc}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold" style={{ color: '#1A2B4A' }}>{pkg.price}</span>
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" style={{ color: pkg.color }} />
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
 
       {/* Grid */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

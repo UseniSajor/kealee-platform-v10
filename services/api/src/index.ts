@@ -1103,6 +1103,17 @@ const start = async () => {
       await fastify.register(conceptValidationRoutes, { prefix: '/design/concept-validation' })
     })
 
+    // ── Ask + Lead Intelligence routes ──
+    await safeRegisterBlock('Ask / AskAnythingBar routes', async () => {
+      const { askRoutes } = await import('./modules/ask/ask.routes.js')
+      await fastify.register(askRoutes)
+    })
+
+    await safeRegisterBlock('Lead Intelligence routes', async () => {
+      const { leadRoutes } = await import('./modules/leads/lead.routes.js')
+      await fastify.register(leadRoutes)
+    })
+
     // ── Test Routes (TEST_MODE=true only) ──
     await safeRegisterBlock('Test simulation routes', async () => {
       const { testRoutes } = await import('./modules/test/test.routes')

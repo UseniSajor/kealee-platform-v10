@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { COUNTIES } from '@/lib/permit-counties'
 import { Container } from '@/components/ui/Container'
 import { Heading } from '@/components/ui/Heading'
+import { AskAnythingBar } from '@/components/ui/AskAnythingBar'
 
 export const metadata: Metadata = {
   title: 'Building Permit Services | DC, MD, VA | Kealee Permit Group',
@@ -72,6 +73,18 @@ export default function PermitsHubPage() {
               sends you back to the end of the queue. Kealee prepares permit-ready packages
               engineered for first-cycle approval.
             </p>
+          </div>
+        </Container>
+      </section>
+
+      {/* ── Ask bar ───────────────────────────────────────────────────── */}
+      <section className="py-10 bg-white border-b border-gray-100">
+        <Container width="md">
+          <div className="rounded-2xl p-5" style={{ backgroundColor: '#1A2B4A' }}>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-white/50 text-center">
+              Questions about permits? Ask anything
+            </p>
+            <AskAnythingBar context="permit" />
           </div>
         </Container>
       </section>

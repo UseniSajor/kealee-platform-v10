@@ -61,6 +61,14 @@ export default function InteriorRenoConceptEnginePage() {
         </div>
       </div>
 
+      {/* Pre-design disclaimer banner */}
+      <div className="bg-purple-50 border-b border-purple-100 py-2.5 px-4 text-center text-sm text-purple-800">
+        AI concept is a pre-design service — not a permit-ready plan.{' '}
+        <Link href="/design-services" className="font-semibold underline hover:text-purple-900">
+          Need permit-ready plans? See Design Services →
+        </Link>
+      </div>
+
       {/* Hero */}
       <section className="py-16 border-b border-gray-100" style={{ background: 'linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%)' }}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">

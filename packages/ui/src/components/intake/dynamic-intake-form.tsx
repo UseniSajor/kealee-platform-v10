@@ -208,7 +208,16 @@ export function DynamicIntakeForm({ projectPath, initialData, onComplete }: Dyna
 
   const isLast = currentStep === steps.length - 1
 
+  // Disable Continue if any required fields on current step are empty
+  const stepRequiredMet = step.fields
+    .filter((f) => f.required)
+    .every((f) => {
+      const val = formData[f.key]
+      return val !== undefined && val !== null && val !== ''
+    })
+
   function handleNext() {
+    if (!stepRequiredMet) return
     if (isLast) {
       onComplete(formData)
     } else {
@@ -266,7 +275,8 @@ export function DynamicIntakeForm({ projectPath, initialData, onComplete }: Dyna
 
         <button
           onClick={handleNext}
-          className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          disabled={!stepRequiredMet}
+          className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white transition-opacity disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
           style={{ backgroundColor: '#E8793A' }}
         >
           {isLast ? 'Review My Intake' : 'Continue'}

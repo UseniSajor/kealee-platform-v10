@@ -13,6 +13,7 @@ import Stripe from 'stripe'
 import { z } from 'zod'
 import { prismaAny } from '../../utils/prisma-helper'
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
+import { LeadIntelligenceService } from '../../services/lead-intelligence.service.js'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2023-10-16' })
 
@@ -100,6 +101,18 @@ export async function permitIntakeRoutes(fastify: FastifyInstance) {
         },
         select: { id: true },
       })
+
+      // Fire-and-forget lead intelligence scoring (fail-open)
+      void LeadIntelligenceService.upsertLeadProfile({
+        email: body.email,
+        firstName: body.name?.split(' ')[0],
+        source: 'intake:permit',
+        stage: 'PERMIT',
+        hasPlans: body.hasPlans === 'yes',
+        needsPermit: true,
+      }).then(() =>
+        LeadIntelligenceService.scoreLeadByEmail(body.email, 'permit_start')
+      ).catch(() => {})
 
       return reply.code(201).send({ ok: true, intakeId: lead.id })
     } catch (error: any) {

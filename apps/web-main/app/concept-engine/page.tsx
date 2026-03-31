@@ -102,12 +102,34 @@ export default function ConceptEnginePage() {
           ))}
         </div>
 
-        <p className="mt-10 text-center text-sm text-gray-400">
-          Not sure which path fits?{' '}
-          <Link href="/contact" className="font-medium hover:underline" style={{ color: '#1A2B4A' }}>
-            Talk to our team
+        {/* Something else */}
+        <div className="mt-5 rounded-2xl border-2 border-dashed border-gray-200 bg-white p-7">
+          <div className="flex items-center justify-between gap-6 flex-col sm:flex-row">
+            <div>
+              <h2 className="text-lg font-bold font-display" style={{ color: '#1A2B4A' }}>Something else?</h2>
+              <p className="mt-1 text-sm text-gray-500">Not sure where your project fits? Tell us and we&apos;ll guide you to the right path.</p>
+            </div>
+            <Link
+              href="/intake/other"
+              className="shrink-0 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90"
+              style={{ backgroundColor: '#1A2B4A' }}
+            >
+              Tell us about it <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Pre-design notice */}
+        <div
+          className="mt-8 rounded-xl border border-orange-200 p-4 text-center text-sm"
+          style={{ backgroundColor: 'rgba(232,121,58,0.05)' }}
+        >
+          <span className="font-semibold" style={{ color: '#E8793A' }}>Note:</span>
+          <span className="ml-1 text-gray-600">AI concept packages are pre-design visualization services — not permit-ready plans. Need permit-ready architectural drawings?</span>{' '}
+          <Link href="/design-services" className="font-semibold hover:underline" style={{ color: '#E8793A' }}>
+            See Design Services →
           </Link>
-        </p>
+        </div>
       </div>
     </div>
   )

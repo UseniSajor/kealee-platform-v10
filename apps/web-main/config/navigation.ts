@@ -316,7 +316,10 @@ export const PRIMARY_NAV: NavItem[] = [
     },
   },
 
-  // 6 — About
+  // 6 — Get Estimate
+  { label: 'Get Estimate', href: '/estimate' },
+
+  // 7 — About
   { label: 'About', href: '/about' },
 ]
 
@@ -347,6 +350,9 @@ export const FOOTER_NAV = {
     { label: 'For Property Managers',      href: '/property-managers' },
     { label: 'Commercial Projects',        href: '/commercial' },
     { label: 'Government',                 href: '/government' },
+    { label: 'Get Estimate',               href: '/estimate' },
+    { label: 'Design Services',            href: '/design-services' },
+    { label: 'Milestone Pay',              href: '/milestone-pay' },
   ],
   portals: [
     { label: 'Owner Portal',               href: '/login' },

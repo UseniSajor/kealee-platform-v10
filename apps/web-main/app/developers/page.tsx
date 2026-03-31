@@ -65,7 +65,7 @@ const WORKFLOW = [
   {
     number: 4,
     title: 'Manage Construction',
-    desc: 'The Digital Twin activates across OS-PM, OS-Pay, and Marketplace. Every milestone, payment, and inspection is tracked against the plan.',
+    desc: 'The project dashboard activates across OS-PM, OS-Pay, and Marketplace. Every milestone, payment, and inspection is tracked against the plan.',
   },
   {
     number: 5,
@@ -170,6 +170,70 @@ export default function DevelopersPage() {
               style={{ backgroundColor: '#E8793A' }}
             >
               Schedule a developer consultation <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Developer Permits section */}
+      <section className="py-20 bg-white border-t border-gray-100">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-10 text-center">
+            <span className="section-label">Developer Permits</span>
+            <h2 className="mt-3 text-2xl font-bold font-display sm:text-3xl" style={{ color: '#1A2B4A' }}>
+              Complex project permit services
+            </h2>
+            <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
+              Commercial, multifamily, and mixed-use projects require coordinated permit strategies
+              across multiple agencies. Kealee manages the entire permit process for complex development projects.
+            </p>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {[
+              {
+                name: 'Multifamily Permit Package',
+                price: 'Starting at $1,999',
+                desc: '5+ unit residential or mixed-use. Includes multi-agency coordination, structural + MEP permit sets, and timeline management.',
+                color: '#1A2B4A',
+              },
+              {
+                name: 'Commercial Permit Coordination',
+                price: 'Starting at $2,499',
+                desc: 'Retail, office, industrial, or mixed-use. Fire, accessibility, zoning, and building permits coordinated in parallel.',
+                color: '#E8793A',
+              },
+              {
+                name: 'Entitlement & Variance Support',
+                price: 'Starting at $3,500',
+                desc: 'Zoning variances, special-use permits, and rezonings. Coordination with planning boards, ANC, and state agencies.',
+                color: '#2ABFBF',
+              },
+              {
+                name: 'Ground-Up Development Permit',
+                price: 'Starting at $4,500',
+                desc: 'Full permit management for new construction including site plan, grading, utility coordination, and building permit sets.',
+                color: '#38A169',
+              },
+            ].map(item => (
+              <div
+                key={item.name}
+                className="rounded-2xl border border-gray-200 bg-white p-6"
+                style={{ boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.06)' }}
+              >
+                <div className="h-1 w-10 rounded-full mb-4" style={{ backgroundColor: item.color }} />
+                <h3 className="font-bold mb-1" style={{ color: '#1A2B4A' }}>{item.name}</h3>
+                <p className="text-sm font-semibold mb-2" style={{ color: item.color }}>{item.price}</p>
+                <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 text-center">
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90"
+              style={{ backgroundColor: '#1A2B4A' }}
+            >
+              Get Developer Permit Consultation <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>

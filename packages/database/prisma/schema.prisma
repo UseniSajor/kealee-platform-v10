@@ -16331,3 +16331,43 @@ model OrchestrationActionLog {
   @@index([decision])
   @@index([createdAt])
 }
+
+// ── Lead Intelligence ─────────────────────────────────────────────────────────
+
+enum LeadStage {
+  UNKNOWN
+  AWARENESS
+  CONCEPT
+  DESIGN
+  PERMIT
+  ESTIMATION
+  CHECKOUT
+  HOT
+}
+
+model LeadProfile {
+  id                      String     @id @default(cuid())
+  email                   String?    @unique
+  phone                   String?
+  firstName               String?
+  lastName                String?
+  projectType             String?
+  location                String?
+  budgetRange             String?
+  hasPlans                Boolean?
+  needsPermit             Boolean?
+  urgencyLevel            String?    @default("normal")
+  stage                   LeadStage  @default(UNKNOWN)
+  leadScore               Int        @default(0)
+  source                  String?
+  contractorMatchCandidate Boolean   @default(false)
+  lastActivityAt          DateTime   @default(now())
+  createdAt               DateTime   @default(now())
+  updatedAt               DateTime   @updatedAt
+
+  @@map("lead_profiles")
+  @@index([email])
+  @@index([stage])
+  @@index([leadScore])
+  @@index([createdAt])
+}

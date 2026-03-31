@@ -139,7 +139,7 @@ const PORTAL_FEATURES = [
     description: 'Complete project visibility for homeowners and property owners.',
     icon: Eye,
     color: '#1A2B4A',
-    highlights: ['Real-time project dashboard', 'Payment tracking & approvals', 'Digital twin access', 'AI assistant (KeaBot Owner)', 'Document library', 'Inspection status'],
+    highlights: ['Real-time project dashboard', 'Payment tracking & approvals', 'Project history & documents', 'AI assistant (KeaBot Owner)', 'Document library', 'Inspection status'],
   },
   {
     id: 'contractor',

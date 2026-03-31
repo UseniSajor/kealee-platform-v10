@@ -5,6 +5,7 @@ import { ArrowRight, Shield, Layers } from 'lucide-react'
 import { useRoleSelector } from '@/hooks/useRoleSelector'
 import { RoleSelectorModal } from '@/components/modals/RoleSelectorModal'
 import { Container } from '@/components/ui/Container'
+import { AskAnythingBar } from '@/components/ui/AskAnythingBar'
 
 export function HeroSection() {
   const { isOpen, context, open, close } = useRoleSelector()
@@ -43,11 +44,16 @@ export function HeroSection() {
             {/* Sub-headline */}
             <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-gray-300 lg:text-xl">
               7 operating systems. 13 AI assistants. Escrow-protected payments.
-              Digital twins for every project — from kitchen remodels to multifamily developments.
+              Project dashboards for every project — from kitchen remodels to multifamily developments.
             </p>
 
+            {/* AskAnythingBar */}
+            <div className="mt-8">
+              <AskAnythingBar context="homepage" />
+            </div>
+
             {/* CTA row */}
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <button
                 onClick={() => open('start-project')}
                 className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90 hover:scale-[1.02]"

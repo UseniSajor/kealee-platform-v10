@@ -128,6 +128,14 @@ export default function ExteriorConceptPage() {
         </div>
       </div>
 
+      {/* Pre-design disclaimer banner */}
+      <div className="bg-orange-50 border-b border-orange-100 py-2.5 px-4 text-center text-sm text-orange-800">
+        AI concept is a pre-design service — not a permit-ready plan.{' '}
+        <Link href="/design-services" className="font-semibold underline hover:text-orange-900">
+          Need permit-ready plans? See Design Services →
+        </Link>
+      </div>
+
       {/* Hero */}
       <section
         className="relative overflow-hidden py-20 lg:py-28"

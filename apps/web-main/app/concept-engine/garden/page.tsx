@@ -60,6 +60,14 @@ export default function GardenConceptEnginePage() {
         </div>
       </div>
 
+      {/* Pre-design disclaimer banner */}
+      <div className="bg-green-50 border-b border-green-100 py-2.5 px-4 text-center text-sm text-green-800">
+        AI concept is a pre-design service — not a permit-ready plan.{' '}
+        <Link href="/design-services" className="font-semibold underline hover:text-green-900">
+          Need permit-ready plans? See Design Services →
+        </Link>
+      </div>
+
       {/* Hero */}
       <section className="py-16 border-b border-gray-100" style={{ background: 'linear-gradient(135deg, #1a3d2b 0%, #22543d 100%)' }}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
@@ -175,7 +183,7 @@ export default function GardenConceptEnginePage() {
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
             {[
               { tier: 'AI Garden Concept', price: '$395', revisions: '1 round (3 layouts)', note: 'AI layout + raised beds + irrigation overview + planting guide' },
-              { tier: 'Advanced Garden Design', price: '$750', revisions: 'Up to 3 rounds', note: 'Detailed plant lists + irrigation specs + 3D garden views', highlight: true },
+              { tier: 'Advanced Garden Design', price: '$695', revisions: 'Up to 3 rounds', note: 'Detailed plant lists + irrigation specs + 3D garden views', highlight: true },
               { tier: 'Full Landscape Design', price: '$2,500+', revisions: 'Up to 5 rounds', note: 'Permit-ready landscape plans + full contractor package' },
             ].map((row, i) => (
               <div

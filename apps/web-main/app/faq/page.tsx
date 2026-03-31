@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+import { AskAnythingBar } from '@/components/ui/AskAnythingBar'
 
 export const metadata: Metadata = {
   title: 'FAQ — Kealee',
@@ -15,6 +16,30 @@ const SECTIONS = [
       {
         q: 'What is the AI Concept Engine?',
         a: 'The Kealee AI Concept Engine delivers property-specific design concepts for your renovation, addition, garden, or development project. Submit your address and goals — we analyze your specific property and deliver 3 design concept options in 5–7 business days, along with a 30-minute consultation call.',
+      },
+      {
+        q: 'What is the difference between an AI concept and architectural services?',
+        a: 'An AI concept is a pre-design visualization service. It shows you what your project could look like — renderings, layout direction, material palettes, and a rough cost range — before you commit to anything. Architectural services produce permit-ready, stamped drawings that contractors can legally build from. The AI concept is a planning and visualization tool; architectural drawings are required to pull a permit and begin construction.',
+      },
+      {
+        q: 'Can an AI concept package get me a permit?',
+        a: 'No. AI concept packages are pre-design services only. They are not permit-ready plans. Most jurisdictions require architect-stamped or engineer-stamped drawings to obtain a building permit. If you need permit-ready plans, see our Design Services page.',
+      },
+      {
+        q: 'When do I need permit-ready plans?',
+        a: 'You need permit-ready plans whenever you plan to pull a building permit — which is required for structural changes, additions, ADUs, new construction, and most work that affects the building envelope or mechanical systems. AI concepts help you decide what you want before investing in full architectural drawings.',
+      },
+      {
+        q: 'Can I use existing plans for permit services?',
+        a: 'Yes. If you already have architect-stamped or engineer-stamped drawings, our permit service team can prepare and submit your permit application directly without needing to create new plans.',
+      },
+      {
+        q: 'What if I don\'t have plans yet?',
+        a: 'Start with an AI concept package to clarify your vision, then move to our Design Services for permit-ready architectural drawings. Our team can coordinate the full sequence — concept → design → permit — so nothing falls through the cracks.',
+      },
+      {
+        q: 'What happens after the AI concept?',
+        a: 'After receiving your concept package, you have several options: (1) use it to get contractor bids for non-permit work; (2) move to Design Services for permit-ready plans; (3) use it to match with a contractor through our Marketplace. Your consultation call covers next steps for your specific project.',
       },
       {
         q: 'How much does an AI concept package cost?',
@@ -51,6 +76,10 @@ const SECTIONS = [
         a: 'Every contractor in our network undergoes license verification, insurance confirmation, and background screening. We also collect and display verified project reviews.',
       },
       {
+        q: 'How does Kealee screen contractors?',
+        a: 'Our contractor network is screened for active state licensing, liability insurance, and project fit. We verify license status through state contractor boards, confirm insurance certificates directly, and review experience against your project type. Contractors who do not meet our standards are not admitted to the network.',
+      },
+      {
         q: 'How do I join as a GC, builder, or contractor?',
         a: 'Visit /contractor/register and complete the application. Our team reviews your license, insurance, and experience, and if approved, you will start receiving matched project opportunities.',
       },
@@ -67,6 +96,10 @@ const SECTIONS = [
       {
         q: 'How do escrow payments work?',
         a: 'Kealee uses milestone-based escrow payments. Funds are held securely and released to your contractor only when you approve each project milestone. This protects you as a homeowner while giving contractors confidence in payment.',
+      },
+      {
+        q: 'What does milestone pay / escrow protect?',
+        a: 'Milestone-based escrow protects you from overpaying for incomplete work. Funds are held by a neutral third party and only released when you approve a completed milestone — such as framing inspection passing, rough-in complete, or final punch list signed. This means contractors are motivated to complete each phase on time, and you are never left paying for work that was not done.',
       },
       {
         q: 'What happens if I have a dispute with my contractor?',
@@ -148,6 +181,16 @@ export default function FAQPage() {
                 {s.title}
               </a>
             ))}
+          </div>
+
+          {/* Ask bar */}
+          <div className="mt-8 mx-auto max-w-xl">
+            <div className="rounded-2xl p-4" style={{ backgroundColor: '#1A2B4A' }}>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-white/50 text-center">
+                Can&apos;t find your answer? Ask anything
+              </p>
+              <AskAnythingBar context="default" />
+            </div>
           </div>
         </div>
       </section>
