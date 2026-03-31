@@ -9,7 +9,7 @@ export default function ProjectTypesSection() {
     <div className="sec" id="projects">
       <div className="ey">Project types</div>
       <h2 className="h2">Pick your project</h2>
-      <p className="sub">Each card below starts with a $395 concept report unless noted. Click any card to see how the process works.</p>
+      <p className="sub">Each project below starts with a $395 concept report unless noted. Click any to see how the process works.</p>
       <div className="ptg">
         {/* Kitchen — spans 2 cols & 2 rows */}
         <div className="ptc s2" style={{ cursor: 'pointer' }} onClick={() => openModal({ tag: 'Most common project', title: 'Kitchen Remodels & Home Additions', description: 'You upload photos of your existing kitchen or the space for your addition. We generate a floor plan, check your zoning and setbacks, estimate a cost band, and identify your permit requirements — delivered the next day.', thumbUrl: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1000&q=60&auto=format&fit=crop' })}>
@@ -117,11 +117,11 @@ export default function ProjectTypesSection() {
           <div className="ptb"><div className="ptpre">Drainage specialists</div><h3>Water mitigation &amp; drainage</h3><p>Grading · French drain · Waterproofing</p></div>
         </Link>
         {/* Other */}
-        <Link href="/intake?type=other" className="ptc" style={{ background: 'var(--smoke2)', border: '2px dashed var(--b2)' }}>
+        <Link href="/intake/other" className="ptc" style={{ background: 'var(--smoke2)', border: '2px dashed var(--b2)' }}>
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, textAlign: 'center', gap: 10 }}>
             <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--w)', border: '1.5px solid var(--b2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, color: 'var(--smokedk)' }}>+</div>
-            <h3 style={{ fontSize: 16, color: 'var(--ink2)' }}>My project type isn&apos;t listed</h3>
-            <p style={{ fontSize: 12, color: 'var(--ink3)', lineHeight: 1.6 }}>Bathroom remodel, commercial buildout, historic renovation, and more — describe your project and we&apos;ll scope it.</p>
+            <h3 style={{ fontSize: 16, color: 'var(--ink2)' }}>Something else</h3>
+            <p style={{ fontSize: 12, color: 'var(--ink3)', lineHeight: 1.6 }}>Not sure where your project fits? Tell us and we&apos;ll guide you.</p>
             <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--o)' }}>Tell us about your project →</span>
           </div>
         </Link>

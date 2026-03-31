@@ -10,7 +10,7 @@ export default function MarketplaceTeaserSection() {
       <div className="mkti">
         <div className="ey">Construction marketplace</div>
         <h2 className="h2">Every trade. Every service. One platform.</h2>
-        <p className="sub">Licensed, insured, and background-checked. We turned down 40% of applicants. Matched by trade, county, and capacity.</p>
+        <p className="sub">Contractor network screened for licensing, insurance, and fit. Matched by trade, county, and capacity.</p>
 
         <div className="mkt-layout">
           {/* GC — tall */}

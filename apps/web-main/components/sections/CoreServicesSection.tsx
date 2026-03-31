@@ -31,6 +31,7 @@ export default function CoreServicesSection() {
                 <div className="tr"><span className="trn">Advanced AI Concept — 3 options</span><span className="trp">$495</span></div>
                 <div className="tr"><span className="trn">Full Design Package</span><span className="trp">starting at $4,499</span></div>
               </div>
+              <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>Pre-design concept only — not a permit-ready plan. <Link href="/design-services" style={{ color: 'var(--o)' }}>Need permit-ready plans?</Link></p>
               <Link href="/concept" className="scta">Start your design</Link>
             </div>
           </div>
@@ -55,6 +56,7 @@ export default function CoreServicesSection() {
                 <div className="tr"><span className="trn">Permit Coordination</span><span className="trp">$2,750</span></div>
                 <div className="tr"><span className="trn">Permit Expediting</span><span className="trp">$5,500</span></div>
               </div>
+              <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>Requires existing plans or architectural documents. <Link href="/design-services" style={{ color: 'var(--o)' }}>Get plans first →</Link></p>
               <Link href="/permits" className="scta">View permit services</Link>
             </div>
           </div>

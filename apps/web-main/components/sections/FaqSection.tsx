@@ -24,8 +24,40 @@ const FAQS = [
     a: 'Always free: your homeowner or project owner dashboard, the AI estimate, the permit checklist, standard contractor assignment, and self-managed project tracking. The $395 concept report is where most projects start. Every other service — detailed estimate, permit filing, PM advisory — is per-service and optional.',
   },
   {
+    q: 'What is the difference between AI concept and architectural services?',
+    a: 'AI concept is a pre-design service: you get a floor plan sketch, cost band, zoning check, and permit scope to help you plan and budget. It is not permit-ready. Architectural services produce licensed, stamped drawings required to pull a permit for complex projects. If your project scores above DCS 41 or exceeds $65,000, we route you to a licensed architect.',
+  },
+  {
+    q: 'Can I use my AI concept to get a permit?',
+    a: 'No. AI concept is a pre-design planning tool only. Permit submissions require architect-stamped, jurisdiction-specific construction documents. See our Design Services page for permit-ready plan packages.',
+  },
+  {
+    q: 'When do I need permit-ready plans?',
+    a: 'Any structural work, additions, ADUs, finished basements, major electrical or plumbing changes, and new construction require permit-ready drawings. Simple cosmetic work (paint, flooring, cabinet refacing) generally does not. The free Permit Guidance Checklist tells you exactly what your project requires.',
+  },
+  {
+    q: 'Can I use my existing plans for permit services?',
+    a: 'Yes. If you already have architect-stamped drawings, upload them during permit intake. We review them for jurisdiction compliance, prepare the submission package, and file on your behalf.',
+  },
+  {
+    q: 'What if I don\'t have plans yet?',
+    a: 'Start with AI concept to plan and budget, then move to Design Services for permit-ready drawings. We offer a Design Starter package from $1,200 that produces stamped drawings for straightforward residential projects.',
+  },
+  {
+    q: 'What happens after my AI concept is delivered?',
+    a: 'You can move to Design Services for permit-ready plans, start the permit intake directly if you already have plans, request a detailed cost estimate, or browse the contractor marketplace. Your concept report includes a recommended next step.',
+  },
+  {
+    q: 'How does Kealee screen contractors?',
+    a: 'Every contractor in our network goes through state license verification (DC, MD, or VA), general liability insurance check, bond verification where required, identity verification, and a credentials review. Verified status is re-checked annually. Contractors are removed immediately on failed re-verification.',
+  },
+  {
     q: 'How does contractor verification work?',
-    a: 'State license check (DC, MD, or VA), general liability insurance verification, bond verification where required, identity verification, and credentials review. We turned down 40% of applicants in our last intake cycle. Verified status re-checked annually. Contractors removed immediately on failed re-verification.',
+    a: 'State license check (DC, MD, or VA), general liability insurance verification, bond verification where required, identity verification, and credentials review. Contractor network screened for licensing, insurance, and fit. Verified status re-checked annually. Contractors removed immediately on failed re-verification.',
+  },
+  {
+    q: 'What does milestone pay / escrow protect me from?',
+    a: 'Milestone pay prevents contractors from demanding large upfront payments. Funds are held in escrow and released only after you approve each completed phase. You are never required to pay for work not yet done. Each release collects a conditional lien waiver, and the final 10% retainage releases only after punch list sign-off and an unconditional lien waiver.',
   },
   {
     q: 'How does milestone escrow work?',

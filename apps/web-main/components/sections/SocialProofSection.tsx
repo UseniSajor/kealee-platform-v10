@@ -8,7 +8,7 @@ export default function SocialProofSection() {
         <div className="pn"><div className="pnv">23yr</div><div className="pnl">In DMV construction — Kealee LLC est. 2002</div></div>
         <div className="pn"><div className="pnv">$4,890</div><div className="pnl">Typical fully-managed project cost</div></div>
         <div className="pn"><div className="pnv">24hr</div><div className="pnl">From photo upload to concept delivery</div></div>
-        <div className="pn"><div className="pnv">40%</div><div className="pnl">Of contractor applicants turned down — not verified</div></div>
+        <div className="pn"><div className="pnv">100%</div><div className="pnl">Of contractors screened for licensing, insurance, and fit</div></div>
       </div>
       <div className="trow">
         <div className="tc">
