@@ -11,16 +11,18 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { Menu, ArrowRight } from 'lucide-react'
+import { Menu, ArrowRight, ChevronDown } from 'lucide-react'
 import { NavItem } from './NavItem'
 import { MobileNav } from './MobileNav'
-import { PRIMARY_NAV, NAV_CTA_PRIMARY, NAV_CTA_SECONDARY, NAV_LOGIN } from '@/config/navigation'
+import { PRIMARY_NAV, NAV_CTA_PRIMARY, NAV_LOGIN_OPTIONS } from '@/config/navigation'
 
 export function GlobalNav() {
-  const [mobileOpen,   setMobileOpen]   = useState(false)
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
-  const [scrolled,     setScrolled]     = useState(false)
-  const navRef = useRef<HTMLElement>(null)
+  const [mobileOpen,    setMobileOpen]    = useState(false)
+  const [openDropdown,  setOpenDropdown]  = useState<string | null>(null)
+  const [loginOpen,     setLoginOpen]     = useState(false)
+  const [scrolled,      setScrolled]      = useState(false)
+  const navRef    = useRef<HTMLElement>(null)
+  const loginRef  = useRef<HTMLDivElement>(null)
 
   // Scroll shadow
   useEffect(() => {
@@ -29,10 +31,11 @@ export function GlobalNav() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   const handleOutsideClick = useCallback((e: MouseEvent) => {
     if (navRef.current && !navRef.current.contains(e.target as Node)) {
       setOpenDropdown(null)
+      setLoginOpen(false)
     }
   }, [])
 
@@ -41,9 +44,14 @@ export function GlobalNav() {
     return () => document.removeEventListener('mousedown', handleOutsideClick)
   }, [handleOutsideClick])
 
-  // Close dropdown on Escape
+  // Close dropdowns on Escape
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenDropdown(null) }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpenDropdown(null)
+        setLoginOpen(false)
+      }
+    }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [])
@@ -56,6 +64,12 @@ export function GlobalNav() {
 
   function toggleDropdown(label: string) {
     setOpenDropdown(s => s === label ? null : label)
+    setLoginOpen(false)
+  }
+
+  function toggleLogin() {
+    setLoginOpen(s => !s)
+    setOpenDropdown(null)
   }
 
   return (
@@ -70,11 +84,11 @@ export function GlobalNav() {
           <Link
             href="/"
             className="flex flex-shrink-0 items-center gap-2.5"
-            onClick={() => setOpenDropdown(null)}
+            onClick={() => { setOpenDropdown(null); setLoginOpen(false) }}
           >
             <div
               className="flex h-8 w-8 items-center justify-center rounded-lg"
-              style={{ backgroundColor: '#E8793A' }}
+              style={{ backgroundColor: '#C8521A' }}
             >
               <span className="text-sm font-bold text-white font-display">K</span>
             </div>
@@ -94,25 +108,42 @@ export function GlobalNav() {
             ))}
           </nav>
 
-          {/* Desktop right — login + CTAs */}
+          {/* Desktop right — login dropdown + CTA */}
           <div className="hidden items-center gap-2 lg:flex">
-            <Link
-              href={NAV_LOGIN.href}
-              className="rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:text-[#1A2B4A]"
-            >
-              {NAV_LOGIN.label}
-            </Link>
-            <Link
-              href={NAV_CTA_SECONDARY.href}
-              className="rounded-lg border px-4 py-2 text-sm font-semibold transition-colors hover:bg-teal-50"
-              style={{ borderColor: '#2ABFBF', color: '#2ABFBF' }}
-            >
-              {NAV_CTA_SECONDARY.label}
-            </Link>
+
+            {/* Login dropdown */}
+            <div className="relative" ref={loginRef}>
+              <button
+                onClick={toggleLogin}
+                className="flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:text-[#1A2B4A]"
+                aria-expanded={loginOpen}
+              >
+                Log In
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${loginOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {loginOpen && (
+                <div className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl">
+                  {NAV_LOGIN_OPTIONS.map(opt => (
+                    <Link
+                      key={opt.href}
+                      href={opt.href}
+                      onClick={() => setLoginOpen(false)}
+                      className="block px-4 py-3 transition-colors hover:bg-gray-50"
+                    >
+                      <p className="text-sm font-semibold text-gray-800">{opt.label}</p>
+                      <p className="mt-0.5 text-xs text-gray-400">{opt.description}</p>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Primary CTA */}
             <Link
               href={NAV_CTA_PRIMARY.href}
               className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-white transition-all hover:opacity-90"
-              style={{ backgroundColor: '#E8793A' }}
+              style={{ backgroundColor: '#C8521A' }}
             >
               {NAV_CTA_PRIMARY.label}
               <ArrowRight className="h-3.5 w-3.5" />

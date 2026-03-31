@@ -66,7 +66,7 @@ const FAQ = [
   },
   {
     q: 'Does this include construction or installation?',
-    a: 'No. All onsite construction is performed by your contractor of record. Kealee provides AI design, advisory, and contractor matching services only.',
+    a: 'No. All onsite construction is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.',
   },
   {
     q: 'Can you design a home addition or ADU?',

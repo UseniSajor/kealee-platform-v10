@@ -2,7 +2,7 @@
  * Health Check Routes
  *
  * GET /health       - Basic liveness probe (always fast, no external deps)
- * GET /health/ready - Readiness probe (verifies database connectivity)
+ * GET /health/ready - Readiness probe (verifies database + Redis connectivity)
  *
  * These endpoints require NO authentication so that container orchestrators
  * (Railway, Docker, Kubernetes) can probe them freely.
@@ -24,32 +24,41 @@ export const healthRoutes: FastifyPluginAsync = async (fastify) => {
     })
   })
 
-  // ── GET /health/ready — readiness check (includes DB connectivity) ──────
+  // ── GET /health/ready — readiness check (DB + Redis) ────────────────────
   fastify.get('/health/ready', async (_request, reply) => {
     const timestamp = new Date().toISOString()
+    const checks: Record<string, string> = {}
+    let overallStatus: 'ok' | 'degraded' = 'ok'
 
+    // ── Database check ─────────────────────────────────────────────────────
     try {
-      // Lightweight query to verify the database connection is alive
       await (prisma as any).$queryRaw`SELECT 1`
-
-      return reply.send({
-        status: 'ok',
-        checks: {
-          database: 'connected',
-        },
-        timestamp,
-      })
+      checks.database = 'connected'
     } catch (err: any) {
-      fastify.log.error(err, 'Health readiness check failed — database unreachable')
-
-      return reply.code(503).send({
-        status: 'degraded',
-        checks: {
-          database: 'disconnected',
-        },
-        error: err?.message || 'Database connectivity check failed',
-        timestamp,
-      })
+      checks.database = 'disconnected'
+      overallStatus = 'degraded'
+      fastify.log.error(err, 'Health check: database unreachable')
     }
+
+    // ── Redis check (non-fatal — jobs degrade gracefully without Redis) ────
+    try {
+      const { Redis } = await import('ioredis')
+      const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+        connectTimeout: 3000,
+        maxRetriesPerRequest: 1,
+        lazyConnect: true,
+      })
+      await redis.connect()
+      await redis.ping()
+      await redis.quit()
+      checks.redis = 'connected'
+    } catch (err: any) {
+      checks.redis = 'disconnected'
+      // Redis failure is non-fatal — warn but don't degrade overall status
+      fastify.log.warn('Health check: Redis unreachable (non-fatal)')
+    }
+
+    const code = overallStatus === 'ok' ? 200 : 503
+    return reply.code(code).send({ status: overallStatus, checks, timestamp })
   })
 }

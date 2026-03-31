@@ -70,8 +70,8 @@ export default function PermitsHubPage() {
             <p className="text-gray-600 leading-relaxed">
               Most permit delays aren't caused by the jurisdiction — they're caused by incomplete
               submissions. A single missing note, incorrect setback dimension, or unstamped drawing
-              sends you back to the end of the queue. Kealee prepares permit-ready packages
-              engineered for first-cycle approval.
+              sends you back to the end of the queue. Kealee&apos;s AI reviews your package before
+              submission, engineered for first-cycle approval.
             </p>
           </div>
         </Container>
@@ -182,6 +182,27 @@ export default function PermitsHubPage() {
               </div>
             </div>
           ))}
+        </Container>
+      </section>
+
+      {/* ── Nationwide CTA strip ──────────────────────────────────────── */}
+      <section className="py-10 border-t border-gray-100 bg-white">
+        <Container width="lg">
+          <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
+            <div>
+              <p className="font-semibold" style={{ color: '#1A1C1B' }}>
+                Don&apos;t see your county?
+              </p>
+              <p className="text-sm text-gray-500">We file nationwide. Tell us your jurisdiction and we&apos;ll confirm coverage within 24 hours.</p>
+            </div>
+            <Link
+              href="/contact"
+              className="flex-shrink-0 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ background: '#C8521A' }}
+            >
+              Contact us →
+            </Link>
+          </div>
         </Container>
       </section>
 

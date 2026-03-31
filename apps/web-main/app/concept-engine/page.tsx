@@ -13,7 +13,7 @@ const PATHS = [
     color:       '#2ABFBF',
     title:       'Exterior Design',
     description: 'Facade, curb appeal, landscaping, hardscaping, and outdoor living — see your exterior transformed.',
-    href:        '/concept-engine/homeowner',
+    href:        '/concept-engine/exterior',
     price:       'From $395 · Consultation included',
   },
   {

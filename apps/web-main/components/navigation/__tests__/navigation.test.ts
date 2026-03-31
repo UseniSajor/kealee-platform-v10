@@ -6,8 +6,7 @@
 import {
   PRIMARY_NAV,
   NAV_CTA_PRIMARY,
-  NAV_CTA_SECONDARY,
-  NAV_LOGIN,
+  NAV_LOGIN_OPTIONS,
   FOOTER_NAV,
   type NavItem,
 } from '../../../config/navigation'
@@ -59,21 +58,20 @@ describe('PRIMARY_NAV', () => {
     })
   })
 
-  it('includes a Marketplace nav item', () => {
-    const marketplace = PRIMARY_NAV.find(i => i.label === 'Marketplace')
-    expect(marketplace).toBeDefined()
+  it('includes a Pricing nav item', () => {
+    const pricing = PRIMARY_NAV.find(i => i.label === 'Pricing')
+    expect(pricing).toBeDefined()
   })
 
-  it('includes role nav items for Homeowners, Developers, Contractors', () => {
+  it('includes role nav items for Contractors and Developers', () => {
     const labels = PRIMARY_NAV.map(i => i.label)
-    expect(labels).toContain('For Homeowners')
-    expect(labels).toContain('For Developers')
     expect(labels).toContain('For Contractors')
+    expect(labels).toContain('For Developers')
   })
 
-  it('About item has correct href', () => {
-    const about = PRIMARY_NAV.find(i => i.label === 'About')
-    expect(about?.href).toBe('/about')
+  it('AI Concept Engine item points to /concept', () => {
+    const conceptItem = PRIMARY_NAV.find(i => i.label === 'AI Concept Engine')
+    expect(conceptItem?.href).toBe('/concept')
   })
 })
 
@@ -85,14 +83,18 @@ describe('NAV CTAs', () => {
     expect(NAV_CTA_PRIMARY.href).toMatch(/^\//)
   })
 
-  it('NAV_CTA_SECONDARY has label and href', () => {
-    expect(typeof NAV_CTA_SECONDARY.label).toBe('string')
-    expect(NAV_CTA_SECONDARY.href).toMatch(/^\//)
+  it('NAV_LOGIN_OPTIONS is a non-empty array with label and href', () => {
+    expect(Array.isArray(NAV_LOGIN_OPTIONS)).toBe(true)
+    expect(NAV_LOGIN_OPTIONS.length).toBeGreaterThan(0)
+    NAV_LOGIN_OPTIONS.forEach(opt => {
+      expect(typeof opt.label).toBe('string')
+      expect(opt.href).toMatch(/^\//)
+    })
   })
 
-  it('NAV_LOGIN has label and href', () => {
-    expect(typeof NAV_LOGIN.label).toBe('string')
-    expect(NAV_LOGIN.href).toMatch(/^\//)
+  it('NAV_LOGIN_OPTIONS includes a client/contractor login option', () => {
+    const client = NAV_LOGIN_OPTIONS.find(o => o.href === '/auth/sign-in')
+    expect(client).toBeDefined()
   })
 })
 
@@ -125,6 +127,11 @@ describe('FOOTER_NAV', () => {
     const labels = FOOTER_NAV.legal.map(l => l.label)
     expect(labels.some(l => l.toLowerCase().includes('terms'))).toBe(true)
     expect(labels.some(l => l.toLowerCase().includes('privacy'))).toBe(true)
+  })
+
+  it('portals section does NOT contain Command Center or OS Admin', () => {
+    const labels = FOOTER_NAV.portals.map(l => l.label.toLowerCase())
+    expect(labels.every(l => !l.includes('command') && !l.includes('admin'))).toBe(true)
   })
 })
 

@@ -177,6 +177,8 @@ function validateStartupGuards() {
 
 // Run startup guards immediately after environment loading
 validateStartupGuards()
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('./env').validateEnv()
 
 // Validate all required / optional env vars and log warnings for missing ones
 import { validateEnv } from './utils/env-validation'

@@ -101,7 +101,7 @@ export default function GardenConceptEnginePage() {
                 </Link>
               </div>
               <p className="mt-4 text-xs text-gray-400">
-                All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, advisory, and contractor matching services only.
+                All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.
               </p>
             </div>
             <div className="lg:w-72 shrink-0">
@@ -125,8 +125,98 @@ export default function GardenConceptEnginePage() {
         </div>
       </section>
 
+      {/* Garden design packages */}
+      <section className="py-20" style={{ backgroundColor: '#F7FAFC' }}>
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="section-label" style={{ color: '#38A169' }}>Packages</span>
+            <h2 className="mt-3 text-2xl font-bold font-display sm:text-3xl" style={{ color: '#1A2B4A' }}>
+              Garden Design Packages
+            </h2>
+            <p className="mt-3 text-gray-500">Choose the package that fits your garden goals.</p>
+          </div>
+          <div className="mt-12 grid gap-6 lg:grid-cols-3">
+            {([
+              {
+                name: 'AI Garden Concept',
+                price: '$395',
+                rounds: '1 feedback round',
+                turnaround: '5–7 business days',
+                desc: 'Property-specific garden layout with raised beds, irrigation overview, and planting guide.',
+                items: ['3 garden layout options', 'Raised bed placement plan', 'Irrigation overview', 'Seasonal planting calendar', '30-min consultation'],
+                cta: 'Start My Garden Concept',
+                href: '/intake/garden_concept',
+                popular: false,
+              },
+              {
+                name: 'Advanced Garden Design',
+                price: '$750',
+                rounds: 'Up to 3 feedback rounds',
+                turnaround: '10–14 business days',
+                desc: 'Detailed garden design with plant lists, irrigation specs, and 3D garden views.',
+                items: ['Everything in AI Concept', 'Detailed plant + variety list', 'Drip irrigation specs', '3D garden views', '60-min consultation'],
+                cta: 'Start Advanced Design',
+                href: '/intake/garden_concept',
+                popular: true,
+              },
+              {
+                name: 'Full Landscape Design',
+                price: 'From $2,500',
+                rounds: 'Up to 5 rounds',
+                turnaround: '2–3 weeks',
+                desc: 'Permit-ready landscape plans with full contractor bid documents.',
+                items: ['Everything in Advanced', 'Permit-ready drawings', 'Contractor bid documents', 'Irrigation system plan', 'Grading + drainage plan'],
+                cta: 'Contact Us',
+                href: '/contact',
+                popular: false,
+              },
+            ] as const).map((tier, i) => (
+              <div
+                key={tier.name}
+                className="relative flex flex-col rounded-xl bg-white p-6"
+                style={{
+                  boxShadow: tier.popular ? `0 10px 25px -5px #38A16940` : '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+                  border: tier.popular ? `2px solid #38A169` : '1px solid #E5E7EB',
+                }}
+              >
+                {tier.popular && (
+                  <span className="absolute right-4 top-4 rounded-full px-2 py-0.5 text-xs font-semibold text-white" style={{ backgroundColor: '#38A169' }}>
+                    Most Popular
+                  </span>
+                )}
+                <h3 className="font-bold font-display" style={{ color: '#1A2B4A' }}>{tier.name}</h3>
+                <div className="my-3">
+                  <span className="text-3xl font-bold font-mono" style={{ color: '#38A169' }}>{tier.price}</span>
+                </div>
+                <p className="text-xs text-gray-500 mb-1">{tier.rounds} · {tier.turnaround}</p>
+                <p className="text-sm text-gray-600 mb-4">{tier.desc}</p>
+                <ul className="flex-1 space-y-2 mb-6">
+                  {tier.items.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
+                      <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={tier.href}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg py-3 text-sm font-semibold transition-all hover:opacity-90"
+                  style={{
+                    backgroundColor: tier.popular ? '#38A169' : 'transparent',
+                    color: tier.popular ? '#fff' : '#38A169',
+                    border: tier.popular ? 'none' : `2px solid #38A169`,
+                  }}
+                >
+                  {tier.cta}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
-      <section className="py-20">
+      <section className="py-20" style={{ backgroundColor: '#F7FAFC' }}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="text-2xl font-bold sm:text-3xl" style={{ color: '#1A2B4A' }}>
@@ -153,7 +243,7 @@ export default function GardenConceptEnginePage() {
       </section>
 
       {/* Trust signals */}
-      <section className="border-t border-gray-100 py-12" style={{ backgroundColor: '#F7FAFC' }}>
+      <section className="border-t border-gray-100 py-12">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-500">
             <span className="flex items-center gap-2">

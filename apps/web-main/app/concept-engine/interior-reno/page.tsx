@@ -102,7 +102,7 @@ export default function InteriorRenoConceptEnginePage() {
                 </Link>
               </div>
               <p className="mt-4 text-xs text-white/50">
-                All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, advisory, and contractor matching services only.
+                All onsite installation and build work is performed by your contractor of record. Kealee provides AI design, final design packages, permit filing, advisory, and contractor matching services only.
               </p>
             </div>
             <div className="lg:w-72 shrink-0">
@@ -126,8 +126,98 @@ export default function InteriorRenoConceptEnginePage() {
         </div>
       </section>
 
+      {/* Interior reno packages */}
+      <section className="py-20" style={{ backgroundColor: '#F7FAFC' }}>
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="section-label" style={{ color: '#7C3AED' }}>Packages</span>
+            <h2 className="mt-3 text-2xl font-bold font-display sm:text-3xl" style={{ color: '#1A2B4A' }}>
+              Interior Reno Packages
+            </h2>
+            <p className="mt-3 text-gray-500">Kitchen, bath, addition, ADU — pick the right level for your project.</p>
+          </div>
+          <div className="mt-12 grid gap-6 lg:grid-cols-3">
+            {([
+              {
+                name: 'AI Interior Concept',
+                price: '$395',
+                rounds: '1 feedback round',
+                turnaround: '5–7 business days',
+                desc: 'AI layout concept with finish direction and rough cost range.',
+                items: ['3 interior layout options', 'Finish + material direction', 'Rough cost range', 'Fixture + appliance overview', '30-min consultation'],
+                cta: 'Start My Interior Concept',
+                href: '/intake/interior_reno_concept',
+                popular: false,
+              },
+              {
+                name: 'Advanced Interior Design',
+                price: '$899',
+                rounds: 'Up to 3 feedback rounds',
+                turnaround: '10–14 business days',
+                desc: 'Detailed floor plans, 3D views, material boards, and contractor-ready scope.',
+                items: ['Everything in AI Concept', 'Detailed floor plans', '3D interior views', 'Material + finish boards', '60-min consultation'],
+                cta: 'Start Advanced Design',
+                href: '/intake/interior_reno_concept',
+                popular: true,
+              },
+              {
+                name: 'Full Design Package',
+                price: 'From $4,500',
+                rounds: 'Up to 5 rounds',
+                turnaround: '3–5 weeks',
+                desc: 'Permit-ready drawings with structural coordination and full specifications.',
+                items: ['Everything in Advanced', 'Permit-ready drawings', 'Structural coordination', 'Full specifications', 'Contractor bid documents'],
+                cta: 'Contact Us',
+                href: '/contact',
+                popular: false,
+              },
+            ] as const).map((tier) => (
+              <div
+                key={tier.name}
+                className="relative flex flex-col rounded-xl bg-white p-6"
+                style={{
+                  boxShadow: tier.popular ? `0 10px 25px -5px #7C3AED40` : '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+                  border: tier.popular ? `2px solid #7C3AED` : '1px solid #E5E7EB',
+                }}
+              >
+                {tier.popular && (
+                  <span className="absolute right-4 top-4 rounded-full px-2 py-0.5 text-xs font-semibold text-white" style={{ backgroundColor: '#7C3AED' }}>
+                    Most Popular
+                  </span>
+                )}
+                <h3 className="font-bold font-display" style={{ color: '#1A2B4A' }}>{tier.name}</h3>
+                <div className="my-3">
+                  <span className="text-3xl font-bold font-mono" style={{ color: '#7C3AED' }}>{tier.price}</span>
+                </div>
+                <p className="text-xs text-gray-500 mb-1">{tier.rounds} · {tier.turnaround}</p>
+                <p className="text-sm text-gray-600 mb-4">{tier.desc}</p>
+                <ul className="flex-1 space-y-2 mb-6">
+                  {tier.items.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
+                      <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={tier.href}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg py-3 text-sm font-semibold transition-all hover:opacity-90"
+                  style={{
+                    backgroundColor: tier.popular ? '#7C3AED' : 'transparent',
+                    color: tier.popular ? '#fff' : '#7C3AED',
+                    border: tier.popular ? 'none' : `2px solid #7C3AED`,
+                  }}
+                >
+                  {tier.cta}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
-      <section className="py-20">
+      <section className="py-20" style={{ backgroundColor: '#F7FAFC' }}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="text-2xl font-bold sm:text-3xl" style={{ color: '#1A2B4A' }}>
@@ -154,7 +244,7 @@ export default function InteriorRenoConceptEnginePage() {
       </section>
 
       {/* Trust signals */}
-      <section className="border-t border-gray-100 py-12" style={{ backgroundColor: '#F7FAFC' }}>
+      <section className="border-t border-gray-100 py-12">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-500">
             <span className="flex items-center gap-2">
@@ -173,38 +263,6 @@ export default function InteriorRenoConceptEnginePage() {
               <CheckCircle className="h-4 w-4 text-green-500" />
               Consultation included
             </span>
-          </div>
-        </div>
-      </section>
-
-      {/* Revision tiers */}
-      <section className="py-16">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-xl font-bold text-center" style={{ color: '#1A2B4A' }}>Interior reno packages</h2>
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-            {[
-              { tier: 'AI Interior Concept', price: '$395', revisions: '1 round (3 options)', note: 'Layout + finish direction + rough cost range' },
-              { tier: 'Advanced Interior Design', price: '$899', revisions: 'Up to 3 rounds', note: 'Detailed floor plans + 3D views + material boards + contractor scope', highlight: true },
-              { tier: 'Full Design Package', price: '$4,500+', revisions: 'Up to 5 rounds', note: 'Permit-ready drawings + structural coordination + full specifications' },
-            ].map((row, i) => (
-              <div
-                key={row.tier}
-                className="flex items-center justify-between px-5 py-4"
-                style={{
-                  backgroundColor: row.highlight ? 'rgba(124,58,237,0.04)' : i % 2 === 0 ? 'white' : '#FAFAFA',
-                  borderBottom: i < 2 ? '1px solid #F3F4F6' : undefined,
-                }}
-              >
-                <div>
-                  <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>{row.tier}</p>
-                  <p className="mt-0.5 text-xs text-gray-400">{row.note}</p>
-                </div>
-                <div className="ml-4 text-right shrink-0">
-                  <p className="text-sm font-bold" style={{ color: '#7C3AED' }}>{row.price}</p>
-                  <p className="text-xs text-gray-500">{row.revisions}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
