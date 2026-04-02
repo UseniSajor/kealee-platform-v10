@@ -1,4 +1,18 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { RETRIEVE_CONTEXT_TOOL_DEF } from '@kealee/ai/tools/retrieve-relevant-context.js';
+
+const API_BASE = process.env.API_BASE_URL ?? 'https://kealee-platform-v10-staging.up.railway.app'
+
+async function apiGet(path: string): Promise<unknown> {
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!res.ok) return null
+    return res.json()
+  } catch { return null }
+}
 
 const CONFIG: BotConfig = {
   name: 'keabot-permit',
@@ -15,6 +29,8 @@ Your capabilities:
 - Generate permit applications with pre-filled data
 
 Rules:
+- ALWAYS call retrieve_relevant_context FIRST with sourceType="JURISDICTION_GUIDE" for jurisdiction-specific questions
+- Always call retrieve_relevant_context with sourceType="PERMIT_APPLICATION" to find similar past projects
 - Always call OS service APIs for data operations (never access DB directly)
 - If a request falls outside your domain, hand off to the appropriate bot
 - Reference specific code sections and jurisdictional requirements when possible
@@ -28,6 +44,13 @@ export class KeaBotPermit extends KeaBot {
 
   async initialize(): Promise<void> {
     this.registerTool({
+      name: RETRIEVE_CONTEXT_TOOL_DEF.name,
+      description: RETRIEVE_CONTEXT_TOOL_DEF.description,
+      parameters: RETRIEVE_CONTEXT_TOOL_DEF.parameters as any,
+      handler: RETRIEVE_CONTEXT_TOOL_DEF.handler as any,
+    });
+
+    this.registerTool({
       name: 'check_requirements',
       description: 'Check permit requirements for a project type and jurisdiction',
       parameters: {
@@ -36,21 +59,15 @@ export class KeaBotPermit extends KeaBot {
         scopeDescription: { type: 'string', description: 'Brief description of project scope', required: false },
       },
       handler: async (params) => {
+        const data = await apiGet(
+          `/api/v1/permits/requirements?jurisdiction=${encodeURIComponent(params.jurisdiction as string)}&type=${encodeURIComponent(params.projectType as string)}`
+        );
+        if (data) return data;
         return {
           projectType: params.projectType,
           jurisdiction: params.jurisdiction,
-          requiredPermits: [
-            { type: 'Building Permit', authority: 'City Building Dept', estimatedReviewTime: '6-8 weeks', fee: '$8,500' },
-            { type: 'Grading Permit', authority: 'City Engineering', estimatedReviewTime: '4-6 weeks', fee: '$3,200' },
-            { type: 'Stormwater Permit', authority: 'DEQ', estimatedReviewTime: '8-12 weeks', fee: '$2,100' },
-            { type: 'Fire Life Safety Review', authority: 'Fire Marshal', estimatedReviewTime: '3-4 weeks', fee: '$1,800' },
-          ],
-          additionalReviews: [
-            { type: 'Design Review', required: true, note: 'Type III review for projects over 40,000 SF' },
-            { type: 'Traffic Impact Study', required: true, note: 'Required for >50 parking spaces' },
-          ],
-          estimatedTotalTimeline: '12-16 weeks (parallel review)',
-          totalEstimatedFees: 15600,
+          note: 'Call retrieve_relevant_context with jurisdiction and sourceType="JURISDICTION_GUIDE" for detailed requirements.',
+          availabilityEndpoint: `/api/v1/availability/check?service=permit-package&jurisdiction=${params.jurisdiction}`,
         };
       },
     });
@@ -62,16 +79,11 @@ export class KeaBotPermit extends KeaBot {
         projectId: { type: 'string', description: 'The project ID', required: true },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          permits: [
-            { id: 'pmt_001', type: 'Building Permit', number: 'BP-2025-04821', status: 'issued', issuedDate: '2025-10-30', expiresAt: '2027-10-30', inspectionsPassed: 4, inspectionsRemaining: 8 },
-            { id: 'pmt_002', type: 'Grading Permit', number: 'GP-2025-01923', status: 'issued', issuedDate: '2025-09-15', expiresAt: '2026-09-15', inspectionsPassed: 2, inspectionsRemaining: 1 },
-            { id: 'pmt_003', type: 'Stormwater Permit', number: 'SW-2026-00342', status: 'in_review', submitDate: '2026-02-01', reviewCycle: 2, lastComment: 'Revised calculations needed for detention basin' },
-          ],
-          overallStatus: 'active_with_pending',
-          nextAction: 'Respond to stormwater review comments by 2026-03-15',
-        };
+        const data = await apiGet(`/api/v1/permits/status/${params.projectId}`);
+        if (data) return data;
+        const projectData = await apiGet(`/projects/${params.projectId}`) as any;
+        if (projectData) return { projectId: params.projectId, project: projectData, permits: [], note: 'No permit tracking data found for this project.' };
+        return { projectId: params.projectId, permits: [], note: 'Use retrieve_relevant_context with projectId for permit history.' };
       },
     });
 
@@ -84,17 +96,18 @@ export class KeaBotPermit extends KeaBot {
         requestedDate: { type: 'string', description: 'Preferred date for inspection (ISO format)', required: false },
       },
       handler: async (params) => {
+        const data = await apiGet(`/projects/${params.projectId}/inspections`);
+        if (data) return data;
         return {
           projectId: params.projectId,
-          scheduled: [
-            { type: 'Structural Steel - Floors 1-3', date: '2026-03-13', time: '9:00 AM', inspector: 'J. Martinez', status: 'confirmed' },
-            { type: 'Plumbing Rough-In - Floor 1', date: '2026-03-20', time: '10:00 AM', inspector: 'TBD', status: 'requested' },
-          ],
-          upcoming_required: [
-            { type: 'Structural Steel - Floors 4-5', earliest: '2026-03-25', note: 'Must pass floors 1-3 first' },
-            { type: 'Fire Sprinkler Rough-In', earliest: '2026-04-10', note: 'After MEP rough-in complete' },
-          ],
-          jurisdictionNotes: 'Request inspections 48 hours in advance. Online portal available.',
+          note: 'Inspection scheduling via jurisdiction portal. Most require 48h advance notice.',
+          jurisdictionPortals: {
+            'dc': 'dcra.dc.gov',
+            'montgomery-county': 'permittingservices.montgomerycountymd.gov',
+            'fairfax-county': 'fairfaxcounty.gov/permits',
+            'arlington': 'permits.arlingtonva.us',
+            'alexandria-city': 'alexandriava.gov/permits',
+          },
         };
       },
     });
@@ -106,7 +119,6 @@ export class KeaBotPermit extends KeaBot {
 
   shouldHandoff(message: string): HandoffRequest | null {
     const lower = message.toLowerCase();
-
     if (/\b(daily log|progress track|schedule delay|weather impact)\b/.test(lower)) {
       return { fromBot: this.name, toBot: 'keabot-construction', reason: 'Construction execution topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
     }
@@ -116,7 +128,6 @@ export class KeaBotPermit extends KeaBot {
     if (/\b(estimate|cost lookup|rsmeans)\b/.test(lower)) {
       return { fromBot: this.name, toBot: 'keabot-estimate', reason: 'Estimation topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
     }
-
     return null;
   }
 }

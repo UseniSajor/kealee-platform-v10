@@ -14,6 +14,7 @@ import { z } from 'zod'
 import { prismaAny } from '../../utils/prisma-helper'
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
 import { LeadIntelligenceService } from '../../services/lead-intelligence.service.js'
+import { evaluateAvailability } from '../../services/availability.service.js'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2023-10-16' })
 
@@ -114,7 +115,17 @@ export async function permitIntakeRoutes(fastify: FastifyInstance) {
         LeadIntelligenceService.scoreLeadByEmail(body.email, 'permit_start')
       ).catch(() => {})
 
-      return reply.code(201).send({ ok: true, intakeId: lead.id })
+      // Evaluate service availability (fire-and-forget, include in response)
+      const serviceKey = body.hasPlans === 'yes' ? 'permit-package' : 'permit-simple'
+      const availability = await evaluateAvailability({
+        serviceType: serviceKey,
+        projectAddress: body.address,
+        hasPlans: body.hasPlans === 'yes',
+        projectDescription: body.projectDescription,
+        jurisdiction: body.countySlug,
+      }).catch(() => null)
+
+      return reply.code(201).send({ ok: true, intakeId: lead.id, availability })
     } catch (error: any) {
       fastify.log.error(error)
       return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to save permit intake') })
@@ -228,6 +239,45 @@ export async function permitIntakeRoutes(fastify: FastifyInstance) {
       }
     } catch (error: any) {
       return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to look up order') })
+    }
+  })
+
+  // ── GET /permits/path-to-approval?address=...&hasPlans=true&county=dc ────
+  // Returns availability + recommended next step (Section 6 — path to approval)
+  fastify.get('/path-to-approval', async (request, reply) => {
+    try {
+      const query = request.query as Record<string, string>
+      const hasPlans = query.hasPlans === 'true'
+      const serviceKey = hasPlans ? 'permit-package' : 'permit-simple'
+
+      const availability = await evaluateAvailability({
+        serviceType: serviceKey,
+        projectAddress: query.address,
+        hasPlans,
+        projectDescription: query.description,
+        jurisdiction: query.county ?? query.jurisdiction,
+      })
+
+      const steps = hasPlans ? [
+        { step: 1, label: 'Submit permit intake form', status: 'pending' },
+        { step: 2, label: 'Kealee reviews plans and prepares application', status: 'pending' },
+        { step: 3, label: 'Application filed with jurisdiction', status: 'pending' },
+        { step: 4, label: 'Plan review and comment response', status: 'pending' },
+        { step: 5, label: 'Permit issued', status: 'pending' },
+      ] : [
+        { step: 1, label: 'Submit permit intake form', status: 'pending' },
+        { step: 2, label: 'Kealee provides jurisdiction research + checklist', status: 'pending' },
+        { step: 3, label: 'You gather required documents', status: 'pending' },
+        { step: 4, label: 'Upgrade to Full Permit Package for filing', status: 'pending' },
+      ]
+
+      const recommendation = !hasPlans
+        ? { message: 'You will need architect-stamped plans before filing. Consider our Design Services.', cta: { label: 'Get Design Services', href: '/design-services' } }
+        : { message: availability.decision === 'GUARANTEED' ? 'You\'re ready to order — same-day start available.' : 'Start your permit application now.', cta: { label: 'Start Permit', href: '/permits' } }
+
+      return reply.send({ availability, steps, recommendation })
+    } catch (error: any) {
+      return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to evaluate path to approval') })
     }
   })
 }

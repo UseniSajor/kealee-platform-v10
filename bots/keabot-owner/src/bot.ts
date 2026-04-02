@@ -1,4 +1,15 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { RETRIEVE_CONTEXT_TOOL_DEF } from '@kealee/ai/tools/retrieve-relevant-context.js';
+
+const API_BASE = process.env.API_BASE_URL ?? 'https://kealee-platform-v10-staging.up.railway.app'
+
+async function apiGet(path: string): Promise<unknown> {
+  try {
+    const res = await fetch(`${API_BASE}${path}`, { headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(10000) })
+    if (!res.ok) return null
+    return res.json()
+  } catch { return null }
+}
 
 const CONFIG: BotConfig = {
   name: 'keabot-owner',
@@ -14,6 +25,7 @@ Your capabilities:
 - Track milestone completion and upcoming deadlines
 
 Rules:
+- ALWAYS call retrieve_relevant_context to pull relevant project history and context
 - Always call OS service APIs for data operations (never access DB directly)
 - If a request falls outside your domain, hand off to the appropriate bot
 - Present financial data clearly with context (percentage complete, burn rate)
@@ -21,27 +33,30 @@ Rules:
 };
 
 export class KeaBotOwner extends KeaBot {
-  constructor() {
-    super(CONFIG);
-  }
+  constructor() { super(CONFIG); }
 
   async initialize(): Promise<void> {
+    this.registerTool({
+      name: RETRIEVE_CONTEXT_TOOL_DEF.name,
+      description: RETRIEVE_CONTEXT_TOOL_DEF.description,
+      parameters: RETRIEVE_CONTEXT_TOOL_DEF.parameters as any,
+      handler: RETRIEVE_CONTEXT_TOOL_DEF.handler as any,
+    });
+
     this.registerTool({
       name: 'get_my_projects',
       description: 'Get a list of all projects owned by the current user',
       parameters: {
         status: { type: 'string', description: 'Filter by status: active, completed, paused, all', required: false },
+        userId: { type: 'string', description: 'User ID to filter projects', required: false },
       },
       handler: async (params) => {
         const status = (params.status as string) || 'active';
-        return {
-          projects: [
-            { id: 'proj_001', name: 'Downtown Mixed-Use', status: 'active', progress: 42, budget: 2400000 },
-            { id: 'proj_002', name: 'Riverside Condos', status: 'active', progress: 78, budget: 5100000 },
-          ],
-          filter: status,
-          total: 2,
-        };
+        const userId = params.userId as string | undefined;
+        const query = [status !== 'all' ? `status=${status}` : '', userId ? `userId=${userId}` : ''].filter(Boolean).join('&');
+        const data = await apiGet(`/projects${query ? '?' + query : ''}`);
+        if (data) return data;
+        return { projects: [], filter: status, note: 'Use retrieve_relevant_context with projectId for project details.' };
       },
     });
 
@@ -52,19 +67,9 @@ export class KeaBotOwner extends KeaBot {
         projectId: { type: 'string', description: 'The project ID', required: true },
       },
       handler: async (params) => {
-        return {
-          id: params.projectId,
-          name: 'Downtown Mixed-Use',
-          address: '123 Main St, Portland, OR',
-          status: 'active',
-          type: 'mixed-use',
-          startDate: '2025-11-01',
-          targetCompletion: '2026-08-30',
-          gc: { name: 'ABC Builders', contact: 'john@abcbuilders.com' },
-          architect: { name: 'Studio Design Co', contact: 'maria@studiodesign.com' },
-          progress: 42,
-          currentPhase: 'Structural Steel',
-        };
+        const data = await apiGet(`/projects/${params.projectId}`);
+        if (data) return data;
+        return { id: params.projectId, note: 'Project not found via API. Use retrieve_relevant_context with projectId.' };
       },
     });
 
@@ -75,18 +80,9 @@ export class KeaBotOwner extends KeaBot {
         projectId: { type: 'string', description: 'The project ID', required: true },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          phases: [
-            { name: 'Site Prep', start: '2025-11-01', end: '2025-12-15', status: 'completed' },
-            { name: 'Foundation', start: '2025-12-16', end: '2026-02-15', status: 'completed' },
-            { name: 'Structural Steel', start: '2026-02-16', end: '2026-05-01', status: 'in_progress' },
-            { name: 'Enclosure', start: '2026-05-02', end: '2026-06-30', status: 'upcoming' },
-            { name: 'Finishes', start: '2026-07-01', end: '2026-08-30', status: 'upcoming' },
-          ],
-          criticalPath: ['Structural Steel', 'Enclosure'],
-          daysRemaining: 174,
-        };
+        const data = await apiGet(`/projects/${params.projectId}/timeline`);
+        if (data) return data;
+        return { projectId: params.projectId, phases: [], note: 'Timeline unavailable via API.' };
       },
     });
 
@@ -97,21 +93,9 @@ export class KeaBotOwner extends KeaBot {
         projectId: { type: 'string', description: 'The project ID', required: true },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          totalBudget: 2400000,
-          spent: 1008000,
-          committed: 350000,
-          remaining: 1042000,
-          percentSpent: 42,
-          contingency: { allocated: 240000, used: 45000, remaining: 195000 },
-          forecast: { projectedTotal: 2380000, variance: -20000, status: 'on_budget' },
-          topCategories: [
-            { name: 'Structural', budgeted: 680000, spent: 510000 },
-            { name: 'Mechanical', budgeted: 420000, spent: 168000 },
-            { name: 'Electrical', budgeted: 310000, spent: 124000 },
-          ],
-        };
+        const data = await apiGet(`/projects/${params.projectId}/budget`);
+        if (data) return data;
+        return { projectId: params.projectId, note: 'Budget data unavailable. Use retrieve_relevant_context with projectId for budget context.' };
       },
     });
 
@@ -123,16 +107,9 @@ export class KeaBotOwner extends KeaBot {
         status: { type: 'string', description: 'Filter: completed, upcoming, overdue, all', required: false },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          milestones: [
-            { id: 'ms_001', name: 'Foundation Complete', dueDate: '2026-02-15', status: 'completed', completedDate: '2026-02-13' },
-            { id: 'ms_002', name: 'Steel Erection Complete', dueDate: '2026-04-15', status: 'in_progress', progress: 60 },
-            { id: 'ms_003', name: 'Watertight Enclosure', dueDate: '2026-06-30', status: 'upcoming' },
-            { id: 'ms_004', name: 'Substantial Completion', dueDate: '2026-08-15', status: 'upcoming' },
-          ],
-          nextDue: { name: 'Steel Erection Complete', dueDate: '2026-04-15', daysRemaining: 37 },
-        };
+        const data = await apiGet(`/projects/${params.projectId}/milestones${params.status ? `?status=${params.status}` : ''}`);
+        if (data) return data;
+        return { projectId: params.projectId, milestones: [], note: 'Milestone data unavailable via API.' };
       },
     });
   }
@@ -143,20 +120,10 @@ export class KeaBotOwner extends KeaBot {
 
   shouldHandoff(message: string): HandoffRequest | null {
     const lower = message.toLowerCase();
-
-    if (/\b(bid|subcontractor|crew|compliance)\b/.test(lower)) {
-      return { fromBot: this.name, toBot: 'keabot-gc', reason: 'GC operations topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
-    }
-    if (/\b(payment|escrow|lien waiver|retainage)\b/.test(lower)) {
-      return { fromBot: this.name, toBot: 'keabot-payments', reason: 'Payments topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
-    }
-    if (/\b(permit|inspection schedule|building department)\b/.test(lower)) {
-      return { fromBot: this.name, toBot: 'keabot-permit', reason: 'Permit topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
-    }
-    if (/\b(estimate|takeoff|cost lookup|rsmeans)\b/.test(lower)) {
-      return { fromBot: this.name, toBot: 'keabot-estimate', reason: 'Estimation topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
-    }
-
+    if (/\b(bid|subcontractor|crew|compliance)\b/.test(lower)) return { fromBot: this.name, toBot: 'keabot-gc', reason: 'GC operations topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
+    if (/\b(payment|escrow|lien waiver|retainage)\b/.test(lower)) return { fromBot: this.name, toBot: 'keabot-payments', reason: 'Payments topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
+    if (/\b(permit|inspection schedule|building department)\b/.test(lower)) return { fromBot: this.name, toBot: 'keabot-permit', reason: 'Permit topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
+    if (/\b(estimate|takeoff|cost lookup|rsmeans)\b/.test(lower)) return { fromBot: this.name, toBot: 'keabot-estimate', reason: 'Estimation topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
     return null;
   }
 }

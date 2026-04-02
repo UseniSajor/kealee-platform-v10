@@ -1116,6 +1116,16 @@ const start = async () => {
       await fastify.register(leadRoutes)
     })
 
+    await safeRegisterBlock('Service Availability routes', async () => {
+      const { availabilityRoutes } = await import('./modules/availability/availability.routes.js')
+      await fastify.register(availabilityRoutes, { prefix: '/api/v1/availability' })
+    })
+
+    await safeRegisterBlock('RAG routes', async () => {
+      const { ragRoutes } = await import('./modules/rag/rag.routes.js')
+      await fastify.register(ragRoutes, { prefix: '/api/v1/rag' })
+    })
+
     // ── Test Routes (TEST_MODE=true only) ──
     await safeRegisterBlock('Test simulation routes', async () => {
       const { testRoutes } = await import('./modules/test/test.routes')
@@ -1176,6 +1186,15 @@ const start = async () => {
       ingestAllSeeds()
     } catch (err: any) {
       console.error('[SeedIngest] Failed to load seeds:', err?.message || err)
+    }
+
+    // ── RAG nightly ingestion job ──
+    try {
+      const { scheduleRagNightlyJob, startRagIngestionWorker } = await import('./modules/rag/rag-nightly-job.js')
+      scheduleRagNightlyJob()
+      startRagIngestionWorker()
+    } catch (err: any) {
+      console.warn('[RAG] Failed to start RAG job scheduler:', err?.message)
     }
 
     await fastify.listen({ port, host: '0.0.0.0' })

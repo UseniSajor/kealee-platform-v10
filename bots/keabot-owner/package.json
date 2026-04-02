@@ -1,7 +1,7 @@
 {
   "name": "@kealee/keabot-owner",
   "version": "1.0.0",
-  "description": "KeaBot Owner — Project owner assistant",
+  "description": "KeaBot Owner \u2014 Project owner assistant",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -13,7 +13,8 @@
     "@kealee/core-bots": "workspace:*",
     "@kealee/core-events": "workspace:*",
     "@kealee/shared": "workspace:*",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "@kealee/ai": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.19.30",

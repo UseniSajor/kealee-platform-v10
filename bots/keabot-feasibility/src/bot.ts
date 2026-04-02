@@ -1,4 +1,23 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { RETRIEVE_CONTEXT_TOOL_DEF } from '@kealee/ai/tools/retrieve-relevant-context.js';
+
+const API_BASE = process.env.API_BASE_URL ?? 'https://kealee-platform-v10-staging.up.railway.app'
+
+async function apiGet(path: string): Promise<unknown> {
+  try {
+    const res = await fetch(`${API_BASE}${path}`, { headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(10000) })
+    if (!res.ok) return null
+    return res.json()
+  } catch { return null }
+}
+
+async function apiPost(path: string, body: unknown): Promise<unknown> {
+  try {
+    const res = await fetch(`${API_BASE}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(10000) })
+    if (!res.ok) return null
+    return res.json()
+  } catch { return null }
+}
 
 const CONFIG: BotConfig = {
   name: 'keabot-feasibility',
@@ -15,6 +34,7 @@ Your capabilities:
 - Assess project viability with go/no-go recommendations
 
 Rules:
+- ALWAYS call retrieve_relevant_context FIRST to find comparable projects and estimates
 - Always call OS service APIs for data operations (never access DB directly)
 - If a request falls outside your domain, hand off to the appropriate bot
 - Present financial scenarios with clear assumptions and sensitivity analysis
@@ -22,11 +42,16 @@ Rules:
 };
 
 export class KeaBotFeasibility extends KeaBot {
-  constructor() {
-    super(CONFIG);
-  }
+  constructor() { super(CONFIG); }
 
   async initialize(): Promise<void> {
+    this.registerTool({
+      name: RETRIEVE_CONTEXT_TOOL_DEF.name,
+      description: RETRIEVE_CONTEXT_TOOL_DEF.description,
+      parameters: RETRIEVE_CONTEXT_TOOL_DEF.parameters as any,
+      handler: RETRIEVE_CONTEXT_TOOL_DEF.handler as any,
+    });
+
     this.registerTool({
       name: 'create_study',
       description: 'Create a new feasibility study for a project or parcel',
@@ -36,21 +61,18 @@ export class KeaBotFeasibility extends KeaBot {
         assumptions: { type: 'string', description: 'JSON string of key assumptions (optional overrides)', required: false },
       },
       handler: async (params) => {
-        return {
-          studyId: 'fs_001',
+        const data = await apiPost('/api/v1/feasibility/study', {
           parcelId: params.parcelId,
           developmentType: params.developmentType,
-          status: 'draft',
-          createdAt: new Date().toISOString(),
-          baseAssumptions: {
-            landCost: 1850000,
-            hardCostPerSF: 285,
-            softCostPercent: 22,
-            contingencyPercent: 8,
-            constructionTimeline: '18 months',
-            stabilizedOccupancy: 0.95,
-            exitCapRate: 0.055,
-          },
+          assumptions: params.assumptions ? JSON.parse(params.assumptions as string) : undefined,
+        });
+        if (data) return data;
+        return {
+          studyId: null,
+          parcelId: params.parcelId,
+          developmentType: params.developmentType,
+          status: 'pending',
+          note: 'Study creation queued. Use retrieve_relevant_context to find comparable projects for cost basis.',
         };
       },
     });
@@ -63,16 +85,12 @@ export class KeaBotFeasibility extends KeaBot {
         variable: { type: 'string', description: 'Variable to test: rent, cost, cap_rate, occupancy', required: true },
       },
       handler: async (params) => {
+        const data = await apiGet(`/api/v1/feasibility/${params.studyId}/scenarios?variable=${params.variable}`);
+        if (data) return data;
         return {
           studyId: params.studyId,
           variable: params.variable,
-          scenarios: [
-            { label: 'Bear Case', assumption: '-10% rents', irr: 0.12, equityMultiple: 1.6, profitMargin: 0.14 },
-            { label: 'Base Case', assumption: 'Market rents', irr: 0.18, equityMultiple: 2.1, profitMargin: 0.22 },
-            { label: 'Bull Case', assumption: '+10% rents', irr: 0.24, equityMultiple: 2.6, profitMargin: 0.30 },
-          ],
-          breakeven: { occupancy: 0.82, rentPSF: 2.45 },
-          recommendation: 'Base and bull cases exceed hurdle rate; bear case still positive but below 15% IRR threshold',
+          note: 'Use retrieve_relevant_context with serviceType="estimate" to find comparable project costs for scenario modeling.',
         };
       },
     });
@@ -85,37 +103,12 @@ export class KeaBotFeasibility extends KeaBot {
         scenario: { type: 'string', description: 'Scenario to use: bear, base, bull', required: false },
       },
       handler: async (params) => {
+        const data = await apiGet(`/api/v1/feasibility/${params.studyId}/proforma?scenario=${params.scenario ?? 'base'}`);
+        if (data) return data;
         return {
           studyId: params.studyId,
           scenario: (params.scenario as string) || 'base',
-          sources: {
-            seniorDebt: 8500000,
-            mezzDebt: 1500000,
-            equity: 3200000,
-            total: 13200000,
-          },
-          uses: {
-            landAcquisition: 1850000,
-            hardCosts: 8550000,
-            softCosts: 1881000,
-            contingency: 684000,
-            financingCosts: 235000,
-            total: 13200000,
-          },
-          revenue: {
-            grossPotentialRent: 1680000,
-            vacancy: -84000,
-            effectiveGrossIncome: 1596000,
-            operatingExpenses: -478800,
-            noi: 1117200,
-          },
-          returns: {
-            irr: 0.18,
-            equityMultiple: 2.1,
-            cashOnCash: 0.085,
-            stabilizedYield: 0.085,
-            projectedValue: 20312727,
-          },
+          note: 'Proforma generation requires study data. Use retrieve_relevant_context for comparable project financials.',
         };
       },
     });
@@ -127,17 +120,9 @@ export class KeaBotFeasibility extends KeaBot {
 
   shouldHandoff(message: string): HandoffRequest | null {
     const lower = message.toLowerCase();
-
-    if (/\b(parcel|zoning|land search|lot size)\b/.test(lower)) {
-      return { fromBot: this.name, toBot: 'keabot-land', reason: 'Land intelligence topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
-    }
-    if (/\b(capital stack|draw request|investor report|lending)\b/.test(lower)) {
-      return { fromBot: this.name, toBot: 'keabot-finance', reason: 'Finance topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
-    }
-    if (/\b(estimate|takeoff|rsmeans|bid comparison)\b/.test(lower)) {
-      return { fromBot: this.name, toBot: 'keabot-estimate', reason: 'Estimation topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
-    }
-
+    if (/\b(parcel|zoning|land search|lot size)\b/.test(lower)) return { fromBot: this.name, toBot: 'keabot-land', reason: 'Land intelligence topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
+    if (/\b(capital stack|draw request|investor report|lending)\b/.test(lower)) return { fromBot: this.name, toBot: 'keabot-finance', reason: 'Finance topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
+    if (/\b(estimate|takeoff|rsmeans|bid comparison)\b/.test(lower)) return { fromBot: this.name, toBot: 'keabot-estimate', reason: 'Estimation topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
     return null;
   }
 }

@@ -1,4 +1,15 @@
 import { KeaBot, BotConfig, HandoffRequest } from '@kealee/core-bots';
+import { RETRIEVE_CONTEXT_TOOL_DEF } from '@kealee/ai/tools/retrieve-relevant-context.js';
+
+const API_BASE = process.env.API_BASE_URL ?? 'https://kealee-platform-v10-staging.up.railway.app'
+
+async function apiGet(path: string): Promise<unknown> {
+  try {
+    const res = await fetch(`${API_BASE}${path}`, { headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(10000) })
+    if (!res.ok) return null
+    return res.json()
+  } catch { return null }
+}
 
 const CONFIG: BotConfig = {
   name: 'keabot-gc',
@@ -15,6 +26,7 @@ Your capabilities:
 - Prepare payment applications and draw requests
 
 Rules:
+- ALWAYS call retrieve_relevant_context first to find project-specific context and comparable bids
 - Always call OS service APIs for data operations (never access DB directly)
 - If a request falls outside your domain, hand off to the appropriate bot
 - Distinguish between GC operations (your domain) and construction execution (keabot-construction)
@@ -22,11 +34,16 @@ Rules:
 };
 
 export class KeaBotGC extends KeaBot {
-  constructor() {
-    super(CONFIG);
-  }
+  constructor() { super(CONFIG); }
 
   async initialize(): Promise<void> {
+    this.registerTool({
+      name: RETRIEVE_CONTEXT_TOOL_DEF.name,
+      description: RETRIEVE_CONTEXT_TOOL_DEF.description,
+      parameters: RETRIEVE_CONTEXT_TOOL_DEF.parameters as any,
+      handler: RETRIEVE_CONTEXT_TOOL_DEF.handler as any,
+    });
+
     this.registerTool({
       name: 'manage_bids',
       description: 'Manage bid packages: list, create, compare, or award bids for a project scope',
@@ -37,16 +54,14 @@ export class KeaBotGC extends KeaBot {
       },
       handler: async (params) => {
         const action = params.action as string;
-        return {
-          projectId: params.projectId,
-          action,
-          bids: [
-            { id: 'bid_001', contractor: 'Elite Plumbing', amount: 185000, status: 'submitted', score: 87 },
-            { id: 'bid_002', contractor: 'Metro Plumbing Co', amount: 172000, status: 'submitted', score: 82 },
-            { id: 'bid_003', contractor: 'ProPipe Services', amount: 198000, status: 'submitted', score: 91 },
-          ],
-          recommendation: 'bid_002 offers best value; bid_003 has highest quality score',
-        };
+        if (action === 'list') {
+          const data = await apiGet(`/projects/${params.projectId}/bids`);
+          if (data) return data;
+        } else if (action === 'compare' && params.scopeId) {
+          const data = await apiGet(`/projects/${params.projectId}/bids/compare?scopeId=${params.scopeId}`);
+          if (data) return data;
+        }
+        return { projectId: params.projectId, action, note: 'Use retrieve_relevant_context with projectId for bid history.' };
       },
     });
 
@@ -58,16 +73,12 @@ export class KeaBotGC extends KeaBot {
         subId: { type: 'string', description: 'Specific subcontractor ID (optional, lists all if omitted)', required: false },
       },
       handler: async (params) => {
-        return {
-          projectId: params.projectId,
-          subcontractors: [
-            { id: 'sub_001', name: 'Elite Plumbing', trade: 'Plumbing', status: 'on_site', nextDeliverable: 'Rough-in complete', dueDate: '2026-03-20' },
-            { id: 'sub_002', name: 'Sparks Electric', trade: 'Electrical', status: 'mobilizing', startDate: '2026-03-15' },
-            { id: 'sub_003', name: 'AirFlow HVAC', trade: 'HVAC', status: 'awaiting_materials', eta: '2026-03-12' },
-          ],
-          pendingRFIs: 2,
-          openChangeOrders: 1,
-        };
+        const path = params.subId
+          ? `/projects/${params.projectId}/subs/${params.subId}`
+          : `/projects/${params.projectId}/subs`;
+        const data = await apiGet(path);
+        if (data) return data;
+        return { projectId: params.projectId, subcontractors: [], note: 'Subcontractor data unavailable via API.' };
       },
     });
 
@@ -79,16 +90,13 @@ export class KeaBotGC extends KeaBot {
         type: { type: 'string', description: 'Compliance type: insurance, licensing, safety, all', required: false },
       },
       handler: async (params) => {
+        const data = await apiGet(`/projects/${params.projectId}/compliance${params.type ? `?type=${params.type}` : ''}`);
+        if (data) return data;
         return {
           projectId: params.projectId,
-          overall: 'compliant_with_warnings',
-          items: [
-            { type: 'insurance', entity: 'Elite Plumbing', status: 'compliant', expiresAt: '2026-09-15' },
-            { type: 'insurance', entity: 'Sparks Electric', status: 'warning', expiresAt: '2026-03-30', note: 'Expiring in 21 days' },
-            { type: 'licensing', entity: 'AirFlow HVAC', status: 'compliant', licenseNumber: 'HVAC-2024-88712' },
-            { type: 'safety', entity: 'Project Site', status: 'compliant', lastAudit: '2026-03-05' },
-          ],
-          actionRequired: ['Remind Sparks Electric to renew insurance before 2026-03-30'],
+          overall: 'unknown',
+          items: [],
+          note: 'Compliance data unavailable via API. Check contractor credentials in marketplace.',
         };
       },
     });
@@ -100,20 +108,10 @@ export class KeaBotGC extends KeaBot {
 
   shouldHandoff(message: string): HandoffRequest | null {
     const lower = message.toLowerCase();
-
-    if (/\b(daily log|progress track|inspection readiness|weather impact)\b/.test(lower)) {
-      return { fromBot: this.name, toBot: 'keabot-construction', reason: 'Construction execution topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
-    }
-    if (/\b(payment|escrow|lien waiver|draw request)\b/.test(lower)) {
-      return { fromBot: this.name, toBot: 'keabot-payments', reason: 'Payments topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
-    }
-    if (/\b(estimate|takeoff|rsmeans|cost lookup)\b/.test(lower)) {
-      return { fromBot: this.name, toBot: 'keabot-estimate', reason: 'Estimation topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
-    }
-    if (/\b(find contractor|marketplace|match skills)\b/.test(lower)) {
-      return { fromBot: this.name, toBot: 'keabot-marketplace', reason: 'Marketplace topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
-    }
-
+    if (/\b(daily log|progress track|inspection readiness|weather impact)\b/.test(lower)) return { fromBot: this.name, toBot: 'keabot-construction', reason: 'Construction execution topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
+    if (/\b(payment|escrow|lien waiver|draw request)\b/.test(lower)) return { fromBot: this.name, toBot: 'keabot-payments', reason: 'Payments topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
+    if (/\b(estimate|takeoff|rsmeans|cost lookup)\b/.test(lower)) return { fromBot: this.name, toBot: 'keabot-estimate', reason: 'Estimation topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
+    if (/\b(find contractor|marketplace|match skills)\b/.test(lower)) return { fromBot: this.name, toBot: 'keabot-marketplace', reason: 'Marketplace topic detected', context: {}, conversationHistory: [{ role: 'user', content: message }] };
     return null;
   }
 }
