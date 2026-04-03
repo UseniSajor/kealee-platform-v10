@@ -204,6 +204,21 @@ async function processIntakeJob(job: Job<IntakeProcessingJobData>) {
       }
     }
 
+    // 8. Enqueue lead follow-up sequence (1hr SMS → 24hr email → 72hr reminder)
+    try {
+      const { leadFollowupQueue } = await import('../queues/lead-followup.queue')
+      await leadFollowupQueue.enqueueSequence({
+        leadId: intakeId,
+        email: customerEmail,
+        firstName: lead.clientName?.split(' ')[0],
+        projectType: projectPath,
+        stage: 'CONCEPT',
+        source: `intake:${projectPath}`,
+      })
+    } catch (followupErr: any) {
+      console.warn(`[intake-processing] Lead followup queue failed (non-fatal): ${followupErr.message}`)
+    }
+
     await job.updateProgress(100)
 
     console.log(`[intake-processing] Intake ${intakeId} fully processed`)

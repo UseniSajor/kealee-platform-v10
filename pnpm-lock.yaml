@@ -1372,6 +1372,9 @@ importers:
 
   apps/web-main:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.82.0
+        version: 0.82.0(zod@4.3.6)
       '@kealee/intake':
         specifier: workspace:*
         version: link:../../packages/intake
@@ -1396,6 +1399,9 @@ importers:
       react-dom:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
+      stripe:
+        specifier: ^14.0.0
+        version: 14.25.0
     devDependencies:
       '@types/node':
         specifier: ^20.0.0
@@ -1424,6 +1430,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.74.0
         version: 0.74.0(zod@3.25.76)
+      '@kealee/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@kealee/core-bots':
         specifier: workspace:*
         version: link:../../packages/core-bots
@@ -1527,6 +1536,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.74.0
         version: 0.74.0(zod@3.25.76)
+      '@kealee/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@kealee/core-bots':
         specifier: workspace:*
         version: link:../../packages/core-bots
@@ -1555,6 +1567,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.74.0
         version: 0.74.0(zod@3.25.76)
+      '@kealee/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@kealee/core-bots':
         specifier: workspace:*
         version: link:../../packages/core-bots
@@ -1611,6 +1626,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.74.0
         version: 0.74.0(zod@3.25.76)
+      '@kealee/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@kealee/core-bots':
         specifier: workspace:*
         version: link:../../packages/core-bots
@@ -1723,6 +1741,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.74.0
         version: 0.74.0(zod@3.25.76)
+      '@kealee/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@kealee/core-bots':
         specifier: workspace:*
         version: link:../../packages/core-bots
@@ -1779,6 +1800,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.74.0
         version: 0.74.0(zod@3.25.76)
+      '@kealee/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@kealee/core-bots':
         specifier: workspace:*
         version: link:../../packages/core-bots
@@ -1810,6 +1834,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.39.0
         version: 0.39.0
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
       '@langchain/core':
         specifier: ^1.1.34
         version: 1.1.34(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.5.0)(openai@4.104.0)
@@ -3633,6 +3660,19 @@ packages:
     dependencies:
       json-schema-to-ts: 3.1.1
       zod: 3.25.76
+    dev: false
+
+  /@anthropic-ai/sdk@0.82.0(zod@4.3.6):
+    resolution: {integrity: sha512-xdHTjL1GlUlDugHq/I47qdOKp/ROPvuHl7ROJCgUQigbvPu7asf9KcAcU1EqdrP2LuVhEKaTs7Z+ShpZDRzHdQ==}
+    hasBin: true
+    peerDependencies:
+      zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      zod:
+        optional: true
+    dependencies:
+      json-schema-to-ts: 3.1.1
+      zod: 4.3.6
     dev: false
 
   /@apm-js-collab/code-transformer@0.8.2:

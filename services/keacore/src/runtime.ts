@@ -19,10 +19,15 @@ function initLlmStack() {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { initializeLlmStack } = require("@kealee/core-llm") as {
-      initializeLlmStack: () => { providers: Array<{ name: string; available: boolean }>; chunksLoaded: number };
+      initializeLlmStack: (opts?: { defaultProvider?: string; fallbackProvider?: string }) => { providers: Array<{ name: string; available: boolean }>; chunksLoaded: number };
     };
-    const result = initializeLlmStack();
-    console.log(`[KeaCore] LLM stack initialized: ${result.providers.length} providers, ${result.chunksLoaded} chunks`);
+    const internalEnabled = process.env.INTERNAL_LLM_ENABLED === "true";
+    const result = initializeLlmStack({
+      defaultProvider:  internalEnabled ? "internal" : "claude",
+      fallbackProvider: "claude",
+    });
+    const availableNames = result.providers.filter(p => p.available).map(p => p.name).join(", ") || "none";
+    console.log(`[KeaCore] LLM stack initialized: ${result.providers.length} providers (available: ${availableNames}), ${result.chunksLoaded} chunks`);
   } catch (err) {
     console.warn("[KeaCore] LLM stack initialization failed — falling back to Claude-only mode:", (err as Error).message);
     // KeaCore can still boot with Claude/GPT external providers even if internal setup fails
