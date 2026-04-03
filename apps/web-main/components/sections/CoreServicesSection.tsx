@@ -54,7 +54,7 @@ export default function CoreServicesSection() {
                 <div className="tr"><span className="trn">Simple Permit Filing</span><span className="trp">$149</span></div>
                 <div className="tr pop"><span className="trn b">Permit Package <span className="pp">Most common</span></span><span className="trp">$950</span></div>
                 <div className="tr"><span className="trn">Permit Coordination</span><span className="trp">$2,750</span></div>
-                <div className="tr"><span className="trn">Permit Expediting</span><span className="trp">$5,500</span></div>
+                <div className="tr"><span className="trn">Permit Expediting</span><span className="trp">Starting at $5,500</span></div>
               </div>
               <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>Requires existing plans or architectural documents. <Link href="/design-services" style={{ color: 'var(--o)' }}>Get plans first →</Link></p>
               <Link href="/permits" className="scta">View permit services</Link>
@@ -79,7 +79,7 @@ export default function CoreServicesSection() {
                 <div className="tr pop"><span className="trn b">PM Advisory <span className="pp">Most common</span></span><span className="trp">$950</span></div>
                 <div className="tr"><span className="trn">PM Oversight</span><span className="trp">$2,950</span></div>
               </div>
-              <Link href="/developers" className="scta">View PM services</Link>
+              <Link href="/products/pm-advisory" className="scta">View PM services</Link>
             </div>
           </div>
 

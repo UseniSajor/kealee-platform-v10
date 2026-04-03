@@ -20,7 +20,7 @@ export default function FeaturedProductsSection() {
             <div className="fcp">Starting at $395 <small>one-time</small></div>
           </div>
         </Link>
-        <Link href="/permits" className="fc">
+        <Link href="/products/permit-package" className="fc">
           <div className="fci">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=700&q=60&auto=format&fit=crop" alt="Permit" />
@@ -59,7 +59,7 @@ export default function FeaturedProductsSection() {
             <div className="fcp">$1,345 <small>bundle</small></div>
           </div>
         </Link>
-        <Link href="/homeowners/garden-farming" className="fc">
+        <Link href="/products/landscape" className="fc">
           <div className="fci">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=700&q=60&auto=format&fit=crop" alt="Landscape" />

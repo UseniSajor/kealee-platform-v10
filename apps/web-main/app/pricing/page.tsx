@@ -31,7 +31,7 @@ const PERMIT_ITEMS = [
   { name: 'Simple Permit Filing', price: '$149', note: 'Single-trade permits' },
   { name: 'Permit Package', price: '$950', note: 'Full application prep + submission', highlight: true },
   { name: 'Permit Coordination', price: '$2,750', note: 'Submission, tracking + comment response' },
-  { name: 'Permit Expediting', price: '$5,500', note: 'Priority approval service' },
+  { name: 'Permit Expediting', price: 'Starting at $5,500', note: 'Priority approval service' },
 ]
 
 const PM_ITEMS = [

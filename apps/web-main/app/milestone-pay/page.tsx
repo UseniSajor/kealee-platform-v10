@@ -82,14 +82,14 @@ export default function MilestonePayPage() {
           </p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
-              href="/concept-engine"
+              href="/homeowners"
               className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#38A169' }}
             >
               Start Your Project <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/contractors"
+              href="/marketplace"
               className="inline-flex items-center gap-2 rounded-xl border border-white/30 px-6 py-3 text-sm font-semibold text-white/80 hover:text-white hover:border-white/50 transition-all"
             >
               Contractor Network
@@ -217,14 +217,14 @@ export default function MilestonePayPage() {
           </p>
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
-              href="/concept-engine"
+              href="/homeowners"
               className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#E8793A' }}
             >
               Start Your Project <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/contractors"
+              href="/marketplace"
               className="inline-flex items-center gap-2 rounded-xl border border-gray-500 px-6 py-3 text-sm font-semibold text-gray-300 transition-colors hover:border-gray-300 hover:text-white"
             >
               Contractor Network

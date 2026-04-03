@@ -116,7 +116,7 @@ const COMBO_PACKAGES = [
     name: 'Exterior Upgrade Package',
     desc: 'Exterior AI concept + contractor match + milestone payments',
     price: 'From $595',
-    href: '/concept-engine/exterior',
+    href: '/products/exterior',
     color: '#7C3AED',
   },
   {

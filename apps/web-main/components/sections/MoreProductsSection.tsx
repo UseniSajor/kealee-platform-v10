@@ -8,7 +8,7 @@ export default function MoreProductsSection() {
         <h2 className="h2">Per-service pricing on everything</h2>
         <p className="sub">Order one service at a time. No subscription required for homeowners and project owners.</p>
         <div className="fp2">
-          <Link href="/homeowners/garden-farming" className="fc">
+          <Link href="/products/garden" className="fc">
             <div className="fci">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=700&q=60&auto=format&fit=crop" alt="Garden" />
@@ -21,7 +21,7 @@ export default function MoreProductsSection() {
               <div className="fcp">per service <small>custom quote</small></div>
             </div>
           </Link>
-          <Link href="/concept-engine/exterior" className="fc">
+          <Link href="/products/exterior" className="fc">
             <div className="fci">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=60&auto=format&fit=crop" alt="Exterior" />
@@ -34,7 +34,7 @@ export default function MoreProductsSection() {
               <div className="fcp">from $149 <small>permit filing</small></div>
             </div>
           </Link>
-          <Link href="/concept?q=Basement+finish" className="fc">
+          <Link href="/products/basement" className="fc">
             <div className="fci">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=700&q=60&auto=format&fit=crop" alt="Basement" />
@@ -47,7 +47,7 @@ export default function MoreProductsSection() {
               <div className="fcp">Starting at $395 <small>one-time</small></div>
             </div>
           </Link>
-          <Link href="/concept?q=Certified+estimate" className="fc">
+          <Link href="/products/certified-estimate" className="fc">
             <div className="fci">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=700&q=60&auto=format&fit=crop" alt="Certified estimate" />

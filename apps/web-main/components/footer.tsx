@@ -14,7 +14,7 @@ export function SiteFooter() {
           </div>
           <div className="fqsc">
             <h5>Contractor marketplace</h5>
-            <p>Licensed, insured, background-checked · 40% of applicants turned down · Matched by trade and county</p>
+            <p>Contractor network screened for licensing, insurance, and fit · Matched by trade and county</p>
           </div>
           <div className="fqsc">
             <h5>Milestone pay &amp; escrow</h5>

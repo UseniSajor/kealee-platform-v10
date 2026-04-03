@@ -76,7 +76,7 @@ export function CountyPermitPageContent({ county }: { county: CountyData }) {
               className="inline-block px-8 py-4 rounded-xl font-bold text-white text-base transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#E8793A' }}
             >
-              Get My Free Estimate →
+              Get Permits →
             </a>
           </div>
         </Container>

@@ -85,7 +85,7 @@ const PERMIT_PACKAGES: {
   {
     tier: 'expediting',
     name: 'Expedited Filing',
-    price: '$1,997',
+    price: 'Starting at $1,997',
     description: 'Priority processing — fastest path to approval',
     includes: [
       'Everything in Permit Coordination',

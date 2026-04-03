@@ -16371,3 +16371,227 @@ model LeadProfile {
   @@index([leadScore])
   @@index([createdAt])
 }
+
+// ============================================================================
+// RAG + AVAILABILITY ENGINE — v20 (2026-04-02)
+// ============================================================================
+
+// ── RAG Document Store ───────────────────────────────────────────────────────
+
+enum RagDocumentType {
+  PROJECT_DESCRIPTION
+  PERMIT_APPLICATION
+  ESTIMATE
+  INSPECTION_REPORT
+  JURISDICTION_GUIDE
+  SERVICE_CATALOG
+  CONCEPT_REPORT
+  ZONING_DATA
+  CONTRACTOR_PROFILE
+  PHASE_NOTE
+
+  @@map("rag_document_type")
+}
+
+model RagDocument {
+  id           String          @id @default(cuid())
+  sourceType   RagDocumentType
+  sourceId     String          // FK to originating record (projectId, permitId, etc.)
+  title        String
+  content      String          @db.Text
+  jurisdiction String?
+  serviceType  String?
+  phase        String?
+  projectId    String?
+  chunkCount   Int             @default(0)
+  lastIndexed  DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  chunks       RagChunk[]
+
+  @@index([sourceType, sourceId])
+  @@index([jurisdiction])
+  @@index([serviceType])
+  @@index([projectId])
+  @@map("rag_documents")
+}
+
+model RagChunk {
+  id         String   @id @default(cuid())
+  documentId String
+  chunkIndex Int
+  content    String   @db.Text
+  embedding  Float[]  // 1536-dim OpenAI text-embedding-3-small
+  tokenCount Int      @default(0)
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  document   RagDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@map("rag_chunks")
+}
+
+// ── Service Availability Engine ──────────────────────────────────────────────
+
+enum ServiceRequestType {
+  AI_CONCEPT
+  PERMIT_SIMPLE
+  PERMIT_PACKAGE
+  PERMIT_COORDINATION
+  PERMIT_EXPEDITING
+  ESTIMATE_DETAILED
+  ESTIMATE_CERTIFIED
+  PRE_DESIGN_STARTER
+  PRE_DESIGN_VISUALIZATION
+  PRE_DESIGN_FULL
+
+  @@map("service_request_type")
+}
+
+enum AvailabilityDecision {
+  GUARANTEED
+  TARGET
+  CONDITIONAL
+  UNAVAILABLE
+
+  @@map("availability_decision")
+}
+
+enum ServiceRequestStatus {
+  PENDING
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+
+  @@map("service_request_status")
+}
+
+model ServiceRequest {
+  id                String               @id @default(cuid())
+  serviceType       ServiceRequestType
+  status            ServiceRequestStatus @default(PENDING)
+  submittedAt       DateTime             @default(now())
+  completedAt       DateTime?
+
+  // Context
+  jurisdiction      String?
+  projectType       String?
+  hasDocuments      Boolean              @default(false)
+  documentCount     Int                  @default(0)
+  difficultyScore   Int                  @default(0) // 0–100
+  priorityScore     Int                  @default(0) // 0–100
+
+  // Linked records
+  intakeId          String?
+  permitLeadId      String?
+  userId            String?
+
+  assignment        ServiceAssignment?
+  snapshots         AvailabilitySnapshot[]
+
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  @@index([serviceType, status])
+  @@index([submittedAt])
+  @@index([jurisdiction])
+  @@map("service_requests")
+}
+
+model ServiceCapacityProfile {
+  id              String             @id @default(cuid())
+  serviceType     ServiceRequestType @unique
+  dailyCapacity   Int                // max requests per day
+  currentQueue    Int                @default(0) // active in-flight
+  avgHours        Float              // average completion hours
+  guaranteedHours Float?             // SLA hours when conditions met
+  sameDayEligible Boolean            @default(false)
+  cutoffHour      Int                @default(14) // 2pm local = eligible same-day
+  updatedAt       DateTime           @updatedAt
+
+  @@map("service_capacity_profiles")
+}
+
+model ServiceAssignment {
+  id             String         @id @default(cuid())
+  requestId      String         @unique
+  assigneeId     String?        // staff user id
+  assigneeType   String         @default("staff") // staff | ai | hybrid
+  assignedAt     DateTime       @default(now())
+  startedAt      DateTime?
+  dueAt          DateTime?
+  completedAt    DateTime?
+  notes          String?        @db.Text
+
+  request        ServiceRequest @relation(fields: [requestId], references: [id])
+
+  @@map("service_assignments")
+}
+
+model AvailabilityRule {
+  id              String             @id @default(cuid())
+  serviceType     ServiceRequestType
+  name            String
+  priority        Int                @default(0)
+  condition       Json               // JSON rule definition
+  outcome         AvailabilityDecision
+  hoursOverride   Float?
+  rationale       String
+  isActive        Boolean            @default(true)
+  createdAt       DateTime           @default(now())
+
+  @@index([serviceType, isActive])
+  @@map("availability_rules")
+}
+
+model AvailabilitySnapshot {
+  id               String               @id @default(cuid())
+  requestId        String?
+  serviceType      ServiceRequestType
+  decision         AvailabilityDecision
+  promisedStartAt  DateTime
+  promisedEndAt    DateTime
+  sameDayEligible  Boolean              @default(false)
+  confidenceScore  Int                  // 0–100
+  rationale        String
+  explanation      String               @db.Text
+  conditions       Json                 @default("[]") // unmet conditions
+  calculatedAt     DateTime             @default(now())
+
+  request          ServiceRequest?      @relation(fields: [requestId], references: [id])
+
+  @@index([serviceType])
+  @@index([requestId])
+  @@index([calculatedAt])
+  @@map("availability_snapshots")
+}
+
+model WorkQueueMetric {
+  id             String             @id @default(cuid())
+  serviceType    ServiceRequestType
+  queueDepth     Int
+  avgWaitHours   Float
+  completedToday Int                @default(0)
+  slaBreaches    Int                @default(0)
+  recordedAt     DateTime           @default(now())
+
+  @@index([serviceType, recordedAt])
+  @@map("work_queue_metrics")
+}
+
+model BusinessCalendar {
+  id          String   @id @default(cuid())
+  date        DateTime @db.Date
+  isWorkday   Boolean  @default(true)
+  isHoliday   Boolean  @default(false)
+  holidayName String?
+  timezone    String   @default("America/New_York")
+  createdAt   DateTime @default(now())
+
+  @@unique([date, timezone])
+  @@index([date])
+  @@map("business_calendar")
+}

@@ -203,7 +203,7 @@ export const PRODUCTS: Record<string, Product> = {
     ctaHref: '/homeowners/garden-farming',
     faq: [
       { q: 'Do I need a permit for landscaping?', a: 'Most planting and bed work does not require a permit. Retaining walls over 4 feet, significant grading, and some structures do. We identify permit requirements as part of scope development.' },
-      { q: 'How are landscape contractors verified?', a: 'State license check, liability insurance verification, bond verification, identity check, and credentials review. We declined 40% of applicants in our last intake cycle.' },
+      { q: 'How are landscape contractors verified?', a: 'State license check, liability insurance verification, bond verification, identity check, and credentials review. Every contractor in our network is screened for licensing, insurance, and project fit.' },
       { q: 'How does milestone payment work?', a: 'Your project funds are held in escrow. They release to the contractor only after you approve a completed milestone. Final retainage releases after punch-list sign-off.' },
       { q: 'What areas do you cover?', a: 'DC, Maryland (Montgomery, Prince George\'s, Howard, Anne Arundel), and Northern Virginia (Fairfax, Arlington, Alexandria, Prince William, Loudoun).' },
     ],
