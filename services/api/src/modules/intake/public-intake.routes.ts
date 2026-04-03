@@ -71,7 +71,7 @@ const PublicIntakeBody = z.object({
   contactEmail: z.string().email(),
   contactPhone: z.string().optional(),
   projectAddress: z.string().min(5),
-  budgetRange: z.string().min(1),
+  budgetRange: z.string().optional().default('not_provided'),
   timelineGoal: z.string().optional(),
   uploadedPhotos: z.array(z.string()).default([]),
   source: z.string().default("public_intake"),

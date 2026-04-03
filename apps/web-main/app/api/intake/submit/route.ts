@@ -48,46 +48,57 @@ export async function POST(req: NextRequest) {
     }
 
     // Direct Supabase save — works without backend API configured
-    const supabase = getSupabaseAdmin()
     const projectPath = intake.projectPath as string
     const meta = PROJECT_PATH_META[projectPath as keyof typeof PROJECT_PATH_META]
-
     const baseAmount = meta?.paymentAmount ?? 58500
     const totalAmount = overrideAmount ?? baseAmount
 
-    const { data, error } = await supabase
-      .from('public_intake_leads')
-      .insert({
-        project_path: projectPath,
-        client_name: intake.clientName,
-        contact_email: intake.contactEmail,
-        contact_phone: intake.contactPhone ?? null,
-        project_address: intake.projectAddress,
-        budget_range: intake.budgetRange ?? null,
-        form_data: {
-          ...intake,
-          captureSessionId: captureSessionId ?? null,
-          captureMode: captureMode ?? null,
-          siteVisitRequested: siteVisitRequested ?? false,
-          preferredVisitWindow: preferredVisitWindow ?? null,
-        },
-        source: 'web-main',
-        status: 'new',
-        requires_payment: meta?.requiresPayment ?? true,
-        payment_amount: totalAmount,
-        created_by_user_id: null,
-      })
-      .select('id')
-      .single()
+    try {
+      const supabase = getSupabaseAdmin()
+      const { data, error } = await supabase
+        .from('public_intake_leads')
+        .insert({
+          project_path: projectPath,
+          client_name: intake.clientName,
+          contact_email: intake.contactEmail,
+          contact_phone: intake.contactPhone ?? null,
+          project_address: intake.projectAddress,
+          budget_range: intake.budgetRange ?? null,
+          form_data: {
+            ...intake,
+            captureSessionId: captureSessionId ?? null,
+            captureMode: captureMode ?? null,
+            siteVisitRequested: siteVisitRequested ?? false,
+            preferredVisitWindow: preferredVisitWindow ?? null,
+          },
+          source: 'web-main',
+          status: 'new',
+          requires_payment: meta?.requiresPayment ?? true,
+          payment_amount: totalAmount,
+          created_by_user_id: null,
+        })
+        .select('id')
+        .single()
 
-    if (error || !data) {
-      console.error('[intake/submit] Supabase error:', error)
-      return NextResponse.json({ ok: false, errors: [error?.message ?? 'Save failed'] }, { status: 500 })
+      if (!error && data) {
+        return NextResponse.json({
+          ok: true,
+          intakeId: data.id,
+          requiresPayment: meta?.requiresPayment ?? true,
+          paymentAmount: totalAmount,
+        })
+      }
+      console.warn('[intake/submit] Supabase save failed, using fallback id:', error?.message)
+    } catch (sbErr) {
+      console.warn('[intake/submit] Supabase unavailable, using fallback id:', (sbErr as Error)?.message)
     }
 
+    // Fail-open: generate a temporary ID so the user can still proceed to payment.
+    // The intake data is embedded in Stripe metadata at checkout time.
+    const fallbackId = `tmp_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
     return NextResponse.json({
       ok: true,
-      intakeId: data.id,
+      intakeId: fallbackId,
       requiresPayment: meta?.requiresPayment ?? true,
       paymentAmount: totalAmount,
     })
