@@ -206,7 +206,7 @@ export default function ContractorsPage() {
 
       <RoleBenefits
         badge="Why Contractors Choose Kealee"
-        headline="Built for Builders, Not Bureaucrats"
+        headline="Built for Builders, Not Bottlenecks"
         subhead="Every feature is designed around how contractors actually work — in the field, on the go, managing multiple projects."
         benefits={BENEFITS}
       />
