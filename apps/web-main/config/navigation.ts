@@ -75,7 +75,10 @@ export const PRIMARY_NAV: NavItem[] = [
     },
   },
 
-  // 2 — Get Permits
+  // 2 — Services overview
+  { label: 'Services', href: '/services' },
+
+  // 3 — Get Permits
   { label: 'Get Permits', href: '/permits' },
 
   // 3 — For Contractors (direct link to landing page)
@@ -162,6 +165,7 @@ export const NAV_LOGIN_OPTIONS = [
 
 export const FOOTER_NAV = {
   platform: [
+    { label: 'All Services',               href: '/services' },
     { label: 'Start Your Design',          href: '/concept' },
     { label: 'Get Permits',                href: '/permits' },
     { label: 'Contractor Marketplace',     href: '/marketplace' },
