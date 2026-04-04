@@ -32,7 +32,7 @@ export default function CoreServicesSection() {
                 <div className="tr"><span className="trn">Full Design Package</span><span className="trp">starting at $4,499</span></div>
               </div>
               <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>Pre-design concept only — not a permit-ready plan. <Link href="/design-services" style={{ color: 'var(--o)' }}>Need permit-ready plans?</Link></p>
-              <Link href="/concept" className="scta">Start your design</Link>
+              <Link href="/concept-engine" className="scta">Start your design</Link>
             </div>
           </div>
 

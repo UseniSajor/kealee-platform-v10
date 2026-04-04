@@ -1,76 +1,88 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowRight, CheckCircle, Calculator } from 'lucide-react'
+import { ArrowRight, CheckCircle, FileText, Award, Package } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Get a Project Estimate — Kealee',
-  description: 'AI-powered cost estimates for your renovation, addition, or new build. From rough budgets to certified estimates — find the right level for your project.',
+  title: 'Get a Cost Estimate — Kealee',
+  description: 'Trade-by-trade cost estimates validated against RSMeans data for the DMV market. Lender-ready. Licensed estimator sign-off.',
 }
 
-const PRODUCTS = [
+const TIERS = [
   {
-    slug: 'ai-design',
-    name: 'AI Design Estimate',
-    price: 'From $395',
-    turnaround: '48 hours',
-    description: 'AI-generated cost range and design brief based on your project scope and location. Ideal for early budgeting before committing to architectural drawings.',
-    items: [
-      'AI cost range estimate for your project type',
-      'Scope breakdown by trade',
-      'Market-based cost benchmarks (DC-Baltimore region)',
-      'Design direction brief included',
-      '30-min consultation call',
-    ],
-    cta: 'Start Design Estimate',
-    accent: '#2ABFBF',
-    badge: 'Most Popular',
-  },
-  {
+    icon: FileText,
     slug: 'cost-estimate',
     name: 'Detailed Cost Estimate',
-    price: 'From $695',
-    turnaround: '5–7 business days',
-    description: 'Line-item cost estimate prepared from your project plans or concept package. Suitable for contractor bid comparison and lender pre-approval packages.',
-    items: [
-      'Line-item cost breakdown by trade + phase',
-      'Material and labor split',
-      'Regional cost adjustments applied',
-      'Contractor bid-ready format',
-      'Suitable for lender use (non-certified)',
+    price: '$595',
+    turnaround: '3–5 business days',
+    desc: 'Human-reviewed, trade-by-trade breakdown validated against current RSMeans unit cost data for the DMV market.',
+    bullets: [
+      'CSI MasterFormat line-item breakdown',
+      'RSMeans unit cost validation',
+      'Base / mid / high scenarios',
+      'Licensed estimator sign-off',
+      'Lender-ready PDF',
     ],
-    cta: 'Start Detailed Estimate',
-    accent: '#E8793A',
+    cta: 'Order Detailed Estimate',
+    href: '/intake/cost_estimate',
+    accent: '#4A8FA8',
+    popular: false,
   },
   {
+    icon: Award,
     slug: 'certified-estimate',
     name: 'Certified Cost Estimate',
-    price: 'From $1,200',
-    turnaround: '7–10 business days',
-    description: 'Professionally certified cost estimate for permitting, financing, insurance claims, or legal proceedings. Stamped and signed by a qualified estimator.',
-    items: [
+    price: '$1,850',
+    turnaround: '5–7 business days',
+    desc: 'Notarized licensed estimator sign-off, full RSMeans source documentation, and investor-grade format accepted by most DMV lenders.',
+    bullets: [
       'Everything in Detailed Estimate',
-      'Certified estimator review and sign-off',
-      'Suitable for permit applications',
-      'Acceptable for construction loan draws',
-      'Insurance claim and legal proceeding use',
+      'Notarized licensed estimator signature',
+      'Full RSMeans source citations',
+      'Investor-grade executive summary',
+      'Excel + PDF deliverable',
     ],
-    cta: 'Start Certified Estimate',
-    accent: '#7C3AED',
+    cta: 'Order Certified Estimate',
+    href: '/intake/certified_estimate',
+    accent: '#E8793A',
+    popular: true,
+  },
+  {
+    icon: Package,
+    slug: 'cost-estimate',
+    name: 'Estimate + Permit Bundle',
+    price: 'From $1,100',
+    turnaround: '5–7 business days',
+    desc: 'Detailed cost estimate plus permit package preparation — bundled for project efficiency. File permits and know your costs in one step.',
+    bullets: [
+      'Full Detailed Cost Estimate',
+      'Permit package preparation',
+      'Submission to correct agency',
+      'Bundle savings vs. individual',
+      'Single project intake',
+    ],
+    cta: 'Contact Us',
+    href: '/contact',
+    accent: '#4A8FA8',
+    popular: false,
   },
 ]
 
-const FAQ = [
+const FAQS = [
   {
-    q: 'What is the difference between an AI estimate and a certified estimate?',
-    a: 'An AI estimate gives you a fast, data-driven cost range for early planning. A certified estimate is reviewed and signed by a qualified estimator — suitable for permits, lender submissions, and legal proceedings.',
+    q: 'Do I need drawings to get an estimate?',
+    a: 'Not always. For scopes under $150K, a written scope description is often sufficient. For larger or more complex projects, schematic drawings are preferred for accuracy.',
   },
   {
-    q: 'Do I need plans to get an estimate?',
-    a: 'Not for an AI Design Estimate — we work from your project description and scope. For Detailed and Certified estimates, we work best from an existing concept package, architectural drawings, or a detailed scope document.',
+    q: 'What is the difference between the Detailed and Certified estimate?',
+    a: 'The Detailed Estimate ($595) covers most residential and small commercial needs. The Certified Estimate ($1,850) adds notarized sign-off and is accepted by virtually all DMV lenders for construction loan draw schedules.',
   },
   {
-    q: 'Can I use an estimate to get contractor bids?',
-    a: "Yes — that's the point of the Detailed Estimate. It puts every contractor on the same page with a standard scope, making bids directly comparable and easier to evaluate.",
+    q: 'Can I use the estimate to evaluate contractor bids?',
+    a: 'Yes. Contractors often use our estimates as a baseline when scoping their own bids. Significant deviations from your estimate are a signal to ask questions.',
+  },
+  {
+    q: 'How accurate are the estimates?',
+    a: 'All estimates are validated against current RSMeans unit cost data for the DMV market, reviewed by a licensed estimator. Accuracy depends on the completeness of scope provided.',
   },
 ]
 
@@ -78,63 +90,71 @@ export default function EstimatePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero */}
-      <section
-        className="py-20 md:py-28"
-        style={{ background: 'linear-gradient(135deg, #1A2B4A 0%, #0F1D34 60%, #1A3B3B 100%)' }}
-      >
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <div
-            className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest mb-5"
-            style={{ backgroundColor: 'rgba(42,191,191,0.15)', color: '#2ABFBF' }}
-          >
-            <Calculator className="h-3.5 w-3.5" />
-            Project Estimation
+      <section className="py-20 border-b border-gray-100" style={{ background: 'linear-gradient(135deg, #1A2B4A 0%, #2d4a72 100%)' }}>
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl">
+            <span
+              className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest mb-4"
+              style={{ backgroundColor: 'rgba(74,143,168,0.25)', color: '#90CDF4' }}
+            >
+              Cost Estimation
+            </span>
+            <h1 className="text-4xl font-bold text-white font-display leading-tight sm:text-5xl">
+              Know your costs<br />before you commit.
+            </h1>
+            <p className="mt-5 text-lg text-gray-300 leading-relaxed">
+              RSMeans-validated, trade-by-trade cost breakdowns for DMV construction projects. Human-reviewed. Lender-ready. Starting at $595.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-6 text-sm text-gray-300">
+              {['RSMeans unit cost data', 'Licensed estimator review', 'Lender-ready PDF', 'DMV market rates'].map(t => (
+                <span key={t} className="flex items-center gap-1.5">
+                  <CheckCircle className="h-4 w-4 text-blue-300" />
+                  {t}
+                </span>
+              ))}
+            </div>
           </div>
-          <h1 className="text-4xl font-bold text-white font-display sm:text-5xl">
-            Know your numbers before you commit
-          </h1>
-          <p className="mt-5 text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            AI-powered cost estimates to certified budget packages — find the right level for your
-            project, from early concept through permit application.
-          </p>
         </div>
       </section>
 
-      {/* Product cards */}
+      {/* Pricing tiers */}
       <section className="py-20" style={{ backgroundColor: '#F7FAFC' }}>
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl font-bold font-display sm:text-3xl" style={{ color: '#1A2B4A' }}>
+              Choose your estimate
+            </h2>
+            <p className="mt-3 text-gray-500">All estimates include RSMeans validation and licensed estimator review.</p>
+          </div>
           <div className="grid gap-6 lg:grid-cols-3">
-            {PRODUCTS.map(product => (
+            {TIERS.map(tier => (
               <div
-                key={product.slug}
-                className="relative flex flex-col rounded-2xl bg-white p-7"
+                key={tier.name}
+                className="relative flex flex-col rounded-xl bg-white p-6"
                 style={{
-                  border: product.badge ? `2px solid ${product.accent}` : '1px solid #E5E7EB',
-                  boxShadow: product.badge
-                    ? `0 10px 25px -5px ${product.accent}30`
-                    : '0 1px 3px 0 rgb(0 0 0 / 0.08)',
+                  boxShadow: tier.popular ? `0 10px 25px -5px ${tier.accent}40` : '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+                  border: tier.popular ? `2px solid ${tier.accent}` : '1px solid #E5E7EB',
                 }}
               >
-                {product.badge && (
+                {tier.popular && (
                   <span
-                    className="absolute right-4 top-4 rounded-full px-2.5 py-0.5 text-xs font-semibold text-white"
-                    style={{ backgroundColor: product.accent }}
+                    className="absolute right-4 top-4 rounded-full px-2 py-0.5 text-xs font-semibold text-white"
+                    style={{ backgroundColor: tier.accent }}
                   >
-                    {product.badge}
+                    Most Popular
                   </span>
                 )}
-                <h2 className="text-lg font-bold font-display" style={{ color: '#1A2B4A' }}>
-                  {product.name}
-                </h2>
-                <div className="mt-3 mb-1">
-                  <span className="text-3xl font-bold font-mono" style={{ color: product.accent }}>
-                    {product.price}
-                  </span>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl mb-4" style={{ backgroundColor: `${tier.accent}14` }}>
+                  <tier.icon className="h-5 w-5" style={{ color: tier.accent }} />
                 </div>
-                <p className="text-xs text-gray-500 mb-3">Delivery: {product.turnaround}</p>
-                <p className="text-sm text-gray-600 leading-relaxed mb-5">{product.description}</p>
-                <ul className="flex-1 space-y-2.5 mb-6">
-                  {product.items.map(item => (
+                <h3 className="font-bold font-display" style={{ color: '#1A2B4A' }}>{tier.name}</h3>
+                <div className="my-3">
+                  <span className="text-3xl font-bold font-mono" style={{ color: tier.accent }}>{tier.price}</span>
+                </div>
+                <p className="text-xs text-gray-500 mb-1">{tier.turnaround}</p>
+                <p className="text-sm text-gray-600 mb-4 leading-relaxed">{tier.desc}</p>
+                <ul className="flex-1 space-y-2 mb-6">
+                  {tier.bullets.map(item => (
                     <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
                       <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-500" />
                       {item}
@@ -142,15 +162,21 @@ export default function EstimatePage() {
                   ))}
                 </ul>
                 <Link
-                  href={`/products/${product.slug}`}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all hover:opacity-90"
+                  href={tier.href}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg py-3 text-sm font-semibold transition-all hover:opacity-90"
                   style={{
-                    backgroundColor: product.badge ? product.accent : 'transparent',
-                    color: product.badge ? '#fff' : product.accent,
-                    border: product.badge ? 'none' : `2px solid ${product.accent}`,
+                    backgroundColor: tier.popular ? tier.accent : 'transparent',
+                    color: tier.popular ? '#fff' : tier.accent,
+                    border: tier.popular ? 'none' : `2px solid ${tier.accent}`,
                   }}
                 >
-                  {product.cta} <ArrowRight className="h-4 w-4" />
+                  {tier.cta}
+                </Link>
+                <Link
+                  href={`/products/${tier.slug}`}
+                  className="mt-2 text-center text-xs text-gray-400 hover:text-gray-600"
+                >
+                  View full details →
                 </Link>
               </div>
             ))}
@@ -159,29 +185,15 @@ export default function EstimatePage() {
       </section>
 
       {/* FAQ */}
-      <section className="py-16">
+      <section className="py-20 border-t border-gray-100">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-8 text-2xl font-bold font-display text-center" style={{ color: '#1A2B4A' }}>
-            Common Questions
-          </h2>
-          <div className="space-y-4">
-            {FAQ.map(item => (
-              <details key={item.q} className="group rounded-xl border border-gray-200 bg-white">
-                <summary
-                  className="flex cursor-pointer items-center justify-between gap-4 px-6 py-4 text-sm font-semibold select-none"
-                  style={{ color: '#1A2B4A' }}
-                >
-                  {item.q}
-                  <span className="shrink-0 rounded-full p-1 text-gray-400 transition-transform group-open:rotate-45" style={{ transition: 'transform 200ms' }}>
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    </svg>
-                  </span>
-                </summary>
-                <div className="border-t border-gray-100 px-6 py-4">
-                  <p className="text-sm text-gray-600 leading-relaxed">{item.a}</p>
-                </div>
-              </details>
+          <h2 className="text-2xl font-bold font-display text-center mb-10" style={{ color: '#1A2B4A' }}>Common questions</h2>
+          <div className="space-y-5">
+            {FAQS.map(faq => (
+              <div key={faq.q} className="rounded-xl bg-white border border-gray-200 p-5">
+                <h3 className="font-semibold text-sm mb-2" style={{ color: '#1A2B4A' }}>{faq.q}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{faq.a}</p>
+              </div>
             ))}
           </div>
         </div>
@@ -190,25 +202,18 @@ export default function EstimatePage() {
       {/* CTA */}
       <section className="py-16" style={{ backgroundColor: '#1A2B4A' }}>
         <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
-          <h2 className="text-2xl font-bold text-white font-display">
-            Not sure which estimate you need?
-          </h2>
-          <p className="mt-3 text-gray-300">
-            Start with a free consultation and we&apos;ll recommend the right level for your project and stage.
-          </p>
-          <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <h2 className="text-3xl font-bold text-white font-display">Ready to know your project cost?</h2>
+          <p className="mt-4 text-gray-300">Submit your scope and we'll deliver a trade-by-trade estimate with licensed estimator sign-off.</p>
+          <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#E8793A' }}
+              href="/intake/cost_estimate"
+              className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ backgroundColor: '#4A8FA8' }}
             >
-              Talk to Our Team <ArrowRight className="h-4 w-4" />
+              Order Detailed Estimate <ArrowRight className="h-5 w-5" />
             </Link>
-            <Link
-              href="/concept-engine"
-              className="inline-flex items-center gap-2 rounded-xl border border-gray-500 px-6 py-3 text-sm font-semibold text-gray-300 transition-colors hover:border-gray-300 hover:text-white"
-            >
-              Start with AI Concept
+            <Link href="/intake/certified_estimate" className="text-sm text-gray-400 hover:text-white transition-colors">
+              Order certified estimate →
             </Link>
           </div>
         </div>

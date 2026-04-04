@@ -164,7 +164,7 @@ export default function SignInPage() {
           </p>
           <p>
             Don&apos;t have an account?{' '}
-            <Link href="/concept" className="font-semibold underline" style={{ color: '#C8521A' }}>Start a project</Link>
+            <Link href="/products" className="font-semibold underline" style={{ color: '#C8521A' }}>Start a project</Link>
           </p>
         </div>
       </div>

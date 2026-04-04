@@ -34,7 +34,7 @@ export const PRIMARY_NAV: NavItem[] = [
   {
     label: 'Start your design',
     type:  'dropdown',
-    href:  '/concept',
+    href:  '/concept-engine',
     groups: [
       {
         title: 'Choose Your Design Path',
@@ -51,6 +51,16 @@ export const PRIMARY_NAV: NavItem[] = [
             badge:       'New',
           },
           {
+            label:       'Kitchen Remodel',
+            href:        '/products/kitchen-remodel',
+            description: 'AI concept, permit scope, layout options — in 24 hours',
+          },
+          {
+            label:       'Bathroom Remodel',
+            href:        '/products/bath-remodel',
+            description: 'Layout options, fixture placement, permit scope, cost band',
+          },
+          {
             label:       'Whole Home Renovation',
             href:        '/concept-engine/whole-home',
             description: 'Floor plan redesign, structural, systems, every room',
@@ -58,7 +68,7 @@ export const PRIMARY_NAV: NavItem[] = [
           {
             label:       'Interior Reno & Addition',
             href:        '/concept-engine/interior-reno',
-            description: 'Kitchen, bath, additions, ADUs, and full interior redesign',
+            description: 'Room additions, layout changes, ADUs, and interior redesign',
           },
           {
             label:       'Developer Concept',
@@ -69,91 +79,77 @@ export const PRIMARY_NAV: NavItem[] = [
       },
     ],
     featured: {
-      label:       'AI Concept Package — From $395',
-      href:        '/concept',
+      label:       'AI Concept Engine — From $395',
+      href:        '/concept-engine',
       description: 'AI-generated design + contractor-ready PDF · 5–7 business day delivery',
     },
   },
 
-  // 2 — Services overview
-  { label: 'Services', href: '/services' },
-
-  // 3 — Get Permits
-  { label: 'Get Permits', href: '/permits' },
-
-  // 3 — For Contractors (direct link to landing page)
-  { label: 'For Contractors', href: '/contractors' },
-
-  // 4 — For Developers (direct link to landing page)
-  { label: 'For Developers', href: '/developers' },
-
-  // 5 — Marketplace
+  // 2 — Products (all services dropdown)
   {
-    label: 'Marketplace',
+    label: 'Products',
     type:  'dropdown',
-    href:  '/marketplace',
+    href:  '/products',
     groups: [
       {
-        title: 'Find Professionals',
+        title: 'AI Design',
         links: [
-          {
-            label:       'Browse GC / Builders / Contractors',
-            href:        '/marketplace',
-            description: 'Search verified, background-checked professionals',
-          },
-          {
-            label:       'Post a Project',
-            href:        '/contact',
-            description: 'Describe your project and get matched in 24 hrs',
-          },
-          {
-            label:       'AI Concept + Contractor Match',
-            href:        '/get-started',
-            description: 'Get an AI design concept, then match to a contractor',
-            badge:       'AI',
-          },
-          {
-            label:       'How It Works',
-            href:        '/marketplace#how-it-works',
-            description: 'Vetting, matching, and milestone payment protection',
-          },
+          { label: 'Whole Home Renovation',    href: '/products/whole-home',      description: 'Full concept, permits, contractor — From $585' },
+          { label: 'Kitchen Remodel',          href: '/products/kitchen-remodel', description: 'Layouts, permit scope, cost band — From $395' },
+          { label: 'Bathroom Remodel',         href: '/products/bath-remodel',    description: 'Layout, fixtures, permit scope — From $395' },
+          { label: 'Exterior Renovation',      href: '/products/exterior',        description: 'Facade, deck, siding, windows — From $395' },
+          { label: 'ADU & In-Law Suite',       href: '/products/adu',             description: 'Zoning check, concept, permit — From $395' },
+          { label: 'Basement Finish',          href: '/products/basement',        description: 'Egress check, layouts, permits — From $395' },
         ],
       },
       {
-        title: 'For GC / Builders / Contractors',
+        title: 'Garden & Landscape',
         links: [
-          {
-            label:       'Join the Marketplace',
-            href:        '/contractor/register',
-            description: 'Apply as a verified GC, builder, or specialty contractor',
-            badge:       'Apply',
-          },
-          {
-            label:       'Contractor Portal',
-            href:        '/login',
-            description: 'Manage bids, projects, crew, and payments',
-          },
+          { label: 'Garden & Farming Design',  href: '/products/garden',          description: 'Raised beds, irrigation, AI concept — From $395' },
+          { label: 'Landscape Design & Install', href: '/products/landscape',     description: 'Beds, hardscape, drainage — From $395' },
+        ],
+      },
+      {
+        title: 'Permits & Estimation',
+        links: [
+          { label: 'Permit Package',           href: '/products/permit-package',   description: 'File, track, respond — From $149' },
+          { label: 'Permit Research',          href: '/products/permit-research',  description: 'Know what you need before filing — $297' },
+          { label: 'Cost Estimate',            href: '/products/cost-estimate',    description: 'RSMeans-validated, lender-ready — From $595' },
+        ],
+      },
+      {
+        title: 'Design & Construction',
+        links: [
+          { label: 'Design Starter',           href: '/products/design-starter',  description: 'Schematic drawings from licensed pro — $1,200' },
+          { label: 'PM Advisory',              href: '/products/pm-advisory',     description: 'Monthly site visits, milestone approvals — $950' },
+          { label: 'ADU Bundle',               href: '/products/adu-bundle',      description: 'Concept + permit bundled — $1,345' },
         ],
       },
     ],
     featured: {
-      label:       'Start a Project',
-      href:        '/get-started',
-      description: 'AI concept design + vetted contractor match — from $395',
+      label:       'All Products →',
+      href:        '/products',
+      description: 'Every Kealee service in one place · Per-service pricing',
     },
   },
 
-  // 6 — Get Estimate
+  // 3 — Get Permits
+  { label: 'Get Permits', href: '/permits' },
+
+  // 4 — Get Estimate
   { label: 'Get Estimate', href: '/estimate' },
 
-  // 7 — About
-  { label: 'About', href: '/about' },
+  // 5 — For Contractors (direct link to landing page)
+  { label: 'For Contractors', href: '/contractors' },
+
+  // 6 — For Developers (direct link to landing page)
+  { label: 'For Developers', href: '/developers' },
 ]
 
 // ── CTA buttons ───────────────────────────────────────────────────────────────
 
-export const NAV_CTA_PRIMARY   = { label: 'Get Started',            href: '/concept' }
-export const NAV_CTA_SECONDARY = { label: 'Join as Contractor',     href: '/contractor/register' }
+export const NAV_CTA_PRIMARY   = { label: 'Start your design',    href: '/concept-engine' }
+export const NAV_CTA_SECONDARY = { label: 'Join as Contractor',   href: '/contractor/register' }
 
 /** Login dropdown entries — shown in nav, never internal routes */
 export const NAV_LOGIN_OPTIONS = [
@@ -165,14 +161,13 @@ export const NAV_LOGIN_OPTIONS = [
 
 export const FOOTER_NAV = {
   platform: [
-    { label: 'All Services',               href: '/services' },
-    { label: 'Start Your Design',          href: '/concept' },
+    { label: 'Start Your Design',          href: '/concept-engine' },
+    { label: 'All Products',               href: '/products' },
     { label: 'Get Permits',                href: '/permits' },
+    { label: 'Get an Estimate',            href: '/estimate' },
     { label: 'Contractor Marketplace',     href: '/marketplace' },
-    { label: 'Construction OS',            href: '/contractors' },
-    { label: 'Digital Twins',              href: '/developers#ddts' },
-    { label: 'Land Intelligence',          href: '/developers#land' },
-    { label: 'Payments & Escrow',          href: '/homeowners#payments' },
+    { label: 'Design Services',            href: '/design-services' },
+    { label: 'Payments & Escrow',          href: '/milestone-pay' },
     { label: 'AI KeaBots',                 href: '/#keabots' },
   ],
   solutions: [

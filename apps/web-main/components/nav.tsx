@@ -60,21 +60,19 @@ export function SiteNav() {
 
       {/* Center links */}
       <ul className="nl" style={{ flex: 1, justifyContent: 'center' }}>
-        <li><Link href="/concept" className="hi">Start AI design</Link></li>
-        <li><Link href="/permits" className="hi">Get permits</Link></li>
-        <li><Link href="/#milestone-pay" className="hi">Milestone Pay</Link></li>
+        <li><Link href="/concept-engine" className="hi">Start AI design</Link></li>
+        <li><Link href="/products" className="hi">Products</Link></li>
+        <li><Link href="/permits" className="tab">Get permits</Link></li>
+        <li><Link href="/estimate" className="tab">Get estimate</Link></li>
         <li><Link href="/marketplace" className="tab">Marketplace</Link></li>
-        <li><Link href="/features" className="tab">How it works</Link></li>
-        <li><Link href="/concept" className="tab">Services</Link></li>
         {isHome && <li><Link href="/contractors" className="gr">Contractors</Link></li>}
         {isHome && <li><Link href="/developers" className="gr">Developers</Link></li>}
-        <li><Link href="/#faq" className="tab">FAQ</Link></li>
       </ul>
 
       {/* Right buttons */}
       <div className="nr">
         <Link href="/auth/sign-in" className="btn bg">Sign in</Link>
-        <Link href="/concept" className="btn bo">Build your project →</Link>
+        <Link href="/products" className="btn bo">All services →</Link>
       </div>
     </nav>
   )

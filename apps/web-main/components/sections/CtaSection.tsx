@@ -9,10 +9,10 @@ export default function CtaSection() {
           <p>Upload photos. Floor plan, zoning check, cost band, and permit scope — delivered the next day. No architect fee upfront. No commitment beyond the report.</p>
         </div>
         <div className="ccards">
-          <Link href="/concept" className="cc">
+          <Link href="/products" className="cc">
             <div>
-              <h4>Get your concept report</h4>
-              <p>Photos in → floor plan + validation out · 24 hours</p>
+              <h4>Browse all services</h4>
+              <p>AI design, permits, estimation, PM — every service in one place</p>
             </div>
             <span className="ccarr">→</span>
           </Link>
