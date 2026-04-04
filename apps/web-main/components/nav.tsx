@@ -74,7 +74,7 @@ export function SiteNav() {
       {/* Right buttons */}
       <div className="nr">
         <Link href="/auth/sign-in" className="btn bg">Sign in</Link>
-        <Link href="/services" className="btn bo">Build your project →</Link>
+        <Link href="/concept" className="btn bo">Build your project →</Link>
       </div>
     </nav>
   )

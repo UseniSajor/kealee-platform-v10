@@ -21,7 +21,7 @@ const FAQS = [
   },
   {
     q: 'What is free? What costs money?',
-    a: 'Always free: your homeowner or project owner dashboard, the AI estimate, the permit checklist, standard contractor assignment, and self-managed project tracking. The $395 concept report is where most projects start. Every other service — detailed estimate, permit filing, PM advisory — is per-service and optional.',
+    a: 'The $395 concept report is where most projects start. Every other service — cost estimate, permit filing, PM advisory — is per-service and optional. Your homeowner dashboard, permit checklist, and standard contractor assignment are included with your project.',
   },
   {
     q: 'What is the difference between AI concept and architectural services?',

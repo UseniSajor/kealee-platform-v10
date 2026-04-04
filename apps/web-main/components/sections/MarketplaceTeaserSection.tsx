@@ -50,7 +50,7 @@ export default function MarketplaceTeaserSection() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&q=60&auto=format&fit=crop" alt="Estimation" />
               </div>
-              <div className="mco" /><span className="mcc">Free AI estimate</span>
+              <div className="mco" /><span className="mcc">AI cost estimate</span>
               <div className="mcb"><div className="mctag">RSMeans validated</div><h4>Cost estimation</h4><p>Free AI · $595 detailed · $1,850 certified</p></div>
             </div>
             <div className="mc med">

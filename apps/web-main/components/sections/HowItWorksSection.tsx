@@ -13,8 +13,8 @@ export default function HowItWorksSection() {
         </div>
         <div className="fwst">
           <div className="fwn">2</div>
-          <h4>Get your estimate</h4>
-          <p>Free AI estimate. Add human review and RSMeans validation for $595.</p>
+          <h4>Get your cost estimate</h4>
+          <p>AI cost estimate. Add human review and RSMeans validation for $595.</p>
           <div className="fwpr">Free → $1,850</div>
         </div>
         <div className="fwst">

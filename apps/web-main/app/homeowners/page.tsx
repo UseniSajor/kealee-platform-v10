@@ -53,7 +53,7 @@ const WORKFLOW = [
   {
     number: 2,
     title: 'Price Your Project',
-    desc: 'AI estimate is included free. Upgrade to a Detailed Estimate ($595) or Certified Estimate ($1,850) for lender-ready reports.',
+    desc: 'AI cost estimate included with all projects. Upgrade to a Detailed Estimate ($595) or Certified Estimate ($1,850) for lender-ready reports.',
   },
   {
     number: 3,

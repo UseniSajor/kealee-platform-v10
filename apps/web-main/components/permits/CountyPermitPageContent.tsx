@@ -245,7 +245,7 @@ export function CountyPermitPageContent({ county }: { county: CountyData }) {
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <ul className="space-y-3 flex-1">
               {[
-                `Free 48-hour estimate for ${county.shortName} projects`,
+                `Permit strategy within 48 hours for ${county.shortName} projects`,
                 'Permit-ready package — no revision cycles',
                 'We manage submission start to approval',
               ].map((item) => (
@@ -271,7 +271,7 @@ export function CountyPermitPageContent({ county }: { county: CountyData }) {
               className="flex-shrink-0 px-8 py-4 rounded-xl font-bold text-white text-base transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#E8793A' }}
             >
-              Start My Estimate →
+              Start My Permit →
             </a>
           </div>
         </Container>
@@ -356,7 +356,7 @@ export function CountyPermitPageContent({ county }: { county: CountyData }) {
         <Container width="md">
           <div className="text-center mb-10">
             <Heading as="h2" size="lg" color="navy" className="mb-3">
-              Get Your Free {county.shortName} Permit Estimate
+              Start Your {county.shortName} Permit Application
             </Heading>
             <p className="text-gray-500">
               Tell us what you're building — we'll send a strategy + pricing within 48 hours
@@ -381,7 +381,7 @@ export function CountyPermitPageContent({ county }: { county: CountyData }) {
                 href="#start-permit"
                 className="px-8 py-4 rounded-xl font-bold text-white border-2 border-white transition-colors hover:bg-white hover:text-orange-500"
               >
-                Start My Estimate →
+                Start My Permit →
               </a>
               <a
                 href="mailto:permits@kealee.com"
