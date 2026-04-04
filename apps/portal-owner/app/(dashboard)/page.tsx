@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { listProjects, getProjectReadiness } from '@/lib/api/owner'
 import type { Project, ReadinessStatus } from '@/lib/api/owner'
+import { RevenueHookModal } from '@kealee/core-hooks'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -137,6 +138,8 @@ export default function OwnerDashboard() {
   const [readinessMap, setReadinessMap] = useState<Record<string, ReadinessStatus>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showDesignHook, setShowDesignHook] = useState(false)
+  const [showPermitHook, setShowPermitHook] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -168,6 +171,29 @@ export default function OwnerDashboard() {
     load()
     return () => { mounted = false }
   }, [])
+
+  // Auto-show design hook once per session when user has active projects
+  useEffect(() => {
+    const hasActive = projects.some(p => p.status !== 'ARCHIVED')
+    if (!loading && hasActive) {
+      const key = 'kea_design_hook_shown'
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, '1')
+        setShowDesignHook(true)
+      }
+    }
+  }, [loading, projects])
+
+  // Auto-show permit hook once per session when a project is in PERMITS phase
+  useEffect(() => {
+    if (!loading && projects.some(p => (p.lifecyclePhase ?? '').toUpperCase() === 'PERMITS')) {
+      const key = 'kea_permit_hook_shown'
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, '1')
+        setShowPermitHook(true)
+      }
+    }
+  }, [loading, projects])
 
   const activeProjects = projects.filter(p => p.status !== 'ARCHIVED')
   const totalBudget = projects.reduce((s, p) => s + (p.totalBudget ?? 0), 0)
@@ -221,6 +247,80 @@ export default function OwnerDashboard() {
           )}
         </div>
       </div>
+
+      {/* Revenue Hook: design_complete — shown when user has active projects */}
+      {!loading && activeProjects.length > 0 && showDesignHook && (
+        <div className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-blue-200 bg-blue-50 px-5 py-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
+              style={{ backgroundColor: 'rgba(49,130,206,0.15)' }}
+            >
+              <Activity className="h-5 w-5" style={{ color: '#3182CE' }} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>
+                Ready for design?
+              </p>
+              <p className="text-xs text-gray-500">
+                Turn your concept into permitted construction drawings with AI-assisted design.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-shrink-0 items-center gap-2">
+            <button
+              onClick={() => setShowDesignHook(false)}
+              className="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-gray-600"
+            >
+              Dismiss
+            </button>
+            <button
+              onClick={() => setShowDesignHook(true)}
+              className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ backgroundColor: '#3182CE' }}
+            >
+              Explore design
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Revenue Hook: permit_detected — shown when a project is in PERMITS phase */}
+      {!loading && projects.some(p => (p.lifecyclePhase ?? '').toUpperCase() === 'PERMITS') && showPermitHook && (
+        <div className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-orange-200 bg-orange-50 px-5 py-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
+              style={{ backgroundColor: 'rgba(232,121,58,0.15)' }}
+            >
+              <Clock className="h-5 w-5" style={{ color: '#E8793A' }} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold" style={{ color: '#1A2B4A' }}>
+                Permits detected on your project
+              </p>
+              <p className="text-xs text-gray-500">
+                Let Kealee handle permit filing, follow-ups, and approvals — saving weeks of back-and-forth.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-shrink-0 items-center gap-2">
+            <button
+              onClick={() => setShowPermitHook(false)}
+              className="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-gray-600"
+            >
+              Dismiss
+            </button>
+            <button
+              onClick={() => setShowPermitHook(true)}
+              className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ backgroundColor: '#E8793A' }}
+            >
+              Handle permits
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Attention banner */}
       {!loading && needsAttention > 0 && (
@@ -297,6 +397,18 @@ export default function OwnerDashboard() {
           )}
         </div>
       </div>
+
+      {/* Revenue Hook Modals */}
+      <RevenueHookModal
+        stage="design_complete"
+        onSelect={() => setShowDesignHook(false)}
+        onDismiss={() => setShowDesignHook(false)}
+      />
+      <RevenueHookModal
+        stage="permit_detected"
+        onSelect={() => setShowPermitHook(false)}
+        onDismiss={() => setShowPermitHook(false)}
+      />
     </div>
   )
 }
