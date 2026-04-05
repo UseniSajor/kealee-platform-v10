@@ -90,7 +90,7 @@ export default function ProjectTwinPage() {
         }
         setTwinData(await resp.json())
       } catch {
-        setError('Failed to load digital twin')
+        setError('Failed to load project dashboard')
       } finally {
         setLoading(false)
       }
@@ -110,7 +110,7 @@ export default function ProjectTwinPage() {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 text-center">
         <AlertTriangle className="h-10 w-10 text-red-400" />
-        <p className="text-gray-600">{error ?? 'Digital twin not available'}</p>
+        <p className="text-gray-600">{error ?? 'Project dashboard not available'}</p>
       </div>
     )
   }

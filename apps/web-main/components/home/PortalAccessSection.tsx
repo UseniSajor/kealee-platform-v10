@@ -7,7 +7,7 @@ const PORTALS = [
     emoji:   '🏠',
     title:   'Owner Portal',
     role:    'Homeowners',
-    desc:    'Track builds, approve payments, view your digital twin, and message your team — all in one place.',
+    desc:    'Track builds, approve payments, view your project dashboard, and message your team — all in one place.',
     accent:  '#2ABFBF',
     href:    '/login',
   },

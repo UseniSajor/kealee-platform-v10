@@ -13,7 +13,7 @@ const SERVICES = [
     image: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600&q=80&auto=format&fit=crop',
     imageAlt: 'Modern open concept whole home renovation with kitchen and living area',
     items: [
-      { name: 'Whole Home Concept Package', price: '$750', desc: 'AI whole-home concept with floor plan, room overview, systems summary, and phasing plan. 7–10 business days.' },
+      { name: 'Whole Home Concept Package', price: '$695', desc: 'AI whole-home concept with floor plan, room overview, systems summary, and phasing plan. 7–10 business days.' },
       { name: 'Detailed Home Design', price: '$1,800', desc: 'Full whole-home design with detailed floor plans, material selections, and contractor coordination package. Up to 3 rounds.' },
       { name: 'Full Architectural Package', price: 'From $5,500', desc: 'Permit-ready architectural drawings with structural engineering coordination and full contractor documentation.' },
     ],
@@ -62,7 +62,7 @@ const BENEFITS = [
 const FAQ = [
   {
     q: 'What does the Whole Home Concept package include?',
-    a: 'The $750 package includes a concept floor plan, room-by-room design overview, MEP systems summary, phasing plan, and a 45-minute consultation. Delivered in 7–10 business days.',
+    a: 'The $695 package includes a concept floor plan, room-by-room design overview, MEP systems summary, phasing plan, and a 45-minute consultation. Delivered in 7–10 business days.',
   },
   {
     q: 'Does this include construction or contractor services?',
@@ -144,7 +144,7 @@ export default function WholeHomePage() {
                 style={{ backgroundColor: ACCENT, boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' }}
               >
                 <p className="text-xs font-semibold text-white">Whole Home Concept</p>
-                <p className="text-2xl font-bold text-white font-mono">From $750</p>
+                <p className="text-2xl font-bold text-white font-mono">From $695</p>
               </div>
             </motion.div>
           </div>
@@ -293,7 +293,7 @@ export default function WholeHomePage() {
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-white font-display">Transform Your Whole Home</h2>
           <p className="mt-4 text-lg text-gray-300">
-            $750 · Floor plan concept + phasing plan · 7–10 business days · Consultation included
+            $695 · Floor plan concept + phasing plan · 7–10 business days · Consultation included
           </p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link

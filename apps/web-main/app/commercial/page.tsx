@@ -43,8 +43,8 @@ const BENEFITS = [
   },
   {
     icon: '📊',
-    title: 'Digital Twin Tracking',
-    desc: 'Live digital model of every commercial project — milestone status, payment progress, change orders, and inspection records in one place.',
+    title: 'Project Dashboard Tracking',
+    desc: 'Live dashboard of every commercial project — milestone status, payment progress, change orders, and inspection records in one place.',
   },
   {
     icon: '🏗️',

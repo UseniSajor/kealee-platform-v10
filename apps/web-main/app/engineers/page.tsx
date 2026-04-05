@@ -79,7 +79,7 @@ const WORKFLOW = [
   {
     title: 'Issue Final Certifications',
     description:
-      'Complete engineering closeout documents, issue certifications, and archive as-built drawings in the project\'s digital twin.',
+      'Complete engineering closeout documents, issue certifications, and archive as-built drawings in the project\'s project dashboard.',
   },
 ]
 

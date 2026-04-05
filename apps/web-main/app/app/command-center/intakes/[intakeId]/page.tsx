@@ -222,10 +222,10 @@ export default function IntakeDetailPage() {
           </dl>
         </div>
 
-        {/* Digital twin */}
+        {/* Project dashboard */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-semibold" style={{ color: '#1A2B4A' }}>Digital Twin</h3>
+            <h3 className="font-semibold" style={{ color: '#1A2B4A' }}>Project Dashboard</h3>
             {twin && (
               <button
                 onClick={() => router.push(`/app/projects/unknown/twin?twinId=${twin.id}`)}
@@ -247,7 +247,7 @@ export default function IntakeDetailPage() {
               </div>
             </div>
           ) : (
-            <p className="text-sm text-gray-400">No digital twin yet.</p>
+            <p className="text-sm text-gray-400">No project dashboard yet.</p>
           )}
         </div>
 

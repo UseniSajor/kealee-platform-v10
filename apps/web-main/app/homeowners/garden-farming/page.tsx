@@ -15,7 +15,7 @@ const SERVICES = [
     desc:    'AI-powered garden layouts tailored to your space, sun exposure, and goals. From decorative to productive gardens.',
     items: [
       { name: 'AI Garden Concept Package',  price: '$395',        note: '3 layout options · consultation included' },
-      { name: 'Advanced Garden Design',     price: '$750',        note: 'Detailed plant lists + irrigation specs + 3D views' },
+      { name: 'Advanced Garden Design',     price: '$695',        note: 'Detailed plant lists + irrigation specs + 3D views' },
       { name: 'Full Landscape Design',      price: '$2,500+',     note: 'Permit-ready landscape plans + contractor package · 2–3 weeks' },
     ],
   },
@@ -90,7 +90,7 @@ const FAQS = [
   },
   {
     q: 'How many revision rounds are included?',
-    a: 'The AI Garden Concept ($395) includes 1 feedback round with 3 layout options. The Advanced Garden Design ($750) includes up to 3 rounds. The Full Landscape Design includes up to 5 rounds.',
+    a: 'The AI Garden Concept ($395) includes 1 feedback round with 3 layout options. The Advanced Garden Design ($695) includes up to 3 rounds. The Full Landscape Design includes up to 5 rounds.',
   },
   {
     q: 'Can you design just irrigation without a full garden redesign?',

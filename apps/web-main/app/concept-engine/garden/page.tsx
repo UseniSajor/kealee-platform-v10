@@ -150,7 +150,7 @@ export default function GardenConceptEnginePage() {
               },
               {
                 name: 'Advanced Garden Design',
-                price: '$750',
+                price: '$695',
                 rounds: 'Up to 3 feedback rounds',
                 turnaround: '10–14 business days',
                 desc: 'Detailed garden design with plant lists, irrigation specs, and 3D garden views.',
