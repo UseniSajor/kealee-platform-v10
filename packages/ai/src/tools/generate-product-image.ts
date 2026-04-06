@@ -143,11 +143,11 @@ Show craftsmanship and quality. Ultra sharp focus.`;
       style: image_type === "before" ? "natural" : "vivid",
     });
 
-    const imageUrl = response.data[0].url;
-
-    if (!imageUrl) {
+    if (!response.data || !response.data[0]?.url) {
       throw new Error("No image URL returned from DALL-E");
     }
+
+    const imageUrl = response.data[0].url;
 
     console.log(`[keabot-design] ✅ Generated ${image_type} image for ${product_id}`);
 
