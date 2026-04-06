@@ -1,0 +1,37 @@
+{
+  "name": "@kealee/keabot-marketing",
+  "version": "1.0.0",
+  "description": "Autonomous marketing orchestration bot for Kealee Platform launch",
+  "type": "module",
+  "main": "dist/bot.js",
+  "exports": {
+    ".": "./dist/bot.js",
+    "./types": "./dist/marketing.types.js",
+    "./prompts": "./dist/marketing.prompts.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/bot.ts",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@kealee/core-bots": "*",
+    "@kealee/core-llm": "*",
+    "@kealee/database": "*",
+    "@kealee/observability": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.6.0"
+  },
+  "keywords": [
+    "marketing",
+    "automation",
+    "bot",
+    "sales",
+    "lead-scoring",
+    "email",
+    "analytics"
+  ]
+}
