@@ -4,39 +4,41 @@ import Stripe from 'stripe'
 // Map product slugs to Stripe price env var names
 // NOTE: Some products may not have Stripe configured yet — checkout returns 503
 const PRICE_ENV_MAP: Record<string, string> = {
-  // AI/Design
-  'ai-design':           'STRIPE_PRICE_CONCEPT_VALIDATION',
-  'whole-home':          'STRIPE_PRICE_CONCEPT_VALIDATION',
-  'kitchen-remodel':     'STRIPE_PRICE_KITCHEN_REMODEL',
-  'bath-remodel':        'STRIPE_PRICE_BATH_REMODEL',
-  'interior-reno':       'STRIPE_PRICE_INTERIOR_RENO',
-  'exterior':            'STRIPE_PRICE_EXTERIOR',
-  'garden':              'STRIPE_PRICE_GARDEN',
-  'landscape':           'STRIPE_PRICE_LANDSCAPE',
-  'basement':            'STRIPE_PRICE_BASEMENT_CONCEPT',
-  'adu':                 'STRIPE_PRICE_ADU',
-  'tiny-home':           'STRIPE_PRICE_TINY_HOME',
-  'new-build':           'STRIPE_PRICE_NEW_BUILD',
-  'design-starter':      'STRIPE_PRICE_DESIGN_STARTER',
-  'design-visualization':'STRIPE_PRICE_DESIGN_VISUALIZATION',
-  'design-full':         'STRIPE_PRICE_DESIGN_FULL',
+  // AI/Design — Estimation Services
+  'ai-design':           'STRIPE_PRICE_CONCEPT',           // $395 - EST_BASIC equivalent
+  'whole-home':          'STRIPE_PRICE_WHOLE_HOME',        // $585 - EST_STANDARD equivalent
+  'kitchen-remodel':     'STRIPE_PRICE_KITCHEN',           // $395 - EST_BASIC equivalent
+  'bath-remodel':        'STRIPE_PRICE_BATH',              // $395 - EST_BASIC equivalent
+  'interior-reno':       'STRIPE_PRICE_INTERIOR',          // $395 - EST_BASIC equivalent
+  'exterior':            'STRIPE_PRICE_EXTERIOR',          // $395 - EST_BASIC equivalent
+  'garden':              'STRIPE_PRICE_GARDEN',            // $395 - EST_BASIC equivalent
+  'landscape':           'STRIPE_PRICE_LANDSCAPE',         // $395 - EST_BASIC equivalent
+  'basement':            'STRIPE_PRICE_BASEMENT',          // $395 - EST_BASIC equivalent
+  'adu':                 'STRIPE_PRICE_ADU',               // $395 - EST_BASIC equivalent
+  'tiny-home':           'STRIPE_PRICE_TINY_HOME',         // $395 - EST_BASIC equivalent
+  'new-build':           'STRIPE_PRICE_NEW_BUILD',         // $395 - EST_BASIC equivalent
+  'design-starter':      'STRIPE_PRICE_DESIGN_STARTER',    // $695 - EST_STANDARD equivalent
+  'design-visualization':'STRIPE_PRICE_DESIGN_VIZ',        // $695 - EST_STANDARD equivalent
+  'design-full':         'STRIPE_PRICE_DESIGN_FULL',       // $1,200+ - Custom
   
-  // Permits
-  'permit-package':      'STRIPE_PRICE_PERMIT_PACKAGE',
-  'permit-research':     'STRIPE_PRICE_PERMIT_SIMPLE',
+  // Permits — On-Demand Services
+  'permit-package':      'STRIPE_PRICE_OD_PERMIT_APP',     // $325 - OD Permit Application
+  'permit-research':     'STRIPE_PRICE_PERMIT_RESEARCH',   // $149-$297 - OD Scope Review
+  'permit-coordination': 'STRIPE_PRICE_OD_CONTRACTOR_COORD',// $500 - OD Contractor Coordination
+  'permit-expediting':   'STRIPE_PRICE_PERMIT_EXPEDITING', // $1,997 - Custom
   
-  // Estimation
-  'cost-estimate':       'STRIPE_PRICE_COST_ESTIMATE',
-  'certified-estimate':  'STRIPE_PRICE_CERTIFIED_ESTIMATE',
+  // Estimation — Estimation Services
+  'cost-estimate':       'STRIPE_PRICE_EST_STANDARD',      // $595 - EST_STANDARD
+  'certified-estimate':  'STRIPE_PRICE_EST_CERTIFIED',     // $1,850 - Custom
   
-  // Construction & PM
-  'pm-advisory':         'STRIPE_PRICE_PM_ADVISORY',
-  'pm-oversight':        'STRIPE_PRICE_PM_OVERSIGHT',
-  'historic-renovation': 'STRIPE_PRICE_HISTORIC_RENOVATION',
+  // Construction & PM — Monthly Packages
+  'pm-advisory':         'STRIPE_PRICE_OD_PROGRESS_REPORT',// $250 - OD Progress Reporting (monthly proxy)
+  'pm-oversight':        'STRIPE_PRICE_OD_SCHEDULE_OPT',   // $1,250 - OD Schedule Optimization
+  'historic-renovation': 'STRIPE_PRICE_HISTORIC',          // $1,500 - Custom
   
   // Bundles & Specialty
-  'adu-bundle':          'STRIPE_PRICE_ADU_BUNDLE',
-  'water-mitigation':    'STRIPE_PRICE_WATER_MITIGATION',
+  'adu-bundle':          'STRIPE_PRICE_ADU_BUNDLE',        // $1,345 - Custom bundle
+  'water-mitigation':    'STRIPE_PRICE_WATER_MITIGATION',  // $395 - EST_BASIC equivalent
 }
 
 export async function POST(req: NextRequest) {
