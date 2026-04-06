@@ -1413,7 +1413,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
     ],
     steps: [
-      { n: '01', title: 'Submit your scope', body: 'Share your project scope, AI Design Report (if you have one), any existing drawings, and your property address.' },
+      { n: '01', title: 'Submit your scope', body: 'Share your project scope, AI Design (if you have one), any existing drawings, and your property address.' },
       { n: '02', title: 'Estimator review', body: 'A licensed estimator reviews your scope against current DMV labor and material rates using RSMeans data.' },
       { n: '03', title: 'Draft and revisions', body: 'You receive a draft estimate within 3–5 business days. One round of scope revisions is included.' },
       { n: '04', title: 'Final delivery', body: 'Signed, lender-ready PDF delivered with a digital spreadsheet for contractor comparison.' },
@@ -1604,7 +1604,7 @@ export const PRODUCTS: Record<string, Product> = {
     badgeColor: '#E8793A',
     accentColor: '#E8793A',
     imageUrl: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=900&q=70&auto=format&fit=crop',
-    description: 'ADUs require both a concept design and a permit — this bundle delivers both at a reduced price. We start with an AI Design Report to validate your lot\'s ADU eligibility, setback compliance, and design options. Then we file the permit package.',
+    description: 'ADUs require both a concept design and a permit — this bundle delivers both at a reduced price. We start with an AI Design to validate your lot\'s ADU eligibility, setback compliance, and design options. Then we file the permit package.',
     includes: [
       'Everything in AI Design Report ($395 value)',
       'ADU lot eligibility and setback check',
@@ -1717,7 +1717,7 @@ export const PRODUCTS: Record<string, Product> = {
 
   'ai-design': {
     slug: 'ai-design',
-    name: 'AI Design Report',
+    name: 'AI Design',
     tagline: 'Floor plan, zoning check, cost band, and permit scope — in 24 hours.',
     price: 'Starting at $395',
     priceNote: 'one-time · no subscription',
@@ -1741,7 +1741,7 @@ export const PRODUCTS: Record<string, Product> = {
       { n: '01', title: 'Upload your photos', body: 'Submit 3–10 photos of your space or lot through our intake form. Add a description of what you want to build.' },
       { n: '02', title: 'AI generates your concept', body: 'Our model produces a floor plan sketch, scope outline, and initial cost band within 2 hours of submission.' },
       { n: '03', title: 'Staff review', body: 'A licensed professional checks zoning data, structural risk, permit complexity, and cost band accuracy.' },
-      { n: '04', title: 'Delivery in 24 hours', body: 'Your complete AI Design Report arrives by email with a PDF and dashboard link. You own the content outright.' },
+      { n: '04', title: 'Delivery in 24 hours', body: 'Your complete AI Design arrives by email with a PDF and dashboard link. You own the content outright.' },
     ],
     forWho: 'Homeowners, project owners, and developers in the DC/Maryland/Virginia metro area planning a remodel, addition, ADU, or new construction project.',
     cta: 'Choose Your Design Path',
