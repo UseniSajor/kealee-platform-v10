@@ -2,16 +2,41 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
 // Map product slugs to Stripe price env var names
+// NOTE: Some products may not have Stripe configured yet — checkout returns 503
 const PRICE_ENV_MAP: Record<string, string> = {
+  // AI/Design
   'ai-design':           'STRIPE_PRICE_CONCEPT_VALIDATION',
-  'permit-package':      'STRIPE_PRICE_PERMIT_PACKAGE',
-  'cost-estimate':       'STRIPE_PRICE_COST_ESTIMATE',
-  'adu-bundle':          'STRIPE_PRICE_ADU_BUNDLE',
-  'pm-advisory':         'STRIPE_PRICE_PM_ADVISORY',
-  'certified-estimate':  'STRIPE_PRICE_CERTIFIED_ESTIMATE',
-  'historic-renovation': 'STRIPE_PRICE_HISTORIC_RENOVATION',
-  'water-mitigation':    'STRIPE_PRICE_WATER_MITIGATION',
+  'whole-home':          'STRIPE_PRICE_CONCEPT_VALIDATION',
+  'kitchen-remodel':     'STRIPE_PRICE_KITCHEN_REMODEL',
+  'bath-remodel':        'STRIPE_PRICE_BATH_REMODEL',
+  'interior-reno':       'STRIPE_PRICE_INTERIOR_RENO',
+  'exterior':            'STRIPE_PRICE_EXTERIOR',
+  'garden':              'STRIPE_PRICE_GARDEN',
+  'landscape':           'STRIPE_PRICE_LANDSCAPE',
   'basement':            'STRIPE_PRICE_BASEMENT_CONCEPT',
+  'adu':                 'STRIPE_PRICE_ADU',
+  'tiny-home':           'STRIPE_PRICE_TINY_HOME',
+  'new-build':           'STRIPE_PRICE_NEW_BUILD',
+  'design-starter':      'STRIPE_PRICE_DESIGN_STARTER',
+  'design-visualization':'STRIPE_PRICE_DESIGN_VISUALIZATION',
+  'design-full':         'STRIPE_PRICE_DESIGN_FULL',
+  
+  // Permits
+  'permit-package':      'STRIPE_PRICE_PERMIT_PACKAGE',
+  'permit-research':     'STRIPE_PRICE_PERMIT_SIMPLE',
+  
+  // Estimation
+  'cost-estimate':       'STRIPE_PRICE_COST_ESTIMATE',
+  'certified-estimate':  'STRIPE_PRICE_CERTIFIED_ESTIMATE',
+  
+  // Construction & PM
+  'pm-advisory':         'STRIPE_PRICE_PM_ADVISORY',
+  'pm-oversight':        'STRIPE_PRICE_PM_OVERSIGHT',
+  'historic-renovation': 'STRIPE_PRICE_HISTORIC_RENOVATION',
+  
+  // Bundles & Specialty
+  'adu-bundle':          'STRIPE_PRICE_ADU_BUNDLE',
+  'water-mitigation':    'STRIPE_PRICE_WATER_MITIGATION',
 }
 
 export async function POST(req: NextRequest) {

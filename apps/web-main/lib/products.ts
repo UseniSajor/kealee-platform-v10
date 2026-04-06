@@ -194,7 +194,7 @@ export const PRODUCTS: Record<string, Product> = {
     forWho: 'Homeowners planning a kitchen update, gut renovation, or layout change in the DC/Maryland/Virginia metro area who want to understand scope, permits, and cost before hiring a contractor.',
     cta: 'Start My Kitchen Concept',
     ctaHref: '/intake/kitchen_remodel',
-    stripeEnvVar: 'STRIPE_PRICE_BASEMENT_CONCEPT',
+    stripeEnvVar: 'STRIPE_PRICE_KITCHEN_REMODEL',
     faq: [
       { q: 'Does a kitchen remodel require a permit?', a: 'Cosmetic work (paint, hardware, appliance swap) typically does not. Moving walls, adding circuits, relocating plumbing, or structural changes all require permits in every DMV jurisdiction.' },
       { q: 'How much does a kitchen remodel cost in the DMV?', a: 'Minor updates: $15,000–$30,000. Mid-range gut renovation: $45,000–$85,000. Full high-end remodel: $100,000–$200,000+.' },
@@ -275,7 +275,7 @@ export const PRODUCTS: Record<string, Product> = {
     forWho: 'Homeowners planning a bathroom remodel, primary suite upgrade, or new bathroom addition in the DC/Maryland/Virginia metro area.',
     cta: 'Start My Bath Concept',
     ctaHref: '/intake/bath_remodel',
-    stripeEnvVar: 'STRIPE_PRICE_BASEMENT_CONCEPT',
+    stripeEnvVar: 'STRIPE_PRICE_BATH_REMODEL',
     faq: [
       { q: 'Does a bathroom remodel require a permit?', a: 'In-place fixture replacements often do not. Any plumbing relocation, new circuits, structural changes, or bathroom additions require permits in all DMV jurisdictions.' },
       { q: 'How much does a bathroom remodel cost?', a: 'Builder-grade refresh: $8,000–$15,000. Mid-range primary bath: $20,000–$45,000. Full primary suite with tile and custom features: $50,000–$100,000+.' },
