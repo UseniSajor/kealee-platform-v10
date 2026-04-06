@@ -31,6 +31,7 @@ import {
   buildArchitectReviewPrompt,
   buildFullDesignPrompt,
 } from './design.prompts.js';
+import { GENERATE_PRODUCT_IMAGE_TOOL_DEF, generate_product_image } from '@kealee/ai';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -112,6 +113,9 @@ export class KeaBotDesign extends KeaBot {
         message:   'Show design upgrade options to the owner.',
       }),
     });
+
+    // Tool: generate product images (for home page and product catalog)
+    this.registerTool(GENERATE_PRODUCT_IMAGE_TOOL_DEF as any);
   }
 
   // ─── Message handler ───────────────────────────────────────────────────────

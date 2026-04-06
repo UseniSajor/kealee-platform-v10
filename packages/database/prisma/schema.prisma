@@ -12704,10 +12704,29 @@ model Product {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
-  projectItems ProjectItem[]
+  projectItems   ProjectItem[]
+  productImages  ProductImage[]
 
   @@index([category])
   @@index([sku])
+}
+
+model ProductImage {
+  id          String   @id @default(cuid())
+  productId   String
+  type        String   // "before" | "after" | "hero" | "trend" | "detail"
+  url         String   // Image URL (DALL-E, stock photo, etc.)
+  prompt      String?  // The prompt used to generate (if AI-generated)
+  style       String?  // Style variation (modern, traditional, etc.)
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([type])
+  @@index([style])
 }
 
 model ProjectItem {
