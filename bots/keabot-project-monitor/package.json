@@ -1,0 +1,11 @@
+{
+  "name": "@kealee/keabot-project-monitor",
+  "version": "1.0.0",
+  "description": "Real-time project tracking, issue detection, and milestone payment bot",
+  "type": "module",
+  "main": "dist/bot.js",
+  "scripts": { "build": "tsc", "dev": "tsx watch src/bot.ts", "type-check": "tsc --noEmit" },
+  "dependencies": { "@kealee/core-bots": "*", "@kealee/ai": "*", "@kealee/database": "*" },
+  "devDependencies": { "@types/node": "^20.10.0", "tsx": "^4.7.0", "typescript": "^5.6.0" },
+  "keywords": ["project", "monitoring", "milestones", "tracking", "bot"]
+}
