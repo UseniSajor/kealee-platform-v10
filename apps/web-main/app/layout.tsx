@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Syne, DM_Sans } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 import { SiteNav } from '@/components/nav'
 import { SiteFooter } from '@/components/footer'
@@ -20,18 +21,52 @@ const dmSans = DM_Sans({
   display: 'swap',
 })
 
+const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
+
 export const metadata: Metadata = {
   title: {
     default: 'Kealee — Build Your Project in DC, MD, VA',
     template: '%s — Kealee',
   },
   description: 'AI-powered permits, design, and construction management for homeowners, contractors, and developers in Washington DC, Maryland, and Virginia.',
+  openGraph: {
+    type: 'website',
+    siteName: 'Kealee',
+    title: 'Kealee — Build Your Project in DC, MD, VA',
+    description: 'AI-powered permits, design, and construction management for homeowners, contractors, and developers in Washington DC, Maryland, and Virginia.',
+    url: 'https://kealee.com',
+    images: [{ url: 'https://kealee.com/og-default.png', width: 1200, height: 630, alt: 'Kealee Platform' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@kealee',
+    title: 'Kealee — Build Your Project in DC, MD, VA',
+    description: 'AI-powered permits, design, and construction management for homeowners, contractors, and developers in Washington DC, Maryland, and Virginia.',
+    images: ['https://kealee.com/og-default.png'],
+  },
+  metadataBase: new URL('https://kealee.com'),
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${syne.variable} ${dmSans.variable}`}>
       <body>
+        {GA_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_ID}', { page_path: window.location.pathname });
+              `}
+            </Script>
+          </>
+        )}
         <VideoModalProvider>
           <SiteNav />
           <main>{children}</main>
