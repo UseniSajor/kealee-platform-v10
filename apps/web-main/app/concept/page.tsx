@@ -11,13 +11,11 @@ export const metadata: Metadata = {
     title: 'AI Design Concepts in Days — Kealee',
     description: 'Get 1–5 photorealistic design concepts, cost estimates, and permit guidance for your renovation. Starting at $395.',
     url: 'https://kealee.com/concept',
-    images: [{ url: 'https://kealee.com/og-concept.png', width: 1200, height: 630, alt: 'Kealee AI Concept Engine' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'AI Design Concepts in Days — Kealee',
     description: 'Get 1–5 photorealistic design concepts, cost estimates, and permit guidance for your renovation. Starting at $395.',
-    images: ['https://kealee.com/og-concept.png'],
   },
 }
 
