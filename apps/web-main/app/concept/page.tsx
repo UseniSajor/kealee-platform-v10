@@ -5,17 +5,17 @@ import { Container } from '@/components/ui/Container'
 import { Heading } from '@/components/ui/Heading'
 
 export const metadata: Metadata = {
-  title: 'Start Your Project — Kealee AI Concept Engine',
-  description: 'Choose your project type. Our AI generates concept visuals, cost estimates, and a permit-ready package in days.',
+  title: 'AI Concept Design — Starter $599 | Professional $1,299 | Kealee',
+  description: 'Get 3 distinct design concepts, 40+ material specs, cost estimates, and a permit path — all property-specific. Starter $599 (≤800 sqft) · Professional $1,299 (800–3,000 sqft) · Enterprise: Contact us.',
   openGraph: {
-    title: 'AI Design Concepts in Days — Kealee',
-    description: 'Get 1–5 photorealistic design concepts, cost estimates, and permit guidance for your renovation. Starting at $395.',
+    title: 'AI Concept Design — From $599 | Kealee',
+    description: 'Starter $599 · Professional $1,299 · Enterprise CFQ. Property-specific design concepts with zoning analysis, specs, and permit guidance.',
     url: 'https://kealee.com/concept',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Design Concepts in Days — Kealee',
-    description: 'Get 1–5 photorealistic design concepts, cost estimates, and permit guidance for your renovation. Starting at $395.',
+    title: 'AI Concept Design — From $599 | Kealee',
+    description: 'Starter $599 · Professional $1,299 · Enterprise CFQ. Property-specific concepts with specs, costs, and permit path.',
   },
 }
 

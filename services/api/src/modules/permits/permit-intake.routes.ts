@@ -19,26 +19,31 @@ import { evaluateAvailability } from '../../services/availability.service.js'
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2023-10-16' })
 
 // ── Permit tiers ──────────────────────────────────────────────────────────────
+// All tiers include Kealee submission + biweekly status updates + portal access.
 const PERMIT_TIERS = {
-  research: {
-    name: 'Permit Research + Checklist',
-    amount: 29700, // $297
-    description: 'Jurisdiction requirements, fee schedule, document checklist — delivered in 24 hrs',
+  standard: {
+    name: 'Standard Permit Package',
+    amount: 49500,  // $495
+    amendmentLimit: 1,
+    description: 'Single-trade permit submission. We file and track. 1 amendment round included.',
   },
-  filing: {
-    name: 'Full Permit Package',
-    amount: 69500, // $695
-    description: 'Complete permit-ready submission package reviewed for first-cycle approval',
+  multi_trade: {
+    name: 'Multi-Trade Permit Package',
+    amount: 89500,  // $895
+    amendmentLimit: 2,
+    description: 'Multi-trade submission (up to 3 permit types). 2 amendment rounds included.',
   },
   full_service: {
-    name: 'Permit Coordination Service',
+    name: 'Full Service Permit Coordination',
     amount: 149500, // $1,495
-    description: 'We manage the full submission, follow-ups, and corrections on your behalf',
+    amendmentLimit: -1, // unlimited
+    description: 'Unlimited scope: all permits, unlimited amendments, direct examiner communication.',
   },
   expedited: {
-    name: 'Expedited Permit Add-On',
-    amount: 50000, // $500 add-on
-    description: 'Priority queue, direct examiner contact, same-day start',
+    name: 'Expedited Add-On',
+    amount: 50000,  // $500 add-on
+    amendmentLimit: 0,
+    description: 'Priority queue, direct examiner contact, same-day start.',
   },
 } as const
 
@@ -58,7 +63,7 @@ const IntakeSchema = z.object({
 
 const CheckoutSchema = z.object({
   intakeId: z.string(),
-  tier: z.enum(['research', 'filing', 'full_service', 'expedited']),
+  tier: z.enum(['standard', 'multi_trade', 'full_service', 'expedited']),
   successUrl: z.string().url(),
   cancelUrl: z.string().url(),
 })
@@ -223,10 +228,10 @@ export async function permitIntakeRoutes(fastify: FastifyInstance) {
       const tier = tierMatch?.[1] ?? null
 
       const TIER_NAMES: Record<string, string> = {
-        research: 'Permit Research + Checklist',
-        filing: 'Full Permit Package',
-        full_service: 'Permit Coordination Service',
-        expedited: 'Expedited Permit Add-On',
+        standard: 'Standard Permit Package',
+        multi_trade: 'Multi-Trade Permit Package',
+        full_service: 'Full Service Permit Coordination',
+        expedited: 'Expedited Add-On',
       }
 
       return {

@@ -873,6 +873,23 @@ const start = async () => {
       // Architect VIP intake + Stripe checkout
       const { architectVIPIntakeRoutes } = await import('./modules/architect/architect-vip-intake.routes')
       await fastify.register(architectVIPIntakeRoutes, { prefix: '/api/v1/architect-vip' })
+
+      // ── NEW: Comprehensive AI-powered routes ─────────────────────────────
+      // AI Concept — full intake wizard, checkout, status, revisions, deliverables
+      const { aiConceptRoutes } = await import('./modules/concepts/ai-concept.routes')
+      await fastify.register(aiConceptRoutes, { prefix: '/api/v1/ai-concept' })
+
+      // AI Permits — comprehensive intake, checkout, documents, subscribe-updates
+      const { aiPermitRoutes } = await import('./modules/permits/ai-permit.routes')
+      await fastify.register(aiPermitRoutes, { prefix: '/api/v1/ai-permits' })
+
+      // AI Architect VIP — comprehensive intake, checkout, revisions, deliverables
+      const { aiArchitectRoutes } = await import('./modules/architect/ai-architect.routes')
+      await fastify.register(aiArchitectRoutes, { prefix: '/api/v1/ai-architect' })
+
+      // Contact forms — 8 form types, email routing
+      const { contactFormRoutes } = await import('./modules/contact/contact-form.routes')
+      await fastify.register(contactFormRoutes, { prefix: '/api/v1/contact' })
     })
 
     await safeRegisterBlock('Phase 1 - Project History, Portfolios, PreCon Extras routes', async () => {

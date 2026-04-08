@@ -15,11 +15,13 @@ const fadeInUp = {
 // ── Homeowner project services (one-time per project) ─────────────────────────
 
 const PLAN_ITEMS = [
-  { name: 'AI Concept Design Package — Small', price: '$599', note: 'Up to ~1,500 sqft. Visuals, design direction, zoning brief, path-to-approval plan + consultation included.', highlight: false },
-  { name: 'AI Concept Design Package — Medium', price: '$1,299', note: '1,500–3,500 sqft. Expanded visuals, floor plan options, full scope direction + consultation.', highlight: true },
-  { name: 'AI Concept Design Package — Large', price: 'Contact for Quote', note: '3,500+ sqft. Custom scoping for large renovations, additions, and new construction.' },
-  { name: 'Architect VIP — Standard', price: '$3,099', note: 'Full permit-ready drawing set with licensed architect. 7–10 business days.' },
-  { name: 'Architect VIP — Expedited', price: '$3,799', note: 'Priority architect assignment. Permit-ready drawings in 3–5 business days.' },
+  { name: 'AI Concept Design — Starter', price: '$599', note: '0–800 sqft. 3 concepts, specs, cost estimate, permit path, 1 revision, portal delivery.', highlight: false },
+  { name: 'AI Concept Design — Professional', price: '$1,299', note: '800–3,000 sqft. 3 concepts + zoning analysis + floor plan options, 2 revisions, portal delivery.', highlight: true },
+  { name: 'AI Concept Design — Enterprise', price: 'Contact us', note: '3,000+ sqft or complex commercial. Custom scope and pricing.' },
+  { name: 'Architect VIP — Starter', price: '$3,890', note: 'Single-space permit-ready drawing set. Licensed architect stamp. 7–10 business days.' },
+  { name: 'Architect VIP — Medium', price: '$5,500', note: 'Multi-room or full-floor permit-ready drawings. 10–14 business days.' },
+  { name: 'Architect VIP — Large', price: '$7,500', note: 'Whole-home or addition drawings. 14–21 business days.' },
+  { name: 'Architect VIP — Enterprise', price: '$9,500+', note: '3,500+ sqft or commercial. Custom quote. Dedicated architect team.' },
 ]
 
 const ESTIMATE_ITEMS = [
@@ -29,10 +31,10 @@ const ESTIMATE_ITEMS = [
 ]
 
 const PERMIT_ITEMS = [
-  { name: 'Permit Research + Checklist', price: '$297', note: 'Jurisdiction requirements, fee schedule, document checklist — delivered in 24 hrs' },
-  { name: 'Full Permit Package', price: '$695', note: 'Complete permit-ready submission package reviewed for first-cycle approval', highlight: true },
-  { name: 'Permit Coordination Service', price: '$1,495', note: 'Full submission management, follow-ups, and comment responses' },
-  { name: 'Expedited Add-On', price: '+$500', note: 'Priority queue, direct examiner contact, same-day start' },
+  { name: 'Standard — Single Trade', price: '$495', note: 'Kealee files 1 permit type + tracks. Biweekly updates. 1 amendment round.' },
+  { name: 'Multi-Trade Package', price: '$895', note: 'Up to 3 permit types. Kealee files all + tracks. 2 amendment rounds.', highlight: true },
+  { name: 'Full Service Coordination', price: '$1,495', note: 'All permits, unlimited amendments, direct examiner communication.' },
+  { name: 'Expedited Add-On', price: '+$500', note: 'Priority queue, direct examiner contact, same-day start. Available with any tier.' },
 ]
 
 const PM_ITEMS = [
@@ -179,7 +181,7 @@ const DEVELOPER_SERVICES = [
 const FAQ_ITEMS = [
   {
     question: 'How does AI Concept Design pricing work?',
-    answer: 'Pricing is based on project square footage. Small projects (up to ~1,500 sqft) start at $599. Medium projects (1,500–3,500 sqft) are $1,299. Large projects (3,500+ sqft) are priced by quote. Every package includes property-specific concept visuals, design direction, layout recommendations, a zoning brief, path-to-approval plan, and an included design consultation call.',
+    answer: 'Pricing is based on project square footage. Starter (0–800 sqft) is $599 and includes 1 revision. Professional (800–3,000 sqft) is $1,299 and includes zoning analysis + 2 revisions. Enterprise (3,000+ sqft) is priced by quote. Every tier includes 3 design concepts, 40+ material specs, cost estimates, permit path guidance, and portal delivery.',
   },
   {
     question: 'Are homeowner fees subscriptions?',
@@ -336,16 +338,21 @@ export default function PricingPage() {
               <p className="mt-2 text-xs text-gray-400">One-time per project fee — not a subscription.</p>
             </div>
 
-            {/* Typical path callout */}
+            {/* Bundle callout */}
             <div className="rounded-2xl p-8" style={{ backgroundColor: 'rgba(26,43,74,0.03)' }}>
               <p className="text-center text-sm font-medium text-gray-600">
-                Typical fully-managed project (medium):
+                Design + Permits bundle (Professional):
                 <span className="ml-2 font-bold" style={{ color: '#1A2B4A' }}>
-                  $1,299 + $595 + $695 + $2,950 = $5,539
+                  $1,299 + $895 = $2,194
                 </span>
               </p>
               <p className="mt-2 text-center text-xs text-gray-400">
-                AI Concept (Medium) · Detailed Estimate · Permit Package · PM Oversight
+                AI Concept Professional · Multi-Trade Permit Package (both required for most kitchen/bath additions)
+              </p>
+              <p className="mt-3 text-center">
+                <a href="/paths" className="text-xs font-semibold underline" style={{ color: '#2ABFBF' }}>
+                  See all 3 customer paths →
+                </a>
               </p>
             </div>
           </div>

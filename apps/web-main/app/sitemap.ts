@@ -17,6 +17,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/contact`, lastModified: now, changeFrequency: 'yearly', priority: 0.5 },
     { url: `${BASE_URL}/concept-package`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE_URL}/architect-vip`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${BASE_URL}/paths`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${BASE_URL}/intake-wizard`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     // Concept engine paths
     { url: `${BASE_URL}/concept-engine/exterior`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE_URL}/concept-engine/whole-home`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },

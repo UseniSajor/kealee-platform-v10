@@ -19,19 +19,30 @@ import { authenticateUser as authenticate } from '../../middleware/auth.middlewa
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2023-10-16' })
 
 // ── Architect VIP tiers ───────────────────────────────────────────────────────
+// Pricing verified: $3,890 base up to $9,500+ for enterprise.
 const ARCHITECT_VIP_TIERS = {
-  standard: {
-    name: 'Architect VIP — Standard',
-    amount: 309900, // $3,099
+  starter: {
+    name: 'Architect VIP — Starter',
+    amount: 389000,  // $3,890
     turnaround: '7–10 business days',
-    description: 'Full permit-ready drawing set with licensed architect + Kealee coordination',
+    revisionLimit: 2,
+    description: 'Single-space permit-ready drawing set with licensed architect. Up to ~800 sqft.',
   },
-  expedited: {
-    name: 'Architect VIP — Expedited',
-    amount: 379900, // $3,799
-    turnaround: '3–5 business days',
-    description: 'Priority architect assignment, expedited drawing set + same-day start',
+  medium: {
+    name: 'Architect VIP — Medium',
+    amount: 550000,  // $5,500
+    turnaround: '10–14 business days',
+    revisionLimit: 2,
+    description: 'Multi-room or full-floor permit-ready drawings. 800–2,000 sqft.',
   },
+  large: {
+    name: 'Architect VIP — Large',
+    amount: 750000,  // $7,500
+    turnaround: '14–21 business days',
+    revisionLimit: 3,
+    description: 'Whole-home or addition permit-ready drawings. 2,000–3,500 sqft.',
+  },
+  // enterprise = Contact For Quote (3,500+ sqft / commercial); no Stripe session
 } as const
 
 type ArchitectVIPTier = keyof typeof ARCHITECT_VIP_TIERS
@@ -53,7 +64,7 @@ const IntakeSchema = z.object({
 
 const CheckoutSchema = z.object({
   intakeId: z.string(),
-  tier: z.enum(['standard', 'expedited']),
+  tier: z.enum(['starter', 'medium', 'large']),
   successUrl: z.string().url(),
   cancelUrl: z.string().url(),
 })

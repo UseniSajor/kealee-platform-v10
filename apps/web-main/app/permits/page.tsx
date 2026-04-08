@@ -6,18 +6,18 @@ import { Heading } from '@/components/ui/Heading'
 import { AskAnythingBar } from '@/components/ui/AskAnythingBar'
 
 export const metadata: Metadata = {
-  title: 'Building Permit Services | DC, MD, VA | Kealee Permit Group',
+  title: 'Building Permit Services — Standard $495 | Multi-Trade $895 | Full Service $1,495 | Kealee',
   description:
-    'Real building permit timelines for DC, MD, and VA jurisdictions. Kealee prepares permit-ready packages that move through plan review in fewer cycles.',
+    'Kealee files your permits and tracks status — for every tier. Standard $495 · Multi-Trade $895 · Full Service $1,495. All tiers include Kealee submission + biweekly updates + portal access. DC, MD & VA.',
   openGraph: {
-    title: 'Building Permits Made Simple | DC, MD, VA — Kealee',
-    description: 'Expert permit research, filing, and coordination for DC, Maryland, and Virginia projects. From $149. No surprises.',
+    title: 'Building Permits — We File For You | DC, MD, VA — Kealee',
+    description: 'Standard $495 · Multi-Trade $895 · Full Service $1,495. All tiers: Kealee submits, biweekly updates, portal access. DC, MD, VA.',
     url: 'https://kealee.com/permits',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Building Permits Made Simple | DC, MD, VA — Kealee',
-    description: 'Expert permit research, filing, and coordination for DC, Maryland, and Virginia projects. From $149. No surprises.',
+    title: 'Building Permits — We File For You | Kealee',
+    description: 'Standard $495 · Multi-Trade $895 · Full Service $1,495. All tiers include Kealee submission + biweekly updates.',
   },
 }
 

@@ -16675,3 +16675,366 @@ model ArchitectVIPOrder {
   @@index([deliveryStatus])
   @@map("architect_vip_orders")
 }
+
+// ── AI CONCEPT INTAKE (9-screen form) ────────────────────────────────────────
+// Stores customer answers from the intake wizard before payment.
+
+model AIConceptIntake {
+  id                String    @id @default(cuid())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Contact
+  email             String
+  phone             String?
+  name              String?
+
+  // Project specifics
+  projectType       String    // kitchen, bathroom, addition, basement, whole_home, living_room
+  squareFeet        Int
+  jurisdiction      String    // DC, Montgomery County MD, Prince George's County MD, Arlington VA, Fairfax VA, Alexandria VA
+
+  // Design inputs (for AI brief generation)
+  currentPains      String[]  // Small & cramped, Dark & dated, Awkward layout, All of the above
+  stylePreferences  String[]  // Modern, Traditional, Contemporary, Transitional, Rustic
+  budget            Int       // In dollars
+  priorities        String[]  // Island, Pantry, Natural Light, Open Concept, Storage, Entertainment Space
+  constraints       String[]  // All white, Too modern, Too traditional, Dark colors, Open concept, Closed-off
+  timeline          String    // ASAP, 3-6 months, 6-12 months, Just exploring
+
+  // Bundle selection
+  bundleType        String    @default("design_only") // design_only, design_permits, full_build
+
+  // Generated brief (Claude Agent)
+  strategicBrief    String?   @db.Text
+  briefCreatedAt    DateTime?
+
+  // Status
+  status            String    @default("intake") // intake, brief_created, designs_generated, curated, delivered
+
+  // Linked project (created after payment)
+  projectId         String?   @unique
+  project           AIConceptProject? @relation("IntakeToProject", fields: [projectId], references: [id])
+
+  @@index([email])
+  @@index([status])
+  @@map("ai_concept_intakes")
+}
+
+// ── AI CONCEPT PROJECT ────────────────────────────────────────────────────────
+// Comprehensive concept project — created after payment, linked to intake.
+
+model AIConceptProject {
+  id                    String    @id @default(cuid())
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Customer
+  customerEmail         String
+  customerPhone         String?
+  customerName          String?
+
+  // Project details
+  tier                  String    // starter (0-800 sqft $599), professional (800-3000 $1,299), enterprise (3000+ CFQ)
+  squareFeet            Int
+  projectType           String    // kitchen, bathroom, addition, basement, whole_home, living_room
+  projectDescription    String    @db.Text
+  location              String
+  jurisdiction          String
+
+  // Zoning (for professional/enterprise if addition/new-construction)
+  zoningRequired        Boolean   @default(false)
+  zoningAnalysis        String?   @db.Text   // JSON: current zoning, setbacks, FAR, rezoning needs
+  zoningCompliance      String?   @db.Text   // JSON: compliance verification
+
+  // Design deliverables (populated by generation pipeline)
+  floorPlanUrl          String?
+  designConcepts        String[]  // concept names
+  designNarratives      Json?     // detailed narratives per concept
+  scopeOfWork           String?   @db.Text
+  costEstimate          Json?     // {low, high, breakdown}
+  specifications        Json?     // 40+ materials per concept
+  permitPathGuidance    String?   @db.Text
+  materialsSpec         String?   @db.Text
+  renderingUrls         String[]
+  strategicBrief        String?   @db.Text
+
+  // Revisions
+  revisionCount         Int       @default(0)
+  revisionLimit         Int       @default(1) // 1 for starter, 2 for professional
+  revisionNotes         String?   @db.Text
+
+  // Delivery
+  deliveryFormat        String    @default("portal_only")
+  pdfFileUrl            String?
+  portalUrl             String?
+  portalAccessCode      String?
+  portalExpiresAt       DateTime?
+
+  // Bundle
+  bundleType            String    @default("design_only") // design_only, design_permits, full_build
+
+  // Status
+  status                String    @default("intake")
+  // intake → generating → revision_requested → curated → delivered → archived
+  generatedAt           DateTime?
+  deliveredAt           DateTime?
+  expiresAt             DateTime?
+
+  // Payment
+  stripeSessionId       String?   @unique
+  stripePriceId         String?
+  amountPaidCents       Int?
+  paymentStatus         String?
+
+  // Email tracking
+  emailSequenceStarted  DateTime?
+  emailsSent            Int       @default(0)
+
+  // Relations
+  intake                AIConceptIntake? @relation("IntakeToProject")
+  linkedPermit          AIPermitRequest? @relation("ConceptToPermit")
+  linkedArchitect       AIArchitectVIPService? @relation("ConceptToArchitect")
+
+  @@index([customerEmail])
+  @@index([tier])
+  @@index([status])
+  @@map("ai_concept_projects")
+}
+
+// ── AI PERMIT REQUEST ─────────────────────────────────────────────────────────
+// Comprehensive permit tracking — standalone or linked to concept/architect.
+
+model AIPermitRequest {
+  id                      String    @id @default(cuid())
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  // Links
+  conceptId               String?   @unique
+  concept                 AIConceptProject? @relation("ConceptToPermit", fields: [conceptId], references: [id])
+  architectId             String?   @unique
+  architect               AIArchitectVIPService? @relation("ArchitectToPermit", fields: [architectId], references: [id])
+
+  // Customer
+  customerEmail           String
+  customerPhone           String?
+  customerName            String?
+
+  // Project
+  address                 String
+  jurisdiction            String
+  projectScope            String    @db.Text
+  squareFeet              Int
+
+  // Service tier
+  tier                    String    // standard ($495), multi_trade ($895), full_service ($1,495)
+  expedited               Boolean   @default(false) // +$500 add-on
+  bundleType              String    @default("standalone") // standalone, with_design, with_full_build
+
+  // Permit analysis
+  requiredPermits         String[]
+  permitBreakdown         Json?     // {building, electrical, plumbing, ...costs}
+  totalEstimatedFees      Int?      // jurisdiction permit fees in cents
+  estimatedTimeline       String?
+  jurisdictionNotes       String?   @db.Text
+
+  // Submission (Kealee always submits)
+  submittedAt             DateTime?
+  submittedBy             String    @default("kealee")
+  permitNumbers           String[]
+
+  // Status tracking
+  currentStatus           String    @default("intake")
+  // intake, researching, submitted, under_review, amendments_needed, approved
+  lastStatusUpdate        DateTime?
+  updateFrequency         String    @default("biweekly")
+
+  // Amendments
+  amendmentCount          Int       @default(0)
+  amendmentNotes          String[]
+  amendmentLimit          Int       @default(1) // standard=1, multi_trade=2, full_service=unlimited(-1)
+
+  // Timeline
+  estimatedApprovalDate   DateTime?
+  actualApprovalDate      DateTime?
+
+  // Delivery
+  portalAccessCode        String?
+  portalUrl               String?
+  portalAccessExpiresAt   DateTime?
+
+  // Payment
+  stripeSessionId         String?   @unique
+  stripePriceId           String?
+  amountPaidCents         Int?
+  paymentStatus           String?
+
+  // No refunds (24h window only)
+  refundEligible          Boolean   @default(false)
+  refundDeadline          DateTime?
+
+  @@index([customerEmail])
+  @@index([tier])
+  @@index([bundleType])
+  @@index([currentStatus])
+  @@map("ai_permit_requests")
+}
+
+// ── AI ARCHITECT VIP SERVICE ──────────────────────────────────────────────────
+// Comprehensive architect service — conversion from AI Concept or standalone.
+
+model AIArchitectVIPService {
+  id                      String    @id @default(cuid())
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  // Link to AI Concept (optional)
+  conceptId               String?   @unique
+  concept                 AIConceptProject? @relation("ConceptToArchitect", fields: [conceptId], references: [id])
+
+  // Customer
+  customerEmail           String
+  customerPhone           String?
+  customerName            String?
+
+  // Project
+  projectType             String
+  projectDescription      String    @db.Text
+  location                String
+  jurisdiction            String
+  squareFeet              Int
+
+  // Service type
+  serviceType             String    // conversion (from AI Concept), standalone
+  aiConceptTier           String?   // starter, professional (if conversion)
+
+  // Verified pricing range
+  priceStarting           Int       @default(389000)  // $3,890 in cents
+  priceEnding             Int       @default(950000)   // $9,500 in cents
+  actualPriceCharged      Int?
+
+  // Architecture deliverables
+  floorPlanUrl            String?
+  elevationDrawings       String?
+  detailDrawings          String?
+  materialSpecSheet       String?
+  structuralNotes         String?   @db.Text
+  mepCoordinationNotes    String?   @db.Text
+  codeComplianceDoc       String?
+  fullArchitectPackage    String?   // zip URL
+
+  // Zoning analysis
+  zoningAnalysis          String?   @db.Text
+
+  // Consultation
+  consultationScheduled   DateTime?
+  consultationCompletedAt DateTime?
+  consultationNotes       String?   @db.Text
+  consultationZoomUrl     String?
+  consultationRecordingUrl String?
+
+  // Revisions
+  revisionCount           Int       @default(0)
+  revisionLimit           Int       @default(2)
+  additionalRevisionCost  Int       @default(25000) // $250 per revision in cents
+  revisionNotes           String[]
+
+  // Delivery
+  portalUrl               String?
+  portalAccessCode        String?
+  portalExpiresAt         DateTime? // 180 days
+
+  // Status
+  status                  String    @default("intake")
+  // intake, designing, revisions, review, ready, delivered
+  architectStartedAt      DateTime?
+  deliveredAt             DateTime?
+
+  // Payment
+  stripeSessionId         String?   @unique
+  stripePriceId           String?
+  amountPaidCents         Int?
+  paymentStatus           String?
+
+  // Relations
+  linkedPermit            AIPermitRequest? @relation("ArchitectToPermit")
+
+  @@index([customerEmail])
+  @@index([serviceType])
+  @@index([status])
+  @@map("ai_architect_vip_services")
+}
+
+// ── FIRST EMAIL SENT (tracking) ───────────────────────────────────────────────
+// Tracks portal welcome emails to prevent duplicates.
+
+model FirstEmailSent {
+  id                String    @id @default(cuid())
+  createdAt         DateTime  @default(now())
+
+  // Links
+  aiConceptId       String?   @unique
+  permitId          String?   @unique
+  architectId       String?   @unique
+
+  // Email details
+  customerEmail     String
+  emailType         String    // ai_concept_portal, permit_portal, architect_portal, full_build
+  portalAccessCode  String
+  portalExpiresAt   DateTime
+
+  // Tracking
+  sentAt            DateTime  @default(now())
+  openedAt          DateTime?
+  clickedPortalAt   DateTime?
+
+  @@index([customerEmail])
+  @@map("first_emails_sent")
+}
+
+// ── CONTACT FORM SUBMISSIONS ──────────────────────────────────────────────────
+// Tracks all contact form submissions across all pages.
+
+model ContactFormSubmission {
+  id               String    @id @default(cuid())
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Contact info
+  name             String
+  email            String
+  phone            String?
+
+  // Context
+  formType         String    // general, complete-build, enterprise, partner, careers, press, portal-help, 404-lost
+  pageUrl          String?
+  referringUrl     String?
+
+  // Message
+  subject          String
+  message          String    @db.Text
+
+  // Lead context
+  projectType      String?
+  jurisdiction     String?
+  budget           String?
+
+  // File upload (for careers)
+  resumeUrl        String?
+
+  // Status
+  status           String    @default("new") // new, contacted, converted, archived
+  assignedTo       String?
+  notes            String?   @db.Text
+
+  // Email tracking
+  emailSentAt      DateTime?
+  autoResponseSent Boolean   @default(false)
+
+  @@index([email])
+  @@index([formType])
+  @@index([status])
+  @@index([createdAt])
+  @@map("contact_form_submissions")
+}

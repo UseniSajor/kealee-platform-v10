@@ -14,10 +14,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
   apiVersion: "2023-10-16",
 });
 
-const PACKAGE_PRICES: Record<string, { name: string; amount: number }> = {
-  small:  { name: "AI Concept Design Package — Small",  amount: 59900 },  // $599 up to ~1,500 sqft
-  medium: { name: "AI Concept Design Package — Medium", amount: 129900 }, // $1,299 1,500–3,500 sqft
-  // cfq = Contact For Quote (3,500+ sqft); handled separately — no Stripe session
+const PACKAGE_PRICES: Record<string, { name: string; amount: number; revisionLimit: number }> = {
+  starter:      { name: "AI Concept Design Package — Starter",      amount: 59900,  revisionLimit: 1 }, // $599, up to 800 sqft
+  professional: { name: "AI Concept Design Package — Professional", amount: 129900, revisionLimit: 2 }, // $1,299, 800–3,000 sqft
+  // enterprise = Contact For Quote (3,000+ sqft); no Stripe session — handled via /contact
 };
 
 const CreateIntakeBodySchema = z.object({
@@ -41,7 +41,7 @@ const CreateIntakeBodySchema = z.object({
 
 const CheckoutBodySchema = z.object({
   intakeId: z.string(),
-  packageTier: z.enum(["small", "medium"]),
+  packageTier: z.enum(["starter", "professional"]),
   successUrl: z.string().url(),
   cancelUrl: z.string().url(),
 });
