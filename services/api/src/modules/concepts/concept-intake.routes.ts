@@ -15,10 +15,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
 });
 
 const PACKAGE_PRICES: Record<string, { name: string; amount: number }> = {
-  essential:    { name: "AI Concept Design Package",    amount: 58500 },
-  professional: { name: "AI Concept Design Package — Priority", amount: 77500 }, // $585 + $195 priority
-  premium:      { name: "Premium Concept Package",      amount: 99900 },
-  white_glove:  { name: "White Glove Concept Package",  amount: 199900 },
+  small:  { name: "AI Concept Design Package — Small",  amount: 59900 },  // $599 up to ~1,500 sqft
+  medium: { name: "AI Concept Design Package — Medium", amount: 129900 }, // $1,299 1,500–3,500 sqft
+  // cfq = Contact For Quote (3,500+ sqft); handled separately — no Stripe session
 };
 
 const CreateIntakeBodySchema = z.object({
@@ -42,7 +41,7 @@ const CreateIntakeBodySchema = z.object({
 
 const CheckoutBodySchema = z.object({
   intakeId: z.string(),
-  packageTier: z.enum(["essential", "professional", "premium", "white_glove"]),
+  packageTier: z.enum(["small", "medium"]),
   successUrl: z.string().url(),
   cancelUrl: z.string().url(),
 });

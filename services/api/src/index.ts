@@ -869,6 +869,10 @@ const start = async () => {
       // Public permit intake + Stripe checkout — no auth required
       const { permitIntakeRoutes } = await import('./modules/permits/permit-intake.routes')
       await fastify.register(permitIntakeRoutes, { prefix: '/api/v1/permits' })
+
+      // Architect VIP intake + Stripe checkout
+      const { architectVIPIntakeRoutes } = await import('./modules/architect/architect-vip-intake.routes')
+      await fastify.register(architectVIPIntakeRoutes, { prefix: '/api/v1/architect-vip' })
     })
 
     await safeRegisterBlock('Phase 1 - Project History, Portfolios, PreCon Extras routes', async () => {

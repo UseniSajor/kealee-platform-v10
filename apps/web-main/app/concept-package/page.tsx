@@ -3,9 +3,9 @@ import Link from 'next/link'
 import { ArrowRight, CheckCircle, Clock, FileText, Eye, MapPin, Layers, Route, Ruler, Package, Video } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'AI Concept Design Package — $585 | Kealee',
+  title: 'AI Concept Design Package — From $599 | Kealee',
   description:
-    'A structured, property-specific design concept that gives you clear visual direction, layout thinking, and a defined path toward permitting and construction. Delivered by Kealee.',
+    'A structured, property-specific design concept that gives you clear visual direction, layout thinking, and a defined path toward permitting and construction. Priced by project size — from $599.',
 }
 
 const DELIVERABLES = [
@@ -140,31 +140,40 @@ export default function ConceptPackagePage() {
             AI Concept Design Package
           </h1>
           <p className="mt-5 text-xl font-semibold" style={{ color: '#E8793A' }}>
-            $585
+            From $599 — priced by project size
           </p>
           <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
             A structured, property-specific design concept that gives you clear visual direction,
             layout thinking, and a defined path toward permitting and construction.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/intake/exterior_concept"
-              className="inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#E8793A' }}
-            >
-              Get My Concept Package <ArrowRight className="h-5 w-5" />
-            </Link>
-            <Link
-              href="/intake"
-              className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-7 py-3.5 text-base font-semibold text-gray-700 transition-colors hover:border-gray-300"
-            >
-              See All Project Types
-            </Link>
+          {/* Tier picker */}
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3 max-w-2xl mx-auto text-left">
+            {[
+              { label: 'Small', sqft: 'Up to ~1,500 sqft', price: '$599', href: '/concept', badge: null },
+              { label: 'Medium', sqft: '1,500–3,500 sqft', price: '$1,299', href: '/concept', badge: 'Most popular' },
+              { label: 'Large', sqft: '3,500+ sqft', price: 'Contact us', href: '/contact', badge: null },
+            ].map((tier) => (
+              <Link
+                key={tier.label}
+                href={tier.href}
+                className="relative flex flex-col rounded-xl border px-5 py-4 transition-all hover:shadow-md"
+                style={{ borderColor: tier.badge ? '#E8793A' : '#E5E7EB', borderWidth: tier.badge ? 2 : 1 }}
+              >
+                {tier.badge && (
+                  <span className="absolute -top-3 left-4 rounded-full px-2.5 py-0.5 text-xs font-bold text-white" style={{ backgroundColor: '#E8793A' }}>
+                    {tier.badge}
+                  </span>
+                )}
+                <span className="font-bold" style={{ color: '#1A2B4A' }}>{tier.label}</span>
+                <span className="text-xs text-gray-400 mt-0.5">{tier.sqft}</span>
+                <span className="mt-2 text-lg font-bold" style={{ color: '#E8793A' }}>{tier.price}</span>
+              </Link>
+            ))}
           </div>
 
           {/* Trust signals */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-400">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-400">
             <span className="flex items-center gap-1.5">
               <CheckCircle className="h-4 w-4 text-green-500" /> Property-specific analysis
             </span>
@@ -251,7 +260,7 @@ export default function ConceptPackagePage() {
         </div>
       </section>
 
-      {/* ── Priority Add-On ────────────────────────────────────────────────── */}
+      {/* ── Need Stamped Drawings? ─────────────────────────────────────────── */}
       <section className="py-12 border-y border-gray-100" style={{ backgroundColor: '#F7FAFC' }}>
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-dashed border-gray-300 bg-white p-6">
@@ -260,18 +269,23 @@ export default function ConceptPackagePage() {
                 className="text-xs font-bold uppercase tracking-widest"
                 style={{ color: '#E8793A' }}
               >
-                Optional Add-On
+                Next Step
               </span>
               <h3 className="mt-1 text-lg font-bold" style={{ color: '#1A2B4A' }}>
-                Priority Turnaround
+                Need permit-ready stamped drawings?
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                Upgrade for faster delivery — your concept package delivered in 24–48 hours instead of the standard timeline.
+                Upgrade to Architect VIP — a full permit-ready drawing set from a licensed architect, starting at $3,099.
               </p>
             </div>
             <div className="shrink-0 text-right">
-              <p className="text-2xl font-bold" style={{ color: '#E8793A' }}>+$195</p>
-              <p className="text-xs text-gray-400">24–48 hr delivery</p>
+              <p className="text-2xl font-bold" style={{ color: '#E8793A' }}>From $3,099</p>
+              <Link
+                href="/architect-vip"
+                className="mt-2 inline-block text-sm font-semibold text-teal-600 hover:underline"
+              >
+                Learn more →
+              </Link>
             </div>
           </div>
         </div>
@@ -334,7 +348,7 @@ export default function ConceptPackagePage() {
             </Link>
           </div>
           <p className="mt-6 text-sm text-gray-500">
-            $585 · One-time · No subscription · Consultation included
+            From $599 · One-time · No subscription · Consultation included · Priced by project size
           </p>
         </div>
       </section>

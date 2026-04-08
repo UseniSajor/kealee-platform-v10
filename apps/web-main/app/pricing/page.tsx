@@ -15,9 +15,11 @@ const fadeInUp = {
 // ── Homeowner project services (one-time per project) ─────────────────────────
 
 const PLAN_ITEMS = [
-  { name: 'AI Concept Design Package', price: '$585', note: 'Property-specific visuals, design direction, zoning brief, path-to-approval plan + consultation included.', highlight: true },
-  { name: 'Advanced AI Concept', price: '$899', note: '3 floor plan options, 3D views, material suggestions' },
-  { name: 'Full Design Package', price: '$4,499', note: 'Permit-ready drawing set with licensed architect' },
+  { name: 'AI Concept Design Package — Small', price: '$599', note: 'Up to ~1,500 sqft. Visuals, design direction, zoning brief, path-to-approval plan + consultation included.', highlight: false },
+  { name: 'AI Concept Design Package — Medium', price: '$1,299', note: '1,500–3,500 sqft. Expanded visuals, floor plan options, full scope direction + consultation.', highlight: true },
+  { name: 'AI Concept Design Package — Large', price: 'Contact for Quote', note: '3,500+ sqft. Custom scoping for large renovations, additions, and new construction.' },
+  { name: 'Architect VIP — Standard', price: '$3,099', note: 'Full permit-ready drawing set with licensed architect. 7–10 business days.' },
+  { name: 'Architect VIP — Expedited', price: '$3,799', note: 'Priority architect assignment. Permit-ready drawings in 3–5 business days.' },
 ]
 
 const ESTIMATE_ITEMS = [
@@ -27,11 +29,10 @@ const ESTIMATE_ITEMS = [
 ]
 
 const PERMIT_ITEMS = [
-  { name: 'Permit Guidance', price: 'Free', note: 'AI checklist + jurisdiction info' },
-  { name: 'Simple Permit Filing', price: '$149', note: 'Single-trade permits' },
-  { name: 'Permit Package', price: '$950', note: 'Full application prep + submission', highlight: true },
-  { name: 'Permit Coordination', price: '$2,750', note: 'Submission, tracking + comment response' },
-  { name: 'Permit Expediting', price: 'Starting at $5,500', note: 'Priority approval service' },
+  { name: 'Permit Research + Checklist', price: '$297', note: 'Jurisdiction requirements, fee schedule, document checklist — delivered in 24 hrs' },
+  { name: 'Full Permit Package', price: '$695', note: 'Complete permit-ready submission package reviewed for first-cycle approval', highlight: true },
+  { name: 'Permit Coordination Service', price: '$1,495', note: 'Full submission management, follow-ups, and comment responses' },
+  { name: 'Expedited Add-On', price: '+$500', note: 'Priority queue, direct examiner contact, same-day start' },
 ]
 
 const PM_ITEMS = [
@@ -177,8 +178,8 @@ const DEVELOPER_SERVICES = [
 
 const FAQ_ITEMS = [
   {
-    question: 'What does the $585 AI Concept Design Package include?',
-    answer: 'You get 8 structured deliverables: property-specific concept visuals (2–4 options), a design direction summary, layout and flow recommendations, a property-based zoning analysis, a path-to-approval plan, rough scope direction, a downloadable digital concept package, and an included design consultation call. Everything is built around your specific property — not generic AI outputs.',
+    question: 'How does AI Concept Design pricing work?',
+    answer: 'Pricing is based on project square footage. Small projects (up to ~1,500 sqft) start at $599. Medium projects (1,500–3,500 sqft) are $1,299. Large projects (3,500+ sqft) are priced by quote. Every package includes property-specific concept visuals, design direction, layout recommendations, a zoning brief, path-to-approval plan, and an included design consultation call.',
   },
   {
     question: 'Are homeowner fees subscriptions?',
@@ -338,13 +339,13 @@ export default function PricingPage() {
             {/* Typical path callout */}
             <div className="rounded-2xl p-8" style={{ backgroundColor: 'rgba(26,43,74,0.03)' }}>
               <p className="text-center text-sm font-medium text-gray-600">
-                Typical fully-managed project:
+                Typical fully-managed project (medium):
                 <span className="ml-2 font-bold" style={{ color: '#1A2B4A' }}>
-                  $585 + $595 + $950 + $2,950 = $5,080
+                  $1,299 + $595 + $695 + $2,950 = $5,539
                 </span>
               </p>
               <p className="mt-2 text-center text-xs text-gray-400">
-                Concept + Validation · Detailed Estimate · Permit Package · PM Oversight
+                AI Concept (Medium) · Detailed Estimate · Permit Package · PM Oversight
               </p>
             </div>
           </div>
@@ -575,8 +576,8 @@ export default function PricingPage() {
             <Link href="/contact" className="btn-primary">
               Schedule a Call <ArrowRight className="h-5 w-5" />
             </Link>
-            <Link href="/homeowners/start" className="btn-outline-white">
-              Start with $585 Concept Package
+            <Link href="/concept" className="btn-outline-white">
+              Start with AI Concept Package
             </Link>
           </div>
         </div>

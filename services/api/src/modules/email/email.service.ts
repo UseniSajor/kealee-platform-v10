@@ -19,7 +19,7 @@ function getResendClient(): Resend | null {
 export interface EmailOptions {
   to: string | string[]
   subject: string
-  template?: 'welcome' | 'password-reset' | 'invoice-paid' | 'subscription-canceled' | 'milestone-approved' | 'payment-released' | 'payment-failed' | 'concept-validation-delivered' | 'developer-service-delivered' | 'concept_package_confirmation' | 'task-assigned'
+  template?: 'welcome' | 'password-reset' | 'invoice-paid' | 'subscription-canceled' | 'milestone-approved' | 'payment-released' | 'payment-failed' | 'concept-validation-delivered' | 'developer-service-delivered' | 'concept_package_confirmation' | 'task-assigned' | 'permit_order_confirmation' | 'architect_vip_confirmation'
   data?: Record<string, any>
   html?: string
   text?: string
@@ -162,6 +162,77 @@ export class EmailService {
             </div>
           `,
           text: `Payment failed: $${data.amount || 0}. Update payment method: ${data.invoiceUrl || `${process.env.APP_BASE_URL || 'https://app.kealee.com'}/billing`}`,
+        }
+
+      case 'permit_order_confirmation':
+        return {
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #fff;">
+              <div style="background: linear-gradient(135deg, #1A2B4A 0%, #0F1D34 100%); padding: 40px 32px; border-radius: 8px 8px 0 0;">
+                <h1 style="color: #fff; margin: 0; font-size: 24px;">Your Permit Order is Confirmed</h1>
+                <p style="color: #94A3B8; margin: 8px 0 0 0;">Kealee Permit Services</p>
+              </div>
+              <div style="padding: 32px;">
+                <p>Hi ${data.customerName || 'there'},</p>
+                <p>We've received your order for <strong>${data.tierName || 'Permit Service'}</strong>.</p>
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                  <p style="margin: 0 0 8px 0;"><strong>Order Details</strong></p>
+                  <p style="margin: 4px 0; color: #475569;">Service: ${data.tierName}</p>
+                  <p style="margin: 4px 0; color: #475569;">Amount: $${data.amount ? (data.amount / 100).toFixed(2) : '0.00'}</p>
+                  <p style="margin: 4px 0; color: #475569;">Order ID: ${data.orderId || 'N/A'}</p>
+                </div>
+                <p>Our team will begin work on your permit package within 1 business day. You'll receive updates via email as we progress.</p>
+                <p><strong>What happens next:</strong></p>
+                <ol style="color: #475569; padding-left: 20px;">
+                  <li>Our permit specialists review your intake information</li>
+                  <li>We research jurisdiction-specific requirements</li>
+                  <li>Your package is prepared and reviewed for first-cycle approval</li>
+                  <li>Delivered to your portal within the agreed timeline</li>
+                </ol>
+                <a href="${process.env.PORTAL_BASE_URL || 'https://app.kealee.com'}/permits" style="display: inline-block; padding: 12px 24px; background: #2ABFBF; color: white; text-decoration: none; border-radius: 8px; margin-top: 16px; font-weight: 600;">
+                  View Your Order
+                </a>
+                <p style="color: #94A3B8; font-size: 13px; margin-top: 24px;">Questions? Reply to this email or contact <a href="mailto:permits@kealee.com" style="color: #2ABFBF;">permits@kealee.com</a></p>
+              </div>
+            </div>
+          `,
+          text: `Your permit order is confirmed. Service: ${data.tierName}. Order ID: ${data.orderId}. Our team will begin within 1 business day.`,
+        }
+
+      case 'architect_vip_confirmation':
+        return {
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #fff;">
+              <div style="background: linear-gradient(135deg, #1A2B4A 0%, #0F1D34 100%); padding: 40px 32px; border-radius: 8px 8px 0 0;">
+                <h1 style="color: #fff; margin: 0; font-size: 24px;">Architect VIP Order Confirmed</h1>
+                <p style="color: #94A3B8; margin: 8px 0 0 0;">Kealee Architect Services</p>
+              </div>
+              <div style="padding: 32px;">
+                <p>Hi ${data.customerName || 'there'},</p>
+                <p>Your <strong>${data.tierName || 'Architect VIP'}</strong> service is confirmed. A licensed architect will be assigned to your project within 1 business day.</p>
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                  <p style="margin: 0 0 8px 0;"><strong>Order Details</strong></p>
+                  <p style="margin: 4px 0; color: #475569;">Service: ${data.tierName}</p>
+                  <p style="margin: 4px 0; color: #475569;">Turnaround: ${data.turnaround || '7–10 business days'}</p>
+                  <p style="margin: 4px 0; color: #475569;">Amount: $${data.amount ? (data.amount / 100).toFixed(2) : '0.00'}</p>
+                  <p style="margin: 4px 0; color: #475569;">Order ID: ${data.orderId || 'N/A'}</p>
+                </div>
+                <p><strong>What happens next:</strong></p>
+                <ol style="color: #475569; padding-left: 20px;">
+                  <li>A licensed architect is assigned to your project</li>
+                  <li>We gather your property details and existing documents</li>
+                  <li>Permit-ready drawing set is prepared</li>
+                  <li>Review + approval before final delivery</li>
+                  <li>Drawings delivered to your Kealee portal</li>
+                </ol>
+                <a href="${process.env.PORTAL_BASE_URL || 'https://app.kealee.com'}/architect-vip" style="display: inline-block; padding: 12px 24px; background: #E8793A; color: white; text-decoration: none; border-radius: 8px; margin-top: 16px; font-weight: 600;">
+                  View Your Project
+                </a>
+                <p style="color: #94A3B8; font-size: 13px; margin-top: 24px;">Questions? Reply to this email or contact <a href="mailto:hello@kealee.com" style="color: #E8793A;">hello@kealee.com</a></p>
+              </div>
+            </div>
+          `,
+          text: `Architect VIP order confirmed. Service: ${data.tierName}. Turnaround: ${data.turnaround}. Order ID: ${data.orderId}. An architect will be assigned within 1 business day.`,
         }
 
       default:

@@ -2010,6 +2010,8 @@ model User {
 
   // Customer Orders (concept packages, one-time purchases)
   conceptPackageOrders ConceptPackageOrder[] @relation("ConceptPackageOrderUser")
+  permitOrders         PermitOrder[]         @relation("PermitOrderUser")
+  architectVIPOrders   ArchitectVIPOrder[]   @relation("ArchitectVIPOrderUser")
 
   // Housing Act – Zoning, Pattern Book, Development Package, HUD
   zoningComplianceReports ZoningComplianceReport[] @relation("ZoningComplianceRequester")
@@ -16613,4 +16615,63 @@ model BusinessCalendar {
   @@unique([date, timezone])
   @@index([date])
   @@map("business_calendar")
+}
+
+// ── PERMIT ORDERS ─────────────────────────────────────────────────────────────
+// Tracks permit service purchases from the intake funnel.
+// Created by the Stripe webhook on checkout.session.completed.
+
+model PermitOrder {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation("PermitOrderUser", fields: [userId], references: [id])
+  stripeSessionId       String    @unique
+  stripePaymentIntentId String?
+  tier                  String    // research, filing, full_service, expedited
+  tierName              String
+  amount                Int       // cents
+  currency              String    @default("usd")
+  status                String    @default("completed") // completed, refunded, disputed
+  deliveryStatus        String    @default("pending")   // pending, in_progress, ready, delivered
+  intakeId              String?   // reference to PermitServiceLead
+  deliveryUrl           String?
+  deliveredAt           DateTime?
+  metadata              Json?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([deliveryStatus])
+  @@map("permit_orders")
+}
+
+// ── ARCHITECT VIP ORDERS ──────────────────────────────────────────────────────
+// Tracks Architect VIP service purchases.
+// Created by the Stripe webhook on checkout.session.completed.
+
+model ArchitectVIPOrder {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation("ArchitectVIPOrderUser", fields: [userId], references: [id])
+  stripeSessionId       String    @unique
+  stripePaymentIntentId String?
+  tier                  String    // standard, expedited
+  tierName              String
+  amount                Int       // cents
+  currency              String    @default("usd")
+  status                String    @default("completed") // completed, refunded, disputed
+  deliveryStatus        String    @default("pending")   // pending, architect_assigned, in_progress, review, delivered
+  intakeId              String?   // reference to PermitServiceLead
+  architectId           String?   // assigned licensed architect
+  deliveryUrl           String?
+  deliveredAt           DateTime?
+  metadata              Json?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([deliveryStatus])
+  @@map("architect_vip_orders")
 }

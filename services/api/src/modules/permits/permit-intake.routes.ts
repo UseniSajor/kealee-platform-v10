@@ -20,25 +20,25 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '20
 
 // ── Permit tiers ──────────────────────────────────────────────────────────────
 const PERMIT_TIERS = {
-  simple: {
+  research: {
     name: 'Permit Research + Checklist',
-    envKey: 'STRIPE_PRICE_PERMIT_SIMPLE',
-    description: 'Jurisdiction requirements, document checklist, fee schedule',
+    amount: 29700, // $297
+    description: 'Jurisdiction requirements, fee schedule, document checklist — delivered in 24 hrs',
   },
-  package: {
+  filing: {
     name: 'Full Permit Package',
-    envKey: 'STRIPE_PRICE_PERMIT_PACKAGE',
+    amount: 69500, // $695
     description: 'Complete permit-ready submission package reviewed for first-cycle approval',
   },
-  coordination: {
+  full_service: {
     name: 'Permit Coordination Service',
-    envKey: 'STRIPE_PRICE_PERMIT_COORDINATION',
+    amount: 149500, // $1,495
     description: 'We manage the full submission, follow-ups, and corrections on your behalf',
   },
-  expediting: {
-    name: 'Expedited Permit Filing',
-    envKey: 'STRIPE_PRICE_PERMIT_EXPEDITING',
-    description: 'Priority queue, direct examiner contact, and status tracking',
+  expedited: {
+    name: 'Expedited Permit Add-On',
+    amount: 50000, // $500 add-on
+    description: 'Priority queue, direct examiner contact, same-day start',
   },
 } as const
 
@@ -58,7 +58,7 @@ const IntakeSchema = z.object({
 
 const CheckoutSchema = z.object({
   intakeId: z.string(),
-  tier: z.enum(['simple', 'package', 'coordination', 'expediting']),
+  tier: z.enum(['research', 'filing', 'full_service', 'expedited']),
   successUrl: z.string().url(),
   cancelUrl: z.string().url(),
 })
@@ -137,23 +137,26 @@ export async function permitIntakeRoutes(fastify: FastifyInstance) {
     try {
       const body = CheckoutSchema.parse(request.body)
       const tier = PERMIT_TIERS[body.tier as PermitTier]
-      const priceId = process.env[tier.envKey]
-
-      if (!priceId) {
-        fastify.log.error(`Stripe price not configured: ${tier.envKey}`)
-        return reply.code(500).send({ error: `Permit pricing not configured for tier: ${body.tier}` })
-      }
 
       const intake = await prismaAny.permitServiceLead.findUnique({
         where: { id: body.intakeId },
-        select: { id: true, email: true, fullName: true, metadata: true },
+        select: { id: true, email: true, fullName: true, message: true },
       })
       if (!intake) return reply.code(404).send({ error: 'Intake not found' })
 
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
         customer_email: intake.email,
-        line_items: [{ price: priceId, quantity: 1 }],
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              unit_amount: tier.amount,
+              product_data: { name: tier.name, description: tier.description },
+            },
+            quantity: 1,
+          },
+        ],
         metadata: {
           source: 'permit-package',
           tier: body.tier,
@@ -220,10 +223,10 @@ export async function permitIntakeRoutes(fastify: FastifyInstance) {
       const tier = tierMatch?.[1] ?? null
 
       const TIER_NAMES: Record<string, string> = {
-        simple: 'Permit Research + Checklist',
-        package: 'Full Permit Package',
-        coordination: 'Permit Coordination Service',
-        expediting: 'Expedited Permit Filing',
+        research: 'Permit Research + Checklist',
+        filing: 'Full Permit Package',
+        full_service: 'Permit Coordination Service',
+        expedited: 'Expedited Permit Add-On',
       }
 
       return {
