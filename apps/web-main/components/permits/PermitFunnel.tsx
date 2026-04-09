@@ -8,7 +8,7 @@ interface PermitFunnelProps {
 
 type ProjectType = 'residential' | 'addition' | 'new-construction' | 'commercial'
 type PlansAnswer = 'yes' | 'no'
-type PermitTier = 'simple' | 'package' | 'coordination' | 'expediting'
+type PermitTier = 'standard' | 'multi_trade' | 'full_service'
 
 interface FunnelState {
   step: 1 | 2 | 3 | 4
@@ -44,55 +44,43 @@ const PERMIT_PACKAGES: {
   highlight?: boolean
 }[] = [
   {
-    tier: 'simple',
-    name: 'Permit Research',
-    price: '$297',
-    description: 'Know exactly what you need before you start',
+    tier: 'standard',
+    name: 'Standard Permit Package',
+    price: '$495',
+    description: 'Kealee prepares, submits, and tracks your permit',
     includes: [
       'Jurisdiction requirements report',
-      'Complete document checklist',
-      'Fee schedule + timeline estimate',
-      'Common rejection reasons for your project type',
+      'Full permit application prepared by Kealee',
+      'Kealee submits directly to the agency',
+      'Biweekly status updates in your portal',
+      '1 amendment round included',
     ],
   },
   {
-    tier: 'package',
-    name: 'Full Permit Package',
-    price: '$497',
-    description: 'Everything prepared for first-cycle approval',
+    tier: 'multi_trade',
+    name: 'Multi-Trade Permit Package',
+    price: '$895',
+    description: 'Best for projects with multiple permit types',
     includes: [
-      'Everything in Permit Research',
-      'Complete submission package review',
-      'Setback + code compliance check',
-      'Cover letter drafted for your jurisdiction',
-      '2 revision rounds',
+      'Everything in Standard Package',
+      'Multi-trade permit coordination (electrical, plumbing, structural)',
+      'Separate agency submissions tracked together',
+      'Biweekly updates + amendment responses',
+      '2 amendment rounds included',
     ],
     highlight: true,
   },
   {
-    tier: 'coordination',
-    name: 'Permit Coordination',
-    price: '$997',
-    description: 'We manage the entire process for you',
+    tier: 'full_service',
+    name: 'Full Service Permit Coordination',
+    price: '$1,495',
+    description: 'End-to-end permit management, zero friction',
     includes: [
-      'Everything in Full Permit Package',
+      'Everything in Multi-Trade Package',
       'Direct examiner communication',
-      'Correction responses handled',
-      'Status tracking + weekly updates',
-      'Unlimited revisions',
-    ],
-  },
-  {
-    tier: 'expediting',
-    name: 'Expedited Filing',
-    price: 'Starting at $1,997',
-    description: 'Priority processing — fastest path to approval',
-    includes: [
-      'Everything in Permit Coordination',
-      'Priority queue placement',
-      'Direct jurisdiction contact',
-      'Same-day issue response',
-      'Guaranteed first submission within 5 business days',
+      'Unlimited correction responses',
+      'Expedited review coordination',
+      'Final permit delivery + closeout docs',
     ],
   },
 ]
@@ -180,7 +168,7 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
     setCheckingOut(tier)
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
     try {
-      const res = await fetch('/api/permits/checkout', {
+      const res = await fetch('/api/ai-permits/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

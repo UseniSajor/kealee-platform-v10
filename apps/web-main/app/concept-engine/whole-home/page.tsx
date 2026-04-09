@@ -118,7 +118,7 @@ export default function WholeHomeConceptEnginePage() {
                 </ul>
                 <div className="mt-6 border-t border-white/10 pt-4 flex items-baseline justify-between">
                   <span className="text-sm text-white/50">Starting at</span>
-                  <span className="text-3xl font-bold text-white">$585</span>
+                  <span className="text-3xl font-bold text-white">$599</span>
                 </div>
               </div>
             </div>
@@ -140,7 +140,7 @@ export default function WholeHomeConceptEnginePage() {
             {([
               {
                 name: 'AI Whole Home Concept',
-                price: '$585',
+                price: '$599',
                 rounds: '1 feedback round',
                 turnaround: '7–10 business days',
                 desc: 'Floor plan direction, scope summary, material palette, and rough cost range.',

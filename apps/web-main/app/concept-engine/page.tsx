@@ -14,7 +14,7 @@ const PATHS = [
     title:       'Exterior Design',
     description: 'Facade, curb appeal, landscaping, hardscaping, and outdoor living — see your exterior transformed.',
     href:        '/concept-engine/exterior',
-    price:       'From $395 · Consultation included',
+    price:       'From $599 · Portal delivery',
   },
   {
     icon:        Leaf,
@@ -22,7 +22,7 @@ const PATHS = [
     title:       'Home Farming & Garden',
     description: 'Garden design, raised beds, backyard farming, irrigation systems, and greenhouse build.',
     href:        '/concept-engine/garden',
-    price:       'From $395 · Consultation included',
+    price:       'From $599 · Portal delivery',
     badge:       'New',
   },
   {
@@ -31,7 +31,7 @@ const PATHS = [
     title:       'Whole Home Renovation',
     description: 'Full property transformation — floor plans, structural changes, systems, and every room redesigned.',
     href:        '/concept-engine/whole-home',
-    price:       'From $585 · Consultation included',
+    price:       'From $599 · Portal delivery',
   },
   {
     icon:        PaintBucket,
@@ -39,7 +39,7 @@ const PATHS = [
     title:       'Interior Reno & Addition',
     description: 'Kitchen, bath, room additions, ADUs, and complete interior redesign — all interior and addition work.',
     href:        '/concept-engine/interior-reno',
-    price:       'From $395 · Consultation included',
+    price:       'From $599 · Portal delivery',
   },
   {
     icon:        Building2,
@@ -47,7 +47,7 @@ const PATHS = [
     title:       'Developer / Investor',
     description: 'Commercial, mixed-use, or multifamily. Business-grade concept with feasibility and entitlement brief.',
     href:        '/concept-engine/developer',
-    price:       'From $585 · Feasibility add-ons available',
+    price:       'From $1,299 · Feasibility add-ons available',
   },
 ]
 

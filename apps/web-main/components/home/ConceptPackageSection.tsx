@@ -73,26 +73,26 @@ export function ConceptPackageSection() {
 
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <Link
-                href="/concept-engine"
+                href="/intake-wizard"
                 className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition-all hover:opacity-90"
                 style={{ backgroundColor: '#E8793A' }}
               >
                 Start Your Project <ArrowRight className="h-4 w-4" />
               </Link>
               <div className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                Starting at{' '}
-                <span className="font-bold text-white">$585</span>
-                {' '}· 48-hr delivery
+                Starter{' '}
+                <span className="font-bold text-white">$599</span>
+                {' '}· Professional $1,299
               </div>
             </div>
 
             <Link
-              href="/capture/demo"
+              href="/paths"
               className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium hover:underline"
               style={{ color: '#2ABFBF' }}
             >
               <Camera className="h-4 w-4" />
-              Try the capture tool — no account needed
+              Compare Design Only, Design+Permits, and Complete Build →
             </Link>
           </div>
 

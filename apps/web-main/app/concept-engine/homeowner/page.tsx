@@ -106,7 +106,7 @@ export default function HomeownerConceptEnginePage() {
                 </ul>
                 <div className="mt-6 border-t border-white/10 pt-4 flex items-baseline justify-between">
                   <span className="text-sm text-white/50">Starting at</span>
-                  <span className="text-3xl font-bold text-white">$585</span>
+                  <span className="text-3xl font-bold text-white">$599</span>
                 </div>
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function HomeownerConceptEnginePage() {
           <h2 className="mb-6 text-xl font-bold text-center" style={{ color: '#1A2B4A' }}>Revision rounds by package tier</h2>
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
             {[
-              { tier: 'AI Concept Package', price: '$585', revisions: '1 round (3 options)', note: 'Additional rounds available as add-on' },
+              { tier: 'AI Concept Package — Starter', price: '$599', revisions: '1 revision round', note: 'Portal delivery · up to 800 sq ft' },
               { tier: 'Advanced AI Concept', price: '$899', revisions: 'Up to 3 rounds', note: '3 floor plan options + 3D views + material suggestions', highlight: true },
               { tier: 'Full Design Package', price: '$4,499', revisions: 'Up to 5 rounds', note: 'Permit-ready drawing set. Premium credit applies at this tier.' },
             ].map((row, i) => (

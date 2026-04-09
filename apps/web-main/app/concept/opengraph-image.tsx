@@ -43,15 +43,15 @@ export default function Image() {
           color: '#94A3B8', fontSize: '26px', marginTop: '24px',
           maxWidth: '760px', lineHeight: '1.5',
         }}>
-          Photorealistic renderings, cost estimates &amp; permit guidance. Starting at $395.
+          Photorealistic renderings, cost estimates &amp; permit guidance. From $599.
         </div>
 
         {/* Tiers */}
         <div style={{ display: 'flex', gap: '16px', marginTop: '48px' }}>
           {[
-            { label: 'Basic', price: 'from $395' },
-            { label: 'Advanced', price: 'from $695' },
-            { label: 'Full Design', price: 'from $2,500' },
+            { label: 'Starter', price: '$599' },
+            { label: 'Professional', price: '$1,299' },
+            { label: 'Enterprise', price: 'CFQ' },
           ].map((tier) => (
             <div key={tier.label} style={{
               background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',

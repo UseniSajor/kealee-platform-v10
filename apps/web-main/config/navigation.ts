@@ -79,7 +79,7 @@ export const PRIMARY_NAV: NavItem[] = [
       },
     ],
     featured: {
-      label:       'AI Concept Engine — From $395',
+      label:       'AI Concept Engine — From $599',
       href:        '/concept-engine',
       description: 'AI-generated design + contractor-ready PDF · 5–7 business day delivery',
     },
@@ -94,35 +94,35 @@ export const PRIMARY_NAV: NavItem[] = [
       {
         title: 'AI Design',
         links: [
-          { label: 'Whole Home Renovation',    href: '/products/whole-home',      description: 'Full concept, permits, contractor — From $585' },
-          { label: 'Kitchen Remodel',          href: '/products/kitchen-remodel', description: 'Layouts, permit scope, cost band — From $395' },
-          { label: 'Bathroom Remodel',         href: '/products/bath-remodel',    description: 'Layout, fixtures, permit scope — From $395' },
-          { label: 'Exterior Renovation',      href: '/products/exterior',        description: 'Facade, deck, siding, windows — From $395' },
-          { label: 'ADU & In-Law Suite',       href: '/products/adu',             description: 'Zoning check, concept, permit — From $395' },
-          { label: 'Basement Finish',          href: '/products/basement',        description: 'Egress check, layouts, permits — From $395' },
+          { label: 'Whole Home Renovation',    href: '/products/whole-home',      description: 'Full concept, permits, contractor — From $599' },
+          { label: 'Kitchen Remodel',          href: '/products/kitchen-remodel', description: 'Layouts, permit scope, cost band — From $599' },
+          { label: 'Bathroom Remodel',         href: '/products/bath-remodel',    description: 'Layout, fixtures, permit scope — From $599' },
+          { label: 'Exterior Renovation',      href: '/products/exterior',        description: 'Facade, deck, siding, windows — From $599' },
+          { label: 'ADU & In-Law Suite',       href: '/products/adu',             description: 'Zoning check, concept, permit — From $599' },
+          { label: 'Basement Finish',          href: '/products/basement',        description: 'Egress check, layouts, permits — From $599' },
         ],
       },
       {
         title: 'Garden & Landscape',
         links: [
-          { label: 'Garden & Farming Design',  href: '/products/garden',          description: 'Raised beds, irrigation, AI concept — From $395' },
-          { label: 'Landscape Design & Install', href: '/products/landscape',     description: 'Beds, hardscape, drainage — From $395' },
+          { label: 'Garden & Farming Design',  href: '/products/garden',          description: 'Raised beds, irrigation, AI concept — From $599' },
+          { label: 'Landscape Design & Install', href: '/products/landscape',     description: 'Beds, hardscape, drainage — From $599' },
         ],
       },
       {
         title: 'Permits & Estimation',
         links: [
-          { label: 'Permit Package',           href: '/products/permit-package',   description: 'File, track, respond — From $149' },
-          { label: 'Permit Research',          href: '/products/permit-research',  description: 'Know what you need before filing — $297' },
-          { label: 'Cost Estimate',            href: '/products/cost-estimate',    description: 'RSMeans-validated, lender-ready — From $595' },
+          { label: 'Permit Package',           href: '/permits',                  description: 'Standard $495 · Multi-Trade $895 · Full Service $1,495' },
+          { label: 'Architect VIP',            href: '/architect-vip',            description: 'Permit-ready drawings from licensed architect — From $3,890' },
+          { label: 'Cost Estimate',            href: '/products/cost-estimate',   description: 'RSMeans-validated, lender-ready — From $595' },
         ],
       },
       {
         title: 'Design & Construction',
         links: [
-          { label: 'Design Starter',           href: '/products/design-starter',  description: 'Schematic drawings from licensed pro — $1,200' },
+          { label: 'Choose Your Path',         href: '/paths',                    description: 'Design Only · Design + Permits · Complete Build' },
           { label: 'PM Advisory',              href: '/products/pm-advisory',     description: 'Monthly site visits, milestone approvals — $950' },
-          { label: 'ADU Bundle',               href: '/products/adu-bundle',      description: 'Concept + permit bundled — $1,345' },
+          { label: 'Start Intake Wizard',      href: '/intake-wizard',            description: 'Answer 9 questions — get your recommended package', badge: 'New' },
         ],
       },
     ],
@@ -162,11 +162,11 @@ export const NAV_LOGIN_OPTIONS = [
 export const FOOTER_NAV = {
   platform: [
     { label: 'Start Your Design',          href: '/concept-engine' },
-    { label: 'All Products',               href: '/products' },
+    { label: 'Choose Your Path',           href: '/paths' },
+    { label: 'Intake Wizard',              href: '/intake-wizard' },
+    { label: 'Architect VIP',              href: '/architect-vip' },
     { label: 'Get Permits',                href: '/permits' },
-    { label: 'Get an Estimate',            href: '/estimate' },
     { label: 'Contractor Marketplace',     href: '/marketplace' },
-    { label: 'Design Services',            href: '/design-services' },
     { label: 'Payments & Escrow',          href: '/milestone-pay' },
     { label: 'AI KeaBots',                 href: '/#keabots' },
   ],
@@ -191,8 +191,8 @@ export const FOOTER_NAV = {
     { label: 'About Us',                   href: '/about' },
     { label: 'Blog',                       href: '/blog' },
     { label: 'FAQ',                        href: '/faq' },
-    { label: 'Contact',                    href: '/contact' },
     { label: 'Pricing',                    href: '/pricing' },
+    { label: 'Contact',                    href: '/contact' },
   ],
   legal: [
     { label: 'Terms of Service',           href: '/terms' },

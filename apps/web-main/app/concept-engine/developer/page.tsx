@@ -113,7 +113,7 @@ export default function DeveloperConceptEnginePage() {
                 </ul>
                 <div className="mt-6 border-t border-white/10 pt-4 flex items-baseline justify-between">
                   <span className="text-sm text-white/50">Starting at</span>
-                  <span className="text-3xl font-bold text-white">$585</span>
+                  <span className="text-3xl font-bold text-white">$1,299</span>
                 </div>
               </div>
             </div>

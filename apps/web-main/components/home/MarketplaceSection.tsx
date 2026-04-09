@@ -52,7 +52,7 @@ export function MarketplaceSection() {
                   className="mt-2 inline-flex items-center gap-1 text-xs font-semibold hover:underline"
                   style={{ color: '#E8793A' }}
                 >
-                  Start AI Concept — From $395 <ArrowRight className="h-3 w-3" />
+                  Start AI Concept — From $599 <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>
             </div>

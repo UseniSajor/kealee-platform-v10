@@ -27,12 +27,12 @@ export default function CoreServicesSection() {
               <h3>Upload photos.<br />Get a floor plan in 24 hours.</h3>
               <div className="exec">You send photos. We send back a concept layout, zoning check, structural risk flag, cost band, and permit scope. Staff-reviewed before delivery.</div>
               <div className="tl">
-                <div className="tr pop"><span className="trn b">Design + Validation <span className="pp">Start here</span></span><span className="trp">$395</span></div>
-                <div className="tr"><span className="trn">Advanced AI Concept — 3 options</span><span className="trp">$495</span></div>
-                <div className="tr"><span className="trn">Full Design Package</span><span className="trp">starting at $4,499</span></div>
+                <div className="tr pop"><span className="trn b">Starter — up to 800 sq ft <span className="pp">Start here</span></span><span className="trp">$599</span></div>
+                <div className="tr"><span className="trn">Professional — up to 3,000 sq ft</span><span className="trp">$1,299</span></div>
+                <div className="tr"><span className="trn">Enterprise — 3,000+ sq ft</span><span className="trp">CFQ</span></div>
               </div>
-              <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>Pre-design concept only — not a permit-ready plan. <Link href="/design-services" style={{ color: 'var(--o)' }}>Need permit-ready plans?</Link></p>
-              <Link href="/concept-engine" className="scta">Start your design</Link>
+              <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>Pre-design concept only — not a permit-ready plan. <Link href="/architect-vip" style={{ color: 'var(--o)' }}>Need permit-ready drawings?</Link></p>
+              <Link href="/intake-wizard" className="scta">Start your design</Link>
             </div>
           </div>
 
@@ -50,11 +50,10 @@ export default function CoreServicesSection() {
               <h3>We file your permit.<br />You get a tracking link.</h3>
               <div className="exec">We know Montgomery DPS, Fairfax LDS, DC DOB, and every other DMV agency. We file, track, respond to comments, and notify you when it is approved.</div>
               <div className="tl">
-                <div className="tr"><span className="trn">Permit Guidance + Checklist</span><span className="trp">Free</span></div>
-                <div className="tr"><span className="trn">Simple Permit Filing</span><span className="trp">$149</span></div>
-                <div className="tr pop"><span className="trn b">Permit Package <span className="pp">Most common</span></span><span className="trp">$950</span></div>
-                <div className="tr"><span className="trn">Permit Coordination</span><span className="trp">$2,750</span></div>
-                <div className="tr"><span className="trn">Permit Expediting</span><span className="trp">Starting at $5,500</span></div>
+                <div className="tr"><span className="trn">Standard — Kealee files + biweekly updates</span><span className="trp">$495</span></div>
+                <div className="tr pop"><span className="trn b">Multi-Trade <span className="pp">Most common</span></span><span className="trp">$895</span></div>
+                <div className="tr"><span className="trn">Full Service — unlimited revisions</span><span className="trp">$1,495</span></div>
+                <div className="tr"><span className="trn">Expedited add-on</span><span className="trp">+$495</span></div>
               </div>
               <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>Requires existing plans or architectural documents. <Link href="/design-services" style={{ color: 'var(--o)' }}>Get plans first →</Link></p>
               <Link href="/permits" className="scta">View permit services</Link>

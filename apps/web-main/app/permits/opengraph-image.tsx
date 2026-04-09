@@ -49,9 +49,9 @@ export default function Image() {
         {/* Tiers */}
         <div style={{ display: 'flex', gap: '16px', marginTop: '48px' }}>
           {[
-            { label: 'Research', price: '$149', note: '24 hrs' },
-            { label: 'Package', price: '$950', note: '1–2 days' },
-            { label: 'Coordination', price: '$2,750', note: 'Full service' },
+            { label: 'Standard', price: '$495', note: 'Kealee files' },
+            { label: 'Multi-Trade', price: '$895', note: 'Most popular' },
+            { label: 'Full Service', price: '$1,495', note: 'Unlimited revisions' },
           ].map((tier) => (
             <div key={tier.label} style={{
               background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',

@@ -43,7 +43,7 @@ const SECTIONS = [
       },
       {
         q: 'How much does an AI concept package cost?',
-        a: 'Exterior, garden, and interior reno concept packages start at $395. Whole home and developer concept packages start at $585. Advanced tiers with more revision rounds and detailed drawings are also available.',
+        a: 'All AI Concept Design Packages start at $599 (Starter, up to 800 sq ft). Professional tier ($1,299, up to 3,000 sq ft) and Enterprise (CFQ, 3,000+ sq ft) are also available. The intake wizard will recommend the right tier based on your project.',
       },
       {
         q: 'What is included in a concept package?',

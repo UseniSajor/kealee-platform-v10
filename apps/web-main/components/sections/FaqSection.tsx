@@ -4,8 +4,8 @@ import { useState } from 'react'
 
 const FAQS = [
   {
-    q: 'What is in the $395 report?',
-    a: 'AI floor plan sketch, design brief, room-by-room scope notes, zoning check, structural risk rating, cost band (low–high), permit risk rating, and contractor scope outline. Staff-reviewed before delivery. In your inbox within 24 hours of photo upload.',
+    q: 'What is in the AI Concept Design Package?',
+    a: 'Photorealistic renderings, design brief, room-by-room scope notes, zoning check, structural risk rating, cost band (low–high), permit path strategy, and contractor scope outline. Delivered to your portal in 5–7 business days. Starter ($599) for projects up to 800 sq ft, Professional ($1,299) up to 3,000 sq ft, Enterprise (CFQ) for larger projects.',
   },
   {
     q: 'Do I need a permit for my project?',
@@ -13,7 +13,7 @@ const FAQS = [
   },
   {
     q: 'How long does a permit take in the DMV?',
-    a: 'Fairfax County simple residential: 2–4 weeks. Montgomery County DPS residential: 4–8 weeks. DC Department of Buildings with plan review: 2–5 months. Commercial projects take longer across all jurisdictions. We include current average timelines for your specific jurisdiction in the $395 concept report.',
+    a: 'Fairfax County simple residential: 2–4 weeks. Montgomery County DPS residential: 4–8 weeks. DC Department of Buildings with plan review: 2–5 months. Commercial projects take longer across all jurisdictions. We include current average timelines for your specific jurisdiction in the AI Concept Design Package.',
   },
   {
     q: 'What if my project needs an architect?',
@@ -21,7 +21,7 @@ const FAQS = [
   },
   {
     q: 'What is free? What costs money?',
-    a: 'The $395 concept report is where most projects start. Every other service — cost estimate, permit filing, PM advisory — is per-service and optional. Your homeowner dashboard, permit checklist, and standard contractor assignment are included with your project.',
+    a: 'The AI Concept Design Package is where most projects start. Every other service — cost estimate, permit filing, PM advisory — is per-service and optional. Your homeowner dashboard, permit checklist, and standard contractor assignment are included with your project.',
   },
   {
     q: 'What is the difference between AI concept and architectural services?',

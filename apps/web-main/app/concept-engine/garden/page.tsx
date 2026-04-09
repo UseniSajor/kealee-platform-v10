@@ -117,7 +117,7 @@ export default function GardenConceptEnginePage() {
                 </ul>
                 <div className="mt-6 border-t border-white/10 pt-4 flex items-baseline justify-between">
                   <span className="text-sm text-white/50">Starting at</span>
-                  <span className="text-3xl font-bold text-white">$395</span>
+                  <span className="text-3xl font-bold text-white">$599</span>
                 </div>
               </div>
             </div>
@@ -139,7 +139,7 @@ export default function GardenConceptEnginePage() {
             {([
               {
                 name: 'AI Garden Concept',
-                price: '$395',
+                price: '$599',
                 rounds: '1 feedback round',
                 turnaround: '5–7 business days',
                 desc: 'Property-specific garden layout with raised beds, irrigation overview, and planting guide.',
@@ -272,7 +272,7 @@ export default function GardenConceptEnginePage() {
           <h2 className="mb-6 text-xl font-bold text-center" style={{ color: '#1A2B4A' }}>Garden design packages</h2>
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
             {[
-              { tier: 'AI Garden Concept', price: '$395', revisions: '1 round (3 layouts)', note: 'AI layout + raised beds + irrigation overview + planting guide' },
+              { tier: 'AI Garden Concept', price: '$599', revisions: '1 round (3 layouts)', note: 'AI layout + raised beds + irrigation overview + planting guide' },
               { tier: 'Advanced Garden Design', price: '$695', revisions: 'Up to 3 rounds', note: 'Detailed plant lists + irrigation specs + 3D garden views', highlight: true },
               { tier: 'Full Landscape Design', price: '$2,500+', revisions: 'Up to 5 rounds', note: 'Permit-ready landscape plans + full contractor package' },
             ].map((row, i) => (

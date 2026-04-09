@@ -5,7 +5,7 @@ export default function ProjectTypesSection() {
     <div className="sec" id="projects">
       <div className="ey">Project types</div>
       <h2 className="h2">Pick your project</h2>
-      <p className="sub">Each project below starts with a $395 concept report unless noted. Click any to see how the process works.</p>
+      <p className="sub">Each project below starts with an AI Concept Design Package from $599. Click any to see how the process works.</p>
       <div className="ptg">
         {/* Kitchen — spans 2 cols & 2 rows */}
         <Link href="/products/kitchen-remodel" className="ptc s2">
@@ -14,7 +14,7 @@ export default function ProjectTypesSection() {
             <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1000&q=60&auto=format&fit=crop" alt="Kitchen" />
           </div>
           <div className="pto" />
-          <span className="ptpr">from $395</span>
+          <span className="ptpr">from $599</span>
           <div className="ptb">
             <div className="ptpre">Most common project</div>
             <h3>Kitchen remodel &amp; home addition</h3>
@@ -28,7 +28,7 @@ export default function ProjectTypesSection() {
             <img src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600&q=60&auto=format&fit=crop" alt="ADU" />
           </div>
           <div className="pto" />
-          <span className="ptpr">from $395</span>
+          <span className="ptpr">from $599</span>
           <div className="ptb"><div className="ptpre">High demand — DMV</div><h3>ADU &amp; in-law suite</h3><p>Zoning · Concept · Permits</p></div>
         </Link>
         {/* Tiny home */}
@@ -38,7 +38,7 @@ export default function ProjectTypesSection() {
             <img src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=600&q=60&auto=format&fit=crop" alt="Tiny home" />
           </div>
           <div className="pto" />
-          <span className="ptpr">from $395</span>
+          <span className="ptpr">from $599</span>
           <div className="ptb"><div className="ptpre">AI design ready</div><h3>Tiny home</h3><p>Concept · Zoning · Permits</p></div>
         </Link>
         {/* Whole home */}
@@ -48,7 +48,7 @@ export default function ProjectTypesSection() {
             <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=60&auto=format&fit=crop" alt="Whole home" />
           </div>
           <div className="pto" />
-          <span className="ptpr">from $395</span>
+          <span className="ptpr">from $599</span>
           <div className="ptb"><div className="ptpre">Full service available</div><h3>Whole home renovation</h3><p>End-to-end project management</p></div>
         </Link>
         {/* New build */}
@@ -68,7 +68,7 @@ export default function ProjectTypesSection() {
             <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=60&auto=format&fit=crop" alt="Exterior" />
           </div>
           <div className="pto" />
-          <span className="ptpr">from $149</span>
+          <span className="ptpr">from $495</span>
           <div className="ptb"><div className="ptpre">Quick permit turnaround</div><h3>Exterior renovation</h3><p>Deck · Siding · Roofing · Windows</p></div>
         </Link>
         {/* Landscape */}
@@ -98,7 +98,7 @@ export default function ProjectTypesSection() {
             <img src="https://images.unsplash.com/photo-1572120360610-d971b9d7767c?w=600&q=60&auto=format&fit=crop" alt="Historic renovation" />
           </div>
           <div className="pto" />
-          <span className="ptpr">Starting at $395</span>
+          <span className="ptpr">from $599</span>
           <div className="ptb"><div className="ptpre">Preservation experts</div><h3>Historic renovation</h3><p>Preservation review · Permits · Contractors</p></div>
         </Link>
         {/* Water Mitigation */}
@@ -108,7 +108,7 @@ export default function ProjectTypesSection() {
             <img src="https://images.unsplash.com/photo-1558478551-1a378f63328e?w=600&q=60&auto=format&fit=crop" alt="Water mitigation" />
           </div>
           <div className="pto" />
-          <span className="ptpr">Starting at $395</span>
+          <span className="ptpr">from $599</span>
           <div className="ptb"><div className="ptpre">Drainage specialists</div><h3>Water mitigation &amp; drainage</h3><p>Grading · French drain · Waterproofing</p></div>
         </Link>
         {/* Other */}

@@ -5,12 +5,12 @@ export function SiteFooter() {
       <div className="fqs">
         <div className="fqsi">
           <div className="fqsc">
-            <h5>AI Concept + Validation</h5>
-            <p>$395 · Staff-reviewed floor plan, zoning check, cost band, and permit risk · Delivered in 24 hours</p>
+            <h5>AI Concept Design</h5>
+            <p>Starter $599 · Professional $1,299 · Enterprise CFQ · Portal delivery in 5–7 business days</p>
           </div>
           <div className="fqsc">
             <h5>Permit services</h5>
-            <p>Free checklist → $149 simple filing → $950 full package → $5,500 expediting · We file, you track</p>
+            <p>Standard $495 · Multi-Trade $895 · Full Service $1,495 · Kealee submits every tier · Biweekly updates</p>
           </div>
           <div className="fqsc">
             <h5>Contractor marketplace</h5>
@@ -33,10 +33,10 @@ export function SiteFooter() {
             </div>
             <div>
               <div className="fch">Services</div>
-              <a href="/#concept" className="fca">AI Concept + Validation</a>
+              <a href="/concept-package" className="fca">AI Concept Design</a>
+              <a href="/architect-vip" className="fca">Architect VIP</a>
               <a href="/permits" className="fca">Permit Services</a>
-              <a href="/#featured" className="fca">Cost Estimation</a>
-              <a href="/#milestone-pay" className="fca">PM Advisory</a>
+              <a href="/paths" className="fca">Choose Your Path</a>
               <a href="/#milestone-pay" className="fca">Milestone Pay</a>
             </div>
             <div>

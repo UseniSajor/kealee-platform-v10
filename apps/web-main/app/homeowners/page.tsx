@@ -48,7 +48,7 @@ const WORKFLOW = [
   {
     number: 1,
     title: 'Get Your Concept + Validation',
-    desc: 'For $585, get a structured, property-specific AI Concept Design Package — 3 concept options, 1 round of feedback, design direction, zoning brief, path-to-approval plan, and an included design consultation. Additional revision rounds available as a paid add-on (Unlimited Package includes unlimited rounds).',
+    desc: 'From $599 — get a structured, property-specific AI Concept Design Package. Photorealistic renderings, design brief, zoning check, permit path, and cost estimate delivered to your portal in 5–7 business days.',
   },
   {
     number: 2,
@@ -58,7 +58,7 @@ const WORKFLOW = [
   {
     number: 3,
     title: 'Handle Your Permits',
-    desc: 'Permit guidance is free. Let us file ($149), package ($950), coordinate ($2,750), or expedite ($5,500) for you.',
+    desc: 'Kealee submits every tier — Standard ($495), Multi-Trade ($895), or Full Service ($1,495). Add Expedited for +$495.',
   },
   {
     number: 4,
@@ -87,9 +87,9 @@ const PRICING = [
   {
     section: 'Plan Your Project',
     items: [
-      { name: 'AI Concept Design Package', price: '$585', note: '3 concept options, 1 round of feedback. Design direction, zoning brief, path-to-approval + consultation included.', highlight: true },
-      { name: 'Advanced AI Concept', price: '$899', note: '3 floor plan options, 3D views, material suggestions — up to 3 revision rounds' },
-      { name: 'Full Design Package', price: '$4,499', note: 'Permit-ready drawing set — up to 5 revision rounds' },
+      { name: 'AI Concept — Starter (≤800 sq ft)', price: '$599', note: 'Renderings, zoning check, cost estimate, permit path · portal delivery', highlight: true },
+      { name: 'AI Concept — Professional (≤3,000 sq ft)', price: '$1,299', note: 'Everything in Starter + expanded scope + 2 revision rounds' },
+      { name: 'AI Concept — Enterprise (3,000+ sq ft)', price: 'CFQ', note: 'Contact for quote — custom scope and timeline' },
     ],
     note: 'Projects over $65,000 or with structural complexity are connected with a licensed architect.',
   },
@@ -104,11 +104,10 @@ const PRICING = [
   {
     section: 'Permit Your Project',
     items: [
-      { name: 'Permit Guidance', price: 'Free', note: 'AI checklist + jurisdiction info' },
-      { name: 'Simple Permit Filing', price: '$149', note: 'Single-trade permits' },
-      { name: 'Permit Package', price: '$950', note: 'Full application prep + submission', highlight: true },
-      { name: 'Permit Coordination', price: '$2,750', note: 'Submission, tracking + comment response' },
-      { name: 'Permit Expediting', price: '$5,500', note: 'Priority approval service' },
+      { name: 'Standard Permit Package', price: '$495', note: 'Kealee files + biweekly updates · 1 amendment round' },
+      { name: 'Multi-Trade Permit Package', price: '$895', note: 'Multi-agency coordination · 2 amendment rounds', highlight: true },
+      { name: 'Full Service Permit Coordination', price: '$1,495', note: 'Unlimited revisions · direct examiner communication' },
+      { name: 'Expedited Add-On', price: '+$495', note: 'Priority processing — available on any tier' },
     ],
   },
   {
@@ -130,7 +129,7 @@ export default function HomeownersPage() {
         headline="Build with Confidence"
         highlight="Confidence"
         subhead="Plan, price, permit, and control your project. Transparent pricing at every step — pay only for what your project needs."
-        cta={{ label: 'Start with $585 AI Concept Package', href: '/homeowners/start' }}
+        cta={{ label: 'Start Intake Wizard — From $599', href: '/intake-wizard' }}
         secondaryCta={{ label: 'Browse Contractors', href: '/marketplace' }}
         trustItems={['No surprise invoices', 'Escrow-protected payments', 'Licensed & insured contractors', 'AI advisor included']}
         dark
@@ -222,11 +221,11 @@ export default function HomeownersPage() {
           <p className="text-center text-sm font-medium text-gray-600">
             Typical fully-managed project:
             <span className="ml-2 font-bold" style={{ color: '#1A2B4A' }}>
-              $585 + $595 + $950 + $2,950 = $5,080
+              $599 + $595 + $895 + $2,950 = $5,039
             </span>
           </p>
           <p className="mt-2 text-center text-xs text-gray-400">
-            Concept + Validation · Detailed Estimate · Permit Package · PM Oversight
+            AI Concept (Starter) · Detailed Estimate · Multi-Trade Permit · PM Oversight
           </p>
         </div>
       </section>
@@ -250,7 +249,7 @@ export default function HomeownersPage() {
               </p>
               <p className="mt-1 text-sm text-gray-600">
                 AI garden design, raised beds, backyard farming, irrigation, and greenhouse build — all under one roof.
-                From $395 · Contractor matching included.
+                From $599 · Contractor matching included.
               </p>
             </div>
           </div>
@@ -278,12 +277,12 @@ export default function HomeownersPage() {
       <RoleFAQ
         items={[
           {
-            question: 'What is included in the $585 AI Concept Design Package?',
+            question: 'What is included in the $599 AI Concept Design Package?',
             answer: '3 property-specific concept visuals, design direction summary, layout and flow recommendations, property analysis, path-to-approval plan, rough scope direction, a downloadable digital package, and an included design consultation call. 1 round of feedback is included.',
           },
           {
             question: 'Can I request more design revisions?',
-            answer: 'The Starter package ($585) includes 1 round of feedback. Additional revision rounds are available as a paid add-on. Upgrading to Advanced AI Concept ($899) includes up to 3 rounds. The Full Design Package ($4,499) includes up to 5 rounds.',
+            answer: 'The Starter package ($599) includes 1 round of feedback. Additional revision rounds are available as a paid add-on. Upgrading to Advanced AI Concept ($899) includes up to 3 rounds. The Full Design Package ($4,499) includes up to 5 rounds.',
           },
           {
             question: 'Does Kealee provide onsite services?',
@@ -306,7 +305,7 @@ export default function HomeownersPage() {
       <RoleCTA
         headline="Ready to Start Your Project?"
         subhead="Join thousands of homeowners who have built smarter with Kealee's AI-powered platform."
-        cta={{ label: 'Get My $585 Concept Package', href: '/homeowners/start' }}
+        cta={{ label: 'Get My $599 Concept Package', href: '/homeowners/start' }}
         secondaryCta={{ label: 'Browse Contractors', href: '/marketplace' }}
       />
     </>

@@ -118,7 +118,7 @@ export default function InteriorRenoConceptEnginePage() {
                 </ul>
                 <div className="mt-6 border-t border-white/10 pt-4 flex items-baseline justify-between">
                   <span className="text-sm text-white/50">Starting at</span>
-                  <span className="text-3xl font-bold text-white">$395</span>
+                  <span className="text-3xl font-bold text-white">$599</span>
                 </div>
               </div>
             </div>
@@ -140,7 +140,7 @@ export default function InteriorRenoConceptEnginePage() {
             {([
               {
                 name: 'AI Interior Concept',
-                price: '$395',
+                price: '$599',
                 rounds: '1 feedback round',
                 turnaround: '5–7 business days',
                 desc: 'AI layout concept with finish direction and rough cost range.',

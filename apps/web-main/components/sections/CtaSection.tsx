@@ -5,14 +5,14 @@ export default function CtaSection() {
     <div className="cta">
       <div className="ctai">
         <div>
-          <h2>Start with a $395 concept report.</h2>
-          <p>Upload photos. Floor plan, zoning check, cost band, and permit scope — delivered the next day. No architect fee upfront. No commitment beyond the report.</p>
+          <h2>Start your design from $599.</h2>
+          <p>Answer 9 questions. Get photorealistic renderings, zoning check, cost estimate, and permit path — delivered to your portal in 5–7 business days.</p>
         </div>
         <div className="ccards">
-          <Link href="/products" className="cc">
+          <Link href="/intake-wizard" className="cc">
             <div>
-              <h4>Browse all services</h4>
-              <p>AI design, permits, estimation, PM — every service in one place</p>
+              <h4>Start the intake wizard</h4>
+              <p>9 questions → your recommended package · Starter, Professional, or Enterprise</p>
             </div>
             <span className="ccarr">→</span>
           </Link>

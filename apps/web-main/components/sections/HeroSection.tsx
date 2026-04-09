@@ -185,8 +185,8 @@ export default function HeroSection() {
           <div className="rcard">
             <div className="rtag"><span className="rdot" />&nbsp;Homeowner &amp; project owner</div>
             <h3>Plan, permit, and build</h3>
-            <p>$395 gets you a floor plan, zoning check, cost band, and permit risk report — in 24 hours.</p>
-            <a href="/#concept" className="rlink">Start your project</a>
+            <p>From $599 — renderings, zoning check, cost estimate, and permit path. Answer 9 questions to get started.</p>
+            <a href="/intake-wizard" className="rlink">Start your project</a>
           </div>
           <div className="rcard">
             <div className="rtag"><span className="rdot" style={{ background: 'var(--blue)' }} />&nbsp;Contractor / General contractor</div>

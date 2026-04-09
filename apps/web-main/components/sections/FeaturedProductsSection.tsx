@@ -15,12 +15,12 @@ export default function FeaturedProductsSection() {
           </div>
           <div className="fcb">
             <div className="fclbl">AI design engine</div>
-            <h4>Concept + Validation Report</h4>
-            <p>Floor plan, zoning check, cost band, and permit risk. Staff reviewed. Delivered in 24 hours.</p>
-            <div className="fcp">Starting at $395 <small>one-time</small></div>
+            <h4>AI Concept Design Package</h4>
+            <p>Renderings, zoning check, cost estimate, and permit path. Portal delivery in 5–7 business days.</p>
+            <div className="fcp">From $599 <small>one-time</small></div>
           </div>
         </Link>
-        <Link href="/products/permit-package" className="fc">
+        <Link href="/permits" className="fc">
           <div className="fci">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=700&q=60&auto=format&fit=crop" alt="Permit" />
@@ -29,8 +29,8 @@ export default function FeaturedProductsSection() {
           <div className="fcb">
             <div className="fclbl">Permit services</div>
             <h4>Permit Package</h4>
-            <p>Application, drawings, submission, and comment response. You do not call the permit office.</p>
-            <div className="fcp">$950 <small>one-time</small></div>
+            <p>Kealee prepares, submits, and tracks your permit. Biweekly updates. We handle corrections.</p>
+            <div className="fcp">From $495 <small>one-time</small></div>
           </div>
         </Link>
         <Link href="/products/cost-estimate" className="fc">
