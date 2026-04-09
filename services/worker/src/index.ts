@@ -23,6 +23,8 @@ import { createConceptEngineWorker } from './processors/concept-engine.processor
 import { captureAnalysisQueue } from './queues/capture-analysis.queue'
 import { createCaptureVisionWorker, pollAndAnalyzePending } from './processors/capture-vision.processor'
 import { createVoiceTranscriptionWorker, pollAndTranscribePending } from './processors/voice-transcription.processor'
+import { orchestrationQueue } from './queues/orchestration.queue'
+import { createOrchestrationWorker } from './processors/orchestration.processor'
 import { cronManager } from './cron/cron.manager'
 import cron from 'node-cron'
 import type { Worker } from 'bullmq'
@@ -42,6 +44,7 @@ let intakeProcessingWorker: Worker | null = null
 let conceptEngineWorker: Worker | null = null
 let captureVisionWorker: Worker | null = null
 let voiceTranscriptionWorker: Worker | null = null
+let orchestrationWorker: Worker | null = null
 
 // Test Redis connection
 async function testRedisConnection() {
@@ -268,6 +271,18 @@ async function initializeConceptEngineQueue() {
   }
 }
 
+// Initialize orchestration queue and worker
+async function initializeOrchestrationQueue() {
+  try {
+    console.log('🧠 Initializing orchestration queue...')
+    orchestrationWorker = createOrchestrationWorker()
+    console.log('✅ Orchestration worker started (LangGraph supervisor graph active)')
+  } catch (error) {
+    console.error('❌ Failed to initialize orchestration queue:', error)
+    // Non-fatal — platform still works without orchestrator
+  }
+}
+
 // Initialize capture analysis workers (vision + voice transcription)
 async function initializeCaptureAnalysisWorkers() {
   try {
@@ -447,6 +462,7 @@ async function start() {
   await initializeIntakeProcessingQueue()
   await initializeConceptEngineQueue()
   await initializeCaptureAnalysisWorkers()
+  await initializeOrchestrationQueue()
   await initializeCronJobs()
 
   console.log('✅ Worker service ready')

@@ -186,7 +186,13 @@ export default function HeroSection() {
             <div className="rtag"><span className="rdot" />&nbsp;Homeowner &amp; project owner</div>
             <h3>Plan, permit, and build</h3>
             <p>From $599 — renderings, zoning check, cost estimate, and permit path. Answer 9 questions to get started.</p>
-            <a href="/intake-wizard" className="rlink">Start your project</a>
+            <a href="/intake-wizard" className="rlink">Start My Project</a>
+          </div>
+          <div className="rcard">
+            <div className="rtag"><span className="rdot" style={{ background: 'var(--teal, #2ABFBF)' }} />&nbsp;Land owner / lot buyer</div>
+            <h3>Find out what you can build</h3>
+            <p>From $195 — zoning review, buildability check, cost band, and a clear recommended next step for your parcel.</p>
+            <a href="/land" className="rlink" style={{ color: 'var(--teal, #2ABFBF)' }}>Check My Land</a>
           </div>
           <div className="rcard">
             <div className="rtag"><span className="rdot" style={{ background: 'var(--blue)' }} />&nbsp;Contractor / General contractor</div>

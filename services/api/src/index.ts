@@ -1147,6 +1147,11 @@ const start = async () => {
       await fastify.register(ragRoutes, { prefix: '/api/v1/rag' })
     })
 
+    await safeRegisterBlock('Orchestration routes', async () => {
+      const { orchestrationRoutes } = await import('./modules/orchestration/orchestration.routes')
+      await fastify.register(orchestrationRoutes, { prefix: '/api/v1/orchestrate' })
+    })
+
     // ── Test Routes (TEST_MODE=true only) ──
     await safeRegisterBlock('Test simulation routes', async () => {
       const { testRoutes } = await import('./modules/test/test.routes')

@@ -17038,3 +17038,93 @@ model ContactFormSubmission {
   @@index([createdAt])
   @@map("contact_form_submissions")
 }
+
+// =============================================================================
+// AI ORCHESTRATOR — LangGraph integration models (added Apr 2026)
+// =============================================================================
+
+/// Tracks active LangGraph supervisor thread state for resume/replay
+model WorkflowThread {
+  id              String    @id @default(cuid())
+  threadId        String    @unique
+  userId          String?
+  orgId           String?
+  projectId       String?
+  role            String?
+  phase           String    @default("discovery")
+  intent          String?
+  activeSubgraph  String?
+  paymentStatus   String    @default("none")
+  readinessJson   Json?
+  landAnalysisJson Json?
+  blockers        Json?
+  finalOutputJson Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([phase])
+  @@index([createdAt])
+  @@map("workflow_threads")
+}
+
+/// Land feasibility analysis orders — LAND_FEASIBILITY_BASIC and LAND_FEASIBILITY_PRO
+model LandAnalysisOrder {
+  id                String    @id @default(cuid())
+  userId            String?
+  orgId             String?
+  projectId         String?
+  threadId          String?
+  sku               String    // LAND_FEASIBILITY_BASIC | LAND_FEASIBILITY_PRO
+  address           String
+  parcelId          String?
+  jurisdiction      String?
+  status            String    @default("pending") // pending | in_progress | complete | failed
+  paymentStatus     String    @default("none")    // none | pending | completed | refunded
+  stripeSessionId   String?
+  // Analysis results
+  zoningCode        String?
+  overlays          Json?
+  setbacksJson      Json?
+  buildableAreaSqFt Float?
+  maxUnits          Int?
+  feasibilityScore  Float?
+  costLow           Float?
+  costHigh          Float?
+  timelineEstimate  String?
+  riskFlags         Json?
+  reportUrl         String?
+  completedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([status])
+  @@index([sku])
+  @@index([createdAt])
+  @@map("land_analysis_orders")
+}
+
+/// Orchestrator event log — append-only structured log for all orchestrator events
+model OrchestratorEventLog {
+  id          String   @id @default(cuid())
+  threadId    String
+  userId      String?
+  projectId   String?
+  eventType   String
+  subgraph    String?
+  agentRole   String?
+  toolName    String?
+  payload     Json?
+  durationMs  Int?
+  createdAt   DateTime @default(now())
+
+  @@index([threadId])
+  @@index([userId])
+  @@index([projectId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("orchestrator_event_log")
+}
