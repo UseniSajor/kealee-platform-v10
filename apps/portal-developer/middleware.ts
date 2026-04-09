@@ -5,27 +5,38 @@ import type { NextRequest } from 'next/server'
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } })
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return request.cookies.getAll() },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          response = NextResponse.next({ request: { headers: request.headers } })
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
-        },
-      },
+  let isAuthenticated = false
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+  const isSupabaseConfigured = supabaseUrl.startsWith('https://') && !supabaseUrl.includes('your-project')
+
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() { return request.cookies.getAll() },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+              response = NextResponse.next({ request: { headers: request.headers } })
+              cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
+            },
+          },
+        }
+      )
+      const { data: { session } } = await supabase.auth.getSession()
+      isAuthenticated = !!session
+    } catch {
+      // Supabase unavailable — deny access
     }
-  )
+  }
 
-  const { data: { session } } = await supabase.auth.getSession()
-
-  const protectedPaths = ['/pipeline', '/feasibility', '/capital', '/portfolio', '/reports']
+  const protectedPaths = ['/pipeline', '/feasibility', '/capital', '/portfolio', '/reports', '/services']
   const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
 
-  if (isProtectedPath && !session) {
+  if (isProtectedPath && !isAuthenticated) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/login'
     return NextResponse.redirect(redirectUrl)
@@ -34,7 +45,7 @@ export async function middleware(request: NextRequest) {
   const authPaths = ['/login', '/signup']
   const isAuthPath = authPaths.some(path => request.nextUrl.pathname.startsWith(path))
 
-  if (isAuthPath && session) {
+  if (isAuthPath && isAuthenticated) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/pipeline'
     return NextResponse.redirect(redirectUrl)
@@ -44,5 +55,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/pipeline/:path*', '/feasibility/:path*', '/capital/:path*', '/portfolio/:path*', '/reports/:path*', '/login', '/signup'],
+  matcher: ['/pipeline/:path*', '/feasibility/:path*', '/capital/:path*', '/portfolio/:path*', '/reports/:path*', '/services/:path*', '/login', '/signup'],
 }
