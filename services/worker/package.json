@@ -17,6 +17,7 @@
     "@kealee/core": "workspace:*",
     "@kealee/database": "workspace:*",
     "@kealee/storage": "workspace:*",
+    "@kealee/ai-orchestrator": "workspace:*",
     "bullmq": "^5.0.0",
     "resend": "^3.2.0",
     "ioredis": "^5.3.2",
