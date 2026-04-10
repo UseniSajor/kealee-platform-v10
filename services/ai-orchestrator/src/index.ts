@@ -77,6 +77,13 @@ export {
   getJurisdictionPattern,
 } from "./memory/long-term";
 
+// ─── KeaBot adapter ───────────────────────────────────────────────────────────
+//
+// Used by LangGraph subgraph nodes to call domain KeaBots for LLM execution.
+
+export { runKeaBotNode, runSubgraphBot, SUBGRAPH_BOT_MAP } from "./agents/bot-adapter";
+export type { BotNodeResult } from "./agents/bot-adapter";
+
 // ─── Graphs (for advanced use) ────────────────────────────────────────────────
 
 export { supervisorGraph }      from "./graphs/supervisor";

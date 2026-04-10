@@ -68,7 +68,13 @@ export interface OrchestratorHealthReport {
   checkedAt: Date;
 }
 
-// Stage flow definition
+/**
+ * @deprecated
+ * STAGE_FLOW is no longer the routing mechanism.
+ * Routing is now handled by supervisor-routing.ts in @kealee/ai-orchestrator.
+ * This constant remains only for backwards compatibility.
+ * Do not add new routing logic here.
+ */
 export const STAGE_FLOW: Record<BotStage, BotStage | null> = {
   intake: 'design',
   design: 'permit',

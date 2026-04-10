@@ -11,6 +11,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@kealee/ai-orchestrator": "workspace:*",
     "@kealee/core-bots": "*",
     "@kealee/database": "*"
   },
