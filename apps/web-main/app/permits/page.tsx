@@ -1,250 +1,372 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { COUNTIES } from '@/lib/permit-counties'
-import { Container } from '@/components/ui/Container'
-import { Heading } from '@/components/ui/Heading'
-import { AskAnythingBar } from '@/components/ui/AskAnythingBar'
+import {
+  CheckCircle2, ArrowRight, Shield, Clock, FileText, AlertTriangle,
+  Search, ClipboardList, Phone, Zap, Users, Home, Building2, HardHat, Info,
+} from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Building Permit Services — Standard $495 | Multi-Trade $895 | Full Service $1,495 | Kealee',
+  title: 'Permit Services — See Your Path to Approval | Kealee',
   description:
-    'Kealee files your permits and tracks status — for every tier. Standard $495 · Multi-Trade $895 · Full Service $1,495. All tiers include Kealee submission + biweekly updates + portal access. DC, MD & VA.',
+    'Kealee helps you understand what permit you need, what may block approval, what documents are missing, and the right next move — then executes the permit process. DC, MD & VA.',
   openGraph: {
-    title: 'Building Permits — We File For You | DC, MD, VA — Kealee',
-    description: 'Standard $495 · Multi-Trade $895 · Full Service $1,495. All tiers: Kealee submits, biweekly updates, portal access. DC, MD, VA.',
+    title: 'See Your Exact Path to Permit Approval | Kealee',
+    description: 'From simple filing to full coordination. Kealee handles the permit process — jurisdiction research, submission, status tracking, and escalation.',
     url: 'https://kealee.com/permits',
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Building Permits — We File For You | Kealee',
-    description: 'Standard $495 · Multi-Trade $895 · Full Service $1,495. All tiers include Kealee submission + biweekly updates.',
+}
+
+const TRUST_ITEMS = [
+  { icon: Clock,        text: 'All DMV jurisdictions' },
+  { icon: Shield,       text: 'Permit specialist review' },
+  { icon: FileText,     text: 'Jurisdiction-specific guidance' },
+  { icon: CheckCircle2, text: 'Status tracking included' },
+]
+
+const PROBLEMS = [
+  {
+    title: 'You don\'t know which permit you actually need',
+    body: 'There are building permits, mechanical permits, electrical permits, zoning approvals, and HOA overlays. The wrong application wastes months.',
   },
-}
+  {
+    title: 'Your plans weren\'t permit-ready',
+    body: 'An AI concept or early sketch is not the same as permit-stamped construction documents. Submitting too early triggers rejection and restarts the clock.',
+  },
+  {
+    title: 'You\'re waiting with no visibility',
+    body: 'Most jurisdictions don\'t proactively notify applicants of status changes. Permits stall in review with no one following up.',
+  },
+  {
+    title: 'You hired the wrong help for the jurisdiction',
+    body: 'A contractor who pulls permits in Virginia may not understand DC\'s DCRA process. Jurisdiction-specific knowledge is not generic.',
+  },
+]
 
-const STATE_LABELS: Record<string, string> = {
-  VA: 'Virginia',
-  MD: 'Maryland',
-  DC: 'Washington DC',
-}
+const WHAT_YOU_GET = [
+  { icon: Search,        text: 'Permit type identification — what you actually need' },
+  { icon: AlertTriangle, text: 'Blocker and risk flag review before submission' },
+  { icon: ClipboardList, text: 'Document checklist — what\'s missing and what\'s required' },
+  { icon: FileText,      text: 'Application preparation and submission' },
+  { icon: Clock,         text: 'Status tracking with biweekly updates' },
+  { icon: Phone,         text: 'Jurisdiction follow-up and escalation' },
+]
 
-export default function PermitsHubPage() {
-  const byState = COUNTIES.reduce<Record<string, typeof COUNTIES>>((acc, c) => {
-    const key = c.state
-    if (!acc[key]) acc[key] = []
-    acc[key].push(c)
-    return acc
-  }, {})
+const PACKAGES = [
+  {
+    sku: 'PERMIT_SIMPLE',
+    name: 'Simple Filing',
+    price: '$395',
+    icon: FileText,
+    tagline: 'For straightforward permits where you already have the documents.',
+    bullets: [
+      'Permit type confirmation',
+      'Application review and submission',
+      'Jurisdiction fee identification',
+      'Status tracking (30 days)',
+      'Single trade / single jurisdiction',
+    ],
+    cta: 'Start Simple Filing',
+    href: '/permits/intake?sku=PERMIT_SIMPLE',
+    highlight: false,
+  },
+  {
+    sku: 'PERMIT_PACKAGE',
+    name: 'Permit Package',
+    price: '$695',
+    icon: ClipboardList,
+    tagline: 'For projects that need document prep and risk review before filing.',
+    bullets: [
+      'Permit type and scope review',
+      'Blocker and risk analysis',
+      'Document checklist and gap audit',
+      'Application prep and submission',
+      'Status tracking (60 days)',
+      'One revision round',
+    ],
+    cta: 'Get Permit Package',
+    href: '/permits/intake?sku=PERMIT_PACKAGE',
+    highlight: true,
+  },
+  {
+    sku: 'PERMIT_COORDINATION',
+    name: 'Permit Coordination',
+    price: '$1,495',
+    icon: Phone,
+    tagline: 'Full-service coordination for multi-trade or complex permit paths.',
+    bullets: [
+      'Everything in Permit Package, plus:',
+      'Multi-trade coordination',
+      'Jurisdiction liaison and escalation',
+      'Inspector scheduling',
+      'Status tracking (120 days)',
+      'Unlimited revisions',
+    ],
+    cta: 'Start Coordination',
+    href: '/permits/intake?sku=PERMIT_COORDINATION',
+    highlight: false,
+  },
+  {
+    sku: 'PERMIT_EXPEDITING',
+    name: 'Permit Expediting',
+    price: '$2,495',
+    icon: Zap,
+    tagline: 'For time-sensitive projects that need to move as fast as possible.',
+    bullets: [
+      'Everything in Coordination, plus:',
+      'Dedicated permit expeditor',
+      'Expedited review request where available',
+      'Direct reviewer contact',
+      'Weekly status calls',
+      'Full permit lifecycle management',
+    ],
+    cta: 'Start Expediting',
+    href: '/permits/intake?sku=PERMIT_EXPEDITING',
+    highlight: false,
+  },
+]
 
+const WHO = [
+  { icon: Home,      label: 'Homeowners',  body: 'Adding a room, finishing a basement, or doing a kitchen remodel that requires a permit.' },
+  { icon: Building2, label: 'Property owners', body: 'Managing a commercial renovation, tenant build-out, or multifamily upgrade.' },
+  { icon: HardHat,   label: 'Contractors', body: 'Pulling permits across jurisdictions where you need local knowledge and faster processing.' },
+  { icon: Users,     label: 'Developers',  body: 'Running multiple permit tracks simultaneously and need coordination support.' },
+]
+
+const FAQ = [
+  {
+    q: 'Is an AI concept or floor plan the same as permit-ready plans?',
+    a: 'No — and this is the most common and expensive mistake in the process. An AI concept or early-stage floor plan is a planning and communication tool. Permit-ready construction documents are stamped drawings prepared by a licensed architect or engineer, meeting your jurisdiction\'s technical requirements. If your permit requires stamped plans and you don\'t have them, Kealee will tell you exactly what\'s needed and can connect you with the right professional.',
+  },
+  {
+    q: 'What jurisdictions do you cover?',
+    a: 'We cover all DMV jurisdictions: Washington DC (DCRA), all Maryland counties including Montgomery, Prince George\'s, Howard, Anne Arundel, and more, plus all Virginia jurisdictions including Fairfax, Arlington, Alexandria, Prince William, Loudoun, and beyond.',
+  },
+  {
+    q: 'Can Kealee guarantee permit approval?',
+    a: 'No. Permit approval is controlled by the local jurisdiction and depends on your project\'s compliance with applicable codes and regulations. Kealee ensures you submit correctly, completely, and with the right documents — which significantly improves approval odds and timelines.',
+  },
+  {
+    q: 'What if plans or professional handoff are required?',
+    a: 'If your project scope requires stamped architectural or engineering drawings, Kealee will identify that clearly, explain what type of professional you need, and can refer you to qualified professionals in our network. We do not file permits without the required documentation.',
+  },
+  {
+    q: 'How long does a permit take?',
+    a: 'It depends on jurisdiction and project type. Simple residential permits in Virginia can take 2–4 weeks. DC DCRA reviews can take 4–16+ weeks. We give you realistic timelines for your specific jurisdiction and project type, and follow up proactively throughout.',
+  },
+]
+
+export default function PermitsPage() {
   return (
-    <>
-      {/* ── Hero ─────────────────────────────────────────────────────── */}
+    <main className="min-h-screen bg-white">
+
+      {/* ── Hero ──────────────────────────────────────────────────────── */}
       <section
-        style={{
-          background: 'linear-gradient(135deg, #1A2B4A 0%, #0F1D34 60%, #1A3B3B 100%)',
-        }}
-        className="py-20 md:py-28"
+        style={{ background: 'linear-gradient(135deg, #1A2B4A 0%, #0F1D34 60%, #0F2A2A 100%)' }}
+        className="px-6 py-24 md:py-32"
       >
-        <Container width="lg">
-          <div className="max-w-2xl">
-            <div
-              className="inline-block text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full mb-5"
-              style={{ backgroundColor: '#2ABFBF20', color: '#2ABFBF' }}
-            >
-              Permit Services
-            </div>
-            <Heading as="h1" size="xl" color="white" className="mb-5">
-              Building Permit Services for DC, MD &amp; VA
-            </Heading>
-            <p className="text-lg text-gray-300 leading-relaxed mb-8">
-              Real permit timelines, common delay causes, and a smarter way to get approved — for
-              every jurisdiction we serve.
-            </p>
-            <a
-              href="#jurisdictions"
-              className="inline-block px-7 py-3.5 rounded-xl font-bold text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#E8793A' }}
-            >
-              Select Your Jurisdiction →
-            </a>
-          </div>
-        </Container>
-      </section>
-
-      {/* ── Intro ─────────────────────────────────────────────────────── */}
-      <section className="py-14 bg-white">
-        <Container width="lg">
-          <div className="max-w-3xl mx-auto text-center">
-            <Heading as="h2" size="md" color="navy" className="mb-4">
-              Why Permits Take Longer Than They Should
-            </Heading>
-            <p className="text-gray-600 leading-relaxed">
-              Most permit delays aren't caused by the jurisdiction — they're caused by incomplete
-              submissions. A single missing note, incorrect setback dimension, or unstamped drawing
-              sends you back to the end of the queue. Kealee&apos;s AI reviews your package before
-              submission, engineered for first-cycle approval.
-            </p>
-          </div>
-        </Container>
-      </section>
-
-      {/* ── Ask bar ───────────────────────────────────────────────────── */}
-      <section className="py-10 bg-white border-b border-gray-100">
-        <Container width="md">
-          <div className="rounded-2xl p-5" style={{ backgroundColor: '#1A2B4A' }}>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-white/50 text-center">
-              Questions about permits? Ask anything
-            </p>
-            <AskAnythingBar context="permit" />
-          </div>
-        </Container>
-      </section>
-
-      {/* ── County Grid ───────────────────────────────────────────────── */}
-      <section id="jurisdictions" className="py-16" style={{ backgroundColor: '#F8FAFC' }}>
-        <Container width="xl">
-          <Heading as="h2" size="lg" color="navy" className="text-center mb-3">
-            Choose Your Jurisdiction
-          </Heading>
-          <p className="text-center text-gray-500 mb-12 max-w-xl mx-auto">
-            Select a county or city below to see real permit timelines, common delay causes, and
-            how Kealee can help
+        <div className="mx-auto max-w-3xl text-center">
+          <span className="inline-block rounded-full bg-[#2ABFBF]/15 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#2ABFBF]">
+            Permit Services — DC, MD &amp; VA
+          </span>
+          <h1 className="mt-5 font-display text-4xl font-bold text-white md:text-5xl lg:text-6xl leading-tight">
+            See your exact path to{' '}
+            <span className="text-[#E8793A]">permit approval</span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-white/70 leading-relaxed">
+            Kealee helps you understand what permit you need, what may block approval, what
+            documents are missing, and what the right next move is — then we help execute the
+            permit process.
           </p>
-
-          {Object.entries(byState).map(([stateCode, counties]) => (
-            <div key={stateCode} className="mb-12">
-              <div className="flex items-center gap-3 mb-6">
-                <div
-                  className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-white"
-                  style={{ backgroundColor: '#1A2B4A' }}
-                >
-                  {stateCode}
-                </div>
-                <h3 className="font-semibold text-gray-700">{STATE_LABELS[stateCode] || stateCode}</h3>
-                <div className="flex-1 h-px bg-gray-200" />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {counties.map((county) => (
-                  <Link
-                    key={county.slug}
-                    href={`/permits/${county.slug}`}
-                    className="group bg-white rounded-2xl border border-gray-100 p-6 transition-all hover:shadow-md hover:border-teal-200"
-                  >
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div>
-                        <p className="font-bold text-base" style={{ color: '#1A2B4A' }}>
-                          {county.shortName}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-0.5">{county.name}</p>
-                      </div>
-                      <svg
-                        className="w-5 h-5 flex-shrink-0 mt-0.5 transition-transform group-hover:translate-x-1"
-                        style={{ color: '#2ABFBF' }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </div>
-                    <div className="space-y-1.5 mb-4">
-                      <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Simple project</span>
-                        <span className="font-semibold" style={{ color: '#1A2B4A' }}>
-                          {county.simpleTimeline}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Addition</span>
-                        <span className="font-semibold" style={{ color: '#1A2B4A' }}>
-                          {county.additionTimeline}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">New construction</span>
-                        <span className="font-semibold" style={{ color: '#1A2B4A' }}>
-                          {county.newConstructionTimeline}
-                        </span>
-                      </div>
-                    </div>
-                    {county.portalName && (
-                      <div
-                        className="inline-block text-xs px-2.5 py-1 rounded-full font-medium"
-                        style={{ backgroundColor: '#F0FAFA', color: '#2ABFBF' }}
-                      >
-                        {county.portalName}
-                      </div>
-                    )}
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                      <span
-                        className="text-xs font-semibold group-hover:underline"
-                        style={{ color: '#2ABFBF' }}
-                      >
-                        View timelines →
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
-        </Container>
-      </section>
-
-      {/* ── Nationwide CTA strip ──────────────────────────────────────── */}
-      <section className="py-10 border-t border-gray-100 bg-white">
-        <Container width="lg">
-          <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
-            <div>
-              <p className="font-semibold" style={{ color: '#1A1C1B' }}>
-                Don&apos;t see your county?
-              </p>
-              <p className="text-sm text-gray-500">We file nationwide. Tell us your jurisdiction and we&apos;ll confirm coverage within 24 hours.</p>
-            </div>
+          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
-              href="/contact"
-              className="flex-shrink-0 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ background: '#C8521A' }}
+              href="/permits/intake?sku=PERMIT_PACKAGE"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#E8793A] px-8 py-4 font-semibold text-white transition hover:opacity-90"
             >
-              Contact us →
+              See My Path to Approval <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="#packages"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-8 py-4 font-semibold text-white transition hover:bg-white/10"
+            >
+              Compare packages
             </Link>
           </div>
-        </Container>
+        </div>
       </section>
 
-      {/* ── Bottom CTA ────────────────────────────────────────────────── */}
-      <section className="py-16" style={{ backgroundColor: '#1A2B4A' }}>
-        <Container width="lg">
-          <div className="text-center">
-            <Heading as="h2" size="lg" color="white" className="mb-4">
-              Not sure which jurisdiction applies to your project?
-            </Heading>
-            <p className="text-gray-300 mb-8 max-w-xl mx-auto">
-              City vs. county boundaries trip up applicants constantly. Email us your project
-              address and we'll confirm the right jurisdiction within 24 hours.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="mailto:permits@kealee.com"
-                className="px-8 py-4 rounded-xl font-bold text-white transition-opacity hover:opacity-90"
-                style={{ backgroundColor: '#E8793A' }}
-              >
-                Email permits@kealee.com
-              </a>
-              <a
-                href="/contact"
-                className="px-8 py-4 rounded-xl font-bold border-2 border-gray-500 text-gray-300 transition-colors hover:border-white hover:text-white"
-              >
-                Contact Us
-              </a>
+      {/* ── Trust bar ─────────────────────────────────────────────────── */}
+      <section className="border-b border-gray-100 bg-gray-50 px-6 py-5">
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-8">
+          {TRUST_ITEMS.map(({ icon: Icon, text }) => (
+            <div key={text} className="flex items-center gap-2 text-sm font-medium text-gray-600">
+              <Icon className="h-4 w-4 text-[#2ABFBF]" />
+              {text}
             </div>
-          </div>
-        </Container>
+          ))}
+        </div>
       </section>
-    </>
+
+      {/* ── IMPORTANT RULE ────────────────────────────────────────────── */}
+      <section className="bg-amber-50 border-b border-amber-100 px-6 py-4">
+        <div className="mx-auto flex max-w-4xl items-start gap-3">
+          <Info className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+          <p className="text-sm text-amber-900">
+            <strong>Important:</strong> An AI concept, floor plan sketch, or early design rendering
+            is <strong>not</strong> the same as permit-ready construction documents. Permit-ready
+            plans are stamped drawings from a licensed architect or engineer. If your project
+            requires stamped plans and you don&apos;t have them, Kealee will identify that and tell
+            you exactly what to do next — including professional referral if needed.
+          </p>
+        </div>
+      </section>
+
+      {/* ── Problem section ───────────────────────────────────────────── */}
+      <section className="px-6 py-20">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-12 text-center">
+            <h2 className="font-display text-3xl font-bold text-[#1A2B4A]">
+              Why permits stall — and how to avoid it
+            </h2>
+            <p className="mt-3 text-gray-500">Most permit delays are predictable. Most are preventable.</p>
+          </div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            {PROBLEMS.map((p, i) => (
+              <div key={i} className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+                <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-red-50 text-sm font-bold text-red-500">
+                  {i + 1}
+                </div>
+                <h3 className="font-semibold text-[#1A2B4A]">{p.title}</h3>
+                <p className="mt-2 text-sm text-gray-500 leading-relaxed">{p.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── What you get ──────────────────────────────────────────────── */}
+      <section className="bg-[#0F1A2E] px-6 py-20">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-12 text-center">
+            <h2 className="font-display text-3xl font-bold text-white">
+              What Kealee does on every permit engagement
+            </h2>
+            <p className="mt-3 text-white/60">Scope depends on your tier. All tiers include the full picture upfront.</p>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+            {WHAT_YOU_GET.map(({ icon: Icon, text }) => (
+              <div key={text} className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-5">
+                <Icon className="mt-0.5 h-5 w-5 shrink-0 text-[#2ABFBF]" />
+                <span className="text-sm font-medium text-white">{text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Pricing ───────────────────────────────────────────────────── */}
+      <section id="packages" className="bg-gray-50 px-6 py-20">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-12 text-center">
+            <h2 className="font-display text-3xl font-bold text-[#1A2B4A]">Choose your permit tier</h2>
+            <p className="mt-3 text-gray-500">Start with what matches your project. Upgrade at any time.</p>
+          </div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            {PACKAGES.map((p) => {
+              const PkgIcon = p.icon
+              return (
+                <div
+                  key={p.sku}
+                  className={`relative flex flex-col rounded-2xl border bg-white p-6 ${
+                    p.highlight ? 'border-[#2ABFBF] shadow-lg ring-1 ring-[#2ABFBF]' : 'border-gray-200'
+                  }`}
+                >
+                  {p.highlight && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#2ABFBF] px-3 py-1 text-xs font-bold text-white">
+                      Most Popular
+                    </span>
+                  )}
+                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-[#2ABFBF]/10">
+                    <PkgIcon className="h-5 w-5 text-[#2ABFBF]" />
+                  </div>
+                  <h3 className="font-display text-lg font-bold text-[#1A2B4A]">{p.name}</h3>
+                  <p className="mt-1 text-xs text-gray-500 leading-relaxed">{p.tagline}</p>
+                  <p className="mt-4 font-display text-2xl font-bold text-[#E8793A]">{p.price}</p>
+                  <ul className="mt-5 flex-1 space-y-2">
+                    {p.bullets.map((b) => (
+                      <li key={b} className="flex items-start gap-1.5 text-xs text-gray-700">
+                        <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#2ABFBF]" />
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    href={p.href}
+                    className="mt-6 flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#E8793A] py-3 text-sm font-semibold text-white transition hover:opacity-90"
+                  >
+                    {p.cta} <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Who it's for ──────────────────────────────────────────────── */}
+      <section className="px-6 py-20">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-12 text-center">
+            <h2 className="font-display text-3xl font-bold text-[#1A2B4A]">Who this is for</h2>
+          </div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4">
+            {WHO.map(({ icon: Icon, label, body }) => (
+              <div key={label} className="rounded-xl border border-gray-100 p-5 text-center">
+                <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#2ABFBF]/10">
+                  <Icon className="h-5 w-5 text-[#2ABFBF]" />
+                </div>
+                <h3 className="font-semibold text-[#1A2B4A]">{label}</h3>
+                <p className="mt-1.5 text-xs text-gray-500 leading-relaxed">{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ───────────────────────────────────────────────────────── */}
+      <section className="bg-gray-50 px-6 py-20">
+        <div className="mx-auto max-w-2xl">
+          <h2 className="mb-10 text-center font-display text-3xl font-bold text-[#1A2B4A]">Common questions</h2>
+          <div className="space-y-4">
+            {FAQ.map(({ q, a }) => (
+              <div key={q} className="rounded-xl border border-gray-200 bg-white p-6">
+                <h3 className="font-semibold text-[#1A2B4A]">{q}</h3>
+                <p className="mt-2 text-sm text-gray-600 leading-relaxed">{a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Final CTA ─────────────────────────────────────────────────── */}
+      <section className="bg-[#0F1A2E] px-6 py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="font-display text-3xl font-bold text-white">
+            Ready to move your permit forward?
+          </h2>
+          <p className="mt-4 text-white/60">
+            Start with a clear picture of your path to approval.
+            No guessing, no wasted submissions.
+          </p>
+          <Link
+            href="/permits/intake?sku=PERMIT_PACKAGE"
+            className="mt-8 inline-flex items-center gap-2 rounded-lg bg-[#E8793A] px-10 py-4 font-semibold text-white transition hover:opacity-90"
+          >
+            See My Path to Approval <ArrowRight className="h-4 w-4" />
+          </Link>
+          <p className="mt-4 text-sm text-white/40">All DMV jurisdictions covered · DC, Maryland, Virginia</p>
+        </div>
+      </section>
+
+    </main>
   )
 }
