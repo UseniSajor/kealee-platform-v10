@@ -12,7 +12,7 @@
 
 import { StateGraph, END } from "@langchain/langgraph";
 import { KealeeStateAnnotation } from "../state/kealee-state";
-import type { KealeeState } from "../state/kealee-state";
+import type { KealeeState, LandAnalysis, ProductSKU } from "../state/kealee-state";
 import { lookupZoningTool } from "../tools/zoning";
 import { lookupParcelTool } from "../tools/parcel";
 import { estimateBuildCostTool } from "../tools/estimate-build-cost";
@@ -20,6 +20,7 @@ import { sendEmailNotificationTool } from "../tools/notifications";
 import { recommendNextProduct, RULE_CONCEPT_NOT_PERMIT_READY } from "../rules/business-rules";
 import { saveLandAnalysis } from "../memory/long-term";
 import { emitEvent, buildEvent } from "../events/contracts";
+import { runLandAnalysisAgent } from "../agents/land-agent.js";
 
 // ─── Node: collect parcel data ────────────────────────────────────────────────
 
@@ -154,7 +155,10 @@ async function estimateCost(state: KealeeState): Promise<Partial<KealeeState>> {
 // ─── Node: generate report + set land_ready ───────────────────────────────────
 
 async function generateReport(state: KealeeState): Promise<Partial<KealeeState>> {
-  const analysis = state.landAnalysis ?? {};
+  // Call the AI Land Analysis Agent — synthesizes all collected parcel/zoning/cost data
+  const agentResult = await runLandAnalysisAgent(state);
+  const report = agentResult.report;
+
   const nextProduct = recommendNextProduct({
     ...state,
     readiness: { ...state.readiness, landReady: true },
@@ -162,31 +166,38 @@ async function generateReport(state: KealeeState): Promise<Partial<KealeeState>>
 
   // Persist to long-term memory
   if (state.address) {
-    saveLandAnalysis(state.address, analysis as Record<string, unknown>);
+    saveLandAnalysis(state.address, state.landAnalysis as Record<string, unknown>);
   }
 
   await emitEvent(
     buildEvent("orchestrator.deliverable.generated", state.threadId, {
       type: "land_feasibility_report",
       productSku: state.currentProductSku ?? "LAND_FEASIBILITY_BASIC",
-      summary: `Land analysis complete for ${state.address}. Feasibility: ${analysis.feasibilityScore}/100.`,
+      summary: report
+        ? `Land analysis complete for ${state.address}. Confidence: ${report.confidence}.`
+        : `Land analysis initiated for ${state.address}.`,
     }, { projectId: state.projectId })
   );
 
-  const completedAnalysis = {
-    ...analysis,
-    recommendedNextStep: nextProduct?.sku,
-    completedAt: new Date().toISOString(),
-    disclaimer: RULE_CONCEPT_NOT_PERMIT_READY,
+  // Merge AI report fields back into landAnalysis (preserves parcel/zoning data from earlier nodes)
+  const enrichedAnalysis: LandAnalysis = {
+    ...state.landAnalysis,
+    feasibilityScore:       report?.feasibility?.score   ?? state.landAnalysis?.feasibilityScore,
+    riskFlags:              report ? report.risks.map((r) => r.description) : state.landAnalysis?.riskFlags,
+    recommendedNextStep:    (report?.nextStep?.productSku as ProductSKU | undefined) ?? nextProduct?.sku,
+    completedAt:            new Date().toISOString(),
   };
 
   return {
-    landAnalysis: completedAnalysis,
-    readiness: { ...state.readiness, landReady: true },
-    phase: "readiness_review" as const,
+    landAnalysis: enrichedAnalysis,
+    readiness:    { ...state.readiness, landReady: true },
+    phase:        "readiness_review" as const,
     finalOutput: {
-      type: "land_feasibility_report",
-      analysis: completedAnalysis,
+      type:                  "land_feasibility_report",
+      analysis:              enrichedAnalysis,
+      landAnalysisReport:    report,
+      agentConfidence:       agentResult.confidence,
+      disclaimer:            RULE_CONCEPT_NOT_PERMIT_READY,
       recommendedNextProduct: nextProduct,
     },
   };

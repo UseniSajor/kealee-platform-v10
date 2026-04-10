@@ -84,6 +84,43 @@ export {
 export { runKeaBotNode, runSubgraphBot, SUBGRAPH_BOT_MAP } from "./agents/bot-adapter";
 export type { BotNodeResult } from "./agents/bot-adapter";
 
+// ─── Domain agents ────────────────────────────────────────────────────────────
+
+export { runLandAnalysisAgent } from "./agents/land-agent";
+export type { LandAnalysisAgentResult, LandAnalysisReport } from "./agents/land-agent";
+
+export { runDesignAgent } from "./agents/design-agent";
+export type { DesignAgentResult, DesignReport } from "./agents/design-agent";
+
+export { runPermitAgent } from "./agents/permit-agent";
+export type { PermitAgentResult, PermitReport } from "./agents/permit-agent";
+
+export { runContractorAgent } from "./agents/contractor-agent";
+export type { ContractorAgentResult, ContractorMatchReport } from "./agents/contractor-agent";
+
+export { runPaymentsAgent } from "./agents/payments-agent";
+export type { PaymentsAgentResult, PaymentDecisionReport } from "./agents/payments-agent";
+
+// ─── RAG Retrieval layer ──────────────────────────────────────────────────────
+
+export {
+  retrievePermitContext,
+  retrieveCostContext,
+  retrieveWorkflowContext,
+  buildRAGContext,
+  invalidateRAGCache,
+  getRAGStats,
+} from "./retrieval/rag-retriever";
+export type {
+  PermitZoningRecord,
+  CostRecord,
+  WorkflowRecord,
+  RAGContext,
+  PermitQuery,
+  CostQuery,
+  WorkflowQuery,
+} from "./retrieval/rag-retriever";
+
 // ─── Graphs (for advanced use) ────────────────────────────────────────────────
 
 export { supervisorGraph }      from "./graphs/supervisor";

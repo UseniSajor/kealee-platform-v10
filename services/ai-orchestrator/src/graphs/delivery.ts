@@ -16,7 +16,6 @@
 import { StateGraph, END } from "@langchain/langgraph";
 import { KealeeStateAnnotation } from "../state/kealee-state";
 import type { KealeeState, ProductSKU } from "../state/kealee-state";
-import { generateConceptTool } from "../tools/concept";
 import { estimateBuildCostTool } from "../tools/estimate-build-cost";
 import { createPermitCaseTool } from "../tools/permit-case";
 import { updateProjectRecordTool } from "../tools/project-record";
@@ -29,6 +28,8 @@ import {
   RULE_CONCEPT_NOT_PERMIT_READY,
 } from "../rules/business-rules";
 import { emitEvent, buildEvent } from "../events/contracts";
+import { runDesignAgent } from "../agents/design-agent.js";
+import { runPermitAgent } from "../agents/permit-agent.js";
 
 // ─── DesignBot node ───────────────────────────────────────────────────────────
 
@@ -37,33 +38,44 @@ async function designBot(state: KealeeState): Promise<Partial<KealeeState>> {
     return { blockers: [...state.blockers, "Project ID required before concept generation."] };
   }
 
-  const result = await generateConceptTool.invoke({
-    projectId: state.projectId,
-    projectType: state.projectType ?? "general",
-    style: state.stylePreferences?.join(", "),
-    budget: state.budgetMax,
-    scopeSummary: state.scopeSummary,
-  });
-  const r = result as { conceptId?: string; status?: string; warning?: string };
+  // Call the AI Design Agent — generates structured conceptual design assessment
+  const agentResult = await runDesignAgent(state);
+  const report = agentResult.report;
 
   await emitEvent(
     buildEvent("orchestrator.agent.started", state.threadId, {
       agentRole: "DesignBot",
-      taskId: r.conceptId,
+      taskId: `design_${state.projectId}`,
+      success: agentResult.success,
+      architectHandoffRequired: agentResult.architectHandoffRequired,
     }, { projectId: state.projectId })
   );
 
+  // Propagate warnings from the design report into state risks
+  const designWarnings = report?.warnings ?? [];
+
   return {
-    readiness: { ...state.readiness, conceptReady: false }, // set true when delivered
+    readiness:        { ...state.readiness, conceptReady: agentResult.success },
+    architectRequired: agentResult.architectHandoffRequired,
+    complexityScore:  report?.complexityScore,
+    risks:            designWarnings.length > 0 ? [...state.risks, ...designWarnings] : state.risks,
     toolResults: [
-      { tool: "generate_concept", success: true, data: result, calledAt: new Date().toISOString() },
+      {
+        tool:      "design_agent",
+        success:   agentResult.success,
+        data:      report ?? undefined,
+        error:     agentResult.error,
+        calledAt:  new Date().toISOString(),
+      },
     ],
     finalOutput: {
       ...state.finalOutput,
       concept: {
-        conceptId: r.conceptId,
-        status: r.status,
-        disclaimer: RULE_CONCEPT_NOT_PERMIT_READY,
+        report,
+        success:                  agentResult.success,
+        error:                    agentResult.error,
+        architectHandoffRequired: agentResult.architectHandoffRequired,
+        disclaimer:               RULE_CONCEPT_NOT_PERMIT_READY,
       },
     },
   };
@@ -112,34 +124,61 @@ async function estimateBot(state: KealeeState): Promise<Partial<KealeeState>> {
 // ─── PermitBot node ───────────────────────────────────────────────────────────
 
 async function permitBot(state: KealeeState): Promise<Partial<KealeeState>> {
-  if (!state.projectId || !state.jurisdiction) {
+  if (!state.jurisdiction) {
     return {
-      blockers: [...state.blockers, "Project ID and jurisdiction required for permit case creation."],
+      blockers: [...state.blockers, "Jurisdiction required for permit analysis."],
     };
   }
 
-  const result = await createPermitCaseTool.invoke({
-    projectId: state.projectId,
-    jurisdiction: state.jurisdiction,
-    permitType: state.currentProductSku ?? "PERMIT_PACKAGE",
-    scopeSummary: state.scopeSummary,
-    budgetEstimate: state.budgetMax,
-    userId: state.userId,
-  });
-  const r = result as { permitCaseId?: string; status?: string; error?: string };
+  // Call the AI Permit Agent — determines permit path, documents, and timeline
+  const agentResult = await runPermitAgent(state);
+  const report = agentResult.report;
 
-  if (r.error) {
-    return { blockers: [...state.blockers, `Permit case failed: ${r.error}`] };
+  // If there are HIGH-severity blockers, surface them
+  const highBlockers = (report?.blockers ?? [])
+    .filter((b) => b.severity === "HIGH")
+    .map((b) => b.description);
+
+  // After AI analysis, create the permit case via tool (if projectId available)
+  let permitCaseId: string | undefined;
+  if (state.projectId && report && !agentResult.hasBlockers) {
+    try {
+      const result = await createPermitCaseTool.invoke({
+        projectId:      state.projectId,
+        jurisdiction:   state.jurisdiction,
+        permitType:     report.recommendedServiceTier ?? state.currentProductSku ?? "PERMIT_PACKAGE",
+        scopeSummary:   state.scopeSummary,
+        budgetEstimate: state.budgetMax,
+        userId:         state.userId,
+      });
+      permitCaseId = (result as { permitCaseId?: string }).permitCaseId;
+    } catch {
+      // Non-fatal — permit case creation can be retried
+    }
   }
 
   return {
-    readiness: { ...state.readiness, permitReady: true },
+    readiness: { ...state.readiness, permitReady: !agentResult.hasBlockers },
+    blockers:  highBlockers.length > 0 ? [...state.blockers, ...highBlockers] : state.blockers,
     toolResults: [
-      { tool: "create_permit_case", success: true, data: result, calledAt: new Date().toISOString() },
+      {
+        tool:     "permit_agent",
+        success:  agentResult.success,
+        data:     report ?? undefined,
+        error:    agentResult.error,
+        calledAt: new Date().toISOString(),
+      },
     ],
     finalOutput: {
       ...state.finalOutput,
-      permit: { caseId: r.permitCaseId, status: r.status },
+      permit: {
+        report,
+        permitCaseId,
+        recommendedTier:  agentResult.recommendedTier,
+        hasBlockers:      agentResult.hasBlockers,
+        missingDocuments: report?.missingDocuments ?? [],
+        timeline:         report?.timeline,
+      },
     },
   };
 }

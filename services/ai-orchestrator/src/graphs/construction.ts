@@ -12,6 +12,7 @@ import { StateGraph, END } from "@langchain/langgraph";
 import { KealeeStateAnnotation } from "../state/kealee-state";
 import type { KealeeState } from "../state/kealee-state";
 import { emitEvent, buildEvent } from "../events/contracts";
+import { runPaymentsAgent } from "../agents/payments-agent.js";
 
 // ─── Node: create milestone plan ──────────────────────────────────────────────
 
@@ -115,12 +116,36 @@ async function inspectionReadiness(state: KealeeState): Promise<Partial<KealeeSt
 // ─── Node: payout readiness ───────────────────────────────────────────────────
 
 async function payoutReadiness(state: KealeeState): Promise<Partial<KealeeState>> {
-  // Check if milestone evidence has been accepted for payout release
+  // Call the AI Payments Agent for structured milestone validation
+  const agentResult = await runPaymentsAgent(state);
+  const report      = agentResult.report;
+
+  const isApproved  = agentResult.decision === "APPROVE";
+
+  await emitEvent(
+    buildEvent("orchestrator.sla.started", state.threadId, {
+      agentRole: "PaymentsAgent",
+      decision:  agentResult.decision,
+      milestoneId: report?.milestoneId,
+    }, { projectId: state.projectId })
+  );
+
   return {
-    readiness: { ...state.readiness, payoutReady: false }, // set true by evidence gate
+    readiness: { ...state.readiness, payoutReady: isApproved },
+    toolResults: [
+      {
+        tool:     "payments_agent",
+        success:  agentResult.success,
+        data:     report ?? undefined,
+        error:    agentResult.error,
+        calledAt: new Date().toISOString(),
+      },
+    ],
     finalOutput: {
       ...state.finalOutput,
-      payoutStatus: "awaiting_milestone_evidence",
+      payoutStatus:      agentResult.decision,
+      payoutDecision:    report,
+      payoutHoldReasons: report?.holdReasons ?? [],
     },
   };
 }

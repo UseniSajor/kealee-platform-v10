@@ -16,6 +16,7 @@ import { rankContractorsTool, assignLeadTool } from "../tools/contractor-ranking
 import { sendEmailNotificationTool } from "../tools/notifications";
 import { isContractorMatchAllowed } from "../rules/business-rules";
 import { emitEvent, buildEvent } from "../events/contracts";
+import { runContractorAgent } from "../agents/contractor-agent.js";
 
 // ─── Node: contractor eligibility check ───────────────────────────────────────
 
@@ -40,26 +41,47 @@ async function contractorRanker(state: KealeeState): Promise<Partial<KealeeState
     return { blockers: [...state.blockers, "Project ID and jurisdiction required for contractor ranking."] };
   }
 
-  const result = await rankContractorsTool.invoke({
-    projectId: state.projectId,
-    projectType: state.projectType ?? "general",
-    jurisdiction: state.jurisdiction,
-    budgetMin: state.budgetMin,
-    budgetMax: state.budgetMax,
-    limit: 5,
-  });
+  // First run the deterministic ranking tool to get raw candidates
+  let rawRanking: unknown = null;
+  try {
+    rawRanking = await rankContractorsTool.invoke({
+      projectId:    state.projectId,
+      projectType:  state.projectType ?? "general",
+      jurisdiction: state.jurisdiction,
+      budgetMin:    state.budgetMin,
+      budgetMax:    state.budgetMax,
+      limit:        5,
+    });
+  } catch {
+    // Non-fatal — contractor agent will generate synthetic matches
+  }
+
+  // Enrich with AI matching analysis
+  const stateWithRanking = rawRanking
+    ? { ...state, finalOutput: { ...state.finalOutput, rankedContractors: rawRanking } }
+    : state;
+
+  const agentResult = await runContractorAgent(stateWithRanking);
+  const report      = agentResult.report;
 
   await emitEvent(
     buildEvent("orchestrator.agent.started", state.threadId, {
-      agentRole: "ContractorMatchBot",
+      agentRole:    "ContractorMatchBot",
+      matchQuality: agentResult.matchQuality,
     }, { projectId: state.projectId })
   );
 
   return {
     toolResults: [
-      { tool: "rank_contractors", success: true, data: result, calledAt: new Date().toISOString() },
+      { tool: "rank_contractors",   success: Boolean(rawRanking), data: rawRanking ?? undefined, calledAt: new Date().toISOString() },
+      { tool: "contractor_agent",   success: agentResult.success, data: report ?? undefined,     calledAt: new Date().toISOString() },
     ],
-    finalOutput: { ...state.finalOutput, rankedContractors: result },
+    finalOutput: {
+      ...state.finalOutput,
+      rankedContractors: rawRanking,
+      contractorMatchReport: report,
+      matchQuality: agentResult.matchQuality,
+    },
   };
 }
 
