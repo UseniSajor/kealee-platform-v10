@@ -16,6 +16,7 @@
 import { ClaudeProvider } from "@kealee/core-llm";
 import type { KealeeState } from "../state/kealee-state.js";
 import { RULE_PERMIT_EXECUTION } from "../rules/business-rules.js";
+import { buildRAGContext } from "../retrieval/rag-retriever.js";
 
 // ─── System prompt ────────────────────────────────────────────────────────────
 
@@ -133,6 +134,16 @@ INSTRUCTIONS:
 - Timeline must account for jurisdiction processing time (DMV: 4-8 weeks simple, 8-24 weeks complex)
 - recommendedServiceTier must be a real Kealee SKU
 - Warnings: flag anything that could cause rejection (missing docs, historic overlays, zoning non-conformance)
+
+REFERENCE DATA (from Kealee RAG — use to calibrate permit requirements and timelines):
+${buildRAGContext({
+    jurisdiction: state.jurisdiction,
+    projectType:  state.projectType ?? undefined,
+    stage:        "permit",
+    topic:        "permit_process",
+    k:            4,
+  }).combined || "No reference data available for this jurisdiction."}
+
 - Output ONLY the JSON object, no preamble`;
 }
 

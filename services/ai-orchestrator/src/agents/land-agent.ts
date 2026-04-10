@@ -17,6 +17,7 @@
 
 import { ClaudeProvider } from "@kealee/core-llm";
 import type { KealeeState } from "../state/kealee-state.js";
+import { buildRAGContext } from "../retrieval/rag-retriever.js";
 
 // ─── System prompt ────────────────────────────────────────────────────────────
 
@@ -142,6 +143,15 @@ Budget: ${state.budgetMax ? `$${state.budgetMax.toLocaleString()}` : "Not specif
 
 PRODUCT PURCHASED:
 ${state.currentProductSku ?? "LAND_FEASIBILITY_BASIC"}
+
+REFERENCE DATA (from Kealee RAG — use to calibrate your output):
+${buildRAGContext({
+    jurisdiction: state.jurisdiction ?? la.jurisdiction,
+    projectType:  state.projectType ?? undefined,
+    stage:        "land_analysis",
+    topic:        "zoning_authority",
+    k:            3,
+  }).combined || "No reference data available for this jurisdiction."}
 
 INSTRUCTIONS:
 - If any zoning field is null or missing, mark confidence LOW for that section

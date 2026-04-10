@@ -16,6 +16,7 @@
 import { ClaudeProvider } from "@kealee/core-llm";
 import type { KealeeState } from "../state/kealee-state.js";
 import { requiresArchitectHandoff, RULE_CONCEPT_NOT_PERMIT_READY } from "../rules/business-rules.js";
+import { buildRAGContext } from "../retrieval/rag-retriever.js";
 
 // ─── System prompt ────────────────────────────────────────────────────────────
 
@@ -119,6 +120,13 @@ ${state.currentProductSku ?? "DESIGN_CONCEPT_VALIDATION"}
 ${missingFields.length > 0 ? `MISSING DATA:
 The following fields are not available: ${missingFields.join(", ")}
 For each missing field, make a reasonable assumption and list it in the assumptions array.` : ""}
+
+COST REFERENCE DATA (from Kealee RAG — use to calibrate cost estimates):
+${buildRAGContext({
+    projectType: state.projectType ?? undefined,
+    stage:       "concept",
+    k:           3,
+  }).costChunks.join("\n") || "No cost reference data available."}
 
 INSTRUCTIONS:
 - Generate 2–3 distinct spatial concept options (unless scope is very simple, then 1–2)
