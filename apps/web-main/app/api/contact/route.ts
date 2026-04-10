@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
             '',
             "Thanks for reaching out to Kealee! We've received your message and our team will get back to you within 24 hours.",
             '',
-            'Here's a copy of what you sent:',
+            "Here's a copy of what you sent:",
             `Subject: ${subject}`,
             `Message: ${message}`,
             '',
