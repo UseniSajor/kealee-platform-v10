@@ -104,7 +104,9 @@ export function loadRAGData(): void {
   let usedPath: string | null = null;
 
   for (const p of candidates) {
-    if (fs.existsSync(p)) {
+    const exists = fs.existsSync(p);
+    console.log(`[RAG] file exists: ${exists} → ${p}`);
+    if (exists) {
       raw = fs.readFileSync(p, "utf-8");
       usedPath = p;
       break;
