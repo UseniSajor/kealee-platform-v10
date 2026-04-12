@@ -190,7 +190,7 @@ import { initTracing } from '@kealee/observability';
 initTracing('kealee-api');
 
 import { ingestAllSeeds } from '@kealee/core-llm';
-import { loadRAGData } from '../../ai-orchestrator/src/retrieval/rag-retriever';
+import { loadRAGData, getRAGStatus } from '../../ai-orchestrator/src/retrieval/rag-retriever';
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
@@ -1233,6 +1233,13 @@ const start = async () => {
     console.log(`\n📦 Integrations: ${configured.length}/${integrations.length} configured`)
     configured.forEach(i => console.log(`   ✅ ${i.name}`))
     missing.forEach(i => console.log(`   ⬚  ${i.name} (set ${i.key})`))
+
+    // ── RAG Status ──
+    const ragStatus = getRAGStatus()
+    console.log(`\n🤖 RAG Retrieval Layer: ${ragStatus.loaded ? '✅ LOADED' : '❌ FAILED'}`)
+    if (ragStatus.loaded) {
+      console.log(`   Records: ${ragStatus.recordCount}`)
+    }
     console.log('');
   } catch (err: any) {
     // This catch handles truly fatal errors: plugin registration failures,

@@ -1,4 +1,4 @@
-import { buildRAGContext } from '../retrieval/rag-retriever';
+import { buildRAGContext, isRAGLoaded } from '../retrieval/rag-retriever';
 
 interface PermitInput {
   jurisdiction?: string;
@@ -14,8 +14,17 @@ interface AgentOutput {
   cta: string;
 }
 
-export async function executePermitAgent(input: PermitInput): Promise<AgentOutput> {
+export async function executePermitAgent(input: PermitInput): Promise<AgentOutput | any> {
   try {
+    // FAIL-SAFE: Check if RAG is loaded before proceeding
+    if (!isRAGLoaded()) {
+      console.error('[PERMIT-AGENT] RAG data not loaded - cannot execute');
+      return {
+        status: 'RAG_MISSING',
+        message: 'RAG dataset not loaded in this environment'
+      };
+    }
+
     // Build RAG context from retrieved data
     const ragContext = buildRAGContext({
       jurisdiction: input.jurisdiction,
