@@ -190,6 +190,7 @@ import { initTracing } from '@kealee/observability';
 initTracing('kealee-api');
 
 import { ingestAllSeeds } from '@kealee/core-llm';
+import { loadRAGData } from '../../ai-orchestrator/src/retrieval/rag-retriever';
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
@@ -1196,6 +1197,9 @@ const start = async () => {
     } catch (err: any) {
       console.warn('[RAG] Failed to start RAG job scheduler:', err?.message)
     }
+
+    // ── Load RAG retrieval data ──
+    loadRAGData()
 
     await fastify.listen({ port, host: '0.0.0.0' })
 
