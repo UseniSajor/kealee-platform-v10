@@ -1484,6 +1484,28 @@ importers:
         specifier: ^5.3.3
         version: 5.9.3
 
+  bots/keabot-contractor-match:
+    dependencies:
+      '@kealee/ai':
+        specifier: '*'
+        version: link:../../packages/ai
+      '@kealee/core-bots':
+        specifier: '*'
+        version: link:../../packages/core-bots
+      '@kealee/database':
+        specifier: '*'
+        version: link:../../packages/database
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
   bots/keabot-design:
     dependencies:
       '@kealee/core-bots':
@@ -1680,6 +1702,31 @@ importers:
         specifier: ^5.3.3
         version: 5.9.3
 
+  bots/keabot-marketing:
+    dependencies:
+      '@kealee/core-bots':
+        specifier: '*'
+        version: link:../../packages/core-bots
+      '@kealee/core-llm':
+        specifier: '*'
+        version: link:../../packages/core-llm
+      '@kealee/database':
+        specifier: '*'
+        version: link:../../packages/database
+      '@kealee/observability':
+        specifier: '*'
+        version: link:../../packages/observability
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
   bots/keabot-marketplace:
     dependencies:
       '@anthropic-ai/sdk':
@@ -1824,6 +1871,50 @@ importers:
         version: 4.21.0
       typescript:
         specifier: ^5.3.3
+        version: 5.9.3
+
+  bots/keabot-project-monitor:
+    dependencies:
+      '@kealee/ai':
+        specifier: '*'
+        version: link:../../packages/ai
+      '@kealee/core-bots':
+        specifier: '*'
+        version: link:../../packages/core-bots
+      '@kealee/database':
+        specifier: '*'
+        version: link:../../packages/database
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  bots/keabot-support:
+    dependencies:
+      '@kealee/ai':
+        specifier: '*'
+        version: link:../../packages/ai
+      '@kealee/core-bots':
+        specifier: '*'
+        version: link:../../packages/core-bots
+      '@kealee/database':
+        specifier: '*'
+        version: link:../../packages/database
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.6.0
         version: 5.9.3
 
   packages/ai:
@@ -3000,7 +3091,7 @@ importers:
         specifier: ^5.22.0
         version: 5.22.0
       tsx:
-        specifier: ^4.7.0
+        specifier: ^4.21.0
         version: 4.21.0
       typescript:
         specifier: ^5.3.3
@@ -3111,6 +3202,25 @@ importers:
       vitest:
         specifier: ^2.1.2
         version: 2.1.9(@types/node@22.19.7)
+
+  services/keabots:
+    dependencies:
+      '@kealee/core-bots':
+        specifier: '*'
+        version: link:../../packages/core-bots
+      '@kealee/database':
+        specifier: '*'
+        version: link:../../packages/database
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.30
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
 
   services/keacore:
     dependencies:
