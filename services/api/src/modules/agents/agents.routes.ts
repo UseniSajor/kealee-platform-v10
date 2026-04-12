@@ -2,6 +2,8 @@
  * services/api/src/modules/agents/agents.routes.ts
  *
  * RAG-powered construction agent endpoints.
+ * Each agent is a decision engine — NOT a chatbot.
+ * Every response MUST include next_step + cta to drive conversion.
  *
  * POST /api/v1/agents/land/execute
  * POST /api/v1/agents/design/execute
@@ -10,81 +12,85 @@
  * GET  /api/v1/agents/status
  */
 
-import type { FastifyInstance } from 'fastify'
-import { executeLandAgent } from '../../../../ai-orchestrator/src/agents/land-agent'
-import { executeDesignAgent } from '../../../../ai-orchestrator/src/agents/design-agent'
-import { executePermitAgent } from '../../../../ai-orchestrator/src/agents/permit-agent'
-import { executeContractorAgent } from '../../../../ai-orchestrator/src/agents/contractor-agent'
-import { getRAGStatus } from '../../../../ai-orchestrator/src/retrieval/rag-retriever'
+import type { FastifyInstance } from "fastify";
+import { executeLandAgent }       from "../../../../ai-orchestrator/src/agents/land-agent";
+import { executeDesignAgent }     from "../../../../ai-orchestrator/src/agents/design-agent";
+import { executePermitAgent }     from "../../../../ai-orchestrator/src/agents/permit-agent";
+import { executeContractorAgent } from "../../../../ai-orchestrator/src/agents/contractor-agent";
+import { getRAGStatus }           from "../../../../ai-orchestrator/src/retrieval/rag-retriever";
 
 export async function agentsRoutes(fastify: FastifyInstance) {
-  // GET /agents/status — health check for all agents + RAG
-  fastify.get('/status', async (_req, reply) => {
-    const rag = getRAGStatus()
+  // ── Health check ──────────────────────────────────────────────────────────
+  fastify.get("/status", async (_req, reply) => {
+    const rag = getRAGStatus();
     return reply.send({
-      agents: ['land', 'design', 'permit', 'contractor'],
-      rag: {
-        loaded: rag.loaded,
-        recordCount: rag.recordCount,
-      },
+      agents: ["land", "design", "permit", "contractor"],
+      rag: { loaded: rag.loaded, recordCount: rag.recordCount },
       ready: rag.loaded,
-    })
-  })
+    });
+  });
 
-  // POST /agents/land/execute
-  fastify.post('/land/execute', async (request, reply) => {
-    const body = request.body as any
+  // ── Land agent ────────────────────────────────────────────────────────────
+  // POST /api/v1/agents/land/execute
+  // Body: { jurisdiction, projectType?, address?, acreage? }
+  fastify.post("/land/execute", async (request, reply) => {
+    const body = request.body as any;
     if (!body?.jurisdiction) {
-      return reply.code(400).send({ error: 'jurisdiction is required' })
+      return reply.code(400).send({ error: "jurisdiction is required" });
     }
     const result = await executeLandAgent({
-      jurisdiction: body.jurisdiction,
-      projectType: body.projectType ?? 'residential',
-      address: body.address,
-      stage: body.stage ?? 'land-analysis',
-    })
-    return reply.send(result)
-  })
+      jurisdiction: String(body.jurisdiction),
+      projectType:  body.projectType  ?? "single-family",
+      address:      body.address,
+      acreage:      body.acreage,
+    });
+    return reply.send(result);
+  });
 
-  // POST /agents/design/execute
-  fastify.post('/design/execute', async (request, reply) => {
-    const body = request.body as any
+  // ── Design agent ──────────────────────────────────────────────────────────
+  // POST /api/v1/agents/design/execute
+  // Body: { projectType, jurisdiction?, sqft? }
+  fastify.post("/design/execute", async (request, reply) => {
+    const body = request.body as any;
     if (!body?.projectType) {
-      return reply.code(400).send({ error: 'projectType is required' })
+      return reply.code(400).send({ error: "projectType is required" });
     }
     const result = await executeDesignAgent({
-      jurisdiction: body.jurisdiction ?? '',
-      projectType: body.projectType,
-      stage: body.stage ?? 'design',
-    })
-    return reply.send(result)
-  })
+      projectType:  String(body.projectType),
+      jurisdiction: body.jurisdiction,
+      sqft:         body.sqft ? Number(body.sqft) : undefined,
+    });
+    return reply.send(result);
+  });
 
-  // POST /agents/permit/execute
-  fastify.post('/permit/execute', async (request, reply) => {
-    const body = request.body as any
+  // ── Permit agent ──────────────────────────────────────────────────────────
+  // POST /api/v1/agents/permit/execute
+  // Body: { jurisdiction, projectType? }
+  fastify.post("/permit/execute", async (request, reply) => {
+    const body = request.body as any;
     if (!body?.jurisdiction) {
-      return reply.code(400).send({ error: 'jurisdiction is required' })
+      return reply.code(400).send({ error: "jurisdiction is required" });
     }
     const result = await executePermitAgent({
-      jurisdiction: body.jurisdiction,
-      projectType: body.projectType ?? 'residential',
-      stage: body.stage ?? 'permitting',
-    })
-    return reply.send(result)
-  })
+      jurisdiction: String(body.jurisdiction),
+      projectType:  body.projectType ?? "single-family",
+    });
+    return reply.send(result);
+  });
 
-  // POST /agents/contractor/execute
-  fastify.post('/contractor/execute', async (request, reply) => {
-    const body = request.body as any
+  // ── Contractor agent ──────────────────────────────────────────────────────
+  // POST /api/v1/agents/contractor/execute
+  // Body: { projectType, jurisdiction?, sqft? }
+  fastify.post("/contractor/execute", async (request, reply) => {
+    const body = request.body as any;
     if (!body?.projectType) {
-      return reply.code(400).send({ error: 'projectType is required' })
+      return reply.code(400).send({ error: "projectType is required" });
     }
     const result = await executeContractorAgent({
-      jurisdiction: body.jurisdiction ?? '',
-      projectType: body.projectType,
-      stage: body.stage ?? 'construction',
-    })
-    return reply.send(result)
-  })
+      projectType:  String(body.projectType),
+      jurisdiction: body.jurisdiction,
+      sqft:         body.sqft ? Number(body.sqft) : undefined,
+    });
+    return reply.send(result);
+  });
 }
