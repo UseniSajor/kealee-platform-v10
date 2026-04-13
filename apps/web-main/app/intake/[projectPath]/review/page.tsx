@@ -26,6 +26,8 @@ interface CaptureInfo {
 }
 
 // ── Agent output types ────────────────────────────────────────────────────────
+interface CTCBreakdown { construction: number; soft: number; risk: number; execution: number }
+interface CTCOutput { total: number; range: [number, number]; cost_per_sqft: number; sqft: number; breakdown: CTCBreakdown }
 interface AgentOutput {
   status?: string
   summary?: string
@@ -34,6 +36,13 @@ interface AgentOutput {
   next_step?: string
   cta?: string
   conversion_product?: string
+  ctc?: CTCOutput
+}
+
+function fmtK(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`
+  if (n >= 1_000) return `$${Math.round(n / 1_000)}k`
+  return `$${n.toLocaleString()}`
 }
 
 // ── Path → agent mapping ──────────────────────────────────────────────────────
@@ -79,6 +88,61 @@ function ConfidenceBadge({ level }: { level: 'high' | 'medium' | 'low' }) {
   )
 }
 
+// ── CTC breakdown card ────────────────────────────────────────────────────────
+function CTCBreakdownCard({ ctc }: { ctc: CTCOutput }) {
+  const rows = [
+    { label: 'Construction',  value: ctc.breakdown.construction, color: '#1A2B4A' },
+    { label: 'Soft Costs',    value: ctc.breakdown.soft,         color: '#4338CA' },
+    { label: 'Risk Buffer',   value: ctc.breakdown.risk,         color: '#B45309' },
+    { label: 'Execution Fees',value: ctc.breakdown.execution,    color: '#E8793A' },
+  ]
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white p-5 space-y-3">
+      <div className="flex items-baseline justify-between">
+        <h3 className="text-sm font-bold" style={{ color: '#1A2B4A' }}>
+          Estimated Total Project Cost
+        </h3>
+        <span className="text-xs text-gray-400">{ctc.sqft.toLocaleString()} sqft</span>
+      </div>
+
+      {/* Range callout */}
+      <div
+        className="rounded-xl px-4 py-3 text-center"
+        style={{ backgroundColor: '#F0FDF4' }}
+      >
+        <p className="text-xs text-gray-500 mb-0.5">Complete Total Cost (CTC)</p>
+        <p className="text-xl font-extrabold" style={{ color: '#15803D' }}>
+          {fmtK(ctc.range[0])} – {fmtK(ctc.range[1])}
+        </p>
+        <p className="text-xs text-gray-400 mt-0.5">
+          {fmtK(ctc.cost_per_sqft)}/sqft base rate
+        </p>
+      </div>
+
+      {/* Breakdown rows */}
+      <div className="space-y-2">
+        {rows.map(({ label, value, color }) => {
+          const pct = ctc.total > 0 ? Math.round((value / ctc.total) * 100) : 0
+          return (
+            <div key={label} className="flex items-center gap-3">
+              <div className="w-24 shrink-0 text-xs text-gray-500">{label}</div>
+              <div className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${pct}%`, backgroundColor: color }}
+                />
+              </div>
+              <div className="w-14 text-right text-sm font-semibold" style={{ color }}>
+                {fmtK(value)}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ── Agent insight card ────────────────────────────────────────────────────────
 function AgentInsightCard({
   output,
@@ -90,68 +154,73 @@ function AgentInsightCard({
   isSubmitting: boolean
 }) {
   return (
-    <div className="rounded-2xl border border-[#1A2B4A]/10 bg-gradient-to-br from-[#1A2B4A]/5 to-white p-5 space-y-4">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="h-4 w-4" style={{ color: '#1A2B4A' }} />
-          <h3 className="text-sm font-bold" style={{ color: '#1A2B4A' }}>
-            Project Analysis
-          </h3>
+    <div className="space-y-4">
+      {/* CTC breakdown (shown when available) */}
+      {output.ctc && <CTCBreakdownCard ctc={output.ctc} />}
+
+      <div className="rounded-2xl border border-[#1A2B4A]/10 bg-gradient-to-br from-[#1A2B4A]/5 to-white p-5 space-y-4">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" style={{ color: '#1A2B4A' }} />
+            <h3 className="text-sm font-bold" style={{ color: '#1A2B4A' }}>
+              Project Analysis
+            </h3>
+          </div>
+          {output.confidence && <ConfidenceBadge level={output.confidence} />}
         </div>
-        {output.confidence && <ConfidenceBadge level={output.confidence} />}
-      </div>
 
-      {/* Summary */}
-      {output.summary && (
-        <p className="text-sm text-gray-700 leading-relaxed">{output.summary}</p>
-      )}
-
-      {/* Risks */}
-      {output.risks && output.risks.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
-            Key Considerations
-          </p>
-          <ul className="space-y-1.5">
-            {output.risks.slice(0, 4).map((risk, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
-                {risk}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Next step */}
-      {output.next_step && (
-        <div
-          className="rounded-xl px-4 py-3 text-sm"
-          style={{ backgroundColor: '#EEF2FF', color: '#3730A3' }}
-        >
-          <span className="font-semibold">Next step:</span> {output.next_step}
-        </div>
-      )}
-
-      {/* CTA */}
-      <button
-        onClick={onCta}
-        disabled={isSubmitting}
-        className="flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-        style={{ backgroundColor: '#E8793A' }}
-      >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" /> Processing...
-          </>
-        ) : (
-          <>
-            {output.cta ?? 'Continue'}
-            <ArrowRight className="h-4 w-4" />
-          </>
+        {/* Summary */}
+        {output.summary && (
+          <p className="text-sm text-gray-700 leading-relaxed">{output.summary}</p>
         )}
-      </button>
+
+        {/* Risks */}
+        {output.risks && output.risks.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+              Key Considerations
+            </p>
+            <ul className="space-y-1.5">
+              {output.risks.slice(0, 4).map((risk, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                  <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+                  {risk}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Next step */}
+        {output.next_step && (
+          <div
+            className="rounded-xl px-4 py-3 text-sm"
+            style={{ backgroundColor: '#EEF2FF', color: '#3730A3' }}
+          >
+            <span className="font-semibold">Next step:</span> {output.next_step}
+          </div>
+        )}
+
+        {/* CTA */}
+        <button
+          onClick={onCta}
+          disabled={isSubmitting}
+          className="flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+          style={{ backgroundColor: '#E8793A' }}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" /> Processing...
+            </>
+          ) : (
+            <>
+              {output.cta ?? 'Continue'}
+              <ArrowRight className="h-4 w-4" />
+            </>
+          )}
+        </button>
+      </div>
     </div>
   )
 }

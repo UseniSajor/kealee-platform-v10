@@ -82,10 +82,50 @@ export interface RAGContext {
   workflows: WorkflowRecord[];
 }
 
-// ── State ─────────────────────────────────────────────────────────────────────
+// ── State + Indices ───────────────────────────────────────────────────────────
 
-let ragData: RAGRecord[] = [];
+let ragData:   RAGRecord[] = [];
 let ragLoaded = false;
+
+/** O(1) lookup indices built at load time */
+const idx = {
+  permitsByJurisdiction: new Map<string, PermitRecord[]>(),
+  zoningByJurisdiction:  new Map<string, ZoningRecord[]>(),
+  costsByProjectType:    new Map<string, CostRecord[]>(),
+  workflowsByStage:      new Map<string, WorkflowRecord[]>(),
+};
+
+function buildIndices(): void {
+  idx.permitsByJurisdiction.clear();
+  idx.zoningByJurisdiction.clear();
+  idx.costsByProjectType.clear();
+  idx.workflowsByStage.clear();
+
+  for (const r of ragData) {
+    if (r.type === "permit") {
+      const key = normalize((r as PermitRecord).jurisdiction);
+      const list = idx.permitsByJurisdiction.get(key) ?? [];
+      list.push(r as PermitRecord);
+      idx.permitsByJurisdiction.set(key, list);
+    } else if (r.type === "zoning") {
+      const key = normalize((r as ZoningRecord).jurisdiction);
+      const list = idx.zoningByJurisdiction.get(key) ?? [];
+      list.push(r as ZoningRecord);
+      idx.zoningByJurisdiction.set(key, list);
+    } else if (r.type === "cost") {
+      const key = normalize((r as CostRecord).project_type);
+      const list = idx.costsByProjectType.get(key) ?? [];
+      list.push(r as CostRecord);
+      idx.costsByProjectType.set(key, list);
+    } else if (r.type === "workflow") {
+      const key = normalize((r as WorkflowRecord).stage);
+      const list = idx.workflowsByStage.get(key) ?? [];
+      list.push(r as WorkflowRecord);
+      idx.workflowsByStage.set(key, list);
+    }
+  }
+  console.log(`[RAG] Indices built: ${idx.permitsByJurisdiction.size} permit jurisdictions, ${idx.zoningByJurisdiction.size} zoning jurisdictions, ${idx.costsByProjectType.size} project types, ${idx.workflowsByStage.size} workflow stages`);
+}
 
 // ── Loader ────────────────────────────────────────────────────────────────────
 
@@ -144,6 +184,7 @@ export function loadRAGData(): void {
 
   console.log(`[RAG] ✅ Loaded ${ragData.length} records from ${usedPath}`);
   console.log(`[RAG] Breakdown: ${JSON.stringify(counts)}`);
+  buildIndices();
 }
 
 // ── Status ────────────────────────────────────────────────────────────────────
@@ -167,14 +208,18 @@ export function retrievePermitContext(
   projectType: string,
   limit = 10
 ): PermitRecord[] {
-  const jLower = normalize(jurisdiction);
+  const jLower  = normalize(jurisdiction);
   const ptLower = normalize(projectType);
-  return (ragData.filter(
-    r =>
-      r.type === "permit" &&
-      normalize((r as PermitRecord).jurisdiction).includes(jLower) &&
-      (r as PermitRecord).project_types.some(pt => normalize(pt).includes(ptLower))
-  ) as PermitRecord[]).slice(0, limit);
+
+  // Use index: find all jurisdictions that contain the search term
+  const candidates: PermitRecord[] = [];
+  for (const [key, records] of idx.permitsByJurisdiction) {
+    if (key.includes(jLower)) candidates.push(...records);
+  }
+  const filtered = ptLower
+    ? candidates.filter(p => p.project_types.some(pt => normalize(pt).includes(ptLower)))
+    : candidates;
+  return filtered.slice(0, limit);
 }
 
 export function retrieveZoningContext(
@@ -182,11 +227,11 @@ export function retrieveZoningContext(
   limit = 10
 ): ZoningRecord[] {
   const jLower = normalize(jurisdiction);
-  return (ragData.filter(
-    r =>
-      r.type === "zoning" &&
-      normalize((r as ZoningRecord).jurisdiction).includes(jLower)
-  ) as ZoningRecord[]).slice(0, limit);
+  const candidates: ZoningRecord[] = [];
+  for (const [key, records] of idx.zoningByJurisdiction) {
+    if (key.includes(jLower)) candidates.push(...records);
+  }
+  return candidates.slice(0, limit);
 }
 
 export function retrieveCostContext(
@@ -195,14 +240,22 @@ export function retrieveCostContext(
   limit = 10
 ): CostRecord[] {
   const ptLower = normalize(projectType);
-  const jLower = jurisdiction ? normalize(jurisdiction) : null;
-  return (ragData.filter(r => {
-    if (r.type !== "cost") return false;
-    const c = r as CostRecord;
-    if (normalize(c.project_type) !== ptLower) return false;
-    if (jLower && !normalize(c.jurisdiction).includes(jLower)) return false;
-    return true;
-  }) as CostRecord[]).slice(0, limit);
+  const jLower  = jurisdiction ? normalize(jurisdiction) : null;
+
+  // Exact project_type match first via index
+  let candidates = idx.costsByProjectType.get(ptLower) ?? [];
+
+  // Partial match fallback if no exact hit
+  if (!candidates.length) {
+    for (const [key, records] of idx.costsByProjectType) {
+      if (key.includes(ptLower) || ptLower.includes(key)) candidates.push(...records);
+    }
+  }
+
+  if (jLower) {
+    candidates = candidates.filter(c => normalize(c.jurisdiction).includes(jLower));
+  }
+  return candidates.slice(0, limit);
 }
 
 export function retrieveWorkflowContext(
@@ -210,15 +263,14 @@ export function retrieveWorkflowContext(
   projectType?: string,
   limit = 10
 ): WorkflowRecord[] {
-  const sLower = normalize(stage);
+  const sLower  = normalize(stage);
   const ptLower = projectType ? normalize(projectType) : null;
-  return (ragData.filter(r => {
-    if (r.type !== "workflow") return false;
-    const w = r as WorkflowRecord;
-    if (normalize(w.stage) !== sLower) return false;
-    if (ptLower && normalize(w.project_type) !== ptLower) return false;
-    return true;
-  }) as WorkflowRecord[]).slice(0, limit);
+
+  const candidates = idx.workflowsByStage.get(sLower) ?? [];
+  const filtered = ptLower
+    ? candidates.filter(w => normalize(w.project_type) === ptLower)
+    : candidates;
+  return filtered.slice(0, limit);
 }
 
 // ── Context builder ───────────────────────────────────────────────────────────

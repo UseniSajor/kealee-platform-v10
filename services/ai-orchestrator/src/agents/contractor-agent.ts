@@ -2,33 +2,23 @@
  * contractor-agent.ts
  *
  * Decision engine for construction planning and contractor readiness.
- * Retrieves cost + zoning data from RAG and drives conversion to
- * the PROJECT_EXECUTION paid service.
+ * Computes full CTC and drives conversion to PROJECT_EXECUTION.
+ * For large projects (CTC > $500k), escalates to PM + contractor match.
  */
 
 import {
   buildRAGContext,
   isRAGLoaded,
-  CostRecord,
-  ZoningRecord,
-  WorkflowRecord,
+  retrievePermitContext,
 } from "../retrieval/rag-retriever";
+import { calculateCTC, formatCurrency } from "../costing/ctc-calculator";
+import type { AgentOutput } from "../types/agent-types";
 
 export interface ContractorAgentInput {
   jurisdiction?: string;
-  projectType: string;
-  sqft?: number;
-  stage?: string;
-}
-
-export interface AgentOutput {
-  summary: string;
-  risks: string[];
-  confidence: "high" | "medium" | "low";
-  next_step: string;
-  cta: string;
-  conversion_product?: string;
-  data_used?: Record<string, unknown>;
+  projectType:   string;
+  sqft?:         number;
+  stage?:        string;
 }
 
 export async function executeContractorAgent(input: ContractorAgentInput): Promise<AgentOutput> {
@@ -45,76 +35,90 @@ export async function executeContractorAgent(input: ContractorAgentInput): Promi
 
   const ragContext = buildRAGContext({
     jurisdiction: input.jurisdiction ?? "",
-    projectType: input.projectType,
-    stage: "construction",
+    projectType:  input.projectType,
+    stage:        "construction",
   });
 
   if (!ragContext) {
     return {
-      summary: `No construction cost data found for project type "${input.projectType}".`,
+      summary: `No construction cost data found for "${input.projectType}".`,
       risks: ["Cost data unavailable — manual estimation required"],
       confidence: "low",
       next_step: "Request a custom construction estimate.",
-      cta: "Request Custom Estimate",
-      conversion_product: "CUSTOM_ESTIMATE",
+      cta: "Start Project Execution — Get Matched Now",
+      conversion_product: "PROJECT_EXECUTION",
     };
   }
 
-  const costs: CostRecord[]     = ragContext.costs;
-  const zoning: ZoningRecord[]  = ragContext.zoning;
-  const workflows: WorkflowRecord[] = ragContext.workflows;
+  const { costs, zoning, workflows } = ragContext;
+  const permitRecords = retrievePermitContext(input.jurisdiction ?? "", input.projectType);
 
-  // Cost metrics
-  const avgCostPerSqft = costs.length
-    ? Math.round(costs.reduce((s, c) => s + c.cost_per_sqft, 0) / costs.length)
-    : 0;
-  const avgDuration = costs.length
+  const avgSqft    = costs.length
+    ? Math.round(costs.reduce((s, c) => s + c.avg_size_sqft, 0) / costs.length)
+    : 1500;
+  const targetSqft = input.sqft ?? avgSqft;
+
+  // ── Full CTC ──────────────────────────────────────────────────────────────
+  const ctcResult = calculateCTC({
+    projectType:   input.projectType,
+    jurisdiction:  input.jurisdiction ?? "",
+    sqft:          targetSqft,
+    costRecords:   costs,
+    permitRecords,
+    zoningRecords: zoning,
+  });
+
+  const avgDuration    = costs.length
     ? Math.round(costs.reduce((s, c) => s + c.typical_duration_months, 0) / costs.length)
     : 8;
-  const targetSqft = input.sqft ?? (costs.length
-    ? Math.round(costs.reduce((s, c) => s + c.avg_size_sqft, 0) / costs.length)
-    : 1500);
-  const hardCostEst = avgCostPerSqft * targetSqft;
-
-  const allCategories = [...new Set(costs.flatMap(c => c.primary_expense_categories))].slice(0, 5);
-  const workflow = workflows[0];
-
-  // Zoning constraints relevant to contractor
-  const maxCoverage = zoning.length ? Math.max(...zoning.map(z => z.max_lot_coverage)) : null;
-  const maxHeight   = zoning.length ? Math.max(...zoning.map(z => z.max_height_ft)) : null;
+  const allCategories  = [...new Set(costs.flatMap(c => c.primary_expense_categories))].slice(0, 5);
+  const maxCoverage    = zoning.length ? Math.max(...zoning.map(z => z.max_lot_coverage)) : null;
+  const maxHeight      = zoning.length ? Math.max(...zoning.map(z => z.max_height_ft)) : null;
+  const workflow       = workflows[0];
 
   const risks: string[] = [
     `Monitor critical cost categories: ${allCategories.slice(0, 3).join(", ")}`,
-    `Construction duration: ~${avgDuration} months — weather and material delays can add 10–20%`,
-    maxCoverage ? `Zoning max lot coverage: ${maxCoverage}% — verify site plan does not exceed` : "Confirm lot coverage with surveyor",
-    maxHeight ? `Maximum building height: ${maxHeight}ft — structural plans must comply` : "Confirm height limits with jurisdiction",
-    "Require licensed, bonded contractor with jurisdiction-specific permit experience",
-    workflow ? `Construction phase typically leads to ${workflow.next_stage ?? "inspections"} — schedule inspections in advance` : "Pre-schedule all required inspections",
+    `Build duration: ~${avgDuration} months — material delays can add 10–20%`,
+    maxCoverage ? `Zoning max coverage: ${maxCoverage}% — verify site plan before breaking ground` : "Confirm lot coverage limits with surveyor",
+    maxHeight ? `Max building height: ${maxHeight}ft — structural plans must comply` : "Confirm height limits with jurisdiction",
+    "Require licensed, bonded contractor with jurisdiction permit history",
+    workflow ? `Construction leads to ${workflow.next_stage ?? "inspections"} — pre-schedule all required inspections` : "Pre-schedule all required inspections",
   ].filter(Boolean).slice(0, 6);
 
   const summary = [
     `Construction planning for ${input.projectType} in ${input.jurisdiction ?? "DMV region"}.`,
-    `Estimated hard cost: $${avgCostPerSqft}/sqft × ${targetSqft.toLocaleString()} sqft = $${hardCostEst.toLocaleString()}.`,
-    `Typical build duration: ${avgDuration} months.`,
-    `Primary cost categories: ${allCategories.join(", ")}.`,
-    zoning.length ? `Zoning constraints: ${maxCoverage}% max coverage, ${maxHeight}ft max height.` : "",
+    `Full CTC: ${formatCurrency(ctcResult.range[0])} – ${formatCurrency(ctcResult.range[1])}.`,
+    `Construction: ${formatCurrency(ctcResult.breakdown.construction)} | Soft: ${formatCurrency(ctcResult.breakdown.soft)} | Risk: ${formatCurrency(ctcResult.breakdown.risk)} | Execution: ${formatCurrency(ctcResult.breakdown.execution)}.`,
+    `Build duration: ${avgDuration} months.`,
+    `Key categories: ${allCategories.join(", ")}.`,
+    zoning.length ? `Zoning: ${maxCoverage}% max coverage, ${maxHeight}ft max height.` : "",
   ].filter(Boolean).join(" ");
+
+  // CTA escalation for large projects
+  const { cta, conversion_product } = ctcResult.total >= 500_000
+    ? { cta: "Match with PM + Verified GC — $3,749", conversion_product: "PERMIT_PACKAGE_PM" }
+    : { cta: "Start Project Execution — Get Matched Now", conversion_product: "PROJECT_EXECUTION" };
 
   return {
     summary,
     risks,
     confidence: costs.length >= 5 ? "high" : costs.length >= 2 ? "medium" : "low",
-    next_step: "Engage a verified general contractor and mobilize for construction phase.",
-    cta: "Start Project Execution — Get Matched Now",
-    conversion_product: "PROJECT_EXECUTION",
+    next_step:  "Engage a verified general contractor and mobilize for construction phase.",
+    cta,
+    conversion_product,
+    ctc: {
+      total:         ctcResult.total,
+      range:         ctcResult.range,
+      cost_per_sqft: ctcResult.cost_per_sqft,
+      sqft:          ctcResult.sqft,
+      breakdown:     ctcResult.breakdown,
+    },
     data_used: {
-      cost_records: costs.length,
-      zoning_records: zoning.length,
-      workflow_records: workflows.length,
-      avg_cost_per_sqft: avgCostPerSqft,
-      hard_cost_estimate: hardCostEst,
-      project_type: input.projectType,
-      jurisdiction: input.jurisdiction,
+      cost_records:    costs.length,
+      zoning_records:  zoning.length,
+      total_ctc:       ctcResult.total,
+      project_type:    input.projectType,
+      jurisdiction:    input.jurisdiction,
     },
   };
 }

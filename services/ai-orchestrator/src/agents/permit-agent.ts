@@ -2,31 +2,24 @@
  * permit-agent.ts
  *
  * Decision engine for permit requirement analysis.
- * Retrieves permit records from RAG and drives conversion to
- * the CONTRACTOR_MATCH paid service.
+ * Retrieves permit records, computes permit-phase CTC contribution,
+ * and drives conversion to CONTRACTOR_MATCH ($199).
  */
 
 import {
   buildRAGContext,
   isRAGLoaded,
-  PermitRecord,
-  WorkflowRecord,
+  retrieveCostContext,
+  retrieveZoningContext,
 } from "../retrieval/rag-retriever";
+import { calculateCTC, formatCurrency } from "../costing/ctc-calculator";
+import type { AgentOutput } from "../types/agent-types";
 
 export interface PermitAgentInput {
-  jurisdiction: string;
-  projectType?: string;
-  stage?: string;
-}
-
-export interface AgentOutput {
-  summary: string;
-  risks: string[];
-  confidence: "high" | "medium" | "low";
-  next_step: string;
-  cta: string;
-  conversion_product?: string;
-  data_used?: Record<string, unknown>;
+  jurisdiction:  string;
+  projectType?:  string;
+  sqft?:         number;
+  stage?:        string;
 }
 
 export async function executePermitAgent(input: PermitAgentInput): Promise<AgentOutput> {
@@ -43,78 +36,94 @@ export async function executePermitAgent(input: PermitAgentInput): Promise<Agent
 
   const ragContext = buildRAGContext({
     jurisdiction: input.jurisdiction,
-    projectType: input.projectType ?? "single-family",
-    stage: "permitting",
+    projectType:  input.projectType ?? "single-family",
+    stage:        "permitting",
   });
 
   if (!ragContext) {
     return {
-      summary: `No permit data found for "${input.jurisdiction}". This jurisdiction may require a custom permit research.`,
+      summary: `No permit data found for "${input.jurisdiction}".`,
       risks: ["Jurisdiction permit data unavailable — manual research required"],
       confidence: "low",
       next_step: "Request a custom permit research package for this jurisdiction.",
-      cta: "Order Custom Permit Research — $399",
-      conversion_product: "CUSTOM_PERMIT_RESEARCH",
+      cta: "Find Verified Contractors — $199",
+      conversion_product: "CONTRACTOR_MATCH",
     };
   }
 
-  const permits: PermitRecord[]   = ragContext.permits;
-  const workflows: WorkflowRecord[] = ragContext.workflows;
+  const { permits, workflows } = ragContext;
 
-  // Aggregate permit metrics
-  const avgDays = permits.length
-    ? Math.round(permits.reduce((s, p) => s + p.processing_days, 0) / permits.length)
-    : 45;
-  const minDays = permits.length ? Math.min(...permits.map(p => p.processing_days)) : 20;
-  const maxDays = permits.length ? Math.max(...permits.map(p => p.processing_days)) : 75;
-  const avgFee  = permits.length
-    ? Math.round(permits.reduce((s, p) => s + p.fee_base, 0) / permits.length)
-    : 500;
-  const avgReviewRounds = permits.length
+  // CTC context for this project
+  const costRecords   = retrieveCostContext(input.projectType ?? "single-family", input.jurisdiction);
+  const zoningRecords = retrieveZoningContext(input.jurisdiction);
+  const targetSqft    = input.sqft ?? (costRecords.length
+    ? Math.round(costRecords.reduce((s, c) => s + c.avg_size_sqft, 0) / costRecords.length)
+    : 1500);
+
+  const ctcResult = calculateCTC({
+    projectType:   input.projectType ?? "single-family",
+    jurisdiction:  input.jurisdiction,
+    sqft:          targetSqft,
+    costRecords,
+    permitRecords: permits,
+    zoningRecords,
+  });
+
+  // Permit metrics
+  const avgDays    = permits.length ? Math.round(permits.reduce((s, p) => s + p.processing_days, 0) / permits.length) : 45;
+  const minDays    = permits.length ? Math.min(...permits.map(p => p.processing_days)) : 20;
+  const maxDays    = permits.length ? Math.max(...permits.map(p => p.processing_days)) : 75;
+  const avgFee     = permits.length ? Math.round(permits.reduce((s, p) => s + p.fee_base, 0) / permits.length) : 800;
+  const avgRounds  = permits.length
     ? parseFloat((permits.reduce((s, p) => s + (p.plan_review_rounds_avg ?? 2), 0) / permits.length).toFixed(1))
     : 2;
-  const expeditedAvailable = permits.some(p => p.expedited_available);
-  const onlineSubmission   = permits.some(p => p.online_submission);
-
-  // Consolidate requirements and issues
-  const allReqs   = [...new Set(permits.flatMap(p => p.requirements))].slice(0, 6);
-  const allIssues = [...new Set(permits.flatMap(p => p.common_issues))].slice(0, 5);
-  const workflow  = workflows[0];
+  const expedited  = permits.some(p => p.expedited_available);
+  const online     = permits.some(p => p.online_submission);
+  const allReqs    = [...new Set(permits.flatMap(p => p.requirements))].slice(0, 6);
+  const allIssues  = [...new Set(permits.flatMap(p => p.common_issues))].slice(0, 4);
+  const workflow   = workflows[0];
 
   const risks: string[] = [
-    `Plan review averages ${avgReviewRounds} rounds — submit complete package to minimize delays`,
+    `Plan review averages ${avgRounds} rounds — submit complete package to minimize comment cycles`,
     ...allIssues.map(i => `Avoid: ${i}`),
-    `Processing time: ${minDays}–${maxDays} days (avg ${avgDays} days) — not including comment resolution`,
-    expeditedAvailable
+    `Processing: ${minDays}–${maxDays} days (avg ${avgDays}) — not including comment resolution`,
+    expedited
       ? "Expedited review available — ask about fee premium for faster approval"
-      : "No expedited review — standard processing timeline applies",
-    workflow ? `Permitting stage typically takes ~${workflow.estimated_days ?? avgDays} days and leads to ${workflow.next_stage ?? "bidding"} phase` : "",
+      : "No expedited option — standard timeline applies, plan accordingly",
+    workflow ? `Permit phase leads to ${workflow.next_stage ?? "bidding"} — pre-qualify contractors now` : "",
   ].filter(Boolean).slice(0, 6);
 
   const summary = [
-    `Permit analysis for ${input.projectType ?? "residential"} project in ${input.jurisdiction}.`,
-    `Found ${permits.length} permit records.`,
-    `Processing time: ${avgDays} days average (range: ${minDays}–${maxDays} days).`,
-    `Estimated base permit fee: $${avgFee.toLocaleString()}.`,
+    `Permit analysis for ${input.projectType ?? "residential"} in ${input.jurisdiction}.`,
+    `${permits.length} permit records found.`,
+    `Timeline: ${avgDays} days average (${minDays}–${maxDays} day range).`,
+    `Base permit fee: $${avgFee.toLocaleString()}.`,
     `Required documents: ${allReqs.slice(0, 3).join(", ")}.`,
-    onlineSubmission ? "Online submission available." : "In-person submission required.",
+    `CTC permit contribution: ${formatCurrency(ctcResult.breakdown.soft)} (soft costs).`,
+    online ? "Online submission available." : "In-person submission required.",
   ].join(" ");
 
   return {
     summary,
     risks,
-    confidence: permits.length >= 5 ? "high" : permits.length >= 2 ? "medium" : "low",
-    next_step: "Match with a licensed contractor who has permit experience in this jurisdiction.",
-    cta: "Find Verified Contractors — $199",
+    confidence:         permits.length >= 5 ? "high" : permits.length >= 2 ? "medium" : "low",
+    next_step:          "Match with a licensed contractor who has proven permit experience in this jurisdiction.",
+    cta:                "Find Verified Contractors — $199",
     conversion_product: "CONTRACTOR_MATCH",
+    ctc: {
+      total:         ctcResult.total,
+      range:         ctcResult.range,
+      cost_per_sqft: ctcResult.cost_per_sqft,
+      sqft:          ctcResult.sqft,
+      breakdown:     ctcResult.breakdown,
+    },
     data_used: {
-      permit_records: permits.length,
+      permit_records:   permits.length,
       workflow_records: workflows.length,
-      avg_processing_days: avgDays,
-      avg_fee: avgFee,
-      expedited_available: expeditedAvailable,
-      jurisdiction: input.jurisdiction,
-      project_type: input.projectType,
+      avg_permit_days:  avgDays,
+      avg_permit_fee:   avgFee,
+      jurisdiction:     input.jurisdiction,
+      project_type:     input.projectType,
     },
   };
 }
