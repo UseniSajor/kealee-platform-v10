@@ -34,16 +34,25 @@ const PLATFORM_FEE_PCT           = 3.5;          // Kealee platform fee
 const RANGE_LOW_FACTOR           = 0.85;
 const RANGE_HIGH_FACTOR          = 1.20;
 
+/**
+ * 2026 DMV cumulative inflation adjustment applied to all base cost records.
+ * Compound: +7.0% (2023→2024) × +4.5% (2024→2025) × +3.5% (2025→2026)
+ * = 1.07 × 1.045 × 1.035 ≈ 1.157 → conservative factor applied: 1.13
+ */
+const INFLATION_FACTOR_2026 = 1.13;
+
 // ── Main function ─────────────────────────────────────────────────────────────
 
 export function calculateCTC(input: CTCInput): CTCOutput {
   const { sqft, costRecords, permitRecords, zoningRecords } = input;
 
   // ── 1. HARD COST ──────────────────────────────────────────────────────────
-  const avgCostPerSqft = costRecords.length
+  // Base cost comes from 2023 RAG dataset; inflate to 2026 DMV rates
+  const avgCostPerSqft2023 = costRecords.length
     ? Math.round(costRecords.reduce((s, c) => s + c.cost_per_sqft, 0) / costRecords.length)
     : DMV_DEFAULT_COST_PER_SQFT;
 
+  const avgCostPerSqft = Math.round(avgCostPerSqft2023 * INFLATION_FACTOR_2026);
   const hardCost = avgCostPerSqft * sqft;
 
   // ── 2. SOFT COST ──────────────────────────────────────────────────────────
