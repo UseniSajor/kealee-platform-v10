@@ -205,8 +205,62 @@ export function getRAGStatus(): { loaded: boolean; recordCount: number } {
 
 // ── Retrieval functions ───────────────────────────────────────────────────────
 
+/** Common DMV jurisdiction aliases → canonical names in the dataset */
+const JURISDICTION_ALIASES: Record<string, string> = {
+  "dc":                       "district of columbia",
+  "washington dc":            "district of columbia",
+  "washington, dc":           "district of columbia",
+  "washington d.c.":          "district of columbia",
+  "washington":               "district of columbia",
+  "district of columbia":     "district of columbia",
+  "md":                       "montgomery county",
+  "maryland":                 "montgomery county",
+  "montgomery":               "montgomery county",
+  "montgomery county md":     "montgomery county",
+  "montgomery county, md":    "montgomery county",
+  "pgc":                      "prince george's county",
+  "prince georges":           "prince george's county",
+  "prince george's":          "prince george's county",
+  "prince george's county md":"prince george's county",
+  "pg county":                "prince george's county",
+  "va":                       "fairfax county",
+  "virginia":                 "fairfax county",
+  "northern virginia":        "fairfax county",
+  "nova":                     "fairfax county",
+  "arlington":                "arlington county",
+  "arlington va":             "arlington county",
+  "arlington, va":            "arlington county",
+  "fairfax":                  "fairfax county",
+  "fairfax va":               "fairfax county",
+  "fairfax, va":              "fairfax county",
+  "alexandria":               "alexandria",
+  "alexandria va":            "alexandria",
+  "howard":                   "howard county",
+  "howard county md":         "howard county",
+  "howard county, md":        "howard county",
+  "anne arundel":             "anne arundel county",
+  "baltimore":                "baltimore city",
+  "baltimore md":             "baltimore city",
+  "baltimore, md":            "baltimore city",
+  "loudoun":                  "loudoun county",
+  "loudoun va":               "loudoun county",
+  "prince william":           "prince william county",
+  "prince william va":        "prince william county",
+  "stafford":                 "stafford county",
+  "stafford va":              "stafford county",
+  "falls church":             "falls church",
+  "falls church va":          "falls church",
+  "frederick":                "frederick county",
+  "frederick md":             "frederick county",
+};
+
 function normalize(s: string): string {
   return s.toLowerCase().trim();
+}
+
+function resolveJurisdiction(raw: string): string {
+  const n = normalize(raw);
+  return JURISDICTION_ALIASES[n] ?? n;
 }
 
 export function retrievePermitContext(
@@ -214,7 +268,7 @@ export function retrievePermitContext(
   projectType: string,
   limit = 10
 ): PermitRecord[] {
-  const jLower  = normalize(jurisdiction);
+  const jLower  = resolveJurisdiction(jurisdiction);
   const ptLower = normalize(projectType);
 
   // Use index: find all jurisdictions that contain the search term
@@ -232,7 +286,7 @@ export function retrieveZoningContext(
   jurisdiction: string,
   limit = 10
 ): ZoningRecord[] {
-  const jLower = normalize(jurisdiction);
+  const jLower = resolveJurisdiction(jurisdiction);
   const candidates: ZoningRecord[] = [];
   for (const [key, records] of idx.zoningByJurisdiction) {
     if (key.includes(jLower)) candidates.push(...records);
@@ -246,7 +300,7 @@ export function retrieveCostContext(
   limit = 10
 ): CostRecord[] {
   const ptLower = normalize(projectType);
-  const jLower  = jurisdiction ? normalize(jurisdiction) : null;
+  const jLower  = jurisdiction ? resolveJurisdiction(jurisdiction) : null;
 
   // Exact project_type match first via index
   let candidates = idx.costsByProjectType.get(ptLower) ?? [];
@@ -294,14 +348,15 @@ export function buildRAGContext(input: RAGInput): RAGContext | null {
   }
 
   const { jurisdiction = "", projectType = "", stage = "" } = input;
+  const resolvedJurisdiction = resolveJurisdiction(jurisdiction);
 
-  const permits   = retrievePermitContext(jurisdiction, projectType);
-  const zoning    = retrieveZoningContext(jurisdiction);
-  const costs     = retrieveCostContext(projectType, jurisdiction);
+  const permits   = retrievePermitContext(resolvedJurisdiction, projectType);
+  const zoning    = retrieveZoningContext(resolvedJurisdiction);
+  const costs     = retrieveCostContext(projectType, resolvedJurisdiction);
   const workflows = retrieveWorkflowContext(stage, projectType);
 
   if (!permits.length && !zoning.length && !costs.length) {
-    console.warn(`[RAG] No context for jurisdiction="${jurisdiction}" projectType="${projectType}"`);
+    console.warn(`[RAG] No context for jurisdiction="${jurisdiction}" (resolved: "${resolvedJurisdiction}") projectType="${projectType}"`);
     return null;
   }
 
