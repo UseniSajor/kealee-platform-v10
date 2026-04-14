@@ -16,4 +16,5 @@ cmds = [
 ]
 
 [start]
-cmd = "node dist/index.js"
+# Run prisma migrate deploy before starting — idempotent, fail-soft if DB unavailable
+cmd = "(pnpm --filter @kealee/database db:migrate:deploy 2>&1 || echo '[migrate] skipped — DB not ready') && node dist/index.js"
