@@ -9,7 +9,7 @@
  *                   PermitBot blocks unless EstimateBot run is COMPLETED
  *   - RAG context injected into PermitBot system prompt (jurisdiction data)
  *   - CTC 2026 pricing injected into EstimateBot system prompt
- *   - KeaBotRun / DesignConcept / EstimateLineItem / PermitCase DB persistence
+ *   - KeaBotRun / BotDesignConcept / BotEstimateLineItem / PermitCase DB persistence
  *     (all DB calls are wrapped in try/catch — chain works without DB if needed)
  */
 
@@ -532,7 +532,7 @@ Generate the MEP system design and full BOM for this project.`
     const prisma = getPrisma()
     if (prisma) {
       try {
-        await prisma.designConcept.create({
+        await prisma.botDesignConcept.create({
           data: {
             projectId:             input.projectId,
             botRunId:              runId,
@@ -734,7 +734,7 @@ Generate the full 2026 CTC line-item estimate.`
     const prisma = getPrisma()
     if (prisma && lineItems.length > 0) {
       try {
-        await prisma.estimateLineItem.createMany({
+        await prisma.botEstimateLineItem.createMany({
           data: lineItems.map((li, i) => ({
             id:              randomUUID(),
             projectId:       input.projectId,

@@ -16916,8 +16916,8 @@ model KeaBotRun {
   updatedAt DateTime @updatedAt
 
   /// Relations to typed output records
-  designConcept  DesignConcept?
-  estimateItems  EstimateLineItem[]
+  designConcept  BotDesignConcept?
+  estimateItems  BotEstimateLineItem[]
   permitCase     PermitCase?
 
   @@index([projectId])
@@ -16928,7 +16928,7 @@ model KeaBotRun {
 }
 
 /// Structured output from DesignBot
-model DesignConcept {
+model BotDesignConcept {
   id        String @id @default(uuid())
   projectId String
   botRunId  String @unique
@@ -16962,11 +16962,11 @@ model DesignConcept {
   botRun KeaBotRun @relation(fields: [botRunId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
-  @@map("design_concepts")
+  @@map("bot_design_concepts")
 }
 
 /// Individual line item from EstimateBot output
-model EstimateLineItem {
+model BotEstimateLineItem {
   id        String @id @default(uuid())
   projectId String
   botRunId  String
@@ -16998,7 +16998,7 @@ model EstimateLineItem {
   @@index([projectId])
   @@index([botRunId])
   @@index([category])
-  @@map("estimate_line_items")
+  @@map("bot_estimate_line_items")
 }
 
 /// Structured output from PermitBot
