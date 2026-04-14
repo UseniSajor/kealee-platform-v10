@@ -1014,6 +1014,11 @@ const start = async () => {
       await fastify.register(botsRoutes, { prefix: '/bots' })
     })
 
+    await safeRegisterBlock('KeaBots chain routes (Design→Estimate→Permit)', async () => {
+      const { botsChainRoutes } = await import('./modules/bots/bots.chain.routes')
+      await fastify.register(botsChainRoutes, { prefix: '/bots' })
+    })
+
     // ══════════════════════════════════════════════════════════════
     // Opportunities Phase 06 — Interest list, contracts, apprenticeships
     // ══════════════════════════════════════════════════════════════

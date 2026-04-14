@@ -1,6 +1,6 @@
 // ============================================================
 // CTC-to-Marketplace Crosswalk
-// Maps CTC Gordian task numbers to Kealee marketplace assembly codes
+// Maps CTC task numbers to Kealee marketplace assembly codes
 // ============================================================
 //
 // The CTC uses task numbers like "09-010" (Interior Painting).
@@ -116,7 +116,7 @@ export async function findClosestMarketplaceAssembly(
     const byCsi = await prisma.assembly.findMany({
       where: {
         csiCode: { startsWith: csiCode.substring(0, 5) },
-        sourceDatabase: { not: 'CTC-Gordian-MD-DGS-2023' },
+        sourceDatabase: { not: 'CTC-2026' },
         isActive: true,
       },
       take: 10,
@@ -131,7 +131,7 @@ export async function findClosestMarketplaceAssembly(
       const byName = await prisma.assembly.findMany({
         where: {
           name: { contains: keyword, mode: 'insensitive' },
-          sourceDatabase: { not: 'CTC-Gordian-MD-DGS-2023' },
+          sourceDatabase: { not: 'CTC-2026' },
           isActive: true,
         },
         take: 5,
@@ -183,7 +183,7 @@ export async function buildFullCrosswalk(
   costDatabaseId?: string,
 ): Promise<CrosswalkEntry[]> {
   const where: any = {
-    sourceDatabase: 'CTC-Gordian-MD-DGS-2023',
+    sourceDatabase: 'CTC-2026',
     isActive: true,
   };
   if (costDatabaseId) where.costDatabaseId = costDatabaseId;

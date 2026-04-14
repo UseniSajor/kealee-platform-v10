@@ -1,9 +1,9 @@
 /**
  * CTC (Construction Task Catalog) Parser Service
  *
- * Specialized parser for the Gordian CTC format used by MD DGS JOC contracts.
+ * Specialized parser for the CTC format used in DMV JOC contracts.
  * Handles CSI MasterFormat division boundaries, modifier tasks, and assembly
- * precedence specific to the CTC's 3500-page structure.
+ * precedence specific to the CTC's multi-page structure.
  *
  * Flow:
  * 1. Extract text from CTC PDF via pdf-parse
@@ -201,10 +201,10 @@ export function splitIntoBatches(text: string, targetPagesPerBatch = 12): string
 }
 
 // ---------------------------------------------------------------------------
-// AI Extraction — CTC-specific prompt for Gordian format
+// AI Extraction — CTC-specific prompt
 // ---------------------------------------------------------------------------
 
-const CTC_SYSTEM_PROMPT = `You are a construction cost data extraction expert specializing in the Gordian Construction Task Catalog (CTC) format used for Job Order Contracting (JOC).
+const CTC_SYSTEM_PROMPT = `You are a construction cost data extraction expert specializing in the Construction Task Catalog (CTC) format used for Job Order Contracting (JOC).
 
 You analyze text extracted from CTC PDF pages and convert task entries into structured JSON.
 
@@ -320,7 +320,7 @@ export async function extractAllCTCTasks(
       divisions: [],
       tasks: [],
       metadata: {
-        source: 'CTC-Gordian-MD-DGS-2023',
+        source: 'CTC-2026',
         version: '1.0',
         region: 'MD-DC-VA',
         totalPages: 0,
@@ -369,7 +369,7 @@ export async function extractAllCTCTasks(
     divisions: Array.from(divisionMap.values()).sort((a, b) => a.code.localeCompare(b.code)),
     tasks: allTasks,
     metadata: {
-      source: 'CTC-Gordian-MD-DGS-2023',
+      source: 'CTC-2026',
       version: '1.0',
       region: 'MD-DC-VA',
       totalPages: 0, // Will be set by caller
@@ -430,7 +430,7 @@ export async function importCTCTasks(
           ],
           notes: task.notes || null,
           metadata: {
-            source: 'CTC-Gordian-MD-DGS-2023',
+            source: 'CTC-2026',
             taskNumber: task.taskNumber,
             isModifier: task.isModifier,
             modifierOf: task.modifierOf || null,
@@ -440,7 +440,7 @@ export async function importCTCTasks(
           // CTC-specific fields
           ctcTaskNumber: task.taskNumber,
           ctcModifierOf: task.isModifier ? task.modifierOf : null,
-          sourceDatabase: 'CTC-Gordian-MD-DGS-2023',
+          sourceDatabase: 'CTC-2026',
         },
       })
       assembliesImported++
@@ -490,7 +490,7 @@ export async function processCTCImportJob(
       progress: 75,
       aiTradeCategory: 'construction-task-catalog',
       aiProjectType: 'joc',
-      aiMethodology: 'gordian-ctc',
+      aiMethodology: 'ctc-2026',
       aiConfidence: 0.85,
     })
 
@@ -501,18 +501,18 @@ export async function processCTCImportJob(
     if (!costDatabaseId) {
       const db = await (prisma as any).costDatabase.create({
         data: {
-          name: 'Construction Task Catalog (CTC) - MD DGS',
-          description: 'Gordian Construction Task Catalog for Maryland Department of General Services Job Order Contracting',
+          name: 'Construction Task Catalog (CTC) — DMV 2026',
+          description: 'Construction Task Catalog for DMV region Job Order Contracting. Unit prices reflect 2026 DMV market rates.',
           region: 'MD-DC-VA',
           type: 'IMPORTED',
           tier: 'STANDARD',
           version: new Date().toISOString().split('T')[0],
-          source: 'CTC-Gordian-MD-DGS-2023',
+          source: 'CTC-2026',
           isActive: true,
           isStandard: true,
           tradeCategory: 'multi-trade',
-          projectType: 'government-joc',
-          methodology: 'gordian-ctc',
+          projectType: 'joc',
+          methodology: 'ctc-2026',
           visibility: 'ORG_ONLY',
           reviewStatus: 'DRAFT',
         },

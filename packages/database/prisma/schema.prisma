@@ -16614,3 +16614,426 @@ model BusinessCalendar {
   @@index([date])
   @@map("business_calendar")
 }
+
+// =============================================================================
+// KEALEE SERVICE CATALOG — 2026 CTC-Based Pricing
+// Every product and deliverable Kealee offers, priced against 2026 DMV CTC data.
+// =============================================================================
+
+/// High-level categories matching products.ts categories
+enum KealeeServiceCategory {
+  AI_DESIGN          // Concept design + floor plan reports
+  PERMITS            // Permit research, filing, coordination, expediting
+  ESTIMATION         // Cost estimates and certified estimates
+  CONSTRUCTION_MGMT  // PM Advisory, PM Oversight, Owner's Rep
+  SPECIALTY          // Water mitigation, historic renovation, specialty assessments
+  BUNDLE             // Combined multi-service packages
+}
+
+/// Tier type within a service — maps to the packages[] in products.ts
+enum KealeeServiceTierType {
+  STARTER      // Entry-level / AI-only / research
+  STANDARD     // Mid-range, most common (popular tier)
+  ADVANCED     // Full design / detailed / professional
+  PREMIUM      // Certified / licensed / full-service
+  ENTERPRISE   // Custom scope / large project / contact-us
+}
+
+/// How the service is delivered
+enum ServiceDeliveryMode {
+  DIGITAL      // AI-generated, fully automated
+  STAFF_REVIEW // AI + human staff review
+  PROFESSIONAL // Licensed professional involvement
+  ON_SITE      // Requires physical site visit
+  HYBRID       // Mix of digital + professional
+}
+
+/// Basis used for calculating the 2026 CTC-justified price
+enum CTCPricingBasis {
+  FLAT_FEE          // Fixed price regardless of project size
+  PER_SQFT          // Price scales proportionally with sqft
+  PCT_OF_CTC        // Percentage of underlying project CTC
+  HOURLY            // Billed hourly (professional services)
+  MONTHLY_RETAINER  // Per calendar month (ongoing services)
+  CUSTOM            // Requires custom quote
+}
+
+/// Canonical Kealee Service Catalog — one record per product/service offering
+model KealeeService {
+  id       String @id @default(uuid())
+  slug     String @unique   // matches products.ts slug e.g. "kitchen-remodel"
+  name     String
+  tagline  String
+  category KealeeServiceCategory
+  deliveryMode ServiceDeliveryMode
+
+  // --- 2026 Pricing ---
+  pricingBasis   CTCPricingBasis
+  basePriceCents Int?   // Lowest published price (null = custom only)
+  maxPriceCents  Int?   // Highest published price (null = open-ended)
+
+  // --- CTC context (what underlying projects this service addresses) ---
+  ctcBasisProjectType String?  // e.g. "kitchen-remodel", "adu", "whole-home"
+  ctcBasisSqft        Int?     // Representative sqft used to price this service
+  ctcTotalMinCents    Int?     // Min CTC of projects this tier is designed for
+  ctcTotalMaxCents    Int?     // Max CTC of projects this tier is designed for
+
+  // --- Delivery economics (2026 DMV rates) ---
+  deliveryHoursMin  Float?   // Minimum staff hours to deliver
+  deliveryHoursMax  Float?   // Maximum staff hours to deliver
+  staffRateUsd      Float?   // 2026 blended staff rate ($/hr)
+  cogsMinCents      Int?     // Minimum COGS to deliver (in cents)
+  cogsMaxCents      Int?     // Maximum COGS to deliver (in cents)
+
+  // --- Agent mapping ---
+  ragAgents         String[] // RAG agents used: "land", "design", "permit", "contractor"
+  conversionProduct String?  // Agent conversion key: "PERMIT_PACKAGE", "DESIGN_CONCEPT_VALIDATION"
+
+  // --- Service metadata ---
+  turnaroundDaysMin Int?
+  turnaroundDaysMax Int?
+  isBundle          Boolean  @default(false)
+  isMostPopular     Boolean  @default(false)
+  isActive          Boolean  @default(true)
+  isVisible         Boolean  @default(true)
+  stripeEnvVar      String?  // e.g. "STRIPE_PRICE_KITCHEN_REMODEL"
+  permitRequired    String?  // "always" | "sometimes" | "rarely"
+  forWho            String?
+  notes             String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tiers        KealeeServiceTier[]
+  ctcSnapshots CTCPricingSnapshot[]
+  orders       KealeeServiceOrder[]
+
+  @@index([category])
+  @@index([slug])
+  @@index([isActive, isVisible])
+  @@map("kealee_services")
+}
+
+/// Individual pricing tier within a service (maps to packages[] in products.ts)
+model KealeeServiceTier {
+  id        String               @id @default(uuid())
+  serviceId String
+  tierType  KealeeServiceTierType
+  name      String               // e.g. "AI Kitchen Concept", "Advanced Design", "Full Package"
+  description String?
+
+  // --- 2026 Pricing (in cents) ---
+  priceCents    Int?   // null = contact us / custom quote
+  priceMinCents Int?   // For range-priced tiers
+  priceMaxCents Int?   // For range-priced tiers
+
+  // --- 2026 CTC Delivery Cost Analysis ---
+  // What Kealee spends to deliver this tier (2026 DMV rates)
+  cogsLaborHours    Float?   // Staff hours
+  cogsLaborRateUsd  Float?   // 2026 blended staff rate
+  cogsLaborCents    Int?     // Labor COGS in cents
+  cogsOverheadCents Int?     // Platform + ops overhead
+  cogsTotalCents    Int?     // Total COGS
+  grossMarginPct    Float?   // (price - COGS) / price
+
+  // --- 2026 Project CTC context ---
+  // Range of project CTCs this tier is typically ordered for
+  projectCtcMinCents  Int?   // Min project CTC (cents)
+  projectCtcMaxCents  Int?   // Max project CTC (cents)
+  kealeeAsPctOfCtc    Float? // Our service fee as % of total project CTC
+
+  // --- Tier logistics ---
+  turnaroundDays  Int?
+  roundsIncluded  Int?
+  isPopular       Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  stripeEnvVar    String?
+  ctaLabel        String?  // Button label e.g. "Start Kitchen Concept"
+  intakeHref      String?  // Intake path e.g. "/intake/kitchen_remodel"
+
+  // What's included (JSON array of strings)
+  includes Json?   // ["3 layout options", "Permit scope", ...]
+
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  service     KealeeService      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  ctcSnapshot CTCPricingSnapshot?
+  orders      KealeeServiceOrder[]
+
+  @@index([serviceId])
+  @@index([tierType])
+  @@index([isActive])
+  @@map("kealee_service_tiers")
+}
+
+/// CTC calculation snapshot that justifies a service or tier price
+/// Computed from the 2026 CTCCalculator using representative project parameters
+model CTCPricingSnapshot {
+  id        String  @id @default(uuid())
+  serviceId String
+  tierId    String? @unique   // null = service-level snapshot, set = tier-level
+
+  // --- Input parameters ---
+  projectType        String
+  jurisdiction       String   @default("Montgomery County, MD")
+  representativeSqft Int
+
+  // --- 2026 CTC components (USD) ---
+  hardCostBase     Float   // Raw hard cost from 2023 RAG data
+  inflationFactor  Float   @default(1.13)
+  hardCost2026     Float   // hardCostBase × 1.13
+  costPerSqft2026  Float   // 2026 $/sqft
+  softCost         Float
+  riskCost         Float
+  executionCost    Float
+  totalCTC         Float
+  ctcRangeLow      Float   // totalCTC × 0.85
+  ctcRangeHigh     Float   // totalCTC × 1.20
+
+  // --- Kealee service economics ---
+  deliveryHours    Float?  // Staff-hours to deliver
+  deliveryRateUsd  Float?  // 2026 blended rate ($/hr)
+  cogsTotalUsd     Float?  // Total COGS
+  kaleePriceUsd    Float?  // Published price
+  grossMarginPct   Float?  // (price - COGS) / price
+  kaleePctOfCtc    Float?  // Our fee as % of total project CTC
+
+  // --- Metadata ---
+  inflationNote String? // "2023 base × 1.13 (cumulative DMV 2023→2026)"
+  dataSource    String  @default("RAG-DMV-2026")
+  computedAt    DateTime @default(now())
+
+  service KealeeService      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  tier    KealeeServiceTier? @relation(fields: [tierId], references: [id])
+
+  @@index([serviceId])
+  @@index([projectType])
+  @@map("ctc_pricing_snapshots")
+}
+
+/// Service order — created when a client purchases a Kealee service
+model KealeeServiceOrder {
+  id        String  @id @default(uuid())
+  serviceId String
+  tierId    String?
+  userId    String?
+  projectId String?
+
+  // --- Order identifiers ---
+  orderNumber String @unique @default(cuid())
+  status      String @default("PENDING")
+  // PENDING | PAID | IN_PROGRESS | DELIVERED | CANCELLED | REFUNDED
+
+  // --- Pricing at time of order ---
+  priceCents Int
+  currency   String @default("USD")
+
+  // --- Stripe ---
+  stripePaymentIntentId String?
+  stripeSessionId       String?
+  paidAt                DateTime?
+
+  // --- Delivery ---
+  deliveredAt DateTime?
+  deliveryUrl String?
+  assignedTo  String?   // Staff member handling delivery
+
+  // --- Project context captured at order time ---
+  jurisdiction String?
+  projectType  String?
+  sqft         Int?
+  address      String?
+
+  // --- CTC snapshot at order time (denormalized for audit) ---
+  ctcSnapshot Json?    // {totalCTC, hardCost, softCost, riskCost, executionCost, range}
+
+  // --- Notes ---
+  clientNotes  String?
+  internalNotes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  service KealeeService      @relation(fields: [serviceId], references: [id])
+  tier    KealeeServiceTier? @relation(fields: [tierId], references: [id])
+
+  @@index([serviceId])
+  @@index([tierId])
+  @@index([userId])
+  @@index([projectId])
+  @@index([status])
+  @@index([orderNumber])
+  @@map("kealee_service_orders")
+}
+
+// =============================================================================
+// KEABOT CHAIN MODELS — DesignBot → EstimateBot → PermitBot
+// Tracks execution of the AI bot chain with Claude prompt caching metrics.
+// =============================================================================
+
+/// Execution record for a single bot run in the chain
+model KeaBotRun {
+  id          String   @id @default(uuid())
+  projectId   String
+  /// "DesignBot" | "EstimateBot" | "PermitBot"
+  botType     String
+  /// PENDING | IN_PROGRESS | COMPLETED | FAILED
+  status      String   @default("PENDING")
+
+  /// Chain position (1=Design, 2=Estimate, 3=Permit)
+  chainOrder  Int      @default(1)
+  /// ID of the upstream run this depends on
+  parentRunId String?
+
+  /// Input payload sent to the bot
+  inputData   Json
+
+  /// Output payload from the bot (null until completed)
+  outputData  Json?
+
+  /// Claude model used
+  modelUsed   String?
+  inputTokens  Int?
+  outputTokens Int?
+
+  /// Prompt caching metrics: {cacheCreationTokens, cacheReadTokens, cacheHit, savedTokens}
+  cacheMetrics Json?
+
+  /// Estimated API cost in USD
+  estimatedCostUsd Float?
+
+  /// Timing
+  startedAt   DateTime?
+  completedAt DateTime?
+  durationMs  Int?
+
+  /// Error details if status = FAILED
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Relations to typed output records
+  designConcept  DesignConcept?
+  estimateItems  EstimateLineItem[]
+  permitCase     PermitCase?
+
+  @@index([projectId])
+  @@index([botType])
+  @@index([status])
+  @@index([parentRunId])
+  @@map("keabot_runs")
+}
+
+/// Structured output from DesignBot
+model DesignConcept {
+  id        String @id @default(uuid())
+  projectId String
+  botRunId  String @unique
+
+  /// Project context
+  projectType  String
+  scope        String?
+  location     String?
+  sqft         Int?
+  budgetUsd    Float?
+
+  /// MEP system design: {irrigation, lighting, drainage, electrical, hvac, plumbing}
+  mepSystem    Json
+
+  /// Bill of Materials: [{item, quantity, unit, estimatedCost, ctcTaskNumber, csiCode}]
+  bom          Json
+
+  /// Kealee service fee at time of concept generation
+  aiConceptCostUsd   Float
+  /// Full project construction CTC from RAG + calculator
+  estimatedTotalCostUsd Float
+
+  /// CTC breakdown snapshot
+  ctcBreakdown Json?  // {hardCost, softCost, riskCost, executionCost, total, range}
+
+  /// How many BOM line items
+  bomItemCount Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  botRun KeaBotRun @relation(fields: [botRunId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("design_concepts")
+}
+
+/// Individual line item from EstimateBot output
+model EstimateLineItem {
+  id        String @id @default(uuid())
+  projectId String
+  botRunId  String
+
+  /// "labor" | "materials" | "equipment" | "subcontractor" | "overhead"
+  category    String
+  description String
+  csiCode     String?
+  ctcTaskNumber String?  // Links to CTC catalog task
+
+  /// Quantities
+  quantity Float
+  unit     String   // "SF", "LF", "CY", "HR", "EA", "MO"
+
+  /// 2026 DMV pricing
+  unitCost        Float
+  inflationFactor Float  @default(1.13)
+  subtotal        Float  // quantity × unitCost × inflationFactor
+
+  /// Labor detail
+  laborHours Float?
+  laborRate  Float?   // 2026 DMV blended rate
+
+  sortOrder Int @default(0)
+  createdAt DateTime @default(now())
+
+  botRun KeaBotRun @relation(fields: [botRunId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([botRunId])
+  @@index([category])
+  @@map("estimate_line_items")
+}
+
+/// Structured output from PermitBot
+model PermitCase {
+  id        String @id @default(uuid())
+  projectId String
+  botRunId  String @unique
+
+  /// Jurisdiction identification
+  zipCode     String
+  jurisdiction String   // e.g. "prince-george-county-md"
+  state       String   // "MD" | "VA" | "DC"
+  county      String?
+  city        String?
+
+  /// Required permits: [{permitType, agency, estimatedFee, processingDays, requiresPlans, requiresPE, notes}]
+  permits     Json
+
+  /// Aggregated totals
+  totalPermitCostUsd  Float
+  totalProcessingDays Int
+
+  /// "IDENTIFIED" | "FILED" | "APPROVED" | "DENIED" | "WITHDRAWN"
+  status String @default("IDENTIFIED")
+
+  /// Cache hit info from PermitBot's jurisdiction system prompt
+  jurisdictionCacheHit Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  botRun KeaBotRun @relation(fields: [botRunId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([jurisdiction])
+  @@index([zipCode])
+  @@map("permit_cases")
+}
