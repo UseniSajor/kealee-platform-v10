@@ -5,9 +5,38 @@
  * Can be called on-demand or via nightly job.
  */
 
-import { ingestDocument } from '@kealee/ai/rag/vector-store.js'
 import { buildAllIngestPayloads } from './document-processor.js'
-import type { IngestOptions } from '@kealee/ai/rag/types.js'
+
+// Inline types — avoids runtime dependency on @kealee/ai which is not installed here
+interface IngestOptions {
+  sourceType: string
+  sourceId: string
+  title: string
+  content: string
+  jurisdiction?: string
+  serviceType?: string
+  phase?: string
+  projectId?: string
+  chunkSize?: number
+  chunkOverlap?: number
+}
+
+/**
+ * Lazy-load the vector store — gracefully degrade if @kealee/ai is not built/available
+ */
+async function ingestDocument(opts: IngestOptions): Promise<void> {
+  try {
+    // @ts-ignore — @kealee/ai is optional; graceful fallback if not installed
+    const mod = await import('@kealee/ai/rag/vector-store.js')
+    await mod.ingestDocument(opts)
+  } catch (err: any) {
+    const isNotFound = err.code === 'MODULE_NOT_FOUND' || String(err.message).includes('Cannot find module')
+    if (isNotFound) {
+      throw new Error(`[RAG] vector-store unavailable (${err.code ?? 'MODULE_NOT_FOUND'}): skipping DB ingest for ${opts.sourceId}`)
+    }
+    throw err
+  }
+}
 
 export interface IngestionResult {
   total: number
