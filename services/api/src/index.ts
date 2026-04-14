@@ -190,7 +190,7 @@ import { initTracing } from '@kealee/observability';
 initTracing('kealee-api');
 
 import { ingestAllSeeds } from '@kealee/core-llm';
-import { loadRAGData, getRAGStatus } from '../../ai-orchestrator/src/retrieval/rag-retriever';
+import { loadRAGData, getRAGStatus } from './lib/orchestrator/retrieval/rag-retriever';
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'

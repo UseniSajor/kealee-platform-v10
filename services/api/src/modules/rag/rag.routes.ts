@@ -18,7 +18,7 @@ import {
   retrieveCostContext,
   retrieveWorkflowContext,
   getRAGStatus,
-} from "../../../../ai-orchestrator/src/retrieval/rag-retriever";
+} from "../../lib/orchestrator/retrieval/rag-retriever";
 
 export async function ragRoutes(fastify: FastifyInstance) {
   // ── DB ingestion trigger (unchanged) ─────────────────────────────────────

@@ -16,7 +16,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { randomUUID } from 'crypto'
 
-// ── External imports (cross-service, rootDir removed) ─────────────────────────
+// ── Orchestrator imports (consolidated in lib/orchestrator/) ──────────────────
 import {
   loadRAGData,
   isRAGLoaded,
@@ -25,11 +25,11 @@ import {
   retrieveZoningContext,
   type PermitRecord,
   type CostRecord,
-} from '../../../../ai-orchestrator/src/retrieval/rag-retriever'
+} from '../../lib/orchestrator/retrieval/rag-retriever'
 import {
   calculateCTC,
   type CTCInput,
-} from '../../../../ai-orchestrator/src/costing/ctc-calculator'
+} from '../../lib/orchestrator/costing/ctc-calculator'
 
 // ── Lazy Prisma client ────────────────────────────────────────────────────────
 

@@ -138,7 +138,7 @@ vi.mock('@anthropic-ai/sdk', () => ({
 
 // ── Mock RAG retriever ────────────────────────────────────────────────────────
 
-vi.mock('../../../../ai-orchestrator/src/retrieval/rag-retriever', () => ({
+vi.mock('../../lib/orchestrator/retrieval/rag-retriever', () => ({
   loadRAGData:           vi.fn(),
   isRAGLoaded:           vi.fn().mockReturnValue(true),
   retrievePermitContext: vi.fn().mockReturnValue([
@@ -174,7 +174,7 @@ vi.mock('../../../../ai-orchestrator/src/retrieval/rag-retriever', () => ({
 
 // ── Mock CTC calculator ───────────────────────────────────────────────────────
 
-vi.mock('../../../../ai-orchestrator/src/costing/ctc-calculator', () => ({
+vi.mock('../../lib/orchestrator/costing/ctc-calculator', () => ({
   calculateCTC: vi.fn().mockReturnValue({
     total:         285000,
     range:         [242250, 342000] as [number, number],

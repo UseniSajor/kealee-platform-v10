@@ -13,11 +13,11 @@
  */
 
 import type { FastifyInstance } from "fastify";
-import { executeLandAgent }       from "../../../../ai-orchestrator/src/agents/land-agent";
-import { executeDesignAgent }     from "../../../../ai-orchestrator/src/agents/design-agent";
-import { executePermitAgent }     from "../../../../ai-orchestrator/src/agents/permit-agent";
-import { executeContractorAgent } from "../../../../ai-orchestrator/src/agents/contractor-agent";
-import { getRAGStatus }           from "../../../../ai-orchestrator/src/retrieval/rag-retriever";
+import { executeLandAgent }       from "../../lib/orchestrator/agents/land-agent";
+import { executeDesignAgent }     from "../../lib/orchestrator/agents/design-agent";
+import { executePermitAgent }     from "../../lib/orchestrator/agents/permit-agent";
+import { executeContractorAgent } from "../../lib/orchestrator/agents/contractor-agent";
+import { getRAGStatus }           from "../../lib/orchestrator/retrieval/rag-retriever";
 
 export async function agentsRoutes(fastify: FastifyInstance) {
   // ── Health check ──────────────────────────────────────────────────────────
