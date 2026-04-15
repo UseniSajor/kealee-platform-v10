@@ -27,9 +27,9 @@ export default function CoreServicesSection() {
               <h3>Upload photos.<br />Get a floor plan in 24 hours.</h3>
               <div className="exec">You send photos. We send back a concept layout, zoning check, structural risk flag, cost band, and permit scope. Staff-reviewed before delivery.</div>
               <div className="tl">
-                <div className="tr pop"><span className="trn b">Design + Validation <span className="pp">Start here</span></span><span className="trp">$395</span></div>
-                <div className="tr"><span className="trn">Advanced AI Concept — 3 options</span><span className="trp">$495</span></div>
-                <div className="tr"><span className="trn">Full Design Package</span><span className="trp">starting at $4,499</span></div>
+                <div className="tr pop"><span className="trn b">AI Concept Report <span className="pp">Start here</span></span><span className="trp">$475</span></div>
+                <div className="tr"><span className="trn">Advanced AI Concept — 3 options</span><span className="trp">$595</span></div>
+                <div className="tr"><span className="trn">Full Design Package</span><span className="trp">starting at $5,395</span></div>
               </div>
               <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>Pre-design concept only — not a permit-ready plan. <Link href="/design-services" style={{ color: 'var(--o)' }}>Need permit-ready plans?</Link></p>
               <Link href="/concept-engine" className="scta">Start your design</Link>
@@ -52,34 +52,33 @@ export default function CoreServicesSection() {
               <div className="tl">
                 <div className="tr"><span className="trn">Permit Guidance + Checklist</span><span className="trp">Free</span></div>
                 <div className="tr"><span className="trn">Simple Permit Filing</span><span className="trp">$149</span></div>
-                <div className="tr pop"><span className="trn b">Permit Package <span className="pp">Most common</span></span><span className="trp">$950</span></div>
-                <div className="tr"><span className="trn">Permit Coordination</span><span className="trp">$2,750</span></div>
-                <div className="tr"><span className="trn">Permit Expediting</span><span className="trp">Starting at $5,500</span></div>
+                <div className="tr pop"><span className="trn b">Permit Package <span className="pp">Most common</span></span><span className="trp">$1,095</span></div>
+                <div className="tr"><span className="trn">Permit Coordination</span><span className="trp">$1,195</span></div>
               </div>
               <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>Requires existing plans or architectural documents. <Link href="/design-services" style={{ color: 'var(--o)' }}>Get plans first →</Link></p>
               <Link href="/permits" className="scta">View permit services</Link>
             </div>
           </div>
 
-          {/* BUILD */}
+          {/* COST ESTIMATES */}
           <div className="sc">
             <div className="scimg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=700&q=60&auto=format&fit=crop" alt="Build" />
-              <button className="scvp" onClick={() => openModal({ tag: 'Build your project', title: 'Build your project — what the platform tracks', description: 'Every milestone, document, pay application, and site photo lives in your project dashboard. You approve each milestone before any payment releases. Your contractor cannot receive funds without your sign-off.', thumbUrl: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=900&q=60&auto=format&fit=crop' })}>
+              <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=700&q=60&auto=format&fit=crop" alt="Cost Estimates" />
+              <button className="scvp" onClick={() => openModal({ tag: 'Cost estimation', title: 'Cost Estimates — how we calculate your budget', description: 'We generate detailed line-item estimates using RSMeans cost data adjusted for 2026 DMV construction inflation. Every estimate includes a hard cost breakdown, soft cost summary, risk buffer, and contractor overhead. Know what your project should cost before you take a single bid.', thumbUrl: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=900&q=60&auto=format&fit=crop' })}>
                 <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="white" /></svg>
               </button>
             </div>
             <div className="scb">
-              <div className="sctag">Build your project</div>
-              <h3>Every milestone, payment,<br />and document in one place.</h3>
-              <div className="exec">Your contractor cannot receive payment until you approve the milestone. Every document, inspection photo, and pay application is logged automatically.</div>
+              <div className="sctag">Cost estimation</div>
+              <h3>Know your budget<br />before you hire anyone.</h3>
+              <div className="exec">Line-item estimates using RSMeans data with 2026 DMV inflation adjustment. Hard cost, soft cost, risk buffer, and contractor overhead — all broken out so you can evaluate every bid.</div>
               <div className="tl">
-                <div className="tr"><span className="trn">Self-managed dashboard</span><span className="trp">Free</span></div>
-                <div className="tr pop"><span className="trn b">PM Advisory <span className="pp">Most common</span></span><span className="trp">$950</span></div>
-                <div className="tr"><span className="trn">PM Oversight</span><span className="trp">$2,950</span></div>
+                <div className="tr pop"><span className="trn b">Detailed Cost Estimate <span className="pp">Most common</span></span><span className="trp">$695</span></div>
+                <div className="tr"><span className="trn">Certified Estimate — lender ready</span><span className="trp">$2,195</span></div>
+                <div className="tr"><span className="trn">PM Advisory — during construction</span><span className="trp">Starting at $1,150</span></div>
               </div>
-              <Link href="/products/pm-advisory" className="scta">View PM services</Link>
+              <Link href="/products/detailed-estimate" className="scta">View estimate services</Link>
             </div>
           </div>
 

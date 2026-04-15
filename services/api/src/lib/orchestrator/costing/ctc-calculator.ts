@@ -37,9 +37,10 @@ const RANGE_HIGH_FACTOR          = 1.20;
 /**
  * 2026 DMV cumulative inflation adjustment applied to all base cost records.
  * Compound: +7.0% (2023→2024) × +4.5% (2024→2025) × +3.5% (2025→2026)
- * = 1.07 × 1.045 × 1.035 ≈ 1.157 → conservative factor applied: 1.13
+ * plus continued materials/labor market tightening in DMV metro.
+ * Applied factor: 1.35 (35% cumulative above 2023 RSMeans base costs)
  */
-const INFLATION_FACTOR_2026 = 1.13;
+const INFLATION_FACTOR_2026 = 1.35;
 
 // ── Main function ─────────────────────────────────────────────────────────────
 
@@ -160,18 +161,18 @@ export function formatCurrency(n: number): string {
 export function ctcCTAAndProduct(totalCTC: number): { cta: string; conversion_product: string } {
   if (totalCTC >= 500_000) {
     return {
-      cta: "Order Permit Package + PM Oversight — $3,749",
+      cta: "Order Permit Package + PM Oversight — $4,590",
       conversion_product: "PERMIT_PACKAGE_PM",
     };
   }
   if (totalCTC >= 200_000) {
     return {
-      cta: "Order Permit Package — $799",
+      cta: "Order Permit Package — $1,095",
       conversion_product: "PERMIT_PACKAGE",
     };
   }
   return {
-    cta: "Order Permit Package — $799",
-    conversion_product: "PERMIT_PACKAGE",
+    cta: "Get AI Concept + Permit — $1,570",
+    conversion_product: "AI_CONCEPT_PERMIT_BUNDLE",
   };
 }

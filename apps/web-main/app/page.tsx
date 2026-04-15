@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
-import HeroSection           from '@/components/sections/HeroSection'
-import ProjectTypesSection   from '@/components/sections/ProjectTypesSection'
-import CoreServicesSection   from '@/components/sections/CoreServicesSection'
+import HeroSection                from '@/components/sections/HeroSection'
+import ConceptPermitEstimateSection from '@/components/sections/ConceptPermitEstimateSection'
+import ProjectTypesSection         from '@/components/sections/ProjectTypesSection'
+import CoreServicesSection         from '@/components/sections/CoreServicesSection'
 import FeaturedProductsSection from '@/components/sections/FeaturedProductsSection'
 import MarketplaceTeaserSection from '@/components/sections/MarketplaceTeaserSection'
 import MilestonePaySection   from '@/components/sections/MilestonePaySection'
@@ -21,6 +22,7 @@ export default function HomePage() {
   return (
     <>
       <HeroSection />
+      <ConceptPermitEstimateSection />
       <ProjectTypesSection />
       <CoreServicesSection />
       <FeaturedProductsSection />

@@ -47,7 +47,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'whole-home',
     name: 'Whole Home Renovation',
     tagline: 'End-to-end concept design for full home renovations — floor plans, structural changes, every room.',
-    price: 'Starting at $585',
+    price: 'Starting at $695',
     priceNote: 'concept report · full-service available',
     label: 'AI design engine',
     badge: 'Most popular',
@@ -72,7 +72,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'AI Whole Home Concept',
-        price: '$585',
+        price: '$695',
         turnaround: '7–10 business days',
         rounds: '1 feedback round',
         desc: 'Floor plan direction, scope summary, material palette, and rough cost range.',
@@ -83,7 +83,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'Advanced Design',
-        price: '$1,200',
+        price: '$1,450',
         turnaround: '2–3 weeks',
         rounds: 'Up to 3 feedback rounds',
         desc: '3D views, detailed floor plans, and a full contractor-ready scope package.',
@@ -94,7 +94,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'Full Design Package',
-        price: 'From $6,500',
+        price: 'From $7,795',
         turnaround: '4–6 weeks',
         rounds: 'Up to 5 rounds',
         desc: 'Permit-ready drawing set with structural coordination and full project specifications.',
@@ -115,7 +115,7 @@ export const PRODUCTS: Record<string, Product> = {
     ctaHref: '/intake/whole_home_concept',
     stripeEnvVar: 'STRIPE_PRICE_CONCEPT_VALIDATION',
     faq: [
-      { q: 'How is whole-home renovation priced?', a: 'Start with a $585 concept report. Permit filing and contractor matching are separate optional steps. Total platform cost typically runs $2,000–$5,000 on a $100K+ project.' },
+      { q: 'How is whole-home renovation priced?', a: 'Start with a $695 concept report. Permit filing and contractor matching are separate optional steps. Total platform cost typically runs $2,000–$5,000 on a $100K+ project.' },
       { q: 'Do I need a general contractor or individual trades?', a: 'Projects touching 3+ trades are best run by a general contractor. We help you evaluate GC vs. trade-direct approaches in your concept report.' },
       { q: 'How long does a whole-home renovation take?', a: '1,500–2,500 sq ft whole-home: 6–12 months from permit to closeout. Larger homes with structural changes: 12–18 months.' },
       { q: 'Can I live in the house during renovation?', a: 'Usually possible for phased renovations. Full gut renovations often require temporary relocation for 3–6 months. We flag this in your concept report.' },
@@ -129,7 +129,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'kitchen-remodel',
     name: 'Kitchen Remodel',
     tagline: 'AI concept with multiple layout options, permit scope, and cost band — delivered in 24 hours.',
-    price: 'Starting at $395',
+    price: 'Starting at $475',
     priceNote: 'one-time · no subscription',
     label: 'AI design engine',
     badge: 'Most common project',
@@ -153,7 +153,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'AI Kitchen Concept',
-        price: '$395',
+        price: '$475',
         turnaround: '24–48 hours',
         rounds: '1 feedback round',
         desc: 'Multiple layout options, permit scope, cost band, and contractor brief.',
@@ -164,7 +164,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'Advanced Kitchen Design',
-        price: '$695',
+        price: '$845',
         turnaround: '5–7 business days',
         rounds: 'Up to 3 feedback rounds',
         desc: 'Detailed design with appliance specs, material selections, and 3D views.',
@@ -210,7 +210,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'bath-remodel',
     name: 'Bathroom Remodel',
     tagline: 'Layout options, fixture placement, permit scope, and cost band — for primary baths, guest baths, and additions.',
-    price: 'Starting at $395',
+    price: 'Starting at $475',
     priceNote: 'one-time · no subscription',
     label: 'AI design engine',
     badge: 'High ROI',
@@ -234,7 +234,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'AI Bath Concept',
-        price: '$395',
+        price: '$475',
         turnaround: '24–48 hours',
         rounds: '1 feedback round',
         desc: 'Layout options, permit scope, fixture guide, and cost band.',
@@ -245,7 +245,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'Advanced Bath Design',
-        price: '$695',
+        price: '$845',
         turnaround: '5–7 business days',
         rounds: 'Up to 3 feedback rounds',
         desc: 'Detailed design with tile selections, fixture specs, and 3D views.',
@@ -291,7 +291,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'interior-reno',
     name: 'Interior Reno & Addition',
     tagline: 'Room additions, layout changes, ADUs, and complete interior redesign — all interior and addition work.',
-    price: 'Starting at $395',
+    price: 'Starting at $475',
     priceNote: 'one-time · no subscription',
     label: 'AI design engine',
     badge: 'Additions + interiors',
@@ -315,7 +315,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'AI Interior Concept',
-        price: '$395',
+        price: '$475',
         turnaround: '5–7 business days',
         rounds: '1 feedback round',
         desc: 'Concept layouts, permit scope, structural notes, and cost range.',
@@ -326,7 +326,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'Advanced Interior Design',
-        price: '$695',
+        price: '$845',
         turnaround: '10–14 business days',
         rounds: 'Up to 3 feedback rounds',
         desc: 'Detailed design with 3D views, finish direction, and contractor-ready scope.',
@@ -372,7 +372,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'exterior',
     name: 'Exterior Renovation',
     tagline: 'Facade, deck, siding, roofing, windows — AI concept, permit filing, and contractor matching.',
-    price: 'Starting at $395',
+    price: 'Starting at $475',
     priceNote: 'concept report · permit filing from $149',
     label: 'AI design engine',
     badge: 'Curb appeal',
@@ -396,7 +396,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'AI Exterior Concept',
-        price: '$395',
+        price: '$475',
         turnaround: '5–7 business days',
         rounds: '1 feedback round',
         desc: 'Exterior visualization concepts, permit scope, and cost band.',
@@ -407,7 +407,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'Advanced Exterior Design',
-        price: '$695',
+        price: '$845',
         turnaround: '7–10 business days',
         rounds: 'Up to 3 feedback rounds',
         desc: 'Detailed renderings, material selections, and contractor-ready scope.',
@@ -453,7 +453,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'garden',
     name: 'Garden & Farming Design',
     tagline: 'AI garden concept, raised beds, irrigation, and greenhouse — then permits and contractor match if needed.',
-    price: 'Starting at $395',
+    price: 'Starting at $475',
     priceNote: 'concept package · consultation included',
     label: 'AI design engine',
     badge: 'Design + Install',
@@ -477,7 +477,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'AI Garden Concept',
-        price: '$395',
+        price: '$475',
         turnaround: '5–7 business days',
         rounds: '1 feedback round',
         desc: 'Property-specific garden layout with raised beds, irrigation overview, and planting guide.',
@@ -488,7 +488,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'Advanced Garden Design',
-        price: '$695',
+        price: '$845',
         turnaround: '10–14 business days',
         rounds: 'Up to 3 feedback rounds',
         desc: 'Detailed garden design with plant lists, irrigation specs, and 3D garden views.',
@@ -534,7 +534,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'landscape',
     name: 'Landscape Design & Install',
     tagline: 'Beds, hardscape, drainage, and planting — starts with AI concept, then permits and contractor match.',
-    price: 'Starting at $395',
+    price: 'Starting at $475',
     priceNote: 'AI concept · installation custom quoted',
     label: 'Outdoor services',
     badge: 'Design + Install',
@@ -558,7 +558,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'AI Landscape Concept',
-        price: '$395',
+        price: '$475',
         turnaround: '5–7 business days',
         rounds: '1 feedback round',
         desc: 'Property-specific landscape layout with bed plan, hardscape direction, and drainage notes.',
@@ -569,7 +569,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'Advanced Landscape Design',
-        price: '$695',
+        price: '$845',
         turnaround: '10–14 business days',
         rounds: 'Up to 3 feedback rounds',
         desc: 'Detailed design with plant lists, hardscape specs, and 3D landscape views.',
@@ -614,7 +614,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'basement',
     name: 'Basement Finish',
     tagline: 'Floor plan options, egress check, structural flag, and permit scope. Staff reviewed in 24 hours.',
-    price: 'Starting at $395',
+    price: 'Starting at $475',
     priceNote: 'one-time · no subscription',
     label: 'AI design engine',
     badge: 'AI design ready',
@@ -638,7 +638,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'AI Basement Concept',
-        price: '$395',
+        price: '$475',
         turnaround: '24–48 hours',
         rounds: '1 feedback round',
         desc: '2–3 layout options with egress check, permit scope, and cost band.',
@@ -649,7 +649,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'Advanced Basement Design',
-        price: '$695',
+        price: '$845',
         turnaround: '5–7 business days',
         rounds: 'Up to 3 feedback rounds',
         desc: 'Detailed design with finishes, built-ins, and contractor-ready scope.',
@@ -695,7 +695,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'adu',
     name: 'ADU & In-Law Suite',
     tagline: 'Zoning check, concept plan, permit filing, and contractor matching — all for your ADU.',
-    price: 'Starting at $395',
+    price: 'Starting at $475',
     priceNote: 'one-time · bundle available',
     label: 'AI design engine',
     badge: 'High demand',
@@ -719,7 +719,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'AI ADU Concept',
-        price: '$395',
+        price: '$475',
         turnaround: '5–7 business days',
         rounds: '1 feedback round',
         desc: 'Lot eligibility check, 2–3 ADU concept layouts, and permit path.',
@@ -730,7 +730,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'ADU Concept + Permit',
-        price: '$1,345',
+        price: '$1,595',
         turnaround: '2–3 weeks',
         rounds: '2 feedback rounds',
         desc: 'AI concept plus full permit preparation and filing — bundled for ADU projects.',
@@ -776,7 +776,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'tiny-home',
     name: 'Tiny Home',
     tagline: 'Concept, zoning check, and permit path for tiny homes, container homes, and micro-dwellings.',
-    price: 'Starting at $395',
+    price: 'Starting at $475',
     priceNote: 'one-time · concept report',
     label: 'AI design engine',
     badge: 'AI design ready',
@@ -800,7 +800,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'AI Tiny Home Concept',
-        price: '$395',
+        price: '$475',
         turnaround: '5–7 business days',
         rounds: '1 feedback round',
         desc: 'Classification, zoning check, permit path, and concept layout.',
@@ -811,7 +811,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'Advanced Tiny Home Design',
-        price: '$695',
+        price: '$845',
         turnaround: '7–10 business days',
         rounds: 'Up to 3 feedback rounds',
         desc: 'Detailed design with interior layout, utility plan, and contractor brief.',
@@ -857,7 +857,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'new-build',
     name: 'New Build / Custom Home',
     tagline: 'Feasibility, architect coordination, permits, and construction management for new construction.',
-    price: 'Starting at $895',
+    price: 'Starting at $1,095',
     priceNote: 'feasibility report · architect required',
     label: 'New construction',
     badge: 'Architect required',
@@ -881,7 +881,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'Feasibility Report',
-        price: '$895',
+        price: '$1,095',
         turnaround: '7–10 business days',
         rounds: '1 revision round',
         desc: 'Lot zoning analysis, buildable envelope, utility assessment, and cost direction.',
@@ -939,7 +939,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'design-starter',
     name: 'Design Starter',
     tagline: 'Schematic drawings, zoning review, and structural assessment from a licensed design professional.',
-    price: '$1,200',
+    price: '$1,450',
     priceNote: 'one-time · no subscription',
     label: 'Architectural services',
     badge: 'Licensed architect',
@@ -969,7 +969,7 @@ export const PRODUCTS: Record<string, Product> = {
     stripeEnvVar: 'STRIPE_PRICE_DESIGN_STARTER',
     faq: [
       { q: 'Is the Design Starter permit-ready?', a: 'No. Schematic drawings are not stamped for permit submission. They are suitable for pre-application meetings, contractor bidding, and HOA approvals.' },
-      { q: 'What is the difference between Design Starter and Full Pre-Design?', a: 'Design Starter provides schematic-level drawings. Full Pre-Design ($6,500+) delivers construction-document-level drawings that can be submitted for permit.' },
+      { q: 'What is the difference between Design Starter and Full Pre-Design?', a: 'Design Starter provides schematic-level drawings. Full Pre-Design ($7,795+) delivers construction-document-level drawings that can be submitted for permit.' },
       { q: 'Can I use Design Starter for contractor bids?', a: 'Yes. Most contractors can prepare bids from schematic drawings. Final bids may require more detail for complex scopes.' },
       { q: 'How long does it take?', a: 'Typical turnaround is 2–3 weeks from project kickoff to delivered schematic set.' },
     ],
@@ -982,7 +982,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'design-visualization',
     name: 'Design Visualization',
     tagline: '3D renderings, material boards, and design-development drawings from a licensed professional.',
-    price: '$2,800',
+    price: '$3,350',
     priceNote: 'one-time · no subscription',
     label: 'Architectural services',
     badge: '3D renderings',
@@ -1014,7 +1014,7 @@ export const PRODUCTS: Record<string, Product> = {
       { q: 'Are these renderings suitable for investor presentations?', a: 'Yes. Our renderings are presentation-quality and suitable for investor decks, HOA submissions, and stakeholder meetings.' },
       { q: 'Can Design Visualization be used for permits?', a: 'No. Design-development drawings are not permit-ready. They precede the construction document phase required for permit submission.' },
       { q: 'How long does it take?', a: 'Typical turnaround is 2–3 weeks from project kickoff to final deliverable.' },
-      { q: 'What is the difference between this and the Full Pre-Design Package?', a: 'Design Visualization focuses on visuals and design development. Full Pre-Design ($6,500+) delivers permit-ready construction documents.' },
+      { q: 'What is the difference between this and the Full Pre-Design Package?', a: 'Design Visualization focuses on visuals and design development. Full Pre-Design ($7,795+) delivers permit-ready construction documents.' },
     ],
     category: 'architectural',
     permitRequired: 'sometimes',
@@ -1025,7 +1025,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'design-full',
     name: 'Full Pre-Design Package',
     tagline: 'Permit-ready construction drawings, structural coordination, and full specification package.',
-    price: 'Starting at $6,500',
+    price: 'Starting at $7,795',
     priceNote: 'per project · scope-dependent',
     label: 'Architectural services',
     badge: 'Permit-ready',
@@ -1067,7 +1067,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'historic-renovation',
     name: 'Historic Renovation',
     tagline: 'Preservation-compliant design, historic review board submissions, and verified specialty contractors.',
-    price: 'Starting at $395',
+    price: 'Starting at $475',
     priceNote: 'per service · custom scope',
     label: 'Specialty renovation',
     badge: 'Preservation-compliant',
@@ -1091,7 +1091,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'Historic Assessment',
-        price: '$395',
+        price: '$475',
         turnaround: '5–7 business days',
         rounds: '1 review round',
         desc: 'Property research, historic designation check, and compliance pathway.',
@@ -1102,7 +1102,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'COA Submission Package',
-        price: 'From $1,200',
+        price: 'From $1,450',
         turnaround: '2–3 weeks',
         rounds: '2 revision rounds',
         desc: 'Full Certificate of Appropriateness preparation and submission.',
@@ -1171,7 +1171,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'Permit Research',
-        price: '$297',
+        price: '$349',
         turnaround: '2–3 business days',
         rounds: 'N/A',
         desc: 'Jurisdiction analysis, permit type determination, and fee schedule.',
@@ -1182,7 +1182,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'Full Permit Package',
-        price: '$497',
+        price: '$595',
         turnaround: '1–2 weeks prep',
         rounds: '2 comment rounds',
         desc: 'Application prep, drawings package, submission, and comment response.',
@@ -1193,7 +1193,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'Permit Coordination',
-        price: '$997',
+        price: '$1,195',
         turnaround: 'Through approval',
         rounds: 'Unlimited',
         desc: 'Full-service permit coordination from intake to approval with unlimited comment response.',
@@ -1214,7 +1214,7 @@ export const PRODUCTS: Record<string, Product> = {
     ctaHref: '/permits#start-permit',
     stripeEnvVar: 'STRIPE_PRICE_PERMIT_PACKAGE',
     faq: [
-      { q: 'What permit tiers are available?', a: 'Permit Research ($297), Full Permit Package ($497), Permit Coordination ($997), and Permit Expediting ($1,997+). The right tier depends on your project type and jurisdiction.' },
+      { q: 'What permit tiers are available?', a: 'Permit Research ($349), Full Permit Package ($595), Permit Coordination ($1,195), and Permit Expediting ($2,395+). The right tier depends on your project type and jurisdiction.' },
       { q: 'Do I need drawings to get a permit?', a: 'It depends on the scope. Simple residential permits often need only forms and photos. Structural changes, additions, and ADUs require stamped drawings — we coordinate your design professional if needed.' },
       { q: 'How long does DMV permitting take?', a: 'Fairfax residential: 2–4 weeks. Montgomery DPS residential: 4–8 weeks. DC DOB with plan review: 2–5 months.' },
       { q: 'What if the permit is denied?', a: 'Denials are uncommon when packages are prepared correctly. If a denial occurs, we review and advise on next steps at no additional charge for the first cycle.' },
@@ -1228,14 +1228,14 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'permit-research',
     name: 'Permit Research',
     tagline: 'Know exactly what permits you need, what they cost, and how long they take — before you start.',
-    price: '$297',
+    price: '$349',
     priceNote: 'one-time · delivered in 2–3 days',
     label: 'Permit services',
     badge: 'Know before you start',
     badgeColor: '#4A8FA8',
     accentColor: '#4A8FA8',
     imageUrl: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=900&q=70&auto=format&fit=crop',
-    description: 'Before you file, spend $297 to know exactly what your project requires. We identify your jurisdiction, determine permit type and review path, check for historic or overlay constraints, and deliver a complete permit requirements brief.',
+    description: 'Before you file, spend $349 to know exactly what your project requires. We identify your jurisdiction, determine permit type and review path, check for historic or overlay constraints, and deliver a complete permit requirements brief.',
     includes: [
       'Jurisdiction identification and contact information',
       'Permit type determination for your specific scope',
@@ -1259,7 +1259,7 @@ export const PRODUCTS: Record<string, Product> = {
     faq: [
       { q: 'What if I discover I do not need a permit?', a: 'That is a valid outcome. Knowing your project does not require a permit saves you time and money. The research is useful regardless.' },
       { q: 'Is this the same as the permit filing package?', a: 'No. Permit Research identifies what you need and what it costs. Filing packages actually prepare and submit your application.' },
-      { q: 'Can I upgrade to a filing package after research?', a: 'Yes. The $297 research fee is credited against the Full Permit Package ($497) or higher tiers if you proceed.' },
+      { q: 'Can I upgrade to a filing package after research?', a: 'Yes. The $349 research fee is credited against the Full Permit Package ($595) or higher tiers if you proceed.' },
       { q: 'How specific is the research to my project?', a: 'It is specific to your address, jurisdiction, and project scope — not a generic county guide.' },
     ],
     category: 'permits',
@@ -1271,7 +1271,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'permit-coordination',
     name: 'Permit Coordination',
     tagline: 'Full-service permit coordination from intake through approval — unlimited comment response included.',
-    price: '$997',
+    price: '$1,195',
     priceNote: 'per permit · through approval',
     label: 'Permit services',
     badge: 'Full service',
@@ -1302,7 +1302,7 @@ export const PRODUCTS: Record<string, Product> = {
     faq: [
       { q: 'What makes this different from the standard Permit Package?', a: 'Permit Coordination includes a dedicated coordinator, unlimited comment response, and direct agency follow-up. The standard package includes 2 comment rounds.' },
       { q: 'When should I choose Coordination vs. the standard package?', a: 'Choose Coordination for historic properties, complex projects, jurisdictions with high comment rates (DC DOB), or when timeline certainty is critical.' },
-      { q: 'Does the $997 include the permit fee paid to the jurisdiction?', a: 'No. Government permit fees are separate and paid directly to the jurisdiction. The $997 covers our coordination services.' },
+      { q: 'Does the $1,195 include the permit fee paid to the jurisdiction?', a: 'No. Government permit fees are separate and paid directly to the jurisdiction. The $1,195 covers our coordination services.' },
       { q: 'What if my permit is ultimately denied?', a: 'Coordinated projects have a very high approval rate when scopes are well-designed. If denied, we document the reasons and advise on appeals.' },
     ],
     category: 'permits',
@@ -1313,8 +1313,8 @@ export const PRODUCTS: Record<string, Product> = {
   'permit-expediting': {
     slug: 'permit-expediting',
     name: 'Expedited Permit Filing',
-    tagline: 'Rush permit filing with agency-level expediting for time-sensitive projects. Starting at $1,997.',
-    price: 'Starting at $1,997',
+    tagline: 'Rush permit filing with agency-level expediting for time-sensitive projects. Starting at $2,395.',
+    price: 'Starting at $2,395',
     priceNote: 'per permit · timeline-dependent',
     label: 'Permit services',
     badge: 'Rush filing',
@@ -1345,7 +1345,7 @@ export const PRODUCTS: Record<string, Product> = {
     faq: [
       { q: 'Which jurisdictions offer expedited review?', a: 'Fairfax, Montgomery, DC (for certain project types), and several other DMV jurisdictions have formal expedited review programs. We confirm availability for your specific project.' },
       { q: 'How much faster is expedited vs. standard?', a: 'In jurisdictions with formal programs, expedited review can reduce approval time by 50–70%. A 4-week standard review may take 1–2 weeks expedited.' },
-      { q: 'Is the $1,997+ fee in addition to government permit fees?', a: 'Yes. Government permit fees and any agency expedite fees are separate and paid directly to the jurisdiction.' },
+      { q: 'Is the $2,395+ fee in addition to government permit fees?', a: 'Yes. Government permit fees and any agency expedite fees are separate and paid directly to the jurisdiction.' },
       { q: 'Can any project be expedited?', a: 'Not all. Projects requiring plan review for structural changes, complex MEP, or special use permits may not qualify for expedited programs. We assess eligibility upfront.' },
     ],
     category: 'permits',
@@ -1359,7 +1359,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'cost-estimate',
     name: 'Detailed Cost Estimate',
     tagline: 'Trade-by-trade breakdown, RSMeans data, and human review. Lender-ready.',
-    price: 'Starting at $595',
+    price: 'Starting at $695',
     priceNote: 'one-time · no subscription',
     label: 'Cost estimation',
     badge: 'RSMeans data',
@@ -1380,7 +1380,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'Detailed Cost Estimate',
-        price: '$595',
+        price: '$695',
         turnaround: '3–5 business days',
         rounds: '1 revision round',
         desc: 'Trade-by-trade breakdown with RSMeans validation and estimator sign-off.',
@@ -1391,7 +1391,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'Certified Cost Estimate',
-        price: '$1,850',
+        price: '$2,195',
         turnaround: '5–7 business days',
         rounds: '1 revision round',
         desc: 'Notarized licensed estimator sign-off, full RSMeans source documentation, investor-grade format.',
@@ -1402,7 +1402,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'Estimate + Permit Bundle',
-        price: 'From $1,100',
+        price: 'From $1,295',
         turnaround: '5–7 business days',
         rounds: '1 revision each',
         desc: 'Detailed cost estimate plus permit package preparation — bundled for project efficiency.',
@@ -1426,7 +1426,7 @@ export const PRODUCTS: Record<string, Product> = {
       { q: 'Is this the same as the AI cost band in the Design Report?', a: 'No. The AI cost band is a planning range. The Detailed Cost Estimate is a line-item breakdown reviewed by a licensed estimator.' },
       { q: 'Do I need drawings first?', a: 'Not always. For scopes under $150K, a written scope description is often sufficient. For larger projects, schematic drawings are preferred.' },
       { q: 'Will contractors accept this estimate?', a: 'Contractors often use our estimates as a baseline when scoping their own bids.' },
-      { q: 'What is the Certified Cost Estimate vs this one?', a: 'The Certified Cost Estimate ($1,850) adds notarized sign-off and is accepted by virtually all DMV lenders.' },
+      { q: 'What is the Certified Cost Estimate vs this one?', a: 'The Certified Cost Estimate ($2,195) adds notarized sign-off and is accepted by virtually all DMV lenders.' },
     ],
     category: 'estimation',
     showJourney: false,
@@ -1436,7 +1436,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'certified-estimate',
     name: 'Certified Cost Estimate',
     tagline: 'Licensed estimator sign-off, RSMeans citations, investor-ready format. Accepted by most DMV lenders.',
-    price: '$1,850',
+    price: '$2,195',
     priceNote: 'one-time · no subscription',
     label: 'Cost estimation',
     badge: 'Lender ready',
@@ -1468,7 +1468,7 @@ export const PRODUCTS: Record<string, Product> = {
     faq: [
       { q: 'Which lenders accept this estimate?', a: 'Most DMV community banks, credit unions, and private construction lenders accept our Certified Cost Estimate.' },
       { q: 'Do I need drawings first?', a: 'For the Certified Estimate, yes — at least schematic-level drawings are required.' },
-      { q: 'How is this different from the Detailed Estimate ($595)?', a: 'The Certified Estimate adds notarized sign-off, full RSMeans source documentation, and investor-grade formatting.' },
+      { q: 'How is this different from the Detailed Estimate ($695)?', a: 'The Certified Estimate adds notarized sign-off, full RSMeans source documentation, and investor-grade formatting.' },
       { q: 'Can this be used in a dispute or litigation?', a: 'Yes. The licensed estimator signature and documented methodology make this suitable for construction disputes and legal proceedings.' },
     ],
     category: 'estimation',
@@ -1481,7 +1481,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'pm-advisory',
     name: 'PM Advisory',
     tagline: 'Monthly site inspection, photo report, milestone sign-off, and issue log for your active build.',
-    price: 'Starting at $950',
+    price: 'Starting at $1,150',
     priceNote: 'per project · billed at milestones',
     label: 'Construction management',
     badge: 'Most common',
@@ -1502,7 +1502,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'PM Advisory',
-        price: '$950',
+        price: '$1,150',
         turnaround: 'Monthly visits',
         desc: 'Monthly site visits, milestone approvals, and pay application review.',
         items: ['Monthly site visits', 'Milestone verification', 'Pay application review', 'Issue log', 'Final punch-list walk'],
@@ -1512,7 +1512,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'PM Oversight',
-        price: '$2,950',
+        price: '$3,495',
         turnaround: 'Weekly visits',
         desc: 'Weekly visits, schedule management, and proactive issue escalation.',
         items: ['Weekly site visits', 'Schedule management', 'Proactive issue escalation', 'Full pay app review', 'Change order management'],
@@ -1542,7 +1542,7 @@ export const PRODUCTS: Record<string, Product> = {
     ctaHref: '/intake/pm_advisory',
     stripeEnvVar: 'STRIPE_PRICE_PM_ADVISORY',
     faq: [
-      { q: 'What is the difference between PM Advisory and PM Oversight?', a: 'PM Advisory ($950) includes monthly visits and milestone approvals. PM Oversight ($2,950) includes weekly visits, full schedule management, and proactive issue escalation.' },
+      { q: 'What is the difference between PM Advisory and PM Oversight?', a: 'PM Advisory ($1,150) includes monthly visits and milestone approvals. PM Oversight ($3,495) includes weekly visits, full schedule management, and proactive issue escalation.' },
       { q: 'Do I need PM Advisory if I have a good contractor?', a: 'Even with a trusted contractor, an independent PM protects your interests. Pay application review alone often saves more than the fee.' },
       { q: 'Can PM Advisory be added after construction starts?', a: 'Yes. We conduct a condition assessment at onboarding to establish a baseline.' },
       { q: 'What happens when my PM finds a problem?', a: 'Your PM documents the issue, notifies the contractor, and escalates to you with a recommended resolution. Payment is held at that milestone until resolution.' },
@@ -1555,7 +1555,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'pm-oversight',
     name: 'PM Oversight',
     tagline: 'Weekly site visits, schedule management, proactive issue escalation, and full pay application review.',
-    price: 'Starting at $2,950',
+    price: 'Starting at $3,495',
     priceNote: 'per project · billed at milestones',
     label: 'Construction management',
     badge: 'Full oversight',
@@ -1587,7 +1587,7 @@ export const PRODUCTS: Record<string, Product> = {
       { q: 'When should I choose PM Oversight over PM Advisory?', a: 'Choose PM Oversight for projects over $200K, projects with complex scopes or multiple trades, or when you are not able to be on-site regularly.' },
       { q: 'Does PM Oversight include contractor selection?', a: 'No. PM Oversight assumes you have a contractor in place. Contractor selection and bid management is a separate service.' },
       { q: 'How does PM Oversight handle contractor disputes?', a: 'Your PM documents all issues, communicates formally with the contractor, and escalates to you with recommended resolutions. Payment holds are used as leverage when appropriate.' },
-      { q: 'What is the typical ROI on PM Oversight?', a: 'On a $500K project, professional oversight typically prevents $20,000–$50,000 in over-billing, rework, and scope creep — far exceeding the $2,950 fee.' },
+      { q: 'What is the typical ROI on PM Oversight?', a: 'On a $500K project, professional oversight typically prevents $20,000–$50,000 in over-billing, rework, and scope creep — far exceeding the $3,495 fee.' },
     ],
     category: 'construction',
     showJourney: false,
@@ -1597,8 +1597,8 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'adu-bundle',
     name: 'ADU Concept + Permit Bundle',
     tagline: 'Floor plan, zoning check, cost band, and full permit preparation — bundled for ADU projects.',
-    price: '$1,345',
-    priceNote: 'bundle · save $395 vs. individual',
+    price: '$1,595',
+    priceNote: 'bundle · AI Concept + Permit Package',
     label: 'Project bundle',
     badge: 'Bundle savings',
     badgeColor: '#E8793A',
@@ -1606,11 +1606,11 @@ export const PRODUCTS: Record<string, Product> = {
     imageUrl: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=900&q=70&auto=format&fit=crop',
     description: 'ADUs require both a concept design and a permit — this bundle delivers both at a reduced price. We start with an AI Design to validate your lot\'s ADU eligibility, setback compliance, and design options. Then we file the permit package.',
     includes: [
-      'Everything in AI Design Report ($395 value)',
+      'Everything in AI Design Report ($475 value)',
       'ADU lot eligibility and setback check',
       'Concept floor plan with ADU-specific zoning overlay',
       'Permit path identification (administrative vs. full review)',
-      'Everything in Full Permit Package ($950 value)',
+      'Everything in Full Permit Package ($1,095 value)',
       'ADU-specific application forms for your jurisdiction',
       'Separate utility connection documentation where required',
       'Priority processing',
@@ -1639,7 +1639,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'water-mitigation',
     name: 'Water Mitigation & Drainage',
     tagline: 'Grading, French drains, waterproofing, and sump systems — assessed, permitted, and installed.',
-    price: 'Starting at $395',
+    price: 'Starting at $475',
     priceNote: 'assessment · project cost varies',
     label: 'Specialty services',
     badge: 'Site assessment',
@@ -1660,7 +1660,7 @@ export const PRODUCTS: Record<string, Product> = {
     packages: [
       {
         name: 'Site Assessment',
-        price: '$395',
+        price: '$475',
         turnaround: '5–7 business days',
         rounds: '1 revision round',
         desc: 'Water source identification, drainage assessment, and recommended solution scope.',
@@ -1671,7 +1671,7 @@ export const PRODUCTS: Record<string, Product> = {
       },
       {
         name: 'Assessment + Contractor Match',
-        price: '$595',
+        price: '$695',
         turnaround: '7–10 business days',
         rounds: '1 revision round',
         desc: 'Full assessment plus matching with 2–3 verified drainage contractors.',
@@ -1719,7 +1719,7 @@ export const PRODUCTS: Record<string, Product> = {
     slug: 'ai-design',
     name: 'AI Design',
     tagline: 'Floor plan, zoning check, cost band, and permit scope — in 24 hours.',
-    price: 'Starting at $395',
+    price: 'Starting at $475',
     priceNote: 'one-time · no subscription',
     label: 'AI design engine',
     badge: 'Start here',
