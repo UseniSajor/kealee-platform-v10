@@ -1,0 +1,27 @@
+# Railway Configuration for Kealee Platform
+# Explicitly configure build and deployment settings
+
+[build]
+# Use the Dockerfile in the root directory
+dockerfile = "Dockerfile"
+dockerfilePath = "."
+
+# Build context
+context = "."
+
+# Don't auto-detect dependencies that cause unnecessary packages
+buildpacks = []
+
+[deploy]
+# Service configuration
+startCommand = "node dist/index.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+
+# Environment
+[env]
+NODE_ENV = "production"
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+PRISMA_CLIENT_ENGINE_TYPE = "binary"
+PRISMA_HIDE_UPDATE_MESSAGE = "true"
+PORT = "3000"
