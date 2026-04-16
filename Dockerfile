@@ -57,6 +57,7 @@ RUN pnpm --filter @kealee/ai-chat run build 2>/dev/null || true
 RUN pnpm --filter @kealee/analytics run build 2>/dev/null || true
 RUN pnpm --filter @kealee/audit run build 2>/dev/null || true
 RUN pnpm --filter @kealee/observability run build 2>/dev/null || true
+RUN pnpm --filter @kealee/redis run build 2>/dev/null || true
 RUN pnpm --filter @kealee/realtime run build 2>/dev/null || true
 RUN pnpm --filter @kealee/scoring run build 2>/dev/null || true
 RUN pnpm --filter @kealee/page-builder run build 2>/dev/null || true
