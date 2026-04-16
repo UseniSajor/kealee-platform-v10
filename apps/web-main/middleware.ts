@@ -21,7 +21,8 @@ const PUBLIC_ROUTES = [
   '/contact',
   '/concept',
   '/permits',
-  '/estimation'
+  '/estimation',
+  '/checkout'
 ]
 
 export async function middleware(request: NextRequest) {
