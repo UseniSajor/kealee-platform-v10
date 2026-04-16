@@ -34,13 +34,12 @@ COPY services ./services
 COPY apps ./apps
 COPY data ./data
 
-# Install dependencies - skip all optional/dev browser packages
-# Use --ignore-scripts to prevent postinstall scripts from downloading chromium
+# Install ALL dependencies (we'll build what we need)
+# The --ignore-scripts prevents Playwright from downloading Chromium
 RUN pnpm install \
     --prod=false \
     --ignore-scripts \
-    --no-frozen-lockfile \
-    --filter @kealee/api...
+    --no-frozen-lockfile
 
 # Build database packages
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \
@@ -68,11 +67,11 @@ RUN pnpm --filter @kealee/concept-engine run build 2>/dev/null || true
 RUN pnpm --filter @kealee/seeds run build 2>/dev/null || true
 RUN pnpm --filter @kealee/core-auth run build 2>/dev/null || true
 
-# Build API service
-RUN pnpm --filter @kealee/api run build 2>/dev/null || true
-
-# Build web-main app
-RUN pnpm --filter web-main run build 2>/dev/null || true
+# Build API service (MUST succeed for production)
+RUN pnpm --filter @kealee/api run db:generate 2>&1 || true
+RUN pnpm --filter @kealee/api run build:ts 2>&1 && \
+    test -f services/api/dist/index.js || \
+    (echo "ERROR: API build failed - dist/index.js not found" && exit 1)
 
 # Production stage
 FROM node:20-slim
