@@ -38,6 +38,7 @@
     "@kealee/estimating": "workspace:*",
     "@kealee/observability": "workspace:*",
     "@kealee/realtime": "workspace:*",
+    "@kealee/redis": "workspace:*",
     "@kealee/scoring": "workspace:*",
     "@kealee/shared": "workspace:*",
     "@kealee/storage": "workspace:*",
