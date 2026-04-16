@@ -66,7 +66,8 @@
     "zod": "^3.22.4",
     "zod-to-json-schema": "^3.22.3",
     "zod-validation-error": "^3.0.0",
-    "@kealee/core-llm": "workspace:*"
+    "@kealee/core-llm": "workspace:*",
+    "@kealee/redis": "workspace:*"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

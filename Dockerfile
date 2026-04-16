@@ -94,6 +94,11 @@ ENV PRISMA_CLIENT_ENGINE_TYPE=binary
 # Copy built application from builder
 COPY --from=builder /app /app
 
+# Explicitly ensure @kealee/redis package files are present
+# (guards against pnpm symlink resolution issues in multi-stage builds)
+COPY --from=builder /app/packages/redis/dist /app/packages/redis/dist
+COPY --from=builder /app/packages/redis/package.json /app/packages/redis/package.json
+
 WORKDIR /app/services/api
 
 EXPOSE 3000
