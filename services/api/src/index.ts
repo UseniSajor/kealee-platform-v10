@@ -190,6 +190,7 @@ import { initTracing } from '@kealee/observability';
 initTracing('kealee-api');
 
 import { ingestAllSeeds } from '@kealee/core-llm';
+import { loadRAGData, getRAGStatus } from './lib/orchestrator/retrieval/rag-retriever';
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
@@ -1056,6 +1057,11 @@ const start = async () => {
       await fastify.register(botsRoutes, { prefix: '/bots' })
     })
 
+    await safeRegisterBlock('KeaBots chain routes (Design→Estimate→Permit)', async () => {
+      const { botsChainRoutes } = await import('./modules/bots/bots.chain.routes')
+      await fastify.register(botsChainRoutes, { prefix: '/bots' })
+    })
+
     // ══════════════════════════════════════════════════════════════
     // Opportunities Phase 06 — Interest list, contracts, apprenticeships
     // ══════════════════════════════════════════════════════════════
@@ -1169,6 +1175,11 @@ const start = async () => {
       await fastify.register(ragRoutes, { prefix: '/api/v1/rag' })
     })
 
+    await safeRegisterBlock('Agent routes', async () => {
+      const { agentsRoutes } = await import('./modules/agents/agents.routes.js')
+      await fastify.register(agentsRoutes, { prefix: '/api/v1/agents' })
+    })
+
     // ── Test Routes (TEST_MODE=true only) ──
     await safeRegisterBlock('Test simulation routes', async () => {
       const { testRoutes } = await import('./modules/test/test.routes')
@@ -1240,6 +1251,9 @@ const start = async () => {
       console.warn('[RAG] Failed to start RAG job scheduler:', err?.message)
     }
 
+    // ── Load RAG retrieval data ──
+    loadRAGData()
+
     await fastify.listen({ port, host: '0.0.0.0' })
 
     // Startup complete message
@@ -1272,6 +1286,13 @@ const start = async () => {
     console.log(`\n📦 Integrations: ${configured.length}/${integrations.length} configured`)
     configured.forEach(i => console.log(`   ✅ ${i.name}`))
     missing.forEach(i => console.log(`   ⬚  ${i.name} (set ${i.key})`))
+
+    // ── RAG Status ──
+    const ragStatus = getRAGStatus()
+    console.log(`\n🤖 RAG Retrieval Layer: ${ragStatus.loaded ? '✅ LOADED' : '❌ FAILED'}`)
+    if (ragStatus.loaded) {
+      console.log(`   Records: ${ragStatus.recordCount}`)
+    }
     console.log('');
   } catch (err: any) {
     // This catch handles truly fatal errors: plugin registration failures,

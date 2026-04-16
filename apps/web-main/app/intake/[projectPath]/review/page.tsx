@@ -3,10 +3,13 @@
 import { useParams, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { IntakeReviewPanel } from '@kealee/ui/components/intake/intake-review-panel'
-import { Camera, Mic, Scan, MapPin, CheckCircle2, AlertCircle } from 'lucide-react'
+import {
+  Camera, Mic, MapPin, CheckCircle2, AlertCircle,
+  ShieldAlert, TrendingUp, ArrowRight, Loader2,
+} from 'lucide-react'
 
 const SITE_VISIT_FEE_CENTS = 12500
-const AI_CONCEPT_BASE_CENTS = 38500 // $385 base AI Concept Package
+const AI_CONCEPT_BASE_CENTS = 38500
 
 type CaptureMode = 'self_capture' | 'enhanced_scan' | 'kealee_site_visit'
 
@@ -22,7 +25,207 @@ interface CaptureInfo {
   scanCompleted: boolean
 }
 
-// ── Capture Method Section ────────────────────────────────────────────────────
+// ── Agent output types ────────────────────────────────────────────────────────
+interface CTCBreakdown { construction: number; soft: number; risk: number; execution: number }
+interface CTCOutput { total: number; range: [number, number]; cost_per_sqft: number; sqft: number; breakdown: CTCBreakdown }
+interface AgentOutput {
+  status?: string
+  summary?: string
+  risks?: string[]
+  confidence?: 'high' | 'medium' | 'low'
+  next_step?: string
+  cta?: string
+  conversion_product?: string
+  ctc?: CTCOutput
+}
+
+function fmtK(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`
+  if (n >= 1_000) return `$${Math.round(n / 1_000)}k`
+  return `$${n.toLocaleString()}`
+}
+
+// ── Path → agent mapping ──────────────────────────────────────────────────────
+function resolveAgent(
+  projectPath: string,
+  formData: Record<string, unknown>
+): { agentType: string; payload: Record<string, unknown> } | null {
+  const jurisdiction =
+    (formData.permitJurisdiction as string) ??
+    (formData.projectAddress as string) ??
+    ''
+  const sqft = Number(formData.squareFootage ?? formData.sqft ?? 1500)
+
+  const map: Record<string, { agentType: string; payload: Record<string, unknown> }> = {
+    exterior_concept:     { agentType: 'land',   payload: { jurisdiction, projectType: 'single-family', address: formData.projectAddress } },
+    capture_site_concept: { agentType: 'land',   payload: { jurisdiction, projectType: 'single-family' } },
+    interior_renovation:  { agentType: 'design', payload: { projectType: 'interior-renovation', jurisdiction, sqft } },
+    whole_home_remodel:   { agentType: 'design', payload: { projectType: 'single-family', jurisdiction, sqft } },
+    addition_expansion:   { agentType: 'design', payload: { projectType: 'addition', jurisdiction, sqft } },
+    design_build:         { agentType: 'design', payload: { projectType: 'single-family', jurisdiction, sqft } },
+    kitchen_remodel:      { agentType: 'design', payload: { projectType: 'kitchen-remodel', jurisdiction, sqft } },
+    bathroom_remodel:     { agentType: 'design', payload: { projectType: 'bathroom-remodel', jurisdiction, sqft } },
+    permit_path_only:     { agentType: 'permit', payload: { jurisdiction, projectType: (formData.permitType as string) ?? '' } },
+  }
+  return map[projectPath] ?? null
+}
+
+// ── Confidence badge ──────────────────────────────────────────────────────────
+function ConfidenceBadge({ level }: { level: 'high' | 'medium' | 'low' }) {
+  const styles = {
+    high:   { bg: '#F0FDF4', text: '#15803D', label: 'High Confidence' },
+    medium: { bg: '#FFFBEB', text: '#B45309', label: 'Medium Confidence' },
+    low:    { bg: '#FEF2F2', text: '#B91C1C', label: 'Low Confidence' },
+  }
+  const s = styles[level]
+  return (
+    <span
+      className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+      style={{ backgroundColor: s.bg, color: s.text }}
+    >
+      {s.label}
+    </span>
+  )
+}
+
+// ── CTC breakdown card ────────────────────────────────────────────────────────
+function CTCBreakdownCard({ ctc }: { ctc: CTCOutput }) {
+  const rows = [
+    { label: 'Construction',  value: ctc.breakdown.construction, color: '#1A2B4A' },
+    { label: 'Soft Costs',    value: ctc.breakdown.soft,         color: '#4338CA' },
+    { label: 'Risk Buffer',   value: ctc.breakdown.risk,         color: '#B45309' },
+    { label: 'Execution Fees',value: ctc.breakdown.execution,    color: '#E8793A' },
+  ]
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white p-5 space-y-3">
+      <div className="flex items-baseline justify-between">
+        <h3 className="text-sm font-bold" style={{ color: '#1A2B4A' }}>
+          Estimated Total Project Cost
+        </h3>
+        <span className="text-xs text-gray-400">{ctc.sqft.toLocaleString()} sqft</span>
+      </div>
+
+      {/* Range callout */}
+      <div
+        className="rounded-xl px-4 py-3 text-center"
+        style={{ backgroundColor: '#F0FDF4' }}
+      >
+        <p className="text-xs text-gray-500 mb-0.5">Complete Total Cost (CTC)</p>
+        <p className="text-xl font-extrabold" style={{ color: '#15803D' }}>
+          {fmtK(ctc.range[0])} – {fmtK(ctc.range[1])}
+        </p>
+        <p className="text-xs text-gray-400 mt-0.5">
+          {fmtK(ctc.cost_per_sqft)}/sqft base rate
+        </p>
+      </div>
+
+      {/* Breakdown rows */}
+      <div className="space-y-2">
+        {rows.map(({ label, value, color }) => {
+          const pct = ctc.total > 0 ? Math.round((value / ctc.total) * 100) : 0
+          return (
+            <div key={label} className="flex items-center gap-3">
+              <div className="w-24 shrink-0 text-xs text-gray-500">{label}</div>
+              <div className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${pct}%`, backgroundColor: color }}
+                />
+              </div>
+              <div className="w-14 text-right text-sm font-semibold" style={{ color }}>
+                {fmtK(value)}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ── Agent insight card ────────────────────────────────────────────────────────
+function AgentInsightCard({
+  output,
+  onCta,
+  isSubmitting,
+}: {
+  output: AgentOutput
+  onCta: () => void
+  isSubmitting: boolean
+}) {
+  return (
+    <div className="space-y-4">
+      {/* CTC breakdown (shown when available) */}
+      {output.ctc && <CTCBreakdownCard ctc={output.ctc} />}
+
+      <div className="rounded-2xl border border-[#1A2B4A]/10 bg-gradient-to-br from-[#1A2B4A]/5 to-white p-5 space-y-4">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" style={{ color: '#1A2B4A' }} />
+            <h3 className="text-sm font-bold" style={{ color: '#1A2B4A' }}>
+              Project Analysis
+            </h3>
+          </div>
+          {output.confidence && <ConfidenceBadge level={output.confidence} />}
+        </div>
+
+        {/* Summary */}
+        {output.summary && (
+          <p className="text-sm text-gray-700 leading-relaxed">{output.summary}</p>
+        )}
+
+        {/* Risks */}
+        {output.risks && output.risks.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+              Key Considerations
+            </p>
+            <ul className="space-y-1.5">
+              {output.risks.slice(0, 4).map((risk, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                  <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+                  {risk}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Next step */}
+        {output.next_step && (
+          <div
+            className="rounded-xl px-4 py-3 text-sm"
+            style={{ backgroundColor: '#EEF2FF', color: '#3730A3' }}
+          >
+            <span className="font-semibold">Next step:</span> {output.next_step}
+          </div>
+        )}
+
+        {/* CTA */}
+        <button
+          onClick={onCta}
+          disabled={isSubmitting}
+          className="flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+          style={{ backgroundColor: '#E8793A' }}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" /> Processing...
+            </>
+          ) : (
+            <>
+              {output.cta ?? 'Continue'}
+              <ArrowRight className="h-4 w-4" />
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Capture method section ────────────────────────────────────────────────────
 function CaptureSummarySection({ info }: { info: CaptureInfo }) {
   if (!info.captureMode) return null
 
@@ -50,27 +253,21 @@ function CaptureSummarySection({ info }: { info: CaptureInfo }) {
         <div className="rounded-xl bg-white px-4 py-3 text-xs text-indigo-700 border border-indigo-100">
           📅 After payment, our team will contact you within 24 hours to confirm your visit.
         </div>
-
-        {/* Pricing breakdown */}
         <div className="border-t border-indigo-100 pt-3 space-y-1.5 text-sm">
           <div className="flex justify-between text-indigo-700">
-            <span>AI Concept Package</span>
-            <span>$385</span>
+            <span>AI Concept Package</span><span>$385</span>
           </div>
           <div className="flex justify-between text-indigo-700">
-            <span>Kealee Site Visit Scan</span>
-            <span>$125</span>
+            <span>Kealee Site Visit Scan</span><span>$125</span>
           </div>
           <div className="flex justify-between font-bold text-indigo-900 border-t border-indigo-200 pt-1.5 mt-1.5">
-            <span>Total</span>
-            <span>$510</span>
+            <span>Total</span><span>$510</span>
           </div>
         </div>
       </div>
     )
   }
 
-  // Self capture or enhanced scan
   return (
     <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 space-y-3">
       <div className="flex items-center justify-between">
@@ -85,13 +282,11 @@ function CaptureSummarySection({ info }: { info: CaptureInfo }) {
           {info.captureMode === 'enhanced_scan' ? 'Enhanced Scan' : 'Self Capture'}
         </span>
       </div>
-
       <p className="text-sm text-gray-600">
         {info.captureMode === 'enhanced_scan'
           ? 'You will capture and scan your property for improved accuracy.'
           : 'You will capture your property using guided photo and video steps.'}
       </p>
-
       {info.captureSessionId && (
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-xl bg-white p-3 text-center shadow-sm">
@@ -112,13 +307,10 @@ function CaptureSummarySection({ info }: { info: CaptureInfo }) {
           </div>
         </div>
       )}
-
       {info.captureMode === 'enhanced_scan' && (
         <div
           className="flex items-center gap-2 rounded-xl px-3 py-2.5"
-          style={{
-            backgroundColor: info.scanCompleted ? '#F0FDF4' : '#FFF7ED',
-          }}
+          style={{ backgroundColor: info.scanCompleted ? '#F0FDF4' : '#FFF7ED' }}
         >
           {info.scanCompleted ? (
             <>
@@ -137,18 +329,14 @@ function CaptureSummarySection({ info }: { info: CaptureInfo }) {
   )
 }
 
-// ── Deliverables Section ──────────────────────────────────────────────────────
+// ── Deliverables ──────────────────────────────────────────────────────────────
 function DeliverablesSection({ captureMode, scanCompleted }: { captureMode: CaptureMode | null; scanCompleted: boolean }) {
   const items = [
     '3D exterior concept renderings',
     'Material + finish direction board',
     'AI-generated design narrative',
-    captureMode === 'enhanced_scan' && scanCompleted
-      ? '+ Floor plan with room layout'
-      : '+ AI-inferred layout',
-    captureMode === 'kealee_site_visit'
-      ? '+ Professional scan measurements'
-      : null,
+    captureMode === 'enhanced_scan' && scanCompleted ? '+ Floor plan with room layout' : '+ AI-inferred layout',
+    captureMode === 'kealee_site_visit' ? '+ Professional scan measurements' : null,
   ].filter(Boolean) as string[]
 
   return (
@@ -168,7 +356,7 @@ function DeliverablesSection({ captureMode, scanCompleted }: { captureMode: Capt
   )
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+// ── Main page ─────────────────────────────────────────────────────────────────
 export default function IntakeReviewPage() {
   const params = useParams()
   const router = useRouter()
@@ -187,16 +375,21 @@ export default function IntakeReviewPage() {
     scanCompleted: false,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [agentOutput, setAgentOutput] = useState<AgentOutput | null>(null)
+  const [agentLoading, setAgentLoading] = useState(false)
 
+  // Load form data + capture info from sessionStorage
   useEffect(() => {
     if (typeof window === 'undefined') return
 
     const stored = sessionStorage.getItem(`kealee_intake_${projectPath}`)
     if (stored) {
-      try { setFormData(JSON.parse(stored)) } catch {}
+      try {
+        const parsed = JSON.parse(stored) as Record<string, unknown>
+        setFormData(parsed)
+      } catch {}
     }
 
-    // Capture mode info
     const captureModeRaw = sessionStorage.getItem(`kealee_capture_mode_${projectPath}`)
     const captureSession = sessionStorage.getItem(`kealee_capture_session_${projectPath}`)
     let parsedMode: { captureMode?: CaptureMode; siteVisitFee?: number; preferredVisitWindow?: string | null } = {}
@@ -206,17 +399,14 @@ export default function IntakeReviewPage() {
 
     const cid = parsedSession.captureSessionId ?? null
     const mode = parsedMode.captureMode ?? null
-    const siteVisitFee = parsedMode.siteVisitFee ?? 0
-
     setCaptureInfo((prev) => ({
       ...prev,
       captureSessionId: cid,
       captureMode: mode,
-      siteVisitFee,
+      siteVisitFee: parsedMode.siteVisitFee ?? 0,
       preferredVisitWindow: parsedMode.preferredVisitWindow ?? null,
     }))
 
-    // Load live capture progress (non-site-visit modes)
     if (cid && mode !== 'kealee_site_visit') {
       fetch(`/api/capture/progress?captureSessionId=${cid}`)
         .then((r) => r.json())
@@ -234,11 +424,36 @@ export default function IntakeReviewPage() {
     }
   }, [projectPath])
 
+  // Call agent once formData is available
+  useEffect(() => {
+    if (!formData) return
+    const agentConfig = resolveAgent(projectPath, formData)
+    if (!agentConfig) return
+
+    setAgentLoading(true)
+    fetch(`/api/agents/${agentConfig.agentType}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(agentConfig.payload),
+    })
+      .then((r) => r.json())
+      .then((data: AgentOutput) => {
+        if (!data.status || data.status !== 'RAG_MISSING') {
+          setAgentOutput(data)
+        }
+      })
+      .catch(() => {})
+      .finally(() => setAgentLoading(false))
+  }, [formData, projectPath])
+
   if (!formData) {
     return (
       <div className="text-center py-20">
         <p className="text-gray-500">No intake data found.</p>
-        <button onClick={() => router.push(`/intake/${projectPath}`)} className="mt-4 text-sm text-[#E8793A] hover:underline">
+        <button
+          onClick={() => router.push(`/intake/${projectPath}`)}
+          className="mt-4 text-sm text-[#E8793A] hover:underline"
+        >
           Start intake
         </button>
       </div>
@@ -251,7 +466,7 @@ export default function IntakeReviewPage() {
       const isSiteVisit = captureInfo.captureMode === 'kealee_site_visit'
       const totalAmount = isSiteVisit
         ? AI_CONCEPT_BASE_CENTS + SITE_VISIT_FEE_CENTS
-        : undefined // use default path amount
+        : undefined
 
       const res = await fetch('/api/intake/submit', {
         method: 'POST',
@@ -270,7 +485,7 @@ export default function IntakeReviewPage() {
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const result = await res.json() as {
-        ok: boolean; intakeId?: string; requiresPayment?: boolean; paymentAmount?: number; errors?: string[];
+        ok: boolean; intakeId?: string; requiresPayment?: boolean; paymentAmount?: number; errors?: string[]
       }
 
       if (!result.ok) {
@@ -281,12 +496,12 @@ export default function IntakeReviewPage() {
       const amount = result.paymentAmount ?? (isSiteVisit ? AI_CONCEPT_BASE_CENTS + SITE_VISIT_FEE_CENTS : 38500)
 
       if (result.requiresPayment && result.intakeId) {
-        const params = new URLSearchParams({
+        const qs = new URLSearchParams({
           intakeId: result.intakeId,
           amount: String(amount),
           ...(isSiteVisit ? { siteVisit: '1' } : {}),
         })
-        router.push(`/intake/${projectPath}/payment?${params.toString()}`)
+        router.push(`/intake/${projectPath}/payment?${qs.toString()}`)
       } else {
         router.push(`/intake/${projectPath}/success?intakeId=${result.intakeId ?? 'unknown'}`)
       }
@@ -301,13 +516,35 @@ export default function IntakeReviewPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 space-y-5">
       <CaptureSummarySection info={captureInfo} />
-      <DeliverablesSection captureMode={captureInfo.captureMode} scanCompleted={captureInfo.scanCompleted} />
+      <DeliverablesSection
+        captureMode={captureInfo.captureMode}
+        scanCompleted={captureInfo.scanCompleted}
+      />
+
+      {/* Agent analysis — shown when RAG data is available */}
+      {agentLoading && (
+        <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4">
+          <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+          <span className="text-sm text-gray-500">Analyzing your project against local permit + zoning data…</span>
+        </div>
+      )}
+
+      {agentOutput && !agentLoading && (
+        <AgentInsightCard
+          output={agentOutput}
+          onCta={handleSubmit}
+          isSubmitting={isSubmitting}
+        />
+      )}
+
+      {/* Standard review panel — CTA shown only if agent didn't load */}
       <IntakeReviewPanel
         formData={formData}
         projectPath={projectPath}
         onBack={() => router.push(`/intake/${projectPath}`)}
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
+        hidePrimaryButton={!!agentOutput}
       />
     </div>
   )

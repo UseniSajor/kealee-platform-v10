@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, Clock, ArrowRight, User } from 'lucide-react'
 import Link from 'next/link'
@@ -115,6 +116,24 @@ const categoryColors: Record<string, { bg: string; text: string }> = {
 }
 
 export default function BlogPage() {
+  const [email, setEmail] = useState('')
+  const [subStatus, setSubStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+
+  async function handleSubscribe(e: React.FormEvent) {
+    e.preventDefault()
+    setSubStatus('loading')
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      setSubStatus(res.ok ? 'success' : 'error')
+    } catch {
+      setSubStatus('error')
+    }
+  }
+
   return (
     <div>
       {/* Hero */}
@@ -251,20 +270,34 @@ export default function BlogPage() {
           <p className="mt-4 text-gray-300">
             Get construction insights, platform updates, and industry analysis delivered to your inbox.
           </p>
-          <div className="mx-auto mt-8 flex max-w-md gap-2">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2"
-              style={{ '--tw-ring-color': '#2ABFBF' } as React.CSSProperties}
-            />
-            <button
-              className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90"
-              style={{ backgroundColor: '#E8793A' }}
-            >
-              Subscribe
-            </button>
-          </div>
+          {subStatus === 'success' ? (
+            <p className="mt-8 text-sm font-medium" style={{ color: '#2ABFBF' }}>
+              ✓ You're subscribed! Look out for our next update.
+            </p>
+          ) : (
+            <form onSubmit={handleSubscribe} className="mx-auto mt-8 flex max-w-md gap-2">
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2"
+                style={{ '--tw-ring-color': '#2ABFBF' } as React.CSSProperties}
+              />
+              <button
+                type="submit"
+                disabled={subStatus === 'loading'}
+                className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-60"
+                style={{ backgroundColor: '#E8793A' }}
+              >
+                {subStatus === 'loading' ? 'Subscribing…' : 'Subscribe'}
+              </button>
+            </form>
+          )}
+          {subStatus === 'error' && (
+            <p className="mt-2 text-sm text-red-400">Something went wrong. Please try again.</p>
+          )}
         </div>
       </section>
     </div>

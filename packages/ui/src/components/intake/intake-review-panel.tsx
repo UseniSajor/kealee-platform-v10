@@ -8,6 +8,8 @@ interface IntakeReviewPanelProps {
   onBack: () => void
   onSubmit: () => void
   isSubmitting?: boolean
+  /** When true, suppresses the primary Submit button (agent CTA shown instead) */
+  hidePrimaryButton?: boolean
 }
 
 function ReviewRow({ label, value }: { label: string; value: unknown }) {
@@ -36,6 +38,7 @@ export function IntakeReviewPanel({
   onBack,
   onSubmit,
   isSubmitting,
+  hidePrimaryButton = false,
 }: IntakeReviewPanelProps) {
   return (
     <div className="mx-auto max-w-xl">
@@ -107,14 +110,16 @@ export function IntakeReviewPanel({
           <ArrowLeft className="h-4 w-4" /> Back to Edit
         </button>
 
-        <button
-          onClick={onSubmit}
-          disabled={isSubmitting}
-          className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-          style={{ backgroundColor: '#E8793A' }}
-        >
-          {isSubmitting ? 'Submitting...' : 'Submit Intake'}
-        </button>
+        {!hidePrimaryButton && (
+          <button
+            onClick={onSubmit}
+            disabled={isSubmitting}
+            className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+            style={{ backgroundColor: '#E8793A' }}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit Intake'}
+          </button>
+        )}
       </div>
     </div>
   )

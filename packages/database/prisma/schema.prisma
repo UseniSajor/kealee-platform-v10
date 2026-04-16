@@ -14156,492 +14156,6 @@ model ParcelComparable {
   parcel Parcel @relation(fields: [parcelId], references: [id], onDelete: Cascade)
 
   @@index([parcelId])
-}
-
-// ============================================================================
-// CONCEPT INTAKE & DESIGN FLOW
-// ============================================================================
-
-enum ConceptStatus {
-  INTAKE_SUBMITTED
-  CONCEPTS_GENERATED
-  CHECKOUT_INITIATED
-  PAID
-  IN_PROGRESS
-  COMPLETED
-  REJECTED
-}
-
-enum ConceptComplexity {
-  SIMPLE
-  MODERATE
-  COMPLEX
-}
-
-model ConceptIntake {
-  id String @id @default(uuid())
-
-  // Contact info
-  email String
-  name String?
-  phone String?
-  
-  // Project info
-  projectType String
-  description String
-  address String?
-  zipCode String?
-  
-  // Project details
-  hasPhotos Boolean @default(false)
-  photoCount Int @default(0)
-  roughDimensions Json? // { sqft, length, width }
-  budgetRange String?
-  stylePreference String?
-  hasExistingStructure Boolean @default(false)
-
-  // Scoring
-  leadScore Int
-  complexity ConceptComplexity
-  tier String // concept_basic, concept_advanced, concept_full
-  readinessState String
-
-  // Generated content
-  generatedConcepts Json? // Array of concept objects
-  scopeSummary Json?
-  feasibilitySignals Json?
-
-  // Funnel tracking
-  funnelSessionId String?
-  source String? // marketplace, advertorial, organic, etc.
-  
-  // Status
-  status ConceptStatus @default(INTAKE_SUBMITTED)
-  checkoutInitiatedAt DateTime?
-  paidAt DateTime?
-
-  // Relationships
-  estimationIntakeId String? // Link to estimation if user proceeds
-  projectId String? // Link to project if created
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([email])
-  @@index([status])
-  @@index([funnelSessionId])
-  @@index([projectId])
-}
-
-// ============================================================================
-// ZONING & FEASIBILITY ANALYSIS FLOW
-// ============================================================================
-
-enum ZoningStatus {
-  INTAKE_SUBMITTED
-  ANALYSIS_QUEUED
-  ANALYSIS_IN_PROGRESS
-  ANALYSIS_COMPLETE
-  CHECKOUT_INITIATED
-  PAID
-  CONSULTATION_SCHEDULED
-  REPORT_DELIVERED
-  COMPLETED
-}
-
-enum BuildabilityRating {
-  HIGHLY_FEASIBLE
-  FEASIBLE_WITH_VARIANCE
-  FEASIBLE_WITH_CUP
-  CHALLENGING_COMPLEX_ENTITLEMENTS
-  NOT_FEASIBLE
-}
-
-model ZoningIntake {
-  id String @id @default(uuid())
-
-  // Contact info
-  email String
-  name String?
-  phone String?
-  
-  // Property info
-  address String?
-  zipCode String?
-  jurisdiction String?
-  zoningDistrict String?
-  propertyType String? // residential, commercial, mixed_use, industrial
-  currentUse String?
-  
-  // Lot info
-  lotSize Int? // in square feet
-  existingStructureInfo String?
-  desiredBuild String?
-
-  // Environmental factors
-  environmentalConstraints String?
-  hasWetlands Boolean @default(false)
-  hasFloodPlain Boolean @default(false)
-  inHistoricDistrict Boolean @default(false)
-
-  // Project intent
-  projectIntent String?
-
-  // Documentation
-  uploadedPhotos Boolean @default(false)
-  uploadedDocuments Boolean @default(false)
-
-  // Analysis results
-  buildabilityScore Int?
-  buildabilityRating BuildabilityRating?
-  analysisSummary Json? // Jurisdiction data, overlays, uses, etc.
-  
-  // Flags
-  requiresVariance Boolean @default(false)
-  requiresCUP Boolean @default(false)
-  requiresEngineer Boolean @default(false)
-  requiresArchitect Boolean @default(false)
-  
-  // Tier
-  recommendedTier String? // zoning_research, feasibility_assessment, entitlement_path, pre_submission_consulting
-  readinessState String?
-
-  // Funnel tracking
-  funnelSessionId String?
-  source String?
-  
-  // Consultation
-  consultationScheduled Boolean @default(false)
-  consultationDate DateTime?
-  consultationNotes String?
-
-  // Status & tracking
-  status ZoningStatus @default(INTAKE_SUBMITTED)
-  checkoutInitiatedAt DateTime?
-  paidAt DateTime?
-
-  // Relationships
-  conceptIntakeId String? // Link to concept intake
-  estimationIntakeId String? // Link to estimation if user proceeds
-  projectId String? // Link to project if created
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([email])
-  @@index([jurisdiction])
-  @@index([status])
-  @@index([funnelSessionId])
-  @@index([projectId])
-}
-
-// ============================================================================
-// ESTIMATION INTAKE
-// ============================================================================
-
-model EstimationIntake {
-  id String @id @default(uuid())
-
-  // Contact info
-  email String
-  name String?
-  phone String?
-  
-  // Project info
-  projectType String
-  projectScope String
-  description String
-  address String?
-  zipCode String?
-  
-  // Project details
-  projectStage String // pre_design, schematic, design_development, etc.
-  scopeDetail String // verbal_description, sketch, schematic_drawing, etc.
-  hasDesignDrawings Boolean @default(false)
-  hasContractorFeedback Boolean @default(false)
-  requiresArchitecturalReview Boolean @default(false)
-  requiresEngineeringReview Boolean @default(false)
-
-  // Scoring
-  leadScore Int
-  tier String // cost_estimate, certified_estimate, bundle
-  readinessState String
-
-  // CSI divisions
-  csiDivisions String[]
-  
-  // Funnel tracking
-  funnelSessionId String?
-  source String?
-  
-  // Status
-  status String @default("INTAKE_SUBMITTED")
-  checkoutInitiatedAt DateTime?
-  paidAt DateTime?
-
-  // Relationships
-  relatedZoningId String?
-  projectId String?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([email])
-  @@index([status])
-  @@index([funnelSessionId])
-  @@index([projectId])
-}
-
-// ============================================================================
-// PERMIT INTAKE
-// ============================================================================
-
-model PermitIntake {
-  id String @id @default(uuid())
-
-  // Contact info
-  email String
-  name String?
-  phone String?
-  role String? // homeowner, contractor, architect, project_manager
-  
-  // Project info
-  jurisdiction String
-  permitTypes String[]
-  projectScope String
-  
-  // Project characteristics
-  isRenovation Boolean @default(false)
-  isAddition Boolean @default(false)
-  isNewConstruction Boolean @default(false)
-  isAccessibilityWork Boolean @default(false)
-  involvesStructuralChange Boolean @default(false)
-  involvesSchoolProximity Boolean @default(false)
-  involvesHistoricDistrict Boolean @default(false)
-  involvesWetlands Boolean @default(false)
-
-  // Scoring
-  leadScore Int
-  tier String // document_assembly, submission, tracking, inspection_coordination
-  readinessState String
-
-  // Documentation
-  hasDesignDocuments Boolean @default(false)
-  hasContractorSelected Boolean @default(false)
-  isOwnersBuilder Boolean @default(false)
-
-  // Relationships
-  relatedEstimateId String?
-  projectId String?
-
-  // Funnel tracking
-  funnelSessionId String?
-  source String?
-  
-  // Status
-  status String @default("INTAKE_SUBMITTED")
-  checkoutInitiatedAt DateTime?
-  paidAt DateTime?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([email])
-  @@index([jurisdiction])
-  @@index([status])
-  @@index([funnelSessionId])
-  @@index([projectId])
-}
-
-// ============================================================================
-// PERMIT AUTHORIZATION (For Managed Submissions)
-// ============================================================================
-
-enum AuthorizationType {
-  OWNER_CONSENT
-  CONTRACTOR_AUTHORIZATION
-  BOTH
-}
-
-enum SubmissionMethod {
-  SELF
-  ASSISTED
-  KEALEE_MANAGED
-}
-
-model PermitAuthorization {
-  id String @id @default(uuid())
-
-  // Authorization details
-  projectId String?
-  permitId String?
-  
-  // Owner info
-  ownerName String
-  ownerEmail String?
-  ownerPhone String?
-  
-  // Contractor info
-  contractorName String?
-  contractorCompany String?
-  contractorEmail String?
-  contractorPhone String?
-  
-  // Signature
-  ownerSignature String? // Base64 or S3 URL
-  contractorSignature String?
-  ownerSignedAt DateTime?
-  contractorSignedAt DateTime?
-  
-  // Authorization type
-  authorizationType AuthorizationType
-  submissionMethod SubmissionMethod @default(ASSISTED)
-  
-  // Jurisdiction
-  jurisdiction String
-  projectScope String
-  
-  // Consent details
-  consentGiven Boolean @default(false)
-  consentDate DateTime?
-  consentExpiry DateTime?
-  
-  // Revocation
-  revokedAt DateTime?
-  revocationReason String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([projectId])
-  @@index([permitId])
-  @@index([submissionMethod])
-  @@index([consentGiven])
-}
-
-// ============================================================================
-// SERVICE CHAIN GATING (Orchestration)
-// ============================================================================
-
-enum ReadinessState {
-  NOT_READY
-  NEEDS_MORE_INFO
-  READY_FOR_CONCEPT
-  READY_FOR_ZONING_REVIEW
-  READY_FOR_ESTIMATE
-  READY_FOR_PERMIT_REVIEW
-  READY_FOR_CHECKOUT
-  REQUIRES_CONSULTATION
-  BLOCKED
-}
-
-model ServiceChainGate {
-  id String @id @default(uuid())
-
-  // Project tracking
-  projectId String?
-  userId String?
-  
-  // Service stages
-  conceptCompleted Boolean @default(false)
-  conceptIntakeId String?
-  
-  zoningCompleted Boolean @default(false)
-  zoningIntakeId String?
-  
-  estimationCompleted Boolean @default(false)
-  estimationIntakeId String?
-  
-  permitReadyForCheckout Boolean @default(false)
-  permitIntakeId String?
-  
-  // Overall readiness
-  currentReadinessState ReadinessState @default(NOT_READY)
-  nextRequiredService String? // concept, zoning, estimation, permit
-  blockedReason String?
-  
-  // Chain execution
-  lastServiceCompleted String?
-  chain Json? // Array of executed services with timestamps
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([projectId])
-  @@index([userId])
-  @@index([currentReadinessState])
-}
-
-// ============================================================================
-// ANALYTICS & CONVERSION TRACKING
-// ============================================================================
-
-enum ConversionEvent {
-  CONCEPT_STARTED
-  CONCEPT_COMPLETED
-  CONCEPT_IMAGES_UPLOADED
-  CONCEPT_CHECKOUT_INITIATED
-  CONCEPT_PAID
-  ZONING_STARTED
-  ZONING_COMPLETED
-  ZONING_CHECKOUT_INITIATED
-  ZONING_PAID
-  ESTIMATION_STARTED
-  ESTIMATION_COMPLETED
-  ESTIMATION_CHECKOUT_INITIATED
-  ESTIMATION_PAID
-  PERMIT_STARTED
-  PERMIT_COMPLETED
-  PERMIT_MANAGED_SELECTED
-  PERMIT_AUTHORIZATION_PROVIDED
-  PERMIT_CHECKOUT_INITIATED
-  PERMIT_PAID
-  ROUTED_TO_ARCHITECT
-  ROUTED_TO_ENGINEER
-  CHAIN_COMPLETED
-}
-
-model ConversionFunnel {
-  id String @id @default(uuid())
-
-  // Funnel session
-  funnelSessionId String @unique
-  userId String?
-
-  // Source tracking
-  source String? // marketplace, advertorial, organic, referral
-  campaign String?
-  medium String?
-  
-  // Conversion events
-  events ConversionEvent[]
-  eventTimestamps Json? // { event: timestamp }
-  
-  // Stage completion
-  conceptCompleted Boolean @default(false)
-  zoningCompleted Boolean @default(false)
-  estimationCompleted Boolean @default(false)
-  permitCompleted Boolean @default(false)
-  fullChainCompleted Boolean @default(false)
-  
-  // Revenue tracking
-  totalRevenue Int @default(0) // in cents
-  
-  // Time tracking
-  firstEventAt DateTime?
-  lastEventAt DateTime?
-  completionTime Int? // seconds from start to completion
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([funnelSessionId])
-  @@index([userId])
-  @@index([source])
-  @@index([fullChainCompleted])
-}
-
-  @@index([parcelId])
   @@map("parcel_comparables")
 }
 
@@ -17101,372 +16615,425 @@ model BusinessCalendar {
   @@map("business_calendar")
 }
 
-// ============================================================================
-// CONCEPT INTAKE & DESIGN FLOW (New)
-// ============================================================================
+// =============================================================================
+// KEALEE SERVICE CATALOG — 2026 CTC-Based Pricing
+// Every product and deliverable Kealee offers, priced against 2026 DMV CTC data.
+// =============================================================================
 
-enum ConceptStatus {
-  INTAKE_SUBMITTED
-  CONCEPTS_GENERATED
-  CHECKOUT_INITIATED
-  PAID
-  IN_PROGRESS
-  COMPLETED
-  REJECTED
+/// High-level categories matching products.ts categories
+enum KealeeServiceCategory {
+  AI_DESIGN          // Concept design + floor plan reports
+  PERMITS            // Permit research, filing, coordination, expediting
+  ESTIMATION         // Cost estimates and certified estimates
+  CONSTRUCTION_MGMT  // PM Advisory, PM Oversight, Owner's Rep
+  SPECIALTY          // Water mitigation, historic renovation, specialty assessments
+  BUNDLE             // Combined multi-service packages
 }
 
-enum ConceptComplexity {
-  SIMPLE
-  MODERATE
-  COMPLEX
+/// Tier type within a service — maps to the packages[] in products.ts
+enum KealeeServiceTierType {
+  STARTER      // Entry-level / AI-only / research
+  STANDARD     // Mid-range, most common (popular tier)
+  ADVANCED     // Full design / detailed / professional
+  PREMIUM      // Certified / licensed / full-service
+  ENTERPRISE   // Custom scope / large project / contact-us
 }
 
-model ConceptIntake {
-  id String @id @default(uuid())
+/// How the service is delivered
+enum ServiceDeliveryMode {
+  DIGITAL      // AI-generated, fully automated
+  STAFF_REVIEW // AI + human staff review
+  PROFESSIONAL // Licensed professional involvement
+  ON_SITE      // Requires physical site visit
+  HYBRID       // Mix of digital + professional
+}
 
-  // Contact info
-  email String
-  name String?
-  phone String?
-  
-  // Project info
-  projectType String
-  description String
-  address String?
-  zipCode String?
-  
-  // Project details
-  hasPhotos Boolean @default(false)
-  photoCount Int @default(0)
-  roughDimensions Json? // { sqft, length, width }
-  budgetRange String?
-  stylePreference String?
-  hasExistingStructure Boolean @default(false)
+/// Basis used for calculating the 2026 CTC-justified price
+enum CTCPricingBasis {
+  FLAT_FEE          // Fixed price regardless of project size
+  PER_SQFT          // Price scales proportionally with sqft
+  PCT_OF_CTC        // Percentage of underlying project CTC
+  HOURLY            // Billed hourly (professional services)
+  MONTHLY_RETAINER  // Per calendar month (ongoing services)
+  CUSTOM            // Requires custom quote
+}
 
-  // Scoring
-  leadScore Int
-  complexity ConceptComplexity
-  tier String // concept_basic, concept_advanced, concept_full
-  readinessState String
+/// Canonical Kealee Service Catalog — one record per product/service offering
+model KealeeService {
+  id       String @id @default(uuid())
+  slug     String @unique   // matches products.ts slug e.g. "kitchen-remodel"
+  name     String
+  tagline  String
+  category KealeeServiceCategory
+  deliveryMode ServiceDeliveryMode
 
-  // Generated content
-  generatedConcepts Json? // Array of concept objects
-  scopeSummary Json?
-  feasibilitySignals Json?
+  // --- 2026 Pricing ---
+  pricingBasis   CTCPricingBasis
+  basePriceCents Int?   // Lowest published price (null = custom only)
+  maxPriceCents  Int?   // Highest published price (null = open-ended)
 
-  // Funnel tracking
-  funnelSessionId String?
-  source String? // marketplace, advertorial, organic, etc.
-  
-  // Status
-  status ConceptStatus @default(INTAKE_SUBMITTED)
-  checkoutInitiatedAt DateTime?
-  paidAt DateTime?
+  // --- CTC context (what underlying projects this service addresses) ---
+  ctcBasisProjectType String?  // e.g. "kitchen-remodel", "adu", "whole-home"
+  ctcBasisSqft        Int?     // Representative sqft used to price this service
+  ctcTotalMinCents    Int?     // Min CTC of projects this tier is designed for
+  ctcTotalMaxCents    Int?     // Max CTC of projects this tier is designed for
 
-  // Relationships
-  estimationIntakeId String?
-  projectId String?
-  
+  // --- Delivery economics (2026 DMV rates) ---
+  deliveryHoursMin  Float?   // Minimum staff hours to deliver
+  deliveryHoursMax  Float?   // Maximum staff hours to deliver
+  staffRateUsd      Float?   // 2026 blended staff rate ($/hr)
+  cogsMinCents      Int?     // Minimum COGS to deliver (in cents)
+  cogsMaxCents      Int?     // Maximum COGS to deliver (in cents)
+
+  // --- Agent mapping ---
+  ragAgents         String[] // RAG agents used: "land", "design", "permit", "contractor"
+  conversionProduct String?  // Agent conversion key: "PERMIT_PACKAGE", "DESIGN_CONCEPT_VALIDATION"
+
+  // --- Service metadata ---
+  turnaroundDaysMin Int?
+  turnaroundDaysMax Int?
+  isBundle          Boolean  @default(false)
+  isMostPopular     Boolean  @default(false)
+  isActive          Boolean  @default(true)
+  isVisible         Boolean  @default(true)
+  stripeEnvVar      String?  // e.g. "STRIPE_PRICE_KITCHEN_REMODEL"
+  permitRequired    String?  // "always" | "sometimes" | "rarely"
+  forWho            String?
+  notes             String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([email])
-  @@index([status])
-  @@index([funnelSessionId])
-  @@index([projectId])
-  @@map("concept_intakes")
+  tiers        KealeeServiceTier[]
+  ctcSnapshots CTCPricingSnapshot[]
+  orders       KealeeServiceOrder[]
+
+  @@index([category])
+  @@index([slug])
+  @@index([isActive, isVisible])
+  @@map("kealee_services")
 }
 
-// ============================================================================
-// ZONING & FEASIBILITY ANALYSIS FLOW (New)
-// ============================================================================
+/// Individual pricing tier within a service (maps to packages[] in products.ts)
+model KealeeServiceTier {
+  id        String               @id @default(uuid())
+  serviceId String
+  tierType  KealeeServiceTierType
+  name      String               // e.g. "AI Kitchen Concept", "Advanced Design", "Full Package"
+  description String?
 
-enum ZoningStatus {
-  INTAKE_SUBMITTED
-  ANALYSIS_QUEUED
-  ANALYSIS_IN_PROGRESS
-  ANALYSIS_COMPLETE
-  CHECKOUT_INITIATED
-  PAID
-  CONSULTATION_SCHEDULED
-  REPORT_DELIVERED
-  COMPLETED
+  // --- 2026 Pricing (in cents) ---
+  priceCents    Int?   // null = contact us / custom quote
+  priceMinCents Int?   // For range-priced tiers
+  priceMaxCents Int?   // For range-priced tiers
+
+  // --- 2026 CTC Delivery Cost Analysis ---
+  // What Kealee spends to deliver this tier (2026 DMV rates)
+  cogsLaborHours    Float?   // Staff hours
+  cogsLaborRateUsd  Float?   // 2026 blended staff rate
+  cogsLaborCents    Int?     // Labor COGS in cents
+  cogsOverheadCents Int?     // Platform + ops overhead
+  cogsTotalCents    Int?     // Total COGS
+  grossMarginPct    Float?   // (price - COGS) / price
+
+  // --- 2026 Project CTC context ---
+  // Range of project CTCs this tier is typically ordered for
+  projectCtcMinCents  Int?   // Min project CTC (cents)
+  projectCtcMaxCents  Int?   // Max project CTC (cents)
+  kealeeAsPctOfCtc    Float? // Our service fee as % of total project CTC
+
+  // --- Tier logistics ---
+  turnaroundDays  Int?
+  roundsIncluded  Int?
+  isPopular       Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  stripeEnvVar    String?
+  ctaLabel        String?  // Button label e.g. "Start Kitchen Concept"
+  intakeHref      String?  // Intake path e.g. "/intake/kitchen_remodel"
+
+  // What's included (JSON array of strings)
+  includes Json?   // ["3 layout options", "Permit scope", ...]
+
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  service     KealeeService      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  ctcSnapshot CTCPricingSnapshot?
+  orders      KealeeServiceOrder[]
+
+  @@index([serviceId])
+  @@index([tierType])
+  @@index([isActive])
+  @@map("kealee_service_tiers")
 }
 
-enum BuildabilityRating {
-  HIGHLY_FEASIBLE
-  FEASIBLE_WITH_VARIANCE
-  FEASIBLE_WITH_CUP
-  CHALLENGING_COMPLEX_ENTITLEMENTS
-  NOT_FEASIBLE
+/// CTC calculation snapshot that justifies a service or tier price
+/// Computed from the 2026 CTCCalculator using representative project parameters
+model CTCPricingSnapshot {
+  id        String  @id @default(uuid())
+  serviceId String
+  tierId    String? @unique   // null = service-level snapshot, set = tier-level
+
+  // --- Input parameters ---
+  projectType        String
+  jurisdiction       String   @default("Montgomery County, MD")
+  representativeSqft Int
+
+  // --- 2026 CTC components (USD) ---
+  hardCostBase     Float   // Raw hard cost from 2023 RAG data
+  inflationFactor  Float   @default(1.13)
+  hardCost2026     Float   // hardCostBase × 1.13
+  costPerSqft2026  Float   // 2026 $/sqft
+  softCost         Float
+  riskCost         Float
+  executionCost    Float
+  totalCTC         Float
+  ctcRangeLow      Float   // totalCTC × 0.85
+  ctcRangeHigh     Float   // totalCTC × 1.20
+
+  // --- Kealee service economics ---
+  deliveryHours    Float?  // Staff-hours to deliver
+  deliveryRateUsd  Float?  // 2026 blended rate ($/hr)
+  cogsTotalUsd     Float?  // Total COGS
+  kaleePriceUsd    Float?  // Published price
+  grossMarginPct   Float?  // (price - COGS) / price
+  kaleePctOfCtc    Float?  // Our fee as % of total project CTC
+
+  // --- Metadata ---
+  inflationNote String? // "2023 base × 1.13 (cumulative DMV 2023→2026)"
+  dataSource    String  @default("RAG-DMV-2026")
+  computedAt    DateTime @default(now())
+
+  service KealeeService      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  tier    KealeeServiceTier? @relation(fields: [tierId], references: [id])
+
+  @@index([serviceId])
+  @@index([projectType])
+  @@map("ctc_pricing_snapshots")
 }
 
-model ZoningIntake {
-  id String @id @default(uuid())
+/// Service order — created when a client purchases a Kealee service
+model KealeeServiceOrder {
+  id        String  @id @default(uuid())
+  serviceId String
+  tierId    String?
+  userId    String?
+  projectId String?
 
-  // Contact info
-  email String
-  name String?
-  phone String?
-  
-  // Property info
-  address String?
-  zipCode String?
+  // --- Order identifiers ---
+  orderNumber String @unique @default(cuid())
+  status      String @default("PENDING")
+  // PENDING | PAID | IN_PROGRESS | DELIVERED | CANCELLED | REFUNDED
+
+  // --- Pricing at time of order ---
+  priceCents Int
+  currency   String @default("USD")
+
+  // --- Stripe ---
+  stripePaymentIntentId String?
+  stripeSessionId       String?
+  paidAt                DateTime?
+
+  // --- Delivery ---
+  deliveredAt DateTime?
+  deliveryUrl String?
+  assignedTo  String?   // Staff member handling delivery
+
+  // --- Project context captured at order time ---
   jurisdiction String?
-  zoningDistrict String?
-  propertyType String? // residential, commercial, mixed_use, industrial
-  currentUse String?
-  
-  // Lot info
-  lotSize Int? // in square feet
-  existingStructureInfo String?
-  desiredBuild String?
+  projectType  String?
+  sqft         Int?
+  address      String?
 
-  // Environmental factors
-  environmentalConstraints String?
-  hasWetlands Boolean @default(false)
-  hasFloodPlain Boolean @default(false)
-  inHistoricDistrict Boolean @default(false)
+  // --- CTC snapshot at order time (denormalized for audit) ---
+  ctcSnapshot Json?    // {totalCTC, hardCost, softCost, riskCost, executionCost, range}
 
-  // Project intent
-  projectIntent String?
+  // --- Notes ---
+  clientNotes  String?
+  internalNotes String?
 
-  // Documentation
-  uploadedPhotos Boolean @default(false)
-  uploadedDocuments Boolean @default(false)
-
-  // Analysis results
-  buildabilityScore Int?
-  buildabilityRating BuildabilityRating?
-  analysisSummary Json? // Jurisdiction data, overlays, uses, etc.
-  
-  // Flags
-  requiresVariance Boolean @default(false)
-  requiresCUP Boolean @default(false)
-  requiresEngineer Boolean @default(false)
-  requiresArchitect Boolean @default(false)
-  
-  // Tier
-  recommendedTier String? // zoning_research, feasibility_assessment, entitlement_path, pre_submission_consulting
-  readinessState String?
-
-  // Funnel tracking
-  funnelSessionId String?
-  source String?
-  
-  // Consultation
-  consultationScheduled Boolean @default(false)
-  consultationDate DateTime?
-  consultationNotes String?
-
-  // Status & tracking
-  status ZoningStatus @default(INTAKE_SUBMITTED)
-  checkoutInitiatedAt DateTime?
-  paidAt DateTime?
-
-  // Relationships
-  conceptIntakeId String?
-  estimationIntakeId String?
-  projectId String?
-  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([email])
-  @@index([jurisdiction])
+  service KealeeService      @relation(fields: [serviceId], references: [id])
+  tier    KealeeServiceTier? @relation(fields: [tierId], references: [id])
+
+  @@index([serviceId])
+  @@index([tierId])
+  @@index([userId])
+  @@index([projectId])
   @@index([status])
-  @@index([funnelSessionId])
-  @@index([projectId])
-  @@map("zoning_intakes")
+  @@index([orderNumber])
+  @@map("kealee_service_orders")
 }
 
-// ============================================================================
-// PERMIT AUTHORIZATION (For Managed Submissions) (New)
-// ============================================================================
+// =============================================================================
+// KEABOT CHAIN MODELS — DesignBot → EstimateBot → PermitBot
+// Tracks execution of the AI bot chain with Claude prompt caching metrics.
+// =============================================================================
 
-enum AuthorizationType {
-  OWNER_CONSENT
-  CONTRACTOR_AUTHORIZATION
-  BOTH
-}
+/// Execution record for a single bot run in the chain
+model KeaBotRun {
+  id          String   @id @default(uuid())
+  projectId   String
+  /// "DesignBot" | "EstimateBot" | "PermitBot"
+  botType     String
+  /// PENDING | IN_PROGRESS | COMPLETED | FAILED
+  status      String   @default("PENDING")
 
-enum SubmissionMethod {
-  SELF
-  ASSISTED
-  KEALEE_MANAGED
-}
+  /// Chain position (1=Design, 2=Estimate, 3=Permit)
+  chainOrder  Int      @default(1)
+  /// ID of the upstream run this depends on
+  parentRunId String?
 
-model PermitAuthorization {
-  id String @id @default(uuid())
+  /// Input payload sent to the bot
+  inputData   Json
 
-  // Authorization details
-  projectId String?
-  permitId String?
-  
-  // Owner info
-  ownerName String
-  ownerEmail String?
-  ownerPhone String?
-  
-  // Contractor info
-  contractorName String?
-  contractorCompany String?
-  contractorEmail String?
-  contractorPhone String?
-  
-  // Signature
-  ownerSignature String? // Base64 or S3 URL
-  contractorSignature String?
-  ownerSignedAt DateTime?
-  contractorSignedAt DateTime?
-  
-  // Authorization type
-  authorizationType AuthorizationType
-  submissionMethod SubmissionMethod @default(ASSISTED)
-  
-  // Jurisdiction
-  jurisdiction String
-  projectScope String
-  
-  // Consent details
-  consentGiven Boolean @default(false)
-  consentDate DateTime?
-  consentExpiry DateTime?
-  
-  // Revocation
-  revokedAt DateTime?
-  revocationReason String?
+  /// Output payload from the bot (null until completed)
+  outputData  Json?
+
+  /// Claude model used
+  modelUsed   String?
+  inputTokens  Int?
+  outputTokens Int?
+
+  /// Prompt caching metrics: {cacheCreationTokens, cacheReadTokens, cacheHit, savedTokens}
+  cacheMetrics Json?
+
+  /// Estimated API cost in USD
+  estimatedCostUsd Float?
+
+  /// Timing
+  startedAt   DateTime?
+  completedAt DateTime?
+  durationMs  Int?
+
+  /// Error details if status = FAILED
+  errorMessage String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// Relations to typed output records
+  designConcept  BotDesignConcept?
+  estimateItems  BotEstimateLineItem[]
+  permitCase     PermitCase?
+
   @@index([projectId])
-  @@index([permitId])
-  @@index([submissionMethod])
-  @@index([consentGiven])
-  @@map("permit_authorizations")
+  @@index([botType])
+  @@index([status])
+  @@index([parentRunId])
+  @@map("keabot_runs")
 }
 
-// ============================================================================
-// SERVICE CHAIN GATING (Orchestration) (New)
-// ============================================================================
+/// Structured output from DesignBot
+model BotDesignConcept {
+  id        String @id @default(uuid())
+  projectId String
+  botRunId  String @unique
 
-enum ReadinessState {
-  NOT_READY
-  NEEDS_MORE_INFO
-  READY_FOR_CONCEPT
-  READY_FOR_ZONING_REVIEW
-  READY_FOR_ESTIMATE
-  READY_FOR_PERMIT_REVIEW
-  READY_FOR_CHECKOUT
-  REQUIRES_CONSULTATION
-  BLOCKED
+  /// Project context
+  projectType  String
+  scope        String?
+  location     String?
+  sqft         Int?
+  budgetUsd    Float?
+
+  /// MEP system design: {irrigation, lighting, drainage, electrical, hvac, plumbing}
+  mepSystem    Json
+
+  /// Bill of Materials: [{item, quantity, unit, estimatedCost, ctcTaskNumber, csiCode}]
+  bom          Json
+
+  /// Kealee service fee at time of concept generation
+  aiConceptCostUsd   Float
+  /// Full project construction CTC from RAG + calculator
+  estimatedTotalCostUsd Float
+
+  /// CTC breakdown snapshot
+  ctcBreakdown Json?  // {hardCost, softCost, riskCost, executionCost, total, range}
+
+  /// How many BOM line items
+  bomItemCount Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  botRun KeaBotRun @relation(fields: [botRunId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("bot_design_concepts")
 }
 
-model ServiceChainGate {
-  id String @id @default(uuid())
+/// Individual line item from EstimateBot output
+model BotEstimateLineItem {
+  id        String @id @default(uuid())
+  projectId String
+  botRunId  String
 
-  // Project tracking
-  projectId String?
-  userId String?
-  
-  // Service stages
-  conceptCompleted Boolean @default(false)
-  conceptIntakeId String?
-  
-  zoningCompleted Boolean @default(false)
-  zoningIntakeId String?
-  
-  estimationCompleted Boolean @default(false)
-  estimationIntakeId String?
-  
-  permitReadyForCheckout Boolean @default(false)
-  permitIntakeId String?
-  
-  // Overall readiness
-  currentReadinessState ReadinessState @default(NOT_READY)
-  nextRequiredService String? // concept, zoning, estimation, permit
-  blockedReason String?
-  
-  // Chain execution
-  lastServiceCompleted String?
-  chain Json? // Array of executed services with timestamps
-  
+  /// "labor" | "materials" | "equipment" | "subcontractor" | "overhead"
+  category    String
+  description String
+  csiCode     String?
+  ctcTaskNumber String?  // Links to CTC catalog task
+
+  /// Quantities
+  quantity Float
+  unit     String   // "SF", "LF", "CY", "HR", "EA", "MO"
+
+  /// 2026 DMV pricing
+  unitCost        Float
+  inflationFactor Float  @default(1.13)
+  subtotal        Float  // quantity × unitCost × inflationFactor
+
+  /// Labor detail
+  laborHours Float?
+  laborRate  Float?   // 2026 DMV blended rate
+
+  sortOrder Int @default(0)
+  createdAt DateTime @default(now())
+
+  botRun KeaBotRun @relation(fields: [botRunId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([botRunId])
+  @@index([category])
+  @@map("bot_estimate_line_items")
+}
+
+/// Structured output from PermitBot
+model PermitCase {
+  id        String @id @default(uuid())
+  projectId String
+  botRunId  String @unique
+
+  /// Jurisdiction identification
+  zipCode     String
+  jurisdiction String   // e.g. "prince-george-county-md"
+  state       String   // "MD" | "VA" | "DC"
+  county      String?
+  city        String?
+
+  /// Required permits: [{permitType, agency, estimatedFee, processingDays, requiresPlans, requiresPE, notes}]
+  permits     Json
+
+  /// Aggregated totals
+  totalPermitCostUsd  Float
+  totalProcessingDays Int
+
+  /// "IDENTIFIED" | "FILED" | "APPROVED" | "DENIED" | "WITHDRAWN"
+  status String @default("IDENTIFIED")
+
+  /// Cache hit info from PermitBot's jurisdiction system prompt
+  jurisdictionCacheHit Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  botRun KeaBotRun @relation(fields: [botRunId], references: [id], onDelete: Cascade)
+
   @@index([projectId])
-  @@index([userId])
-  @@index([currentReadinessState])
-  @@map("service_chain_gates")
-}
-
-// ============================================================================
-// ANALYTICS & CONVERSION TRACKING (New)
-// ============================================================================
-
-enum ConversionEvent {
-  CONCEPT_STARTED
-  CONCEPT_COMPLETED
-  CONCEPT_IMAGES_UPLOADED
-  CONCEPT_CHECKOUT_INITIATED
-  CONCEPT_PAID
-  ZONING_STARTED
-  ZONING_COMPLETED
-  ZONING_CHECKOUT_INITIATED
-  ZONING_PAID
-  ESTIMATION_STARTED
-  ESTIMATION_COMPLETED
-  ESTIMATION_CHECKOUT_INITIATED
-  ESTIMATION_PAID
-  PERMIT_STARTED
-  PERMIT_COMPLETED
-  PERMIT_MANAGED_SELECTED
-  PERMIT_AUTHORIZATION_PROVIDED
-  PERMIT_CHECKOUT_INITIATED
-  PERMIT_PAID
-  ROUTED_TO_ARCHITECT
-  ROUTED_TO_ENGINEER
-  CHAIN_COMPLETED
-}
-
-model ConversionFunnel {
-  id String @id @default(uuid())
-
-  // Funnel session
-  funnelSessionId String @unique
-  userId String?
-
-  // Source tracking
-  source String? // marketplace, advertorial, organic, referral
-  campaign String?
-  medium String?
-  
-  // Conversion events
-  events ConversionEvent[]
-  eventTimestamps Json? // { event: timestamp }
-  
-  // Stage completion
-  conceptCompleted Boolean @default(false)
-  zoningCompleted Boolean @default(false)
-  estimationCompleted Boolean @default(false)
-  permitCompleted Boolean @default(false)
-  fullChainCompleted Boolean @default(false)
-  
-  // Revenue tracking
-  totalRevenue Int @default(0) // in cents
-  
-  // Time tracking
-  firstEventAt DateTime?
-  lastEventAt DateTime?
-  completionTime Int? // seconds from start to completion
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([funnelSessionId])
-  @@index([userId])
-  @@index([source])
-  @@index([fullChainCompleted])
-  @@map("conversion_funnels")
+  @@index([jurisdiction])
+  @@index([zipCode])
+  @@map("permit_cases")
 }

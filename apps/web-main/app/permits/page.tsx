@@ -9,6 +9,16 @@ export const metadata: Metadata = {
   title: 'Building Permit Services | DC, MD, VA | Kealee Permit Group',
   description:
     'Real building permit timelines for DC, MD, and VA jurisdictions. Kealee prepares permit-ready packages that move through plan review in fewer cycles.',
+  openGraph: {
+    title: 'Building Permits Made Simple | DC, MD, VA — Kealee',
+    description: 'Expert permit research, filing, and coordination for DC, Maryland, and Virginia projects. From $149. No surprises.',
+    url: 'https://kealee.com/permits',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Building Permits Made Simple | DC, MD, VA — Kealee',
+    description: 'Expert permit research, filing, and coordination for DC, Maryland, and Virginia projects. From $149. No surprises.',
+  },
 }
 
 const STATE_LABELS: Record<string, string> = {

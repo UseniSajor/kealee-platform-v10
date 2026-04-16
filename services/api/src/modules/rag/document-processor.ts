@@ -6,7 +6,32 @@
  */
 
 import { prismaAny } from '../../utils/prisma-helper.js'
-import type { IngestOptions } from '@kealee/ai/rag/types.js'
+
+// Inline types — avoids runtime dependency on @kealee/ai which is not installed here
+type RagDocumentType =
+  | 'PROJECT_DESCRIPTION'
+  | 'PERMIT_APPLICATION'
+  | 'ESTIMATE'
+  | 'INSPECTION_REPORT'
+  | 'JURISDICTION_GUIDE'
+  | 'SERVICE_CATALOG'
+  | 'CONCEPT_REPORT'
+  | 'ZONING_DATA'
+  | 'CONTRACTOR_PROFILE'
+  | 'PHASE_NOTE'
+
+interface IngestOptions {
+  sourceType: RagDocumentType
+  sourceId: string
+  title: string
+  content: string
+  jurisdiction?: string
+  serviceType?: string
+  phase?: string
+  projectId?: string
+  chunkSize?: number
+  chunkOverlap?: number
+}
 
 // ── Jurisdiction Guide text — built-in knowledge ──────────────────────────────
 
