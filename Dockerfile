@@ -1,10 +1,15 @@
 # ============================================================
 # Railway Deployment Dockerfile — Kealee Platform
-# Multi-service production build (API + Web)
+# Production build for API service
 # ============================================================
 
 # Build stage
 FROM node:20-slim AS builder
+
+# Prevent package installation of Playwright/Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PRISMA_CLIENT_ENGINE_TYPE=binary
+ENV NPM_CONFIG_PRODUCTION=false
 
 # Install build dependencies only
 RUN apt-get update -y \
@@ -29,11 +34,13 @@ COPY services ./services
 COPY apps ./apps
 COPY data ./data
 
-# Install dependencies (skip optional dependencies)
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PRISMA_CLIENT_ENGINE_TYPE=binary
-
-RUN pnpm install --prod=false --ignore-scripts --no-frozen-lockfile
+# Install dependencies - skip all optional/dev browser packages
+# Use --ignore-scripts to prevent postinstall scripts from downloading chromium
+RUN pnpm install \
+    --prod=false \
+    --ignore-scripts \
+    --no-frozen-lockfile \
+    --filter @kealee/api...
 
 # Build database packages
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \

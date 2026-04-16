@@ -1,27 +1,18 @@
 # Railway Configuration for Kealee Platform
-# Explicitly configure build and deployment settings
+# Override nixpacks to use explicit Dockerfile
 
 [build]
-# Use the Dockerfile in the root directory
+# Use our custom Dockerfile
 dockerfile = "Dockerfile"
-dockerfilePath = "."
-
-# Build context
-context = "."
-
-# Don't auto-detect dependencies that cause unnecessary packages
-buildpacks = []
+contextDir = "."
 
 [deploy]
-# Service configuration
+# API service start command
 startCommand = "node dist/index.js"
-healthcheckPath = "/health"
-healthcheckTimeout = 30
 
-# Environment
+# Environment variables
 [env]
 NODE_ENV = "production"
+PORT = "3000"
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
 PRISMA_CLIENT_ENGINE_TYPE = "binary"
-PRISMA_HIDE_UPDATE_MESSAGE = "true"
-PORT = "3000"

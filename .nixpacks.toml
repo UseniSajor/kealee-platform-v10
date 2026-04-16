@@ -1,0 +1,14 @@
+[providers]
+# Use Node.js without nixpacks trying to install browser packages
+node = "20"
+
+[install]
+# Skip Playwright and other test dependencies during build
+# These are dev-only and should not be installed in production
+skip_dev_dependencies = true
+
+[env]
+# Tell Node/npm/pnpm to skip optional dependencies
+NPM_CONFIG_PRODUCTION = "true"
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+SKIP_BUILD_SCRIPT = "true"
