@@ -1235,25 +1235,8 @@ const start = async () => {
     const port = Number(process.env.PORT) || 3000
     console.log(`🔌 Starting server on port ${port}...`)
 
-    // Load zoning and other seed data into the retrieval layer
-    try {
-      ingestAllSeeds()
-    } catch (err: any) {
-      console.error('[SeedIngest] Failed to load seeds:', err?.message || err)
-    }
-
-    // ── RAG nightly ingestion job ──
-    try {
-      const { scheduleRagNightlyJob, startRagIngestionWorker } = await import('./modules/rag/rag-nightly-job.js')
-      scheduleRagNightlyJob()
-      startRagIngestionWorker()
-    } catch (err: any) {
-      console.warn('[RAG] Failed to start RAG job scheduler:', err?.message)
-    }
-
-    // ── Load RAG retrieval data ──
-    loadRAGData()
-
+    // START SERVER FIRST - This ensures /health responds immediately for healthchecks
+    // Background initialization tasks will run after server is listening
     await fastify.listen({ port, host: '0.0.0.0' })
 
     // Startup complete message
@@ -1268,6 +1251,43 @@ const start = async () => {
     console.log(`Health:       /health`);
     console.log(`Docs:         /docs`);
     console.log('='.repeat(60));
+
+    // ═══════════════════════════════════════════════════════════════════════════════════
+    // BACKGROUND INITIALIZATION - runs after server is listening
+    // These are non-critical initialization tasks that should not block healthchecks
+    // ═══════════════════════════════════════════════════════════════════════════════════
+
+    // Load zoning and other seed data into the retrieval layer (async in background)
+    setImmediate(() => {
+      try {
+        ingestAllSeeds()
+        console.log('✅ Seed data ingestion started')
+      } catch (err: any) {
+        console.error('[SeedIngest] Failed to load seeds:', err?.message || err)
+      }
+    })
+
+    // ── RAG nightly ingestion job (async in background) ──
+    setImmediate(async () => {
+      try {
+        const { scheduleRagNightlyJob, startRagIngestionWorker } = await import('./modules/rag/rag-nightly-job.js')
+        scheduleRagNightlyJob()
+        startRagIngestionWorker()
+        console.log('✅ RAG job scheduler started')
+      } catch (err: any) {
+        console.warn('[RAG] Failed to start RAG job scheduler:', err?.message)
+      }
+    })
+
+    // ── Load RAG retrieval data (async in background) ──
+    setImmediate(() => {
+      try {
+        loadRAGData()
+        console.log('✅ RAG retrieval data loaded')
+      } catch (err: any) {
+        console.warn('[RAG] Failed to load retrieval data:', err?.message)
+      }
+    })
 
     // ── Integration Status ──
     const integrations = [
