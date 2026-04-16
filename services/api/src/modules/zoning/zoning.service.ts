@@ -465,6 +465,192 @@ Return a JSON object with:
     if (existing) return { found: true, profile: existing }
     return { found: false, profile: null }
   }
+
+  /**
+   * SHARED ZONING INTELLIGENCE LAYER
+   * Three-tier system for concept, estimation, permit services
+   */
+
+  /**
+   * Snapshot: Lightweight zoning intelligence for base tier
+   * Used in: Concept basic tier, initial feasibility checks
+   */
+  async getZoningSnapshot(input: ZoningAnalysisInput) {
+    const profile = await this.analyzeZoning(input, 'system')
+
+    return {
+      jurisdiction: profile.jurisdiction?.name || 'Unknown',
+      zoningDistrict: profile.districtCode,
+      basicUseAllowed: profile.allowedUses?.length > 0,
+      highLevelConstraints: [
+        ...(profile.maxBuildingHeightFt ? [`Max height: ${profile.maxBuildingHeightFt}ft`] : []),
+        ...(profile.maxStories ? [`Max stories: ${profile.maxStories}`] : []),
+        ...(profile.maxFAR ? [`Max FAR: ${profile.maxFAR}`] : []),
+      ],
+      riskFlags: profile.overlayDistricts?.length > 0 ? ['Has overlay districts'] : [],
+      feasibilityRating: 'PRELIMINARY',
+      confidenceLevel: Math.min(profile.aiConfidence || 50, 75),
+    }
+  }
+
+  /**
+   * Summary: Moderate zoning intelligence for advanced tier
+   * Used in: Advanced concept, estimation, permit prechecks
+   */
+  async getZoningSummary(input: ZoningAnalysisInput) {
+    const profile = await this.analyzeZoning(input, 'system')
+    const compliance = await this.checkCompliance(
+      {
+        zoningProfileId: profile.id,
+        housingType: 'MULTI_FAMILY',
+        proposedUnits: 4,
+        stories: 3,
+        totalSqFt: 10000,
+      },
+      'system'
+    )
+
+    return {
+      // Snapshot fields
+      jurisdiction: profile.jurisdiction?.name || 'Unknown',
+      zoningDistrict: profile.districtCode,
+      basicUseAllowed: profile.allowedUses?.length > 0,
+      highLevelConstraints: [
+        ...(profile.maxBuildingHeightFt ? [`Max height: ${profile.maxBuildingHeightFt}ft`] : []),
+        ...(profile.maxStories ? [`Max stories: ${profile.maxStories}`] : []),
+        ...(profile.maxFAR ? [`Max FAR: ${profile.maxFAR}`] : []),
+      ],
+      riskFlags: profile.overlayDistricts?.length > 0 ? ['Has overlay districts'] : [],
+      feasibilityRating: 'MODERATE',
+      confidenceLevel: Math.min(profile.aiConfidence || 50, 85),
+
+      // Summary additions
+      overlays: profile.overlayDistricts || [],
+      setbacks: {
+        front: profile.frontSetbackFt,
+        side: profile.sideSetbackFt,
+        rear: profile.rearSetbackFt,
+      },
+      heightLimits: {
+        maxHeightFt: profile.maxBuildingHeightFt,
+        maxStories: profile.maxStories,
+      },
+      lotCoverage: {
+        maxPercentage: profile.maxLotCoverage ? profile.maxLotCoverage * 100 : undefined,
+      },
+      parkingIndicators: {
+        minPerUnit: profile.minParkingPerUnit,
+        reductionPossible: profile.minParkingPerUnit < 1.5,
+      },
+      entitlementPath: compliance.requiredVariances?.length > 0 ? 'VARIANCE_REQUIRED' : 'STANDARD',
+      buildabilitySummary: compliance.isCompliant ? 'Generally feasible' : 'Feasibility concerns',
+      zoningRequirements: [
+        `Zoning: ${profile.districtCode} (${profile.districtName})`,
+        `Max density: ${profile.maxDensityPerAcre} units/acre`,
+        ...profile.allowedUses,
+      ],
+    }
+  }
+
+  /**
+   * Full Report: Comprehensive zoning intelligence
+   * Used in: Full tier concept, deeper feasibility analysis, high-risk jobs
+   */
+  async getZoningFullReport(input: ZoningAnalysisInput) {
+    const profile = await this.analyzeZoning(input, 'system')
+    const compliance = await this.checkCompliance(
+      {
+        zoningProfileId: profile.id,
+        housingType: 'MULTI_FAMILY',
+        proposedUnits: 4,
+        stories: 3,
+        totalSqFt: 10000,
+      },
+      'system'
+    )
+    const nepa = await this.checkNEPAExemption({
+      address: input.address,
+      housingType: 'MULTI_FAMILY',
+      proposedUnits: 4,
+    })
+    const checklist = await this.generatePermitChecklist({
+      zoningProfileId: profile.id,
+      housingType: 'MULTI_FAMILY',
+    })
+
+    return {
+      // Summary fields
+      jurisdiction: profile.jurisdiction?.name || 'Unknown',
+      zoningDistrict: profile.districtCode,
+      basicUseAllowed: profile.allowedUses?.length > 0,
+      highLevelConstraints: [
+        ...(profile.maxBuildingHeightFt ? [`Max height: ${profile.maxBuildingHeightFt}ft`] : []),
+        ...(profile.maxStories ? [`Max stories: ${profile.maxStories}`] : []),
+        ...(profile.maxFAR ? [`Max FAR: ${profile.maxFAR}`] : []),
+      ],
+      riskFlags: profile.overlayDistricts?.length > 0 ? ['Has overlay districts'] : [],
+      feasibilityRating: 'VERIFIED',
+      confidenceLevel: Math.min(profile.aiConfidence || 50, 95),
+
+      overlays: profile.overlayDistricts || [],
+      setbacks: {
+        front: profile.frontSetbackFt,
+        side: profile.sideSetbackFt,
+        rear: profile.rearSetbackFt,
+      },
+      heightLimits: {
+        maxHeightFt: profile.maxBuildingHeightFt,
+        maxStories: profile.maxStories,
+      },
+      lotCoverage: {
+        maxPercentage: profile.maxLotCoverage ? profile.maxLotCoverage * 100 : undefined,
+      },
+      parkingIndicators: {
+        minPerUnit: profile.minParkingPerUnit,
+        reductionPossible: profile.minParkingPerUnit < 1.5,
+      },
+      entitlementPath: compliance.requiredVariances?.length > 0 ? 'VARIANCE_REQUIRED' : 'STANDARD',
+      buildabilitySummary: compliance.isCompliant ? 'Generally feasible' : 'Feasibility concerns',
+      zoningRequirements: [
+        `Zoning: ${profile.districtCode} (${profile.districtName})`,
+        `Max density: ${profile.maxDensityPerAcre} units/acre`,
+        ...profile.allowedUses,
+      ],
+
+      // Full report additions
+      developmentStandards: {
+        minLotSize: profile.minLotSizeSqFt,
+        maxFAR: profile.maxFAR,
+        maxCoverage: profile.maxLotCoverage,
+        densityLimit: profile.maxDensityPerAcre,
+      },
+      environmentalConstraints: nepa.qualifications.filter(q => q.includes('environmental') || q.includes('wetland') || q.includes('flood')),
+      historicConstraints: profile.overlayDistricts?.filter(o => o.includes('Historic')) || [],
+      detailedRiskAnalysis: compliance.violations.map(v => ({
+        category: 'Compliance',
+        issue: v,
+        severity: 'HIGH',
+      })),
+      buildabilitySummaryExpanded: {
+        isCompliant: compliance.isCompliant,
+        complianceScore: compliance.complianceScore,
+        violations: compliance.violations,
+        requiredVariances: compliance.requiredVariances,
+        estimatedPermitTimeline: `${compliance.estimatedTimelineDays} days`,
+        estimatedPermitCosts: `$${compliance.estimatedFees}`,
+      },
+      requiresArchitect: compliance.violations.length > 2,
+      requiresEngineer: compliance.violations.some(v => v.includes('FAR') || v.includes('Height')),
+      nepaAssessment: {
+        exemptionType: nepa.exemptionType,
+        isExempt: nepa.isExempt,
+        recommendation: nepa.recommendation,
+      },
+      permitsRequired: checklist.permits,
+      totalPermitFees: checklist.totalEstimatedFees,
+      totalPermitTimeline: `${checklist.totalEstimatedDays} days`,
+    }
+  }
 }
 
 export const zoningService = new ZoningService()

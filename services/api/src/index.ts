@@ -328,6 +328,7 @@ import { registerPublicZoningRoutes } from './modules/zoning/public-zoning-intak
 import { registerPermitAuthorizationRoutes } from './modules/permits/permit-authorization.routes'
 import { registerOrchestrationRoutes } from './modules/orchestration/chain-gating'
 import { registerAnalyticsRoutes } from './modules/analytics/funnel-analytics'
+import checkoutPricingRoutes from './routes/checkout-pricing.routes'
 // import { createGraphQLServer } from './graphql/server' // DISABLED: GraphQL not critical for MVP
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware'
 import { registerRateLimits } from './middleware/rate-limit.middleware'
@@ -537,6 +538,11 @@ const start = async () => {
     // ── Stripe Webhook Handlers ──
     await safeRegisterBlock('Stripe webhook handlers (payment events)', async () => {
       await registerStripeWebhookRoutes(fastify)
+    })
+
+    // ── Checkout Pricing Calculation ──
+    await safeRegisterBlock('Checkout pricing calculation endpoints', async () => {
+      await checkoutPricingRoutes(fastify)
     })
 
     // ── Service Chain Orchestration & Gating ──
