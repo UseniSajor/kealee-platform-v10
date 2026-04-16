@@ -315,12 +315,19 @@ import { complianceCheckpointRoutes } from './modules/compliance/compliance-chec
 // import { complianceRoutes } from './routes/compliance.routes'
 // Deposit temporarily disabled
 // import { depositRoutes } from './routes/deposit.routes'
-// Stripe webhook temporarily disabled
-// import { stripeWebhookRoutes } from './routes/stripe-webhook.routes'
+// Stripe webhook handlers for checkout and payment events
+import { registerStripeWebhookRoutes } from './modules/webhooks/stripe-webhook.routes'
 // Oversight temporarily disabled
 // import { oversightRoutes } from './routes/oversight.routes'
 import testRoutes from './routes/test.routes'
 import { healthRoutes } from './routes/health.routes'
+import { registerPublicEstimationRoutes } from './modules/estimation/public-estimation-intake.routes'
+import { registerPublicPermitRoutes } from './modules/permits/public-permits-intake.routes'
+import { registerPublicConceptRoutes } from './modules/concept/public-concept-intake.routes'
+import { registerPublicZoningRoutes } from './modules/zoning/public-zoning-intake.routes'
+import { registerPermitAuthorizationRoutes } from './modules/permits/permit-authorization.routes'
+import { registerOrchestrationRoutes } from './modules/orchestration/chain-gating'
+import { registerAnalyticsRoutes } from './modules/analytics/funnel-analytics'
 // import { createGraphQLServer } from './graphql/server' // DISABLED: GraphQL not critical for MVP
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware'
 import { registerRateLimits } from './middleware/rate-limit.middleware'
@@ -514,6 +521,34 @@ const start = async () => {
       await fastify.register(disputeRoutes, { prefix: '/disputes' })
     })
 
+    // ── Public Intake Routes (Concept, Zoning, Estimation & Permits) ──
+    await safeRegisterBlock('Public intake routes (concept, zoning, estimation, permits)', async () => {
+      await registerPublicConceptRoutes(fastify)
+      await registerPublicZoningRoutes(fastify)
+      await registerPublicEstimationRoutes(fastify)
+      await registerPublicPermitRoutes(fastify)
+    })
+
+    // ── Permit Authorization & Managed Submissions ──
+    await safeRegisterBlock('Permit authorization & managed submission routes', async () => {
+      await registerPermitAuthorizationRoutes(fastify)
+    })
+
+    // ── Stripe Webhook Handlers ──
+    await safeRegisterBlock('Stripe webhook handlers (payment events)', async () => {
+      await registerStripeWebhookRoutes(fastify)
+    })
+
+    // ── Service Chain Orchestration & Gating ──
+    await safeRegisterBlock('Service chain orchestration & gating routes', async () => {
+      await registerOrchestrationRoutes(fastify)
+    })
+
+    // ── Funnel Analytics ──
+    await safeRegisterBlock('Funnel analytics & conversion tracking', async () => {
+      await registerAnalyticsRoutes(fastify)
+    })
+
     // ── Analytics & Compliance ──
     await safeRegisterBlock('Analytics & Compliance routes', async () => {
       const { analyticsRoutes } = await import('./modules/analytics/analytics.routes')
@@ -584,6 +619,8 @@ const start = async () => {
       await fastify.register(financingRoutes, { prefix: '/financing' })
       await fastify.register(lenderRoutes, { prefix: '/lenders' })
       await fastify.register(productRoutes, { prefix: '/products' })
+      const { default: productImagesRoutes } = await import('./routes/product-images')
+      await fastify.register(productImagesRoutes, { prefix: '/product-images' })
       await fastify.register(projectItemRoutes, { prefix: '/projects' })
       // Temporarily disabled - needs service method fixes
       // await fastify.register(disputeRoutes, { prefix: '/disputes' })
