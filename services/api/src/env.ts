@@ -6,8 +6,6 @@
 
 const REQUIRED_VARS: string[] = [
   'DATABASE_URL',
-  'SUPABASE_URL',
-  'SUPABASE_SERVICE_ROLE_KEY',
   'JWT_SECRET',
   'STRIPE_SECRET_KEY',
   'STRIPE_WEBHOOK_SECRET',
@@ -28,9 +26,9 @@ export function validateEnv(): void {
 /** Typed, non-null env constants (safe to use after validateEnv() passes) */
 export const env = {
   databaseUrl:         process.env.DATABASE_URL!,
-  supabaseUrl:         process.env.SUPABASE_URL!,
+  supabaseUrl:         process.env.SUPABASE_URL ?? '',
   supabaseAnonKey:     process.env.SUPABASE_ANON_KEY ?? '',
-  supabaseServiceKey:  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  supabaseServiceKey:  process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
   jwtSecret:           process.env.JWT_SECRET!,
   stripeSecretKey:     process.env.STRIPE_SECRET_KEY!,
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,

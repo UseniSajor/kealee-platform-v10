@@ -21,10 +21,10 @@ export const config = {
   // Database
   databaseUrl: process.env.DATABASE_URL!,
   
-  // Supabase
-  supabaseUrl: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  supabaseAnonKey: process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  // Supabase (optional - can use S3/R2 instead)
+  supabaseUrl: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  supabaseAnonKey: process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
   
   // Stripe
   stripeSecretKey: process.env.STRIPE_SECRET_KEY!,
@@ -62,35 +62,24 @@ export const config = {
 // Validate required env vars in production
 const required = [
   'DATABASE_URL',
-  'SUPABASE_URL',
-  'SUPABASE_SERVICE_KEY',
 ];
 
 if (process.env.NODE_ENV === 'production') {
   for (const key of required) {
-    const value = key === 'SUPABASE_URL' 
-      ? config.supabaseUrl
-      : key === 'SUPABASE_SERVICE_KEY'
-      ? config.supabaseServiceKey
-      : process.env[key];
-    
-    if (!value) {
+    if (!process.env[key]) {
       throw new Error(`Missing required environment variable: ${key}`);
     }
   }
 } else {
-  // Warn in development
-  const missing = required.filter(key => {
-    const value = key === 'SUPABASE_URL' 
-      ? config.supabaseUrl
-      : key === 'SUPABASE_SERVICE_KEY'
-      ? config.supabaseServiceKey
-      : process.env[key];
-    return !value;
-  });
+  // Warn in development if missing optional integrations
+  const optional = [
+    { key: 'SUPABASE_URL', desc: 'Supabase storage (can use S3/R2 instead)' },
+    { key: 'STRIPE_SECRET_KEY', desc: 'Stripe payments' },
+  ];
   
+  const missing = optional.filter(item => !process.env[item.key]);
   if (missing.length > 0) {
-    console.warn('⚠️  Missing optional environment variables (some features may not work):', missing.join(', '));
+    console.warn('⚠️  Missing optional environment variables:', missing.map(m => `${m.key} (${m.desc})`).join(', '));
   }
 }
 

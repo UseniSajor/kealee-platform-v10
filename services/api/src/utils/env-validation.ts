@@ -15,8 +15,6 @@
 // ============================================================================
 const REQUIRED_ENV_VARS: { name: string; description: string }[] = [
   { name: 'DATABASE_URL',              description: 'PostgreSQL connection string (Prisma)' },
-  { name: 'SUPABASE_URL',              description: 'Supabase project URL' },
-  { name: 'SUPABASE_SERVICE_ROLE_KEY', description: 'Supabase service-role key (server-side)' },
   { name: 'STRIPE_SECRET_KEY',         description: 'Stripe API secret key' },
   { name: 'STRIPE_WEBHOOK_SECRET',     description: 'Stripe webhook signing secret' },
 ]
@@ -25,6 +23,11 @@ const REQUIRED_ENV_VARS: { name: string; description: string }[] = [
 // Optional env vars -- warn if missing so operators can enable integrations
 // ============================================================================
 const OPTIONAL_ENV_VARS: { name: string; description: string }[] = [
+  // Supabase (use S3/R2 if not configured)
+  { name: 'SUPABASE_URL',              description: 'Supabase project URL (optional if using S3/R2)' },
+  { name: 'SUPABASE_SERVICE_ROLE_KEY', description: 'Supabase service-role key (optional if using S3/R2)' },
+  { name: 'SUPABASE_ANON_KEY',         description: 'Supabase anonymous key (optional if using S3/R2)' },
+
   // DocuSign
   { name: 'DOCUSIGN_INTEGRATION_KEY',  description: 'DocuSign integration key' },
   { name: 'DOCUSIGN_USER_ID',          description: 'DocuSign user / impersonation ID' },

@@ -190,8 +190,6 @@ export function validateProductionConfig(): void {
 
   const requiredProductionVars = [
     'DATABASE_URL',
-    'SUPABASE_URL',
-    'SUPABASE_SERVICE_ROLE_KEY',
     'STRIPE_SECRET_KEY',
     'API_BASE_URL',
   ];
