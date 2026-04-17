@@ -97,6 +97,10 @@ ENV PRISMA_CLIENT_ENGINE_TYPE=binary
 # Copy entire monorepo from builder (includes all built packages and node_modules)
 COPY --from=builder /app /app
 
+# Copy node_modules from builder to ensure all workspace packages are available
+# This includes all pnpm-resolved dependencies and workspace symlinks
+COPY --from=builder /app/node_modules /app/node_modules
+
 WORKDIR /app/services/api
 
 EXPOSE 3000
