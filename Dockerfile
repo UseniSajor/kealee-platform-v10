@@ -1,14 +1,7 @@
-# ============================================================
-# Railway Deployment Dockerfile — Kealee Platform
-# Production build for API service - OPTIMIZED FOR SPEED
-# ============================================================
-
 # Build stage
 FROM node:20-slim AS builder
 
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PRISMA_CLIENT_ENGINE_TYPE=binary
-ENV NPM_CONFIG_PRODUCTION=false
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true PRISMA_CLIENT_ENGINE_TYPE=binary NPM_CONFIG_PRODUCTION=false
 
 RUN apt-get update -y && apt-get install -y --no-install-recommends openssl ca-certificates python3 make gcc g++ && rm -rf /var/lib/apt/lists/*
 RUN npm install -g pnpm@8.12.0
@@ -19,10 +12,8 @@ COPY packages ./packages
 COPY services ./services
 COPY data ./data
 
-# OPTIMIZED: Use frozen lockfile for faster pnpm resolution
-RUN pnpm install --filter @kealee/api... --prod=false --ignore-scripts --frozen-lockfile || pnpm install --filter @kealee/api... --prod=false --ignore-scripts
+RUN pnpm install --filter @kealee/api... --prod=false --ignore-scripts
 
-# Build only essential packages
 RUN pnpm --filter @kealee/database run db:generate 2>&1 || true
 RUN pnpm --filter @kealee/database run build 2>/dev/null || true
 RUN pnpm --filter @kealee/types run build 2>/dev/null || true
@@ -47,11 +38,10 @@ RUN pnpm --filter @kealee/concept-engine run build 2>/dev/null || true
 RUN pnpm --filter @kealee/seeds run build 2>/dev/null || true
 RUN pnpm --filter @kealee/core-auth run build 2>/dev/null || true
 
-# Build API
 RUN pnpm --filter @kealee/api run db:generate 2>&1 || true
 RUN pnpm --filter @kealee/api run build:ts 2>&1 && test -f services/api/dist/index.js || (echo "ERROR: API build failed" && exit 1)
 
-# Production stage - copy entire built monorepo
+# Production
 FROM node:20-slim
 RUN apt-get update -y && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production

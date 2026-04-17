@@ -12,8 +12,8 @@ COPY packages ./packages
 COPY services ./services
 COPY data ./data
 
-# Optimized: frozen-lockfile for speed (faster than no-frozen-lockfile)
-RUN pnpm install --filter @kealee/api... --prod=false --ignore-scripts --frozen-lockfile || pnpm install --filter @kealee/api... --prod=false --ignore-scripts
+# Install all dependencies (remove frozen-lockfile - causes issues with workspace resolution)
+RUN pnpm install --filter @kealee/api... --prod=false --ignore-scripts
 
 RUN pnpm --filter @kealee/database run db:generate 2>&1 || true
 RUN pnpm --filter @kealee/database run build 2>/dev/null || true
@@ -41,7 +41,7 @@ RUN pnpm --filter @kealee/core-auth run build 2>/dev/null || true
 
 RUN cd services/api && pnpm run build:ts 2>&1 && test -f dist/index.js || (echo "FATAL: API build failed" && exit 1)
 
-# Production - copy entire built monorepo (fast because layers cache)
+# Production
 FROM node:20-slim
 RUN apt-get update -y && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production PORT=3000
