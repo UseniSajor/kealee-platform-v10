@@ -1,3 +1,5 @@
+# REBUILD TRIGGER
+
 # ============================================================
 # Railway Deployment Dockerfile — Kealee Platform
 # Production build for API service
