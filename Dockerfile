@@ -19,7 +19,7 @@ COPY packages ./packages
 COPY services ./services
 COPY data ./data
 
-# OPTIMIZED: Use frozen lockfile for faster resolution + only API dependencies
+# OPTIMIZED: Use frozen lockfile for faster pnpm resolution
 RUN pnpm install --filter @kealee/api... --prod=false --ignore-scripts --frozen-lockfile || pnpm install --filter @kealee/api... --prod=false --ignore-scripts
 
 # Build only essential packages
@@ -51,17 +51,12 @@ RUN pnpm --filter @kealee/core-auth run build 2>/dev/null || true
 RUN pnpm --filter @kealee/api run db:generate 2>&1 || true
 RUN pnpm --filter @kealee/api run build:ts 2>&1 && test -f services/api/dist/index.js || (echo "ERROR: API build failed" && exit 1)
 
-# Production stage - minimal
+# Production stage - copy entire built monorepo
 FROM node:20-slim
 RUN apt-get update -y && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
 
-COPY --from=builder /app/services/api/dist /app/services/api/dist
-COPY --from=builder /app/services/api/package.json /app/services/api/package.json
-COPY --from=builder /app/packages/database/dist /app/packages/database/dist
-COPY --from=builder /app/packages/database/prisma /app/packages/database/prisma
-COPY --from=builder /app/node_modules /app/node_modules
-COPY --from=builder /app/package.json /app/package.json
+COPY --from=builder /app /app
 
 WORKDIR /app/services/api
 EXPOSE 3000
