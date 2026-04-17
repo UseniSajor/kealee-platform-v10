@@ -58,6 +58,7 @@ RUN pnpm --filter @kealee/analytics run build 2>/dev/null || true
 RUN pnpm --filter @kealee/audit run build 2>/dev/null || true
 RUN pnpm --filter @kealee/observability run build 2>/dev/null || true
 RUN pnpm --filter @kealee/redis run build 2>/dev/null || true
+RUN pnpm --filter @kealee/intake run build 2>/dev/null || true
 RUN pnpm --filter @kealee/realtime run build 2>/dev/null || true
 RUN pnpm --filter @kealee/scoring run build 2>/dev/null || true
 RUN pnpm --filter @kealee/page-builder run build 2>/dev/null || true
@@ -93,6 +94,9 @@ ENV PRISMA_CLIENT_ENGINE_TYPE=binary
 
 # Copy built application from builder
 COPY --from=builder /app /app
+
+# Explicitly copy node_modules to ensure pnpm workspace symlinks resolve correctly
+COPY --from=builder /app/node_modules /app/node_modules
 
 WORKDIR /app/services/api
 
