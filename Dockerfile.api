@@ -1,8 +1,10 @@
 # ============================================================
-# Railway Deployment Dockerfile — Kealee API (single-stage)
+# Railway Deployment Dockerfile — Kealee Platform (optimized)
+# Production build for kealee-platform-v10 service
 # ============================================================
 
-FROM node:20-slim
+# Build stage
+FROM node:20-slim AS builder
 
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends \
@@ -18,7 +20,7 @@ RUN npm install -g pnpm@8.12.0
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PRISMA_CLIENT_ENGINE_TYPE=binary
-ENV PRISMA_HIDE_UPDATE_MESSAGE=true
+ENV NPM_CONFIG_PRODUCTION=false
 
 WORKDIR /app
 
@@ -27,8 +29,7 @@ COPY packages ./packages
 COPY services ./services
 COPY data ./data
 
-RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    pnpm install --filter @kealee/api... --prod=false --ignore-scripts --no-frozen-lockfile
+RUN pnpm install --filter @kealee/api... --prod=false --ignore-scripts --no-frozen-lockfile
 
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \
     pnpm --filter @kealee/database run db:generate 2>&1 || true
@@ -44,6 +45,8 @@ RUN pnpm --filter @kealee/ai-chat run build 2>/dev/null || true
 RUN pnpm --filter @kealee/analytics run build 2>/dev/null || true
 RUN pnpm --filter @kealee/audit run build 2>/dev/null || true
 RUN pnpm --filter @kealee/observability run build 2>/dev/null || true
+RUN pnpm --filter @kealee/intake run build 2>/dev/null || true
+RUN pnpm --filter @kealee/redis run build 2>/dev/null || true
 RUN pnpm --filter @kealee/realtime run build 2>/dev/null || true
 RUN pnpm --filter @kealee/scoring run build 2>/dev/null || true
 RUN pnpm --filter @kealee/page-builder run build 2>/dev/null || true
@@ -52,13 +55,30 @@ RUN pnpm --filter @kealee/core-events run build 2>/dev/null || true
 RUN pnpm --filter @kealee/core-llm run build 2>/dev/null || true
 RUN pnpm --filter @kealee/concept-engine run build 2>/dev/null || true
 RUN pnpm --filter @kealee/seeds run build 2>/dev/null || true
+RUN pnpm --filter @kealee/core-auth run build 2>/dev/null || true
 
 RUN cd services/api && (pnpm run build:ts; true) && \
     test -f dist/index.js || \
     (echo "FATAL: dist/index.js missing after tsc!" && exit 1)
 
+# Production stage
+FROM node:20-slim
+
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN npm install -g pnpm@8.12.0
+
 ENV NODE_ENV=production
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PRISMA_CLIENT_ENGINE_TYPE=binary
 ENV PORT=3000
+
+# Copy pre-built application from builder
+COPY --from=builder /app /app
 
 WORKDIR /app/services/api
 

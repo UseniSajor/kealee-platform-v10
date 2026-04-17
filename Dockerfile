@@ -57,6 +57,7 @@ RUN pnpm --filter @kealee/ai-chat run build 2>/dev/null || true
 RUN pnpm --filter @kealee/analytics run build 2>/dev/null || true
 RUN pnpm --filter @kealee/audit run build 2>/dev/null || true
 RUN pnpm --filter @kealee/observability run build 2>/dev/null || true
+RUN pnpm --filter @kealee/intake run build 2>/dev/null || true
 RUN pnpm --filter @kealee/redis run build 2>/dev/null || true
 RUN pnpm --filter @kealee/realtime run build 2>/dev/null || true
 RUN pnpm --filter @kealee/scoring run build 2>/dev/null || true
@@ -74,10 +75,10 @@ RUN pnpm --filter @kealee/api run build:ts 2>&1 && \
     test -f services/api/dist/index.js || \
     (echo "ERROR: API build failed - dist/index.js not found" && exit 1)
 
-# Production stage
+# Production deployment stage
 FROM node:20-slim
 
-# Install only runtime dependencies (NO build tools, NO browser dependencies)
+# Install only runtime dependencies
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends \
     openssl \
@@ -91,7 +92,7 @@ ENV NODE_ENV=production
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PRISMA_CLIENT_ENGINE_TYPE=binary
 
-# Copy built application from builder
+# Copy entire monorepo from builder (includes all built packages and node_modules)
 COPY --from=builder /app /app
 
 WORKDIR /app/services/api
