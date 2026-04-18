@@ -15,6 +15,7 @@ import { prismaAny } from '../../utils/prisma-helper';
 import { createLogger } from '@kealee/observability';
 import { getEmailQueue } from '../../utils/email-queue';
 import { getProjectExecutionQueue } from '../../utils/project-execution-queue';
+import { RedisClient } from '@kealee/redis';
 
 const webhookLogger = createLogger('stripe-webhook');
 
@@ -502,7 +503,93 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     return
   }
 
-  // ── 4D: Public intake payment (AI Concept Package) ────────────────────────────
+  // ── 4D: Estimation package purchase ─────────────────────────────────────────────
+  if ((metadata.source === 'estimation' || metadata.source === 'estimation-package') && metadata.intakeId) {
+    try {
+      // 1. Retrieve estimation intake from Redis
+      const redis = await RedisClient.getInstance()
+      const intakeData = await redis.get(`estimation_intake:${metadata.intakeId}`).catch(() => null)
+
+      if (!intakeData) {
+        webhookLogger.warn({ intakeId: metadata.intakeId }, 'Estimation intake not found in Redis — creating ProjectOutput with minimal data')
+      }
+
+      // 2. Create ProjectOutput record
+      const output = await prismaAny.projectOutput
+        .create({
+          data: {
+            intakeId: metadata.intakeId,
+            type: 'estimate',
+            status: 'pending',
+            metadata: {
+              source: metadata.source,
+              tier: metadata.packageTier,
+              packageName: metadata.packageName,
+              sessionId: session.id,
+              customerEmail: metadata.customerEmail,
+            },
+          },
+        })
+        .catch((err) => {
+          webhookLogger.warn({ err: err.message }, 'Failed to create ProjectOutput')
+          return null
+        })
+
+      // 3. Enqueue project.execution job
+      if (output) {
+        try {
+          const queue = getProjectExecutionQueue()
+          await queue.add('execute', {
+            outputId: output.id,
+            type: 'estimate',
+            intakeId: metadata.intakeId,
+            metadata: { tier: metadata.packageTier, sessionId: session.id, customerEmail: metadata.customerEmail },
+          })
+          webhookLogger.info({ intakeId: metadata.intakeId, outputId: output.id }, 'Estimation execution job enqueued')
+        } catch (queueErr: any) {
+          webhookLogger.warn({ err: queueErr.message }, 'Failed to enqueue estimation execution job — non-fatal')
+        }
+      }
+
+      // 4. Send confirmation email
+      try {
+        const intake = intakeData ? JSON.parse(intakeData) : null
+        const customerEmail = metadata.customerEmail || intake?.contact?.contactEmail
+        if (customerEmail) {
+          const amountDollars = session.amount_total ? (session.amount_total / 100).toFixed(2) : '0.00'
+          const packageName = metadata.packageName || 'Cost Estimation Package'
+
+          await getEmailQueue().add('estimation_confirmation', {
+            to: customerEmail,
+            subject: `Your ${packageName} is confirmed!`,
+            template: 'estimation_confirmation',
+            data: {
+              customerName: intake?.contact?.clientName || customerEmail.split('@')[0],
+              packageName,
+              packageTier: metadata.packageTier || 'standard',
+              amount: amountDollars,
+              intakeId: metadata.intakeId,
+            },
+            metadata: {
+              intakeId: metadata.intakeId,
+              eventType: 'estimation_confirmation',
+            },
+          })
+          webhookLogger.info({ intakeId: metadata.intakeId, email: customerEmail }, 'Confirmation email queued')
+        }
+      } catch (emailErr: any) {
+        webhookLogger.warn({ err: emailErr.message }, 'Failed to queue confirmation email — non-fatal')
+      }
+
+      webhookLogger.info({ intakeId: metadata.intakeId }, 'Estimation package payment processed')
+      return
+    } catch (err: unknown) {
+      webhookLogger.error({ err: (err as Error).message, intakeId: metadata.intakeId }, 'Failed to process estimation package payment')
+    }
+    return
+  }
+
+  // ── 4E: Public intake payment (AI Concept Package) ────────────────────────────
   if (metadata.source === 'public_intake' && metadata.intakeId) {
     try {
       // Update intake status to 'paid'

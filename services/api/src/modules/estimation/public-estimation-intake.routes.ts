@@ -239,7 +239,7 @@ export async function registerPublicEstimationRoutes(fastify: FastifyInstance) {
           success_url: `${process.env.APP_URL}/public/estimation/success?sessionId={CHECKOUT_SESSION_ID}`,
           cancel_url: `${process.env.APP_URL}/public/estimation/checkout-cancelled`,
           metadata: {
-            source: 'estimation',
+            source: 'estimation-package',
             packageTier: tier,
             packageName: packageInfo.name,
             intakeId,
