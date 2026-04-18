@@ -22,8 +22,12 @@ PORT = "3000"
 APP_ENV = "production"
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
 PRISMA_CLIENT_ENGINE_TYPE = "binary"
+SUPABASE_URL = "https://rkreqfpkxavqpsqexbfs.supabase.co"
+API_BASE_URL = "https://api.kealee.com"
 
 # IMPORTANT: Set these in Railway dashboard Variables section
 # DATABASE_URL = set in Railway dashboard (required)
 # REDIS_URL = set in Railway dashboard (optional, falls back to localhost)
+# SUPABASE_SERVICE_ROLE_KEY = set in Railway dashboard (required)
+# SUPABASE_ANON_KEY = set in Railway dashboard (required)
 # All other service credentials (Stripe, Anthropic, etc.) in Variables section
