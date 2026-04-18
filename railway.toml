@@ -1,17 +1,17 @@
 # Railway Configuration for Kealee Platform
-# Override nixpacks to use explicit Dockerfile
+# IMPORTANT: This is a MONOREPO with multiple services
+# Service-specific configuration is set per-service in Railway dashboard:
+# - web-main: startCommand="pnpm start", healthcheckPath="/"
+# - kealee-api: startCommand="node dist/index.js", healthcheckPath="/health"
+# - other services: custom per service
 
 [build]
-# Use our custom Dockerfile
+# Use our custom Dockerfile per service
 dockerfile = "Dockerfile"
 contextDir = "."
 
 [deploy]
-# API service start command
-startCommand = "node dist/index.js"
-# Health check configuration - increased timeouts to accommodate initialization
-healthcheckPath = "/health"
-healthcheckTimeout = 30000  # 30 seconds
+# Deployment settings (can be overridden per-service in dashboard)
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 5
 
