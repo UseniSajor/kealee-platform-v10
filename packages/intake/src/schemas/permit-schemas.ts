@@ -307,3 +307,7 @@ export const DMV_JURISDICTIONS = {
 } as const
 
 export type DMVJurisdictionCode = keyof typeof DMV_JURISDICTIONS
+
+// Export aliases for consistency with index.ts imports
+export const PermitSchema = PermitIntakeSchema
+export type Permit = PermitIntake

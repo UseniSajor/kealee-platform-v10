@@ -1,16 +1,5 @@
 import { z } from "zod";
-
-const BaseContactSchema = z.object({
-  clientName: z.string().min(2, "Name is required"),
-  contactEmail: z.string().email("Valid email is required"),
-  contactPhone: z.string().optional(),
-  projectAddress: z.string().min(5, "Project address is required"),
-  budgetRange: z.string().min(1, "Budget range is required"),
-  timelineGoal: z.string().optional(),
-  uploadedPhotos: z.array(z.string()).default([]),
-  source: z.string().default("public_intake"),
-  funnelSessionId: z.string().optional(),
-});
+import { BaseContactSchema } from "./base-schemas";
 
 export const ExteriorConceptIntakeSchema = BaseContactSchema.extend({
   projectPath: z.literal("exterior_concept"),
