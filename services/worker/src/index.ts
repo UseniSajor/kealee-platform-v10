@@ -23,6 +23,8 @@ import { createConceptEngineWorker } from './processors/concept-engine.processor
 import { captureAnalysisQueue } from './queues/capture-analysis.queue'
 import { createCaptureVisionWorker, pollAndAnalyzePending } from './processors/capture-vision.processor'
 import { createVoiceTranscriptionWorker, pollAndTranscribePending } from './processors/voice-transcription.processor'
+import { projectExecutionQueue } from './queues/project-execution.queue'
+import { createProjectExecutionWorker } from './processors/project-execution.processor'
 import { cronManager } from './cron/cron.manager'
 import cron from 'node-cron'
 import type { Worker } from 'bullmq'
@@ -42,6 +44,7 @@ let intakeProcessingWorker: Worker | null = null
 let conceptEngineWorker: Worker | null = null
 let captureVisionWorker: Worker | null = null
 let voiceTranscriptionWorker: Worker | null = null
+let projectExecutionWorker: Worker | null = null
 
 // Test Redis connection
 async function testRedisConnection() {
@@ -293,6 +296,19 @@ async function initializeCaptureAnalysisWorkers() {
   }
 }
 
+// Initialize project execution queue and worker
+async function initializeProjectExecutionQueue() {
+  try {
+    console.log('Initializing project execution queue...')
+    projectExecutionWorker = createProjectExecutionWorker()
+    console.log('Project execution worker started')
+    console.log('Project execution queue initialized')
+  } catch (error) {
+    console.error('Failed to initialize project execution queue:', error)
+    throw error
+  }
+}
+
 // Graceful shutdown
 async function shutdown() {
   console.log('\n⚠️ Shutting down worker service...')
@@ -363,6 +379,11 @@ async function shutdown() {
       console.log('✅ Voice transcription worker closed')
     }
 
+    if (projectExecutionWorker) {
+      await projectExecutionWorker.close()
+      console.log('✅ Project execution worker closed')
+    }
+
     // Close queues
     await emailQueue.close()
     console.log('✅ Email queue closed')
@@ -396,6 +417,9 @@ async function shutdown() {
 
     await captureAnalysisQueue.close()
     console.log('✅ Capture analysis queue closed')
+
+    await projectExecutionQueue.close()
+    console.log('✅ Project execution queue closed')
 
     // Close Redis
     await redis.quit()
@@ -447,6 +471,7 @@ async function start() {
   await initializeIntakeProcessingQueue()
   await initializeConceptEngineQueue()
   await initializeCaptureAnalysisWorkers()
+  await initializeProjectExecutionQueue()
   await initializeCronJobs()
 
   console.log('✅ Worker service ready')

@@ -14,6 +14,7 @@ import Stripe from 'stripe';
 import { prismaAny } from '../../utils/prisma-helper';
 import { createLogger } from '@kealee/observability';
 import { getEmailQueue } from '../../utils/email-queue';
+import { getProjectExecutionQueue } from '../../utils/project-execution-queue';
 
 const webhookLogger = createLogger('stripe-webhook');
 
@@ -454,7 +455,54 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     return
   }
 
-  // ── Public intake payment (AI Concept Package) ──────────────────────────────
+  // ── 4C: Permit package purchase ─────────────────────────────────────────────
+  if (metadata.source === 'permit-package' && metadata.intakeId) {
+    try {
+      // 1. Mark PermitServiceLead as paid
+      await prismaAny.permitServiceLead
+        .update({
+          where: { id: metadata.intakeId },
+          data: { status: 'PAID', paidAt: new Date(), stripeSessionId: session.id },
+        })
+        .catch(e => webhookLogger.warn({ err: e.message }, 'PermitServiceLead update failed'))
+
+      // 2. Create ProjectOutput record
+      const output = await prismaAny.projectOutput
+        .create({
+          data: {
+            intakeId: metadata.intakeId,
+            type: 'permit',
+            status: 'pending',
+            metadata: { source: 'permit-package', tier: metadata.tier, sessionId: session.id },
+          },
+        })
+        .catch(() => null)
+
+      // 3. Enqueue project.execution job
+      if (output) {
+        try {
+          const queue = getProjectExecutionQueue()
+          await queue.add('execute', {
+            outputId: output.id,
+            type: 'permit',
+            intakeId: metadata.intakeId,
+            metadata: { tier: metadata.tier, sessionId: session.id },
+          })
+          webhookLogger.info({ intakeId: metadata.intakeId, outputId: output.id }, 'Project execution job enqueued')
+        } catch (queueErr: any) {
+          webhookLogger.warn({ err: queueErr.message }, 'Failed to enqueue project execution job — non-fatal')
+        }
+      }
+
+      webhookLogger.info({ intakeId: metadata.intakeId }, 'Permit package payment processed')
+      return
+    } catch (err: unknown) {
+      webhookLogger.error({ err: (err as Error).message, intakeId: metadata.intakeId }, 'Failed to process permit package payment')
+    }
+    return
+  }
+
+  // ── 4D: Public intake payment (AI Concept Package) ────────────────────────────
   if (metadata.source === 'public_intake' && metadata.intakeId) {
     try {
       // Update intake status to 'paid'

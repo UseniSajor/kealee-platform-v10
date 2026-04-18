@@ -1,4 +1,22 @@
-import { z } from "zod";
+import { z } from 'zod';
+
+export const ConceptIntakeSchema = z.object({
+  projectType: z.enum(['garden', 'kitchen', 'landscape', 'renovation']),
+  scope: z.string().min(10).max(500),
+  budget: z.number().min(100).max(1000000),
+  location: z.string().regex(/^[0-9]{5}$/),
+  homeownerEmail: z.string().email(),
+});
+
+export const ZoningIntakeSchema = z.object({
+  location: z.string().regex(/^[0-9]{5}$/),
+  propertySize: z.number().min(100).max(50000),
+  projectType: z.enum(['garden', 'kitchen', 'landscape', 'renovation']),
+  email: z.string().email(),
+});
+
+export type ConceptIntake = z.infer<typeof ConceptIntakeSchema>;
+export type ZoningIntake = z.infer<typeof ZoningIntakeSchema>;
 
 /**
  * Concept Intake Validation Schema

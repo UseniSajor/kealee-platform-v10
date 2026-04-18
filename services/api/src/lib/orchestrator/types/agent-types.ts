@@ -26,8 +26,10 @@ export interface CTCOutput {
 // ── Agent Output ──────────────────────────────────────────────────────────────
 
 export interface AgentOutput {
+  success?: boolean;
   summary: string;
   risks: string[];
+  recommendations?: string[];
   confidence: "high" | "medium" | "low";
   next_step: string;
   cta: string;

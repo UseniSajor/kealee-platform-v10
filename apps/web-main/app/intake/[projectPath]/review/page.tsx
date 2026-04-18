@@ -13,6 +13,16 @@ const AI_CONCEPT_BASE_CENTS = 38500
 
 type CaptureMode = 'self_capture' | 'enhanced_scan' | 'kealee_site_visit'
 
+// ── Stripe product checkout mapping ────────────────────────────────────────────
+const PRODUCT_CHECKOUT_MAP: Record<string, { path: string; amount?: number } | undefined> = {
+  PERMIT_PACKAGE: { path: '/intake/permit_path_only/payment', amount: 79900 },
+  PERMIT_PACKAGE_PM: { path: '/intake/permit_path_only/payment', amount: 374900 },
+  CONTRACTOR_MATCH: { path: '/intake/contractor_match/payment', amount: 19900 },
+  DESIGN_CONCEPT: { path: '/intake/design_build/checkout', amount: 39900 },
+  DESIGN_CONCEPT_VALIDATION: { path: '/intake/design_build/checkout', amount: 39900 },
+  CONSULTATION: { path: '/intake/design_build/payment', amount: 14900 },
+}
+
 interface CaptureInfo {
   captureSessionId: string | null
   captureMode: CaptureMode | null
@@ -29,9 +39,11 @@ interface CaptureInfo {
 interface CTCBreakdown { construction: number; soft: number; risk: number; execution: number }
 interface CTCOutput { total: number; range: [number, number]; cost_per_sqft: number; sqft: number; breakdown: CTCBreakdown }
 interface AgentOutput {
+  success?: boolean
   status?: string
   summary?: string
   risks?: string[]
+  recommendations?: string[]
   confidence?: 'high' | 'medium' | 'low'
   next_step?: string
   cta?: string
@@ -460,6 +472,28 @@ export default function IntakeReviewPage() {
     )
   }
 
+  async function handleAgentCTA() {
+    // Route to specific Stripe product based on agent's conversion_product
+    const product = agentOutput?.conversion_product
+    if (!product) {
+      // Fallback to standard intake submit
+      return handleSubmit()
+    }
+
+    const checkout = PRODUCT_CHECKOUT_MAP[product]
+    if (!checkout) {
+      // Product not in map, fallback to standard intake
+      return handleSubmit()
+    }
+
+    // Route to the Stripe product checkout
+    const qs = new URLSearchParams()
+    if (checkout.amount) {
+      qs.append('amount', String(checkout.amount))
+    }
+    router.push(`${checkout.path}?${qs.toString()}`)
+  }
+
   async function handleSubmit() {
     setIsSubmitting(true)
     try {
@@ -532,7 +566,7 @@ export default function IntakeReviewPage() {
       {agentOutput && !agentLoading && (
         <AgentInsightCard
           output={agentOutput}
-          onCta={handleSubmit}
+          onCta={handleAgentCTA}
           isSubmitting={isSubmitting}
         />
       )}

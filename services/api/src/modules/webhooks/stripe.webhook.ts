@@ -1141,6 +1141,26 @@ async function handleConceptPackagePurchase(session: Stripe.Checkout.Session): P
     }
     console.log(`  ✅ ConceptPackageOrder created for session ${session.id}`)
 
+    // 3.5. Create ProjectOutput for tracking deliverables
+    try {
+      const order = await prismaAny.conceptPackageOrder.findFirst({
+        where: { stripeSessionId: session.id },
+        select: { id: true },
+      })
+      if (order) {
+        await prismaAny.projectOutput.create({
+          data: {
+            orderId: order.id,
+            type: 'concept',
+            status: 'pending',
+            metadata: { packageTier, sessionId: session.id, customerEmail },
+          },
+        }).catch(e => console.warn('ProjectOutput create failed (non-fatal):', e.message))
+      }
+    } catch {
+      console.warn('  ⚠️  ProjectOutput creation failed (non-critical)')
+    }
+
     // 4. Create marketing lead linked to funnel session
     const lead = await prismaAny.marketingLead.create({
       data: {

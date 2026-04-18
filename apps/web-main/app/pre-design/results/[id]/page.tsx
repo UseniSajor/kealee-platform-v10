@@ -161,6 +161,62 @@ function ExecutionPathCard({ route, requiresArchitect }: { route?: string; requi
 }
 
 // ---------------------------------------------------------------------------
+// Revenue CTA Bar Component
+// ---------------------------------------------------------------------------
+
+function RevenueCtaBar({ route, requiresArchitect, projectId }: { route?: string; requiresArchitect?: boolean; projectId?: string }) {
+  const isAiOnly = route === 'AI_ONLY'
+  const isRequired = route === 'ARCHITECT_REQUIRED' || requiresArchitect
+
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-6">
+      <h3 className="text-lg font-bold text-gray-900 mb-4">Next Steps</h3>
+      <div className="space-y-3 flex flex-col">
+        {/* Permit Package CTA */}
+        <Link
+          href={`/intake/permit_path_only/payment?amount=79900${projectId ? `&projectId=${projectId}` : ''}`}
+          className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 hover:border-gray-300 hover:bg-gray-50 transition"
+        >
+          <div>
+            <p className="text-sm font-bold text-gray-900">Order Permit Package</p>
+            <p className="text-xs text-gray-500">Get started with permits</p>
+          </div>
+          <span className="text-sm font-bold text-gray-900">$299</span>
+        </Link>
+
+        {/* Contractor Match CTA */}
+        <Link
+          href={`/intake/contractor_match/payment?amount=19900${projectId ? `&projectId=${projectId}` : ''}`}
+          className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 hover:border-gray-300 hover:bg-gray-50 transition"
+        >
+          <div>
+            <p className="text-sm font-bold text-gray-900">Match with Verified Contractor</p>
+            <p className="text-xs text-gray-500">Connect with qualified builders</p>
+          </div>
+          <span className="text-sm font-bold text-gray-900">$199</span>
+        </Link>
+
+        {/* Architect Consultation CTA (only if needed) */}
+        {(isRequired || !isAiOnly) && (
+          <Link
+            href={`/intake/design_build/payment?amount=14900${projectId ? `&projectId=${projectId}` : ''}`}
+            className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 hover:border-gray-300 hover:bg-gray-50 transition"
+          >
+            <div>
+              <p className="text-sm font-bold text-gray-900">
+                {isRequired ? 'Connect with Architect' : 'Architect Consultation'}
+              </p>
+              <p className="text-xs text-gray-500">Expert guidance for your project</p>
+            </div>
+            <span className="text-sm font-bold text-gray-900">$149</span>
+          </Link>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
@@ -445,6 +501,13 @@ export default function PreDesignResultsPage() {
             </div>
           </div>
         )}
+
+        {/* Revenue CTAs */}
+        <RevenueCtaBar
+          route={session?.executionRoute}
+          requiresArchitect={session?.requiresArchitect}
+          projectId={id}
+        />
 
         {/* Next steps CTA */}
         <div className="rounded-2xl p-6 text-center" style={{ background: 'linear-gradient(135deg, #1A2B4A 0%, #1e3a5f 100%)' }}>

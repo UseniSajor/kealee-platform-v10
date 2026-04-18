@@ -2647,6 +2647,16 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/redis:
+    dependencies:
+      redis:
+        specifier: ^4.6.0
+        version: 4.7.1
+    devDependencies:
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+
   packages/scoring:
     dependencies:
       '@prisma/client':
@@ -2942,6 +2952,9 @@ importers:
       '@fastify/swagger-ui':
         specifier: ^2.1.0
         version: 2.1.0
+      '@kealee/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@kealee/ai-chat':
         specifier: workspace:*
         version: link:../../packages/ai-chat
@@ -2969,6 +2982,9 @@ importers:
       '@kealee/estimating':
         specifier: workspace:*
         version: link:../../packages/estimating
+      '@kealee/intake':
+        specifier: workspace:*
+        version: link:../../packages/intake
       '@kealee/observability':
         specifier: workspace:*
         version: link:../../packages/observability
@@ -2978,6 +2994,9 @@ importers:
       '@kealee/realtime':
         specifier: workspace:*
         version: link:../../packages/realtime
+      '@kealee/redis':
+        specifier: workspace:*
+        version: link:../../packages/redis
       '@kealee/scoring':
         specifier: workspace:*
         version: link:../../packages/scoring
@@ -3091,7 +3110,7 @@ importers:
         specifier: ^5.22.0
         version: 5.22.0
       tsx:
-        specifier: ^4.21.0
+        specifier: ^4.7.0
         version: 4.21.0
       typescript:
         specifier: ^5.3.3

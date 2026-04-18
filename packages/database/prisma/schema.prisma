@@ -16270,6 +16270,30 @@ model ConceptPackage {
   @@index([generatedAt])
 }
 
+// ─── Project Output: Unified deliverables tracking ────────────────────────────────
+
+model ProjectOutput {
+  id          String   @id @default(cuid())
+  projectId   String?
+  intakeId    String?
+  orderId     String?
+  type        String   // design | permit | estimate | concept
+  status      String   @default("pending") // pending | generating | completed | failed
+  resultJson  Json?
+  pdfUrl      String?
+  downloadUrl String?
+  generatedAt DateTime @default(now())
+  completedAt DateTime?
+  metadata    Json?
+
+  @@map("project_outputs")
+  @@index([status])
+  @@index([type])
+  @@index([intakeId])
+  @@index([orderId])
+  @@index([generatedAt])
+}
+
 model ArchitectReviewTask {
   id                  BigInt                @id @default(autoincrement())
   intakeId            String

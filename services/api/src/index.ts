@@ -1180,6 +1180,16 @@ const start = async () => {
       await fastify.register(agentsRoutes, { prefix: '/api/v1/agents' })
     })
 
+    await safeRegisterBlock('Debug routes', async () => {
+      const { debugRoutes } = await import('./routes/debug.routes.js')
+      await fastify.register(debugRoutes)
+    })
+
+    await safeRegisterBlock('Service level routes', async () => {
+      const { serviceLevelRoutes } = await import('./routes/service-level.routes.js')
+      await fastify.register(serviceLevelRoutes)
+    })
+
     // ── Test Routes (TEST_MODE=true only) ──
     await safeRegisterBlock('Test simulation routes', async () => {
       const { testRoutes } = await import('./modules/test/test.routes')
