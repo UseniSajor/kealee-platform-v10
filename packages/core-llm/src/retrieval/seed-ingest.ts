@@ -16,6 +16,15 @@ import { createId } from "../utils/ids";
 import fs from 'fs';
 import path from 'path';
 import { parse } from 'csv-parse/sync';
+import {
+  intentSeeds,
+  workflowTemplateSeeds,
+  jurisdictionSeeds,
+  serviceOfferingSeeds,
+  toolRegistrySeeds,
+  ruleSeeds,
+  promptPolicySeeds
+} from '@kealee/seeds';
 // ─── Seed chunk store ─────────────────────────────────────────────────────────
 function loadZoningCSV() {
   // Try multiple candidate paths so the module works whether cwd is the monorepo
@@ -104,10 +113,6 @@ function addChunk(partial: Omit<SeedChunk, "id" | "keywords"> & { text: string }
 
 function ingestIntents(): void {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { intentSeeds } = require("@kealee/seeds") as {
-      intentSeeds: Array<{ code: string; label: string; description?: string; entrySignals?: string[]; defaultWorkflowTemplate?: string; category?: string }>;
-    };
     for (const intent of intentSeeds) {
       addChunk({
         sourceType: "intent",
@@ -117,17 +122,14 @@ function ingestIntents(): void {
         workflowCode: intent.defaultWorkflowTemplate,
       });
     }
-  } catch (_) {
-    console.warn("[SeedIngest] Could not load intent seeds");
+    console.log(`[SeedIngest] Loaded ${intentSeeds.length} intent seeds`);
+  } catch (err) {
+    console.warn("[SeedIngest] Could not load intent seeds:", (err as any)?.message);
   }
 }
 
 function ingestWorkflows(): void {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { workflowTemplateSeeds } = require("@kealee/seeds") as {
-      workflowTemplateSeeds: Array<{ code: string; name: string; description?: string; appliesToIntents?: string[]; steps?: Array<{ code: string; title: string }> }>;
-    };
     for (const wf of workflowTemplateSeeds) {
       addChunk({
         sourceType: "workflow",
@@ -137,17 +139,14 @@ function ingestWorkflows(): void {
         workflowCode: wf.code,
       });
     }
-  } catch (_) {
-    console.warn("[SeedIngest] Could not load workflow seeds");
+    console.log(`[SeedIngest] Loaded ${workflowTemplateSeeds.length} workflow seeds`);
+  } catch (err) {
+    console.warn("[SeedIngest] Could not load workflow seeds:", (err as any)?.message);
   }
 }
 
 function ingestJurisdictions(): void {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { jurisdictionSeeds } = require("@kealee/seeds") as {
-      jurisdictionSeeds: Array<{ code: string; name: string; permitPortalName?: string; permitPortalUrl?: string; planUploadSystem?: string; notesForKeaCore?: string }>;
-    };
     for (const j of jurisdictionSeeds) {
       addChunk({
         sourceType: "jurisdiction",
@@ -157,17 +156,14 @@ function ingestJurisdictions(): void {
         jurisdictionCode: j.code,
       });
     }
-  } catch (_) {
-    console.warn("[SeedIngest] Could not load jurisdiction seeds");
+    console.log(`[SeedIngest] Loaded ${jurisdictionSeeds.length} jurisdiction seeds`);
+  } catch (err) {
+    console.warn("[SeedIngest] Could not load jurisdiction seeds:", (err as any)?.message);
   }
 }
 
 function ingestServices(): void {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { serviceOfferingSeeds } = require("@kealee/seeds") as {
-      serviceOfferingSeeds: Array<{ code: string; name: string; category?: string; description?: string; basePrice?: number; billingType?: string; includedOutputs?: string[]; stripePriceKey?: string }>;
-    };
     for (const svc of serviceOfferingSeeds) {
       addChunk({
         sourceType: "service",
@@ -177,17 +173,14 @@ function ingestServices(): void {
         serviceCode: svc.code,
       });
     }
-  } catch (_) {
-    console.warn("[SeedIngest] Could not load service seeds");
+    console.log(`[SeedIngest] Loaded ${serviceOfferingSeeds.length} service seeds`);
+  } catch (err) {
+    console.warn("[SeedIngest] Could not load service seeds:", (err as any)?.message);
   }
 }
 
 function ingestTools(): void {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { toolRegistrySeeds } = require("@kealee/seeds") as {
-      toolRegistrySeeds: Array<{ code: string; name: string; description?: string; tags?: string[]; requiresApproval?: boolean }>;
-    };
     for (const tool of toolRegistrySeeds) {
       addChunk({
         sourceType: "tool",
@@ -196,17 +189,14 @@ function ingestTools(): void {
         metadata: { toolCode: tool.code, requiresApproval: tool.requiresApproval },
       });
     }
-  } catch (_) {
-    console.warn("[SeedIngest] Could not load tool seeds");
+    console.log(`[SeedIngest] Loaded ${toolRegistrySeeds.length} tool seeds`);
+  } catch (err) {
+    console.warn("[SeedIngest] Could not load tool seeds:", (err as any)?.message);
   }
 }
 
 function ingestRules(): void {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { ruleSeeds } = require("@kealee/seeds") as {
-      ruleSeeds: Array<{ code: string; description?: string; type?: string; severity?: string }>;
-    };
     for (const rule of ruleSeeds) {
       addChunk({
         sourceType: "rule",
@@ -215,17 +205,14 @@ function ingestRules(): void {
         metadata: { ruleCode: rule.code, ruleType: rule.type, riskLevel: rule.severity },
       });
     }
-  } catch (_) {
-    console.warn("[SeedIngest] Could not load rule seeds");
+    console.log(`[SeedIngest] Loaded ${ruleSeeds.length} rule seeds`);
+  } catch (err) {
+    console.warn("[SeedIngest] Could not load rule seeds:", (err as any)?.message);
   }
 }
 
 function ingestPrompts(): void {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { promptPolicySeeds } = require("@kealee/seeds") as {
-      promptPolicySeeds: Array<{ code: string; type?: string; appliesTo?: string[] }>;
-    };
     for (const prompt of promptPolicySeeds) {
       addChunk({
         sourceType: "prompt",
@@ -234,8 +221,9 @@ function ingestPrompts(): void {
         metadata: { promptCode: prompt.code, category: prompt.type },
       });
     }
-  } catch (_) {
-    console.warn("[SeedIngest] Could not load prompt seeds");
+    console.log(`[SeedIngest] Loaded ${promptPolicySeeds.length} prompt seeds`);
+  } catch (err) {
+    console.warn("[SeedIngest] Could not load prompt seeds:", (err as any)?.message);
   }
 }
 
