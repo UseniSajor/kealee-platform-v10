@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Building2, MapPin, DollarSign, Shield, Clock, Zap } from 'lucide-react'
+import { SERVICE_PRICING, PERMIT_SUBMISSION_MULTIPLIERS, formatPrice } from '@kealee/shared/pricing'
 
 export default function PermitsPage() {
   const router = useRouter()
@@ -34,40 +35,46 @@ export default function PermitsPage() {
     { code: 'baltimore_dop', name: 'Baltimore City, MD - DOP', abbr: 'BAL' },
   ]
 
-  const permitTiers = [
-    {
-      code: 'document_assembly',
-      name: 'Document Assembly',
-      price: 495,
-      description: 'Professional permit application preparation',
-      features: ['Application review', 'Document organization', 'Checklist preparation'],
-      submissionMethods: ['SELF'],
-    },
-    {
-      code: 'simple_permit',
-      name: 'Simple Permit Package',
-      price: 795,
-      description: 'Small residential projects',
-      features: ['Full application prep', 'Scope document', '1 agency coordination'],
-      submissionMethods: ['SELF', 'ASSISTED'],
-    },
-    {
-      code: 'complex_permit',
-      name: 'Complex Permit Package',
-      price: 1495,
-      description: 'Larger renovation or construction projects',
-      features: ['Full application + drawings', 'Multi-agency coordination', 'Compliance review', 'Site plan prep'],
-      submissionMethods: ['ASSISTED', 'KEALEE_MANAGED'],
-    },
-    {
-      code: 'expedited',
-      name: 'Expedited Coordination',
-      price: 2495,
-      description: 'Fastest path for time-sensitive projects',
-      features: ['Priority handling', 'Direct agency contact', 'Weekly status updates', 'Expedited review'],
-      submissionMethods: ['KEALEE_MANAGED'],
-    },
-  ]
+  // Build permit tiers from shared pricing configuration
+  const buildPermitTiers = () => {
+    const pricing = SERVICE_PRICING.permits
+    return [
+      {
+        code: 'document_assembly',
+        name: pricing.document_assembly.name,
+        price: Math.round(pricing.document_assembly.amount / 100),
+        description: pricing.document_assembly.description,
+        features: pricing.document_assembly.features,
+        submissionMethods: Object.keys(pricing.document_assembly.submissionMethods),
+      },
+      {
+        code: 'simple_permit',
+        name: pricing.simple_permit.name,
+        price: Math.round(pricing.simple_permit.amount / 100),
+        description: pricing.simple_permit.description,
+        features: pricing.simple_permit.features,
+        submissionMethods: Object.keys(pricing.simple_permit.submissionMethods),
+      },
+      {
+        code: 'complex_permit',
+        name: pricing.complex_permit.name,
+        price: Math.round(pricing.complex_permit.amount / 100),
+        description: pricing.complex_permit.description,
+        features: pricing.complex_permit.features,
+        submissionMethods: Object.keys(pricing.complex_permit.submissionMethods),
+      },
+      {
+        code: 'expedited',
+        name: pricing.expedited.name,
+        price: Math.round(pricing.expedited.amount / 100),
+        description: pricing.expedited.description,
+        features: pricing.expedited.features,
+        submissionMethods: Object.keys(pricing.expedited.submissionMethods),
+      },
+    ]
+  }
+
+  const permitTiers = buildPermitTiers()
 
   const submissionOptions = {
     SELF: {
@@ -124,13 +131,9 @@ export default function PermitsPage() {
       // 2. Redirect to checkout with intakeId
       const tier = permitTiers.find(t => t.code === formData.budgetRange) || permitTiers[0]
       const basePrice = tier.price
-      const multiplier = {
-        SELF: 0.8,
-        ASSISTED: 1.0,
-        KEALEE_MANAGED: 1.3,
-      }[formData.submissionMethod]
+      const multiplier = PERMIT_SUBMISSION_MULTIPLIERS[formData.submissionMethod] || 1.0
 
-      const finalPrice = Math.round(basePrice * multiplier)
+      const finalPrice = Math.round(basePrice * multiplier * 100) // Convert to cents
 
       router.push(
         `/permits/checkout?intakeId=${intakeId}&tier=${tier.code}&price=${finalPrice}&submissionMethod=${formData.submissionMethod}`

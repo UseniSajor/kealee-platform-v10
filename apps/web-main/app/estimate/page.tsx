@@ -1,71 +1,61 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight, CheckCircle, FileText, Award, Package } from 'lucide-react'
+import { SERVICE_PRICING, formatPrice } from '@kealee/shared/pricing'
 
 export const metadata: Metadata = {
   title: 'Get a Cost Estimate — Kealee',
   description: 'Trade-by-trade cost estimates validated against RSMeans data for the DMV market. Lender-ready. Licensed estimator sign-off.',
 }
 
-const TIERS = [
-  {
-    icon: FileText,
-    slug: 'cost-estimate',
-    name: 'Detailed Cost Estimate',
-    price: '$595',
-    turnaround: '3–5 business days',
-    desc: 'Human-reviewed, trade-by-trade breakdown validated against current RSMeans unit cost data for the DMV market.',
-    bullets: [
-      'CSI MasterFormat line-item breakdown',
-      'RSMeans unit cost validation',
-      'Base / mid / high scenarios',
-      'Licensed estimator sign-off',
-      'Lender-ready PDF',
-    ],
-    cta: 'Order Detailed Estimate',
-    href: '/intake/cost_estimate',
-    accent: '#4A8FA8',
-    popular: false,
-  },
-  {
-    icon: Award,
-    slug: 'certified-estimate',
-    name: 'Certified Cost Estimate',
-    price: '$1,850',
-    turnaround: '5–7 business days',
-    desc: 'Notarized licensed estimator sign-off, full RSMeans source documentation, and investor-grade format accepted by most DMV lenders.',
-    bullets: [
-      'Everything in Detailed Estimate',
-      'Notarized licensed estimator signature',
-      'Full RSMeans source citations',
-      'Investor-grade executive summary',
-      'Excel + PDF deliverable',
-    ],
-    cta: 'Order Certified Estimate',
-    href: '/intake/certified_estimate',
-    accent: '#E8793A',
-    popular: true,
-  },
-  {
-    icon: Package,
-    slug: 'cost-estimate',
-    name: 'Estimate + Permit Bundle',
-    price: 'From $1,100',
-    turnaround: '5–7 business days',
-    desc: 'Detailed cost estimate plus permit package preparation — bundled for project efficiency. File permits and know your costs in one step.',
-    bullets: [
-      'Full Detailed Cost Estimate',
-      'Permit package preparation',
-      'Submission to correct agency',
-      'Bundle savings vs. individual',
-      'Single project intake',
-    ],
-    cta: 'Contact Us',
-    href: '/contact',
-    accent: '#4A8FA8',
-    popular: false,
-  },
-]
+// Build tiers from shared pricing configuration
+const buildEstimateTiers = () => {
+  const pricing = SERVICE_PRICING.estimation
+
+  return [
+    {
+      icon: FileText,
+      slug: 'cost-estimate',
+      name: pricing.cost_estimate.name,
+      price: formatPrice(pricing.cost_estimate.amount, 'display'),
+      turnaround: `${pricing.cost_estimate.turnaround}–5 business days`,
+      desc: pricing.cost_estimate.description,
+      bullets: pricing.cost_estimate.features,
+      cta: 'Order Detailed Estimate',
+      href: '/intake/cost_estimate',
+      accent: '#4A8FA8',
+      popular: false,
+    },
+    {
+      icon: Award,
+      slug: 'certified-estimate',
+      name: pricing.certified_estimate.name,
+      price: formatPrice(pricing.certified_estimate.amount, 'display'),
+      turnaround: `${pricing.certified_estimate.turnaround}–7 business days`,
+      desc: pricing.certified_estimate.description,
+      bullets: pricing.certified_estimate.features,
+      cta: 'Order Certified Estimate',
+      href: '/intake/certified_estimate',
+      accent: '#E8793A',
+      popular: true,
+    },
+    {
+      icon: Package,
+      slug: 'bundle',
+      name: pricing.bundle.name,
+      price: `From ${formatPrice(pricing.bundle.amount, 'display')}`,
+      turnaround: `${pricing.bundle.turnaround}–7 business days`,
+      desc: pricing.bundle.description,
+      bullets: pricing.bundle.features,
+      cta: 'Explore Bundle',
+      href: '/estimate-permit-bundle',
+      accent: '#4A8FA8',
+      popular: false,
+    },
+  ]
+}
+
+const TIERS = buildEstimateTiers()
 
 const FAQS = [
   {
