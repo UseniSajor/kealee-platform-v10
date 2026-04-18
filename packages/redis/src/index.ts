@@ -68,6 +68,16 @@ class RedisClient {
   isReady(): boolean {
     return this.isConnected;
   }
+
+  static getInstance(): RedisClient {
+    if (!redisInstance) {
+      redisInstance = new RedisClient();
+      // Don't await here - static methods can't be async
+      // getInstance returns the instance synchronously
+      redisInstance.connect().catch(err => console.error('[Redis] Connection error:', err));
+    }
+    return redisInstance;
+  }
 }
 
 // Singleton instance
