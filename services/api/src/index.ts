@@ -1190,6 +1190,11 @@ const start = async () => {
       await fastify.register(serviceLevelRoutes)
     })
 
+    await safeRegisterBlock('ProjectOutput status routes', async () => {
+      const { projectOutputRoutes } = await import('./modules/project-output/project-output.routes.js')
+      await fastify.register(projectOutputRoutes, { prefix: '/api' })
+    })
+
     // ── Test Routes (TEST_MODE=true only) ──
     await safeRegisterBlock('Test simulation routes', async () => {
       const { testRoutes } = await import('./modules/test/test.routes')

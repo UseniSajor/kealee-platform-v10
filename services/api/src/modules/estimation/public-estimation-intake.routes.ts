@@ -2,7 +2,7 @@
  * Public Estimation Intake Routes
  * Consumer-facing API for cost estimation intake and checkout
  * Pattern: Same as concept intake, adapted for estimation service
- * Routes: /estimation/intake (public), /estimation/checkout (public)
+ * Routes: /public/estimation/intake (public), /public/estimation/checkout (public)
  */
 
 import type { FastifyInstance } from 'fastify'
@@ -121,11 +121,11 @@ export async function registerPublicEstimationRoutes(fastify: FastifyInstance) {
   const redis = await RedisClient.getInstance()
 
   /**
-   * POST /estimation/intake
+   * POST /public/estimation/intake
    * Public endpoint: No auth required
    * Validates estimation intake, scores lead, prepares for checkout
    */
-  fastify.post<{ Body: EstimationIntake }>('/estimation/intake', async (request, reply) => {
+  fastify.post<{ Body: EstimationIntake }>('/public/estimation/intake', async (request, reply) => {
     try {
       // Validate intake
       const validatedIntake = EstimationIntakeSchema.parse(request.body)
@@ -189,12 +189,12 @@ export async function registerPublicEstimationRoutes(fastify: FastifyInstance) {
   })
 
   /**
-   * POST /estimation/checkout
+   * POST /public/estimation/checkout
    * Public endpoint: No auth required
    * Creates Stripe checkout session for estimation package
    */
   fastify.post<{ Body: { intakeId: string; tier: string; email: string } }>(
-    '/estimation/checkout',
+    '/public/estimation/checkout',
     async (request, reply) => {
       try {
         const { intakeId, tier, email } = request.body
@@ -236,8 +236,8 @@ export async function registerPublicEstimationRoutes(fastify: FastifyInstance) {
               quantity: 1,
             },
           ],
-          success_url: `${process.env.APP_URL}/estimation/success?sessionId={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${process.env.APP_URL}/estimation/checkout-cancelled`,
+          success_url: `${process.env.APP_URL}/public/estimation/success?sessionId={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${process.env.APP_URL}/public/estimation/checkout-cancelled`,
           metadata: {
             source: 'estimation',
             packageTier: tier,
@@ -284,10 +284,10 @@ export async function registerPublicEstimationRoutes(fastify: FastifyInstance) {
   )
 
   /**
-   * GET /estimation/{intakeId}/status
+   * GET /public/estimation/{intakeId}/status
    * Public endpoint: Check intake status
    */
-  fastify.get<{ Params: { intakeId: string } }>('/estimation/:intakeId/status', async (request, reply) => {
+  fastify.get<{ Params: { intakeId: string } }>('/public/estimation/:intakeId/status', async (request, reply) => {
     try {
       const { intakeId } = request.params
       const intakeData = await redis.get(`estimation_intake:${intakeId}`)

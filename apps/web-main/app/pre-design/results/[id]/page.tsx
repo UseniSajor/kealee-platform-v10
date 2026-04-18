@@ -1,16 +1,34 @@
 'use client'
 
 import { useParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import {
   Download, FileText, CheckCircle, AlertCircle, Loader2,
   DollarSign, MapPin, Wrench, Zap, ArrowRight, ExternalLink,
 } from 'lucide-react'
+import { ProcessingLoader } from '../loading-processing'
+import { FallbackOutput } from '../fallback-output'
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
+
+interface ProjectOutput {
+  id: string
+  status: 'pending' | 'generating' | 'completed' | 'failed'
+  type: string
+  summary?: string
+  resultJson?: any
+  pdfUrl?: string
+  nextStep?: string
+  confidence?: string
+  updatedAt?: string
+  isProcessing?: boolean
+  isCompleted?: boolean
+  fallback?: boolean
+  estimatedHours?: number
+}
 
 interface PreDesignSession {
   id: string
@@ -225,19 +243,70 @@ export default function PreDesignResultsPage() {
   const id = params?.id as string
 
   const [session, setSession] = useState<PreDesignSession | null>(null)
+  const [projectOutput, setProjectOutput] = useState<ProjectOutput | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isPolling, setIsPolling] = useState(false)
+  const pollingInterval = useRef<NodeJS.Timeout | null>(null)
+
+  // STEP 4: Implement status polling
+  const pollProjectOutput = async (outputId: string) => {
+    try {
+      const res = await fetch(`/api/project-output/${outputId}`)
+      if (!res.ok) return
+      
+      const data: ProjectOutput = await res.json()
+      setProjectOutput(data)
+      
+      // [polling] active
+      console.log('[polling] active', { status: data.status, type: data.type })
+
+      // Stop polling when completed or failed
+      if (data.status === 'completed' || data.status === 'failed') {
+        if (pollingInterval.current) {
+          clearInterval(pollingInterval.current)
+          pollingInterval.current = null
+          setIsPolling(false)
+        }
+      }
+    } catch (err) {
+      console.error('[polling] error', err)
+    }
+  }
 
   useEffect(() => {
     if (!id) return
+
+    // Initial load: fetch pre-design session
     fetch(`/api/pre-design/${id}`)
       .then((r) => {
         if (!r.ok) throw new Error('Session not found')
         return r.json()
       })
-      .then(setSession)
-      .catch((e) => setError(e.message))
+      .then((sess) => {
+        setSession(sess)
+
+        // After loading session, start polling for ProjectOutput
+        // Assume outputId = id for now (can be mapped differently)
+        setIsPolling(true)
+        pollProjectOutput(id)
+
+        // Poll every 3 seconds
+        pollingInterval.current = setInterval(() => {
+          pollProjectOutput(id)
+        }, 3000)
+      })
+      .catch((e) => {
+        setError(e.message)
+        setLoading(false)
+      })
       .finally(() => setLoading(false))
+
+    return () => {
+      if (pollingInterval.current) {
+        clearInterval(pollingInterval.current)
+      }
+    }
   }, [id])
 
   if (loading) {
@@ -259,6 +328,37 @@ export default function PreDesignResultsPage() {
     )
   }
 
+  // STEP 2: Render processing state while polling
+  if (projectOutput?.isProcessing) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: '#F7FAFC' }}>
+        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+          <ProcessingLoader
+            estimatedHours={projectOutput.estimatedHours}
+            status={projectOutput.status}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // STEP 2: Render fallback UI if failed
+  if (projectOutput?.fallback || projectOutput?.status === 'failed') {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: '#F7FAFC' }}>
+        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+          {/* [fallback] triggered */}
+          <FallbackOutput
+            projectId={id}
+            projectType={session.projectType}
+            failureReason={projectOutput?.status === 'failed' ? 'Processing encountered an issue' : undefined}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // STEP 3: Render completed results (original layout)
   const concept = session.conceptSummary
   const budget = session.budgetRange
   const feasibility = session.feasibilitySummary
