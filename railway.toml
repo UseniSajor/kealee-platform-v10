@@ -1,9 +1,6 @@
 # Railway Configuration for Kealee Platform MONOREPO
 # Each service uses its own Dockerfile and configuration
-
-[build]
-dockerfile = "Dockerfile"
-contextDir = "."
+# Root [build] is NOT USED - each service must define its own build config
 
 [env]
 NODE_ENV = "production"
@@ -16,11 +13,9 @@ API_BASE_URL = "https://api.kealee.com"
 # ============================================================================
 # SERVICE: web-main (Next.js frontend)
 # ============================================================================
-[services.web-main]
 [services.web-main.build]
-builder = "NIXPACKS"
-buildCommand = "corepack enable && corepack prepare pnpm@8.15.9 --activate && pnpm install --no-frozen-lockfile && pnpm turbo build --filter=./apps/web-main"
-watchPatterns = ["apps/web-main/**", "packages/**"]
+dockerfile = "apps/web-main/Dockerfile"
+contextDir = "."
 
 [services.web-main.deploy]
 startCommand = "pnpm start"
@@ -32,7 +27,10 @@ restartPolicyMaxRetries = 10
 # ============================================================================
 # SERVICE: kealee-api (Fastify backend)
 # ============================================================================
-[services.kealee-api]
+[services.kealee-api.build]
+dockerfile = "services/api/Dockerfile"
+contextDir = "."
+
 [services.kealee-api.deploy]
 startCommand = "node dist/index.js"
 healthcheckPath = "/health"
@@ -43,7 +41,10 @@ restartPolicyMaxRetries = 5
 # ============================================================================
 # SERVICE: worker (BullMQ job processor)
 # ============================================================================
-[services.worker]
+[services.worker.build]
+dockerfile = "services/worker/Dockerfile"
+contextDir = "."
+
 [services.worker.deploy]
 startCommand = "node dist/index.js"
 restartPolicyType = "ON_FAILURE"
