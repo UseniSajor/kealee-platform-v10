@@ -39,7 +39,7 @@ RUN apt-get update -y && \
     apt-get install -y --no-install-recommends openssl ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# Install pnpm for runtime
+# Install pnpm for runtime (required by CMD pnpm start)
 RUN npm install -g pnpm@8.12.0
 
 WORKDIR /app
