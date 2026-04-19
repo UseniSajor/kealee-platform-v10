@@ -47,7 +47,9 @@ COPY packages/core-llm/package.json              ./packages/core-llm/package.jso
 COPY packages/seeds/package.json                 ./packages/seeds/package.json
 
 # ── Layer 2: install dependencies ──
-RUN pnpm install --filter @kealee/api... --prod=false --ignore-scripts
+# Install entire workspace (not just api's filter) to ensure all packages are available
+# This ensures @kealee/seeds, @kealee/core-llm, and all other packages are in node_modules
+RUN pnpm install --prod=false --ignore-scripts
 
 # ── Layer 3: copy source ──
 COPY packages/database/       ./packages/database/
