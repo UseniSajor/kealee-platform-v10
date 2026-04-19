@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Landmark, DollarSign, TrendingUp, ArrowUpRight, ArrowDownLeft, Building2, Users, Clock, CheckCircle, AlertCircle } from 'lucide-react'
 
 // ── v20 Seed: Payment Milestone Templates (7 milestones) ──
@@ -100,18 +100,67 @@ const INVESTOR_SUMMARY = {
 
 export default function CapitalPage() {
   const [activeTab, setActiveTab] = useState<'stacks' | 'draws' | 'investors'>('stacks')
+  const [stacks, setStacks] = useState(CAPITAL_STACKS)
+  const [draws, setDraws] = useState(DRAW_SCHEDULE)
+  const [loading, setLoading] = useState(true)
+  const [isLive, setIsLive] = useState(false)
 
-  const totalCapital = CAPITAL_STACKS.reduce((s, c) => s + c.totalCapital, 0)
-  const totalDebt = CAPITAL_STACKS.reduce((s, c) => s + c.sources.filter(src => src.name.includes('Debt') || src.name.includes('Loan')).reduce((ss, src) => ss + src.amount, 0), 0)
-  const totalLPEquity = CAPITAL_STACKS.reduce((s, c) => s + c.sources.filter(src => src.name.includes('LP')).reduce((ss, src) => ss + src.amount, 0), 0)
-  const pendingDraws = DRAW_SCHEDULE.filter(d => d.status !== 'funded').reduce((s, d) => s + d.amount, 0)
-  const fundedDraws = DRAW_SCHEDULE.filter(d => d.status === 'funded').reduce((s, d) => s + d.amount, 0)
+  useEffect(() => {
+    const fetchCapitalData = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+        const response = await fetch(`${apiUrl}/api/v1/projects?includeFinance=true&limit=20`, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(typeof window !== 'undefined' && localStorage.getItem('authToken') && {
+              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            })
+          },
+          signal: AbortSignal.timeout(5000),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          const apiStacks = Array.isArray(data) ? data : data.projects || []
+          if (apiStacks.length > 0) {
+            setStacks(apiStacks)
+            setIsLive(true)
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch capital data from API, using local data:', err)
+        setIsLive(false)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCapitalData()
+  }, [])
+
+  const totalCapital = stacks.reduce((s, c) => s + c.totalCapital, 0)
+  const totalDebt = stacks.reduce((s, c) => s + c.sources.filter(src => src.name.includes('Debt') || src.name.includes('Loan')).reduce((ss, src) => ss + src.amount, 0), 0)
+  const totalLPEquity = stacks.reduce((s, c) => s + c.sources.filter(src => src.name.includes('LP')).reduce((ss, src) => ss + src.amount, 0), 0)
+  const pendingDraws = draws.filter(d => d.status !== 'funded').reduce((s, d) => s + d.amount, 0)
+  const fundedDraws = draws.filter(d => d.status === 'funded').reduce((s, d) => s + d.amount, 0)
 
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Capital Management</h1>
-        <p className="mt-1 text-sm text-gray-600">Capital stacks, draw tracking ({PAYMENT_MILESTONES.length}-milestone schedule), and investor reporting</p>
+        <div className="flex items-center gap-3">
+          <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Capital Management</h1>
+          {isLive && (
+            <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#22c55e' }} />
+              Live Data
+            </span>
+          )}
+        </div>
+        {stacks.length === 0 && !loading ? (
+          <p className="mt-1 text-sm text-amber-600">No capital data available. Create projects with capital stacks to get started.</p>
+        ) : (
+          <p className="mt-1 text-sm text-gray-600">Capital stacks, draw tracking ({PAYMENT_MILESTONES.length}-milestone schedule), and investor reporting</p>
+        )}
       </div>
 
       {/* Summary Cards */}
@@ -161,7 +210,7 @@ export default function CapitalPage() {
       {/* ── Capital Stacks Tab ── */}
       {activeTab === 'stacks' && (
         <div className="space-y-6">
-          {CAPITAL_STACKS.map((stack) => (
+          {stacks.map((stack) => (
             <div key={stack.id} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
               <div className="mb-4 flex items-center justify-between">
                 <div>
@@ -234,7 +283,7 @@ export default function CapitalPage() {
           {/* Draw list */}
           <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
             <div className="divide-y divide-gray-50">
-              {DRAW_SCHEDULE.map((draw) => (
+              {draws.map((draw) => (
                 <div key={draw.id} className="flex items-center justify-between px-5 py-4">
                   <div className="flex items-center gap-3">
                     <div className={`rounded-lg p-2 ${draw.status === 'funded' ? 'bg-green-100' : draw.status === 'approved' ? 'bg-blue-100' : 'bg-gray-100'}`}>
@@ -268,7 +317,7 @@ export default function CapitalPage() {
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <p className="text-xs text-gray-500">Total LP Commitments</p>
               <p className="mt-1 text-2xl font-bold" style={{ color: '#1A2B4A' }}>${(INVESTOR_SUMMARY.totalCommitments / 1000000).toFixed(2)}M</p>
-              <p className="mt-1 text-xs text-gray-400">{INVESTOR_SUMMARY.investorCount} investors across {CAPITAL_STACKS.length} projects</p>
+              <p className="mt-1 text-xs text-gray-400">{INVESTOR_SUMMARY.investorCount} investors across {stacks.length} projects</p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <p className="text-xs text-gray-500">Capital Called</p>
@@ -293,15 +342,15 @@ export default function CapitalPage() {
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <p className="text-xs text-gray-500">Active Investors</p>
               <p className="mt-1 text-2xl font-bold" style={{ color: '#1A2B4A' }}>{INVESTOR_SUMMARY.investorCount}</p>
-              <p className="mt-1 text-xs text-gray-400">Across {CAPITAL_STACKS.length} project capital stacks</p>
+              <p className="mt-1 text-xs text-gray-400">Across {stacks.length} project capital stacks</p>
             </div>
           </div>
 
           {/* Per-project capital called */}
           <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
             <h3 className="mb-4 text-sm font-semibold" style={{ color: '#1A2B4A' }}>Capital Called by Project</h3>
-            {CAPITAL_STACKS.map((stack) => {
-              const projectDraws = DRAW_SCHEDULE.filter(d => d.project === stack.project)
+            {stacks.map((stack) => {
+              const projectDraws = draws.filter(d => d.project === stack.project)
               const funded = projectDraws.filter(d => d.status === 'funded').reduce((s, d) => s + d.amount, 0)
               const pctDrawn = stack.totalCapital > 0 ? (funded / stack.totalCapital) * 100 : 0
               return (

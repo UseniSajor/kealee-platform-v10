@@ -25,6 +25,8 @@ import { createCaptureVisionWorker, pollAndAnalyzePending } from './processors/c
 import { createVoiceTranscriptionWorker, pollAndTranscribePending } from './processors/voice-transcription.processor'
 import { projectExecutionQueue } from './queues/project-execution.queue'
 import { createProjectExecutionWorker } from './processors/project-execution.processor'
+import { leadFollowupQueue } from './queues/lead-followup.queue'
+import { createLeadFollowupWorker } from './processors/lead-followup.processor'
 import { cronManager } from './cron/cron.manager'
 import cron from 'node-cron'
 import type { Worker } from 'bullmq'
@@ -45,6 +47,7 @@ let conceptEngineWorker: Worker | null = null
 let captureVisionWorker: Worker | null = null
 let voiceTranscriptionWorker: Worker | null = null
 let projectExecutionWorker: Worker | null = null
+let leadFollowupWorker: Worker | null = null
 
 // Test Redis connection
 async function testRedisConnection() {
@@ -309,6 +312,19 @@ async function initializeProjectExecutionQueue() {
   }
 }
 
+// Initialize lead followup queue and worker
+async function initializeLeadFollowupQueue() {
+  try {
+    console.log('📧 Initializing lead followup queue...')
+    leadFollowupWorker = createLeadFollowupWorker()
+    console.log('✅ Lead followup worker started')
+    console.log('✅ Lead followup queue initialized')
+  } catch (error) {
+    console.error('❌ Failed to initialize lead followup queue:', error)
+    throw error
+  }
+}
+
 // Graceful shutdown
 async function shutdown() {
   console.log('\n⚠️ Shutting down worker service...')
@@ -384,6 +400,11 @@ async function shutdown() {
       console.log('✅ Project execution worker closed')
     }
 
+    if (leadFollowupWorker) {
+      await leadFollowupWorker.close()
+      console.log('✅ Lead followup worker closed')
+    }
+
     // Close queues
     await emailQueue.close()
     console.log('✅ Email queue closed')
@@ -420,6 +441,9 @@ async function shutdown() {
 
     await projectExecutionQueue.close()
     console.log('✅ Project execution queue closed')
+
+    await leadFollowupQueue.close()
+    console.log('✅ Lead followup queue closed')
 
     // Close Redis
     await redis.quit()
@@ -472,6 +496,7 @@ async function start() {
   await initializeConceptEngineQueue()
   await initializeCaptureAnalysisWorkers()
   await initializeProjectExecutionQueue()
+  await initializeLeadFollowupQueue()
   await initializeCronJobs()
 
   console.log('✅ Worker service ready')
@@ -509,8 +534,12 @@ start()
           mlPrediction: !!mlPredictionWorker,
           spatialVerification: !!spatialVerificationWorker,
           conceptDelivery: !!conceptDeliveryWorker,
+          intakeProcessing: !!intakeProcessingWorker,
+          conceptEngine: !!conceptEngineWorker,
           captureVision: !!captureVisionWorker,
           voiceTranscription: !!voiceTranscriptionWorker,
+          projectExecution: !!projectExecutionWorker,
+          leadFollowup: !!leadFollowupWorker,
         },
         timestamp: new Date().toISOString(),
       }))

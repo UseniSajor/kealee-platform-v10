@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FlaskConical, TrendingUp, DollarSign, Building2, Calculator, Plus, ChevronRight, CheckCircle, XCircle, AlertTriangle, Layers } from 'lucide-react'
 
 // ── v20 Seed: CSI Cost Categories ──────────────────────────
@@ -154,20 +154,68 @@ const decisionConfig: Record<string, { label: string; color: string; bg: string;
 
 export default function FeasibilityPage() {
   const [expandedId, setExpandedId] = useState<string | null>('1')
+  const [studies, setStudies] = useState(STUDIES)
+  const [loading, setLoading] = useState(true)
+  const [isLive, setIsLive] = useState(false)
 
-  const totalPipeline = STUDIES.reduce((s, st) => s + st.totalCost, 0)
-  const goCount = STUDIES.filter(s => s.decision === 'GO').length
-  const noGoCount = STUDIES.filter(s => s.decision === 'NO_GO').length
-  const pendingCount = STUDIES.filter(s => s.decision === null).length
+  useEffect(() => {
+    const fetchStudies = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+        const response = await fetch(`${apiUrl}/api/v1/feasibility/studies`, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(typeof window !== 'undefined' && localStorage.getItem('authToken') && {
+              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            })
+          },
+          signal: AbortSignal.timeout(5000),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          const apiStudies = Array.isArray(data) ? data : data.studies || []
+          if (apiStudies.length > 0) {
+            setStudies(apiStudies)
+            setIsLive(true)
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch feasibility studies from API, using local data:', err)
+        setIsLive(false)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStudies()
+  }, [])
+
+  const totalPipeline = studies.reduce((s, st) => s + st.totalCost, 0)
+  const goCount = studies.filter(s => s.decision === 'GO').length
+  const noGoCount = studies.filter(s => s.decision === 'NO_GO').length
+  const pendingCount = studies.filter(s => s.decision === null).length
 
   return (
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Feasibility Studies</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            {STUDIES.length} studies | ${(totalPipeline / 1000000).toFixed(0)}M pipeline | {goCount} GO | {noGoCount} NO-GO | {pendingCount} pending
-          </p>
+          <div className="flex items-center gap-3">
+            <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Feasibility Studies</h1>
+            {isLive && (
+              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>
+                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#22c55e' }} />
+                Live Data
+              </span>
+            )}
+          </div>
+          {studies.length === 0 && !loading ? (
+            <p className="mt-1 text-sm text-amber-600">No feasibility studies yet. Create your first study to get started.</p>
+          ) : (
+            <p className="mt-1 text-sm text-gray-600">
+              {studies.length} studies | ${(totalPipeline / 1000000).toFixed(0)}M pipeline | {goCount} GO | {noGoCount} NO-GO | {pendingCount} pending
+            </p>
+          )}
         </div>
         <button className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: '#E8793A' }}>
           <Plus className="h-4 w-4" />
@@ -179,7 +227,7 @@ export default function FeasibilityPage() {
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
           <FlaskConical className="h-5 w-5" style={{ color: '#2ABFBF' }} />
-          <p className="mt-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>{STUDIES.reduce((s, st) => s + st.scenarios.length, 0)}</p>
+          <p className="mt-2 text-2xl font-bold" style={{ color: '#1A2B4A' }}>{studies.reduce((s, st) => s + st.scenarios.length, 0)}</p>
           <p className="text-xs text-gray-500">Total Scenarios</p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -201,7 +249,7 @@ export default function FeasibilityPage() {
 
       {/* Studies */}
       <div className="space-y-6">
-        {STUDIES.map((study) => {
+        {studies.map((study) => {
           const pt = PROJECT_TYPES[study.projectType]
           const isExpanded = expandedId === study.id
           const bestScenario = study.scenarios.reduce((best, s) => s.irr > best.irr ? s : best, study.scenarios[0])

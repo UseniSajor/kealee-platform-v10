@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Map, MapPin, DollarSign, Ruler, ChevronRight, Plus, Filter, Layers, Cpu, Box } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Map, MapPin, DollarSign, Ruler, ChevronRight, Plus, Filter, Layers, Cpu, Box, AlertCircle } from 'lucide-react'
 
 // ── v20 Seed: Lifecycle Phases ──────────────────────────────
 const LIFECYCLE_PHASES = [
@@ -142,26 +142,77 @@ const tierColors: Record<string, string> = {
 
 export default function PipelinePage() {
   const [phaseFilter, setPhaseFilter] = useState<string>('All')
+  const [projects, setProjects] = useState(PROJECTS)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [isLive, setIsLive] = useState(false)
 
-  const filtered = phaseFilter === 'All' ? PROJECTS : PROJECTS.filter(p => p.phase === phaseFilter)
-  const totalBudget = PROJECTS.reduce((s, p) => s + p.totalBudget, 0)
-  const totalUnits = PROJECTS.reduce((s, p) => s + p.units, 0)
-  const totalAcres = PROJECTS.reduce((s, p) => s + p.acres, 0)
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+        const response = await fetch(`${apiUrl}/api/v1/projects?limit=50`, {
+          headers: {
+            'Content-Type': 'application/json',
+            // Add auth header if available
+            ...(typeof window !== 'undefined' && localStorage.getItem('authToken') && {
+              'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            })
+          },
+          signal: AbortSignal.timeout(5000),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          const apiProjects = Array.isArray(data) ? data : data.projects || []
+          if (apiProjects.length > 0) {
+            setProjects(apiProjects)
+            setIsLive(true)
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch projects from API, using local data:', err)
+        // Fall back to local data
+        setIsLive(false)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProjects()
+  }, [])
+
+  const filtered = phaseFilter === 'All' ? projects : projects.filter(p => p.phase === phaseFilter)
+  const totalBudget = projects.reduce((s, p) => s + p.totalBudget, 0)
+  const totalUnits = projects.reduce((s, p) => s + p.units, 0)
+  const totalAcres = projects.reduce((s, p) => s + p.acres, 0)
 
   // Phase distribution
   const phaseCounts = LIFECYCLE_PHASES.map(lp => ({
     ...lp,
-    count: PROJECTS.filter(p => p.phase === lp.key).length,
+    count: projects.filter(p => p.phase === lp.key).length,
   })).filter(p => p.count > 0)
 
   return (
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Developer Pipeline</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            {PROJECTS.length} projects | {totalAcres.toFixed(1)} acres | {totalUnits} units | ${(totalBudget / 1000000).toFixed(1)}M total capital
-          </p>
+          <div className="flex items-center gap-3">
+            <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Developer Pipeline</h1>
+            {isLive && (
+              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>
+                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#22c55e' }} />
+                Live Data
+              </span>
+            )}
+          </div>
+          {projects.length === 0 && !loading ? (
+            <p className="mt-1 text-sm text-amber-600">No projects found. Create your first project to get started.</p>
+          ) : (
+            <p className="mt-1 text-sm text-gray-600">
+              {projects.length} projects | {totalAcres.toFixed(1)} acres | {totalUnits} units | ${(totalBudget / 1000000).toFixed(1)}M total capital
+            </p>
+          )}
         </div>
         <button className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white" style={{ backgroundColor: '#E8793A' }}>
           <Plus className="h-4 w-4" />

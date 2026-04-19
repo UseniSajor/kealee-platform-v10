@@ -2,78 +2,104 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { Menu, X, Search } from 'lucide-react'
+import { useState } from 'react'
+import ProjectSearchBar from './ProjectSearchBar'
 
 export function SiteNav() {
   const pathname = usePathname()
   const isHome = pathname === '/'
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const navLinks = [
+    { href: '/intake/exterior_concept', label: 'Plan Project' },
+    { href: '/intake/permit_path_only', label: 'Get Permit' },
+    { href: '/intake/cost_estimate', label: 'Price Project' },
+    { href: '/marketplace', label: 'Marketplace' },
+    { href: '/homeowners', label: 'Homeowners' },
+    { href: '/contractors', label: 'Contractors' },
+  ]
 
   return (
-    <nav
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 300,
-        background: 'rgba(255,255,255,.95)',
-        backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(26,28,27,.1)',
-        height: 60,
-        padding: '0 32px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 16,
-      }}
-    >
-      {/* Logo */}
-      <Link
-        href="/"
-        style={{
-          fontFamily: 'var(--font-syne, Syne, sans-serif)',
-          fontWeight: 800,
-          fontSize: 20,
-          letterSpacing: '-.04em',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          flexShrink: 0,
-          color: 'var(--ink)',
-        }}
-      >
-        <span
-          style={{
-            width: 28,
-            height: 28,
-            background: 'var(--o)',
-            borderRadius: 5,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#fff',
-            fontSize: 14,
-            fontWeight: 800,
-          }}
+    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
+      <div className="mx-auto max-w-7xl px-4 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+          <div className="w-7 h-7 bg-orange-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+            K
+          </div>
+          <span className="font-bold text-xl text-slate-900 hidden sm:inline">Kealee</span>
+        </Link>
+
+        {/* Desktop Navigation */}
+        <div className="hidden lg:flex items-center gap-8 flex-1 ml-12">
+          {navLinks.slice(0, 4).map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-slate-600 hover:text-orange-600 font-medium text-sm transition"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Desktop Search & Auth */}
+        <div className="hidden lg:flex items-center gap-4">
+          <div className="w-64">
+            <ProjectSearchBar size="sm" />
+          </div>
+          <Link href="/auth/sign-in">
+            <button className="text-slate-700 hover:text-slate-900 font-medium text-sm transition">
+              Sign in
+            </button>
+          </Link>
+          <Link href="/intake/exterior_concept">
+            <button className="bg-orange-600 hover:bg-orange-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition">
+              Get Started
+            </button>
+          </Link>
+        </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="lg:hidden p-2 text-slate-600 hover:text-slate-900"
         >
-          K
-        </span>
-        Kealee
-      </Link>
-
-      {/* Center links */}
-      <ul className="nl" style={{ flex: 1, justifyContent: 'center' }}>
-        <li><Link href="/concept-engine" className="hi">Start AI design</Link></li>
-        <li><Link href="/products" className="hi">Products</Link></li>
-        <li><Link href="/permits" className="tab">Get permits</Link></li>
-        <li><Link href="/estimate" className="tab">Get estimate</Link></li>
-        <li><Link href="/marketplace" className="tab">Marketplace</Link></li>
-        {isHome && <li><Link href="/contractors" className="gr">Contractors</Link></li>}
-        {isHome && <li><Link href="/developers" className="gr">Developers</Link></li>}
-      </ul>
-
-      {/* Right buttons */}
-      <div className="nr">
-        <Link href="/auth/sign-in" className="btn bg">Sign in</Link>
-        <Link href="/products" className="btn bo">All services →</Link>
+          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden border-t border-slate-200 bg-white">
+          <div className="px-4 py-4 space-y-4">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="block text-slate-600 hover:text-orange-600 font-medium transition py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
+            <div className="pt-4 border-t border-slate-200 space-y-3">
+              <div>
+                <ProjectSearchBar size="sm" />
+              </div>
+              <Link href="/auth/sign-in" className="block w-full text-center py-2 text-slate-700 font-medium">
+                Sign in
+              </Link>
+              <Link href="/intake/exterior_concept" className="block w-full">
+                <button className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 rounded-lg transition">
+                  Get Started
+                </button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   )
 }
