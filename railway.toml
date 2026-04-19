@@ -16,6 +16,7 @@ API_BASE_URL = "https://api.kealee.com"
 [services.web-main.build]
 dockerfile = "apps/web-main/Dockerfile"
 contextDir = "."
+# Docker handles build via Dockerfile - no custom buildCommand needed
 
 [services.web-main.deploy]
 startCommand = "pnpm start"
