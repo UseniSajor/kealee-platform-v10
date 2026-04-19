@@ -913,6 +913,9 @@ const start = async () => {
       // Public permit intake + Stripe checkout — no auth required
       const { permitIntakeRoutes } = await import('./modules/permits/permit-intake.routes')
       await fastify.register(permitIntakeRoutes, { prefix: '/api/v1/permits' })
+
+      const { estimationIntakeRoutes } = await import('./modules/estimation/estimation-intake.routes')
+      await fastify.register(estimationIntakeRoutes, { prefix: '/api/v1/estimation' })
     })
 
     await safeRegisterBlock('Phase 1 - Project History, Portfolios, PreCon Extras routes', async () => {
