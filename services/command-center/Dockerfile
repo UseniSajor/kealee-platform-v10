@@ -72,14 +72,19 @@ RUN groupadd -g 1001 nodejs && \
 
 WORKDIR /app
 
-# Copy built output and dependencies
+# Root node_modules (shared by all packages in pnpm monorepo)
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
+
+# Command Center service
 COPY --from=builder --chown=nodejs:nodejs /app/services/command-center/dist ./services/command-center/dist
 COPY --from=builder --chown=nodejs:nodejs /app/services/command-center/package.json ./services/command-center/package.json
-COPY --from=builder --chown=nodejs:nodejs /app/services/command-center/node_modules ./services/command-center/node_modules
-COPY --from=builder --chown=nodejs:nodejs /app/packages/database/node_modules ./packages/database/node_modules
+
+# Database package (required at runtime)
+COPY --from=builder --chown=nodejs:nodejs /app/packages/database/dist ./packages/database/dist
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/package.json ./packages/database/package.json
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/prisma ./packages/database/prisma
+
+# Workspace config
 COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nodejs:nodejs /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 

@@ -32,8 +32,6 @@ WORKDIR /app
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules                    ./node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/services/os-pay/dist              ./services/os-pay/dist
 COPY --from=builder --chown=nodejs:nodejs /app/services/os-pay/package.json      ./services/os-pay/package.json
-COPY --from=builder --chown=nodejs:nodejs /app/services/os-pay/node_modules      ./services/os-pay/node_modules
-COPY --from=builder --chown=nodejs:nodejs /app/packages/database/node_modules  ./packages/database/node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/package.json  ./packages/database/package.json
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/prisma        ./packages/database/prisma
 COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json

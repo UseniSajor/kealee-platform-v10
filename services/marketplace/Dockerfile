@@ -29,13 +29,19 @@ FROM node:20-slim AS production
 RUN apt-get update -y && apt-get install -y --no-install-recommends openssl ca-certificates dumb-init wget && rm -rf /var/lib/apt/lists/*
 RUN groupadd -g 1001 nodejs && useradd -u 1001 -g nodejs -s /bin/sh nodejs
 WORKDIR /app
+# Root node_modules (shared by all packages in pnpm monorepo)
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules                    ./node_modules
+
+# Marketplace service
 COPY --from=builder --chown=nodejs:nodejs /app/services/marketplace/dist              ./services/marketplace/dist
 COPY --from=builder --chown=nodejs:nodejs /app/services/marketplace/package.json      ./services/marketplace/package.json
-COPY --from=builder --chown=nodejs:nodejs /app/services/marketplace/node_modules      ./services/marketplace/node_modules
-COPY --from=builder --chown=nodejs:nodejs /app/packages/database/node_modules  ./packages/database/node_modules
+
+# Database package (required at runtime)
+COPY --from=builder --chown=nodejs:nodejs /app/packages/database/dist          ./packages/database/dist
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/package.json  ./packages/database/package.json
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/prisma        ./packages/database/prisma
+
+# Workspace config
 COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nodejs:nodejs /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 ENV NODE_ENV=production PORT=3000
