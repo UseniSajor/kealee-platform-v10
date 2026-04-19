@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
+    "@kealee/seeds": "workspace:*",
     "openai": "^4.77.0",
     "zod": "^3.22.0",
     "nanoid": "^3.3.7",
