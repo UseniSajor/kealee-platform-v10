@@ -1,33 +1,59 @@
-# Railway Configuration for Kealee Platform
-# IMPORTANT: This is a MONOREPO with multiple services
-# Service-specific configuration is set per-service in Railway dashboard:
-# - web-main: startCommand="pnpm start", healthcheckPath="/"
-# - kealee-api: startCommand="node dist/index.js", healthcheckPath="/health"
-# - other services: custom per service
+# Railway Configuration for Kealee Platform MONOREPO
+# Each service uses its own Dockerfile and configuration
 
 [build]
-# Use our custom Dockerfile per service
 dockerfile = "Dockerfile"
 contextDir = "."
 
-[deploy]
-# Deployment settings (can be overridden per-service in dashboard)
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 5
-
-# Environment variables
 [env]
 NODE_ENV = "production"
-PORT = "3000"
 APP_ENV = "production"
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
 PRISMA_CLIENT_ENGINE_TYPE = "binary"
 SUPABASE_URL = "https://rkreqfpkxavqpsqexbfs.supabase.co"
 API_BASE_URL = "https://api.kealee.com"
 
+# ============================================================================
+# SERVICE: web-main (Next.js frontend)
+# ============================================================================
+[services.web-main]
+[services.web-main.build]
+builder = "NIXPACKS"
+buildCommand = "corepack enable && corepack prepare pnpm@8.15.9 --activate && pnpm install --no-frozen-lockfile && pnpm turbo build --filter=./apps/web-main"
+watchPatterns = ["apps/web-main/**", "packages/**"]
+
+[services.web-main.deploy]
+startCommand = "cd apps/web-main && pnpm start"
+healthcheckPath = "/"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+# ============================================================================
+# SERVICE: kealee-api (Fastify backend)
+# ============================================================================
+[services.kealee-api]
+[services.kealee-api.deploy]
+startCommand = "node services/api/dist/index.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
+
+# ============================================================================
+# SERVICE: worker (BullMQ job processor)
+# ============================================================================
+[services.worker]
+[services.worker.deploy]
+startCommand = "node services/worker/dist/index.js"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
+
 # IMPORTANT: Set these in Railway dashboard Variables section
-# DATABASE_URL = set in Railway dashboard (required)
-# REDIS_URL = set in Railway dashboard (optional, falls back to localhost)
-# SUPABASE_SERVICE_ROLE_KEY = set in Railway dashboard (required)
-# SUPABASE_ANON_KEY = set in Railway dashboard (required)
-# All other service credentials (Stripe, Anthropic, etc.) in Variables section
+# - DATABASE_URL (required)
+# - REDIS_URL (optional, falls back to localhost)
+# - SUPABASE_SERVICE_ROLE_KEY (required)
+# - SUPABASE_ANON_KEY (required)
+# - STRIPE_SECRET_KEY (required)
+# - ANTHROPIC_API_KEY (required)
+# - All other service credentials (Resend, Twilio, etc.)
