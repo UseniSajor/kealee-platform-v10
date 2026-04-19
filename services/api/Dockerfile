@@ -121,20 +121,27 @@ RUN groupadd -g 1001 nodejs && \
 
 WORKDIR /app
 
+# Root node_modules (shared by all packages in pnpm monorepo)
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules                   ./node_modules
+
+# API service
 COPY --from=builder --chown=nodejs:nodejs /app/services/api/dist              ./services/api/dist
 COPY --from=builder --chown=nodejs:nodejs /app/services/api/package.json      ./services/api/package.json
-COPY --from=builder --chown=nodejs:nodejs /app/services/api/node_modules      ./services/api/node_modules
-COPY --from=builder --chown=nodejs:nodejs /app/packages/database/node_modules ./packages/database/node_modules
+
+# Database package
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/dist         ./packages/database/dist
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/package.json ./packages/database/package.json
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/prisma       ./packages/database/prisma
-COPY --from=builder --chown=nodejs:nodejs /app/packages/core-llm/node_modules ./packages/core-llm/node_modules
+
+# Core LLM package (required by API at runtime)
 COPY --from=builder --chown=nodejs:nodejs /app/packages/core-llm/dist         ./packages/core-llm/dist
 COPY --from=builder --chown=nodejs:nodejs /app/packages/core-llm/package.json ./packages/core-llm/package.json
-COPY --from=builder --chown=nodejs:nodejs /app/packages/seeds/node_modules    ./packages/seeds/node_modules
+
+# Seeds package (required by core-llm at runtime)
 COPY --from=builder --chown=nodejs:nodejs /app/packages/seeds/dist            ./packages/seeds/dist
 COPY --from=builder --chown=nodejs:nodejs /app/packages/seeds/package.json    ./packages/seeds/package.json
+
+# Workspace config
 COPY --from=builder --chown=nodejs:nodejs /app/package.json                   ./package.json
 COPY --from=builder --chown=nodejs:nodejs /app/pnpm-workspace.yaml            ./pnpm-workspace.yaml
 
