@@ -44,6 +44,7 @@ COPY packages/core-ddts/package.json             ./packages/core-ddts/package.js
 COPY packages/core-events/package.json           ./packages/core-events/package.json
 COPY packages/types/package.json                 ./packages/types/package.json
 COPY packages/core-llm/package.json              ./packages/core-llm/package.json
+COPY packages/seeds/package.json                 ./packages/seeds/package.json
 
 # ── Layer 2: install dependencies ──
 RUN pnpm install --filter @kealee/api... --prod=false --ignore-scripts
@@ -67,6 +68,7 @@ COPY packages/core-ddts/      ./packages/core-ddts/
 COPY packages/core-events/    ./packages/core-events/
 COPY packages/types/          ./packages/types/
 COPY packages/core-llm/       ./packages/core-llm/
+COPY packages/seeds/          ./packages/seeds/
 COPY services/api/            ./services/api/
 
 # ── Layer 4: generate Prisma client + compile database package ──
@@ -92,6 +94,7 @@ RUN pnpm --filter @kealee/core-events run build 2>/dev/null || true
 RUN pnpm --filter @kealee/core-ddts run build 2>/dev/null || true
 RUN pnpm --filter @kealee/concept-engine run build 2>/dev/null || true
 RUN pnpm --filter @kealee/core-llm run build 2>/dev/null || true
+RUN pnpm --filter @kealee/seeds run build 2>/dev/null || true
 
 # ── Layer 6: build the API ──
 RUN cd services/api && (pnpm run build:ts; true) && \
@@ -124,6 +127,9 @@ COPY --from=builder --chown=nodejs:nodejs /app/packages/database/node_modules ./
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/dist         ./packages/database/dist
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/package.json ./packages/database/package.json
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/prisma       ./packages/database/prisma
+COPY --from=builder --chown=nodejs:nodejs /app/packages/core-llm/dist         ./packages/core-llm/dist
+COPY --from=builder --chown=nodejs:nodejs /app/packages/seeds/dist            ./packages/seeds/dist
+COPY --from=builder --chown=nodejs:nodejs /app/packages/seeds/package.json    ./packages/seeds/package.json
 COPY --from=builder --chown=nodejs:nodejs /app/package.json                   ./package.json
 COPY --from=builder --chown=nodejs:nodejs /app/pnpm-workspace.yaml            ./pnpm-workspace.yaml
 
