@@ -63,4 +63,6 @@ EXPOSE 3024
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3024/',(r)=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))"
 
-CMD ["pnpm", "start"]
+# Use shell form to ensure proper command execution
+SHELL ["/bin/sh", "-c"]
+CMD pnpm start
