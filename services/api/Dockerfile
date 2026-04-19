@@ -127,7 +127,10 @@ COPY --from=builder --chown=nodejs:nodejs /app/packages/database/node_modules ./
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/dist         ./packages/database/dist
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/package.json ./packages/database/package.json
 COPY --from=builder --chown=nodejs:nodejs /app/packages/database/prisma       ./packages/database/prisma
+COPY --from=builder --chown=nodejs:nodejs /app/packages/core-llm/node_modules ./packages/core-llm/node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/packages/core-llm/dist         ./packages/core-llm/dist
+COPY --from=builder --chown=nodejs:nodejs /app/packages/core-llm/package.json ./packages/core-llm/package.json
+COPY --from=builder --chown=nodejs:nodejs /app/packages/seeds/node_modules    ./packages/seeds/node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/packages/seeds/dist            ./packages/seeds/dist
 COPY --from=builder --chown=nodejs:nodejs /app/packages/seeds/package.json    ./packages/seeds/package.json
 COPY --from=builder --chown=nodejs:nodejs /app/package.json                   ./package.json
