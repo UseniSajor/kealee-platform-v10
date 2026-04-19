@@ -9,4 +9,4 @@ cmds = [
 ]
 
 [start]
-cmd = "cd apps/web-main && npx next start -p $PORT"
+cmd = "pnpm --filter web-main start"
