@@ -13,7 +13,6 @@ RUN pnpm install --prod=false --ignore-scripts && \
 
 FROM node:20-alpine
 ENV NODE_ENV=production PORT=3024
-# Force rebuild: 2026-04-20T16:47:00Z - cache bust for web-main deployment
 RUN apk add --no-cache openssl ca-certificates
 WORKDIR /app/apps/web-main
 COPY --from=builder /app/apps/web-main/.next ./.next
@@ -21,5 +20,5 @@ COPY --from=builder /app/apps/web-main/public ./public
 COPY --from=builder /app/apps/web-main/package.json ./
 COPY --from=builder /app/apps/web-main/node_modules ./node_modules
 EXPOSE 3024
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=5 CMD node -e "require('http').get('http://localhost:3024/', r => process.exit(r.statusCode===200 ? 0:1))"
-CMD ["node", "/app/apps/web-main/node_modules/.next/standalone/server.js"]
+ENTRYPOINT ["/usr/local/bin/node"]
+CMD ["/app/apps/web-main/node_modules/.next/standalone/server.js"]
