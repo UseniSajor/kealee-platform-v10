@@ -2938,11 +2938,11 @@ importers:
         specifier: ^0.74.0
         version: 0.74.0(zod@3.25.76)
       '@bull-board/api':
-        specifier: ^7.0.0
-        version: 7.0.0(@bull-board/ui@7.0.0)
+        specifier: ^6.1.0
+        version: 6.21.3(@bull-board/ui@6.21.3)
       '@bull-board/fastify':
-        specifier: ^7.0.0
-        version: 7.0.0
+        specifier: ^6.1.0
+        version: 6.21.3
       '@fastify/cors':
         specifier: ^8.5.0
         version: 8.5.0
@@ -6147,29 +6147,29 @@ packages:
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
     dev: true
 
-  /@bull-board/api@7.0.0(@bull-board/ui@7.0.0):
-    resolution: {integrity: sha512-ISNspLHVmUWUSq/eLw+wd1FuBBUnqpLbYP2xUNmehpfKhS+NoZWMbBvqjUYVeE/HLfUkRcR1edzMKpl5n9zlSw==}
+  /@bull-board/api@6.21.3(@bull-board/ui@6.21.3):
+    resolution: {integrity: sha512-FoQO+0MgZsPrQX9WLZx0KpINamJY48FUU+OyMcZxx9mQWCwsdak45V/uBgQrTYB3GaF5oGA0SxPXEp4RHwj36A==}
     peerDependencies:
-      '@bull-board/ui': 7.0.0
+      '@bull-board/ui': 6.21.3
     dependencies:
-      '@bull-board/ui': 7.0.0
+      '@bull-board/ui': 6.21.3
       redis-info: 3.1.0
     dev: false
 
-  /@bull-board/fastify@7.0.0:
-    resolution: {integrity: sha512-QW8mltNCev7UXF6DRgjazkrlNOikoPFiWp/G2XeFO7MnhWR6ZVYNMtLm7/fFia+yKexOp5fRRW4bnhTvryq7/g==}
+  /@bull-board/fastify@6.21.3:
+    resolution: {integrity: sha512-uCUmKceSD54cTj7+xAt99+LGbjcyeUtJTdwUs8QHy3y+3h9S2xynjtEdJCr58+Z/skGsDIYdOeoWhaHUqUW2EQ==}
     dependencies:
-      '@bull-board/api': 7.0.0(@bull-board/ui@7.0.0)
-      '@bull-board/ui': 7.0.0
+      '@bull-board/api': 6.21.3(@bull-board/ui@6.21.3)
+      '@bull-board/ui': 6.21.3
       '@fastify/static': 9.1.1
       '@fastify/view': 11.1.1
       ejs: 5.0.2
     dev: false
 
-  /@bull-board/ui@7.0.0:
-    resolution: {integrity: sha512-AnKeklpDn0iMFgu4ukDU6uTNmw4oudl07G4k2Fh95SknKDrXSiWRV0N1TGUawMqyfG1Yi5P/W/8d7raBq/Uw6w==}
+  /@bull-board/ui@6.21.3:
+    resolution: {integrity: sha512-s/PLBJab8cnoQAGVqjQb0v4oGe0KgB4aQ5G5g93doxzXB/D+wkXNL9P9+zLWLldBJXE57jL4CR99ttDCIiyNHw==}
     dependencies:
-      '@bull-board/api': 7.0.0(@bull-board/ui@7.0.0)
+      '@bull-board/api': 6.21.3(@bull-board/ui@6.21.3)
     dev: false
 
   /@callstack/react-theme-provider@3.0.9(react@18.2.0):

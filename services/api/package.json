@@ -21,8 +21,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
-    "@bull-board/api": "^7.0.0",
-    "@bull-board/fastify": "^7.0.0",
+    "@bull-board/api": "^6.1.0",
+    "@bull-board/fastify": "^6.1.0",
     "@fastify/cors": "^8.5.0",
     "@fastify/csrf-protection": "^7.1.0",
     "@fastify/helmet": "^11.1.1",
