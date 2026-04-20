@@ -13,17 +13,12 @@ RUN pnpm install --prod=false --ignore-scripts && \
 
 FROM node:20-alpine
 ENV NODE_ENV=production PORT=3024
-RUN apk add --no-cache openssl ca-certificates && \
-    rm -rf /root/.profile /root/.bashrc /root/.bash_profile /root/.ash_history 2>/dev/null || true
+RUN apk add --no-cache openssl ca-certificates
 WORKDIR /app/apps/web-main
 COPY --from=builder /app/apps/web-main/.next ./.next
 COPY --from=builder /app/apps/web-main/public ./public
 COPY --from=builder /app/apps/web-main/package.json ./
 COPY --from=builder /app/apps/web-main/node_modules ./node_modules
-RUN echo '#!/bin/sh' > ./start.sh && \
-    echo 'set +e' >> ./start.sh && \
-    echo 'exec node /app/apps/web-main/node_modules/.next/standalone/server.js' >> ./start.sh && \
-    chmod +x ./start.sh
 EXPOSE 3024
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=5 CMD node -e "require('http').get('http://localhost:3024/', r => process.exit(r.statusCode===200 ? 0:1))"
-CMD ["./start.sh"]
+CMD ["node", "/app/apps/web-main/node_modules/.next/standalone/server.js"]
