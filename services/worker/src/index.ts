@@ -1,4 +1,6 @@
 import { createServer } from 'http'
+import { logger } from './lib/logger'
+import { initWorkerSentry, captureWorkerError } from './lib/sentry'
 import { redis } from './config/redis.config'
 import { emailQueue } from './queues/email.queue'
 import { webhookQueue } from './queues/webhook.queue'
@@ -31,7 +33,10 @@ import { cronManager } from './cron/cron.manager'
 import cron from 'node-cron'
 import type { Worker } from 'bullmq'
 
-console.log('🚀 Starting Kealee Platform Worker Service...')
+logger.info('Starting Kealee Platform Worker Service')
+
+// Initialize Sentry error tracking
+initWorkerSentry()
 
 // Workers
 let emailWorker: Worker | null = null
@@ -516,6 +521,20 @@ async function start() {
   }, 1000 * 60 * 60) // 1 hour
 }
 
+// Unhandled Promise rejection handler
+process.on('unhandledRejection', (reason: Error | unknown) => {
+  const error = reason instanceof Error ? reason : new Error(String(reason))
+  logger.error({ err: error }, 'Unhandled Promise Rejection')
+  captureWorkerError(error, { type: 'unhandledRejection' })
+})
+
+// Uncaught Exception handler
+process.on('uncaughtException', (err: Error) => {
+  logger.fatal({ err }, 'Uncaught Exception')
+  captureWorkerError(err, { type: 'uncaughtException' })
+  process.exit(1)
+})
+
 start()
   .then(() => {
     // Health check HTTP server — required for Railway healthcheck probes
@@ -545,10 +564,11 @@ start()
       }))
     })
     healthServer.listen(HEALTH_PORT, '0.0.0.0', () => {
-      console.log(`✅ Worker health endpoint: http://0.0.0.0:${HEALTH_PORT}/health`)
+      logger.info({ port: HEALTH_PORT }, 'Worker health endpoint listening')
     })
   })
   .catch((error) => {
-    console.error('❌ Failed to start worker service:', error)
+    logger.error({ err: error }, 'Failed to start worker service')
+    captureWorkerError(error as Error, { type: 'startupError' })
     process.exit(1)
   })

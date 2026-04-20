@@ -340,9 +340,10 @@ import { requestLogger, responseLogger } from './middleware/logging.middleware'
 import { swaggerConfig, swaggerUIConfig } from './config/swagger.config'
 import { prisma } from '@kealee/database'
 import { environment, logEnvironment, validateProductionConfig, getSafeConfig } from './config/environment'
+import { createFastifyLogger } from '@kealee/observability'
 
 const fastify = Fastify({
-  logger: true,
+  logger: createFastifyLogger('kealee-api'),
 })
 
 // Register health check routes IMMEDIATELY so Railway/Docker health probes
@@ -1198,6 +1199,12 @@ const start = async () => {
       await fastify.register(projectOutputRoutes, { prefix: '/api' })
     })
 
+    // ── Admin Dashboard (Bull Board + System Status) ──
+    await safeRegisterBlock('Admin dashboard routes', async () => {
+      const { registerAdminRoutes } = await import('./modules/admin/admin-dashboard.routes.js')
+      await registerAdminRoutes(fastify)
+    })
+
     // ── Test Routes (TEST_MODE=true only) ──
     await safeRegisterBlock('Test simulation routes', async () => {
       const { testRoutes } = await import('./modules/test/test.routes')
@@ -1354,6 +1361,32 @@ const start = async () => {
     }
   }
 }
+
+// Unhandled Promise rejection handler
+process.on('unhandledRejection', (reason: Error | unknown) => {
+  const error = reason instanceof Error ? reason : new Error(String(reason))
+  console.error('❌ Unhandled Promise Rejection:', error.message)
+  console.error('Stack:', error.stack || '(no stack)')
+  try {
+    const { captureException } = require('./middleware/sentry.middleware')
+    captureException(error)
+  } catch {
+    // Sentry not available
+  }
+})
+
+// Uncaught Exception handler
+process.on('uncaughtException', (err: Error) => {
+  console.error('❌ Uncaught Exception:', err.message)
+  console.error('Stack:', err.stack || '(no stack)')
+  try {
+    const { captureException } = require('./middleware/sentry.middleware')
+    captureException(err)
+  } catch {
+    // Sentry not available
+  }
+  process.exit(1)
+})
 
 start().catch((err) => {
   console.error('❌ Unhandled startup error:', err?.message || err)

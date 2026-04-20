@@ -12,6 +12,7 @@
     "@anthropic-ai/sdk": "^0.82.0",
     "@kealee/intake": "workspace:*",
     "@kealee/ui": "workspace:*",
+    "@sentry/nextjs": "^10.38.0",
     "@supabase/supabase-js": "^2.39.0",
     "framer-motion": "^11.15.0",
     "lucide-react": "^0.294.0",

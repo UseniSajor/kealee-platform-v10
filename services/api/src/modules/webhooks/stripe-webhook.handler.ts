@@ -30,7 +30,8 @@ interface StripeWebhookEvent {
  */
 async function handleCheckoutSessionCompleted(
   session: Stripe.Checkout.Session,
-  redis: any
+  redis: any,
+  logger: any
 ): Promise<void> {
   const metadata = session.metadata || {}
   const source = metadata.source // 'concept', 'zoning', 'estimation', 'permits'
@@ -38,7 +39,7 @@ async function handleCheckoutSessionCompleted(
   const funnelSessionId = metadata.funnelSessionId
   const tier = metadata.packageTier
 
-  console.log(`✅ Payment completed: ${source} intake #${intakeId}`)
+  logger.info({ source, intakeId, sessionId: session.id }, 'Payment completed')
 
   // Update intake based on source
   if (source === 'concept') {
@@ -120,7 +121,7 @@ async function handleCheckoutSessionCompleted(
   // Send notification email
   if (session.customer_email) {
     // Queue email notification job
-    console.log(`📧 Sending payment confirmation email to ${session.customer_email}`)
+    logger.info({ email: session.customer_email, sessionId: session.id }, 'Queueing payment confirmation email')
     // TODO: Queue job using BullMQ or similar
     // await emailQueue.add('payment-confirmation', { email: session.customer_email, sessionId: session.id })
   }
@@ -132,18 +133,19 @@ async function handleCheckoutSessionCompleted(
  */
 async function handleChargeFailed(
   charge: Stripe.Charge,
-  redis: any
+  redis: any,
+  logger: any
 ): Promise<void> {
   const metadata = charge.metadata || {}
   const source = metadata.source
   const intakeId = metadata.intakeId
   const funnelSessionId = metadata.funnelSessionId
 
-  console.error(`❌ Payment failed: ${source} intake #${intakeId} - ${charge.failure_message}`)
+  logger.error({ source, intakeId, failureMessage: charge.failure_message, chargeId: charge.id }, 'Payment failed')
 
   // Send notification email to customer
   if (charge.receipt_email) {
-    console.log(`📧 Sending payment failure notification to ${charge.receipt_email}`)
+    logger.info({ email: charge.receipt_email, chargeId: charge.id }, 'Queueing payment failure notification')
     // TODO: Queue email notification
   }
 
@@ -162,9 +164,10 @@ async function handleChargeFailed(
  * For recurring billing scenarios (future use)
  */
 async function handleSubscriptionUpdated(
-  subscription: Stripe.Subscription
+  subscription: Stripe.Subscription,
+  logger: any
 ): Promise<void> {
-  console.log(`📋 Subscription updated: ${subscription.id}`)
+  logger.info({ subscriptionId: subscription.id }, 'Subscription updated')
   // TODO: Handle subscription updates (price changes, tier upgrades, etc.)
 }
 
@@ -173,9 +176,10 @@ async function handleSubscriptionUpdated(
  * For subscription cancellations
  */
 async function handleSubscriptionDeleted(
-  subscription: Stripe.Subscription
+  subscription: Stripe.Subscription,
+  logger: any
 ): Promise<void> {
-  console.log(`📋 Subscription deleted: ${subscription.id}`)
+  logger.info({ subscriptionId: subscription.id }, 'Subscription deleted')
   // TODO: Handle subscription cancellations
 }
 
@@ -288,34 +292,34 @@ export async function registerStripeWebhookHandler(fastify: FastifyInstance) {
             process.env.STRIPE_WEBHOOK_SECRET || ''
           ) as StripeWebhookEvent
         } catch (err: any) {
-          console.error(`⚠️  Webhook signature verification failed: ${err.message}`)
+          fastify.log.error({ err }, 'Stripe webhook signature verification failed')
           return reply.status(400).send({
             error: 'Webhook signature verification failed',
           })
         }
 
-        console.log(`🔔 Stripe webhook: ${event.type}`)
+        fastify.log.info({ eventType: event.type }, 'Processing Stripe webhook event')
 
         // Handle events
         switch (event.type) {
           case 'checkout.session.completed':
-            await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session, redis)
+            await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session, redis, fastify.log)
             break
 
           case 'charge.failed':
-            await handleChargeFailed(event.data.object as Stripe.Charge, redis)
+            await handleChargeFailed(event.data.object as Stripe.Charge, redis, fastify.log)
             break
 
           case 'customer.subscription.updated':
-            await handleSubscriptionUpdated(event.data.object as Stripe.Subscription)
+            await handleSubscriptionUpdated(event.data.object as Stripe.Subscription, fastify.log)
             break
 
           case 'customer.subscription.deleted':
-            await handleSubscriptionDeleted(event.data.object as Stripe.Subscription)
+            await handleSubscriptionDeleted(event.data.object as Stripe.Subscription, fastify.log)
             break
 
           default:
-            console.log(`ℹ️  Unhandled webhook event: ${event.type}`)
+            fastify.log.info({ eventType: event.type }, 'Unhandled webhook event type')
         }
 
         // Acknowledge receipt

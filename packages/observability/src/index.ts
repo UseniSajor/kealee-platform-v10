@@ -38,3 +38,10 @@ export {
   type CreateLoggerOptions,
   type Logger,
 } from './logger.js';
+
+// Alerts
+export {
+  sendAlert,
+  sendAlertAsync,
+  type AlertType,
+} from './alerts.js';

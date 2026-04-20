@@ -18,28 +18,23 @@ export function initSentry(dsn?: string, environment?: string) {
   }
 
   try {
-    // Dynamic import to avoid bundling issues if Sentry not installed
-    import('@sentry/node').then((Sentry) => {
-      Sentry.init({
-        dsn: sentryDsn,
-        environment: environment || process.env.NODE_ENV || 'development',
-        tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-        integrations: [
-          Sentry.httpIntegration(),
-        ],
-        beforeSend(event, hint) {
-          // Filter out health check errors
-          if (event.request?.url?.includes('/health')) {
-            return null
-          }
-          return event
-        },
-      })
-      sentryInitialized = true
-      console.log('✅ Sentry initialized for API')
-    }).catch(() => {
-      console.warn('Sentry package not installed. Run: pnpm add @sentry/node')
+    Sentry.init({
+      dsn: sentryDsn,
+      environment: environment || process.env.NODE_ENV || 'development',
+      tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+      integrations: [
+        Sentry.httpIntegration(),
+      ],
+      beforeSend(event) {
+        // Filter out health check errors
+        if (event.request?.url?.includes('/health')) {
+          return null
+        }
+        return event
+      },
     })
+    sentryInitialized = true
+    console.log('✅ Sentry initialized for API')
   } catch (error) {
     console.warn('Failed to initialize Sentry:', error)
   }
@@ -55,8 +50,6 @@ export async function sentryRequestHandler(
   if (!sentryInitialized) return
 
   try {
-    const Sentry = await import('@sentry/node')
-    
     // Use newer Sentry v8 API
     const span = Sentry.startInactiveSpan({
       op: 'http.server',
@@ -106,11 +99,10 @@ export async function sentryResponseHandler(
 /**
  * Sentry error handler
  */
-export async function captureException(error: Error, context?: Record<string, any>) {
+export function captureException(error: Error, context?: Record<string, any>) {
   if (!sentryInitialized) return
 
   try {
-    const Sentry = await import('@sentry/node')
     Sentry.captureException(error, {
       extra: context,
     })
@@ -119,11 +111,10 @@ export async function captureException(error: Error, context?: Record<string, an
   }
 }
 
-export async function captureMessage(message: string, level: 'info' | 'warning' | 'error' = 'info') {
+export function captureMessage(message: string, level: 'info' | 'warning' | 'error' = 'info') {
   if (!sentryInitialized) return
 
   try {
-    const Sentry = await import('@sentry/node')
     Sentry.captureMessage(message, level)
   } catch {
     // Sentry not available
