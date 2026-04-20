@@ -44,6 +44,15 @@ jobs:
           pnpm --filter @kealee/shared run build
           pnpm --filter @kealee/storage run build
 
+      - name: Build Next.js apps
+        run: |
+          pnpm --filter web-main run build
+          pnpm --filter portal-owner run build
+          pnpm --filter portal-contractor run build
+          pnpm --filter portal-developer run build
+          pnpm --filter command-center run build
+          pnpm --filter admin-console run build
+
       - name: Type check API
         run: pnpm --filter @kealee/api run build:ts
 

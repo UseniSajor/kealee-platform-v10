@@ -12,7 +12,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.24.0",
+    "@anthropic-ai/sdk": "^0.74.0",
     "@kealee/concept-engine": "workspace:*",
     "@kealee/core": "workspace:*",
     "@kealee/database": "workspace:*",

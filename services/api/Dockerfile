@@ -75,28 +75,28 @@ COPY services/api/            ./services/api/
 
 # ── Layer 4: generate Prisma client + compile database package ──
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \
-    pnpm --filter @kealee/database run db:generate 2>&1 || true
-RUN pnpm --filter @kealee/database run build 2>/dev/null || true
+    pnpm --filter @kealee/database run db:generate
+RUN pnpm --filter @kealee/database run build
 
 # ── Layer 5: build workspace packages ──
-RUN pnpm --filter @kealee/shared run build 2>/dev/null || true
-RUN pnpm --filter @kealee/storage run build 2>/dev/null || true
-RUN pnpm --filter @kealee/estimating run build 2>/dev/null || true
-RUN pnpm --filter @kealee/workflow-engine run build 2>/dev/null || true
-RUN pnpm --filter @kealee/ai run build 2>/dev/null || true
-RUN pnpm --filter @kealee/ai-chat run build 2>/dev/null || true
-RUN pnpm --filter @kealee/analytics run build 2>/dev/null || true
-RUN pnpm --filter @kealee/audit run build 2>/dev/null || true
-RUN pnpm --filter @kealee/observability run build 2>/dev/null || true
-RUN pnpm --filter @kealee/realtime run build 2>/dev/null || true
-RUN pnpm --filter @kealee/scoring run build 2>/dev/null || true
-RUN pnpm --filter @kealee/page-builder run build 2>/dev/null || true
-RUN pnpm --filter @kealee/types run build 2>/dev/null || true
-RUN pnpm --filter @kealee/core-events run build 2>/dev/null || true
-RUN pnpm --filter @kealee/core-ddts run build 2>/dev/null || true
-RUN pnpm --filter @kealee/concept-engine run build 2>/dev/null || true
-RUN pnpm --filter @kealee/core-llm run build 2>/dev/null || true
-RUN pnpm --filter @kealee/seeds run build 2>/dev/null || true
+RUN pnpm --filter @kealee/shared run build
+RUN pnpm --filter @kealee/storage run build
+RUN pnpm --filter @kealee/estimating run build
+RUN pnpm --filter @kealee/workflow-engine run build
+RUN pnpm --filter @kealee/ai run build
+RUN pnpm --filter @kealee/ai-chat run build
+RUN pnpm --filter @kealee/analytics run build
+RUN pnpm --filter @kealee/audit run build
+RUN pnpm --filter @kealee/observability run build
+RUN pnpm --filter @kealee/realtime run build
+RUN pnpm --filter @kealee/scoring run build
+RUN pnpm --filter @kealee/page-builder run build
+RUN pnpm --filter @kealee/types run build
+RUN pnpm --filter @kealee/core-events run build
+RUN pnpm --filter @kealee/core-ddts run build
+RUN pnpm --filter @kealee/concept-engine run build
+RUN pnpm --filter @kealee/core-llm run build
+RUN pnpm --filter @kealee/seeds run build
 
 # ── Layer 6: build the API ──
 RUN cd services/api && (pnpm run build:ts; true) && \

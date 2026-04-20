@@ -45,7 +45,7 @@ COPY services/command-center/ ./services/command-center/
 
 # ── Layer 4: Generate Prisma client ──
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \
-    pnpm --filter @kealee/database run db:generate 2>&1 || true
+    pnpm --filter @kealee/database run db:generate
 
 # ── Layer 5: Build the command center ──
 RUN cd services/command-center && pnpm run build && \

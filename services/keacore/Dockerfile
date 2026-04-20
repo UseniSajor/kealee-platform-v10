@@ -19,7 +19,7 @@ COPY packages/core-agents/ ./packages/core-agents/
 COPY packages/core-tools/ ./packages/core-tools/
 COPY packages/database/ ./packages/database/
 COPY services/keacore/ ./services/keacore/
-RUN pnpm install --filter @kealee/keacore... --prod=false --frozen-lockfile --ignore-scripts 2>/dev/null || true
+RUN pnpm install --filter @kealee/keacore... --prod=false --frozen-lockfile --ignore-scripts
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" cd packages/database && npx prisma generate
 RUN cd packages/core-agents && pnpm run build
 RUN cd packages/core-tools && pnpm run build
