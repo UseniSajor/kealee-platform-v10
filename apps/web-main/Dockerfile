@@ -14,7 +14,7 @@ RUN npm install -g pnpm@8.12.0
 WORKDIR /app
 
 # Copy root dependencies and workspace files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json ./
 
 # Copy all packages and apps (needed for turbo dependency graph)
 COPY packages ./packages
@@ -45,7 +45,7 @@ RUN npm install -g pnpm@8.12.0
 WORKDIR /app
 
 # Copy root workspace files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json ./
 
 # Copy packages
 COPY packages ./packages
