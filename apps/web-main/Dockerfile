@@ -20,6 +20,8 @@ COPY --from=builder /app/apps/web-main/.next ./.next
 COPY --from=builder /app/apps/web-main/public ./public
 COPY --from=builder /app/apps/web-main/package.json ./
 COPY --from=builder /app/apps/web-main/node_modules ./node_modules
+COPY start.sh ./start.sh
+RUN chmod +x ./start.sh
 EXPOSE 3024
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=5 CMD node -e "require('http').get('http://localhost:3024/', r => process.exit(r.statusCode===200 ? 0:1))"
-CMD ["node", ".next/standalone/server.js"]
+CMD ["./start.sh"]
