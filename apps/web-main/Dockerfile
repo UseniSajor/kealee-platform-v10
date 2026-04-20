@@ -12,14 +12,13 @@ RUN pnpm install --prod=false --ignore-scripts && \
     cd /app/apps/web-main && pnpm run build 2>&1 | tail -20
 
 FROM node:20-alpine
-LABEL build.timestamp="2026-04-20T17:10:00Z" description="Production Next.js app - Docker build"
+LABEL build.timestamp="2026-04-20T17:15:00Z" description="Production Next.js - Force fresh Docker rebuild"
 ENV NODE_ENV=production PORT=3024
-RUN apk add --no-cache openssl ca-certificates
+RUN apk add --no-cache openssl ca-certificates && rm -rf /etc/profile /etc/profile.d /root/.bashrc /root/.bash_profile 2>/dev/null || true
 WORKDIR /app/apps/web-main
 COPY --from=builder /app/apps/web-main/.next ./.next
 COPY --from=builder /app/apps/web-main/public ./public
 COPY --from=builder /app/apps/web-main/package.json ./
 COPY --from=builder /app/apps/web-main/node_modules ./node_modules
 EXPOSE 3024
-ENTRYPOINT ["/usr/local/bin/node"]
-CMD ["/app/apps/web-main/node_modules/.next/standalone/server.js"]
+ENTRYPOINT ["/usr/local/bin/node", "/app/apps/web-main/node_modules/.next/standalone/server.js"]
