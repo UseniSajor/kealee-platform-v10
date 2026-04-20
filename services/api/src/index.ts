@@ -1200,17 +1200,19 @@ const start = async () => {
     })
 
     // ── Admin Dashboard (Bull Board + System Status) ──
-    await safeRegisterBlock('Admin dashboard routes', async () => {
-      const { registerAdminRoutes } = await import('./modules/admin/admin-dashboard.routes.js')
-      await registerAdminRoutes(fastify)
-    })
+    // DISABLED: @bull-board requires Fastify 5.x, API uses 4.x. Can be re-enabled after upgrading Fastify.
+    // await safeRegisterBlock('Admin dashboard routes', async () => {
+    //   const { registerAdminRoutes } = await import('./modules/admin/admin-dashboard.routes.js')
+    //   await registerAdminRoutes(fastify)
+    // })
 
     // ── Test Routes (TEST_MODE=true only) ──
-    await safeRegisterBlock('Test simulation routes', async () => {
-      const { testRoutes } = await import('./modules/test/test.routes')
-      await fastify.register(testRoutes, { prefix: '/test' })
-      console.log(`✅ Test routes registered${process.env.TEST_MODE === 'true' ? ' [TEST_MODE ACTIVE]' : ' [inactive — set TEST_MODE=true]'}`)
-    })
+    // DISABLED: Test routes require @fastify/view which requires Fastify 5.x. Can be re-enabled after upgrading Fastify.
+    // await safeRegisterBlock('Test simulation routes', async () => {
+    //   const { testRoutes } = await import('./modules/test/test.routes')
+    //   await fastify.register(testRoutes, { prefix: '/test' })
+    //   console.log(`✅ Test routes registered${process.env.TEST_MODE === 'true' ? ' [TEST_MODE ACTIVE]' : ' [inactive — set TEST_MODE=true]'}`)
+    // })
 
     // ══════════════════════════════════════════════════════════════
 
