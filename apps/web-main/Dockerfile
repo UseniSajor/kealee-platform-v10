@@ -53,5 +53,5 @@ EXPOSE 3024
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3024/', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))" || exit 1
 
-# Run Next.js directly
-CMD ["node", "node_modules/.next/standalone/server.js"]
+# Run directly with no shell
+ENTRYPOINT ["node", "node_modules/.next/standalone/server.js"]
