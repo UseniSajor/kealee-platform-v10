@@ -26,12 +26,12 @@ RUN pnpm install --prod=false --ignore-scripts
 # Generate Prisma client
 RUN pnpm --filter @kealee/database run db:generate 2>&1 || true
 
-# Build directly in web-main directory (more reliable than turbo filtering)
-RUN cd /app/apps/web-main && \
-    echo "Starting Next.js build..." && \
-    pnpm build && \
+# Build web-main while maintaining workspace context
+RUN echo "Starting Next.js build..." && \
+    pnpm --filter web-main run build && \
     echo "Build completed successfully" && \
-    ls -la .next/ || (echo "ERROR: .next directory not found"; ls -la; exit 1)
+    test -d /app/apps/web-main/.next && echo ".next directory verified" || \
+    (echo "ERROR: .next directory not found"; find /app/apps/web-main -name ".next" -o -type d -name "dist"; exit 1)
 
 # Production stage
 FROM node:20-slim
