@@ -27,8 +27,8 @@ RUN pnpm install --prod=false --ignore-scripts
 RUN pnpm --filter @kealee/database run db:generate 2>&1 || true
 
 # Use turbo to build web-main and all its dependencies
-RUN pnpm turbo build --filter=./apps/web-main 2>&1 && \
-    test -d apps/web-main/.next || (echo "ERROR: web-main build failed" && exit 1)
+RUN pnpm turbo build --filter=./apps/web-main || (echo "TURBO BUILD FAILED"; exit 1)
+RUN test -d apps/web-main/.next || (echo "ERROR: .next directory not found after build"; ls -la apps/web-main/; exit 1)
 
 # Production stage
 FROM node:20-slim
