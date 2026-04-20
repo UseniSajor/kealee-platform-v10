@@ -26,17 +26,21 @@ RUN pnpm install --prod=false --ignore-scripts
 # Generate Prisma client
 RUN pnpm --filter @kealee/database run db:generate 2>&1 || true
 
-# Build required packages for web-main
-RUN pnpm --filter '@kealee/shared' run build 2>&1 || true
-RUN pnpm --filter '@kealee/intake' run build 2>&1 || true
-RUN pnpm --filter '@kealee/ui' run build 2>&1 || true
+# Build required packages for web-main (must succeed)
+RUN echo "Building @kealee/shared..." && pnpm --filter '@kealee/shared' run build || exit 1
+RUN echo "Building @kealee/intake..." && pnpm --filter '@kealee/intake' run build || exit 1
+RUN echo "Building @kealee/ui..." && pnpm --filter '@kealee/ui' run build || exit 1
+
+# List what was built
+RUN echo "Verifying package builds:" && \
+    find /app/packages -name "dist" -type d | head -20
 
 # Build web-main while maintaining workspace context
 RUN echo "Starting Next.js build..." && \
-    pnpm --filter web-main run build && \
+    pnpm --filter web-main run build 2>&1 | tee /tmp/build.log && \
     echo "Build completed successfully" && \
-    test -d /app/apps/web-main/.next && echo ".next directory verified" || \
-    (echo "ERROR: .next directory not found"; find /app/apps/web-main -name ".next" -o -type d -name "dist"; exit 1)
+    (test -d /app/apps/web-main/.next && echo ".next directory verified" || \
+    (echo "ERROR: .next directory not found"; echo "---BUILD LOG---"; cat /tmp/build.log; echo "---DIRECTORY LISTING---"; ls -laR /app/apps/web-main/ | head -100; exit 1))
 
 # Production stage
 FROM node:20-slim
