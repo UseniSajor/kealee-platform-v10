@@ -1,5 +1,8 @@
 'use client'
 
+// This page uses useSearchParams() which requires dynamic rendering
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
