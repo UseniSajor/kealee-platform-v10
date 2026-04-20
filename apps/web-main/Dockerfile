@@ -13,6 +13,7 @@ RUN pnpm install --prod=false --ignore-scripts && \
 
 FROM node:20-alpine
 ENV NODE_ENV=production PORT=3024
+# Force rebuild: 2026-04-20T16:47:00Z - cache bust for web-main deployment
 RUN apk add --no-cache openssl ca-certificates
 WORKDIR /app/apps/web-main
 COPY --from=builder /app/apps/web-main/.next ./.next
