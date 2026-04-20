@@ -1,11 +1,11 @@
 'use client'
 
-// This page uses useSearchParams() which requires dynamic rendering
-export const dynamic = 'force-dynamic'
-
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
+
+// This page uses useSearchParams() which requires dynamic rendering
+export const dynamic = 'force-dynamic'
 
 export default function PermitsCheckoutPage() {
   const params = useSearchParams()

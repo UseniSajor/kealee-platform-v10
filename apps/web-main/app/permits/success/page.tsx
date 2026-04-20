@@ -1,12 +1,12 @@
 'use client'
 
-// This page uses useSearchParams() which requires dynamic rendering
-export const dynamic = 'force-dynamic'
-
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, Clock, FileText, Zap } from 'lucide-react'
+
+// This page uses useSearchParams() which requires dynamic rendering
+export const dynamic = 'force-dynamic'
 
 interface OrderStatus {
   id: string
