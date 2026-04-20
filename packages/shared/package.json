@@ -34,6 +34,12 @@
       "import": "./dist/intake/index.js",
       "require": "./dist/intake/index.js",
       "default": "./dist/intake/index.js"
+    },
+    "./pricing": {
+      "types": "./dist/pricing.d.ts",
+      "import": "./dist/pricing.js",
+      "require": "./dist/pricing.js",
+      "default": "./dist/pricing.js"
     }
   },
   "typesVersions": {
@@ -49,6 +55,9 @@
       ],
       "intake": [
         "dist/intake/index.d.ts"
+      ],
+      "pricing": [
+        "dist/pricing.d.ts"
       ]
     }
   },
