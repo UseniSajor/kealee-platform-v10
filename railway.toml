@@ -22,7 +22,7 @@ dockerfile = "apps/web-main/Dockerfile"
 contextDir = "."
 # Docker handles build via Dockerfile - no custom buildCommand needed
 # CRITICAL: This is the ONLY Dockerfile for web-main - NOT m-marketplace (was renamed from m-marketplace to web-main)
-# Force Railway to re-read config: 2026-04-20T16:31:00Z (force rebuild after inline start.sh fix)
+# Force Railway to re-read config: 2026-04-20T17:05:00Z (removed NIXPACKS railway.json - use Docker only)
 
 [services.web-main.deploy]
 startCommand = "node /app/apps/web-main/node_modules/.next/standalone/server.js"
