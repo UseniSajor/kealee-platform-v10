@@ -11,10 +11,10 @@ RUN pnpm install --prod=false --ignore-scripts && \
     pnpm --filter '@kealee/ui' run build 2>&1 | tail -10 || true && \
     cd /app/apps/web-main && pnpm run build 2>&1 | tail -20
 
-FROM node:20-alpine
-LABEL build.timestamp="2026-04-20T17:15:00Z" description="Production Next.js - Force fresh Docker rebuild"
+FROM node:20-slim
+LABEL build.timestamp="2026-04-20T17:30:00Z" description="Production Next.js - Force FULL rebuild with new base image"
 ENV NODE_ENV=production PORT=3024
-RUN apk add --no-cache openssl ca-certificates && rm -rf /etc/profile /etc/profile.d /root/.bashrc /root/.bash_profile 2>/dev/null || true
+RUN apt-get update -qq && apt-get install -qq -y ca-certificates openssl > /dev/null 2>&1 && rm -rf /etc/profile /etc/profile.d /root/.bashrc /root/.bash_profile 2>/dev/null || true
 WORKDIR /app/apps/web-main
 COPY --from=builder /app/apps/web-main/.next ./.next
 COPY --from=builder /app/apps/web-main/public ./public
