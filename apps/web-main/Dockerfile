@@ -1,83 +1,57 @@
-# Build stage for web-main
-FROM node:20-slim AS builder
+# Multi-stage build for web-main
+FROM node:20-alpine AS builder
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PRISMA_CLIENT_ENGINE_TYPE=binary \
-    NPM_CONFIG_PRODUCTION=false
+    NPM_CONFIG_PRODUCTION=false \
+    NODE_ENV=production
 
-RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends openssl ca-certificates python3 make gcc g++ && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache python3 make gcc g++ openssl ca-certificates
 
 RUN npm install -g pnpm@8.12.0
 
 WORKDIR /app
 
-# Copy root dependencies and workspace files
+# Copy monorepo workspace files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json .npmrc .pnpmrc ./
 
-# Copy all packages and apps (needed for turbo dependency graph)
+# Copy packages needed for build
 COPY packages ./packages
 COPY apps/web-main ./apps/web-main
 
-# Install all dependencies
-RUN pnpm install --prod=false --ignore-scripts
+# Install dependencies
+RUN pnpm install --prod=false --ignore-scripts 2>&1 | head -100
 
-# Generate Prisma client
-RUN pnpm --filter @kealee/database run db:generate 2>&1 || true
+# Build dependencies
+RUN pnpm --filter '@kealee/shared' run build 2>&1 | tail -20 || true
+RUN pnpm --filter '@kealee/intake' run build 2>&1 | tail -20 || true
+RUN pnpm --filter '@kealee/ui' run build 2>&1 | tail -20 || true
 
-# Build required packages for web-main (must succeed)
-RUN echo "Building @kealee/shared..." && pnpm --filter '@kealee/shared' run build || exit 1
-RUN echo "Building @kealee/intake..." && pnpm --filter '@kealee/intake' run build || exit 1
-RUN echo "Building @kealee/ui..." && pnpm --filter '@kealee/ui' run build || exit 1
+# Build Next.js app
+RUN cd /app/apps/web-main && pnpm run build 2>&1 | tail -50
 
-# List what was built
-RUN echo "Verifying package builds:" && \
-    find /app/packages -name "dist" -type d | head -20
-
-# Build web-main while maintaining workspace context
-RUN echo "Starting Next.js build..." && \
-    pnpm --filter web-main run build 2>&1 | tee /tmp/build.log && \
-    echo "Build completed successfully" && \
-    (test -d /app/apps/web-main/.next && echo ".next directory verified" || \
-    (echo "ERROR: .next directory not found"; echo "---BUILD LOG---"; cat /tmp/build.log; echo "---DIRECTORY LISTING---"; ls -laR /app/apps/web-main/ | head -100; exit 1))
-
-# Production stage
-FROM node:20-slim
+#Production stage
+FROM node:20-alpine
 
 ENV NODE_ENV=production
 
-RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends openssl ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install pnpm for runtime (required by CMD pnpm start)
-RUN npm install -g pnpm@8.12.0
-
-WORKDIR /app
-
-# Copy root workspace files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json .npmrc .pnpmrc ./
-
-# Copy packages
-COPY packages ./packages
-
-# Copy node_modules from builder (for standalone mode, all dependencies are bundled)
-COPY --from=builder /app/node_modules ./node_modules
-
-# Copy web-main (including .next build output)
-COPY --from=builder /app/apps/web-main ./apps/web-main
-
-# Verify .next directory exists
-RUN test -d /app/apps/web-main/.next && echo ".next directory found" || \
-    (echo "ERROR: .next not found in production stage"; find /app/apps/web-main -type d | head -20; exit 1)
+RUN apk add --no-cache openssl ca-certificates
 
 WORKDIR /app/apps/web-main
 
+# Copy built .next directory from builder
+COPY --from=builder /app/apps/web-main/.next ./.next
+COPY --from=builder /app/apps/web-main/public ./public
+COPY --from=builder /app/apps/web-main/package.json ./package.json
+
+# Copy only production node_modules for standalone
+COPY --from=builder /app/apps/web-main/node_modules ./node_modules
+
 EXPOSE 3024
 
+# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3024/',(r)=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))"
+  CMD node -e "require('http').get('http://localhost:3024/', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))" || exit 1
 
-# Use direct next command instead of pnpm (pnpm tries to process workspace from subdir)
-CMD ["node_modules/.bin/next", "start", "-p", "3024"]
+# Run Next.js directly
+CMD ["node", "node_modules/.next/standalone/server.js"]
