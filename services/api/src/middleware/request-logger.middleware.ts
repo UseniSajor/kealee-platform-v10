@@ -150,7 +150,7 @@ export async function responseLogger(request: FastifyRequest, reply: FastifyRepl
 
   const log: RequestLog = {
     method: request.method,
-    path: request.routerPath || request.url.split('?')[0],
+    path: (request.routeOptions?.url as string) || request.url.split('?')[0],
     statusCode: reply.statusCode,
     duration,
     userId: user?.id,

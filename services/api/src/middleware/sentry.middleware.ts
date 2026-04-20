@@ -53,7 +53,7 @@ export async function sentryRequestHandler(
     // Use newer Sentry v8 API
     const span = Sentry.startInactiveSpan({
       op: 'http.server',
-      name: `${request.method} ${request.routerPath || request.url}`,
+      name: `${request.method} ${(request.routeOptions?.url as string) || request.url}`,
       attributes: {
         method: request.method,
         url: request.url,

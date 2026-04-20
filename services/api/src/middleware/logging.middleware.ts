@@ -16,7 +16,7 @@ export async function requestLogger(
     type: 'request',
     method: request.method,
     url: request.url,
-    path: request.routerPath || request.url,
+    path: (request.routeOptions?.url as string) || request.url,
     query: request.query,
     headers: {
       'user-agent': request.headers['user-agent'],
@@ -65,7 +65,7 @@ export function logError(
     request: {
       method: request.method,
       url: request.url,
-      path: request.routerPath || request.url,
+      path: (request.routeOptions?.url as string) || request.url,
       query: request.query,
       body: request.body,
       params: request.params,
@@ -116,7 +116,7 @@ export function configureLogger() {
       req: (request: FastifyRequest) => ({
         method: request.method,
         url: request.url,
-        path: request.routerPath,
+        path: (request.routeOptions?.url as string),
         headers: {
           host: request.headers.host,
           'user-agent': request.headers['user-agent'],
