@@ -25,7 +25,7 @@ contextDir = "."
 # Force Railway to re-read config: 2026-04-20T16:31:00Z (force rebuild after inline start.sh fix)
 
 [services.web-main.deploy]
-# startCommand set in Railway dashboard (not locked here - allows editing)
+startCommand = "node /app/apps/web-main/node_modules/.next/standalone/server.js"
 healthcheckPath = "/"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
