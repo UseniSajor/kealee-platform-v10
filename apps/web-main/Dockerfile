@@ -12,6 +12,7 @@ RUN pnpm install --prod=false --ignore-scripts && \
     cd /app/apps/web-main && pnpm run build 2>&1 | tail -20
 
 FROM node:20-alpine
+LABEL build.timestamp="2026-04-20T17:10:00Z" description="Production Next.js app - Docker build"
 ENV NODE_ENV=production PORT=3024
 RUN apk add --no-cache openssl ca-certificates
 WORKDIR /app/apps/web-main
