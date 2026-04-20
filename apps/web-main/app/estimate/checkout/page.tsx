@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { AlertCircle, Loader2 } from 'lucide-react'
 
-// This page uses useSearchParams() which requires dynamic rendering
-export const dynamic = 'force-dynamic'
+// Disable static prerendering - uses useSearchParams() which requires dynamic rendering
+export const revalidate = 0
 
 export default function EstimateCheckoutPage() {
   const router = useRouter()

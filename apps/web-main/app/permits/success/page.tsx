@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { CheckCircle, Clock, FileText, Zap } from 'lucide-react'
 
 // This page uses useSearchParams() which requires dynamic rendering
-export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 interface OrderStatus {
   id: string
