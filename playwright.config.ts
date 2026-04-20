@@ -1,39 +1,57 @@
-// playwright.config.ts
-// Playwright configuration for E2E tests
+import { defineConfig, devices } from '@playwright/test'
 
-import { defineConfig, devices } from '@playwright/test';
-
+/**
+ * Playwright Configuration for Kealee Platform E2E Tests
+ * Tests the complete user journeys: concept → estimation → permit → checkout → output
+ *
+ * Base URL: http://localhost:3024 (web-main Next.js app)
+ * Test Directory: ./tests/e2e
+ */
 export default defineConfig({
-  testDir: './apps',
+  testDir: './tests/e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
-  use: {
-    baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
+  timeout: 30_000,
+  expect: {
+    timeout: 5_000,
   },
+  reporter: [
+    ['html'],
+    ['list'],
+    ['junit', { outputFile: 'test-results/junit.xml' }],
+  ],
+  use: {
+    baseURL: 'http://localhost:3024',
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+  },
+
   projects: [
     {
-      name: 'm-ops-services',
-      testMatch: '**/m-ops-services/**/__tests__/e2e/**/*.spec.ts',
+      name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
     {
-      name: 'm-architect',
-      testMatch: '**/m-architect/**/__tests__/e2e/**/*.spec.ts',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
     },
     {
-      name: 'm-permits-inspections',
-      testMatch: '**/m-permits-inspections/**/__tests__/e2e/**/*.spec.ts',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+    },
+    {
+      name: 'Mobile Chrome',
+      use: { ...devices['Pixel 5'] },
     },
   ],
+
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
+    command: 'pnpm dev --filter=web-main',
+    url: 'http://localhost:3024',
     reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
   },
-});
+})
