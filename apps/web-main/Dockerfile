@@ -62,11 +62,15 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json .n
 # Copy packages
 COPY packages ./packages
 
-# Copy web-main (including build output)
+# Copy node_modules from builder (for standalone mode, all dependencies are bundled)
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy web-main (including .next build output)
 COPY --from=builder /app/apps/web-main ./apps/web-main
 
-# Install production dependencies only
-RUN pnpm install --filter web-main --prod --ignore-scripts
+# Verify .next directory exists
+RUN test -d /app/apps/web-main/.next && echo ".next directory found" || \
+    (echo "ERROR: .next not found in production stage"; find /app/apps/web-main -type d | head -20; exit 1)
 
 WORKDIR /app/apps/web-main
 
