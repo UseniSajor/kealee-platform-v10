@@ -21,7 +21,7 @@ dockerfile = "apps/web-main/Dockerfile"
 contextDir = "."
 # Docker handles build via Dockerfile - no custom buildCommand needed
 # CRITICAL: This is the ONLY Dockerfile for web-main - NOT m-marketplace (was renamed from m-marketplace to web-main)
-# Force Railway to re-read config: 2026-04-20T02:05:00Z
+# Force Railway to re-read config: 2026-04-20T16:31:00Z (force rebuild after inline start.sh fix)
 
 [services.web-main.deploy]
 # startCommand set in Railway dashboard (not locked here - allows editing)
