@@ -26,6 +26,11 @@ RUN pnpm install --prod=false --ignore-scripts
 # Generate Prisma client
 RUN pnpm --filter @kealee/database run db:generate 2>&1 || true
 
+# Build required packages for web-main
+RUN pnpm --filter '@kealee/shared' run build 2>&1 || true
+RUN pnpm --filter '@kealee/intake' run build 2>&1 || true
+RUN pnpm --filter '@kealee/ui' run build 2>&1 || true
+
 # Build web-main while maintaining workspace context
 RUN echo "Starting Next.js build..." && \
     pnpm --filter web-main run build && \
