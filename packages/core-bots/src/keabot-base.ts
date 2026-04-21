@@ -2,6 +2,7 @@
  * KeaBot Base Class — all 13 bots extend this
  */
 import Anthropic from '@anthropic-ai/sdk';
+import { callLLMWithFallback, type LLMSource } from './llm-fallback';
 
 export interface BotTool {
   name: string;
@@ -90,16 +91,15 @@ export abstract class KeaBot {
   }
 
   /**
-   * Call the Anthropic Messages API with the bot's system prompt, tools, and
-   * the user message. Loops through tool_use responses, executing each tool
-   * and feeding results back until the model produces a final text response.
+   * Call the Anthropic Messages API (or fallback to local LLM) with the bot's
+   * system prompt, tools, and the user message. Loops through tool_use responses,
+   * executing each tool and feeding results back until the model produces a final
+   * text response. Includes llmSource flag in response for audit trail.
    */
   protected async chat(
     userMessage: string,
     context?: Record<string, unknown>,
   ): Promise<string> {
-    const client = new Anthropic(); // reads ANTHROPIC_API_KEY from env
-
     const tools = this.getToolDefinitions();
 
     // Build the conversation messages array
@@ -107,37 +107,63 @@ export abstract class KeaBot {
       { role: 'user', content: userMessage },
     ];
 
+    // Track which LLM source we're using (set on first call)
+    let llmSource: LLMSource = 'ERROR';
+
     // Loop until we get a final text-only response (no tool_use blocks)
     const MAX_ITERATIONS = 10;
     for (let i = 0; i < MAX_ITERATIONS; i++) {
-      const response = await client.messages.create({
-        model: this.config.model!,
-        max_tokens: this.config.maxTokens!,
-        temperature: this.config.temperature!,
-        system: this.config.systemPrompt,
-        tools: tools as Anthropic.Tool[],
+      // Use fallback-enabled LLM call
+      const llmResponse = await callLLMWithFallback(
         messages,
-      });
+        this.config.systemPrompt,
+        this.config.model!,
+        this.config.maxTokens!,
+        this.config.temperature!,
+        tools as Anthropic.Tool[],
+      );
+
+      // Track the LLM source from first iteration
+      if (i === 0) {
+        llmSource = llmResponse.llmSource;
+      }
+
+      // Handle errors
+      if (llmResponse.stopReason === 'error') {
+        const errorMsg = llmResponse.error || 'Unknown error';
+        const response = JSON.stringify({
+          error: `[${this.name}] LLM request failed: ${errorMsg}`,
+          llmSource,
+        });
+        return response;
+      }
 
       // Check if the response contains any tool_use blocks
-      const toolUseBlocks = response.content.filter(
+      const toolUseBlocks = llmResponse.content.filter(
         (block): block is Anthropic.ContentBlockParam & { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> } =>
           block.type === 'tool_use',
       );
 
       // If the model is not requesting tool execution, return the text response
-      if (response.stop_reason !== 'tool_use' || toolUseBlocks.length === 0) {
-        const textParts = response.content
+      if (llmResponse.stopReason !== 'tool_use' || toolUseBlocks.length === 0) {
+        const textParts = llmResponse.content
           .filter((block): block is Anthropic.TextBlock => block.type === 'text')
           .map((block) => block.text);
 
-        return textParts.length > 0
+        const responseText = textParts.length > 0
           ? textParts.join('\n')
           : `[${this.name}] No response generated.`;
+
+        // Return response with llmSource flag
+        const response = JSON.stringify({
+          content: responseText,
+          llmSource,
+        });
+        return response;
       }
 
       // Append the assistant turn with all content blocks
-      messages.push({ role: 'assistant', content: response.content });
+      messages.push({ role: 'assistant', content: llmResponse.content });
 
       // Execute each tool call and build tool_result blocks
       const toolResults: Anthropic.ToolResultBlockParam[] = [];
@@ -163,7 +189,11 @@ export abstract class KeaBot {
       // 'tool_use', the loop continues to let the model process results.
     }
 
-    return `[${this.name}] Reached maximum tool-use iterations.`;
+    const response = JSON.stringify({
+      error: `[${this.name}] Reached maximum tool-use iterations.`,
+      llmSource,
+    });
+    return response;
   }
 
   /**
