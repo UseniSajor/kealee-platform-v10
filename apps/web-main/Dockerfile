@@ -12,13 +12,11 @@ RUN pnpm install --prod=false --ignore-scripts && \
     cd /app/apps/web-main && pnpm run build 2>&1 | tail -20
 
 FROM node:20-slim
-LABEL build.timestamp="2026-04-20T17:30:00Z" description="Production Next.js - Force FULL rebuild with new base image"
-ENV NODE_ENV=production PORT=3024
-RUN apt-get update -qq && apt-get install -qq -y ca-certificates openssl > /dev/null 2>&1 && rm -rf /etc/profile /etc/profile.d /root/.bashrc /root/.bash_profile 2>/dev/null || true
-WORKDIR /app/apps/web-main
-COPY --from=builder /app/apps/web-main/.next ./.next
-COPY --from=builder /app/apps/web-main/public ./public
-COPY --from=builder /app/apps/web-main/package.json ./
-COPY --from=builder /app/apps/web-main/node_modules ./node_modules
+ENV NODE_ENV=production PORT=3024 HOSTNAME=0.0.0.0
+RUN apt-get update -qq && apt-get install -qq -y ca-certificates openssl > /dev/null 2>&1 && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY --from=builder /app/apps/web-main/.next/standalone ./
+COPY --from=builder /app/apps/web-main/.next/static ./apps/web-main/.next/static
+COPY --from=builder /app/apps/web-main/public ./apps/web-main/public
 EXPOSE 3024
-ENTRYPOINT ["/usr/local/bin/node", "/app/apps/web-main/node_modules/.next/standalone/server.js"]
+CMD ["node", "apps/web-main/server.js"]
