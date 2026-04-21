@@ -1,11 +1,9 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "DOCKERFILE",
-    "dockerfilePath": "apps/m-marketplace/Dockerfile"
+    "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "node apps/m-marketplace/server.js",
     "healthcheckPath": "/",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",

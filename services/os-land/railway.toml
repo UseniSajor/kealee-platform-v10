@@ -1,12 +1,11 @@
-# KEALEE OS-LAND — Railway Configuration
-# Set "Root Directory" to "/" (repo root) in Railway dashboard.
-
 [build]
-builder = "DOCKERFILE"
-dockerfilePath = "services/os-land/Dockerfile"
+builder = "NIXPACKS"
+buildCommand = "corepack enable && corepack prepare pnpm@8.15.9 --activate && pnpm install --no-frozen-lockfile && DATABASE_URL='postgresql://placeholder:placeholder@localhost:5432/placeholder' pnpm --filter @kealee/database db:generate && pnpm turbo build --filter=./services/os-land"
+watchPatterns = ["services/os-land/**", "packages/**"]
 
 [deploy]
 numReplicas = 1
+startCommand = "cd services/os-land && node dist/index.js"
 healthcheckPath = "/health"
 healthcheckTimeout = 15
 restartPolicyType = "ON_FAILURE"
