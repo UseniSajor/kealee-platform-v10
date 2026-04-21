@@ -27,6 +27,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid tier' }, { status: 400 })
     }
 
+    // Verify intake hasn't been blocked for unavailability (safety check)
+    // This shouldn't happen since frontend also checks, but double-check here
+    if (intakeId && intakeId !== 'pending') {
+      const apiUrl = process.env.INTERNAL_API_URL || 'https://api.kealee.com'
+      try {
+        const intakeCheck = await fetch(`${apiUrl}/api/v1/permits/intake/${intakeId}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        })
+
+        if (!intakeCheck.ok && intakeCheck.status === 400) {
+          const error = await intakeCheck.json()
+          if (error.error === 'SERVICE_NOT_AVAILABLE') {
+            return NextResponse.json(
+              { error: 'SERVICE_UNAVAILABLE', message: error.message },
+              { status: 400 }
+            )
+          }
+        }
+      } catch (err) {
+        // Fail-open: allow checkout to proceed if verification fails
+        console.warn('[permits/checkout] Availability verification failed (non-blocking):', err)
+      }
+    }
+
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' as any })
 
     const session = await stripe.checkout.sessions.create({

@@ -114,6 +114,8 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
   const [submitting, setSubmitting] = useState(false)
   const [checkingOut, setCheckingOut] = useState<PermitTier | null>(null)
   const [dragOver, setDragOver] = useState(false)
+  const [availability, setAvailability] = useState<any | null>(null)
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const set = (patch: Partial<FunnelState>) =>
@@ -141,10 +143,11 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
     set({ uploadedFiles: [...state.uploadedFiles, ...files] })
   }
 
-  // Step 3 → submit contact info → get intakeId → advance to step 4
+  // Step 3 → submit contact info → check availability → advance to step 4 if serviceable
   const handleSubmit = async () => {
     if (!state.name || !state.email) return
     setSubmitting(true)
+    setAvailabilityError(null)
     try {
       const res = await fetch('/api/permits/intake', {
         method: 'POST',
@@ -161,14 +164,30 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
         }),
       })
       const data = await res.json()
+
+      // Check if service is available
+      if (!data.ok) {
+        // Service unavailable
+        setAvailabilityError(data.message || 'Service not available in your area')
+        setAvailability({ isServiceable: false, ...data.availability })
+        setSubmitting(false)
+        return
+      }
+
+      // Success: service available
+      if (data.availability) {
+        setAvailability(data.availability)
+      }
+
       if (data.intakeId) {
         set({ intakeId: data.intakeId, step: 4 })
       } else {
         // Fallback: still advance (intake will be recovered from email)
         set({ step: 4 })
       }
-    } catch {
-      // Still advance — don't block user
+    } catch (err) {
+      // Network error: still advance (fail-open)
+      console.error('Intake submission error:', err)
       set({ step: 4 })
     } finally {
       setSubmitting(false)
@@ -498,13 +517,34 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
                 />
               </div>
             </div>
+
+            {/* Availability checking indicator */}
+            {submitting && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-700 font-medium">
+                  ✓ Checking service availability in {countySlug || 'your area'}…
+                </p>
+              </div>
+            )}
+
+            {/* Availability error message */}
+            {availabilityError && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="font-semibold text-red-900">Service not yet available</p>
+                <p className="text-sm text-red-700 mt-2">{availabilityError}</p>
+                <p className="text-xs text-red-600 mt-3">
+                  Contact us at support@kealee.com for updates on service expansion
+                </p>
+              </div>
+            )}
+
             <button
               onClick={handleSubmit}
-              disabled={submitting || !state.name || !state.email}
+              disabled={submitting || !state.name || !state.email || availabilityError !== null}
               className="w-full py-4 rounded-xl font-bold text-white text-base transition-opacity hover:opacity-90 disabled:opacity-50"
-              style={{ backgroundColor: '#E8793A' }}
+              style={{ backgroundColor: availabilityError ? '#9CA3AF' : '#E8793A' }}
             >
-              {submitting ? 'Saving…' : 'See Packages & Pricing →'}
+              {submitting ? 'Checking availability…' : availabilityError ? 'Service not available' : 'See Packages & Pricing →'}
             </button>
             <p className="text-center text-xs text-gray-400 mt-3">
               No spam. No sales calls. Cancel anytime.

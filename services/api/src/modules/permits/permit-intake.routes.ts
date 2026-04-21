@@ -115,7 +115,7 @@ export async function permitIntakeRoutes(fastify: FastifyInstance) {
         LeadIntelligenceService.scoreLeadByEmail(body.email, 'permit_start')
       ).catch(() => {})
 
-      // Evaluate service availability (fire-and-forget, include in response)
+      // Evaluate service availability and BLOCK if unavailable
       const serviceKey = body.hasPlans === 'yes' ? 'permit-package' : 'permit-simple'
       const availability = await evaluateAvailability({
         serviceType: serviceKey,
@@ -123,9 +123,56 @@ export async function permitIntakeRoutes(fastify: FastifyInstance) {
         hasPlans: body.hasPlans === 'yes',
         projectDescription: body.projectDescription,
         jurisdiction: body.countySlug,
-      }).catch(() => null)
+      }).catch((err) => {
+        fastify.log.warn('Availability check failed, assuming serviceable:', err)
+        return { decision: 'TARGET', confidenceScore: 0.5 } // fail-open
+      })
 
-      return reply.code(201).send({ ok: true, intakeId: lead.id, availability })
+      // Block intake if service unavailable
+      if (availability?.decision === 'UNAVAILABLE') {
+        fastify.log.info(`Intake blocked - service unavailable for ${body.countySlug}`)
+        return reply.code(400).send({
+          ok: false,
+          error: 'SERVICE_NOT_AVAILABLE',
+          message: `Service not yet available in your area. ${availability.rationale || availability.explanation}`,
+          decision: availability.decision,
+          explanation: availability.explanation,
+          region: body.countySlug,
+        })
+      }
+
+      // Persist availability snapshot for audit trail
+      if (availability && lead.id) {
+        try {
+          await persistAvailabilitySnapshot({
+            serviceRequestId: lead.id,
+            decision: availability.decision,
+            confidenceScore: availability.confidenceScore,
+            promisedStartAt: availability.promisedStartAt,
+            promisedCompleteAt: availability.promisedCompleteAt,
+            sameDayEligible: availability.sameDayEligible,
+            missingRequirements: JSON.stringify(availability.missingRequirements || []),
+          }).catch((err) => {
+            fastify.log.warn('Failed to persist availability snapshot:', err)
+          })
+        } catch (err) {
+          // Fail-open: don't block intake if persistence fails
+          fastify.log.warn('Availability persistence error (non-blocking):', err)
+        }
+      }
+
+      return reply.code(201).send({
+        ok: true,
+        intakeId: lead.id,
+        availability: {
+          isServiceable: availability?.decision !== 'UNAVAILABLE',
+          decision: availability?.decision,
+          confidenceScore: availability?.confidenceScore,
+          promisedCompleteAt: availability?.promisedCompleteAt,
+          explanation: availability?.explanation,
+          region: body.countySlug,
+        }
+      })
     } catch (error: any) {
       fastify.log.error(error)
       return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to save permit intake') })
