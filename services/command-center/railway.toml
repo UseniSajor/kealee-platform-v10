@@ -1,6 +1,6 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "corepack enable && corepack prepare pnpm@8.15.9 --activate && pnpm install --no-frozen-lockfile && DATABASE_URL='postgresql://placeholder:placeholder@localhost:5432/placeholder' pnpm --filter @kealee/database db:generate && pnpm turbo build --filter=./services/command-center"
+buildCommand = "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true corepack enable && corepack prepare pnpm@8.15.9 --activate && pnpm install --no-frozen-lockfile && DATABASE_URL='postgresql://placeholder:placeholder@localhost:5432/placeholder' pnpm --filter @kealee/database db:generate && pnpm turbo build --filter=./services/command-center"
 watchPatterns = ["services/command-center/**", "packages/**"]
 
 [deploy]

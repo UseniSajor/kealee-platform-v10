@@ -1,0 +1,12 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "openssl"]
+
+[phases.setup.env]
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+NODE_ENV = "production"
+
+[phases.install]
+cmds = [
+  "corepack enable && corepack prepare pnpm@8.15.9 --activate",
+  "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true pnpm install --no-frozen-lockfile"
+]
