@@ -8,6 +8,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import Stripe from 'stripe'
 import { prisma } from '@kealee/database'
 import { RedisClient } from '@kealee/redis'
+import { emailQueue } from '../../worker/queues/email.queue'
 
 // ============================================================================
 // TYPES
@@ -118,12 +119,19 @@ async function handleCheckoutSessionCompleted(
     await updateFunnelRevenue(funnelSessionId, session.amount_total || 0)
   }
 
-  // Send notification email
+  // Queue payment confirmation email
   if (session.customer_email) {
-    // Queue email notification job
-    logger.info({ email: session.customer_email, sessionId: session.id }, 'Queueing payment confirmation email')
-    // TODO: Queue job using BullMQ or similar
-    // await emailQueue.add('payment-confirmation', { email: session.customer_email, sessionId: session.id })
+    try {
+      await emailQueue.sendTemplatedEmail(session.customer_email, 'concept_package_confirmation', {
+        customerName: session.customer_details?.name || 'there',
+        packageName: getPackageName(source, tier),
+        packageTier: tier || 'Standard',
+        amount: ((session.amount_total || 0) / 100).toFixed(2),
+      })
+      logger.info({ email: session.customer_email, sessionId: session.id }, 'Payment confirmation email queued')
+    } catch (err) {
+      logger.error({ email: session.customer_email, err }, 'Failed to queue payment confirmation email')
+    }
   }
 }
 
@@ -143,10 +151,19 @@ async function handleChargeFailed(
 
   logger.error({ source, intakeId, failureMessage: charge.failure_message, chargeId: charge.id }, 'Payment failed')
 
-  // Send notification email to customer
+  // Queue payment failure notification email
   if (charge.receipt_email) {
-    logger.info({ email: charge.receipt_email, chargeId: charge.id }, 'Queueing payment failure notification')
-    // TODO: Queue email notification
+    try {
+      await emailQueue.sendTemplatedEmail(charge.receipt_email, 'gc_payment_failed', {
+        gcName: charge.billing_details?.name || 'there',
+        invoiceNumber: charge.invoice || 'Unknown',
+        billingPortalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://kealee.com'}/billing`,
+        invoiceUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://kealee.com'}/invoices/${charge.invoice}`,
+      })
+      logger.info({ email: charge.receipt_email, chargeId: charge.id }, 'Payment failure notification email queued')
+    } catch (err) {
+      logger.error({ email: charge.receipt_email, err }, 'Failed to queue payment failure email')
+    }
   }
 
   // Track failure event
@@ -245,6 +262,41 @@ async function updateFunnelRevenue(funnelSessionId: string, amount: number): Pro
       },
     })
   }
+}
+
+/**
+ * Map source and tier to display package name for email
+ */
+function getPackageName(source: string | undefined, tier: string | undefined): string {
+  const packageMap: Record<string, Record<string, string>> = {
+    concept: {
+      starter: 'Concept Engine Starter',
+      standard: 'Concept Engine Standard',
+      premium: 'Concept Engine Premium',
+    },
+    permits: {
+      simple: 'Permit Filing - Simple',
+      package: 'Permit Filing - Complete Package',
+      coordination: 'Permit Coordination',
+      expediting: 'Expedited Permit Service',
+    },
+    zoning: {
+      analysis: 'Zoning Analysis',
+      variance: 'Variance Application',
+      appeal: 'Appeal Process',
+    },
+    estimation: {
+      quick: 'Quick Estimate',
+      detailed: 'Detailed Estimate',
+      professional: 'Professional Cost Estimate',
+    },
+  }
+
+  if (source && tier && packageMap[source]) {
+    return packageMap[source][tier] || 'Service Package'
+  }
+
+  return `${source || 'Premium'} Service Package`
 }
 
 // ============================================================================
