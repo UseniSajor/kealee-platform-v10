@@ -82,54 +82,74 @@
 
 ---
 
-## CURRENT ISSUE — RAILWAY BUILD FAILING
+## CURRENT ISSUE — MIXED BUILDER CONFIGURATION
 
-**Problem**: Docker builder is still being used despite configuration changes
+**Problem**: Some services have Nixpacks ✅, but others still have Docker ❌
 
-**Error Logs**:
-```
-[internal] load build definition from Dockerfile
-[builder 46/67] COPY services/api/            ./services/api/
-ERROR: failed to solve: failed to compute cache key: "/services/api": not found
-```
+**Current Configuration Status**:
+- ✅ **web-main**: Nixpacks builder
+- ✅ **kealee-api** (api.kealee.com): Nixpacks builder
+- ❌ **Other services**: Docker builder (needs to be changed to Nixpacks)
+
+**Services that need Docker → Nixpacks conversion**:
+- command-center
+- portal-owner
+- portal-contractor
+- portal-developer
+- admin-console
+- marketplace
+- worker
+- Any other services in Railway Dashboard
 
 **Root Cause**:
-- Railway **UI settings still set to Docker builder** (not Nixpacks)
-- OR Railway using cached Docker builds despite file deletions
-- Dockerfiles were deleted but UI configuration not updated
+- These services were not updated in Railway Dashboard UI from Docker to Nixpacks
+- Dockerfiles were deleted from repo but UI settings not changed
 
 **Current State**:
 1. ✅ Dockerfiles deleted from repo
 2. ✅ railway.json files updated to Nixpacks
 3. ✅ railway.toml configured for Nixpacks
-4. ❌ Railway Dashboard still showing Docker builder (needs verification)
+4. ✅ web-main and kealee-api set to Nixpacks in UI
+5. ❌ Other services still set to Docker in UI (need update)
 
 ---
 
 ## NEXT STEPS FOR NEXT CHAT SESSION
 
-### IMMEDIATE (Required to unblock builds)
+### IMMEDIATE (Required to unblock remaining services)
 
-**1. Verify Railway UI Settings**
-   - Go to Railway Dashboard → Services
-   - For **web-main**: Settings → Builder should be `Nixpacks` (not Docker)
-   - For **kealee-api**: Settings → Builder should be `Nixpacks` (not Docker)
-   - For **worker**: Settings → Builder should be `Nixpacks` (not Docker)
+**UPDATE THESE SERVICES in Railway Dashboard:**
 
-**2. If still Docker:**
-   - Change to `Nixpacks`
-   - Click **Save**
-   - Manually trigger **Redeploy**
+For EACH service below:
+1. Go to Railway Dashboard → Services → Select service
+2. Click **Settings** (⚙️)
+3. Find **Builder** dropdown
+4. Change from `Docker` → `Nixpacks`
+5. Click **Save**
+6. Click **Redeploy**
 
-**3. If Nixpacks but still failing:**
-   - Settings → Scroll to **Build** section
-   - Click **Clear build cache**
-   - Click **Redeploy**
+**Services to update**:
+- [ ] command-center
+- [ ] portal-owner
+- [ ] portal-contractor
+- [ ] portal-developer
+- [ ] admin-console
+- [ ] marketplace
+- [ ] worker
+- [ ] Any other services showing Docker
 
-**4. Verify Root Directories**
-   - web-main: Root Directory = `apps/web-main`
-   - kealee-api: Root Directory = `services/api`
-   - worker: Root Directory = `services/worker`
+**Verify Root Directories** while updating:
+- command-center: `services/command-center`
+- portal-owner: `apps/portal-owner`
+- portal-contractor: `apps/portal-contractor`
+- portal-developer: `apps/portal-developer`
+- admin-console: `apps/admin-console`
+- marketplace: `services/marketplace`
+- worker: `services/worker`
+
+**Already Correct** ✅:
+- web-main: Nixpacks, root = `apps/web-main`
+- kealee-api: Nixpacks, root = `services/api`
 
 ### IF STILL FAILING
 
