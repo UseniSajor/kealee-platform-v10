@@ -106,45 +106,6 @@ interface Document {
   status: 'uploaded' | 'approved' | 'pending_review' | 'missing'
 }
 
-const DOCUMENTS: Document[] = [
-  // Building Permit docs
-  { id: '1', name: 'Site Plan - Modern Duplex.pdf', type: 'pdf', project: 'Modern Duplex', size: '4.2 MB', uploaded: '2025-10-10', category: 'Permits', permitType: 'BUILDING', status: 'approved' },
-  { id: '2', name: 'Floor Plans A1-A4.pdf', type: 'pdf', project: 'Modern Duplex', size: '18.7 MB', uploaded: '2025-10-12', category: 'Permits', permitType: 'BUILDING', status: 'approved' },
-  { id: '3', name: 'Elevations - North & South.pdf', type: 'pdf', project: 'Modern Duplex', size: '8.3 MB', uploaded: '2025-10-12', category: 'Permits', permitType: 'BUILDING', status: 'approved' },
-  { id: '4', name: 'Structural Calculations.pdf', type: 'pdf', project: 'Modern Duplex', size: '3.1 MB', uploaded: '2025-10-14', category: 'Permits', permitType: 'BUILDING', status: 'approved' },
-  { id: '5', name: 'Title 24 Energy Compliance.pdf', type: 'pdf', project: 'Modern Duplex', size: '2.8 MB', uploaded: '2025-10-14', category: 'Permits', permitType: 'BUILDING', status: 'approved' },
-  { id: '6', name: 'Proof of Ownership - Deed.pdf', type: 'pdf', project: 'Modern Duplex', size: '540 KB', uploaded: '2025-10-08', category: 'Permits', permitType: 'BUILDING', status: 'approved' },
-
-  // Electrical Permit docs
-  { id: '7', name: 'Electrical Plans E1-E3.pdf', type: 'pdf', project: 'Modern Duplex', size: '6.4 MB', uploaded: '2025-11-05', category: 'Permits', permitType: 'ELECTRICAL', status: 'approved' },
-  { id: '8', name: 'Load Calculations.xlsx', type: 'xlsx', project: 'Modern Duplex', size: '128 KB', uploaded: '2025-11-05', category: 'Permits', permitType: 'ELECTRICAL', status: 'approved' },
-  { id: '9', name: 'Panel Schedule.pdf', type: 'pdf', project: 'Modern Duplex', size: '890 KB', uploaded: '2025-11-06', category: 'Permits', permitType: 'ELECTRICAL', status: 'approved' },
-  { id: '10', name: 'Single-Line Diagram.pdf', type: 'pdf', project: 'Modern Duplex', size: '1.1 MB', uploaded: '2025-11-06', category: 'Permits', permitType: 'ELECTRICAL', status: 'approved' },
-
-  // Plumbing Permit docs (pending)
-  { id: '11', name: 'Plumbing Plans P1-P2.pdf', type: 'pdf', project: 'Modern Duplex', size: '5.2 MB', uploaded: '2026-02-20', category: 'Permits', permitType: 'PLUMBING', status: 'pending_review' },
-  { id: '12', name: 'Fixture Unit Calculations.xlsx', type: 'xlsx', project: 'Modern Duplex', size: '95 KB', uploaded: '2026-02-20', category: 'Permits', permitType: 'PLUMBING', status: 'pending_review' },
-  { id: '13', name: 'Water Supply Sizing.pdf', type: 'pdf', project: 'Modern Duplex', size: '780 KB', uploaded: '2026-02-22', category: 'Permits', permitType: 'PLUMBING', status: 'pending_review' },
-  { id: '14', name: 'Isometric Diagram.pdf', type: 'pdf', project: 'Modern Duplex', size: '1.4 MB', uploaded: '2026-02-22', category: 'Permits', permitType: 'PLUMBING', status: 'uploaded' },
-
-  // Mechanical Permit docs (pending)
-  { id: '15', name: 'Mechanical Plans M1-M3.pdf', type: 'pdf', project: 'Modern Duplex', size: '7.8 MB', uploaded: '2026-02-25', category: 'Permits', permitType: 'MECHANICAL', status: 'pending_review' },
-  { id: '16', name: 'Manual J - HVAC Load Calcs.pdf', type: 'pdf', project: 'Modern Duplex', size: '2.1 MB', uploaded: '2026-02-25', category: 'Permits', permitType: 'MECHANICAL', status: 'pending_review' },
-  { id: '17', name: 'Equipment Specifications.pdf', type: 'pdf', project: 'Modern Duplex', size: '3.4 MB', uploaded: '2026-02-26', category: 'Permits', permitType: 'MECHANICAL', status: 'uploaded' },
-
-  // Zoning docs
-  { id: '18', name: 'Site Plan with Setbacks.pdf', type: 'pdf', project: 'Modern Duplex', size: '5.6 MB', uploaded: '2025-09-20', category: 'Permits', permitType: 'ZONING', status: 'approved' },
-  { id: '19', name: 'Zoning Analysis Letter.pdf', type: 'pdf', project: 'Modern Duplex', size: '420 KB', uploaded: '2025-09-18', category: 'Permits', permitType: 'ZONING', status: 'approved' },
-  { id: '20', name: 'Property Survey - ALTA.pdf', type: 'pdf', project: 'Modern Duplex', size: '3.9 MB', uploaded: '2025-09-15', category: 'Permits', permitType: 'ZONING', status: 'approved' },
-
-  // General project documents
-  { id: '21', name: 'Construction Contract - Final.pdf', type: 'pdf', project: 'Modern Duplex', size: '2.4 MB', uploaded: '2025-10-28', category: 'Contracts', status: 'approved' },
-  { id: '22', name: 'Insurance Certificate - GL.pdf', type: 'pdf', project: 'All Projects', size: '320 KB', uploaded: '2025-09-15', category: 'Insurance', status: 'approved' },
-  { id: '23', name: 'Foundation Inspection Report.pdf', type: 'pdf', project: 'Modern Duplex', size: '1.2 MB', uploaded: '2025-12-22', category: 'Inspections', status: 'approved' },
-  { id: '24', name: 'Progress Photos - March 2026.zip', type: 'zip', project: 'Modern Duplex', size: '45.3 MB', uploaded: '2026-03-07', category: 'Photos', status: 'uploaded' },
-  { id: '25', name: 'Draw Schedule.xlsx', type: 'xlsx', project: 'Modern Duplex', size: '89 KB', uploaded: '2025-10-30', category: 'Financial', status: 'approved' },
-  { id: '26', name: 'Kitchen Design Concept.pdf', type: 'pdf', project: 'Kitchen Remodel', size: '5.1 MB', uploaded: '2026-01-20', category: 'Plans', status: 'approved' },
-]
 
 const ALL_CATEGORIES = ['All', 'Permits', 'Contracts', 'Plans', 'Inspections', 'Photos', 'Financial', 'Insurance']
 
@@ -202,7 +163,7 @@ export default function DocumentsPage() {
   const [category, setCategory] = useState('All')
   const [view, setView] = useState<'permits' | 'documents'>('permits')
   const [expandedPermit, setExpandedPermit] = useState<string | null>('BUILDING')
-  const [documents, setDocuments] = useState<Document[]>(DOCUMENTS)
+  const [documents, setDocuments] = useState<Document[]>([])
   const [isLive, setIsLive] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
@@ -212,10 +173,10 @@ export default function DocumentsPage() {
     try {
       const data = await listFiles('project-documents')
       if (data.files?.length) {
-        setDocuments([...DOCUMENTS, ...data.files.map(mapApiFileToDoc)])
+        setDocuments(data.files.map(mapApiFileToDoc))
         setIsLive(true)
       }
-    } catch { /* keep seed data */ }
+    } catch { /* fail silently */ }
   }, [])
 
   useEffect(() => { loadFiles() }, [loadFiles])
@@ -230,7 +191,7 @@ export default function DocumentsPage() {
         files.map(f => uploadFile(f, 'project-documents', { category: 'Uploads', project: 'My Project' }))
       )
       setDocuments(prev => [...prev, ...uploaded.map(mapApiFileToDoc)])
-      setIsLive(true)
+      if (uploaded.length > 0) setIsLive(true)
     } catch (err: any) {
       setUploadError(err.message || 'Upload failed')
     } finally {
@@ -342,7 +303,7 @@ export default function DocumentsPage() {
         <div className="space-y-3">
           {PERMIT_CATEGORIES.map((permit) => {
             const isExpanded = expandedPermit === permit.key
-            const permitDocs = DOCUMENTS.filter(d => d.permitType === permit.key)
+            const permitDocs = documents.filter(d => d.permitType === permit.key)
             const uploadedCount = permitDocs.length
             const requiredCount = permit.requiredDocuments.length
 

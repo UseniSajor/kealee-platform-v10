@@ -14,72 +14,6 @@ const PAYMENT_MILESTONES = [
   { key: 'COMPLETION', name: 'Substantial Completion', percentage: 10, order: 7, typicalInspection: 'CERTIFICATE_OF_OCCUPANCY' },
 ] as const
 
-// ── Capital Stacks (per project, tied to v20 project types) ──
-const CAPITAL_STACKS = [
-  {
-    id: '1',
-    project: 'Oak Hill Mixed-Use',
-    projectType: 'MIXED_USE',
-    twinTier: 'L3',
-    totalCapital: 28500000,
-    sources: [
-      { name: 'Senior Debt', amount: 19950000, pct: 70, rate: '6.5%', lender: 'First National Bank' },
-      { name: 'Mezzanine', amount: 2850000, pct: 10, rate: '12%', lender: 'Capital Bridge Fund' },
-      { name: 'LP Equity', amount: 4275000, pct: 15, rate: '18% pref', lender: '4 investors' },
-      { name: 'GP Equity', amount: 1425000, pct: 5, rate: 'Promote', lender: 'Your Entity' },
-    ],
-  },
-  {
-    id: '2',
-    project: 'Riverside Multifamily',
-    projectType: 'MULTIFAMILY',
-    twinTier: 'L3',
-    totalCapital: 42000000,
-    sources: [
-      { name: 'Senior Debt', amount: 29400000, pct: 70, rate: '6.0%', lender: 'Prosperity Bank' },
-      { name: 'Mezzanine', amount: 4200000, pct: 10, rate: '11%', lender: 'Meridian Capital' },
-      { name: 'LP Equity', amount: 6300000, pct: 15, rate: '16% pref', lender: '6 investors' },
-      { name: 'GP Equity', amount: 2100000, pct: 5, rate: 'Promote', lender: 'Your Entity' },
-    ],
-  },
-  {
-    id: '3',
-    project: 'East Austin Townhomes',
-    projectType: 'MULTIFAMILY',
-    twinTier: 'L3',
-    totalCapital: 7200000,
-    sources: [
-      { name: 'Construction Loan', amount: 5040000, pct: 70, rate: '7.0%', lender: 'Independent Bank' },
-      { name: 'LP Equity', amount: 1440000, pct: 20, rate: '15% pref', lender: '2 investors' },
-      { name: 'GP Equity', amount: 720000, pct: 10, rate: 'Promote', lender: 'Your Entity' },
-    ],
-  },
-  {
-    id: '4',
-    project: 'Congress Ave Retail',
-    projectType: 'COMMERCIAL',
-    twinTier: 'L2',
-    totalCapital: 8200000,
-    sources: [
-      { name: 'Senior Debt', amount: 5740000, pct: 70, rate: '7.25%', lender: 'Western Alliance Bank' },
-      { name: 'LP Equity', amount: 1640000, pct: 20, rate: '14% pref', lender: '3 investors' },
-      { name: 'GP Equity', amount: 820000, pct: 10, rate: 'Promote', lender: 'Your Entity' },
-    ],
-  },
-]
-
-// Draw schedule aligned to 7 payment milestones from seed
-const DRAW_SCHEDULE = [
-  { id: '1', project: 'Oak Hill Mixed-Use', milestone: 'DEPOSIT', milestoneName: 'Deposit / Mobilization', amount: 2850000, percentage: 10, requested: '2026-01-15', status: 'funded', funded: '2026-01-20' },
-  { id: '2', project: 'Oak Hill Mixed-Use', milestone: 'FOUNDATION', milestoneName: 'Foundation Complete', amount: 4275000, percentage: 15, requested: '2026-02-28', status: 'funded', funded: '2026-03-05' },
-  { id: '3', project: 'Oak Hill Mixed-Use', milestone: 'FRAMING', milestoneName: 'Framing Complete', amount: 5700000, percentage: 20, requested: '2026-03-10', status: 'approved', funded: null },
-  { id: '4', project: 'Riverside Multifamily', milestone: 'DEPOSIT', milestoneName: 'Deposit / Mobilization', amount: 4200000, percentage: 10, requested: '2025-11-01', status: 'funded', funded: '2025-11-06' },
-  { id: '5', project: 'Riverside Multifamily', milestone: 'FOUNDATION', milestoneName: 'Foundation Complete', amount: 6300000, percentage: 15, requested: '2026-01-10', status: 'funded', funded: '2026-01-15' },
-  { id: '6', project: 'Riverside Multifamily', milestone: 'FRAMING', milestoneName: 'Framing Complete', amount: 8400000, percentage: 20, requested: '2026-03-01', status: 'funded', funded: '2026-03-06' },
-  { id: '7', project: 'Riverside Multifamily', milestone: 'MEP_ROUGH', milestoneName: 'MEP Rough-In Complete', amount: 6300000, percentage: 15, requested: '2026-03-10', status: 'submitted', funded: null },
-  { id: '8', project: 'East Austin Townhomes', milestone: 'DEPOSIT', milestoneName: 'Deposit / Mobilization', amount: 720000, percentage: 10, requested: '2026-02-01', status: 'funded', funded: '2026-02-05' },
-  { id: '9', project: 'East Austin Townhomes', milestone: 'FOUNDATION', milestoneName: 'Foundation Complete', amount: 1080000, percentage: 15, requested: '2026-03-08', status: 'pending', funded: null },
-]
 
 const drawStatusColors: Record<string, string> = {
   pending: 'bg-gray-100 text-gray-700',
@@ -88,20 +22,12 @@ const drawStatusColors: Record<string, string> = {
   funded: 'bg-green-100 text-green-700',
 }
 
-// Investor reporting data
-const INVESTOR_SUMMARY = {
-  totalCommitments: 13655000, // Sum of all LP equity
-  capitalCalled: 9855000,
-  distributions: 0,
-  remainingCommitment: 3800000,
-  weightedIRR: 19.4,
-  investorCount: 15,
-}
 
 export default function CapitalPage() {
   const [activeTab, setActiveTab] = useState<'stacks' | 'draws' | 'investors'>('stacks')
-  const [stacks, setStacks] = useState(CAPITAL_STACKS)
-  const [draws, setDraws] = useState(DRAW_SCHEDULE)
+  const [stacks, setStacks] = useState<any[]>([])
+  const [draws, setDraws] = useState<any[]>([])
+  const [investorSummary, setInvestorSummary] = useState({ totalCommitments: 0, capitalCalled: 0, distributions: 0, remainingCommitment: 0, weightedIRR: 0, investorCount: 0 })
   const [loading, setLoading] = useState(true)
   const [isLive, setIsLive] = useState(false)
 
@@ -316,32 +242,32 @@ export default function CapitalPage() {
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <p className="text-xs text-gray-500">Total LP Commitments</p>
-              <p className="mt-1 text-2xl font-bold" style={{ color: '#1A2B4A' }}>${(INVESTOR_SUMMARY.totalCommitments / 1000000).toFixed(2)}M</p>
-              <p className="mt-1 text-xs text-gray-400">{INVESTOR_SUMMARY.investorCount} investors across {stacks.length} projects</p>
+              <p className="mt-1 text-2xl font-bold" style={{ color: '#1A2B4A' }}>${(investorSummary.totalCommitments / 1000000).toFixed(2)}M</p>
+              <p className="mt-1 text-xs text-gray-400">{investorSummary.investorCount} investors across {stacks.length} projects</p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <p className="text-xs text-gray-500">Capital Called</p>
-              <p className="mt-1 text-2xl font-bold" style={{ color: '#E8793A' }}>${(INVESTOR_SUMMARY.capitalCalled / 1000000).toFixed(2)}M</p>
-              <p className="mt-1 text-xs text-gray-400">{((INVESTOR_SUMMARY.capitalCalled / INVESTOR_SUMMARY.totalCommitments) * 100).toFixed(0)}% of total commitments</p>
+              <p className="mt-1 text-2xl font-bold" style={{ color: '#E8793A' }}>${(investorSummary.capitalCalled / 1000000).toFixed(2)}M</p>
+              <p className="mt-1 text-xs text-gray-400">{((investorSummary.capitalCalled / investorSummary.totalCommitments) * 100).toFixed(0)}% of total commitments</p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <p className="text-xs text-gray-500">Remaining Unfunded</p>
-              <p className="mt-1 text-2xl font-bold" style={{ color: '#2ABFBF' }}>${(INVESTOR_SUMMARY.remainingCommitment / 1000000).toFixed(2)}M</p>
+              <p className="mt-1 text-2xl font-bold" style={{ color: '#2ABFBF' }}>${(investorSummary.remainingCommitment / 1000000).toFixed(2)}M</p>
               <p className="mt-1 text-xs text-gray-400">Next call anticipated Q2 2026</p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <p className="text-xs text-gray-500">Distributions to Date</p>
-              <p className="mt-1 text-2xl font-bold" style={{ color: '#38A169' }}>${(INVESTOR_SUMMARY.distributions / 1000000).toFixed(2)}M</p>
+              <p className="mt-1 text-2xl font-bold" style={{ color: '#38A169' }}>${(investorSummary.distributions / 1000000).toFixed(2)}M</p>
               <p className="mt-1 text-xs text-gray-400">All projects in development phase</p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <p className="text-xs text-gray-500">Weighted Portfolio IRR</p>
-              <p className="mt-1 text-2xl font-bold" style={{ color: '#2ABFBF' }}>{INVESTOR_SUMMARY.weightedIRR}%</p>
+              <p className="mt-1 text-2xl font-bold" style={{ color: '#2ABFBF' }}>{investorSummary.weightedIRR}%</p>
               <p className="mt-1 text-xs text-gray-400">Projected at stabilization</p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <p className="text-xs text-gray-500">Active Investors</p>
-              <p className="mt-1 text-2xl font-bold" style={{ color: '#1A2B4A' }}>{INVESTOR_SUMMARY.investorCount}</p>
+              <p className="mt-1 text-2xl font-bold" style={{ color: '#1A2B4A' }}>{investorSummary.investorCount}</p>
               <p className="mt-1 text-xs text-gray-400">Across {stacks.length} project capital stacks</p>
             </div>
           </div>

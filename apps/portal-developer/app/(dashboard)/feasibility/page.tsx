@@ -27,119 +27,6 @@ const PROJECT_TYPES: Record<string, { name: string; tier: string; modules: strin
   RENOVATION: { name: 'Renovation / Remodel', tier: 'L1', modules: ['os-pm', 'os-pay', 'marketplace'] },
 }
 
-const STUDIES = [
-  {
-    id: '1',
-    parcel: 'Oak Hill Mixed-Use',
-    projectType: 'MIXED_USE',
-    status: 'Active' as const,
-    decision: null as 'GO' | 'NO_GO' | null,
-    scenarios: [
-      { name: 'Base Case', units: 48, totalCost: 28500000, revenue: 41600000, irr: 18.5, equityMultiple: 1.82, yieldOnCost: 7.2 },
-      { name: 'Conservative', units: 48, totalCost: 30200000, revenue: 38400000, irr: 14.2, equityMultiple: 1.54, yieldOnCost: 6.1 },
-      { name: 'Optimistic', units: 52, totalCost: 29800000, revenue: 46200000, irr: 22.8, equityMultiple: 2.12, yieldOnCost: 8.4 },
-    ],
-    landCost: 2400000,
-    csiBreakdown: [
-      { division: '03', name: 'Concrete', cost: 3420000, pct: 12 },
-      { division: '05', name: 'Metals', cost: 4560000, pct: 16 },
-      { division: '06', name: 'Wood & Composites', cost: 2850000, pct: 10 },
-      { division: '07', name: 'Thermal & Moisture', cost: 1710000, pct: 6 },
-      { division: '08', name: 'Doors & Windows', cost: 2280000, pct: 8 },
-      { division: '09', name: 'Finishes', cost: 3990000, pct: 14 },
-      { division: '22', name: 'Plumbing', cost: 1995000, pct: 7 },
-      { division: '23', name: 'HVAC', cost: 2565000, pct: 9 },
-      { division: '26', name: 'Electrical', cost: 2280000, pct: 8 },
-    ],
-    hardCost: 25650000,
-    softCost: 2850000,
-    totalCost: 28500000,
-    projectedRevenue: 41600000,
-    proForma: { monthlyRent: 1850, occupancy: 94, capRate: 5.2, exitValue: 38500000, holdPeriod: 36 },
-  },
-  {
-    id: '2',
-    parcel: 'Riverside Multifamily',
-    projectType: 'MULTIFAMILY',
-    status: 'Active' as const,
-    decision: 'GO' as 'GO' | 'NO_GO' | null,
-    scenarios: [
-      { name: 'Base Case', units: 120, totalCost: 42000000, revenue: 62400000, irr: 21.3, equityMultiple: 2.04, yieldOnCost: 7.8 },
-      { name: 'Conservative', units: 120, totalCost: 44500000, revenue: 57600000, irr: 16.7, equityMultiple: 1.72, yieldOnCost: 6.5 },
-    ],
-    landCost: 5200000,
-    csiBreakdown: [
-      { division: '03', name: 'Concrete', cost: 5880000, pct: 14 },
-      { division: '05', name: 'Metals', cost: 6720000, pct: 16 },
-      { division: '06', name: 'Wood & Composites', cost: 3360000, pct: 8 },
-      { division: '07', name: 'Thermal & Moisture', cost: 2520000, pct: 6 },
-      { division: '08', name: 'Doors & Windows', cost: 2940000, pct: 7 },
-      { division: '09', name: 'Finishes', cost: 5460000, pct: 13 },
-      { division: '22', name: 'Plumbing', cost: 3360000, pct: 8 },
-      { division: '23', name: 'HVAC', cost: 3780000, pct: 9 },
-      { division: '26', name: 'Electrical', cost: 2780000, pct: 7 },
-    ],
-    hardCost: 36800000,
-    softCost: 5200000,
-    totalCost: 42000000,
-    projectedRevenue: 62400000,
-    proForma: { monthlyRent: 1650, occupancy: 95, capRate: 4.8, exitValue: 58000000, holdPeriod: 48 },
-  },
-  {
-    id: '3',
-    parcel: 'Congress Ave Retail',
-    projectType: 'COMMERCIAL',
-    status: 'Complete' as const,
-    decision: 'NO_GO' as 'GO' | 'NO_GO' | null,
-    scenarios: [
-      { name: 'Base Case', units: 6, totalCost: 8200000, revenue: 10400000, irr: 9.2, equityMultiple: 1.28, yieldOnCost: 5.1 },
-      { name: 'Value-Add', units: 6, totalCost: 9100000, revenue: 13200000, irr: 13.8, equityMultiple: 1.55, yieldOnCost: 6.3 },
-    ],
-    landCost: 3100000,
-    csiBreakdown: [
-      { division: '03', name: 'Concrete', cost: 510000, pct: 10 },
-      { division: '05', name: 'Metals', cost: 765000, pct: 15 },
-      { division: '09', name: 'Finishes', cost: 918000, pct: 18 },
-      { division: '22', name: 'Plumbing', cost: 357000, pct: 7 },
-      { division: '23', name: 'HVAC', cost: 612000, pct: 12 },
-      { division: '26', name: 'Electrical', cost: 510000, pct: 10 },
-    ],
-    hardCost: 5100000,
-    softCost: 1100000,
-    totalCost: 8200000,
-    projectedRevenue: 10400000,
-    proForma: { monthlyRent: 32, occupancy: 88, capRate: 6.5, exitValue: 9200000, holdPeriod: 60 },
-  },
-  {
-    id: '4',
-    parcel: 'East Austin Townhomes',
-    projectType: 'MULTIFAMILY',
-    status: 'Active' as const,
-    decision: 'GO' as 'GO' | 'NO_GO' | null,
-    scenarios: [
-      { name: 'Base Case', units: 16, totalCost: 7200000, revenue: 11200000, irr: 24.3, equityMultiple: 2.15, yieldOnCost: 8.8 },
-      { name: 'For-Sale', units: 16, totalCost: 7200000, revenue: 12800000, irr: 28.1, equityMultiple: 2.42, yieldOnCost: 9.6 },
-      { name: 'Conservative', units: 16, totalCost: 7800000, revenue: 10400000, irr: 18.6, equityMultiple: 1.78, yieldOnCost: 7.2 },
-      { name: 'Downside', units: 16, totalCost: 8100000, revenue: 9600000, irr: 12.4, equityMultiple: 1.42, yieldOnCost: 5.8 },
-    ],
-    landCost: 950000,
-    csiBreakdown: [
-      { division: '03', name: 'Concrete', cost: 750000, pct: 12 },
-      { division: '06', name: 'Wood & Composites', cost: 1000000, pct: 16 },
-      { division: '07', name: 'Thermal & Moisture', cost: 437500, pct: 7 },
-      { division: '08', name: 'Doors & Windows', cost: 500000, pct: 8 },
-      { division: '09', name: 'Finishes', cost: 937500, pct: 15 },
-      { division: '22', name: 'Plumbing', cost: 500000, pct: 8 },
-      { division: '23', name: 'HVAC', cost: 562500, pct: 9 },
-      { division: '26', name: 'Electrical', cost: 437500, pct: 7 },
-    ],
-    hardCost: 6250000,
-    softCost: 950000,
-    totalCost: 7200000,
-    projectedRevenue: 11200000,
-    proForma: { monthlyRent: 2200, occupancy: 96, capRate: 5.5, exitValue: 10800000, holdPeriod: 24 },
-  },
-]
 
 const statusColors: Record<string, string> = {
   Active: 'bg-blue-100 text-blue-700',
@@ -153,8 +40,8 @@ const decisionConfig: Record<string, { label: string; color: string; bg: string;
 }
 
 export default function FeasibilityPage() {
-  const [expandedId, setExpandedId] = useState<string | null>('1')
-  const [studies, setStudies] = useState(STUDIES)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [studies, setStudies] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [isLive, setIsLive] = useState(false)
 

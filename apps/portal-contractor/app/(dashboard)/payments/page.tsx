@@ -5,8 +5,8 @@ import { DollarSign, Clock, CheckCircle, FileText, Download, Shield, AlertTriang
 import { getContractorProjects } from '@/lib/api/contractor'
 import { getProjectMilestones, submitDrawRequest, type ApiMilestone } from '@/lib/api/payments'
 
-// ── Seed data ────────────────────────────────────────────────────────────────
-const SEED_MILESTONES = [
+// ── Milestone Templates ──────────────────────────────────────────────────────────────
+const MILESTONE_TEMPLATES = [
   { key: 'DEPOSIT', name: 'Deposit / Mobilization', percentage: 10, order: 1 },
   { key: 'FOUNDATION', name: 'Foundation Complete', percentage: 15, order: 2 },
   { key: 'FRAMING', name: 'Framing Complete', percentage: 20, order: 3 },
@@ -36,55 +36,6 @@ interface ProjectPayment {
   }[]
 }
 
-const SEED_PROJECT_PAYMENTS: ProjectPayment[] = [
-  {
-    id: '1', project: 'Kitchen & Bath Remodel - Cedar Park', projectType: 'Renovation / Remodel',
-    contractAmount: 78500, retainageRate: 5, escrowBalance: 43175,
-    milestones: [
-      { key: 'DEPOSIT',          amount: 7850,  retainage: 392.50, status: 'paid',      paidDate: '2026-02-10', drawRequestId: 'DR-1001' },
-      { key: 'FOUNDATION',       amount: 11775, retainage: 588.75, status: 'paid',      paidDate: '2026-02-24', drawRequestId: 'DR-1002' },
-      { key: 'FRAMING',          amount: 15700, retainage: 785.00, status: 'paid',      paidDate: '2026-03-05', drawRequestId: 'DR-1003' },
-      { key: 'MEP_ROUGH',        amount: 11775, retainage: 588.75, status: 'submitted', submittedDate: '2026-03-09', drawRequestId: 'DR-1004' },
-      { key: 'DRYWALL_INTERIOR', amount: 11775, retainage: 588.75, status: 'upcoming' },
-      { key: 'FINISH',           amount: 11775, retainage: 588.75, status: 'upcoming' },
-      { key: 'COMPLETION',       amount: 7850,  retainage: 392.50, status: 'upcoming' },
-    ],
-  },
-  {
-    id: '2', project: 'Second-Story Addition - Mueller', projectType: 'Home Addition',
-    contractAmount: 312000, retainageRate: 10, escrowBalance: 234000,
-    milestones: [
-      { key: 'DEPOSIT',          amount: 31200,  retainage: 3120.00, status: 'paid',    paidDate: '2026-02-03', drawRequestId: 'DR-2001' },
-      { key: 'FOUNDATION',       amount: 46800,  retainage: 4680.00, status: 'paid',    paidDate: '2026-02-28', drawRequestId: 'DR-2002' },
-      { key: 'FRAMING',          amount: 62400,  retainage: 6240.00, status: 'pending', submittedDate: '2026-03-08', drawRequestId: 'DR-2003' },
-      { key: 'MEP_ROUGH',        amount: 46800,  retainage: 4680.00, status: 'upcoming', canSubmit: true },
-      { key: 'DRYWALL_INTERIOR', amount: 46800,  retainage: 4680.00, status: 'upcoming' },
-      { key: 'FINISH',           amount: 46800,  retainage: 4680.00, status: 'upcoming' },
-      { key: 'COMPLETION',       amount: 31200,  retainage: 3120.00, status: 'upcoming' },
-    ],
-  },
-  {
-    id: '3', project: 'Custom New Home - Dripping Springs', projectType: 'New Home Construction',
-    contractAmount: 724000, retainageRate: 10, escrowBalance: 724000,
-    milestones: [
-      { key: 'DEPOSIT',          amount: 72400,  retainage: 7240.00, status: 'approved', canSubmit: false, drawRequestId: 'DR-3001' },
-      { key: 'FOUNDATION',       amount: 108600, retainage: 10860.00, status: 'upcoming', canSubmit: true },
-      { key: 'FRAMING',          amount: 144800, retainage: 14480.00, status: 'upcoming' },
-      { key: 'MEP_ROUGH',        amount: 108600, retainage: 10860.00, status: 'upcoming' },
-      { key: 'DRYWALL_INTERIOR', amount: 108600, retainage: 10860.00, status: 'upcoming' },
-      { key: 'FINISH',           amount: 108600, retainage: 10860.00, status: 'upcoming' },
-      { key: 'COMPLETION',       amount: 72400,  retainage: 7240.00, status: 'upcoming' },
-    ],
-  },
-]
-
-const SEED_LIEN_WAIVERS = [
-  { id: '1', project: 'Kitchen & Bath Remodel',  type: 'Conditional Progress',   milestoneKey: 'FRAMING',    period: 'Mar 2026', status: 'signed' as const },
-  { id: '2', project: 'Kitchen & Bath Remodel',  type: 'Unconditional Progress', milestoneKey: 'FOUNDATION', period: 'Feb 2026', status: 'signed' as const },
-  { id: '3', project: 'Second-Story Addition',    type: 'Conditional Progress',   milestoneKey: 'FRAMING',    period: 'Mar 2026', status: 'pending_signature' as const },
-  { id: '4', project: 'Second-Story Addition',    type: 'Unconditional Progress', milestoneKey: 'FOUNDATION', period: 'Feb 2026', status: 'signed' as const },
-  { id: '5', project: 'Custom New Home',          type: 'Conditional Progress',   milestoneKey: 'DEPOSIT',    period: 'Mar 2026', status: 'pending_signature' as const },
-]
 
 function mapApiToProjectPayment(
   projectId: string,
@@ -107,7 +58,7 @@ function mapApiToProjectPayment(
       }
       return {
         id: m.id,
-        key: SEED_MILESTONES[idx]?.key ?? key,
+        key: MILESTONE_TEMPLATES[idx]?.key ?? key,
         amount: m.amount,
         retainage: Math.round(m.amount * 0.1),
         status: statusMap[m.status] ?? 'upcoming',
@@ -129,8 +80,8 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: str
 }
 
 export default function PaymentsPage() {
-  const [projectPayments, setProjectPayments] = useState<ProjectPayment[]>(SEED_PROJECT_PAYMENTS)
-  const [lienWaivers] = useState(SEED_LIEN_WAIVERS)
+  const [projectPayments, setProjectPayments] = useState<ProjectPayment[]>([])
+  const [lienWaivers, setLienWaivers] = useState<Array<{ id: string; project: string; type: string; milestoneKey: string; period: string; status: 'signed' | 'pending_signature' }>>([])
   const [isLive, setIsLive]     = useState(false)
   const [loading, setLoading]   = useState(true)
   const [activeTab, setActiveTab] = useState<'draws' | 'milestones' | 'waivers'>('draws')
@@ -280,7 +231,7 @@ export default function PaymentsPage() {
                 </div>
                 <div className="divide-y divide-gray-50">
                   {activeDraws.map((ms) => {
-                    const template = SEED_MILESTONES.find(t => t.key === ms.key)
+                    const template = MILESTONE_TEMPLATES.find(t => t.key === ms.key)
                     const config   = STATUS_CONFIG[ms.status]
                     const stateKey = `${pp.id}-${ms.key}`
                     const isSubmitting = submitting[stateKey]
@@ -351,7 +302,7 @@ export default function PaymentsPage() {
                 </div>
                 <div className="mb-3 flex gap-0.5">
                   {pp.milestones.map((ms) => {
-                    const template = SEED_MILESTONES.find(t => t.key === ms.key)
+                    const template = MILESTONE_TEMPLATES.find(t => t.key === ms.key)
                     const bg = ms.status === 'paid' ? '#38A169' : ms.status === 'approved' ? '#2ABFBF' : ['pending', 'submitted'].includes(ms.status) ? '#E8793A' : '#E5E7EB'
                     return (
                       <div key={ms.key} className="relative" style={{ flex: template?.percentage || 1 }}
@@ -394,7 +345,7 @@ export default function PaymentsPage() {
           )}
           {lienWaivers.map((w) => {
             const config        = STATUS_CONFIG[w.status]
-            const milestoneName = SEED_MILESTONES.find(m => m.key === w.milestoneKey)?.name || w.milestoneKey
+            const milestoneName = MILESTONE_TEMPLATES.find(m => m.key === w.milestoneKey)?.name || w.milestoneKey
             return (
               <div key={w.id} className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
                 <div>
