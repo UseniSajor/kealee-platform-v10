@@ -1,0 +1,62 @@
+## Kealee Platform — Next Session Context
+
+**Project:** Kealee Platform v10 monorepo (full-lifecycle construction platform)
+**Repo:** usenisajor/kealee-platform-v10
+**Date of last session:** April 20–21, 2026
+
+---
+
+### What was done last session
+
+We fixed a long series of Railway deployment failures. Key changes pushed to `main`:
+
+1. Locked all 3 Railway services to Docker builder in `railway.toml`
+2. Fixed `services/api/railway.json` Dockerfile path
+3. Removed stale root-level Dockerfiles that confused Railway
+4. Rewrote API Dockerfile startup to use `dumb-init` + `node dist/index.js` directly
+5. Fixed Supabase auth import in `packages/core-auth/src/session-manager.ts`
+6. Fixed `turbo.json` concurrency type (number → string)
+7. Fastify 4→5 upgrade + `@bull-board` downgrade to v6
+8. Next.js `useSearchParams()` pages marked `dynamic = 'force-dynamic'`
+
+See `RAILWAY_FIX_SUMMARY.md` for full details.
+
+---
+
+### Current platform state
+
+- **Railway:** Should be deploying. Verify all 3 services (web-main, kealee-api, worker) are healthy.
+- **Backend API:** Complete (Tasks 15–30) — auth, RBAC, entitlements, audit, BullMQ workers
+- **Admin UI:** Tasks 31–39 complete — login, dashboard, orgs, users, RBAC, audit pages
+- **Next feature tasks:** Task 42 (user creation page) and Task 43 (role assignment UI)
+
+---
+
+### First thing to do this session
+
+1. Check Railway deployment — are all 3 services running?
+2. If not, look at Railway build/deploy logs and continue fixing
+3. If yes, move on to Task 42: User creation page at `/users/new`
+
+---
+
+### Critical reminders
+
+- Prisma org model = `Org` (NOT `Organization`)
+- pnpm version = `8.15.9`
+- Railway `startCommand` for API and worker is set in Railway dashboard, NOT locked in `railway.toml`
+- API healthcheck endpoint: `GET /health`
+- Supabase project URL: `https://rkreqfpkxavqpsqexbfs.supabase.co`
+- `packages/automation/apps/estimation-tool` uses CommonJS, `require.main === module` pattern
+
+---
+
+### Key files
+
+- `railway.toml` — root Railway service definitions
+- `services/api/Dockerfile` — API Docker build
+- `services/api/railway.json` — API Railway override
+- `packages/core-auth/src/session-manager.ts` — Supabase server auth
+- `packages/database/prisma/schema.prisma` — full Prisma schema
+- `CURRENT_STATUS.md` — task history and next steps
+- `CLAUDE_CHAT_SUMMARY.md` — full previous session recap
