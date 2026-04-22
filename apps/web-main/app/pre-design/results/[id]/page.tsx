@@ -8,6 +8,7 @@ import {
   DollarSign, MapPin, Wrench, Zap, ArrowRight, ExternalLink,
 } from 'lucide-react'
 import { ProcessingLoader } from '../loading-processing'
+import { ResultsReadyBanner } from '../results-ready-banner'
 import { FallbackOutput } from '../fallback-output'
 
 // ---------------------------------------------------------------------------
@@ -371,6 +372,13 @@ export default function PreDesignResultsPage() {
   }
 
   // STEP 3: Render completed results (original layout)
+  // STEP 3.5: Calculate deliverables status
+  const deliverablesStatus = {
+    concept: (images && images.length > 0) || !!(concept?.description && concept?.keyChanges?.length),
+    budget: !!(budget && (budget.low || budget.mid || budget.high)),
+    feasibility: !!(feasibility || zoning),
+    permit: !!(scope || systems || estimate),
+  }
   const concept = session.conceptSummary
   const budget = session.budgetRange
   const feasibility = session.feasibilitySummary
@@ -422,6 +430,13 @@ export default function PreDesignResultsPage() {
       </div>
 
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+        {/* Results Ready Banner */}
+        <ResultsReadyBanner
+          projectId={id}
+          status={projectOutput?.status ?? 'completed'}
+          deliverables={deliverablesStatus}
+          confidence={session.confidenceScore}
+        />
         {/* Concept images */}
         {images.length > 0 && (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
