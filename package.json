@@ -72,7 +72,9 @@
     "db:migrate:staging": "cd packages/database && npm run db:migrate:staging",
     "db:migrate:prod": "cd packages/database && npm run db:migrate:prod",
     "db:rollback:prod": "cd packages/database && npm run db:rollback:prod",
-    "db:create:migration": "bash scripts/db-create-migration.sh"
+    "db:create:migration": "bash scripts/db-create-migration.sh",
+    "go-live-check": "tsx scripts/go-live-check.ts",
+    "platform-ai-test": "tsx scripts/platform-ai-test.ts"
   },
   "workspaces": [
     "apps/*",
