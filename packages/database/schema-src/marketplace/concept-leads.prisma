@@ -1,0 +1,122 @@
+// MARKETPLACE — CONCEPT SERVICE LEADS
+// Domain: marketplace | Owner: web-main + concept-engine service
+// Public intake leads for concept/pre-design service
+
+enum ConceptServiceLeadStatus {
+  NEW
+  CONTACTED
+  QUOTE_PROVIDED
+  PAYMENT_PENDING
+  PAID
+  DESIGN_IN_PROGRESS
+  DESIGN_COMPLETED
+  DOWNLOADED
+  ARCHIVED
+}
+
+// Concept/pre-design service lead
+model ConceptServiceLead {
+  id String @id @default(uuid())
+
+  // Contact Information
+  fullName String
+  email    String
+  phone    String?
+  company  String?
+
+  // Project Details
+  projectType     String // kitchen, bathroom, addition, etc.
+  location        String?
+  zipCode         String?
+  description     String? @db.Text
+  roughDimensions Json? // { sqft: number, length?: number, width?: number }
+  stylePreference String?
+  budgetRange     String? // "$50k-100k", "$100k-200k", etc.
+
+  // Project Context
+  hasPhotos     Boolean @default(false)
+  photoCount    Int?
+  hasRoughPlans Boolean @default(false)
+
+  // Service Details
+  tier          String // concept_basic, concept_advanced, concept_full
+  status        ConceptServiceLeadStatus @default(NEW)
+  priority      String                   @default("MEDIUM") // LOW, MEDIUM, HIGH
+  source        String                   @default("WEBSITE") // WEBSITE, REFERRAL, ORGANIC, etc.
+  assignedTo    String? // User ID of assigned team member
+
+  // Lead Scoring
+  leadScore     Int? // Readiness score (0-100)
+  complexity    String? // simple, moderate, complex
+  readinessState String? // NEEDS_MORE_INFO, READY_FOR_CONCEPT
+
+  // Payment Information
+  stripeSessionId String?
+  stripePaymentId String?
+  pricePaidCents  Int?
+  paidAt          DateTime?
+
+  // Related Entities
+  projectConceptPreDesignId String? // Links to generated project
+  projectId                 String? // If converted to full project
+
+  // Metadata & Notes
+  metadata  Json?
+  notes     ConceptServiceLeadNote[]
+  activities ConceptServiceLeadActivity[]
+  files     FileUpload[] // Uploaded photos, sketches, etc.
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  project ProjectConceptPreDesign? @relation("ConceptLeadToPreDesign", fields: [projectConceptPreDesignId], references: [id])
+
+  @@index([email])
+  @@index([status])
+  @@index([tier])
+  @@index([createdAt])
+  @@index([leadScore])
+  @@map("concept_service_leads")
+}
+
+// Notes on concept service leads
+model ConceptServiceLeadNote {
+  id     String @id @default(uuid())
+  leadId String
+
+  content   String  @db.Text
+  createdBy String // User ID
+  isPrivate Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lead ConceptServiceLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([createdBy])
+  @@index([createdAt])
+  @@map("concept_service_lead_notes")
+}
+
+// Activity log for concept service leads
+model ConceptServiceLeadActivity {
+  id     String @id @default(uuid())
+  leadId String
+
+  activityType String // STATUS_CHANGED, EMAIL_SENT, CALL_MADE, PAYMENT_COMPLETED, DESIGN_STARTED, etc.
+  description  String @db.Text
+  metadata     Json? // Additional activity data (old_status, new_status, etc.)
+
+  createdBy String // User ID
+  createdAt DateTime @default(now())
+
+  lead ConceptServiceLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([activityType])
+  @@index([createdAt])
+  @@map("concept_service_lead_activities")
+}

@@ -700,6 +700,7 @@ model PermitServiceLead {
   // Relations
   notes      PermitServiceLeadNote[]
   activities PermitServiceLeadActivity[]
+  files      FileUpload[] // Uploaded permit documents, drawings, etc.
 
   @@index([status])
   @@index([email])

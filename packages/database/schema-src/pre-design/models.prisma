@@ -49,6 +49,7 @@ model ProjectConceptPreDesign {
   updatedAt DateTime @updatedAt
 
   architectEngagement ArchitectEngagement?
+  conceptServiceLead  ConceptServiceLead? @relation("ConceptLeadToPreDesign")
 
   @@index([projectId])
   @@index([intakeId])

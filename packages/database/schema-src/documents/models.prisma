@@ -132,11 +132,15 @@ model FileUpload {
   category FileCategory
 
   // Context
-  projectId      String?
-  propertyId     String?
-  milestoneId    String?
-  leadId         String?
-  organizationId String?
+  projectId                  String?
+  propertyId                 String?
+  milestoneId                String?
+  leadId                     String?
+  organizationId             String?
+  // New: Intake lead associations
+  conceptServiceLeadId       String?
+  estimationServiceLeadId    String?
+  permitServiceLeadId        String?
 
   // Upload metadata
   uploadedById   String
@@ -172,12 +176,19 @@ model FileUpload {
   project    Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   milestone  Milestone? @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
   receipt    Receipt? // Reverse relation for receipts
+  // New: Intake lead relations
+  conceptServiceLead      ConceptServiceLead?      @relation(fields: [conceptServiceLeadId], references: [id], onDelete: Cascade)
+  estimationServiceLead   EstimationServiceLead?   @relation(fields: [estimationServiceLeadId], references: [id], onDelete: Cascade)
+  permitServiceLead       PermitServiceLead?       @relation(fields: [permitServiceLeadId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
   @@index([uploadedById])
   @@index([category])
   @@index([createdAt])
   @@index([isValidated])
+  @@index([conceptServiceLeadId])
+  @@index([estimationServiceLeadId])
+  @@index([permitServiceLeadId])
   @@map("file_uploads")
 }
 
