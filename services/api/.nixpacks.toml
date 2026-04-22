@@ -1,0 +1,23 @@
+[providers]
+node = "20"
+
+[env]
+NODE_ENV = "production"
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+PRISMA_CLIENT_ENGINE_TYPE = "binary"
+
+[phases.setup]
+nixPkgs = ["nodejs", "pnpm"]
+cmds = [
+  "pnpm --version"
+]
+
+[phases.install]
+cmds = [
+  "pnpm install --frozen-lockfile"
+]
+
+[phases.build]
+cmds = [
+  "pnpm build"
+]
