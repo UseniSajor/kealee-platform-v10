@@ -2,7 +2,12 @@
  * PRICING ENGINE SERVICE
  * Centralized pricing logic with 2023 CTC base costs + 13% inflation (2026 adjusted)
  * Supports dynamic pricing for concept, estimation, permits based on complexity and jurisdiction
+ *
+ * CONSOLIDATED: Multipliers should match packages/shared/src/pricing.ts for frontend/backend consistency
+ * Frontend uses: SERVICE_PRICING and PERMIT_SUBMISSION_MULTIPLIERS from @kealee/shared/pricing
  */
+
+import { PERMIT_SUBMISSION_MULTIPLIERS } from '@kealee/shared/pricing'
 
 // ============================================================================
 // TYPES
@@ -125,16 +130,11 @@ function getZoningRiskAdjustment(zoningRisk?: string): number {
 // ============================================================================
 
 function getSubmissionMethodMultiplier(submissionMethod?: string): number {
-  switch (submissionMethod) {
-    case 'SELF':
-      return 0.8 // 20% discount
-    case 'ASSISTED':
-      return 1.0 // Base price
-    case 'KEALEE_MANAGED':
-      return 1.45 // 45% markup for managed service
-    default:
-      return 1.0
-  }
+  // CONSOLIDATED: Use multipliers from @kealee/shared/pricing for frontend/backend consistency
+  if (!submissionMethod) return 1.0
+
+  const method = submissionMethod.toUpperCase() as keyof typeof PERMIT_SUBMISSION_MULTIPLIERS
+  return PERMIT_SUBMISSION_MULTIPLIERS[method] || 1.0
 }
 
 // ============================================================================

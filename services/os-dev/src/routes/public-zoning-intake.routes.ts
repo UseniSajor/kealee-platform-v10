@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { runZoningBot } from "../services/zoning-bot-service";
+import { runZoningBot } from "@kealee/core-rules";
 import { ZoningIntakeSchema } from "@kealee/core-rules";
 
 /**
