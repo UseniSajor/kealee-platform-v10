@@ -388,6 +388,22 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   // ── Concept Package fulfillment (intake-to-payment flow) ──────────────────
   if (metadata.source === 'concept-package' && metadata.intakeId) {
     try {
+      // Update ConceptServiceLead with payment info (non-blocking)
+      try {
+        await prismaAny.conceptServiceLead.update({
+          where: { id: metadata.intakeId },
+          data: {
+            status: 'PAYMENT_PENDING',
+            stripeSessionId: session.id,
+            stripePaymentId: session.payment_intent as string | null,
+            pricePaidCents: session.amount_total ?? 0,
+            paidAt: new Date(),
+          },
+        }).catch(() => null); // Ignore if not found (legacy string ID)
+      } catch (e: any) {
+        console.warn('concept-package: ConceptServiceLead update failed (non-fatal):', e?.message);
+      }
+
       // Resolve userId from metadata or customer email
       let cpUserId = metadata.userId || null;
       if (!cpUserId && session.customer_email) {
@@ -476,6 +492,51 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       console.log('ConceptPackageOrder created:', order.id);
     } catch (err: any) {
       console.error('Failed to create ConceptPackageOrder:', err?.message);
+    }
+    return;
+  }
+
+  // ── Estimation Package fulfillment (intake-to-payment flow) ───────────────
+  if (metadata.source === 'estimation-package' && metadata.intakeId) {
+    try {
+      // Update EstimationServiceLead with payment info
+      try {
+        await prismaAny.estimationServiceLead.update({
+          where: { id: metadata.intakeId },
+          data: {
+            status: 'PAID',
+            stripeSessionId: session.id,
+            stripePaymentId: session.payment_intent as string | null,
+            pricePaidCents: session.amount_total ?? 0,
+            paidAt: new Date(),
+          },
+        }).catch(() => null); // Ignore if not found (legacy string ID)
+      } catch (e: any) {
+        console.warn('estimation-package: EstimationServiceLead update failed (non-fatal):', e?.message);
+      }
+
+      // Enqueue estimation processing job
+      try {
+        const { Queue } = await import('bullmq');
+        const queue = new Queue('intake-processing', {
+          connection: { url: process.env.REDIS_URL || 'redis://localhost:6379' },
+        });
+        await queue.add('process-estimation-intake', {
+          intakeId: metadata.intakeId,
+          tier: metadata.packageTier || 'cost_estimate',
+          tierName: metadata.packageName || 'Detailed Cost Estimate',
+          customerEmail: metadata.customerEmail ?? session.customer_email ?? '',
+          customerName: metadata.customerName ?? '',
+          stripeSessionId: session.id,
+        }, { priority: 2, attempts: 3 });
+        await queue.close();
+      } catch (qErr: any) {
+        console.warn('estimation-package: queue enqueue failed (non-fatal):', qErr.message);
+      }
+
+      console.log('estimation-package paid:', metadata.intakeId, 'tier:', metadata.packageTier);
+    } catch (err: any) {
+      console.error('Failed to process estimation-package payment:', err?.message);
     }
     return;
   }

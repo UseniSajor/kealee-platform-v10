@@ -9,6 +9,8 @@ import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import Stripe from 'stripe'
 import { RedisClient } from '@kealee/redis'
+import { prismaAny } from '../../utils/prisma-helper'
+import { uploadFileWithTracking } from '../../lib/file-upload-handler'
 import {
   ConceptIntakeSchema,
   ConceptIntakeResponseSchema,
@@ -178,8 +180,44 @@ export async function registerPublicConceptRoutes(fastify: FastifyInstance) {
       const scoring = scoreConceptLead(validatedIntake)
 
       // Generate unique IDs
-      const intakeId = `concept_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      let intakeId: string
       const funnelSessionId = (request.cookies as any)?.funnelSessionId || `fs_${Date.now()}`
+
+      // Create DB record first (use UUID as intakeId for better referential integrity)
+      try {
+        const dbRecord = await prismaAny.conceptServiceLead.create({
+          data: {
+            fullName: validatedIntake.name || 'Unnamed',
+            email: validatedIntake.email,
+            phone: validatedIntake.phone,
+            company: validatedIntake.company,
+            projectType: validatedIntake.projectType,
+            location: validatedIntake.address,
+            zipCode: validatedIntake.zipCode,
+            description: validatedIntake.description,
+            roughDimensions: validatedIntake.roughDimensions ? JSON.stringify(validatedIntake.roughDimensions) : null,
+            stylePreference: validatedIntake.stylePreference,
+            budgetRange: validatedIntake.budgetRange,
+            hasPhotos: validatedIntake.hasPhotos ?? false,
+            photoCount: validatedIntake.photoCount,
+            tier: scoring.tier,
+            leadScore: scoring.total,
+            complexity: scoring.complexity,
+            readinessState: scoring.readinessState,
+            source: 'WEBSITE',
+            metadata: {
+              funnelSessionId,
+              flags: scoring.flags,
+              routeRecommendation: scoring.total >= 75 ? 'immediate' : scoring.total >= 50 ? 'standard' : 'requires_followup',
+            },
+          },
+        })
+        intakeId = dbRecord.id
+      } catch (dbErr: any) {
+        // Fallback to legacy string ID if DB fails (non-blocking)
+        fastify.log.warn('ConceptServiceLead creation failed:', dbErr?.message)
+        intakeId = `concept_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      }
 
       // Here you would normally queue a job to generate AI concepts
       // For now, we'll store the intake and include placeholder concepts
@@ -333,7 +371,7 @@ export async function registerPublicConceptRoutes(fastify: FastifyInstance) {
           success_url: `${process.env.APP_URL}/concept/success?sessionId={CHECKOUT_SESSION_ID}`,
           cancel_url: `${process.env.APP_URL}/concept/checkout-cancelled`,
           metadata: {
-            source: 'concept',
+            source: 'concept-package',
             packageTier: tier,
             packageName: packageInfo.name,
             intakeId,
@@ -440,6 +478,63 @@ export async function registerPublicConceptRoutes(fastify: FastifyInstance) {
       throw error
     }
   })
+
+  /**
+   * POST /concept/upload
+   * Public endpoint: Upload photos/documents for concept intake
+   * Expects multipart/form-data with: file, conceptServiceLeadId
+   */
+  fastify.post<{ Body: any }>(
+    '/concept/upload',
+    { schema: { consumes: ['multipart/form-data'] } },
+    async (request, reply) => {
+      try {
+        const data = await request.file()
+        if (!data) {
+          return reply.status(400).send({ error: 'No file provided' })
+        }
+
+        const { conceptServiceLeadId } = data.fields
+        if (!conceptServiceLeadId) {
+          return reply.status(400).send({ error: 'Missing conceptServiceLeadId' })
+        }
+
+        // Read file buffer
+        const buffer = await data.toBuffer()
+
+        // Upload with tracking
+        const result = await uploadFileWithTracking({
+          bucket: 'concept-intake-photos',
+          path: `${conceptServiceLeadId}/${Date.now()}-${data.filename}`,
+          file: buffer,
+          fileName: data.filename,
+          fileSize: buffer.length,
+          contentType: data.mimetype,
+          category: 'SITE_PHOTO',
+          conceptServiceLeadId: conceptServiceLeadId as string,
+        })
+
+        fastify.log.info({
+          event: 'concept.file.uploaded',
+          conceptServiceLeadId,
+          fileName: data.filename,
+          fileSize: buffer.length,
+        })
+
+        return reply.send({
+          fileUrl: result.fileUrl,
+          fileUploadId: result.fileUploadId,
+          fileName: data.filename,
+        })
+      } catch (error) {
+        fastify.log.error(error)
+        return reply.status(500).send({
+          error: 'File upload failed',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        })
+      }
+    }
+  )
 
   fastify.log.info('Public concept intake routes registered')
 }

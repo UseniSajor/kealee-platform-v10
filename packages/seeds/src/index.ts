@@ -6,6 +6,17 @@ import { serviceOfferingSeeds } from "./services/service-catalog.seed";
 import { rolePermissionSeeds } from "./roles/roles-permissions.seed";
 import { ruleSeeds } from "./rules/risk-approval-rules.seed";
 import { promptPolicySeeds } from "./prompts/prompts-policies.seed";
+import {
+  searchJurisdictions,
+  findJurisdiction,
+  searchServiceOfferings,
+  findServiceOfferingByCode,
+  getServiceOfferingsByCategory,
+  searchRules,
+  getRulesByType,
+  findRuleByCode,
+  getActiveRules,
+} from "./search/seed-search";
 
 export {
   intentSeeds,
@@ -16,6 +27,16 @@ export {
   rolePermissionSeeds,
   ruleSeeds,
   promptPolicySeeds,
+  // Search functions
+  searchJurisdictions,
+  findJurisdiction,
+  searchServiceOfferings,
+  findServiceOfferingByCode,
+  getServiceOfferingsByCategory,
+  searchRules,
+  getRulesByType,
+  findRuleByCode,
+  getActiveRules,
 };
 
 export type {

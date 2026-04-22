@@ -9,6 +9,8 @@ import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import Stripe from 'stripe'
 import { RedisClient } from '@kealee/redis'
+import { prismaAny } from '../../utils/prisma-helper'
+import { uploadFileWithTracking } from '../../lib/file-upload-handler'
 import {
   EstimationIntakeSchema,
   EstimationIntakeResponseSchema,
@@ -133,9 +135,49 @@ export async function registerPublicEstimationRoutes(fastify: FastifyInstance) {
       // Score lead
       const scoring = scoreEstimationLead(validatedIntake)
 
-      // Generate unique IDs
-      const intakeId = `est_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      // Create DB record first (use UUID as intakeId)
+      let intakeId: string
       const funnelSessionId = (request.cookies as any)?.funnelSessionId || `fs_${Date.now()}`
+
+      try {
+        const dbRecord = await prismaAny.estimationServiceLead.create({
+          data: {
+            fullName: validatedIntake.contact.name,
+            email: validatedIntake.contact.email,
+            phone: validatedIntake.contact.phone,
+            company: validatedIntake.contact.company,
+            projectScope: validatedIntake.project.projectScope,
+            projectStage: validatedIntake.project.projectStage,
+            scopeDetail: validatedIntake.project.scopeDetail,
+            location: validatedIntake.project.location,
+            zipCode: validatedIntake.project.zipCode,
+            description: validatedIntake.project.description,
+            estimatedBudget: validatedIntake.project.estimatedBudget ? BigInt(Math.round(validatedIntake.project.estimatedBudget * 100)) / 100n : null,
+            hasDesignDrawings: validatedIntake.hasDesignDrawings ?? false,
+            designDocumentUrl: validatedIntake.designDocumentUrl,
+            drawingCount: validatedIntake.drawingCount,
+            hasContractorFeedback: validatedIntake.hasContractorFeedback ?? false,
+            requiresArchitecturalReview: validatedIntake.requiresArchitecturalReview ?? false,
+            requiresEngineeringReview: validatedIntake.requiresEngineeringReview ?? false,
+            isPhased: validatedIntake.isPhased ?? false,
+            tier: scoring.tier,
+            tierPreference: validatedIntake.tierPreference,
+            leadScore: scoring.total,
+            readinessState: scoring.readinessState,
+            source: 'WEBSITE',
+            metadata: {
+              funnelSessionId,
+              flags: scoring.flags,
+              routeRecommendation: scoring.total >= 75 ? 'immediate' : scoring.total >= 50 ? 'standard' : 'requires_followup',
+            },
+          },
+        })
+        intakeId = dbRecord.id
+      } catch (dbErr: any) {
+        // Fallback to legacy string ID if DB fails (non-blocking)
+        fastify.log.warn('EstimationServiceLead creation failed:', dbErr?.message)
+        intakeId = `est_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      }
 
       // Store intake in Redis with 7-day TTL
       await redis.setex(
@@ -312,6 +354,63 @@ export async function registerPublicEstimationRoutes(fastify: FastifyInstance) {
       throw error
     }
   })
+
+  /**
+   * POST /public/estimation/upload
+   * Public endpoint: Upload design documents/drawings for estimation intake
+   * Expects multipart/form-data with: file, estimationServiceLeadId
+   */
+  fastify.post<{ Body: any }>(
+    '/public/estimation/upload',
+    { schema: { consumes: ['multipart/form-data'] } },
+    async (request, reply) => {
+      try {
+        const data = await request.file()
+        if (!data) {
+          return reply.status(400).send({ error: 'No file provided' })
+        }
+
+        const { estimationServiceLeadId } = data.fields
+        if (!estimationServiceLeadId) {
+          return reply.status(400).send({ error: 'Missing estimationServiceLeadId' })
+        }
+
+        // Read file buffer
+        const buffer = await data.toBuffer()
+
+        // Upload with tracking
+        const result = await uploadFileWithTracking({
+          bucket: 'estimation-intake-docs',
+          path: `${estimationServiceLeadId}/${Date.now()}-${data.filename}`,
+          file: buffer,
+          fileName: data.filename,
+          fileSize: buffer.length,
+          contentType: data.mimetype,
+          category: 'DESIGN_FILE',
+          estimationServiceLeadId: estimationServiceLeadId as string,
+        })
+
+        fastify.log.info({
+          event: 'estimation.file.uploaded',
+          estimationServiceLeadId,
+          fileName: data.filename,
+          fileSize: buffer.length,
+        })
+
+        return reply.send({
+          fileUrl: result.fileUrl,
+          fileUploadId: result.fileUploadId,
+          fileName: data.filename,
+        })
+      } catch (error) {
+        fastify.log.error(error)
+        return reply.status(500).send({
+          error: 'File upload failed',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        })
+      }
+    }
+  )
 
   fastify.log.info('Public estimation intake routes registered')
 }

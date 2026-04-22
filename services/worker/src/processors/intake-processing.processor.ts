@@ -2,6 +2,7 @@ import { Worker, Job } from 'bullmq'
 import { redis } from '../config/redis.config'
 import { IntakeProcessingJobData } from '../queues/intake-processing.queue'
 import { emailQueue } from '../queues/email.queue'
+import { createBotRun, logBotRunInput, completeBotRun, failBotRun } from '../lib/bot-logger'
 
 const TEAM_EMAIL = process.env.TEAM_INTAKE_EMAIL || 'team@kealee.com'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.kealee.com'
@@ -241,9 +242,26 @@ async function processIntakeJob(job: Job<IntakeProcessingJobData>) {
 async function processPermitIntakeJob(job: Job) {
   const { intakeId, tier, tierName, customerEmail, customerName, stripeSessionId } = job.data
   const prisma = await getPrisma()
+  const startTime = Date.now()
+  let botRunId: string | null = null
 
   try {
     console.log(`[intake-processing] Processing permit intake ${intakeId} tier=${tier}`)
+
+    // Start bot logging
+    botRunId = await createBotRun({
+      botName: 'permit-intake-processor',
+      sourceType: 'job_queue',
+      sourceId: intakeId,
+      metadata: { tier, tierName, stripeSessionId },
+      tags: ['permit-intake', 'stripe-webhook'],
+    })
+
+    // Log input
+    await logBotRunInput(botRunId, {
+      rawInput: { intakeId, tier, tierName, customerEmail, customerName, stripeSessionId },
+      isValidated: true,
+    })
 
     // 1. Fetch permit lead
     const lead = await prisma.permitServiceLead.findUnique({
@@ -335,9 +353,181 @@ async function processPermitIntakeJob(job: Job) {
 
     await job.updateProgress(100)
     console.log(`[intake-processing] Permit intake ${intakeId} fully processed`)
+
+    // Complete bot logging
+    const durationMs = Date.now() - startTime
+    if (botRunId) {
+      await completeBotRun(botRunId, {
+        output: { success: true, intakeId, tier },
+        durationMs,
+        quality: 'high',
+        confidenceScore: 0.95,
+      }).catch(() => {/* non-blocking */})
+    }
+
     return { success: true, intakeId, tier }
   } catch (error: any) {
     console.error(`[intake-processing] Permit job failed for ${intakeId}:`, error.message)
+
+    // Log failure
+    const durationMs = Date.now() - startTime
+    if (botRunId) {
+      await failBotRun(botRunId, {
+        errorType: 'job_processing_error',
+        errorMessage: error.message,
+        errorStack: error.stack,
+        isRetryable: true,
+      }).catch(() => {/* non-blocking */})
+    }
+
+    throw error
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+// ── Estimation intake processor ───────────────────────────────────────────────
+async function processEstimationIntakeJob(job: Job) {
+  const { intakeId, tier, tierName, customerEmail, customerName, stripeSessionId } = job.data
+  const prisma = await getPrisma()
+  const startTime = Date.now()
+  let botRunId: string | null = null
+
+  try {
+    console.log(`[intake-processing] Processing estimation intake ${intakeId} tier=${tier}`)
+
+    // Start bot logging
+    botRunId = await createBotRun({
+      botName: 'estimation-intake-processor',
+      sourceType: 'job_queue',
+      sourceId: intakeId,
+      metadata: { tier, tierName, stripeSessionId },
+      tags: ['estimation-intake', 'stripe-webhook'],
+    })
+
+    // Log input
+    await logBotRunInput(botRunId, {
+      rawInput: { intakeId, tier, tierName, customerEmail, customerName, stripeSessionId },
+      isValidated: true,
+    })
+
+    // 1. Fetch estimation lead
+    const lead = await prisma.estimationServiceLead.findUnique({
+      where: { id: intakeId },
+    })
+
+    if (!lead) {
+      throw new Error(`EstimationServiceLead ${intakeId} not found`)
+    }
+
+    await job.updateProgress(20)
+
+    // 2. Mark as actively working
+    await prisma.estimationServiceLead.update({
+      where: { id: intakeId },
+      data: { status: 'ESTIMATION_IN_PROGRESS' },
+    }).catch(() => {/* non-fatal */})
+
+    // 3. Create command center task
+    try {
+      await prisma.task.create({
+        data: {
+          title: `Estimation: ${lead.fullName || customerName} — ${tierName}`,
+          description: [
+            `Customer: ${lead.fullName || customerName}`,
+            `Email: ${lead.email || customerEmail}`,
+            `Package: ${tierName}`,
+            `Project Scope: ${lead.projectScope || 'Not specified'}`,
+            `Project Stage: ${lead.projectStage || 'Not specified'}`,
+            `Location: ${lead.location || 'Not specified'}`,
+            `Budget: ${lead.estimatedBudget ? `$${lead.estimatedBudget}` : 'Not provided'}`,
+            `Stripe Session: ${stripeSessionId}`,
+            `Intake ID: ${intakeId}`,
+          ].join('\n'),
+          status: 'PENDING',
+          priority: 'MEDIUM',
+          source: 'estimation_intake',
+          metadata: { intakeId, tier, tierName, stripeSessionId },
+        },
+      })
+    } catch (taskErr: any) {
+      console.warn(`[intake-processing] Estimation task creation failed (non-fatal): ${taskErr.message}`)
+    }
+
+    await job.updateProgress(50)
+
+    // 4. Send customer confirmation
+    const email = lead.email || customerEmail
+    if (email) {
+      try {
+        await emailQueue.sendEmail({
+          to: email,
+          subject: `Your ${tierName} is confirmed — Kealee Estimation`,
+          html: `
+            <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+              <h2 style="color:#1a5a8c">Estimation request confirmed!</h2>
+              <p>Hi ${lead.fullName || customerName || 'there'},</p>
+              <p>Your <strong>${tierName}</strong> request has been received and payment confirmed.</p>
+              <h3>What happens next</h3>
+              <ol>
+                <li>Our estimation team reviews your project within 2 business days</li>
+                <li>We analyze design documents and scope</li>
+                <li>Your detailed cost estimate is delivered</li>
+              </ol>
+              <p>Questions? Email <a href="mailto:estimates@kealee.com">estimates@kealee.com</a></p>
+              <p>— The Kealee Estimation Team</p>
+            </div>
+          `,
+          text: `Hi ${lead.fullName || customerName || 'there'},\n\nYour ${tierName} is confirmed. Our team will prepare your estimate within 2 business days.\n\nQuestions? Email estimates@kealee.com\n\n— The Kealee Estimation Team`,
+          metadata: { eventType: 'estimation_intake_confirmation', intakeId },
+        })
+      } catch (emailErr: any) {
+        console.warn(`[intake-processing] Estimation confirmation email failed (non-fatal): ${emailErr.message}`)
+      }
+    }
+
+    // 5. Team alert
+    try {
+      await emailQueue.sendEmail({
+        to: TEAM_EMAIL,
+        subject: `New Estimation Intake — ${lead.fullName || customerName} (${tierName})`,
+        html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto"><h2>New Estimation Intake</h2><p><strong>${tierName}</strong></p><p>Customer: ${lead.fullName || customerName}<br>Email: ${email}<br>Scope: ${lead.projectScope}<br>Intake ID: ${intakeId}</p><p><a href="${COMMAND_CENTER_URL}/estimation/${intakeId}" style="background:#1a5a8c;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;display:inline-block">View in Command Center</a></p></div>`,
+        text: `New Estimation Intake — ${tierName}\nCustomer: ${lead.fullName || customerName}\nEmail: ${email}\nIntake ID: ${intakeId}`,
+        metadata: { eventType: 'estimation_team_alert', intakeId },
+      })
+    } catch (teamErr: any) {
+      console.warn(`[intake-processing] Estimation team alert failed (non-fatal): ${teamErr.message}`)
+    }
+
+    await job.updateProgress(100)
+    console.log(`[intake-processing] Estimation intake ${intakeId} fully processed`)
+
+    // Complete bot logging
+    const durationMs = Date.now() - startTime
+    if (botRunId) {
+      await completeBotRun(botRunId, {
+        output: { success: true, intakeId, tier },
+        durationMs,
+        quality: 'high',
+        confidenceScore: 0.95,
+      }).catch(() => {/* non-blocking */})
+    }
+
+    return { success: true, intakeId, tier }
+  } catch (error: any) {
+    console.error(`[intake-processing] Estimation job failed for ${intakeId}:`, error.message)
+
+    // Log failure
+    const durationMs = Date.now() - startTime
+    if (botRunId) {
+      await failBotRun(botRunId, {
+        errorType: 'job_processing_error',
+        errorMessage: error.message,
+        errorStack: error.stack,
+        isRetryable: true,
+      }).catch(() => {/* non-blocking */})
+    }
+
     throw error
   } finally {
     await prisma.$disconnect()
@@ -351,6 +541,9 @@ export function createIntakeProcessingWorker(): Worker<IntakeProcessingJobData> 
       // Route by job name
       if (job.name === 'process-permit-intake') {
         return processPermitIntakeJob(job)
+      }
+      if (job.name === 'process-estimation-intake') {
+        return processEstimationIntakeJob(job)
       }
       return processIntakeJob(job)
     },
