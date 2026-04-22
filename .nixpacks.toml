@@ -1,14 +1,28 @@
+[build]
+# Use pnpm for monorepo builds (critical!)
+cmd = "pnpm install --frozen-lockfile && pnpm build"
+
+[start]
+# Start command for API/Worker services
+cmd = "pnpm start"
+
 [providers]
-# Use Node.js without nixpacks trying to install browser packages
 node = "20"
 
-[install]
-# Skip Playwright and other test dependencies during build
-# These are dev-only and should not be installed in production
-skip_dev_dependencies = true
+[phases.setup]
+# Ensure pnpm is available
+nixPkgs = ["nodejs", "pnpm"]
+
+[phases.install]
+# Force pnpm with frozen lockfile
+cmds = ["pnpm install --frozen-lockfile"]
+
+[phases.build]
+# Build with pnpm/turbo
+cmds = ["pnpm build"]
 
 [env]
-# Tell Node/npm/pnpm to skip optional dependencies
+# Production settings
+NODE_ENV = "production"
 NPM_CONFIG_PRODUCTION = "true"
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
-SKIP_BUILD_SCRIPT = "true"
