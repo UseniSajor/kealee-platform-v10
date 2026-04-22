@@ -1256,13 +1256,20 @@ const start = async () => {
       }
     })
 
-    // Railway provides PORT env var, default to 3000 for local dev
-    const port = Number(process.env.PORT) || 3000
-    console.log(`🔌 Starting server on port ${port}...`)
+    // Railway provides PORT env var, default to 3001 for local dev
+    const PORT = Number(process.env.PORT) || 3001
+    console.log(`🔌 Starting server on port ${PORT}...`)
 
-    // START SERVER FIRST - This ensures /health responds immediately for healthchecks
+    // Start listening on Railway-assigned port
     // Background initialization tasks will run after server is listening
-    await fastify.listen({ port, host: '0.0.0.0' })
+    await fastify.listen({ port: PORT, host: '0.0.0.0' }, (err, address) => {
+      if (err) {
+        fastify.log.error(err);
+        process.exit(1);
+      }
+      fastify.log.info(`API server listening on ${address}`);
+    })
+
 
     // Startup complete message
     const emoji = environment.isProduction ? '🚀' : environment.isStaging ? '🔶' : environment.isPreview ? '🔵' : '💻';
@@ -1271,7 +1278,8 @@ const start = async () => {
     console.log(`${emoji} API Server Started Successfully ${emoji}`);
     console.log('='.repeat(60));
     console.log(`Environment:  ${environment.env.toUpperCase()}`);
-    console.log(`Port:         ${port}`);
+    console.log(`Port:         ${PORT}`);
+
     console.log(`Host:         0.0.0.0`);
     console.log(`Health:       /health`);
     console.log(`Docs:         /docs`);
