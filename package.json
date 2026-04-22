@@ -74,7 +74,8 @@
     "db:rollback:prod": "cd packages/database && npm run db:rollback:prod",
     "db:create:migration": "bash scripts/db-create-migration.sh",
     "go-live-check": "tsx scripts/go-live-check.ts",
-    "platform-ai-test": "tsx scripts/platform-ai-test.ts"
+    "platform-ai-test": "tsx scripts/platform-ai-test.ts",
+    "automation-validation": "tsx scripts/automation-validation.ts"
   },
   "workspaces": [
     "apps/*",
