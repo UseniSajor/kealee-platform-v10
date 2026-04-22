@@ -1,18 +1,11 @@
 [phases.setup]
-nixPkgs = ["nodejs", "npm"]
+nixPkgs = ["nodejs", "pnpm"]
 
 [phases.install]
-cmds = [
-  "npm install -g pnpm@8.15.9",
-  "export PATH=$PATH:$(npm bin -g)",
-  "pnpm install --no-frozen-lockfile"
-]
+cmds = ["pnpm install"]
 
 [phases.build]
-cmds = [
-  "export PATH=$PATH:$(npm bin -g)",
-  "pnpm build"
-]
+cmds = ["pnpm build"]
 
 [start]
 cmd = "node dist/index.js"
