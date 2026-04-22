@@ -1,28 +1,34 @@
-[build]
-# Use pnpm for monorepo builds (critical!)
-cmd = "pnpm install --frozen-lockfile && pnpm build"
-
-[start]
-# Start command for API/Worker services
-cmd = "pnpm start"
+# Nixpacks Configuration for Kealee Platform Monorepo
+# Forces pnpm, disables npm, uses Turbo for builds
 
 [providers]
 node = "20"
 
 [phases.setup]
-# Ensure pnpm is available
+# Install pnpm package manager
 nixPkgs = ["nodejs", "pnpm"]
 
 [phases.install]
-# Force pnpm with frozen lockfile
-cmds = ["pnpm install --frozen-lockfile"]
+# Use pnpm ONLY (not npm) with frozen lockfile
+cmds = [
+  "pnpm --version",
+  "pnpm install --frozen-lockfile"
+]
 
 [phases.build]
-# Build with pnpm/turbo
-cmds = ["pnpm build"]
+# Build entire monorepo using Turbo
+cmds = [
+  "pnpm build"
+]
 
 [env]
-# Production settings
+# Production environment
 NODE_ENV = "production"
 NPM_CONFIG_PRODUCTION = "true"
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+PRISMA_CLIENT_ENGINE_TYPE = "binary"
+
+# CRITICAL: Disable npm, force pnpm
+npm_config_package_manager = "pnpm"
+PNPM_HOME = "/root/.local/share/pnpm"
+PATH = "/root/.local/share/pnpm:$PATH"
