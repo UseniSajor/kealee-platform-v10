@@ -19,12 +19,20 @@ interface ProjectOutput {
   id: string
   status: 'pending' | 'generating' | 'completed' | 'failed'
   type: string
+  serviceType?: 'concept' | 'estimation' | 'permit'
+  deliveryStatus?: 'pending' | 'generating' | 'persisted' | 'failed'
   summary?: string
   resultJson?: any
   pdfUrl?: string
+  downloadUrl?: string
+  conceptImageUrls?: string[]
+  estimationPdfUrl?: string
+  permitFileUrls?: string[]
+  fileMetadata?: Record<string, any>
   nextStep?: string
   confidence?: string
   updatedAt?: string
+  completedAt?: string
   isProcessing?: boolean
   isCompleted?: boolean
   fallback?: boolean
@@ -372,13 +380,7 @@ export default function PreDesignResultsPage() {
   }
 
   // STEP 3: Render completed results (original layout)
-  // STEP 3.5: Calculate deliverables status
-  const deliverablesStatus = {
-    concept: (images && images.length > 0) || !!(concept?.description && concept?.keyChanges?.length),
-    budget: !!(budget && (budget.low || budget.mid || budget.high)),
-    feasibility: !!(feasibility || zoning),
-    permit: !!(scope || systems || estimate),
-  }
+  // STEP 3.5: Calculate deliverables status with persisted sources
   const concept = session.conceptSummary
   const budget = session.budgetRange
   const feasibility = session.feasibilitySummary
@@ -387,7 +389,25 @@ export default function PreDesignResultsPage() {
   const scope = session.scopeOfWork
   const systems = session.systemsImpact
   const estimate = session.estimateFramework
-  const images = session.outputImages ?? []
+
+  // Use persisted deliverables from ProjectOutput, fall back to session data
+  const persistedConceptImages = projectOutput?.resultJson?.conceptImageUrls || projectOutput?.resultJson?.images || []
+  const persistedPdfUrl = projectOutput?.pdfUrl || session.outputPdfUrl
+  const persistedDownloadUrl = projectOutput?.downloadUrl || persistedPdfUrl
+  const images = (persistedConceptImages && persistedConceptImages.length > 0)
+    ? persistedConceptImages.map((url: string, i: number) => ({
+        url,
+        label: `Concept ${i + 1}`,
+        caption: 'From persisted deliverable'
+      }))
+    : session.outputImages ?? []
+
+  const deliverablesStatus = {
+    concept: (images && images.length > 0) || !!(concept?.description && concept?.keyChanges?.length),
+    budget: !!(budget && (budget.low || budget.mid || budget.high)),
+    feasibility: !!(feasibility || zoning),
+    permit: !!(scope || systems || estimate),
+  }
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F7FAFC' }}>
@@ -404,9 +424,9 @@ export default function PreDesignResultsPage() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              {session.outputPdfUrl && (
+              {(persistedDownloadUrl || session.outputPdfUrl) && (
                 <a
-                  href={session.outputPdfUrl}
+                  href={persistedDownloadUrl || session.outputPdfUrl || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700 hover:border-gray-300"
@@ -600,12 +620,12 @@ export default function PreDesignResultsPage() {
         )}
 
         {/* Downloads */}
-        {(session.outputPdfUrl || session.outputJsonUrl || session.outputDxfUrl) && (
+        {(persistedDownloadUrl || session.outputPdfUrl || session.outputJsonUrl || session.outputDxfUrl) && (
           <div className="rounded-2xl border border-gray-200 bg-white p-5">
             <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-3">Downloads</h3>
             <div className="flex flex-wrap gap-3">
-              {session.outputPdfUrl && (
-                <a href={session.outputPdfUrl} target="_blank" rel="noopener noreferrer"
+              {(persistedDownloadUrl || session.outputPdfUrl) && (
+                <a href={persistedDownloadUrl || session.outputPdfUrl || '#'} target="_blank" rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-bold text-gray-700 hover:border-gray-300"
                 >
                   <Download className="h-4 w-4" /> PDF Package

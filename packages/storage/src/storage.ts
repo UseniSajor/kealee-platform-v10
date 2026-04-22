@@ -335,6 +335,251 @@ export async function uploadDocument(
 }
 
 // ---------------------------------------------------------------------------
+// Deliverables (Concept, Estimation, Permit PDFs + Images)
+// ---------------------------------------------------------------------------
+
+export interface ConceptDeliverableOptions {
+  intakeLeadId: string
+  conceptImages: Buffer[] // Multiple concept renderings
+  pdfContent: Buffer // Generated PDF with summary
+  fileName?: string
+  uploadedBy: string
+}
+
+export interface ConceptDeliverableResult {
+  conceptImageUrls: string[]
+  pdfUrl: string
+  fileUploadIds: string[]
+}
+
+/**
+ * Upload concept package deliverables (images + PDF)
+ * Stores in 'designs' bucket, creates FileUpload records
+ */
+export async function uploadConceptDeliverable(
+  opts: ConceptDeliverableOptions,
+  deps: { prisma: any; onEvent?: OnEvent }
+): Promise<ConceptDeliverableResult> {
+  const prefix = `concept-packages/${opts.intakeLeadId}/${Date.now()}`
+  const pdfFileName = opts.fileName || `concept-package-${Date.now()}.pdf`
+  const imagePath = `${prefix}/images`
+  const pdfPath = `${prefix}/${pdfFileName}`
+
+  // Upload PDF
+  const pdfResult = await uploadFile({
+    bucket: 'designs',
+    path: pdfPath,
+    file: opts.pdfContent,
+    contentType: 'application/pdf',
+  })
+
+  // Upload concept images in parallel
+  const imageUrls = await Promise.all(
+    opts.conceptImages.map((imgBuffer, idx) =>
+      uploadFile({
+        bucket: 'designs',
+        path: `${imagePath}/concept-${idx + 1}.jpg`,
+        file: imgBuffer,
+        contentType: 'image/jpeg',
+      })
+    )
+  )
+
+  // Create FileUpload records for PDF + images
+  const fileUploadIds: string[] = []
+
+  // Record for PDF
+  const pdfRecord = await deps.prisma.fileUpload.create({
+    data: {
+      fileName: pdfFileName,
+      fileUrl: pdfResult.url,
+      fileSize: opts.pdfContent.length,
+      mimeType: 'application/pdf',
+      category: 'DESIGN_FILE',
+      conceptServiceLeadId: opts.intakeLeadId,
+      uploadedById: opts.uploadedBy,
+      uploadedByRole: 'KEALEE_ADMIN',
+      metadata: {
+        deliverableType: 'concept-pdf',
+        storagePath: pdfPath,
+        bucket: 'designs',
+      },
+    },
+  })
+  fileUploadIds.push(pdfRecord.id)
+
+  // Records for images
+  for (let i = 0; i < imageUrls.length; i++) {
+    const imgRecord = await deps.prisma.fileUpload.create({
+      data: {
+        fileName: `concept-rendering-${i + 1}.jpg`,
+        fileUrl: imageUrls[i].url,
+        fileSize: opts.conceptImages[i].length,
+        mimeType: 'image/jpeg',
+        category: 'RENDERING',
+        conceptServiceLeadId: opts.intakeLeadId,
+        uploadedById: opts.uploadedBy,
+        uploadedByRole: 'KEALEE_ADMIN',
+        metadata: {
+          deliverableType: 'concept-image',
+          imageIndex: i + 1,
+          storagePath: imageUrls[i].path,
+          bucket: 'designs',
+        },
+      },
+    })
+    fileUploadIds.push(imgRecord.id)
+  }
+
+  // Publish event
+  deps.onEvent?.('concept.deliverable.uploaded', {
+    intakeLeadId: opts.intakeLeadId,
+    pdfUrl: pdfResult.url,
+    imageUrls: imageUrls.map((r) => r.url),
+    fileUploadIds,
+  })
+
+  return {
+    conceptImageUrls: imageUrls.map((r) => r.url),
+    pdfUrl: pdfResult.url,
+    fileUploadIds,
+  }
+}
+
+export interface EstimationDeliverableOptions {
+  intakeLeadId: string
+  pdfContent: Buffer
+  fileName?: string
+  uploadedBy: string
+}
+
+export interface EstimationDeliverableResult {
+  pdfUrl: string
+  fileUploadId: string
+}
+
+/**
+ * Upload estimation package deliverable (PDF)
+ * Stores in 'documents' bucket
+ */
+export async function uploadEstimationDeliverable(
+  opts: EstimationDeliverableOptions,
+  deps: { prisma: any; onEvent?: OnEvent }
+): Promise<EstimationDeliverableResult> {
+  const prefix = `estimation-packages/${opts.intakeLeadId}/${Date.now()}`
+  const pdfFileName = opts.fileName || `estimate-${Date.now()}.pdf`
+  const pdfPath = `${prefix}/${pdfFileName}`
+
+  const pdfResult = await uploadFile({
+    bucket: 'documents',
+    path: pdfPath,
+    file: opts.pdfContent,
+    contentType: 'application/pdf',
+  })
+
+  const record = await deps.prisma.fileUpload.create({
+    data: {
+      fileName: pdfFileName,
+      fileUrl: pdfResult.url,
+      fileSize: opts.pdfContent.length,
+      mimeType: 'application/pdf',
+      category: 'OTHER',
+      estimationServiceLeadId: opts.intakeLeadId,
+      uploadedById: opts.uploadedBy,
+      uploadedByRole: 'KEALEE_ADMIN',
+      metadata: {
+        deliverableType: 'estimation-pdf',
+        storagePath: pdfPath,
+        bucket: 'documents',
+      },
+    },
+  })
+
+  deps.onEvent?.('estimation.deliverable.uploaded', {
+    intakeLeadId: opts.intakeLeadId,
+    pdfUrl: pdfResult.url,
+    fileUploadId: record.id,
+  })
+
+  return {
+    pdfUrl: pdfResult.url,
+    fileUploadId: record.id,
+  }
+}
+
+export interface PermitDeliverableOptions {
+  intakeLeadId: string
+  packageFiles: Buffer[] // Permit application, supporting docs, etc.
+  fileNames: string[]
+  uploadedBy: string
+}
+
+export interface PermitDeliverableResult {
+  fileUrls: string[]
+  fileUploadIds: string[]
+}
+
+/**
+ * Upload permit package deliverables (application + supporting docs)
+ * Stores in 'permits' bucket
+ */
+export async function uploadPermitDeliverable(
+  opts: PermitDeliverableOptions,
+  deps: { prisma: any; onEvent?: OnEvent }
+): Promise<PermitDeliverableResult> {
+  const prefix = `permit-packages/${opts.intakeLeadId}/${Date.now()}`
+  const fileUrls: string[] = []
+  const fileUploadIds: string[] = []
+
+  // Upload all files in parallel
+  const uploads = await Promise.all(
+    opts.packageFiles.map((fileBuffer, idx) =>
+      uploadFile({
+        bucket: 'permits',
+        path: `${prefix}/${opts.fileNames[idx] || `permit-doc-${idx + 1}.pdf`}`,
+        file: fileBuffer,
+        contentType: 'application/pdf',
+      })
+    )
+  )
+
+  // Create FileUpload records
+  for (let i = 0; i < uploads.length; i++) {
+    const record = await deps.prisma.fileUpload.create({
+      data: {
+        fileName: opts.fileNames[i] || `permit-doc-${i + 1}.pdf`,
+        fileUrl: uploads[i].url,
+        fileSize: opts.packageFiles[i].length,
+        mimeType: 'application/pdf',
+        category: 'PERMIT_DOCUMENT',
+        permitServiceLeadId: opts.intakeLeadId,
+        uploadedById: opts.uploadedBy,
+        uploadedByRole: 'KEALEE_ADMIN',
+        metadata: {
+          deliverableType: 'permit-doc',
+          docIndex: i + 1,
+          storagePath: uploads[i].path,
+          bucket: 'permits',
+        },
+      },
+    })
+    fileUploadIds.push(record.id)
+    fileUrls.push(uploads[i].url)
+  }
+
+  deps.onEvent?.('permit.deliverable.uploaded', {
+    intakeLeadId: opts.intakeLeadId,
+    fileUrls,
+    fileUploadIds,
+  })
+
+  return {
+    fileUrls,
+    fileUploadIds,
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Signed URLs (for private buckets)
 // ---------------------------------------------------------------------------
 
