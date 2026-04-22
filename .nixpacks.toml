@@ -1,34 +1,38 @@
-# Nixpacks Configuration for Kealee Platform Monorepo
-# Forces pnpm, disables npm, uses Turbo for builds
+# Nixpacks Configuration for pnpm Monorepo
+# Explicitly configure Node.js + pnpm for Kealee Platform
 
 [providers]
+# Use Node.js 20 LTS
 node = "20"
 
+[env]
+# Force pnpm as package manager (Nixpacks auto-detects from pnpm-lock.yaml)
+# These env vars ensure pnpm is used in install phase
+PNPM_HOME = "/root/.pnpm"
+PATH = "$PNPM_HOME:$PATH"
+
+# Production settings
+NODE_ENV = "production"
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+PRISMA_CLIENT_ENGINE_TYPE = "binary"
+
 [phases.setup]
-# Install pnpm package manager
-nixPkgs = ["nodejs", "pnpm"]
+# Install pnpm via npm first, then use pnpm for everything else
+nixPkgs = ["nodejs"]
+cmds = [
+  "npm install -g pnpm@8.15.9",
+  "pnpm --version"
+]
 
 [phases.install]
-# Use pnpm ONLY (not npm) with frozen lockfile
+# Install dependencies with pnpm (monorepo mode)
+# pnpm-lock.yaml presence forces pnpm detection
 cmds = [
-  "pnpm --version",
   "pnpm install --frozen-lockfile"
 ]
 
 [phases.build]
-# Build entire monorepo using Turbo
+# Build entire workspace using Turbo (automatically found in root)
 cmds = [
   "pnpm build"
 ]
-
-[env]
-# Production environment
-NODE_ENV = "production"
-NPM_CONFIG_PRODUCTION = "true"
-PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
-PRISMA_CLIENT_ENGINE_TYPE = "binary"
-
-# CRITICAL: Disable npm, force pnpm
-npm_config_package_manager = "pnpm"
-PNPM_HOME = "/root/.local/share/pnpm"
-PATH = "/root/.local/share/pnpm:$PATH"
