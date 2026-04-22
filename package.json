@@ -75,7 +75,8 @@
     "db:create:migration": "bash scripts/db-create-migration.sh",
     "go-live-check": "tsx scripts/go-live-check.ts",
     "platform-ai-test": "tsx scripts/platform-ai-test.ts",
-    "automation-validation": "tsx scripts/automation-validation.ts"
+    "automation-validation": "tsx scripts/automation-validation.ts",
+    "production-deployment-check": "tsx scripts/production-deployment-check.ts"
   },
   "workspaces": [
     "apps/*",
