@@ -18,4 +18,4 @@ RUN pnpm --filter @kealee/api build
 EXPOSE 3000
 
 # Start API
-CMD ["pnpm", "--filter", "@kealee/api", "start"]
+RUN pnpm -r build
