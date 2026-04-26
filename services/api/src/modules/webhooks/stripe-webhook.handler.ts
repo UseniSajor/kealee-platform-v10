@@ -8,7 +8,30 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import Stripe from 'stripe'
 import { prisma } from '@kealee/database'
 import { RedisClient } from '@kealee/redis'
-import { emailQueue } from '../../worker/queues/email.queue'
+// Email jobs are published directly to BullMQ; the worker consumes them independently.
+import { Queue as BullQueue } from 'bullmq'
+import IORedis from 'ioredis'
+
+let _emailQ: BullQueue | null = null
+function getEmailQ(): BullQueue | null {
+  if (_emailQ) return _emailQ
+  const url = process.env.REDIS_URL
+  if (!url) return null
+  try {
+    const conn = new IORedis(url, { maxRetriesPerRequest: null, lazyConnect: true })
+    _emailQ = new BullQueue('email', { connection: conn })
+  } catch { /* Redis unavailable — emails skipped */ }
+  return _emailQ
+}
+
+const emailQueue = {
+  sendTemplatedEmail: async (to: string, template: string, templateData: Record<string, any>) => {
+    const q = getEmailQ()
+    if (!q) return
+    await q.add('send', { to, template, templateData })
+  },
+}
+import { getProjectExecutionQueue } from '../../utils/project-execution-queue'
 
 // ============================================================================
 // TYPES
@@ -111,6 +134,43 @@ async function handleCheckoutSessionCompleted(
         amount: session.amount_total,
         tier,
       })
+    }
+  }
+
+  // Create ProjectOutput and enqueue execution job
+  if (intakeId && source) {
+    const typeMap: Record<string, 'design' | 'permit' | 'estimate' | 'concept'> = {
+      concept:    'concept',
+      zoning:     'design',
+      estimation: 'estimate',
+      permits:    'permit',
+    }
+    const outputType = typeMap[source]
+    if (outputType) {
+      try {
+        const output = await (prisma as any).projectOutput.create({
+          data: {
+            intakeId,
+            type: outputType,
+            status: 'pending',
+            metadata: { source, tier, sessionId: session.id },
+          },
+        })
+        const queue = getProjectExecutionQueue()
+        const orgId = metadata.orgId ?? undefined
+        const projectId = metadata.projectId ?? undefined
+        await queue.add('execute', {
+          outputId: output.id,
+          type: outputType,
+          intakeId,
+          projectId,
+          metadata: { source, tier, sessionId: session.id, packageTier: tier, orgId },
+        }, { attempts: 3, backoff: { type: 'exponential', delay: 5000 } })
+        logger.info({ outputId: output.id, type: outputType, intakeId }, 'ProjectOutput created and execution enqueued')
+      } catch (err: any) {
+        logger.error({ err: err.message, intakeId, source }, 'Failed to create ProjectOutput or enqueue execution — rethrowing for Stripe retry')
+        throw err
+      }
     }
   }
 

@@ -14,6 +14,7 @@ const PATH_NAMES: Record<string, string> = {
   addition_expansion:        'Addition / Expansion AI Package',
   design_build:              'Design + Build AI Package',
   permit_path_only:          'Permit Path Intake',
+  contractor_match:          'Contractor Match Service',
   multi_unit_residential:    'Multi-Unit Residential Concept',
   mixed_use:                 'Mixed-Use Development Concept',
   commercial_office:         'Commercial Office Concept',

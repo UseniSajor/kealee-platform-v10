@@ -54,6 +54,18 @@ let voiceTranscriptionWorker: Worker | null = null
 let projectExecutionWorker: Worker | null = null
 let leadFollowupWorker: Worker | null = null
 
+// Validate required environment variables at startup (fail fast, not at first query)
+function validateRequiredEnv() {
+  const required = ['DATABASE_URL', 'REDIS_URL'] as const
+  const missing = required.filter(k => !process.env[k])
+  if (missing.length > 0) {
+    console.error('❌ FATAL: Missing required environment variables:', missing.join(', '))
+    console.error('   Worker cannot start without DATABASE_URL and REDIS_URL.')
+    process.exit(1)
+  }
+  console.log('✅ Required environment variables present: DATABASE_URL, REDIS_URL')
+}
+
 // Test Redis connection
 async function testRedisConnection() {
   try {
@@ -488,6 +500,7 @@ async function initializeCronJobs() {
 
 // Initialize
 async function start() {
+  validateRequiredEnv()
   await testRedisConnection()
   await initializeEmailQueue()
   await initializeWebhookQueue()

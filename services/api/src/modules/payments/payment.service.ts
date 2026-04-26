@@ -370,7 +370,7 @@ export const paymentService = {
           channels: ['email', 'push'],
           status: 'PENDING',
         },
-      }).catch(() => {})
+      }).catch((e: any) => { console.error('Failed to create contractor payment notification:', e.message) })
     }
     if (ownerId) {
       await prismaAny.notification.create({
@@ -383,7 +383,7 @@ export const paymentService = {
           channels: ['email'],
           status: 'PENDING',
         },
-      }).catch(() => {})
+      }).catch((e: any) => { console.error('Failed to create owner payment notification:', e.message) })
     }
 
     return {

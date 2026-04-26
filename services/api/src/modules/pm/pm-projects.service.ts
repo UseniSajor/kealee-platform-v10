@@ -3,6 +3,7 @@
  * Handles project CRUD, overview, activity feed, and status reports
  */
 import { prismaAny } from '../../utils/prisma-helper'
+import { ensureDigitalTwin } from '../../lib/twin/digital-twin.service'
 
 class ProjectService {
   async list(filters: {
@@ -86,7 +87,7 @@ class ProjectService {
     orgId: string
     createdById: string
   }) {
-    return prismaAny.project.create({
+    const project = await prismaAny.project.create({
       data: {
         name: data.name,
         description: data.description,
@@ -100,6 +101,9 @@ class ProjectService {
         status: 'ACTIVE',
       },
     })
+    // Ensure DigitalTwin exists for the new project (DDTS enforcement)
+    await ensureDigitalTwin(project.id, data.orgId)
+    return project
   }
 
   async update(id: string, data: {

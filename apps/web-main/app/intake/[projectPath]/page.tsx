@@ -133,7 +133,7 @@ export default function IntakePage() {
       if (!intakeRes.ok) throw new Error('Intake failed')
       const { intakeId } = await intakeRes.json()
 
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '')
       const checkoutRes = await fetch('/api/intake/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

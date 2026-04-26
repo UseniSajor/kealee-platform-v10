@@ -6,6 +6,7 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { prismaAny as prisma } from '../../utils/prisma-helper';
+import { ensureDigitalTwin } from '../../lib/twin/digital-twin.service';
 
 // Import parcel service logic inline (during transition, before service extraction)
 // Once os-land runs standalone, these routes can proxy to it instead
@@ -128,6 +129,8 @@ export async function landRoutes(fastify: FastifyInstance) {
         status: 'ACTIVE',
       },
     });
+    // Ensure DigitalTwin exists for the converted project (DDTS enforcement)
+    await ensureDigitalTwin(project.id, body.orgId)
     await prisma.parcel.update({ where: { id }, data: { status: 'CONVERTED', projectId: project.id } });
     return reply.code(201).send({ project });
   });

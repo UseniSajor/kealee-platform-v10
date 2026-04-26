@@ -16,8 +16,8 @@ import {
 
 // @langchain/core 1.x tool.invoke() returns a complex union type that TypeScript
 // cannot resolve. This helper casts cleanly.
-function inv<T>(t: { invoke: (i: unknown) => unknown }, input: unknown): Promise<T> {
-  return (t.invoke as (i: unknown) => Promise<T>)(input);
+async function inv<T>(tool: { invoke: (input: any) => Promise<any> }, input: any): Promise<T> {
+  return await tool.invoke(input);
 }
 
 export async function collectIntake(state: ExteriorConceptState): Promise<Partial<ExteriorConceptState>> {

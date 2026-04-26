@@ -76,6 +76,17 @@ export interface ChainInput {
   electricalChanges?: boolean
   plumbingChanges?:   boolean
   hvacChanges?:       boolean
+  /** DigitalTwin context — injected by runChain() before bot execution */
+  twinContext?: {
+    id:           string
+    tier:         string
+    status:       string
+    healthStatus: string
+    healthScore:  number
+    currentPhase: string
+    metrics:      Record<string, any>
+    recentEvents?: Array<{ eventType: string; description?: string | null; createdAt: string }>
+  }
 }
 
 export interface CachedCallResult {
@@ -187,12 +198,29 @@ export interface CacheMetrics {
   savedTokens:         number
 }
 
+export interface ContractorBotResult {
+  botRunId:           string
+  parentRunId:        string
+  projectType:        string
+  jurisdiction:       string
+  matchCriteria:      Record<string, unknown>
+  recommendations:    string[]
+  summary:            string
+  nextStep:           string
+  conversion_product: string
+  confidence:         string
+  cta:                string
+  cacheMetrics:       CacheMetrics
+  durationMs:         number
+}
+
 export interface ChainRunResult {
   chainId:           string
   projectId:         string
   design:            DesignBotResult
   estimate:          EstimateBotResult
   permit:            PermitBotResult
+  contractor:        ContractorBotResult
   totalChainCostUsd: number
   totalDurationMs:   number
 }
@@ -209,6 +237,21 @@ export class ChainGateError extends Error {
     super(message)
     this.name = 'ChainGateError'
   }
+}
+
+// ── Environment flag ──────────────────────────────────────────────────────────
+const IS_PROD = process.env.NODE_ENV === 'production'
+
+// ── DB retry helper (3 attempts, exponential backoff 500ms base) ──────────────
+async function dbRetry<T>(fn: () => Promise<T>, attempts = 3, baseMs = 500): Promise<T> {
+  let lastErr: unknown
+  for (let a = 1; a <= attempts; a++) {
+    try { return await fn() } catch (err) {
+      lastErr = err
+      if (a < attempts) await new Promise(r => setTimeout(r, baseMs * Math.pow(2, a - 1)))
+    }
+  }
+  throw lastErr
 }
 
 // ── Cost constants for cache pricing ─────────────────────────────────────────
@@ -336,7 +379,7 @@ async function dbCreateRun(params: {
   const prisma = getPrisma()
   if (!prisma) return
   try {
-    await prisma.keaBotRun.create({
+    await dbRetry(() => prisma.keaBotRun.create({
       data: {
         id:          params.id,
         projectId:   params.projectId,
@@ -347,9 +390,12 @@ async function dbCreateRun(params: {
         inputData:   params.inputData,
         startedAt:   new Date(),
       },
-    })
+    }))
+    console.log(`[DB_WRITE_SUCCESS] entity=KeaBotRun id=${params.id} bot=${params.botType} status=IN_PROGRESS`)
   } catch (e: unknown) {
-    console.warn('[Chain] dbCreateRun failed (Prisma may need generate):', (e as Error).message)
+    const msg = (e as Error).message
+    console.error(`[DB_WRITE_FAILED] entity=KeaBotRun id=${params.id} bot=${params.botType} error=${msg}`)
+    if (IS_PROD) throw new Error(`[Chain] dbCreateRun failed after retries: ${msg}`)
   }
 }
 
@@ -366,22 +412,25 @@ async function dbCompleteRun(params: {
   const prisma = getPrisma()
   if (!prisma) return
   try {
-    await prisma.keaBotRun.update({
+    await dbRetry(() => prisma.keaBotRun.update({
       where: { id: params.id },
       data:  {
-        status:          'COMPLETED',
-        outputData:      params.outputData,
-        modelUsed:       params.modelUsed,
-        inputTokens:     params.inputTokens,
-        outputTokens:    params.outputTokens,
-        cacheMetrics:    params.cacheMetrics,
+        status:           'COMPLETED',
+        outputData:       params.outputData,
+        modelUsed:        params.modelUsed,
+        inputTokens:      params.inputTokens,
+        outputTokens:     params.outputTokens,
+        cacheMetrics:     params.cacheMetrics,
         estimatedCostUsd: params.estimatedCostUsd,
-        durationMs:      params.durationMs,
-        completedAt:     new Date(),
+        durationMs:       params.durationMs,
+        completedAt:      new Date(),
       },
-    })
+    }))
+    console.log(`[DB_WRITE_SUCCESS] entity=KeaBotRun id=${params.id} status=COMPLETED durationMs=${params.durationMs}`)
   } catch (e: unknown) {
-    console.warn('[Chain] dbCompleteRun failed:', (e as Error).message)
+    const msg = (e as Error).message
+    console.error(`[DB_WRITE_FAILED] entity=KeaBotRun id=${params.id} status=COMPLETED error=${msg}`)
+    if (IS_PROD) throw new Error(`[Chain] dbCompleteRun failed after retries: ${msg}`)
   }
 }
 
@@ -389,11 +438,15 @@ async function dbFailRun(id: string, errorMessage: string): Promise<void> {
   const prisma = getPrisma()
   if (!prisma) return
   try {
-    await prisma.keaBotRun.update({
+    await dbRetry(() => prisma.keaBotRun.update({
       where: { id },
       data:  { status: 'FAILED', errorMessage, completedAt: new Date() },
-    })
-  } catch {}
+    }))
+    console.log(`[DB_WRITE_SUCCESS] entity=KeaBotRun id=${id} status=FAILED`)
+  } catch (e: unknown) {
+    // Never rethrow in dbFailRun — already inside an error handler; log only
+    console.error(`[DB_WRITE_FAILED] entity=KeaBotRun id=${id} status=FAILED error=${(e as Error).message}`)
+  }
 }
 
 async function dbGetRunStatus(id: string): Promise<string | null> {
@@ -450,6 +503,16 @@ ctcTaskNumber format: Division-Section-Task (e.g. "15-30-40" for HVAC ductwork).
 csiCode format: CSI MasterFormat (e.g. "23 31 13").
 Include 15-25 BOM items covering all major systems.`
 
+/** Build a DigitalTwin context section for bot user prompts (empty string if no twin). */
+function buildTwinSection(input: ChainInput): string {
+  if (!input.twinContext) return ''
+  const t = input.twinContext
+  const events = t.recentEvents?.length
+    ? `Recent events: ${t.recentEvents.map(e => e.eventType).join(', ')}`
+    : ''
+  return `\nDigitalTwin State:\n- ID: ${t.id} | Tier: ${t.tier} | Status: ${t.status}\n- Health: ${t.healthStatus} (score ${t.healthScore}) | Phase: ${t.currentPhase}${events ? '\n- ' + events : ''}\n`
+}
+
 export async function runDesignBot(input: ChainInput): Promise<DesignBotResult> {
   ensureRAG()
   const runId    = randomUUID()
@@ -493,8 +556,8 @@ CTC 2026 DMV Estimate:
 - Soft Cost: $${ctc.breakdown.soft.toLocaleString()}
 - Risk/Contingency: $${ctc.breakdown.risk.toLocaleString()}
 - Execution: $${ctc.breakdown.execution.toLocaleString()}
-- Total CTC: $${ctc.total.toLocaleString()} (range $${ctc.range[0].toLocaleString()}–$${ctc.range[1].toLocaleString()})
-
+- Total CTC: $${ctc.total.toLocaleString()} (range $${ctc.range[0].toLocaleString()}–$${ctc.range[1].toLocaleString()})\
+${buildTwinSection(input)}
 Generate the MEP system design and full BOM for this project.`
 
     const llmResult = await callModelCached({
@@ -532,7 +595,7 @@ Generate the MEP system design and full BOM for this project.`
     const prisma = getPrisma()
     if (prisma) {
       try {
-        await prisma.botDesignConcept.create({
+        await dbRetry(() => prisma.botDesignConcept.create({
           data: {
             projectId:             input.projectId,
             botRunId:              runId,
@@ -548,9 +611,12 @@ Generate the MEP system design and full BOM for this project.`
             ctcBreakdown:          { ...ctc.breakdown, total: ctc.total, range: ctc.range },
             bomItemCount,
           },
-        })
+        }))
+        console.log(`[DB_WRITE_SUCCESS] entity=BotDesignConcept runId=${runId} bomItems=${bomItemCount}`)
       } catch (e: unknown) {
-        console.warn('[Chain] DesignConcept persist failed:', (e as Error).message)
+        const msg = (e as Error).message
+        console.error(`[DB_WRITE_FAILED] entity=BotDesignConcept runId=${runId} error=${msg}`)
+        if (IS_PROD) throw new Error(`[Chain] BotDesignConcept persist failed after retries: ${msg}`)
       }
     }
 
@@ -695,15 +761,15 @@ MEP Systems:
 - Electrical: ${(designResult.mepSystem.electrical as string) ?? 'Per design'}
 - Plumbing: ${(designResult.mepSystem.plumbing as string) ?? 'Per design'}
 
-CTC Budget: $${designResult.ctcTotal.toLocaleString()} (range $${designResult.ctcRange[0].toLocaleString()}–$${designResult.ctcRange[1].toLocaleString()})
-
+CTC Budget: $${designResult.ctcTotal.toLocaleString()} (range $${designResult.ctcRange[0].toLocaleString()}–$${designResult.ctcRange[1].toLocaleString()})\
+${buildTwinSection(input)}
 Generate the full 2026 CTC line-item estimate.`
 
     const llmResult = await callModelCached({
       systemPrompt,
       userPrompt,
       model:       'claude-sonnet-4-6',
-      maxTokens:   4096,
+      maxTokens:   8192, // 4096 truncates mid-JSON when BOM context is included
       temperature: 0.15,
     })
 
@@ -734,7 +800,7 @@ Generate the full 2026 CTC line-item estimate.`
     const prisma = getPrisma()
     if (prisma && lineItems.length > 0) {
       try {
-        await prisma.botEstimateLineItem.createMany({
+        await dbRetry(() => prisma.botEstimateLineItem.createMany({
           data: lineItems.map((li, i) => ({
             id:              randomUUID(),
             projectId:       input.projectId,
@@ -752,9 +818,12 @@ Generate the full 2026 CTC line-item estimate.`
             laborRate:       li.laborRate  ?? null,
             sortOrder:       i,
           })),
-        })
+        }))
+        console.log(`[DB_WRITE_SUCCESS] entity=BotEstimateLineItem runId=${runId} count=${lineItems.length}`)
       } catch (e: unknown) {
-        console.warn('[Chain] EstimateLineItem persist failed:', (e as Error).message)
+        const msg = (e as Error).message
+        console.error(`[DB_WRITE_FAILED] entity=BotEstimateLineItem runId=${runId} error=${msg}`)
+        if (IS_PROD) throw new Error(`[Chain] BotEstimateLineItem persist failed after retries: ${msg}`)
       }
     }
 
@@ -899,8 +968,8 @@ Structural Changes: ${input.structuralChanges ?? false}
 Electrical Changes: ${input.electricalChanges ?? false}
 Plumbing Changes: ${input.plumbingChanges ?? false}
 HVAC Changes: ${input.hvacChanges ?? false}
-Estimated Construction Cost: $${estimateResult.totalLow.toLocaleString()}–$${estimateResult.totalHigh.toLocaleString()}
-
+Estimated Construction Cost: $${estimateResult.totalLow.toLocaleString()}–$${estimateResult.totalHigh.toLocaleString()}\
+${buildTwinSection(input)}
 Identify all required permits, issues, and provide a permitting action plan.`
 
     const llmResult = await callModelCached({
@@ -942,7 +1011,7 @@ Identify all required permits, issues, and provide a permitting action plan.`
     const prisma = getPrisma()
     if (prisma) {
       try {
-        await prisma.permitCase.create({
+        await dbRetry(() => prisma.permitCase.create({
           data: {
             projectId:            input.projectId,
             botRunId:             runId,
@@ -954,9 +1023,12 @@ Identify all required permits, issues, and provide a permitting action plan.`
             totalProcessingDays,
             jurisdictionCacheHit,
           },
-        })
+        }))
+        console.log(`[DB_WRITE_SUCCESS] entity=PermitCase runId=${runId} jurisdiction=${jurisdiction} permits=${permits.length}`)
       } catch (e: unknown) {
-        console.warn('[Chain] PermitCase persist failed:', (e as Error).message)
+        const msg = (e as Error).message
+        console.error(`[DB_WRITE_FAILED] entity=PermitCase runId=${runId} error=${msg}`)
+        if (IS_PROD) throw new Error(`[Chain] PermitCase persist failed after retries: ${msg}`)
       }
     }
 
@@ -996,31 +1068,214 @@ Identify all required permits, issues, and provide a permitting action plan.`
   }
 }
 
+// ── Stage 4: ContractorBot ────────────────────────────────────────────────────
+
+const CONTRACTOR_BOT_SYSTEM = `You are Kealee's ContractorBot — a contractor matching specialist for the DC, Maryland, and Virginia (DMV) region.
+
+Given permit analysis and project scope, provide contractor matching criteria and recommendations.
+
+Return ONLY valid JSON:
+{
+  "matchCriteria": {
+    "licenseTypes": ["General Contractor", "Electrical", "Plumbing"],
+    "bondingRequired": true,
+    "insuranceMin": 2000000,
+    "experienceYears": 5,
+    "specializations": ["residential", "renovation"]
+  },
+  "recommendations": [
+    "Require contractor with active DC/MD/VA GC license",
+    "Request proof of $2M+ general liability coverage",
+    "Review 3+ comparable project references in your jurisdiction"
+  ],
+  "nextStep": "Begin contractor outreach with verified DMV contractors",
+  "cta": "Match with Verified Contractor",
+  "conversion_product": "CONTRACTOR_MATCH"
+}
+
+Tailor recommendations to the permit readiness score and total project cost.`
+
+export async function runContractorBot(
+  input:        ChainInput,
+  permitResult: PermitBotResult,
+): Promise<ContractorBotResult> {
+  ensureRAG()
+  const runId     = randomUUID()
+  const startedAt = Date.now()
+  const jurisdiction = input.jurisdiction ?? input.location
+
+  // ── Chain gate ───────────────────────────────────────────────────────────
+  const parentStatus = await dbGetRunStatus(permitResult.botRunId)
+  if (parentStatus !== null && parentStatus !== 'COMPLETED') {
+    throw new ChainGateError(
+      `ContractorBot blocked — PermitBot run ${permitResult.botRunId} has status ${parentStatus} (must be COMPLETED)`,
+      'ContractorBot',
+      permitResult.botRunId,
+      parentStatus,
+    )
+  }
+
+  await dbCreateRun({
+    id:          runId,
+    projectId:   input.projectId,
+    botType:     'ContractorBot',
+    chainOrder:  4,
+    parentRunId: permitResult.botRunId,
+    inputData:   {
+      projectType:   input.projectType,
+      jurisdiction,
+      readinessScore: permitResult.readinessScore,
+      issueCount:    permitResult.issues.length,
+    },
+  })
+
+  try {
+    const userPrompt = `Project Type: ${input.projectType}
+Location: ${input.location}
+Jurisdiction: ${jurisdiction}
+Square Footage: ${input.sqft ?? 'TBD'} SF
+Scope: ${input.scope}
+Permit Readiness Score: ${permitResult.readinessScore}%
+Total Permits: ${permitResult.permits.length}
+Total Permit Cost: $${permitResult.totalPermitCostUsd.toLocaleString()}
+Blocking Issues: ${permitResult.issues.filter(i => i.severity === 'blocking').length}
+Warnings: ${permitResult.issues.filter(i => i.severity === 'warning').length}\
+${buildTwinSection(input)}
+Provide contractor matching criteria and actionable recommendations.`
+
+    const llmResult = await callModelCached({
+      systemPrompt: CONTRACTOR_BOT_SYSTEM,
+      userPrompt,
+      model:        'claude-sonnet-4-6',
+      maxTokens:    2048,
+      temperature:  0.15,
+    })
+
+    const parsed = parseJSON<{
+      matchCriteria?:     Record<string, unknown>
+      recommendations?:   string[]
+      nextStep?:          string
+      cta?:               string
+      conversion_product?: string
+    }>(llmResult.content, {})
+
+    const matchCriteria     = parsed.matchCriteria     ?? { licenseTypes: ['General Contractor'], bondingRequired: true }
+    const recommendations   = parsed.recommendations   ?? ['Require licensed, bonded contractor', 'Request 3+ DMV references']
+    const nextStep          = parsed.nextStep          ?? 'Match with a verified general contractor to begin permit filing.'
+    const cta               = parsed.cta               ?? 'Match with Verified Contractor'
+    const conversion_product = parsed.conversion_product ?? 'CONTRACTOR_MATCH'
+
+    const confidence = permitResult.readinessScore >= 80 ? 'high' : permitResult.readinessScore >= 60 ? 'medium' : 'low'
+
+    const summary = `Contractor matching criteria for ${input.projectType} in ${jurisdiction}. Permit readiness: ${permitResult.readinessScore}%. ${recommendations[0] ?? ''}`
+
+    const cacheMetrics: CacheMetrics = {
+      cacheCreationTokens: llmResult.cacheCreationTokens,
+      cacheReadTokens:     llmResult.cacheReadTokens,
+      cacheHit:            llmResult.cacheHit,
+      savedTokens:         llmResult.savedTokens,
+    }
+
+    const durationMs = Date.now() - startedAt
+
+    await dbCompleteRun({
+      id:               runId,
+      outputData:       { matchCriteria, recommendationCount: recommendations.length, confidence, cacheMetrics },
+      modelUsed:        llmResult.model,
+      inputTokens:      llmResult.inputTokens,
+      outputTokens:     llmResult.outputTokens,
+      cacheMetrics,
+      estimatedCostUsd: llmResult.estimatedCostUsd,
+      durationMs,
+    })
+
+    console.log(`[Chain:ContractorBot] run=${runId} readiness=${permitResult.readinessScore} cache_hit=${llmResult.cacheHit} cost=$${llmResult.estimatedCostUsd.toFixed(4)}`)
+
+    return {
+      botRunId:           runId,
+      parentRunId:        permitResult.botRunId,
+      projectType:        input.projectType,
+      jurisdiction,
+      matchCriteria,
+      recommendations,
+      summary,
+      nextStep,
+      conversion_product,
+      confidence,
+      cta,
+      cacheMetrics,
+      durationMs,
+    }
+  } catch (err: unknown) {
+    const msg = (err instanceof Error) ? err.message : String(err)
+    await dbFailRun(runId, msg)
+    throw err
+  }
+}
+
 // ── Full chain orchestrator ───────────────────────────────────────────────────
 
 /**
- * Run the full DesignBot → EstimateBot → PermitBot chain.
+ * Run the full DesignBot → EstimateBot → PermitBot → ContractorBot chain.
  *
- * Returns all three results plus aggregate metrics.
+ * Returns all four results plus aggregate metrics.
  * Throws `ChainGateError` if any stage's parent is not COMPLETED.
  * Throws the underlying error for LLM failures.
  */
-export async function runChain(input: ChainInput): Promise<ChainRunResult> {
+export async function runChain(rawInput: ChainInput): Promise<ChainRunResult> {
   const chainId  = randomUUID()
   const wallStart = Date.now()
 
-  console.log(`[Chain] START chainId=${chainId} project=${input.projectId} type=${input.projectType}`)
+  console.log(`[Chain] START chainId=${chainId} project=${rawInput.projectId} type=${rawInput.projectType}`)
 
-  const design   = await runDesignBot(input)
-  const estimate = await runEstimateBot(input, design)
-  const permit   = await runPermitBot(input, estimate)
+  // ── Inject DigitalTwin context before bot execution (DDTS enforcement) ────
+  let input: ChainInput = rawInput
+  if (rawInput.projectId) {
+    const prisma = getPrisma()
+    if (prisma) {
+      const IS_PROD = process.env.NODE_ENV === 'production'
+      try {
+        const twin = await prisma.digitalTwin.findUnique({
+          where:   { projectId: rawInput.projectId },
+          include: { events: { take: 3, orderBy: { createdAt: 'desc' } } },
+        })
+        if (twin) {
+          input = {
+            ...rawInput,
+            twinContext: {
+              id:           twin.id,
+              tier:         twin.tier,
+              status:       twin.status,
+              healthStatus: twin.healthStatus,
+              healthScore:  twin.healthScore,
+              currentPhase: twin.currentPhase,
+              metrics:      (twin.metrics as Record<string, any>) ?? {},
+              recentEvents: (twin.events ?? []).map((e: any) => ({
+                eventType:   e.eventType,
+                description: e.description ?? null,
+                createdAt:   e.createdAt?.toISOString?.() ?? String(e.createdAt),
+              })),
+            },
+          }
+          console.log(`[Chain] DigitalTwin loaded tier=${twin.tier} status=${twin.status} phase=${twin.currentPhase}`)
+        } else if (IS_PROD) {
+          throw new Error(`[Chain] Project ${rawInput.projectId} has no DigitalTwin — integrity violation`)
+        } else {
+          console.warn(`[Chain] No DigitalTwin for project ${rawInput.projectId} (dev-only, continuing without twin context)`)
+        }
+      } catch (err: any) {
+        if (IS_PROD) throw err
+        console.warn(`[Chain] DigitalTwin read failed (dev-only skip): ${err.message}`)
+      }
+    }
+  }
 
-  const totalChainCostUsd =
-    (design.cacheMetrics.cacheCreationTokens + design.cacheMetrics.cacheReadTokens) * 0 + // tracked in runs
-    design.durationMs * 0 // just accumulate estimate costs below
+  const design     = await runDesignBot(input)
+  const estimate   = await runEstimateBot(input, design)
+  const permit     = await runPermitBot(input, estimate)
+  const contractor = await runContractorBot(input, permit)
 
-  // Sum up from what we stored in runs — re-derive from result metrics approximation
-  // (exact costs are stored in KeaBotRun.estimatedCostUsd in DB)
+  // exact costs are stored in KeaBotRun.estimatedCostUsd in DB
   const totalDurationMs = Date.now() - wallStart
 
   console.log(`[Chain] DONE chainId=${chainId} duration=${totalDurationMs}ms`)
@@ -1031,6 +1286,7 @@ export async function runChain(input: ChainInput): Promise<ChainRunResult> {
     design,
     estimate,
     permit,
+    contractor,
     totalChainCostUsd: 0, // populated from DB if needed; stored per-run
     totalDurationMs,
   }

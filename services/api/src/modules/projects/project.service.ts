@@ -4,6 +4,7 @@ import { AuthorizationError, NotFoundError, ValidationError } from '../../errors
 import { readinessService } from '../readiness/readiness.service'
 import { auditService } from '../audit/audit.service'
 import { eventService } from '../events/event.service'
+import { ensureDigitalTwin } from '../../lib/twin/digital-twin.service'
 
 export type CreateProjectInput = {
   ownerId: string
@@ -101,6 +102,9 @@ export const projectService = {
         },
       },
     })
+
+    // Ensure DigitalTwin exists for the new project (DDTS enforcement)
+    await ensureDigitalTwin(project.id, input.orgId ?? undefined)
 
     // Log admin override in audit (only after successful creation)
     if (input.adminOverride && userId) {
@@ -254,6 +258,9 @@ export const projectService = {
 
       return project
     })
+
+    // Ensure DigitalTwin exists for the new project (DDTS enforcement)
+    await ensureDigitalTwin(result.id, orgId)
 
     // Create default readiness checklist (optional)
     try {

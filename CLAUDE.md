@@ -96,3 +96,38 @@ pnpm run build
 - pnpm package manager (v8.15.9 for Vercel compatibility)
 - TypeScript 5.6+
 - Prisma 5.22+
+
+## MEMORY SYSTEM (MANDATORY)
+
+All system knowledge is stored in the docs/ directory.
+
+Primary folders:
+- docs/audits/
+- docs/decisions/
+- docs/system/
+- docs/prompts/
+- docs/runbooks/
+
+Before ANY change, Claude MUST:
+
+1. Read:
+   - docs/system/pipeline.md
+   - docs/decisions/architecture.md (or closest equivalent)
+   - docs/audits/latest.md (or newest audit)
+2. Scan:
+   - docs/decisions/
+   - docs/system/
+   - docs/audits/
+3. Summarize:
+   - current system state
+   - known failures
+   - critical rules
+
+Rules:
+- Do NOT ignore audits
+- Do NOT override decisions
+- Do NOT break execution pipeline
+- Prefer existing patterns in repo
+
+Execution pipeline is sacred:
+User → Agent → CTA → Stripe → Webhook → ProjectOutput → Queue → Worker → Output → Upsell

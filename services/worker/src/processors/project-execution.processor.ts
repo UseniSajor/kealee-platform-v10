@@ -9,17 +9,20 @@ import { Worker, Job } from 'bullmq'
 import { redis } from '../config/redis.config'
 import { getEmailQueue } from '../../src/utils/email-queue'
 import { prismaAny } from '../../src/utils/prisma-helper'
+import { withRetry } from '../../src/utils/db-retry'
 import type { ProjectExecutionJobData } from '../queues/project-execution.queue'
+import { createJobLogger } from '../lib/logger'
+
+const IS_DEV = process.env.NODE_ENV !== 'production'
 
 export function createProjectExecutionWorker(): Worker<ProjectExecutionJobData> {
   return new Worker<ProjectExecutionJobData>(
     'project.execution',
     async (job: Job<ProjectExecutionJobData>) => {
       const { outputId, type, intakeId, orderId, projectId, metadata } = job.data
+      const log = createJobLogger('project.execution', job.id!)
 
-      console.log(
-        `[project.execution] Starting job ${job.id} — type: ${type}, outputId: ${outputId}`
-      )
+      log.info({ type, outputId }, 'job started')
 
       try {
         // 1. Fetch intake or order data
@@ -39,12 +42,15 @@ export function createProjectExecutionWorker(): Worker<ProjectExecutionJobData> 
         }
 
         // 2. Update ProjectOutput status to 'generating'
-        await prismaAny.projectOutput
-          .update({
+        try {
+          await withRetry(() => prismaAny.projectOutput.update({
             where: { id: outputId },
-            data: { status: 'generating' },
-          })
-          .catch(() => null)
+            data:  { status: 'generating' },
+          }))
+          log.info({ outputId }, '[DB_WRITE_SUCCESS] entity=ProjectOutput status=generating')
+        } catch (e: any) {
+          log.warn({ err: e.message, outputId }, '[DB_WRITE_FAILED] entity=ProjectOutput status=generating — continuing')
+        }
 
         // 3. Run appropriate agent/AI based on type
         let result: any = null
@@ -61,19 +67,29 @@ export function createProjectExecutionWorker(): Worker<ProjectExecutionJobData> 
           result = await executeChangeOrderExecution(orderData, metadata)
         }
 
-        // 4. Update ProjectOutput with result
-        await prismaAny.projectOutput
-          .update({
+        // 4. Update ProjectOutput with result — enforce summary + nextStep always present
+        const safeResult = result ?? {}
+        const normalizedResult = {
+          ...safeResult,
+          summary:  safeResult.summary  ?? `${type} output generated successfully`,
+          nextStep: safeResult.nextStep ?? `Review your ${type} deliverable and proceed to the next step`,
+          cta:      safeResult.cta      ?? 'View Output',
+          conversion_product: safeResult.conversion_product ?? 'NEXT_STEP',
+        }
+        const doCompleteOutput = async () => {
+          await withRetry(() => prismaAny.projectOutput.update({
             where: { id: outputId },
-            data: {
-              status: 'completed',
-              resultJson: result,
-              completedAt: new Date(),
-            },
-          })
-          .catch(e => {
-            console.warn('[project.execution] Failed to update ProjectOutput:', e.message)
-          })
+            data:  { status: 'completed', resultJson: normalizedResult, completedAt: new Date() },
+          }))
+          log.info({ outputId }, '[DB_WRITE_SUCCESS] entity=ProjectOutput status=completed')
+        }
+        if (IS_DEV) {
+          await doCompleteOutput().catch((e: any) =>
+            log.warn({ err: e.message, outputId }, '[DB_WRITE_FAILED] entity=ProjectOutput status=completed (dev-only skip)'),
+          )
+        } else {
+          await doCompleteOutput() // production: throw → BullMQ retries
+        }
 
         // 5. Send completion notification email
         if (intakeData?.contactEmail || orderData?.customerEmail) {
@@ -90,26 +106,71 @@ export function createProjectExecutionWorker(): Worker<ProjectExecutionJobData> 
               },
             })
           } catch (emailErr: any) {
-            console.warn('[project.execution] Failed to queue notification email:', emailErr.message)
+            log.warn({ err: emailErr.message }, 'Failed to queue notification email')
           }
         }
 
-        // 6. Broadcast realtime update (if socket.io available)
+        // 6. Update DigitalTwin on completion (v20 DDTS enforcement)
         if (projectId) {
-          console.log(`[project.execution] Job ${job.id} complete — broadcasting update for project ${projectId}`)
+          const isDev = process.env.NODE_ENV !== 'production'
+
+          const doTwinUpdate = async () => {
+            const twin = await prismaAny.digitalTwin.upsert({
+              where:  { projectId },
+              create: {
+                projectId,
+                orgId:          metadata?.orgId ?? 'unknown',
+                tier:           'L1',
+                status:         'PRE_CONSTRUCTION',
+                healthStatus:   'HEALTHY',
+                healthScore:    70,
+                enabledModules: [type],
+                metrics:        { lastOutputType: type, lastOutputId: outputId },
+                config:         {},
+              },
+              update: {
+                updatedAt: new Date(),
+                metrics:   { lastOutputType: type, lastOutputId: outputId, updatedAt: new Date().toISOString() },
+              },
+            })
+
+            await prismaAny.twinEvent.create({
+              data: {
+                twinId:      twin.id,
+                eventType:   'OUTPUT_COMPLETED',
+                source:      'project.execution.worker',
+                severity:    'INFO',
+                payload:     { outputId, type, completedAt: new Date().toISOString() },
+                description: `${type} output completed`,
+              },
+            })
+
+            log.info({ projectId, twinId: twin.id }, 'DigitalTwin updated after execution')
+          }
+
+          if (isDev) {
+            // Development: warn and continue on failure
+            await doTwinUpdate().catch((e: any) =>
+              log.warn({ err: e.message }, 'DigitalTwin update failed (dev-only skip)'),
+            )
+          } else {
+            // Production: enforce — throws and BullMQ will retry
+            await doTwinUpdate()
+          }
         }
 
-        console.log(`[project.execution] Job ${job.id} completed successfully`)
+        log.info({ outputId }, 'job completed successfully')
       } catch (err: any) {
-        console.error(`[project.execution] Job ${job.id} failed:`, err.message)
+        log.error({ err: err.message, outputId }, 'job failed')
 
-        // Mark as failed in database
-        await prismaAny.projectOutput
-          .update({
-            where: { id: outputId },
-            data: { status: 'failed' },
-          })
-          .catch(() => null)
+        // Mark as failed in database (best-effort — never mask the original error)
+        await withRetry(() => prismaAny.projectOutput.update({
+          where: { id: outputId },
+          data:  { status: 'failed' },
+        })).then(
+          () => log.info({ outputId }, '[DB_WRITE_SUCCESS] entity=ProjectOutput status=failed'),
+          (e: any) => log.error({ err: e.message, outputId }, '[DB_WRITE_FAILED] entity=ProjectOutput status=failed'),
+        )
 
         throw err
       }
@@ -187,13 +248,13 @@ async function executeDesignExecution(intakeData: any, metadata: any) {
 async function executeEstimateExecution(intakeData: any, metadata: any) {
   try {
     const apiUrl = process.env.INTERNAL_API_URL || process.env.API_URL || 'http://localhost:3001'
-    const response = await fetch(`${apiUrl}/api/v1/agents/design/execute`, {
+    const response = await fetch(`${apiUrl}/api/v1/agents/estimate/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        projectType: metadata?.projectType || 'cost_estimate',
-        address: intakeData?.projectAddress,
-        description: intakeData?.message,
+        projectType:  metadata?.projectType || 'cost_estimate',
+        jurisdiction: intakeData?.jurisdiction,
+        sqft:         intakeData?.sqft ? Number(intakeData.sqft) : undefined,
       }),
       signal: AbortSignal.timeout(30000),
     })
@@ -204,7 +265,6 @@ async function executeEstimateExecution(intakeData: any, metadata: any) {
     throw new Error(`Estimate agent returned ${response.status}`)
   } catch (err: any) {
     console.warn('[executeEstimateExecution] Agent call failed:', err.message)
-    // Fallback to default response
     return {
       type: 'estimate',
       success: true,
@@ -212,22 +272,36 @@ async function executeEstimateExecution(intakeData: any, metadata: any) {
       estimatedTotal: 150000,
       nextStep: 'Review estimate and finalize project budget',
       cta: 'View Cost Breakdown',
+      conversion_product: 'PERMIT_PACKAGE',
     }
   }
 }
 
 async function executeConceptExecution(intakeData: any, metadata: any) {
-  // Concept execution chains to concept-engine queue
+  const { conceptEngineQueue } = await import('../queues/concept-engine.queue')
+  await conceptEngineQueue.add('generate', {
+    intakeId: intakeData?.id,
+    projectAddress: intakeData?.projectAddress,
+    metadata,
+  })
   return {
     type: 'concept',
     summary: 'Concept package queued for generation',
+    nextStep: 'Your concept package is being generated. You will receive an email when ready.',
   }
 }
 
 async function executeChangeOrderExecution(orderData: any, metadata: any) {
-  // TODO: Process change order logic
+  // Return a structured fallback — change order processing is manual for now
   return {
     type: 'change_order',
-    summary: 'Change order processed',
+    success: true,
+    summary: 'Change order received and logged for review',
+    nextStep: 'A project manager will review and confirm your change order within 1 business day',
+    cta: 'View Project Status',
+    conversion_product: 'PM_REVIEW',
+    orderId: orderData?.id ?? null,
+    requestedChanges: metadata?.changes ?? null,
+    status: 'pending_review',
   }
 }

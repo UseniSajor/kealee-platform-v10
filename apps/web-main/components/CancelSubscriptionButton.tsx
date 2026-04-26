@@ -16,7 +16,7 @@ export default function CancelSubscriptionButton({ orgId }: CancelSubscriptionBu
     setError(null)
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? ''
       const response = await fetch(`${apiUrl}/billing/subscriptions/${orgId}/cancel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

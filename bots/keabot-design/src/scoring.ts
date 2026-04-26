@@ -11,7 +11,7 @@
  *   DCS 71+                           → ARCHITECT_REQUIRED (skip AI concept)
  */
 
-export type DesignRoute = 'AI_ONLY' | 'ARCHITECT_REQUIRED';
+export type DesignRoute = 'AI_ONLY' | 'HYBRID' | 'ARCHITECT_REQUIRED';
 
 export interface DCSInput {
   // Structural complexity
@@ -89,11 +89,11 @@ export function scoreDCS(input: DCSInput): DCSResult {
     skipAiConcept = true;
     routingReason = `DCS ${total} >= 71 — high complexity project requires architect (AI concept skipped)`;
   } else if (total >= 41 || budget >= 65000) {
-    route = 'ARCHITECT_REQUIRED';
+    route = 'HYBRID';
     skipAiConcept = false;
     routingReason = total >= 41
-      ? `DCS ${total} >= 41 — moderate-high complexity, architect required for permit-ready drawings`
-      : `Budget $${(budget / 100).toLocaleString()} >= $65,000 — architect required for permit-ready drawings`;
+      ? `DCS ${total} 41–70 — moderate complexity, AI reference sketch + architect sign-off required`
+      : `Budget $${(budget / 1000).toLocaleString()}K >= $65K — hybrid AI + architect review required`;
   } else {
     route = 'AI_ONLY';
     skipAiConcept = false;

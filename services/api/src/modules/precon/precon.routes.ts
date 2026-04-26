@@ -8,6 +8,7 @@ import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateParams, validateQuery } from '../../middleware/validation.middleware'
 import { z } from 'zod'
 import { preconService, DESIGN_PACKAGE_FEES, PLATFORM_COMMISSION_RATE } from './precon.service'
+import { ensureDigitalTwin } from '../../lib/twin/digital-twin.service'
 
 // Validation Schemas
 const createPreConSchema = z.object({
@@ -524,6 +525,9 @@ export async function preconRoutes(fastify: FastifyInstance) {
           currentPhase: 'PRE_CONSTRUCTION',
         },
       })
+
+      // Ensure DigitalTwin exists for the new project (DDTS enforcement)
+      await ensureDigitalTwin(project.id, precon.orgId || undefined)
 
       // Add owner as project member
       await prismaAny.projectMembership.create({

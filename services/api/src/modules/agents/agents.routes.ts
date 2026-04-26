@@ -5,8 +5,12 @@
  * Each agent is a decision engine — NOT a chatbot.
  * Every response MUST include next_step + cta to drive conversion.
  *
+ * Live DB context (Parcel, ZoningProfile, FeasibilityStudy, DigitalTwin) is
+ * fetched INSIDE each agent via live-db.ts — routes just forward projectId + address.
+ *
  * POST /api/v1/agents/land/execute
  * POST /api/v1/agents/design/execute
+ * POST /api/v1/agents/estimate/execute
  * POST /api/v1/agents/permit/execute
  * POST /api/v1/agents/contractor/execute
  * GET  /api/v1/agents/status
@@ -15,6 +19,7 @@
 import type { FastifyInstance } from "fastify";
 import { executeLandAgent }       from "../../lib/orchestrator/agents/land-agent";
 import { executeDesignAgent }     from "../../lib/orchestrator/agents/design-agent";
+import { executeEstimateAgent }   from "../../lib/orchestrator/agents/estimate-agent";
 import { executePermitAgent }     from "../../lib/orchestrator/agents/permit-agent";
 import { executeContractorAgent } from "../../lib/orchestrator/agents/contractor-agent";
 import { getRAGStatus }           from "../../lib/orchestrator/retrieval/rag-retriever";
@@ -24,7 +29,7 @@ export async function agentsRoutes(fastify: FastifyInstance) {
   fastify.get("/status", async (_req, reply) => {
     const rag = getRAGStatus();
     return reply.send({
-      agents: ["land", "design", "permit", "contractor"],
+      agents: ["land", "design", "estimate", "permit", "contractor"],
       rag: { loaded: rag.loaded, recordCount: rag.recordCount },
       ready: rag.loaded,
     });
@@ -32,7 +37,7 @@ export async function agentsRoutes(fastify: FastifyInstance) {
 
   // ── Land agent ────────────────────────────────────────────────────────────
   // POST /api/v1/agents/land/execute
-  // Body: { jurisdiction, projectType?, address?, acreage? }
+  // Body: { jurisdiction, projectType?, address?, acreage?, sqft?, projectId? }
   fastify.post("/land/execute", async (request, reply) => {
     try {
       const body = request.body as any;
@@ -43,16 +48,19 @@ export async function agentsRoutes(fastify: FastifyInstance) {
         jurisdiction: String(body.jurisdiction),
         projectType:  body.projectType  ?? "single-family",
         address:      body.address,
-        acreage:      body.acreage,
+        acreage:      body.acreage      ? Number(body.acreage) : undefined,
+        sqft:         body.sqft         ? Number(body.sqft)    : undefined,
+        projectId:    body.projectId,
       });
-      console.log(`[agent:land] executed — confidence: ${result.confidence}, cta: ${result.cta}`);
+      fastify.log.info({ agent: 'land', confidence: result.confidence, cta: result.cta }, 'agent executed');
       return reply.send({
         success: true,
         ...result,
+        nextStep: result.next_step,
         recommendations: result.risks?.slice(0, 3) ?? [],
       });
     } catch (err: any) {
-      console.error(`[agent:land] error:`, err.message);
+      fastify.log.error({ agent: 'land', err: err.message }, 'agent error');
       return reply.send({
         success: false,
         summary: "Unable to analyze land availability — using standard guidance.",
@@ -66,9 +74,47 @@ export async function agentsRoutes(fastify: FastifyInstance) {
     }
   });
 
+  // ── Estimate agent ────────────────────────────────────────────────────────
+  // POST /api/v1/agents/estimate/execute
+  // Body: { projectType, jurisdiction?, sqft?, address?, projectId? }
+  fastify.post("/estimate/execute", async (request, reply) => {
+    try {
+      const body = request.body as any;
+      if (!body?.projectType) {
+        return reply.code(400).send({ error: "projectType is required" });
+      }
+      const result = await executeEstimateAgent({
+        projectType:  String(body.projectType),
+        jurisdiction: body.jurisdiction,
+        sqft:         body.sqft ? Number(body.sqft) : undefined,
+        address:      body.address,
+        projectId:    body.projectId,
+      });
+      fastify.log.info({ agent: 'estimate', confidence: result.confidence, cta: result.cta }, 'agent executed');
+      return reply.send({
+        success: true,
+        ...result,
+        nextStep: result.next_step,
+        recommendations: result.risks?.slice(0, 3) ?? [],
+      });
+    } catch (err: any) {
+      fastify.log.error({ agent: 'estimate', err: err.message }, 'agent error');
+      return reply.send({
+        success: false,
+        summary: "Unable to generate cost estimate — using standard reference data.",
+        risks: ["Manual review recommended"],
+        recommendations: ["Request a detailed cost estimate", "Provide project scope documents"],
+        confidence: "low" as const,
+        next_step: "Our team will review your project and follow up within 24 hours.",
+        cta: "Order Cost Estimate",
+        conversion_product: "PERMIT_PACKAGE",
+      });
+    }
+  });
+
   // ── Design agent ──────────────────────────────────────────────────────────
   // POST /api/v1/agents/design/execute
-  // Body: { projectType, jurisdiction?, sqft? }
+  // Body: { projectType, jurisdiction?, sqft?, address?, projectId? }
   fastify.post("/design/execute", async (request, reply) => {
     try {
       const body = request.body as any;
@@ -79,15 +125,18 @@ export async function agentsRoutes(fastify: FastifyInstance) {
         projectType:  String(body.projectType),
         jurisdiction: body.jurisdiction,
         sqft:         body.sqft ? Number(body.sqft) : undefined,
+        address:      body.address,
+        projectId:    body.projectId,
       });
-      console.log(`[agent:design] executed — confidence: ${result.confidence}, cta: ${result.cta}`);
+      fastify.log.info({ agent: 'design', confidence: result.confidence, cta: result.cta }, 'agent executed');
       return reply.send({
         success: true,
         ...result,
+        nextStep: result.next_step,
         recommendations: result.risks?.slice(0, 3) ?? [],
       });
     } catch (err: any) {
-      console.error(`[agent:design] error:`, err.message);
+      fastify.log.error({ agent: 'design', err: err.message }, 'agent error');
       return reply.send({
         success: false,
         summary: "Unable to analyze design costs — using standard estimate.",
@@ -103,7 +152,7 @@ export async function agentsRoutes(fastify: FastifyInstance) {
 
   // ── Permit agent ──────────────────────────────────────────────────────────
   // POST /api/v1/agents/permit/execute
-  // Body: { jurisdiction, projectType? }
+  // Body: { jurisdiction, projectType?, sqft?, address?, projectId? }
   fastify.post("/permit/execute", async (request, reply) => {
     try {
       const body = request.body as any;
@@ -113,15 +162,19 @@ export async function agentsRoutes(fastify: FastifyInstance) {
       const result = await executePermitAgent({
         jurisdiction: String(body.jurisdiction),
         projectType:  body.projectType ?? "single-family",
+        sqft:         body.sqft        ? Number(body.sqft) : undefined,
+        address:      body.address,
+        projectId:    body.projectId,
       });
-      console.log(`[agent:permit] executed — confidence: ${result.confidence}, cta: ${result.cta}`);
+      fastify.log.info({ agent: 'permit', confidence: result.confidence, cta: result.cta }, 'agent executed');
       return reply.send({
         success: true,
         ...result,
+        nextStep: result.next_step,
         recommendations: result.risks?.slice(0, 3) ?? [],
       });
     } catch (err: any) {
-      console.error(`[agent:permit] error:`, err.message);
+      fastify.log.error({ agent: 'permit', err: err.message }, 'agent error');
       return reply.send({
         success: false,
         summary: "Unable to analyze permit requirements — using standard package.",
@@ -137,7 +190,7 @@ export async function agentsRoutes(fastify: FastifyInstance) {
 
   // ── Contractor agent ──────────────────────────────────────────────────────
   // POST /api/v1/agents/contractor/execute
-  // Body: { projectType, jurisdiction?, sqft? }
+  // Body: { projectType, jurisdiction?, sqft?, address?, projectId? }
   fastify.post("/contractor/execute", async (request, reply) => {
     try {
       const body = request.body as any;
@@ -148,15 +201,18 @@ export async function agentsRoutes(fastify: FastifyInstance) {
         projectType:  String(body.projectType),
         jurisdiction: body.jurisdiction,
         sqft:         body.sqft ? Number(body.sqft) : undefined,
+        address:      body.address,
+        projectId:    body.projectId,
       });
-      console.log(`[agent:contractor] executed — confidence: ${result.confidence}, cta: ${result.cta}`);
+      fastify.log.info({ agent: 'contractor', confidence: result.confidence, cta: result.cta }, 'agent executed');
       return reply.send({
         success: true,
         ...result,
+        nextStep: result.next_step,
         recommendations: result.risks?.slice(0, 3) ?? [],
       });
     } catch (err: any) {
-      console.error(`[agent:contractor] error:`, err.message);
+      fastify.log.error({ agent: 'contractor', err: err.message }, 'agent error');
       return reply.send({
         success: false,
         summary: "Unable to match contractors — using standard matching criteria.",

@@ -33,10 +33,9 @@ export class BotOrchestrator {
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
-    console.log('[BotOrchestrator] Initializing all bots...');
+    logBotStart('orchestrator', 'intake', 'system', { event: 'initializing' });
     // Bots are loaded lazily on first use to avoid startup overhead
     this.initialized = true;
-    console.log('[BotOrchestrator] Ready');
   }
 
   private async getBot(botName: string): Promise<any> {
@@ -53,7 +52,7 @@ export class BotOrchestrator {
       this.bots.set(botName, instance);
       return instance;
     } catch (err) {
-      console.warn(`[BotOrchestrator] Could not load bot ${botName}:`, err);
+      logBotError('load_error', `Could not load bot ${botName}: ${err}`, 0);
       return null;
     }
   }
@@ -77,7 +76,6 @@ export class BotOrchestrator {
     const cacheKey = buildCacheKey(botName, request.stage, request.projectId);
     const cached = cacheGet(cacheKey);
     if (cached) {
-      console.log(`[BotOrchestrator] Cache HIT for ${cacheKey}`);
       return { success: true, stage: request.stage, botName, data: cached, nextStage: STAGE_FLOW[request.stage] ?? undefined, latencyMs: 0 };
     }
 
@@ -134,12 +132,11 @@ export class BotOrchestrator {
     let currentData = { ...initialData };
 
     for (const stage of stages) {
-      console.log(`[BotOrchestrator] Chaining stage: ${stage} for project ${projectId}`);
       const response = await this.execute({ projectId, stage, data: currentData });
       results.push(response);
 
       if (!response.success) {
-        console.error(`[BotOrchestrator] Chain broken at stage ${stage}: ${response.errors?.join(', ')}`);
+        logBotError('chain', `Chain broken at stage ${stage}: ${response.errors?.join(', ')}`, 0);
         break;
       }
 

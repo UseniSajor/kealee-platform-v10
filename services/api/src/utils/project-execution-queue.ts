@@ -24,16 +24,7 @@ export function getProjectExecutionQueue(): Queue<ProjectExecutionJobData> {
 
   const redisUrl = process.env.REDIS_URL
   if (!redisUrl) {
-    // If Redis not available, return a mock queue that just logs
-    console.warn('⚠️  REDIS_URL not set, project execution queue will log only')
-    return {
-      add: async (name: string, data: ProjectExecutionJobData) => {
-        console.log(
-          `📦 Project execution queued (mock): type=${data.type}, outputId=${data.outputId}`
-        )
-        return {} as any
-      },
-    } as any
+    throw new Error('REDIS_URL is required for project execution queue — cannot start without Redis')
   }
 
   const connection = new IORedis(redisUrl, {

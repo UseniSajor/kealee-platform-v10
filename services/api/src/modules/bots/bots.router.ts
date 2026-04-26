@@ -60,6 +60,7 @@ export interface ModelCallParams {
   maxTokens?:   number
   temperature?: number
   history?:     ConvMessage[]
+  timeoutMs?:   number  // default 25000ms — enforced on the Anthropic call
 }
 
 export interface ModelCallResult {
@@ -83,13 +84,24 @@ export async function callModel(params: ModelCallParams): Promise<ModelCallResul
     { role: 'user', content: params.userPrompt },
   ]
 
-  const response = await getClient().messages.create({
-    model,
-    max_tokens:  maxTokens,
-    temperature: params.temperature ?? 0.3,
-    system:      params.systemPrompt,
-    messages,
-  })
+  const BOT_LLM_TIMEOUT_MS = params.timeoutMs ?? 25000
+
+  const timeoutId = setTimeout(() => {
+    throw new Error(`LLM call timed out after ${BOT_LLM_TIMEOUT_MS}ms — model: ${model}`)
+  }, BOT_LLM_TIMEOUT_MS)
+
+  let response: Anthropic.Message
+  try {
+    response = await getClient().messages.create({
+      model,
+      max_tokens:  maxTokens,
+      temperature: params.temperature ?? 0.3,
+      system:      params.systemPrompt,
+      messages,
+    })
+  } finally {
+    clearTimeout(timeoutId)
+  }
 
   const content = response.content
     .filter(b => b.type === 'text')

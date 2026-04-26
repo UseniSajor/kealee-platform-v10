@@ -23,10 +23,12 @@ import {
   runDesignBot,
   runEstimateBot,
   runPermitBot,
+  runContractorBot,
   ChainGateError,
   type ChainInput,
   type DesignBotResult,
   type EstimateBotResult,
+  type PermitBotResult,
 } from './bots.chain'
 
 // ── Schemas ───────────────────────────────────────────────────────────────────
@@ -101,6 +103,64 @@ function guardKey(request: { user?: { id: string; orgId?: string } }): string {
   return request.user?.orgId ?? request.user?.id ?? 'anonymous'
 }
 
+// ── Output Normalization ──────────────────────────────────────────────────────
+// All bot responses must include: summary, recommendations, nextStep,
+// conversion_product, confidence — for consistent consumer contract.
+
+function normalizeDesign(r: any) {
+  if (!r) return r
+  return {
+    ...r,
+    summary: r.summary ?? `Design analysis complete for ${r.projectType ?? 'your project'} in ${r.location ?? 'your area'}.`,
+    recommendations: r.recommendations ?? (r.bom ?? []).slice(0, 3).map((i: any) => String(i.description ?? i)),
+    nextStep: r.nextStep ?? 'Review your design concept and proceed to cost estimation.',
+    conversion_product: r.conversion_product ?? 'DESIGN_CONCEPT_VALIDATION',
+    confidence: r.confidence ?? (r.ctcTotal > 0 ? 'high' : 'medium'),
+  }
+}
+
+function normalizeEstimate(r: any) {
+  if (!r) return r
+  const lo = r.totalLow ?? 0
+  const hi = r.totalHigh ?? 0
+  const conf = typeof r.confidence === 'number'
+    ? (r.confidence > 0.8 ? 'high' : r.confidence > 0.5 ? 'medium' : 'low')
+    : (r.confidence ?? 'medium')
+  return {
+    ...r,
+    summary: r.summary ?? `Cost estimate: $${lo.toLocaleString()} – $${hi.toLocaleString()}.`,
+    recommendations: r.recommendations ?? (r.assumptions ?? []).slice(0, 3),
+    nextStep: r.nextStep ?? 'Proceed to permit analysis to validate your project scope.',
+    conversion_product: r.conversion_product ?? 'PERMIT_PACKAGE',
+    confidence: conf,
+  }
+}
+
+function normalizePermit(r: any) {
+  if (!r) return r
+  const score = r.readinessScore ?? 0
+  return {
+    ...r,
+    summary: r.summary ?? `Permit readiness score: ${score}%. ${r.recommendation ?? ''}`.trim(),
+    recommendations: r.recommendations ?? (r.issues ?? []).slice(0, 3).map((i: any) => String(i.description ?? i)),
+    nextStep: r.nextStep ?? 'Match with a verified contractor to begin permit filing.',
+    conversion_product: r.conversion_product ?? 'CONTRACTOR_MATCH',
+    confidence: r.confidence ?? (score >= 80 ? 'high' : score >= 60 ? 'medium' : 'low'),
+  }
+}
+
+function normalizeContractor(r: any) {
+  if (!r) return r
+  return {
+    ...r,
+    summary: r.summary ?? `Contractor matching criteria generated for ${r.projectType ?? 'your project'} in ${r.jurisdiction ?? 'your area'}.`,
+    recommendations: r.recommendations ?? ['Require licensed, bonded contractor', 'Request 3+ DMV references'],
+    nextStep: r.nextStep ?? 'Engage a verified general contractor and mobilize for construction.',
+    conversion_product: r.conversion_product ?? 'CONTRACTOR_MATCH',
+    confidence: r.confidence ?? 'medium',
+  }
+}
+
 // ── Routes ────────────────────────────────────────────────────────────────────
 
 export async function botsChainRoutes(fastify: FastifyInstance) {
@@ -129,7 +189,14 @@ export async function botsChainRoutes(fastify: FastifyInstance) {
       const input: ChainInput = { ...body, userId: user.id, orgId: user.orgId }
 
       try {
-        const result = await runChain(input)
+        const raw = await runChain(input)
+        const result = {
+          ...raw,
+          design:     normalizeDesign(raw.design),
+          estimate:   normalizeEstimate(raw.estimate),
+          permit:     normalizePermit(raw.permit),
+          contractor: normalizeContractor(raw.contractor),
+        }
         return reply.code(200).send({ success: true, result })
       } catch (err: any) {
         if (err instanceof ChainGateError) {
@@ -171,7 +238,7 @@ export async function botsChainRoutes(fastify: FastifyInstance) {
 
       try {
         const designResult = await runDesignBot(input)
-        return reply.code(200).send({ success: true, result: designResult })
+        return reply.code(200).send({ success: true, result: normalizeDesign(designResult) })
       } catch (err: any) {
         fastify.log.error({ err }, 'DesignBot run failed')
         return reply.code(500).send({ error: sanitizeErrorMessage(err, 'DesignBot run failed') })
@@ -206,7 +273,7 @@ export async function botsChainRoutes(fastify: FastifyInstance) {
 
       try {
         const estimateResult = await runEstimateBot(input, designResult as DesignBotResult)
-        return reply.code(200).send({ success: true, result: estimateResult })
+        return reply.code(200).send({ success: true, result: normalizeEstimate(estimateResult) })
       } catch (err: any) {
         if (err instanceof ChainGateError) {
           return reply.code(422).send({
@@ -249,7 +316,7 @@ export async function botsChainRoutes(fastify: FastifyInstance) {
 
       try {
         const permitResult = await runPermitBot(input, estimateResult as EstimateBotResult)
-        return reply.code(200).send({ success: true, result: permitResult })
+        return reply.code(200).send({ success: true, result: normalizePermit(permitResult) })
       } catch (err: any) {
         if (err instanceof ChainGateError) {
           return reply.code(422).send({
@@ -261,6 +328,71 @@ export async function botsChainRoutes(fastify: FastifyInstance) {
         }
         fastify.log.error({ err }, 'PermitBot run failed')
         return reply.code(500).send({ error: sanitizeErrorMessage(err, 'PermitBot run failed') })
+      }
+    }
+  )
+
+  /**
+   * POST /bots/chain/contractor/run
+   * Run ContractorBot using a prior PermitBot result.
+   * Body must include `permitResult` (output from /chain/permit/run).
+   */
+  fastify.post(
+    '/chain/contractor/run',
+    {
+      preHandler: [
+        authenticateUser,
+        validateBody(chainInputSchema.extend({
+          permitResult: z.object({
+            botRunId:             z.string(),
+            parentRunId:          z.string(),
+            jurisdiction:         z.string(),
+            zipCode:              z.string(),
+            state:                z.string(),
+            permits:              z.array(z.unknown()),
+            totalPermitCostUsd:   z.number(),
+            totalProcessingDays:  z.number(),
+            readinessScore:       z.number(),
+            issues:               z.array(z.unknown()),
+            recommendation:       z.string(),
+            jurisdictionCacheHit: z.boolean(),
+            cacheMetrics: z.object({
+              cacheCreationTokens: z.number(),
+              cacheReadTokens:     z.number(),
+              cacheHit:            z.boolean(),
+              savedTokens:         z.number(),
+            }),
+            durationMs: z.number(),
+          }),
+        })),
+      ],
+    },
+    async (request, reply) => {
+      const body = request.body as z.infer<typeof chainInputSchema> & { permitResult: PermitBotResult }
+      const user = (request as any).user as { id: string; orgId?: string }
+
+      const guard = checkCostGuard({ key: guardKey({ user }), maxPerHour: 20, maxPerDay: 100 })
+      if (!guard.allowed) {
+        return reply.code(429).send({ error: guard.reason })
+      }
+
+      const { permitResult, ...chainFields } = body
+      const input: ChainInput = { ...chainFields, userId: user.id, orgId: user.orgId }
+
+      try {
+        const contractorResult = await runContractorBot(input, permitResult)
+        return reply.code(200).send({ success: true, result: normalizeContractor(contractorResult) })
+      } catch (err: any) {
+        if (err instanceof ChainGateError) {
+          return reply.code(422).send({
+            error:        err.message,
+            stage:        err.stage,
+            parentRunId:  err.parentRunId,
+            parentStatus: err.parentStatus,
+          })
+        }
+        fastify.log.error({ err }, 'ContractorBot run failed')
+        return reply.code(500).send({ error: sanitizeErrorMessage(err, 'ContractorBot run failed') })
       }
     }
   )

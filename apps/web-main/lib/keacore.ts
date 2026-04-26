@@ -13,7 +13,7 @@
 const KEACORE_URL =
   (typeof process !== "undefined" && process.env.KEACORE_URL) ||
   (typeof process !== "undefined" && process.env.NEXT_PUBLIC_KEACORE_URL) ||
-  "http://localhost:3030";
+  "";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
