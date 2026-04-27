@@ -12,6 +12,7 @@ export interface SeedMeta {
 export interface IntentSeed extends SeedMeta {
   label: string;
   description: string;
+  category?: string;
   entrySignals: string[];
   negativeSignals?: string[];
   defaultPrimaryAgent: string;
@@ -41,6 +42,7 @@ export interface WorkflowTemplateStepSeed {
 
 export interface WorkflowTemplateSeed extends SeedMeta {
   name: string;
+  description?: string;
   appliesToIntents: string[];
   mode: "autonomous" | "assisted" | "operator";
   entryCriteria: string[];
