@@ -1,21 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import {
-  ArrowRight, CheckCircle, Clock, DollarSign, Zap, Wrench, Droplets,
-  Wind, Lightbulb, Download, Share2, ChevronDown, ChevronUp,
+  ArrowRight, CheckCircle, CheckCircle2, Clock, DollarSign, Zap, Wrench, Droplets,
+  Wind, Lightbulb, Download, Share2, ChevronDown, ChevronUp, Loader2,
 } from 'lucide-react'
 import { VideoComparison } from '@/components/VideoComparison'
+import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 
-// ─── Sample Concept Data ───────────────────────────────────────────────────────
-// In production this would be fetched from the API using conceptId from query params.
+// ─── Sample Concept Data (demo / fallback) ────────────────────────────────────
 
 const SAMPLE_CONCEPTS: Record<string, ConceptData> = {
   kitchen: {
     conceptId: 'concept_demo_001',
     projectType: 'Kitchen Renovation',
+    projectPath: 'kitchen_remodel',
     scope: 'Complete kitchen renovation with island, new appliances, granite counters, updated lighting, and modern cabinetry.',
     budget: 75000,
     location: '20024 (Washington, DC)',
@@ -39,13 +40,13 @@ const SAMPLE_CONCEPTS: Record<string, ConceptData> = {
       lighting: '12× 4W LED recessed, 20 ft under-cabinet strips, 3× island pendant lights, dimmer switches',
     },
     billOfMaterials: [
-      { item: 'Custom Kitchen Cabinetry',  quantity: 1,   unit: 'set',   estimatedCost: 15000, description: 'Custom-built cabinetry, soft-close hinges, modern handles' },
-      { item: 'Granite Countertops',       quantity: 85,  unit: 'sqft',  estimatedCost: 8500,  description: 'Premium granite, edge finishing, backsplash included' },
-      { item: 'Stainless Steel Appliances',quantity: 5,   unit: 'units', estimatedCost: 12000, description: 'Refrigerator, range, oven, dishwasher, microwave' },
-      { item: 'Island with Seating',       quantity: 1,   unit: 'unit',  estimatedCost: 8000,  description: 'Custom island, 4-seat bar, storage underneath' },
-      { item: 'Plumbing Fixtures',         quantity: 2,   unit: 'units', estimatedCost: 3000,  description: 'Faucets, sinks, handles, fixtures' },
-      { item: 'Electrical Work',           quantity: 120, unit: 'hours', estimatedCost: 5400,  description: 'Rewiring, panel upgrades, outlet installation' },
-      { item: 'Labor — Installation',      quantity: 240, unit: 'hours', estimatedCost: 18000, description: 'Cabinet installation, countertop, appliances, finishing' },
+      { item: 'Custom Kitchen Cabinetry',   quantity: 1,   unit: 'set',   estimatedCost: 15000, description: 'Custom-built cabinetry, soft-close hinges, modern handles' },
+      { item: 'Granite Countertops',        quantity: 85,  unit: 'sqft',  estimatedCost: 8500,  description: 'Premium granite, edge finishing, backsplash included' },
+      { item: 'Stainless Steel Appliances', quantity: 5,   unit: 'units', estimatedCost: 12000, description: 'Refrigerator, range, oven, dishwasher, microwave' },
+      { item: 'Island with Seating',        quantity: 1,   unit: 'unit',  estimatedCost: 8000,  description: 'Custom island, 4-seat bar, storage underneath' },
+      { item: 'Plumbing Fixtures',          quantity: 2,   unit: 'units', estimatedCost: 3000,  description: 'Faucets, sinks, handles, fixtures' },
+      { item: 'Electrical Work',            quantity: 120, unit: 'hours', estimatedCost: 5400,  description: 'Rewiring, panel upgrades, outlet installation' },
+      { item: 'Labor — Installation',       quantity: 240, unit: 'hours', estimatedCost: 18000, description: 'Cabinet installation, countertop, appliances, finishing' },
     ],
     nextStep: '/intake/permit_path_only',
     nextStepLabel: 'Continue to Permit Planning',
@@ -53,6 +54,7 @@ const SAMPLE_CONCEPTS: Record<string, ConceptData> = {
   bathroom: {
     conceptId: 'concept_demo_002',
     projectType: 'Master Bathroom Remodel',
+    projectPath: 'bathroom_remodel',
     scope: 'Master bathroom remodel with new shower, soaking tub, heated floors, double vanity, and tile work.',
     budget: 35000,
     location: '22202 (Arlington, VA)',
@@ -76,12 +78,12 @@ const SAMPLE_CONCEPTS: Record<string, ConceptData> = {
       lighting: 'Backlit vanity mirror, recessed ceiling lights, shower niche lighting',
     },
     billOfMaterials: [
-      { item: 'Shower Enclosure & Tile',  quantity: 80,  unit: 'sqft',  estimatedCost: 6000,  description: 'Large-format tile, frameless glass, niche' },
-      { item: 'Soaking Tub',             quantity: 1,   unit: 'unit',  estimatedCost: 3500,  description: 'Freestanding acrylic soaking tub' },
-      { item: 'Double Vanity',           quantity: 1,   unit: 'unit',  estimatedCost: 2500,  description: '72" double vanity, soft-close, undermount sinks' },
-      { item: 'Heated Floor System',     quantity: 100, unit: 'sqft',  estimatedCost: 3000,  description: 'Electric radiant mat with smart thermostat' },
-      { item: 'Fixtures & Fittings',     quantity: 1,   unit: 'set',   estimatedCost: 4000,  description: 'Brushed nickel faucets, shower system, towel bars' },
-      { item: 'Labor',                   quantity: 200, unit: 'hours', estimatedCost: 12000, description: 'Tile work, plumbing, electrical, finishing' },
+      { item: 'Shower Enclosure & Tile', quantity: 80,  unit: 'sqft',  estimatedCost: 6000,  description: 'Large-format tile, frameless glass, niche' },
+      { item: 'Soaking Tub',            quantity: 1,   unit: 'unit',  estimatedCost: 3500,  description: 'Freestanding acrylic soaking tub' },
+      { item: 'Double Vanity',          quantity: 1,   unit: 'unit',  estimatedCost: 2500,  description: '72" double vanity, soft-close, undermount sinks' },
+      { item: 'Heated Floor System',    quantity: 100, unit: 'sqft',  estimatedCost: 3000,  description: 'Electric radiant mat with smart thermostat' },
+      { item: 'Fixtures & Fittings',    quantity: 1,   unit: 'set',   estimatedCost: 4000,  description: 'Brushed nickel faucets, shower system, towel bars' },
+      { item: 'Labor',                  quantity: 200, unit: 'hours', estimatedCost: 12000, description: 'Tile work, plumbing, electrical, finishing' },
     ],
     nextStep: '/intake/permit_path_only',
     nextStepLabel: 'Continue to Permit Planning',
@@ -89,6 +91,7 @@ const SAMPLE_CONCEPTS: Record<string, ConceptData> = {
   garden: {
     conceptId: 'concept_demo_003',
     projectType: 'Garden / Landscape Design',
+    projectPath: 'garden_concept',
     scope: 'Front yard landscape redesign with native plants, irrigation system, and hardscaping.',
     budget: 12000,
     location: '20745 (Prince George\'s County, MD)',
@@ -112,18 +115,18 @@ const SAMPLE_CONCEPTS: Record<string, ConceptData> = {
       lighting: 'Low-voltage LED path lights (12×), uplighting for accent plants',
     },
     billOfMaterials: [
-      { item: 'Native Plants Package', quantity: 45,  unit: 'plants',  estimatedCost: 2700, description: 'Dogwood, coneflower, black-eyed susan, ornamental grasses' },
-      { item: 'Hardscaping Materials', quantity: 150, unit: 'sqft',    estimatedCost: 3000, description: 'Paver walkway, stone borders, mulch beds' },
-      { item: 'Irrigation System',     quantity: 1,   unit: 'system',  estimatedCost: 2500, description: 'Drip lines, smart controller, hoses, fittings' },
-      { item: 'Lighting System',       quantity: 12,  unit: 'fixtures',estimatedCost: 1200, description: 'Low-voltage LED path lights, uplighting' },
-      { item: 'Installation Labor',    quantity: 80,  unit: 'hours',   estimatedCost: 2400, description: 'Planting, hardscaping, irrigation installation' },
+      { item: 'Native Plants Package', quantity: 45,  unit: 'plants',   estimatedCost: 2700, description: 'Dogwood, coneflower, black-eyed susan, ornamental grasses' },
+      { item: 'Hardscaping Materials', quantity: 150, unit: 'sqft',     estimatedCost: 3000, description: 'Paver walkway, stone borders, mulch beds' },
+      { item: 'Irrigation System',     quantity: 1,   unit: 'system',   estimatedCost: 2500, description: 'Drip lines, smart controller, hoses, fittings' },
+      { item: 'Lighting System',       quantity: 12,  unit: 'fixtures', estimatedCost: 1200, description: 'Low-voltage LED path lights, uplighting' },
+      { item: 'Installation Labor',    quantity: 80,  unit: 'hours',    estimatedCost: 2400, description: 'Planting, hardscaping, irrigation installation' },
     ],
     nextStep: '/intake/contractor_match',
     nextStepLabel: 'Find a Landscaping Contractor',
   },
 }
 
-// ─── Types ─────────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface BOMItem {
   item: string
@@ -143,6 +146,7 @@ interface MEPSystem {
 interface ConceptData {
   conceptId: string
   projectType: string
+  projectPath: string
   scope: string
   budget: number
   location: string
@@ -159,7 +163,7 @@ interface ConceptData {
   nextStepLabel: string
 }
 
-// ─── MEP Section ───────────────────────────────────────────────────────────────
+// ─── MEP Section ──────────────────────────────────────────────────────────────
 
 function MEPRow({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: string; color: string }) {
   if (!value || value === 'N/A') return null
@@ -176,18 +180,142 @@ function MEPRow({ icon: Icon, label, value, color }: { icon: React.ElementType; 
   )
 }
 
-// ─── Page ──────────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function conceptOutputToData(
+  conceptOutput: Record<string, unknown>,
+  intake: Record<string, unknown>,
+  projectPath: string,
+): ConceptData {
+  const deliverable = SERVICE_DELIVERABLES[projectPath]
+  const formData = (intake.form_data as Record<string, unknown>) ?? {}
+
+  const dc = (conceptOutput.designConcept as Record<string, unknown>) ?? {}
+  const mep = (conceptOutput.mepSystem as Record<string, unknown>) ?? {}
+  const bom = (conceptOutput.billOfMaterials as BOMItem[]) ?? []
+
+  return {
+    conceptId: `concept_${(intake.id as string)?.slice(0, 8) ?? 'live'}`,
+    projectType: deliverable?.label ?? projectPath,
+    projectPath,
+    scope: (conceptOutput.description as string) ?? (formData.description as string) ?? '',
+    budget: typeof intake.budget_range === 'number' ? intake.budget_range : 0,
+    location: (intake.project_address as string) ?? '',
+    estimatedCost: (conceptOutput.estimatedCost as number) ?? 0,
+    projectTimeline: (conceptOutput.projectTimeline as string) ?? deliverable?.deliveryDays ?? '4-6 weeks',
+    designConcept: {
+      style: (dc.style as string) ?? 'Modern Contemporary',
+      colorPalette: (dc.colorPalette as string[]) ?? [],
+      keyFeatures: (dc.keyFeatures as string[]) ?? [],
+    },
+    mepSystem: {
+      electrical: (mep.electrical as string) ?? '',
+      plumbing: (mep.plumbing as string) ?? 'N/A',
+      hvac: (mep.hvac as string) ?? 'N/A',
+      lighting: (mep.lighting as string) ?? '',
+    },
+    billOfMaterials: bom,
+    nextStep: deliverable?.nextStep?.href ?? '/intake/permit_path_only',
+    nextStepLabel: deliverable?.nextStep?.label ?? 'Continue Your Project',
+  }
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ConceptDeliverablePage() {
   const searchParams = useSearchParams()
+  const intakeId = searchParams.get('intakeId')
+  const projectPathParam = searchParams.get('projectPath')
   const conceptType = searchParams.get('type') || 'kitchen'
-  const data = SAMPLE_CONCEPTS[conceptType] || SAMPLE_CONCEPTS.kitchen
 
+  const [data, setData] = useState<ConceptData | null>(null)
+  const [loadStatus, setLoadStatus] = useState<'loading' | 'polling' | 'ready' | 'demo'>('loading')
+  const [pollCount, setPollCount] = useState(0)
   const [showFullBOM, setShowFullBOM] = useState(false)
-  const displayedBOM = showFullBOM ? data.billOfMaterials : data.billOfMaterials.slice(0, 4)
 
+  const fetchAndSetData = useCallback(async (id: string): Promise<boolean> => {
+    try {
+      const res = await fetch(`/api/intake?intakeId=${id}`)
+      if (!res.ok) return false
+      const intake = await res.json()
+
+      const formData = (intake.form_data as Record<string, unknown>) ?? {}
+      const projectPath = projectPathParam ?? (intake.project_path as string) ?? 'kitchen_remodel'
+
+      if (formData.conceptOutput && intake.status === 'concept_ready') {
+        const conceptData = conceptOutputToData(
+          formData.conceptOutput as Record<string, unknown>,
+          intake as Record<string, unknown>,
+          projectPath,
+        )
+        setData(conceptData)
+        setLoadStatus('ready')
+        return true
+      }
+      return false
+    } catch {
+      return false
+    }
+  }, [projectPathParam])
+
+  useEffect(() => {
+    if (!intakeId) {
+      // Demo mode
+      const demo = SAMPLE_CONCEPTS[conceptType] ?? SAMPLE_CONCEPTS.kitchen
+      setData(demo)
+      setLoadStatus('demo')
+      return
+    }
+
+    // Try to load real data
+    fetchAndSetData(intakeId).then((found) => {
+      if (!found) setLoadStatus('polling')
+    })
+  }, [intakeId, conceptType, fetchAndSetData])
+
+  // Poll every 5s for up to 60s if not ready
+  useEffect(() => {
+    if (loadStatus !== 'polling' || !intakeId) return
+    if (pollCount >= 12) {
+      // After 60s max polling, fall back to demo
+      const demo = SAMPLE_CONCEPTS[conceptType] ?? SAMPLE_CONCEPTS.kitchen
+      setData(demo)
+      setLoadStatus('demo')
+      return
+    }
+
+    const timer = setTimeout(async () => {
+      const found = await fetchAndSetData(intakeId)
+      if (!found) setPollCount(c => c + 1)
+    }, 5000)
+
+    return () => clearTimeout(timer)
+  }, [loadStatus, pollCount, intakeId, conceptType, fetchAndSetData])
+
+  if (loadStatus === 'loading' || loadStatus === 'polling') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <Loader2 className="w-16 h-16 text-orange-600 animate-spin mx-auto mb-6" />
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Generating Your Concept</h1>
+          <p className="text-slate-600">
+            {loadStatus === 'polling'
+              ? `Still working on it... (check ${pollCount + 1}/12)`
+              : 'Loading your concept package...'}
+          </p>
+          <p className="text-slate-400 text-sm mt-2">This page will update automatically.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!data) return null
+
+  const displayedBOM = showFullBOM ? data.billOfMaterials : data.billOfMaterials.slice(0, 4)
   const totalBOM = data.billOfMaterials.reduce((sum, item) => sum + item.estimatedCost, 0)
-  const withinBudget = data.estimatedCost <= data.budget
+  const withinBudget = data.budget > 0 ? data.estimatedCost <= data.budget : true
+  const deliverable = SERVICE_DELIVERABLES[data.projectPath]
+  const isDemo = loadStatus === 'demo'
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -199,9 +327,9 @@ export default function ConceptDeliverablePage() {
               <div className="flex items-center gap-2 mb-1">
                 <span
                   className="rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-widest text-white"
-                  style={{ backgroundColor: '#2ABFBF' }}
+                  style={{ backgroundColor: isDemo ? '#94A3B8' : '#2ABFBF' }}
                 >
-                  Concept Ready
+                  {isDemo ? 'Demo' : 'Concept Ready'}
                 </span>
                 <span className="text-xs text-gray-400">{data.conceptId}</span>
               </div>
@@ -211,18 +339,22 @@ export default function ConceptDeliverablePage() {
               <p className="mt-1 text-sm text-gray-500 max-w-xl">{data.scope}</p>
             </div>
 
-            <div className="shrink-0 text-right">
-              <p className="text-xs text-gray-400 mb-0.5">Estimated Cost</p>
-              <p className="text-3xl font-bold" style={{ color: '#1A2B4A' }}>
-                ${data.estimatedCost.toLocaleString()}
-              </p>
-              <p className="text-xs mt-0.5" style={{ color: withinBudget ? '#38A169' : '#E53E3E' }}>
-                {withinBudget
-                  ? `$${(data.budget - data.estimatedCost).toLocaleString()} under budget`
-                  : `$${(data.estimatedCost - data.budget).toLocaleString()} over budget`
-                }
-              </p>
-            </div>
+            {data.estimatedCost > 0 && (
+              <div className="shrink-0 text-right">
+                <p className="text-xs text-gray-400 mb-0.5">Estimated Cost</p>
+                <p className="text-3xl font-bold" style={{ color: '#1A2B4A' }}>
+                  ${data.estimatedCost.toLocaleString()}
+                </p>
+                {data.budget > 0 && (
+                  <p className="text-xs mt-0.5" style={{ color: withinBudget ? '#38A169' : '#E53E3E' }}>
+                    {withinBudget
+                      ? `$${(data.budget - data.estimatedCost).toLocaleString()} under budget`
+                      : `$${(data.estimatedCost - data.budget).toLocaleString()} over budget`
+                    }
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Meta row */}
@@ -231,14 +363,18 @@ export default function ConceptDeliverablePage() {
               <Clock className="h-4 w-4 text-gray-400" />
               {data.projectTimeline}
             </span>
-            <span className="flex items-center gap-1.5">
-              <DollarSign className="h-4 w-4 text-gray-400" />
-              Budget: ${data.budget.toLocaleString()}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Zap className="h-4 w-4 text-gray-400" />
-              {data.location}
-            </span>
+            {data.budget > 0 && (
+              <span className="flex items-center gap-1.5">
+                <DollarSign className="h-4 w-4 text-gray-400" />
+                Budget: ${data.budget.toLocaleString()}
+              </span>
+            )}
+            {data.location && (
+              <span className="flex items-center gap-1.5">
+                <Zap className="h-4 w-4 text-gray-400" />
+                {data.location}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -251,7 +387,7 @@ export default function ConceptDeliverablePage() {
             Before / After Concept Preview
           </h2>
           <VideoComparison
-            projectType={conceptType}
+            projectType={data.projectPath || conceptType}
             projectTitle={data.projectType}
             beforeVideoUrl=""
             afterVideoUrl=""
@@ -262,117 +398,147 @@ export default function ConceptDeliverablePage() {
           </p>
         </section>
 
-        {/* ── Design Concept ──────────────────────────────────────────────── */}
-        <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#E8793A' }} />
-            <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Design Concept</h2>
-            <span className="ml-auto text-xs text-gray-400 font-medium">{data.designConcept.style}</span>
-          </div>
-          <div className="p-6 grid sm:grid-cols-2 gap-6">
-            <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Key Features</p>
-              <ul className="space-y-2">
-                {data.designConcept.keyFeatures.map(f => (
-                  <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
-                    <CheckCircle className="h-4 w-4 shrink-0 mt-0.5 text-green-500" />
-                    {f}
+        {/* ── What's Included ─────────────────────────────────────────────── */}
+        {deliverable?.includes && deliverable.includes.length > 0 && (
+          <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#2ABFBF' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>What's Included in Your Package</h2>
+            </div>
+            <div className="p-6">
+              <ul className="grid sm:grid-cols-2 gap-2">
+                {deliverable.includes.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-teal-500" />
+                    {item}
                   </li>
                 ))}
               </ul>
             </div>
-            <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Color Palette</p>
-              <div className="flex flex-wrap gap-2">
-                {data.designConcept.colorPalette.map(c => (
-                  <span
-                    key={c}
-                    className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700"
-                  >
-                    {c}
-                  </span>
-                ))}
+          </section>
+        )}
+
+        {/* ── Design Concept ──────────────────────────────────────────────── */}
+        {data.designConcept.keyFeatures.length > 0 && (
+          <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#E8793A' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Design Concept</h2>
+              <span className="ml-auto text-xs text-gray-400 font-medium">{data.designConcept.style}</span>
+            </div>
+            <div className="p-6 grid sm:grid-cols-2 gap-6">
+              <div>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Key Features</p>
+                <ul className="space-y-2">
+                  {data.designConcept.keyFeatures.map(f => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
+                      <CheckCircle className="h-4 w-4 shrink-0 mt-0.5 text-green-500" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-5 mb-2">Timeline</p>
-              <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm">
-                <span className="font-semibold text-gray-900">{data.projectTimeline}</span>
-                <span className="text-gray-500 ml-2">estimated project duration</span>
+              <div>
+                {data.designConcept.colorPalette.length > 0 && (
+                  <>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Color Palette</p>
+                    <div className="flex flex-wrap gap-2">
+                      {data.designConcept.colorPalette.map(c => (
+                        <span
+                          key={c}
+                          className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700"
+                        >
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-5 mb-2">Timeline</p>
+                <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm">
+                  <span className="font-semibold text-gray-900">{data.projectTimeline}</span>
+                  <span className="text-gray-500 ml-2">estimated project duration</span>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* ── MEP Systems ─────────────────────────────────────────────────── */}
-        <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#7C3AED' }} />
-            <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>MEP Systems Specification</h2>
-          </div>
-          <div className="px-6 py-2">
-            <MEPRow icon={Zap}       label="Electrical" value={data.mepSystem.electrical} color="#E8793A" />
-            <MEPRow icon={Droplets}  label="Plumbing"   value={data.mepSystem.plumbing}   color="#3B82F6" />
-            <MEPRow icon={Wind}      label="HVAC"       value={data.mepSystem.hvac}        color="#2ABFBF" />
-            <MEPRow icon={Lightbulb} label="Lighting"   value={data.mepSystem.lighting}    color="#F59E0B" />
-          </div>
-        </section>
+        {(data.mepSystem.electrical || data.mepSystem.plumbing || data.mepSystem.lighting) && (
+          <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#7C3AED' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>MEP Systems Specification</h2>
+            </div>
+            <div className="px-6 py-2">
+              <MEPRow icon={Zap}       label="Electrical" value={data.mepSystem.electrical} color="#E8793A" />
+              <MEPRow icon={Droplets}  label="Plumbing"   value={data.mepSystem.plumbing}   color="#3B82F6" />
+              <MEPRow icon={Wind}      label="HVAC"       value={data.mepSystem.hvac}        color="#2ABFBF" />
+              <MEPRow icon={Lightbulb} label="Lighting"   value={data.mepSystem.lighting}    color="#F59E0B" />
+            </div>
+          </section>
+        )}
 
         {/* ── Bill of Materials ───────────────────────────────────────────── */}
-        <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#38A169' }} />
-            <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Bill of Materials</h2>
-            <span className="ml-auto text-xs text-gray-400">{data.billOfMaterials.length} line items</span>
-          </div>
+        {data.billOfMaterials.length > 0 && (
+          <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#38A169' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Bill of Materials</h2>
+              <span className="ml-auto text-xs text-gray-400">{data.billOfMaterials.length} line items</span>
+            </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Item</th>
-                  <th className="px-4 py-3 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Qty</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Unit</th>
-                  <th className="px-4 py-3 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Est. Cost</th>
-                </tr>
-              </thead>
-              <tbody>
-                {displayedBOM.map((row, i) => (
-                  <tr key={i} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-3">
-                      <p className="font-medium text-gray-900">{row.item}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{row.description}</p>
-                    </td>
-                    <td className="px-4 py-3 text-right text-gray-700 tabular-nums">{row.quantity.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-gray-500">{row.unit}</td>
-                    <td className="px-4 py-3 text-right font-semibold text-gray-900 tabular-nums">
-                      ${row.estimatedCost.toLocaleString()}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100 bg-gray-50">
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Item</th>
+                    <th className="px-4 py-3 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Qty</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Unit</th>
+                    <th className="px-4 py-3 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Est. Cost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayedBOM.map((row, i) => (
+                    <tr key={i} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-3">
+                        <p className="font-medium text-gray-900">{row.item}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{row.description}</p>
+                      </td>
+                      <td className="px-4 py-3 text-right text-gray-700 tabular-nums">{row.quantity.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-gray-500">{row.unit}</td>
+                      <td className="px-4 py-3 text-right font-semibold text-gray-900 tabular-nums">
+                        ${row.estimatedCost.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-gray-50 border-t-2 border-gray-200">
+                    <td colSpan={3} className="px-6 py-3 text-sm font-bold text-gray-700">Total Estimated Cost</td>
+                    <td className="px-4 py-3 text-right text-base font-bold" style={{ color: '#1A2B4A' }}>
+                      ${totalBOM.toLocaleString()}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="bg-gray-50 border-t-2 border-gray-200">
-                  <td colSpan={3} className="px-6 py-3 text-sm font-bold text-gray-700">Total Estimated Cost</td>
-                  <td className="px-4 py-3 text-right text-base font-bold" style={{ color: '#1A2B4A' }}>
-                    ${totalBOM.toLocaleString()}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+                </tfoot>
+              </table>
+            </div>
 
-          {data.billOfMaterials.length > 4 && (
-            <button
-              onClick={() => setShowFullBOM(v => !v)}
-              className="w-full flex items-center justify-center gap-2 py-3 text-xs font-medium text-gray-500 hover:text-gray-700 border-t border-gray-100 transition-colors"
-            >
-              {showFullBOM ? (
-                <><ChevronUp className="h-4 w-4" /> Show less</>
-              ) : (
-                <><ChevronDown className="h-4 w-4" /> Show all {data.billOfMaterials.length} items</>
-              )}
-            </button>
-          )}
-        </section>
+            {data.billOfMaterials.length > 4 && (
+              <button
+                onClick={() => setShowFullBOM(v => !v)}
+                className="w-full flex items-center justify-center gap-2 py-3 text-xs font-medium text-gray-500 hover:text-gray-700 border-t border-gray-100 transition-colors"
+              >
+                {showFullBOM ? (
+                  <><ChevronUp className="h-4 w-4" /> Show less</>
+                ) : (
+                  <><ChevronDown className="h-4 w-4" /> Show all {data.billOfMaterials.length} items</>
+                )}
+              </button>
+            )}
+          </section>
+        )}
 
         {/* ── Next Steps ──────────────────────────────────────────────────── */}
         <section className="rounded-2xl border border-gray-200 bg-white p-6">

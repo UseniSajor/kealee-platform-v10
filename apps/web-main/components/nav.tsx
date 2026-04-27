@@ -11,20 +11,31 @@ export function SiteNav() {
   const isHome = pathname === '/'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const navLinks = [
+  // Primary CTAs shown left of center
+  const primaryLinks = [
     { href: '/intake/exterior_concept', label: 'Plan Project' },
     { href: '/intake/permit_path_only', label: 'Get Permit' },
     { href: '/intake/cost_estimate', label: 'Price Project' },
     { href: '/marketplace', label: 'Marketplace' },
+  ]
+
+  // Secondary info links shown right of center, lighter style
+  const secondaryLinks = [
     { href: '/faq', label: 'FAQ' },
     { href: '/milestone-pay', label: 'Milestone Pay' },
+  ]
+
+  // Full list for mobile menu
+  const allLinks = [
+    ...primaryLinks,
+    ...secondaryLinks,
     { href: '/homeowners', label: 'Homeowners' },
     { href: '/contractors', label: 'Contractors' },
   ]
 
   return (
     <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
-      <div className="mx-auto max-w-7xl px-4 h-16 flex items-center justify-between">
+      <div className="mx-auto max-w-7xl px-4 h-16 flex items-center gap-6">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 flex-shrink-0">
           <div className="w-7 h-7 bg-orange-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
@@ -33,31 +44,52 @@ export function SiteNav() {
           <span className="font-bold text-xl text-slate-900 hidden sm:inline">Kealee</span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <div className="hidden lg:flex items-center gap-8 flex-1 ml-12">
-          {navLinks.slice(0, 6).map((link) => (
+        {/* Primary desktop links */}
+        <div className="hidden lg:flex items-center gap-5 flex-1">
+          {primaryLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-slate-600 hover:text-orange-600 font-medium text-sm transition"
+              className={`whitespace-nowrap font-medium text-sm transition ${
+                pathname === link.href
+                  ? 'text-orange-600'
+                  : 'text-slate-600 hover:text-orange-600'
+              }`}
             >
               {link.label}
             </Link>
           ))}
         </div>
 
-        {/* Desktop Search & Auth */}
-        <div className="hidden lg:flex items-center gap-4">
-          <div className="w-64">
-            <ProjectSearchBar size="sm" />
-          </div>
-          <Link href="/auth/sign-in">
-            <button className="text-slate-700 hover:text-slate-900 font-medium text-sm transition">
-              Sign in
-            </button>
+        {/* Secondary links — always visible at lg */}
+        <div className="hidden lg:flex items-center gap-4 flex-shrink-0">
+          {secondaryLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`whitespace-nowrap rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                pathname === link.href
+                  ? 'border-orange-200 bg-orange-50 text-orange-700'
+                  : 'border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700'
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Search — only at xl to prevent overflow */}
+        <div className="hidden xl:block w-52 flex-shrink-0">
+          <ProjectSearchBar size="sm" />
+        </div>
+
+        {/* Auth */}
+        <div className="hidden lg:flex items-center gap-3 flex-shrink-0 ml-auto">
+          <Link href="/auth/sign-in" className="text-slate-700 hover:text-slate-900 font-medium text-sm transition whitespace-nowrap">
+            Sign in
           </Link>
           <Link href="/intake/exterior_concept">
-            <button className="bg-orange-600 hover:bg-orange-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition">
+            <button className="bg-orange-600 hover:bg-orange-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition whitespace-nowrap">
               Get Started
             </button>
           </Link>
@@ -66,7 +98,7 @@ export function SiteNav() {
         {/* Mobile Menu Button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="lg:hidden p-2 text-slate-600 hover:text-slate-900"
+          className="lg:hidden p-2 text-slate-600 hover:text-slate-900 ml-auto"
         >
           {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -75,21 +107,23 @@ export function SiteNav() {
       {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-slate-200 bg-white">
-          <div className="px-4 py-4 space-y-4">
-            {navLinks.map((link) => (
+          <div className="px-4 py-4 space-y-1">
+            {allLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="block text-slate-600 hover:text-orange-600 font-medium transition py-2"
+                className={`block rounded-lg px-3 py-2.5 font-medium text-sm transition ${
+                  pathname === link.href
+                    ? 'bg-orange-50 text-orange-600'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {link.label}
               </Link>
             ))}
-            <div className="pt-4 border-t border-slate-200 space-y-3">
-              <div>
-                <ProjectSearchBar size="sm" />
-              </div>
+            <div className="pt-4 border-t border-slate-200 space-y-3 mt-2">
+              <ProjectSearchBar size="sm" />
               <Link href="/auth/sign-in" className="block w-full text-center py-2 text-slate-700 font-medium">
                 Sign in
               </Link>

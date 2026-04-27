@@ -354,48 +354,58 @@ function CategorySection({
 }) {
   const minPrice = Math.min(...cat.services.map(s => s.price))
   return (
-    <section id={cat.id} className="scroll-mt-14">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
+    <section id={cat.id} className="scroll-mt-16 rounded-2xl bg-white border border-gray-200 overflow-hidden shadow-sm">
+      {/* ── Category Header ─────────────────────────────────────────────── */}
+      <div
+        className="flex items-center gap-4 px-6 py-5 border-b border-gray-100"
+        style={{ backgroundColor: cat.bgLight }}
+      >
         <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-          style={{ backgroundColor: cat.bgLight }}
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl shadow-sm"
+          style={{ backgroundColor: cat.color }}
         >
-          <cat.Icon className="h-5 w-5" style={{ color: cat.color }} />
+          <cat.Icon className="h-6 w-6 text-white" />
         </div>
-        <div>
-          <h2 className="text-base font-bold text-gray-900">{cat.label}</h2>
-          <p className="text-xs text-gray-500">
-            {cat.services.length} AI service{cat.services.length > 1 ? 's' : ''} from ${minPrice.toLocaleString()}
+        <div className="flex-1 min-w-0">
+          <h2 className="text-xl font-extrabold text-gray-900 leading-tight">{cat.label}</h2>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {cat.services.length} AI-powered service{cat.services.length > 1 ? 's' : ''} · from ${minPrice.toLocaleString()}
           </p>
         </div>
-        <div className="ml-auto hidden sm:block h-px flex-1 rounded-full" style={{ backgroundColor: `${cat.color}20` }} />
+        <div
+          className="hidden sm:flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-white shrink-0"
+          style={{ backgroundColor: cat.color }}
+        >
+          {cat.services.length} {cat.services.length === 1 ? 'Service' : 'Services'}
+        </div>
       </div>
 
-      {/* Kealee AI Service Cards */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-4">
-        {cat.services.map(s => (
-          <ServiceCard key={s.slug} service={s} color={cat.color} />
-        ))}
-      </div>
+      {/* ── AI Service Cards ─────────────────────────────────────────────── */}
+      <div className="px-6 py-5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-5">
+          {cat.services.map(s => (
+            <ServiceCard key={s.slug} service={s} color={cat.color} />
+          ))}
+        </div>
 
-      {/* Contractor Trade Chips */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium text-gray-400 mr-1">Find a contractor:</span>
-        {cat.trades.map(trade => (
-          <button
-            key={trade}
-            onClick={() => onTradeClick(trade)}
-            className="rounded-full border px-3 py-1 text-xs font-medium transition-all"
-            style={{
-              borderColor: activeTrade === trade ? cat.color : '#E5E7EB',
-              backgroundColor: activeTrade === trade ? cat.color : '#FFFFFF',
-              color: activeTrade === trade ? '#FFFFFF' : '#6B7280',
-            }}
-          >
-            {trade}
-          </button>
-        ))}
+        {/* ── Contractor Trade Chips ──────────────────────────────────────── */}
+        <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-gray-100">
+          <span className="text-xs font-semibold text-gray-400 mr-1">Find a contractor:</span>
+          {cat.trades.map(trade => (
+            <button
+              key={trade}
+              onClick={() => onTradeClick(trade)}
+              className="rounded-full border px-3.5 py-1 text-xs font-medium transition-all"
+              style={{
+                borderColor: activeTrade === trade ? cat.color : '#E5E7EB',
+                backgroundColor: activeTrade === trade ? cat.color : '#FFFFFF',
+                color: activeTrade === trade ? '#FFFFFF' : '#6B7280',
+              }}
+            >
+              {trade}
+            </button>
+          ))}
+        </div>
       </div>
     </section>
   )
@@ -558,7 +568,7 @@ export default function MarketplacePage() {
       </div>
 
       {/* ── CATEGORY SECTIONS ─────────────────────────────────────────────── */}
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 space-y-12">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 space-y-8">
         {SERVICE_CATEGORIES.map(cat => (
           <CategorySection
             key={cat.id}
