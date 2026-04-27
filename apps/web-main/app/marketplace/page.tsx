@@ -1,7 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Search, X, ArrowRight } from 'lucide-react'
+import { useState, useMemo, useRef, useEffect } from 'react'
+import {
+  Search, X, ArrowRight, Home, Wrench, Plus, LayoutGrid,
+  Building2, Store, Flower2, Shield, Calculator, Users, Zap,
+} from 'lucide-react'
 import Link from 'next/link'
 import { MarketplaceTopbar } from '@/components/marketplace/MarketplaceTopbar'
 import { MarketplaceNav } from '@/components/marketplace/MarketplaceNav'
@@ -9,87 +12,130 @@ import { MarketplaceFilterBar, type Filters } from '@/components/marketplace/Mar
 import { MarketplaceCard, type ContractorCardData } from '@/components/marketplace/MarketplaceCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 
-// Project types organized in 5 buckets
-const PROJECT_TYPE_BUCKETS = [
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type ServiceItem = {
+  slug: string
+  label: string
+  price: number
+  delivery: string
+  popular?: boolean
+}
+
+type ServiceCategory = {
+  id: string
+  label: string
+  color: string
+  bgLight: string
+  Icon: React.ElementType
+  services: ServiceItem[]
+  trades: string[]
+}
+
+// ─── Service Category Data ─────────────────────────────────────────────────────
+
+const SERVICE_CATEGORIES: ServiceCategory[] = [
   {
-    bucket: 'Interior Renovations',
+    id: 'interior',
+    label: 'Interior Renovations',
     color: '#7C3AED',
-    types: [
-      { label: 'Kitchen Remodel',     trade: 'General Contractor' },
-      { label: 'Bathroom Remodel',    trade: 'General Contractor' },
-      { label: 'Master Bath',         trade: 'General Contractor' },
-      { label: 'Basement Finish',     trade: 'General Contractor' },
-      { label: 'Flooring',            trade: 'Flooring' },
-      { label: 'Interior Painting',   trade: 'Painting' },
-      { label: 'Drywall',             trade: 'Drywall' },
-      { label: 'Closet & Storage',    trade: 'General Contractor' },
-      { label: 'Home Theater / AV',   trade: 'Electrician' },
+    bgLight: '#F5F3FF',
+    Icon: Home,
+    services: [
+      { slug: 'kitchen_remodel',     label: 'Kitchen Design Package',  price: 395, delivery: '3–5 days', popular: true },
+      { slug: 'bathroom_remodel',    label: 'Bathroom Design Package', price: 295, delivery: '2–4 days' },
+      { slug: 'interior_reno_concept', label: 'Interior Reno Concept', price: 345, delivery: '3–5 days' },
+      { slug: 'interior_renovation', label: 'Interior Renovation',     price: 345, delivery: '3–5 days' },
     ],
+    trades: ['General Contractor', 'Flooring', 'Painting', 'Drywall', 'Electrician'],
   },
   {
-    bucket: 'Exterior Improvements',
+    id: 'exterior',
+    label: 'Exterior Upgrades',
     color: '#E8793A',
-    types: [
-      { label: 'Roof Replacement',    trade: 'Roofing' },
-      { label: 'Siding & Cladding',   trade: 'General Contractor' },
-      { label: 'Windows & Doors',     trade: 'General Contractor' },
-      { label: 'Deck & Patio',        trade: 'General Contractor' },
-      { label: 'Fence & Gate',        trade: 'General Contractor' },
-      { label: 'Driveway & Hardscape',trade: 'Masonry' },
-      { label: 'Exterior Painting',   trade: 'Painting' },
-      { label: 'Gutters',             trade: 'General Contractor' },
-      { label: 'Landscaping',         trade: 'Landscaping' },
-      { label: 'Outdoor Kitchen',     trade: 'General Contractor' },
+    bgLight: '#FFF7ED',
+    Icon: Wrench,
+    services: [
+      { slug: 'exterior_concept',      label: 'Exterior Concept Package', price: 395, delivery: '3–5 days', popular: true },
+      { slug: 'capture_site_concept',  label: 'Site Capture + Concept',   price: 125, delivery: '1–2 days' },
+      { slug: 'design_build',          label: 'Design + Build Package',   price: 795, delivery: '5–7 days' },
     ],
+    trades: ['General Contractor', 'Roofing', 'Painting', 'Masonry', 'Landscaping'],
   },
   {
-    bucket: 'Additions & Structures',
+    id: 'additions',
+    label: 'Additions',
     color: '#2ABFBF',
-    types: [
-      { label: 'Addition / Bump-Out', trade: 'General Contractor' },
-      { label: 'ADU / Garage Conversion', trade: 'General Contractor' },
-      { label: 'Whole-Home Renovation',   trade: 'General Contractor' },
-      { label: 'New Construction',        trade: 'General Contractor' },
-      { label: 'Pool & Hot Tub',          trade: 'General Contractor' },
+    bgLight: '#F0FDFD',
+    Icon: Plus,
+    services: [
+      { slug: 'addition_expansion', label: 'Addition / Expansion', price: 495, delivery: '3–5 days' },
     ],
+    trades: ['General Contractor'],
   },
   {
-    bucket: 'Specialty Trade',
-    color: '#38A169',
-    types: [
-      { label: 'HVAC / Heat Pump',   trade: 'HVAC' },
-      { label: 'Electrical Panel',   trade: 'Electrician' },
-      { label: 'EV Charger Install', trade: 'Electrician' },
-      { label: 'Solar',              trade: 'Electrician' },
-      { label: 'Plumbing',           trade: 'Plumber' },
-      { label: 'Water Heater',       trade: 'Plumber' },
-      { label: 'Insulation',         trade: 'General Contractor' },
-      { label: 'Irrigation',         trade: 'Landscaping' },
+    id: 'whole-house',
+    label: 'Whole House',
+    color: '#3B82F6',
+    bgLight: '#EFF6FF',
+    Icon: LayoutGrid,
+    services: [
+      { slug: 'whole_home_concept', label: 'Whole Home Concept',  price: 595, delivery: '4–6 days', popular: true },
+      { slug: 'whole_home_remodel', label: 'Whole-Home Remodel',  price: 695, delivery: '4–6 days' },
     ],
+    trades: ['General Contractor'],
   },
   {
-    bucket: 'Property & Multifamily',
+    id: 'new-construction',
+    label: 'New Construction',
     color: '#1A2B4A',
-    types: [
-      { label: 'Multifamily Renovation', trade: 'General Contractor' },
-      { label: 'Office Fit-Out',         trade: 'General Contractor' },
-      { label: 'Retail Build-Out',       trade: 'General Contractor' },
-      { label: 'Restaurant Renovation',  trade: 'General Contractor' },
-      { label: 'Warehouse / Industrial', trade: 'Steel / Structural' },
-      { label: 'Commercial Roofing',     trade: 'Roofing' },
-      { label: 'Commercial HVAC',        trade: 'HVAC' },
-      { label: 'ADA Compliance',         trade: 'General Contractor' },
-      { label: 'Parking & Site Work',    trade: 'Excavation' },
+    bgLight: '#F0F4FF',
+    Icon: Building2,
+    services: [
+      { slug: 'developer_concept',          label: 'Developer Concept',           price: 795,  delivery: '5–7 days' },
+      { slug: 'single_lot_development',     label: 'Single-Lot Development',      price: 899,  delivery: '4–6 days' },
+      { slug: 'development_feasibility',    label: 'Feasibility Study',           price: 1499, delivery: '5–7 days' },
+      { slug: 'single_family_subdivision',  label: 'Single-Family Subdivision',   price: 1499, delivery: '6–8 days' },
+      { slug: 'townhome_subdivision',       label: 'Townhome Subdivision',        price: 1699, delivery: '7–10 days' },
     ],
+    trades: ['General Contractor', 'Excavation', 'Steel / Structural'],
+  },
+  {
+    id: 'commercial',
+    label: 'Commercial',
+    color: '#64748B',
+    bgLight: '#F8FAFC',
+    Icon: Store,
+    services: [
+      { slug: 'commercial_office',     label: 'Commercial Office',       price: 1199, delivery: '5–7 days' },
+      { slug: 'mixed_use',             label: 'Mixed-Use Concept',       price: 1299, delivery: '6–8 days' },
+      { slug: 'multi_unit_residential',label: 'Multi-Unit Residential',  price: 999,  delivery: '5–7 days' },
+    ],
+    trades: ['General Contractor', 'HVAC', 'Roofing', 'Electrician', 'Plumber'],
+  },
+  {
+    id: 'landscaping',
+    label: 'Landscaping',
+    color: '#38A169',
+    bgLight: '#F0FFF4',
+    Icon: Flower2,
+    services: [
+      { slug: 'garden_concept', label: 'Garden Concept', price: 295, delivery: '2–4 days' },
+    ],
+    trades: ['Landscaping', 'Masonry', 'Irrigation'],
   },
 ]
 
-// Flattened for filtering
-const PROJECT_TYPES = PROJECT_TYPE_BUCKETS.flatMap(b =>
-  b.types.map(t => ({ ...t, group: b.bucket }))
-)
+// ─── Cross-Category Services ───────────────────────────────────────────────────
 
-// Combo packages
+const CROSS_SERVICES = [
+  { label: 'Permit Package',    price: '$499', href: '/intake/permit_path_only', Icon: Shield,     desc: 'Permit-ready drawings + submission' },
+  { label: 'Cost Estimate',     price: '$595', href: '/intake/cost_estimate',    Icon: Calculator, desc: 'Detailed cost breakdown for bidding' },
+  { label: 'Contractor Match',  price: '$199', href: '/intake/contractor_match', Icon: Users,      desc: 'Matched to 3 vetted local contractors' },
+]
+
+// ─── Combo Packages ────────────────────────────────────────────────────────────
+
 const COMBO_PACKAGES = [
   {
     name: 'Design + Permit Starter',
@@ -128,7 +174,8 @@ const COMBO_PACKAGES = [
   },
 ]
 
-// Mock contractor data — replace with API calls when backend is integrated
+// ─── Contractors ───────────────────────────────────────────────────────────────
+
 const CONTRACTORS: ContractorCardData[] = [
   {
     id: 'c1',
@@ -260,32 +307,134 @@ const DEFAULT_FILTERS: Filters = {
   sortBy: 'rating',
 }
 
+// ─── Service Card ──────────────────────────────────────────────────────────────
+
+function ServiceCard({ service, color }: { service: ServiceItem; color: string }) {
+  return (
+    <Link
+      href={`/intake/${service.slug}`}
+      className="group relative flex flex-col rounded-xl bg-white p-4 transition-all hover:shadow-md hover:-translate-y-0.5"
+      style={{ border: `1px solid ${color}25`, borderLeft: `3px solid ${color}` }}
+    >
+      {service.popular && (
+        <span
+          className="absolute -top-2 right-3 rounded-full px-2 py-0.5 text-xs font-bold text-white"
+          style={{ backgroundColor: color }}
+        >
+          Popular
+        </span>
+      )}
+      <p className="text-sm font-semibold text-gray-900 mb-1">{service.label}</p>
+      <p className="text-xs text-gray-400 mb-4">Delivered in {service.delivery}</p>
+      <div className="mt-auto flex items-center justify-between">
+        <span className="text-lg font-bold" style={{ color: '#1A2B4A' }}>
+          ${service.price.toLocaleString()}
+        </span>
+        <span
+          className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity group-hover:opacity-90"
+          style={{ backgroundColor: color }}
+        >
+          Get Started <ArrowRight className="h-3 w-3" />
+        </span>
+      </div>
+    </Link>
+  )
+}
+
+// ─── Category Section ──────────────────────────────────────────────────────────
+
+function CategorySection({
+  cat,
+  activeTrade,
+  onTradeClick,
+}: {
+  cat: ServiceCategory
+  activeTrade: string
+  onTradeClick: (trade: string) => void
+}) {
+  const minPrice = Math.min(...cat.services.map(s => s.price))
+  return (
+    <section id={cat.id} className="scroll-mt-14">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <div
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+          style={{ backgroundColor: cat.bgLight }}
+        >
+          <cat.Icon className="h-5 w-5" style={{ color: cat.color }} />
+        </div>
+        <div>
+          <h2 className="text-base font-bold text-gray-900">{cat.label}</h2>
+          <p className="text-xs text-gray-500">
+            {cat.services.length} AI service{cat.services.length > 1 ? 's' : ''} from ${minPrice.toLocaleString()}
+          </p>
+        </div>
+        <div className="ml-auto hidden sm:block h-px flex-1 rounded-full" style={{ backgroundColor: `${cat.color}20` }} />
+      </div>
+
+      {/* Kealee AI Service Cards */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-4">
+        {cat.services.map(s => (
+          <ServiceCard key={s.slug} service={s} color={cat.color} />
+        ))}
+      </div>
+
+      {/* Contractor Trade Chips */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs font-medium text-gray-400 mr-1">Find a contractor:</span>
+        {cat.trades.map(trade => (
+          <button
+            key={trade}
+            onClick={() => onTradeClick(trade)}
+            className="rounded-full border px-3 py-1 text-xs font-medium transition-all"
+            style={{
+              borderColor: activeTrade === trade ? cat.color : '#E5E7EB',
+              backgroundColor: activeTrade === trade ? cat.color : '#FFFFFF',
+              color: activeTrade === trade ? '#FFFFFF' : '#6B7280',
+            }}
+          >
+            {trade}
+          </button>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+// ─── Page ──────────────────────────────────────────────────────────────────────
+
 export default function MarketplacePage() {
   const [search, setSearch] = useState('')
   const [activeTrade, setActiveTrade] = useState('')
   const [activeCategory, setActiveCategory] = useState('')
-  const [filters, setFilters] = useState(DEFAULT_FILTERS)
-  const [activeProjectType, setActiveProjectType] = useState('')
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
+  const [activeCatId, setActiveCatId] = useState('interior')
+  const [stickyVisible, setStickyVisible] = useState(false)
+  const heroRef = useRef<HTMLDivElement>(null)
 
-  function handleProjectType(label: string, trade: string) {
-    if (activeProjectType === label) {
-      setActiveProjectType('')
-      setActiveTrade('')
-    } else {
-      setActiveProjectType(label)
-      setActiveTrade(trade)
-    }
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      ([entry]) => setStickyVisible(!entry.isIntersecting),
+      { threshold: 0 }
+    )
+    if (heroRef.current) obs.observe(heroRef.current)
+    return () => obs.disconnect()
+  }, [])
+
+  function scrollToCategory(id: string) {
+    setActiveCatId(id)
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  function handleTradeClick(trade: string) {
+    setActiveTrade(prev => (prev === trade ? '' : trade))
+    document.getElementById('contractor-directory')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   const filtered = useMemo(() => {
     let results = [...CONTRACTORS]
-
-    if (activeTrade) {
-      results = results.filter(c => c.trade === activeTrade)
-    }
-    if (activeCategory) {
-      results = results.filter(c => c.category === activeCategory)
-    }
+    if (activeTrade) results = results.filter(c => c.trade === activeTrade)
+    if (activeCategory) results = results.filter(c => c.category === activeCategory)
     if (search) {
       const q = search.toLowerCase()
       results = results.filter(
@@ -296,26 +445,16 @@ export default function MarketplacePage() {
           c.specialties.some(s => s.toLowerCase().includes(q))
       )
     }
-    if (filters.minRating > 0) {
-      results = results.filter(c => c.rating >= filters.minRating)
-    }
-    if (filters.priceRange) {
-      results = results.filter(c => c.priceRange === filters.priceRange)
-    }
-    if (filters.verifiedOnly) {
-      results = results.filter(c => c.isVerified)
-    }
-    if (filters.insuredOnly) {
-      results = results.filter(c => c.isInsured)
-    }
-
+    if (filters.minRating > 0) results = results.filter(c => c.rating >= filters.minRating)
+    if (filters.priceRange) results = results.filter(c => c.priceRange === filters.priceRange)
+    if (filters.verifiedOnly) results = results.filter(c => c.isVerified)
+    if (filters.insuredOnly) results = results.filter(c => c.isInsured)
     results.sort((a, b) => {
       if (filters.sortBy === 'rating') return b.rating - a.rating
       if (filters.sortBy === 'reviews') return b.reviewCount - a.reviewCount
       if (filters.sortBy === 'experience') return b.yearsExperience - a.yearsExperience
       return 0
     })
-
     return results
   }, [activeTrade, activeCategory, search, filters])
 
@@ -323,24 +462,24 @@ export default function MarketplacePage() {
     <div className="min-h-screen" style={{ backgroundColor: '#F7FAFC' }}>
       <MarketplaceTopbar />
 
-      {/* Hero — search focused */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-          <h1 className="font-display text-2xl font-bold text-center sm:text-3xl" style={{ color: '#1A2B4A' }}>
-            Find a Contractor
+      {/* ── HERO ─────────────────────────────────────────────────────────── */}
+      <div ref={heroRef} className="bg-white border-b border-gray-200">
+        <div className="mx-auto max-w-3xl px-4 pt-10 pb-6 sm:px-6 lg:px-8 text-center">
+          <h1 className="font-display text-3xl font-bold sm:text-4xl" style={{ color: '#1A2B4A' }}>
+            What are you building?
           </h1>
-          <p className="mt-1.5 text-sm text-center text-gray-500 mb-5">
-            Licensed, insured, and background-checked professionals in the DC–Baltimore corridor.
+          <p className="mt-2 text-sm text-gray-500 mb-6">
+            AI-powered design, permits, and estimates — plus vetted local contractors.
           </p>
 
-          {/* Big search bar */}
-          <div className="relative">
+          {/* Search */}
+          <div className="relative mb-6">
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search by trade, company, specialty, or location..."
+              placeholder="Search by service, trade, or specialty..."
               className="w-full rounded-2xl border border-gray-200 py-3.5 pl-12 pr-12 text-sm shadow-sm placeholder-gray-400 focus:border-[#2ABFBF] focus:outline-none focus:ring-2 focus:ring-[#2ABFBF]/20"
             />
             {search && (
@@ -352,63 +491,112 @@ export default function MarketplacePage() {
               </button>
             )}
           </div>
+
+          {/* Category pills */}
+          <div className="flex flex-wrap justify-center gap-2">
+            {SERVICE_CATEGORIES.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => scrollToCategory(cat.id)}
+                className="flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-all"
+                style={{
+                  borderColor: activeCatId === cat.id ? cat.color : '#E5E7EB',
+                  backgroundColor: activeCatId === cat.id ? cat.color : '#FFFFFF',
+                  color: activeCatId === cat.id ? '#FFFFFF' : '#374151',
+                }}
+              >
+                <cat.Icon className="h-3.5 w-3.5" />
+                {cat.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Project type chips — 5 bucket groups */}
-        <div className="mx-auto max-w-7xl px-4 pb-5 sm:px-6 lg:px-8 space-y-4">
-          {PROJECT_TYPE_BUCKETS.map((bucket) => (
-            <div key={bucket.bucket}>
-              <p
-                className="mb-2 text-xs font-bold uppercase tracking-wider"
-                style={{ color: bucket.color }}
-              >
-                {bucket.bucket}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {bucket.types.map((pt) => {
-                  const active = activeProjectType === pt.label
-                  return (
-                    <button
-                      key={pt.label}
-                      onClick={() => handleProjectType(pt.label, pt.trade)}
-                      className="rounded-full border px-3.5 py-1.5 text-sm font-medium transition-all"
-                      style={{
-                        borderColor: active ? bucket.color : '#E5E7EB',
-                        backgroundColor: active ? bucket.color : '#FFFFFF',
-                        color: active ? '#FFFFFF' : '#374151',
-                      }}
-                    >
-                      {pt.label}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
+        {/* Trust strip */}
+        <div className="border-t border-gray-100 bg-gray-50 py-3">
+          <div className="mx-auto max-w-3xl px-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-xs text-gray-500">
+            <span className="flex items-center gap-1.5">
+              <Shield className="h-3.5 w-3.5 text-green-500" />
+              Licensed contractors
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Users className="h-3.5 w-3.5 text-blue-500" />
+              Escrow-protected
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Zap className="h-3.5 w-3.5 text-orange-500" />
+              AI-powered
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Row 3 — Nav: trade + category filters */}
-      <MarketplaceNav
-        activeTrade={activeTrade}
-        activeCategory={activeCategory}
-        onTradeChange={(t) => { setActiveTrade(t); setActiveProjectType('') }}
-        onCategoryChange={setActiveCategory}
-      />
-
-      {/* Filters (no search — it's in the hero) */}
-      <MarketplaceFilterBar
-        filters={filters}
-        resultCount={filtered.length}
-        onFiltersChange={setFilters}
-        onReset={() => setFilters(DEFAULT_FILTERS)}
-      />
-
-      {/* Combo packages */}
-      <div className="mx-auto max-w-7xl px-4 pt-8 pb-2 sm:px-6 lg:px-8">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400">Featured Packages</h2>
+      {/* ── STICKY CATEGORY NAV ───────────────────────────────────────────── */}
+      <div
+        className={`fixed top-0 left-0 right-0 z-30 bg-white border-b border-gray-200 transition-transform duration-200 ${
+          stickyVisible ? 'translate-y-0' : '-translate-y-full'
+        }`}
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-1 overflow-x-auto py-2 [scrollbar-width:none]">
+            {SERVICE_CATEGORIES.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => scrollToCategory(cat.id)}
+                className="flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all"
+                style={{
+                  backgroundColor: activeCatId === cat.id ? cat.color : 'transparent',
+                  color: activeCatId === cat.id ? '#FFFFFF' : '#6B7280',
+                }}
+              >
+                <cat.Icon className="h-3 w-3" />
+                {cat.label}
+              </button>
+            ))}
+          </div>
         </div>
+      </div>
+
+      {/* ── CATEGORY SECTIONS ─────────────────────────────────────────────── */}
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 space-y-12">
+        {SERVICE_CATEGORIES.map(cat => (
+          <CategorySection
+            key={cat.id}
+            cat={cat}
+            activeTrade={activeTrade}
+            onTradeClick={handleTradeClick}
+          />
+        ))}
+      </div>
+
+      {/* ── CROSS-CATEGORY STRIP ──────────────────────────────────────────── */}
+      <div className="bg-white border-y border-gray-200">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Also Available</p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {CROSS_SERVICES.map(s => (
+              <Link
+                key={s.label}
+                href={s.href}
+                className="group flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 transition-all hover:shadow-sm hover:border-[#2ABFBF]"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-50">
+                  <s.Icon className="h-5 w-5 text-gray-500 group-hover:text-[#2ABFBF] transition-colors" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900">{s.label}</p>
+                  <p className="text-xs text-gray-500 truncate">{s.desc}</p>
+                </div>
+                <span className="text-sm font-bold text-[#1A2B4A] shrink-0">{s.price}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── COMBO PACKAGES ────────────────────────────────────────────────── */}
+      <div className="mx-auto max-w-7xl px-4 pt-8 pb-2 sm:px-6 lg:px-8">
+        <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4">Featured Packages</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {COMBO_PACKAGES.map(pkg => (
             <Link
@@ -429,23 +617,58 @@ export default function MarketplacePage() {
         </div>
       </div>
 
-      {/* Grid */}
+      {/* ── CONTRACTOR DIRECTORY ──────────────────────────────────────────── */}
+      <div id="contractor-directory" className="mx-auto max-w-7xl px-4 pt-10 pb-2 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-3 mb-1">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400">Contractor Directory</h2>
+          {activeTrade && (
+            <button
+              onClick={() => setActiveTrade('')}
+              className="flex items-center gap-1 rounded-full border border-gray-200 px-2.5 py-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              {activeTrade} <X className="h-3 w-3 ml-0.5" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      <MarketplaceNav
+        activeTrade={activeTrade}
+        activeCategory={activeCategory}
+        onTradeChange={(t) => { setActiveTrade(t) }}
+        onCategoryChange={setActiveCategory}
+      />
+
+      <MarketplaceFilterBar
+        filters={filters}
+        resultCount={filtered.length}
+        onFiltersChange={setFilters}
+        onReset={() => setFilters(DEFAULT_FILTERS)}
+      />
+
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {filtered.length === 0 ? (
           <EmptyState
-            icon="search"
-            title="No contractors found"
-            description="Try adjusting your filters or search terms to find contractors in your area."
-            action={{
-              label: 'Clear Filters',
-              onClick: () => {
-                setFilters(DEFAULT_FILTERS)
-                setActiveTrade('')
-                setActiveCategory('')
-                setSearch('')
-                setActiveProjectType('')
-              },
-            }}
+            icon="🔍"
+            title={activeTrade ? `No ${activeTrade} contractors yet` : 'No contractors found'}
+            description={
+              activeTrade
+                ? 'Be the first to join our contractor network for this trade.'
+                : 'Try adjusting your filters or search terms to find contractors in your area.'
+            }
+            action={
+              activeTrade
+                ? { label: 'Join Our Network', href: '/contractor/register' }
+                : {
+                    label: 'Clear Filters',
+                    onClick: () => {
+                      setFilters(DEFAULT_FILTERS)
+                      setActiveTrade('')
+                      setActiveCategory('')
+                      setSearch('')
+                    },
+                  }
+            }
           />
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

@@ -15,6 +15,7 @@ const ROLES = [
 const UTILITY_LINKS = [
   { label: 'How It Works',              href: '/marketplace#how-it-works' },
   { label: 'FAQ',                       href: '/faq' },
+  { label: 'Milestone Pay',             href: '/milestone-pay' },
   { label: 'Join as GC / Contractor',   href: '/contractor/register' },
 ]
 

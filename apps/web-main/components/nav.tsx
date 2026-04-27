@@ -16,6 +16,8 @@ export function SiteNav() {
     { href: '/intake/permit_path_only', label: 'Get Permit' },
     { href: '/intake/cost_estimate', label: 'Price Project' },
     { href: '/marketplace', label: 'Marketplace' },
+    { href: '/faq', label: 'FAQ' },
+    { href: '/milestone-pay', label: 'Milestone Pay' },
     { href: '/homeowners', label: 'Homeowners' },
     { href: '/contractors', label: 'Contractors' },
   ]
@@ -33,7 +35,7 @@ export function SiteNav() {
 
         {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center gap-8 flex-1 ml-12">
-          {navLinks.slice(0, 4).map((link) => (
+          {navLinks.slice(0, 6).map((link) => (
             <Link
               key={link.href}
               href={link.href}
