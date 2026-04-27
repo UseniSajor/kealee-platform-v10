@@ -13,22 +13,22 @@
     "providers:status": "tsx src/scripts/provider-status.ts"
   },
   "dependencies": {
+    "@fastify/cors": "^11.2.0",
+    "@fastify/sensible": "^5.5.0",
     "@kealee/core": "workspace:*",
     "@kealee/core-agents": "workspace:*",
-    "@kealee/core-tools": "workspace:*",
-    "@kealee/core-llm": "workspace:*",
     "@kealee/core-ai-gateway": "workspace:*",
+    "@kealee/core-llm": "workspace:*",
+    "@kealee/core-tools": "workspace:*",
     "@kealee/database": "workspace:*",
     "@kealee/seeds": "workspace:*",
-    "fastify": "^4.28.1",
-    "@fastify/cors": "^8.5.0",
-    "@fastify/sensible": "^5.5.0",
-    "zod": "^3.22.0",
     "dotenv": "^16.0.3",
-    "tsx": "^4.7.0"
+    "fastify": "^4.28.1",
+    "tsx": "^4.7.0",
+    "zod": "^3.22.0"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
-    "@types/node": "^20.11.0"
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
   }
 }
