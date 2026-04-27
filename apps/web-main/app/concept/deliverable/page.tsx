@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import {
@@ -222,7 +222,7 @@ function conceptOutputToData(
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function ConceptDeliverablePage() {
+function ConceptDeliverableContent() {
   const searchParams = useSearchParams()
   const intakeId = searchParams.get('intakeId')
   const projectPathParam = searchParams.get('projectPath')
@@ -592,5 +592,21 @@ export default function ConceptDeliverablePage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ConceptDeliverablePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 border-4 border-orange-600 border-t-transparent rounded-full animate-spin mx-auto mb-6" />
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Loading Your Concept</h1>
+          <p className="text-slate-600">Preparing your concept package...</p>
+        </div>
+      </div>
+    }>
+      <ConceptDeliverableContent />
+    </Suspense>
   )
 }
