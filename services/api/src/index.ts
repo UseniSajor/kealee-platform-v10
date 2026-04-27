@@ -411,12 +411,13 @@ const start = async () => {
       origin: (origin: string | undefined, callback: (err: Error | null, allow: boolean) => void) => {
         // Allow requests with no origin (mobile apps, Postman, etc.)
         if (!origin) return callback(null, true)
-        // Check if origin is in allowed list
-        if (corsOrigins.includes(origin)) {
-          callback(null, true)
-        } else {
-          callback(new Error('Not allowed by CORS'), false)
-        }
+        // Check exact match list
+        if (corsOrigins.includes(origin)) return callback(null, true)
+        // Allow all *.kealee.com subdomains and *.vercel.app preview deployments
+        if (/^https:\/\/([a-z0-9-]+\.)*kealee\.com$/.test(origin)) return callback(null, true)
+        if (/^https:\/\/[a-z0-9-]+-kealee\.vercel\.app$/.test(origin)) return callback(null, true)
+        if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/.test(origin)) return callback(null, true)
+        callback(new Error('Not allowed by CORS'), false)
       },
       credentials: true,
     })
