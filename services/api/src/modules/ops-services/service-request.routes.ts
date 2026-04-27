@@ -4,6 +4,20 @@ import { authenticateUser } from '../auth/auth.middleware'
 import { validateParams, validateBody } from '../../middleware/validation.middleware'
 import { serviceRequestService } from './service-request.service'
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
+import { prismaAny as prisma } from '../../utils/prisma-helper'
+import { getProjectExecutionQueue } from '../../utils/project-execution-queue'
+
+// Categories that map to AI pipeline execution types
+const CATEGORY_TO_OUTPUT_TYPE: Record<string, 'design' | 'estimate' | 'permit' | 'concept'> = {
+  land_analysis:   'concept',
+  design:          'design',
+  estimation:      'estimate',
+  estimate:        'estimate',
+  permit:          'permit',
+  permits:         'permit',
+  concept:         'concept',
+  ai_concept:      'concept',
+}
 
 const createServiceRequestSchema = z.object({
   orgId: z.string().uuid(),
@@ -12,6 +26,7 @@ const createServiceRequestSchema = z.object({
   category: z.string().min(1),
   priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
   dueDate: z.string().optional(),
+  projectId: z.string().uuid().optional(), // When provided + category maps to pipeline type, triggers AI execution
 })
 
 const updateStatusSchema = z.object({
@@ -53,6 +68,33 @@ export async function serviceRequestRoutes(fastify: FastifyInstance) {
           dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
           userId: user.id,
         })
+
+        // If a projectId is provided and the category maps to an AI pipeline type,
+        // create a ProjectOutput and enqueue execution (OS-Land pipeline connection)
+        const outputType = CATEGORY_TO_OUTPUT_TYPE[body.category?.toLowerCase()]
+        if (body.projectId && outputType) {
+          try {
+            const output = await prisma.projectOutput.create({
+              data: {
+                projectId: body.projectId,
+                type: outputType,
+                status: 'pending',
+                metadata: { source: 'os_service_request', serviceRequestId: serviceRequest.id, orgId: body.orgId },
+              },
+            })
+            const queue = getProjectExecutionQueue()
+            await queue.add(
+              'execute',
+              { outputId: output.id, type: outputType, projectId: body.projectId, metadata: { source: 'os_service_request', category: body.category } },
+              { attempts: 3, backoff: { type: 'exponential', delay: 5000 } },
+            )
+            fastify.log.info({ outputId: output.id, projectId: body.projectId, category: body.category }, '[OS-LAND] ProjectOutput created and execution enqueued')
+          } catch (err: any) {
+            fastify.log.error({ err: err.message, projectId: body.projectId }, '[OS-LAND] Failed to enqueue execution — service request saved, execution skipped')
+            // Non-fatal: service request is persisted; operator can re-trigger manually
+          }
+        }
+
         return reply.code(201).send({ serviceRequest })
       } catch (error: any) {
         fastify.log.error(error)

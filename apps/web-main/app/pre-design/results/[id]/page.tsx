@@ -460,7 +460,7 @@ export default function PreDesignResultsPage() {
         {/* Concept images */}
         {images.length > 0 && (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {images.map((img, i) => (
+            {images.map((img: { url: string; label?: string; caption?: string }, i: number) => (
               <div key={i} className="rounded-2xl overflow-hidden border border-gray-200 bg-white">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={img.url} alt={img.label ?? `Concept ${i + 1}`} className="w-full h-48 object-cover" />

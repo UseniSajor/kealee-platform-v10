@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
   const assets = assetsRaw ?? []
 
   // Build zone metadata for required zones
-  const zonesMeta = session.required_zones.map((zone) => {
+  const zonesMeta = session.required_zones.map((zone: any) => {
     const meta = getZoneMeta(zone)
     const zoneAssets = assets.filter((a: { zone: string }) => a.zone === zone)
     return {

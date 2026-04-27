@@ -18,6 +18,11 @@ import { authenticateUser } from '../auth/auth.middleware'
 import { validateBody, validateParams } from '../../middleware/validation.middleware'
 import { checkCostGuard } from './bots.router'
 import { sanitizeErrorMessage } from '../../utils/sanitize-error'
+import { prismaAny as prisma } from '../../utils/prisma-helper'
+
+// Minimum DCS (Design Completion Score) required to run the bot chain.
+// Projects below this threshold lack sufficient context for reliable AI output.
+const DCS_MIN_THRESHOLD = 60
 import {
   runChain,
   runDesignBot,
@@ -184,6 +189,26 @@ export async function botsChainRoutes(fastify: FastifyInstance) {
       const guard = checkCostGuard({ key: guardKey({ user }), maxPerHour: 10, maxPerDay: 50 })
       if (!guard.allowed) {
         return reply.code(429).send({ error: guard.reason })
+      }
+
+      // DCS gate — reject projects that haven't cleared the design completion threshold
+      try {
+        const project = await prisma.project.findUnique({
+          where: { id: body.projectId },
+          select: { dcsScore: true },
+        })
+        const dcs = project?.dcsScore ?? 0
+        if (dcs < DCS_MIN_THRESHOLD) {
+          return reply.code(422).send({
+            error: 'DCS_GATE_FAILED',
+            message: `Project DCS score ${dcs} is below the minimum threshold of ${DCS_MIN_THRESHOLD}. Complete more project details before running the bot chain.`,
+            dcsScore: dcs,
+            required: DCS_MIN_THRESHOLD,
+          })
+        }
+      } catch (dcsErr: any) {
+        // DB unavailable — warn and continue; don't block execution on a lookup failure
+        fastify.log.warn({ err: dcsErr?.message, projectId: body.projectId }, '[DCS_GATE] Could not check DCS score — continuing')
       }
 
       const input: ChainInput = { ...body, userId: user.id, orgId: user.orgId }

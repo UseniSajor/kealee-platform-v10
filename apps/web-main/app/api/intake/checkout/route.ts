@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 })
     }
 
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' })
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' as any })
 
     const productName = PATH_NAMES[projectPath] ?? 'Project Intake'
     const baseAmount = siteVisitRequested ? amount - SITE_VISIT_FEE : amount

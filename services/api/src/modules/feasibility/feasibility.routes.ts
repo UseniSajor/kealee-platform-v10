@@ -6,6 +6,7 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { prismaAny as prisma } from '../../utils/prisma-helper';
+import { getProjectExecutionQueue } from '../../utils/project-execution-queue';
 
 // ── Helpers ──
 
@@ -502,6 +503,32 @@ export async function feasibilityRoutes(fastify: FastifyInstance) {
       },
       include: { scenarios: true, costAssumptions: true, revenueAssumptions: true, comparisons: true },
     });
+
+    // When a feasibility study is approved (GO), enqueue an estimate execution job
+    // so the AI pipeline picks it up and produces a ProjectOutput.
+    if (parsed.data.decision === 'GO' && study.projectId) {
+      try {
+        const output = await prisma.projectOutput.create({
+          data: {
+            projectId: study.projectId,
+            type: 'estimate',
+            status: 'pending',
+            metadata: { source: 'feasibility_go', studyId: id, orgId: study.orgId },
+          },
+        });
+        const queue = getProjectExecutionQueue();
+        await queue.add(
+          'execute',
+          { outputId: output.id, type: 'estimate', projectId: study.projectId, metadata: { source: 'feasibility_go', studyId: id } },
+          { attempts: 3, backoff: { type: 'exponential', delay: 5000 } },
+        );
+        fastify.log.info({ outputId: output.id, studyId: id, projectId: study.projectId }, '[OS-FEAS] ProjectOutput created and execution enqueued');
+      } catch (err: any) {
+        fastify.log.error({ err: err.message, studyId: id }, '[OS-FEAS] Failed to enqueue execution — study saved, execution skipped');
+        // Non-fatal: study decision is persisted; operator can re-trigger manually
+      }
+    }
+
     return reply.send({ study });
   });
 }

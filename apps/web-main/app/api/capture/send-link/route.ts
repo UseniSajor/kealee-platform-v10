@@ -38,12 +38,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Log SMS send
-    await supabase.from('capture_sms_log').insert({
-      capture_session_id: captureSessionId,
-      phone_number: phoneNumber,
-      message_id: result.messageId ?? null,
-      sent_at: new Date().toISOString(),
-    }).throwOnError().then(() => {}).catch(() => {}) // non-critical
+    // Non-critical log insert — failures are swallowed
+    try {
+      await supabase.from('capture_sms_log').insert({
+        capture_session_id: captureSessionId,
+        phone_number: phoneNumber,
+        message_id: result.messageId ?? null,
+        sent_at: new Date().toISOString(),
+      })
+    } catch { /* non-critical */ }
 
     return NextResponse.json({ ok: true, messageId: result.messageId })
   } catch (err: unknown) {

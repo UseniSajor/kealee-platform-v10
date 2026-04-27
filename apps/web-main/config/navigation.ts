@@ -6,6 +6,7 @@
  */
 
 export interface NavLink {
+  type?: 'link'
   label: string
   href:  string
   description?: string

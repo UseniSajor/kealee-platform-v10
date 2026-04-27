@@ -66,6 +66,8 @@ export interface ToolRegistrySeed extends SeedMeta {
 export interface JurisdictionSeed extends SeedMeta {
   name: string;
   state: string;
+  county?: string;
+  fipsCode?: string;
   permitAuthority: string;
   zoningAuthority: string;
   permitPortalName: string;

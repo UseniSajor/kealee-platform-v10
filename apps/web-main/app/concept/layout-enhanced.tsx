@@ -3,6 +3,7 @@
  * Improved with FAQs, testimonials, SEO, and full conversion optimization
  */
 
+import React from 'react'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -194,9 +195,9 @@ export default function ConceptLayout({ children }: { children: React.ReactNode 
           <FAQ question='How long does it take to get my concept?' answer='Most concepts are ready within 2-3 business days. Our AI runs comprehensive analysis including zoning, feasibility, and design generation.' />
           <FAQ question='Is my concept design guaranteed to be approved?' answer='No. Our concepts are zoning-aware and designed to reduce compliance risk, but final approval depends on local jurisdiction requirements. We recommend using your concept as a strong foundation for discussion with your architect or contractor.' />
           <FAQ question='What if I need changes?' answer='After your concept is delivered, you can request revisions or adjustments. Additional scope changes may incur additional fees.' />
-          <FAQ question='Can you recommend contractors?' answer='We provide your concept to our contractor network, who can bid on your project. However, we don't dictate contractor selection — you maintain full control.' />
-          <FAQ question='What happens after my concept?' description='Your concept is a strong foundation for estimation, permitting, or architect engagement. Many clients proceed to our Estimation service to get detailed cost breakdowns.' />
-          <FAQ question='What if my area isn't supported?' answer='We're expanding zoning coverage. If your jurisdiction isn't available, contact us for a timeline.' />
+          <FAQ question='Can you recommend contractors?' answer="We provide your concept to our contractor network, who can bid on your project. However, we don't dictate contractor selection — you maintain full control." />
+          <FAQ question='What happens after my concept?' answer='Your concept is a strong foundation for estimation, permitting, or architect engagement. Many clients proceed to our Estimation service to get detailed cost breakdowns.' />
+          <FAQ question="What if my area isn't supported?" answer="We're expanding zoning coverage. If your jurisdiction isn't available, contact us for a timeline." />
         </div>
       </section>
 

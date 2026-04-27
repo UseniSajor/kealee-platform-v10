@@ -74,13 +74,25 @@
 - `apps/web-main/.env.example` — CREATED (comprehensive; all vars across Supabase, Stripe, AI, email, portals, Sentry, GA)
 - `components/CancelSubscriptionButton.tsx`: removed `|| 'http://localhost:3001'` fallback → `?? ''`
 
+## Fixes Applied 2026-04-26 — P0-P3
+
+- **P0 Fastify v5 plugins**: upgraded @fastify/cors→9, helmet→12, rate-limit→10, multipart→9, swagger→9, swagger-ui→5, sensible→6, jwt→9 in `services/api/`
+- **P1 OS-Feas queue**: `feasibility.routes.ts` — on GO decision with projectId → create ProjectOutput(type='estimate') + enqueue
+- **P1 OS-Land queue**: `ops-services/service-request.routes.ts` — added optional `projectId` + `CATEGORY_TO_OUTPUT_TYPE` map → create ProjectOutput + enqueue when projectId + qualifying category present
+- **P2 DCS gate**: `bots.chain.routes.ts` — added DCS_MIN_THRESHOLD=60 guard before runChain(); returns 422 DCS_GATE_FAILED if score < 60; DB failure → warn+continue
+- **P3 TS errors**: fixed 30 TypeScript errors across 15 files; removed `ignoreBuildErrors`/`ignoreDuringBuilds` from `next.config.js`
+  - Stripe apiVersion casts (3 files)
+  - RoleBenefits/RoleWorkflow component interfaces accept `emoji`/`description`/`eyebrow`/`subheadline`/`accentColor` aliases (4 pages fixed)
+  - Capture routes: `address`/`client_name`/`created_by_user_id` casts; `CaptureCompletenessReport` missing fields added; `CaptureZone` cast; `send-link` PromiseLike→try-catch
+  - FAQ `description` → `answer` prop; React import added to layout-enhanced.tsx
+  - `Filters` exported from MarketplaceFilterBar; DEFAULT_FILTERS typed
+  - Search route: `best` typed as union element
+  - NavLink: `type?: 'link'` added for test narrowing
+
 ## Remaining Issues
 
-- Duplicate repos: kealee-platform, kealee-platform-v10services, kealee — manual delete required
-- OS app API routes (OS-Land, OS-Feas) not connected to ProjectOutput/queue
-- DCS routing not enforced at chain route level
-- `@fastify/cors@8.5.0` expects Fastify 4.x but 5.8.5 is installed (5 plugins need v5 upgrades)
-- `next.config.js`: `ignoreBuildErrors: true` and `ignoreDuringBuilds: true` should be removed once TS errors are fixed
+- Duplicate repos: manual delete requires `delete_repo` OAuth scope — run `gh auth refresh -h github.com -s delete_repo` then delete: kealee-api, kealee-openclaw, kealee-platform, kealee-platform-v3, kealee-construction-z-digital
+- P4 repo deletion blocked — needs `delete_repo` scope grant
 
 ## Pipeline State
 

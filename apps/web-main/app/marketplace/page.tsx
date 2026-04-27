@@ -5,7 +5,7 @@ import { Search, X, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { MarketplaceTopbar } from '@/components/marketplace/MarketplaceTopbar'
 import { MarketplaceNav } from '@/components/marketplace/MarketplaceNav'
-import { MarketplaceFilterBar } from '@/components/marketplace/MarketplaceFilterBar'
+import { MarketplaceFilterBar, type Filters } from '@/components/marketplace/MarketplaceFilterBar'
 import { MarketplaceCard, type ContractorCardData } from '@/components/marketplace/MarketplaceCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 
@@ -252,12 +252,12 @@ const CONTRACTORS: ContractorCardData[] = [
   },
 ]
 
-const DEFAULT_FILTERS = {
+const DEFAULT_FILTERS: Filters = {
   minRating: 0,
   priceRange: '',
   verifiedOnly: false,
   insuredOnly: false,
-  sortBy: 'rating' as const,
+  sortBy: 'rating',
 }
 
 export default function MarketplacePage() {

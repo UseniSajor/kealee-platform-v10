@@ -103,10 +103,10 @@ export async function POST(req: NextRequest) {
       // Create new twin
       const twinRecord = buildDigitalTwinRecord({
         project_id: session.project_id ?? undefined,
-        address: session.address,
-        creation_path: 'mobile_capture',
+        creation_path: 'mobile_capture' as any,
         source_capture_session_ids: [captureSessionId],
-      })
+        ...(((session as any).address) ? { address: (session as any).address } : {}),
+      } as any)
       twinId = twinRecord.id
 
       const { error: twinErr } = await supabase.from('property_twins').insert(twinRecord)

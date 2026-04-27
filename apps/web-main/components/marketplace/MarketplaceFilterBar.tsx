@@ -2,7 +2,7 @@
 
 import { SlidersHorizontal, X } from 'lucide-react'
 
-interface Filters {
+export interface Filters {
   minRating: number
   priceRange: string
   verifiedOnly: boolean

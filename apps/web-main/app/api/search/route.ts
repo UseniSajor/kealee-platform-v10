@@ -37,7 +37,7 @@ export interface SearchResult {
 // Lightweight fuzzy match — fast fallback when Claude is unavailable
 function fuzzyMatch(query: string): SearchResult {
   const q = query.toLowerCase()
-  let best = PROJECT_PATH_CONTEXT[0]
+  let best: typeof PROJECT_PATH_CONTEXT[number] = PROJECT_PATH_CONTEXT[0]
   let bestScore = 0
 
   for (const p of PROJECT_PATH_CONTEXT) {

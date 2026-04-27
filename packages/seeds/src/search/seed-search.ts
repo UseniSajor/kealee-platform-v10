@@ -102,13 +102,11 @@ export function searchRules(query: string): typeof ruleSeeds {
   const lowerQuery = query.toLowerCase()
 
   return ruleSeeds.filter((r) => {
-    const name = (r.name || '').toLowerCase()
-    const ruleType = (r.ruleType || '').toLowerCase()
+    const ruleType = (r.type || '').toLowerCase()
     const description = (r.description || '').toLowerCase()
     const code = (r.code || '').toLowerCase()
 
     return (
-      name.includes(lowerQuery) ||
       ruleType.includes(lowerQuery) ||
       description.includes(lowerQuery) ||
       code.includes(lowerQuery)
@@ -120,7 +118,7 @@ export function searchRules(query: string): typeof ruleSeeds {
  * Get rules by type
  */
 export function getRulesByType(ruleType: string): typeof ruleSeeds {
-  return ruleSeeds.filter((r) => r.ruleType === ruleType)
+  return ruleSeeds.filter((r) => r.type === ruleType)
 }
 
 /**

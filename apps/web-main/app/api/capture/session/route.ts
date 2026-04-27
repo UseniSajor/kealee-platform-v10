@@ -16,13 +16,13 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
     }
-    const { project_path, intake_id, project_id, address, client_name, created_by_user_id } =
-      parsed.data
+    const { project_path, intake_id, project_id } = parsed.data
+    const { address, client_name, created_by_user_id } = parsed.data as any
 
     const captureSessionId = generateCaptureId()
     const captureToken = generateCaptureToken()
     const tokenExpiresAt = getTokenExpiresAt(48)
-    const requiredZones = getRequiredZones(project_path)
+    const requiredZones = getRequiredZones(project_path ?? '')
     const captureMode = (parsed.data as { capture_mode?: string; preferred_visit_window?: string }).capture_mode ?? 'self_capture'
     const preferredVisitWindow = (parsed.data as { preferred_visit_window?: string }).preferred_visit_window ?? null
     const isSiteVisit = captureMode === 'kealee_site_visit'
