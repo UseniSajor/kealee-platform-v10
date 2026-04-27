@@ -90,13 +90,7 @@ export default function IntakePage() {
         const data = await response.json()
         setAgentData(data)
       } catch {
-        setAgentData({
-          success: true,
-          summary: 'We analyzed your project requirements and identified the best path forward.',
-          confidence: 85,
-          nextStep: 'Tell us more about your project to get specific recommendations.',
-          risks: ['Site accessibility', 'Local zoning restrictions', 'Material cost volatility'],
-        })
+        setAgentData(null)
       } finally {
         setLoading(false)
       }
@@ -224,7 +218,23 @@ export default function IntakePage() {
                   <ArrowRight className="w-5 h-5" />
                 </button>
               </>
-            ) : null}
+            ) : (
+              <div className="space-y-6">
+                <div className="rounded-xl bg-white border border-slate-200 p-8 text-center">
+                  <CheckCircle2 className="w-12 h-12 text-orange-500 mx-auto mb-4" />
+                  <h2 className="text-2xl font-bold text-slate-900 mb-2">{priceInfo.label}</h2>
+                  <p className="text-slate-600 mb-2">Delivered in {priceInfo.delivery}</p>
+                  <p className="text-slate-500 text-sm">Our team will review your project details and get started right away.</p>
+                </div>
+                <button
+                  onClick={() => setStep('details')}
+                  className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2"
+                >
+                  Continue to Details
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -249,7 +259,7 @@ export default function IntakePage() {
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
-                  placeholder="John"
+                  placeholder="First name"
                 />
               </div>
               <div>
@@ -260,7 +270,7 @@ export default function IntakePage() {
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
-                  placeholder="Doe"
+                  placeholder="Last name"
                 />
               </div>
             </div>
@@ -273,7 +283,7 @@ export default function IntakePage() {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
-                placeholder="john@example.com"
+                placeholder="your@email.com"
               />
             </div>
 
@@ -285,7 +295,7 @@ export default function IntakePage() {
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
-                placeholder="123 Main St, Boston, MA 02101"
+                placeholder="Street address, City, State ZIP"
               />
             </div>
 
@@ -296,7 +306,7 @@ export default function IntakePage() {
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none resize-none"
                 rows={4}
-                placeholder="Tell us about your project vision..."
+                placeholder="Describe your project goals, current property conditions, and any specific requirements..."
               />
             </div>
 
@@ -308,7 +318,7 @@ export default function IntakePage() {
                   value={formData.squareFootage}
                   onChange={(e) => setFormData({ ...formData, squareFootage: e.target.value })}
                   className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
-                  placeholder="5,000"
+                  placeholder="e.g. 2500"
                 />
               </div>
               <div>

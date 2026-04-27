@@ -6,7 +6,7 @@ import { useChat } from "@ai-sdk/react";
 export default function ExteriorConceptChatPage() {
   const [intakeData] = useState<Record<string, unknown>>({});
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading, append } =
+  const { messages, input, handleInputChange, handleSubmit, isLoading } =
     useChat({
       api: "/api/ai/exterior-concept",
       body: { intakeData },
@@ -59,19 +59,6 @@ export default function ExteriorConceptChatPage() {
         </button>
       </form>
 
-      <button
-        type="button"
-        className="mt-4 rounded-xl border px-4 py-2 text-sm hover:bg-slate-50 transition-colors"
-        onClick={() =>
-          append({
-            role: "user",
-            content:
-              "My name is Tim Chamberlain, email tim@example.com. The address is 123 Example St, Fort Washington, MD. I want a modern exterior refresh. Budget is $20k to $40k. Style: modern, clean lines, warm contrast. Photos: https://dummy.kealee.local/front.jpg, https://dummy.kealee.local/rear.jpg",
-          })
-        }
-      >
-        Load sample intake
-      </button>
     </div>
   );
 }

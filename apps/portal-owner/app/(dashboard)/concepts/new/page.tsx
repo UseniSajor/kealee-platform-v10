@@ -231,13 +231,13 @@ export default function NewConceptPage() {
                 }`}
               >
                 <p className="text-sm text-slate-500">
-                  📷 Paste a photo URL to continue (full upload UI coming soon)
+                  📷 Add a photo URL of your property
                 </p>
                 <p className="mt-1 text-xs text-slate-400">{field.helperText}</p>
                 <input
                   type="text"
                   className="mt-3 w-full rounded-xl border px-3 py-2 text-xs"
-                  placeholder="https://example.com/photo.jpg"
+                  placeholder="https://..."
                   onChange={(e) => {
                     updateField(field.key, e.target.value ? [e.target.value] : []);
                   }}

@@ -29,10 +29,7 @@ export default async function ConceptsPage() {
             ? "medium"
             : "low",
       }))
-    : [
-        { id: "intake_ab12", client: "Tim Chamberlain", address: "123 Example St, Fort Washington, MD", projectType: "facade redesign", status: "READY_FOR_PM_REVIEW", complexity: "low" },
-        { id: "intake_cd34", client: "Demo Client", address: "456 Example Ave, Washington, DC", projectType: "addition concept", status: "WAITING_FOR_CLIENT", complexity: "medium" },
-      ];
+    : [];
 
   return (
     <div className="p-6">
