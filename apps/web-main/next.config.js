@@ -2,7 +2,7 @@ const { withSentryConfig } = require('@sentry/nextjs');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@kealee/ui', '@kealee/intake'],
+  transpilePackages: ['@kealee/ui', '@kealee/intake', '@kealee/shared'],
 }
 
 module.exports = withSentryConfig(nextConfig, {
