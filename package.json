@@ -4,6 +4,7 @@
   "private": true,
   "packageManager": "pnpm@8.15.9",
   "scripts": {
+    "start": "cd services/api && node dist/index.js",
     "dev": "turbo run dev",
     "dev:portals": "concurrently --names \"owner,contractor,developer,cc,admin\" --prefix-colors \"cyan,magenta,yellow,green,blue\" \"pnpm --filter portal-owner dev\" \"pnpm --filter portal-contractor dev\" \"pnpm --filter portal-developer dev\" \"pnpm --filter command-center dev\" \"pnpm --filter admin-console dev\"",
     "dev:web": "pnpm --filter web-main dev",
