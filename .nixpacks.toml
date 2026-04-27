@@ -1,11 +1,17 @@
 [phases.setup]
-nixPkgs = ["nodejs_20", "pnpm"]
+nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["pnpm install --frozen-lockfile"]
+cmds = [
+  "corepack enable",
+  "corepack prepare pnpm@9.0.0 --activate",
+  "pnpm install --frozen-lockfile"
+]
 
 [phases.build]
-cmds = ["pnpm build"]
+cmds = [
+  "pnpm --filter @kealee/api... build"
+]
 
 [start]
-cmd = "pnpm start"
+cmd = "node services/api/dist/index.js"

@@ -407,8 +407,8 @@ const start = async () => {
         'http://localhost:3009',
       ]
 
-    await fastify.register(cors, {
-      origin: (origin, callback) => {
+    await fastify.register(cors as any, {
+      origin: (origin: string | undefined, callback: (err: Error | null, allow: boolean) => void) => {
         // Allow requests with no origin (mobile apps, Postman, etc.)
         if (!origin) return callback(null, true)
         // Check if origin is in allowed list
@@ -421,17 +421,17 @@ const start = async () => {
       credentials: true,
     })
 
-    await fastify.register(helmet)
+    await fastify.register(helmet as any)
 
     // Register multipart for file uploads (Prompt 3.2)
-    await fastify.register(multipart, {
+    await fastify.register(multipart as any, {
       limits: {
         fileSize: 50 * 1024 * 1024, // 50MB
       },
     })
 
     // Capture raw body for Stripe webhook signature verification (enabled per-route)
-    await fastify.register(rawBody, {
+    await fastify.register(rawBody as any, {
       field: 'rawBody',
       global: false,
       encoding: 'utf8',
