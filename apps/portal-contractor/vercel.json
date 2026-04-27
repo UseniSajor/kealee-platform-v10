@@ -1,0 +1,6 @@
+{
+  "framework": "nextjs",
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm --filter @kealee/auth build && pnpm --filter @kealee/core-hooks build && pnpm --filter portal-contractor build",
+  "outputDirectory": ".next"
+}
