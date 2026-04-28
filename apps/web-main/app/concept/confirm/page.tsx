@@ -3,8 +3,191 @@
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Shield, Video, Play, Loader2 } from 'lucide-react'
-import { SERVICE_MAP, SERVICES } from '@/lib/services-config'
+import { ArrowLeft, CheckCircle2, Shield, Video, Loader2, FileText, Image as ImageIcon, LayoutTemplate, Table2, Layers, Star } from 'lucide-react'
+import { SERVICE_MAP } from '@/lib/services-config'
+
+// ── Tier deliverable content ──────────────────────────────────────────────────
+
+interface TierDeliverable {
+  icon: React.ElementType
+  title: string
+  items: string[]
+}
+
+const TIER_DELIVERABLES: Record<1 | 2 | 3, TierDeliverable[]> = {
+  1: [
+    {
+      icon: FileText,
+      title: 'PDF Report (15–20 pages)',
+      items: [
+        'Project vision, style & color palette',
+        'Spatial planning & layout analysis',
+        'Zoning & code compliance check',
+        'Materials & finish specifications',
+        'Budget estimate with category breakdown',
+        'MEP systems overview (electrical, plumbing, HVAC)',
+        'Project timeline & phases',
+        'Design rationale notes',
+      ],
+    },
+    {
+      icon: ImageIcon,
+      title: '3–5 Concept Renderings (1920×1080)',
+      items: [
+        'Front counter view',
+        'Island & seating view',
+        'Full space overview',
+        'Detail & alternate angles',
+      ],
+    },
+    {
+      icon: FileText,
+      title: 'Quick Reference Sheet + Budget Comparison',
+      items: [
+        'One-page print-ready summary',
+        'Budget / standard / luxury options side-by-side',
+        'Key colors, materials & permit count',
+      ],
+    },
+    {
+      icon: LayoutTemplate,
+      title: 'Web Portal Access (lifetime)',
+      items: [
+        'Shareable link — send to family or contractors',
+        'Download all files individually',
+        '10-year cloud storage',
+        '1 revision included',
+      ],
+    },
+  ],
+  2: [
+    {
+      icon: Video,
+      title: '60-Second Transformation Video (1080p)',
+      items: [
+        'HeyGen AI avatar narration (30s)',
+        'Runway ML before → after transformation (20s)',
+        'Professional music, color grading & subtitles',
+        'Download + streaming + social-ready formats',
+      ],
+    },
+    {
+      icon: Layers,
+      title: '2D Architectural Floor Plan',
+      items: [
+        'Scale 1/4″ = 1′ (contractor-ready)',
+        'All rooms, dimensions & appliance locations',
+        'Color-coded MEP: 🟠 Electrical, 🔵 Plumbing, 🟢 HVAC',
+        'Interactive viewer (zoom/pan) + PDF download',
+      ],
+    },
+    {
+      icon: ImageIcon,
+      title: '6–8 Enhanced Renderings (2560×1440)',
+      items: [
+        'Hero, island detail, appliance zone, sink area',
+        'Lifestyle & alternate lighting angles',
+        'Social media, print & mobile download sizes',
+      ],
+    },
+    {
+      icon: LayoutTemplate,
+      title: 'Interactive Web Portal',
+      items: [
+        'Embedded video player',
+        'Interactive floor plan with layer toggles',
+        'Lightbox renderings gallery',
+        'All specs, docs & downloads in one place',
+        'Password-protect & share freely — lifetime access',
+      ],
+    },
+    {
+      icon: Table2,
+      title: 'Itemized Bill of Materials',
+      items: [
+        '8 categories (cabinetry, countertops, appliances…)',
+        'Unit prices, quantities & labor estimates',
+        'Editable Excel spreadsheet + PDF',
+        'Budget / standard / luxury cost comparator',
+      ],
+    },
+    {
+      icon: FileText,
+      title: 'Everything in Basic +',
+      items: [
+        '15–20 page PDF report',
+        'Quick reference sheet',
+        '1 major + 2 minor revisions',
+        'Email + phone support (30 days)',
+      ],
+    },
+  ],
+  3: [
+    {
+      icon: Video,
+      title: '4 Video Formats',
+      items: [
+        '60s Full  ·  30s Mobile  ·  15s Social  ·  10s Preview',
+        '4K resolution, multiple aspect ratios',
+        'HeyGen narration + Runway transformation',
+        'Music options & custom branding',
+      ],
+    },
+    {
+      icon: Layers,
+      title: 'Multi-Layer 3D Floor Plan',
+      items: [
+        'Interactive 3D model with MEP layer toggles',
+        'CAD file downloads (DWG/DXF)',
+        'Permit-submission quality',
+        'Virtual walkthrough experience',
+      ],
+    },
+    {
+      icon: ImageIcon,
+      title: '12–15 Renderings (4K)',
+      items: [
+        'Every angle covered, dusk/dawn lighting sets',
+        'Interior + exterior context shots',
+        'Framing-quality print resolution',
+      ],
+    },
+    {
+      icon: Star,
+      title: 'Professional Service',
+      items: [
+        'Advanced cost analysis + contractor bid tool',
+        'Permit submission strategy & variance guidance',
+        'Tax deduction & energy savings calculation',
+        'Contractor coordination support',
+      ],
+    },
+    {
+      icon: FileText,
+      title: 'Everything in Premium +',
+      items: [
+        '25–30 page comprehensive PDF report',
+        'Unlimited revisions',
+        '90-day priority support',
+        'Perceived value $8,000–$12,000',
+      ],
+    },
+  ],
+}
+
+const TIER_TAGLINES: Record<1 | 2 | 3, string> = {
+  1: 'Perfect for exploring ideas and getting contractor bids.',
+  2: 'The sweet spot — video + floor plan for most homeowners.',
+  3: 'Professional-grade package. Like hiring a $5K architect.',
+}
+
+const TIER_VALUE: Record<1 | 2 | 3, string> = {
+  1: 'Perceived value $1,500–$2,000',
+  2: 'Perceived value $4,500–$6,000',
+  3: 'Perceived value $8,000–$12,000',
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
 
 function SummaryRow({ label, value, editHref }: { label: string; value: string; editHref: string }) {
   return (
@@ -109,8 +292,8 @@ function ConfirmInner() {
     <div>
       <div className="mb-8">
         <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-2">Step 4 of 4</p>
-        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">Review Your Concept</h1>
-        <p className="text-slate-500">Confirm your details and choose your package.</p>
+        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">Choose Your Package</h1>
+        <p className="text-slate-500">Select a tier, then complete secure checkout.</p>
       </div>
 
       {/* Summary */}
@@ -129,10 +312,11 @@ function ConfirmInner() {
       {/* Tier Selector */}
       <div className="mb-8">
         <h2 className="text-xl font-bold text-slate-900 mb-5">Select Your Package</h2>
-        <div className={`grid gap-4 ${availableTiers.length === 3 ? 'md:grid-cols-3' : availableTiers.length === 2 ? 'md:grid-cols-2' : 'max-w-xs'}`}>
+        <div className={`grid gap-5 ${availableTiers.length === 3 ? 'lg:grid-cols-3' : availableTiers.length === 2 ? 'sm:grid-cols-2' : 'max-w-xs'}`}>
           {availableTiers.map((t) => {
             const isSelected = tier === t.tier
-            const isPremium = t.tier === 2
+            const deliverables = TIER_DELIVERABLES[t.tier as 1 | 2 | 3] ?? []
+
             return (
               <button
                 key={t.tier}
@@ -140,41 +324,58 @@ function ConfirmInner() {
                 onClick={() => setTier(t.tier as 1 | 2 | 3)}
                 className={`relative flex flex-col rounded-2xl border-2 p-5 text-left transition-all ${
                   isSelected
-                    ? 'border-[#E8724B] bg-orange-50 shadow-md shadow-orange-100'
-                    : 'border-slate-200 bg-white hover:border-slate-300'
+                    ? 'border-[#E8724B] bg-orange-50 shadow-lg shadow-orange-100'
+                    : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-md'
                 }`}
               >
+                {/* Popular badge */}
                 {t.badge && (
-                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-[#E8724B] text-white text-[10px] font-bold px-2.5 py-0.5 whitespace-nowrap">
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-[#E8724B] text-white text-[10px] font-bold px-3 py-0.5 whitespace-nowrap">
                     {t.badge}
                   </span>
                 )}
-                <div className="flex items-start justify-between gap-2 mb-3">
-                  <p className={`text-sm font-bold uppercase tracking-widest ${isSelected ? 'text-[#E8724B]' : 'text-slate-500'}`}>{t.name}</p>
-                  <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${isSelected ? 'border-[#E8724B] bg-[#E8724B]' : 'border-slate-300'}`}>
-                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                  </div>
+
+                {/* Radio indicator */}
+                <div className={`absolute top-4 right-4 w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected ? 'border-[#E8724B] bg-[#E8724B]' : 'border-slate-300'}`}>
+                  {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                 </div>
-                <p className="text-3xl font-black text-slate-900 mb-3">${t.price.toLocaleString()}</p>
-                {t.video && (
-                  <div className="flex items-center gap-1.5 rounded-lg bg-orange-100 px-2.5 py-1.5 mb-3">
-                    <Video className="w-3.5 h-3.5 text-[#E8724B]" />
-                    <span className="text-[11px] font-semibold text-[#E8724B]">AI Video Included</span>
-                  </div>
-                )}
-                {t.videoDeliverables && (
-                  <ul className="space-y-1 mt-1">
-                    {t.videoDeliverables.map((d) => (
-                      <li key={d} className="flex items-start gap-1.5 text-xs text-slate-600">
-                        <Play className="w-3 h-3 text-[#E8724B] shrink-0 mt-0.5" />
-                        {d}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {!t.video && (
-                  <p className="text-xs text-slate-500">Concept renders, cost estimate, permit scope — no video</p>
-                )}
+
+                {/* Tier name */}
+                <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${isSelected ? 'text-[#E8724B]' : 'text-slate-400'}`}>{t.name}</p>
+
+                {/* Price */}
+                <p className="text-3xl font-black text-slate-900 mb-1">${t.price.toLocaleString()}</p>
+
+                {/* Tagline */}
+                <p className="text-xs text-slate-500 mb-4 leading-relaxed">{TIER_TAGLINES[t.tier as 1 | 2 | 3]}</p>
+
+                {/* Deliverables */}
+                <div className="space-y-3 flex-1">
+                  {deliverables.map((d, i) => {
+                    const Icon = d.icon
+                    return (
+                      <div key={i}>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <Icon className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-[#E8724B]' : 'text-slate-400'}`} />
+                          <p className="text-xs font-bold text-slate-800">{d.title}</p>
+                        </div>
+                        <ul className="ml-5 space-y-0.5">
+                          {d.items.map((item) => (
+                            <li key={item} className="flex items-start gap-1.5 text-[11px] text-slate-500 leading-snug">
+                              <CheckCircle2 className={`w-3 h-3 shrink-0 mt-0.5 ${isSelected ? 'text-[#E8724B]' : 'text-slate-300'}`} />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Perceived value */}
+                <p className={`mt-4 pt-3 border-t text-[10px] font-semibold ${isSelected ? 'border-orange-200 text-[#E8724B]' : 'border-slate-100 text-slate-400'}`}>
+                  {TIER_VALUE[t.tier as 1 | 2 | 3]}
+                </p>
               </button>
             )
           })}

@@ -40,7 +40,7 @@ function ServicesDropdown() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1 font-medium text-sm text-slate-600 hover:text-orange-600 transition whitespace-nowrap"
+        className="flex items-center gap-1 font-medium text-sm text-slate-600 hover:text-slate-900 transition whitespace-nowrap"
       >
         Services <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
@@ -84,153 +84,181 @@ function ServicesDropdown() {
   )
 }
 
+// Color config per nav tab
+const NAV_TABS = [
+  {
+    href: '/concept',
+    label: 'Design Concept',
+    hoverColor: 'hover:text-orange-500',
+    activeColor: 'text-orange-500 border-b-2 border-orange-500',
+  },
+  {
+    href: '/estimate',
+    label: 'What does it Cost',
+    hoverColor: 'hover:text-blue-500',
+    activeColor: 'text-blue-500 border-b-2 border-blue-500',
+  },
+  {
+    href: '/permits',
+    label: 'Get Permits',
+    hoverColor: 'hover:text-green-600',
+    activeColor: 'text-green-600 border-b-2 border-green-600',
+  },
+  {
+    href: '/marketplace',
+    label: 'Marketplace',
+    hoverColor: 'hover:text-orange-500',
+    activeColor: 'text-orange-500 border-b-2 border-orange-500',
+  },
+  {
+    href: '/faq',
+    label: 'FAQ',
+    hoverColor: 'hover:text-orange-500',
+    activeColor: 'text-orange-500 border-b-2 border-orange-500',
+  },
+]
+
+function MobileServicesAccordion({ onClose }: { onClose: () => void }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
+      >
+        Services
+        <ChevronDown className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="ml-4 mt-1 space-y-0.5">
+          {SERVICES.map((svc) => (
+            <Link
+              key={svc.slug}
+              href={`/services/${svc.slug}`}
+              onClick={onClose}
+              className="block rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"
+            >
+              {svc.label}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function SiteNav() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const navLinks = [
-    { href: '/gallery', label: 'Gallery' },
-    { href: '/marketplace', label: 'Marketplace' },
-    { href: '/faq', label: 'FAQ' },
-  ]
-
-  const actionLinks = [
-    { href: '/concept', label: 'Design Concept' },
-    { href: '/estimate', label: 'What does it Cost' },
-    { href: '/permits', label: 'Get Permits' },
-    { href: '/new-construction', label: 'Build Now' },
-    { href: '/milestone-pay', label: 'Milestone Pay' },
-  ]
+  function isActive(href: string) {
+    return pathname === href || (href !== '/' && pathname?.startsWith(href + '/'))
+  }
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
-      <div className="mx-auto max-w-screen-2xl px-4 h-16 flex items-center gap-4">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-          <div className="w-7 h-7 bg-[#E8724B] rounded-lg flex items-center justify-center text-white font-bold text-sm">
-            K
+    <nav className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200">
+      <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+
+          {/* LEFT: Logo + Desktop Nav */}
+          <div className="flex items-center gap-6">
+            <Link href="/" className="flex items-center gap-2 shrink-0">
+              <div className="w-8 h-8 bg-[#E8724B] rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                K
+              </div>
+              <span className="hidden sm:inline font-bold text-xl text-slate-900">Kealee</span>
+            </Link>
+
+            {/* Desktop tabs */}
+            <div className="hidden lg:flex items-center gap-1">
+              <ServicesDropdown />
+
+              {NAV_TABS.map((tab) => {
+                const active = isActive(tab.href)
+                return (
+                  <Link
+                    key={tab.href}
+                    href={tab.href}
+                    className={`whitespace-nowrap px-3 py-1 font-medium text-sm transition-colors ${
+                      active
+                        ? tab.activeColor
+                        : `text-slate-600 ${tab.hoverColor} hover:underline`
+                    }`}
+                  >
+                    {tab.label}
+                  </Link>
+                )
+              })}
+            </div>
           </div>
-          <span className="font-bold text-xl text-slate-900 hidden sm:inline">Kealee</span>
-        </Link>
 
-        {/* Desktop nav */}
-        <div className="hidden lg:flex items-center gap-4 flex-1 overflow-x-auto">
-          <ServicesDropdown />
-          {navLinks.map((link) => (
+          {/* RIGHT: Divider + Account */}
+          <div className="flex items-center gap-4">
+            {/* Divider (desktop only) */}
+            <div className="hidden lg:block w-px h-6 bg-gray-300" />
+
             <Link
-              key={link.href}
-              href={link.href}
-              className={`whitespace-nowrap font-medium text-sm transition ${
-                pathname === link.href
-                  ? 'text-orange-600'
-                  : 'text-slate-600 hover:text-orange-600'
-              }`}
+              href="/auth/sign-in"
+              className="hidden sm:block text-sm text-slate-600 hover:text-slate-900 font-medium transition whitespace-nowrap"
             >
-              {link.label}
+              Sign in
             </Link>
-          ))}
 
-          {/* Divider */}
-          <span className="w-px h-4 bg-slate-200 flex-shrink-0" />
-
-          {/* Action links */}
-          {actionLinks.map((link) => (
             <Link
-              key={link.href}
-              href={link.href}
-              className={`whitespace-nowrap font-medium text-sm transition ${
-                pathname === link.href || pathname?.startsWith(link.href + '/')
-                  ? 'text-[#E8724B]'
-                  : 'text-[#1A2B4A] hover:text-[#E8724B]'
-              }`}
+              href="/concept"
+              className="hidden sm:flex items-center px-5 py-2 bg-[#E8724B] hover:bg-[#D45C33] active:bg-[#C04820] text-white font-semibold rounded-lg text-sm transition-all shadow-sm hover:shadow-md whitespace-nowrap"
             >
-              {link.label}
-            </Link>
-          ))}
-        </div>
-
-        {/* Auth + CTA */}
-        <div className="hidden lg:flex items-center gap-3 flex-shrink-0 ml-auto">
-          <Link href="/auth/sign-in" className="text-slate-600 hover:text-slate-900 font-medium text-sm transition whitespace-nowrap">
-            Sign in
-          </Link>
-          <Link href="/concept">
-            <button className="bg-[#E8724B] hover:bg-[#D45C33] text-white font-semibold px-4 py-2 rounded-lg text-sm transition whitespace-nowrap shadow-sm shadow-orange-200">
               Get Started
-            </button>
-          </Link>
-        </div>
+            </Link>
 
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="lg:hidden p-2 text-slate-600 hover:text-slate-900 ml-auto"
-          aria-label="Toggle menu"
-        >
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 text-slate-600 hover:text-slate-900 transition"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-slate-200 bg-white max-h-[80vh] overflow-y-auto">
           <div className="px-4 py-4 space-y-1">
-            {/* Services list */}
-            <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Services</p>
-            {SERVICES.map((svc) => (
-              <Link
-                key={svc.slug}
-                href={`/services/${svc.slug}`}
-                className="block rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {svc.label}
-                <span className="text-xs text-slate-400 ml-2">{svc.priceDisplay}</span>
-              </Link>
-            ))}
+            {/* Services accordion */}
+            <MobileServicesAccordion onClose={() => setMobileMenuOpen(false)} />
 
-            <div className="border-t border-slate-100 my-2 pt-2">
-              {navLinks.map((link) => (
+            {/* Main tabs */}
+            {NAV_TABS.map((tab) => {
+              const active = isActive(tab.href)
+              return (
                 <Link
-                  key={link.href}
-                  href={link.href}
+                  key={tab.href}
+                  href={tab.href}
+                  onClick={() => setMobileMenuOpen(false)}
                   className={`block rounded-lg px-3 py-2.5 font-medium text-sm transition ${
-                    pathname === link.href
-                      ? 'bg-orange-50 text-orange-600'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    active ? 'bg-orange-50 text-[#E8724B]' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                   }`}
-                  onClick={() => setMobileMenuOpen(false)}
                 >
-                  {link.label}
+                  {tab.label}
                 </Link>
-              ))}
-            </div>
+              )
+            })}
 
-            <div className="border-t border-slate-100 my-2 pt-2">
-              <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Get Started</p>
-              {actionLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`block rounded-lg px-3 py-2.5 font-semibold text-sm transition ${
-                    pathname === link.href || pathname?.startsWith(link.href + '/')
-                      ? 'bg-orange-50 text-[#E8724B]'
-                      : 'text-[#1A2B4A] hover:bg-orange-50 hover:text-[#E8724B]'
-                  }`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-
-            <div className="pt-3 border-t border-slate-200 space-y-2 mt-2">
-              <Link href="/auth/sign-in" className="block w-full text-center py-2 text-slate-700 font-medium text-sm">
+            {/* Account */}
+            <div className="border-t border-slate-200 mt-3 pt-3 space-y-2">
+              <Link
+                href="/auth/sign-in"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
+              >
                 Sign in
               </Link>
-              <Link href="/concept" className="block w-full" onClick={() => setMobileMenuOpen(false)}>
-                <button className="w-full bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold py-3 rounded-xl transition">
-                  Get Started — Build Your Concept
+              <Link href="/concept" onClick={() => setMobileMenuOpen(false)}>
+                <button className="w-full bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold py-3.5 rounded-xl text-base transition">
+                  Get Started — Design Your Concept
                 </button>
               </Link>
             </div>
