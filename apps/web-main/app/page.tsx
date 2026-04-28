@@ -13,7 +13,7 @@ export default function HomePage() {
   const ctaButtons = [
     {
       label: 'Get a Concept',
-      href: '/intake/exterior_concept',
+      href: '/intake/concept',
       icon: '🎨',
       description: 'Design concept & plan',
     },

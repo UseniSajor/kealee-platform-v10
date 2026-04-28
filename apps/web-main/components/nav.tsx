@@ -13,7 +13,7 @@ export function SiteNav() {
 
   // Primary CTAs shown left of center
   const primaryLinks = [
-    { href: '/intake/exterior_concept', label: 'Concept' },
+    { href: '/intake/concept', label: 'Concept' },
     { href: '/intake/cost_estimate', label: 'Estimate' },
     { href: '/intake/permit_path_only', label: 'Permit' },
     { href: '/marketplace', label: 'Marketplace' },
@@ -88,7 +88,7 @@ export function SiteNav() {
           <Link href="/auth/sign-in" className="text-slate-700 hover:text-slate-900 font-medium text-sm transition whitespace-nowrap">
             Sign in
           </Link>
-          <Link href="/intake/exterior_concept">
+          <Link href="/intake/concept">
             <button className="bg-orange-600 hover:bg-orange-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition whitespace-nowrap">
               Get Started
             </button>
@@ -127,7 +127,7 @@ export function SiteNav() {
               <Link href="/auth/sign-in" className="block w-full text-center py-2 text-slate-700 font-medium">
                 Sign in
               </Link>
-              <Link href="/intake/exterior_concept" className="block w-full">
+              <Link href="/intake/concept" className="block w-full">
                 <button className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 rounded-lg transition">
                   Get Started
                 </button>
