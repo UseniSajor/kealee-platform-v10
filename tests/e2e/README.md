@@ -1,4 +1,6 @@
 # E2E Testing Suite — Kealee Platform
+<!-- Updated: 2026-04-27 — Added MEGA PROMPT test specs for concept intake, deliverable, and full journeys -->
+
 
 Complete end-to-end testing system for Kealee Platform v20 using Playwright.
 

@@ -1,6 +1,9 @@
 /**
  * Mock data and API responses for E2E tests
+ * Updated per MEGA PROMPT testing spec — Concept & Permits Intake + Deliverables
  */
+
+// ── Legacy helpers (kept for existing specs) ──────────────────────────────────
 
 export const mockConceptResponse = {
   id: 'test-concept-123',
@@ -44,6 +47,109 @@ export const mockStripeCheckoutSession = {
   url: 'https://checkout.stripe.com/pay/cs_test_123456789',
 }
 
+// ── Test user profiles (from MEGA PROMPT §1.2) ─────────────────────────────
+
+export const TEST_USERS = {
+  userA: {
+    name: 'Alex Johnson',
+    email: 'alex.johnson@test.kealee.com',
+    phone: '202-555-0101',
+    projectPath: 'kitchen_remodel',
+    budget: '$50,000',
+    description: 'Modern kitchen with island, new appliances, granite counters',
+    address: '1234 Capitol Hill St NW, Washington DC 20024',
+    zipCode: '20024',
+  },
+  userB: {
+    name: 'Beth Martinez',
+    email: 'beth.martinez@test.kealee.com',
+    phone: '301-555-0102',
+    projectPath: 'bathroom_remodel',
+    budget: '$30,000',
+    description: 'Spa-style master bath with walk-in shower, double vanity, heated floors',
+    address: '456 River Rd, Temple Hills MD 20745',
+    zipCode: '20745',
+  },
+  userC: {
+    name: 'Carlos Wei',
+    email: 'carlos.wei@test.kealee.com',
+    phone: '703-555-0103',
+    projectPath: 'whole_home_remodel',
+    budget: '$100,000',
+    description: 'Full whole-house renovation: kitchen, bathrooms, flooring, paint, fixtures',
+    address: '789 Arlington Blvd, Arlington VA 22202',
+    zipCode: '22202',
+  },
+  userD: {
+    name: 'Dana Park',
+    email: 'dana.park@test.kealee.com',
+    phone: '410-555-0104',
+    projectPath: 'garden_concept',
+    budget: '$15,000',
+    description: 'Native plant garden with drip irrigation, stone patio, and evening lighting',
+    address: '321 Inner Harbor Way, Baltimore MD 21201',
+    zipCode: '21201',
+  },
+} as const
+
+// ── Mock intake API responses ─────────────────────────────────────────────────
+
+export const mockIntakeResponse = {
+  intakeId: 'test-intake-uuid-001',
+  status: 'paid',
+  deliverableUrl: '/concept/deliverable?intakeId=test-intake-uuid-001',
+}
+
+export const mockConceptOutput = {
+  designConcept: {
+    style: 'Modern Contemporary',
+    colorPalette: ['Crisp White', 'Charcoal Grey', 'Brushed Brass', 'Warm Oak'],
+    keyFeatures: [
+      'Waterfall quartz island with seating for 4',
+      'Custom shaker cabinetry with soft-close hardware',
+      'Under-cabinet LED strip lighting',
+      'Professional-grade 48" range',
+      'Built-in beverage center',
+    ],
+  },
+  mepSystem: {
+    electrical: 'New 20A dedicated circuits for island outlets, 15A circuits for LED recessed lighting (12 fixtures), range hood wiring',
+    plumbing: 'Island sink connection with 3/4" supply lines, filtered water dispenser rough-in, dishwasher connection upgrade',
+    hvac: 'Updated range hood ductwork (6" to 8" transition), recirculating ventilation option',
+    lighting: '12x recessed LED (6000K/2700K switchable), 3x pendant island lights, 18ft under-cabinet strip, toe-kick lighting',
+  },
+  billOfMaterials: [
+    { item: 'Custom shaker cabinetry', quantity: 1, unit: 'set', estimatedCost: 18000, description: 'Soft-close hinges, dovetail drawers, painted finish' },
+    { item: 'Quartz countertops', quantity: 95, unit: 'sqft', estimatedCost: 9500, description: 'Calacatta white, waterfall island edge' },
+    { item: 'Subway tile backsplash', quantity: 42, unit: 'sqft', estimatedCost: 1680, description: '3x6 white ceramic, subway pattern' },
+    { item: 'Professional range (48")', quantity: 1, unit: 'unit', estimatedCost: 8500, description: '6-burner + griddle, dual oven' },
+    { item: 'LED recessed lighting', quantity: 12, unit: 'fixtures', estimatedCost: 1440, description: '6" gimbal, 2700K/6000K switchable' },
+    { item: 'Island pendant lights', quantity: 3, unit: 'fixtures', estimatedCost: 900, description: 'Brushed brass, 12" diameter' },
+    { item: 'Labor — demolition', quantity: 40, unit: 'hours', estimatedCost: 3200, description: 'Removal and disposal of existing kitchen' },
+    { item: 'Labor — installation', quantity: 120, unit: 'hours', estimatedCost: 9600, description: 'Cabinet, countertop, appliance installation' },
+  ],
+  estimatedCost: 52820,
+  projectTimeline: '10–14 weeks',
+  description: 'A modern chef\'s kitchen with a large island, premium appliances, and custom cabinetry that maximizes your $50,000 budget while delivering a professional-grade cooking environment.',
+  includes: [
+    '3 concept visuals (before/after renders)',
+    'Bill of Materials (BOM) with line-item costs',
+    'MEP specification (electrical, plumbing, HVAC, lighting)',
+    'Detailed cost estimate',
+    'Design brief with style direction',
+    'Zoning & permit scope brief',
+    'Path-to-approval summary',
+    '30-min consultation call',
+  ],
+}
+
+export const mockLeadResponse = {
+  success: true,
+  saved: false, // CI/test environments won't have real DB
+}
+
+// ── Legacy test data aliases ────────────────────────────────────────────────
+
 export const testUserData = {
   name: 'John Homeowner',
   email: 'john@example.com',
@@ -64,9 +170,8 @@ export const testEstimationData = {
   projectDescription: 'Complete kitchen remodel with new cabinets, countertops, and appliances',
 }
 
-/**
- * API response interceptor helper
- */
+// ── API interceptor helpers ────────────────────────────────────────────────
+
 export async function mockApiResponse(
   page: any,
   urlPattern: string | RegExp,
@@ -82,9 +187,6 @@ export async function mockApiResponse(
   })
 }
 
-/**
- * API error interceptor helper
- */
 export async function mockApiError(
   page: any,
   urlPattern: string | RegExp,

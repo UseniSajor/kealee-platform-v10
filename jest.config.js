@@ -26,6 +26,7 @@ module.exports = {
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/apps/web-main/$1',
       },
+      setupFilesAfterEnv: ['<rootDir>/apps/web-main/__tests__/setup.ts'],
     },
   ],
   collectCoverageFrom: [
