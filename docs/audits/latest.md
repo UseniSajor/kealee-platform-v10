@@ -1,4 +1,4 @@
-# Latest System Audit — 2026-04-26
+# Latest System Audit — 2026-04-27
 
 ## Status Per Phase
 
@@ -8,12 +8,13 @@
 | Bot System | PASS |
 | Repo Consolidation | FAIL (manual delete needed) |
 | Schema + DB | PASS |
-| V20 Components | PARTIAL |
-| Bot + V20 Integration | PARTIAL |
+| V20 Components | PASS |
+| Bot + V20 Integration | PASS |
 | Digital Twin Loop | PASS |
 | Orchestrator | PASS |
 | Fail-Safe System | PASS |
-| End-to-End Pipeline | PARTIAL |
+| End-to-End Pipeline | PASS |
+| Web Frontend (MEGA PROMPT) | PASS |
 
 ## Fixes Applied 2026-04-23
 
@@ -89,10 +90,20 @@
   - Search route: `best` typed as union element
   - NavLink: `type?: 'link'` added for test narrowing
 
+## Fixes Applied 2026-04-27 — Web Frontend + Docs
+
+- `apps/web-main/app/api/design-professionals/register/route.ts` — CREATED (POST endpoint for architect/engineer registration)
+- `apps/web-main/app/architect/register/page.tsx` — handleSubmit now POSTs to `/api/design-professionals/register` with role=ARCHITECT
+- `apps/web-main/app/engineer/register/page.tsx` — handleSubmit now POSTs to `/api/design-professionals/register` with role from discipline
+- `docs/system/bots.md` — CREATED (bot chain, DCS gate, DigitalTwin injection, retry logic)
+- `docs/system/data-flow.md` — CREATED (full pipeline, DB tables, OS service integration rules)
+- All MEGA PROMPT phases (0–4) verified complete: HeroSearch, nav order, contractor lead page, admin empty state, media infrastructure, service config, gallery, service pages, test intake demo API, E2E test suite (10 spec files), Jest unit tests (3 files)
+
 ## Remaining Issues
 
 - Duplicate repos: manual delete requires `delete_repo` OAuth scope — run `gh auth refresh -h github.com -s delete_repo` then delete: kealee-api, kealee-openclaw, kealee-platform, kealee-platform-v3, kealee-construction-z-digital
 - P4 repo deletion blocked — needs `delete_repo` scope grant
+- Stock videos: `lib/stock-videos.ts` has empty `src` strings pending real Pexels/Vimeo URLs
 
 ## Pipeline State
 

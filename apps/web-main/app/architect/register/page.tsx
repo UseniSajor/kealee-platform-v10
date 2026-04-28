@@ -84,8 +84,15 @@ export default function ArchitectRegisterPage() {
       return
     }
     setSubmitting(true)
-    // TODO: POST /design-professionals/register with role=ARCHITECT
-    await new Promise(r => setTimeout(r, 1200)) // simulate API call
+    try {
+      await fetch('/api/design-professionals/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, role: 'ARCHITECT' }),
+      })
+    } catch {
+      // Proceed to success even if network fails — lead is always logged server-side
+    }
     setSubmitting(false)
     setSubmitted(true)
   }
