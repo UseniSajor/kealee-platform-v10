@@ -33,7 +33,7 @@
 html { scroll-behavior: smooth; }
 body {
   font-family: var(--font-dm, 'DM Sans'), sans-serif;
-  background: #FFFFFF;
+  background: #FFFBF5;
   color: #1A1C1B;
   line-height: 1.6;
   overflow-x: hidden;

@@ -46,7 +46,7 @@ function ServicesDropdown() {
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full mt-1 w-[600px] bg-white rounded-2xl shadow-xl border border-slate-200 p-5 z-50">
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[600px] bg-white rounded-2xl shadow-xl border border-slate-200 p-5 z-50">
           <div className="grid grid-cols-3 gap-5">
             {SERVICE_GROUPS.map((group) => (
               <div key={group.label}>
@@ -205,13 +205,6 @@ export function SiteNav() {
             </Link>
 
             <Link
-              href="/build"
-              className="hidden sm:flex items-center px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] text-white font-semibold rounded-lg text-sm transition-all shadow-sm hover:shadow-md whitespace-nowrap"
-            >
-              Build
-            </Link>
-
-            <Link
               href="/concept"
               className="hidden sm:flex items-center px-5 py-2 bg-[#E8724B] hover:bg-[#D45C33] active:bg-[#C04820] text-white font-semibold rounded-lg text-sm transition-all shadow-sm hover:shadow-md whitespace-nowrap"
             >
@@ -262,11 +255,6 @@ export function SiteNav() {
                 className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
               >
                 Sign in
-              </Link>
-              <Link href="/build" onClick={() => setMobileMenuOpen(false)}>
-                <button className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold py-3 rounded-xl text-sm transition mb-2">
-                  Build
-                </button>
               </Link>
               <Link href="/concept" onClick={() => setMobileMenuOpen(false)}>
                 <button className="w-full bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold py-3.5 rounded-xl text-base transition">

@@ -17,10 +17,9 @@ import { EmptyState } from '@/components/ui/EmptyState'
 type ServiceItem = {
   slug: string
   label: string
-  priceRange: string
-  typical: string
+  price: number
+  delivery: string
   popular?: boolean
-  href: string
 }
 
 type ServiceCategory = {
@@ -31,7 +30,6 @@ type ServiceCategory = {
   Icon: React.ElementType
   services: ServiceItem[]
   trades: string[]
-  fromPrice: string
 }
 
 // ─── Service Category Data ─────────────────────────────────────────────────────
@@ -43,13 +41,11 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     color: '#7C3AED',
     bgLight: '#F5F3FF',
     Icon: Home,
-    fromPrice: '$10K',
     services: [
-      { slug: 'kitchen_remodel',      label: 'Kitchen Remodel',        priceRange: '$25K–$80K',   typical: '8–16 weeks',  popular: true, href: '/concept?service=kitchen' },
-      { slug: 'bathroom_remodel',     label: 'Bathroom Remodel',       priceRange: '$10K–$40K',   typical: '4–8 weeks',                 href: '/concept?service=bathroom' },
-      { slug: 'whole_home_reno',      label: 'Whole-Home Renovation',  priceRange: '$75K–$250K',  typical: '16–36 weeks',               href: '/concept?service=whole-house' },
-      { slug: 'interior_painting',    label: 'Interior Painting',      priceRange: '$3K–$15K',    typical: '1–2 weeks',                 href: '/concept' },
-      { slug: 'flooring',             label: 'Flooring',               priceRange: '$8K–$30K',    typical: '1–3 weeks',                 href: '/concept' },
+      { slug: 'kitchen_remodel',     label: 'Kitchen Design Package',  price: 395, delivery: '3–5 days', popular: true },
+      { slug: 'bathroom_remodel',    label: 'Bathroom Design Package', price: 295, delivery: '2–4 days' },
+      { slug: 'interior_reno_concept', label: 'Interior Reno Concept', price: 345, delivery: '3–5 days' },
+      { slug: 'interior_renovation', label: 'Interior Renovation',     price: 345, delivery: '3–5 days' },
     ],
     trades: ['General Contractor', 'Flooring', 'Painting', 'Drywall', 'Electrician'],
   },
@@ -59,12 +55,10 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     color: '#E8793A',
     bgLight: '#FFF7ED',
     Icon: Wrench,
-    fromPrice: '$8K',
     services: [
-      { slug: 'roofing',              label: 'Roofing Replacement',    priceRange: '$8K–$30K',    typical: '1–2 weeks',   popular: true, href: '/concept' },
-      { slug: 'siding',               label: 'Siding & Cladding',      priceRange: '$10K–$35K',   typical: '2–4 weeks',                 href: '/concept?service=facade' },
-      { slug: 'windows_doors',        label: 'Windows & Doors',        priceRange: '$8K–$25K',    typical: '1–2 weeks',                 href: '/concept' },
-      { slug: 'deck_patio',           label: 'Deck & Patio',           priceRange: '$15K–$50K',   typical: '4–8 weeks',                 href: '/concept?service=deck' },
+      { slug: 'exterior_concept',      label: 'Exterior Concept Package', price: 395, delivery: '3–5 days', popular: true },
+      { slug: 'capture_site_concept',  label: 'Site Capture + Concept',   price: 125, delivery: '1–2 days' },
+      { slug: 'design_build',          label: 'Design + Build Package',   price: 795, delivery: '5–7 days' },
     ],
     trades: ['General Contractor', 'Roofing', 'Painting', 'Masonry', 'Landscaping'],
   },
@@ -74,11 +68,8 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     color: '#2ABFBF',
     bgLight: '#F0FDFD',
     Icon: Plus,
-    fromPrice: '$30K',
     services: [
-      { slug: 'room_addition',        label: 'Room Addition',          priceRange: '$50K–$200K',  typical: '12–20 weeks', popular: true, href: '/concept?service=addition' },
-      { slug: 'adu_inlaw',            label: 'ADU / In-law Suite',     priceRange: '$80K–$250K',  typical: '16–28 weeks',               href: '/concept?service=addition' },
-      { slug: 'garage_addition',      label: 'Garage Addition',        priceRange: '$30K–$80K',   typical: '8–12 weeks',                href: '/concept?service=addition' },
+      { slug: 'addition_expansion', label: 'Addition / Expansion', price: 495, delivery: '3–5 days' },
     ],
     trades: ['General Contractor'],
   },
@@ -88,10 +79,9 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     color: '#3B82F6',
     bgLight: '#EFF6FF',
     Icon: LayoutGrid,
-    fromPrice: '$40K',
     services: [
-      { slug: 'full_gut_rehab',       label: 'Full Gut Rehab',         priceRange: '$120K–$400K', typical: '20–40 weeks', popular: true, href: '/concept?service=whole-house' },
-      { slug: 'cosmetic_reno',        label: 'Cosmetic Renovation',    priceRange: '$40K–$120K',  typical: '8–16 weeks',                href: '/concept?service=interior' },
+      { slug: 'whole_home_concept', label: 'Whole Home Concept',  price: 595, delivery: '4–6 days', popular: true },
+      { slug: 'whole_home_remodel', label: 'Whole-Home Remodel',  price: 695, delivery: '4–6 days' },
     ],
     trades: ['General Contractor'],
   },
@@ -101,11 +91,12 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     color: '#1A2B4A',
     bgLight: '#F0F4FF',
     Icon: Building2,
-    fromPrice: '$120K',
     services: [
-      { slug: 'single_family',        label: 'Single-Family Home',     priceRange: '$300K–$800K', typical: '10–18 months', popular: true, href: '/new-construction/intake' },
-      { slug: 'adu_cottage',          label: 'ADU / Cottage',          priceRange: '$120K–$350K', typical: '6–12 months',                href: '/new-construction/intake' },
-      { slug: 'townhome_build',       label: 'Townhome Build',         priceRange: '$250K–$600K', typical: '12–20 months',               href: '/new-construction/intake' },
+      { slug: 'developer_concept',          label: 'Developer Concept',           price: 795,  delivery: '5–7 days' },
+      { slug: 'single_lot_development',     label: 'Single-Lot Development',      price: 899,  delivery: '4–6 days' },
+      { slug: 'development_feasibility',    label: 'Feasibility Study',           price: 1499, delivery: '5–7 days' },
+      { slug: 'single_family_subdivision',  label: 'Single-Family Subdivision',   price: 1499, delivery: '6–8 days' },
+      { slug: 'townhome_subdivision',       label: 'Townhome Subdivision',        price: 1699, delivery: '7–10 days' },
     ],
     trades: ['General Contractor', 'Excavation', 'Steel / Structural'],
   },
@@ -115,11 +106,10 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     color: '#64748B',
     bgLight: '#F8FAFC',
     Icon: Store,
-    fromPrice: '$50K',
     services: [
-      { slug: 'office_fitout',        label: 'Office Fit-Out',         priceRange: '$50K–$300K',  typical: '8–16 weeks',  popular: true, href: '/contact' },
-      { slug: 'retail_buildout',      label: 'Retail Build-Out',       priceRange: '$60K–$250K',  typical: '8–14 weeks',                href: '/contact' },
-      { slug: 'mixed_use',            label: 'Mixed-Use Development',  priceRange: '$1M–$5M+',    typical: '12–24 months',               href: '/contact' },
+      { slug: 'commercial_office',     label: 'Commercial Office',       price: 1199, delivery: '5–7 days' },
+      { slug: 'mixed_use',             label: 'Mixed-Use Concept',       price: 1299, delivery: '6–8 days' },
+      { slug: 'multi_unit_residential',label: 'Multi-Unit Residential',  price: 999,  delivery: '5–7 days' },
     ],
     trades: ['General Contractor', 'HVAC', 'Roofing', 'Electrician', 'Plumber'],
   },
@@ -129,11 +119,8 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     color: '#38A169',
     bgLight: '#F0FFF4',
     Icon: Flower2,
-    fromPrice: '$5K',
     services: [
-      { slug: 'hardscape_patio',      label: 'Hardscape & Patio',      priceRange: '$15K–$60K',   typical: '2–4 weeks',   popular: true, href: '/concept?service=garden' },
-      { slug: 'full_landscape',       label: 'Full Landscape Design',  priceRange: '$20K–$80K',   typical: '4–8 weeks',                 href: '/concept?service=garden' },
-      { slug: 'irrigation',           label: 'Irrigation System',      priceRange: '$5K–$20K',    typical: '1–2 weeks',                 href: '/concept?service=garden' },
+      { slug: 'garden_concept', label: 'Garden Concept', price: 295, delivery: '2–4 days' },
     ],
     trades: ['Landscaping', 'Masonry', 'Irrigation'],
   },
@@ -142,48 +129,48 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
 // ─── Cross-Category Services ───────────────────────────────────────────────────
 
 const CROSS_SERVICES = [
-  { label: 'Design Concept',      price: 'From $149', href: '/concept',                  Icon: Zap,        desc: 'AI renders, materials & layout for your project' },
-  { label: 'Contractor Match',    price: '$199',       href: '/intake/contractor_match',  Icon: Users,      desc: 'Matched to 3 vetted local contractors' },
-  { label: 'Project Estimate',    price: 'From $595',  href: '/estimate',                 Icon: Calculator, desc: 'Detailed cost breakdown for contractor bidding' },
+  { label: 'Permit Package',    price: '$499', href: '/intake/permit_path_only', Icon: Shield,     desc: 'Permit-ready drawings + submission' },
+  { label: 'Cost Estimate',     price: '$595', href: '/intake/cost_estimate',    Icon: Calculator, desc: 'Detailed cost breakdown for bidding' },
+  { label: 'Contractor Match',  price: '$199', href: '/intake/contractor_match', Icon: Users,      desc: 'Matched to 3 vetted local contractors' },
 ]
 
 // ─── Combo Packages ────────────────────────────────────────────────────────────
 
 const COMBO_PACKAGES = [
   {
-    name: 'Design + Build',
-    desc: 'Concept design through full construction management',
-    price: 'Custom Quote',
-    href: '/new-construction',
-    color: '#1A2B4A',
-  },
-  {
-    name: 'Kitchen + Bath Bundle',
-    desc: 'Combined kitchen and primary bath renovation',
-    price: 'From $45K',
-    href: '/concept',
-    color: '#7C3AED',
-  },
-  {
-    name: 'Full Gut Rehab',
-    desc: 'Complete interior gut rehabilitation, all trades',
-    price: 'From $85K',
-    href: '/contact',
-    color: '#3B82F6',
-  },
-  {
-    name: 'ADU Complete',
-    desc: 'ADU design, permits, and build management end-to-end',
-    price: 'From $120K',
-    href: '/contact',
+    name: 'Design + Permit Starter',
+    desc: 'AI concept → permit-ready plans → permit submission',
+    price: 'From $2,095',
+    href: '/design-services',
     color: '#2ABFBF',
   },
   {
-    name: 'Exterior Refresh',
-    desc: 'Roof, siding, windows, and deck all-in-one package',
-    price: 'From $35K',
-    href: '/concept',
+    name: 'Concept + Estimate',
+    desc: 'AI concept design + detailed cost estimate for contractor bidding',
+    price: 'From $990',
+    href: '/estimate',
     color: '#E8793A',
+  },
+  {
+    name: 'Permit + Owner Oversight',
+    desc: 'Full permit package + Owner Portal for milestone tracking',
+    price: 'From $597',
+    href: '/permits',
+    color: '#38A169',
+  },
+  {
+    name: 'Exterior Upgrade Package',
+    desc: 'Exterior AI concept + contractor match + milestone payments',
+    price: 'From $595',
+    href: '/products/exterior',
+    color: '#7C3AED',
+  },
+  {
+    name: 'ADU Complete',
+    desc: 'ADU concept + design services + permit + contractor match',
+    price: 'From $3,499',
+    href: '/contact',
+    color: '#1A2B4A',
   },
 ]
 
@@ -325,7 +312,7 @@ const DEFAULT_FILTERS: Filters = {
 function ServiceCard({ service, color }: { service: ServiceItem; color: string }) {
   return (
     <Link
-      href={service.href}
+      href={`/intake/${service.slug}`}
       className="group relative flex flex-col rounded-xl bg-white p-4 transition-all hover:shadow-md hover:-translate-y-0.5"
       style={{ border: `1px solid ${color}25`, borderLeft: `3px solid ${color}` }}
     >
@@ -338,10 +325,10 @@ function ServiceCard({ service, color }: { service: ServiceItem; color: string }
         </span>
       )}
       <p className="text-sm font-semibold text-gray-900 mb-1">{service.label}</p>
-      <p className="text-xs text-gray-400 mb-4">Typical: {service.typical}</p>
+      <p className="text-xs text-gray-400 mb-4">Delivered in {service.delivery}</p>
       <div className="mt-auto flex items-center justify-between">
         <span className="text-lg font-bold" style={{ color: '#1A2B4A' }}>
-          {service.priceRange}
+          ${service.price.toLocaleString()}
         </span>
         <span
           className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity group-hover:opacity-90"
@@ -365,6 +352,7 @@ function CategorySection({
   activeTrade: string
   onTradeClick: (trade: string) => void
 }) {
+  const minPrice = Math.min(...cat.services.map(s => s.price))
   return (
     <section id={cat.id} className="scroll-mt-16 rounded-2xl bg-white border border-gray-200 overflow-hidden shadow-sm">
       {/* ── Category Header ─────────────────────────────────────────────── */}
@@ -381,18 +369,18 @@ function CategorySection({
         <div className="flex-1 min-w-0">
           <h2 className="text-xl font-extrabold text-gray-900 leading-tight">{cat.label}</h2>
           <p className="text-sm text-gray-500 mt-0.5">
-            {cat.services.length} project type{cat.services.length > 1 ? 's' : ''} · from {cat.fromPrice}
+            {cat.services.length} AI-powered service{cat.services.length > 1 ? 's' : ''} · from ${minPrice.toLocaleString()}
           </p>
         </div>
         <div
           className="hidden sm:flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-white shrink-0"
           style={{ backgroundColor: cat.color }}
         >
-          {cat.services.length} {cat.services.length === 1 ? 'Type' : 'Types'}
+          {cat.services.length} {cat.services.length === 1 ? 'Service' : 'Services'}
         </div>
       </div>
 
-      {/* ── Service Cards ────────────────────────────────────────────────── */}
+      {/* ── AI Service Cards ─────────────────────────────────────────────── */}
       <div className="px-6 py-5">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-5">
           {cat.services.map(s => (
@@ -491,7 +479,7 @@ export default function MarketplacePage() {
             What are you building?
           </h1>
           <p className="mt-2 text-sm text-gray-500 mb-6">
-            Browse renovation types and connect with vetted local contractors in the DMV area.
+            AI-powered design, permits, and estimates — plus vetted local contractors.
           </p>
 
           {/* Search */}
@@ -501,7 +489,7 @@ export default function MarketplacePage() {
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search by project type, trade, or specialty..."
+              placeholder="Search by service, trade, or specialty..."
               className="w-full rounded-2xl border border-gray-200 py-3.5 pl-12 pr-12 text-sm shadow-sm placeholder-gray-400 focus:border-[#2ABFBF] focus:outline-none focus:ring-2 focus:ring-[#2ABFBF]/20"
             />
             {search && (
