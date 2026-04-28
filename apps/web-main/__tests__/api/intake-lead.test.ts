@@ -115,7 +115,7 @@ describe('POST /api/intake/lead', () => {
     })
     await POST(req)
 
-    const insertArg = mockInsert.mock.calls[0]?.[0]
+    const insertArg = (mockInsert.mock.calls[0] as unknown[])?.[0] as Record<string, any> | undefined
     expect(insertArg?.metadata?.contractorId).toBe('contractor-xyz')
   })
 
@@ -134,7 +134,7 @@ describe('POST /api/intake/lead', () => {
     })
     await POST(req)
 
-    const insertArg = mockInsert.mock.calls[0]?.[0]
+    const insertArg = (mockInsert.mock.calls[0] as unknown[])?.[0] as Record<string, any> | undefined
     expect(insertArg?.source).toBe('contractor-inquiry')
   })
 })

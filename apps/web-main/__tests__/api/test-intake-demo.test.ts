@@ -49,7 +49,7 @@ describe('POST /api/test/intake-demo', () => {
     mockFetch = jest.fn()
 
     // Default: endpoint is enabled (dev/test env)
-    delete process.env.NODE_ENV
+    ;(process.env as Record<string, string | undefined>).NODE_ENV = undefined
     process.env.ALLOW_TEST_INTAKE = 'true'
   })
 
@@ -126,7 +126,7 @@ describe('POST /api/test/intake-demo', () => {
     const POST = await getHandler()
     await POST(makeRequest({ projectPath: 'garden_concept' }))
 
-    const insertArg = mockInsertFn.mock.calls[0]?.[0]
+    const insertArg = (mockInsertFn.mock.calls[0] as unknown[])?.[0] as Record<string, any> | undefined
     if (insertArg) {
       expect(insertArg.status).toBe('paid')
       expect(insertArg.requires_payment).toBe(false)
