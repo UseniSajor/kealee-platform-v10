@@ -53,7 +53,7 @@ export default function HomeHero() {
           {[
             { value: '3–5 days', label: 'Concept delivery' },
             { value: '$99+', label: 'Starting price' },
-            { value: '10 services', label: 'Available' },
+            { value: 'AI-Powered', label: 'Design Engine' },
           ].map(stat => (
             <div key={stat.label} className="text-center">
               <p className="text-2xl font-extrabold text-white">{stat.value}</p>

@@ -1,5 +1,5 @@
 /**
- * Kealee Services Configuration — single source of truth for all 10 services.
+ * Kealee Services Configuration — single source of truth for all services.
  * Used by homepage, service detail pages, concept intake, and pricing.
  */
 
@@ -48,7 +48,7 @@ function tier2(price: number): ServiceTier {
     available: price > 0,
     video: price > 0,
     badge: 'Popular',
-    videoDeliverables: price > 0 ? ['60s transformation video', 'HeyGen narration overlay', 'Downloadable MP4', 'Shareable link'] : undefined,
+    videoDeliverables: price > 0 ? ['60s AI transformation video', 'Professional narration overlay', 'Downloadable MP4', 'Shareable link'] : undefined,
   }
 }
 

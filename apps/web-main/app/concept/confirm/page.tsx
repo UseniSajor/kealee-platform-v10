@@ -65,8 +65,8 @@ const TIER_DELIVERABLES: Record<1 | 2 | 3, TierDeliverable[]> = {
       icon: Video,
       title: '60-Second Transformation Video (1080p)',
       items: [
-        'HeyGen AI avatar narration (30s)',
-        'Runway ML before → after transformation (20s)',
+        'AI avatar narration with professional voiceover (30s)',
+        'AI-generated before → after transformation (20s)',
         'Professional music, color grading & subtitles',
         'Download + streaming + social-ready formats',
       ],
@@ -129,7 +129,7 @@ const TIER_DELIVERABLES: Record<1 | 2 | 3, TierDeliverable[]> = {
       items: [
         '60s Full  ·  30s Mobile  ·  15s Social  ·  10s Preview',
         '4K resolution, multiple aspect ratios',
-        'HeyGen narration + Runway transformation',
+        'AI narration + AI transformation sequence',
         'Music options & custom branding',
       ],
     },

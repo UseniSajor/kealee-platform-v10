@@ -69,7 +69,7 @@ function ServicesDropdown() {
             ))}
           </div>
           <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
-            <p className="text-xs text-slate-500">10 services · Delivered in 2–6 days</p>
+            <p className="text-xs text-slate-500">Delivered in 2–6 days</p>
             <Link
               href="/gallery"
               onClick={() => setOpen(false)}

@@ -18,7 +18,7 @@ function ServiceGallery() {
     <section id="services" className="py-24 bg-white scroll-mt-16">
       <div className="mx-auto max-w-7xl px-4">
         <div className="text-center mb-14">
-          <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-3">10 Services</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-3">Our Services</p>
           <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">What We Can Transform</h2>
           <p className="mt-3 text-slate-500 max-w-xl mx-auto">
             Choose a project type and get an AI-generated concept with full cost estimate and permit scope.
@@ -293,7 +293,7 @@ function FinalCTA() {
           </Link>
         </div>
         <div className="mt-8 flex justify-center gap-6 flex-wrap">
-          {['No commitment required', '10 service types', 'Delivered in days'].map(item => (
+          {['No commitment required', 'Multiple service types', 'Delivered in days'].map(item => (
             <span key={item} className="flex items-center gap-1.5 text-sm text-orange-100">
               <CheckCircle2 className="w-4 h-4 text-white" /> {item}
             </span>
