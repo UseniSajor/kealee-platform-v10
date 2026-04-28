@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
-  "buildCommand": "cd ../.. && pnpm --filter @kealee/auth build && pnpm --filter @kealee/ai build && pnpm --filter command-center build",
+  "buildCommand": "cd ../.. && pnpm --filter @kealee/database build && pnpm --filter @kealee/auth build && pnpm --filter @kealee/ai build && pnpm --filter command-center build",
   "outputDirectory": ".next"
 }
