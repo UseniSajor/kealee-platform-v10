@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Loader2, AlertCircle, ArrowRight, CheckCircle2, Clock, Shield, Zap } from 'lucide-react'
+import { Loader2, AlertCircle, ArrowRight, CheckCircle2, Clock, Shield, Zap, Package } from 'lucide-react'
+import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 
 const AGENT_MAP: Record<string, string> = {
   exterior_concept: 'design', garden_concept: 'design', whole_home_concept: 'design',
@@ -88,10 +89,12 @@ function StepBar({ step }: { step: 'details' | 'review' }) {
 // ── Order summary sidebar ──────────────────────────────────────────────────────
 function OrderSummary({
   priceInfo,
+  includes,
   agentInsight,
   insightLoading,
 }: {
   priceInfo: { label: string; amount: number; delivery: string }
+  includes: string[]
   agentInsight: AgentInsight | null
   insightLoading: boolean
 }) {
@@ -101,12 +104,12 @@ function OrderSummary({
       <div className="rounded-xl bg-white border border-slate-200 p-5 shadow-sm">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-orange-600 mb-1">Your Order</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-orange-600 mb-1">Your Package</p>
             <h3 className="text-base font-bold text-slate-900">{priceInfo.label}</h3>
           </div>
           <span className="text-xl font-black text-slate-900">{formatPrice(priceInfo.amount)}</span>
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 mb-4">
           <span className="flex items-center gap-2 text-sm text-slate-600">
             <Clock className="h-4 w-4 text-orange-500" /> Delivered in {priceInfo.delivery}
           </span>
@@ -116,6 +119,30 @@ function OrderSummary({
           <span className="flex items-center gap-2 text-sm text-slate-600">
             <CheckCircle2 className="h-4 w-4 text-blue-500" /> 30-min consultation included
           </span>
+        </div>
+
+        {/* What's included */}
+        {includes.length > 0 && (
+          <div className="border-t border-slate-100 pt-4">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Package className="h-3.5 w-3.5 text-slate-400" />
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-400">What's Included</p>
+            </div>
+            <ul className="space-y-1.5">
+              {includes.map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0 mt-0.5" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="mt-4 pt-3 border-t border-slate-100">
+          <Link href="/gallery" className="text-xs text-orange-600 hover:text-orange-700 font-semibold">
+            Browse all packages →
+          </Link>
         </div>
       </div>
 
@@ -191,6 +218,8 @@ export default function IntakePage() {
 
   const agentType = AGENT_MAP[projectPath] || 'design'
   const priceInfo = PRICE_MAP[projectPath] || { label: 'Project Package', amount: 39500, delivery: '3–5 days' }
+  const deliverable = SERVICE_DELIVERABLES[projectPath]
+  const includes = deliverable?.includes ?? []
 
   // Fetch AI insight in background — form is already visible
   useEffect(() => {
@@ -314,6 +343,19 @@ export default function IntakePage() {
             {/* ── DETAILS FORM ─────────────────────────────────────────────── */}
             {step === 'details' && (
               <form onSubmit={handleDetailsSubmit} className="space-y-5" noValidate>
+                {/* Package context — visible on mobile (sidebar is hidden) */}
+                <div className="lg:hidden rounded-xl bg-orange-50 border border-orange-200 p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold text-orange-700 uppercase tracking-widest mb-0.5">Ordering</p>
+                    <p className="text-sm font-bold text-slate-900">{priceInfo.label}</p>
+                    <p className="text-xs text-slate-500">Delivered in {priceInfo.delivery}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xl font-black text-slate-900">{formatPrice(priceInfo.amount)}</p>
+                    <Link href="/gallery" className="text-xs text-orange-600 font-semibold">change</Link>
+                  </div>
+                </div>
+
                 <div>
                   <h1 className="text-2xl font-extrabold text-slate-900">Tell us about your project</h1>
                   <p className="text-slate-500 mt-1 text-sm">
@@ -541,6 +583,7 @@ export default function IntakePage() {
           <div className="lg:col-span-2 lg:sticky lg:top-24">
             <OrderSummary
               priceInfo={priceInfo}
+              includes={includes}
               agentInsight={agentInsight}
               insightLoading={insightLoading}
             />
