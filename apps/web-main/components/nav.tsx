@@ -2,35 +2,96 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X, Search } from 'lucide-react'
-import { useState } from 'react'
-import ProjectSearchBar from './ProjectSearchBar'
+import { Menu, X, ChevronDown } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { SERVICES } from '@/lib/services-config'
+
+// Group services by category for dropdown
+const SERVICE_GROUPS = [
+  {
+    label: 'Remodels',
+    services: SERVICES.filter((s) => s.category === 'remodel'),
+  },
+  {
+    label: 'Additions & Outdoor',
+    services: SERVICES.filter((s) => s.category === 'addition' || s.category === 'landscape'),
+  },
+  {
+    label: 'Design & Build',
+    services: SERVICES.filter((s) => s.category === 'design' || s.category === 'construction'),
+  },
+]
+
+function ServicesDropdown() {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1 font-medium text-sm text-slate-600 hover:text-orange-600 transition whitespace-nowrap"
+      >
+        Services <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {open && (
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[600px] bg-white rounded-2xl shadow-xl border border-slate-200 p-5 z-50">
+          <div className="grid grid-cols-3 gap-5">
+            {SERVICE_GROUPS.map((group) => (
+              <div key={group.label}>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">{group.label}</p>
+                <ul className="space-y-1">
+                  {group.services.map((svc) => (
+                    <li key={svc.slug}>
+                      <Link
+                        href={`/services/${svc.slug}`}
+                        onClick={() => setOpen(false)}
+                        className="block rounded-lg px-2 py-1.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-700 transition"
+                      >
+                        {svc.label}
+                        <span className="block text-[11px] text-slate-400">{svc.priceDisplay}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+            <p className="text-xs text-slate-500">10 services · Delivered in 2–6 days</p>
+            <Link
+              href="/gallery"
+              onClick={() => setOpen(false)}
+              className="text-xs font-semibold text-orange-600 hover:text-orange-700"
+            >
+              Browse all →
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export function SiteNav() {
   const pathname = usePathname()
-  const isHome = pathname === '/'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Primary CTAs shown left of center
-  const primaryLinks = [
-    { href: '/intake/concept', label: 'Concept' },
-    { href: '/intake/cost_estimate', label: 'Estimate' },
-    { href: '/intake/permit_path_only', label: 'Permit' },
+  const navLinks = [
+    { href: '/gallery', label: 'Gallery' },
     { href: '/marketplace', label: 'Marketplace' },
-  ]
-
-  // Secondary info links shown right of center, lighter style
-  const secondaryLinks = [
     { href: '/faq', label: 'FAQ' },
-    { href: '/milestone-pay', label: 'Milestone Pay' },
-  ]
-
-  // Full list for mobile menu
-  const allLinks = [
-    ...primaryLinks,
-    ...secondaryLinks,
-    { href: '/homeowners', label: 'Homeowners' },
-    { href: '/contractors', label: 'Contractors' },
   ]
 
   return (
@@ -38,15 +99,16 @@ export function SiteNav() {
       <div className="mx-auto max-w-7xl px-4 h-16 flex items-center gap-6">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-          <div className="w-7 h-7 bg-orange-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+          <div className="w-7 h-7 bg-[#E8724B] rounded-lg flex items-center justify-center text-white font-bold text-sm">
             K
           </div>
           <span className="font-bold text-xl text-slate-900 hidden sm:inline">Kealee</span>
         </Link>
 
-        {/* Primary desktop links */}
-        <div className="hidden lg:flex items-center gap-5 flex-1">
-          {primaryLinks.map((link) => (
+        {/* Desktop nav */}
+        <div className="hidden lg:flex items-center gap-6 flex-1">
+          <ServicesDropdown />
+          {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -61,35 +123,13 @@ export function SiteNav() {
           ))}
         </div>
 
-        {/* Secondary links — always visible at lg */}
-        <div className="hidden lg:flex items-center gap-4 flex-shrink-0">
-          {secondaryLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`whitespace-nowrap rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                pathname === link.href
-                  ? 'border-orange-200 bg-orange-50 text-orange-700'
-                  : 'border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700'
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
-
-        {/* Search — only at xl to prevent overflow */}
-        <div className="hidden xl:block w-52 flex-shrink-0">
-          <ProjectSearchBar size="sm" />
-        </div>
-
-        {/* Auth */}
+        {/* Auth + CTA */}
         <div className="hidden lg:flex items-center gap-3 flex-shrink-0 ml-auto">
-          <Link href="/auth/sign-in" className="text-slate-700 hover:text-slate-900 font-medium text-sm transition whitespace-nowrap">
+          <Link href="/auth/sign-in" className="text-slate-600 hover:text-slate-900 font-medium text-sm transition whitespace-nowrap">
             Sign in
           </Link>
-          <Link href="/intake/concept">
-            <button className="bg-orange-600 hover:bg-orange-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition whitespace-nowrap">
+          <Link href="/concept">
+            <button className="bg-[#E8724B] hover:bg-[#D45C33] text-white font-semibold px-4 py-2 rounded-lg text-sm transition whitespace-nowrap shadow-sm shadow-orange-200">
               Get Started
             </button>
           </Link>
@@ -99,6 +139,7 @@ export function SiteNav() {
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="lg:hidden p-2 text-slate-600 hover:text-slate-900 ml-auto"
+          aria-label="Toggle menu"
         >
           {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -106,30 +147,46 @@ export function SiteNav() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-slate-200 bg-white">
+        <div className="lg:hidden border-t border-slate-200 bg-white max-h-[80vh] overflow-y-auto">
           <div className="px-4 py-4 space-y-1">
-            {allLinks.map((link) => (
+            {/* Services list */}
+            <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Services</p>
+            {SERVICES.map((svc) => (
               <Link
-                key={link.href}
-                href={link.href}
-                className={`block rounded-lg px-3 py-2.5 font-medium text-sm transition ${
-                  pathname === link.href
-                    ? 'bg-orange-50 text-orange-600'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                }`}
+                key={svc.slug}
+                href={`/services/${svc.slug}`}
+                className="block rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {link.label}
+                {svc.label}
+                <span className="text-xs text-slate-400 ml-2">{svc.priceDisplay}</span>
               </Link>
             ))}
-            <div className="pt-4 border-t border-slate-200 space-y-3 mt-2">
-              <ProjectSearchBar size="sm" />
-              <Link href="/auth/sign-in" className="block w-full text-center py-2 text-slate-700 font-medium">
+
+            <div className="border-t border-slate-100 my-2 pt-2">
+              {[...navLinks, { href: '/homeowners', label: 'Homeowners' }, { href: '/contractors', label: 'Contractors' }].map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`block rounded-lg px-3 py-2.5 font-medium text-sm transition ${
+                    pathname === link.href
+                      ? 'bg-orange-50 text-orange-600'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+
+            <div className="pt-3 border-t border-slate-200 space-y-2 mt-2">
+              <Link href="/auth/sign-in" className="block w-full text-center py-2 text-slate-700 font-medium text-sm">
                 Sign in
               </Link>
-              <Link href="/intake/concept" className="block w-full">
-                <button className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 rounded-lg transition">
-                  Get Started
+              <Link href="/concept" className="block w-full" onClick={() => setMobileMenuOpen(false)}>
+                <button className="w-full bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold py-3 rounded-xl transition">
+                  Get Started — Build Your Concept
                 </button>
               </Link>
             </div>

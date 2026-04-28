@@ -1,20 +1,70 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
-import { SERVICES } from '@/config/services'
-import { ServiceCard } from '@/components/ServiceCard'
-import { FilterBar } from '@/components/FilterBar'
+import { ArrowRight, Search, X } from 'lucide-react'
+import { SERVICES } from '@/lib/services-config'
+import type { Service } from '@/lib/services-config'
 
-const ALL_CATEGORIES = ['design', 'development', 'permit', 'estimate', 'match']
+const CATEGORIES = [
+  { key: '', label: 'All Services' },
+  { key: 'remodel', label: 'Remodels' },
+  { key: 'addition', label: 'Additions' },
+  { key: 'landscape', label: 'Landscape' },
+  { key: 'design', label: 'Design' },
+  { key: 'construction', label: 'New Build' },
+]
+
+function ServiceCard({ svc }: { svc: Service }) {
+  const minPrice = svc.tiers.find((t) => t.available)?.price ?? 0
+  const hasVideo = svc.tiers.some((t) => t.video)
+
+  return (
+    <Link href={`/services/${svc.slug}`}>
+      <div className="group rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer h-full flex flex-col">
+        {/* Image */}
+        <div className="relative h-44 overflow-hidden bg-slate-100 flex-shrink-0">
+          <Image
+            src={svc.heroImage}
+            alt={svc.label}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
+          {/* Badges */}
+          <div className="absolute top-3 left-3 flex gap-1.5">
+            <span className="rounded-full bg-black/50 backdrop-blur-sm px-2.5 py-0.5 text-[11px] font-semibold text-white capitalize">
+              {svc.category}
+            </span>
+            {hasVideo && (
+              <span className="rounded-full bg-[#E8724B]/90 backdrop-blur-sm px-2.5 py-0.5 text-[11px] font-semibold text-white">
+                + Video
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-4 flex flex-col flex-1">
+          <h3 className="text-[15px] font-bold text-slate-900 leading-tight mb-1">{svc.label}</h3>
+          <p className="text-xs text-slate-500 line-clamp-2 mb-3 flex-1">{svc.description}</p>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-bold text-[#E8724B]">{svc.priceDisplay}</span>
+            <span className="text-xs text-slate-400 flex items-center gap-1">
+              {svc.deliveryDays} <ArrowRight className="w-3 h-3" />
+            </span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  )
+}
 
 export default function GalleryPage() {
   const [activeCategory, setActiveCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-
-  const handleSearch = useCallback((q: string) => setSearchQuery(q), [])
 
   const filtered = useMemo(() => {
     let results = [...SERVICES]
@@ -26,7 +76,6 @@ export default function GalleryPage() {
       results = results.filter(
         (s) =>
           s.label.toLowerCase().includes(q) ||
-          s.tagline.toLowerCase().includes(q) ||
           s.description.toLowerCase().includes(q) ||
           s.category.toLowerCase().includes(q)
       )
@@ -35,46 +84,74 @@ export default function GalleryPage() {
   }, [activeCategory, searchQuery])
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Hero */}
-      <section
-        className="py-16 px-4 text-center"
-        style={{
-          background: 'linear-gradient(135deg, #1A2B4A 0%, #0F1D34 60%, #1A3B3B 100%)',
-        }}
-      >
+      <section className="bg-[#1A2B4A] py-16 px-4 text-center">
         <div className="mx-auto max-w-3xl">
-          <span className="inline-block rounded-full bg-[#E8793A]/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-[#E8793A] mb-5">
-            Service Gallery
-          </span>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
-            Every service. Every project type.
+          <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-4">Service Gallery</p>
+          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
+            Every Service. Every Project Type.
           </h1>
-          <p className="text-lg text-white/60 max-w-xl mx-auto">
-            Browse AI-powered design packages, permit services, cost estimates, and contractor matching—all in one place.
+          <p className="text-lg text-slate-300 max-w-xl mx-auto">
+            AI-designed concepts with professional videos, cost estimates, and permit roadmaps — starting at $99.
           </p>
         </div>
       </section>
 
-      {/* Filters */}
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <FilterBar
-          categories={ALL_CATEGORIES}
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
-          onSearch={handleSearch}
-          resultCount={filtered.length}
-        />
+      {/* Sticky filter bar */}
+      <div className="sticky top-16 z-40 bg-white border-b border-slate-200 shadow-sm">
+        <div className="mx-auto max-w-7xl px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          {/* Category chips */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.key}
+                onClick={() => setActiveCategory(cat.key)}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                  activeCategory === cat.key
+                    ? 'bg-[#E8724B] text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Search */}
+          <div className="relative sm:ml-auto w-full sm:w-56">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search services..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-8 py-1.5 rounded-lg border border-slate-200 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#E8724B] focus:outline-none focus:ring-2 focus:ring-[#E8724B]/20 transition"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          <span className="text-xs text-slate-400 whitespace-nowrap hidden sm:block">
+            {filtered.length} service{filtered.length !== 1 ? 's' : ''}
+          </span>
+        </div>
       </div>
 
       {/* Grid */}
-      <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-10">
         {filtered.length === 0 ? (
           <div className="py-20 text-center">
-            <p className="text-gray-400 text-lg mb-2">No services match your search.</p>
+            <p className="text-slate-400 text-lg mb-2">No services match your search.</p>
             <button
               onClick={() => { setActiveCategory(''); setSearchQuery('') }}
-              className="text-[#E8793A] font-semibold text-sm underline"
+              className="text-[#E8724B] font-semibold text-sm"
             >
               Clear filters
             </button>
@@ -82,18 +159,16 @@ export default function GalleryPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
-              {filtered.map((service) => (
+              {filtered.map((svc) => (
                 <motion.div
-                  key={service.key}
+                  key={svc.slug}
                   layout
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Link href={`/services/${service.slug}`} className="block mb-2">
-                    <ServiceCard service={service} />
-                  </Link>
+                  <ServiceCard svc={svc} />
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -103,13 +178,13 @@ export default function GalleryPage() {
 
       {/* CTA strip */}
       <div className="bg-[#1A2B4A] py-12 px-4 text-center">
-        <h2 className="text-2xl font-extrabold text-white mb-3">Not sure which service you need?</h2>
-        <p className="text-white/60 mb-6">Answer a few questions and we'll recommend the right package.</p>
+        <h2 className="text-2xl font-bold text-white mb-3">Ready to get started?</h2>
+        <p className="text-slate-400 mb-6">Tell us about your project and get an AI-designed concept in days.</p>
         <Link
-          href="/get-started"
-          className="inline-flex items-center gap-2 rounded-xl bg-[#E8793A] px-7 py-3.5 text-sm font-bold text-white hover:bg-orange-500 transition"
+          href="/concept"
+          className="inline-flex items-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold px-7 py-3.5 rounded-xl transition-all duration-200"
         >
-          Get Started <ArrowRight className="h-4 w-4" />
+          Build My Concept <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
     </div>
