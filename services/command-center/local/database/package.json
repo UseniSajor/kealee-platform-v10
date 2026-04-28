@@ -1,0 +1,10 @@
+{
+  "name": "@kealee/database",
+  "version": "1.0.0",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "type": "module",
+  "dependencies": {
+    "@prisma/client": "^5.20.0"
+  }
+}

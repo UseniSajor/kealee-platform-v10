@@ -1,3 +1,6 @@
+# ── Build stage ────────────────────────────────────────────────────────────────
+# Build context: services/command-center/ (Railway root directory for this service)
+# Workspace deps replaced with local/*/  file: references — no monorepo root needed.
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -5,28 +8,26 @@ WORKDIR /app
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@8.15.9 --activate
 
-# Copy workspace manifests
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY services/command-center/package.json ./services/command-center/
+# Copy manifests first for layer caching
+COPY package.json ./
+COPY local/ ./local/
 
-# Install deps
-RUN pnpm install --frozen-lockfile --filter @kealee/command-center...
+# Install all deps (file: references resolve to ./local/*)
+RUN pnpm install --no-frozen-lockfile --ignore-scripts
 
-# Copy source
-COPY services/command-center ./services/command-center
-
-# Build
-WORKDIR /app/services/command-center
+# Copy source and build
+COPY . .
 RUN pnpm run build
 
-# ── Runtime ────────────────────────────────────────────────────────────────────
+# ── Runtime stage ──────────────────────────────────────────────────────────────
 FROM node:20-alpine
 
-WORKDIR /app/services/command-center
+WORKDIR /app
 
-COPY --from=builder /app/services/command-center/dist ./dist
-COPY --from=builder /app/services/command-center/package.json ./
-COPY --from=builder /app/node_modules /app/node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/local ./local
 
 ENV NODE_ENV=production
 ENV PORT=3001
