@@ -156,11 +156,6 @@ export default function CommandCenterPage() {
     } catch (err: any) {
       console.error('[CommandCenter] Fetch error:', err)
       setError(err.message || 'Failed to fetch system status')
-
-      // Use mock data in development so the UI is always visible
-      if (!data) {
-        setData(getMockData())
-      }
     } finally {
       setLoading(false)
     }
@@ -177,7 +172,25 @@ export default function CommandCenterPage() {
     )
   }
 
-  const status = data ?? getMockData()
+  if (!data) {
+    return (
+      <div className="p-6">
+        <div className="mx-auto max-w-md rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+            <Activity className="h-6 w-6 text-gray-400" />
+          </div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">No data available</h2>
+          <p className="text-sm text-gray-500 mb-6">Command center API offline. Check that the API server is running.</p>
+          <Button variant="outline" onClick={fetchData}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  const status = data
 
   return (
     <div className="p-6 space-y-6">
@@ -205,12 +218,6 @@ export default function CommandCenterPage() {
           </Button>
         </div>
       </div>
-
-      {error && (
-        <div className="rounded-md bg-yellow-50 border border-yellow-200 p-3 text-sm text-yellow-800">
-          API unavailable — showing cached / mock data. {error}
-        </div>
-      )}
 
       {/* ── Summary Stats ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -415,41 +422,3 @@ export default function CommandCenterPage() {
   )
 }
 
-// ── Mock Data (fallback when API is unavailable) ───────────────────────────
-
-function getMockData(): SystemStatus {
-  const appNames: Record<string, string> = {
-    'APP-01': 'Bid Engine',
-    'APP-02': 'Visit Scheduler',
-    'APP-03': 'Change Order Processor',
-    'APP-04': 'Report Generator',
-    'APP-05': 'Permit Tracker',
-    'APP-06': 'Inspection Coordinator',
-    'APP-07': 'Budget Tracker',
-    'APP-08': 'Communication Hub',
-    'APP-09': 'Task Queue Manager',
-    'APP-10': 'Document Generator',
-    'APP-11': 'Predictive Engine',
-    'APP-12': 'Smart Scheduler',
-    'APP-13': 'QA Inspector',
-    'APP-14': 'Decision Support',
-    'APP-15': 'Dashboard Monitor',
-  }
-
-  return {
-    apps: Object.entries(appNames).map(([id, name]) => ({
-      appId: id,
-      name,
-      status: 'healthy' as const,
-      metrics: null,
-      lastActivity: null,
-    })),
-    alerts: [],
-    summary: {
-      totalJobsToday: 0,
-      avgProcessingTime: 0,
-      successRate: 1,
-      activeWorkers: 0,
-    },
-  }
-}

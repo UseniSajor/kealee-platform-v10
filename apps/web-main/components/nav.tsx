@@ -13,9 +13,9 @@ export function SiteNav() {
 
   // Primary CTAs shown left of center
   const primaryLinks = [
-    { href: '/intake/exterior_concept', label: 'Plan Project' },
-    { href: '/intake/permit_path_only', label: 'Get Permit' },
-    { href: '/intake/cost_estimate', label: 'Price Project' },
+    { href: '/intake/exterior_concept', label: 'Concept' },
+    { href: '/intake/cost_estimate', label: 'Estimate' },
+    { href: '/intake/permit_path_only', label: 'Permit' },
     { href: '/marketplace', label: 'Marketplace' },
   ]
 

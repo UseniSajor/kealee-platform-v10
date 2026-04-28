@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight, CheckCircle2, Zap, Clock, DollarSign } from 'lucide-react'
+import { HeroSearch } from '@/components/HeroSearch'
 
 export const metadata: Metadata = {
   title: 'Kealee — Your Construction Execution Engine',
@@ -11,22 +12,22 @@ export const metadata: Metadata = {
 export default function HomePage() {
   const ctaButtons = [
     {
-      label: 'Plan My Project',
+      label: 'Get a Concept',
       href: '/intake/exterior_concept',
-      icon: '🏗️',
+      icon: '🎨',
       description: 'Design concept & plan',
-    },
-    {
-      label: 'Get My Permit',
-      href: '/intake/permit_path_only',
-      icon: '📋',
-      description: 'Permit roadmap & filing',
     },
     {
       label: 'Price My Project',
       href: '/intake/cost_estimate',
       icon: '💰',
       description: 'Detailed cost estimate',
+    },
+    {
+      label: 'Get My Permit',
+      href: '/intake/permit_path_only',
+      icon: '📋',
+      description: 'Permit roadmap & filing',
     },
   ]
 
@@ -56,16 +57,7 @@ export default function HomePage() {
 
           {/* SEARCH-STYLE INPUT */}
           <div className="mt-12 mx-auto max-w-2xl">
-            <div className="relative rounded-2xl bg-white shadow-lg border border-slate-200 p-2">
-              <input
-                type="text"
-                placeholder="Ask anything about your project..."
-                className="w-full bg-transparent px-6 py-4 text-lg outline-none placeholder:text-slate-400"
-              />
-              <button className="absolute right-3 top-1/2 -translate-y-1/2 bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-xl font-semibold transition">
-                Analyze
-              </button>
-            </div>
+            <HeroSearch />
             <p className="mt-3 text-sm text-slate-500">Try: "exterior renovation" or "permit phase"</p>
           </div>
 
@@ -156,9 +148,11 @@ export default function HomePage() {
                 Get Started Free
               </button>
             </Link>
-            <button className="rounded-xl border-2 border-slate-300 hover:border-orange-400 text-slate-900 font-bold py-4 px-8 transition">
-              Learn More
-            </button>
+            <Link href="/gallery">
+              <button className="rounded-xl border-2 border-slate-300 hover:border-orange-400 text-slate-900 font-bold py-4 px-8 transition">
+                Learn More
+              </button>
+            </Link>
           </div>
         </div>
       </section>
