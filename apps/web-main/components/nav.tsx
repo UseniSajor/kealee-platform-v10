@@ -94,9 +94,17 @@ export function SiteNav() {
     { href: '/faq', label: 'FAQ' },
   ]
 
+  const actionLinks = [
+    { href: '/concept', label: 'Design Concept' },
+    { href: '/estimate', label: 'What does it Cost' },
+    { href: '/permits', label: 'Get Permits' },
+    { href: '/new-construction', label: 'Build Now' },
+    { href: '/milestone-pay', label: 'Milestone Pay' },
+  ]
+
   return (
     <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
-      <div className="mx-auto max-w-7xl px-4 h-16 flex items-center gap-6">
+      <div className="mx-auto max-w-screen-2xl px-4 h-16 flex items-center gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 flex-shrink-0">
           <div className="w-7 h-7 bg-[#E8724B] rounded-lg flex items-center justify-center text-white font-bold text-sm">
@@ -106,7 +114,7 @@ export function SiteNav() {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden lg:flex items-center gap-6 flex-1">
+        <div className="hidden lg:flex items-center gap-4 flex-1 overflow-x-auto">
           <ServicesDropdown />
           {navLinks.map((link) => (
             <Link
@@ -116,6 +124,24 @@ export function SiteNav() {
                 pathname === link.href
                   ? 'text-orange-600'
                   : 'text-slate-600 hover:text-orange-600'
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          {/* Divider */}
+          <span className="w-px h-4 bg-slate-200 flex-shrink-0" />
+
+          {/* Action links */}
+          {actionLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`whitespace-nowrap font-medium text-sm transition ${
+                pathname === link.href || pathname?.startsWith(link.href + '/')
+                  ? 'text-[#E8724B]'
+                  : 'text-[#1A2B4A] hover:text-[#E8724B]'
               }`}
             >
               {link.label}
@@ -164,7 +190,7 @@ export function SiteNav() {
             ))}
 
             <div className="border-t border-slate-100 my-2 pt-2">
-              {[...navLinks, { href: '/homeowners', label: 'Homeowners' }, { href: '/contractors', label: 'Contractors' }].map((link) => (
+              {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
@@ -172,6 +198,24 @@ export function SiteNav() {
                     pathname === link.href
                       ? 'bg-orange-50 text-orange-600'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+
+            <div className="border-t border-slate-100 my-2 pt-2">
+              <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Get Started</p>
+              {actionLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`block rounded-lg px-3 py-2.5 font-semibold text-sm transition ${
+                    pathname === link.href || pathname?.startsWith(link.href + '/')
+                      ? 'bg-orange-50 text-[#E8724B]'
+                      : 'text-[#1A2B4A] hover:bg-orange-50 hover:text-[#E8724B]'
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
