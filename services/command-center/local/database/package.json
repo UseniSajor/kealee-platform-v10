@@ -4,6 +4,9 @@
   "main": "./index.js",
   "types": "./index.d.ts",
   "type": "module",
+  "prisma": {
+    "schema": "./schema.prisma"
+  },
   "dependencies": {
     "@prisma/client": "^5.20.0"
   }
