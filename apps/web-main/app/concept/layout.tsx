@@ -63,13 +63,19 @@ function ConceptProgressBar() {
   )
 }
 
-export default function ConceptLayout({ children }: { children: React.ReactNode }) {
+function LayoutInner({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  const isConfirm = pathname === '/concept/confirm'
   return (
     <div className="min-h-screen bg-slate-50">
       <ConceptProgressBar />
-      <div className="mx-auto max-w-3xl px-4 py-10 lg:py-14">
+      <div className={`mx-auto px-4 py-10 lg:py-14 ${isConfirm ? 'max-w-6xl' : 'max-w-3xl'}`}>
         {children}
       </div>
     </div>
   )
+}
+
+export default function ConceptLayout({ children }: { children: React.ReactNode }) {
+  return <LayoutInner>{children}</LayoutInner>
 }
