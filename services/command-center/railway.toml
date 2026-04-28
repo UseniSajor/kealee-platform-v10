@@ -1,11 +1,13 @@
 # KEALEE COMMAND CENTER - RAILWAY CONFIGURATION
 # Deploy to Railway.app
-# Dockerfile is self-contained — build context is services/command-center/ (Railway default).
-# Workspace deps replaced with local/ file: references, no monorepo root needed.
+#
+# IMPORTANT: Set Railway Root Directory to / (repo root) in the Railway dashboard.
+# Go to: Railway dashboard → service → Settings → Source → Root Directory → clear to "/"
+# dockerfilePath below is relative to that root directory.
 
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
+dockerfilePath = "services/command-center/Dockerfile"
 
 [deploy]
 numReplicas = 1
