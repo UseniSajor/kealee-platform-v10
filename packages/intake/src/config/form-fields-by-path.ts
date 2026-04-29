@@ -11,7 +11,9 @@ export type FieldType =
   | "radio"
   | "boolean"
   | "numeric"
-  | "file";
+  | "file"
+  | "camera"   // labeled photo zone capture — zones come from PROJECT_PATH_META.photoZones
+  | "video";   // video upload + camera record
 
 export interface FieldOption {
   value: string;
@@ -74,18 +76,46 @@ const SHARED_BUDGET_FIELDS: IntakeField[] = [
   },
 ];
 
+/** Generic media step for paths without specific photo zones */
 const ASSETS_STEP: IntakeFormStep = {
-  id: "assets",
-  title: "Photos & Files",
+  id: "media",
+  title: "Photos & Media",
   fields: [
     {
       key: "uploadedPhotos",
       label: "Property Photos",
-      type: "file",
-      hint: "Upload photos of your property, existing conditions, or inspiration images.",
+      type: "camera",
+      hint: "Upload or capture photos of your property, existing conditions, or inspiration images.",
+    },
+    {
+      key: "videoWalkthrough",
+      label: "Video Walkthrough (optional)",
+      type: "video",
+      hint: "A 2–3 min walkthrough dramatically improves AI deliverable quality.",
     },
   ],
 };
+
+/** Media step for paths that require labeled zone capture */
+function buildMediaStep(includeVideo: boolean): IntakeFormStep {
+  const fields: IntakeField[] = [
+    {
+      key: "uploadedPhotos",
+      label: "Labeled Photo Zones",
+      type: "camera",
+      hint: "Capture each zone listed below. Required zones must be completed to continue.",
+    },
+  ];
+  if (includeVideo) {
+    fields.push({
+      key: "videoWalkthrough",
+      label: "Video Walkthrough",
+      type: "video",
+      hint: "Record or upload a 2–3 min walkthrough. Dramatically improves AI deliverable quality.",
+    });
+  }
+  return { id: "media", title: "Photos & Video", fields };
+}
 
 export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
   garden_concept: [
@@ -416,8 +446,54 @@ export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
         { key: "knownConstraints", label: "Known Constraints (HOA, setbacks, etc.)", type: "textarea", placeholder: "List any constraints...", rows: 3 },
       ],
     },
+    {
+      id: "assessment",
+      title: "Property Details",
+      fields: [
+        {
+          key: "hoaApprovalStatus",
+          label: "HOA Approval Status",
+          type: "select",
+          options: [
+            { value: "no_hoa", label: "No HOA" },
+            { value: "not_submitted", label: "Not yet submitted" },
+            { value: "pending", label: "Pending review" },
+            { value: "approved", label: "Approved" },
+            { value: "denied", label: "Denied — revising" },
+          ],
+        },
+        {
+          key: "currentExteriorMaterial",
+          label: "Current Exterior Material",
+          type: "select",
+          options: [
+            { value: "brick", label: "Brick" },
+            { value: "wood_siding", label: "Wood Siding" },
+            { value: "vinyl_siding", label: "Vinyl Siding" },
+            { value: "fiber_cement", label: "Fiber Cement / HardiePlank" },
+            { value: "stucco", label: "Stucco" },
+            { value: "stone", label: "Stone / Cultured Stone" },
+            { value: "mixed", label: "Mixed Materials" },
+          ],
+        },
+        {
+          key: "drivewayMaterial",
+          label: "Driveway Material",
+          type: "select",
+          options: [
+            { value: "concrete", label: "Concrete" },
+            { value: "asphalt", label: "Asphalt" },
+            { value: "pavers", label: "Pavers" },
+            { value: "gravel", label: "Gravel" },
+            { value: "none", label: "No driveway" },
+          ],
+        },
+        { key: "fencingExists", label: "Existing Fencing?", type: "boolean" },
+        { key: "knownPermitRequirements", label: "Known Permit Requirements", type: "textarea", placeholder: "Any permits you know are required...", rows: 2 },
+      ],
+    },
     { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
-    ASSETS_STEP,
+    buildMediaStep(false),
   ],
 
   interior_renovation: [
@@ -478,8 +554,41 @@ export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
         { key: "knownConstraints", label: "Known Constraints", type: "textarea", placeholder: "Budget limits, structural concerns...", rows: 3 },
       ],
     },
+    {
+      id: "assessment",
+      title: "Condition Assessment",
+      fields: [
+        { key: "conditionPerRoom", label: "Condition Notes Per Room", type: "textarea", placeholder: "e.g. Kitchen: original 1970s cabinetry, dated tile. Bath: cracked grout, old fixtures...", rows: 4 },
+        { key: "structuralConcerns", label: "Any known structural concerns?", type: "boolean" },
+        {
+          key: "asbestosRisk",
+          label: "Asbestos / Lead Risk",
+          type: "select",
+          options: [
+            { value: "tested_clear", label: "Tested — clear" },
+            { value: "not_tested", label: "Not tested (pre-1980 home)" },
+            { value: "known_present", label: "Known to be present" },
+            { value: "not_applicable", label: "Post-1980 home — N/A" },
+          ],
+        },
+        {
+          key: "existingFlooringType",
+          label: "Existing Flooring Type",
+          type: "multiselect",
+          options: [
+            { value: "hardwood", label: "Hardwood" },
+            { value: "carpet", label: "Carpet" },
+            { value: "tile", label: "Tile / Stone" },
+            { value: "lvp", label: "LVP / Vinyl Plank" },
+            { value: "laminate", label: "Laminate" },
+            { value: "concrete", label: "Concrete (exposed)" },
+            { value: "mixed", label: "Mixed" },
+          ],
+        },
+      ],
+    },
     { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
-    ASSETS_STEP,
+    buildMediaStep(true),
   ],
 
   whole_home_remodel: [
@@ -547,6 +656,59 @@ export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
       ],
     },
     {
+      id: "assessment",
+      title: "Property Assessment",
+      fields: [
+        {
+          key: "yearBuilt",
+          label: "Year Built (approx.)",
+          type: "select",
+          options: [
+            { value: "pre_1950", label: "Before 1950" },
+            { value: "1950_1970", label: "1950–1970" },
+            { value: "1970_1990", label: "1970–1990" },
+            { value: "1990_2005", label: "1990–2005" },
+            { value: "2005_plus", label: "2005 or newer" },
+          ],
+        },
+        {
+          key: "hvacAge",
+          label: "HVAC System Age",
+          type: "select",
+          options: [
+            { value: "under_5", label: "Under 5 years" },
+            { value: "5_10", label: "5–10 years" },
+            { value: "10_15", label: "10–15 years" },
+            { value: "over_15", label: "Over 15 years / unknown" },
+          ],
+        },
+        {
+          key: "electricalPanelSize",
+          label: "Electrical Panel Size",
+          type: "select",
+          options: [
+            { value: "100a", label: "100 Amp" },
+            { value: "150a", label: "150 Amp" },
+            { value: "200a", label: "200 Amp" },
+            { value: "unknown", label: "Unknown" },
+          ],
+        },
+        { key: "liveInDuringReno", label: "Will you live in the home during renovation?", type: "boolean" },
+        { key: "previousRenovations", label: "Previous Renovations (describe)", type: "textarea", placeholder: "What has already been updated?", rows: 3 },
+        {
+          key: "roofAge",
+          label: "Roof Age",
+          type: "select",
+          options: [
+            { value: "under_5", label: "Under 5 years" },
+            { value: "5_10", label: "5–10 years" },
+            { value: "10_20", label: "10–20 years" },
+            { value: "over_20", label: "Over 20 years / unknown" },
+          ],
+        },
+      ],
+    },
+    {
       id: "budget",
       title: "Budget & Financing",
       fields: [
@@ -589,7 +751,7 @@ export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
         },
       ],
     },
-    ASSETS_STEP,
+    buildMediaStep(true),
   ],
 
   addition_expansion: [
@@ -640,8 +802,52 @@ export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
         { key: "goals", label: "Project Goals", type: "textarea", placeholder: "Why are you adding this space?", rows: 4 },
       ],
     },
+    {
+      id: "assessment",
+      title: "Site Assessment",
+      fields: [
+        { key: "lotSizeSqFt", label: "Lot Size (sq ft)", type: "numeric", placeholder: "8500" },
+        { key: "rearYardDepth", label: "Rear Yard Depth (ft)", type: "numeric", placeholder: "45" },
+        {
+          key: "existingStructures",
+          label: "Existing Structures on Lot",
+          type: "multiselect",
+          options: [
+            { value: "detached_garage", label: "Detached Garage" },
+            { value: "shed", label: "Shed / Workshop" },
+            { value: "pool", label: "Pool" },
+            { value: "deck_patio", label: "Deck / Patio" },
+            { value: "adu", label: "ADU / Guest House" },
+            { value: "none", label: "None" },
+          ],
+        },
+        { key: "utilityMarkings", label: "Have utilities been marked (811)?", type: "boolean" },
+        {
+          key: "soilCondition",
+          label: "Soil / Site Condition",
+          type: "select",
+          options: [
+            { value: "standard", label: "Standard / unknown" },
+            { value: "expansive_clay", label: "Expansive clay" },
+            { value: "sandy", label: "Sandy / poor bearing" },
+            { value: "rocky", label: "Rocky" },
+            { value: "fill", label: "Previously filled / disturbed" },
+          ],
+        },
+        { key: "adjacentStructures", label: "Adjacent Structures / Easements", type: "textarea", placeholder: "Describe any neighboring structures or easement issues...", rows: 2 },
+        { key: "hoaApprovalStatus", label: "HOA Approval Status", type: "select", options: [
+            { value: "no_hoa", label: "No HOA" },
+            { value: "not_submitted", label: "Not yet submitted" },
+            { value: "pending", label: "Pending review" },
+            { value: "approved", label: "Approved" },
+            { value: "denied", label: "Denied — revising" },
+          ],
+        },
+        { key: "knownPermitRequirements", label: "Known Permit Requirements", type: "textarea", placeholder: "Any permits you know are required...", rows: 2 },
+      ],
+    },
     { id: "budget", title: "Budget & Timeline", fields: SHARED_BUDGET_FIELDS },
-    ASSETS_STEP,
+    buildMediaStep(true),
   ],
 
   design_build: [
@@ -745,6 +951,24 @@ export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
       ],
     },
     {
+      id: "assessment",
+      title: "Documentation Status",
+      fields: [
+        { key: "hasCertificateOfOccupancy", label: "Has Certificate of Occupancy?", type: "boolean" },
+        { key: "existingDrawingsAvailable", label: "Existing Architectural Drawings Available?", type: "boolean" },
+        { key: "anyOpenPermits", label: "Any open or expired permits on the property?", type: "boolean" },
+        { key: "codeViolations", label: "Any known code violations?", type: "boolean" },
+        { key: "hoaApprovalStatus", label: "HOA Approval Status", type: "select", options: [
+            { value: "no_hoa", label: "No HOA" },
+            { value: "not_submitted", label: "Not yet submitted" },
+            { value: "pending", label: "Pending review" },
+            { value: "approved", label: "Approved" },
+            { value: "denied", label: "Denied — revising" },
+          ],
+        },
+      ],
+    },
+    {
       id: "budget",
       title: "Budget & Timeline",
       fields: [
@@ -815,7 +1039,74 @@ export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
         ...SHARED_BUDGET_FIELDS,
       ],
     },
-    ASSETS_STEP,
+    {
+      id: "assessment",
+      title: "Kitchen Assessment",
+      fields: [
+        {
+          key: "kitchenLayout",
+          label: "Current Kitchen Layout",
+          type: "select",
+          options: [
+            { value: "galley", label: "Galley (two parallel walls)" },
+            { value: "l_shaped", label: "L-Shaped" },
+            { value: "u_shaped", label: "U-Shaped" },
+            { value: "open_concept", label: "Open Concept" },
+            { value: "one_wall", label: "One-Wall" },
+          ],
+        },
+        { key: "cabinetCount", label: "Approximate Cabinet Count (uppers + lowers)", type: "numeric", placeholder: "24" },
+        {
+          key: "appliancesToReplace",
+          label: "Appliances to Replace",
+          type: "multiselect",
+          options: [
+            { value: "refrigerator", label: "Refrigerator" },
+            { value: "range_oven", label: "Range / Oven" },
+            { value: "dishwasher", label: "Dishwasher" },
+            { value: "microwave", label: "Microwave / Hood" },
+            { value: "sink_faucet", label: "Sink & Faucet" },
+            { value: "none", label: "Keeping existing appliances" },
+          ],
+        },
+        { key: "hasIsland", label: "Island (existing or planned)?", type: "boolean" },
+        {
+          key: "countertopMaterial",
+          label: "Target Countertop Material",
+          type: "select",
+          options: [
+            { value: "quartz", label: "Quartz" },
+            { value: "granite", label: "Granite" },
+            { value: "marble", label: "Marble" },
+            { value: "quartzite", label: "Quartzite" },
+            { value: "butcher_block", label: "Butcher Block" },
+            { value: "laminate", label: "Laminate" },
+            { value: "undecided", label: "Undecided" },
+          ],
+        },
+        { key: "plumbingRelocate", label: "Does the plumbing need to be relocated?", type: "boolean" },
+        {
+          key: "electricalUpgrade",
+          label: "Electrical Upgrade Needed?",
+          type: "select",
+          options: [
+            { value: "needed", label: "Yes — needed" },
+            { value: "maybe", label: "Maybe — need assessment" },
+            { value: "no", label: "No — existing circuits sufficient" },
+          ],
+        },
+        { key: "hoaApprovalStatus", label: "HOA Approval Status", type: "select", options: [
+            { value: "no_hoa", label: "No HOA" },
+            { value: "not_submitted", label: "Not yet submitted" },
+            { value: "pending", label: "Pending review" },
+            { value: "approved", label: "Approved" },
+            { value: "denied", label: "Denied — revising" },
+          ],
+        },
+        { key: "knownPermitRequirements", label: "Known Permit Requirements", type: "textarea", placeholder: "Any permits you know are required...", rows: 2 },
+      ],
+    },
+    buildMediaStep(false),
   ],
 
   bathroom_remodel: [
@@ -858,7 +1149,68 @@ export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
         ...SHARED_BUDGET_FIELDS,
       ],
     },
-    ASSETS_STEP,
+    {
+      id: "assessment",
+      title: "Bathroom Assessment",
+      fields: [
+        {
+          key: "bathroomType",
+          label: "Bathroom Type",
+          type: "select",
+          options: [
+            { value: "master", label: "Master / Primary Bath" },
+            { value: "full", label: "Full Bath (tub + shower)" },
+            { value: "half", label: "Half Bath / Powder Room" },
+            { value: "three_quarter", label: "3/4 Bath (shower only)" },
+          ],
+        },
+        {
+          key: "existingShowerTub",
+          label: "Existing Shower / Tub",
+          type: "select",
+          options: [
+            { value: "tub_only", label: "Tub only" },
+            { value: "shower_only", label: "Shower only" },
+            { value: "tub_shower_combo", label: "Tub/shower combo" },
+            { value: "separate_both", label: "Separate tub and shower" },
+            { value: "none", label: "None (half bath)" },
+          ],
+        },
+        {
+          key: "fixtureCondition",
+          label: "Existing Fixture Condition",
+          type: "select",
+          options: [
+            { value: "good", label: "Good — keeping" },
+            { value: "dated", label: "Dated — replacing" },
+            { value: "damaged", label: "Damaged — must replace" },
+          ],
+        },
+        { key: "hasTileWork", label: "Existing tile that needs to be replaced?", type: "boolean" },
+        { key: "accessibilityNeeds", label: "Accessibility / ADA needs?", type: "boolean" },
+        {
+          key: "ventilation",
+          label: "Ventilation",
+          type: "select",
+          options: [
+            { value: "window", label: "Window only" },
+            { value: "fan_adequate", label: "Exhaust fan — adequate" },
+            { value: "fan_inadequate", label: "Exhaust fan — inadequate / noisy" },
+            { value: "none", label: "No ventilation" },
+          ],
+        },
+        { key: "hoaApprovalStatus", label: "HOA Approval Status", type: "select", options: [
+            { value: "no_hoa", label: "No HOA" },
+            { value: "not_submitted", label: "Not yet submitted" },
+            { value: "pending", label: "Pending review" },
+            { value: "approved", label: "Approved" },
+            { value: "denied", label: "Denied — revising" },
+          ],
+        },
+        { key: "knownPermitRequirements", label: "Known Permit Requirements", type: "textarea", placeholder: "Any permits you know are required...", rows: 2 },
+      ],
+    },
+    buildMediaStep(false),
   ],
 
   capture_site_concept: [
@@ -881,7 +1233,7 @@ export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
         { key: "projectDescription", label: "Describe your project vision", type: "textarea", placeholder: "What are you hoping to build, renovate, or explore?", rows: 4 },
       ],
     },
-    ASSETS_STEP,
+    buildMediaStep(true),
   ],
 
   // ── Commercial / developer paths ─────────────────────────────────────────────
@@ -915,6 +1267,37 @@ export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
         },
         { key: "targetRoiPct", label: "Target ROI / IRR (%)", type: "numeric", placeholder: "15" },
         { key: "notes", label: "Additional Notes", type: "textarea", rows: 3 },
+      ],
+    },
+    {
+      id: "assessment",
+      title: "Site Due Diligence",
+      fields: [
+        { key: "apn", label: "Assessor Parcel Number (APN)", type: "text", placeholder: "e.g. 1234-567-890" },
+        { key: "hasTitle", label: "Title report / preliminary title available?", type: "boolean" },
+        {
+          key: "infrastructureAccess",
+          label: "Infrastructure Access",
+          type: "multiselect",
+          options: [
+            { value: "water", label: "Water" },
+            { value: "sewer", label: "Sewer" },
+            { value: "gas", label: "Gas" },
+            { value: "electric", label: "Electric" },
+            { value: "fiber", label: "Fiber / Broadband" },
+          ],
+        },
+        {
+          key: "zoningOverlayDistricts",
+          label: "Zoning Overlay Districts",
+          type: "multiselect",
+          options: [
+            { value: "historic", label: "Historic District" },
+            { value: "flood", label: "Flood Zone" },
+            { value: "coastal", label: "Coastal Zone" },
+            { value: "none", label: "None known" },
+          ],
+        },
       ],
     },
   ],
@@ -964,6 +1347,7 @@ export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
         { key: "notes", label: "Workplace Priorities or Requirements", type: "textarea", rows: 3 },
       ],
     },
+    buildMediaStep(true),
   ],
 
   development_feasibility: [
@@ -996,6 +1380,37 @@ export const FORM_FIELDS_BY_PATH: Record<ProjectPath, IntakeFormStep[]> = {
         { key: "targetRoiPct", label: "Target IRR (%)", type: "numeric", placeholder: "18" },
         { key: "equityAvailable", label: "Equity Available ($)", type: "numeric", placeholder: "500000" },
         { key: "notes", label: "Known Constraints or Opportunities", type: "textarea", rows: 3 },
+      ],
+    },
+    {
+      id: "assessment",
+      title: "Site Due Diligence",
+      fields: [
+        { key: "apn", label: "Assessor Parcel Number (APN)", type: "text", placeholder: "e.g. 1234-567-890" },
+        { key: "hasTitle", label: "Title report / preliminary title available?", type: "boolean" },
+        {
+          key: "infrastructureAccess",
+          label: "Infrastructure Access",
+          type: "multiselect",
+          options: [
+            { value: "water", label: "Water" },
+            { value: "sewer", label: "Sewer" },
+            { value: "gas", label: "Gas" },
+            { value: "electric", label: "Electric" },
+            { value: "fiber", label: "Fiber / Broadband" },
+          ],
+        },
+        {
+          key: "zoningOverlayDistricts",
+          label: "Zoning Overlay Districts",
+          type: "multiselect",
+          options: [
+            { value: "historic", label: "Historic District" },
+            { value: "flood", label: "Flood Zone" },
+            { value: "coastal", label: "Coastal Zone" },
+            { value: "none", label: "None known" },
+          ],
+        },
       ],
     },
   ],

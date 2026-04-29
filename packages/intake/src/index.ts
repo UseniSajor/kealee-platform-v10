@@ -1,6 +1,6 @@
 // Config
-export { PROJECT_PATHS, PROJECT_PATH_META, isValidProjectPath } from "./config/project-path-config";
-export type { ProjectPath, ProjectPathMeta } from "./config/project-path-config";
+export { PROJECT_PATHS, PROJECT_PATH_META, isValidProjectPath, resolvePaymentAmount, resolveTierLabel } from "./config/project-path-config";
+export type { ProjectPath, ProjectPathMeta, PhotoZone, PricingTier } from "./config/project-path-config";
 export { INTAKE_OPTION_CARDS } from "./config/intake-option-cards";
 export type { IntakeOptionCard } from "./config/intake-option-cards";
 export { FORM_FIELDS_BY_PATH } from "./config/form-fields-by-path";

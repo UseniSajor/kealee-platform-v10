@@ -1,15 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import {
   ArrowLeft, ArrowRight, Check, MapPin, Boxes,
   Home, Building2, Warehouse, Building, Landmark, Layers,
-  ChevronRight, AlertCircle,
+  ChevronRight, AlertCircle, Camera, Video, Upload, X,
 } from 'lucide-react'
 import { RevenueHookModal } from '@kealee/core-hooks'
 
-type Step = 'type' | 'details' | 'location' | 'twin' | 'photos' | 'review'
+type Step = 'type' | 'details' | 'location' | 'twin' | 'info' | 'media' | 'review'
 
 const PROJECT_TYPES = [
   { id: 'ADDITION', label: 'Addition', desc: 'Expand your existing home', icon: Home, twinTier: 'L1' },
@@ -51,14 +51,148 @@ const TWIN_TIERS = [
   },
 ]
 
+// ── Photo zones per project type ────────────────────────────────────────────
+interface PhotoZone { id: string; label: string; required: boolean; hint: string }
+
+const PHOTO_ZONES_BY_TYPE: Record<string, PhotoZone[]> = {
+  ADDITION: [
+    { id: 'rear_yard', label: 'Rear Yard Looking Toward House', required: true, hint: 'Stand at back fence, capture full yard width and existing structure' },
+    { id: 'side_yard', label: 'Side Yard', required: true, hint: 'Show available side yard clearance and existing walls' },
+    { id: 'exterior_walls', label: 'Exterior Walls Being Extended', required: true, hint: 'Capture the existing wall(s) where the addition will connect' },
+    { id: 'neighborhood_context', label: 'Neighborhood Context', required: false, hint: 'Show adjacent homes and any relevant site constraints' },
+  ],
+  RENOVATION: [
+    { id: 'room_overview', label: 'Room Overview', required: true, hint: 'Full room from the doorway — show walls, floor, and ceiling' },
+    { id: 'focal_wall', label: 'Main Feature Wall', required: true, hint: 'The wall or feature you most want to change' },
+    { id: 'flooring_closeup', label: 'Flooring Close-Up', required: true, hint: 'Capture existing floor material and condition' },
+    { id: 'ceiling_detail', label: 'Ceiling / Lighting', required: false, hint: 'Show ceiling height, existing fixtures' },
+  ],
+  NEW_HOME: [
+    { id: 'site_overview', label: 'Site Overview', required: true, hint: 'Full site from the street' },
+    { id: 'lot_boundaries', label: 'Lot Boundaries', required: true, hint: 'Walk the perimeter and capture boundary markers' },
+    { id: 'adjacent_structures', label: 'Adjacent Structures', required: false, hint: 'Neighboring homes or structures that affect design' },
+  ],
+  MULTIFAMILY: [
+    { id: 'site_overview', label: 'Site Overview', required: true, hint: 'Full site from the street' },
+    { id: 'existing_structure', label: 'Existing Structure (if any)', required: false, hint: 'Any buildings currently on site' },
+    { id: 'adjacent_context', label: 'Adjacent Context', required: false, hint: 'Neighboring buildings that affect design' },
+  ],
+  COMMERCIAL: [
+    { id: 'overall_space', label: 'Overall Space', required: true, hint: 'Wide shot from the corner showing full floor plate' },
+    { id: 'existing_layout', label: 'Existing Layout', required: false, hint: 'Current desk arrangement and partitions' },
+    { id: 'meeting_rooms', label: 'Meeting Rooms', required: false, hint: 'Capture a representative conference room' },
+  ],
+  MIXED_USE: [
+    { id: 'site_overview', label: 'Site Overview', required: true, hint: 'Full site from the street' },
+    { id: 'adjacent_retail', label: 'Adjacent Retail / Street Character', required: false, hint: 'Show neighboring retail and pedestrian context' },
+  ],
+}
+
+// Types that require video walkthrough
+const REQUIRES_VIDEO = new Set(['ADDITION', 'RENOVATION', 'COMMERCIAL'])
+
+// ── Project info fields per type ─────────────────────────────────────────────
+interface InfoField { key: string; label: string; type: 'select' | 'boolean' | 'text' | 'numeric'; options?: { value: string; label: string }[] }
+
+const INFO_FIELDS_BY_TYPE: Record<string, { title: string; fields: InfoField[] }> = {
+  ADDITION: {
+    title: 'Site Assessment',
+    fields: [
+      { key: 'lotSizeSqFt', label: 'Lot Size (sq ft)', type: 'numeric' },
+      { key: 'rearYardDepth', label: 'Rear Yard Depth (ft)', type: 'numeric' },
+      { key: 'utilityMarkings', label: 'Have utilities been marked (811)?', type: 'boolean' },
+      { key: 'hoaApprovalStatus', label: 'HOA Approval Status', type: 'select', options: [
+        { value: 'no_hoa', label: 'No HOA' },
+        { value: 'not_submitted', label: 'Not yet submitted' },
+        { value: 'pending', label: 'Pending review' },
+        { value: 'approved', label: 'Approved' },
+      ]},
+      { key: 'soilCondition', label: 'Soil / Site Condition', type: 'select', options: [
+        { value: 'standard', label: 'Standard / unknown' },
+        { value: 'expansive_clay', label: 'Expansive clay' },
+        { value: 'sandy', label: 'Sandy / poor bearing' },
+        { value: 'rocky', label: 'Rocky' },
+        { value: 'fill', label: 'Previously filled / disturbed' },
+      ]},
+    ],
+  },
+  RENOVATION: {
+    title: 'Condition Assessment',
+    fields: [
+      { key: 'yearBuilt', label: 'Year Built (approx.)', type: 'select', options: [
+        { value: 'pre_1950', label: 'Before 1950' },
+        { value: '1950_1970', label: '1950–1970' },
+        { value: '1970_1990', label: '1970–1990' },
+        { value: '1990_2005', label: '1990–2005' },
+        { value: '2005_plus', label: '2005 or newer' },
+      ]},
+      { key: 'structuralConcerns', label: 'Any known structural concerns?', type: 'boolean' },
+      { key: 'liveInDuringReno', label: 'Will you live in the home during renovation?', type: 'boolean' },
+      { key: 'electricalPanelSize', label: 'Electrical Panel Size', type: 'select', options: [
+        { value: '100a', label: '100 Amp' },
+        { value: '150a', label: '150 Amp' },
+        { value: '200a', label: '200 Amp' },
+        { value: 'unknown', label: 'Unknown' },
+      ]},
+    ],
+  },
+  NEW_HOME: {
+    title: 'Site Assessment',
+    fields: [
+      { key: 'lotSizeSqFt', label: 'Lot Size (sq ft)', type: 'numeric' },
+      { key: 'hasTitle', label: 'Title report available?', type: 'boolean' },
+      { key: 'utilityMarkings', label: 'Have utilities been marked (811)?', type: 'boolean' },
+      { key: 'hoaApprovalStatus', label: 'HOA / Covenant Status', type: 'select', options: [
+        { value: 'no_hoa', label: 'No HOA / Covenants' },
+        { value: 'not_submitted', label: 'Not yet submitted' },
+        { value: 'pending', label: 'Pending review' },
+        { value: 'approved', label: 'Approved' },
+      ]},
+    ],
+  },
+  MULTIFAMILY: {
+    title: 'Site Due Diligence',
+    fields: [
+      { key: 'lotSizeSqFt', label: 'Lot Size (sq ft)', type: 'numeric' },
+      { key: 'apn', label: 'Assessor Parcel Number (APN)', type: 'text' },
+      { key: 'hasTitle', label: 'Title report available?', type: 'boolean' },
+      { key: 'zoningCode', label: 'Zoning Code (if known)', type: 'text' },
+    ],
+  },
+  COMMERCIAL: {
+    title: 'Space Assessment',
+    fields: [
+      { key: 'totalGfaSqFt', label: 'Total Office Area (sq ft)', type: 'numeric' },
+      { key: 'headcount', label: 'Approximate Headcount', type: 'numeric' },
+      { key: 'officeLayout', label: 'Preferred Layout', type: 'select', options: [
+        { value: 'open_plan', label: 'Open Plan' },
+        { value: 'private_office', label: 'Private Offices' },
+        { value: 'hybrid', label: 'Hybrid (open + private)' },
+      ]},
+    ],
+  },
+  MIXED_USE: {
+    title: 'Site Due Diligence',
+    fields: [
+      { key: 'lotSizeSqFt', label: 'Lot Size (sq ft)', type: 'numeric' },
+      { key: 'apn', label: 'Assessor Parcel Number (APN)', type: 'text' },
+      { key: 'zoningCode', label: 'Zoning Code (if known)', type: 'text' },
+      { key: 'hasTitle', label: 'Title report available?', type: 'boolean' },
+    ],
+  },
+}
+
 const STEPS: { id: Step; label: string }[] = [
-  { id: 'type', label: 'Project Type' },
+  { id: 'type', label: 'Type' },
   { id: 'details', label: 'Details' },
   { id: 'location', label: 'Location' },
-  { id: 'twin', label: 'Digital Twin' },
-  { id: 'photos', label: 'Photos' },
+  { id: 'twin', label: 'Twin' },
+  { id: 'info', label: 'Info' },
+  { id: 'media', label: 'Media' },
   { id: 'review', label: 'Review' },
 ]
+
+interface ZonePhoto { zoneId: string; file: File; url: string }
 
 export default function NewProjectPage() {
   const [step, setStep] = useState<Step>('type')
@@ -66,21 +200,37 @@ export default function NewProjectPage() {
   const [twinTier, setTwinTier] = useState<string>('L1')
   const [details, setDetails] = useState({ name: '', description: '', budget: '', sqft: '' })
   const [location, setLocation] = useState({ address: '', city: '', state: '', zip: '' })
+  const [projectInfo, setProjectInfo] = useState<Record<string, any>>({})
+  const [zonePhotos, setZonePhotos] = useState<ZonePhoto[]>([])
+  const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [videoUrl, setVideoUrl] = useState<string | null>(null)
+  const [videoDuration, setVideoDuration] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [showIntakeHook, setShowIntakeHook] = useState(false)
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
-  const [uploadedPhotos, setUploadedPhotos] = useState<Array<{id: string, url: string, filename: string}>>([])
-  const [uploading, setUploading] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   const currentStepIndex = STEPS.findIndex(s => s.id === step)
   const selectedType = PROJECT_TYPES.find(t => t.id === projectType)
+  const zones = projectType ? (PHOTO_ZONES_BY_TYPE[projectType] ?? []) : []
+  const requiresVideo = projectType ? REQUIRES_VIDEO.has(projectType) : false
+  const requiredZones = zones.filter(z => z.required)
+  const capturedZoneIds = new Set(zonePhotos.map(p => p.zoneId))
+  const requiredZonesCaptured = requiredZones.filter(z => capturedZoneIds.has(z.id)).length
 
   const canAdvance = () => {
     if (step === 'type') return !!projectType
     if (step === 'details') return !!details.name && !!details.budget
     if (step === 'location') return !!location.address && !!location.city && !!location.state
     if (step === 'twin') return true
-    if (step === 'photos') return uploadedPhotos.length >= 1
+    if (step === 'info') return true
+    if (step === 'media') {
+      const requiredMet = requiredZones.every(z => capturedZoneIds.has(z.id))
+      if (!requiredMet) return false
+      if (requiresVideo && !videoFile) return false
+      return true
+    }
     return true
   }
 
@@ -92,6 +242,46 @@ export default function NewProjectPage() {
   const prevStep = () => {
     const idx = STEPS.findIndex(s => s.id === step)
     if (idx > 0) setStep(STEPS[idx - 1].id)
+  }
+
+  const handleTypeSelect = (typeId: string) => {
+    setProjectType(typeId)
+    const type = PROJECT_TYPES.find(t => t.id === typeId)
+    if (type) setTwinTier(type.twinTier)
+    // Reset media when type changes
+    setZonePhotos([])
+    setVideoFile(null)
+    setVideoUrl(null)
+    setVideoDuration(null)
+  }
+
+  const handleZoneCapture = async (zoneId: string, file: File) => {
+    setUploading(true)
+    try {
+      const url = URL.createObjectURL(file)
+      setZonePhotos(prev => {
+        const without = prev.filter(p => p.zoneId !== zoneId)
+        return [...without, { zoneId, file, url }]
+      })
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleVideoCapture = (file: File) => {
+    if (videoUrl) URL.revokeObjectURL(videoUrl)
+    const url = URL.createObjectURL(file)
+    setVideoFile(file)
+    setVideoUrl(url)
+    // Read duration after metadata loads
+    const vid = document.createElement('video')
+    vid.src = url
+    vid.onloadedmetadata = () => {
+      const secs = Math.round(vid.duration)
+      const mins = Math.floor(secs / 60)
+      const remainder = secs % 60
+      setVideoDuration(`${mins}:${remainder.toString().padStart(2, '0')}`)
+    }
   }
 
   const handleSubmit = async () => {
@@ -111,45 +301,52 @@ export default function NewProjectPage() {
           state: location.state,
           zip: location.zip,
           twinTier,
+          projectInfo,
+          mediaZones: zonePhotos.map(p => ({ zoneId: p.zoneId, filename: p.file.name })),
+          hasVideoWalkthrough: !!videoFile,
         }),
       })
       if (res.ok) {
         const data = await res.json()
         setCreatedProjectId(data.project?.id ?? null)
+        const pid = data.project?.id
 
-        // Upload photos to project
-        if (uploadedPhotos.length > 0 && data.project?.id) {
-          const pid = data.project.id
-          for (const photo of uploadedPhotos as any[]) {
-            if (!photo.file) continue
+        // Upload zone photos
+        if (pid && zonePhotos.length > 0) {
+          for (const photo of zonePhotos) {
             try {
-              // Get presigned URL
               const urlRes = await fetch(`/api/v1/projects/${pid}/photos/presign`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ filename: photo.filename, contentType: photo.file.type }),
+                body: JSON.stringify({ filename: photo.file.name, contentType: photo.file.type, zoneId: photo.zoneId }),
               })
               const { uploadUrl, photoId } = await urlRes.json()
-              // Upload to S3
-              await fetch(uploadUrl, {
-                method: 'PUT',
-                body: photo.file,
-                headers: { 'Content-Type': photo.file.type },
-              })
-              // Confirm upload
-              await fetch(`/api/v1/projects/${pid}/photos/${photoId}/confirm`, {
-                method: 'POST',
-              })
-            } catch (photoErr) {
-              console.warn('Photo upload failed for', photo.filename, photoErr)
+              await fetch(uploadUrl, { method: 'PUT', body: photo.file, headers: { 'Content-Type': photo.file.type } })
+              await fetch(`/api/v1/projects/${pid}/photos/${photoId}/confirm`, { method: 'POST' })
+            } catch (err) {
+              console.warn('Zone photo upload failed', photo.zoneId, err)
             }
           }
         }
 
-        // Show project_intake revenue hook before redirecting
+        // Upload video
+        if (pid && videoFile) {
+          try {
+            const urlRes = await fetch(`/api/v1/projects/${pid}/videos/presign`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ filename: videoFile.name, contentType: videoFile.type }),
+            })
+            const { uploadUrl, videoId } = await urlRes.json()
+            await fetch(uploadUrl, { method: 'PUT', body: videoFile, headers: { 'Content-Type': videoFile.type } })
+            await fetch(`/api/v1/projects/${pid}/videos/${videoId}/confirm`, { method: 'POST' })
+          } catch (err) {
+            console.warn('Video upload failed', err)
+          }
+        }
+
         setShowIntakeHook(true)
       } else {
-        // Fall back gracefully
         window.location.href = '/projects'
       }
     } catch {
@@ -159,11 +356,65 @@ export default function NewProjectPage() {
     }
   }
 
-  // Auto-select recommended twin tier when project type changes
-  const handleTypeSelect = (typeId: string) => {
-    setProjectType(typeId)
-    const type = PROJECT_TYPES.find(t => t.id === typeId)
-    if (type) setTwinTier(type.twinTier)
+  // ── Info step renderer ────────────────────────────────────────────────────
+  const renderInfoStep = () => {
+    if (!projectType) return null
+    const config = INFO_FIELDS_BY_TYPE[projectType]
+    if (!config) return (
+      <div className="text-sm text-gray-500">No additional info required for this project type.</div>
+    )
+    return (
+      <div className="space-y-4">
+        {config.fields.map(field => {
+          if (field.type === 'boolean') return (
+            <div key={field.key}>
+              <label className="mb-1 block text-sm font-medium text-gray-700">{field.label}</label>
+              <div className="flex gap-3">
+                {(['Yes', 'No'] as const).map(opt => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setProjectInfo(prev => ({ ...prev, [field.key]: opt === 'Yes' }))}
+                    className="flex-1 rounded-lg border-2 py-2 text-sm font-medium transition-all"
+                    style={{
+                      borderColor: projectInfo[field.key] === (opt === 'Yes') ? '#2ABFBF' : '#E5E7EB',
+                      backgroundColor: projectInfo[field.key] === (opt === 'Yes') ? 'rgba(42,191,191,0.06)' : 'white',
+                      color: '#1A2B4A',
+                    }}
+                  >{opt}</button>
+                ))}
+              </div>
+            </div>
+          )
+          if (field.type === 'select' && field.options) return (
+            <div key={field.key}>
+              <label className="mb-1 block text-sm font-medium text-gray-700">{field.label}</label>
+              <select
+                value={projectInfo[field.key] ?? ''}
+                onChange={e => setProjectInfo(prev => ({ ...prev, [field.key]: e.target.value }))}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2"
+                style={{ '--tw-ring-color': 'rgba(42,191,191,0.3)' } as React.CSSProperties}
+              >
+                <option value="">Select…</option>
+                {field.options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+          )
+          return (
+            <div key={field.key}>
+              <label className="mb-1 block text-sm font-medium text-gray-700">{field.label}</label>
+              <input
+                type={field.type === 'numeric' ? 'number' : 'text'}
+                value={projectInfo[field.key] ?? ''}
+                onChange={e => setProjectInfo(prev => ({ ...prev, [field.key]: e.target.value }))}
+                className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2"
+                style={{ '--tw-ring-color': 'rgba(42,191,191,0.3)' } as React.CSSProperties}
+              />
+            </div>
+          )
+        })}
+      </div>
+    )
   }
 
   return (
@@ -177,8 +428,8 @@ export default function NewProjectPage() {
       <p className="mb-8 text-sm text-gray-500">Set up your project and activate its Digital Twin</p>
 
       {/* Step Progress */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
+      <div className="mb-8 overflow-x-auto">
+        <div className="flex min-w-max items-center justify-between">
           {STEPS.map((s, i) => (
             <div key={s.id} className="flex items-center">
               <div className="flex flex-col items-center">
@@ -198,7 +449,7 @@ export default function NewProjectPage() {
                 </span>
               </div>
               {i < STEPS.length - 1 && (
-                <div className="mx-2 mt-[-18px] h-0.5 w-12 sm:w-20" style={{
+                <div className="mx-2 mt-[-18px] h-0.5 w-8 sm:w-14" style={{
                   backgroundColor: i < currentStepIndex ? '#38A169' : '#E5E7EB',
                 }} />
               )}
@@ -209,6 +460,8 @@ export default function NewProjectPage() {
 
       {/* Step Content */}
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+
+        {/* ── Step 1: Type ─────────────────────────────────────────────────── */}
         {step === 'type' && (
           <div>
             <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>What type of project?</h2>
@@ -247,6 +500,7 @@ export default function NewProjectPage() {
           </div>
         )}
 
+        {/* ── Step 2: Details ───────────────────────────────────────────────── */}
         {step === 'details' && (
           <div>
             <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>Project Details</h2>
@@ -305,6 +559,7 @@ export default function NewProjectPage() {
           </div>
         )}
 
+        {/* ── Step 3: Location ──────────────────────────────────────────────── */}
         {step === 'location' && (
           <div>
             <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>Project Location</h2>
@@ -363,6 +618,7 @@ export default function NewProjectPage() {
           </div>
         )}
 
+        {/* ── Step 4: Twin ──────────────────────────────────────────────────── */}
         {step === 'twin' && (
           <div>
             <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>Choose Digital Twin Tier</h2>
@@ -389,7 +645,6 @@ export default function NewProjectPage() {
                   </div>
                   <p className="font-display text-xl font-bold" style={{ color: tier.color }}>{tier.price}</p>
                   <p className="mb-3 mt-1 text-xs text-gray-500">{tier.desc}</p>
-
                   <p className="mb-2 text-xs font-medium text-gray-600">{tier.kpis.length} KPIs tracked:</p>
                   <ul className="mb-3 space-y-1">
                     {tier.kpis.map((kpi) => (
@@ -399,7 +654,6 @@ export default function NewProjectPage() {
                       </li>
                     ))}
                   </ul>
-
                   <p className="mb-1 text-xs font-medium text-gray-600">Modules:</p>
                   <div className="flex flex-wrap gap-1">
                     {tier.modules.map((mod) => (
@@ -414,98 +668,194 @@ export default function NewProjectPage() {
                 </button>
               ))}
             </div>
-
             <div className="mt-4 flex items-start gap-2 rounded-lg p-3" style={{ backgroundColor: 'rgba(42,191,191,0.06)' }}>
               <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#2ABFBF' }} />
               <p className="text-xs text-gray-600">
                 Your Digital Twin is created automatically when you start a project. You can upgrade tiers at any time.
-                Higher tiers track more KPIs and enable additional OS modules.
               </p>
             </div>
           </div>
         )}
 
-        {step === 'photos' && (
+        {/* ── Step 5: Info ──────────────────────────────────────────────────── */}
+        {step === 'info' && (
           <div>
-            <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>Project Photos</h2>
-            <p className="mb-2 text-sm text-gray-500">Add photos of your current space, lot, or reference images.</p>
-            <p className="mb-6 text-xs text-gray-400">Better photos = better AI concept. Minimum 1 required.</p>
+            <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>
+              {projectType && INFO_FIELDS_BY_TYPE[projectType] ? INFO_FIELDS_BY_TYPE[projectType].title : 'Project Info'}
+            </h2>
+            <p className="mb-6 text-sm text-gray-500">Technical details that help our AI produce better deliverables</p>
+            {renderInfoStep()}
+          </div>
+        )}
 
-            {/* Drop zone */}
-            <label
-              className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 transition-colors hover:bg-gray-50"
-              style={{ borderColor: uploading ? '#2ABFBF' : '#E5E7EB' }}
-            >
-              <input
-                type="file"
-                className="hidden"
-                accept="image/jpeg,image/png,image/heic"
-                multiple
-                onChange={async (e) => {
-                  const files = Array.from(e.target.files ?? [])
-                  if (!files.length) return
-                  setUploading(true)
-                  try {
-                    for (const file of files.slice(0, 10 - uploadedPhotos.length)) {
-                      if (file.size > 20 * 1024 * 1024) {
-                        alert(`${file.name} exceeds 20MB limit`)
-                        continue
-                      }
-                      // For now store locally — actual S3 upload wired after project creation
-                      const url = URL.createObjectURL(file)
-                      setUploadedPhotos(prev => [...prev, {
-                        id:       Math.random().toString(36).slice(2),
-                        url,
-                        filename: file.name,
-                        file,
-                      } as any])
-                    }
-                  } finally {
-                    setUploading(false)
-                  }
-                }}
-              />
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl"
-                style={{ backgroundColor: 'rgba(42,191,191,0.1)' }}>
-                {uploading ? (
-                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-teal-500 border-t-transparent" />
+        {/* ── Step 6: Media ─────────────────────────────────────────────────── */}
+        {step === 'media' && (
+          <div>
+            <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>Photos & Video</h2>
+            <div className="mb-4 flex items-center justify-between">
+              <p className="text-sm text-gray-500">Capture each zone for the best AI results</p>
+              {zones.length > 0 && (
+                <span className="rounded-full px-3 py-1 text-xs font-semibold" style={{
+                  backgroundColor: requiredZonesCaptured === requiredZones.length ? 'rgba(56,161,105,0.1)' : 'rgba(239,68,68,0.1)',
+                  color: requiredZonesCaptured === requiredZones.length ? '#38A169' : '#DC2626',
+                }}>
+                  {requiredZonesCaptured} of {requiredZones.length} required zones captured
+                </span>
+              )}
+            </div>
+
+            {/* Zone cards */}
+            <div className="mb-6 grid gap-3 sm:grid-cols-2">
+              {zones.map(zone => {
+                const captured = zonePhotos.find(p => p.zoneId === zone.id)
+                return (
+                  <div
+                    key={zone.id}
+                    className="relative overflow-hidden rounded-xl border-2 transition-all"
+                    style={{
+                      borderColor: captured ? '#38A169' : zone.required ? '#FCA5A5' : '#E5E7EB',
+                    }}
+                  >
+                    {captured ? (
+                      <div className="relative aspect-video">
+                        <img src={captured.url} alt={zone.label} className="h-full w-full object-cover" />
+                        <div className="absolute inset-0 flex flex-col justify-between p-2">
+                          <div className="flex justify-between">
+                            <span className="rounded-full bg-green-500 px-2 py-0.5 text-[10px] font-bold text-white">Captured</span>
+                            <button
+                              onClick={() => setZonePhotos(prev => prev.filter(p => p.zoneId !== zone.id))}
+                              className="flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                          <p className="rounded bg-black/50 px-2 py-0.5 text-xs text-white">{zone.label}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="flex cursor-pointer flex-col items-center gap-2 p-4 text-center">
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/jpeg,image/png,image/heic,image/*"
+                          capture="environment"
+                          onChange={e => {
+                            const file = e.target.files?.[0]
+                            if (file) handleZoneCapture(zone.id, file)
+                            e.target.value = ''
+                          }}
+                        />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full" style={{
+                          backgroundColor: zone.required ? 'rgba(239,68,68,0.1)' : 'rgba(42,191,191,0.1)',
+                        }}>
+                          <Camera className="h-5 w-5" style={{ color: zone.required ? '#DC2626' : '#2ABFBF' }} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium" style={{ color: '#1A2B4A' }}>
+                            {zone.label}
+                            {zone.required && <span className="ml-1 text-red-500">*</span>}
+                          </p>
+                          <p className="mt-0.5 text-xs text-gray-400">{zone.hint}</p>
+                        </div>
+                        <span className="rounded-full px-3 py-1 text-xs font-medium" style={{
+                          backgroundColor: 'rgba(42,191,191,0.1)',
+                          color: '#2ABFBF',
+                        }}>
+                          Tap to capture
+                        </span>
+                      </label>
+                    )}
+                  </div>
+                )
+              })}
+
+              {/* Generic upload if no zones defined */}
+              {zones.length === 0 && (
+                <label className="col-span-2 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 hover:bg-gray-50" style={{ borderColor: '#E5E7EB' }}>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    multiple
+                    onChange={e => {
+                      const files = Array.from(e.target.files ?? [])
+                      files.forEach(f => {
+                        const id = `generic_${Math.random().toString(36).slice(2)}`
+                        handleZoneCapture(id, f)
+                      })
+                      e.target.value = ''
+                    }}
+                  />
+                  <Camera className="mb-2 h-8 w-8 text-gray-400" />
+                  <p className="text-sm font-medium text-gray-700">Add project photos</p>
+                  <p className="mt-1 text-xs text-gray-400">JPEG, PNG, HEIC · 20MB max each</p>
+                </label>
+              )}
+            </div>
+
+            {/* Video section */}
+            {requiresVideo && (
+              <div className="rounded-xl border border-gray-200 p-5" style={{ backgroundColor: '#F7FAFC' }}>
+                <div className="mb-3 flex items-center gap-2">
+                  <Video className="h-5 w-5" style={{ color: '#2ABFBF' }} />
+                  <p className="font-medium" style={{ color: '#1A2B4A' }}>
+                    Video Walkthrough <span className="text-red-500">*</span>
+                  </p>
+                </div>
+                <p className="mb-4 text-xs text-gray-500">2–3 min walkthrough dramatically improves AI deliverable quality</p>
+
+                {videoUrl ? (
+                  <div className="relative">
+                    <video
+                      ref={videoRef}
+                      src={videoUrl}
+                      className="w-full rounded-lg"
+                      controls
+                      style={{ maxHeight: 240 }}
+                    />
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                        Video captured {videoDuration ? `· ${videoDuration}` : ''}
+                      </span>
+                      <button
+                        onClick={() => { setVideoFile(null); setVideoUrl(null); setVideoDuration(null) }}
+                        className="text-xs text-red-500 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
                 ) : (
-                  <svg className="h-6 w-6" style={{ color: '#2ABFBF' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+                  <div className="flex gap-3">
+                    <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed py-4 text-sm font-medium transition-colors hover:bg-white" style={{ borderColor: '#2ABFBF', color: '#2ABFBF' }}>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="video/*"
+                        capture="environment"
+                        onChange={e => { const f = e.target.files?.[0]; if (f) handleVideoCapture(f); e.target.value = '' }}
+                      />
+                      <Camera className="h-4 w-4" />
+                      Record with Camera
+                    </label>
+                    <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed py-4 text-sm font-medium transition-colors hover:bg-white" style={{ borderColor: '#E5E7EB', color: '#6B7280' }}>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="video/mp4,video/mov,video/quicktime,video/x-msvideo"
+                        onChange={e => { const f = e.target.files?.[0]; if (f) handleVideoCapture(f); e.target.value = '' }}
+                      />
+                      <Upload className="h-4 w-4" />
+                      Upload Existing
+                    </label>
+                  </div>
                 )}
               </div>
-              <p className="text-sm font-medium" style={{ color: '#1A2B4A' }}>
-                {uploading ? 'Uploading…' : 'Click to add photos'}
-              </p>
-              <p className="mt-1 text-xs text-gray-400">JPEG, PNG, HEIC · Max 10 files · 20MB each</p>
-            </label>
-
-            {/* Thumbnail grid */}
-            {uploadedPhotos.length > 0 && (
-              <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
-                {uploadedPhotos.map((photo) => (
-                  <div key={photo.id} className="group relative aspect-square overflow-hidden rounded-xl border border-gray-200">
-                    <img src={photo.url} alt={photo.filename} className="h-full w-full object-cover" />
-                    <button
-                      onClick={() => setUploadedPhotos(prev => prev.filter(p => p.id !== photo.id))}
-                      className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white opacity-0 transition-opacity group-hover:opacity-100 text-xs"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {uploadedPhotos.length === 0 && (
-              <p className="mt-3 text-center text-xs font-medium text-red-500">
-                At least 1 photo is required to generate your AI concept
-              </p>
             )}
           </div>
         )}
 
+        {/* ── Step 7: Review ────────────────────────────────────────────────── */}
         {step === 'review' && (
           <div>
             <h2 className="font-display mb-1 text-lg font-semibold" style={{ color: '#1A2B4A' }}>Review & Create</h2>
@@ -556,21 +906,66 @@ export default function NewProjectPage() {
                     <p className="font-medium" style={{ color: '#1A2B4A' }}>
                       {twinTier} — {TWIN_TIERS.find(t => t.tier === twinTier)?.name}
                     </p>
-                    <p className="text-xs text-gray-400">
-                      {TWIN_TIERS.find(t => t.tier === twinTier)?.kpis.length} KPIs | {TWIN_TIERS.find(t => t.tier === twinTier)?.modules.length} modules
-                    </p>
                   </div>
                 </div>
                 <button onClick={() => setStep('twin')} className="text-xs" style={{ color: '#2ABFBF' }}>Edit</button>
               </div>
 
-              {/* Photos */}
-              <div className="flex items-center justify-between rounded-lg border border-gray-100 p-4">
-                <div>
-                  <p className="text-xs text-gray-500">Project Photos</p>
-                  <p className="font-medium" style={{ color: '#1A2B4A' }}>{uploadedPhotos.length} photo{uploadedPhotos.length !== 1 ? 's' : ''} added</p>
+              {/* Project Info summary */}
+              {projectType && Object.keys(projectInfo).length > 0 && (
+                <div className="rounded-lg border border-gray-100 p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-xs text-gray-500">Project Info</p>
+                    <button onClick={() => setStep('info')} className="text-xs" style={{ color: '#2ABFBF' }}>Edit</button>
+                  </div>
+                  <div className="grid gap-x-4 gap-y-1 sm:grid-cols-2">
+                    {Object.entries(projectInfo).filter(([, v]) => v !== '' && v !== null && v !== undefined).map(([k, v]) => (
+                      <div key={k} className="flex justify-between text-xs">
+                        <span className="capitalize text-gray-500">{k.replace(/([A-Z])/g, ' $1').toLowerCase()}</span>
+                        <span className="font-medium" style={{ color: '#1A2B4A' }}>{String(v)}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <button onClick={() => setStep('photos')} className="text-xs" style={{ color: '#2ABFBF' }}>Edit</button>
+              )}
+
+              {/* Media summary */}
+              <div className="rounded-lg border border-gray-100 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-xs text-gray-500">Media</p>
+                  <button onClick={() => setStep('media')} className="text-xs" style={{ color: '#2ABFBF' }}>Edit</button>
+                </div>
+
+                {/* Zone photo thumbnails */}
+                {zonePhotos.length > 0 && (
+                  <div className="mb-3 grid grid-cols-4 gap-2 sm:grid-cols-6">
+                    {zonePhotos.map(p => {
+                      const zone = zones.find(z => z.id === p.zoneId)
+                      return (
+                        <div key={p.zoneId} className="relative">
+                          <div className="aspect-square overflow-hidden rounded-lg">
+                            <img src={p.url} alt={zone?.label ?? p.zoneId} className="h-full w-full object-cover" />
+                          </div>
+                          <p className="mt-0.5 truncate text-[10px] text-gray-500">{zone?.label ?? p.zoneId}</p>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {/* Video badge */}
+                {videoFile && (
+                  <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: 'rgba(42,191,191,0.08)' }}>
+                    <Video className="h-4 w-4" style={{ color: '#2ABFBF' }} />
+                    <span className="text-xs font-medium" style={{ color: '#1A2B4A' }}>
+                      Video walkthrough captured {videoDuration ? `· ${videoDuration}` : ''}
+                    </span>
+                  </div>
+                )}
+
+                {zonePhotos.length === 0 && !videoFile && (
+                  <p className="text-xs text-gray-400">No media added</p>
+                )}
               </div>
             </div>
 
@@ -640,7 +1035,7 @@ export default function NewProjectPage() {
         </div>
       </div>
 
-      {/* Revenue Hook: project_intake — fires after project created, before redirect */}
+      {/* Revenue Hook */}
       {showIntakeHook && (
         <RevenueHookModal
           stage="project_intake"
