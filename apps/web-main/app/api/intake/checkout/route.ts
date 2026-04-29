@@ -86,6 +86,13 @@ export async function POST(req: NextRequest) {
         projectPath,
         siteVisitRequested: siteVisitRequested ? 'true' : 'false',
       },
+      payment_intent_data: {
+        metadata: {
+          source: 'public_intake',
+          intakeId,
+          projectPath,
+        },
+      },
       success_url: successUrl,
       cancel_url: cancelUrl,
     })

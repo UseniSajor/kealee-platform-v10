@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft, Shield, Loader2, FileText, Image as ImageIcon,
-  LayoutTemplate, Table2, Layers, Star, Video, Check, Lock, Zap,
+  LayoutTemplate, Table2, Layers, Star, Video, Check, Lock, Zap, X,
 } from 'lucide-react'
 import { SERVICE_MAP } from '@/lib/services-config'
 
@@ -74,6 +74,11 @@ function ConfirmInner() {
   const [submitting, setSubmitting] = useState(false)
   const [error,      setError]      = useState('')
 
+  // Payment status banners (set from URL params)
+  const [showCanceled,    setShowCanceled]    = useState(searchParams.get('canceled') === 'true')
+  const [showFailed,      setShowFailed]      = useState(searchParams.get('payment_failed') === 'true')
+  const [showExpired,     setShowExpired]     = useState(searchParams.get('session_expired') === 'true')
+
   const selectedTier = service?.tiers.find((t) => t.tier === tier)
   const price        = selectedTier?.price ?? 0
 
@@ -122,7 +127,12 @@ function ConfirmInner() {
       if (url) window.location.href = url
       else throw new Error('No checkout URL returned.')
     } catch (err) {
-      setError((err as Error).message)
+      const msg = (err as Error).message
+      const isServerError = msg.includes('Failed to') || msg.includes('Could not') || msg.includes('No checkout')
+      setError(isServerError
+        ? "We couldn't open checkout right now — this isn't your card. Your details are safe. Try again or email hello@kealee.com."
+        : msg
+      )
       setSubmitting(false)
     }
   }
@@ -140,6 +150,43 @@ function ConfirmInner() {
 
   return (
     <div className="space-y-10">
+
+      {/* ── Payment status banners ────────────────────────── */}
+      {showCanceled && (
+        <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3.5 text-sm text-amber-800">
+          <span className="flex-1">
+            <span className="font-bold">Payment Paused</span> — nothing was charged. Your details are saved. Select your package below and try again.
+          </span>
+          <button onClick={() => setShowCanceled(false)} className="shrink-0 text-amber-400 hover:text-amber-700 transition">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {showFailed && (
+        <div className="flex items-start gap-3 rounded-xl bg-red-50 border border-red-200 px-4 py-3.5 text-sm text-red-800">
+          <span className="flex-1">
+            <span className="font-bold">Payment Unsuccessful</span> — this is usually caused by insufficient funds, a bank hold, or an expired card. Nothing was charged.{' '}
+            <button onClick={handleSubmit} className="font-semibold underline hover:no-underline">Try Again</button>
+            {' or '}
+            <a href="mailto:hello@kealee.com" className="font-semibold underline hover:no-underline">Contact Support</a>.
+          </span>
+          <button onClick={() => setShowFailed(false)} className="shrink-0 text-red-400 hover:text-red-700 transition">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {showExpired && (
+        <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3.5 text-sm text-amber-800">
+          <span className="flex-1">
+            <span className="font-bold">Your Checkout Link Expired</span> — sessions expire after 24 hours. Your details are saved. Click Pay below for a fresh checkout link.
+          </span>
+          <button onClick={() => setShowExpired(false)} className="shrink-0 text-amber-400 hover:text-amber-700 transition">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* ── Page header ───────────────────────────────────── */}
       <div>

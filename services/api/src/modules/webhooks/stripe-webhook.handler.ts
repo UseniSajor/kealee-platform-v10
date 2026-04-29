@@ -135,6 +135,25 @@ async function handleCheckoutSessionCompleted(
         tier,
       })
     }
+  } else if (source === 'public_intake') {
+    await (prisma as any).publicIntakeLead?.updateMany?.({
+      where: { id: intakeId },
+      data: {
+        status: 'paid',
+        paidAt: new Date(),
+        stripeSessionId: session.id,
+      },
+    }).catch((err: any) => {
+      logger.warn({ err: err.message, intakeId }, 'Failed to update publicIntakeLead status (non-fatal)')
+    })
+
+    if (funnelSessionId) {
+      await trackConversionEvent(redis, funnelSessionId, 'PUBLIC_INTAKE_PAID', {
+        sessionId: session.id,
+        amount: session.amount_total,
+        projectPath: metadata.projectPath,
+      })
+    }
   }
 
   // Create ProjectOutput and enqueue execution job
@@ -144,6 +163,7 @@ async function handleCheckoutSessionCompleted(
       zoning:     'design',
       estimation: 'estimate',
       permits:    'permit',
+      public_intake: 'design',
     }
     const outputType = typeMap[source]
     if (outputType) {

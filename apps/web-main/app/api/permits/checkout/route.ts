@@ -67,8 +67,15 @@ export async function POST(req: NextRequest) {
         },
       ],
       metadata: { source: 'permit-package', tier, intakeId: intakeId ?? 'pending' },
+      payment_intent_data: {
+        metadata: {
+          source: 'permit-package',
+          intakeId: intakeId ?? 'pending',
+          projectPath: tier,
+        },
+      },
       success_url: successUrl ?? `${req.nextUrl.origin}/permits/success`,
-      cancel_url:  cancelUrl  ?? `${req.nextUrl.origin}/permits`,
+      cancel_url:  cancelUrl  ?? `${req.nextUrl.origin}/permits?canceled=true`,
     })
 
     return NextResponse.json({ url: session.url })

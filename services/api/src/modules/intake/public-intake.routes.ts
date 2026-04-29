@@ -76,6 +76,34 @@ const PublicIntakeBody = z.object({
   uploadedPhotos: z.array(z.string()).default([]),
   source: z.string().default("public_intake"),
   funnelSessionId: z.string().optional(),
+  // ── New routing fields ─────────────────────────────────────────────────
+  projectTypeCategory: z.enum([
+    'new_construction',
+    'addition',
+    'renovation_major',
+    'renovation_minor',
+    'permit_only',
+    'multifamily',
+    'commercial',
+  ]).optional(),
+  complexity: z.enum([
+    'simple',          // Painting, fixtures, minor updates
+    'moderate',        // Kitchen/bath remodel, deck
+    'complex',         // Addition, structural changes
+    'very_complex',    // New construction, multifamily
+  ]).optional(),
+  regulatoryFlags: z.object({
+    needsPermits: z.boolean().default(false),
+    inHistoricDistrict: z.boolean().default(false),
+    wetlandsProximity: z.boolean().default(false),
+    hoaRestrictions: z.boolean().default(false),
+  }).optional(),
+  designTeamPreference: z.enum([
+    'architect',
+    'engineer',
+    'design_build',
+    'no_preference',
+  ]).optional(),
 }).passthrough();
 
 const CheckoutBody = z.object({
@@ -110,14 +138,101 @@ const TIMELINE_SCORES: Record<string, number> = {
   "6_12_months": 10, planning: 4, flexible: 6,
 };
 
-function scoreLead(data: Record<string, unknown>) {
+interface LeadScore {
+  total: number;
+  tier: 'hot' | 'warm' | 'cold';
+  route: 'fast_track' | 'standard' | 'nurture';
+  assignedTeam: 'architect' | 'sales' | 'design' | 'operations';
+  flags: string[];
+}
+
+function scoreLead(data: Record<string, unknown>): LeadScore {
   const budget = BUDGET_SCORES[String(data.budgetRange ?? "")] ?? 10;
   const urgency = TIMELINE_SCORES[String(data.timelineGoal ?? "planning")] ?? 4;
-  const complexity = 10;
+  let complexity = 10;
+  let assignedTeam: 'architect' | 'sales' | 'design' | 'operations' = 'design';
+  let tier: 'hot' | 'warm' | 'cold' = 'warm';
+  const flags: string[] = [];
+
+  // ── Complexity bonus from new field ────────────────────────────────────
+  const complexityFromField = data.complexity as string | undefined;
+  if (complexityFromField === 'very_complex') complexity += 15;
+  else if (complexityFromField === 'complex') complexity += 10;
+  else if (complexityFromField === 'moderate') complexity += 5;
+
+  // ── Regulatory complexity bonus ────────────────────────────────────────
+  const regulatoryFlags = data.regulatoryFlags as any;
+  if (regulatoryFlags?.needsPermits) complexity += 5;
+  if (regulatoryFlags?.inHistoricDistrict) {
+    complexity += 8;
+    flags.push('historic_district');
+  }
+  if (regulatoryFlags?.wetlandsProximity) {
+    complexity += 8;
+    flags.push('wetlands_proximity');
+  }
+  if (regulatoryFlags?.hoaRestrictions) {
+    complexity += 3;
+    flags.push('hoa_restrictions');
+  }
+
+  // ── Route to architect for complex projects or when team preference set ─
+  const projectType = data.projectTypeCategory as string | undefined;
+  const preference = data.designTeamPreference as string | undefined;
+
+  // NEW CONSTRUCTION → architect + operations (sales support)
+  if (projectType === 'new_construction') {
+    assignedTeam = 'architect';
+    tier = 'hot';
+    flags.push('new_construction', 'architect_required');
+    complexity = Math.min(100, complexity + 20);
+  }
+  // MULTIFAMILY → architect + sales
+  else if (projectType === 'multifamily') {
+    assignedTeam = 'architect';
+    tier = 'hot';
+    flags.push('multifamily', 'architect_required', 'sales_coordination');
+    complexity = Math.min(100, complexity + 20);
+  }
+  // COMMERCIAL → sales + architect support
+  else if (projectType === 'commercial') {
+    assignedTeam = 'sales';
+    tier = 'hot';
+    flags.push('commercial', 'sales_required', 'architect_support');
+    complexity = Math.min(100, complexity + 15);
+  }
+  // MAJOR RENOVATION + COMPLEX → architect
+  else if (projectType === 'renovation_major' && complexityFromField === 'complex') {
+    assignedTeam = 'architect';
+    tier = regulatoryFlags?.needsPermits ? 'hot' : 'warm';
+    flags.push('major_renovation', 'architect_review');
+  }
+  // ADDITION → architect
+  else if (projectType === 'addition') {
+    assignedTeam = 'architect';
+    tier = 'warm';
+    flags.push('addition', 'architect_required');
+    complexity = Math.min(100, complexity + 12);
+  }
+  // Explicit architect preference
+  else if (preference === 'architect') {
+    assignedTeam = 'architect';
+    flags.push('architect_preference');
+  }
+  // Explicit design_build preference
+  else if (preference === 'design_build') {
+    assignedTeam = 'operations';
+    flags.push('design_build_preference');
+  }
+
   const total = Math.min(100, budget + urgency + complexity);
-  const tier = total >= 70 ? "hot" : total >= 45 ? "warm" : "cold";
-  const route = tier === "hot" ? "fast_track" : tier === "cold" ? "nurture" : "standard";
-  return { total, tier, route };
+  if (tier === 'warm') {
+    tier = total >= 70 ? 'hot' : total >= 45 ? 'warm' : 'cold';
+  }
+  
+  const route = tier === 'hot' ? 'fast_track' : tier === 'cold' ? 'nurture' : 'standard';
+
+  return { total, tier, route, assignedTeam, flags };
 }
 
 // ── Route plugin ──────────────────────────────────────────────────────────────
@@ -155,7 +270,15 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
           leadRoute: score.route,
           requiresPayment: true,
           paymentAmount,
-          metadata: data as unknown as Record<string, unknown>,
+          metadata: {
+            ...data,
+            assignedTeam: score.assignedTeam,
+            complexity: data.complexity,
+            projectTypeCategory: data.projectTypeCategory,
+            regulatoryFlags: data.regulatoryFlags,
+            designTeamPreference: data.designTeamPreference,
+            scoringFlags: score.flags,
+          } as unknown as Record<string, unknown>,
           status: "new",
         },
       });
@@ -183,6 +306,9 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
         paymentAmount,
         tier: score.tier,
         route: score.route,
+        leadScore: score.total,
+        assignedTeam: score.assignedTeam,
+        flags: score.flags,
       });
     } catch (err) {
       fastify.log.error(err);
@@ -203,6 +329,12 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
     const { intakeId, projectPath, amount, successUrl, cancelUrl, siteVisitRequested } = parse.data;
 
     try {
+      // Fetch intake to get assigned team
+      const intake = await prismaAny.publicIntakeLead.findUnique({
+        where: { id: intakeId },
+      }).catch(() => null);
+
+      const assignedTeam = intake?.metadata?.assignedTeam ?? 'design';
       const baseAmount = siteVisitRequested ? amount - SITE_VISIT_FEE : amount;
 
       const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
@@ -235,6 +367,7 @@ export async function publicIntakeRoutes(fastify: FastifyInstance) {
           intakeId,
           projectPath,
           siteVisitRequested: siteVisitRequested ? "true" : "false",
+          assignedTeam,
         },
         success_url: successUrl,
         cancel_url: cancelUrl,

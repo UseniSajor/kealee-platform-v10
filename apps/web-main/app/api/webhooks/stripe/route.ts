@@ -45,6 +45,54 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
+  // ── payment_intent.payment_failed ─────────────────────────────────────────
+  if (event.type === 'payment_intent.payment_failed') {
+    const pi = event.data.object as Stripe.PaymentIntent
+    const meta = pi.metadata ?? {}
+    const intakeId = meta.intakeId
+    const projectPath = meta.projectPath
+    const source = meta.source
+
+    const failureMessage =
+      pi.last_payment_error?.message ?? 'Unknown error'
+
+    console.log(`[stripe-webhook] payment_intent.payment_failed intakeId=${intakeId} reason="${failureMessage}"`)
+
+    // Fire-and-forget email notification
+    if (intakeId && source) {
+      const baseUrl = req.nextUrl.origin
+      fetch(`${baseUrl}/api/emails/payment-failed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: pi.receipt_email ?? '',
+          firstName: '',
+          service: projectPath ?? source,
+          amount: pi.amount,
+          intakeId,
+          failureMessage,
+          source,
+        }),
+      }).catch((err: Error) => {
+        console.error('[stripe-webhook] payment-failed email trigger failed:', err.message)
+      })
+    }
+
+    return NextResponse.json({ received: true })
+  }
+
+  // ── checkout.session.expired ───────────────────────────────────────────────
+  if (event.type === 'checkout.session.expired') {
+    const session = event.data.object as Stripe.Checkout.Session
+    const meta = session.metadata ?? {}
+    const intakeId = meta.intakeId
+
+    console.log(`[stripe-webhook] checkout.session.expired intakeId=${intakeId}`)
+
+    return NextResponse.json({ received: true })
+  }
+
+  // ── checkout.session.completed ─────────────────────────────────────────────
   if (event.type !== 'checkout.session.completed') {
     // Acknowledge other events without processing
     return NextResponse.json({ received: true })
