@@ -2060,6 +2060,9 @@ importers:
       '@kealee/intake':
         specifier: workspace:*
         version: link:../../packages/intake
+      '@kealee/keabot-permit':
+        specifier: workspace:*
+        version: link:../../bots/keabot-permit
       '@kealee/observability':
         specifier: workspace:*
         version: link:../../packages/observability

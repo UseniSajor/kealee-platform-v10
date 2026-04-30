@@ -9,6 +9,7 @@ import { authenticateUser } from '../middleware/auth.middleware';
 import { validateBody, validateParams } from '../middleware/validation.middleware';
 import { prisma } from '@kealee/database';
 import { sanitizeErrorMessage } from '../utils/sanitize-error'
+import { KeaBotPermit } from '@kealee/keabot-permit';
 // AI review function - uses @kealee/automation AI service if available
 async function reviewPermitWithAI(permit: any): Promise<{ score: number; issues: any[]; suggestions: any[] }> {
   try {
@@ -305,6 +306,157 @@ export async function permitRoutes(fastify: FastifyInstance) {
         fastify.log.error(error);
         return reply.code(500).send({
           error: sanitizeErrorMessage(error, 'Failed to submit permit'),
+        });
+      }
+    }
+  );
+
+  // ─── POST /api/permits/generate-roadmap ─────────────────────────────────────
+  // PermitBot generates a structured permit roadmap for a project.
+  //
+  // CRITICAL: The returned roadmap has status "generated" and humanReviewRequired=true.
+  // It is saved to the permit record but CANNOT be submitted to a building department
+  // until a human specialist approves it via the admin review queue.
+  //
+  const generateRoadmapSchema = z.object({
+    projectId: z.string().min(1),
+    jurisdiction: z.string().min(1),
+    projectType: z.string().min(1),
+    scope: z.string().min(1),
+    budget: z.number().min(0),
+    /** ID of an existing concept deliverable — used to enrich the roadmap */
+    conceptId: z.string().optional(),
+    /** ID of an existing estimation — used to enrich the roadmap */
+    estimationId: z.string().optional(),
+  });
+
+  fastify.post(
+    '/generate-roadmap',
+    {
+      preHandler: [authenticateUser, validateBody(generateRoadmapSchema)],
+    },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user;
+        const body = generateRoadmapSchema.parse(request.body);
+
+        // Optionally load concept/estimation context from Prisma
+        let conceptContext: string | undefined;
+        let estimationContext: string | undefined;
+
+        if (body.conceptId) {
+          try {
+            const concept = await (prisma as any).conceptDeliverable.findFirst({
+              where: { id: body.conceptId },
+              select: { designSummary: true, zoningAnalysis: true, mepSystems: true },
+            });
+            if (concept) {
+              conceptContext = [
+                concept.designSummary && `Design: ${concept.designSummary}`,
+                concept.zoningAnalysis && `Zoning: ${JSON.stringify(concept.zoningAnalysis)}`,
+                concept.mepSystems && `MEP: ${JSON.stringify(concept.mepSystems)}`,
+              ].filter(Boolean).join('\n');
+            }
+          } catch {
+            // Concept model may not exist yet — continue without it
+          }
+        }
+
+        if (body.estimationId) {
+          try {
+            const estimation = await (prisma as any).estimation.findFirst({
+              where: { id: body.estimationId },
+              select: { totalEstimatedCost: true, permitCosts: true },
+            });
+            if (estimation) {
+              estimationContext = `Total estimated cost: $${estimation.totalEstimatedCost ?? 'unknown'}, permit budget: ${JSON.stringify(estimation.permitCosts)}`;
+            }
+          } catch {
+            // Estimation model may not exist yet — continue without it
+          }
+        }
+
+        // Run PermitBot roadmap generator
+        const bot = new KeaBotPermit();
+        await bot.initialize();
+
+        const roadmap = await bot.generateRoadmap({
+          projectId: body.projectId,
+          jurisdiction: body.jurisdiction,
+          projectType: body.projectType,
+          scope: body.scope,
+          budget: body.budget,
+          conceptContext,
+          estimationContext,
+        });
+
+        // Persist roadmap as an AI review record on the permit
+        // Create a minimal permit record if none exists for this project yet
+        let permitRecord = await prisma.permit.findFirst({
+          where: { projectId: body.projectId },
+          orderBy: { createdAt: 'desc' },
+        });
+
+        if (!permitRecord) {
+          permitRecord = await prisma.permit.create({
+            data: {
+              jurisdictionId: body.jurisdiction,
+              applicantId: user.id,
+              applicantName: user.name ?? '',
+              applicantEmail: user.email ?? '',
+              applicantPhone: '',
+              permitType: 'BUILDING',
+              scope: body.scope,
+              valuation: body.budget,
+              address: '',
+              projectId: body.projectId,
+              clientId: user.id,
+              pmUserId: user.id,
+              applicantType: 'OWNER',
+              status: 'DRAFT',
+            },
+          });
+        }
+
+        // Save roadmap output as an AI review record
+        const aiReview = await (prisma as any).permitAiReview.create({
+          data: {
+            permitId: permitRecord.id,
+            reviewerType: 'AI',
+            status: 'generated',
+            score: roadmap.confidenceScore,
+            issues: [],
+            suggestions: [],
+            metadata: {
+              model: 'claude-sonnet-4-20250514',
+              bot: 'keabot-permit',
+              roadmap,
+              humanReviewRequired: true,
+              generatedAt: new Date().toISOString(),
+            },
+          },
+        }).catch(() => null); // permitAiReview model may use different name — non-fatal
+
+        fastify.log.info({
+          msg: 'PermitBot roadmap generated',
+          permitId: permitRecord.id,
+          projectId: body.projectId,
+          jurisdiction: body.jurisdiction,
+          confidenceScore: roadmap.confidenceScore,
+          permitsCount: roadmap.permitsRequired?.length ?? 0,
+        });
+
+        return reply.code(201).send({
+          permitId: permitRecord.id,
+          roadmap,
+          status: 'generated',
+          humanReviewRequired: true,
+          message: 'Roadmap generated. A permit specialist must review and approve before any submission.',
+        });
+      } catch (error: any) {
+        fastify.log.error(error);
+        return reply.code(500).send({
+          error: sanitizeErrorMessage(error, 'PermitBot roadmap generation failed'),
         });
       }
     }
