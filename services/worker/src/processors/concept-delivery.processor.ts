@@ -92,6 +92,26 @@ async function processConceptDeliveryJob(job: Job<ConceptDeliveryJobData>) {
 
     await job.updateProgress(55)
 
+    // 3b. Generate concept images via Replicate design engine
+    let designOutput: { images: string[]; floorPlans: string[]; style: string; descriptions: string[] } | null = null
+    try {
+      const { runDesignEngine } = await import('@kealee/ai')
+      console.log(`[concept-delivery] Running design engine for order ${orderId}`)
+      designOutput = await runDesignEngine({
+        projectType: funnelData?.projectType || packageTier || 'residential renovation',
+        scope: funnelData?.scope || funnelData?.goals?.join(', ') || 'general renovation',
+        style: funnelData?.stylePreferences?.[0] || funnelData?.style || 'modern',
+        budget: funnelData?.budgetRange || funnelData?.budget || '',
+        location: funnelData?.city && funnelData?.state ? `${funnelData.city}, ${funnelData.state}` : funnelData?.projectAddress || '',
+        tier: (packageTier as 'basic' | 'advanced' | 'premium') || 'advanced',
+      })
+      console.log(`[concept-delivery] Design engine complete: ${designOutput.images.length} images generated`)
+    } catch (designErr: any) {
+      console.error(`[concept-delivery] Design engine failed for order ${orderId}:`, designErr.message)
+    }
+
+    await job.updateProgress(70)
+
     // 4. Optionally call page-builder with AI results
     try {
       const { buildPage } = await import('@kealee/page-builder')
@@ -144,6 +164,12 @@ async function processConceptDeliveryJob(job: Job<ConceptDeliveryJobData>) {
           landscapeImages: aiResult?.state?.landscapeConceptImages ?? [],
           designBriefId: aiResult?.state?.designBrief?.id ?? null,
           generatedWithAI: !!(aiResult?.state?.exteriorConceptImages?.length),
+          // Design engine outputs
+          conceptImages: designOutput?.images ?? [],
+          floorPlanImages: designOutput?.floorPlans ?? [],
+          designStyle: designOutput?.style ?? null,
+          designDescriptions: designOutput?.descriptions ?? [],
+          hasReplicateImages: !!(designOutput?.images?.length),
         },
       },
     })

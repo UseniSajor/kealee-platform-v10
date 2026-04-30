@@ -28,15 +28,32 @@
     "./tools/retrieve-relevant-context": {
       "types": "./dist/tools/retrieve-relevant-context.d.ts",
       "default": "./dist/tools/retrieve-relevant-context.js"
+    },
+    "./design-engine": {
+      "types": "./dist/design-engine.d.ts",
+      "default": "./dist/design-engine.js"
     }
   },
   "typesVersions": {
     "*": {
-      "exterior-concept": ["./dist/exterior-concept/index.d.ts"],
-      "rag/types": ["./dist/rag/types.d.ts"],
-      "rag/vector-store": ["./dist/rag/vector-store.d.ts"],
-      "rag/retriever": ["./dist/rag/retriever.d.ts"],
-      "tools/retrieve-relevant-context": ["./dist/tools/retrieve-relevant-context.d.ts"]
+      "exterior-concept": [
+        "./dist/exterior-concept/index.d.ts"
+      ],
+      "rag/types": [
+        "./dist/rag/types.d.ts"
+      ],
+      "rag/vector-store": [
+        "./dist/rag/vector-store.d.ts"
+      ],
+      "rag/retriever": [
+        "./dist/rag/retriever.d.ts"
+      ],
+      "tools/retrieve-relevant-context": [
+        "./dist/tools/retrieve-relevant-context.d.ts"
+      ],
+      "design-engine": [
+        "./dist/design-engine.d.ts"
+      ]
     }
   },
   "scripts": {
@@ -52,6 +69,7 @@
     "@langchain/openai": "^1.3.0",
     "ai": "^6.0.116",
     "openai": "^4.77.0",
+    "replicate": "^1.4.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

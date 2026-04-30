@@ -18,3 +18,7 @@ export type { IngestOptions, RetrievalOptions, RetrievalResult, RetrievalFilter,
 
 // Image Generation
 export { generate_product_image, GENERATE_PRODUCT_IMAGE_TOOL_DEF, generate_product_image_set } from './tools/generate-product-image';
+
+// Design Engine (Replicate SDXL)
+export { runDesignEngine, buildPrompts, buildFloorPlanPrompt, generateImages } from './design-engine';
+export type { DesignEngineInput, DesignEngineOutput } from './design-engine';

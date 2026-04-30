@@ -1009,6 +1009,9 @@ importers:
       openai:
         specifier: ^4.77.0
         version: 4.104.0(zod@4.3.6)
+      replicate:
+        specifier: ^1.4.0
+        version: 1.4.0
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -6908,7 +6911,7 @@ packages:
     peerDependencies:
       '@langchain/core': ^1.0.1
     dependencies:
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@6.34.0)
+      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
       uuid: 10.0.0
     dev: false
 
@@ -6932,7 +6935,7 @@ packages:
       vue:
         optional: true
     dependencies:
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@6.34.0)
+      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
       '@types/json-schema': 7.0.15
       p-queue: 9.1.2
       p-retry: 7.1.1
@@ -6952,7 +6955,7 @@ packages:
       zod-to-json-schema:
         optional: true
     dependencies:
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@6.34.0)
+      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
       '@langchain/langgraph-checkpoint': 1.0.1(@langchain/core@1.1.40)
       '@langchain/langgraph-sdk': 1.8.9(@langchain/core@1.1.40)(react-dom@18.2.0)(react@18.2.0)
       '@standard-schema/spec': 1.1.0
@@ -6971,7 +6974,7 @@ packages:
     peerDependencies:
       '@langchain/core': ^1.1.39
     dependencies:
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@6.34.0)
+      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
       js-tiktoken: 1.0.21
       openai: 6.34.0(zod@3.25.76)
       zod: 3.25.76
@@ -20525,6 +20528,13 @@ packages:
     hasBin: true
     dependencies:
       jsesc: 3.1.0
+
+  /replicate@1.4.0:
+    resolution: {integrity: sha512-1ufKejfUVz/azy+5TnzQP7U1+MHVWZ6psnQ06az8byUUnRhT+DZ/MvewzB1NQYBVMgNKR7xPDtTwlcP5nv/5+w==}
+    engines: {git: '>=2.11.0', node: '>=18.0.0', npm: '>=7.19.0', yarn: '>=1.7.0'}
+    optionalDependencies:
+      readable-stream: 4.7.0
+    dev: false
 
   /require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
