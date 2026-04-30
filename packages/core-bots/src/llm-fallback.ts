@@ -47,7 +47,7 @@ async function callLocalLLM(
 
   if (!config.enabled) {
     return {
-      content: [{ type: 'text', text: 'Local LLM not configured.' }],
+      content: [{ type: 'text', text: 'Local LLM not configured.' }] as Anthropic.ContentBlock[],
       stopReason: 'error',
       llmSource: 'ERROR',
       error: 'INTERNAL_LLM_ENABLED not set to true',
@@ -92,7 +92,7 @@ async function callLocalLLM(
     if (!response.ok) {
       const errorText = await response.text();
       return {
-        content: [{ type: 'text', text: `Local LLM error: ${response.status}` }],
+        content: [{ type: 'text', text: `Local LLM error: ${response.status}` }] as Anthropic.ContentBlock[],
         stopReason: 'error',
         llmSource: 'LOCAL',
         error: errorText.slice(0, 200),
@@ -102,14 +102,14 @@ async function callLocalLLM(
     const data = (await response.json()) as LocalLLMResponse;
 
     return {
-      content: [{ type: 'text', text: data.content }],
+      content: [{ type: 'text', text: data.content }] as Anthropic.ContentBlock[],
       stopReason: (data.stop_reason === 'stop' ? 'end_turn' : 'stop_sequence') as any,
       llmSource: 'LOCAL',
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return {
-      content: [{ type: 'text', text: 'Local LLM request failed.' }],
+      content: [{ type: 'text', text: 'Local LLM request failed.' }] as Anthropic.ContentBlock[],
       stopReason: 'error',
       llmSource: 'LOCAL',
       error: message.slice(0, 200),
@@ -181,7 +181,7 @@ export async function callLLMWithFallback(
           type: 'text',
           text: `Both Claude API and local LLM failed. Please check your configuration. Original error: ${errorMsg.slice(0, 150)}`,
         },
-      ],
+      ] as Anthropic.ContentBlock[],
       stopReason: 'error',
       llmSource: 'ERROR',
       error: errorMsg.slice(0, 200),

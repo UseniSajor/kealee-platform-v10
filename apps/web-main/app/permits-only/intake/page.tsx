@@ -1,8 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { Metadata } from 'next'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.kealee.com'
 
@@ -90,7 +89,7 @@ function Card({ children }: { children: React.ReactNode }) {
   )
 }
 
-export default function PermitOnlyIntakePage() {
+function IntakeForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const defaultTier = searchParams.get('tier') ?? 'professional'
@@ -333,5 +332,13 @@ export default function PermitOnlyIntakePage() {
         )}
       </div>
     </main>
+  )
+}
+
+export default function PermitOnlyIntakePage() {
+  return (
+    <Suspense fallback={<main style={{ background: '#f0fdf4', minHeight: '100vh', padding: '48px 24px' }}><div style={{ maxWidth: 580, margin: '0 auto', textAlign: 'center', color: '#6b7280' }}>Loading…</div></main>}>
+      <IntakeForm />
+    </Suspense>
   )
 }
