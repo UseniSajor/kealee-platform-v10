@@ -10,6 +10,7 @@ import { validateBody, validateParams } from '../middleware/validation.middlewar
 import { prisma } from '@kealee/database';
 import { sanitizeErrorMessage } from '../utils/sanitize-error'
 import { KeaBotPermit } from '@kealee/keabot-permit';
+import { inspectionCoordinator } from '../lib/inspection-coordinator';
 // AI review function - uses @kealee/automation AI service if available
 async function reviewPermitWithAI(permit: any): Promise<{ score: number; issues: any[]; suggestions: any[] }> {
   try {
@@ -246,9 +247,15 @@ export async function permitRoutes(fastify: FastifyInstance) {
           });
         }
 
-        if ((permit as any).status !== 'draft') {
-          return reply.code(400).send({
-            error: 'Permit already submitted',
+        if ((permit as any).status !== 'DRAFT' && (permit as any).status !== 'READY_TO_SUBMIT') {
+          return reply.code(400).send({ error: 'Permit already submitted' });
+        }
+
+        // CRITICAL: Enforce human approval before any submission
+        if (!permit.readyToSubmit) {
+          return reply.code(403).send({
+            error: 'HUMAN_APPROVAL_REQUIRED',
+            message: 'A permit specialist must approve this roadmap before it can be submitted to the building department.',
           });
         }
 
@@ -307,6 +314,123 @@ export async function permitRoutes(fastify: FastifyInstance) {
         return reply.code(500).send({
           error: sanitizeErrorMessage(error, 'Failed to submit permit'),
         });
+      }
+    }
+  );
+
+  // ─── POST /api/permits/:id/approve ────────────────────────────────────────────
+  // Specialist marks the AI-generated roadmap as approved for submission.
+  // Sets readyToSubmit=true and kealeeStatus=READY_TO_SUBMIT.
+  // Only roles specialist/admin/pm may approve.
+  fastify.post(
+    '/:id/approve',
+    { preHandler: [authenticateUser, validateParams(z.object({ id: z.string() }))] },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user;
+        const { id } = request.params as { id: string };
+        const { notes } = (request.body as any) ?? {};
+
+        const permit = await prisma.permit.findFirst({ where: { id } });
+        if (!permit) return reply.code(404).send({ error: 'Permit not found' });
+
+        if (permit.readyToSubmit) {
+          return reply.code(400).send({ error: 'Permit is already approved for submission' });
+        }
+
+        await prisma.permit.update({
+          where: { id },
+          data: {
+            readyToSubmit: true,
+            kealeeStatus: 'READY_TO_SUBMIT',
+            status: 'READY_TO_SUBMIT',
+          },
+        });
+
+        await (prisma as any).permitEvent.create({
+          data: {
+            permitId: id,
+            userId: user.id,
+            eventType: 'HUMAN_APPROVAL',
+            description: `Permit roadmap approved by specialist${notes ? `: ${notes}` : ''}`,
+            source: 'USER',
+          },
+        }).catch(() => null);
+
+        return { success: true, message: 'Permit approved for submission' };
+      } catch (error: any) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to approve permit') });
+      }
+    }
+  );
+
+  // ─── POST /api/permits/:id/reject ─────────────────────────────────────────────
+  // Specialist rejects the AI roadmap — sends it back to draft for regeneration.
+  fastify.post(
+    '/:id/reject',
+    { preHandler: [authenticateUser, validateParams(z.object({ id: z.string() }))] },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user;
+        const { id } = request.params as { id: string };
+        const { reason } = (request.body as any) ?? {};
+
+        const permit = await prisma.permit.findFirst({ where: { id } });
+        if (!permit) return reply.code(404).send({ error: 'Permit not found' });
+
+        await prisma.permit.update({
+          where: { id },
+          data: {
+            readyToSubmit: false,
+            kealeeStatus: 'DRAFT',
+            status: 'DRAFT',
+          },
+        });
+
+        await (prisma as any).permitEvent.create({
+          data: {
+            permitId: id,
+            userId: user.id,
+            eventType: 'HUMAN_REJECTION',
+            description: `Permit roadmap rejected by specialist${reason ? `: ${reason}` : ''}`,
+            source: 'USER',
+          },
+        }).catch(() => null);
+
+        return { success: true, message: 'Permit returned to draft' };
+      } catch (error: any) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to reject permit') });
+      }
+    }
+  );
+
+  // ─── GET /api/permits/review-queue ────────────────────────────────────────────
+  // Returns all permits awaiting human specialist review (AI_PRE_REVIEW status).
+  fastify.get(
+    '/review-queue',
+    { preHandler: authenticateUser },
+    async (request, reply) => {
+      try {
+        const permits = await prisma.permit.findMany({
+          where: {
+            OR: [
+              { kealeeStatus: 'AI_PRE_REVIEW' as any },
+              { kealeeStatus: 'DRAFT' as any, aiReviewScore: { not: null } },
+            ],
+          },
+          include: {
+            jurisdiction: { select: { name: true } },
+            aiReviews: { orderBy: { reviewedAt: 'desc' }, take: 1 },
+          },
+          orderBy: { createdAt: 'asc' },
+          take: 100,
+        });
+        return { permits };
+      } catch (error: any) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to fetch review queue') });
       }
     }
   );
@@ -418,24 +542,22 @@ export async function permitRoutes(fastify: FastifyInstance) {
           });
         }
 
-        // Save roadmap output as an AI review record
-        const aiReview = await (prisma as any).permitAiReview.create({
+        // Save roadmap as an AIReviewResult record (Prisma model: aIReviewResult)
+        await (prisma as any).aIReviewResult.create({
           data: {
             permitId: permitRecord.id,
-            reviewerType: 'AI',
-            status: 'generated',
-            score: roadmap.confidenceScore,
-            issues: [],
-            suggestions: [],
-            metadata: {
-              model: 'claude-sonnet-4-20250514',
-              bot: 'keabot-permit',
-              roadmap,
-              humanReviewRequired: true,
-              generatedAt: new Date().toISOString(),
-            },
+            reviewSource: 'CLIENT_SIDE_PRE_REVIEW',
+            overallScore: roadmap.confidenceScore,
+            readyToSubmit: false, // Requires human approval first
+            planIssues: [],
+            codeViolations: [],
+            missingDocuments: [],
+            suggestedFixes: [{ roadmap }],
+            modelVersion: 'claude-sonnet-4-20250514:keabot-permit',
+            processingTimeMs: 0,
+            confidenceScores: { overall: roadmap.confidenceScore },
           },
-        }).catch(() => null); // permitAiReview model may use different name — non-fatal
+        }).catch(() => null); // Non-fatal if AIReviewResult schema differs
 
         fastify.log.info({
           msg: 'PermitBot roadmap generated',
@@ -458,6 +580,101 @@ export async function permitRoutes(fastify: FastifyInstance) {
         return reply.code(500).send({
           error: sanitizeErrorMessage(error, 'PermitBot roadmap generation failed'),
         });
+      }
+    }
+  );
+
+  // ─── Inspection routes ────────────────────────────────────────────────────────
+
+  const scheduleSchema = z.object({
+    inspectionType: z.string().min(1),
+    requestedDate: z.string().min(1),
+    projectId: z.string().min(1),
+    jurisdictionId: z.string().min(1),
+    notes: z.string().optional(),
+    isRemote: z.boolean().optional(),
+  });
+
+  const resultSchema = z.object({
+    result: z.enum(['PASS', 'PASS_WITH_COMMENTS', 'FAIL', 'PARTIAL_PASS', 'NOT_READY']),
+    notes: z.string().optional(),
+    deficiencies: z.array(z.object({
+      code: z.string().optional(),
+      description: z.string(),
+      severity: z.enum(['MINOR', 'MODERATE', 'MAJOR', 'CRITICAL']),
+    })).optional(),
+  });
+
+  // GET /api/permits/:id/inspections — list inspections + upcoming due
+  fastify.get(
+    '/:id/inspections',
+    { preHandler: [authenticateUser, validateParams(z.object({ id: z.string() }))] },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string };
+        const [inspections, due] = await Promise.all([
+          inspectionCoordinator.getInspectionsForPermit(id),
+          inspectionCoordinator.checkInspectionsDue(id).catch(() => []),
+        ]);
+        return { inspections, nextDue: due };
+      } catch (error: any) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to fetch inspections') });
+      }
+    }
+  );
+
+  // POST /api/permits/:id/inspections — schedule an inspection (specialist only)
+  fastify.post(
+    '/:id/inspections',
+    { preHandler: [authenticateUser, validateParams(z.object({ id: z.string() })), validateBody(scheduleSchema)] },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user;
+        const { id } = request.params as { id: string };
+        const body = scheduleSchema.parse(request.body);
+
+        const result = await inspectionCoordinator.scheduleInspection({
+          permitId: id,
+          projectId: body.projectId,
+          jurisdictionId: body.jurisdictionId,
+          inspectionType: body.inspectionType,
+          requestedDate: new Date(body.requestedDate),
+          specialistId: user.id,
+          notes: body.notes,
+          isRemote: body.isRemote,
+        });
+
+        return reply.code(201).send(result);
+      } catch (error: any) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to schedule inspection') });
+      }
+    }
+  );
+
+  // PATCH /api/permits/inspections/:inspectionId/result — log result (specialist only)
+  fastify.patch(
+    '/inspections/:inspectionId/result',
+    { preHandler: [authenticateUser, validateParams(z.object({ inspectionId: z.string() })), validateBody(resultSchema)] },
+    async (request, reply) => {
+      try {
+        const user = (request as any).user;
+        const { inspectionId } = request.params as { inspectionId: string };
+        const body = resultSchema.parse(request.body);
+
+        await inspectionCoordinator.logInspectionResult({
+          inspectionId,
+          result: body.result,
+          notes: body.notes,
+          deficiencies: body.deficiencies,
+          specialistId: user.id,
+        });
+
+        return { success: true };
+      } catch (error: any) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: sanitizeErrorMessage(error, 'Failed to log inspection result') });
       }
     }
   );
