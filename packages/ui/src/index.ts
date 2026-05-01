@@ -371,6 +371,93 @@ export {
 } from './components/ClawStatusBar';
 
 // ========================================
+// Construction-Specific Components
+// ========================================
+export {
+  PermitStatus,
+  InspectionBadge,
+  BidComparison,
+  BudgetTracker,
+  RiskGauge,
+  TaskQueue,
+  VisitChecklist,
+  EstimateBreakdown,
+  PhotoGallery,
+} from './components/construction';
+export type {
+  PermitStatusProps,
+  PermitStep,
+  InspectionBadgeProps,
+  InspectionResult,
+  BidComparisonProps,
+  BidItem,
+  BudgetTrackerProps,
+  BudgetCategory,
+  BudgetStat,
+  RiskGaugeProps,
+  RiskLevel,
+  RiskCause,
+  RiskRecommendation,
+  TaskQueueProps,
+  QueueTask,
+  TaskPriority as ConstructionTaskPriority,
+  TaskStatus as ConstructionTaskStatus,
+  VisitChecklistProps,
+  ChecklistItem,
+  WeatherCondition,
+  EstimateBreakdownProps,
+  EstimateLineItem,
+  EstimateDivision,
+  PhotoGalleryProps,
+  SitePhoto,
+} from './components/construction';
+
+// ========================================
+// Form Components
+// ========================================
+export { Select, Checkbox, RadioGroup, FormField } from './components/forms';
+export type {
+  SelectProps,
+  SelectOption,
+  CheckboxProps,
+  RadioGroupProps,
+  RadioOption,
+  FormFieldProps,
+} from './components/forms';
+
+// ========================================
+// Navigation Components (new)
+// ========================================
+export { Breadcrumbs, TabNav } from './components/navigation';
+export type {
+  BreadcrumbsProps,
+  BreadcrumbItem as NavBreadcrumbItem,
+  TabNavProps,
+  TabItem,
+} from './components/navigation';
+
+// ========================================
+// Modal Components (new)
+// ========================================
+export { Dialog, ConfirmDialog, Sheet } from './components/modals';
+export type {
+  DialogProps,
+  ConfirmDialogProps,
+  SheetProps,
+} from './components/modals';
+
+// ========================================
+// Chart Components
+// ========================================
+export { DonutChart, BudgetChart } from './components/charts';
+export type {
+  DonutChartProps,
+  DonutSegment,
+  BudgetChartProps,
+  BudgetChartDataPoint,
+} from './components/charts';
+
+// ========================================
 // Utilities
 // ========================================
 export { cn } from './lib/utils';
