@@ -428,13 +428,13 @@ export type {
 // ========================================
 // Navigation Components (new)
 // ========================================
-export { Breadcrumbs, TabNav } from './components/navigation';
+export { Breadcrumbs, TabNav } from './components/Navigation';
 export type {
   BreadcrumbsProps,
   BreadcrumbItem as NavBreadcrumbItem,
   TabNavProps,
   TabItem,
-} from './components/navigation';
+} from './components/Navigation';
 
 // ========================================
 // Modal Components (new)

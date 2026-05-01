@@ -4,7 +4,7 @@
 
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "./Dockerfile"
+dockerfilePath = "packages/automation/Dockerfile"
 
 [deploy]
 # Single instance — BullMQ handles concurrency within the process.

@@ -1,6 +1,6 @@
 FROM node:20-bullseye
 
-RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
+RUN corepack enable && corepack prepare pnpm@8.15.9 --activate
 
 WORKDIR /app
 
