@@ -13,7 +13,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "ignoreDeprecations": "5.0",
     "types": ["node"],
     "typeRoots": ["./node_modules/@types", "../../node_modules/@types", "./src/types"],

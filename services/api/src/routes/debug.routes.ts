@@ -7,7 +7,7 @@
 
 import type { FastifyInstance } from 'fastify'
 import { getRAGStatus } from '../lib/orchestrator/retrieval/rag-retriever'
-import { redis } from '../config/redis.config'
+import { redisClient as redis } from '../config/redis.config'
 
 export async function debugRoutes(fastify: FastifyInstance) {
   fastify.get('/debug/status', async (_req, reply) => {
@@ -15,13 +15,15 @@ export async function debugRoutes(fastify: FastifyInstance) {
     let queueHealth = { connected: false, lastJobAt: null as string | null }
 
     try {
-      await redis.ping()
-      queueHealth.connected = true
+      if (redis) {
+        await redis.ping()
+        queueHealth.connected = true
 
-      // Try to get last job info
-      const info = await redis.info('keyspace')
-      if (info) {
-        queueHealth.lastJobAt = new Date().toISOString()
+        // Try to get last job info
+        const info = await redis.info('keyspace')
+        if (info) {
+          queueHealth.lastJobAt = new Date().toISOString()
+        }
       }
     } catch (err: any) {
       console.warn('[debug] Redis ping failed:', err.message)
