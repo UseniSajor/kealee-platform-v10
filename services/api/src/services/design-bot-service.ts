@@ -1,6 +1,7 @@
-import { Anthropic } from "@anthropic-ai/sdk";
-import { prisma } from "@kealee/core-ddts";
+import Anthropic from "@anthropic-ai/sdk";
+import { prisma } from "@kealee/database";
 import { zoningService } from "../modules/zoning/zoning.service";
+
 
 interface ConceptRequest {
   projectType: "garden" | "kitchen" | "landscape" | "renovation";

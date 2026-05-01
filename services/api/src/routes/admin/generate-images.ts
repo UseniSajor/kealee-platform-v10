@@ -6,9 +6,12 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { db } from '@kealee/database';
-import { anthropic } from '@kealee/ai-provider';
+import { prisma as db } from '@kealee/database';
+import Anthropic from '@anthropic-ai/sdk';
 import { GENERATE_PRODUCT_IMAGE_TOOL_DEF } from '@kealee/ai';
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
 
 const router = Router();
 

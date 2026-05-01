@@ -75,3 +75,17 @@ export type {
 
 export { PermitSchema } from "./permit-schemas";
 export type { Permit } from "./permit-schemas";
+
+export {
+  ConceptIntakeSchema,
+  ConceptIntakeResponseSchema,
+  ZoningIntakeSchema,
+  ZoningIntakeResponseSchema,
+  DMV_JURISDICTIONS,
+} from "./concept-zoning.schemas";
+export type {
+  ConceptIntake,
+  ConceptIntakeResponse,
+  ZoningIntake,
+  ZoningIntakeResponse,
+} from "./concept-zoning.schemas";

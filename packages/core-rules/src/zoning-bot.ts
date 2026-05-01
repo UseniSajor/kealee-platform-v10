@@ -6,8 +6,9 @@
  * CONSOLIDATED: Removed duplicate implementations from services/api and services/os-dev
  */
 
-import { Anthropic } from "@anthropic-ai/sdk";
-import { prisma } from "@kealee/core-ddts";
+import Anthropic from "@anthropic-ai/sdk";
+import { prisma } from "@kealee/database";
+
 
 export interface ZoningRequest {
   location: string;
