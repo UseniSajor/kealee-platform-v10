@@ -1,6 +1,6 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "corepack enable && corepack prepare pnpm@8.15.9 --activate && pnpm install --no-frozen-lockfile && pnpm turbo build --filter=./apps/admin-console"
+buildCommand = "corepack enable && corepack prepare pnpm@8.15.9 --activate && pnpm install --no-frozen-lockfile && pnpm --filter admin-console build"
 watchPatterns = ["apps/admin-console/**", "packages/**"]
 
 [deploy]

@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@kealee/ui', '@kealee/auth'],
+  output: 'standalone',
+  transpilePackages: ['@kealee/ui', '@kealee/auth', '@kealee/core-hooks'],
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
 }
