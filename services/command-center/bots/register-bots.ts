@@ -11,6 +11,7 @@ import { GrowthBot } from './growth/growth.bot.js'
 import { ContractorMatchBot } from './contractor-match/contractor-match.bot.js'
 import { ProjectMonitorBot } from './project-monitor/project-monitor.bot.js'
 import { SupportBot } from './support/support.bot.js'
+import { PermitComplianceBot } from './permit/permit-compliance.bot.js'
 import { createLogger } from '@kealee/observability'
 
 const logger = createLogger('bot-registration')
@@ -21,6 +22,7 @@ export function registerAllBots(redis: Redis): void {
     new ContractorMatchBot(),
     new ProjectMonitorBot(),
     new SupportBot(),
+    new PermitComplianceBot(),
   ]
 
   for (const bot of bots) {
