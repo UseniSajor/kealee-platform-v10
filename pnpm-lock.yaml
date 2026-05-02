@@ -483,13 +483,31 @@ importers:
 
   apps/os-admin: {}
 
-  apps/portal-contractor: {}
+  apps/portal-contractor:
+    dependencies:
+      '@kealee/core-hooks':
+        specifier: workspace:*
+        version: link:../../packages/core-hooks
 
   apps/portal-developer: {}
 
-  apps/portal-owner: {}
+  apps/portal-owner:
+    dependencies:
+      '@kealee/core-hooks':
+        specifier: workspace:*
+        version: link:../../packages/core-hooks
 
-  apps/web-main: {}
+  apps/web-main:
+    dependencies:
+      '@kealee/intake':
+        specifier: workspace:*
+        version: link:../../packages/intake
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@kealee/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
 
   bots/keabot-command:
     dependencies:
@@ -6911,7 +6929,7 @@ packages:
     peerDependencies:
       '@langchain/core': ^1.0.1
     dependencies:
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
+      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@6.34.0)
       uuid: 10.0.0
     dev: false
 
@@ -6935,7 +6953,7 @@ packages:
       vue:
         optional: true
     dependencies:
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
+      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@6.34.0)
       '@types/json-schema': 7.0.15
       p-queue: 9.1.2
       p-retry: 7.1.1
@@ -6955,7 +6973,7 @@ packages:
       zod-to-json-schema:
         optional: true
     dependencies:
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
+      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@6.34.0)
       '@langchain/langgraph-checkpoint': 1.0.1(@langchain/core@1.1.40)
       '@langchain/langgraph-sdk': 1.8.9(@langchain/core@1.1.40)(react-dom@18.2.0)(react@18.2.0)
       '@standard-schema/spec': 1.1.0
@@ -6974,7 +6992,7 @@ packages:
     peerDependencies:
       '@langchain/core': ^1.1.39
     dependencies:
-      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@4.104.0)
+      '@langchain/core': 1.1.40(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.7.0)(openai@6.34.0)
       js-tiktoken: 1.0.21
       openai: 6.34.0(zod@3.25.76)
       zod: 3.25.76

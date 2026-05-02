@@ -1,6 +1,6 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "corepack enable && corepack prepare pnpm@8.15.9 --activate && pnpm install --no-frozen-lockfile && pnpm --filter portal-owner build"
+buildCommand = "corepack enable && corepack prepare pnpm@8.15.9 --activate && NODE_ENV=development pnpm install --no-frozen-lockfile && pnpm --filter portal-owner build"
 watchPatterns = ["apps/portal-owner/**", "packages/**"]
 
 [deploy]
