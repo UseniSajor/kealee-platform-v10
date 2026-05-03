@@ -238,13 +238,16 @@ async function handleCheckoutSessionCompleted(
   }
 
   // Queue payment confirmation email
+  // Deliverables are accessed through the Owner Portal — email contains payment receipt + login details only
   if (session.customer_email) {
     try {
-      await emailQueue.sendTemplatedEmail(session.customer_email, 'concept_package_confirmation', {
-        customerName: session.customer_details?.name || 'there',
+      const portalUrl = process.env.OWNER_PORTAL_URL ?? process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? 'https://owner.kealee.com'
+      await emailQueue.sendTemplatedEmail(session.customer_email, 'payment_confirmation', {
+        customerName: session.customer_details?.name || metadata.customerName || 'there',
         packageName: getPackageName(source, tier),
-        packageTier: tier || 'Standard',
         amount: ((session.amount_total || 0) / 100).toFixed(2),
+        portalUrl,
+        loginEmail: session.customer_email,
       })
       logger.info({ email: session.customer_email, sessionId: session.id }, 'Payment confirmation email queued')
     } catch (err) {

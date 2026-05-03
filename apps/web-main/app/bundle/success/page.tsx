@@ -16,9 +16,10 @@ function SuccessContent() {
           </svg>
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">You&rsquo;re all set!</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Payment confirmed!</h1>
         <p className="text-gray-500 mb-8">
-          Your <strong>Full-Stack Design Bundle</strong> is confirmed. Our team is already working on your deliverables.
+          Your <strong>Full-Stack Design Bundle</strong> is underway. All three deliverables will appear
+          in your Owner Portal as they are completed.
         </p>
 
         {/* Deliverables list */}
@@ -26,17 +27,17 @@ function SuccessContent() {
           {[
             {
               label: 'Design Concept',
-              detail: 'AI-generated renders + concept PDF — delivered within 24 hrs',
+              detail: 'AI-generated renders and concept PDF — view in portal when ready',
               color: 'orange',
             },
             {
               label: 'Cost Estimation',
-              detail: 'Detailed cost breakdown for your project scope',
+              detail: 'Detailed cost breakdown — view in portal when ready',
               color: 'blue',
             },
             {
               label: 'Permit Roadmap',
-              detail: 'Jurisdiction-specific permit checklist and filing guide',
+              detail: 'Jurisdiction-specific checklist and filing guide — view in portal when ready',
               color: 'green',
             },
           ].map(({ label, detail, color }) => (
@@ -60,14 +61,14 @@ function SuccessContent() {
         </div>
 
         <p className="text-xs text-gray-400 mb-6">
-          A confirmation email has been sent to you. Check your inbox (and spam folder) for details.
+          A payment confirmation email with your portal login details has been sent to your inbox.
         </p>
 
         <Link
-          href="/"
+          href={process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? 'https://owner.kealee.com'}
           className="inline-block w-full rounded-xl bg-gray-900 px-6 py-3 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
         >
-          Back to home
+          Go to Owner Portal
         </Link>
       </div>
     </main>
