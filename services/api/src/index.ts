@@ -1185,6 +1185,11 @@ const start = async () => {
       await fastify.register(agentsRoutes, { prefix: '/api/v1/agents' })
     })
 
+    await safeRegisterBlock('OrgBot routes', async () => {
+      const { orgBotsRoutes } = await import('./modules/orgbots/orgbots.routes.js')
+      await fastify.register(orgBotsRoutes, { prefix: '/api/v1/orgbots' })
+    })
+
     await safeRegisterBlock('Debug routes', async () => {
       const { debugRoutes } = await import('./routes/debug.routes.js')
       await fastify.register(debugRoutes)
