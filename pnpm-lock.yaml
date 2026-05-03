@@ -2333,6 +2333,24 @@ importers:
         specifier: ^2.1.2
         version: 2.1.9(@types/node@22.19.17)
 
+  services/cost-model:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.39
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
+  services/external-data:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.39
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
   services/keabots:
     dependencies:
       '@kealee/core-bots':
@@ -2443,6 +2461,22 @@ importers:
       vitest:
         specifier: ^1.2.2
         version: 1.6.1(@types/node@20.19.39)
+
+  services/orgbots:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.74.0
+        version: 0.74.0(zod@4.3.6)
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.39
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
 
   services/os-dev:
     dependencies:

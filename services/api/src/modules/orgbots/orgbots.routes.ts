@@ -13,10 +13,10 @@
  */
 
 import type { FastifyInstance } from "fastify";
-import { orgBotOrchestrator, type OrgBotEventType } from "../../../../services/orgbots/src/orgbot-orchestrator.js";
-import { computeCostModel, computeRiskScore } from "../../../../services/cost-model/src/cost-model.service.js";
-import { getMarketSnapshot } from "../../../../services/external-data/src/external-data.service.js";
-import type { ProjectType, ComplexityLevel } from "../../../../services/cost-model/src/cost-model.service.js";
+import { orgBotOrchestrator, type OrgBotEventType } from "../../../../orgbots/src/orgbot-orchestrator.js";
+import { computeCostModel, computeRiskScore } from "../../../../cost-model/src/cost-model.service.js";
+import { getMarketSnapshot } from "../../../../external-data/src/external-data.service.js";
+import type { ProjectType, ComplexityLevel } from "../../../../cost-model/src/cost-model.service.js";
 
 export async function orgBotsRoutes(fastify: FastifyInstance) {
 
