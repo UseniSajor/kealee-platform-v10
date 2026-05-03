@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import {
   CheckCircle, Clock, AlertTriangle, Download, ArrowRight,
@@ -26,11 +26,11 @@ interface ConceptRecord {
 
 const API_BASE = '/api/v1'
 
-const RISK_BADGE: Record<string, { bg: string; text: string }> = {
-  LOW:      { bg: 'rgba(52,211,153,0.1)',  text: '#059669' },
-  MEDIUM:   { bg: 'rgba(251,191,36,0.1)',  text: '#D97706' },
-  HIGH:     { bg: 'rgba(248,113,113,0.1)', text: '#DC2626' },
-  CRITICAL: { bg: 'rgba(220,38,38,0.15)',  text: '#991B1B' },
+const RISK_BADGE: Record<string, React.CSSProperties> = {
+  LOW:      { backgroundColor: 'rgba(52,211,153,0.1)',  color: '#059669' },
+  MEDIUM:   { backgroundColor: 'rgba(251,191,36,0.1)',  color: '#D97706' },
+  HIGH:     { backgroundColor: 'rgba(248,113,113,0.1)', color: '#DC2626' },
+  CRITICAL: { backgroundColor: 'rgba(220,38,38,0.15)',  color: '#991B1B' },
 }
 
 export default function ConceptPage() {

@@ -64,11 +64,16 @@ export default function CapitalPage() {
     fetchCapitalData()
   }, [])
 
-  const totalCapital = stacks.reduce((s, c) => s + c.totalCapital, 0)
-  const totalDebt = stacks.reduce((s, c) => s + c.sources.filter(src => src.name.includes('Debt') || src.name.includes('Loan')).reduce((ss, src) => ss + src.amount, 0), 0)
-  const totalLPEquity = stacks.reduce((s, c) => s + c.sources.filter(src => src.name.includes('LP')).reduce((ss, src) => ss + src.amount, 0), 0)
-  const pendingDraws = draws.filter(d => d.status !== 'funded').reduce((s, d) => s + d.amount, 0)
-  const fundedDraws = draws.filter(d => d.status === 'funded').reduce((s, d) => s + d.amount, 0)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const totalCapital = stacks.reduce((s: number, c: any) => s + c.totalCapital, 0)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const totalDebt = stacks.reduce((s: number, c: any) => s + (c.sources as any[]).filter((src: any) => src.name.includes('Debt') || src.name.includes('Loan')).reduce((ss: number, src: any) => ss + src.amount, 0), 0)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const totalLPEquity = stacks.reduce((s: number, c: any) => s + (c.sources as any[]).filter((src: any) => src.name.includes('LP')).reduce((ss: number, src: any) => ss + src.amount, 0), 0)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pendingDraws = draws.filter((d: any) => d.status !== 'funded').reduce((s: number, d: any) => s + d.amount, 0)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fundedDraws = draws.filter((d: any) => d.status === 'funded').reduce((s: number, d: any) => s + d.amount, 0)
 
   return (
     <div>
@@ -148,14 +153,14 @@ export default function CapitalPage() {
 
               {/* Stacked bar */}
               <div className="mb-4 flex h-6 w-full overflow-hidden rounded-full">
-                {stack.sources.map((s, i) => {
+                {(stack.sources as any[]).map((s: any, i: number) => {
                   const barColors = ['#1A2B4A', '#2ABFBF', '#E8793A', '#D69E2E']
                   return <div key={i} className="transition-all" style={{ width: `${s.pct}%`, backgroundColor: barColors[i % barColors.length] }} />
                 })}
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {stack.sources.map((s, i) => {
+                {(stack.sources as any[]).map((s: any, i: number) => {
                   const textColors = ['#1A2B4A', '#2ABFBF', '#E8793A', '#D69E2E']
                   const dotColors = ['#1A2B4A', '#2ABFBF', '#E8793A', '#D69E2E']
                   return (

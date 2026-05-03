@@ -5,7 +5,7 @@
  * Security: the `redirect` param is validated to ensure it is a relative path
  * (starts with "/") to prevent open-redirect attacks.
  */
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
@@ -45,10 +45,10 @@ export async function GET(request: NextRequest) {
           getAll() {
             return cookieStore.getAll()
           },
-          setAll(cookiesToSet) {
+          setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
             try {
               cookiesToSet.forEach(({ name, value, options }) => {
-                cookieStore.set(name, value, options)
+                cookieStore.set(name, value, options as Parameters<typeof cookieStore.set>[2])
               })
             } catch {
               // The `setAll` method was called from a Server Component.

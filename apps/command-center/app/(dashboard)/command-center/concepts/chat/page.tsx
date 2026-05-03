@@ -2,15 +2,27 @@
 
 import { useState } from "react";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 
 export default function ExteriorConceptChatPage() {
   const [intakeData] = useState<Record<string, unknown>>({});
+  const [input, setInput] = useState("");
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading } =
-    useChat({
+  const { messages, sendMessage, status } = useChat({
+    transport: new DefaultChatTransport({
       api: "/api/ai/exterior-concept",
       body: { intakeData },
-    });
+    }),
+  });
+
+  const isLoading = status === "streaming" || status === "submitted";
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    sendMessage({ text: input });
+    setInput("");
+  };
 
   return (
     <div className="mx-auto max-w-3xl p-6">
@@ -23,15 +35,21 @@ export default function ExteriorConceptChatPage() {
         {messages.length === 0 && (
           <p className="text-sm text-slate-400">No messages yet. Start by describing the project.</p>
         )}
-        {messages.map((m) => (
-          <div
-            key={m.id}
-            className={`rounded-xl p-3 ${m.role === "user" ? "bg-slate-100" : "bg-emerald-50"}`}
-          >
-            <div className="mb-1 text-xs font-medium uppercase text-slate-500">{m.role}</div>
-            <div className="text-sm whitespace-pre-wrap">{m.content}</div>
-          </div>
-        ))}
+        {messages.map((m) => {
+          const textContent = m.parts
+            .filter((p) => p.type === "text")
+            .map((p) => (p as { type: "text"; text: string }).text)
+            .join("");
+          return (
+            <div
+              key={m.id}
+              className={`rounded-xl p-3 ${m.role === "user" ? "bg-slate-100" : "bg-emerald-50"}`}
+            >
+              <div className="mb-1 text-xs font-medium uppercase text-slate-500">{m.role}</div>
+              <div className="text-sm whitespace-pre-wrap">{textContent}</div>
+            </div>
+          );
+        })}
         {isLoading && (
           <div className="rounded-xl bg-slate-50 p-3">
             <div className="text-xs text-slate-400">Thinking...</div>
@@ -46,7 +64,7 @@ export default function ExteriorConceptChatPage() {
         <input
           className="flex-1 rounded-xl border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
           value={input}
-          onChange={handleInputChange}
+          onChange={(e) => setInput(e.target.value)}
           placeholder="Describe the exterior design request"
           disabled={isLoading}
         />
@@ -58,7 +76,6 @@ export default function ExteriorConceptChatPage() {
           Send
         </button>
       </form>
-
     </div>
   );
 }

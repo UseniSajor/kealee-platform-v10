@@ -250,6 +250,137 @@ CREATE POLICY "bid_access" ON "Bid"
   );
 
 -- ┌──────────────────────────────────────────────────────────────────────────┐
+-- │ AGENT SESSIONS — own sessions only                                      │
+-- └──────────────────────────────────────────────────────────────────────────┘
+
+ALTER TABLE agent_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "agent_sessions_select_own" ON agent_sessions
+  FOR SELECT USING (user_id = auth.uid()::text);
+
+CREATE POLICY "agent_sessions_update_own" ON agent_sessions
+  FOR UPDATE USING (user_id = auth.uid()::text);
+
+-- ┌──────────────────────────────────────────────────────────────────────────┐
+-- │ BOT PROMPTS — any authenticated user can read                           │
+-- └──────────────────────────────────────────────────────────────────────────┘
+
+ALTER TABLE bot_prompts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "bot_prompts_select_authenticated" ON bot_prompts
+  FOR SELECT USING (auth.role() = 'authenticated');
+
+-- ┌──────────────────────────────────────────────────────────────────────────┐
+-- │ KEABOT EVENTS — project members                                         │
+-- └──────────────────────────────────────────────────────────────────────────┘
+
+ALTER TABLE keabot_events ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "keabot_events_select_project_members" ON keabot_events
+  FOR SELECT USING (
+    project_id IS NULL
+    OR is_project_member(project_id::uuid)
+  );
+
+-- ┌──────────────────────────────────────────────────────────────────────────┐
+-- │ PROJECT OUTPUTS — project members OR intake email match                 │
+-- └──────────────────────────────────────────────────────────────────────────┘
+
+ALTER TABLE project_outputs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "project_outputs_select_owner" ON project_outputs
+  FOR SELECT USING (
+    (project_id IS NOT NULL AND is_project_member(project_id::uuid))
+    OR intake_id IN (
+      SELECT id::text FROM public_intake_leads
+      WHERE contact_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+    )
+  );
+
+-- ┌──────────────────────────────────────────────────────────────────────────┐
+-- │ KEABOT RUNS — project members                                           │
+-- └──────────────────────────────────────────────────────────────────────────┘
+
+ALTER TABLE keabot_runs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "keabot_runs_select_project_members" ON keabot_runs
+  FOR SELECT USING (
+    is_project_member(project_id::uuid)
+  );
+
+-- ┌──────────────────────────────────────────────────────────────────────────┐
+-- │ AI CONVERSATIONS — own conversations                                    │
+-- └──────────────────────────────────────────────────────────────────────────┘
+
+ALTER TABLE ai_conversations ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "ai_conversations_select_own" ON ai_conversations
+  FOR SELECT USING (user_id = auth.uid()::text);
+
+CREATE POLICY "ai_conversations_update_own" ON ai_conversations
+  FOR UPDATE USING (user_id = auth.uid()::text);
+
+-- ┌──────────────────────────────────────────────────────────────────────────┐
+-- │ CONCEPT PACKAGES — homeowner by userId or email                         │
+-- └──────────────────────────────────────────────────────────────────────────┘
+
+ALTER TABLE concept_packages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "concept_packages_select_owner" ON concept_packages
+  FOR SELECT USING (
+    homeowner_id = auth.uid()::text
+    OR contact_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+  );
+
+-- ┌──────────────────────────────────────────────────────────────────────────┐
+-- │ CONCEPT FLOORPLANS — via concept_packages join                          │
+-- └──────────────────────────────────────────────────────────────────────────┘
+
+ALTER TABLE concept_floorplans ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "concept_floorplans_select_via_package" ON concept_floorplans
+  FOR SELECT USING (
+    concept_package_id IN (
+      SELECT id::text FROM concept_packages
+      WHERE homeowner_id = auth.uid()::text
+        OR contact_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+    )
+  );
+
+-- ┌──────────────────────────────────────────────────────────────────────────┐
+-- │ ORCHESTRATION GATES — project members                                   │
+-- └──────────────────────────────────────────────────────────────────────────┘
+
+ALTER TABLE orchestration_gates ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "orchestration_gates_select_project_members" ON orchestration_gates
+  FOR SELECT USING (
+    is_project_member(project_id::uuid)
+  );
+
+-- ┌──────────────────────────────────────────────────────────────────────────┐
+-- │ ORCHESTRATION ACTION LOG — project members                              │
+-- └──────────────────────────────────────────────────────────────────────────┘
+
+ALTER TABLE orchestration_action_log ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "orchestration_action_log_select_project_members" ON orchestration_action_log
+  FOR SELECT USING (
+    is_project_member(project_id::uuid)
+  );
+
+-- ┌──────────────────────────────────────────────────────────────────────────┐
+-- │ PUBLIC INTAKE LEADS — users see leads matching their auth email         │
+-- └──────────────────────────────────────────────────────────────────────────┘
+
+ALTER TABLE public_intake_leads ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "intake_leads_select_own_email" ON public_intake_leads
+  FOR SELECT USING (
+    contact_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+  );
+
+-- ┌──────────────────────────────────────────────────────────────────────────┐
 -- │ NOTES                                                                   │
 -- └──────────────────────────────────────────────────────────────────────────┘
 -- The service_role key automatically bypasses all RLS policies.

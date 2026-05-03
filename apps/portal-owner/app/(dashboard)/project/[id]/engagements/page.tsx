@@ -8,7 +8,7 @@
  * engagements via Kealee's professional network.
  */
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Users, Plus, ArrowLeft } from 'lucide-react'
@@ -32,11 +32,11 @@ const TYPE_LABELS: Record<string, string> = {
   INSPECTOR:        'Inspector',
 }
 
-const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  ACTIVE:   { bg: 'rgba(56,161,105,0.1)',   text: '#38A169' },
-  PENDING:  { bg: 'rgba(232,121,58,0.1)',   text: '#E8793A' },
-  COMPLETE: { bg: 'rgba(42,191,191,0.1)',   text: '#2ABFBF' },
-  PAUSED:   { bg: 'rgba(160,174,192,0.1)',  text: '#9CA3AF' },
+const STATUS_COLORS: Record<string, React.CSSProperties> = {
+  ACTIVE:   { backgroundColor: 'rgba(56,161,105,0.1)',   color: '#38A169' },
+  PENDING:  { backgroundColor: 'rgba(232,121,58,0.1)',   color: '#E8793A' },
+  COMPLETE: { backgroundColor: 'rgba(42,191,191,0.1)',   color: '#2ABFBF' },
+  PAUSED:   { backgroundColor: 'rgba(160,174,192,0.1)',  color: '#9CA3AF' },
 }
 
 export default function ProjectEngagementsPage() {

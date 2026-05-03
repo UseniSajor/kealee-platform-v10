@@ -1233,6 +1233,9 @@ importers:
 
   packages/core-agents:
     dependencies:
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
       '@kealee/seeds':
         specifier: workspace:*
         version: link:../seeds

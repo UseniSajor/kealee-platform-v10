@@ -5,15 +5,16 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import {
   FolderKanban, DollarSign, FileText, MessageSquare,
-  LogOut, Bot, X, ChevronRight, Bell,
+  LogOut, Bot, X, ChevronRight, Bell, Package,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 const NAV_ITEMS = [
-  { href: '/projects', label: 'Projects', icon: FolderKanban },
-  { href: '/payments', label: 'Payments', icon: DollarSign },
-  { href: '/documents', label: 'Documents', icon: FileText },
-  { href: '/messages', label: 'Messages', icon: MessageSquare },
+  { href: '/projects',     label: 'Projects',     icon: FolderKanban },
+  { href: '/deliverables', label: 'Deliverables', icon: Package },
+  { href: '/payments',     label: 'Payments',     icon: DollarSign },
+  { href: '/documents',    label: 'Documents',    icon: FileText },
+  { href: '/messages',     label: 'Messages',     icon: MessageSquare },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

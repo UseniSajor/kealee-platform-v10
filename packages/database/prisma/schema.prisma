@@ -17061,3 +17061,69 @@ model PermitCase {
   @@index([zipCode])
   @@map("permit_cases")
 }
+
+// ============================================================================
+// AGENT SESSION + BOT PROMPT + KEABOT EVENT (2026-05-03)
+// ============================================================================
+
+/// Persistent session store for KeaCoreRuntime (replaces in-memory Map)
+model AgentSession {
+  id        String    @id @default(uuid())
+  orgId     String?
+  userId    String?
+  projectId String?
+  threadId  String?
+  source    String    // web | portal-owner | portal-developer | command-center | api
+  mode      String    @default("assisted") // autonomous | assisted | operator
+  status    String    @default("active")   // active | paused | closed
+  memory    Json      @default("{}")
+  metadata  Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  closedAt  DateTime?
+
+  @@map("agent_sessions")
+  @@index([userId])
+  @@index([projectId])
+  @@index([status])
+}
+
+/// Versioned prompt storage — master, wrapper per bot, orchestrator
+model BotPrompt {
+  id         String   @id @default(uuid())
+  botName    String   // keabot-design | __master__ | __orchestrator__
+  promptType String   // master | wrapper | orchestrator
+  version    Int      @default(1)
+  content    String   @db.Text
+  variables  Json?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([botName, version])
+  @@map("bot_prompts")
+  @@index([botName])
+  @@index([isActive])
+}
+
+/// Orchestrator execution records — triggered bots, plan, status, errors
+model KeaBotEvent {
+  id            String    @id @default(uuid())
+  projectId     String?
+  sessionId     String?
+  eventType     String    // new_project | updated_design | user_request | milestone_completion
+  payload       Json      @default("{}")
+  context       Json?
+  triggeredBots String[]
+  executionPlan Json?
+  status        String    @default("pending") // pending | running | completed | failed
+  errors        Json?
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+
+  @@map("keabot_events")
+  @@index([projectId])
+  @@index([sessionId])
+  @@index([eventType])
+  @@index([status])
+}

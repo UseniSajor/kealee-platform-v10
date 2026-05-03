@@ -139,7 +139,7 @@ export default function FeasibilityPage() {
         {studies.map((study) => {
           const pt = PROJECT_TYPES[study.projectType]
           const isExpanded = expandedId === study.id
-          const bestScenario = study.scenarios.reduce((best, s) => s.irr > best.irr ? s : best, study.scenarios[0])
+          const bestScenario = (study.scenarios as any[]).reduce((best: any, s: any) => s.irr > best.irr ? s : best, study.scenarios[0])
 
           return (
             <div key={study.id} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -232,7 +232,7 @@ export default function FeasibilityPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {study.scenarios.map((sc, i) => (
+                          {(study.scenarios as any[]).map((sc: any, i: number) => (
                             <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
                               <td className="px-4 py-2 font-medium" style={{ color: '#1A2B4A' }}>{sc.name}</td>
                               <td className="px-4 py-2 text-gray-600">{sc.units}</td>
@@ -252,7 +252,7 @@ export default function FeasibilityPage() {
                   <div>
                     <h4 className="mb-2 text-sm font-semibold" style={{ color: '#1A2B4A' }}>CSI Division Cost Breakdown</h4>
                     <div className="space-y-2">
-                      {study.csiBreakdown.map((csi) => (
+                      {(study.csiBreakdown as any[]).map((csi: any) => (
                         <div key={csi.division} className="flex items-center gap-3">
                           <span className="w-20 shrink-0 text-xs text-gray-500">Div {csi.division}</span>
                           <span className="w-36 shrink-0 text-xs font-medium text-gray-700">{csi.name}</span>
