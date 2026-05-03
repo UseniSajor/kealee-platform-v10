@@ -154,9 +154,47 @@ async function handleCheckoutSessionCompleted(
         projectPath: metadata.projectPath,
       })
     }
+  } else if (source === 'bundle') {
+    // Full-Stack Design Bundle: concept + estimate + permit
+    // No single intake record — create 3 ProjectOutput records and enqueue 3 execution jobs
+    const customerEmail = metadata.customerEmail ?? session.customer_email ?? ''
+    const customerName = metadata.customerName ?? session.customer_details?.name ?? ''
+    const bundleMeta = { source: 'bundle', sessionId: session.id, customerEmail, customerName }
+    const bundleTypes: Array<'concept' | 'estimate' | 'permit'> = ['concept', 'estimate', 'permit']
+
+    for (const bundleType of bundleTypes) {
+      try {
+        const output = await (prisma as any).projectOutput.create({
+          data: {
+            intakeId: session.id, // Stripe session ID as bundle reference
+            type: bundleType,
+            status: 'pending',
+            metadata: bundleMeta,
+          },
+        })
+        const queue = getProjectExecutionQueue()
+        await queue.add('execute', {
+          outputId: output.id,
+          type: bundleType,
+          intakeId: session.id,
+          metadata: bundleMeta,
+        }, { attempts: 3, backoff: { type: 'exponential', delay: 5000 } })
+        logger.info({ outputId: output.id, type: bundleType, sessionId: session.id }, 'Bundle ProjectOutput created and enqueued')
+      } catch (err: any) {
+        logger.error({ err: err.message, bundleType, sessionId: session.id }, 'Failed to create bundle ProjectOutput — rethrowing for Stripe retry')
+        throw err
+      }
+    }
+
+    if (funnelSessionId) {
+      await trackConversionEvent(redis, funnelSessionId, 'BUNDLE_PAID', {
+        sessionId: session.id,
+        amount: session.amount_total,
+      })
+    }
   }
 
-  // Create ProjectOutput and enqueue execution job
+  // Create ProjectOutput and enqueue execution job (single-source intakes only; bundle handled above)
   if (intakeId && source) {
     const typeMap: Record<string, 'design' | 'permit' | 'estimate' | 'concept'> = {
       concept:    'concept',
@@ -348,6 +386,8 @@ async function updateFunnelRevenue(funnelSessionId: string, amount: number): Pro
  * Map source and tier to display package name for email
  */
 function getPackageName(source: string | undefined, tier: string | undefined): string {
+  if (source === 'bundle') return 'Kealee Full-Stack Design Bundle'
+
   const packageMap: Record<string, Record<string, string>> = {
     concept: {
       starter: 'Concept Engine Starter',
