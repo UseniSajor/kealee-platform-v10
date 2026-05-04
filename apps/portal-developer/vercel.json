@@ -3,5 +3,6 @@
   "ignoreCommand": "exit 1",
   "installCommand": "cd ../.. && NODE_ENV=development pnpm install --no-frozen-lockfile",
   "buildCommand": "cd ../.. && pnpm turbo run build --filter=portal-developer",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "_build": "2026-05-04-fix-devdeps"
 }
