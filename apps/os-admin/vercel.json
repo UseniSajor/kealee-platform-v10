@@ -1,34 +1,7 @@
 {
-  "buildCommand": "cd ../.. && pnpm turbo run build --filter=os-admin",
-  "installCommand": "cd ../.. && PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true NODE_ENV=development pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/$1"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        }
-      ]
-    }
-  ]
+  "ignoreCommand": "exit 1",
+  "installCommand": "cd ../.. && NODE_ENV=development pnpm install --no-frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm turbo run build --filter=os-admin",
+  "outputDirectory": ".next"
 }
