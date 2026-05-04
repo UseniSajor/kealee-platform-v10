@@ -1,6 +1,7 @@
+// Build: 2026-05-04-tw3
 const { withSentryConfig } = require('@sentry/nextjs');
 
-// Build: 2026-05-04
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ['@kealee/ui', '@kealee/intake', '@kealee/shared'],
