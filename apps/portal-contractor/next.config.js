@@ -1,3 +1,4 @@
+// Build: 2026-05-04
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
