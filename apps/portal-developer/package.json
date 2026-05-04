@@ -1,1 +1,17 @@
-{"name":"portal-developer","version":"1.0.0","private":true,"scripts":{"dev":"next dev","build":"next build","start":"next start","lint":"next lint"}}
+{
+  "name": "portal-developer",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@kealee/auth": "workspace:*",
+    "@kealee/core-hooks": "workspace:*",
+    "@kealee/observability": "workspace:*",
+    "@kealee/ui": "workspace:*"
+  }
+}

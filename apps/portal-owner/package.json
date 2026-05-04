@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@kealee/core-hooks": "workspace:*"
+    "@kealee/auth": "workspace:*",
+    "@kealee/core-hooks": "workspace:*",
+    "@kealee/shared": "workspace:*",
+    "@kealee/ui": "workspace:*"
   }
 }

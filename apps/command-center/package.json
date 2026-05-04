@@ -12,6 +12,8 @@
     "@ai-sdk/react": "^3.0.118",
     "@kealee/ai": "workspace:*",
     "@kealee/auth": "workspace:*",
+    "@kealee/database": "workspace:*",
+    "@kealee/observability": "workspace:*",
     "@kealee/ui": "workspace:*",
     "@langchain/core": "^1.1.34",
     "@langchain/langgraph": "^1.2.3",

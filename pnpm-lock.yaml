@@ -219,6 +219,12 @@ importers:
       '@kealee/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@kealee/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
       '@kealee/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -483,6 +489,18 @@ importers:
 
   apps/os-admin:
     dependencies:
+      '@kealee/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
+      '@kealee/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@kealee/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@radix-ui/react-dialog':
         specifier: ^1.1.15
         version: 1.1.15(react-dom@18.2.0)(react@18.2.0)
@@ -501,17 +519,48 @@ importers:
 
   apps/portal-contractor:
     dependencies:
+      '@kealee/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@kealee/core-hooks':
         specifier: workspace:*
         version: link:../../packages/core-hooks
+      '@kealee/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
+      '@kealee/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
 
-  apps/portal-developer: {}
+  apps/portal-developer:
+    dependencies:
+      '@kealee/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@kealee/core-hooks':
+        specifier: workspace:*
+        version: link:../../packages/core-hooks
+      '@kealee/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
+      '@kealee/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
 
   apps/portal-owner:
     dependencies:
+      '@kealee/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@kealee/core-hooks':
         specifier: workspace:*
         version: link:../../packages/core-hooks
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@kealee/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
 
   apps/web-main:
     dependencies:
