@@ -47,8 +47,8 @@ const buildEstimateTiers = () => {
       turnaround: `${pricing.bundle.turnaround}–7 business days`,
       desc: pricing.bundle.description,
       bullets: pricing.bundle.features,
-      cta: 'Explore Bundle',
-      href: '/estimate-permit-bundle',
+      cta: 'Order Estimate + Permit Bundle',
+      href: '/intake/cost_estimate?bundle=true',
       accent: '#4A8FA8',
       popular: false,
     },
@@ -162,12 +162,6 @@ export default function EstimatePage() {
                 >
                   {tier.cta}
                 </Link>
-                <Link
-                  href={`/products/${tier.slug}`}
-                  className="mt-2 text-center text-xs text-gray-400 hover:text-gray-600"
-                >
-                  View full details →
-                </Link>
               </div>
             ))}
           </div>
@@ -203,7 +197,7 @@ export default function EstimatePage() {
               Order Detailed Estimate <ArrowRight className="h-5 w-5" />
             </Link>
             <Link href="/intake/certified_estimate" className="text-sm text-gray-400 hover:text-white transition-colors">
-              Order certified estimate →
+              Order Certified Estimate ($1,850) →
             </Link>
           </div>
         </div>

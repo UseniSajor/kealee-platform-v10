@@ -50,7 +50,7 @@ function ContactInner() {
   }
 
   const backParams = new URLSearchParams()
-  ;['service', 'scope', 'budget', 'zip'].forEach((k) => {
+  ;['service', 'scope', 'budget', 'zip', 'style', 'priority', 'timeline', 'sqft'].forEach((k) => {
     const v = searchParams.get(k)
     if (v) backParams.set(k, v)
   })

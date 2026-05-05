@@ -2,9 +2,42 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { CheckCircle2, Clock, ArrowRight, Shield, DollarSign, Video, Play } from 'lucide-react'
+import { CheckCircle2, Clock, ArrowRight, Shield, DollarSign, Video, FileText, Image as ImageIcon, Table2, Layers, Star, LayoutTemplate, Zap } from 'lucide-react'
 import { SERVICES, SERVICE_MAP } from '@/lib/services-config'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
+
+// ── Tier deliverables (mirrors confirm/page.tsx TIER_ITEMS) ──────────────────
+interface DeliverableItem {
+  icon: React.ElementType
+  label: string
+  color: string
+}
+
+const TIER_DELIVERABLES: Record<1 | 2 | 3, DeliverableItem[]> = {
+  1: [
+    { icon: FileText,       label: 'PDF Design Report — 15–20 pages',               color: 'bg-blue-100 text-blue-600' },
+    { icon: ImageIcon,      label: '3–5 Concept Renderings (1920×1080)',             color: 'bg-purple-100 text-purple-600' },
+    { icon: Table2,         label: 'Budget Comparison — Basic · Standard · Luxury',  color: 'bg-green-100 text-green-600' },
+    { icon: FileText,       label: 'Quick Reference Sheet (print-ready)',            color: 'bg-amber-100 text-amber-600' },
+    { icon: LayoutTemplate, label: 'Web Portal — lifetime access & sharing',         color: 'bg-sky-100 text-sky-600' },
+    { icon: Zap,            label: '1 revision included · Email support',            color: 'bg-slate-100 text-slate-500' },
+  ],
+  2: [
+    { icon: Video,          label: '60-Second AI Transformation Video',              color: 'bg-orange-100 text-orange-600' },
+    { icon: Layers,         label: '2D Architectural Floor Plan with MEP',           color: 'bg-blue-100 text-blue-600' },
+    { icon: ImageIcon,      label: '6–8 Enhanced Renderings (2560×1440)',            color: 'bg-purple-100 text-purple-600' },
+    { icon: LayoutTemplate, label: 'Interactive Portal — video, floor plan, docs',   color: 'bg-sky-100 text-sky-600' },
+    { icon: Table2,         label: 'Itemized Bill of Materials (editable)',          color: 'bg-green-100 text-green-600' },
+    { icon: FileText,       label: 'Everything in Basic · 3 revisions · 30-day support', color: 'bg-slate-100 text-slate-500' },
+  ],
+  3: [
+    { icon: Video,          label: '4 Video Formats — 60s · 30s · 15s · 10s',       color: 'bg-orange-100 text-orange-600' },
+    { icon: Layers,         label: 'Multi-Layer 3D Floor Plan + CAD files',          color: 'bg-blue-100 text-blue-600' },
+    { icon: ImageIcon,      label: '12–15 Renderings in 4K resolution',              color: 'bg-purple-100 text-purple-600' },
+    { icon: LayoutTemplate, label: 'Enhanced Portal — virtual walkthrough',          color: 'bg-sky-100 text-sky-600' },
+    { icon: FileText,       label: 'Everything in Premium · 3 revisions · 90-day support', color: 'bg-slate-100 text-slate-500' },
+  ],
+}
 
 interface Params {
   serviceType: string
@@ -43,60 +76,53 @@ const PROCESS_STEPS = [
 function TierCard({
   tier,
   serviceSlug,
-  isNew,
 }: {
-  tier: { tier: number; name: string; price: number; available: boolean; video: boolean; badge?: string; videoDeliverables?: string[] }
+  tier: { tier: number; name: string; price: number; available: boolean; video: boolean; badge?: string }
   serviceSlug: string
-  isNew?: boolean
 }) {
   if (!tier.available) return null
 
   const isPremium = tier.tier === 2
-  const isPremiumPlus = tier.tier === 3
+  const deliverables = TIER_DELIVERABLES[tier.tier as 1 | 2 | 3] ?? []
 
   return (
     <div
-      className={`relative rounded-2xl border p-6 flex flex-col ${
+      className={`relative rounded-2xl border flex flex-col overflow-hidden ${
         isPremium
           ? 'border-[#E8724B] shadow-lg shadow-orange-100 bg-white ring-2 ring-[#E8724B]/20'
           : 'border-slate-200 bg-white shadow-sm'
       }`}
     >
       {tier.badge && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#E8724B] text-white text-xs font-bold px-3 py-1">
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#E8724B] text-white text-xs font-bold px-3 py-1 z-10">
           {tier.badge}
         </span>
       )}
 
-      <div className="mb-4">
+      {/* Header */}
+      <div className="px-6 pt-7 pb-5 border-b border-slate-100">
         <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">{tier.name}</p>
-        <p className="text-4xl font-black text-slate-900">
-          ${tier.price.toLocaleString()}
-        </p>
-        <p className="text-sm text-slate-500 mt-1">one-time</p>
+        <p className="text-4xl font-black text-slate-900">${tier.price.toLocaleString()}</p>
+        <p className="text-sm text-slate-500 mt-1">one-time · delivered in 3–5 days</p>
       </div>
 
-      {/* Video badge */}
-      {tier.video && (
-        <div className="flex items-center gap-1.5 rounded-lg bg-orange-50 border border-orange-100 px-3 py-2 mb-4">
-          <Video className="w-4 h-4 text-[#E8724B]" />
-          <span className="text-xs font-semibold text-[#E8724B]">Includes AI Video</span>
-        </div>
-      )}
+      {/* Deliverables */}
+      <div className="px-6 py-5 flex-1 space-y-3">
+        {deliverables.map((item, i) => {
+          const Icon = item.icon
+          return (
+            <div key={i} className="flex items-center gap-3">
+              <div className={`w-8 h-8 rounded-full ${item.color} flex items-center justify-center shrink-0`}>
+                <Icon className="w-4 h-4" />
+              </div>
+              <p className="text-sm text-slate-700 leading-snug">{item.label}</p>
+            </div>
+          )
+        })}
+      </div>
 
-      {/* Video deliverables */}
-      {tier.videoDeliverables && (
-        <ul className="space-y-1.5 mb-5">
-          {tier.videoDeliverables.map((d) => (
-            <li key={d} className="flex items-start gap-2 text-xs text-slate-600">
-              <Play className="w-3 h-3 text-[#E8724B] shrink-0 mt-0.5" />
-              {d}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div className="mt-auto pt-4">
+      {/* CTA */}
+      <div className="px-6 pb-6">
         <Link
           href={`/concept?service=${serviceSlug}&tier=${tier.tier}`}
           className={`flex items-center justify-center gap-2 w-full rounded-xl py-3 text-sm font-bold transition-all duration-200 ${

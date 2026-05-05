@@ -31,13 +31,13 @@ export async function POST(req: NextRequest) {
         contact_email: contactEmail,
         contact_phone: contactPhone ?? null,
         project_address: projectAddress,
-        budget_range: budgetRange ?? null,
-        form_data: formData ?? {},
+        // budget_range is NOT NULL — fall back to formData.budget if not explicitly provided
+        budget_range: budgetRange ?? (formData?.budget ? String(formData.budget) : 'Not provided'),
         source: 'web-main',
         status: 'new',
-        requires_payment: false,
+        requires_payment: true,
         payment_amount: 0,
-        created_by_user_id: userId ?? null,
+        metadata: formData ? { ...formData } : null,
       })
       .select('id')
       .single()

@@ -9,6 +9,34 @@ import { SERVICE_MAP } from '@/lib/services-config'
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#E8724B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8724B]/20 transition'
 
+const STYLE_OPTIONS = [
+  'Modern / Contemporary',
+  'Transitional',
+  'Traditional / Classic',
+  'Farmhouse / Rustic',
+  'Coastal / Beach',
+  'Industrial / Loft',
+  'Scandinavian / Minimalist',
+  'Other / Not sure yet',
+]
+
+const PRIORITY_OPTIONS = [
+  'Maximize space & functionality',
+  'High-end finishes & materials',
+  'Stay within budget',
+  'Fast turnaround',
+  'Increase home value / resale',
+  'Eco-friendly / sustainable',
+]
+
+const TIMELINE_OPTIONS = [
+  'As soon as possible',
+  '1–3 months',
+  '3–6 months',
+  '6–12 months',
+  'Exploring / no set timeline',
+]
+
 function DetailsInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -18,6 +46,10 @@ function DetailsInner() {
   const [scope, setScope] = useState('')
   const [budget, setBudget] = useState('')
   const [zip, setZip] = useState('')
+  const [style, setStyle] = useState('')
+  const [priority, setPriority] = useState('')
+  const [timeline, setTimeline] = useState('')
+  const [sqft, setSqft] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   function validate() {
@@ -36,6 +68,10 @@ function DetailsInner() {
       scope,
       budget,
       zip,
+      style,
+      priority,
+      timeline,
+      sqft,
     })
     router.push(`/concept/contact?${params.toString()}`)
   }
@@ -60,25 +96,76 @@ function DetailsInner() {
       </div>
 
       <div className="space-y-6 max-w-xl">
-        {/* Scope */}
+
+        {/* Project Description */}
         <div>
           <label className="block text-sm font-semibold text-slate-800 mb-1.5">
             Project Description <span className="text-[#E8724B]">*</span>
           </label>
           <textarea
             className={`${inputClass} h-32 resize-none`}
-            placeholder="E.g., Open-concept kitchen with quartz island, new cabinetry floor-to-ceiling, LED lighting, and a professional range..."
+            placeholder="E.g., Full kitchen gut-renovation — remove wall between kitchen and dining room, add a 10-ft island with seating, replace all cabinetry, quartz counters, professional 6-burner range, under-cabinet LED lighting..."
             value={scope}
             onChange={(e) => setScope(e.target.value)}
           />
           {errors.scope && <p className="text-xs text-red-500 mt-1">{errors.scope}</p>}
-          <p className="text-xs text-slate-400 mt-1">{scope.length} characters — min 20</p>
+          <p className="text-xs text-slate-400 mt-1">{scope.length} characters — the more detail, the more accurate your concept</p>
+        </div>
+
+        {/* Square Footage */}
+        <div>
+          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+            Approximate Square Footage <span className="text-slate-400 font-normal">(optional)</span>
+          </label>
+          <input
+            type="number"
+            className={inputClass}
+            placeholder="e.g. 450"
+            min="0"
+            value={sqft}
+            onChange={(e) => setSqft(e.target.value)}
+          />
+          <p className="text-xs text-slate-400 mt-1">Area of the specific space being renovated or added</p>
+        </div>
+
+        {/* Style */}
+        <div>
+          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+            Design Style <span className="text-slate-400 font-normal">(optional)</span>
+          </label>
+          <select
+            className={inputClass}
+            value={style}
+            onChange={(e) => setStyle(e.target.value)}
+          >
+            <option value="">Select a style...</option>
+            {STYLE_OPTIONS.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Priority */}
+        <div>
+          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+            Top Priority <span className="text-slate-400 font-normal">(optional)</span>
+          </label>
+          <select
+            className={inputClass}
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+          >
+            <option value="">What matters most to you?</option>
+            {PRIORITY_OPTIONS.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
         </div>
 
         {/* Budget */}
         <div>
           <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-            Estimated Budget <span className="text-[#E8724B]">*</span>
+            Estimated Project Budget <span className="text-[#E8724B]">*</span>
           </label>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">$</span>
@@ -92,13 +179,30 @@ function DetailsInner() {
             />
           </div>
           {errors.budget && <p className="text-xs text-red-500 mt-1">{errors.budget}</p>}
-          <p className="text-xs text-slate-400 mt-1">Approximate total project budget</p>
+          <p className="text-xs text-slate-400 mt-1">Your total budget for construction — not the AI concept fee</p>
+        </div>
+
+        {/* Timeline */}
+        <div>
+          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+            Project Timeline <span className="text-slate-400 font-normal">(optional)</span>
+          </label>
+          <select
+            className={inputClass}
+            value={timeline}
+            onChange={(e) => setTimeline(e.target.value)}
+          >
+            <option value="">When do you want to start?</option>
+            {TIMELINE_OPTIONS.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
         </div>
 
         {/* ZIP */}
         <div>
           <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-            ZIP Code <span className="text-[#E8724B]">*</span>
+            Project ZIP Code <span className="text-[#E8724B]">*</span>
           </label>
           <input
             type="text"
@@ -110,9 +214,8 @@ function DetailsInner() {
           />
           {errors.zip && <p className="text-xs text-red-500 mt-1">{errors.zip}</p>}
           {zip.length === 5 && !errors.zip && (
-            <p className="text-xs text-green-600 mt-1">✓ Location confirmed</p>
+            <p className="text-xs text-green-600 mt-1">✓ Location confirmed — used for zoning and permit analysis</p>
           )}
-          <p className="text-xs text-slate-400 mt-1">Used for zoning and permit analysis</p>
         </div>
       </div>
 

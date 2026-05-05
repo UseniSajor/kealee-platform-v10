@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft, Shield, Loader2, FileText, Image as ImageIcon,
-  LayoutTemplate, Table2, Layers, Star, Video, Check, Lock, Zap, X,
+  LayoutTemplate, Table2, Layers, Video, Check, Lock, Zap, X,
 } from 'lucide-react'
 import { SERVICE_MAP } from '@/lib/services-config'
 
@@ -38,9 +38,8 @@ const TIER_ITEMS: Record<1 | 2 | 3, DeliverableItem[]> = {
     { icon: Video,         label: '4 Video Formats — 60s · 30s · 15s · 10s', color: 'bg-orange-100 text-orange-600' },
     { icon: Layers,        label: 'Multi-Layer 3D Floor Plan + CAD files',    color: 'bg-blue-100 text-blue-600' },
     { icon: ImageIcon,     label: '12–15 Renderings in 4K resolution',        color: 'bg-purple-100 text-purple-600' },
-    { icon: Star,          label: 'Professional Permit & Contractor Service',  color: 'bg-amber-100 text-amber-600' },
     { icon: LayoutTemplate,label: 'Enhanced Portal — virtual walkthrough',    color: 'bg-sky-100 text-sky-600' },
-    { icon: Zap,           label: 'Unlimited revisions · 90-day priority support', color: 'bg-slate-100 text-slate-500' },
+    { icon: FileText,      label: 'Everything in Premium · 3 revisions · 90-day support', color: 'bg-slate-100 text-slate-500' },
   ],
 }
 
@@ -59,6 +58,10 @@ function ConfirmInner() {
   const scope       = searchParams.get('scope') ?? ''
   const budget      = searchParams.get('budget') ?? ''
   const zip         = searchParams.get('zip') ?? ''
+  const style       = searchParams.get('style') ?? ''
+  const priority    = searchParams.get('priority') ?? ''
+  const timeline    = searchParams.get('timeline') ?? ''
+  const sqft        = searchParams.get('sqft') ?? ''
   const firstName   = searchParams.get('firstName') ?? ''
   const lastName    = searchParams.get('lastName') ?? ''
   const email       = searchParams.get('email') ?? ''
@@ -82,8 +85,8 @@ function ConfirmInner() {
   const selectedTier = service?.tiers.find((t) => t.tier === tier)
   const price        = selectedTier?.price ?? 0
 
-  const detailsParams = new URLSearchParams({ service: serviceSlug, scope, budget, zip })
-  const contactParams = new URLSearchParams({ service: serviceSlug, scope, budget, zip, firstName, lastName, email, phone, address })
+  const detailsParams = new URLSearchParams({ service: serviceSlug, scope, budget, zip, style, priority, timeline, sqft })
+  const contactParams = new URLSearchParams({ service: serviceSlug, scope, budget, zip, style, priority, timeline, sqft, firstName, lastName, email, phone, address })
 
   async function handleSubmit() {
     if (!agreed) { setError('Please agree to the terms to continue.'); return }
@@ -99,7 +102,8 @@ function ConfirmInner() {
           contactEmail: email,
           contactPhone: phone || null,
           projectAddress: address || `ZIP: ${zip}`,
-          formData: { description: scope, budget, zip, tier },
+          budgetRange: budget || 'Not provided',
+          formData: { description: scope, budget, zip, tier, style, priority, timeline, sqft },
         }),
       })
       if (!intakeRes.ok) {
