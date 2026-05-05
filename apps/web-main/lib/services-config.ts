@@ -36,6 +36,8 @@ export interface Service {
   costRange: string        // e.g. "$35K – $100K"
   timeline: string         // e.g. "12–16 weeks"
   permits: number          // typical permit count
+  /** Optional YouTube video ID for promotional embed on service pages */
+  promoVideoId?: string
 }
 
 // ── Tier helper ────────────────────────────────────────────────────────────────

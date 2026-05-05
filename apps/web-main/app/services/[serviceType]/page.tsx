@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { CheckCircle2, Clock, ArrowRight, Shield, Video, FileText, Image as ImageIcon, Table2, Layers, Star, LayoutTemplate, Zap } from 'lucide-react'
+import { CheckCircle2, Clock, ArrowRight, Shield, Video, FileText, Image as ImageIcon, Table2, Layers, Star, LayoutTemplate, Zap, PlayCircle } from 'lucide-react'
 import { SERVICES, SERVICE_MAP } from '@/lib/services-config'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 
@@ -279,6 +279,54 @@ export default async function ServicePage({
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── 3.5 Video Advertisement ──────────────────────────────────────── */}
+      <section className="relative bg-[#0f1c30] py-16 px-4 overflow-hidden">
+        <div className="absolute inset-0">
+          <Image src={svc.heroImage} alt="" fill className="object-cover opacity-10" aria-hidden />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0f1c30]/95 to-[#1A2B4A]/80" />
+        </div>
+        <div className="relative mx-auto max-w-4xl">
+          {svc.promoVideoId ? (
+            <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+              <iframe
+                src={`https://www.youtube.com/embed/${svc.promoVideoId}?rel=0&modestbranding=1&color=white`}
+                title={`${svc.label} — Kealee Design Overview`}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <div className="mx-auto w-20 h-20 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mb-5">
+                <PlayCircle className="w-10 h-10 text-white/70" />
+              </div>
+              <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-3">Video Overview</p>
+              <h2 className="text-2xl font-bold text-white mb-3">
+                See a {svc.label} project come to life
+              </h2>
+              <p className="text-slate-400 max-w-lg mx-auto text-sm mb-6 leading-relaxed">
+                Watch our design team walk through a {svc.label.toLowerCase()} — from rough idea to AI-rendered package with full cost estimate and permit scope — in under 90 seconds.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link
+                  href={`/concept?service=${svc.slug}`}
+                  className="inline-flex items-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold px-6 py-3 rounded-xl transition text-sm"
+                >
+                  Start Your Design <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/gallery"
+                  className="inline-flex items-center gap-2 border border-white/20 hover:border-white/40 text-white/70 hover:text-white font-semibold px-6 py-3 rounded-xl transition text-sm"
+                >
+                  Browse Project Gallery
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

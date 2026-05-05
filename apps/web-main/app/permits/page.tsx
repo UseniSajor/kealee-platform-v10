@@ -7,6 +7,7 @@ import {
   Building2, MapPin, Shield, Clock, Zap, CheckCircle2,
   ArrowRight, FileCheck, Users, TrendingUp, ChevronRight,
   Loader2, Check, Lock, AlertCircle, Phone,
+  Home, Wind, Utensils, HardHat, ShoppingBag, Briefcase, Paintbrush, Droplets, Star,
 } from 'lucide-react'
 import { SERVICE_PRICING, PERMIT_SUBMISSION_MULTIPLIERS } from '@kealee/shared/pricing'
 
@@ -29,6 +30,8 @@ const PROJECT_TYPES = [
   { value: 'hvac',             label: 'HVAC System' },
   { value: 'electrical',       label: 'Electrical Work' },
   { value: 'plumbing',         label: 'Plumbing Work' },
+  { value: 'commercial_ti',    label: 'Commercial Tenant Improvement' },
+  { value: 'commercial_food',  label: 'Restaurant / Food Service' },
   { value: 'other',            label: 'Other' },
 ]
 
@@ -39,8 +42,55 @@ const PERMIT_RECOMMENDATION: Record<string, string> = {
   hvac:             'simple_permit',
   electrical:       'simple_permit',
   plumbing:         'simple_permit',
+  commercial_ti:    'complex_permit',
+  commercial_food:  'expedited',
   other:            'simple_permit',
 }
+
+const TIER_SHORT_LABELS: Record<string, string> = {
+  document_assembly: 'Self-Submit Kit',
+  simple_permit:     'Filed & Tracked',
+  complex_permit:    'Multi-Permit Package',
+  expedited:         '5-Day Rush',
+}
+
+// ── Permit service cards — 20 types: 13 residential + 7 commercial ─────────
+
+interface PermitServiceCard {
+  key: string
+  label: string
+  icon: React.ElementType
+  permits: number
+  projectType: string
+  tier: string
+  desc: string
+  commercial?: boolean
+}
+
+const PERMIT_SERVICE_CARDS: PermitServiceCard[] = [
+  // ── Residential (13) ──
+  { key: 'kitchen',         label: 'Kitchen Remodel',              icon: Utensils,    permits: 4,  projectType: 'renovation',       tier: 'simple_permit',     desc: 'Cabinetry, island, plumbing & electrical — one coordinated permit package.' },
+  { key: 'bathroom',        label: 'Bathroom Remodel',             icon: Droplets,    permits: 3,  projectType: 'renovation',       tier: 'simple_permit',     desc: 'Plumbing, tile, electrical, and ventilation permits for all bath sizes.' },
+  { key: 'home-addition',   label: 'Home Addition',                icon: Home,        permits: 6,  projectType: 'addition',         tier: 'complex_permit',    desc: 'Structural, MEP, and zoning permits — includes setback and impervious coverage review.' },
+  { key: 'deck-patio',      label: 'Deck & Patio',                 icon: Home,        permits: 2,  projectType: 'addition',         tier: 'simple_permit',     desc: 'Structural and occupancy permits for decks, patios, pergolas, and covered outdoor rooms.' },
+  { key: 'interior-reno',   label: 'Interior Renovation',          icon: Paintbrush,  permits: 2,  projectType: 'renovation',       tier: 'simple_permit',     desc: 'Wall removal, flooring, and lighting permits for full-floor interior renovations.' },
+  { key: 'exterior-facade', label: 'Exterior Facade',              icon: Home,        permits: 2,  projectType: 'renovation',       tier: 'simple_permit',     desc: 'Siding, window replacement, and roofline permits with historic district handling.' },
+  { key: 'whole-house',     label: 'Whole House Renovation',       icon: Building2,   permits: 8,  projectType: 'renovation',       tier: 'complex_permit',    desc: 'Coordinated multi-permit package covering structural, MEP, and exterior for full renos.' },
+  { key: 'hvac',            label: 'HVAC / Mechanical',            icon: Wind,        permits: 2,  projectType: 'hvac',             tier: 'simple_permit',     desc: 'Heating, cooling, and ventilation permits for new installs, replacements, and upgrades.' },
+  { key: 'electrical',      label: 'Electrical Upgrade',           icon: Zap,         permits: 1,  projectType: 'electrical',       tier: 'document_assembly', desc: 'Panel upgrades, EV chargers, service upgrades, and whole-home rewiring permits.' },
+  { key: 'plumbing',        label: 'Plumbing Work',                icon: Droplets,    permits: 1,  projectType: 'plumbing',         tier: 'document_assembly', desc: 'Water, sewer, gas line, and irrigation permits for residential plumbing work.' },
+  { key: 'new-home',        label: 'New Home Construction',        icon: HardHat,     permits: 12, projectType: 'new_construction', tier: 'expedited',         desc: 'Full permit coordination from foundation through certificate of occupancy.' },
+  { key: 'adu',             label: 'ADU / In-Law Suite',           icon: Home,        permits: 5,  projectType: 'addition',         tier: 'complex_permit',    desc: 'Accessory dwelling permits — garage conversions, basement suites, and backyard cottages.' },
+  { key: 'roof',            label: 'Roof Replacement',             icon: Home,        permits: 1,  projectType: 'renovation',       tier: 'document_assembly', desc: 'Roofing, skylights, and solar panel permits for residential and light commercial buildings.' },
+  // ── Commercial & Retail (7) ──
+  { key: 'commercial-ti',   label: 'Commercial Tenant Improvement', icon: Building2,   permits: 5,  projectType: 'commercial_ti',    tier: 'complex_permit',    desc: 'Full TI permit package for retail, office, and mixed-use tenant build-outs.', commercial: true },
+  { key: 'retail-buildout', label: 'Retail Build-Out',              icon: ShoppingBag, permits: 5,  projectType: 'commercial_ti',    tier: 'complex_permit',    desc: 'Storefront, signage, interior partition, and occupancy permits for retail spaces.', commercial: true },
+  { key: 'restaurant',      label: 'Restaurant / Food Service',     icon: Utensils,    permits: 7,  projectType: 'commercial_food',  tier: 'expedited',         desc: 'Health, fire, mechanical, and CO permits for restaurant and cafe build-outs.', commercial: true },
+  { key: 'office-reno',     label: 'Office Renovation',             icon: Briefcase,   permits: 3,  projectType: 'commercial_ti',    tier: 'simple_permit',     desc: 'Partition walls, MEP, egress, ADA compliance, and fire suppression permits.', commercial: true },
+  { key: 'multifamily',     label: 'Multi-Family / Condo',          icon: Building2,   permits: 10, projectType: 'new_construction', tier: 'expedited',         desc: 'Complex multi-unit residential permits across all trades and occupancy classes.', commercial: true },
+  { key: 'medical-office',  label: 'Medical / Dental Office',       icon: Briefcase,   permits: 6,  projectType: 'commercial_ti',    tier: 'complex_permit',    desc: 'Healthcare facility permits — HVAC, plumbing, gas, ADA, and NFPA compliance.', commercial: true },
+  { key: 'warehouse',       label: 'Warehouse / Industrial',        icon: Building2,   permits: 4,  projectType: 'commercial_ti',    tier: 'complex_permit',    desc: 'Industrial occupancy, fire suppression, loading dock access, and ADA permits.', commercial: true },
+]
 
 const TIMELINE_OPTS = [
   { value: 'asap',     label: 'ASAP — within 1–2 weeks' },
@@ -190,21 +240,34 @@ export default function PermitsPage() {
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-5 leading-tight">
-              Permits filed.<br />
-              <span className="text-green-400">Projects started.</span>
+              Stop losing weeks<br />
+              <span className="text-green-400">to permit delays.</span>
             </h1>
-            <p className="text-slate-300 text-lg max-w-2xl mb-10 leading-relaxed">
-              Professional permit preparation and submission across DC, Maryland, and Virginia.
-              We know every jurisdiction — DC DOB, Montgomery DPS, Fairfax ZEA, and more.
-              We file, track, and get you approved.
+            <p className="text-slate-300 text-lg max-w-2xl mb-6 leading-relaxed">
+              Kealee handles every form, every agency, every comment cycle — across DC, Maryland, and Virginia.
+              We know every jurisdiction. We file, track, and get you approved.
             </p>
+            <div className="flex items-center gap-2 mb-10">
+              <div className="flex -space-x-1.5">
+                {['bg-green-400', 'bg-blue-400', 'bg-amber-400', 'bg-purple-400'].map((c, i) => (
+                  <div key={i} className={`w-7 h-7 rounded-full ${c} border-2 border-[#1A2B4A] flex items-center justify-center text-[10px] font-black text-white`}>
+                    {['H','K','L','T'][i]}
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-1 text-xs text-slate-400">
+                <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                <span><span className="text-white font-semibold">4.9/5</span> from 200+ clients — homeowners, contractors, and developers</span>
+              </div>
+            </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-5 max-w-lg mb-12">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-5 max-w-2xl mb-12">
               {[
-                { value: '7',     label: 'Jurisdictions' },
+                { value: '500+',  label: 'Permits filed' },
                 { value: '5–7',   label: 'Day turnaround' },
-                { value: '98%',   label: 'Approval rate' },
+                { value: '98%',   label: 'First-pass approval' },
+                { value: '7',     label: 'Jurisdictions' },
               ].map(({ value, label }) => (
                 <div key={label} className="text-center">
                   <p className="text-3xl font-black text-white">{value}</p>
@@ -240,8 +303,108 @@ export default function PermitsPage() {
           </div>
         </div>
 
+        {/* ── Every Project, Every Permit ─────────────────────────────── */}
+        <div className="py-20 px-4 bg-white">
+          <div className="mx-auto max-w-6xl">
+            <div className="text-center mb-10">
+              <p className="text-xs font-bold uppercase tracking-widest text-green-600 mb-2">All Project Types</p>
+              <h2 className="text-3xl font-bold text-slate-900 mb-3">Every project. Every permit.</h2>
+              <p className="text-slate-500 text-sm max-w-xl mx-auto">
+                Click any project type below to start your permit application. We&apos;ll match you with the right package and file with the correct agency.
+              </p>
+            </div>
+
+            {/* Residential permits */}
+            <div className="mb-10">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="h-px flex-1 bg-slate-100" />
+                <span className="text-xs font-bold uppercase tracking-widest text-slate-400 px-3">Residential</span>
+                <div className="h-px flex-1 bg-slate-100" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {PERMIT_SERVICE_CARDS.filter(c => !c.commercial).map((card) => {
+                  const Icon = card.icon
+                  return (
+                    <div
+                      key={card.key}
+                      className="group rounded-xl border border-slate-200 bg-white p-5 hover:shadow-lg hover:border-green-300 cursor-pointer transition-all duration-200"
+                      onClick={() => { setFormData(f => ({ ...f, projectType: card.projectType, tierCode: card.tier })); setStep('intake') }}
+                    >
+                      <div className="flex items-start gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center shrink-0 group-hover:bg-green-100 transition-colors">
+                          <Icon className="w-5 h-5 text-green-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-slate-900 text-sm leading-tight mb-0.5">{card.label}</h3>
+                          <p className="text-[11px] text-slate-400">{card.permits} permit{card.permits !== 1 ? 's' : ''} · <span className="text-green-600 font-semibold">{TIER_SHORT_LABELS[card.tier]}</span></p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 mb-4">{card.desc}</p>
+                      <button className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-slate-50 group-hover:bg-green-500 text-slate-500 group-hover:text-white text-xs font-bold py-2.5 transition-all duration-200 border border-slate-200 group-hover:border-green-500">
+                        Start Permit <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Commercial permits */}
+            <div>
+              <div className="flex items-center gap-3 mb-5">
+                <div className="h-px flex-1 bg-slate-100" />
+                <span className="text-xs font-bold uppercase tracking-widest text-slate-400 px-3">Commercial &amp; Retail</span>
+                <div className="h-px flex-1 bg-slate-100" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {PERMIT_SERVICE_CARDS.filter(c => c.commercial).map((card) => {
+                  const Icon = card.icon
+                  return (
+                    <div
+                      key={card.key}
+                      className="group rounded-xl border border-slate-200 bg-white p-5 hover:shadow-lg hover:border-blue-400 cursor-pointer transition-all duration-200"
+                      onClick={() => { setFormData(f => ({ ...f, projectType: card.projectType, tierCode: card.tier })); setStep('intake') }}
+                    >
+                      <div className="flex items-start gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
+                          <Icon className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-slate-900 text-sm leading-tight mb-0.5">{card.label}</h3>
+                          <p className="text-[11px] text-slate-400">{card.permits} permit{card.permits !== 1 ? 's' : ''} · <span className="text-blue-600 font-semibold">{TIER_SHORT_LABELS[card.tier]}</span></p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 mb-4">{card.desc}</p>
+                      <button className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-slate-50 group-hover:bg-blue-600 text-slate-500 group-hover:text-white text-xs font-bold py-2.5 transition-all duration-200 border border-slate-200 group-hover:border-blue-600">
+                        Start Permit <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Risk reversal */}
+            <div className="mt-10 rounded-2xl bg-green-50 border border-green-200 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                <Shield className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="font-bold text-slate-900 mb-0.5">Kealee Approval Guarantee</p>
+                <p className="text-sm text-slate-600">If your permit application is rejected due to a preparation error on our part, we refile at no additional charge. That&apos;s our commitment to getting you approved.</p>
+              </div>
+              <button
+                onClick={() => setStep('select')}
+                className="shrink-0 flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold px-5 py-2.5 rounded-xl transition text-sm whitespace-nowrap"
+              >
+                Get Started <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* How it works */}
-        <div id="how-it-works" className="py-20 px-4 bg-white">
+        <div id="how-it-works" className="py-20 px-4 bg-white border-t border-slate-100">
           <div className="mx-auto max-w-5xl">
             <div className="text-center mb-12">
               <p className="text-xs font-bold uppercase tracking-widest text-green-600 mb-2">Simple Process</p>
@@ -271,7 +434,7 @@ export default function PermitsPage() {
         </div>
 
         {/* Service tiers */}
-        <div className="py-20 px-4 bg-slate-50">
+        <div className="py-20 px-4 bg-slate-50 border-t border-slate-100">
           <div className="mx-auto max-w-5xl">
             <div className="text-center mb-12">
               <p className="text-xs font-bold uppercase tracking-widest text-green-600 mb-2">Service Packages</p>
