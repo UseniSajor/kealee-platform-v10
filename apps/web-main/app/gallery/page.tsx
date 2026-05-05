@@ -4,17 +4,21 @@ import { useState, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Search, X } from 'lucide-react'
+import { ArrowRight, Search, X, Building2 } from 'lucide-react'
 import { SERVICES } from '@/lib/services-config'
 import type { Service } from '@/lib/services-config'
 
+// Precon = AI concepts, estimates, permits (digital deliverables)
+// Build = construction execution (separate flow)
+const PRECON_SERVICES = SERVICES.filter((s) => s.phase === 'precon')
+const BUILD_SERVICES = SERVICES.filter((s) => s.phase === 'build')
+
 const CATEGORIES = [
-  { key: '', label: 'All Services' },
+  { key: '', label: 'All' },
   { key: 'remodel', label: 'Remodels' },
   { key: 'addition', label: 'Additions' },
   { key: 'landscape', label: 'Landscape' },
   { key: 'design', label: 'Design' },
-  { key: 'construction', label: 'New Build' },
 ]
 
 function ServiceCard({ svc }: { svc: Service }) {
@@ -66,7 +70,8 @@ export default function GalleryPage() {
   const [searchQuery, setSearchQuery] = useState('')
 
   const filtered = useMemo(() => {
-    let results = [...SERVICES]
+    // Filter within precon services only (build has its own section)
+    let results = [...PRECON_SERVICES]
     if (activeCategory) {
       results = results.filter((s) => s.category === activeCategory)
     }
@@ -87,12 +92,12 @@ export default function GalleryPage() {
       {/* Hero */}
       <section className="bg-[#1A2B4A] py-16 px-4 text-center">
         <div className="mx-auto max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-4">Service Gallery</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-4">Design &amp; Planning Services</p>
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-            Every Service. Every Project Type.
+            Every Project Type. Delivered in Days.
           </h1>
           <p className="text-lg text-slate-300 max-w-xl mx-auto">
-            AI-designed concepts with professional videos, cost estimates, and permit roadmaps — starting at $99.
+            AI-generated concepts, cost estimates, and permit packages — before you break ground.
           </p>
         </div>
       </section>
@@ -175,15 +180,57 @@ export default function GalleryPage() {
         )}
       </div>
 
+      {/* Build Services section */}
+      <div className="bg-[#0F1E35] py-14 px-4">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex items-center gap-3 mb-2">
+            <Building2 className="w-5 h-5 text-[#2563EB]" />
+            <p className="text-xs font-bold uppercase tracking-widest text-[#2563EB]">Build Services</p>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Ready to Break Ground?</h2>
+          <p className="text-slate-400 text-sm mb-8 max-w-lg">
+            Full construction execution — architectural management, permit coordination, and GC oversight from lot to certificate of occupancy.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {BUILD_SERVICES.map((svc) => (
+              <Link
+                key={svc.slug}
+                href={svc.customIntakePath ?? `/services/${svc.slug}`}
+                className="group flex gap-4 items-start rounded-xl bg-white/5 border border-white/10 p-5 hover:bg-white/10 hover:border-[#2563EB]/40 transition-all"
+              >
+                <div className="w-10 h-10 rounded-lg bg-[#2563EB]/20 flex items-center justify-center shrink-0">
+                  <Building2 className="w-5 h-5 text-[#2563EB]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-white mb-1">{svc.label}</p>
+                  <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">{svc.description}</p>
+                  <p className="text-xs text-[#2563EB] font-semibold mt-2 flex items-center gap-1">
+                    {svc.priceDisplay} <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+          <div className="mt-6">
+            <Link
+              href="/build"
+              className="inline-flex items-center gap-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold px-6 py-3 rounded-xl transition-all text-sm"
+            >
+              View All Build Services <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* CTA strip */}
       <div className="bg-[#1A2B4A] py-12 px-4 text-center">
-        <h2 className="text-2xl font-bold text-white mb-3">Ready to get started?</h2>
-        <p className="text-slate-400 mb-6">Tell us about your project and get an AI-designed concept in days.</p>
+        <h2 className="text-2xl font-bold text-white mb-3">Not sure where to start?</h2>
+        <p className="text-slate-400 mb-6">Get an AI-designed concept first — then move to permits or build management when you're ready.</p>
         <Link
           href="/concept"
           className="inline-flex items-center gap-2 bg-[#E8724B] hover:bg-[#D45C33] text-white font-bold px-7 py-3.5 rounded-xl transition-all duration-200"
         >
-          Build My Concept <ArrowRight className="w-4 h-4" />
+          Start with Design Concept <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
     </div>

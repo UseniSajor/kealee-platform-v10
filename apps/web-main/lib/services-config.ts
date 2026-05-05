@@ -21,6 +21,8 @@ export interface Service {
   description: string
   priceDisplay: string     // Display range for homepage cards
   heroImage: string        // Unsplash URL
+  /** 'precon' = design/planning services (AI concepts, estimates, permits) · 'build' = construction execution */
+  phase: 'precon' | 'build'
   category: 'remodel' | 'addition' | 'landscape' | 'design' | 'construction'
   deliveryDays: string
   tiers: ServiceTier[]
@@ -82,6 +84,7 @@ export const SERVICES: Service[] = [
     description: 'Transform your kitchen with AI-generated concepts, detailed cost estimates, and permit-ready plans. From updated cabinets to full gut-renovations with custom islands.',
     priceDisplay: 'From $149',
     heroImage: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=900&q=80&auto=format&fit=crop',
+    phase: 'precon',
     category: 'remodel',
     deliveryDays: '3–5 days',
     tiers: [tier1(149), tier2(699), tier3(1299)],
@@ -99,6 +102,7 @@ export const SERVICES: Service[] = [
     description: 'Create your dream bathroom — from spa-level primary suites to efficient powder room refreshes. Full AI concepts with plumbing, electrical, and tile specifications.',
     priceDisplay: 'From $129',
     heroImage: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=900&q=80&auto=format&fit=crop',
+    phase: 'precon',
     category: 'remodel',
     deliveryDays: '2–4 days',
     tiers: [tier1(129), tier2(549), tier3(999)],
@@ -116,6 +120,7 @@ export const SERVICES: Service[] = [
     description: 'Design your outdoor living space with AI-generated landscape concepts, plant selection guides, irrigation overviews, and hardscape design — tailored to your climate zone.',
     priceDisplay: 'From $99',
     heroImage: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=900&q=80&auto=format&fit=crop',
+    phase: 'precon',
     category: 'landscape',
     deliveryDays: '2–4 days',
     tiers: [tier1(99), tier2(399), tier3(799)],
@@ -133,6 +138,7 @@ export const SERVICES: Service[] = [
     description: 'Add space and value with a seamlessly integrated addition — primary suite, family room, ADU, or garage. Full feasibility analysis with zoning, structural, and permit scope.',
     priceDisplay: 'From $199',
     heroImage: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=900&q=80&auto=format&fit=crop',
+    phase: 'precon',
     category: 'addition',
     deliveryDays: '3–5 days',
     tiers: [tier1(199), tier2(799), tier3(1499)],
@@ -150,6 +156,7 @@ export const SERVICES: Service[] = [
     description: 'Complete home transformation — coordinated interior, exterior, and systems upgrade. One unified design direction, one master cost plan, one permit scope covering every trade.',
     priceDisplay: 'From $249',
     heroImage: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=900&q=80&auto=format&fit=crop',
+    phase: 'precon',
     category: 'remodel',
     deliveryDays: '4–6 days',
     tiers: [tier1(249), tier2(899), tier3(1699)],
@@ -167,6 +174,7 @@ export const SERVICES: Service[] = [
     description: 'Refresh your home\'s interior spaces — flooring, walls, trim, lighting, and built-ins — with cohesive design direction and room-by-room specifications.',
     priceDisplay: 'From $149',
     heroImage: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=900&q=80&auto=format&fit=crop',
+    phase: 'precon',
     category: 'remodel',
     deliveryDays: '3–5 days',
     tiers: [tier1(149), tier2(649), tier3(1199)],
@@ -184,6 +192,7 @@ export const SERVICES: Service[] = [
     description: 'Dramatically improve your home\'s curb appeal — new siding, windows, roofline, entry, and landscaping — with AI-generated concepts and a full material specification.',
     priceDisplay: 'From $139',
     heroImage: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=80&auto=format&fit=crop',
+    phase: 'precon',
     category: 'remodel',
     deliveryDays: '3–5 days',
     tiers: [tier1(139), tier2(599), tier3(1099)],
@@ -201,6 +210,7 @@ export const SERVICES: Service[] = [
     description: 'Design your outdoor living and entertaining space — deck, patio, pergola, or covered outdoor room — with structural plans, material specs, and permit requirements.',
     priceDisplay: 'From $119',
     heroImage: 'https://images.unsplash.com/photo-1558618047-f4739d2dbe3e?w=900&q=80&auto=format&fit=crop',
+    phase: 'precon',
     category: 'addition',
     deliveryDays: '2–4 days',
     tiers: [tier1(119), tier2(449), tier3(899)],
@@ -218,6 +228,7 @@ export const SERVICES: Service[] = [
     description: 'Get professional-grade interior design direction — mood boards, material palettes, furniture layout, and space planning — without committing to a full renovation.',
     priceDisplay: 'From $79',
     heroImage: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=900&q=80&auto=format&fit=crop',
+    phase: 'precon',
     category: 'design',
     deliveryDays: '2–3 days',
     // Tier 2 + 3 NOT available for design services (no video)
@@ -236,6 +247,7 @@ export const SERVICES: Service[] = [
     description: 'Full-scope new construction: architectural design, site planning, permit coordination, and build management — from vacant lot to move-in. Custom engagement for serious builders.',
     priceDisplay: 'Custom Quote',
     heroImage: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=900&q=80&auto=format&fit=crop',
+    phase: 'build',
     category: 'construction',
     deliveryDays: 'Custom',
     // No concept intake, no video — routes to custom 5-step sales flow
@@ -260,4 +272,12 @@ export function getService(slug: string): Service | undefined {
 
 export function getConceptServices(): Service[] {
   return SERVICES.filter(s => s.usesConceptIntake)
+}
+
+export function getPreconServices(): Service[] {
+  return SERVICES.filter(s => s.phase === 'precon')
+}
+
+export function getBuildServices(): Service[] {
+  return SERVICES.filter(s => s.phase === 'build')
 }

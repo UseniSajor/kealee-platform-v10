@@ -6,19 +6,22 @@ import { Menu, X, ChevronDown } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { SERVICES } from '@/lib/services-config'
 
-// Group services by category for dropdown
+// Services dropdown shows precon (design/planning) services only
+// Build services live under the Build button → /build
+const PRECON_SERVICES = SERVICES.filter((s) => s.phase === 'precon')
+
 const SERVICE_GROUPS = [
   {
     label: 'Remodels',
-    services: SERVICES.filter((s) => s.category === 'remodel'),
+    services: PRECON_SERVICES.filter((s) => s.category === 'remodel'),
   },
   {
     label: 'Additions & Outdoor',
-    services: SERVICES.filter((s) => s.category === 'addition' || s.category === 'landscape'),
+    services: PRECON_SERVICES.filter((s) => s.category === 'addition' || s.category === 'landscape'),
   },
   {
-    label: 'Design & Build',
-    services: SERVICES.filter((s) => s.category === 'design' || s.category === 'construction'),
+    label: 'Design',
+    services: PRECON_SERVICES.filter((s) => s.category === 'design'),
   },
 ]
 
@@ -131,7 +134,7 @@ function MobileServicesAccordion({ onClose }: { onClose: () => void }) {
       </button>
       {open && (
         <div className="ml-4 mt-1 space-y-0.5">
-          {SERVICES.map((svc) => (
+          {PRECON_SERVICES.map((svc) => (
             <Link
               key={svc.slug}
               href={`/services/${svc.slug}`}

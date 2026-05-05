@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, CheckCircle2, Star } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Star, Building2 } from 'lucide-react'
 import HomeHero from '@/components/HomeHero'
 import { SERVICES } from '@/lib/services-config'
+
+const PRECON_SERVICES = SERVICES.filter((s) => s.phase === 'precon')
 
 export const metadata: Metadata = {
   title: 'Kealee — Transform Your Home with AI Design',
@@ -18,15 +20,15 @@ function ServiceGallery() {
     <section id="services" className="py-24 bg-white scroll-mt-16">
       <div className="mx-auto max-w-7xl px-4">
         <div className="text-center mb-14">
-          <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-3">Our Services</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-3">Design &amp; Planning</p>
           <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">What We Can Transform</h2>
           <p className="mt-3 text-slate-500 max-w-xl mx-auto">
-            Choose a project type and get an AI-generated concept with full cost estimate and permit scope.
+            AI-generated concepts, cost estimates, and permit packages — delivered in days, not months.
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
-          {SERVICES.map((service) => {
+          {PRECON_SERVICES.map((service) => {
             const href = service.usesConceptIntake
               ? `/services/${service.slug}`
               : service.customIntakePath ?? `/services/${service.slug}`
@@ -63,6 +65,25 @@ function ServiceGallery() {
               </Link>
             )
           })}
+        </div>
+
+        {/* Build CTA — separate from precon services */}
+        <div className="mt-10 rounded-2xl bg-[#1A2B4A] px-8 py-7 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-[#2563EB]/20 flex items-center justify-center shrink-0">
+              <Building2 className="w-6 h-6 text-[#2563EB]" />
+            </div>
+            <div>
+              <p className="font-bold text-white text-base">Ready to Build?</p>
+              <p className="text-slate-400 text-sm">New construction, GC coordination, and full build management across DMV.</p>
+            </div>
+          </div>
+          <Link
+            href="/build"
+            className="shrink-0 flex items-center gap-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold px-6 py-3 rounded-xl transition-all text-sm whitespace-nowrap"
+          >
+            Explore Build Services <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </section>
