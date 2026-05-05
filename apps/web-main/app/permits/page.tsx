@@ -120,10 +120,27 @@ export default function PermitsPage() {
     ? Math.round(selectedTier.price * (PERMIT_SUBMISSION_MULTIPLIERS[formData.submissionMethod] ?? 1))
     : 0
 
+  // Fire-and-forget soft capture — called before the checkout API
+  function softCapture() {
+    if (!formData.contactEmail) return
+    fetch('/api/intake/soft-capture', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email:   formData.contactEmail,
+        name:    formData.clientName || null,
+        phone:   formData.contactPhone || null,
+        service: formData.tierCode || 'permit',
+        source:  'permits',
+      }),
+    }).catch(() => {})
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     setLoading(true)
+    softCapture() // capture before any API call
     try {
       const res = await fetch('/api/v1/permits/intake', {
         method: 'POST',
@@ -143,9 +160,15 @@ export default function PermitsPage() {
       if (!res.ok) throw new Error('Failed to create permit intake')
       const { intakeId } = await res.json()
       router.push(`/permits/checkout?intakeId=${intakeId}&tier=${formData.tierCode}&price=${finalPrice * 100}&submissionMethod=${formData.submissionMethod}`)
-    } catch (err) {
-      setError((err as Error).message || 'An error occurred')
-      setLoading(false)
+    } catch {
+      // Non-recoverable — redirect to soft landing so no user hits a dead end
+      const params = new URLSearchParams({
+        source:  'permits',
+        service: formData.tierCode || 'permit',
+        email:   formData.contactEmail,
+        name:    formData.clientName,
+      })
+      router.push(`/got-you?${params.toString()}`)
     }
   }
 

@@ -92,6 +92,19 @@ function ConfirmInner() {
     if (!agreed) { setError('Please agree to the terms to continue.'); return }
     setError('')
     setSubmitting(true)
+
+    // Capture contact before any API calls — fire and forget
+    fetch('/api/intake/soft-capture', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email:   email,
+        name:    `${firstName} ${lastName}`.trim(),
+        service: serviceSlug,
+        source:  'concept-confirm',
+      }),
+    }).catch(() => {})
+
     try {
       const intakeRes = await fetch('/api/intake', {
         method: 'POST',
@@ -134,12 +147,15 @@ function ConfirmInner() {
       const msg = (err as Error).message
       const isServerError = msg.includes('Failed to') || msg.includes('Could not') || msg.includes('No checkout')
       setError(isServerError
-        ? "We couldn't open checkout right now — this isn't your card. Your details are safe. Try again or email hello@kealee.com."
+        ? "We couldn't open checkout right now — your details are safe. Try again or let our team follow up for you."
         : msg
       )
       setSubmitting(false)
     }
   }
+
+  // Escape hatch URL shown alongside inline errors
+  const gotYouUrl = `/got-you?${new URLSearchParams({ service: serviceSlug, email, name: `${firstName} ${lastName}`.trim(), source: 'concept-confirm' }).toString()}`
 
   if (!serviceSlug || !email) {
     return (
@@ -351,7 +367,12 @@ function ConfirmInner() {
 
           {error && (
             <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-              {error}
+              <p>{error}</p>
+              <p className="mt-2">
+                <Link href={gotYouUrl} className="font-semibold underline hover:no-underline">
+                  Let our team follow up instead →
+                </Link>
+              </p>
             </div>
           )}
 

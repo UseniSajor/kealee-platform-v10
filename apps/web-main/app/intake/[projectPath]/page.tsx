@@ -261,6 +261,21 @@ export default function IntakePage() {
     )
   }
 
+  // Fire-and-forget soft capture — never blocks user flow
+  function softCapture() {
+    if (!formData.email) return
+    fetch('/api/intake/soft-capture', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email:   formData.email,
+        name:    `${formData.firstName} ${formData.lastName}`.trim(),
+        service: projectPath,
+        source:  'intake',
+      }),
+    }).catch(() => {})
+  }
+
   // ── Step: details ──────────────────────────────────────────────────────────
   function handleDetailsSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -268,6 +283,7 @@ export default function IntakePage() {
     if (!formData.firstName.trim()) { setFormError('First name is required.'); return }
     if (!formData.email.trim()) { setFormError('Email is required.'); return }
     if (!formData.address.trim()) { setFormError('Project address is required.'); return }
+    softCapture() // capture lead before payment step
     setStep('review')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -325,9 +341,15 @@ export default function IntakePage() {
       } else {
         throw new Error('No checkout URL returned from payment processor.')
       }
-    } catch (err) {
-      setFormError((err as Error).message)
-      setSubmitting(false)
+    } catch {
+      // Non-recoverable — redirect to soft landing so no one hits a dead end
+      const params = new URLSearchParams({
+        source:  projectPath,
+        service: projectPath,
+        email:   formData.email,
+        name:    `${formData.firstName} ${formData.lastName}`.trim(),
+      })
+      router.push(`/got-you?${params.toString()}`)
     }
   }
 
