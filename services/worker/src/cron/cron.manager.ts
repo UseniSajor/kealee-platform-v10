@@ -9,6 +9,7 @@ import { executeFileCleanup } from '../jobs/file-cleanup.job'
 import { executeBidDailyAlerts } from '../jobs/bid-daily-alerts.job'
 import { executeBidUrgentCheck } from '../jobs/bid-urgent-check.job'
 import { executeLeadAssignmentExpiry } from '../jobs/lead-assignment-expiry.job'
+import { executeMarketingSequences } from '../jobs/marketing-sequences.job'
 
 /**
  * Cron job manager
@@ -75,6 +76,9 @@ export class CronManager {
             case 'lead_assignment_expiry':
               result = await executeLeadAssignmentExpiry()
               break
+            case 'marketing_sequences':
+              result = await executeMarketingSequences()
+              break
             default:
               console.error(`❌ Unknown cron job type: ${config.type}`)
               return
@@ -131,6 +135,9 @@ export class CronManager {
 
     // Register lead assignment expiry job (every 30 minutes)
     this.registerJob(CRON_JOBS.leadAssignmentExpiry)
+
+    // Register marketing sequences watcher (every 15 minutes)
+    this.registerJob(CRON_JOBS.marketingSequences)
 
     console.log(`✅ Registered ${this.jobs.size} cron jobs`)
   }

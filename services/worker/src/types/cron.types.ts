@@ -12,6 +12,7 @@ export type CronJobType =
   | 'bid_daily_alerts'
   | 'bid_urgent_check'
   | 'lead_assignment_expiry'
+  | 'marketing_sequences'
   | 'custom'
 
 export interface CronJobConfig {
@@ -130,6 +131,19 @@ export const CRON_JOBS: Record<string, CronJobConfig> = {
         'Finds PENDING ProfessionalAssignments past their 48-hour accept window, ' +
         'marks them FORFEITED, pushes professionals to back of rotation queue, ' +
         'and forwards leads to the next eligible professional.',
+    },
+  },
+  marketingSequences: {
+    name: 'Marketing Sequences',
+    type: 'marketing_sequences',
+    schedule: '*/15 * * * *', // Every 15 minutes
+    enabled: true,
+    timezone: 'UTC',
+    metadata: {
+      description:
+        'Watches for abandoned checkouts (public_intake_leads status=new older than 45min) ' +
+        'and soft captures (contact_inquiries source=soft_capture older than 30min). ' +
+        'Enqueues abandoned checkout sequence (1h→24h→72h) and soft capture nurture (1h→24h→72h→7d).',
     },
   },
 }

@@ -235,6 +235,21 @@ async function processConceptDeliveryJob(job: Job<ConceptDeliveryJobData>) {
       console.warn(`[concept-delivery] Delivery email queue failed: ${emailErr.message}`)
     }
 
+    // 9. Queue 7-day post-purchase upsell (permits, certified estimate, contractor match)
+    try {
+      const { leadFollowupQueue } = await import('../queues/lead-followup.queue')
+      await leadFollowupQueue.enqueueUpsellSequence({
+        leadId: orderId,
+        email: customerEmail,
+        firstName: customerName?.split(' ')[0] ?? '',
+        projectType: packageName,
+        stage: 'POST_PURCHASE',
+        source: 'concept_delivery',
+      })
+    } catch (upsellErr: any) {
+      console.warn(`[concept-delivery] Upsell queue failed (non-fatal): ${upsellErr.message}`)
+    }
+
     await job.updateProgress(100)
 
     console.log(`[concept-delivery] Order ${orderId} delivered successfully`)
