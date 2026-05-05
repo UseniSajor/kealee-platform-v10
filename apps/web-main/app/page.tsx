@@ -56,11 +56,12 @@ function ServiceGallery() {
                     <p className="text-xs text-slate-500 line-clamp-2 mb-3">{service.description}</p>
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-[#E8724B]">{service.deliverableLabel} · {service.deliveryDays}</span>
+                        <span className="text-xs font-bold text-[#E8724B]">{service.priceDisplay}</span>
                         <span className="text-xs text-slate-400 flex items-center gap-1">
                           Explore <ArrowRight className="w-3 h-3" />
                         </span>
                       </div>
+                      <p className="text-[11px] text-slate-400">{service.deliverableLabel} · {service.deliveryDays}</p>
                       {service.timeline && service.timeline !== 'Custom' && (
                         <p className="text-[11px] text-slate-400">Renovation: {service.timeline}</p>
                       )}

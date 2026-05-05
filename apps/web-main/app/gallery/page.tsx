@@ -55,9 +55,10 @@ function ServiceCard({ svc }: { svc: Service }) {
           <p className="text-xs text-slate-500 line-clamp-2 mb-3 flex-1">{svc.description}</p>
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-[#E8724B]">{svc.deliverableLabel} · {svc.deliveryDays}</span>
+              <span className="text-xs font-bold text-[#E8724B]">{svc.priceDisplay}</span>
               <ArrowRight className="w-3 h-3 text-slate-400" />
             </div>
+            <p className="text-[11px] text-slate-400">{svc.deliverableLabel} · {svc.deliveryDays}</p>
             {svc.timeline && svc.timeline !== 'Custom' && svc.timeline !== 'Design fee only' && (
               <p className="text-[11px] text-slate-400">Renovation: {svc.timeline}</p>
             )}

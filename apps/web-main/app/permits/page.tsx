@@ -482,7 +482,7 @@ export default function PermitsPage() {
                   )}
                   <div className={`bg-gradient-to-br ${tier.accent} px-5 pt-6 pb-5`}>
                     <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">{tier.name}</p>
-                    <p className="text-white/70 text-sm">Price confirmed after intake</p>
+                    <p className="text-white font-black text-3xl">From ${tier.price.toLocaleString()}</p>
                   </div>
                   <div className="flex-1 px-5 py-4 space-y-2">
                     {tier.features.slice(0, 4).map((f, i) => (
@@ -648,7 +648,7 @@ export default function PermitsPage() {
                         )}
                         <div className={`bg-gradient-to-br ${tier.accent} px-5 py-4`}>
                           <p className="text-white/60 text-[11px] font-bold uppercase tracking-widest mb-0.5">{tier.name}</p>
-                          <p className="text-white/70 text-sm">Price confirmed after intake</p>
+                          <p className="text-white font-black text-2xl">From ${tier.price.toLocaleString()}</p>
                         </div>
                         <div className="px-5 py-4 bg-white space-y-1.5 flex-1">
                           {tier.features.slice(0, 3).map((f, i) => (

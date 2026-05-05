@@ -139,7 +139,8 @@ export default function EstimatePage() {
                 </div>
                 <h3 className="font-bold font-display" style={{ color: '#1A2B4A' }}>{tier.name}</h3>
                 <div className="my-3">
-                  <span className="text-sm text-gray-500">Quote after intake</span>
+                  <span className="text-3xl font-black" style={{ color: '#1A2B4A' }}>{tier.price}</span>
+                  <span className="text-sm text-gray-500 ml-1">one-time</span>
                 </div>
                 <p className="text-xs text-gray-500 mb-1">{tier.turnaround}</p>
                 <p className="text-sm text-gray-600 mb-4 leading-relaxed">{tier.desc}</p>

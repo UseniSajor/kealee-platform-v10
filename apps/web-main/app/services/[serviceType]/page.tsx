@@ -106,7 +106,11 @@ function TierCard({
       {/* Header */}
       <div className="px-6 pt-7 pb-5 border-b border-slate-100">
         <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">{tier.name}</p>
-        <p className="text-sm text-slate-500 mt-1">{deliverableLabel} · Delivered in {deliveryDays}</p>
+        <p className="text-3xl font-black text-slate-900 mt-1">
+          ${tier.price.toLocaleString()}
+          <span className="text-sm font-normal text-slate-400 ml-1">one-time</span>
+        </p>
+        <p className="text-xs text-slate-500 mt-1">{deliverableLabel} · Delivered in {deliveryDays}</p>
       </div>
 
       {/* Deliverables */}
