@@ -76,10 +76,12 @@ const PROCESS_STEPS = [
 function TierCard({
   tier,
   serviceSlug,
+  deliverableLabel,
   deliveryDays,
 }: {
   tier: { tier: number; name: string; price: number; available: boolean; video: boolean; badge?: string }
   serviceSlug: string
+  deliverableLabel: string
   deliveryDays: string
 }) {
   if (!tier.available) return null
@@ -104,7 +106,7 @@ function TierCard({
       {/* Header */}
       <div className="px-6 pt-7 pb-5 border-b border-slate-100">
         <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">{tier.name}</p>
-        <p className="text-sm text-slate-500 mt-1">Delivered in {deliveryDays}</p>
+        <p className="text-sm text-slate-500 mt-1">{deliverableLabel} · Delivered in {deliveryDays}</p>
       </div>
 
       {/* Deliverables */}
@@ -209,7 +211,7 @@ export default async function ServicePage({
         </div>
         <div className="relative mx-auto max-w-4xl text-center">
           <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-4">
-            {svc.category} · {svc.deliveryDays}
+            {svc.deliverableLabel} · {svc.deliveryDays}
           </p>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-5 leading-tight">
             {svc.label}
@@ -221,8 +223,13 @@ export default async function ServicePage({
           {/* Chips */}
           <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
             <span className="flex items-center gap-1.5 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white">
-              <Clock className="w-4 h-4" /> {svc.deliveryDays}
+              <Clock className="w-4 h-4" /> {svc.deliverableLabel} in {svc.deliveryDays}
             </span>
+            {svc.timeline && svc.timeline !== 'Custom' && svc.timeline !== 'Design fee only' && (
+              <span className="flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-sm text-white/70">
+                Renovation: {svc.timeline}
+              </span>
+            )}
             {svc.permits > 0 && (
               <span className="flex items-center gap-1.5 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white">
                 <Shield className="w-4 h-4" /> Permit scope included
@@ -250,7 +257,7 @@ export default async function ServicePage({
 
           <div className={`grid gap-6 ${availableTiers.length === 3 ? 'md:grid-cols-3' : availableTiers.length === 2 ? 'md:grid-cols-2 max-w-2xl mx-auto' : 'max-w-sm mx-auto'}`}>
             {svc.tiers.map((tier) => (
-              <TierCard key={tier.tier} tier={tier} serviceSlug={svc.slug} deliveryDays={svc.deliveryDays} />
+              <TierCard key={tier.tier} tier={tier} serviceSlug={svc.slug} deliverableLabel={svc.deliverableLabel} deliveryDays={svc.deliveryDays} />
             ))}
           </div>
         </div>
@@ -332,7 +339,7 @@ export default async function ServicePage({
           Ready to get your {svc.label}?
         </h2>
         <p className="text-orange-100 text-lg mb-8 max-w-xl mx-auto">
-          AI-designed concept with professional video, cost estimate, and permit roadmap — delivered in {svc.deliveryDays}.
+          Your {svc.deliverableLabel.toLowerCase()} — AI-designed with renders, cost estimate, and permit scope — delivered in {svc.deliveryDays}.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link

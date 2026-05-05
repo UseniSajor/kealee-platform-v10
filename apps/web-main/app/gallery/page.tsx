@@ -53,11 +53,14 @@ function ServiceCard({ svc }: { svc: Service }) {
         <div className="p-4 flex flex-col flex-1">
           <h3 className="text-[15px] font-bold text-slate-900 leading-tight mb-1">{svc.label}</h3>
           <p className="text-xs text-slate-500 line-clamp-2 mb-3 flex-1">{svc.description}</p>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 capitalize">{svc.category}</span>
-            <span className="text-xs text-slate-400 flex items-center gap-1">
-              {svc.deliveryDays} <ArrowRight className="w-3 h-3" />
-            </span>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-[#E8724B]">{svc.deliverableLabel} · {svc.deliveryDays}</span>
+              <ArrowRight className="w-3 h-3 text-slate-400" />
+            </div>
+            {svc.timeline && svc.timeline !== 'Custom' && svc.timeline !== 'Design fee only' && (
+              <p className="text-[11px] text-slate-400">Renovation: {svc.timeline}</p>
+            )}
           </div>
         </div>
       </div>
@@ -92,12 +95,12 @@ export default function GalleryPage() {
       {/* Hero */}
       <section className="bg-[#1A2B4A] py-16 px-4 text-center">
         <div className="mx-auto max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-4">Design &amp; Planning Services</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-4">Design &amp; Planning Packages</p>
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-            Every Project Type. Delivered in Days.
+            Plan Your Project. Then Build It.
           </h1>
           <p className="text-lg text-slate-300 max-w-xl mx-auto">
-            AI-generated concepts, cost estimates, and permit packages — before you break ground.
+            Design packages delivered in 2–6 days — renders, cost estimates, permit scope. The renovation itself takes weeks; the planning starts here.
           </p>
         </div>
       </section>

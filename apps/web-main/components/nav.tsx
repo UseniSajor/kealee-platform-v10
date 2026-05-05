@@ -63,7 +63,7 @@ function ServicesDropdown() {
                         className="block rounded-lg px-2 py-1.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-700 transition"
                       >
                         {svc.label}
-                        <span className="block text-[11px] text-slate-400">{svc.deliveryDays}</span>
+                        <span className="block text-[11px] text-slate-400">{svc.deliverableLabel} · {svc.deliveryDays}</span>
                       </Link>
                     </li>
                   ))}

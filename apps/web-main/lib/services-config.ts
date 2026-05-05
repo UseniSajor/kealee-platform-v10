@@ -24,6 +24,8 @@ export interface Service {
   /** 'precon' = design/planning services (AI concepts, estimates, permits) · 'build' = construction execution */
   phase: 'precon' | 'build'
   category: 'remodel' | 'addition' | 'landscape' | 'design' | 'construction'
+  /** What Kealee actually delivers — e.g. "Design Package", "Concept Package", "Custom Quote" */
+  deliverableLabel: string
   deliveryDays: string
   tiers: ServiceTier[]
   /** Whether this service uses /concept intake (vs. custom flow) */
@@ -85,6 +87,7 @@ export const SERVICES: Service[] = [
     priceDisplay: 'From $149',
     heroImage: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',
+    deliverableLabel: 'Design Package',
     category: 'remodel',
     deliveryDays: '3–5 days',
     tiers: [tier1(149), tier2(699), tier3(1299)],
@@ -103,6 +106,7 @@ export const SERVICES: Service[] = [
     priceDisplay: 'From $129',
     heroImage: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',
+    deliverableLabel: 'Design Package',
     category: 'remodel',
     deliveryDays: '2–4 days',
     tiers: [tier1(129), tier2(549), tier3(999)],
@@ -121,6 +125,7 @@ export const SERVICES: Service[] = [
     priceDisplay: 'From $99',
     heroImage: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',
+    deliverableLabel: 'Landscape Package',
     category: 'landscape',
     deliveryDays: '2–4 days',
     tiers: [tier1(99), tier2(399), tier3(799)],
@@ -139,6 +144,7 @@ export const SERVICES: Service[] = [
     priceDisplay: 'From $199',
     heroImage: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',
+    deliverableLabel: 'Feasibility Package',
     category: 'addition',
     deliveryDays: '3–5 days',
     tiers: [tier1(199), tier2(799), tier3(1499)],
@@ -157,6 +163,7 @@ export const SERVICES: Service[] = [
     priceDisplay: 'From $249',
     heroImage: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',
+    deliverableLabel: 'Design Package',
     category: 'remodel',
     deliveryDays: '4–6 days',
     tiers: [tier1(249), tier2(899), tier3(1699)],
@@ -175,6 +182,7 @@ export const SERVICES: Service[] = [
     priceDisplay: 'From $149',
     heroImage: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',
+    deliverableLabel: 'Design Package',
     category: 'remodel',
     deliveryDays: '3–5 days',
     tiers: [tier1(149), tier2(649), tier3(1199)],
@@ -193,6 +201,7 @@ export const SERVICES: Service[] = [
     priceDisplay: 'From $139',
     heroImage: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',
+    deliverableLabel: 'Design Package',
     category: 'remodel',
     deliveryDays: '3–5 days',
     tiers: [tier1(139), tier2(599), tier3(1099)],
@@ -209,8 +218,9 @@ export const SERVICES: Service[] = [
     shortLabel: 'Deck',
     description: 'Design your outdoor living and entertaining space — deck, patio, pergola, or covered outdoor room — with structural plans, material specs, and permit requirements.',
     priceDisplay: 'From $119',
-    heroImage: 'https://images.unsplash.com/photo-1558618047-f4739d2dbe3e?w=900&q=80&auto=format&fit=crop',
+    heroImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',
+    deliverableLabel: 'Design Package',
     category: 'addition',
     deliveryDays: '2–4 days',
     tiers: [tier1(119), tier2(449), tier3(899)],
@@ -229,6 +239,7 @@ export const SERVICES: Service[] = [
     priceDisplay: 'From $79',
     heroImage: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=900&q=80&auto=format&fit=crop',
     phase: 'precon',
+    deliverableLabel: 'Design Package',
     category: 'design',
     deliveryDays: '2–3 days',
     // Tier 2 + 3 NOT available for design services (no video)
@@ -248,6 +259,7 @@ export const SERVICES: Service[] = [
     priceDisplay: 'Custom Quote',
     heroImage: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=900&q=80&auto=format&fit=crop',
     phase: 'build',
+    deliverableLabel: 'Build Management',
     category: 'construction',
     deliveryDays: 'Custom',
     // No concept intake, no video — routes to custom 5-step sales flow

@@ -20,10 +20,10 @@ function ServiceGallery() {
     <section id="services" className="py-24 bg-white scroll-mt-16">
       <div className="mx-auto max-w-7xl px-4">
         <div className="text-center mb-14">
-          <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-3">Design &amp; Planning</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">What We Can Transform</h2>
+          <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-3">Design &amp; Planning Packages</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">Your Project, Planned in Days</h2>
           <p className="mt-3 text-slate-500 max-w-xl mx-auto">
-            AI-generated concepts, cost estimates, and permit packages — delivered in days, not months.
+            AI-generated design packages with cost estimates and permit scope — delivered in 2–6 days. The renovation itself takes weeks; the planning starts now.
           </p>
         </div>
 
@@ -54,11 +54,16 @@ function ServiceGallery() {
                   <div className="p-4">
                     <h3 className="text-[15px] font-bold text-slate-900 leading-tight mb-1">{service.label}</h3>
                     <p className="text-xs text-slate-500 line-clamp-2 mb-3">{service.description}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-500">{service.deliveryDays} delivery</span>
-                      <span className="text-xs text-slate-400 flex items-center gap-1">
-                        Explore <ArrowRight className="w-3 h-3" />
-                      </span>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-[#E8724B]">{service.deliverableLabel} · {service.deliveryDays}</span>
+                        <span className="text-xs text-slate-400 flex items-center gap-1">
+                          Explore <ArrowRight className="w-3 h-3" />
+                        </span>
+                      </div>
+                      {service.timeline && service.timeline !== 'Custom' && (
+                        <p className="text-[11px] text-slate-400">Renovation: {service.timeline}</p>
+                      )}
                     </div>
                   </div>
                 </div>
