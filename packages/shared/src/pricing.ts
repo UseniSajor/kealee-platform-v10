@@ -59,12 +59,15 @@ export const SERVICE_PRICING = {
       name: 'Document Assembly',
       amount: 49500, // cents
       amountUsd: 495,
-      description: 'DIY permit application with our document templates',
+      description: 'We prepare it, you submit — everything you need to file on your own',
       features: [
-        'Jurisdiction-specific forms',
-        'Document templates',
-        'Email support',
-        'Self-submission',
+        'Jurisdiction-specific permit application (complete, pre-filled)',
+        'Building department cover letter (project-specific narrative)',
+        'Supporting documents checklist with completion guidance',
+        'Agency fee schedule + exact submission instructions',
+        'Code section reference guide for your project type',
+        'Permit drawing requirements checklist',
+        'Email Q&A support through your submission',
       ],
       submissionMethods: {
         SELF: 1.0, // -20% discount built into base price
@@ -74,12 +77,15 @@ export const SERVICE_PRICING = {
       name: 'Simple Permit',
       amount: 79500, // cents
       amountUsd: 795,
-      description: 'Basic residential permit preparation and submission',
+      description: 'We file it, you track it — direct submission by a licensed permit expediter',
       features: [
-        'Single permit type',
-        'Application preparation',
-        'Agency submission',
-        'Status updates',
+        'Everything in Document Assembly',
+        'Direct agency submission by licensed permit expediter',
+        'Real-time status tracking portal access',
+        'First RFI / plan review comment response handled for you',
+        'Inspection scheduling coordination and timeline estimate',
+        'Agency fee payment coordination',
+        'Phone + email support throughout process',
       ],
       submissionMethods: {
         SELF: 0.8, // -20% discount
@@ -90,12 +96,16 @@ export const SERVICE_PRICING = {
       name: 'Complex Permit',
       amount: 149500, // cents
       amountUsd: 1495,
-      description: 'Multi-permit coordination, structural or engineering components',
+      description: 'Multi-permit coordination across building, electrical, plumbing, and mechanical',
       features: [
-        'Multiple permit coordination',
-        'Engineering liaison',
-        'Expedited processing',
-        'Unlimited revisions',
+        'Everything in Simple Permit',
+        'Coordination across 2–4 permit types (building, electrical, plumbing, mechanical)',
+        'Structural / engineering review liaison',
+        'Code compliance analysis report for your project',
+        'Plan review meeting representation available',
+        'Multiple RFI and comment response rounds included',
+        'Dedicated permit specialist assigned to your project',
+        'Inspection readiness briefing before site visits',
       ],
       submissionMethods: {
         ASSISTED: 1.0,
@@ -103,16 +113,19 @@ export const SERVICE_PRICING = {
       },
     },
     expedited: {
-      name: 'Expedited Permit Processing',
+      name: 'Expedited Processing',
       amount: 249500, // cents
       amountUsd: 2495,
-      description: 'Priority processing with expedited timeline',
+      description: '5-business-day priority commitment with a dedicated project manager',
       features: [
-        'Priority processing',
-        ' 5-day turnaround',
-        'Dedicated project manager',
-        'Direct agency contact',
-        'Unlimited support',
+        'Everything in Complex Permit',
+        '5-business-day delivery commitment (guaranteed)',
+        'Priority queue placement at all DMV agencies',
+        'Dedicated project manager with direct phone line',
+        'Daily status updates via email',
+        '2-hour emergency response during business hours',
+        'Pre-inspection walkthrough coordination',
+        'Inspection accompaniment available upon request',
       ],
       submissionMethods: {
         KEALEE_MANAGED: 1.0, // premium price is base

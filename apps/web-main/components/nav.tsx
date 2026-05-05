@@ -169,6 +169,14 @@ export function SiteNav() {
               <span className="hidden sm:inline font-bold text-xl text-slate-900">Kealee</span>
             </Link>
 
+            {/* Build button — desktop left section */}
+            <Link
+              href="/build"
+              className="hidden lg:flex items-center px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] text-white font-semibold rounded-lg text-sm transition-all shadow-sm hover:shadow-md whitespace-nowrap"
+            >
+              Build
+            </Link>
+
             {/* Desktop tabs */}
             <div className="hidden lg:flex items-center gap-1">
               <ServicesDropdown />
@@ -202,13 +210,6 @@ export function SiteNav() {
               className="hidden sm:block text-sm text-slate-600 hover:text-slate-900 font-medium transition whitespace-nowrap"
             >
               Sign in
-            </Link>
-
-            <Link
-              href="/build"
-              className="hidden sm:flex items-center px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] text-white font-semibold rounded-lg text-sm transition-all shadow-sm hover:shadow-md whitespace-nowrap"
-            >
-              Build
             </Link>
 
             <Link

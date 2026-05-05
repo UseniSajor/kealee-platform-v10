@@ -44,9 +44,9 @@ const TIER_ITEMS: Record<1 | 2 | 3, DeliverableItem[]> = {
 }
 
 const TIER_META: Record<1 | 2 | 3, { tagline: string; accent: string; badge?: string }> = {
-  1: { tagline: 'Explore your project with professional AI design docs.',  accent: 'from-slate-700 to-slate-900' },
-  2: { tagline: 'Video + floor plan — the choice for most homeowners.',    accent: 'from-[#E8724B] to-[#c75c35]', badge: 'Most Popular' },
-  3: { tagline: 'Full-service package — professional-grade deliverables.', accent: 'from-[#1A2B4A] to-[#0f1c30]' },
+  1: { tagline: 'PDF report, renders & budget comparison — perfect for planning and contractor quotes.',  accent: 'from-slate-700 to-slate-900' },
+  2: { tagline: 'Video tour + floor plan — the standard for HOA approvals and lender presentations.',    accent: 'from-[#E8724B] to-[#c75c35]', badge: 'Most Popular' },
+  3: { tagline: '4-video production, 4K renders, and CAD files — built for financing and premium builds.', accent: 'from-[#1A2B4A] to-[#0f1c30]' },
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

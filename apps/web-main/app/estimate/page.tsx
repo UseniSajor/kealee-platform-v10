@@ -93,7 +93,7 @@ export default function EstimatePage() {
               Know your costs<br />before you commit.
             </h1>
             <p className="mt-5 text-lg text-gray-300 leading-relaxed">
-              RSMeans-validated, trade-by-trade cost breakdowns for DMV construction projects. Human-reviewed. Lender-ready. Starting at $595.
+              RSMeans-validated, trade-by-trade cost breakdowns for DMV construction projects. Human-reviewed. Lender-ready. Pricing confirmed after intake.
             </p>
             <div className="mt-8 flex flex-wrap gap-6 text-sm text-gray-300">
               {['RSMeans unit cost data', 'Licensed estimator review', 'Lender-ready PDF', 'DMV market rates'].map(t => (
@@ -139,7 +139,7 @@ export default function EstimatePage() {
                 </div>
                 <h3 className="font-bold font-display" style={{ color: '#1A2B4A' }}>{tier.name}</h3>
                 <div className="my-3">
-                  <span className="text-3xl font-bold font-mono" style={{ color: tier.accent }}>{tier.price}</span>
+                  <span className="text-sm text-gray-500">Quote after intake</span>
                 </div>
                 <p className="text-xs text-gray-500 mb-1">{tier.turnaround}</p>
                 <p className="text-sm text-gray-600 mb-4 leading-relaxed">{tier.desc}</p>
@@ -197,7 +197,7 @@ export default function EstimatePage() {
               Order Detailed Estimate <ArrowRight className="h-5 w-5" />
             </Link>
             <Link href="/intake/certified_estimate" className="text-sm text-gray-400 hover:text-white transition-colors">
-              Order Certified Estimate ($1,850) →
+              Order Certified Estimate →
             </Link>
           </div>
         </div>

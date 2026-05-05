@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { CheckCircle2, Clock, ArrowRight, Shield, DollarSign, Video, FileText, Image as ImageIcon, Table2, Layers, Star, LayoutTemplate, Zap } from 'lucide-react'
+import { CheckCircle2, Clock, ArrowRight, Shield, Video, FileText, Image as ImageIcon, Table2, Layers, Star, LayoutTemplate, Zap } from 'lucide-react'
 import { SERVICES, SERVICE_MAP } from '@/lib/services-config'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 
@@ -76,9 +76,11 @@ const PROCESS_STEPS = [
 function TierCard({
   tier,
   serviceSlug,
+  deliveryDays,
 }: {
   tier: { tier: number; name: string; price: number; available: boolean; video: boolean; badge?: string }
   serviceSlug: string
+  deliveryDays: string
 }) {
   if (!tier.available) return null
 
@@ -102,8 +104,7 @@ function TierCard({
       {/* Header */}
       <div className="px-6 pt-7 pb-5 border-b border-slate-100">
         <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">{tier.name}</p>
-        <p className="text-4xl font-black text-slate-900">${tier.price.toLocaleString()}</p>
-        <p className="text-sm text-slate-500 mt-1">one-time · delivered in 3–5 days</p>
+        <p className="text-sm text-slate-500 mt-1">Delivered in {deliveryDays}</p>
       </div>
 
       {/* Deliverables */}
@@ -133,6 +134,7 @@ function TierCard({
         >
           Get Started <ArrowRight className="w-4 h-4" />
         </Link>
+        <p className="text-xs text-slate-400 text-center mt-3">Pricing revealed at checkout — no commitment until then</p>
       </div>
     </div>
   )
@@ -150,7 +152,6 @@ export default async function ServicePage({
   const deliverable = SERVICE_DELIVERABLES[svc.intakePath]
   const includes = deliverable?.includes ?? svc.features
   const availableTiers = svc.tiers.filter((t) => t.available)
-  const minPrice = availableTiers[0]?.price ?? 0
 
   // If New Construction, redirect to its custom flow
   if (!svc.usesConceptIntake) {
@@ -222,9 +223,6 @@ export default async function ServicePage({
             <span className="flex items-center gap-1.5 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white">
               <Clock className="w-4 h-4" /> {svc.deliveryDays}
             </span>
-            <span className="flex items-center gap-1.5 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white">
-              <DollarSign className="w-4 h-4" /> From ${minPrice.toLocaleString()}
-            </span>
             {svc.permits > 0 && (
               <span className="flex items-center gap-1.5 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white">
                 <Shield className="w-4 h-4" /> Permit scope included
@@ -252,7 +250,7 @@ export default async function ServicePage({
 
           <div className={`grid gap-6 ${availableTiers.length === 3 ? 'md:grid-cols-3' : availableTiers.length === 2 ? 'md:grid-cols-2 max-w-2xl mx-auto' : 'max-w-sm mx-auto'}`}>
             {svc.tiers.map((tier) => (
-              <TierCard key={tier.tier} tier={tier} serviceSlug={svc.slug} />
+              <TierCard key={tier.tier} tier={tier} serviceSlug={svc.slug} deliveryDays={svc.deliveryDays} />
             ))}
           </div>
         </div>

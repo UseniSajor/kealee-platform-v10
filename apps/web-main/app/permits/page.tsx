@@ -32,6 +32,16 @@ const PROJECT_TYPES = [
   { value: 'other',            label: 'Other' },
 ]
 
+const PERMIT_RECOMMENDATION: Record<string, string> = {
+  renovation:       'simple_permit',
+  addition:         'complex_permit',
+  new_construction: 'complex_permit',
+  hvac:             'simple_permit',
+  electrical:       'simple_permit',
+  plumbing:         'simple_permit',
+  other:            'simple_permit',
+}
+
 const TIMELINE_OPTS = [
   { value: 'asap',     label: 'ASAP — within 1–2 weeks' },
   { value: 'month',    label: 'Within 1 month' },
@@ -245,13 +255,40 @@ export default function PermitsPage() {
               <h2 className="text-3xl font-bold text-slate-900">Choose the right level of support</h2>
               <p className="text-slate-500 mt-2 text-sm">All packages include licensed professional review</p>
             </div>
+            {/* Project type selector */}
+            <div className="mb-8">
+              <p className="text-sm font-semibold text-slate-700 mb-3">What&apos;s your project type?</p>
+              <div className="flex flex-wrap gap-2">
+                {PROJECT_TYPES.map(pt => (
+                  <button
+                    key={pt.value}
+                    onClick={() => setFormData(f => ({ ...f, projectType: pt.value, tierCode: PERMIT_RECOMMENDATION[pt.value] }))}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition ${
+                      formData.projectType === pt.value
+                        ? 'bg-green-600 text-white border-green-600'
+                        : 'border-slate-300 text-slate-600 hover:border-green-500'
+                    }`}
+                  >
+                    {pt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {tiers.map((tier) => (
+              {tiers.map((tier) => {
+                const isRecommended = formData.projectType !== '' && PERMIT_RECOMMENDATION[formData.projectType] === tier.code
+                return (
                 <div
                   key={tier.code}
                   className="relative flex flex-col rounded-2xl overflow-hidden shadow-sm border border-slate-200 bg-white hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() => { setFormData(f => ({ ...f, tierCode: tier.code })); setStep('select') }}
+                  onClick={() => { setFormData(f => ({ ...f, tierCode: tier.code })); setStep('intake') }}
                 >
+                  {isRecommended && (
+                    <span className="absolute top-3 left-3 rounded-full bg-green-100 text-green-800 text-[10px] font-bold px-2 py-0.5 z-10 border border-green-200">
+                      Recommended
+                    </span>
+                  )}
                   {tier.badge && (
                     <span className="absolute top-3 right-3 rounded-full bg-green-500 text-white text-[10px] font-bold px-2.5 py-0.5 z-10">
                       {tier.badge}
@@ -259,7 +296,7 @@ export default function PermitsPage() {
                   )}
                   <div className={`bg-gradient-to-br ${tier.accent} px-5 pt-6 pb-5`}>
                     <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">{tier.name}</p>
-                    <p className="text-white font-black text-3xl">From ${tier.price}</p>
+                    <p className="text-white/70 text-sm">Price confirmed after intake</p>
                   </div>
                   <div className="flex-1 px-5 py-4 space-y-2">
                     {tier.features.slice(0, 4).map((f, i) => (
@@ -275,7 +312,8 @@ export default function PermitsPage() {
                     </button>
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
@@ -424,7 +462,7 @@ export default function PermitsPage() {
                         )}
                         <div className={`bg-gradient-to-br ${tier.accent} px-5 py-4`}>
                           <p className="text-white/60 text-[11px] font-bold uppercase tracking-widest mb-0.5">{tier.name}</p>
-                          <p className="text-white font-black text-2xl">From ${tier.price}</p>
+                          <p className="text-white/70 text-sm">Price confirmed after intake</p>
                         </div>
                         <div className="px-5 py-4 bg-white space-y-1.5 flex-1">
                           {tier.features.slice(0, 3).map((f, i) => (
@@ -462,7 +500,45 @@ export default function PermitsPage() {
 
         {/* ── STEP 2: Intake form ──────────────────────────────────────── */}
         {step === 'intake' && (
-          <form onSubmit={e => { e.preventDefault(); setStep('checkout') }} className="space-y-6">
+          <form onSubmit={e => {
+            e.preventDefault()
+            if (!formData.jurisdictionCode) {
+              setError('Please select a jurisdiction before continuing.')
+              return
+            }
+            setError('')
+            setStep('checkout')
+          }} className="space-y-6">
+
+            {/* Jurisdiction */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <h2 className="font-bold text-slate-900 mb-1">Select your jurisdiction</h2>
+              <p className="text-sm text-slate-500 mb-5">Where is the project located?</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {JURISDICTIONS.map(j => {
+                  const sel = formData.jurisdictionCode === j.code
+                  return (
+                    <button
+                      key={j.code}
+                      type="button"
+                      onClick={() => setFormData(f => ({ ...f, jurisdictionCode: j.code }))}
+                      className={`flex items-center gap-4 rounded-xl border-2 px-4 py-3.5 text-left transition-all ${
+                        sel ? 'border-green-500 bg-green-50 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
+                      }`}
+                    >
+                      <div className={`w-10 h-10 rounded-full text-sm font-black flex items-center justify-center shrink-0 ${j.color}`}>
+                        {j.abbr.length > 2 ? j.abbr.slice(0, 2) : j.abbr}
+                      </div>
+                      <div className="min-w-0">
+                        <p className={`text-sm font-bold ${sel ? 'text-green-700' : 'text-slate-800'}`}>{j.name}</p>
+                        <p className="text-xs text-slate-400 truncate">{j.agency}</p>
+                      </div>
+                      {sel && <Check className="w-4 h-4 text-green-500 ml-auto shrink-0" strokeWidth={3} />}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
 
             {/* Contact */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">

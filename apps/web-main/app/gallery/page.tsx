@@ -18,7 +18,6 @@ const CATEGORIES = [
 ]
 
 function ServiceCard({ svc }: { svc: Service }) {
-  const minPrice = svc.tiers.find((t) => t.available)?.price ?? 0
   const hasVideo = svc.tiers.some((t) => t.video)
 
   return (
@@ -51,7 +50,7 @@ function ServiceCard({ svc }: { svc: Service }) {
           <h3 className="text-[15px] font-bold text-slate-900 leading-tight mb-1">{svc.label}</h3>
           <p className="text-xs text-slate-500 line-clamp-2 mb-3 flex-1">{svc.description}</p>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-[#E8724B]">{svc.priceDisplay}</span>
+            <span className="text-xs font-semibold text-slate-500 capitalize">{svc.category}</span>
             <span className="text-xs text-slate-400 flex items-center gap-1">
               {svc.deliveryDays} <ArrowRight className="w-3 h-3" />
             </span>
