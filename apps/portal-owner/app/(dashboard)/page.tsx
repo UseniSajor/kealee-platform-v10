@@ -204,17 +204,21 @@ export default function OwnerDashboard() {
 
   return (
     <div>
-      {/* Welcome */}
-      <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>
-          Owner Dashboard
-        </h1>
-        <p className="mt-1 text-sm text-gray-500">Your construction portfolio at a glance</p>
+      {/* Welcome banner */}
+      <div className="mb-6 rounded-2xl px-6 py-5 text-white overflow-hidden relative"
+        style={{ background: 'linear-gradient(135deg, #0F1F38 0%, #1a3560 60%, #1f4080 100%)' }}>
+        <div className="absolute right-0 top-0 h-full w-1/3 opacity-10"
+          style={{ background: 'radial-gradient(circle at 80% 50%, #2ABFBF, transparent 70%)' }} />
+        <div className="relative">
+          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#2ABFBF' }}>Owner Portal</p>
+          <h1 className="font-display text-2xl font-bold text-white mt-1">Owner Dashboard</h1>
+          <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>Your construction portfolio at a glance</p>
+        </div>
       </div>
 
       {/* Stats */}
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl bg-white p-4 shadow-sm" style={{ borderLeft: '3px solid #2ABFBF' }}>
           <p className="text-xs text-gray-500">Active Projects</p>
           {loading ? <Skeleton className="mt-1 h-8 w-12" /> : (
             <p className="mt-1 text-2xl font-bold font-display" style={{ color: '#2ABFBF' }}>
@@ -222,15 +226,15 @@ export default function OwnerDashboard() {
             </p>
           )}
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl bg-white p-4 shadow-sm" style={{ borderLeft: '3px solid #E8724B' }}>
           <p className="text-xs text-gray-500">Total Budget</p>
           {loading ? <Skeleton className="mt-1 h-8 w-24" /> : (
-            <p className="mt-1 text-2xl font-bold font-display" style={{ color: '#1A2B4A' }}>
+            <p className="mt-1 text-2xl font-bold font-display" style={{ color: '#0F1F38' }}>
               {formatBudget(totalBudget)}
             </p>
           )}
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl bg-white p-4 shadow-sm" style={{ borderLeft: '3px solid #38A169' }}>
           <p className="text-xs text-gray-500">Avg Twin Health</p>
           {loading ? <Skeleton className="mt-1 h-8 w-16" /> : (
             <p className="mt-1 text-2xl font-bold font-display" style={{ color: healthColor(avgHealth) }}>
@@ -238,7 +242,7 @@ export default function OwnerDashboard() {
             </p>
           )}
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl bg-white p-4 shadow-sm" style={{ borderLeft: `3px solid ${needsAttention > 0 ? '#E53E3E' : '#38A169'}` }}>
           <p className="text-xs text-gray-500">Needs Attention</p>
           {loading ? <Skeleton className="mt-1 h-8 w-12" /> : (
             <p className="mt-1 text-2xl font-bold font-display" style={{ color: needsAttention > 0 ? '#E53E3E' : '#38A169' }}>

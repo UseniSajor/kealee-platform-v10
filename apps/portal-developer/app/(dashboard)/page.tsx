@@ -19,11 +19,11 @@ const TYPE_LABELS: Record<string, string> = {
 
 function StatCard({ label, value, sub, icon: Icon, color }: { label: string; value: string; sub?: string; icon: any; color: string }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5">
+    <div className="rounded-xl bg-white p-5 shadow-sm" style={{ borderLeft: `3px solid ${color}` }}>
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-widest text-gray-400">{label}</p>
-          <p className="mt-1 text-2xl font-bold font-display" style={{ color: '#1A2B4A' }}>{value}</p>
+          <p className="mt-1 text-2xl font-bold font-display" style={{ color: '#1E1B4B' }}>{value}</p>
           {sub && <p className="mt-0.5 text-xs text-gray-400">{sub}</p>}
         </div>
         <div className="rounded-xl p-3" style={{ backgroundColor: `${color}14` }}>
@@ -58,18 +58,25 @@ export default function DeveloperDashboard() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>Developer Dashboard</h1>
-          <p className="mt-1 text-sm text-gray-500">Portfolio overview, pipeline, and feasibility tracking.</p>
+      {/* Welcome banner */}
+      <div className="mb-6 rounded-2xl px-6 py-5 overflow-hidden relative"
+        style={{ background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 60%, #3730A3 100%)' }}>
+        <div className="absolute right-0 top-0 h-full w-1/3 opacity-10"
+          style={{ background: 'radial-gradient(circle at 80% 50%, #818CF8, transparent 70%)' }} />
+        <div className="relative flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#818CF8' }}>Developer Portal</p>
+            <h1 className="font-display text-2xl font-bold text-white mt-1">Developer Dashboard</h1>
+            <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>Portfolio overview, pipeline, and feasibility tracking.</p>
+          </div>
+          <Link
+            href="/pipeline"
+            className="shrink-0 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg, #6366F1, #4338CA)' }}
+          >
+            <Plus className="h-4 w-4" /> New Project
+          </Link>
         </div>
-        <Link
-          href="/pipeline"
-          className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-          style={{ backgroundColor: '#1A2B4A' }}
-        >
-          <Plus className="h-4 w-4" /> New Project
-        </Link>
       </div>
 
       {/* Stats */}

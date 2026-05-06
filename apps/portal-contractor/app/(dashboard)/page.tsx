@@ -105,27 +105,29 @@ export default function DashboardPage() {
 
   return (
     <div>
-      {/* Welcome header */}
-      <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold" style={{ color: '#1A2B4A' }}>
-          {loading ? (
-            <Skeleton className="h-7 w-64" />
-          ) : (
-            <>Welcome back, {profile?.businessName ?? 'Contractor'}</>
-          )}
-        </h1>
-        <p className="mt-1 text-sm text-gray-500">Here&apos;s a summary of your activity</p>
+      {/* Welcome banner */}
+      <div className="mb-6 rounded-2xl px-6 py-5 overflow-hidden relative"
+        style={{ background: 'linear-gradient(135deg, #1C1008 0%, #2D1A0A 60%, #3D2010 100%)' }}>
+        <div className="absolute right-0 top-0 h-full w-1/3 opacity-10"
+          style={{ background: 'radial-gradient(circle at 80% 50%, #F59E0B, transparent 70%)' }} />
+        <div className="relative">
+          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#F59E0B' }}>Contractor Portal</p>
+          <h1 className="font-display text-2xl font-bold text-white mt-1">
+            {loading ? 'Loading…' : <>Welcome back, {profile?.businessName ?? 'Contractor'}</>}
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>Here&apos;s a summary of your activity</p>
+        </div>
       </div>
 
       {/* Quick stats row */}
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {/* Pending leads */}
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl bg-white p-4 shadow-sm" style={{ borderLeft: '3px solid #F59E0B' }}>
           <p className="text-xs text-gray-500">Pending Leads</p>
           {loading ? (
             <Skeleton className="mt-1 h-8 w-12" />
           ) : (
-            <p className="mt-1 text-2xl font-bold font-display" style={{ color: '#E8793A' }}>
+            <p className="mt-1 text-2xl font-bold font-display" style={{ color: '#F59E0B' }}>
               {counts?.pending ?? 0}
             </p>
           )}
@@ -133,7 +135,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Active docs */}
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl bg-white p-4 shadow-sm" style={{ borderLeft: '3px solid #38A169' }}>
           <p className="text-xs text-gray-500">Approved Docs</p>
           {loading ? (
             <Skeleton className="mt-1 h-8 w-12" />
@@ -146,7 +148,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Issues */}
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl bg-white p-4 shadow-sm" style={{ borderLeft: `3px solid ${expiredOrRejected.length > 0 ? '#E53E3E' : '#38A169'}` }}>
           <p className="text-xs text-gray-500">Action Needed</p>
           {loading ? (
             <Skeleton className="mt-1 h-8 w-12" />
@@ -162,7 +164,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Verification status */}
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl bg-white p-4 shadow-sm" style={{ borderLeft: '3px solid #6366F1' }}>
           <p className="text-xs text-gray-500">Verification</p>
           {loading ? (
             <Skeleton className="mt-1 h-8 w-28" />

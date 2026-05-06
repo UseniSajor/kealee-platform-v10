@@ -4,203 +4,210 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import {
-  Megaphone,
-  Gavel,
-  FolderKanban,
-  DollarSign,
-  ShieldCheck,
-  UserCircle,
-  LogOut,
-  HardHat,
-  Bot,
-  Menu,
-  X,
-  ChevronRight,
-  Bell,
-  TrendingUp,
-  FileText,
+  Megaphone, Gavel, FolderKanban, DollarSign, ShieldCheck,
+  UserCircle, LogOut, HardHat, Bot, Menu, X, ChevronRight,
+  Bell, TrendingUp, FileText,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 const NAV_ITEMS = [
-  { href: '/leads', label: 'Leads', icon: Megaphone },
-  { href: '/bids', label: 'Bids', icon: Gavel },
-  { href: '/projects', label: 'Projects', icon: FolderKanban },
-  { href: '/permits', label: 'Permits', icon: FileText },
-  { href: '/payments', label: 'Payments', icon: DollarSign },
-  { href: '/credentials', label: 'Credentials', icon: ShieldCheck },
-  { href: '/marketing', label: 'Grow', icon: TrendingUp },
-  { href: '/profile', label: 'Profile', icon: UserCircle },
+  { href: '/leads',       label: 'Leads',        icon: Megaphone,    group: 'Business' },
+  { href: '/bids',        label: 'Bids',         icon: Gavel,        group: 'Business' },
+  { href: '/projects',    label: 'Projects',     icon: FolderKanban, group: 'Business' },
+  { href: '/permits',     label: 'Permits',      icon: FileText,     group: 'Compliance' },
+  { href: '/payments',    label: 'Payments',     icon: DollarSign,   group: 'Compliance' },
+  { href: '/credentials', label: 'Credentials',  icon: ShieldCheck,  group: 'Compliance' },
+  { href: '/marketing',   label: 'Grow',         icon: TrendingUp,   group: 'Growth' },
+  { href: '/profile',     label: 'Profile',      icon: UserCircle,   group: 'Growth' },
 ]
+
+// Contractor accent: amber / warm orange
+const ACCENT  = '#F59E0B'   // amber-400
+const SIDEBAR = '#1C1008'   // very dark warm brown-black
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const [showBot, setShowBot]       = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [showBot, setShowBot] = useState(false)
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     window.location.href = '/login'
   }
 
-  return (
-    <div className="flex min-h-screen" style={{ backgroundColor: '#F7FAFC' }}>
-      {/* Sidebar - Desktop */}
-      <aside className="hidden w-64 flex-shrink-0 lg:flex lg:flex-col" style={{ backgroundColor: '#1A2B4A' }}>
-        {/* Logo */}
-        <div className="flex h-16 items-center gap-2 px-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-          <Link href="/leads" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: '#E8793A' }}>
-              <HardHat className="h-4 w-4 text-white" />
+  const groups = [
+    { label: 'Business',   items: NAV_ITEMS.filter(i => i.group === 'Business') },
+    { label: 'Compliance', items: NAV_ITEMS.filter(i => i.group === 'Compliance') },
+    { label: 'Growth',     items: NAV_ITEMS.filter(i => i.group === 'Growth') },
+  ]
+
+  const currentPage = NAV_ITEMS.find(i => pathname.startsWith(i.href))
+
+  const SidebarContent = () => (
+    <>
+      {/* Logo */}
+      <div className="flex h-16 items-center px-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <Link href="/leads" className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl"
+            style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)' }}>
+            <HardHat className="h-4 w-4 text-white" />
+          </div>
+          <span className="text-base font-bold text-white font-display tracking-tight">Kealee</span>
+          <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
+            style={{ backgroundColor: '#D97706' }}>
+            GC
+          </span>
+        </Link>
+      </div>
+
+      {/* Grouped Nav */}
+      <div className="flex-1 overflow-y-auto py-4 px-3 space-y-5">
+        {groups.map(group => (
+          <div key={group.label}>
+            <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest"
+              style={{ color: 'rgba(255,255,255,0.25)' }}>
+              {group.label}
+            </p>
+            <div className="space-y-0.5">
+              {group.items.map(item => {
+                const active = pathname.startsWith(item.href)
+                return (
+                  <Link key={item.href} href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all"
+                    style={{
+                      backgroundColor: active ? `${ACCENT}18` : 'transparent',
+                      color: active ? ACCENT : 'rgba(255,255,255,0.5)',
+                      borderLeft: active ? `3px solid ${ACCENT}` : '3px solid transparent',
+                    }}
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    {item.label}
+                  </Link>
+                )
+              })}
             </div>
-            <span className="text-lg font-bold text-white font-display">Kealee</span>
-            <span className="rounded px-1.5 py-0.5 text-xs font-bold text-white" style={{ backgroundColor: '#E8793A' }}>GC</span>
-          </Link>
-        </div>
+          </div>
+        ))}
+      </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 space-y-1 p-4">
-          {NAV_ITEMS.map((item) => {
-            const active = pathname.startsWith(item.href)
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
-                style={{
-                  backgroundColor: active ? 'rgba(42,191,191,0.15)' : 'transparent',
-                  color: active ? '#2ABFBF' : 'rgba(255,255,255,0.6)',
-                }}
-              >
-                <item.icon className="h-5 w-5" />
-                {item.label}
-              </Link>
-            )
-          })}
-        </nav>
+      {/* KeaBot GC */}
+      <div className="px-3 pb-3">
+        <button onClick={() => { setShowBot(!showBot); setMobileOpen(false) }}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all"
+          style={{ backgroundColor: showBot ? `${ACCENT}22` : `${ACCENT}10`, color: ACCENT }}>
+          <Bot className="h-4 w-4" />
+          <span className="flex-1 text-left">KeaBot GC</span>
+          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#34D399' }} />
+        </button>
+      </div>
 
-        {/* KeaBot GC Button */}
-        <div className="px-4 pb-2">
-          <button
-            onClick={() => setShowBot(!showBot)}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
-            style={{ backgroundColor: 'rgba(42,191,191,0.1)', color: '#2ABFBF' }}
-          >
-            <Bot className="h-5 w-5" />
-            KeaBot GC
-            <span className="ml-auto h-2 w-2 rounded-full" style={{ backgroundColor: '#38A169' }} />
-          </button>
-        </div>
+      {/* Sign out */}
+      <div className="px-3 pb-4" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '12px' }}>
+        <button onClick={handleSignOut}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/40 transition-colors hover:bg-white/5 hover:text-white/70">
+          <LogOut className="h-4 w-4" />
+          Sign Out
+        </button>
+      </div>
+    </>
+  )
 
-        {/* Sign Out */}
-        <div className="p-4" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <button
-            onClick={handleSignOut}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/40 transition-colors hover:text-white/80"
-          >
-            <LogOut className="h-5 w-5" />
-            Sign Out
-          </button>
-        </div>
+  return (
+    <div className="flex min-h-screen" style={{ backgroundColor: '#FAFAF7' }}>
+      {/* Desktop sidebar */}
+      <aside className="hidden w-56 flex-shrink-0 flex-col lg:flex"
+        style={{ backgroundColor: SIDEBAR, position: 'sticky', top: 0, height: '100vh' }}>
+        <SidebarContent />
       </aside>
 
-      {/* Main content */}
-      <div className="flex flex-1 flex-col">
-        {/* Top bar */}
-        <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 sm:px-6">
-          {/* Mobile menu button */}
-          <button
-            className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 lg:hidden"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
+          <aside className="absolute left-0 top-0 h-full w-56 flex flex-col" style={{ backgroundColor: SIDEBAR }}>
+            <SidebarContent />
+          </aside>
+        </div>
+      )}
+
+      {/* Content area */}
+      <div className="flex flex-1 flex-col min-w-0">
+        {/* Mobile header */}
+        <header className="flex h-14 items-center gap-3 border-b border-slate-200 bg-white px-4 lg:hidden">
+          <button onClick={() => setMobileOpen(true)} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100">
+            <Menu className="h-5 w-5" />
           </button>
-
-          {/* Logo on mobile */}
-          <Link href="/leads" className="flex items-center gap-2 lg:hidden">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ backgroundColor: '#E8793A' }}>
-              <HardHat className="h-3.5 w-3.5 text-white" />
-            </div>
-            <span className="text-lg font-bold font-display" style={{ color: '#1A2B4A' }}>Kealee</span>
-            <span className="rounded px-1 py-0.5 text-xs font-bold text-white" style={{ backgroundColor: '#E8793A' }}>GC</span>
-          </Link>
-
-          {/* Breadcrumb on desktop */}
-          <div className="hidden items-center gap-2 text-sm text-gray-500 lg:flex">
-            <Link href="/leads" className="hover:text-gray-700">Contractor Portal</Link>
-            <ChevronRight className="h-4 w-4 text-gray-300" />
-            <span className="font-medium capitalize" style={{ color: '#1A2B4A' }}>
-              {pathname.replace('/', '').split('/')[0] || 'leads'}
-            </span>
-          </div>
-
-          {/* Right actions */}
-          <div className="flex items-center gap-3">
-            <button className="relative rounded-lg p-2 text-gray-500 hover:bg-gray-100">
-              <Bell className="h-5 w-5" />
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full" style={{ backgroundColor: '#E8793A' }} />
+          <span className="font-bold font-display text-sm" style={{ color: SIDEBAR }}>Contractor Portal</span>
+          <div className="ml-auto flex items-center gap-2">
+            <button className="relative rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+              <Bell className="h-4 w-4" />
+              <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full" style={{ backgroundColor: ACCENT }} />
             </button>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white" style={{ backgroundColor: '#1A2B4A' }}>
+            <div className="flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white"
+              style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)' }}>
               SC
             </div>
           </div>
         </header>
 
-        {/* Mobile nav */}
-        {mobileOpen && (
-          <nav className="flex gap-1 overflow-x-auto border-b border-gray-200 bg-white px-4 py-2 lg:hidden">
-            {NAV_ITEMS.map((item) => {
-              const active = pathname.startsWith(item.href)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium"
-                  style={{
-                    backgroundColor: active ? 'rgba(42,191,191,0.1)' : 'transparent',
-                    color: active ? '#2ABFBF' : '#4A5568',
-                  }}
-                >
-                  <item.icon className="h-3.5 w-3.5" />
-                  {item.label}
-                </Link>
-              )
-            })}
-          </nav>
-        )}
+        {/* Desktop breadcrumb header */}
+        <div className="hidden lg:flex h-12 items-center justify-between px-8 border-b"
+          style={{ backgroundColor: '#FEFCF3', borderColor: '#FEF3C7' }}>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-slate-400">Contractor Portal</span>
+            {currentPage && (
+              <>
+                <ChevronRight className="h-3.5 w-3.5 text-slate-300" />
+                <span className="font-semibold" style={{ color: SIDEBAR }}>{currentPage.label}</span>
+              </>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <button className="relative rounded-lg p-1.5 text-slate-400 hover:bg-amber-50">
+              <Bell className="h-4 w-4" />
+              <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full" style={{ backgroundColor: ACCENT }} />
+            </button>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
+              style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)' }}>
+              SC
+            </div>
+          </div>
+        </div>
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
 
       {/* KeaBot GC Chat Widget */}
       {showBot && (
-        <div className="fixed bottom-4 right-4 z-50 w-80 overflow-hidden rounded-xl bg-white shadow-2xl sm:w-96" style={{ border: '1px solid #E5E7EB' }}>
-          <div className="flex items-center justify-between px-4 py-3" style={{ backgroundColor: '#1A2B4A' }}>
+        <div className="fixed bottom-5 right-5 z-50 w-80 overflow-hidden rounded-2xl bg-white sm:w-96"
+          style={{ boxShadow: '0 20px 60px rgba(28,16,8,0.18)', border: '1px solid rgba(0,0,0,0.08)' }}>
+          <div className="flex items-center justify-between px-4 py-3"
+            style={{ background: `linear-gradient(135deg, ${SIDEBAR}, #2D1A0A)` }}>
             <div className="flex items-center gap-2">
-              <Bot className="h-5 w-5" style={{ color: '#2ABFBF' }} />
+              <Bot className="h-4 w-4" style={{ color: ACCENT }} />
               <span className="text-sm font-semibold text-white">KeaBot GC</span>
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#38A169' }} />
+              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: '#34D399' }} />
             </div>
-            <button onClick={() => setShowBot(false)} className="text-white/60 hover:text-white">
+            <button onClick={() => setShowBot(false)} className="text-white/50 hover:text-white">
               <X className="h-4 w-4" />
             </button>
           </div>
           <div className="h-64 overflow-y-auto p-4">
-            <div className="mb-3 max-w-[80%] rounded-xl rounded-tl-none p-3 text-sm" style={{ backgroundColor: '#F7FAFC', color: '#1A2B4A' }}>
-              Hi! I&apos;m your KeaBot GC assistant. I can help you with lead matching, bid status, project schedules, payments, and more. What can I help you with?
+            <div className="mb-3 max-w-[85%] rounded-2xl rounded-tl-sm p-3 text-sm leading-relaxed"
+              style={{ backgroundColor: '#FFFBEB', color: '#1C1008', border: `1px solid ${ACCENT}33` }}>
+              Hi! I&apos;m KeaBot GC. I can help with lead matching, bid status, project schedules, payment milestones, and credential renewal. What do you need?
             </div>
           </div>
-          <div className="border-t border-gray-200 p-3">
+          <div className="border-t border-slate-100 p-3">
             <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Ask about your leads or projects..."
-                className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-1"
-                onFocus={(e) => { e.target.style.borderColor = '#2ABFBF'; e.target.style.boxShadow = '0 0 0 1px #2ABFBF' }}
-                onBlur={(e) => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none' }}
+              <input type="text" placeholder="Ask about leads or projects…"
+                className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none"
+                onFocus={e => (e.target.style.borderColor = ACCENT)}
+                onBlur={e => (e.target.style.borderColor = '#E2E8F0')}
               />
-              <button className="rounded-lg p-2 text-white" style={{ backgroundColor: '#E8793A' }}>
+              <button className="rounded-xl p-2 text-white"
+                style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)' }}>
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
