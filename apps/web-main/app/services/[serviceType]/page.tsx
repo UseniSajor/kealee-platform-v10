@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { CheckCircle2, Clock, ArrowRight, Shield, Video, FileText, Image as ImageIcon, Table2, Layers, Star, LayoutTemplate, Zap, PlayCircle } from 'lucide-react'
+import { CheckCircle2, Clock, ArrowRight, Shield, Video, FileText, Image as ImageIcon, Table2, Layers, Star, LayoutTemplate, Zap, PlayCircle, Phone } from 'lucide-react'
 import { SERVICES, SERVICE_MAP } from '@/lib/services-config'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 
@@ -35,6 +35,7 @@ const TIER_DELIVERABLES: Record<1 | 2 | 3, DeliverableItem[]> = {
     { icon: Layers,         label: 'Multi-Layer 3D Floor Plan + CAD files',          color: 'bg-blue-100 text-blue-600' },
     { icon: ImageIcon,      label: '12–15 Renderings in 4K resolution',              color: 'bg-purple-100 text-purple-600' },
     { icon: LayoutTemplate, label: 'Enhanced Portal — virtual walkthrough',          color: 'bg-sky-100 text-sky-600' },
+    { icon: Phone,          label: '15-min expert consultation call',                color: 'bg-green-100 text-green-600' },
     { icon: FileText,       label: 'Everything in Premium · 3 revisions · 90-day support', color: 'bg-slate-100 text-slate-500' },
   ],
 }
@@ -70,7 +71,7 @@ const PROCESS_STEPS = [
   { step: '01', title: 'Choose Your Package', desc: 'Select Basic, Premium, or Premium+ based on your goals.' },
   { step: '02', title: 'Submit Intake', desc: 'Fill out a short form about your project — takes 3 minutes.' },
   { step: '03', title: 'AI + Staff Review', desc: 'AI generates renders and specs, then a Kealee specialist reviews.' },
-  { step: '04', title: 'Delivery & Consult', desc: 'Receive your full package with a 30-min consultation call.' },
+  { step: '04', title: 'Delivery & Support', desc: 'Receive your full package. Ask questions anytime via the portal ask bar — real staff responds.' },
 ]
 
 function TierCard({
@@ -256,7 +257,7 @@ export default async function ServicePage({
           <div className="text-center mb-12">
             <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-3">Pricing</p>
             <h2 className="text-3xl font-bold text-slate-900">Choose Your Package</h2>
-            <p className="mt-3 text-slate-500">All packages include staff review and 30-min consultation.</p>
+            <p className="mt-3 text-slate-500">All packages include staff review. Premium+ includes a 15-min expert call.</p>
           </div>
 
           <div className={`grid gap-6 ${availableTiers.length === 3 ? 'md:grid-cols-3' : availableTiers.length === 2 ? 'md:grid-cols-2 max-w-2xl mx-auto' : 'max-w-sm mx-auto'}`}>

@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft, Shield, Loader2, FileText, Image as ImageIcon,
-  LayoutTemplate, Table2, Layers, Video, Check, Lock, Zap, X,
+  LayoutTemplate, Table2, Layers, Video, Check, Lock, Zap, X, Phone,
 } from 'lucide-react'
 import { SERVICE_MAP } from '@/lib/services-config'
 
@@ -39,6 +39,7 @@ const TIER_ITEMS: Record<1 | 2 | 3, DeliverableItem[]> = {
     { icon: Layers,        label: 'Multi-Layer 3D Floor Plan + CAD files',    color: 'bg-blue-100 text-blue-600' },
     { icon: ImageIcon,     label: '12–15 Renderings in 4K resolution',        color: 'bg-purple-100 text-purple-600' },
     { icon: LayoutTemplate,label: 'Enhanced Portal — virtual walkthrough',    color: 'bg-sky-100 text-sky-600' },
+    { icon: Phone,         label: '15-min expert consultation call',           color: 'bg-green-100 text-green-600' },
     { icon: FileText,      label: 'Everything in Premium · 3 revisions · 90-day support', color: 'bg-slate-100 text-slate-500' },
   ],
 }
