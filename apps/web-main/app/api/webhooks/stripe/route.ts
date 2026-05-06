@@ -142,5 +142,40 @@ export async function POST(req: NextRequest) {
     })
   }
 
+  // 3. Admin purchase notification email (fire-and-forget)
+  const resendApiKey = process.env.RESEND_API_KEY
+  if (resendApiKey) {
+    const amountCents = session.amount_total ?? 0
+    const amountFormatted = (amountCents / 100).toFixed(2)
+    const clientEmail = session.customer_details?.email ?? 'unknown'
+    const clientName  = session.customer_details?.name  ?? 'Unknown Client'
+
+    fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Kealee Notifications <notifications@kealee.com>',
+        to: ['hello@kealee.com'],
+        subject: `New purchase — ${projectPath.replace(/_/g, ' ')} $${amountFormatted}`,
+        text: [
+          'A new purchase has been completed.',
+          '',
+          `  Intake ID:   ${intakeId}`,
+          `  Service:     ${projectPath.replace(/_/g, ' ')}`,
+          `  Client:      ${clientName} <${clientEmail}>`,
+          `  Amount:      $${amountFormatted}`,
+          `  Time:        ${new Date().toISOString()}`,
+          '',
+          'Review in Command Center: https://cc.kealee.com/events',
+        ].join('\n'),
+      }),
+    }).catch((err: Error) => {
+      console.error('[stripe-webhook] Purchase notification email failed:', err.message)
+    })
+  }
+
   return NextResponse.json({ received: true })
 }

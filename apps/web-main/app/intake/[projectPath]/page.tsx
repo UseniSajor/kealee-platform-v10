@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Loader2, AlertCircle, ArrowRight, CheckCircle2, Clock, Shield, Zap, Package } from 'lucide-react'
+import { Loader2, AlertCircle, ArrowRight, CheckCircle2, Clock, Shield, Zap, Package, ImagePlus, X, FileVideo } from 'lucide-react'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 
 const AGENT_MAP: Record<string, string> = {
@@ -217,6 +217,11 @@ export default function IntakePage() {
     timeline: 'flexible',
   })
 
+  // File upload state
+  const [uploadedFiles, setUploadedFiles] = useState<{ name: string; url: string; type: 'image' | 'video' }[]>([])
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const agentType = AGENT_MAP[projectPath] || 'design'
   const priceInfo = PRICE_MAP[projectPath] || { label: 'Project Package', amount: 39500, delivery: '3–5 days' }
   const deliverable = SERVICE_DELIVERABLES[projectPath]
@@ -259,6 +264,35 @@ export default function IntakePage() {
         </div>
       </div>
     )
+  }
+
+  // ── File upload handler ────────────────────────────────────────────────────
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = Array.from(e.target.files ?? [])
+    if (!selected.length) return
+    if (uploadedFiles.length + selected.length > 5) {
+      setFormError('You can upload a maximum of 5 files.')
+      return
+    }
+    setUploading(true)
+    try {
+      const body = new FormData()
+      selected.forEach(f => body.append('files', f))
+      const res = await fetch('/api/intake/upload', { method: 'POST', body })
+      if (!res.ok) return
+      const { urls } = await res.json()
+      const newFiles = selected.map((f, i) => ({
+        name: f.name,
+        url: urls[i] ?? '',
+        type: f.type.startsWith('video/') ? 'video' as const : 'image' as const,
+      })).filter(f => f.url)
+      setUploadedFiles(prev => [...prev, ...newFiles])
+    } catch {
+      // Upload failures are non-blocking
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
   }
 
   // Fire-and-forget soft capture — never blocks user flow
@@ -307,6 +341,7 @@ export default function IntakePage() {
             description: formData.description,
             squareFootage: formData.squareFootage,
             timeline: formData.timeline,
+            uploadedFiles: uploadedFiles.map(f => f.url),
           },
         }),
       })
@@ -478,6 +513,69 @@ export default function IntakePage() {
                   />
                 </div>
 
+                {/* Photo / Video Upload */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-sm font-semibold text-slate-800">
+                      Photos or Videos <span className="text-slate-400 font-normal">(optional)</span>
+                    </label>
+                    {uploadedFiles.length > 0 && (
+                      <span className="text-xs text-slate-400">{uploadedFiles.length}/5 uploaded</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-500 mb-3">
+                    For best output, upload a photo of your space or a reference image. Accepted: JPG, PNG, WEBP, HEIC, MP4, MOV (max 50 MB each).
+                  </p>
+
+                  {/* Uploaded file chips */}
+                  {uploadedFiles.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {uploadedFiles.map((f, i) => (
+                        <div key={i} className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700">
+                          {f.type === 'video'
+                            ? <FileVideo className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                            : <ImagePlus className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                          }
+                          <span className="max-w-[120px] truncate">{f.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => setUploadedFiles(prev => prev.filter((_, j) => j !== i))}
+                            className="ml-0.5 text-slate-400 hover:text-red-500 transition"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/jpeg,image/png,image/webp,image/heic,image/heif,video/mp4,video/quicktime"
+                    onChange={handleFileChange}
+                    className="sr-only"
+                    id="intake-file-upload"
+                  />
+                  {uploadedFiles.length < 5 && (
+                    <label
+                      htmlFor="intake-file-upload"
+                      className={`flex items-center justify-center gap-2 w-full rounded-lg border-2 border-dashed px-4 py-4 text-sm font-medium transition cursor-pointer ${
+                        uploading
+                          ? 'border-orange-300 bg-orange-50 text-orange-500'
+                          : 'border-slate-300 bg-white text-slate-500 hover:border-orange-400 hover:bg-orange-50 hover:text-orange-600'
+                      }`}
+                    >
+                      {uploading ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" /> Uploading...</>
+                      ) : (
+                        <><ImagePlus className="h-4 w-4" /> Add photos or videos</>
+                      )}
+                    </label>
+                  )}
+                </div>
+
                 {/* Sq ft + Timeline */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -542,6 +640,7 @@ export default function IntakePage() {
                     { label: 'Address', value: formData.address },
                     formData.phone ? { label: 'Phone', value: formData.phone } : null,
                     formData.description ? { label: 'Project description', value: formData.description } : null,
+                    uploadedFiles.length > 0 ? { label: 'Files', value: `${uploadedFiles.length} file${uploadedFiles.length > 1 ? 's' : ''} uploaded` } : null,
                   ].filter(Boolean).map(row => (
                     <div key={row!.label} className="flex items-start gap-4 px-5 py-3">
                       <span className="text-xs font-semibold text-slate-400 w-28 shrink-0 pt-0.5">{row!.label}</span>
