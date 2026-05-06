@@ -76,6 +76,8 @@ function ConfirmInner() {
   const [agreed,     setAgreed]     = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error,      setError]      = useState('')
+  const [promoCode,  setPromoCode]  = useState('')
+  const [promoApplied, setPromoApplied] = useState(false)
 
   // Payment status banners (set from URL params)
   const [showCanceled,    setShowCanceled]    = useState(searchParams.get('canceled') === 'true')
@@ -88,68 +90,95 @@ function ConfirmInner() {
   const detailsParams = new URLSearchParams({ service: serviceSlug, scope, budget, zip, style, priority, timeline, sqft })
   const contactParams = new URLSearchParams({ service: serviceSlug, scope, budget, zip, style, priority, timeline, sqft, firstName, lastName, email, phone, address })
 
+  const projectPath = service?.intakePath ?? serviceSlug
+
+  async function createIntakeRecord(): Promise<string> {
+    const intakeRes = await fetch('/api/intake', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        projectPath,
+        clientName: `${firstName} ${lastName}`.trim(),
+        contactEmail: email,
+        contactPhone: phone || null,
+        projectAddress: address || `ZIP: ${zip}`,
+        budgetRange: budget || 'Not provided',
+        formData: { description: scope, budget, zip, tier, style, priority, timeline, sqft },
+      }),
+    })
+    if (!intakeRes.ok) {
+      const b = await intakeRes.json().catch(() => ({}))
+      throw new Error(b.error ?? 'Failed to save intake.')
+    }
+    const { intakeId } = await intakeRes.json()
+    return intakeId as string
+  }
+
   async function handleSubmit() {
     if (!agreed) { setError('Please agree to the terms to continue.'); return }
     setError('')
     setSubmitting(true)
 
-    // Capture contact before any API calls — fire and forget
+    // Fire-and-forget soft capture
     fetch('/api/intake/soft-capture', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email:   email,
-        name:    `${firstName} ${lastName}`.trim(),
-        service: serviceSlug,
-        source:  'concept-confirm',
-      }),
+      body: JSON.stringify({ email, name: `${firstName} ${lastName}`.trim(), service: serviceSlug, source: 'concept-confirm' }),
     }).catch(() => {})
 
     try {
-      const intakeRes = await fetch('/api/intake', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          projectPath: service?.intakePath ?? serviceSlug,
-          clientName: `${firstName} ${lastName}`.trim(),
-          contactEmail: email,
-          contactPhone: phone || null,
-          projectAddress: address || `ZIP: ${zip}`,
-          budgetRange: budget || 'Not provided',
-          formData: { description: scope, budget, zip, tier, style, priority, timeline, sqft },
-        }),
-      })
-      if (!intakeRes.ok) {
-        const body = await intakeRes.json().catch(() => ({}))
-        throw new Error(body.error ?? 'Failed to save intake.')
-      }
-      const { intakeId } = await intakeRes.json()
+      const intakeId = await createIntakeRecord()
 
+      // ── Free promo code path — bypass Stripe entirely ──────────────────────
+      const code = promoCode.trim()
+      if (code) {
+        const redeemRes = await fetch('/api/intake/redeem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ intakeId, projectPath, promoCode: code }),
+        })
+        if (!redeemRes.ok) {
+          const b = await redeemRes.json().catch(() => ({}))
+          // Invalid code → fall through to Stripe below
+          if (b.error === 'Invalid promo code') {
+            setError('Promo code not recognised. Please check the code and try again, or proceed to payment.')
+            setSubmitting(false)
+            return
+          }
+          // Other redeem error → still try Stripe
+        } else {
+          // Promo accepted — go straight to deliverable
+          window.location.href = `${window.location.origin}/concept/deliverable?intakeId=${intakeId}&redeemed=true`
+          return
+        }
+      }
+
+      // ── Standard Stripe checkout path ─────────────────────────────────────
       const checkoutRes = await fetch('/api/intake/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           intakeId,
-          projectPath: service?.intakePath ?? serviceSlug,
+          projectPath,
           amount: price * 100,
           successUrl: `${window.location.origin}/concept/deliverable?intakeId=${intakeId}&session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${window.location.origin}/concept/confirm?${searchParams.toString()}&canceled=true`,
         }),
       })
       if (!checkoutRes.ok) {
-        const body = await checkoutRes.json().catch(() => ({}))
-        throw new Error(body.error ?? 'Could not create checkout.')
+        const b = await checkoutRes.json().catch(() => ({}))
+        const msg = b.error ?? 'Could not create checkout.'
+        // Surface actionable message for missing Stripe config
+        if (msg.includes('not configured') || msg.includes('Stripe')) {
+          throw new Error('Payment is not yet configured on this account. Use promo code KEALEE-ALLIN-2026 to access for free, or contact hello@kealee.com.')
+        }
+        throw new Error(msg)
       }
       const { url } = await checkoutRes.json()
       if (url) window.location.href = url
       else throw new Error('No checkout URL returned.')
     } catch (err) {
-      const msg = (err as Error).message
-      const isServerError = msg.includes('Failed to') || msg.includes('Could not') || msg.includes('No checkout')
-      setError(isServerError
-        ? "We couldn't open checkout right now — your details are safe. Try again or let our team follow up for you."
-        : msg
-      )
+      setError((err as Error).message)
       setSubmitting(false)
     }
   }
@@ -323,7 +352,14 @@ function ConfirmInner() {
           </div>
           <div className="text-right">
             <p className="text-xs text-slate-400 uppercase tracking-widest mb-0.5">Total</p>
-            <p className="text-2xl font-black text-slate-900">${price.toLocaleString()}</p>
+            {promoApplied ? (
+              <div className="flex items-center gap-2 justify-end">
+                <p className="text-lg font-bold text-slate-400 line-through">${price.toLocaleString()}</p>
+                <p className="text-2xl font-black text-green-600">$0</p>
+              </div>
+            ) : (
+              <p className="text-2xl font-black text-slate-900">${price.toLocaleString()}</p>
+            )}
           </div>
         </div>
 
@@ -348,6 +384,43 @@ function ConfirmInner() {
 
         {/* Terms + CTA */}
         <div className="px-6 py-5 space-y-4">
+
+          {/* Promo code */}
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Promo Code</p>
+            {promoApplied ? (
+              <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-4 py-2.5">
+                <Check className="w-4 h-4 text-green-600 shrink-0" strokeWidth={3} />
+                <span className="text-sm font-semibold text-green-700">Code applied — payment waived</span>
+                <button
+                  type="button"
+                  onClick={() => { setPromoCode(''); setPromoApplied(false) }}
+                  className="ml-auto text-green-400 hover:text-green-700 transition"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                  placeholder="Enter promo code"
+                  className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E8724B] focus:border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={() => promoCode.trim() && setPromoApplied(true)}
+                  disabled={!promoCode.trim()}
+                  className="rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-40 px-4 py-2.5 text-sm font-semibold text-slate-700 transition"
+                >
+                  Apply
+                </button>
+              </div>
+            )}
+          </div>
+
           <label className="flex items-start gap-3 cursor-pointer">
             <div
               onClick={() => setAgreed(!agreed)}
@@ -383,6 +456,8 @@ function ConfirmInner() {
           >
             {submitting ? (
               <><Loader2 className="w-5 h-5 animate-spin" /> Processing…</>
+            ) : promoApplied ? (
+              <><Check className="w-5 h-5" strokeWidth={3} /> Redeem Free Access — Start My Concept</>
             ) : (
               <><Shield className="w-5 h-5" /> Pay ${price.toLocaleString()} — Start My Concept</>
             )}

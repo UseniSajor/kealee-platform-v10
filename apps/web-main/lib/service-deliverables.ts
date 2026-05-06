@@ -354,4 +354,23 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     deliveryDays: '1 day',
     nextStep: { label: 'Browse the Marketplace', href: '/marketplace' },
   },
+  // All-in-one bundle — design concept + cost estimate + permit scope
+  design_estimate_permit_bundle: {
+    label: 'Design + Estimate + Permit Bundle',
+    category: 'design',
+    agentType: 'design',
+    generatesConcept: true,
+    includes: [
+      'AI concept renderings (3–5 views)',
+      'Bill of Materials with line-item costs',
+      'MEP specification (electrical, plumbing, HVAC, lighting)',
+      'RSMeans-validated cost estimate (trade-by-trade)',
+      'Permit scope brief with jurisdiction checklist',
+      'Zoning & setback analysis',
+      'Path-to-approval summary',
+      '30-min strategy consultation call',
+    ],
+    deliveryDays: '3–5 days',
+    nextStep: { label: 'Match with a Contractor', href: '/intake/contractor_match' },
+  },
 }
