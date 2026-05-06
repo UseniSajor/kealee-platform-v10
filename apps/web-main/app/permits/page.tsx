@@ -339,7 +339,7 @@ export default function PermitsPage() {
                           <p className="text-[11px] text-slate-400">{card.permits} permit{card.permits !== 1 ? 's' : ''} · <span className="text-green-600 font-semibold">{TIER_SHORT_LABELS[card.tier]}</span></p>
                         </div>
                       </div>
-                      <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 mb-4">{card.desc}</p>
+                      <p className="text-xs text-slate-500 leading-relaxed mb-4">{card.desc}</p>
                       <button className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-slate-50 group-hover:bg-green-500 text-slate-500 group-hover:text-white text-xs font-bold py-2.5 transition-all duration-200 border border-slate-200 group-hover:border-green-500">
                         Start Permit <ArrowRight className="w-3.5 h-3.5" />
                       </button>
@@ -374,7 +374,7 @@ export default function PermitsPage() {
                           <p className="text-[11px] text-slate-400">{card.permits} permit{card.permits !== 1 ? 's' : ''} · <span className="text-blue-600 font-semibold">{TIER_SHORT_LABELS[card.tier]}</span></p>
                         </div>
                       </div>
-                      <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 mb-4">{card.desc}</p>
+                      <p className="text-xs text-slate-500 leading-relaxed mb-4">{card.desc}</p>
                       <button className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-slate-50 group-hover:bg-blue-600 text-slate-500 group-hover:text-white text-xs font-bold py-2.5 transition-all duration-200 border border-slate-200 group-hover:border-blue-600">
                         Start Permit <ArrowRight className="w-3.5 h-3.5" />
                       </button>
@@ -461,7 +461,7 @@ export default function PermitsPage() {
               </div>
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {tiers.map((tier) => {
                 const isRecommended = formData.projectType !== '' && PERMIT_RECOMMENDATION[formData.projectType] === tier.code
                 return (
@@ -485,7 +485,7 @@ export default function PermitsPage() {
                     <p className="text-white font-black text-3xl">From ${tier.price.toLocaleString()}</p>
                   </div>
                   <div className="flex-1 px-5 py-4 space-y-2">
-                    {tier.features.slice(0, 4).map((f, i) => (
+                    {tier.features.map((f, i) => (
                       <div key={i} className="flex items-start gap-2 text-xs text-slate-600">
                         <Check className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" strokeWidth={3} />
                         {f}
