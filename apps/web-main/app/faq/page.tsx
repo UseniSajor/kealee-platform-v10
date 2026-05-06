@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { AskAnythingBar } from '@/components/ui/AskAnythingBar'
+import { AskChatBar } from '@/components/ui/AskChatBar'
 
 export const metadata: Metadata = {
   title: 'FAQ — Kealee',
@@ -189,7 +189,7 @@ export default function FAQPage() {
               <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-white/50 text-center">
                 Can&apos;t find your answer? Ask anything
               </p>
-              <AskAnythingBar context="default" />
+              <AskChatBar context="default" variant="light" />
             </div>
           </div>
         </div>

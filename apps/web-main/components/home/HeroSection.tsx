@@ -5,7 +5,7 @@ import { ArrowRight, Shield, Layers } from 'lucide-react'
 import { useRoleSelector } from '@/hooks/useRoleSelector'
 import { RoleSelectorModal } from '@/components/modals/RoleSelectorModal'
 import { Container } from '@/components/ui/Container'
-import { AskAnythingBar } from '@/components/ui/AskAnythingBar'
+import { AskChatBar } from '@/components/ui/AskChatBar'
 
 export function HeroSection() {
   const { isOpen, context, open, close } = useRoleSelector()
@@ -49,7 +49,7 @@ export function HeroSection() {
 
             {/* AskAnythingBar */}
             <div className="mt-8">
-              <AskAnythingBar context="homepage" />
+              <AskChatBar context="homepage" variant="dark" />
             </div>
 
             {/* CTA row */}
