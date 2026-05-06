@@ -8,9 +8,9 @@ import { SERVICES } from '@/lib/services-config'
 const PRECON_SERVICES = SERVICES.filter((s) => s.phase === 'precon')
 
 export const metadata: Metadata = {
-  title: 'Kealee — Transform Your Home with AI Design',
+  title: 'Kealee — Build & Renovation Services in the DMV',
   description:
-    'AI-designed concepts with professional videos, cost estimates, and permit roadmaps. Kitchen, bathroom, addition, whole house — delivered in days.',
+    'Kitchen remodels, home additions, whole-house renovations, permits, and new construction — Kealee manages design, permits, and build coordination across DC, Maryland, and Virginia.',
 }
 
 // ── Service Gallery ────────────────────────────────────────────────────────────
@@ -20,10 +20,10 @@ function ServiceGallery() {
     <section id="services" className="py-24 bg-white scroll-mt-16">
       <div className="mx-auto max-w-7xl px-4">
         <div className="text-center mb-14">
-          <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-3">Design &amp; Planning Packages</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">Your Project, Planned in Days</h2>
+          <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-3">Build &amp; Renovation Services</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">Every Project, One Platform</h2>
           <p className="mt-3 text-slate-500 max-w-xl mx-auto">
-            AI-generated design packages with cost estimates and permit scope — delivered in 2–6 days. The renovation itself takes weeks; the planning starts now.
+            Kitchen remodels, additions, whole-house renovations, and more — Kealee manages design, permits, and build coordination across the DMV.
           </p>
         </div>
 
@@ -43,7 +43,7 @@ function ServiceGallery() {
                       alt={service.label}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 20vw"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                     {/* Category badge */}
                     <span className="absolute top-3 left-3 rounded-full bg-black/40 backdrop-blur-sm px-2.5 py-0.5 text-[11px] font-semibold text-white capitalize">
@@ -56,14 +56,13 @@ function ServiceGallery() {
                     <p className="text-xs text-slate-500 line-clamp-2 mb-3">{service.description}</p>
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-[#E8724B]">{service.priceDisplay}</span>
+                        <span className="text-sm font-bold text-slate-900">{service.costRange}</span>
                         <span className="text-xs text-slate-400 flex items-center gap-1">
-                          Explore <ArrowRight className="w-3 h-3" />
+                          View Details <ArrowRight className="w-3 h-3" />
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-400">{service.deliverableLabel} · {service.deliveryDays}</p>
-                      {service.timeline && service.timeline !== 'Custom' && (
-                        <p className="text-[11px] text-slate-400">Renovation: {service.timeline}</p>
+                      {service.timeline && service.timeline !== 'Custom' && service.timeline !== 'Design fee only' && (
+                        <p className="text-[11px] text-slate-400">{service.timeline} · {service.permits > 0 ? `${service.permits} permit${service.permits !== 1 ? 's' : ''}` : 'No permits'}</p>
                       )}
                     </div>
                   </div>
@@ -73,22 +72,22 @@ function ServiceGallery() {
           })}
         </div>
 
-        {/* Build CTA — separate from precon services */}
+        {/* New Construction CTA */}
         <div className="mt-10 rounded-2xl bg-[#1A2B4A] px-8 py-7 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-[#2563EB]/20 flex items-center justify-center shrink-0">
               <Building2 className="w-6 h-6 text-[#2563EB]" />
             </div>
             <div>
-              <p className="font-bold text-white text-base">Ready to Build?</p>
-              <p className="text-slate-400 text-sm">New construction, GC coordination, and full build management across DMV.</p>
+              <p className="font-bold text-white text-base">New Construction</p>
+              <p className="text-slate-400 text-sm">Vacant lot to move-in — architectural design, permit coordination, and full build management. $500K–$5M+.</p>
             </div>
           </div>
           <Link
-            href="/build"
+            href="/new-construction/intake"
             className="shrink-0 flex items-center gap-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold px-6 py-3 rounded-xl transition-all text-sm whitespace-nowrap"
           >
-            Explore Build Services <ArrowRight className="w-4 h-4" />
+            Get a Custom Quote <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>
