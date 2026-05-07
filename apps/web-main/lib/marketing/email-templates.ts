@@ -13,7 +13,7 @@ import {
   PERMIT_BASIC_PRICE,
   CONCEPT_START_PRICE,
 } from '@/lib/marketing/pricing'
-import { signUnsubscribeToken } from '@/app/api/marketing/unsubscribe/route'
+import { signUnsubscribeToken } from '@/lib/marketing/unsubscribe-token'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://kealee.com'
 
