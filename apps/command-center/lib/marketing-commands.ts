@@ -314,6 +314,155 @@ export const COMMAND_REGISTRY: CommandSchema[] = [
     ],
   },
 
+  // ── Strategy prompts (brand-strategy driven copy) ─────────────────────────
+
+  {
+    id:          'email-subject-lines',
+    name:        'Email Subject Lines (Nurture)',
+    description: 'Generate 8 email subject lines for a nurture sequence. Confident, specific, no hype. Varied angles: speed, price, jurisdiction, portal, process.',
+    category:    'content',
+    tags:        ['email', 'subject-lines', 'nurture', 'ghl', 'strategy'],
+    inputs: {
+      audience: {
+        type:        'enum',
+        label:       'Target Audience',
+        description: 'Who this sequence is for',
+        required:    true,
+        options:     ['homeowners', 'investors', 'contractors', 'developers'],
+      },
+      projectType: {
+        type:        'string',
+        label:       'Project Type',
+        description: 'e.g. "ADU addition", "kitchen remodel", "whole-home renovation"',
+        required:    true,
+        placeholder: 'ADU addition',
+      },
+    },
+    steps: [
+      'Send audience + project type to email-subject-bot',
+      'Bot applies brand voice rules: no emojis, no questions, no urgency bait',
+      'Return 8 subject lines ordered Day 1–12 with varied angles',
+    ],
+  },
+
+  {
+    id:          'google-ad-copy',
+    name:        'Google Ad Copy (Search)',
+    description: 'Write 5 Google Search ad variations for a jurisdiction + keyword. Each has Headline 1 (30 chars), Headline 2 (30 chars), Description (90 chars). No exclamation marks.',
+    category:    'content',
+    tags:        ['google', 'ads', 'search', 'ppc', 'strategy'],
+    inputs: {
+      keyword: {
+        type:        'string',
+        label:       'Target Keyword',
+        description: 'e.g. "ADU permit Arlington VA"',
+        required:    true,
+        placeholder: 'ADU permit Arlington VA',
+      },
+      jurisdiction: {
+        type:        'string',
+        label:       'Jurisdiction',
+        description: 'City or county to name in the ads',
+        required:    true,
+        placeholder: 'Arlington, VA',
+      },
+      priceTier: {
+        type:        'string',
+        label:       'Price Tier to Feature',
+        description: 'Which price point to anchor on',
+        required:    false,
+        placeholder: '$595–$1,499',
+        default:     '$595–$1,499',
+      },
+    },
+    steps: [
+      'Send keyword + jurisdiction + price tier to google-ad-bot',
+      'Bot writes 5 variations — each with distinct angle (speed / price / expertise / process / trust)',
+      'Return ads as structured objects: headline1, headline2, description, angle',
+    ],
+  },
+
+  {
+    id:          'meta-ad-copy',
+    name:        'Meta Ad Copy (Facebook / Instagram)',
+    description: 'Write 3 Facebook/Instagram ad body copy variations (60–90 words each). Leads with a specific problem, introduces AI Concept as the low-risk first step. No rhetorical questions.',
+    category:    'content',
+    tags:        ['facebook', 'instagram', 'meta', 'ads', 'social', 'strategy'],
+    inputs: {
+      audience: {
+        type:        'enum',
+        label:       'Target Audience',
+        required:    true,
+        options:     ['homeowners', 'investors', 'contractors', 'developers'],
+        default:     'homeowners',
+      },
+      jurisdictions: {
+        type:        'string',
+        label:       'Target Jurisdictions',
+        description: 'Comma-separated list of cities/counties for ad targeting context',
+        required:    true,
+        placeholder: 'Arlington, Fairfax, Montgomery County',
+      },
+    },
+    steps: [
+      'Send audience + jurisdictions to meta-ad-bot',
+      'Bot writes 3 variations — each leading with a different specific problem',
+      'Return structured ads with problem, body, and CTA',
+    ],
+  },
+
+  {
+    id:          'ghl-day1-email',
+    name:        'GHL Day 1 Welcome Email',
+    description: 'Write the Day 1 welcome email for new Kealee leads. Confirms receipt, explains next steps (portal setup, 24hr response), introduces 3 service paths, single CTA to book a scope call. 200–260 words.',
+    category:    'content',
+    tags:        ['email', 'ghl', 'welcome', 'day1', 'nurture', 'strategy'],
+    inputs: {
+      leadName: {
+        type:        'string',
+        label:       'Lead First Name (optional)',
+        description: 'Personalizes the greeting if known',
+        required:    false,
+        placeholder: 'Jane',
+        default:     'there',
+      },
+      projectType: {
+        type:        'string',
+        label:       'Project Type (optional)',
+        description: 'Personalizes the intro if known from intake',
+        required:    false,
+        placeholder: 'kitchen remodel',
+      },
+    },
+    steps: [
+      'Send lead name + project type to day1-email-bot',
+      'Bot writes 200–260 word welcome email following brand voice rules',
+      'Return subject line, full email body, word count, and CTA',
+    ],
+  },
+
+  {
+    id:          'ghl-day8-objection',
+    name:        'GHL Day 8 Objection Email',
+    description: 'Write the Day 8 objection-handling email for leads who haven\'t booked yet. Addresses 3 objections: readiness, bad past experience, jurisdiction uncertainty. 250–300 words.',
+    category:    'content',
+    tags:        ['email', 'ghl', 'objections', 'day8', 'nurture', 'strategy'],
+    inputs: {
+      jurisdiction: {
+        type:        'string',
+        label:       'Lead Jurisdiction (optional)',
+        description: 'Personalizes the jurisdiction expertise block',
+        required:    false,
+        placeholder: 'Montgomery County, MD',
+      },
+    },
+    steps: [
+      'Send jurisdiction context to day8-email-bot',
+      'Bot writes 250–300 word objection email with 3 distinct objection/response blocks',
+      'Return subject line, full email body, objection labels, and CTA',
+    ],
+  },
+
   // ── Campaigns (chained pipelines) ─────────────────────────────────────────
 
   {
@@ -448,11 +597,16 @@ async function executeAtomicCommand(
   try {
     // ── Bot-backed commands ──────────────────────────────────────────────────
     const BOT_MAP: Record<string, string> = {
-      'generate-content':  'marketing-bot',
-      'qualify-lead':      'lead-bot',
-      'generate-pitch':    'pitch-bot',
-      'estimate-project':  'estimate-bot',
-      'run-campaign':      'marketing-bot',
+      'generate-content':    'marketing-bot',
+      'qualify-lead':        'lead-bot',
+      'generate-pitch':      'pitch-bot',
+      'estimate-project':    'estimate-bot',
+      'run-campaign':        'marketing-bot',
+      'email-subject-lines': 'email-subject-bot',
+      'google-ad-copy':      'google-ad-bot',
+      'meta-ad-copy':        'meta-ad-bot',
+      'ghl-day1-email':      'day1-email-bot',
+      'ghl-day8-objection':  'day8-email-bot',
     }
 
     if (BOT_MAP[commandId]) {
