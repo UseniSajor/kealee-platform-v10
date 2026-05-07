@@ -1,16 +1,138 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, CheckCircle2, Star, Building2 } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Star, Building2, Sparkles } from 'lucide-react'
 import HomeHero from '@/components/HomeHero'
 import { SERVICES } from '@/lib/services-config'
 
 const PRECON_SERVICES = SERVICES.filter((s) => s.phase === 'precon')
 
 export const metadata: Metadata = {
-  title: 'Kealee — Build & Renovation Services in the DMV',
+  title: 'Kealee — AI Home Design Concepts, Permit Scope & Cost Estimates',
   description:
-    'Kitchen remodels, home additions, whole-house renovations, permits, and new construction — Kealee manages design, permits, and build coordination across DC, Maryland, and Virginia.',
+    'Get AI-generated concept renderings, permit scope, and cost estimates for your kitchen remodel, bathroom, addition, or whole-home renovation — starting at $99. Serving Austin, TX and beyond.',
+}
+
+// ── Concept Package Tiers ─────────────────────────────────────────────────────
+
+const TIERS = [
+  {
+    name:    'Basic',
+    tagline: 'Visualize your project',
+    price:   'From $99',
+    color:   '#1A2B4A',
+    badge:   null,
+    items: [
+      '3–5 AI Concept Renderings',
+      'Floor Plan Layout Direction',
+      'Permit Scope Brief + Path-to-Approval',
+      'Itemized Cost Estimate (Bill of Materials)',
+      'PDF Design Report (15–20 pages)',
+      '1 revision · Email support',
+    ],
+    cta: 'Start Basic',
+  },
+  {
+    name:    'Premium',
+    tagline: 'The full design experience',
+    price:   'From $399',
+    color:   '#E8724B',
+    badge:   'Most Popular',
+    items: [
+      '60-Second AI Transformation Video',
+      '2D Architectural Floor Plan with MEP',
+      '6–8 Enhanced Renderings (2560×1440)',
+      'Permit-Ready Documents (HOA + lender)',
+      'Editable Bill of Materials',
+      'Everything in Basic · 3 revisions · 30-day support',
+    ],
+    cta: 'Start Premium',
+  },
+  {
+    name:    'Premium+',
+    tagline: 'Maximum detail, maximum impact',
+    price:   'From $799',
+    color:   '#2ABFBF',
+    badge:   'Best Value',
+    items: [
+      '4 Video Formats — 60s · 30s · 15s · 10s',
+      '3D Floor Plan + CAD Files (DWG export)',
+      '12–15 Renderings in 4K Resolution',
+      'Permit Package — full cost credited toward plans',
+      '15-min Expert Consultation Call',
+      'Everything in Premium · 3 revisions · 90-day support',
+    ],
+    cta: 'Start Premium+',
+  },
+]
+
+function ConceptTiers() {
+  return (
+    <section id="packages" className="py-24 bg-slate-50 scroll-mt-16">
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="text-center mb-14">
+          <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-3">AI Design Packages</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">Choose Your Concept Package</h2>
+          <p className="mt-3 text-slate-500 max-w-xl mx-auto">
+            Every package includes AI renderings, a permit scope, and a cost estimate — delivered digitally.
+            Your concept cost is <strong>credited in full</strong> toward permit drawing plans.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {TIERS.map((tier) => (
+            <div
+              key={tier.name}
+              className={`relative rounded-2xl border flex flex-col ${
+                tier.badge === 'Most Popular'
+                  ? 'border-[#E8724B] shadow-xl shadow-orange-100 scale-[1.02]'
+                  : 'border-slate-200 shadow-sm'
+              } bg-white overflow-hidden`}
+            >
+              {tier.badge && (
+                <div
+                  className="py-1.5 text-center text-xs font-bold uppercase tracking-widest text-white"
+                  style={{ backgroundColor: tier.color }}
+                >
+                  {tier.badge}
+                </div>
+              )}
+              <div className="p-6 flex flex-col flex-1">
+                <div className="mb-5">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">{tier.tagline}</p>
+                  <h3 className="text-xl font-bold text-slate-900">{tier.name}</h3>
+                  <p className="text-2xl font-black mt-2" style={{ color: tier.color }}>{tier.price}</p>
+                </div>
+
+                <ul className="space-y-2.5 flex-1 mb-6">
+                  {tier.items.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
+                      <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: tier.color }} />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+
+                <Link href="/concept">
+                  <button
+                    className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all hover:-translate-y-0.5"
+                    style={{ backgroundColor: tier.color }}
+                  >
+                    {tier.cta} <ArrowRight className="inline w-4 h-4 ml-1" />
+                  </button>
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <p className="text-center mt-8 text-sm text-slate-400">
+          <Sparkles className="inline w-4 h-4 mr-1 text-[#E8724B]" />
+          Your concept package cost is credited in full toward permit drawing plans when you're ready to build.
+        </p>
+      </div>
+    </section>
+  )
 }
 
 // ── Service Gallery ────────────────────────────────────────────────────────────
@@ -20,10 +142,11 @@ function ServiceGallery() {
     <section id="services" className="py-24 bg-white scroll-mt-16">
       <div className="mx-auto max-w-7xl px-4">
         <div className="text-center mb-14">
-          <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-3">Build &amp; Renovation Services</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">Every Project, One Platform</h2>
+          <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-3">Project Types</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">Every Project Type, Covered</h2>
           <p className="mt-3 text-slate-500 max-w-xl mx-auto">
-            Kitchen remodels, additions, whole-house renovations, and more — Kealee manages design, permits, and build coordination across the DMV.
+            From kitchen remodels to home additions — get an AI concept package for any project type.
+            Renderings, permit scope, and cost estimates included.
           </p>
         </div>
 
@@ -45,7 +168,6 @@ function ServiceGallery() {
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
-                    {/* Category badge */}
                     <span className="absolute top-3 left-3 rounded-full bg-black/40 backdrop-blur-sm px-2.5 py-0.5 text-[11px] font-semibold text-white capitalize">
                       {service.category}
                     </span>
@@ -54,16 +176,11 @@ function ServiceGallery() {
                   <div className="p-4">
                     <h3 className="text-[15px] font-bold text-slate-900 leading-tight mb-1">{service.label}</h3>
                     <p className="text-xs text-slate-500 line-clamp-2 mb-3">{service.description}</p>
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-slate-900">{service.costRange}</span>
-                        <span className="text-xs text-slate-400 flex items-center gap-1">
-                          View Details <ArrowRight className="w-3 h-3" />
-                        </span>
-                      </div>
-                      {service.timeline && service.timeline !== 'Custom' && service.timeline !== 'Design fee only' && (
-                        <p className="text-[11px] text-slate-400">{service.timeline} · {service.permits > 0 ? `${service.permits} permit${service.permits !== 1 ? 's' : ''}` : 'No permits'}</p>
-                      )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-[#E8724B]">{service.priceDisplay}</span>
+                      <span className="text-xs text-slate-400 flex items-center gap-1">
+                        View Details <ArrowRight className="w-3 h-3" />
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -98,10 +215,10 @@ function ServiceGallery() {
 // ── Process Section ────────────────────────────────────────────────────────────
 
 const STEPS = [
-  { n: 1, icon: '💬', title: 'Choose Your Project', desc: 'Select from 10 renovation and design types' },
+  { n: 1, icon: '💬', title: 'Choose Your Project', desc: 'Select your project type and package tier' },
   { n: 2, icon: '📐', title: 'Tell Us Your Vision', desc: 'Share your budget, scope, location, and goals' },
-  { n: 3, icon: '⚡', title: 'Get Your Concept', desc: 'AI-designed visuals, cost estimate, and permits' },
-  { n: 4, icon: '🚀', title: 'Move Forward', desc: 'Download, share, or hire a vetted contractor' },
+  { n: 3, icon: '⚡', title: 'Get Your Concept', desc: 'AI-designed visuals, cost estimate, and permit scope' },
+  { n: 4, icon: '🚀', title: 'Move Forward', desc: 'Download, share, or credit toward permit drawings' },
 ]
 
 function ProcessSection() {
@@ -114,9 +231,7 @@ function ProcessSection() {
         </div>
 
         <div className="relative">
-          {/* Connecting line — desktop only */}
           <div className="hidden lg:block absolute top-9 left-[12.5%] right-[12.5%] h-0.5 border-t-2 border-dashed border-slate-300 z-0" />
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
             {STEPS.map((step) => (
               <div key={step.n} className="flex flex-col items-center text-center">
@@ -146,24 +261,21 @@ function ProcessSection() {
 
 const FEATURED = [
   {
-    slug: 'kitchen',
-    title: 'Kitchen Remodel',
-    before: 'https://images.unsplash.com/photo-1556909014-0284a50fc0c3?w=700&q=80&auto=format&fit=crop',
-    after: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=700&q=80&auto=format&fit=crop',
+    slug:      'kitchen',
+    title:     'Kitchen Remodel',
+    after:     'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=700&q=80&auto=format&fit=crop',
     highlight: 'Open-concept with quartz island',
   },
   {
-    slug: 'bathroom',
-    title: 'Bathroom Remodel',
-    before: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=700&q=80&auto=format&fit=crop',
-    after: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=700&q=80&auto=format&fit=crop',
+    slug:      'bathroom',
+    title:     'Bathroom Remodel',
+    after:     'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=700&q=80&auto=format&fit=crop',
     highlight: 'Spa-level primary suite',
   },
   {
-    slug: 'addition',
-    title: 'Home Addition',
-    before: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=700&q=80&auto=format&fit=crop',
-    after: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=700&q=80&auto=format&fit=crop',
+    slug:      'addition',
+    title:     'Home Addition',
+    after:     'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=700&q=80&auto=format&fit=crop',
     highlight: 'Primary suite + outdoor living',
   },
 ]
@@ -174,8 +286,8 @@ function FeaturedSection() {
       <div className="mx-auto max-w-6xl px-4">
         <div className="text-center mb-14">
           <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-3">Real Results</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">See Transformations in Action</h2>
-          <p className="mt-3 text-slate-500">AI-generated before/after concepts — your home, your vision.</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">See Concepts in Action</h2>
+          <p className="mt-3 text-slate-500">AI-generated concepts — your home, your vision.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -189,13 +301,11 @@ function FeaturedSection() {
                   className="object-cover opacity-80 group-hover:opacity-60 group-hover:scale-105 transition-all duration-500"
                   sizes="(max-width: 768px) 100vw, 33vw"
                 />
-                {/* Bottom overlay */}
                 <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-5">
                   <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-1">Concept</p>
                   <h3 className="text-lg font-bold text-white leading-tight">{item.title}</h3>
                   <p className="text-sm text-slate-300 mt-1">{item.highlight}</p>
                 </div>
-                {/* View video badge */}
                 <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                   <span className="text-xs font-semibold text-white">View Concept</span>
                   <ArrowRight className="w-3 h-3 text-white" />
@@ -213,22 +323,22 @@ function FeaturedSection() {
 
 const TESTIMONIALS = [
   {
-    quote: "Working with Kealee transformed what felt like an overwhelming renovation into a clear, exciting project. The AI concept was spot-on and saved us weeks of back-and-forth with contractors.",
-    author: 'Sarah M.',
-    project: 'Kitchen Remodel — Bethesda, MD',
-    stars: 5,
+    quote:   "Working with Kealee transformed what felt like an overwhelming renovation into a clear, exciting project. The AI concept was spot-on and saved us weeks of back-and-forth with contractors.",
+    author:  'Sarah M.',
+    project: 'Kitchen Remodel — Austin, TX',
+    stars:   5,
   },
   {
-    quote: "I got a permit roadmap I actually understood in 24 hours. My contractor couldn't believe I came prepared with zoning data and a full cost breakdown. Kealee made me look like a pro.",
-    author: 'Marcus T.',
-    project: 'Home Addition — Arlington, VA',
-    stars: 5,
+    quote:   "I got a permit roadmap I actually understood in days. My contractor couldn't believe I came prepared with zoning data and a full cost breakdown. Kealee made me look like a pro.",
+    author:  'Marcus T.',
+    project: 'Home Addition — Round Rock, TX',
+    stars:   5,
   },
   {
-    quote: "The before/after concept video was incredible. I showed it to my HOA and got approval on the first try. The whole process — from intake to delivery — took less than a week.",
-    author: 'Jennifer L.',
-    project: 'Exterior Facade — Washington, DC',
-    stars: 5,
+    quote:   "The before/after concept was incredible. I showed it to my HOA and got approval on the first try. The whole process — from intake to delivery — was seamless.",
+    author:  'Jennifer L.',
+    project: 'Exterior Facade — Cedar Park, TX',
+    stars:   5,
   },
 ]
 
@@ -243,11 +353,7 @@ function Testimonials() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {TESTIMONIALS.map((t, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 border-l-4 border-l-[#E8724B]"
-            >
-              {/* Stars */}
+            <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 border-l-4 border-l-[#E8724B]">
               <div className="flex gap-0.5 mb-4">
                 {Array.from({ length: t.stars }).map((_, j) => (
                   <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" />
@@ -269,10 +375,10 @@ function Testimonials() {
 // ── Value Props ────────────────────────────────────────────────────────────────
 
 const VALUE_PROPS = [
-  { icon: '⚡', title: 'Fast Delivery', desc: 'Concepts in 2–6 days, not months' },
-  { icon: '🤖', title: 'AI-Powered', desc: 'Photorealistic renders + cost data' },
-  { icon: '📋', title: 'Permit-Ready', desc: 'Jurisdiction analysis included' },
-  { icon: '💰', title: 'Transparent Pricing', desc: 'From $99 — no surprises' },
+  { icon: '⚡', title: 'Fast Delivery',        desc: 'Concepts in 2–6 days, not months' },
+  { icon: '🤖', title: 'AI-Powered',           desc: 'Photorealistic renders + cost data' },
+  { icon: '📋', title: 'Permit-Ready',         desc: 'Jurisdiction analysis included' },
+  { icon: '💰', title: 'Transparent Pricing',  desc: 'From $99 — no surprises' },
 ]
 
 function ValueProps() {
@@ -300,25 +406,25 @@ function FinalCTA() {
     <section className="py-24 bg-gradient-to-r from-[#E8724B] to-[#D45C33]">
       <div className="mx-auto max-w-2xl px-4 text-center">
         <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-          Ready to Transform Your Home?
+          Ready to See Your Home Transformed?
         </h2>
         <p className="text-orange-100 text-lg mb-10">
-          Get a professional AI concept with video, cost estimate, and permit roadmap — in days.
+          Get a professional AI concept with renderings, cost estimate, and permit scope — in days.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/concept">
             <button className="bg-white text-[#E8724B] hover:bg-orange-50 font-bold text-base px-8 py-4 rounded-xl shadow-lg transition-all duration-200 hover:-translate-y-0.5">
-              Start Now
+              Start My Concept
             </button>
           </Link>
-          <Link href="/gallery">
+          <Link href="#services">
             <button className="border-2 border-white/50 hover:border-white text-white font-semibold text-base px-8 py-4 rounded-xl transition-all duration-200">
-              Browse All Services
+              Browse Project Types
             </button>
           </Link>
         </div>
         <div className="mt-8 flex justify-center gap-6 flex-wrap">
-          {['No commitment required', 'Multiple service types', 'Delivered in days'].map(item => (
+          {['No commitment required', 'Credited toward permit drawings', 'Delivered in days'].map(item => (
             <span key={item} className="flex items-center gap-1.5 text-sm text-orange-100">
               <CheckCircle2 className="w-4 h-4 text-white" /> {item}
             </span>
@@ -336,6 +442,7 @@ export default function HomePage() {
     <div className="min-h-screen">
       <HomeHero />
       <ValueProps />
+      <ConceptTiers />
       <ServiceGallery />
       <ProcessSection />
       <FeaturedSection />
