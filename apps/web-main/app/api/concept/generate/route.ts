@@ -133,6 +133,19 @@ function getRenderUrls(projectPath: string, tier: number): string[] {
   return stubs.slice(0, count)
 }
 
+function permitGuidance(permitRequired: 'always' | 'sometimes' | 'rarely' | undefined): string {
+  if (permitRequired === 'always') {
+    return `PERMIT RULE (from Kealee product catalog): This project type ALWAYS requires a permit in the DMV region. You MUST set "requiresPermit": true in permitScope regardless of scope details. Identify the specific permit types, realistic fees, and processing days for the jurisdiction.`
+  }
+  if (permitRequired === 'sometimes') {
+    return `PERMIT RULE (from Kealee product catalog): This project type SOMETIMES requires a permit depending on scope (structural changes, electrical panel work, plumbing rough-in, HVAC ductwork, decks over 30", etc.). Assess the described scope and set "requiresPermit" accordingly.`
+  }
+  if (permitRequired === 'rarely') {
+    return `PERMIT RULE (from Kealee product catalog): This project type RARELY requires a permit. Only set "requiresPermit": true if the described scope explicitly includes something permit-triggering (e.g. irrigation system in a jurisdiction that requires it, grading over regulated thresholds).`
+  }
+  return `PERMIT RULE: Assess whether a permit is required based on the described scope and DMV jurisdiction norms.`
+}
+
 function buildConceptPrompt(intake: Record<string, unknown>, projectPath: string): string {
   const deliverable = SERVICE_DELIVERABLES[projectPath]
   const formData = (intake.form_data as Record<string, unknown>) ?? {}
@@ -151,6 +164,8 @@ Project Details:
 
 What this service includes:
 ${deliverable?.includes?.map(i => `- ${i}`).join('\n') ?? '- Concept package'}
+
+${permitGuidance(deliverable?.permitRequired)}
 
 Generate a comprehensive concept package. Respond ONLY with valid JSON in this exact shape:
 {
@@ -278,8 +293,8 @@ export async function POST(req: NextRequest) {
         includes: SERVICE_DELIVERABLES[projectPath]?.includes ?? [],
         renderUrls: getRenderUrls(projectPath, tier),
         permitScope: {
-          requiresPermit: false,
-          permitTypes: [],
+          requiresPermit: deliverable?.permitRequired === 'always',
+          permitTypes: deliverable?.permitRequired === 'always' ? ['Building Permit'] : [],
           estimatedPermitFee: 0,
           estimatedProcessingDays: 0,
           requiresPE: false,
@@ -287,7 +302,7 @@ export async function POST(req: NextRequest) {
         },
         zoningNotes: 'Zoning analysis pending — confirm with local planning department.',
         buildabilityFlag: 'feasible' as const,
-        readinessScore: 70,
+        readinessScore: deliverable?.permitRequired === 'always' ? 55 : 70,
       }
     } else {
       conceptOutput = JSON.parse(jsonMatch[0]) as ConceptOutput
@@ -297,6 +312,31 @@ export async function POST(req: NextRequest) {
       }
       // Populate render stubs (no external image API needed)
       conceptOutput.renderUrls = getRenderUrls(projectPath, tier)
+      // Enforce catalog permit rule — override AI if it contradicts the product definition
+      if (deliverable?.permitRequired === 'always' && !conceptOutput.permitScope?.requiresPermit) {
+        if (!conceptOutput.permitScope) {
+          conceptOutput.permitScope = {
+            requiresPermit: true,
+            permitTypes: ['Building Permit'],
+            estimatedPermitFee: 0,
+            estimatedProcessingDays: 0,
+            requiresPE: false,
+            notes: 'A permit is required for this project type in the DMV region.',
+          }
+        } else {
+          conceptOutput.permitScope.requiresPermit = true
+        }
+      }
+      if (deliverable?.permitRequired === 'rarely' && conceptOutput.permitScope?.requiresPermit === undefined) {
+        conceptOutput.permitScope = conceptOutput.permitScope ?? {
+          requiresPermit: false,
+          permitTypes: [],
+          estimatedPermitFee: 0,
+          estimatedProcessingDays: 0,
+          requiresPE: false,
+          notes: 'Permit rarely required for this project type.',
+        }
+      }
     }
 
     // 3. Update intake record

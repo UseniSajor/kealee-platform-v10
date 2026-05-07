@@ -139,6 +139,7 @@ export default function ConceptDeliverablePage() {
   const [loadStatus, setLoadStatus] = useState<'loading' | 'polling' | 'ready' | 'error'>('loading')
   const [pollCount,  setPollCount]  = useState(0)
   const [showFullBOM, setShowFullBOM] = useState(false)
+  const [catalogPermitRequired, setCatalogPermitRequired] = useState<'always' | 'sometimes' | 'rarely' | null>(null)
 
   const fetchData = useCallback(async (): Promise<boolean> => {
     try {
@@ -152,6 +153,10 @@ export default function ConceptDeliverablePage() {
 
       const formData = (intake.form_data as Record<string, unknown>) ?? {}
       if (!formData.conceptOutput || intake.status !== 'concept_ready') return false
+
+      // Persist catalog-level permit requirement (set at Stripe purchase time)
+      const pr = formData.permitRequired as 'always' | 'sometimes' | 'rarely' | undefined
+      setCatalogPermitRequired(pr ?? null)
 
       const co = formData.conceptOutput as Record<string, unknown>
       const projectPath = (intake.project_path as string) ?? 'default'
@@ -612,6 +617,38 @@ export default function ConceptDeliverablePage() {
                   </div>
                 </div>
               )}
+            </div>
+          </section>
+        )}
+
+        {/* ── Permit Required Banner ───────────────────────────────────────── */}
+        {catalogPermitRequired === 'always' && (
+          <section className="rounded-2xl overflow-hidden"
+            style={{ border: '1.5px solid #6B46C1', backgroundColor: '#FAF5FF' }}>
+            <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                style={{ backgroundColor: '#6B46C115' }}>
+                <ShieldCheck className="h-5 w-5" style={{ color: '#6B46C1' }} />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold mb-0.5" style={{ color: '#44337A' }}>
+                  Required Action — Permit Before Construction
+                </p>
+                <p className="text-sm text-purple-700">
+                  This project type always requires a permit in the DMV region. You cannot begin
+                  construction without permit approval. Start your permit package now to avoid delays.
+                </p>
+              </div>
+              <a href="https://kealee.com/intake/permit_path_only"
+                className="shrink-0 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                style={{ backgroundColor: '#6B46C1' }}>
+                Start Permit Package →
+              </a>
+            </div>
+            <div className="px-6 pb-4 flex items-center gap-2">
+              <p className="text-xs text-purple-600 font-medium">From $799</p>
+              <span className="text-purple-300">·</span>
+              <p className="text-xs text-purple-600">Permit drawings + jurisdiction submission included</p>
             </div>
           </section>
         )}

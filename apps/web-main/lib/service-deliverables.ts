@@ -6,6 +6,8 @@ export interface ServiceDeliverable {
   category: ServiceCategory
   agentType: AgentType
   generatesConcept: boolean
+  /** Mirrors products.ts permitRequired. Used by concept generator + webhook. */
+  permitRequired?: 'always' | 'sometimes' | 'rarely'
   includes: string[]
   deliveryDays: string
   nextStep: { label: string; href: string }
@@ -17,6 +19,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'design',
     agentType: 'design',
     generatesConcept: true,
+    permitRequired: 'sometimes',
     includes: [
       'Floor plan / layout direction',
       '3–5 concept renderings (before/after views)',
@@ -37,6 +40,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'design',
     agentType: 'design',
     generatesConcept: true,
+    permitRequired: 'sometimes',
     includes: [
       'Floor plan / layout direction',
       '3–5 concept renderings (before/after views)',
@@ -57,6 +61,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'design',
     agentType: 'design',
     generatesConcept: true,
+    permitRequired: 'sometimes',
     includes: [
       'Floor plan / layout direction',
       '3–5 exterior renderings (front, side, rear views)',
@@ -77,6 +82,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'design',
     agentType: 'design',
     generatesConcept: true,
+    permitRequired: 'always',
     includes: [
       'Floor plan / layout direction',
       'Interior concept visuals (3–5 renders)',
@@ -96,6 +102,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'design',
     agentType: 'design',
     generatesConcept: true,
+    permitRequired: 'always',
     includes: [
       'Floor plan / layout direction',
       'Interior concept visuals (3–5 renders)',
@@ -115,6 +122,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'design',
     agentType: 'design',
     generatesConcept: true,
+    permitRequired: 'always',
     includes: [
       'Floor plan / layout direction',
       'Full-home concept renderings',
@@ -133,6 +141,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'design',
     agentType: 'design',
     generatesConcept: true,
+    permitRequired: 'always',
     includes: [
       'Floor plan / layout direction',
       'Full-home concept renderings',
@@ -152,6 +161,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'design',
     agentType: 'design',
     generatesConcept: true,
+    permitRequired: 'always',
     includes: [
       'Floor plan / layout direction',
       'Addition concept renderings (interior + exterior)',
@@ -171,6 +181,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'design',
     agentType: 'design',
     generatesConcept: true,
+    permitRequired: 'rarely',
     includes: [
       'Floor plan / layout direction',
       'Garden layout concept rendering',
@@ -190,6 +201,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'design',
     agentType: 'design',
     generatesConcept: true,
+    permitRequired: 'sometimes',
     includes: [
       'Floor plan / layout direction',
       'Site capture documentation',
@@ -207,6 +219,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'design',
     agentType: 'design',
     generatesConcept: true,
+    permitRequired: 'always',
     includes: [
       'Floor plan / layout direction',
       'Full concept design package',
@@ -227,6 +240,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'development',
     agentType: 'land',
     generatesConcept: true,
+    permitRequired: 'always',
     includes: [
       '3 development concept options',
       'Entitlement brief (zoning + use analysis)',
@@ -242,6 +256,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'development',
     agentType: 'land',
     generatesConcept: true,
+    permitRequired: 'always',
     includes: [
       'Single-lot development concept',
       'Zoning analysis & setback review',
@@ -257,6 +272,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'development',
     agentType: 'land',
     generatesConcept: true,
+    permitRequired: 'always',
     includes: [
       'Subdivision concept layout',
       'Lot yield analysis',
@@ -272,6 +288,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'development',
     agentType: 'land',
     generatesConcept: true,
+    permitRequired: 'always',
     includes: [
       'Townhome layout concept',
       'HOA structure considerations',
@@ -287,6 +304,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'development',
     agentType: 'land',
     generatesConcept: true,
+    permitRequired: 'always',
     includes: [
       'Full feasibility analysis report',
       'ROI projections (3 scenarios)',
@@ -303,6 +321,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'development',
     agentType: 'land',
     generatesConcept: true,
+    permitRequired: 'always',
     includes: [
       'Mixed-use concept renderings',
       'Use matrix (residential + commercial split)',
@@ -318,6 +337,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'development',
     agentType: 'land',
     generatesConcept: true,
+    permitRequired: 'always',
     includes: [
       'Commercial office concept renderings',
       'Code compliance brief (ADA, egress, occupancy)',
@@ -333,6 +353,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'development',
     agentType: 'land',
     generatesConcept: true,
+    permitRequired: 'always',
     includes: [
       'Multi-unit concept renderings',
       'Unit mix analysis (studio / 1BR / 2BR)',
@@ -394,6 +415,7 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     category: 'design',
     agentType: 'design',
     generatesConcept: true,
+    permitRequired: 'always',
     includes: [
       'Floor plan / layout direction',
       'AI concept renderings (3–5 views)',

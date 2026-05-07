@@ -116,10 +116,25 @@ export async function POST(req: NextRequest) {
 
   const supabase = getSupabaseAdmin()
 
-  // 1. Mark intake as paid
+  // 1. Resolve deliverable + fetch existing form_data (needed to merge permitRequired)
+  const deliverable = SERVICE_DELIVERABLES[projectPath]
+
+  const { data: currentIntake } = await supabase
+    .from('public_intake_leads')
+    .select('form_data')
+    .eq('id', intakeId)
+    .single()
+  const existingFormData = (currentIntake?.form_data as Record<string, unknown>) ?? {}
+
+  // Merge catalog permit requirement so concept generator + portal can read it
+  const mergedFormData = deliverable?.permitRequired != null
+    ? { ...existingFormData, permitRequired: deliverable.permitRequired }
+    : existingFormData
+
+  // 2. Mark intake as paid and persist permitRequired in form_data
   const { error: updateErr } = await supabase
     .from('public_intake_leads')
-    .update({ status: 'paid' })
+    .update({ status: 'paid', form_data: mergedFormData })
     .eq('id', intakeId)
     .eq('status', 'new') // Only update if still new (idempotency)
 
@@ -128,8 +143,7 @@ export async function POST(req: NextRequest) {
     // Don't return error — Stripe would retry. Log and continue.
   }
 
-  // 2. Trigger concept generation for design/development services (fire-and-forget)
-  const deliverable = SERVICE_DELIVERABLES[projectPath]
+  // 3. Trigger concept generation for design/development services (fire-and-forget)
   if (deliverable?.generatesConcept) {
     const baseUrl = req.nextUrl.origin
     // Non-blocking — Stripe gets 200 immediately
