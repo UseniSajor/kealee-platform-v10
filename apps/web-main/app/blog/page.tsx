@@ -13,6 +13,52 @@ const fadeInUp = {
 }
 
 const BLOG_POSTS = [
+  // ── New SEO articles — Permits, Cost Guides, Jurisdictions ──────────────
+  {
+    slug: 'deck-permit-pg-county',
+    title: "Deck Permit in Prince George's County, MD — Complete 2026 Guide",
+    excerpt: "Everything homeowners need to know about getting a deck permit in PG County — requirements, costs, timelines, and how to avoid common rejection reasons.",
+    author: 'Tim Chamberlain',
+    date: '2026-05-01',
+    readTime: '8 min',
+    category: 'Permits',
+    jurisdiction: "Prince George's County",
+    gradient: 'from-teal to-teal-dark',
+  },
+  {
+    slug: 'home-addition-cost-dmv',
+    title: 'Home Addition Cost in the DMV — 2026 Guide',
+    excerpt: 'What does a home addition cost in DC, Maryland, and Virginia? Complete cost breakdown by addition type, jurisdiction, and quality tier.',
+    author: 'Tim Chamberlain',
+    date: '2026-05-01',
+    readTime: '9 min',
+    category: 'Cost Guides',
+    jurisdiction: 'DMV',
+    gradient: 'from-builder-orange to-builder-orange-dark',
+  },
+  {
+    slug: 'dc-dcra-permit-guide',
+    title: 'DC Building Permit Guide 2026 — What Homeowners Need to Know',
+    excerpt: 'Complete guide to DC building permits through the DLCP (formerly DCRA) — requirements, fees, historic preservation, and permit timelines.',
+    author: 'Tim Chamberlain',
+    date: '2026-05-01',
+    readTime: '10 min',
+    category: 'Permits',
+    jurisdiction: 'Washington DC',
+    gradient: 'from-navy to-navy-dark',
+  },
+  {
+    slug: 'basement-finish-northern-virginia',
+    title: 'Finishing a Basement in Northern Virginia — Permits, Costs & Timeline 2026',
+    excerpt: 'Permits, egress requirements, costs ($25k–$130k+), and inspection requirements for basement finishing projects in Fairfax County, Arlington, and Northern VA.',
+    author: 'Tim Chamberlain',
+    date: '2026-05-01',
+    readTime: '9 min',
+    category: 'Cost Guides',
+    jurisdiction: 'Northern Virginia',
+    gradient: 'from-green-600 to-green-800',
+  },
+  // ── Existing articles ───────────────────────────────────────────────────
   {
     slug: 'digital-twins-construction',
     title: 'How Digital Twins Are Transforming Construction Project Management',
@@ -106,18 +152,33 @@ const BLOG_POSTS = [
 ]
 
 const categoryColors: Record<string, { bg: string; text: string }> = {
-  Technology: { bg: 'rgba(42,191,191,0.1)', text: '#2ABFBF' },
-  Finance: { bg: 'rgba(56,161,105,0.1)', text: '#38A169' },
-  AI: { bg: 'rgba(232,121,58,0.1)', text: '#E8793A' },
-  Guides: { bg: 'rgba(26,43,74,0.1)', text: '#1A2B4A' },
-  Policy: { bg: 'rgba(42,191,191,0.1)', text: '#2ABFBF' },
-  Land: { bg: 'rgba(56,161,105,0.1)', text: '#38A169' },
-  Industry: { bg: 'rgba(26,43,74,0.1)', text: '#1A2B4A' },
+  Technology:  { bg: 'rgba(42,191,191,0.1)', text: '#2ABFBF' },
+  Finance:     { bg: 'rgba(56,161,105,0.1)', text: '#38A169' },
+  AI:          { bg: 'rgba(232,121,58,0.1)', text: '#E8793A' },
+  Guides:      { bg: 'rgba(26,43,74,0.1)',   text: '#1A2B4A' },
+  Policy:      { bg: 'rgba(42,191,191,0.1)', text: '#2ABFBF' },
+  Land:        { bg: 'rgba(56,161,105,0.1)', text: '#38A169' },
+  Industry:    { bg: 'rgba(26,43,74,0.1)',   text: '#1A2B4A' },
+  Permits:     { bg: 'rgba(107,70,193,0.1)', text: '#6B46C1' },
+  'Cost Guides': { bg: 'rgba(232,121,58,0.1)', text: '#E8793A' },
 }
 
+const FILTER_TABS = ['All', 'Permits', 'Cost Guides', 'Jurisdictions']
+
 export default function BlogPage() {
-  const [email, setEmail] = useState('')
+  const [email, setEmail]       = useState('')
   const [subStatus, setSubStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [activeFilter, setActiveFilter] = useState('All')
+
+  const filteredPosts = activeFilter === 'All'
+    ? BLOG_POSTS
+    : activeFilter === 'Permits'
+      ? BLOG_POSTS.filter(p => p.category === 'Permits')
+      : activeFilter === 'Cost Guides'
+        ? BLOG_POSTS.filter(p => p.category === 'Cost Guides')
+        : activeFilter === 'Jurisdictions'
+          ? BLOG_POSTS.filter(p => 'jurisdiction' in p)
+          : BLOG_POSTS
 
   async function handleSubscribe(e: React.FormEvent) {
     e.preventDefault()
@@ -206,11 +267,32 @@ export default function BlogPage() {
         </div>
       </section>
 
+      {/* Category filter */}
+      <section className="pb-4">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap gap-2">
+            {FILTER_TABS.map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveFilter(tab)}
+                className="rounded-full px-4 py-1.5 text-sm font-medium transition-all"
+                style={{
+                  backgroundColor: activeFilter === tab ? '#1A2B4A' : 'rgba(26,43,74,0.07)',
+                  color:           activeFilter === tab ? '#fff' : '#1A2B4A',
+                }}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* All posts */}
-      <section className="py-12 pb-20">
+      <section className="py-8 pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {BLOG_POSTS.slice(1).map((post, i) => {
+            {filteredPosts.map((post, i) => {
               const colors = categoryColors[post.category] || categoryColors.Industry
               return (
                 <motion.article
@@ -228,20 +310,27 @@ export default function BlogPage() {
                     </div>
                   </div>
                   <div className="p-5">
-                    <div className="mb-3 flex items-center gap-2">
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
                       <span
                         className="rounded-full px-2.5 py-0.5 text-xs font-medium"
                         style={{ backgroundColor: colors.bg, color: colors.text }}
                       >
                         {post.category}
                       </span>
+                      {'jurisdiction' in post && (
+                        <span className="rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: 'rgba(107,70,193,0.08)', color: '#6B46C1' }}>
+                          {(post as any).jurisdiction}
+                        </span>
+                      )}
                       <span className="flex items-center gap-1 text-xs text-gray-400">
                         <Clock className="h-3 w-3" />{post.readTime}
                       </span>
                     </div>
-                    <h2 className="text-lg font-bold font-display transition-colors" style={{ color: '#1A2B4A' }}>
-                      {post.title}
-                    </h2>
+                    <Link href={`/blog/${post.slug}`}>
+                      <h2 className="text-lg font-bold font-display transition-colors hover:text-teal-600" style={{ color: '#1A2B4A' }}>
+                        {post.title}
+                      </h2>
+                    </Link>
                     <p className="mt-2 line-clamp-2 text-sm text-gray-600">{post.excerpt}</p>
                     <div className="mt-4 flex items-center justify-between">
                       <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -251,9 +340,9 @@ export default function BlogPage() {
                         <Calendar className="h-3 w-3" />
                         <span>{new Date(post.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                       </div>
-                      <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: '#E8793A' }}>
+                      <Link href={`/blog/${post.slug}`} className="flex items-center gap-1 text-xs font-semibold" style={{ color: '#E8793A' }}>
                         Read <ArrowRight className="h-3 w-3" />
-                      </span>
+                      </Link>
                     </div>
                   </div>
                 </motion.article>
