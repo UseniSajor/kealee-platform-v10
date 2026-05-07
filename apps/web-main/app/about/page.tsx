@@ -126,7 +126,7 @@ export default function AboutPage() {
                   for everyone.
                 </p>
                 <p>
-                  Today, Kealee serves the DC-Baltimore corridor and beyond with 7 integrated operating systems,
+                  Today, Kealee serves homeowners and developers nationwide with 7 integrated operating systems,
                   13 AI assistants, and dedicated portals for every role in construction — from the homeowner
                   renovating a kitchen to the developer managing a $50M multi-family project.
                 </p>

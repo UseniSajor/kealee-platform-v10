@@ -13,16 +13,6 @@ import { SERVICE_PRICING, PERMIT_SUBMISSION_MULTIPLIERS } from '@kealee/shared/p
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 
-const JURISDICTIONS = [
-  { code: 'dc_dob',                  abbr: 'DC',   name: 'Washington DC',     agency: 'Dept. of Buildings',              color: 'bg-red-100 text-red-700' },
-  { code: 'pg_county_dps',           abbr: 'PG',   name: "Prince George's Co.", agency: 'Dept. of Permitting Services',  color: 'bg-blue-100 text-blue-700' },
-  { code: 'montgomery_county_deid',  abbr: 'MoCo', name: 'Montgomery County',  agency: 'Dept. of Environmental Protection', color: 'bg-green-100 text-green-700' },
-  { code: 'arlington_county_pzm',    abbr: 'ARL',  name: 'Arlington County',   agency: 'Planning & Zoning Mgmt',         color: 'bg-purple-100 text-purple-700' },
-  { code: 'alexandria_dna',          abbr: 'ALX',  name: 'Alexandria City',    agency: 'Dept. of Neighborhood Assets',   color: 'bg-amber-100 text-amber-700' },
-  { code: 'fairfax_county_zea',      abbr: 'FFX',  name: 'Fairfax County',     agency: 'Zoning Evaluation Agency',       color: 'bg-sky-100 text-sky-700' },
-  { code: 'baltimore_dop',           abbr: 'BAL',  name: 'Baltimore City',     agency: 'Dept. of Permits',               color: 'bg-orange-100 text-orange-700' },
-]
-
 const PROJECT_TYPES = [
   { value: 'renovation',       label: 'Renovation / Remodel' },
   { value: 'addition',         label: 'Home Addition' },
@@ -148,7 +138,7 @@ export default function PermitsPage() {
   const router = useRouter()
   const [step, setStep] = useState<'hero' | 'select' | 'intake' | 'checkout'>('hero')
   const [formData, setFormData] = useState({
-    jurisdictionCode: '',
+    zipCode: '',
     tierCode: '',
     projectType: '',
     projectAddress: '',
@@ -163,7 +153,6 @@ export default function PermitsPage() {
   const [error, setError] = useState('')
 
   const tiers = buildTiers()
-  const selectedJurisdiction = JURISDICTIONS.find(j => j.code === formData.jurisdictionCode)
   const selectedTier = tiers.find(t => t.code === formData.tierCode)
 
   const finalPrice = selectedTier
@@ -196,7 +185,7 @@ export default function PermitsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          jurisdictionCode: formData.jurisdictionCode,
+          zipCode: formData.zipCode,
           projectType: formData.projectType,
           projectAddress: formData.projectAddress,
           clientName: formData.clientName,
@@ -235,7 +224,7 @@ export default function PermitsPage() {
           <div className="mx-auto max-w-5xl relative z-10">
             <div className="flex items-center gap-2 mb-5">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/20 border border-green-500/30 px-3 py-1 text-xs font-bold text-green-400 uppercase tracking-widest">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" /> DMV Permit Specialists
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" /> Licensed Permit Specialists
               </span>
             </div>
 
@@ -244,8 +233,8 @@ export default function PermitsPage() {
               <span className="text-green-400">to permit delays.</span>
             </h1>
             <p className="text-slate-300 text-lg max-w-2xl mb-6 leading-relaxed">
-              Kealee handles every form, every agency, every comment cycle — across DC, Maryland, and Virginia.
-              We know every jurisdiction. We file, track, and get you approved.
+              Kealee handles every form, every agency, every comment cycle — nationwide.
+              We know permit requirements. We file, track, and get you approved.
             </p>
             <div className="flex items-center gap-2 mb-10">
               <div className="flex -space-x-1.5">
@@ -267,7 +256,7 @@ export default function PermitsPage() {
                 { value: '500+',  label: 'Permits filed' },
                 { value: '5–7',   label: 'Day turnaround' },
                 { value: '98%',   label: 'First-pass approval' },
-                { value: '7',     label: 'Jurisdictions' },
+                { value: '50+',   label: 'States served' },
               ].map(({ value, label }) => (
                 <div key={label} className="text-center">
                   <p className="text-3xl font-black text-white">{value}</p>
@@ -287,19 +276,6 @@ export default function PermitsPage() {
                 How it works
               </a>
             </div>
-          </div>
-        </div>
-
-        {/* Jurisdiction strip */}
-        <div className="bg-slate-900 py-5 px-4 overflow-x-auto">
-          <div className="mx-auto max-w-5xl flex items-center gap-3 min-w-max">
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mr-2 whitespace-nowrap">We file in:</p>
-            {JURISDICTIONS.map(j => (
-              <span key={j.code} className="flex items-center gap-2 rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 whitespace-nowrap">
-                <span className={`w-6 h-6 rounded-full text-[11px] font-black flex items-center justify-center ${j.color}`}>{j.abbr.slice(0, 2)}</span>
-                <span className="text-xs text-slate-300 font-medium">{j.name}</span>
-              </span>
-            ))}
           </div>
         </div>
 
@@ -412,7 +388,7 @@ export default function PermitsPage() {
             </div>
             <div className="grid md:grid-cols-3 gap-8">
               {[
-                { n: '01', icon: FileCheck, title: 'Choose Your Service', body: 'Select your jurisdiction and permit package. Self-submit, guided, or fully managed — your choice.' },
+                { n: '01', icon: FileCheck, title: 'Choose Your Service', body: 'Enter your ZIP code and select a permit package. Self-submit, guided, or fully managed — your choice.' },
                 { n: '02', icon: Users,     title: 'We Prepare Everything', body: 'Our specialists assemble your complete application, drawings, and supporting documents within 5–7 days.' },
                 { n: '03', icon: TrendingUp, title: 'Filed & Tracked',     body: 'We submit, monitor status, and respond to agency comments. You get real-time updates until approval.' },
               ].map(({ n, icon: Icon, title, body }) => (
@@ -508,7 +484,7 @@ export default function PermitsPage() {
         <div className="py-16 px-4 bg-white border-t border-slate-100">
           <div className="mx-auto max-w-5xl grid md:grid-cols-3 gap-8">
             {[
-              { icon: Shield,     title: 'Licensed Professionals',   body: 'Every application reviewed and certified by licensed permit expediters with 10+ years DMV experience.' },
+              { icon: Shield,     title: 'Licensed Professionals',   body: 'Every application reviewed and certified by licensed permit expediters with 10+ years of experience.' },
               { icon: Clock,      title: '5–7 Day Turnaround',       body: 'Complete applications assembled in 5–7 business days. Expedited rush service available for urgent projects.' },
               { icon: Phone,      title: 'Agency Coordination',      body: 'We handle all agency correspondence, RFI responses, and inspection coordination on your behalf.' },
             ].map(({ icon: Icon, title, body }) => (
@@ -535,13 +511,19 @@ export default function PermitsPage() {
           >
             Start My Permit <ArrowRight className="w-5 h-5" />
           </button>
+          <p className="mt-6 text-xs text-slate-500">
+            Based in DC, Maryland, or Virginia?{' '}
+            <Link href="/permits/dmv" className="text-green-400 hover:text-green-300 underline underline-offset-2">
+              View DMV permit specialists →
+            </Link>
+          </p>
         </div>
       </div>
     )
   }
 
   // ── FORM FLOW ───────────────────────────────────────────────────────────────
-  const STEP_LABELS = ['Jurisdiction & Package', 'Project Details', 'Review & Pay']
+  const STEP_LABELS = ['Location & Package', 'Project Details', 'Review & Pay']
   const stepIndex   = step === 'select' ? 0 : step === 'intake' ? 1 : 2
 
   return (
@@ -594,38 +576,23 @@ export default function PermitsPage() {
         {step === 'select' && (
           <div className="space-y-8">
 
-            {/* Jurisdiction */}
+            {/* ZIP Code */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-              <h2 className="font-bold text-slate-900 mb-1">Select your jurisdiction</h2>
-              <p className="text-sm text-slate-500 mb-5">Where is the project located?</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {JURISDICTIONS.map(j => {
-                  const sel = formData.jurisdictionCode === j.code
-                  return (
-                    <button
-                      key={j.code}
-                      type="button"
-                      onClick={() => setFormData(f => ({ ...f, jurisdictionCode: j.code }))}
-                      className={`flex items-center gap-4 rounded-xl border-2 px-4 py-3.5 text-left transition-all ${
-                        sel ? 'border-green-500 bg-green-50 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
-                      }`}
-                    >
-                      <div className={`w-10 h-10 rounded-full text-sm font-black flex items-center justify-center shrink-0 ${j.color}`}>
-                        {j.abbr.length > 2 ? j.abbr.slice(0,2) : j.abbr}
-                      </div>
-                      <div className="min-w-0">
-                        <p className={`text-sm font-bold ${sel ? 'text-green-700' : 'text-slate-800'}`}>{j.name}</p>
-                        <p className="text-xs text-slate-400 truncate">{j.agency}</p>
-                      </div>
-                      {sel && <Check className="w-4 h-4 text-green-500 ml-auto shrink-0" strokeWidth={3} />}
-                    </button>
-                  )
-                })}
+              <h2 className="font-bold text-slate-900 mb-1">Project location</h2>
+              <p className="text-sm text-slate-500 mb-5">Enter the ZIP code where the project is located.</p>
+              <div className="max-w-xs">
+                <FieldLabel>ZIP Code *</FieldLabel>
+                <Input
+                  placeholder="e.g. 78701"
+                  maxLength={5}
+                  value={formData.zipCode}
+                  onChange={e => setFormData(f => ({ ...f, zipCode: e.target.value.replace(/\D/g, '') }))}
+                />
               </div>
             </div>
 
             {/* Tier selection */}
-            {formData.jurisdictionCode && (
+            {formData.zipCode.length === 5 && (
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                 <h2 className="font-bold text-slate-900 mb-1">Choose your service package</h2>
                 <p className="text-sm text-slate-500 mb-5">Select the level of support you need.</p>
@@ -672,7 +639,7 @@ export default function PermitsPage() {
               </div>
             )}
 
-            {formData.jurisdictionCode && formData.tierCode && (
+            {formData.zipCode.length === 5 && formData.tierCode && (
               <button
                 type="button"
                 onClick={() => setStep('intake')}
@@ -688,41 +655,27 @@ export default function PermitsPage() {
         {step === 'intake' && (
           <form onSubmit={e => {
             e.preventDefault()
-            if (!formData.jurisdictionCode) {
-              setError('Please select a jurisdiction before continuing.')
+            if (!formData.zipCode || formData.zipCode.length < 5) {
+              setError('Please enter a valid 5-digit ZIP code before continuing.')
               return
             }
             setError('')
             setStep('checkout')
           }} className="space-y-6">
 
-            {/* Jurisdiction */}
+            {/* ZIP Code */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-              <h2 className="font-bold text-slate-900 mb-1">Select your jurisdiction</h2>
-              <p className="text-sm text-slate-500 mb-5">Where is the project located?</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {JURISDICTIONS.map(j => {
-                  const sel = formData.jurisdictionCode === j.code
-                  return (
-                    <button
-                      key={j.code}
-                      type="button"
-                      onClick={() => setFormData(f => ({ ...f, jurisdictionCode: j.code }))}
-                      className={`flex items-center gap-4 rounded-xl border-2 px-4 py-3.5 text-left transition-all ${
-                        sel ? 'border-green-500 bg-green-50 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
-                      }`}
-                    >
-                      <div className={`w-10 h-10 rounded-full text-sm font-black flex items-center justify-center shrink-0 ${j.color}`}>
-                        {j.abbr.length > 2 ? j.abbr.slice(0, 2) : j.abbr}
-                      </div>
-                      <div className="min-w-0">
-                        <p className={`text-sm font-bold ${sel ? 'text-green-700' : 'text-slate-800'}`}>{j.name}</p>
-                        <p className="text-xs text-slate-400 truncate">{j.agency}</p>
-                      </div>
-                      {sel && <Check className="w-4 h-4 text-green-500 ml-auto shrink-0" strokeWidth={3} />}
-                    </button>
-                  )
-                })}
+              <h2 className="font-bold text-slate-900 mb-1">Project location</h2>
+              <p className="text-sm text-slate-500 mb-5">Enter the ZIP code where the project is located.</p>
+              <div className="max-w-xs">
+                <FieldLabel>ZIP Code *</FieldLabel>
+                <Input
+                  required
+                  placeholder="e.g. 78701"
+                  maxLength={5}
+                  value={formData.zipCode}
+                  onChange={e => setFormData(f => ({ ...f, zipCode: e.target.value.replace(/\D/g, '') }))}
+                />
               </div>
             </div>
 
@@ -740,11 +693,11 @@ export default function PermitsPage() {
                 </div>
                 <div>
                   <FieldLabel>Phone (optional)</FieldLabel>
-                  <Input type="tel" placeholder="(703) 555-0000" value={formData.contactPhone} onChange={e => setFormData(f => ({ ...f, contactPhone: e.target.value }))} />
+                  <Input type="tel" placeholder="(555) 555-0000" value={formData.contactPhone} onChange={e => setFormData(f => ({ ...f, contactPhone: e.target.value }))} />
                 </div>
                 <div>
                   <FieldLabel>Project Address *</FieldLabel>
-                  <Input required placeholder="2 Hickory St, Fort Washington, MD" value={formData.projectAddress} onChange={e => setFormData(f => ({ ...f, projectAddress: e.target.value }))} />
+                  <Input required placeholder="123 Main St, Austin, TX" value={formData.projectAddress} onChange={e => setFormData(f => ({ ...f, projectAddress: e.target.value }))} />
                 </div>
               </div>
             </div>
@@ -833,7 +786,7 @@ export default function PermitsPage() {
               </div>
               <div className="divide-y divide-slate-100">
                 {[
-                  { label: 'Jurisdiction', value: selectedJurisdiction?.name },
+                  { label: 'Project ZIP', value: formData.zipCode },
                   { label: 'Service Package', value: selectedTier?.name },
                   { label: 'Project Address', value: formData.projectAddress },
                   { label: 'Contact', value: `${formData.clientName} — ${formData.contactEmail}` },

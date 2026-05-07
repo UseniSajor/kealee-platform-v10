@@ -91,7 +91,7 @@ export default function ContactPage() {
                 {[
                   { icon: Mail, label: 'Email', value: 'hello@kealee.com', href: 'mailto:hello@kealee.com' },
                   { icon: Phone, label: 'Phone', value: '(240) 555-0100', href: 'tel:+12405550100' },
-                  { icon: MapPin, label: 'Office', value: 'DC-Baltimore Metropolitan Area', href: undefined },
+                  { icon: MapPin, label: 'Office', value: 'Austin, TX (Serving Nationwide)', href: undefined },
                   { icon: Clock, label: 'Hours', value: 'Mon-Fri 9am-6pm ET', href: undefined },
                 ].map((item) => (
                   <div key={item.label} className="flex items-start gap-4">
