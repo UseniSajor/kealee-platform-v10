@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation'
 import {
   ArrowRight, CheckCircle, CheckCircle2, Clock, DollarSign, Zap, Wrench, Droplets,
   Wind, Lightbulb, Download, Share2, ChevronDown, ChevronUp, Loader2, Video,
+  ShieldCheck, AlertTriangle, MapPin, TrendingUp,
 } from 'lucide-react'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
 
@@ -100,6 +101,17 @@ const SAMPLE_CONCEPTS: Record<string, ConceptData> = {
       { item: 'Electrical Work',            quantity: 120, unit: 'hours', estimatedCost: 5400,  description: 'Rewiring, panel upgrades, outlet installation' },
       { item: 'Labor — Installation',       quantity: 240, unit: 'hours', estimatedCost: 18000, description: 'Cabinet installation, countertop, appliances, finishing' },
     ],
+    permitScope: {
+      requiresPermit: true,
+      permitTypes: ['Building Permit', 'Electrical Permit', 'Plumbing Permit'],
+      estimatedPermitFee: 1200,
+      estimatedProcessingDays: 30,
+      requiresPE: false,
+      notes: 'Building, electrical, and plumbing permits required for this scope in Washington DC. Apply through DLCP at permits.dc.gov. Incomplete applications are rejected — full drawings required at submittal.',
+    },
+    zoningNotes: 'R-4 residential zone. Kitchen remodel is permitted by right — no zoning variance required. Confirm with DCRA if island addition affects footprint.',
+    buildabilityFlag: 'feasible' as const,
+    readinessScore: 78,
     nextStep: '/intake/permit_path_only',
     nextStepLabel: 'Continue to Permit Planning',
   },
@@ -139,6 +151,17 @@ const SAMPLE_CONCEPTS: Record<string, ConceptData> = {
       { item: 'Fixtures & Fittings',    quantity: 1,   unit: 'set',   estimatedCost: 4000,  description: 'Brushed nickel faucets, shower system, towel bars' },
       { item: 'Labor',                  quantity: 200, unit: 'hours', estimatedCost: 12000, description: 'Tile work, plumbing, electrical, finishing' },
     ],
+    permitScope: {
+      requiresPermit: true,
+      permitTypes: ['Building Permit', 'Plumbing Permit', 'Electrical Permit'],
+      estimatedPermitFee: 750,
+      estimatedProcessingDays: 21,
+      requiresPE: false,
+      notes: 'Permits required for plumbing and electrical work in Arlington, VA. Submit to Arlington County DES. Processing is typically 2–3 weeks for residential remodels.',
+    },
+    zoningNotes: 'R-5 residential zone. Bathroom remodel is permitted by right. No variance required.',
+    buildabilityFlag: 'feasible' as const,
+    readinessScore: 82,
     nextStep: '/intake/permit_path_only',
     nextStepLabel: 'Continue to Permit Planning',
   },
@@ -177,6 +200,17 @@ const SAMPLE_CONCEPTS: Record<string, ConceptData> = {
       { item: 'Lighting System',       quantity: 12,  unit: 'fixtures', estimatedCost: 1200, description: 'Low-voltage LED path lights, uplighting' },
       { item: 'Installation Labor',    quantity: 80,  unit: 'hours',    estimatedCost: 2400, description: 'Planting, hardscaping, irrigation installation' },
     ],
+    permitScope: {
+      requiresPermit: false,
+      permitTypes: [],
+      estimatedPermitFee: 0,
+      estimatedProcessingDays: 0,
+      requiresPE: false,
+      notes: 'Landscape and irrigation work generally does not require a permit in PG County for residential properties. Confirm if any grading or impervious surface changes are planned.',
+    },
+    zoningNotes: 'R-R residential reserve zone. Native plant landscaping and irrigation are permitted by right. No variance required.',
+    buildabilityFlag: 'feasible' as const,
+    readinessScore: 92,
     nextStep: '/intake/contractor_match',
     nextStepLabel: 'Find a Landscaping Contractor',
   },
@@ -199,6 +233,15 @@ interface MEPSystem {
   lighting: string
 }
 
+interface PermitScope {
+  requiresPermit: boolean
+  permitTypes: string[]
+  estimatedPermitFee: number
+  estimatedProcessingDays: number
+  requiresPE: boolean
+  notes: string
+}
+
 interface ConceptData {
   conceptId: string
   projectType: string
@@ -217,6 +260,10 @@ interface ConceptData {
   }
   mepSystem: MEPSystem
   billOfMaterials: BOMItem[]
+  permitScope: PermitScope | null
+  zoningNotes: string
+  buildabilityFlag: 'feasible' | 'feasible-with-variance' | 'challenging'
+  readinessScore: number
   nextStep: string
   nextStepLabel: string
 }
@@ -281,6 +328,12 @@ function conceptOutputToData(
       lighting: (mep.lighting as string) ?? '',
     },
     billOfMaterials: bom,
+    permitScope: conceptOutput.permitScope
+      ? (conceptOutput.permitScope as PermitScope)
+      : null,
+    zoningNotes: (conceptOutput.zoningNotes as string) ?? '',
+    buildabilityFlag: ((conceptOutput.buildabilityFlag as string) ?? 'feasible') as ConceptData['buildabilityFlag'],
+    readinessScore: (conceptOutput.readinessScore as number) ?? 70,
     nextStep: deliverable?.nextStep?.href ?? '/intake/permit_path_only',
     nextStepLabel: deliverable?.nextStep?.label ?? 'Continue Your Project',
   }
@@ -306,23 +359,18 @@ function ConceptDeliverableContent() {
       const intake = await res.json()
 
       const formData = (intake.form_data as Record<string, unknown>) ?? {}
-      const projectPath = projectPathParam ?? (intake.project_path as string) ?? 'kitchen_remodel'
 
       if (formData.conceptOutput && intake.status === 'concept_ready') {
-        const conceptData = conceptOutputToData(
-          formData.conceptOutput as Record<string, unknown>,
-          intake as Record<string, unknown>,
-          projectPath,
-        )
-        setData(conceptData)
-        setLoadStatus('ready')
+        // Redirect to owner portal for authenticated access
+        const portalUrl = process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? 'https://owner.kealee.com'
+        window.location.href = `${portalUrl}/deliverables/${id}`
         return true
       }
       return false
     } catch {
       return false
     }
-  }, [projectPathParam])
+  }, [])
 
   useEffect(() => {
     if (!intakeId) {
@@ -363,13 +411,15 @@ function ConceptDeliverableContent() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="text-center max-w-md">
           <Loader2 className="w-16 h-16 text-orange-600 animate-spin mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Generating Your Concept</h1>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+            {loadStatus === 'polling' ? 'Generating Your Concept' : 'Preparing Your Package'}
+          </h1>
           <p className="text-slate-600">
             {loadStatus === 'polling'
-              ? `Still working on it... (check ${pollCount + 1}/12)`
-              : 'Loading your concept package...'}
+              ? `Still working on it… (check ${pollCount + 1}/12)`
+              : 'Your concept is ready — redirecting to your owner portal…'}
           </p>
-          <p className="text-slate-400 text-sm mt-2">This page will update automatically.</p>
+          <p className="text-slate-400 text-sm mt-2">You will be redirected automatically.</p>
         </div>
       </div>
     )
@@ -653,10 +703,132 @@ function ConceptDeliverableContent() {
           </section>
         )}
 
+        {/* ── Permit & Zoning ─────────────────────────────────────────────── */}
+        {(data.permitScope || data.zoningNotes) && (
+          <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#6B46C1' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1A2B4A' }}>Permit &amp; Zoning Assessment</h2>
+              {/* Readiness score badge */}
+              <span
+                className="ml-auto rounded-full px-2.5 py-0.5 text-xs font-bold"
+                style={{
+                  backgroundColor: data.readinessScore >= 80 ? '#C6F6D5' : data.readinessScore >= 60 ? '#FEFCBF' : '#FED7D7',
+                  color: data.readinessScore >= 80 ? '#276749' : data.readinessScore >= 60 ? '#744210' : '#9B2C2C',
+                }}
+              >
+                {data.readinessScore}% Ready
+              </span>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {/* Readiness bar */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Permit Readiness Score</p>
+                  <p className="text-xs text-gray-500">{data.readinessScore}/100</p>
+                </div>
+                <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                  <div
+                    className="h-2 rounded-full transition-all"
+                    style={{
+                      width: `${data.readinessScore}%`,
+                      backgroundColor: data.readinessScore >= 80 ? '#38A169' : data.readinessScore >= 60 ? '#D69E2E' : '#E53E3E',
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Buildability */}
+              <div className="flex items-center gap-3 rounded-xl border px-4 py-3" style={{
+                borderColor: data.buildabilityFlag === 'feasible' ? '#C6F6D5' : data.buildabilityFlag === 'feasible-with-variance' ? '#FEFCBF' : '#FED7D7',
+                backgroundColor: data.buildabilityFlag === 'feasible' ? '#F0FFF4' : data.buildabilityFlag === 'feasible-with-variance' ? '#FFFFF0' : '#FFF5F5',
+              }}>
+                {data.buildabilityFlag === 'feasible'
+                  ? <TrendingUp className="h-5 w-5 shrink-0" style={{ color: '#38A169' }} />
+                  : data.buildabilityFlag === 'feasible-with-variance'
+                    ? <AlertTriangle className="h-5 w-5 shrink-0" style={{ color: '#D69E2E' }} />
+                    : <AlertTriangle className="h-5 w-5 shrink-0" style={{ color: '#E53E3E' }} />}
+                <div>
+                  <p className="text-sm font-semibold" style={{
+                    color: data.buildabilityFlag === 'feasible' ? '#276749' : data.buildabilityFlag === 'feasible-with-variance' ? '#744210' : '#9B2C2C',
+                  }}>
+                    {data.buildabilityFlag === 'feasible' ? 'Buildable — no special approvals needed'
+                      : data.buildabilityFlag === 'feasible-with-variance' ? 'Feasible with zoning variance'
+                      : 'Challenging — additional review required'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Permit types */}
+              {data.permitScope && (
+                <div>
+                  {data.permitScope.requiresPermit ? (
+                    <>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Required Permits</p>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {data.permitScope.permitTypes.map(pt => (
+                          <span key={pt} className="flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-medium text-purple-800">
+                            <ShieldCheck className="h-3 w-3" />
+                            {pt}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                        {data.permitScope.estimatedPermitFee > 0 && (
+                          <div className="rounded-lg bg-gray-50 px-4 py-3">
+                            <p className="text-xs text-gray-400 mb-0.5">Estimated Permit Fee</p>
+                            <p className="font-bold text-gray-900">${data.permitScope.estimatedPermitFee.toLocaleString()}</p>
+                          </div>
+                        )}
+                        {data.permitScope.estimatedProcessingDays > 0 && (
+                          <div className="rounded-lg bg-gray-50 px-4 py-3">
+                            <p className="text-xs text-gray-400 mb-0.5">Est. Processing Time</p>
+                            <p className="font-bold text-gray-900">{data.permitScope.estimatedProcessingDays} days</p>
+                          </div>
+                        )}
+                      </div>
+                      {data.permitScope.requiresPE && (
+                        <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
+                          <p className="text-sm text-amber-800">
+                            <span className="font-semibold">PE stamp required.</span> This project requires drawings stamped by a licensed Professional Engineer. See &ldquo;Get Permit-Ready Drawings&rdquo; below.
+                          </p>
+                        </div>
+                      )}
+                      {data.permitScope.notes && (
+                        <p className="mt-3 text-sm text-gray-600 leading-relaxed">{data.permitScope.notes}</p>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-start gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+                      <CheckCircle className="h-4 w-4 shrink-0 mt-0.5 text-green-600" />
+                      <p className="text-sm text-green-800">
+                        <span className="font-semibold">No permit required</span> for this scope. {data.permitScope.notes}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Zoning notes */}
+              {data.zoningNotes && (
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-4 w-4 shrink-0 mt-0.5 text-gray-400" />
+                  <div>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Zoning Notes</p>
+                    <p className="text-sm text-gray-700 leading-relaxed">{data.zoningNotes}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
         {/* ── Next Steps ──────────────────────────────────────────────────── */}
         <section className="rounded-2xl border border-gray-200 bg-white p-6">
           <h2 className="text-base font-bold mb-4" style={{ color: '#1A2B4A' }}>Continue Your Project</h2>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className={`grid gap-3 ${(data.permitScope?.requiresPermit || data.permitScope?.requiresPE) ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3'}`}>
             <Link
               href={data.nextStep}
               className="flex flex-col rounded-xl p-4 text-white transition-opacity hover:opacity-90"
@@ -666,6 +838,24 @@ function ConceptDeliverableContent() {
               <span className="text-sm font-semibold mb-auto">{data.nextStepLabel}</span>
               <ArrowRight className="h-4 w-4 mt-3" />
             </Link>
+
+            {/* Professional permit-ready drawings CTA — shown when permit required or PE stamp needed */}
+            {(data.permitScope?.requiresPermit || data.permitScope?.requiresPE) && (
+              <Link
+                href="/intake/permit_package"
+                className="flex flex-col rounded-xl p-4 transition-all hover:shadow-sm"
+                style={{ background: 'linear-gradient(135deg, #6B46C120 0%, #6B46C108 100%)', border: '1px solid #6B46C130' }}
+              >
+                <span className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#6B46C1' }}>
+                  {data.permitScope?.requiresPE ? 'PE Required' : 'Permit Filing'}
+                </span>
+                <span className="text-sm font-semibold text-gray-900 mb-auto">
+                  {data.permitScope?.requiresPE ? 'Get Permit-Ready Drawings' : 'File Your Permit'}
+                </span>
+                <span className="text-xs font-semibold mt-3" style={{ color: '#6B46C1' }}>From $799 →</span>
+              </Link>
+            )}
+
             <Link
               href="/intake/cost_estimate"
               className="flex flex-col rounded-xl border border-gray-200 p-4 hover:shadow-sm transition-all"

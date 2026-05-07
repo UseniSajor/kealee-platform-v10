@@ -38,6 +38,17 @@ interface ConceptOutput {
   description: string
   includes: string[]
   renderUrls: string[]
+  permitScope: {
+    requiresPermit: boolean
+    permitTypes: string[]
+    estimatedPermitFee: number
+    estimatedProcessingDays: number
+    requiresPE: boolean
+    notes: string
+  }
+  zoningNotes: string
+  buildabilityFlag: 'feasible' | 'feasible-with-variance' | 'challenging'
+  readinessScore: number
 }
 
 // ── Curated render stubs (Unsplash) by project type ──────────────────────────
@@ -171,10 +182,23 @@ Generate a comprehensive concept package. Respond ONLY with valid JSON in this e
   "includes": [
     "What client receives item 1",
     "What client receives item 2"
-  ]
+  ],
+  "permitScope": {
+    "requiresPermit": true,
+    "permitTypes": ["Building Permit", "Electrical Permit"],
+    "estimatedPermitFee": 850,
+    "estimatedProcessingDays": 30,
+    "requiresPE": false,
+    "notes": "A building permit is required for this scope. Submit to local jurisdiction before construction begins."
+  },
+  "zoningNotes": "R-4 residential zone — proposed scope is permitted by right. No variance required.",
+  "buildabilityFlag": "feasible",
+  "readinessScore": 80
 }
 
-Use realistic costs for the DC/MD/VA metro area. Bill of materials should have 5-8 line items with accurate quantities and costs that sum to estimatedCost (within 5%). The includes array should match what this service delivers.`
+Use realistic costs for the DC/MD/VA metro area. Bill of materials should have 5-8 line items with accurate quantities and costs that sum to estimatedCost (within 5%). The includes array should match what this service delivers.
+
+For permitScope: requiresPE should be true if the project involves structural changes, new load-bearing elements, additions, ADUs, or new construction. buildabilityFlag must be one of "feasible", "feasible-with-variance", or "challenging". readinessScore is 0–100 (permit readiness).`
 }
 
 export async function POST(req: NextRequest) {
@@ -253,6 +277,17 @@ export async function POST(req: NextRequest) {
         description: 'Your personalized concept package has been prepared based on your project details.',
         includes: SERVICE_DELIVERABLES[projectPath]?.includes ?? [],
         renderUrls: getRenderUrls(projectPath, tier),
+        permitScope: {
+          requiresPermit: false,
+          permitTypes: [],
+          estimatedPermitFee: 0,
+          estimatedProcessingDays: 0,
+          requiresPE: false,
+          notes: 'Permit requirements to be confirmed with your local jurisdiction.',
+        },
+        zoningNotes: 'Zoning analysis pending — confirm with local planning department.',
+        buildabilityFlag: 'feasible' as const,
+        readinessScore: 70,
       }
     } else {
       conceptOutput = JSON.parse(jsonMatch[0]) as ConceptOutput

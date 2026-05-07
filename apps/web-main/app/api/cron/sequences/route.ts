@@ -6,7 +6,7 @@
  * and processes each step via ghl-client functions.
  *
  * Vercel cron config (vercel.json):
- * { "crons": [{ "path": "/api/cron/sequences", "schedule": "*/5 * * * *" }] }
+ * schedule: every-5-minutes  ("*\/5 * * * *")
  */
 
 import { NextRequest, NextResponse } from 'next/server'

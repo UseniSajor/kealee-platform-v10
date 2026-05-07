@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import {
   Download, FileText, Package, Clock, CheckCircle,
-  AlertCircle, Loader2, ExternalLink, Layers,
+  AlertCircle, Loader2, ExternalLink, Layers, ArrowRight,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -23,6 +24,8 @@ interface ProjectOutput {
   completedAt: string | null
   metadata: Record<string, unknown> | null
 }
+
+const CONCEPT_TYPES = new Set(['design', 'concept'])
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -124,14 +127,25 @@ function DeliverableCard({ output }: { output: ProjectOutput }) {
         </div>
 
         {output.status === 'completed' && (
-          <div className="mt-4 flex gap-2">
+          <div className="mt-4 flex gap-2 flex-wrap">
+            {/* Concept packages — link to full detail page */}
+            {CONCEPT_TYPES.has(output.type.toLowerCase()) && output.intakeId && (
+              <Link
+                href={`/deliverables/${output.intakeId}`}
+                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90"
+                style={{ backgroundColor: cfg.color }}
+              >
+                <ArrowRight className="h-3.5 w-3.5" />
+                View Package
+              </Link>
+            )}
             {output.pdfUrl && (
               <a
                 href={output.pdfUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90"
-                style={{ backgroundColor: cfg.color }}
+                className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium transition-colors hover:bg-gray-50"
+                style={{ color: '#6B7280' }}
               >
                 <ExternalLink className="h-3.5 w-3.5" />
                 View PDF
