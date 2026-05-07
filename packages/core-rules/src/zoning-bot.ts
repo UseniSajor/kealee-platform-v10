@@ -7,7 +7,6 @@
  */
 
 import { Anthropic } from "@anthropic-ai/sdk";
-import { prisma } from "@kealee/core-ddts";
 
 export interface ZoningRequest {
   location: string;
@@ -93,21 +92,6 @@ Return only JSON.`,
     ) {
       throw new Error("Invalid zoning response structure");
     }
-
-    // Save to database
-    const savedOutput = await prisma.zoningOutput.create({
-      data: {
-        location: request.location,
-        jurisdiction: zoningData.jurisdiction,
-        zoning: zoningData.zoning,
-        setbacks: zoningData.setbacks as Record<string, number>,
-        far: zoningData.far || null,
-        permitTypes: zoningData.permitType,
-        requirements: zoningData.requirements,
-      },
-    });
-
-    console.log(`Zoning analysis saved: ${savedOutput.id}`);
 
     return zoningData;
   } catch (error) {
