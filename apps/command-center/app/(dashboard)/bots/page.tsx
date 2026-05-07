@@ -139,12 +139,14 @@ function TraceRow({ trace }: { trace: BotExecutionTrace }) {
 // ── Run modal ─────────────────────────────────────────────────────────────────
 
 const BOT_SAMPLE_INPUTS: Record<string, { label: string; input: Record<string, unknown> }> = {
-  'lead-bot':            { label: 'High-quality lead in DC', input: { sessionId: 'demo', message: 'I want to renovate my kitchen in Bethesda MD. Budget around $120K, ready to start this summer.' } },
-  'estimate-bot':        { label: 'Kitchen + bath renovation', input: { projectType: 'residential renovation', location: 'Bethesda, MD', scopeOfWork: 'Full kitchen and two bathrooms', squareFootage: 1400, qualityLevel: 'premium' } },
-  'permit-bot':          { label: 'Two-story addition Arlington VA', input: { projectType: 'addition', jurisdiction: 'Arlington, VA', scope: 'Two-story rear addition, 600 sqft', structuralChanges: true, electricalChanges: true } },
-  'contractor-match-bot':{ label: 'Match contractors for renovation', input: { leadId: 'lead-demo', projectType: 'residential renovation', location: 'Bethesda, MD', budget: 150000 } },
-  'project-monitor-bot': { label: 'Project health (replace ID)', input: { projectId: 'REPLACE_WITH_REAL_PROJECT_ID', includeRiskAnalysis: true } },
-  'support-bot':         { label: 'Owner navigation question', input: { sessionId: 'support-demo', message: 'How do I check the readiness status of my project?', userRole: 'owner' } },
+  'lead-bot':            { label: 'Kitchen remodel lead in Austin', input: { sessionId: 'demo', message: 'I want to remodel my kitchen in Austin, TX. Budget around $80K, hoping to start by fall.' } },
+  'estimate-bot':        { label: 'Kitchen remodel Austin TX', input: { projectType: 'kitchen_remodel', location: 'Austin, TX', scopeOfWork: 'Full kitchen remodel with island, new appliances', squareFootage: 280, qualityLevel: 'premium' } },
+  'permit-bot':          { label: 'Rear addition Austin TX', input: { projectType: 'addition_expansion', jurisdiction: 'Austin, TX', scope: 'Rear addition 600 sqft, single story', structuralChanges: true, electricalChanges: true } },
+  'contractor-match-bot':{ label: 'Match contractors for kitchen remodel', input: { leadId: 'lead-demo', projectType: 'kitchen_remodel', location: 'Austin, TX', budget: 80000 } },
+  'project-monitor-bot': { label: 'Project health check', input: { projectId: 'REPLACE_WITH_REAL_INTAKE_ID', includeRiskAnalysis: true } },
+  'support-bot':         { label: 'Concept package status question', input: { sessionId: 'support-demo', message: 'When will my kitchen concept package be ready? I purchased it 2 days ago.', userRole: 'owner' } },
+  'marketing-bot':       { label: 'Instagram + email for kitchen remodel', input: { serviceType: 'kitchen_remodel', targetAudience: 'Austin TX homeowners aged 35-55, interested in home renovation', tone: 'friendly and professional' } },
+  'pitch-bot':           { label: 'Personalized pitch for qualified lead', input: { name: 'Sarah', location: 'Austin, TX', projectType: 'kitchen_remodel', budget: '$80,000', timeline: 'Fall 2026', leadScore: 82, tier: 'hot' } },
 }
 
 function RunModal({ botId, onClose, onResult }: { botId: string; onClose: () => void; onResult: (r: Record<string, unknown>) => void }) {

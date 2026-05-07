@@ -5,12 +5,13 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import {
   FolderKanban, DollarSign, FileText, MessageSquare,
-  LogOut, Bot, X, ChevronRight, Bell, Package, Menu, Home,
+  LogOut, Bot, X, ChevronRight, Bell, Package, Menu, Home, Sparkles,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 const NAV_ITEMS = [
   { href: '/projects',     label: 'Projects',     icon: FolderKanban, badge: null },
+  { href: '/concepts',     label: 'Concepts',     icon: Sparkles,     badge: null },
   { href: '/deliverables', label: 'Deliverables', icon: Package,      badge: null },
   { href: '/payments',     label: 'Payments',     icon: DollarSign,   badge: null },
   { href: '/documents',    label: 'Documents',    icon: FileText,     badge: null },

@@ -7,7 +7,8 @@
 
 import { getAuthToken } from '../supabase'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
+// Always use local Next.js API routes (NEXT_PUBLIC_API_URL points to external API, not bot routes)
+const API_URL = '/api'
 
 async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = await getAuthToken()

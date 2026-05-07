@@ -1,322 +1,354 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Boxes, Activity, AlertTriangle, Users, Plug, Cpu, Box, RefreshCw } from 'lucide-react'
-import { getPlatformStats, getSystemStatus, getRecentEvents, type PlatformStats, type SystemStatus, type PlatformEvent } from '@/lib/api/platform'
+import { useEffect, useState, useCallback } from 'react'
+import { Boxes, Activity, AlertTriangle, Users, Plug, RefreshCw, TrendingUp, Loader2 } from 'lucide-react'
 
-// ── v20 Seed: 7 Roles ──────────────────────────────────────
-const V20_ROLES = [
-  { key: 'homeowner', name: 'Homeowner', userCount: 142 },
-  { key: 'contractor', name: 'Contractor', userCount: 87 },
-  { key: 'developer', name: 'Developer', userCount: 24 },
-  { key: 'architect', name: 'Architect', userCount: 18 },
-  { key: 'engineer', name: 'Engineer', userCount: 12 },
-  { key: 'kealee_pm', name: 'Kealee PM', userCount: 8 },
-  { key: 'admin', name: 'Administrator', userCount: 3 },
+// ── Lifecycle phases (static structure — counts come from real data) ──────────
+const LIFECYCLE_PHASE_LABELS: Record<string, string> = {
+  kitchen_remodel:               'Kitchen Remodel',
+  bathroom_remodel:              'Bathroom Remodel',
+  exterior_concept:              'Exterior Concept',
+  interior_reno_concept:         'Interior Reno',
+  interior_renovation:           'Interior Renovation',
+  whole_home_concept:            'Whole Home',
+  whole_home_remodel:            'Whole-Home Remodel',
+  addition_expansion:            'Addition',
+  garden_concept:                'Garden',
+  capture_site_concept:          'Site Capture',
+  design_build:                  'Design + Build',
+  design_estimate_permit_bundle: 'Full Bundle',
+  developer_concept:             'Developer',
+  single_lot_development:        'Single Lot',
+  single_family_subdivision:     'SF Subdivision',
+  townhome_subdivision:          'Townhome Sub',
+  development_feasibility:       'Feasibility',
+  mixed_use:                     'Mixed-Use',
+  commercial_office:             'Commercial',
+  multi_unit_residential:        'Multi-Unit',
+  permit_path_only:              'Permit Only',
+  cost_estimate:                 'Cost Estimate',
+  contractor_match:              'Contractor Match',
+}
+
+const PHASE_COLORS = [
+  '#6366F1', '#818CF8', '#3B82F6', '#06B6D4', '#F59E0B',
+  '#FB923C', '#2ABFBF', '#38A169', '#84CC16', '#D69E2E',
+  '#A78BFA', '#94A3B8', '#E879A0', '#14B8A6', '#F43F5E',
+  '#8B5CF6', '#EC4899', '#10B981', '#F97316', '#EF4444',
 ]
 
-// ── v20 Seed: 12 Lifecycle Phases ──────────────────────────
-const LIFECYCLE_PHASES = [
-  { key: 'IDEA', name: 'Idea', order: 1, projectCount: 8 },
-  { key: 'LAND', name: 'Land', order: 2, projectCount: 5 },
-  { key: 'FEASIBILITY', name: 'Feasibility', order: 3, projectCount: 6 },
-  { key: 'DESIGN', name: 'Design', order: 4, projectCount: 7 },
-  { key: 'PERMITS', name: 'Permits', order: 5, projectCount: 4 },
-  { key: 'PRECONSTRUCTION', name: 'Pre-Con', order: 6, projectCount: 3 },
-  { key: 'CONSTRUCTION', name: 'Construction', order: 7, projectCount: 12 },
-  { key: 'INSPECTIONS', name: 'Inspections', order: 8, projectCount: 2 },
-  { key: 'PAYMENTS', name: 'Payments', order: 9, projectCount: 0 },
-  { key: 'CLOSEOUT', name: 'Closeout', order: 10, projectCount: 3 },
-  { key: 'OPERATIONS', name: 'Operations', order: 11, projectCount: 4 },
-  { key: 'ARCHIVE', name: 'Archive', order: 12, projectCount: 14 },
-]
+// ── Types ─────────────────────────────────────────────────────────────────────
 
-// ── v20 Seed: Twin Tiers ───────────────────────────────────
-const TWIN_TIERS = [
-  { tier: 'L1', label: 'Light', kpiCount: 3, projectCount: 18, avgHealth: 92 },
-  { tier: 'L2', label: 'Standard', kpiCount: 6, projectCount: 24, avgHealth: 87 },
-  { tier: 'L3', label: 'Premium', kpiCount: 10, projectCount: 12, avgHealth: 84 },
-]
+interface PathEntry  { key: string; name: string; count: number }
+interface EventEntry { id: string; timestamp: string; message: string; type: string; module: string }
+interface Integration { name: string; status: string; latencyMs: number }
 
-// ── v20 Seed: 7 OS Modules ─────────────────────────────────
-const OS_MODULES = [
-  { key: 'os-land', name: 'OS Land', description: 'Land acquisition and parcel analysis', activeProjects: 14, eventsToday: 8, status: 'healthy' },
-  { key: 'os-feas', name: 'OS Feasibility', description: 'Financial pro-forma and market analysis', activeProjects: 18, eventsToday: 12, status: 'healthy' },
-  { key: 'os-dev', name: 'OS Development', description: 'Design coordination and permit docs', activeProjects: 26, eventsToday: 34, status: 'healthy' },
-  { key: 'os-pm', name: 'OS Project Management', description: 'Scheduling, milestones, RFIs, change orders', activeProjects: 42, eventsToday: 187, status: 'healthy' },
-  { key: 'os-pay', name: 'OS Payments', description: 'Escrow, milestone payments, draw requests', activeProjects: 38, eventsToday: 24, status: 'healthy' },
-  { key: 'os-ops', name: 'OS Operations', description: 'Warranty, maintenance, facility mgmt', activeProjects: 12, eventsToday: 6, status: 'warning' },
-  { key: 'marketplace', name: 'Marketplace', description: 'Bidding, contractor matching, lead distribution', activeProjects: 34, eventsToday: 45, status: 'healthy' },
-]
+interface OverviewData {
+  live: boolean
+  stats: {
+    totalIntakes: number
+    totalUsers: number
+    paidIntakes: number
+    activeIntakes: number
+    recentIntakes30d: number
+  }
+  pathDistribution: PathEntry[]
+  recentEvents: EventEntry[]
+  integrations: Integration[]
+  generatedAt: string
+}
 
-const STATS = [
-  { label: 'Active Projects', value: '68', change: '+5 this week', icon: Boxes, color: '#2ABFBF', bg: 'rgba(42, 191, 191, 0.1)' },
-  { label: 'Digital Twins', value: '54', change: '79% coverage', icon: Activity, color: '#38A169', bg: 'rgba(56, 161, 105, 0.1)' },
-  { label: 'Active Alerts', value: '12', change: '3 critical', icon: AlertTriangle, color: '#E8793A', bg: 'rgba(232, 121, 58, 0.1)' },
-  { label: 'Active Users', value: '294', change: `${V20_ROLES.length} roles`, icon: Users, color: '#A78BFA', bg: 'rgba(167, 139, 250, 0.1)' },
-]
+// ─────────────────────────────────────────────────────────────────────────────
 
-const RECENT_EVENTS = [
-  { time: '1 min ago', message: 'OS PM: Milestone "Framing Complete" approved for Riverside Multifamily (L3 Twin)', type: 'success', module: 'os-pm' },
-  { time: '3 min ago', message: 'OS Pay: Draw #7 funded - $6.3M for Riverside Multifamily MEP Rough-In', type: 'success', module: 'os-pay' },
-  { time: '7 min ago', message: 'OS Dev: 14 new drawings uploaded for Oak Hill Mixed-Use design review', type: 'info', module: 'os-dev' },
-  { time: '12 min ago', message: 'Marketplace: Bid received from Summit GC - East Austin Townhomes ($7.2M)', type: 'info', module: 'marketplace' },
-  { time: '18 min ago', message: 'OS Feas: Feasibility scenario "Value-Add" completed for Congress Ave Retail', type: 'info', module: 'os-feas' },
-  { time: '25 min ago', message: 'OS Ops: Warranty claim escalated - Slaughter Lane Office HVAC (critical)', type: 'error', module: 'os-ops' },
-  { time: '32 min ago', message: 'OS Land: Zoning verification complete for Domain Heights Tower (MU-2)', type: 'success', module: 'os-land' },
-  { time: '45 min ago', message: 'OS PM: RFI #42 response overdue - Westlake Custom Home (L2 Twin warning)', type: 'error', module: 'os-pm' },
-  { time: '1 hour ago', message: 'KeaBot: Lead captured - Jennifer A. - Kitchen Remodel Quote (score: 82)', type: 'info', module: 'marketplace' },
-  { time: '1.5 hours ago', message: 'Stripe webhook: checkout.session.completed - new homeowner signup', type: 'success', module: 'os-pay' },
-]
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const mins  = Math.floor(diff / 60_000)
+  const hours = Math.floor(diff / 3_600_000)
+  const days  = Math.floor(diff / 86_400_000)
+  if (mins < 1)   return 'just now'
+  if (mins < 60)  return `${mins}m ago`
+  if (hours < 24) return `${hours}h ago`
+  return `${days}d ago`
+}
 
-const INTEGRATION_STATUS = [
-  { name: 'Stripe', status: 'operational', latency: '45ms' },
-  { name: 'GoHighLevel', status: 'degraded', latency: '1.2s' },
-  { name: 'Supabase', status: 'operational', latency: '23ms' },
-  { name: 'Redis', status: 'operational', latency: '2ms' },
-  { name: 'Anthropic AI', status: 'operational', latency: '890ms' },
-  { name: 'Resend', status: 'operational', latency: '120ms' },
-  { name: 'Twilio', status: 'operational', latency: '200ms' },
-]
+function latencyLabel(ms: number): string {
+  if (ms === 0) return '—'
+  if (ms < 1000) return `${ms}ms`
+  return `${(ms / 1000).toFixed(1)}s`
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function CommandCenterOverview() {
-  const seedTotalUsers = V20_ROLES.reduce((s, r) => s + r.userCount, 0)
-  const totalModuleEvents = OS_MODULES.reduce((s, m) => s + m.eventsToday, 0)
-
-  const [stats, setStats]     = useState<PlatformStats | null>(null)
-  const [status, setStatus]   = useState<SystemStatus | null>(null)
-  const [events, setEvents]   = useState<PlatformEvent[]>([])
-  const [isLive, setIsLive]   = useState(false)
+  const [data, setData]       = useState<OverviewData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [error, setError]     = useState<string | null>(null)
 
-  const totalUsers = stats?.totalUsers ?? seedTotalUsers
+  const load = useCallback(async (isManual = false) => {
+    if (isManual) setRefreshing(true)
+    try {
+      const res = await fetch('/api/command-center/overview', { cache: 'no-store' })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json: OverviewData = await res.json()
+      setData(json)
+      setError(null)
+    } catch (err: any) {
+      setError(err?.message ?? 'Failed to load')
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }, [])
 
   useEffect(() => {
-    async function load() {
-      try {
-        const [s, st, ev] = await Promise.allSettled([
-          getPlatformStats(),
-          getSystemStatus(),
-          getRecentEvents(10),
-        ])
-        if (s.status  === 'fulfilled') { setStats(s.value);  setIsLive(true) }
-        if (st.status === 'fulfilled') setStatus(st.value)
-        if (ev.status === 'fulfilled' && ev.value.length > 0) setEvents(ev.value)
-      } finally {
-        setLoading(false)
-      }
-    }
     load()
-    const interval = setInterval(load, 30_000) // refresh every 30s
+    const interval = setInterval(() => load(), 30_000)
     return () => clearInterval(interval)
-  }, [])
+  }, [load])
+
+  // ── Derived display values ─────────────────────────────────────────────────
+
+  const stats = data?.stats
+  const isLive = data?.live ?? false
 
   const displayStats = [
     {
-      label: 'Active Projects',
-      value: stats ? String(stats.totalProjects) : STATS[0].value,
-      change: stats ? `${stats.metrics.activeWorkers} active workers` : STATS[0].change,
-      icon: Boxes, color: '#2ABFBF', bg: 'rgba(42,191,191,0.1)',
+      label: 'Total Intakes',
+      value: stats ? String(stats.totalIntakes) : '—',
+      change: stats ? `${stats.paidIntakes} paid · ${stats.activeIntakes} active` : 'connecting…',
+      icon: Boxes,
+      color: '#2ABFBF',
+      bg: 'rgba(42,191,191,0.1)',
     },
     {
-      label: 'Active Alerts',
-      value: stats ? String(stats.activeAlerts) : STATS[2].value,
-      change: status ? `${status.warningApps ?? 0} warning apps` : STATS[2].change,
-      icon: AlertTriangle, color: '#E8793A', bg: 'rgba(232,121,58,0.1)',
+      label: 'Last 30 Days',
+      value: stats ? String(stats.recentIntakes30d) : '—',
+      change: stats ? `${Math.round((stats.recentIntakes30d / Math.max(stats.totalIntakes, 1)) * 100)}% of all intakes` : '',
+      icon: TrendingUp,
+      color: '#38A169',
+      bg: 'rgba(56,161,105,0.1)',
     },
     {
-      label: 'Active Users',
-      value: stats ? String(stats.totalUsers) : String(seedTotalUsers),
-      change: `${V20_ROLES.length} roles`,
-      icon: Users, color: '#A78BFA', bg: 'rgba(167,139,250,0.1)',
+      label: 'Paid Concepts',
+      value: stats ? String(stats.paidIntakes) : '—',
+      change: stats ? `${Math.round((stats.paidIntakes / Math.max(stats.totalIntakes, 1)) * 100)}% conversion` : '',
+      icon: AlertTriangle,
+      color: '#E8793A',
+      bg: 'rgba(232,121,58,0.1)',
     },
     {
-      label: 'Job Success Rate',
-      value: stats ? `${Math.round((stats.metrics.successRate ?? 1) * 100)}%` : '—',
-      change: stats ? `avg ${stats.metrics.avgDuration}ms` : 'connecting...',
-      icon: Activity, color: '#38A169', bg: 'rgba(56,161,105,0.1)',
+      label: 'Platform Users',
+      value: stats ? String(stats.totalUsers) : '—',
+      change: 'unique contact emails + auth users',
+      icon: Users,
+      color: '#A78BFA',
+      bg: 'rgba(167,139,250,0.1)',
     },
   ]
 
-  const displayEvents = events.length > 0 ? events : RECENT_EVENTS
-  const displayIntegrations = status?.apps?.length
-    ? status.apps.map(a => ({
-        name: a.appName,
-        status: a.status === 'healthy' ? 'operational' : 'degraded',
-        latency: `${a.avgDuration}ms`,
-      }))
-    : INTEGRATION_STATUS
+  const pathDist   = data?.pathDistribution ?? []
+  const totalCount = pathDist.reduce((s, p) => s + p.count, 0)
+
+  const displayIntegrations = (data?.integrations ?? []).map(int => ({
+    name: int.name,
+    status: int.status === 'operational' ? 'operational' : int.status === 'unknown' ? 'unknown' : 'degraded',
+    latency: latencyLabel(int.latencyMs),
+  }))
+
+  const displayEvents = data?.recentEvents ?? []
 
   return (
     <div>
+      {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold text-white">Command Center</h1>
           <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            {isLive ? '● Live data' : loading ? '○ Connecting...' : '○ Seed data'} · {V20_ROLES.length} roles · {LIFECYCLE_PHASES.length} lifecycle phases · {OS_MODULES.length} OS modules
+            {loading
+              ? '○ Connecting to Supabase…'
+              : isLive
+                ? `● Live · ${pathDist.length} service types · updated ${data ? timeAgo(data.generatedAt) : '—'}`
+                : `○ Error: ${error}`}
           </p>
         </div>
-        <div className="flex items-center gap-1 text-xs" style={{ color: isLive ? '#38A169' : 'rgba(255,255,255,0.3)' }}>
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-          {isLive ? 'Live' : 'Seed'}
-        </div>
+        <button
+          onClick={() => load(true)}
+          disabled={refreshing}
+          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+          style={{ color: isLive ? '#38A169' : 'rgba(255,255,255,0.3)', backgroundColor: 'rgba(255,255,255,0.05)' }}
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${(loading || refreshing) ? 'animate-spin' : ''}`} />
+          {refreshing ? 'Refreshing…' : isLive ? 'Live' : 'Retry'}
+        </button>
       </div>
 
-      {/* Top Stats */}
-      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {displayStats.map((stat) => (
-          <div key={stat.label} className="rounded-xl border p-5" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg p-2.5" style={{ backgroundColor: stat.bg }}>
-                <stat.icon className="h-5 w-5" style={{ color: stat.color }} />
-              </div>
-              <div>
-                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>{stat.label}</p>
-                <p className="text-xl font-bold text-white">{stat.value}</p>
-                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{stat.change}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Lifecycle Phase Distribution */}
-      <div className="mb-6 rounded-xl border p-5" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-        <h2 className="font-display mb-3 text-sm font-semibold text-white">Lifecycle Phase Distribution ({LIFECYCLE_PHASES.length} Phases)</h2>
-        <div className="flex h-8 w-full overflow-hidden rounded-lg">
-          {LIFECYCLE_PHASES.filter(p => p.projectCount > 0).map((phase, i) => {
-            const totalProjects = LIFECYCLE_PHASES.reduce((s, p) => s + p.projectCount, 0)
-            const width = (phase.projectCount / totalProjects) * 100
-            const colors = ['#6366F1', '#818CF8', '#3B82F6', '#06B6D4', '#F59E0B', '#FB923C', '#2ABFBF', '#38A169', '#84CC16', '#D69E2E', '#A78BFA', '#94A3B8']
-            return (
-              <div key={phase.key} className="flex items-center justify-center text-xs font-bold text-white" style={{ width: `${width}%`, backgroundColor: colors[i % colors.length], minWidth: '22px' }} title={`${phase.name}: ${phase.projectCount}`}>
-                {phase.projectCount}
-              </div>
-            )
-          })}
-        </div>
-        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-          {LIFECYCLE_PHASES.filter(p => p.projectCount > 0).map((phase, i) => {
-            const colors = ['#6366F1', '#818CF8', '#3B82F6', '#06B6D4', '#F59E0B', '#FB923C', '#2ABFBF', '#38A169', '#84CC16', '#D69E2E', '#A78BFA', '#94A3B8']
-            return (
-              <span key={phase.key} className="flex items-center gap-1 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: colors[i % colors.length] }} />
-                {phase.name} ({phase.projectCount})
-              </span>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Twin Health + Role Distribution Row */}
-      <div className="mb-6 grid gap-4 lg:grid-cols-2">
-        {/* Twin Tier Overview */}
-        <div className="rounded-xl border p-5" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-          <h2 className="font-display mb-3 text-sm font-semibold text-white">Twin Health Overview (3 Tiers)</h2>
-          <div className="grid grid-cols-3 gap-3">
-            {TWIN_TIERS.map((t) => {
-              const color = t.tier === 'L1' ? '#94A3B8' : t.tier === 'L2' ? '#3B82F6' : '#8B5CF6'
-              return (
-                <div key={t.tier} className="rounded-lg p-3 text-center" style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
-                  <Cpu className="mx-auto h-5 w-5" style={{ color }} />
-                  <p className="mt-1 text-lg font-bold text-white">{t.projectCount}</p>
-                  <p className="text-xs font-semibold" style={{ color }}>{t.tier} - {t.label}</p>
-                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.kpiCount} KPIs | {t.avgHealth}% avg</p>
-                </div>
-              )
-            })}
+      {/* Loading state */}
+      {loading && (
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <Loader2 className="h-10 w-10 animate-spin mx-auto mb-4" style={{ color: '#2ABFBF' }} />
+            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Loading live data from Supabase…</p>
           </div>
         </div>
+      )}
 
-        {/* Role Distribution */}
-        <div className="rounded-xl border p-5" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-          <h2 className="font-display mb-3 text-sm font-semibold text-white">User Distribution ({V20_ROLES.length} Roles) - {totalUsers} total</h2>
-          <div className="space-y-2">
-            {V20_ROLES.map((role) => {
-              const pct = (role.userCount / totalUsers) * 100
-              return (
-                <div key={role.key} className="flex items-center gap-3">
-                  <span className="w-24 shrink-0 text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>{role.name}</span>
-                  <div className="flex-1 h-3 overflow-hidden rounded-full" style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
-                    <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: '#2ABFBF' }} />
-                  </div>
-                  <span className="w-10 shrink-0 text-right text-xs font-bold text-white">{role.userCount}</span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Module Activation Stats */}
-      <div className="mb-6 rounded-xl border p-5" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-        <h2 className="font-display mb-3 text-sm font-semibold text-white">OS Module Status ({OS_MODULES.length} Modules) - {totalModuleEvents} events today</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
-          {OS_MODULES.map((mod) => (
-            <div key={mod.key} className="rounded-lg p-3 text-center" style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
-              <Box className="mx-auto h-5 w-5" style={{ color: mod.status === 'healthy' ? '#38A169' : '#E8793A' }} />
-              <p className="mt-1 text-sm font-bold text-white">{mod.activeProjects}</p>
-              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>{mod.name}</p>
-              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{mod.eventsToday} events</p>
-              <span className="mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium" style={{
-                backgroundColor: mod.status === 'healthy' ? 'rgba(56, 161, 105, 0.15)' : 'rgba(232, 121, 58, 0.15)',
-                color: mod.status === 'healthy' ? '#38A169' : '#E8793A'
-              }}>{mod.status}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Event Feed */}
-        <div className="rounded-xl border p-6" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-          <h2 className="font-display mb-4 text-lg font-semibold text-white">Live Event Feed</h2>
-          <div className="space-y-3">
-            {displayEvents.map((event: any, i: number) => {
-              const isApiEvent = 'eventType' in event
-              const msg  = isApiEvent ? (event.message ?? event.eventType) : event.message
-              const time = isApiEvent ? new Date(event.occurredAt).toLocaleTimeString() : event.time
-              const type = isApiEvent ? 'info' : event.type
-              return (
-                <div key={i} className="flex items-start gap-3 rounded-lg p-3" style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
-                  <div className="mt-0.5 h-2 w-2 flex-shrink-0 rounded-full" style={{
-                    backgroundColor: type === 'success' ? '#38A169' : type === 'error' ? '#E53E3E' : '#2ABFBF'
-                  }} />
-                  <div className="flex-1">
-                    <p className="text-sm" style={{ color: 'rgba(255,255,255,0.8)' }}>{msg}</p>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{time}</p>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Integration Status */}
-        <div className="rounded-xl border p-6" style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
-          <h2 className="font-display mb-4 text-lg font-semibold text-white">Integration Health</h2>
-          <div className="space-y-3">
-            {displayIntegrations.map((int: any) => (
-              <div key={int.name} className="flex items-center justify-between rounded-lg p-3" style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
+      {!loading && (
+        <>
+          {/* Top Stats */}
+          <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {displayStats.map((stat) => (
+              <div key={stat.label} className="rounded-xl border p-5"
+                style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
                 <div className="flex items-center gap-3">
-                  <Plug className="h-4 w-4" style={{ color: 'rgba(255,255,255,0.4)' }} />
-                  <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>{int.name}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{int.latency}</span>
-                  <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium" style={{
-                    backgroundColor: int.status === 'operational' ? 'rgba(56, 161, 105, 0.15)' : 'rgba(232, 121, 58, 0.15)',
-                    color: int.status === 'operational' ? '#38A169' : '#E8793A'
-                  }}>
-                    <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: int.status === 'operational' ? '#38A169' : '#E8793A' }} />
-                    {int.status}
-                  </span>
+                  <div className="rounded-lg p-2.5" style={{ backgroundColor: stat.bg }}>
+                    <stat.icon className="h-5 w-5" style={{ color: stat.color }} />
+                  </div>
+                  <div>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>{stat.label}</p>
+                    <p className="text-xl font-bold text-white">{stat.value}</p>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{stat.change}</p>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-      </div>
+
+          {/* Service Type Distribution */}
+          <div className="mb-6 rounded-xl border p-5"
+            style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
+            <h2 className="font-display mb-3 text-sm font-semibold text-white">
+              Intake Distribution by Service Type ({pathDist.length} types · {totalCount} total)
+            </h2>
+            {pathDist.length === 0 ? (
+              <p className="text-xs py-4 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                No intake data yet.
+              </p>
+            ) : (
+              <>
+                <div className="flex h-8 w-full overflow-hidden rounded-lg">
+                  {pathDist.map((p, i) => {
+                    const width = (p.count / totalCount) * 100
+                    return (
+                      <div
+                        key={p.key}
+                        className="flex items-center justify-center text-xs font-bold text-white"
+                        style={{ width: `${width}%`, backgroundColor: PHASE_COLORS[i % PHASE_COLORS.length], minWidth: '20px' }}
+                        title={`${LIFECYCLE_PHASE_LABELS[p.key] ?? p.name}: ${p.count}`}
+                      >
+                        {p.count}
+                      </div>
+                    )
+                  })}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                  {pathDist.map((p, i) => (
+                    <span key={p.key} className="flex items-center gap-1 text-xs"
+                      style={{ color: 'rgba(255,255,255,0.4)' }}>
+                      <span className="inline-block h-2 w-2 rounded-full"
+                        style={{ backgroundColor: PHASE_COLORS[i % PHASE_COLORS.length] }} />
+                      {LIFECYCLE_PHASE_LABELS[p.key] ?? p.name} ({p.count})
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Status Breakdown */}
+          {stats && (
+            <div className="mb-6 rounded-xl border p-5"
+              style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
+              <h2 className="font-display mb-3 text-sm font-semibold text-white">Intake Status Breakdown</h2>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[
+                  { label: 'Total', value: stats.totalIntakes, color: '#2ABFBF' },
+                  { label: 'Paid / Ready', value: stats.paidIntakes, color: '#38A169' },
+                  { label: 'Active (new)', value: stats.activeIntakes, color: '#F59E0B' },
+                  { label: 'Last 30 Days', value: stats.recentIntakes30d, color: '#A78BFA' },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-lg p-3 text-center"
+                    style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
+                    <p className="text-2xl font-bold" style={{ color: item.color }}>{item.value}</p>
+                    <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>{item.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Event Feed + Integrations */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Live Event Feed */}
+            <div className="rounded-xl border p-6"
+              style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
+              <h2 className="font-display mb-4 text-lg font-semibold text-white">
+                Live Intake Feed
+                {isLive && <span className="ml-2 text-xs font-normal" style={{ color: '#38A169' }}>● live</span>}
+              </h2>
+              {displayEvents.length === 0 ? (
+                <p className="text-xs py-8 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                  No intake events yet.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {displayEvents.map((event, i) => (
+                    <div key={event.id ?? i} className="flex items-start gap-3 rounded-lg p-3"
+                      style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
+                      <div className="mt-0.5 h-2 w-2 flex-shrink-0 rounded-full" style={{
+                        backgroundColor: event.type === 'success' ? '#38A169' : event.type === 'error' ? '#E53E3E' : '#2ABFBF'
+                      }} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm truncate" style={{ color: 'rgba(255,255,255,0.8)' }}>{event.message}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                          {timeAgo(event.timestamp)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Integration Health */}
+            <div className="rounded-xl border p-6"
+              style={{ borderColor: '#2A3D5F', backgroundColor: '#1A2B4A' }}>
+              <h2 className="font-display mb-4 text-lg font-semibold text-white">Integration Health</h2>
+              {displayIntegrations.length === 0 ? (
+                <p className="text-xs py-8 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                  No integration data.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {displayIntegrations.map((int) => {
+                    const isOk      = int.status === 'operational'
+                    const isUnknown = int.status === 'unknown'
+                    const color = isOk ? '#38A169' : isUnknown ? '#94A3B8' : '#E8793A'
+                    const bg    = isOk ? 'rgba(56,161,105,0.15)' : isUnknown ? 'rgba(148,163,184,0.15)' : 'rgba(232,121,58,0.15)'
+                    return (
+                      <div key={int.name} className="flex items-center justify-between rounded-lg p-3"
+                        style={{ backgroundColor: 'rgba(15, 26, 46, 0.5)' }}>
+                        <div className="flex items-center gap-3">
+                          <Plug className="h-4 w-4" style={{ color: 'rgba(255,255,255,0.4)' }} />
+                          <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>{int.name}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{int.latency}</span>
+                          <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                            style={{ backgroundColor: bg, color }}>
+                            <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
+                            {int.status}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

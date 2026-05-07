@@ -9,6 +9,10 @@ const STATUS_LABEL: Record<string, string> = {
   generating: "GENERATING_VISUALS",
   ready:      "READY_FOR_PM_REVIEW",
   delivered:  "DELIVERED",
+  new:        "COLLECTING_INFO",
+  processing: "GENERATING_VISUALS",
+  concept_ready: "READY_FOR_PM_REVIEW",
+  paid:       "READY_FOR_PM_REVIEW",
 };
 
 export default async function ConceptsPage() {
@@ -35,9 +39,9 @@ export default async function ConceptsPage() {
     <div className="p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Exterior Concept Intake</h1>
+          <h1 className="text-2xl font-bold">Concept Intake Queue</h1>
           <p className="mt-1 text-sm text-slate-500">
-            {total > 0 ? `${total} active order${total !== 1 ? "s" : ""} in queue` : "Manage and review incoming exterior concept requests"}
+            {total > 0 ? `${total} intake${total !== 1 ? "s" : ""} · all service types` : "Incoming concept package purchases across all service types"}
           </p>
         </div>
       </div>

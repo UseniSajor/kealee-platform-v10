@@ -2,13 +2,63 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
 import {
   ArrowRight, CheckCircle, CheckCircle2, Clock, DollarSign, Zap, Wrench, Droplets,
-  Wind, Lightbulb, Download, Share2, ChevronDown, ChevronUp, Loader2,
+  Wind, Lightbulb, Download, Share2, ChevronDown, ChevronUp, Loader2, Video,
 } from 'lucide-react'
-import { VideoComparison } from '@/components/VideoComparison'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
+
+// ─── Render stubs (mirrors generate/route.ts — used for demo mode) ────────────
+const RENDER_STUBS: Record<string, string[]> = {
+  kitchen_remodel: [
+    'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1920&q=80',
+    'https://images.unsplash.com/photo-1565538810643-b5bdb714032a?w=1920&q=80',
+    'https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=1920&q=80',
+    'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=1920&q=80',
+    'https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=1920&q=80',
+    'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1920&q=80',
+  ],
+  bathroom_remodel: [
+    'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1920&q=80',
+    'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1920&q=80',
+    'https://images.unsplash.com/photo-1600566752734-2a0cd0e0da49?w=1920&q=80',
+    'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=1920&q=80',
+    'https://images.unsplash.com/photo-1620626011761-996317702574?w=1920&q=80',
+    'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1920&q=80',
+  ],
+  exterior_concept: [
+    'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1920&q=80',
+    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80',
+    'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1920&q=80',
+    'https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=1920&q=80',
+    'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1920&q=80',
+    'https://images.unsplash.com/photo-1628744448840-55bdb2497bd4?w=1920&q=80',
+  ],
+  garden_concept: [
+    'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1920&q=80',
+    'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=1920&q=80',
+    'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=1920&q=80',
+    'https://images.unsplash.com/photo-1558618047-f4e80c0d9e52?w=1920&q=80',
+    'https://images.unsplash.com/photo-1463554050456-f2ed7d3fec09?w=1920&q=80',
+    'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?w=1920&q=80',
+  ],
+  default: [
+    'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1920&q=80',
+    'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1920&q=80',
+    'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1920&q=80',
+    'https://images.unsplash.com/photo-1600607687939-ce8a6c349dc6?w=1920&q=80',
+    'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=1920&q=80',
+    'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=1920&q=80',
+  ],
+}
+
+function getStubRenders(projectPath: string, tier: number): string[] {
+  const stubs = RENDER_STUBS[projectPath] ?? RENDER_STUBS.default
+  const count = tier >= 3 ? stubs.length : tier === 2 ? 6 : 3
+  return stubs.slice(0, count)
+}
 
 // ─── Sample Concept Data (demo / fallback) ────────────────────────────────────
 
@@ -22,6 +72,8 @@ const SAMPLE_CONCEPTS: Record<string, ConceptData> = {
     location: '20024 (Washington, DC)',
     estimatedCost: 70400,
     projectTimeline: '12–14 weeks',
+    tier: 2,
+    renderUrls: getStubRenders('kitchen_remodel', 2),
     designConcept: {
       style: 'Modern Contemporary',
       colorPalette: ['White cabinetry', 'Gray granite', 'Stainless steel', 'Warm wood accents'],
@@ -60,6 +112,8 @@ const SAMPLE_CONCEPTS: Record<string, ConceptData> = {
     location: '22202 (Arlington, VA)',
     estimatedCost: 31000,
     projectTimeline: '8–10 weeks',
+    tier: 1,
+    renderUrls: getStubRenders('bathroom_remodel', 1),
     designConcept: {
       style: 'Spa-Inspired Modern',
       colorPalette: ['White marble tile', 'Brushed nickel', 'Warm grey', 'Soft white'],
@@ -97,6 +151,8 @@ const SAMPLE_CONCEPTS: Record<string, ConceptData> = {
     location: '20745 (Prince George\'s County, MD)',
     estimatedCost: 11800,
     projectTimeline: '4–6 weeks',
+    tier: 1,
+    renderUrls: getStubRenders('garden_concept', 1),
     designConcept: {
       style: 'Native Naturalistic',
       colorPalette: ['Dogwood white', 'Coneflower purple', 'Black-eyed susan gold', 'Ornamental grass green'],
@@ -152,6 +208,8 @@ interface ConceptData {
   location: string
   estimatedCost: number
   projectTimeline: string
+  tier: number
+  renderUrls: string[]
   designConcept: {
     style: string
     colorPalette: string[]
@@ -189,10 +247,16 @@ function conceptOutputToData(
 ): ConceptData {
   const deliverable = SERVICE_DELIVERABLES[projectPath]
   const formData = (intake.form_data as Record<string, unknown>) ?? {}
+  const tier = typeof formData.tier === 'number' ? formData.tier : 1
 
   const dc = (conceptOutput.designConcept as Record<string, unknown>) ?? {}
   const mep = (conceptOutput.mepSystem as Record<string, unknown>) ?? {}
   const bom = (conceptOutput.billOfMaterials as BOMItem[]) ?? []
+
+  // Use stored renderUrls if available, otherwise generate stubs
+  const renderUrls = Array.isArray(conceptOutput.renderUrls) && (conceptOutput.renderUrls as string[]).length > 0
+    ? (conceptOutput.renderUrls as string[])
+    : getStubRenders(projectPath, tier)
 
   return {
     conceptId: `concept_${(intake.id as string)?.slice(0, 8) ?? 'live'}`,
@@ -203,6 +267,8 @@ function conceptOutputToData(
     location: (intake.project_address as string) ?? '',
     estimatedCost: (conceptOutput.estimatedCost as number) ?? 0,
     projectTimeline: (conceptOutput.projectTimeline as string) ?? deliverable?.deliveryDays ?? '4-6 weeks',
+    tier,
+    renderUrls,
     designConcept: {
       style: (dc.style as string) ?? 'Modern Contemporary',
       colorPalette: (dc.colorPalette as string[]) ?? [],
@@ -381,22 +447,69 @@ function ConceptDeliverableContent() {
 
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
 
-        {/* ── Video Comparison ────────────────────────────────────────────── */}
-        <section>
-          <h2 className="text-lg font-bold mb-4" style={{ color: '#1A2B4A' }}>
-            Before / After Concept Preview
-          </h2>
-          <VideoComparison
-            projectType={data.projectPath || conceptType}
-            projectTitle={data.projectType}
-            beforeVideoUrl=""
-            afterVideoUrl=""
-            duration={45}
-          />
-          <p className="mt-2 text-xs text-gray-400 text-center">
-            AI-generated concept render — videos available after design package delivery
-          </p>
-        </section>
+        {/* ── Render Gallery ──────────────────────────────────────────────── */}
+        {data.renderUrls.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold" style={{ color: '#1A2B4A' }}>
+                Concept Renderings
+              </h2>
+              <span className="text-xs text-gray-400 font-medium">{data.renderUrls.length} render{data.renderUrls.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div className={`grid gap-3 ${data.renderUrls.length === 1 ? 'grid-cols-1' : data.renderUrls.length <= 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2 sm:grid-cols-3'}`}>
+              {data.renderUrls.map((url, i) => (
+                <div key={i} className={`relative overflow-hidden rounded-xl bg-gray-100 ${i === 0 && data.renderUrls.length > 3 ? 'col-span-2 row-span-2' : ''}`}
+                  style={{ aspectRatio: '16/9' }}>
+                  <Image
+                    src={url}
+                    alt={`${data.projectType} concept render ${i + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    unoptimized
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                  <span className="absolute bottom-2 left-3 text-white text-[10px] font-bold uppercase tracking-widest opacity-70">
+                    Render {i + 1}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-gray-400 text-center">
+              AI-curated concept images — final renders delivered in your package within 3–5 business days
+            </p>
+          </section>
+        )}
+
+        {/* ── Video Production Card (tier 2+) ─────────────────────────────── */}
+        {data.tier >= 2 && (
+          <section>
+            <div className="rounded-2xl overflow-hidden"
+              style={{ background: 'linear-gradient(135deg, #E8724B 0%, #c75c35 100%)' }}>
+              <div className="px-6 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/20">
+                  <Video className="h-6 w-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-white text-base mb-1">
+                    {data.tier >= 3 ? '4 Video Formats — In Production' : 'AI Transformation Video — In Production'}
+                  </h3>
+                  <p className="text-white/80 text-sm leading-relaxed">
+                    {data.tier >= 3
+                      ? 'Your 60s, 30s, 15s, and 10s AI transformation videos are being produced and will be delivered within your package window.'
+                      : 'Your 60-second AI transformation video is being produced — estimated delivery within your package window.'}
+                  </p>
+                </div>
+                <a
+                  href="mailto:hello@kealee.com?subject=Video%20Status%20Inquiry"
+                  className="shrink-0 rounded-xl bg-white/15 hover:bg-white/25 transition-colors px-4 py-2.5 text-sm font-semibold text-white border border-white/20"
+                >
+                  Check status →
+                </a>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* ── What's Included ─────────────────────────────────────────────── */}
         {deliverable?.includes && deliverable.includes.length > 0 && (

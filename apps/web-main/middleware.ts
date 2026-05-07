@@ -8,6 +8,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Public routes that don't require authentication
+// NOTE: /concept/deliverable is intentionally excluded — it requires auth
 const PUBLIC_ROUTES = [
   '/auth/login',
   '/auth/signup',
@@ -19,15 +20,31 @@ const PUBLIC_ROUTES = [
   '/pricing',
   '/blog',
   '/contact',
-  '/concept',
+  '/concept/details',
+  '/concept/contact',
+  '/concept/confirm',
+  '/concept',  // matches /concept exactly (service select page)
   '/permits',
   '/estimation',
   '/checkout'
 ]
 
+// Owner portal URL for cross-app redirects
+const OWNER_PORTAL_URL = process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? 'https://owner.kealee.com'
+
 export async function middleware(request: NextRequest) {
   const res = NextResponse.next()
   const pathname = request.nextUrl.pathname
+
+  // /concept/deliverable requires auth — redirect to owner portal login
+  if (pathname.startsWith('/concept/deliverable')) {
+    const supabase = createMiddlewareClient({ req: request, res })
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) {
+      return NextResponse.redirect(`${OWNER_PORTAL_URL}/login`)
+    }
+    return res
+  }
 
   // Create Supabase client
   const supabase = createMiddlewareClient({ req: request, res })
@@ -37,7 +54,7 @@ export async function middleware(request: NextRequest) {
   const user = session?.user
 
   // Allow public routes
-  if (PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
+  if (PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith(route + '/'))) {
     // Redirect authenticated users away from auth pages
     if (pathname.startsWith('/auth/') && user && !pathname.startsWith('/auth/callback')) {
       return NextResponse.redirect(new URL('/dashboard', request.url))

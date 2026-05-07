@@ -18,7 +18,9 @@ export default async function ConceptDetailPage({ params }: { params: { id: stri
     clientName: order.user?.name ?? order.user?.email ?? "Unknown",
     contactEmail: order.user?.email ?? "",
     projectAddress: intake.projectAddress ?? "",
-    projectType: order.packageTier ?? "",
+    projectType: order.packageTier
+      ? order.packageTier.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+      : "",
     budgetRange: intake.budgetRange ?? "",
     jurisdiction: intake.jurisdiction ?? "",
     uploadedPhotos: intake.photos ?? [],
@@ -26,6 +28,9 @@ export default async function ConceptDetailPage({ params }: { params: { id: stri
     permitPathSummary: outputs.permitPathSummary ?? null,
     exteriorConceptImages: outputs.exteriorConceptImages ?? [],
     landscapeConceptImages: outputs.landscapeConceptImages ?? [],
+    // Concept engine fields
+    intakeId: order.id,
+    projectPath: order.packageTier ?? 'interior_renovation',
   };
 
   return (

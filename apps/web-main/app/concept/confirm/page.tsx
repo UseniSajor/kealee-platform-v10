@@ -19,28 +19,28 @@ interface DeliverableItem {
 
 const TIER_ITEMS: Record<1 | 2 | 3, DeliverableItem[]> = {
   1: [
-    { icon: FileText,      label: 'PDF Design Report — 15–20 pages',          color: 'bg-blue-100 text-blue-600' },
-    { icon: ImageIcon,     label: '3–5 Concept Renderings (1920×1080)',        color: 'bg-purple-100 text-purple-600' },
-    { icon: Table2,        label: 'Budget Comparison — Basic · Standard · Luxury', color: 'bg-green-100 text-green-600' },
-    { icon: FileText,      label: 'Quick Reference Sheet (print-ready)',       color: 'bg-amber-100 text-amber-600' },
-    { icon: LayoutTemplate,label: 'Web Portal — lifetime access & sharing',   color: 'bg-sky-100 text-sky-600' },
-    { icon: Zap,           label: '1 revision included · Email support',       color: 'bg-slate-100 text-slate-500' },
+    { icon: Layers,        label: 'Floor Plan Overview Sketch + Layout Direction', color: 'bg-blue-100 text-blue-600' },
+    { icon: ImageIcon,     label: '3–5 Concept Renderings (1920×1080)',            color: 'bg-purple-100 text-purple-600' },
+    { icon: FileText,      label: 'Permit Scope Brief + Path-to-Approval',         color: 'bg-amber-100 text-amber-600' },
+    { icon: Table2,        label: 'Itemized Cost Estimate (Bill of Materials)',    color: 'bg-green-100 text-green-600' },
+    { icon: FileText,      label: 'PDF Design Report — 15–20 pages',              color: 'bg-sky-100 text-sky-600' },
+    { icon: Zap,           label: '1 revision included · Email support',           color: 'bg-slate-100 text-slate-500' },
   ],
   2: [
-    { icon: Video,         label: '60-Second AI Transformation Video',         color: 'bg-orange-100 text-orange-600' },
-    { icon: Layers,        label: '2D Architectural Floor Plan with MEP',      color: 'bg-blue-100 text-blue-600' },
-    { icon: ImageIcon,     label: '6–8 Enhanced Renderings (2560×1440)',       color: 'bg-purple-100 text-purple-600' },
-    { icon: LayoutTemplate,label: 'Interactive Portal — video, floor plan, docs', color: 'bg-sky-100 text-sky-600' },
-    { icon: Table2,        label: 'Itemized Bill of Materials (editable)',     color: 'bg-green-100 text-green-600' },
-    { icon: FileText,      label: 'Everything in Basic · 3 revisions · 30-day support', color: 'bg-slate-100 text-slate-500' },
+    { icon: Video,         label: '60-Second AI Transformation Video',             color: 'bg-orange-100 text-orange-600' },
+    { icon: Layers,        label: '2D Architectural Floor Plan with MEP layers',   color: 'bg-blue-100 text-blue-600' },
+    { icon: ImageIcon,     label: '6–8 Enhanced Renderings (2560×1440)',           color: 'bg-purple-100 text-purple-600' },
+    { icon: FileText,      label: 'Permit-Ready Documents (HOA + lender)',         color: 'bg-amber-100 text-amber-600' },
+    { icon: Table2,        label: 'Editable Bill of Materials',                    color: 'bg-green-100 text-green-600' },
+    { icon: Zap,           label: 'Everything in Basic · 3 revisions · 30-day support', color: 'bg-slate-100 text-slate-500' },
   ],
   3: [
-    { icon: Video,         label: '4 Video Formats — 60s · 30s · 15s · 10s', color: 'bg-orange-100 text-orange-600' },
-    { icon: Layers,        label: 'Multi-Layer 3D Floor Plan + CAD files',    color: 'bg-blue-100 text-blue-600' },
-    { icon: ImageIcon,     label: '12–15 Renderings in 4K resolution',        color: 'bg-purple-100 text-purple-600' },
-    { icon: LayoutTemplate,label: 'Enhanced Portal — virtual walkthrough',    color: 'bg-sky-100 text-sky-600' },
-    { icon: Phone,         label: '15-min expert consultation call',           color: 'bg-green-100 text-green-600' },
-    { icon: FileText,      label: 'Everything in Premium · 3 revisions · 90-day support', color: 'bg-slate-100 text-slate-500' },
+    { icon: Video,         label: '4 Video Formats — 60s · 30s · 15s · 10s',     color: 'bg-orange-100 text-orange-600' },
+    { icon: Layers,        label: '3D Floor Plan + CAD files (DWG export)',        color: 'bg-blue-100 text-blue-600' },
+    { icon: ImageIcon,     label: '12–15 Renderings in 4K resolution',             color: 'bg-purple-100 text-purple-600' },
+    { icon: Lock,          label: 'Permit Package Credit — full cost credited toward plans', color: 'bg-teal-100 text-teal-600' },
+    { icon: Phone,         label: '15-min expert consultation call',               color: 'bg-green-100 text-green-600' },
+    { icon: Zap,           label: 'Everything in Premium · 3 revisions · 90-day support', color: 'bg-slate-100 text-slate-500' },
   ],
 }
 
@@ -148,13 +148,15 @@ function ConfirmInner() {
           }
           // Other redeem error → still try Stripe
         } else {
-          // Promo accepted — go straight to deliverable
-          window.location.href = `${window.location.origin}/concept/deliverable?intakeId=${intakeId}&redeemed=true`
+          // Promo accepted — redirect to owner portal concept viewer
+          const ownerPortal = process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? window.location.origin
+          window.location.href = `${ownerPortal}/concepts/${intakeId}?welcome=1`
           return
         }
       }
 
       // ── Standard Stripe checkout path ─────────────────────────────────────
+      const ownerPortal = process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ?? window.location.origin
       const checkoutRes = await fetch('/api/intake/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -162,7 +164,7 @@ function ConfirmInner() {
           intakeId,
           projectPath,
           amount: price * 100,
-          successUrl: `${window.location.origin}/concept/deliverable?intakeId=${intakeId}&session_id={CHECKOUT_SESSION_ID}`,
+          successUrl: `${ownerPortal}/concepts/${intakeId}?welcome=1&session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${window.location.origin}/concept/confirm?${searchParams.toString()}&canceled=true`,
         }),
       })
@@ -318,6 +320,12 @@ function ConfirmInner() {
                   })}
                 </div>
 
+                {/* Permit credit badge */}
+                <div className="bg-teal-50 border-t border-teal-100 px-6 py-2.5 flex items-center gap-2">
+                  <span className="text-teal-600 text-xs">💡</span>
+                  <span className="text-xs text-teal-700 font-medium">Cost credited toward permit drawing plans</span>
+                </div>
+
                 {/* Select indicator */}
                 <div className={`border-t px-6 py-4 flex items-center justify-between transition-colors ${
                   isSelected ? 'bg-orange-50 border-orange-100' : 'bg-slate-50 border-slate-100'
@@ -335,6 +343,15 @@ function ConfirmInner() {
             )
           })}
         </div>
+      </div>
+
+      {/* ── Permit credit banner ─────────────────────────── */}
+      <div className="flex items-center gap-3 rounded-xl bg-teal-50 border border-teal-200 px-5 py-3.5">
+        <span className="text-xl">💡</span>
+        <p className="text-sm text-teal-800">
+          <span className="font-bold">Your design concept cost is credited in full toward permit drawing plans.</span>{' '}
+          When you proceed to permits, the amount you pay today is deducted from your permit package price.
+        </p>
       </div>
 
       {/* ── Checkout section ──────────────────────────────── */}
