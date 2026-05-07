@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -117,7 +117,7 @@ function OrderSummary() {
   )
 }
 
-export default function ProfessionalDrawingsIntakePage() {
+function ProfessionalDrawingsForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const conceptId = searchParams.get('conceptId') ?? ''
@@ -609,5 +609,17 @@ export default function ProfessionalDrawingsIntakePage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ProfessionalDrawingsIntakePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-700" />
+      </div>
+    }>
+      <ProfessionalDrawingsForm />
+    </Suspense>
   )
 }
