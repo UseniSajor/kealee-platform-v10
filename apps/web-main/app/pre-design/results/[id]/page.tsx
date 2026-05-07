@@ -213,7 +213,7 @@ function RevenueCtaBar({ route, requiresArchitect, projectId }: { route?: string
 
         {/* Permit Package CTA */}
         <Link
-          href={`/intake/permit_path_only/payment?amount=79900${projectId ? `&projectId=${projectId}` : ''}`}
+          href={`/intake/permit_path_only${projectId ? `?projectId=${projectId}` : ''}`}
           className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 hover:border-gray-300 hover:bg-gray-50 transition"
         >
           <div>

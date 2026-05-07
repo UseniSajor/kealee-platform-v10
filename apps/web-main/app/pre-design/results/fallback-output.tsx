@@ -39,7 +39,7 @@ export function FallbackOutput({ projectId, projectType, failureReason }: Fallba
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
           {/* Permit Package */}
           <Link
-            href={`/intake/permit_path_only/payment?projectId=${projectId}`}
+            href={`/intake/permit_path_only${projectId ? `?projectId=${projectId}` : ''}`}
             className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-6 hover:border-blue-500 hover:shadow-lg transition-all"
           >
             <div className="space-y-4">
