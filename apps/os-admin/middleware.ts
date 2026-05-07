@@ -1,9 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Roles allowed in the admin dashboard
 const ALLOWED_ROLES = ['admin', 'super_admin'];
 
 export async function middleware(request: NextRequest) {
@@ -46,42 +44,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Use service role client for DB lookups (bypasses RLS)
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  // Check role from app_metadata (set via Supabase SQL: UPDATE auth.users SET raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}' WHERE email = '...')
+  const role = (session.user.app_metadata?.role ?? 'user').toLowerCase();
 
-  if (!serviceKey || !supabaseUrl) {
-    // If service key not configured, allow through (rely on page-level auth)
-    return response;
-  }
-
-  const adminClient = createClient(supabaseUrl, serviceKey);
-
-  // Check for user in User table
-  const { data: user } = await adminClient
-    .from('User')
-    .select('role, status')
-    .eq('id', session.user.id)
-    .single();
-
-  // Must be ACTIVE
-  if (!user || user.status !== 'ACTIVE') {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = '/unauthorized';
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  // Enforce admin role — check OrgMember.roleKey first, fallback to User.role
-  const { data: membership } = await adminClient
-    .from('OrgMember')
-    .select('roleKey')
-    .eq('userId', session.user.id)
-    .limit(1)
-    .single();
-
-  const effectiveRole = (membership?.roleKey || user.role || 'user').toLowerCase();
-
-  if (!ALLOWED_ROLES.includes(effectiveRole)) {
+  if (!ALLOWED_ROLES.includes(role)) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/unauthorized';
     return NextResponse.redirect(redirectUrl);
