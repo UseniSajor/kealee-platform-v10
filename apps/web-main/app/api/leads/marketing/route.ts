@@ -208,6 +208,33 @@ export async function POST(req: NextRequest) {
   // Send welcome email
   const emailSent = await sendWelcomeEmail(email, name ?? '', funnelUrl, serviceLabel)
 
+  // Schedule 3-email drip sequence (Day 1, 3, 7)
+  if (savedToDb) {
+    try {
+      const supabase  = getSupabaseAdmin()
+      const now       = Date.now()
+      const dripSteps = [
+        { step: 1, delayDays: 1 },
+        { step: 2, delayDays: 3 },
+        { step: 3, delayDays: 7 },
+      ]
+      const dripRows = dripSteps.map(({ step, delayDays }) => ({
+        lead_id:       leadId,
+        email,
+        name:          name ?? null,
+        service_label: serviceLabel,
+        funnel_url:    funnelUrl,
+        sequence_step: step,
+        send_at:       new Date(now + delayDays * 24 * 60 * 60 * 1000).toISOString(),
+        status:        'pending',
+      }))
+      await supabase.from('marketing_drip_queue').insert(dripRows)
+    } catch (e: any) {
+      // Non-fatal — table may not exist yet; run the SQL in Supabase to enable drip
+      console.warn('[leads/marketing] Drip schedule skipped:', e?.message)
+    }
+  }
+
   console.log(`[leads/marketing] Lead captured: email=${email} service=${projectInterest ?? 'unknown'} source=${source ?? 'unknown'} saved=${savedToDb} email=${emailSent}`)
 
   return NextResponse.json({

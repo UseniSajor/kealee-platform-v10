@@ -11,6 +11,7 @@ import {
   BarChart3,
   LogOut,
   Radar,
+  Megaphone,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -19,6 +20,7 @@ const NAV_ITEMS = [
   { href: '/twins', label: 'Digital Twins', icon: Boxes },
   { href: '/events', label: 'Events', icon: Radio },
   { href: '/bots', label: 'Bots', icon: Bot },
+  { href: '/marketing', label: 'Marketing', icon: Megaphone },
   { href: '/integrations', label: 'Integrations', icon: Plug },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
 ]

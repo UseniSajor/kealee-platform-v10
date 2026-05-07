@@ -109,7 +109,11 @@ Given a serviceType and targetAudience, produce:
 - emailSubject: compelling email subject line
 - emailBody: personalized email body (3-4 paragraphs, includes CTA to kealee.com/concept)
 - dmScript: 3-message DM conversation script (intro → value prop → CTA)
+- redditTitle: Reddit post title (not salesy, sounds organic, max 100 chars)
+- redditPost: Reddit post body (2-3 paragraphs, helpful tone, soft mention of Kealee at end, suitable for r/HomeImprovement or r/RealEstate)
 - keyBenefits: string[] (3-5 bullet points for this service type)
+
+For Reddit: write as a helpful community member sharing a resource, not as an advertiser. Lead with value/education, mention Kealee naturally at the end.
 
 Respond with valid JSON only, no markdown.`,
   },
