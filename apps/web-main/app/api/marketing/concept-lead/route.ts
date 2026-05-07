@@ -13,9 +13,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
-import { createOrUpdateContact, createOpportunity } from '@kealee/core-rules'
+import { createOrUpdateContact, createOpportunity } from '@/lib/marketing/ghl-client'
 import { scheduleSequence } from '@/lib/marketing/sequences'
-import { CONCEPT_KITCHEN_PRICE, CONCEPT_WHOLE_HOME_PRICE } from '@kealee/core-rules'
+import { CONCEPT_KITCHEN_PRICE, CONCEPT_WHOLE_HOME_PRICE } from '@/lib/marketing/pricing'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://kealee.com'
 

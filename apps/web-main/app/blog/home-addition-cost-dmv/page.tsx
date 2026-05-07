@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { CONCEPT_WHOLE_HOME_PRICE, PERMIT_STANDARD_PRICE } from '@kealee/core-rules'
+import { CONCEPT_WHOLE_HOME_PRICE, PERMIT_STANDARD_PRICE } from '@/lib/marketing/pricing'
 
 export const metadata: Metadata = {
   title: 'Home Addition Cost in the DMV — 2026 Guide | Kealee',

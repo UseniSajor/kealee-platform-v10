@@ -10,7 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { tagContact, updateContactField } from '@kealee/core-rules'
+import { tagContact, updateContactField } from '@/lib/marketing/ghl-client'
 
 interface GhlSmsPayload {
   contactId?:      string

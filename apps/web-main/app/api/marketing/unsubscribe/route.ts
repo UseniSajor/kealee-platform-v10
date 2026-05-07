@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createHmac }                from 'crypto'
 import { getSupabaseAdmin }          from '@/lib/supabase-server'
-import { updateContactField }        from '@kealee/core-rules'
+import { updateContactField }        from '@/lib/marketing/ghl-client'
 
 const SITE_URL        = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://kealee.com'
 const UNSUBSCRIBE_SECRET = process.env.UNSUBSCRIBE_JWT_SECRET ?? process.env.NEXTAUTH_SECRET ?? 'kealee-unsubscribe-secret'

@@ -36,7 +36,7 @@ export async function GET() {
     const byService: Record<string, number> = {}
 
     for (const lead of all) {
-      const src = (lead.form_data as any)?.source ?? lead.source ?? 'unknown'
+      const src = (lead.form_data as any)?.source ?? 'unknown'
       bySource[src]             = (bySource[src] ?? 0) + 1
       byService[lead.project_path] = (byService[lead.project_path] ?? 0) + 1
     }

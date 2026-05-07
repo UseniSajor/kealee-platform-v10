@@ -18,7 +18,7 @@ import {
   triggerWorkflow,
   createOpportunity,
   moveOpportunityStage,
-} from '@kealee/core-rules'
+} from '@/lib/marketing/ghl-client'
 
 const CRON_SECRET = process.env.CRON_SECRET ?? ''
 const BATCH_LIMIT = 50

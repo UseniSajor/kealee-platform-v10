@@ -243,6 +243,7 @@ export async function POST(req: NextRequest) {
     const projectPath = intake.project_path as string
     const existingFormData = (intake.form_data as Record<string, unknown>) ?? {}
     const tier = typeof existingFormData.tier === 'number' ? existingFormData.tier : 1
+    const deliverable = SERVICE_DELIVERABLES[projectPath]
 
     // Return cached concept if already generated
     if (existingFormData.conceptOutput && intake.status === 'concept_ready') {

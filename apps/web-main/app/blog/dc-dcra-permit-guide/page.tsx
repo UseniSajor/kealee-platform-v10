@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { PERMIT_STANDARD_PRICE, PERMIT_BASIC_PRICE } from '@kealee/core-rules'
+import { PERMIT_STANDARD_PRICE, PERMIT_BASIC_PRICE } from '@/lib/marketing/pricing'
 
 export const metadata: Metadata = {
   title: 'DC DCRA Permit Guide 2026 — What Homeowners Need to Know | Kealee',

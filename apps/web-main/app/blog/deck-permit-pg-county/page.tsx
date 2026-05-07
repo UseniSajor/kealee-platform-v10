@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { PERMIT_STANDARD_PRICE, CONCEPT_KITCHEN_PRICE } from '@kealee/core-rules'
+import { PERMIT_STANDARD_PRICE, CONCEPT_KITCHEN_PRICE } from '@/lib/marketing/pricing'
 
 export const metadata: Metadata = {
   title: 'Deck Permit in Prince George\'s County, MD — Complete 2026 Guide | Kealee',

@@ -10,7 +10,7 @@ import {
   CONCEPT_WHOLE_HOME_PRICE,
   PERMIT_STANDARD_PRICE,
   ESTIMATION_PRICE,
-} from '@kealee/core-rules'
+} from '@/lib/marketing/pricing'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

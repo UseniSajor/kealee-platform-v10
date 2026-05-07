@@ -13,7 +13,7 @@ import {
   PERMIT_BASIC_PRICE,
   CONCEPT_KITCHEN_PRICE,
   CONCEPT_WHOLE_HOME_PRICE,
-} from '@kealee/core-rules'
+} from '@/lib/marketing/pricing'
 
 // ── Step types ────────────────────────────────────────────────────────────────
 

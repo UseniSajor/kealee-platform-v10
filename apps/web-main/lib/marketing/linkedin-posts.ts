@@ -9,7 +9,7 @@ import {
   PERMIT_STANDARD_PRICE,
   CONCEPT_KITCHEN_PRICE,
   ADU_BUNDLE_PRICE,
-} from '@kealee/core-rules'
+} from '@/lib/marketing/pricing'
 
 export interface LinkedInPost {
   week:          number

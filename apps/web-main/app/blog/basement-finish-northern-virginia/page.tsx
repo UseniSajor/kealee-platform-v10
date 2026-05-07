@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { CONCEPT_KITCHEN_PRICE, PERMIT_STANDARD_PRICE } from '@kealee/core-rules'
+import { CONCEPT_KITCHEN_PRICE, PERMIT_STANDARD_PRICE } from '@/lib/marketing/pricing'
 
 export const metadata: Metadata = {
   title: 'Finishing a Basement in Northern Virginia — Permits, Costs & Timeline 2026 | Kealee',

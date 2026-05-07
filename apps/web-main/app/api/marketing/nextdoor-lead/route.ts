@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z }                         from 'zod'
 import { getSupabaseAdmin }          from '@/lib/supabase-server'
-import { createOrUpdateContact }     from '@kealee/core-rules'
+import { createOrUpdateContact }     from '@/lib/marketing/ghl-client'
 import { scheduleSequence }          from '@/lib/marketing/sequences'
 
 const NextdoorLeadSchema = z.object({
