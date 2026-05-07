@@ -409,6 +409,24 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     deliveryDays: '1 day',
     nextStep: { label: 'Browse the Marketplace', href: '/marketplace' },
   },
+  professional_drawings: {
+    label: 'Professional Design Drawings',
+    category: 'permit',
+    agentType: 'permit',
+    generatesConcept: false,
+    permitRequired: 'always',
+    includes: [
+      'Licensed architect / PE assigned to your project',
+      'AI concept review and integration',
+      'Permit-ready drawing set (floor plan, elevations, site plan)',
+      'PE stamp where required by jurisdiction',
+      'Jurisdiction cover sheet and code compliance notes',
+      'Building department coordination',
+    ],
+    deliveryDays: '7–14 days',
+    nextStep: { label: 'File Your Permit', href: '/intake/permit_path_only' },
+  },
+
   // All-in-one bundle — design concept + cost estimate + permit scope
   design_estimate_permit_bundle: {
     label: 'Design + Estimate + Permit Bundle',

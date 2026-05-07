@@ -842,7 +842,7 @@ function ConceptDeliverableContent() {
             {/* Professional permit-ready drawings CTA — shown when permit required or PE stamp needed */}
             {(data.permitScope?.requiresPermit || data.permitScope?.requiresPE) && (
               <Link
-                href="/intake/permit_package"
+                href={`/intake/professional_drawings${intakeId ? `?conceptId=${intakeId}` : ''}`}
                 className="flex flex-col rounded-xl p-4 transition-all hover:shadow-sm"
                 style={{ background: 'linear-gradient(135deg, #6B46C120 0%, #6B46C108 100%)', border: '1px solid #6B46C130' }}
               >
@@ -852,7 +852,7 @@ function ConceptDeliverableContent() {
                 <span className="text-sm font-semibold text-gray-900 mb-auto">
                   {data.permitScope?.requiresPE ? 'Get Permit-Ready Drawings' : 'File Your Permit'}
                 </span>
-                <span className="text-xs font-semibold mt-3" style={{ color: '#6B46C1' }}>From $799 →</span>
+                <span className="text-xs font-semibold mt-3" style={{ color: '#6B46C1' }}>From $1,499 →</span>
               </Link>
             )}
 

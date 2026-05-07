@@ -639,16 +639,14 @@ export default function ConceptDeliverablePage() {
                   construction without permit approval. Start your permit package now to avoid delays.
                 </p>
               </div>
-              <a href="https://kealee.com/intake/permit_path_only"
+              <a href={`https://kealee.com/intake/professional_drawings?conceptId=${intakeId}`}
                 className="shrink-0 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                 style={{ backgroundColor: '#6B46C1' }}>
-                Start Permit Package →
+                Get Permit-Ready Drawings →
               </a>
             </div>
             <div className="px-6 pb-4 flex items-center gap-2">
-              <p className="text-xs text-purple-600 font-medium">From $799</p>
-              <span className="text-purple-300">·</span>
-              <p className="text-xs text-purple-600">Permit drawings + jurisdiction submission included</p>
+              <p className="text-xs text-purple-600 font-medium">From $1,499 · Licensed architect · PE stamp included</p>
             </div>
           </section>
         )}
@@ -667,7 +665,7 @@ export default function ConceptDeliverablePage() {
             </Link>
 
             {requiresDrawings && (
-              <a href="https://kealee.com/intake/permit_package"
+              <a href={`https://kealee.com/intake/professional_drawings?conceptId=${intakeId}`}
                 className="flex flex-col rounded-xl p-4 transition-all hover:shadow-sm"
                 style={{ background: 'linear-gradient(135deg, #6B46C120 0%, #6B46C108 100%)', border: '1px solid #6B46C130' }}>
                 <span className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#6B46C1' }}>
@@ -676,7 +674,7 @@ export default function ConceptDeliverablePage() {
                 <span className="text-sm font-semibold text-gray-900 mb-auto">
                   {data.permitScope?.requiresPE ? 'Get Permit-Ready Drawings' : 'File Your Permit'}
                 </span>
-                <span className="text-xs font-semibold mt-3" style={{ color: '#6B46C1' }}>From $799 →</span>
+                <span className="text-xs font-semibold mt-3" style={{ color: '#6B46C1' }}>From $1,499 →</span>
               </a>
             )}
 

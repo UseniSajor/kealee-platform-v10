@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import {
   Search, X, ArrowRight, Home, Wrench, Plus, LayoutGrid,
-  Building2, Store, Flower2, Shield, Calculator, Users, Zap,
+  Building2, Store, Flower2, Shield, Calculator, Users, Zap, PenTool,
 } from 'lucide-react'
 import Link from 'next/link'
 import { MarketplaceTopbar } from '@/components/marketplace/MarketplaceTopbar'
@@ -137,6 +137,20 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
     ],
     trades: ['Landscaping', 'Masonry', 'Irrigation'],
   },
+  {
+    id: 'architects',
+    label: 'Architects & Designers',
+    color: '#6B46C1',
+    bgLight: '#FAF5FF',
+    Icon: PenTool,
+    fromPrice: 'From $1,499',
+    trades: ['Architect', 'Licensed Designer', 'PE Engineer'],
+    services: [
+      { slug: 'professional-drawings', label: 'Permit-Ready Drawings',           priceRange: '$1,499–$2,999', typical: '7–14 days',  popular: true, href: '/intake/professional_drawings' },
+      { slug: 'pe-stamp',              label: 'Structural / PE Stamp',           priceRange: '$799–$1,499',   typical: '5–10 days',                 href: '/intake/professional_drawings' },
+      { slug: 'interior-design',       label: 'Interior Design Consultation',    priceRange: '$395–$695',     typical: '48–72 hrs',                 href: '/intake/kitchen_remodel' },
+    ],
+  },
 ]
 
 // ─── Cross-Category Services ───────────────────────────────────────────────────
@@ -238,7 +252,7 @@ const CONTRACTORS: ContractorCardData[] = [
     category: 'commercial',
     rating: 4.7,
     reviewCount: 42,
-    location: 'Washington, DC',
+    location: 'Austin, TX',
     yearsExperience: 9,
     projectsCompleted: 98,
     isVerified: true,
@@ -253,12 +267,12 @@ const CONTRACTORS: ContractorCardData[] = [
   {
     id: 'c4',
     name: 'Elena Santos',
-    company: 'Prestige Interiors DC',
+    company: 'Prestige Interiors',
     trade: 'General Contractor',
     category: 'multifamily',
     rating: 5.0,
     reviewCount: 31,
-    location: 'Arlington, VA',
+    location: 'Dallas, TX',
     yearsExperience: 14,
     projectsCompleted: 67,
     isVerified: true,
@@ -266,7 +280,7 @@ const CONTRACTORS: ContractorCardData[] = [
     responseTime: '< 1hr',
     priceRange: 'premium',
     specialties: ['Luxury Residential', 'Multifamily', 'Historic Renovation'],
-    bio: 'Award-winning GC specializing in luxury renovations and multifamily gut rehabs in the DC metro area.',
+    bio: 'Award-winning GC specializing in luxury renovations and multifamily gut rehabs across major metro areas.',
     initials: 'ES',
     accentColor: '#38A169',
   },
@@ -278,7 +292,7 @@ const CONTRACTORS: ContractorCardData[] = [
     category: 'residential',
     rating: 4.6,
     reviewCount: 58,
-    location: 'Rockville, MD',
+    location: 'Houston, TX',
     yearsExperience: 11,
     projectsCompleted: 189,
     isVerified: true,
@@ -298,7 +312,7 @@ const CONTRACTORS: ContractorCardData[] = [
     category: 'multifamily',
     rating: 4.8,
     reviewCount: 24,
-    location: 'Baltimore, MD',
+    location: 'San Antonio, TX',
     yearsExperience: 16,
     projectsCompleted: 78,
     isVerified: true,
@@ -306,9 +320,49 @@ const CONTRACTORS: ContractorCardData[] = [
     responseTime: '< 12hr',
     priceRange: 'mid',
     specialties: ['Wood Framing', 'Steel Stud', 'Multifamily'],
-    bio: 'Framing specialist with deep experience in multifamily wood-frame construction across the Baltimore metro.',
+    bio: 'Framing specialist with deep experience in multifamily wood-frame construction across major metros.',
     initials: 'PP',
     accentColor: '#E8793A',
+  },
+  {
+    id: 'c7',
+    name: 'Sofia Reyes',
+    company: 'Reyes Architecture Studio',
+    trade: 'Licensed Architect',
+    category: 'residential',
+    rating: 4.9,
+    reviewCount: 46,
+    location: 'Bethesda, MD',
+    yearsExperience: 14,
+    projectsCompleted: 112,
+    isVerified: true,
+    isInsured: true,
+    responseTime: '< 4hr',
+    priceRange: 'mid',
+    specialties: ['Permit-Ready Drawings', 'ADUs', 'Additions'],
+    bio: 'Licensed architect specializing in permit-ready drawing sets for residential renovations, ADUs, and additions across the DMV region.',
+    initials: 'SR',
+    accentColor: '#6B46C1',
+  },
+  {
+    id: 'c8',
+    name: 'David Okafor',
+    company: 'Okafor PE Consulting',
+    trade: 'Licensed Architect',
+    category: 'residential',
+    rating: 4.8,
+    reviewCount: 31,
+    location: 'Washington, DC',
+    yearsExperience: 19,
+    projectsCompleted: 89,
+    isVerified: true,
+    isInsured: true,
+    responseTime: '< 6hr',
+    priceRange: 'premium',
+    specialties: ['PE Stamp', 'Structural Drawings', 'Whole-Home Renovation'],
+    bio: 'Structural PE with deep residential and light commercial experience. Provides PE stamps, structural drawings, and code compliance review for DMV permits.',
+    initials: 'DO',
+    accentColor: '#6B46C1',
   },
 ]
 
@@ -491,7 +545,7 @@ export default function MarketplacePage() {
             What are you building?
           </h1>
           <p className="mt-2 text-sm text-gray-500 mb-6">
-            Browse renovation types and connect with vetted local contractors in the DMV area.
+            Browse renovation types and connect with vetted local contractors in your area.
           </p>
 
           {/* Search */}
