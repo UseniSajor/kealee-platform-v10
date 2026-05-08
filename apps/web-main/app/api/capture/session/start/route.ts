@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { isTokenExpired, normalizeCaptureSession, getZoneMeta } from '@kealee/intake'
 
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/capture/session/start?token=xxx
 // Resolves a capture token → returns session + zone metadata
 export async function GET(req: NextRequest) {

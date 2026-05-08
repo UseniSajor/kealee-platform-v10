@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { randomUUID } from 'crypto'
 
+export const dynamic = 'force-dynamic'
+
+
 // POST /api/intake — create a new intake record
 export async function POST(req: NextRequest) {
   try {

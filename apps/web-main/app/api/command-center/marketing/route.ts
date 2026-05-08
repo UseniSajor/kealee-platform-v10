@@ -10,6 +10,9 @@
 import { NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 
+export const dynamic = 'force-dynamic'
+
+
 export const runtime = 'nodejs'
 
 const MARKETING_SOURCES = ['marketing_bot', 'facebook_bot', 'instagram_dm', 'email_bot', 'chatbot', 'reddit']

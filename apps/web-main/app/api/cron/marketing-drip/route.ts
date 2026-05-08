@@ -16,6 +16,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 
+export const dynamic = 'force-dynamic'
+
+
 export const runtime = 'nodejs'
 
 const SITE_URL    = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://kealee.com'

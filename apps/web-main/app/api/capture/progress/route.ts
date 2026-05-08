@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/capture/progress?captureSessionId=xxx
 // Polling endpoint for desktop progress panel
 export async function GET(req: NextRequest) {

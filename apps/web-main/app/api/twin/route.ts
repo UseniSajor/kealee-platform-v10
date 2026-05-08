@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { buildDigitalTwinRecord, CreateDigitalTwinSchema } from '@kealee/intake'
 
+export const dynamic = 'force-dynamic'
+
+
 // POST /api/twin — create twin (non-capture paths)
 export async function POST(req: NextRequest) {
   try {

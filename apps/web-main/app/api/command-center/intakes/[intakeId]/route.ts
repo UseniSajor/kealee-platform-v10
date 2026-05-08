@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/command-center/intakes/[intakeId]
 export async function GET(req: NextRequest, { params }: { params: { intakeId: string } }) {
   const { intakeId } = params

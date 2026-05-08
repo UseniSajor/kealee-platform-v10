@@ -12,6 +12,9 @@ import { createHmac }                from 'crypto'
 import { getSupabaseAdmin }          from '@/lib/supabase-server'
 import { updateContactField }        from '@/lib/marketing/ghl-client'
 
+export const dynamic = 'force-dynamic'
+
+
 const SITE_URL           = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://kealee.com'
 const UNSUBSCRIBE_SECRET = process.env.UNSUBSCRIBE_JWT_SECRET ?? process.env.NEXTAUTH_SECRET ?? 'kealee-unsubscribe-secret'
 

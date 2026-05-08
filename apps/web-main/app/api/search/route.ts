@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
+
 // All valid project paths with rich keyword context for Claude
 const PROJECT_PATH_CONTEXT = [
   { path: 'kitchen_remodel',          label: 'Kitchen Remodel',             keywords: 'kitchen, cabinets, countertops, appliances, cooking, backsplash, island, layout' },

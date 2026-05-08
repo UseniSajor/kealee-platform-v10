@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin }          from '@/lib/supabase-server'
 import {
+
   sendSMS,
   sendEmail,
   tagContact,
@@ -19,6 +20,8 @@ import {
   createOpportunity,
   moveOpportunityStage,
 } from '@/lib/marketing/ghl-client'
+
+export const dynamic = 'force-dynamic'
 
 const CRON_SECRET = process.env.CRON_SECRET ?? ''
 const BATCH_LIMIT = 50

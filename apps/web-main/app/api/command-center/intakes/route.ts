@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 
+export const dynamic = 'force-dynamic'
+
+
 // GET /api/command-center/intakes
 // Returns intake queue with optional filters
 export async function GET(req: NextRequest) {

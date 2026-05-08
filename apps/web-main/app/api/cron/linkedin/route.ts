@@ -17,6 +17,9 @@
 import { NextRequest, NextResponse }   from 'next/server'
 import { LINKEDIN_POSTS, LinkedInPost } from '@/lib/marketing/linkedin-posts'
 
+export const dynamic = 'force-dynamic'
+
+
 const CRON_SECRET              = process.env.CRON_SECRET              ?? ''
 const LINKEDIN_ACCESS_TOKEN    = process.env.LINKEDIN_ACCESS_TOKEN    ?? ''
 const LINKEDIN_ORGANIZATION_ID = process.env.LINKEDIN_ORGANIZATION_ID ?? ''

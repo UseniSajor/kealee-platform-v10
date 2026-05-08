@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import {
+
   generateCaptureId,
   generateCaptureToken,
   getTokenExpiresAt,
   getRequiredZones,
   CreateCaptureSessionSchema,
 } from '@kealee/intake'
+
+export const dynamic = 'force-dynamic'
 
 // POST /api/capture/session — create a new capture session
 export async function POST(req: NextRequest) {
