@@ -10,7 +10,7 @@ const nextConfig = {
     // Warning: This allows production builds to complete even with ESLint errors
     ignoreDuringBuilds: true,
   },
-  transpilePackages: ['@kealee/shared-ai', '@kealee/database', '@kealee/auth'],
+  transpilePackages: ['@kealee/shared-ai', '@kealee/database', '@kealee/auth', '@kealee/shared'],
   images: {
     domains: ['localhost', 'supabase.co', 'images.unsplash.com'],
     remotePatterns: [

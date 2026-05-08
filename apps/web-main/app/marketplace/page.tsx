@@ -11,6 +11,7 @@ import { MarketplaceNav } from '@/components/marketplace/MarketplaceNav'
 import { MarketplaceFilterBar, type Filters } from '@/components/marketplace/MarketplaceFilterBar'
 import { MarketplaceCard, type ContractorCardData } from '@/components/marketplace/MarketplaceCard'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { MARKETPLACE_DIRECTORY_SEARCH_PLACEHOLDER } from '@kealee/shared'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -555,7 +556,7 @@ export default function MarketplacePage() {
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search by project type, trade, or specialty..."
+              placeholder={MARKETPLACE_DIRECTORY_SEARCH_PLACEHOLDER}
               className="w-full rounded-2xl border border-gray-200 py-3.5 pl-12 pr-12 text-sm shadow-sm placeholder-gray-400 focus:border-[#2ABFBF] focus:outline-none focus:ring-2 focus:ring-[#2ABFBF]/20"
             />
             {search && (

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { HERO_ASK_ANYTHING_PLACEHOLDER } from '@kealee/shared'
 
 export function HeroSearch() {
   const [query, setQuery] = useState('')
@@ -27,7 +28,7 @@ export function HeroSearch() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Ask anything about your project..."
+        placeholder={HERO_ASK_ANYTHING_PLACEHOLDER}
         className="w-full bg-transparent px-6 py-4 text-lg outline-none placeholder:text-slate-400"
       />
       <button

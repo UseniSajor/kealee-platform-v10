@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  transpilePackages: ['@kealee/ui', '@kealee/auth'],
+  transpilePackages: ['@kealee/ui', '@kealee/auth', '@kealee/shared'],
   images: {
     domains: ['images.unsplash.com'],
     remotePatterns: [

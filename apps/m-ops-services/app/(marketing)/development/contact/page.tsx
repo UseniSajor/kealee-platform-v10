@@ -17,6 +17,7 @@ import {
   Checkbox,
 } from "@/components/ui"
 import { Loader2, CheckCircle2, AlertCircle, Mail, MapPin, Clock } from "lucide-react"
+import { OPS_MARKETPLACE_CONTACT_MESSAGE_PLACEHOLDER } from "@kealee/shared"
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -364,7 +365,7 @@ export default function ContactPage() {
                           id="message"
                           {...register("message")}
                           rows={5}
-                          placeholder="Tell us about your project, challenges, and what you're looking to achieve..."
+                          placeholder={OPS_MARKETPLACE_CONTACT_MESSAGE_PLACEHOLDER}
                         />
                         {errors.message && (
                           <p className="text-sm text-red-600 mt-1">{errors.message.message}</p>

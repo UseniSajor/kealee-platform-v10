@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Search, X } from 'lucide-react'
+import { GALLERY_SEARCH_PLACEHOLDER } from '@kealee/shared'
 
 interface FilterBarProps {
   categories: string[]
@@ -47,7 +48,7 @@ export function FilterBar({
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Search services..."
+          placeholder={GALLERY_SEARCH_PLACEHOLDER}
           className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-10 text-sm placeholder-gray-400 shadow-sm focus:border-[#2ABFBF] focus:outline-none focus:ring-2 focus:ring-[#2ABFBF]/20"
         />
         {inputValue && (

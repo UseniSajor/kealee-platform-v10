@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { getPermitsOnlyScopePlaceholder } from '@kealee/shared'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.kealee.com'
 
@@ -257,7 +258,7 @@ function IntakeForm() {
               <textarea
                 value={form.scope}
                 onChange={e => set('scope', e.target.value)}
-                placeholder="Describe what you're building or renovating…"
+                placeholder={getPermitsOnlyScopePlaceholder(form.projectType)}
                 rows={4}
                 style={{ width: '100%', padding: '10px 14px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 14, resize: 'vertical', boxSizing: 'border-box' }}
               />

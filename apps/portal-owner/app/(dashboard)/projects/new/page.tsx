@@ -8,6 +8,10 @@ import {
   ChevronRight, AlertCircle, Camera, Video, Upload, X,
 } from 'lucide-react'
 import { RevenueHookModal } from '@kealee/core-hooks'
+import {
+  PORTAL_OWNER_NEW_PROJECT_NAME_PLACEHOLDER,
+  PORTAL_OWNER_NEW_PROJECT_SCOPE_PLACEHOLDER,
+} from '@kealee/shared'
 
 type Step = 'type' | 'details' | 'location' | 'twin' | 'info' | 'media' | 'review'
 
@@ -512,7 +516,7 @@ export default function NewProjectPage() {
                   type="text"
                   value={details.name}
                   onChange={(e) => setDetails({ ...details, name: e.target.value })}
-                  placeholder="e.g. Kitchen Remodel - Oak Lane"
+                  placeholder={PORTAL_OWNER_NEW_PROJECT_NAME_PLACEHOLDER}
                   className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2"
                   style={{ '--tw-ring-color': 'rgba(42,191,191,0.3)' } as React.CSSProperties}
                 />
@@ -522,7 +526,7 @@ export default function NewProjectPage() {
                 <textarea
                   value={details.description}
                   onChange={(e) => setDetails({ ...details, description: e.target.value })}
-                  placeholder="Brief description of the project scope..."
+                  placeholder={PORTAL_OWNER_NEW_PROJECT_SCOPE_PLACEHOLDER}
                   rows={3}
                   className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2"
                   style={{ '--tw-ring-color': 'rgba(42,191,191,0.3)' } as React.CSSProperties}

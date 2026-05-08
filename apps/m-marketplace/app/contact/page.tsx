@@ -7,6 +7,7 @@ import { Footer } from '@/components/Footer';
 import { Mail, Phone, MapPin, Send, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { sectionImages } from '@kealee/ui';
+import { CONTACT_PAGE_MESSAGE_PLACEHOLDER } from '@kealee/shared';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -289,7 +290,7 @@ export default function ContactPage() {
                           rows={6}
                           value={formData.message}
                           onChange={(e) => setFormData({...formData, message: e.target.value})}
-                          placeholder="Tell us about your project or question..."
+                          placeholder={CONTACT_PAGE_MESSAGE_PLACEHOLDER}
                           className="
                             w-full px-4 py-3
                             border-2 border-gray-300 rounded-lg

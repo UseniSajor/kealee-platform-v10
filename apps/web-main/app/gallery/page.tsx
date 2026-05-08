@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { ArrowRight, Search, X, Building2 } from 'lucide-react'
 import { SERVICES } from '@/lib/services-config'
 import type { Service } from '@/lib/services-config'
+import { GALLERY_SEARCH_PLACEHOLDER } from '@kealee/shared'
 
 // Precon = AI concepts, estimates, permits (digital deliverables)
 // Build = construction execution (separate flow)
@@ -131,7 +132,7 @@ export default function GalleryPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
             <input
               type="text"
-              placeholder="Search services..."
+              placeholder={GALLERY_SEARCH_PLACEHOLDER}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-8 pr-8 py-1.5 rounded-lg border border-slate-200 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#E8724B] focus:outline-none focus:ring-2 focus:ring-[#E8724B]/20 transition"

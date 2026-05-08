@@ -4,6 +4,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle, Lock } from 'lucide-react'
+import { getPreDesignCheckoutNotesPlaceholder } from '@kealee/shared'
 
 type ProjectType = 'exterior' | 'interior' | 'landscape'
 
@@ -168,7 +169,7 @@ export default function PreDesignCheckoutPage() {
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
                   className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 resize-none"
-                  placeholder="Describe what you're hoping to achieve, any specific areas of focus, budget range, or constraints..."
+                  placeholder={getPreDesignCheckoutNotesPlaceholder(typeKey)}
                 />
               </div>
             </div>

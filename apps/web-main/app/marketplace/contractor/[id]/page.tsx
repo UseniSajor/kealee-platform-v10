@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { ArrowRight, Users, CheckCircle } from 'lucide-react'
+import { MARKETPLACE_CONTRACTOR_INQUIRY_PLACEHOLDER } from '@kealee/shared'
 
 const BUDGET_RANGES = [
   'Under $10,000',
@@ -172,7 +173,7 @@ export default function ContractorInquiryPage() {
                 value={form.description}
                 onChange={handleChange}
                 rows={4}
-                placeholder="Describe your project (e.g. kitchen remodel, 200 sq ft, open concept layout, new appliances...)"
+                placeholder={MARKETPLACE_CONTRACTOR_INQUIRY_PLACEHOLDER}
                 className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm placeholder-gray-400 focus:border-[#2ABFBF] focus:outline-none focus:ring-2 focus:ring-[#2ABFBF]/20 resize-none"
               />
             </div>

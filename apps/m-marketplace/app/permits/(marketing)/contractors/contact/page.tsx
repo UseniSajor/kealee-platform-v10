@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import { CheckCircle2, AlertCircle, Loader2, Mail, Phone, Clock } from "lucide-react"
+import { PERMITS_MARKETING_CONTRACTOR_MESSAGE_PLACEHOLDER } from "@kealee/shared"
 
 export default function PermitContactPage() {
   const [formData, setFormData] = useState({
@@ -310,7 +311,7 @@ export default function PermitContactPage() {
                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                         rows={4}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-transparent"
-                        placeholder="What type of permits do you need? Which jurisdictions? Any special requirements?"
+                        placeholder={PERMITS_MARKETING_CONTRACTOR_MESSAGE_PLACEHOLDER}
                         required
                       />
                     </div>

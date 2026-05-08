@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { ESTIMATION_AI_TOOLS_DESCRIPTION_PLACEHOLDER } from "@kealee/shared";
 
 function formatMoney(n: number) {
   return n.toLocaleString(undefined, {
@@ -310,7 +311,7 @@ export default function AiToolsPage() {
                         value={projectDescription}
                         onChange={(e) => setProjectDescription(e.target.value)}
                         rows={3}
-                        placeholder="Describe the project scope, building type, systems..."
+                        placeholder={ESTIMATION_AI_TOOLS_DESCRIPTION_PLACEHOLDER}
                         className="mt-1.5 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]/25"
                       />
                     </div>

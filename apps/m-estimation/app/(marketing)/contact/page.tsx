@@ -4,6 +4,7 @@ import { useState } from "react"
 import Image from "next/image"
 import { CheckCircle2, Mail, Phone, Clock, Send, Loader2 } from "lucide-react"
 import { apiClient } from "@/lib/api"
+import { ESTIMATION_MARKETING_CONTACT_SCOPE_PLACEHOLDER } from "@kealee/shared"
 
 const projectTypes = [
   "New Construction",
@@ -211,7 +212,7 @@ export default function ContactPage() {
                     value={form.description}
                     onChange={(e) => updateField("description", e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="Describe your project: location, size, scope of work, timeline, any special requirements..."
+                    placeholder={ESTIMATION_MARKETING_CONTACT_SCOPE_PLACEHOLDER}
                   />
                 </div>
 

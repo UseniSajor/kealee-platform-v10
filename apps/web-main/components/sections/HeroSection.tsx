@@ -2,6 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { HERO_PROJECT_SEARCH_PLACEHOLDER } from '@kealee/shared'
 
 interface Suggestion {
   path: string
@@ -134,7 +135,7 @@ export default function HeroSection() {
               <input
                 className="sinput"
                 type="text"
-                placeholder="Kitchen remodel, ADU, tiny home, deck, landscape..."
+                placeholder={HERO_PROJECT_SEARCH_PLACEHOLDER}
                 value={query}
                 onChange={e => onQueryChange(e.target.value)}
                 onKeyDown={onKeyDown}

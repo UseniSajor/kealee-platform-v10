@@ -10,6 +10,10 @@ import {
   ArrowRight,
   AlertCircle,
 } from 'lucide-react'
+import {
+  MARKETPLACE_NEW_PROJECT_TITLE_PLACEHOLDER,
+  MARKETPLACE_OWNER_PROJECT_DESCRIPTION_PLACEHOLDER,
+} from '@kealee/shared'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
 
@@ -173,7 +177,7 @@ export default function NewProjectPage() {
               type="text"
               value={form.name}
               onChange={(e) => updateField('name', e.target.value)}
-              placeholder="e.g., Kitchen Renovation - Main Street"
+              placeholder={MARKETPLACE_NEW_PROJECT_TITLE_PLACEHOLDER}
               className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none text-sm transition"
               required
               minLength={3}
@@ -207,7 +211,7 @@ export default function NewProjectPage() {
             <textarea
               value={form.description}
               onChange={(e) => updateField('description', e.target.value)}
-              placeholder="Describe your project — what you want done, any specific requirements, preferred style..."
+              placeholder={MARKETPLACE_OWNER_PROJECT_DESCRIPTION_PLACEHOLDER}
               className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none text-sm transition resize-none"
               rows={4}
               required

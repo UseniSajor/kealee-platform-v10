@@ -4,6 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FileText, AlertCircle, CheckCircle } from 'lucide-react'
 import { SERVICE_PRICING, formatPrice } from '@kealee/shared/pricing'
+import {
+  getCostEstimateProjectNamePlaceholder,
+  getCostEstimateScopePlaceholder,
+} from '@kealee/shared'
 
 export default function CostEstimateIntakePage() {
   const router = useRouter()
@@ -151,7 +155,7 @@ export default function CostEstimateIntakePage() {
                     value={formData.projectName}
                     onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
                     className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., Kitchen Remodel - 123 Main St"
+                    placeholder={getCostEstimateProjectNamePlaceholder(formData.projectType)}
                   />
                 </div>
 
@@ -208,7 +212,7 @@ export default function CostEstimateIntakePage() {
                     onChange={(e) => setFormData({ ...formData, scopeDescription: e.target.value })}
                     className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={4}
-                    placeholder="Describe the work you need estimated..."
+                    placeholder={getCostEstimateScopePlaceholder(formData.projectType)}
                     required
                   />
                 </div>

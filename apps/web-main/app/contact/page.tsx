@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Mail, Phone, MapPin, Send, MessageSquare, ArrowRight, Clock } from 'lucide-react'
+import { CONTACT_PAGE_MESSAGE_PLACEHOLDER } from '@kealee/shared'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -198,7 +199,7 @@ export default function ContactPage() {
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-all focus:outline-none focus:ring-2"
                     style={{ '--tw-ring-color': '#2ABFBF' } as React.CSSProperties}
-                    placeholder="Tell us about your project or question..."
+                    placeholder={CONTACT_PAGE_MESSAGE_PLACEHOLDER}
                   />
                 </div>
                 {error && (

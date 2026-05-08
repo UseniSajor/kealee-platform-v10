@@ -4,3 +4,4 @@ export * from './feature-flags';
 export * from './types/network';
 export * from './intake';
 export * from './pricing';
+export * from './project-placeholders';

@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button, Input, Textarea, ProgressBar, StepIndicator } from '@kealee/ui';
+import {
+  MARKETPLACE_NEW_PROJECT_TITLE_PLACEHOLDER,
+  MARKETPLACE_OWNER_PROJECT_DESCRIPTION_PLACEHOLDER,
+} from '@kealee/shared';
 
 const STEPS = [
   { id: 'basics', title: 'Project Basics', subtitle: 'Name and location' },
@@ -230,7 +234,7 @@ function StepBasics({
         required
         value={formData.name}
         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        placeholder="e.g., Kitchen Renovation"
+        placeholder={MARKETPLACE_NEW_PROJECT_TITLE_PLACEHOLDER}
         error={errors.name}
         autoFocus
       />
@@ -355,7 +359,7 @@ function StepScope({
         label="Brief Description"
         value={formData.description}
         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-        placeholder="Tell us more about your project..."
+        placeholder={MARKETPLACE_OWNER_PROJECT_DESCRIPTION_PLACEHOLDER}
         rows={3}
         helperText="Optional - You can add more details later"
       />

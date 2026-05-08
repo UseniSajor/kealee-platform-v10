@@ -23,6 +23,7 @@ import {
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { sectionImages } from '@kealee/ui';
+import { SMART_ESTIMATE_AI_PROMPT_PLACEHOLDER } from '@kealee/shared';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -303,7 +304,7 @@ export default function SmartEstimatePage() {
             rows={5}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Tell us about your project. For example: 'I want to renovate my 150 sqft kitchen with granite countertops, new cabinets, and stainless steel appliances...'"
+            placeholder={SMART_ESTIMATE_AI_PROMPT_PLACEHOLDER}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition resize-none placeholder:text-gray-400 text-gray-800"
           />
           <p className="text-xs text-gray-400 mt-1">

@@ -288,7 +288,11 @@ importers:
 
   apps/m-engineer: {}
 
-  apps/m-estimation: {}
+  apps/m-estimation:
+    dependencies:
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
 
   apps/m-finance-trust: {}
 
@@ -467,13 +471,25 @@ importers:
         specifier: ^5.3.3
         version: 5.9.3
 
-  apps/m-marketplace: {}
+  apps/m-marketplace:
+    dependencies:
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
 
-  apps/m-ops-services: {}
+  apps/m-ops-services:
+    dependencies:
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
 
   apps/m-permits-inspections: {}
 
-  apps/m-project-owner: {}
+  apps/m-project-owner:
+    dependencies:
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
 
   apps/marketing:
     dependencies:
@@ -543,6 +559,9 @@ importers:
       '@kealee/observability':
         specifier: workspace:*
         version: link:../../packages/observability
+      '@kealee/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@kealee/ui':
         specifier: workspace:*
         version: link:../../packages/ui

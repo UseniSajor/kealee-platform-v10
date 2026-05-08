@@ -34,6 +34,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, Building, FileText, MapPin, DollarSign } from 'lucide-react';
 import FileUpload from '@/components/file-upload';
 import { PermitApiService } from '@/lib/api/permits';
+import { PERMIT_APPLICATION_PROJECT_DESCRIPTION_PLACEHOLDER } from '@kealee/shared';
 
 // Define form schema with Zod
 const permitFormSchema = z.object({
@@ -651,7 +652,7 @@ export default function PermitApplicationForm({
                         <FormLabel>Project Description *</FormLabel>
                         <FormControl>
                           <Textarea 
-                            placeholder="Describe the project..."
+                            placeholder={PERMIT_APPLICATION_PROJECT_DESCRIPTION_PLACEHOLDER}
                             className="min-h-[100px]"
                             {...field} 
                           />

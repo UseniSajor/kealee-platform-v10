@@ -5,6 +5,12 @@ import { notFound } from 'next/navigation'
 import { CheckCircle2, Clock, ArrowRight, Shield, Video, FileText, Image as ImageIcon, Table2, Layers, Star, LayoutTemplate, Zap, PlayCircle, Phone } from 'lucide-react'
 import { SERVICES, SERVICE_MAP } from '@/lib/services-config'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
+import {
+  getIncludedSectionBlurb,
+  getServicePricingBlurb,
+  getServiceProcessSteps,
+  getServiceVideoFallbackCopy,
+} from '@/lib/service-page-copy'
 
 // ── Tier deliverables (mirrors confirm/page.tsx TIER_ITEMS) ──────────────────
 interface DeliverableItem {
@@ -66,13 +72,6 @@ export async function generateMetadata({
 export function generateStaticParams() {
   return SERVICES.map((s) => ({ serviceType: s.slug }))
 }
-
-const PROCESS_STEPS = [
-  { step: '01', title: 'Choose Your Package', desc: 'Select Basic, Premium, or Premium+ based on your goals.' },
-  { step: '02', title: 'Submit Intake', desc: 'Fill out a short form about your project — takes 3 minutes.' },
-  { step: '03', title: 'AI + Staff Review', desc: 'AI generates renders and specs, then a Kealee specialist reviews.' },
-  { step: '04', title: 'Delivery & Support', desc: 'Receive your full package. Ask questions anytime via the portal ask bar — real staff responds.' },
-]
 
 function TierCard({
   tier,
@@ -159,6 +158,10 @@ export default async function ServicePage({
   const deliverable = SERVICE_DELIVERABLES[svc.intakePath]
   const includes = deliverable?.includes ?? svc.features
   const availableTiers = svc.tiers.filter((t) => t.available)
+  const processSteps = getServiceProcessSteps(svc.slug)
+  const videoFallback = getServiceVideoFallbackCopy(svc.slug, svc.label)
+  const pricingBlurb = getServicePricingBlurb(svc.slug)
+  const includedBlurb = getIncludedSectionBlurb(svc.slug)
 
   // If New Construction, redirect to its custom flow
   if (!svc.usesConceptIntake) {
@@ -257,7 +260,7 @@ export default async function ServicePage({
           <div className="text-center mb-12">
             <p className="text-xs font-bold uppercase tracking-widest text-[#E8724B] mb-3">Pricing</p>
             <h2 className="text-3xl font-bold text-slate-900">Choose Your Package</h2>
-            <p className="mt-3 text-slate-500">All packages include staff review. Premium+ includes a 15-min expert call.</p>
+            <p className="mt-3 text-slate-500">{pricingBlurb}</p>
           </div>
 
           <div className={`grid gap-6 ${availableTiers.length === 3 ? 'md:grid-cols-3' : availableTiers.length === 2 ? 'md:grid-cols-2 max-w-2xl mx-auto' : 'max-w-sm mx-auto'}`}>
@@ -272,7 +275,7 @@ export default async function ServicePage({
       <section className="py-16 px-4 bg-white">
         <div className="mx-auto max-w-4xl">
           <h2 className="text-2xl font-bold text-slate-900 mb-2">What's Included</h2>
-          <p className="text-slate-500 mb-8">Every deliverable reviewed by a Kealee specialist before delivery.</p>
+          <p className="text-slate-500 mb-8">{includedBlurb}</p>
           <div className="grid sm:grid-cols-2 gap-3">
             {includes.map((item) => (
               <div
@@ -310,12 +313,8 @@ export default async function ServicePage({
                 <PlayCircle className="w-10 h-10 text-white/70" />
               </div>
               <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-3">Video Overview</p>
-              <h2 className="text-2xl font-bold text-white mb-3">
-                See a {svc.label} project come to life
-              </h2>
-              <p className="text-slate-400 max-w-lg mx-auto text-sm mb-6 leading-relaxed">
-                Watch our design team walk through a {svc.label.toLowerCase()} — from rough idea to AI-rendered package with full cost estimate and permit scope — in under 90 seconds.
-              </p>
+              <h2 className="text-2xl font-bold text-white mb-3">{videoFallback.headline}</h2>
+              <p className="text-slate-400 max-w-lg mx-auto text-sm mb-6 leading-relaxed">{videoFallback.body}</p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
                   href={`/concept?service=${svc.slug}`}
@@ -373,7 +372,7 @@ export default async function ServicePage({
         <div className="mx-auto max-w-4xl">
           <h2 className="text-2xl font-bold text-slate-900 mb-10 text-center">How It Works</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {PROCESS_STEPS.map((step) => (
+            {processSteps.map((step) => (
               <div key={step.step} className="text-center">
                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#1A2B4A] text-sm font-black text-white">
                   {step.step}
@@ -392,7 +391,12 @@ export default async function ServicePage({
           Ready to get your {svc.label}?
         </h2>
         <p className="text-orange-100 text-lg mb-8 max-w-xl mx-auto">
-          Your {svc.deliverableLabel.toLowerCase()} — AI-designed with renders, cost estimate, and permit scope — delivered in {svc.deliveryDays}.
+          Your {svc.deliverableLabel.toLowerCase()}
+          {' — '}
+          AI-assisted with renders
+          {svc.permits > 0 ? ', cost estimate, and permit scope' : ' and documented design direction'}
+          {' — '}
+          delivered in {svc.deliveryDays}.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
@@ -402,10 +406,10 @@ export default async function ServicePage({
             Start My {svc.shortLabel} Concept <ArrowRight className="w-5 h-5" />
           </Link>
           <Link
-            href="/gallery"
+            href="/services"
             className="inline-flex items-center justify-center gap-2 border-2 border-white/50 hover:border-white text-white font-semibold px-8 py-4 rounded-xl transition-all duration-200"
           >
-            Browse All Services
+            Explore all services
           </Link>
         </div>
       </section>

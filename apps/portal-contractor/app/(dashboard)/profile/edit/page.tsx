@@ -18,6 +18,7 @@ import {
   ArrowLeft, Loader2, AlertCircle, AlertTriangle, CheckCircle2, Save,
 } from 'lucide-react'
 import { getContractorProfile, updateContractorProfile, type ContractorProfile } from '@/lib/api/contractor'
+import { PORTAL_CONTRACTOR_COMPANY_BIO_PLACEHOLDER } from '@kealee/shared'
 
 // ─── CSI divisions list ────────────────────────────────────────────────────────
 
@@ -294,7 +295,7 @@ export default function ProfileEditPage() {
                 className={inputCls + ' resize-none'}
                 rows={4}
                 maxLength={1500}
-                placeholder="Tell project owners about your company, experience, and specialties..."
+                placeholder={PORTAL_CONTRACTOR_COMPANY_BIO_PLACEHOLDER}
                 value={form.bio}
                 onChange={e => set('bio', e.target.value)}
               />

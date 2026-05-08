@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Loader2, AlertCircle, ArrowRight, CheckCircle2, Clock, Shield, Zap, Package, ImagePlus, X, FileVideo } from 'lucide-react'
 import { SERVICE_DELIVERABLES } from '@/lib/service-deliverables'
+import { getIntakeCheckoutProjectDescriptionPlaceholder } from '@kealee/shared'
 
 const AGENT_MAP: Record<string, string> = {
   exterior_concept: 'design', garden_concept: 'design', whole_home_concept: 'design',
@@ -510,7 +511,7 @@ export default function IntakePage() {
                     onChange={e => setFormData(d => ({ ...d, description: e.target.value }))}
                     rows={4}
                     className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 resize-none"
-                    placeholder="Tell us your goals, what's changing, any specific requirements or style preferences..."
+                    placeholder={getIntakeCheckoutProjectDescriptionPlaceholder(projectPath)}
                   />
                 </div>
 

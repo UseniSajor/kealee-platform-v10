@@ -7,6 +7,10 @@
  */
 
 import { useState } from 'react'
+import {
+  MARKETPLACE_OWNER_PROJECT_DESCRIPTION_PLACEHOLDER,
+  MARKETPLACE_PROJECT_SPECIAL_NOTES_PLACEHOLDER,
+} from '@kealee/shared'
 
 interface ProjectFormData {
   propertyAddress: string
@@ -234,7 +238,7 @@ export function ProjectCreationForm() {
               aria-invalid={!!fieldErrors.projectDescription}
               aria-describedby={[fieldErrors.projectDescription ? 'projectDescription-error' : '', 'projectDescription-hint'].filter(Boolean).join(' ')}
               className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 ${fieldErrors.projectDescription ? 'border-red-500' : 'border-gray-300'}`}
-              placeholder="Describe your project in detail... What work needs to be done? Any specific requirements?"
+              placeholder={MARKETPLACE_OWNER_PROJECT_DESCRIPTION_PLACEHOLDER}
               value={formData.projectDescription}
               onChange={(e) => {
                 setFormData({ ...formData, projectDescription: e.target.value })
@@ -357,7 +361,7 @@ export function ProjectCreationForm() {
               maxLength={2000}
               rows={3}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-              placeholder="Any special requirements, preferences, or constraints..."
+              placeholder={MARKETPLACE_PROJECT_SPECIAL_NOTES_PLACEHOLDER}
               value={formData.specialRequirements}
               onChange={(e) => setFormData({ ...formData, specialRequirements: e.target.value })}
             />

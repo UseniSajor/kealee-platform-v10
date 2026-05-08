@@ -12,6 +12,7 @@ import {
   formatDrawingsPrice,
   type DrawingsServiceConfig,
 } from '@/lib/professional-drawings-config'
+import { PROFESSIONAL_DRAWINGS_SCOPE_PLACEHOLDER } from '@kealee/shared'
 
 const INCLUDES = [
   'Licensed architect / PE assigned to your project',
@@ -442,7 +443,7 @@ function ProfessionalDrawingsForm() {
                     onChange={e => setFormData(d => ({ ...d, description: e.target.value }))}
                     rows={4}
                     className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 resize-none"
-                    placeholder="Describe your renovation scope, structural changes, additions, or any specific requirements…"
+                    placeholder={PROFESSIONAL_DRAWINGS_SCOPE_PLACEHOLDER}
                   />
                 </div>
 

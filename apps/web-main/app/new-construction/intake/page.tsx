@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, ArrowLeft, CheckCircle2, Building2, MapPin, DollarSign, Calendar, User } from 'lucide-react'
+import { NEW_CONSTRUCTION_SPECIAL_REQUIREMENTS_PLACEHOLDER } from '@kealee/shared'
 
 type FormData = {
   // Step 1: Project basics
@@ -292,7 +293,7 @@ export default function NewConstructionIntakePage() {
               <Field label="Special features or requirements" hint="Pool, basement, home office, in-law suite, etc.">
                 <textarea
                   className={`${inputClass} h-28 resize-none`}
-                  placeholder="Describe any special requirements..."
+                  placeholder={NEW_CONSTRUCTION_SPECIAL_REQUIREMENTS_PLACEHOLDER}
                   value={form.specialFeatures}
                   onChange={(e) => set('specialFeatures')(e.target.value)}
                 />

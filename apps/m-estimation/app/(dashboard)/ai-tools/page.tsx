@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/lib/api';
+import { ESTIMATION_AI_TOOLS_DESCRIPTION_PLACEHOLDER } from '@kealee/shared';
 import {
   Brain,
   Search,
@@ -159,7 +160,7 @@ function ScopeAnalysisPanel({
           rows={4}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Describe the project scope, building type, size, and key requirements..."
+          placeholder={ESTIMATION_AI_TOOLS_DESCRIPTION_PLACEHOLDER}
         />
       </div>
       <div>

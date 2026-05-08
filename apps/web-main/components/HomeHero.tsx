@@ -41,7 +41,7 @@ export default function HomeHero() {
         <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white leading-[1.08] tracking-tight">
           Transform Your Home.
           <br className="hidden sm:block" />
-          <span className="text-[#E8724B]"> Visualize</span> Your Future.
+          <span className="text-[#E8724B]"> Visualize</span> Your Build.
         </h1>
 
         <p className="mt-6 text-lg sm:text-xl lg:text-2xl text-slate-300 max-w-2xl mx-auto leading-relaxed">

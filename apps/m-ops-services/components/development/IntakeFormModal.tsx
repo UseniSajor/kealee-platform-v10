@@ -18,6 +18,7 @@ import {
   Checkbox,
 } from "@/components/ui"
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react"
+import { OPS_MARKETPLACE_CONTACT_MESSAGE_PLACEHOLDER } from "@kealee/shared"
 
 interface IntakeFormModalProps {
   isOpen: boolean
@@ -341,7 +342,7 @@ export function IntakeFormModal({ isOpen, onClose }: IntakeFormModalProps) {
                   id="message"
                   {...register("message")}
                   rows={4}
-                  placeholder="Tell us about your project, challenges, and what you're looking to achieve..."
+                  placeholder={OPS_MARKETPLACE_CONTACT_MESSAGE_PLACEHOLDER}
                 />
                 {errors.message && (
                   <p className="text-sm text-red-600 mt-1">{errors.message.message}</p>

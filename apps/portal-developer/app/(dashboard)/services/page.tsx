@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { BarChart3, TrendingUp, Layers, Building2, ArrowRight, X, CheckCircle } from 'lucide-react'
+import { PORTAL_DEVELOPER_SERVICE_DESCRIPTION_PLACEHOLDER } from '@kealee/shared'
 
 const SERVICES = [
   {
@@ -173,7 +174,7 @@ export default function DeveloperServicesPage() {
                   rows={4}
                   value={form.description}
                   onChange={e => setForm({ ...form, description: e.target.value })}
-                  placeholder="Describe your development project, target use, and any known constraints..."
+                  placeholder={PORTAL_DEVELOPER_SERVICE_DESCRIPTION_PLACEHOLDER}
                   className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm"
                 />
               </div>

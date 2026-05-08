@@ -5,6 +5,7 @@ import { Button } from '@estimation/components/ui/button';
 import { Input } from '@estimation/components/ui/input';
 import { Label } from '@estimation/components/ui/label';
 import { Textarea } from '@estimation/components/ui/textarea';
+import { ESTIMATION_WIZARD_SCOPE_DETAIL_PLACEHOLDER } from '@kealee/shared';
 
 interface BasicInfoStepProps {
   data: any;
@@ -157,7 +158,7 @@ export function BasicInfoStep({
               setFormData({ ...formData, description: e.target.value });
               setErrors({ ...errors, description: '' });
             }}
-            placeholder="Describe the scope of work in detail. Include square footage, number of rooms, materials, finishes, etc. The more detail you provide, the better our AI can analyze the project."
+            placeholder={ESTIMATION_WIZARD_SCOPE_DETAIL_PLACEHOLDER}
             rows={6}
             className={errors.description ? 'border-destructive' : ''}
           />

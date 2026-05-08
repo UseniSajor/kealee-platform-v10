@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { getPermitFunnelProjectDescriptionPlaceholder } from '@kealee/shared'
 
 interface PermitFunnelProps {
   countySlug?: string
@@ -418,7 +419,7 @@ export function PermitFunnel({ countySlug }: PermitFunnelProps) {
                     <textarea
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 resize-none"
                       rows={3}
-                      placeholder="e.g. Adding a 400 sq ft primary suite above the existing garage..."
+                      placeholder={getPermitFunnelProjectDescriptionPlaceholder(state.projectType)}
                       value={state.projectDescription}
                       onChange={(e) => set({ projectDescription: e.target.value })}
                     />

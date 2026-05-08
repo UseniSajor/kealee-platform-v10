@@ -8,6 +8,7 @@ import {
   LogOut, Bot, X, ChevronRight, Bell, Package, Menu, Home, Sparkles,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { PORTAL_OWNER_ASK_BOT_PLACEHOLDER } from '@kealee/shared'
 
 const NAV_ITEMS = [
   { href: '/projects',     label: 'Projects',     icon: FolderKanban, badge: null },
@@ -186,7 +187,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <div className="border-t border-slate-100 p-3">
             <div className="flex gap-2">
-              <input type="text" placeholder="Ask about your project…"
+              <input type="text" placeholder={PORTAL_OWNER_ASK_BOT_PLACEHOLDER}
                 className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none"
                 onFocus={e => (e.target.style.borderColor = ACCENT)}
                 onBlur={e => (e.target.style.borderColor = '#E2E8F0')}

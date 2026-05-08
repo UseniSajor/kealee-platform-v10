@@ -7,6 +7,7 @@ import { Button, Input, ProgressBar, StepIndicator } from '@kealee/ui';
 import { Card } from '@kealee/ui';
 import { api } from '@permits/lib/api/client';
 import { detectJurisdiction, loadJurisdictions, findJurisdictionByCode, type Jurisdiction } from '@permits/lib/jurisdictions';
+import { PERMIT_NEW_FLOW_ADDRESS_PLACEHOLDER } from '@kealee/shared';
 
 // Simple toast implementation (replace with sonner if available)
 const toast = {
@@ -301,7 +302,7 @@ function StepLocation({
           required
           value={formData.address}
           onChange={(e) => handleAddressChange(e.target.value)}
-          placeholder="Enter project address..."
+          placeholder={PERMIT_NEW_FLOW_ADDRESS_PLACEHOLDER}
           error={errors.address}
           autoFocus
           leftIcon={<MapPin size={20} />}

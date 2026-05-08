@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { ArrowRight, X, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { ASK_ANYTHING_BAR_PLACEHOLDER } from '@kealee/shared'
 
 interface AskResponse {
   answer: string
@@ -103,7 +104,7 @@ export function AskAnythingBar({ context = 'default', className = '' }: Props) {
           onFocus={() => setIsFocused(true)}
           onBlur={() => setTimeout(() => setIsFocused(false), 150)}
           onKeyDown={e => e.key === 'Enter' && handleSubmit(query)}
-          placeholder="Ask anything — permits, costs, design, contractors…"
+          placeholder={ASK_ANYTHING_BAR_PLACEHOLDER}
           className="flex-1 bg-transparent px-5 py-3.5 text-sm text-white placeholder-white/50 outline-none"
         />
         <button

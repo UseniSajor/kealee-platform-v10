@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowRight, ArrowLeft } from 'lucide-react'
 import { SERVICE_MAP } from '@/lib/services-config'
+import { getConceptScopePlaceholder, getConceptSqftHint } from '@/lib/concept-scope-placeholders'
 
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#E8724B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E8724B]/20 transition'
@@ -104,7 +105,7 @@ function DetailsInner() {
           </label>
           <textarea
             className={`${inputClass} h-32 resize-none`}
-            placeholder="E.g., Full kitchen gut-renovation — remove wall between kitchen and dining room, add a 10-ft island with seating, replace all cabinetry, quartz counters, professional 6-burner range, under-cabinet LED lighting..."
+            placeholder={getConceptScopePlaceholder(serviceSlug)}
             value={scope}
             onChange={(e) => setScope(e.target.value)}
           />
@@ -125,7 +126,7 @@ function DetailsInner() {
             value={sqft}
             onChange={(e) => setSqft(e.target.value)}
           />
-          <p className="text-xs text-slate-400 mt-1">Area of the specific space being renovated or added</p>
+          <p className="text-xs text-slate-400 mt-1">{getConceptSqftHint(serviceSlug)}</p>
         </div>
 
         {/* Style */}
