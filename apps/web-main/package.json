@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "diag:intake": "node ./scripts/smoke-intake-diagnostics.mjs"
+    "diag:intake": "node ./scripts/smoke-intake-diagnostics.mjs",
+    "test:ghl": "node ./scripts/test-ghl-connection.mjs",
+    "test:marketing-setup": "node ./scripts/setup-marketing-phase1-check.mjs"
   },
   "dependencies": {
     "@kealee/core-rules": "workspace:*",
