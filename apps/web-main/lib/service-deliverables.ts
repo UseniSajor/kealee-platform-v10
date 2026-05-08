@@ -417,11 +417,12 @@ export const SERVICE_DELIVERABLES: Record<string, ServiceDeliverable> = {
     permitRequired: 'always',
     includes: [
       'Licensed architect / PE assigned to your project',
-      'AI concept review and integration',
+      'AI concept review and integration into drawing set',
       'Permit-ready drawing set (floor plan, elevations, site plan)',
       'PE stamp where required by jurisdiction',
       'Jurisdiction cover sheet and code compliance notes',
       'Building department coordination',
+      'Permit filing fee included — all-in pricing',
     ],
     deliveryDays: '7–14 days',
     nextStep: { label: 'File Your Permit', href: '/intake/permit_path_only' },

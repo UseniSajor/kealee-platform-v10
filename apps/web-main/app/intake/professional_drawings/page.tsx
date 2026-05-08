@@ -7,12 +7,11 @@ import {
   Loader2, AlertCircle, ArrowRight, CheckCircle2, Clock, Shield,
   Package, ImagePlus, X, FileVideo, PenTool,
 } from 'lucide-react'
-
-const PRICE_INFO = {
-  label: 'Permit-Ready Drawings',
-  amount: 149900,
-  delivery: '7–14 days',
-}
+import {
+  getDrawingsConfig,
+  formatDrawingsPrice,
+  type DrawingsServiceConfig,
+} from '@/lib/professional-drawings-config'
 
 const INCLUDES = [
   'Licensed architect / PE assigned to your project',
@@ -23,10 +22,6 @@ const INCLUDES = [
   'Building department coordination',
   'Portal support through permit submission',
 ]
-
-function formatPrice(cents: number) {
-  return `$${(cents / 100).toFixed(2)}`
-}
 
 function StepBar({ step }: { step: 'details' | 'review' }) {
   const steps = ['details', 'review'] as const
@@ -60,20 +55,23 @@ function StepBar({ step }: { step: 'details' | 'review' }) {
   )
 }
 
-function OrderSummary() {
+function OrderSummary({ priceInfo }: { priceInfo: DrawingsServiceConfig }) {
   return (
     <div className="space-y-4">
       <div className="rounded-xl bg-white border border-slate-200 p-5 shadow-sm">
         <div className="flex items-start justify-between mb-3">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-purple-700 mb-1">Your Package</p>
-            <h3 className="text-base font-bold text-slate-900">{PRICE_INFO.label}</h3>
+            <h3 className="text-base font-bold text-slate-900">{priceInfo.label}</h3>
           </div>
-          <span className="text-xl font-black text-slate-900">{formatPrice(PRICE_INFO.amount)}</span>
+          <span className="text-xl font-black text-slate-900">{formatDrawingsPrice(priceInfo.amount)}</span>
         </div>
+        {priceInfo.note && (
+          <p className="text-xs text-slate-500 mb-3 italic">{priceInfo.note}</p>
+        )}
         <div className="flex flex-col gap-2 mb-4">
           <span className="flex items-center gap-2 text-sm text-slate-600">
-            <Clock className="h-4 w-4 text-purple-500" /> Delivered in {PRICE_INFO.delivery}
+            <Clock className="h-4 w-4 text-purple-500" /> Delivered in {priceInfo.delivery}
           </span>
           <span className="flex items-center gap-2 text-sm text-slate-600">
             <Shield className="h-4 w-4 text-green-500" /> Secure checkout via Stripe
@@ -121,6 +119,8 @@ function ProfessionalDrawingsForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const conceptId = searchParams.get('conceptId') ?? ''
+  const serviceSlug = searchParams.get('service') ?? ''
+  const priceInfo = getDrawingsConfig(serviceSlug || null)
 
   const [step, setStep] = useState<'details' | 'review'>('details')
   const [formError, setFormError] = useState('')
@@ -253,9 +253,9 @@ function ProfessionalDrawingsForm() {
         body: JSON.stringify({
           intakeId,
           projectPath: 'professional_drawings',
-          amount: PRICE_INFO.amount,
+          amount: priceInfo.amount,
           successUrl: `${appUrl}/intake/professional_drawings/success?session_id={CHECKOUT_SESSION_ID}&intakeId=${intakeId}`,
-          cancelUrl: `${appUrl}/intake/professional_drawings?canceled=true${conceptId ? `&conceptId=${conceptId}` : ''}`,
+          cancelUrl: `${appUrl}/intake/professional_drawings?canceled=true${conceptId ? `&conceptId=${conceptId}` : ''}${serviceSlug ? `&service=${serviceSlug}` : ''}`,
         }),
       })
 
@@ -308,11 +308,11 @@ function ProfessionalDrawingsForm() {
                 <div className="lg:hidden rounded-xl bg-purple-50 border border-purple-200 p-4 flex items-center justify-between">
                   <div>
                     <p className="text-xs font-bold text-purple-700 uppercase tracking-widest mb-0.5">Ordering</p>
-                    <p className="text-sm font-bold text-slate-900">{PRICE_INFO.label}</p>
-                    <p className="text-xs text-slate-500">Delivered in {PRICE_INFO.delivery}</p>
+                    <p className="text-sm font-bold text-slate-900">{priceInfo.label}</p>
+                    <p className="text-xs text-slate-500">Delivered in {priceInfo.delivery}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xl font-black text-slate-900">{formatPrice(PRICE_INFO.amount)}</p>
+                    <p className="text-xl font-black text-slate-900">{formatDrawingsPrice(priceInfo.amount)}</p>
                     <Link href="/gallery" className="text-xs text-purple-700 font-semibold">change</Link>
                   </div>
                 </div>
@@ -525,7 +525,7 @@ function ProfessionalDrawingsForm() {
                   type="submit"
                   className="w-full flex items-center justify-center gap-2 rounded-xl bg-purple-700 hover:bg-purple-800 py-4 text-sm font-bold text-white transition focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
-                  Review & Pay {formatPrice(PRICE_INFO.amount)}
+                  Review & Pay {formatDrawingsPrice(priceInfo.amount)}
                   <ArrowRight className="h-5 w-5" />
                 </button>
 
@@ -587,7 +587,7 @@ function ProfessionalDrawingsForm() {
                     {submitting ? (
                       <><Loader2 className="h-5 w-5 animate-spin" /> Processing…</>
                     ) : (
-                      <>Pay {formatPrice(PRICE_INFO.amount)} &amp; Get Drawings <ArrowRight className="h-5 w-5" /></>
+                      <>Pay {formatDrawingsPrice(priceInfo.amount)} &amp; Get Drawings <ArrowRight className="h-5 w-5" /></>
                     )}
                   </button>
                   <button
@@ -604,7 +604,7 @@ function ProfessionalDrawingsForm() {
 
           {/* ── Right: Order summary ── */}
           <div className="lg:col-span-2 hidden lg:block">
-            <OrderSummary />
+            <OrderSummary priceInfo={priceInfo} />
           </div>
         </div>
       </div>

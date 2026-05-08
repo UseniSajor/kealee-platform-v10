@@ -5,7 +5,7 @@ import { ArrowRight, CheckCircle2, Star, Building2, Sparkles } from 'lucide-reac
 import HomeHero from '@/components/HomeHero'
 import { SERVICES } from '@/lib/services-config'
 
-const PRECON_SERVICES = SERVICES.filter((s) => s.phase === 'precon')
+const PRECON_SERVICES = SERVICES.filter((s) => s.phase === 'precon' && s.slug !== 'design-services')
 
 export const metadata: Metadata = {
   title: 'Kealee — AI Home Design Concepts, Permit Scope & Cost Estimates',
@@ -27,7 +27,7 @@ const TIERS = [
       'Floor Plan Layout Direction',
       'Permit Scope Brief + Path-to-Approval',
       'Itemized Cost Estimate (Bill of Materials)',
-      'PDF Design Report (15–20 pages)',
+      'PDF Design Report',
       '1 revision · Email support',
     ],
     cta: 'Start Basic',
